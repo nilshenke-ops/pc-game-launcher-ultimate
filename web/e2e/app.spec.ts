@@ -1,7 +1,7 @@
 import { expect, test, devices, type Browser, type Page } from "@playwright/test";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
-import { COMPANION, RELAY, state } from "./env";
+import { COMPANION, HOSTED_SITE, RELAY, state } from "./env";
 
 // The tests build on each other (pairing → launching → revoking), so they run in order.
 test.describe.configure({ mode: "serial" });
@@ -125,6 +125,47 @@ test("Download-Status ist ehrlich (Entwicklungsserver hat keine EXE)", async () 
   await pc.goto(`${COMPANION}/#/help`);
   await expect(pc.getByText("Companion noch nicht gebaut")).toBeVisible();
   await expect(pc.getByRole("button", { name: "Begleiter herunterladen" })).toBeDisabled();
+});
+
+test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async ({ browser }) => {
+  // Opens without any PC information and shows "PC verbinden".
+  const ctx = await browser.newContext({ ...devices["iPad (gen 7)"], locale: "de-DE" });
+  const tablet = await ctx.newPage();
+  await tablet.goto(`${HOSTED_SITE}/`);
+  await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
+
+  // On the PC: create a code; the PC shows code and address to type in, and the QR link points to the hosted site.
+  await pc.goto(`${COMPANION}/#/pair`);
+  await pc.getByRole("button", { name: "Neuen Code erzeugen" }).click();
+  const code = (await pc.locator(".code-display").textContent())!.trim();
+  const address = (await pc.getByText("PC-Adresse (zum Abschreiben)").locator("..").locator("code").textContent())!.trim();
+  expect(address).toBe(COMPANION);
+  // The QR code points to the hosted site (first link), with code and PC address as parameters.
+  await expect(pc.locator(".qr + code, .qr ~ code").first()).toHaveText(`${HOSTED_SITE}/`);
+
+  // Manual path: type code and PC address.
+  await tablet.locator("input.code-input").fill(code);
+  await tablet.getByLabel("PC-Adresse").fill(address);
+  await tablet.getByRole("button", { name: "PC verbinden" }).click();
+  await expect(pc.getByRole("dialog", { name: "Neue Kopplungsanfrage" })).toBeVisible({ timeout: 15000 });
+  await pc.getByRole("button", { name: "Erlauben" }).click();
+  await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await tablet.reload();
+  await tablet.locator(".bottom-nav, .sidebar").getByRole("link", { name: "Spiele" }).first().click();
+  await expect(tablet.getByText("E2E Testspiel")).toBeVisible({ timeout: 15000 });
+
+  // QR path: the link fills in code and PC address automatically.
+  const phone2 = await (await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" })).newPage();
+  await pc.goto(`${COMPANION}/#/pair`);
+  await pc.getByRole("button", { name: "Neuen Code erzeugen" }).click();
+  const code2 = (await pc.locator(".code-display").textContent())!.trim();
+  await phone2.goto(`${HOSTED_SITE}/#/pair?code=${code2}&pc=${encodeURIComponent(address)}`);
+  await expect(phone2.locator("input.code-input")).toHaveValue(code2);
+  await expect(phone2.getByLabel("PC-Adresse")).toHaveValue(address);
+  await phone2.getByRole("button", { name: "PC verbinden" }).click();
+  await expect(pc.getByRole("dialog", { name: "Neue Kopplungsanfrage" })).toBeVisible({ timeout: 15000 });
+  await pc.getByRole("button", { name: "Erlauben" }).click();
+  await expect(phone2.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
 });
 
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {

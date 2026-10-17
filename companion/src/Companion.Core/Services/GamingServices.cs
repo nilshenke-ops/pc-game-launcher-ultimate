@@ -64,6 +64,7 @@ public sealed class SettingsService
         public bool? LanAccess { get; set; }
         public int? Port { get; set; }
         public string? PublicUrl { get; set; }
+        public string? WebAppUrl { get; set; }
         public bool? RelayEnabled { get; set; }
         public string? RelayUrl { get; set; }
         public string? RelayCompanionId { get; set; }
@@ -76,6 +77,8 @@ public sealed class SettingsService
         if (u.Port is { } port && (port < 1024 || port > 65535)) throw new RpcException("invalid-params", "Port muss zwischen 1024 und 65535 liegen.");
         if (u.PublicUrl is { Length: > 0 } pu && !(Uri.TryCreate(pu, UriKind.Absolute, out var puri) && puri.Scheme is "https" or "http"))
             throw new RpcException("invalid-params", "Öffentliche Adresse muss mit https:// beginnen.");
+        if (u.WebAppUrl is { Length: > 0 } wa && !(Uri.TryCreate(wa, UriKind.Absolute, out var wau) && wau.Scheme is "https" or "http"))
+            throw new RpcException("invalid-params", "Adresse der Web-App muss mit https:// beginnen.");
         if (u.RelayUrl is { Length: > 0 } ru && !(Uri.TryCreate(ru, UriKind.Absolute, out var ruri) && ruri.Scheme is "wss" or "ws"))
             throw new RpcException("invalid-params", "Relay-Adresse muss mit wss:// beginnen (ws:// nur im lokalen Netz).");
         if (u.UpdateManifestUrl is { Length: > 0 } um && !(Uri.TryCreate(um, UriKind.Absolute, out var umu) && umu.Scheme == "https"))
@@ -88,6 +91,7 @@ public sealed class SettingsService
             if (u.LanAccess != null) s.LanAccess = u.LanAccess.Value;
             if (u.Port != null) s.Port = u.Port.Value;
             if (u.PublicUrl != null) s.PublicUrl = u.PublicUrl == "" ? null : u.PublicUrl.TrimEnd('/');
+            if (u.WebAppUrl != null) s.WebAppUrl = u.WebAppUrl == "" ? null : u.WebAppUrl.Trim().TrimEnd('/');
             if (u.RelayEnabled != null) s.RelayEnabled = u.RelayEnabled.Value;
             if (u.RelayUrl != null) s.RelayUrl = u.RelayUrl == "" ? null : u.RelayUrl;
             if (u.RelayCompanionId != null) s.RelayCompanionId = u.RelayCompanionId == "" ? null : u.RelayCompanionId;
@@ -106,6 +110,8 @@ public sealed class SettingsService
         s.RelaySecretProtected = keepSecurityFrom.RelaySecretProtected;
         s.LanAccess = keepSecurityFrom.LanAccess;
         s.Port = keepSecurityFrom.Port;
+        s.PublicUrl = keepSecurityFrom.PublicUrl;   // allowed web origins are never changed by a backup file
+        s.WebAppUrl = keepSecurityFrom.WebAppUrl;
         _store.Replace(s);
         _hub.Changed("settings");
     }

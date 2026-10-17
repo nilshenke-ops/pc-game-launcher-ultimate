@@ -88,3 +88,22 @@ describe("hotkey recording", () => {
     expect(comboFromEvent(ev({ key: "Dead", code: "Backquote" }))).toBeNull();
   });
 });
+
+import { pcAddressToWs, wsToPcAddress } from "./address";
+describe("PC-Adresse", () => {
+  it("turns typed or scanned addresses into WebSocket URLs", () => {
+    expect(pcAddressToWs("gaming-pc.tail1234.ts.net", true)).toBe("wss://gaming-pc.tail1234.ts.net/ws");
+    expect(pcAddressToWs("  https://gaming-pc.tail1234.ts.net/ ", true)).toBe("wss://gaming-pc.tail1234.ts.net/ws");
+    expect(pcAddressToWs("wss://relay.example.com/ws?pc=mein-pc", true)).toBe("wss://relay.example.com/ws?pc=mein-pc");
+    expect(pcAddressToWs("http://192.168.178.116:8787", false)).toBe("ws://192.168.178.116:8787/ws");
+    expect(pcAddressToWs("192.168.178.116:8787", false)).toBe("ws://192.168.178.116:8787/ws");
+    expect(pcAddressToWs("", true)).toBeNull();
+    expect(pcAddressToWs("javascript:alert(1)", true)).toBeNull();
+  });
+  it("round-trips through the short display form", () => {
+    for (const ws of ["wss://gaming-pc.tail1234.ts.net/ws", "ws://127.0.0.1:18787/ws"]) {
+      const short = wsToPcAddress(ws);
+      expect(pcAddressToWs(short.startsWith("ws") ? short : (ws.startsWith("wss") ? short : "http://" + short), ws.startsWith("wss"))).toBe(ws);
+    }
+  });
+});

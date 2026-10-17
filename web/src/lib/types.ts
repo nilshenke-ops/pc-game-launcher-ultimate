@@ -150,6 +150,7 @@ export interface Settings {
   lanAccess: boolean;
   port: number;
   publicUrl?: string;
+  webAppUrl?: string;
   relayEnabled: boolean;
   relayUrl?: string;
   relayCompanionId?: string;

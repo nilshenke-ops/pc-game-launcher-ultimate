@@ -259,9 +259,9 @@ function Connection() {
   const conn = useConn();
   const isLocal = !!conn.me?.isLocal;
   const st = useRpc<{ lanUrls: string[]; relay: { state: string; lastError?: string } }>("state.get", {}, ["settings"]);
-  const [f, setF] = useState({ publicUrl: "", relayUrl: "", relayCompanionId: "", relaySecret: "", port: 8787 });
+  const [f, setF] = useState({ publicUrl: "", webAppUrl: "", relayUrl: "", relayCompanionId: "", relaySecret: "", port: 8787 });
   const [url, setUrl] = useState(serverUrl());
-  useEffect(() => { if (s.data) setF({ publicUrl: s.data.settings.publicUrl ?? "", relayUrl: s.data.settings.relayUrl ?? "", relayCompanionId: s.data.settings.relayCompanionId ?? "", relaySecret: "", port: s.data.settings.port }); }, [s.data]);
+  useEffect(() => { if (s.data) setF({ publicUrl: s.data.settings.publicUrl ?? "", webAppUrl: s.data.settings.webAppUrl ?? "", relayUrl: s.data.settings.relayUrl ?? "", relayCompanionId: s.data.settings.relayCompanionId ?? "", relaySecret: "", port: s.data.settings.port }); }, [s.data]);
   const set = s.data?.settings;
   return (
     <Loadable loading={s.loading} error={s.error} onRetry={s.reload}>
@@ -284,6 +284,10 @@ function Connection() {
           <Field label={t("Öffentliche Adresse der Web-App (optional)")} hint={t("z. B. dein Cloudflare-Tunnel https://games.deinedomain.de – wird im QR-Code verwendet. Eine temporäre trycloudflare.com-Adresse ändert sich bei jedem Start.")}>
             <div className="row nowrap"><input className="input" value={f.publicUrl} disabled={!conn.me?.permissions.includes("admin")} onChange={(e) => setF({ ...f, publicUrl: e.target.value })} placeholder="https://…" />
               <Button onClick={() => s.save({ publicUrl: f.publicUrl }, true)}>{t("Speichern")}</Button></div>
+          </Field>
+          <Field label={t("Adresse der gehosteten Web-App (optional)")} hint={t("Feste Webseite, die auch bei ausgeschaltetem PC erreichbar ist (z. B. https://dein-name.pages.dev). Der QR-Code öffnet dann diese Seite mit Code und PC-Adresse.")}>
+            <div className="row nowrap"><input className="input" value={f.webAppUrl} disabled={!conn.me?.permissions.includes("admin")} onChange={(e) => setF({ ...f, webAppUrl: e.target.value })} placeholder="https://…" />
+              <Button onClick={() => s.save({ webAppUrl: f.webAppUrl }, true)}>{t("Speichern")}</Button></div>
           </Field>
           <div className="divider" />
           <Switch checked={!!set?.relayEnabled} disabled={!isLocal} onChange={(v) => s.save({ relayEnabled: v }, true)} label={t("Mit eigenem Relay verbinden")} hint={t("Der PC baut eine ausgehende Verbindung zu deinem Relay-Server auf. Anmeldung und Kopplung bleiben Ende-zu-Ende beim Companion.")} />

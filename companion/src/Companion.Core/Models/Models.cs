@@ -260,6 +260,8 @@ public sealed class Settings
     public int Port { get; set; } = 8787;
     /// <summary>Public https URL of the web app (tunnel or hosting). Used for QR codes. Empty = LAN address.</summary>
     public string? PublicUrl { get; set; }
+    /// <summary>Address of the hosted web app (static site that stays online while the PC is off). Its QR code links there.</summary>
+    public string? WebAppUrl { get; set; }
     public bool RelayEnabled { get; set; }
     public string? RelayUrl { get; set; }
     public string? RelayCompanionId { get; set; }

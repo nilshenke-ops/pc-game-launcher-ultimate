@@ -13,6 +13,9 @@ export interface Hello {
 
 export interface Me { isLocal: boolean; permissions: string[]; device?: { id: string; name: string } | null }
 
+/** Hosted build: the web app lives on a static host and connects to the PC address the user scans or types. */
+export const HOSTED = import.meta.env.VITE_HOSTED === "1";
+
 export interface ConnStatus {
   phase: "connecting" | "online" | "offline";
   attempt: number;
@@ -22,6 +25,8 @@ export interface ConnStatus {
   relayCompanion?: "online" | "offline";
   /** The user opened the app without a PC connection (design/layout can be changed, connects automatically later). */
   offlineShell?: boolean;
+  /** Hosted build without a saved PC address: show "PC verbinden" instead of connecting anywhere. */
+  needsServer?: boolean;
   auth: "none" | "checking" | "ok" | "failed" | "revoked";
   authError?: string;
   hello?: Hello;
@@ -66,6 +71,8 @@ export function defaultServerUrl(): string {
 export function serverUrl(): string {
   return readJson<string>(SERVER_KEY) || defaultServerUrl();
 }
+
+export function serverConfigured() { return !!readJson<string>(SERVER_KEY); }
 
 export function setServerUrl(url: string | null) {
   writeJson(SERVER_KEY, url && url.trim() ? url.trim() : null);
@@ -151,6 +158,7 @@ class Client {
 
   /** Opens the app shell while the PC is off. Paired devices log in automatically once the PC is reachable. */
   openOffline() { writeJson(OFFLINE_KEY, true); this.set({ offlineShell: true }); }
+  closeOffline() { writeJson(OFFLINE_KEY, null); this.set({ offlineShell: false }); }
 
   /** Closes and reopens the connection, e.g. after the server address was changed. */
   restart() {
@@ -160,6 +168,12 @@ class Client {
   }
 
   private connect() {
+    if (HOSTED && !serverConfigured()) {
+      // Nothing to connect to yet – the user scans the QR code or types the PC address.
+      this.set({ phase: "offline", needsServer: true, url: "", lastError: undefined, retryAt: undefined });
+      return;
+    }
+    if (this.status.needsServer) this.set({ needsServer: false });
     const url = serverUrl();
     this.set({ phase: "connecting", url, attempt: this.attempt, retryAt: undefined });
     let ws: WebSocket;
@@ -303,6 +317,7 @@ class Client {
     try { await this.call("auth.logout"); } catch { /* ignore */ }
     writeJson(CRED_KEY, null);
     writeJson(ADMIN_KEY, null, "session");
+    if (HOSTED) { setServerUrl(null); this.restart(); }
     this.set({ auth: "none", me: undefined });
   }
 

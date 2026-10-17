@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
-import { CheckCircle2, Clock, KeyRound, Link2, LogOut, QrCode, ShieldCheck, Smartphone, XCircle } from "lucide-react";
-import { client, readJson, RpcError, writeJson } from "../lib/rpc";
+import { CheckCircle2, Clock, Eye, KeyRound, Link2, LogOut, MonitorSmartphone, Palette, QrCode, ShieldCheck, Smartphone, XCircle } from "lucide-react";
+import { client, enterDemo, HOSTED, readJson, RpcError, serverConfigured, serverUrl, setServerUrl, writeJson } from "../lib/rpc";
+import { pcAddressToWs, wsToPcAddress } from "../lib/address";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useNow, toast } from "../lib/hooks";
 import { Banner, Button, Card, Field, PageHead } from "../components/ui";
@@ -32,6 +33,11 @@ export function DevicePairScreen() {
   // A newly scanned QR code (same tab, new URL) replaces whatever was typed before.
   const urlCode = params.get("code");
   useEffect(() => { if (urlCode) { setCode(urlCode); setError(null); } }, [urlCode]);
+  // Hosted web app: the PC address comes from the QR code ("pc" parameter) or is typed in.
+  const [address, setAddress] = useState(params.get("pc") ?? (HOSTED && serverConfigured() ? wsToPcAddress(serverUrl()) : ""));
+  const urlPc = params.get("pc");
+  useEffect(() => { if (urlPc) setAddress(urlPc); }, [urlPc]);
+  const [connecting, setConnecting] = useState(false);
 
   const navigate = useNavigate();
   const finish = useCallback(async (token: string, deviceId: string) => {
@@ -64,9 +70,7 @@ export function DevicePairScreen() {
     return () => clearInterval(id);
   }, [state.step, conn.phase, finish]);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+  const request = useCallback(async () => {
     setState({ step: "sending" });
     try {
       const r = await client.call<{ requestId: string; claimSecret: string }>("pairing.request", { code, deviceName: name, platform: navigator.platform || "web" });
@@ -77,16 +81,47 @@ export function DevicePairScreen() {
       setError({ code: x.code, message: x.message });
       setState({ step: "form" });
     }
+  }, [code, name]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    if (HOSTED) {
+      const ws = pcAddressToWs(address, location.protocol === "https:");
+      if (!ws) { setError({ code: "address", message: t("Bitte eine gültige PC-Adresse eingeben, z. B. gaming-pc.tail1234.ts.net") }); return; }
+      if (location.protocol === "https:" && ws.startsWith("ws:")) { setError({ code: "address", message: t("Diese Seite braucht eine https-Adresse des PCs (z. B. den Tailscale-Funnel-Link).") }); return; }
+      if (ws !== serverUrl() || conn.phase !== "online") {
+        setServerUrl(ws);
+        setConnecting(true);
+        setState({ step: "sending" });
+        client.restart();
+        return; // the effect below sends the request once the PC answers
+      }
+    }
+    await request();
   };
+
+  // Hosted: continue as soon as the connection to the entered PC address is up – or explain why it failed.
+  useEffect(() => {
+    if (!connecting) return;
+    if (conn.phase === "online" && conn.hello) { setConnecting(false); request(); }
+    else if (conn.phase === "offline" && conn.lastError) {
+      setConnecting(false);
+      setState({ step: "form" });
+      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Ist der PC an, läuft der Companion und ist der Tailscale-Link aktiv?") });
+    }
+  }, [connecting, conn.phase, conn.hello, conn.lastError, request]);
 
   const pc = conn.hello?.info.pcName;
   return (
     <div className="center-screen">
       <div className="center-card stack fade-in">
         <div style={{ textAlign: "center" }} className="stack-sm">
-          <div className="state-icon"><Link2 size={34} /></div>
-          <h1>{t("Gerät koppeln")}</h1>
-          <p className="muted">{pc ? t("Verbunden mit „{pc}“. Gib den Code ein, der im Companion am PC angezeigt wird.", { pc }) : t("Gib den Code ein, der im Companion am PC angezeigt wird.")}</p>
+          <div className="state-icon">{HOSTED ? <MonitorSmartphone size={34} /> : <Link2 size={34} />}</div>
+          <h1>{HOSTED ? t("PC verbinden") : t("Gerät koppeln")}</h1>
+          <p className="muted">{HOSTED
+            ? t("Öffne am PC den PC Game Launcher → „Gerät koppeln“ → „Neuen Code erzeugen“. Scanne den QR-Code mit der Kamera oder gib Code und PC-Adresse hier ein.")
+            : pc ? t("Verbunden mit „{pc}“. Gib den Code ein, der im Companion am PC angezeigt wird.", { pc }) : t("Gib den Code ein, der im Companion am PC angezeigt wird.")}</p>
         </div>
         {conn.auth === "revoked" && <Banner kind="warn" title={t("Kopplung wurde aufgehoben")}>{conn.authError ?? t("Dieses Gerät wurde am PC entfernt.")}</Banner>}
         {conn.auth === "failed" && <Banner kind="warn" title={t("Anmeldung nicht mehr gültig")}>{conn.authError}</Banner>}
@@ -98,10 +133,16 @@ export function DevicePairScreen() {
               <Field label={t("Kopplungscode")} error={error?.message}>
                 <input className="input code-input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="XXXX-XXXX" maxLength={9} autoComplete="one-time-code" autoCapitalize="characters" spellCheck={false} required aria-invalid={!!error} />
               </Field>
+              {HOSTED && (
+                <Field label={t("PC-Adresse")} hint={t("Steht im PC Game Launcher unter dem QR-Code. Beim Scannen wird sie automatisch ausgefüllt.")}>
+                  <input className="input mono" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="gaming-pc.tail1234.ts.net" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} required />
+                </Field>
+              )}
               <Field label={t("Name dieses Geräts")} hint={t("So erscheint das Gerät später in der Geräteliste am PC.")}>
                 <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
               </Field>
-              <Button variant="primary" size="lg" block busy={state.step === "sending"} disabled={code.replace(/[^A-Z0-9]/gi, "").length < 8} type="submit" icon={<KeyRound size={18} />}>{t("Koppeln")}</Button>
+              <Button variant="primary" size="lg" block busy={state.step === "sending"} disabled={code.replace(/[^A-Z0-9]/gi, "").length < 8 || (HOSTED && !address.trim())} type="submit" icon={HOSTED ? <MonitorSmartphone size={18} /> : <KeyRound size={18} />}>{HOSTED ? t("PC verbinden") : t("Koppeln")}</Button>
+              {state.step === "sending" && connecting && <p className="small muted" style={{ textAlign: "center" }}>{t("Verbinde mit deinem PC …")}</p>}
             </form>
           )}
           {state.step === "waiting" && (
@@ -128,6 +169,12 @@ export function DevicePairScreen() {
             </div>
           )}
         </Card>
+        {HOSTED && (state.step === "form" || state.step === "denied") && (
+          <div className="row" style={{ justifyContent: "center" }}>
+            <Button size="sm" icon={<Palette size={15} />} onClick={() => client.openOffline()}>{t("Erst Design & Layout einstellen")}</Button>
+            <Button size="sm" variant="ghost" icon={<Eye size={15} />} onClick={enterDemo}>{t("Demo ansehen")}</Button>
+          </div>
+        )}
         <p className="tiny muted" style={{ textAlign: "center" }}>
           <ShieldCheck size={13} style={{ verticalAlign: -2 }} /> {t("Der Code ist 5 Minuten gültig und nur einmal verwendbar. Ohne Bestätigung am PC erhält kein Gerät Zugriff.")}
         </p>
@@ -140,14 +187,14 @@ export function DevicePairScreen() {
 export function PairPage() {
   const conn = useConn();
   const now = useNow(1000);
-  const [code, setCode] = useState<{ code: string; expiresAt: string; urls: string[] } | null>(null);
+  const [code, setCode] = useState<{ code: string; expiresAt: string; urls: string[]; pcAddress?: string } | null>(null);
   const [qr, setQr] = useState<string>("");
   const [urlIndex, setUrlIndex] = useState(0);
   const isLocal = !!conn.me?.isLocal;
 
   const load = useCallback(() => {
     if (!isLocal) return;
-    client.call<{ code?: string; expiresAt?: string; urls?: string[] }>("pairing.pending").then((r) => setCode(r.code ? { code: r.code, expiresAt: r.expiresAt!, urls: r.urls ?? [] } : null)).catch(() => {});
+    client.call<{ code?: string; expiresAt?: string; urls?: string[]; pcAddress?: string }>("pairing.pending").then((r) => setCode(r.code ? { code: r.code, expiresAt: r.expiresAt!, urls: r.urls ?? [], pcAddress: r.pcAddress } : null)).catch(() => {});
   }, [isLocal]);
   useEffect(load, [load]);
   useEvent<{ topic: string }>("changed", (d) => { if (d.topic === "pairing") load(); });
@@ -192,6 +239,12 @@ export function PairPage() {
             {code && !expired ? (
               <>
                 <div className="code-display" aria-label={t("Kopplungscode")}>{code.code}</div>
+                {code.pcAddress && (
+                  <div className="stack-sm" style={{ textAlign: "center" }}>
+                    <span className="label">{t("PC-Adresse (zum Abschreiben)")}</span>
+                    <code style={{ fontSize: "1rem" }}>{code.pcAddress}</code>
+                  </div>
+                )}
                 <div className="row between small">
                   <span className="muted">{t("Gültig noch {m}:{s}", { m: Math.floor(left / 60), s: String(left % 60).padStart(2, "0") })}</span>
                   <Button size="sm" onClick={() => client.call("pairing.cancel").then(load)}>{t("Code verwerfen")}</Button>

@@ -18,7 +18,7 @@ public static class RpcApi
         rpc.Register("pairing.create", ctx =>
         {
             var (code, expires) = s.Pairing.CreateCode();
-            return new { code, expiresAt = expires, urls = PairingUrls(s, code) };
+            return new { code, expiresAt = expires, urls = PairingUrls(s, code), pcAddress = PcAddress(s) };
         });
         rpc.Register("pairing.cancel", ctx => { s.Pairing.CancelCode(); return true; });
         rpc.Register("pairing.pending", ctx =>
@@ -29,6 +29,7 @@ public static class RpcApi
                 code = active?.code,
                 expiresAt = active?.expiresAt,
                 urls = active == null ? null : PairingUrls(s, active.Value.code),
+                pcAddress = PcAddress(s),
                 pending = s.Pairing.Pending().Select(p => new { requestId = p.RequestId, deviceName = p.DeviceName, platform = p.Platform, ip = p.Ip, createdAt = p.CreatedAt }),
             };
         });
@@ -307,12 +308,28 @@ public static class RpcApi
 
     static ItemKind? ParseKind(string? k) => k switch { "game" => ItemKind.Game, "program" => ItemKind.Program, null => null, _ => throw new RpcException("invalid-params", "Typ muss game oder program sein.") };
 
+    /// <summary>What a person types as "PC-Adresse" on the hosted web app: the public (tunnel) address, otherwise the first LAN address.</summary>
+    static string? PcAddress(CompanionServices s)
+    {
+        var set = s.Settings.Get();
+        var url = set.PublicUrl ?? s.Web.LanUrls().FirstOrDefault();
+        if (url == null || !Uri.TryCreate(url, UriKind.Absolute, out var u)) return null;
+        // https is implied by the hosted page; keep the scheme only for plain http (home network/testing).
+        return u.Scheme == "https" ? u.Authority : $"{u.Scheme}://{u.Authority}";
+    }
+
     static List<string> PairingUrls(CompanionServices s, string code)
     {
+        var set = s.Settings.Get();
+        var urls = new List<string>();
+        // First choice: the hosted web app (online even while the PC is off) with code and PC address filled in.
+        if (set.WebAppUrl is { } web && PcAddress(s) is { } pc)
+            urls.Add($"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}");
         var bases = new List<string>();
-        if (s.Settings.Get().PublicUrl is { } pub) bases.Add(pub);
+        if (set.PublicUrl is { } pub) bases.Add(pub);
         bases.AddRange(s.Web.LanUrls());
-        return bases.Distinct().Select(b => $"{b}/#/pair?code={code}").ToList();
+        urls.AddRange(bases.Distinct().Select(b => $"{b}/#/pair?code={code}"));
+        return urls;
     }
 
     static object Diagnostics(CompanionServices s, RpcSession session)

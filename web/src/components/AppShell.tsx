@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, Gamepad2, Home, Menu, Music, Search, Smartphone, Zap } from "lucide-react";
-import { client, exitDemo } from "../lib/rpc";
+import { client, exitDemo, HOSTED } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo";
 import { t } from "../lib/i18n";
 import { navItems } from "../lib/nav";
@@ -138,7 +138,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         {conn.phase !== "online" && !client.demo && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
-            <Banner kind="warn" title={conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")} actions={<Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}>
+            <Banner kind="warn" title={conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")} actions={HOSTED && !client.credentials
+              ? <Button size="sm" variant="primary" onClick={() => client.closeOffline()}>{t("PC verbinden")}</Button>
+              : <Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}>
               {conn.everConnected ? t("Automatischer neuer Versuch läuft. Angezeigte Daten können veraltet sein.")
                 : t("Die App verbindet sich automatisch, sobald der PC an ist. Design und Layout kannst du schon jetzt unter Einstellungen ändern.")}
             </Banner>

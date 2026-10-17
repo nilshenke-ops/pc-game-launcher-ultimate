@@ -7,7 +7,7 @@ import { ConnectScreen } from "./pages/ConnectScreen";
 import { DevicePairScreen } from "./pages/Pair";
 import { useConn } from "./lib/hooks";
 import { loadRemotePrefs, usePrefs } from "./lib/prefs";
-import { client } from "./lib/rpc";
+import { client, HOSTED } from "./lib/rpc";
 import { t } from "./lib/i18n";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -59,6 +59,8 @@ function Gate() {
   const offlineShell = conn.phase !== "online" && (!!client.credentials || !!conn.offlineShell);
   const authed = conn.auth === "ok" || (conn.auth === "checking" && !!conn.me) || offlineShell;
   if (!authed) {
+    // Hosted web app: "PC verbinden" handles address, connection state and pairing in one screen.
+    if (HOSTED && !client.credentials && !conn.offlineShell) return <DevicePairScreen />;
     if (conn.phase !== "online") return <ConnectScreen />;
     if (conn.auth === "checking") return <div className="center-screen"><div className="center-card"><Loading /></div></div>;
     return <DevicePairScreen />;

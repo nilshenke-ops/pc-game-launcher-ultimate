@@ -218,15 +218,16 @@ public sealed class WebHost : IAsyncDisposable
         finally { _perIp.AddOrUpdate(ip, 0, (_, n) => Math.Max(0, n - 1)); }
     }
 
-    /// <summary>Blocks cross-site WebSocket hijacking: browsers must come from this server's own page or the configured public URL.</summary>
+    /// <summary>Blocks cross-site WebSocket hijacking: browsers must come from this server's own page, the public URL or the hosted web app.</summary>
     bool OriginAllowed(HttpRequest req)
     {
         var origin = req.Headers.Origin.FirstOrDefault();
         if (string.IsNullOrEmpty(origin)) return true; // non-browser client; still needs a token
         if (!Uri.TryCreate(origin, UriKind.Absolute, out var o)) return false;
         if (string.Equals(o.Authority, req.Host.Value, StringComparison.OrdinalIgnoreCase)) return true;
-        var pub = _svc.Settings.Get().PublicUrl;
-        if (pub != null && Uri.TryCreate(pub, UriKind.Absolute, out var p) && string.Equals(p.Authority, o.Authority, StringComparison.OrdinalIgnoreCase)) return true;
+        var set = _svc.Settings.Get();
+        foreach (var allowed in new[] { set.PublicUrl, set.WebAppUrl })
+            if (allowed != null && Uri.TryCreate(allowed, UriKind.Absolute, out var a) && string.Equals(a.Scheme, o.Scheme, StringComparison.OrdinalIgnoreCase) && string.Equals(a.Authority, o.Authority, StringComparison.OrdinalIgnoreCase)) return true;
         // Vite dev server during development.
         return Environment.GetEnvironmentVariable("PGL_DEV") == "1" && o.Host is "localhost" or "127.0.0.1";
     }

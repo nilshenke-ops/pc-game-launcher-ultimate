@@ -12,5 +12,5 @@ echo "==> Windows-Companion: Build-Prüfung (Cross-Compile)"
 dotnet build "$ROOT/companion/src/Companion.Windows" -c Release --nologo -v q
 echo "==> End-to-End (Playwright, Chromium)"
 dotnet build "$ROOT/companion/src/Companion.Headless" --nologo -v q
-(cd "$ROOT/web" && npm run build && npx playwright test)
+(cd "$ROOT/web" && npm run build && npm run build:hosted && npx playwright test)
 echo "Alle Tests erfolgreich."

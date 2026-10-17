@@ -1,6 +1,18 @@
 // English translations. Keys are the German source texts used in t("...").
 // scripts/i18n-keys.mjs and src/lib/i18n.test.ts verify that every key is present.
 export const en: Record<string, string> = {
+  "PC verbinden": "Connect PC",
+  "Öffne am PC den PC Game Launcher → „Gerät koppeln“ → „Neuen Code erzeugen“. Scanne den QR-Code mit der Kamera oder gib Code und PC-Adresse hier ein.": "On the PC open PC Game Launcher → “Pair device” → “Create new code”. Scan the QR code with your camera or enter the code and PC address here.",
+  "PC-Adresse": "PC address",
+  "Steht im PC Game Launcher unter dem QR-Code. Beim Scannen wird sie automatisch ausgefüllt.": "Shown in PC Game Launcher below the QR code. Filled in automatically when scanning.",
+  "Bitte eine gültige PC-Adresse eingeben, z. B. gaming-pc.tail1234.ts.net": "Please enter a valid PC address, e.g. gaming-pc.tail1234.ts.net",
+  "Diese Seite braucht eine https-Adresse des PCs (z. B. den Tailscale-Funnel-Link).": "This page needs an https address of the PC (e.g. the Tailscale Funnel link).",
+  "Der PC ist unter dieser Adresse nicht erreichbar. Ist der PC an, läuft der Companion und ist der Tailscale-Link aktiv?": "The PC is not reachable at this address. Is the PC on, the companion running and the Tailscale link active?",
+  "Verbinde mit deinem PC …": "Connecting to your PC …",
+  "Erst Design & Layout einstellen": "Set up design & layout first",
+  "PC-Adresse (zum Abschreiben)": "PC address (to type in)",
+  "Adresse der gehosteten Web-App (optional)": "Address of the hosted web app (optional)",
+  "Feste Webseite, die auch bei ausgeschaltetem PC erreichbar ist (z. B. https://dein-name.pages.dev). Der QR-Code öffnet dann diese Seite mit Code und PC-Adresse.": "Permanent website that is reachable even while the PC is off (e.g. https://your-name.pages.dev). The QR code then opens this page with code and PC address.",
   "Dieser Bereich konnte nicht geladen werden": "This section could not be loaded",
   "Wahrscheinlich ist der PC aus und der Bereich wurde noch nicht auf diesem Gerät gespeichert. Sobald der PC erreichbar ist, funktioniert er wieder.": "The PC is probably off and this section has not been stored on this device yet. It works again as soon as the PC is reachable.",
   "Neu laden": "Reload",
@@ -644,7 +656,6 @@ export const en: Record<string, string> = {
   "Updates": "Updates",
   "VB-Audio Virtual Cable (offizielle Seite)": "VB-Audio Virtual Cable (official site)",
   "Verbinde iPhone, iPad, Android oder einen anderen Browser sicher mit diesem PC.": "Securely connect an iPhone, iPad, Android or another browser to this PC.",
-  "Verbinde mit deinem PC …": "Connecting to your PC …",
   "Verbinde …": "Connecting …",
   "Verbindung": "Connection",
   "Verbindung & PC": "Connection & PC",

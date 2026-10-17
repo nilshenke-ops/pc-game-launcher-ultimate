@@ -33,6 +33,19 @@ Standardmäßig ist der PC **nur im Heimnetz** erreichbar; es werden keine Route
 
 **Offline-Speicher:** Über https speichert sich die Web-App beim ersten Besuch komplett auf dem Gerät. Danach öffnet sich der Link auch, wenn der PC aus ist: Design und Layout lassen sich ändern, und sobald der PC an ist, verbindet sich die App automatisch. Am zuverlässigsten auf iPhone/iPad über Safari → „Zum Home-Bildschirm“.
 
+### Feste Webseite „PC verbinden“ (immer erreichbar, auch wenn der PC aus ist)
+Die Web-App kann zusätzlich als feste Webseite bei einem kostenlosen Anbieter liegen. Sie zeigt „PC verbinden“; man scannt am PC den QR-Code oder tippt Code und PC-Adresse ab und ist dann über den Tailscale-Link mit dem PC verbunden.
+
+1. `scripts/build-hosted-site.sh` erzeugt `artifacts/GameLauncher-Webseite-<Version>.zip` (oder die fertige ZIP aus dem Release verwenden).
+2. **Cloudflare Pages** (kostenlos, keine Domain nötig): https://dash.cloudflare.com → kostenlos registrieren → *Workers & Pages* → *Erstellen* → *Pages* → *Assets hochladen* → Projektname wählen (z. B. `mein-gamelauncher`) → ZIP hochladen → *Bereitstellen*. Die Adresse lautet dann `https://mein-gamelauncher.pages.dev`.
+   Alternativ: GitHub Pages oder Netlify – jeder Anbieter für statische Webseiten mit https funktioniert.
+3. Im Companion: **Einstellungen → Verbindung**
+   - „Öffentliche Adresse der Web-App“ = Tailscale-Funnel-Link (`https://…ts.net`)
+   - „Adresse der gehosteten Web-App“ = `https://mein-gamelauncher.pages.dev`
+4. Ab jetzt öffnet der QR-Code unter „Gerät koppeln“ die feste Webseite – Code und PC-Adresse sind schon eingetragen. Ohne QR: Code und die angezeigte „PC-Adresse (zum Abschreiben)“ eintippen.
+
+Die feste Webseite verbindet sich nur über https (Tailscale Funnel); `http://192.168…` ist von einer https-Seite aus technisch nicht erlaubt.
+
 ### b) Cloudflare Tunnel (ohne eigenen Server)
 1. `cloudflared` installieren (https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
 2. Schnelltest (temporäre Adresse, ändert sich bei jedem Start!): `cloudflared tunnel --url http://localhost:8787`

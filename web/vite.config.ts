@@ -16,6 +16,7 @@ function offlineManifest() {
 }
 
 const demo = process.env.VITE_DEMO === "1";
+const hosted = process.env.VITE_HOSTED === "1";
 
 export default defineConfig({
   plugins: [react(), offlineManifest()],
@@ -32,7 +33,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: demo ? "dist-demo" : "dist",
+    outDir: demo ? "dist-demo" : hosted ? "dist-hosted" : "dist",
     assetsDir: "assets",
     sourcemap: false,
     chunkSizeWarningLimit: 700,
