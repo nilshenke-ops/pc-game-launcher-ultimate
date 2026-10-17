@@ -28,6 +28,8 @@ export interface ConnStatus {
   /** Hosted build without a saved PC address: show "PC verbinden" instead of connecting anywhere. */
   needsServer?: boolean;
   auth: "none" | "checking" | "ok" | "failed" | "revoked";
+  /** This page has been logged in to a real PC at least once (no example data after that). */
+  everAuthed?: boolean;
   authError?: string;
   hello?: Hello;
   me?: Me;
@@ -47,6 +49,15 @@ const OFFLINE_KEY = "pgl.offlineShell";
 const SERVER_KEY = "pgl.server";
 const ADMIN_KEY = "pgl.admin";
 const REQUEST_TIMEOUT_MS = 20000;
+
+// Preview (no PC connected yet): these read-only requests are answered with clearly marked example content,
+// so every section can be looked at. Everything else needs the PC and opens the "PC verbinden" hint instead.
+const PREVIEW_READ = new Set(["state.get", "library.list", "quick.list", "profiles.list", "automations.list", "hotkeys.list", "history.get",
+  "sounds.list", "audio.state", "notifications.list", "settings.get", "autostart.get", "updates.status", "devices.list"]);
+/** Requests that pages make by themselves (loading data); they fail quietly in the preview instead of opening the hint. */
+const QUIET = /\.(list|get|status|state|logs|subscribe|unsubscribe|diagnose|run|me|pending|getPrefs)$/;
+// Requests that work without login (connection setup and pairing) always go to the PC.
+const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim"]);
 
 function store(kind: "local" | "session") {
   try { return kind === "local" ? window.localStorage : window.sessionStorage; } catch { return null; }
@@ -156,6 +167,9 @@ class Client {
     this.connect();
   }
 
+  /** No PC logged in yet on this page: pages show example content, actions ask to connect the PC first. */
+  get preview() { return !this.demo && this.status.auth !== "ok" && !this.status.everAuthed && !this.credentials; }
+
   /** Opens the app shell while the PC is off. Paired devices log in automatically once the PC is reachable. */
   openOffline() { writeJson(OFFLINE_KEY, true); this.set({ offlineShell: true }); }
   closeOffline() { writeJson(OFFLINE_KEY, null); this.set({ offlineShell: false }); }
@@ -247,7 +261,7 @@ class Client {
     if (msg.ev) {
       if (msg.ev === "auth.revoked") {
         writeJson(CRED_KEY, null);
-        this.set({ auth: "revoked", me: undefined, authError: (msg.d as { reason?: string })?.reason });
+        this.set({ auth: "revoked", me: undefined, everAuthed: false, authError: (msg.d as { reason?: string })?.reason });
       }
       this.emit(msg.ev, msg.d);
       return;
@@ -264,6 +278,12 @@ class Client {
 
   call<T = unknown>(method: string, params?: unknown): Promise<T> {
     if (this.demo) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
+    if (this.status.auth !== "ok" && !NO_LOGIN.has(method) && !this.status.me) {
+      if (method === "ui.savePrefs" || method === "ui.getPrefs") return Promise.resolve((method === "ui.getPrefs" ? { prefs: null } : true) as T); // design stays on this device
+      if (this.preview && PREVIEW_READ.has(method)) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
+      if (!QUIET.test(method)) this.emit("needs-pc", { method });
+      return Promise.reject(new RpcError("needs-pc", needsPcMessage()));
+    }
     return new Promise<T>((resolve, reject) => {
       const ws = this.ws;
       if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -295,7 +315,7 @@ class Client {
       const me = admin
         ? await this.call<Me>("auth.login", { adminToken: admin })
         : await this.call<Me>("auth.login", { deviceId: cred!.deviceId, proof: loginProof(cred!.token, hello.nonce) });
-      this.set({ auth: "ok", me, authError: undefined });
+      this.set({ auth: "ok", me, authError: undefined, everAuthed: true });
       this.emit("authenticated", me);
     } catch (e) {
       const err = e as RpcError;
@@ -318,13 +338,19 @@ class Client {
     writeJson(CRED_KEY, null);
     writeJson(ADMIN_KEY, null, "session");
     if (HOSTED) { setServerUrl(null); this.restart(); }
-    this.set({ auth: "none", me: undefined });
+    this.set({ auth: "none", me: undefined, everAuthed: false });
   }
 
-  can(permission: string) { return this.status.me?.permissions.includes(permission) ?? false; }
+  can(permission: string) {
+    // Preview: show all controls (except PC-only ones); using them asks to connect the PC first.
+    if (!this.status.me && this.preview) return permission !== "local" && permission !== "admin";
+    return this.status.me?.permissions.includes(permission) ?? false;
+  }
 }
 
 export const client = new Client();
+
+export function needsPcMessage() { return t("Dafür muss zuerst dein PC verbunden sein."); }
 
 const DEMO_KEY = "pgl.demo";
 export function demoRequested() { return readJson<boolean>(DEMO_KEY, "session") === true; }

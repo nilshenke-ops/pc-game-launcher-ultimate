@@ -1,13 +1,11 @@
 import { Component, lazy, Suspense, useEffect, type ReactNode } from "react";
-import { HashRouter, MemoryRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { DEMO_BUILD } from "./lib/demo";
 import { AppShell } from "./components/AppShell";
 import { ConfirmHost, Toasts } from "./components/ui";
-import { ConnectScreen } from "./pages/ConnectScreen";
-import { DevicePairScreen } from "./pages/Pair";
 import { useConn } from "./lib/hooks";
 import { loadRemotePrefs, usePrefs } from "./lib/prefs";
-import { client, HOSTED } from "./lib/rpc";
+import { client } from "./lib/rpc";
 import { t } from "./lib/i18n";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -25,6 +23,7 @@ const Notifications = lazy(() => import("./pages/Notifications"));
 const SettingsPage = lazy(() => import("./pages/Settings"));
 const Diagnostics = lazy(() => import("./pages/Diagnostics"));
 const Help = lazy(() => import("./pages/Help"));
+const Connect = lazy(() => import("./pages/Connect"));
 const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
 function Loading() {
@@ -49,26 +48,21 @@ class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Erro
 
 function Gate() {
   const conn = useConn();
+  const loc = useLocation(); // resets the error boundary per page (window.location would be stale here)
   usePrefs(); // re-render on language/theme change
 
   useEffect(() => client.on("authenticated", () => { loadRemotePrefs(); }), []);
 
-  // Once logged in, a short connection loss keeps the app visible (with a banner) instead of throwing the user out.
-  // Paired devices (and anyone who chose "ohne PC öffnen") get the full app while the PC is off:
-  // design and layout work locally, data appears as soon as the PC is reachable.
-  const offlineShell = conn.phase !== "online" && (!!client.credentials || !!conn.offlineShell);
-  const authed = conn.auth === "ok" || (conn.auth === "checking" && !!conn.me) || offlineShell;
-  if (!authed) {
-    // Hosted web app: "PC verbinden" handles address, connection state and pairing in one screen.
-    if (HOSTED && !client.credentials && !conn.offlineShell) return <DevicePairScreen />;
-    if (conn.phase !== "online") return <ConnectScreen />;
-    if (conn.auth === "checking") return <div className="center-screen"><div className="center-card"><Loading /></div></div>;
-    return <DevicePairScreen />;
-  }
+  // Without a logged-in PC the whole app is shown as a preview: example content, design and layout work locally,
+  // everything else asks to connect the PC first ("Verbinden" in the navigation). Logged-in devices keep the app
+  // during short connection losses and reconnect automatically.
+  if (!client.demo && conn.phase === "online" && conn.auth === "checking" && !conn.me)
+    return <div className="center-screen"><div className="center-card"><Loading /></div></div>;
+  const pcLoggedIn = client.demo || conn.auth === "ok" || !!conn.me || !!client.credentials;
 
   return (
     <AppShell>
-      <PageErrorBoundary key={location.hash}>
+      <PageErrorBoundary key={loc.pathname}>
       <Suspense fallback={<Loading />}>
         <Routes>
           <Route path="/" element={<Dashboard />} />
@@ -83,7 +77,8 @@ function Gate() {
           <Route path="/hotkeys" element={<Hotkeys />} />
           <Route path="/history" element={<History />} />
           <Route path="/devices" element={<Devices />} />
-          <Route path="/pair" element={<PairAdmin />} />
+          <Route path="/pair" element={pcLoggedIn ? <PairAdmin /> : <Connect />} />
+          <Route path="/connect" element={<Connect />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/diagnostics" element={<Diagnostics />} />

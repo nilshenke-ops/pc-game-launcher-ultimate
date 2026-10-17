@@ -21,6 +21,22 @@ function launch(item: LibraryItem) {
 
 function StatusWidget() {
   const { state, updatedAt } = useAppState();
+  useConn();
+  if (client.preview) {
+    return (
+      <div className="stack">
+        <div className="row nowrap">
+          <div className="grow">
+            <div className="eyebrow">{t("Dein Gaming-PC")}</div>
+            <h2 style={{ fontSize: "1.4rem" }}>{t("Kein PC verbunden")}</h2>
+            <div className="small muted">{t("Scanne den QR-Code aus dem PC Game Launcher oder gib den Code ein.")}</div>
+          </div>
+          <span className="badge"><span className="dot error" />{t("Offline")}</span>
+        </div>
+        <div><Link to="/connect" className="btn primary sm">{t("PC verbinden")}</Link></div>
+      </div>
+    );
+  }
   if (!state) return <div className="skeleton" style={{ height: 120 }} />;
   const relay = state.relay.state;
   return (
@@ -117,11 +133,13 @@ function ItemsWidget({ mode }: { mode: "favorites" | "recent" }) {
 
 function SystemWidget() {
   const [m, setM] = useState<MetricsSample | null>(null);
+  const authed = useConn().auth === "ok";
   useEffect(() => {
     client.call<MetricsSample>("monitor.subscribe").then(setM).catch(() => {});
     return () => { client.call("monitor.unsubscribe").catch(() => {}); };
-  }, []);
+  }, [authed]);
   useEvent<MetricsSample>("monitor.sample", setM);
+  if (!m && client.preview) return <p className="small muted">{t("Live-Werte erscheinen, sobald dein PC verbunden ist.")}</p>;
   if (!m) return <div className="skeleton" style={{ height: 110 }} />;
   const ram = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
   const gpu = m.gpus[0];

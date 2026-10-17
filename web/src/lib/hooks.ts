@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { client, RpcError, type ConnStatus } from "./rpc";
+import { client, needsPcMessage, RpcError, type ConnStatus } from "./rpc";
 import { t } from "./i18n";
 
 export function useConn(): ConnStatus {
@@ -23,16 +23,21 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
   const [state, setState] = useState<{ data?: T; error: RpcError | null; loading: boolean; updatedAt: number | null }>({ error: null, loading: true, updatedAt: null });
   const paramKey = JSON.stringify(params ?? {});
   const seq = useRef(0);
-  const ready = conn.auth === "ok" && conn.phase === "online" && enabled;
+  // Preview without PC: example content from lib/demo.ts; replaced by real data as soon as the PC is logged in.
+  const mode = conn.auth === "ok" && conn.phase === "online" ? "pc" : client.preview ? "preview" : "off";
+  const ready = mode !== "off" && enabled;
+  const shownMode = useRef(mode);
 
   const load = useCallback(() => {
     if (!ready) return;
     const my = ++seq.current;
-    setState((s) => ({ ...s, loading: true }));
+    const switched = shownMode.current !== mode;
+    shownMode.current = mode;
+    setState((s) => (switched ? { error: null, loading: true, updatedAt: null } : { ...s, loading: true }));
     client.call<T>(method, JSON.parse(paramKey))
       .then((data) => { if (my === seq.current) setState({ data, error: null, loading: false, updatedAt: Date.now() }); })
       .catch((error: RpcError) => { if (my === seq.current) setState((s) => ({ ...s, error, loading: false })); });
-  }, [method, paramKey, ready]);
+  }, [method, paramKey, ready, mode]);
 
   useEffect(() => { load(); }, [load]);
   const topicKey = topics.join(",");
@@ -73,6 +78,7 @@ const toastListeners = new Set<() => void>();
 let toastId = 1;
 
 export function toast(text: string, kind: Toast["kind"] = "info") {
+  if (text === needsPcMessage()) return; // the "PC verbinden" hint is already open
   if (kind === "error" && text.startsWith("Demo:")) kind = "info"; // demo notices are explanations, not errors
   const id = toastId++;
   toasts = [...toasts.filter((x) => x.text !== text), { id, text, kind }].slice(-4);

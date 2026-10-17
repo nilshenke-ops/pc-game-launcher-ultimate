@@ -42,10 +42,17 @@ test("PC-Ansicht zeigt den echten Zustand", async ({ browser }) => {
   await expect(pc.getByText("Relay: verbunden")).toBeVisible();
 });
 
-test("Ungekoppeltes Handy sieht nur die Kopplung, falscher Code wird abgelehnt", async ({ browser }) => {
+test("Ungekoppeltes Handy: Vorschau ansehen, Aktionen fragen nach dem PC, falscher Code wird abgelehnt", async ({ browser }) => {
   const ctx = await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" });
   phone = await ctx.newPage();
   await phone.goto(`${COMPANION}/#/games`);
+  await expect(phone.getByText("Vorschau – noch kein PC verbunden")).toBeVisible();
+  await expect(phone.getByText("Counter-Strike 2")).toBeVisible(); // example content, nothing from the PC
+  await expect(phone.getByText("E2E Testspiel")).toHaveCount(0);
+  await phone.getByRole("button", { name: "Spielen" }).first().click();
+  const hint = phone.getByRole("dialog", { name: "Erst PC verbinden" });
+  await expect(hint).toBeVisible();
+  await hint.getByRole("button", { name: "PC verbinden" }).click();
   await expect(phone.getByRole("heading", { name: "Gerät koppeln" })).toBeVisible();
   await phone.locator("input.code-input").fill("ABCD-EFGH");
   await phone.getByRole("button", { name: "Koppeln" }).click();
@@ -118,6 +125,8 @@ test("Widerrufenes Gerät verliert sofort den Zugriff", async () => {
   await pc.getByRole("dialog").getByRole("button", { name: "Entfernen" }).click();
   await expect(phone.getByText("Kopplung wurde aufgehoben")).toBeVisible({ timeout: 10000 });
   await phone.reload();
+  await expect(phone.getByText("Vorschau – noch kein PC verbunden")).toBeVisible();
+  await phone.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(phone.getByRole("heading", { name: "Gerät koppeln" })).toBeVisible();
 });
 
@@ -132,6 +141,13 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   const ctx = await browser.newContext({ ...devices["iPad (gen 7)"], locale: "de-DE" });
   const tablet = await ctx.newPage();
   await tablet.goto(`${HOSTED_SITE}/`);
+  await expect(tablet.getByText("Vorschau – noch kein PC verbunden")).toBeVisible();
+  await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
+  // Design works without a PC.
+  await tablet.goto(`${HOSTED_SITE}/#/settings?s=design`);
+  await tablet.getByRole("button", { name: "Emerald" }).click();
+  expect(await tablet.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#34d399");
+  await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
   // On the PC: create a code; the PC shows code and address to type in, and the QR link points to the hosted site.

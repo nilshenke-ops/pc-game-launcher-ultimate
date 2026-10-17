@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Cpu, Gauge as GaugeIcon, HardDrive, MemoryStick, MonitorPlay, Timer } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useEvent } from "../lib/hooks";
+import { useConn, useEvent } from "../lib/hooks";
 import { bytes, clock } from "../lib/format";
 import type { MetricsSample } from "../lib/types";
 import { Banner, Card, Gauge, Meter, PageHead, Sparkline } from "../components/ui";
@@ -23,10 +23,12 @@ export default function Monitor() {
     setM(s);
   };
   // Sampling on the PC only runs while this page (or the dashboard widget) is open.
+  const authed = useConn().auth === "ok";
   useEffect(() => {
+    setErr(null);
     client.call<MetricsSample>("monitor.subscribe").then(push).catch((e) => setErr(e.message));
     return () => { client.call("monitor.unsubscribe").catch(() => {}); };
-  }, []);
+  }, [authed]);
   useEvent<MetricsSample>("monitor.sample", push);
 
   const ramPct = m?.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
@@ -34,8 +36,8 @@ export default function Monitor() {
   return (
     <>
       <PageHead eyebrow={t("System")} title={t("PC Monitor")} text={t("Live-Werte deines Gaming-PCs. Abgefragt wird nur, solange diese Ansicht offen ist (alle 2 Sekunden).")} />
-      {err && <Banner kind="error">{err}</Banner>}
-      {!m ? <div className="grid-3">{[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 220 }} />)}</div> : (
+      {err && <Banner kind={client.preview ? "info" : "error"}>{client.preview ? t("Live-Werte erscheinen, sobald dein PC verbunden ist.") : err}</Banner>}
+      {!m && client.preview ? null : !m ? <div className="grid-3">{[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 220 }} />)}</div> : (
         <div className="stack">
           <div className="grid-3">
             <Card title="CPU" icon={<Cpu size={18} />} meta={m.sources.cpu}>

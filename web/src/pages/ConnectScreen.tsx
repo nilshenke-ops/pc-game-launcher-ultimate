@@ -7,7 +7,7 @@ import { Banner, Button, Card, Field } from "../components/ui";
 import { DownloadCard } from "../components/DownloadCard";
 
 /** Shown when the companion/relay cannot be reached and no session exists yet. Never an endless spinner. */
-export function ConnectScreen() {
+export function ConnectScreen({ embedded = false }: { embedded?: boolean }) {
   const conn = useConn();
   const now = useNow(500);
   const [editing, setEditing] = useState(false);
@@ -16,8 +16,8 @@ export function ConnectScreen() {
   const seconds = conn.retryAt ? Math.max(0, Math.ceil((conn.retryAt - now) / 1000)) : 0;
 
   return (
-    <div className="center-screen">
-      <div className="center-card stack fade-in">
+    <div className={embedded ? "" : "center-screen"}>
+      <div className={embedded ? "stack fade-in connect-panel" : "center-card stack fade-in"}>
         <div style={{ textAlign: "center" }} className="stack-sm">
           <div className={`state-icon ${first ? "" : "warn"}`}>{first ? <PlugZap size={34} /> : <WifiOff size={34} />}</div>
           <h1>{first ? t("Verbinde mit deinem PC …") : t("PC nicht erreichbar")}</h1>
@@ -65,7 +65,7 @@ export function ConnectScreen() {
         {!first && location.protocol === "https:" && serverUrl().startsWith("ws://") && (
           <Banner kind="warn">{t("Eine https-Seite darf keine unverschlüsselte ws://-Verbindung öffnen. Nutze eine wss://-Adresse (Relay oder Tunnel).")}</Banner>
         )}
-        {!first && (
+        {!first && !embedded && (
           <Card className="flat" title={t("Ohne PC umsehen")} icon={<Eye size={18} />}>
             <div className="stack">
               <p className="small muted">{t("Die Demo zeigt die ganze Oberfläche mit Beispieldaten. Es wird nichts auf einem PC ausgeführt.")}</p>
@@ -77,7 +77,7 @@ export function ConnectScreen() {
             </div>
           </Card>
         )}
-        {!first && <DownloadCard compact />}
+        {!first && !embedded && <DownloadCard compact />}
       </div>
     </div>
   );

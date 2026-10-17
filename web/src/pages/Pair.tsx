@@ -20,7 +20,7 @@ function guessDeviceName() {
 type PairState = { step: "form" } | { step: "sending" } | { step: "waiting"; requestId: string } | { step: "approved" } | { step: "denied" };
 
 /** Pairing on a new device (phone, tablet, other browser). */
-export function DevicePairScreen() {
+export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
   const conn = useConn();
   const [params] = useSearchParams();
   const [code, setCode] = useState(params.get("code") ?? "");
@@ -114,8 +114,8 @@ export function DevicePairScreen() {
 
   const pc = conn.hello?.info.pcName;
   return (
-    <div className="center-screen">
-      <div className="center-card stack fade-in">
+    <div className={embedded ? "" : "center-screen"}>
+      <div className={embedded ? "stack fade-in connect-panel" : "center-card stack fade-in"}>
         <div style={{ textAlign: "center" }} className="stack-sm">
           <div className="state-icon">{HOSTED ? <MonitorSmartphone size={34} /> : <Link2 size={34} />}</div>
           <h1>{HOSTED ? t("PC verbinden") : t("Gerät koppeln")}</h1>
@@ -169,7 +169,7 @@ export function DevicePairScreen() {
             </div>
           )}
         </Card>
-        {HOSTED && (state.step === "form" || state.step === "denied") && (
+        {HOSTED && !embedded && (state.step === "form" || state.step === "denied") && (
           <div className="row" style={{ justifyContent: "center" }}>
             <Button size="sm" icon={<Palette size={15} />} onClick={() => client.openOffline()}>{t("Erst Design & Layout einstellen")}</Button>
             <Button size="sm" variant="ghost" icon={<Eye size={15} />} onClick={enterDemo}>{t("Demo ansehen")}</Button>

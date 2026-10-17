@@ -38,7 +38,7 @@ Letzter vollständiger Lauf mit `scripts/test-all.sh`: **alle erfolgreich, 0 feh
 | End-to-End (Playwright/Chromium) | 11 | ✅ 11/11 | Echter Headless-Companion + echtes Relay + Browser (Desktop und iPhone-/Pixel-Emulation): PC-Ansicht, ungekoppeltes Handy, falscher Code, **Kopplung per QR-Link mit Bestätigung am PC**, Sitzung übersteht Neuladen, **Programm am PC freigeben und vom Handy starten (Start nachgewiesen)**, Handy kann keine EXE freigeben, globale Suche, Design bleibt nach Neuladen, **Kopplung und Nutzung über das Relay**, **Widerruf entzieht sofort den Zugriff**, ehrlicher Download-Status, **PC aus → App öffnet aus dem Offline-Speicher, Design änderbar, verbindet sich nach PC-Start automatisch** |
 | Windows-Build | – | ✅ | Cross-Compile von `Companion.Windows` ohne Fehler |
 | EXE-Prüfung | – | ✅ | PE32+, x64, Windows-GUI-Subsystem; Web-App als Ressource enthalten |
-| Download über Relay | – | ✅ | `/download/info` und Download der echten EXE: Größe (84 191 698 Bytes) und SHA-256 stimmen mit der Datei überein (curl + sha256sum) |
+| Download über Relay | – | ✅ | `/download/info` und Download der echten EXE: Größe (84 195 485 Bytes) und SHA-256 stimmen mit der Datei überein (curl + sha256sum) |
 
 Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dateien wurden vom Companion nicht ausgeliefert (Routing), Companion ignorierte SIGTERM, Epic-Prozessnamen falsch zerlegt, neuer QR-Code im selben Tab übernahm den Code nicht, nach Kopplung blieb das Handy auf der Kopplungsseite, Formular-Labels nicht mit Feldern verknüpft (Screenreader), Hinweis „Kopplung aufgehoben“ ging verloren, Endlos-Neuverbindung im Relay-Modus, endloses „Verbinde …“ bei inkompatibler Version.
 
@@ -82,7 +82,8 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
 - **Fernzugriff ohne Domain:** Anleitung für Tailscale Funnel (INSTALLATION.md).
 - Behoben: Seitlicher Überlauf auf Handys bei langen Namen (untere Leiste verschwand), leere Seite bei nicht zwischengespeicherten Bereichen (jetzt Fehlermeldung + vollständiger Offline-Speicher).
 
-- **Veröffentlicht (GitHub Pages, geprüft):** Webseite https://nilshenke-ops.github.io/pc-game-launcher-ultimate/ lädt fehlerfrei und zeigt „PC verbinden“ (Chromium, iPad-Größe). Download https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/PCGameLauncherCompanion-1.0.0-win-x64.zip bzw. `/download/PCGameLauncherCompanion.exe` – per curl heruntergeladen, Größe 84 191 698 Bytes und SHA-256 `9ff9135c…702f` stimmen.
+- **Veröffentlicht (GitHub Pages, geprüft):** Webseite https://nilshenke-ops.github.io/pc-game-launcher-ultimate/ lädt fehlerfrei (Chromium, iPad-Größe). Download https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/PCGameLauncherCompanion-1.0.0-win-x64.zip bzw. `/download/PCGameLauncherCompanion.exe` – per curl heruntergeladen, Größe 84 195 485 Bytes und SHA-256 `df9b1e6d…9a1a` stimmen.
+- **Vorschau ohne PC + Punkt „Verbinden“:** Ohne gekoppelten PC öffnet die Webseite direkt die ganze App mit deutlich gekennzeichneten Beispielinhalten („Vorschau – noch kein PC verbunden“). Design und Layout funktionieren lokal; jede Aktion (Starten, Sounds, Speichern …) öffnet stattdessen „Erst PC verbinden“ mit Weg zur Verbindungsseite. Die untere Leiste hat den neuen Punkt „Verbinden“ (Status-Punkt rot/grün): QR-Code/Code + PC-Adresse, bei bestehender Verbindung Status und Abmelden. Gekoppelte Geräte sehen bei ausgeschaltetem PC keine Beispieldaten, sondern „Warte auf deinen PC …“. Behoben dabei: Der eingegebene Code ging beim Verbinden verloren (Bereich wurde neu aufgebaut). FERTIG UND GETESTET (E2E: Vorschau, Hinweisfenster, Design ohne PC, Kopplung über die Webseite; alle 11 Tests grün).
 
 ## 6. Offene Punkte
 1. **Test auf einem echten Windows-PC** (Fenster, Tray, Audio, Hotkeys, Steam/Epic-Start, Autostart, Firewall-Abfrage). Das ist der wichtigste nächste Schritt.
@@ -119,9 +120,9 @@ Companion → **Gerät koppeln** → **Neuen Code erzeugen** → QR-Code mit dem
 ## 12. Wo liegen die Dateien?
 | Datei | Pfad |
 |---|---|
-| Windows-EXE | `artifacts/companion/PCGameLauncherCompanion.exe` (84 191 698 Bytes) |
+| Windows-EXE | `artifacts/companion/PCGameLauncherCompanion.exe` (84 195 485 Bytes) |
 | ZIP für Nutzer | `artifacts/PCGameLauncherCompanion-1.0.0-win-x64.zip` (+ `.sha256`) |
-| SHA-256 der EXE | `9ff9135c61329a063000f02711057450082aec307178114d3064d5c5a8b9702f` |
+| SHA-256 der EXE | `df9b1e6dfc7b8ea31df378bbe04945e164ffa8db42baa2ae2716227746e09a1a` |
 | Quellcode | gesamtes Repository (`git log` zeigt die Entwicklungsschritte) |
 
 `artifacts/` ist nicht im Git-Repository (Build-Ergebnis); mit `scripts/publish-companion.sh` reproduzierbar.
