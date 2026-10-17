@@ -1,0 +1,9 @@
+{
+  "port": 8788,
+  "host": "0.0.0.0",
+  "trustProxy": true,
+  "allowedOrigins": [],
+  "companions": [
+    { "id": "mein-pc", "secretSha256": "<Ausgabe von: npm run hash-secret>" }
+  ]
+}

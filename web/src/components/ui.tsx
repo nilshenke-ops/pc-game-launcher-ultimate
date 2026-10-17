@@ -1,4 +1,4 @@
-import { useEffect, useRef, useSyncExternalStore, type ReactNode } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useRef, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, X, XCircle } from "lucide-react";
 import { dismissToast, useToasts } from "../lib/hooks";
 import { t } from "../lib/i18n";
@@ -53,13 +53,19 @@ export function Switch({ checked, onChange, label, hint, disabled }: { checked: 
   );
 }
 
+/** Form field. A direct input/select/textarea child is linked to the label and hint (screen readers, label clicks). */
 export function Field({ label, hint, error, children }: { label: ReactNode; hint?: ReactNode; error?: ReactNode; children: ReactNode }) {
+  const id = useId();
+  const direct = isValidElement(children) && typeof children.type === "string" && ["input", "select", "textarea"].includes(children.type);
+  const control = direct
+    ? cloneElement(children as ReactElement<Record<string, unknown>>, { id: (children.props as { id?: string }).id ?? id, "aria-describedby": hint || error ? `${id}-hint` : undefined })
+    : children;
   return (
-    <div className="field">
-      <label>{label}</label>
-      {children}
-      {hint && <span className="hint">{hint}</span>}
-      {error && <span className="error">{error}</span>}
+    <div className="field" role={direct ? undefined : "group"} aria-labelledby={direct ? undefined : `${id}-label`}>
+      <label id={`${id}-label`} htmlFor={direct ? (children.props as { id?: string }).id ?? id : undefined}>{label}</label>
+      {control}
+      {hint && <span className="hint" id={`${id}-hint`}>{hint}</span>}
+      {error && <span className="error" id={hint ? undefined : `${id}-hint`} role="alert">{error}</span>}
     </div>
   );
 }

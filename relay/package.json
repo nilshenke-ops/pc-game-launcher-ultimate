@@ -1,0 +1,25 @@
+{
+  "name": "pgl-relay",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Optional relay for PC Game Launcher Ultimate: forwards web clients to a companion that connects outbound.",
+  "type": "module",
+  "main": "dist/src/main.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "start": "node dist/src/main.js",
+    "test": "tsc -p . && node --test --test-timeout=20000 dist/test/*.test.js",
+    "hash-secret": "node dist/src/hash-secret.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "@types/ws": "^8.18.2",
+    "typescript": "~5.9.3"
+  }
+}

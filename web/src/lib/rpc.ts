@@ -194,8 +194,10 @@ class Client {
     if (msg.type === "relay") {
       // Status messages from the relay itself (not from the companion).
       const online = msg.state === "companion-online";
+      const wasOffline = this.status.relayCompanion === "offline";
       this.set({ relayCompanion: online ? "online" : "offline" });
-      if (online && this.status.auth !== "ok") { this.restart(); }
+      // The PC came back: start a fresh session (new hello/nonce) through the relay.
+      if (online && wasOffline) { this.restart(); return; }
       if (!online) for (const [, p] of this.pending) p.reject(new RpcError("relay-companion-offline", t("Der PC ist gerade nicht mit dem Relay verbunden.")));
       return;
     }
@@ -239,7 +241,11 @@ class Client {
     if (!hello) return;
     const admin = readJson<string>(ADMIN_KEY, "session");
     const cred = this.credentials;
-    if (!admin && !cred) { this.set({ auth: "none", me: undefined }); return; }
+    if (!admin && !cred) {
+      // Keep "revoked" so the pairing screen can explain why the device was signed out.
+      this.set({ auth: this.status.auth === "revoked" ? "revoked" : "none", me: undefined });
+      return;
+    }
     this.set({ auth: "checking" });
     try {
       const me = admin

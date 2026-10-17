@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { CheckCircle2, Clock, KeyRound, Link2, LogOut, QrCode, ShieldCheck, Smartphone, XCircle } from "lucide-react";
 import { client, readJson, RpcError, writeJson } from "../lib/rpc";
@@ -29,12 +29,17 @@ export function DevicePairScreen() {
     return p ? { step: "waiting", requestId: p.requestId } : { step: "form" };
   });
   const [error, setError] = useState<{ code: string; message: string } | null>(null);
+  // A newly scanned QR code (same tab, new URL) replaces whatever was typed before.
+  const urlCode = params.get("code");
+  useEffect(() => { if (urlCode) { setCode(urlCode); setError(null); } }, [urlCode]);
 
+  const navigate = useNavigate();
   const finish = useCallback(async (token: string, deviceId: string) => {
     writeJson(PENDING_KEY, null, "session");
     setState({ step: "approved" });
+    navigate("/", { replace: true }); // after pairing, land on the dashboard instead of the pairing page
     await client.savePairing(token, deviceId);
-  }, []);
+  }, [navigate]);
 
   useEvent<{ approved: boolean; token?: string; deviceId?: string }>("pairing.result", (r) => {
     if (r.approved && r.token && r.deviceId) finish(r.token, r.deviceId);
