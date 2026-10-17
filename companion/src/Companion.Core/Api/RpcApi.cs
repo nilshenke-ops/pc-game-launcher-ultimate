@@ -323,7 +323,10 @@ public static class RpcApi
         var set = s.Settings.Get();
         var urls = new List<string>();
         // First choice: the hosted web app (online even while the PC is off) with code and PC address filled in.
-        if (set.WebAppUrl is { } web && PcAddress(s) is { } pc)
+        // Only with an https PC address (e.g. Tailscale Funnel): an https page cannot connect to plain http.
+        var webIsHttps = set.WebAppUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
+        var pcIsHttps = set.PublicUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
+        if (set.WebAppUrl is { } web && PcAddress(s) is { } pc && (!webIsHttps || pcIsHttps))
             urls.Add($"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}");
         var bases = new List<string>();
         if (set.PublicUrl is { } pub) bases.Add(pub);
