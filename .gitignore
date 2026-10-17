@@ -11,3 +11,4 @@ relay/downloads/*
 web/test-results/
 web/playwright-report/
 *.log
+deliverables/
