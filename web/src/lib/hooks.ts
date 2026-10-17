@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { client, RpcError, type ConnStatus } from "./rpc";
+import { t } from "./i18n";
 
 export function useConn(): ConnStatus {
   return useSyncExternalStore(client.subscribe, client.getStatus);
@@ -41,6 +42,9 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
     return client.on("changed", (d) => { if (list.includes((d as { topic: string }).topic)) load(); });
   }, [topicKey, load]);
 
+  // Never an endless skeleton: while the PC is unreachable, pages show a clear offline message instead.
+  if (!ready && enabled && conn.phase !== "online" && !state.data)
+    return { data: undefined, error: new RpcError("offline", t("Der PC ist gerade nicht erreichbar. Die Inhalte erscheinen automatisch, sobald der PC an ist und der Companion läuft.")), loading: false, reload: () => client.reconnectNow(), updatedAt: null };
   return { data: state.data, error: state.error, loading: state.loading && !state.data, reload: load, updatedAt: state.updatedAt };
 }
 
@@ -69,6 +73,7 @@ const toastListeners = new Set<() => void>();
 let toastId = 1;
 
 export function toast(text: string, kind: Toast["kind"] = "info") {
+  if (kind === "error" && text.startsWith("Demo:")) kind = "info"; // demo notices are explanations, not errors
   const id = toastId++;
   toasts = [...toasts.filter((x) => x.text !== text), { id, text, kind }].slice(-4);
   toastListeners.forEach((l) => l());

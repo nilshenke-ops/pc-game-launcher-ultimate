@@ -35,10 +35,10 @@ Letzter vollständiger Lauf mit `scripts/test-all.sh`: **alle erfolgreich, 0 feh
 | Web Unit-Tests (Vitest) | 10 | ✅ 10/10 | SHA-256/HMAC gegen Node-Crypto, Login-Beweis identisch zum C#-Server, Übersetzungen vollständig (≈750 Texte), Platzhalter, alle aufgerufenen API-Methoden existieren im Protokoll, Eingabebereinigung der Designdaten, Kontrastberechnung, Suche, Hotkey-Aufnahme |
 | Relay (node:test) | 6 | ✅ 6/6 | falscher Schlüssel abgelehnt, Offline-/Online-Status, Weiterleitung in beide Richtungen, fremde Origins/unbekannter PC abgelehnt, statische Dateien + Pfad-Traversal-Schutz + Sicherheitsheader, Download nur bei passendem Manifest, Ersetzen einer Companion-Verbindung |
 | Companion (xUnit) | 71 | ✅ 71/71 | Kopplung (Format, Einmaligkeit, Ablauf, Sperre, Rate-Limit, Claim), Challenge-Response/Replay, Widerruf, Berechtigungen, Admin nur lokal, Protokoll-Vollständigkeit, Startziel-Validierung, Steam-/Epic-Parser, Spielerkennung, Hotkey-Normalisierung/Konflikte, Audio-Formaterkennung, Duplikate, SSRF-Schutz, Automatisierungs-Schleifenschutz/Cooldown/Widersprüche, Profile, Einstellungsvalidierung, Backup (Roundtrip, keine Geheimnisse, beschädigte/manipulierte Dateien), beschädigte JSON-Dateien, echter Programmstart (Linux-Skript) |
-| End-to-End (Playwright/Chromium) | 9 | ✅ 9/9 | Echter Headless-Companion + echtes Relay + Browser (Desktop und iPhone-/Pixel-Emulation): PC-Ansicht, ungekoppeltes Handy, falscher Code, **Kopplung per QR-Link mit Bestätigung am PC**, Sitzung übersteht Neuladen, **Programm am PC freigeben und vom Handy starten (Start nachgewiesen)**, Handy kann keine EXE freigeben, globale Suche, Design bleibt nach Neuladen, **Kopplung und Nutzung über das Relay**, **Widerruf entzieht sofort den Zugriff**, ehrlicher Download-Status |
+| End-to-End (Playwright/Chromium) | 10 | ✅ 10/10 | Echter Headless-Companion + echtes Relay + Browser (Desktop und iPhone-/Pixel-Emulation): PC-Ansicht, ungekoppeltes Handy, falscher Code, **Kopplung per QR-Link mit Bestätigung am PC**, Sitzung übersteht Neuladen, **Programm am PC freigeben und vom Handy starten (Start nachgewiesen)**, Handy kann keine EXE freigeben, globale Suche, Design bleibt nach Neuladen, **Kopplung und Nutzung über das Relay**, **Widerruf entzieht sofort den Zugriff**, ehrlicher Download-Status, **PC aus → App öffnet aus dem Offline-Speicher, Design änderbar, verbindet sich nach PC-Start automatisch** |
 | Windows-Build | – | ✅ | Cross-Compile von `Companion.Windows` ohne Fehler |
 | EXE-Prüfung | – | ✅ | PE32+, x64, Windows-GUI-Subsystem; Web-App als Ressource enthalten |
-| Download über Relay | – | ✅ | `/download/info` und Download der echten EXE: Größe (84 182 602 Bytes) und SHA-256 stimmen mit der Datei überein (curl + sha256sum) |
+| Download über Relay | – | ✅ | `/download/info` und Download der echten EXE: Größe (84 190 188 Bytes) und SHA-256 stimmen mit der Datei überein (curl + sha256sum) |
 
 Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dateien wurden vom Companion nicht ausgeliefert (Routing), Companion ignorierte SIGTERM, Epic-Prozessnamen falsch zerlegt, neuer QR-Code im selben Tab übernahm den Code nicht, nach Kopplung blieb das Handy auf der Kopplungsseite, Formular-Labels nicht mit Feldern verknüpft (Screenreader), Hinweis „Kopplung aufgehoben“ ging verloren, Endlos-Neuverbindung im Relay-Modus, endloses „Verbinde …“ bei inkompatibler Version.
 
@@ -75,6 +75,12 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
 | Code-Signatur, Installer (MSI) | NOCH NICHT IMPLEMENTIERT | kein Zertifikat; EXE läuft ohne Installation |
 | Push-Benachrichtigungen aufs Handy | NOCH NICHT IMPLEMENTIERT | Meldungen erscheinen in der App, nicht als System-Push |
 
+## Nachträge
+- **Offline-Modus:** Gekoppelte Geräte öffnen die App auch bei ausgeschaltetem PC (Service Worker, nur über https/localhost). Design und Layout sind änderbar; nach dem PC-Start verbindet sich die App automatisch (Wiederholung alle ≤ 15 s). Neue Geräte können über „App ohne PC öffnen“ vorab das Design einstellen. FERTIG UND GETESTET (E2E, Chromium); auf echtem iPad/Opera NICHT TESTBAR hier.
+- **Demo-Vorschau:** Eigene Demo-Version mit Beispieldaten (deutlich gekennzeichnet, führt nichts aus), veröffentlicht als privates claude.ai-Artifact: https://claude.ai/artifact/EkJyHeUFFKo68VGXuFNxWB. Kann sich bauartbedingt nicht mit dem PC verbinden. Lokal im Browser getestet; die Darstellung im Artifact-Viewer selbst konnte ich nicht prüfen.
+- **Fernzugriff ohne Domain:** Anleitung für Tailscale Funnel (INSTALLATION.md).
+- Behoben: Seitlicher Überlauf auf Handys bei langen Namen (untere Leiste verschwand), leere Seite bei nicht zwischengespeicherten Bereichen (jetzt Fehlermeldung + vollständiger Offline-Speicher).
+
 ## 6. Offene Punkte
 1. **Test auf einem echten Windows-PC** (Fenster, Tray, Audio, Hotkeys, Steam/Epic-Start, Autostart, Firewall-Abfrage). Das ist der wichtigste nächste Schritt.
 2. Test auf echtem iPhone/iPad/Android im WLAN.
@@ -110,9 +116,9 @@ Companion → **Gerät koppeln** → **Neuen Code erzeugen** → QR-Code mit dem
 ## 12. Wo liegen die Dateien?
 | Datei | Pfad |
 |---|---|
-| Windows-EXE | `artifacts/companion/PCGameLauncherCompanion.exe` (84 182 602 Bytes) |
+| Windows-EXE | `artifacts/companion/PCGameLauncherCompanion.exe` (84 190 188 Bytes) |
 | ZIP für Nutzer | `artifacts/PCGameLauncherCompanion-1.0.0-win-x64.zip` (+ `.sha256`) |
-| SHA-256 der EXE | `3d3917d9ea0820992da2616f38ef3c11280ab93767a87273790890d4877de465` |
+| SHA-256 der EXE | `db9dfa6dc8063de6cdff6c90e1b9a5cd6c5dee3e82e61de7895bbc0a2f73dcd0` |
 | Quellcode | gesamtes Repository (`git log` zeigt die Entwicklungsschritte) |
 
 `artifacts/` ist nicht im Git-Repository (Build-Ergebnis); mit `scripts/publish-companion.sh` reproduzierbar.

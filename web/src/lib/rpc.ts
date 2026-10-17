@@ -1,5 +1,6 @@
 import { loginProof } from "./sha256";
 import { t } from "./i18n";
+import { attachDemo, demoCall } from "./demo";
 
 export const PROTOCOL_VERSION = 1;
 
@@ -19,6 +20,8 @@ export interface ConnStatus {
   lastError?: string;
   everConnected: boolean;
   relayCompanion?: "online" | "offline";
+  /** The user opened the app without a PC connection (design/layout can be changed, connects automatically later). */
+  offlineShell?: boolean;
   auth: "none" | "checking" | "ok" | "failed" | "revoked";
   authError?: string;
   hello?: Hello;
@@ -35,6 +38,7 @@ interface Credentials { deviceId: string; token: string; pcName?: string }
 type Listener = (data: unknown) => void;
 
 const CRED_KEY = "pgl.cred";
+const OFFLINE_KEY = "pgl.offlineShell";
 const SERVER_KEY = "pgl.server";
 const ADMIN_KEY = "pgl.admin";
 const REQUEST_TIMEOUT_MS = 20000;
@@ -89,7 +93,24 @@ class Client {
   private attempt = 0;
   private started = false;
   private closeReason: string | null = null;
-  status: ConnStatus = { phase: "connecting", attempt: 0, everConnected: false, auth: "none", url: "" };
+  status: ConnStatus = { phase: "connecting", attempt: 0, everConnected: false, auth: "none", url: "", offlineShell: readJson<boolean>(OFFLINE_KEY) === true };
+
+  /** True while the app shows example data instead of a real PC (preview link or "Demo ansehen"). */
+  demo = false;
+
+  /** Starts the demo: no network connection, every request is answered by lib/demo.ts. */
+  startDemo() {
+    this.demo = true;
+    this.started = true;
+    attachDemo((ev, d) => this.emit(ev, d));
+    const permissions = ["view", "launch", "soundboard", "manage", "admin"];
+    this.set({
+      phase: "online", everConnected: true, auth: "ok", url: "demo",
+      hello: { protocol: PROTOCOL_VERSION, nonce: "", transport: "local", info: { app: "PC Game Launcher Ultimate", version: "1.0.0", pcName: "Demo-PC", platform: "Demo", features: { audio: true, hotkeys: true, autostart: true, pickFile: false, installUpdates: true } } },
+      me: { isLocal: false, permissions, device: { id: "demo", name: "Dieses Gerät" } },
+    });
+    queueMicrotask(() => this.emit("authenticated", this.status.me));
+  }
 
   start() {
     if (this.started) return;
@@ -127,6 +148,9 @@ class Client {
     this.attempt = 0;
     this.connect();
   }
+
+  /** Opens the app shell while the PC is off. Paired devices log in automatically once the PC is reachable. */
+  openOffline() { writeJson(OFFLINE_KEY, true); this.set({ offlineShell: true }); }
 
   /** Closes and reopens the connection, e.g. after the server address was changed. */
   restart() {
@@ -176,7 +200,7 @@ class Client {
     for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new RpcError("offline", t("Verbindung unterbrochen"))); }
     this.pending.clear();
     // Exponential backoff with jitter: 1, 2, 4, 8, 15, 30 s.
-    const delay = Math.min(30000, 1000 * 2 ** Math.min(this.attempt, 5)) * (0.8 + Math.random() * 0.4);
+    const delay = Math.min(15000, 1000 * 2 ** Math.min(this.attempt, 4)) * (0.8 + Math.random() * 0.4);
     this.attempt++;
     const auth = this.status.auth === "revoked" ? "revoked" : this.status.auth === "ok" ? "checking" : this.status.auth;
     this.set({ phase: "offline", lastError: reason, retryAt: Date.now() + delay, attempt: this.attempt, auth, relayCompanion: undefined });
@@ -225,6 +249,7 @@ class Client {
   }
 
   call<T = unknown>(method: string, params?: unknown): Promise<T> {
+    if (this.demo) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
     return new Promise<T>((resolve, reject) => {
       const ws = this.ws;
       if (!ws || ws.readyState !== WebSocket.OPEN) {
@@ -274,6 +299,7 @@ class Client {
   }
 
   async logout() {
+    if (this.demo) { exitDemo(); return; }
     try { await this.call("auth.logout"); } catch { /* ignore */ }
     writeJson(CRED_KEY, null);
     writeJson(ADMIN_KEY, null, "session");
@@ -284,3 +310,8 @@ class Client {
 }
 
 export const client = new Client();
+
+const DEMO_KEY = "pgl.demo";
+export function demoRequested() { return readJson<boolean>(DEMO_KEY, "session") === true; }
+export function enterDemo() { writeJson(DEMO_KEY, true, "session"); location.hash = "#/"; location.reload(); }
+export function exitDemo() { writeJson(DEMO_KEY, null, "session"); location.hash = "#/"; location.reload(); }

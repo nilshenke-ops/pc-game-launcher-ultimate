@@ -126,3 +126,40 @@ test("Download-Status ist ehrlich (Entwicklungsserver hat keine EXE)", async () 
   await expect(pc.getByText("Companion noch nicht gebaut")).toBeVisible();
   await expect(pc.getByRole("button", { name: "Begleiter herunterladen" })).toBeDisabled();
 });
+
+test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
+  const ctx = await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" });
+  const ipad = await ctx.newPage();
+  await pair(ipad, COMPANION);
+  // The offline cache (service worker) must be active before the PC goes away.
+  await ipad.reload();
+  await expect.poll(() => ipad.evaluate(async () => !!(await navigator.serviceWorker?.getRegistration())?.active), { timeout: 15000 }).toBe(true);
+  await ipad.reload();
+
+  // "Turn the PC off": stop the companion.
+  const s = state();
+  process.kill(s.pids[0], "SIGTERM");
+  await expect.poll(async () => { try { await fetch(`${COMPANION}/healthz`); return "up"; } catch { return "down"; } }, { timeout: 15000 }).toBe("down");
+
+  await ipad.reload();
+  await expect(ipad.getByRole("heading", { name: "Warte auf deinen PC …" })).toBeVisible({ timeout: 15000 });
+  await ipad.getByRole("link", { name: "Design & Layout anpassen" }).click();
+  await ipad.getByRole("button", { name: "Synthwave" }).click();
+  expect(await ipad.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#f472b6");
+
+  // "Turn the PC on" again: same data directory, so the iPad's pairing is still valid.
+  const { spawn } = await import("node:child_process");
+  const { existsSync } = await import("node:fs");
+  const dotnet = process.env.DOTNET ?? (existsSync("/opt/dotnet/dotnet") ? "/opt/dotnet/dotnet" : "dotnet");
+  const root = join(s.workDir, "..");
+  void root;
+  const dll = new URL("../../companion/src/Companion.Headless/bin/Debug/net8.0/pgl-companion-headless.dll", import.meta.url).pathname;
+  const proc = spawn(dotnet, [dll, "--data", s.dataDir], { env: { ...process.env, PGL_WEB_DIR: new URL("../dist", import.meta.url).pathname }, stdio: "ignore", detached: true });
+  proc.unref();
+  try {
+    await ipad.goto(`${COMPANION}/#/games`).catch(() => {});
+    await expect(ipad.getByText("E2E Testspiel")).toBeVisible({ timeout: 30000 });
+  } finally {
+    process.kill(proc.pid!, "SIGTERM");
+  }
+});

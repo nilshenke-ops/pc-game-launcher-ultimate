@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { BookOpen, Cable, Globe, Keyboard, Link2, Rocket, Wrench } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useAppState } from "../lib/state";
@@ -46,7 +47,7 @@ export default function Help() {
             <li>{t("Kein Sound in Discord: Audio-Diagnose ausführen.")}</li>
             <li>{t("Code abgelaufen: Codes gelten 5 Minuten – einfach neuen erzeugen.")}</li>
           </ul>
-          <a className="btn sm" href="#/diagnostics?run=1" style={{ alignSelf: "flex-start" }}>{t("Diagnose ausführen")}</a>
+          <Link className="btn sm" to="/diagnostics?run=1" style={{ alignSelf: "flex-start" }}>{t("Diagnose ausführen")}</Link>
         </Section>
       </div>
       <div style={{ marginTop: 16 }}><DownloadCard /></div>

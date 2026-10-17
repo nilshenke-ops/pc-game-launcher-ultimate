@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   ArchiveRestore, Bell, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
   Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Upload, UserX,
@@ -327,7 +327,7 @@ function Security() {
           </ul>
         </Banner>
         {dev.data && <p className="muted">{t("Schlüsselspeicher")}: {dev.data.protection}</p>}
-        <a className="btn" href="#/devices" style={{ alignSelf: "flex-start" }}>{t("Geräte & Sitzungen verwalten")}</a>
+        <Link className="btn" to="/devices" style={{ alignSelf: "flex-start" }}>{t("Geräte & Sitzungen verwalten")}</Link>
       </div>
     </Card>
   );

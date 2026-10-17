@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useEvent, useMediaQuery, useRpc, toast } from "../lib/hooks";
+import { useConn, useEvent, useMediaQuery, useRpc, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
 import { bytes, clock, gradientFor, relTime, since } from "../lib/format";
@@ -239,6 +239,25 @@ export default function Dashboard() {
   const visible = layout.widgets.filter((w) => w.visible);
   const hidden = layout.widgets.filter((w) => !w.visible);
   const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
+
+  const conn = useConn();
+  if (!state && conn.phase !== "online") {
+    return (
+      <>
+        <PageHead eyebrow={greeting} title={t("Gaming-Zentrale")} />
+        <Card className="hero">
+          <div className="stack">
+            <h2>{t("Warte auf deinen PC …")}</h2>
+            <p className="muted">{t("Sobald der PC an ist und der Companion läuft, erscheinen hier deine Spiele, Sounds und Live-Werte – ohne dass du etwas tun musst.")}</p>
+            <div className="row">
+              <Link to="/settings?s=design" className="btn primary">{t("Design & Layout anpassen")}</Link>
+              <Button onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
+            </div>
+          </div>
+        </Card>
+      </>
+    );
+  }
 
   return (
     <>

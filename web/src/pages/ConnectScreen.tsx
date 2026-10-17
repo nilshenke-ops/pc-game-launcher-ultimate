@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { PlugZap, RefreshCw, Server, WifiOff } from "lucide-react";
-import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
+import { Eye, Palette, PlugZap, RefreshCw, Server, WifiOff } from "lucide-react";
+import { client, defaultServerUrl, enterDemo, serverUrl, setServerUrl } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useNow } from "../lib/hooks";
 import { Banner, Button, Card, Field } from "../components/ui";
@@ -64,6 +64,18 @@ export function ConnectScreen() {
 
         {!first && location.protocol === "https:" && serverUrl().startsWith("ws://") && (
           <Banner kind="warn">{t("Eine https-Seite darf keine unverschlüsselte ws://-Verbindung öffnen. Nutze eine wss://-Adresse (Relay oder Tunnel).")}</Banner>
+        )}
+        {!first && (
+          <Card className="flat" title={t("Ohne PC umsehen")} icon={<Eye size={18} />}>
+            <div className="stack">
+              <p className="small muted">{t("Die Demo zeigt die ganze Oberfläche mit Beispieldaten. Es wird nichts auf einem PC ausgeführt.")}</p>
+              <div className="row">
+                <Button variant="primary" icon={<Palette size={16} />} onClick={() => client.openOffline()}>{t("App ohne PC öffnen")}</Button>
+                <Button icon={<Eye size={16} />} onClick={enterDemo}>{t("Demo mit Beispieldaten")}</Button>
+              </div>
+              <p className="tiny muted">{t("„App ohne PC öffnen“: Design und Layout schon jetzt einstellen – sobald der PC an ist, verbindet sich die App automatisch.")}</p>
+            </div>
+          </Card>
         )}
         {!first && <DownloadCard compact />}
       </div>

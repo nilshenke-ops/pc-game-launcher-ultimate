@@ -25,7 +25,15 @@ Der Code gilt 5 Minuten, ist einmalig verwendbar und wird nach 5 Fehlversuchen g
 
 Standardmäßig ist der PC **nur im Heimnetz** erreichbar; es werden keine Router-Ports geöffnet. Zwei sichere Wege für unterwegs:
 
-### a) Cloudflare Tunnel (ohne eigenen Server)
+### a) Tailscale Funnel (empfohlen: kostenlos, ohne Domain, fester https-Link)
+1. Tailscale für Windows installieren (https://tailscale.com/download/windows) und anmelden.
+2. PowerShell: `tailscale funnel --bg 8787` – beim ersten Mal den angezeigten Freischalt-Link öffnen und Funnel erlauben, dann den Befehl wiederholen.
+3. Der angezeigte Link (`https://<pc-name>.<tailnet>.ts.net`) bleibt dauerhaft gleich. Im Companion unter **Einstellungen → Verbindung → Öffentliche Adresse** eintragen.
+4. Auf dem Handy/iPad diesen Link öffnen (kein Tailscale auf dem Handy nötig) und einmal koppeln.
+
+**Offline-Speicher:** Über https speichert sich die Web-App beim ersten Besuch komplett auf dem Gerät. Danach öffnet sich der Link auch, wenn der PC aus ist: Design und Layout lassen sich ändern, und sobald der PC an ist, verbindet sich die App automatisch. Am zuverlässigsten auf iPhone/iPad über Safari → „Zum Home-Bildschirm“.
+
+### b) Cloudflare Tunnel (ohne eigenen Server)
 1. `cloudflared` installieren (https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/).
 2. Schnelltest (temporäre Adresse, ändert sich bei jedem Start!): `cloudflared tunnel --url http://localhost:8787`
 3. Dauerhaft: benannter Tunnel mit eigener Domain, Ziel `http://localhost:8787`.
@@ -33,7 +41,7 @@ Standardmäßig ist der PC **nur im Heimnetz** erreichbar; es werden keine Route
 
 Hinweis: Über den Tunnel gilt dieselbe Kopplung/Anmeldung. Die PC-Ansicht (Admin) ist über den Tunnel **nicht** möglich – sie funktioniert nur direkt am PC.
 
-### b) Eigenes Relay (eigener Server mit Node.js 20+)
+### c) Eigenes Relay (eigener Server mit Node.js 20+)
 ```bash
 cd relay
 npm ci && npm run build
