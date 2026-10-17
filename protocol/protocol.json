@@ -1,0 +1,131 @@
+{
+  "$comment": "Single source of truth for the PGL wire protocol. Checked by tests in companion (C#), relay and web (TS).",
+  "version": 1,
+  "permissions": ["view", "launch", "soundboard", "manage", "admin", "local"],
+  "defaultDevicePermissions": ["view", "launch", "soundboard", "manage"],
+  "methods": {
+    "hello": "none",
+    "ping": "none",
+    "auth.login": "none",
+    "auth.logout": "any",
+    "pairing.request": "none",
+    "pairing.claim": "none",
+    "pairing.create": "local",
+    "pairing.cancel": "local",
+    "pairing.pending": "local",
+    "pairing.decide": "local",
+
+    "devices.list": "admin",
+    "devices.me": "any",
+    "devices.rename": "admin",
+    "devices.revoke": "admin",
+    "devices.setPermissions": "local",
+
+    "state.get": "view",
+
+    "library.list": "view",
+    "library.detect": "manage",
+    "library.addDetected": "manage",
+    "library.addPath": "local",
+    "library.pickFile": "local",
+    "library.update": "manage",
+    "library.updateTarget": "local",
+    "library.remove": "manage",
+    "library.launch": "launch",
+
+    "quick.list": "view",
+    "quick.save": "manage",
+    "quick.remove": "manage",
+    "quick.reorder": "manage",
+    "quick.run": "launch",
+
+    "profiles.list": "view",
+    "profiles.save": "manage",
+    "profiles.remove": "manage",
+    "profiles.copy": "manage",
+    "profiles.activate": "launch",
+    "profiles.revert": "launch",
+
+    "automations.list": "view",
+    "automations.save": "manage",
+    "automations.remove": "manage",
+    "automations.copy": "manage",
+    "automations.test": "manage",
+
+    "hotkeys.list": "view",
+    "hotkeys.save": "manage",
+    "hotkeys.remove": "manage",
+
+    "history.get": "view",
+    "history.clear": "manage",
+
+    "sounds.list": "view",
+    "sounds.uploadBegin": "manage",
+    "sounds.uploadChunk": "manage",
+    "sounds.uploadEnd": "manage",
+    "sounds.importUrl": "manage",
+    "sounds.update": "manage",
+    "sounds.remove": "manage",
+    "sounds.play": "soundboard",
+    "sounds.stop": "soundboard",
+    "sounds.stopAll": "soundboard",
+    "sounds.pause": "soundboard",
+    "sounds.resume": "soundboard",
+    "sounds.saveCollection": "manage",
+    "sounds.removeCollection": "manage",
+    "sounds.setActiveCollection": "soundboard",
+    "sounds.exportConfig": "manage",
+    "sounds.importConfig": "manage",
+
+    "audio.state": "view",
+    "audio.save": "manage",
+    "audio.testTone": "soundboard",
+    "audio.diagnose": "view",
+
+    "monitor.subscribe": "view",
+    "monitor.unsubscribe": "view",
+    "network.diagnose": "view",
+
+    "notifications.list": "view",
+    "notifications.dismiss": "view",
+    "notifications.dismissAll": "view",
+
+    "settings.get": "view",
+    "settings.save": "manage",
+    "settings.saveSecurity": "admin",
+
+    "autostart.get": "view",
+    "autostart.set": "local",
+
+    "updates.status": "view",
+    "updates.check": "admin",
+    "updates.download": "admin",
+    "updates.install": "local",
+
+    "backup.export": "admin",
+    "backup.validate": "admin",
+    "backup.restore": "admin",
+
+    "diagnostics.run": "view",
+    "diagnostics.logs": "admin",
+
+    "ui.getPrefs": "view",
+    "ui.savePrefs": "view",
+
+    "system.openDataFolder": "local"
+  },
+  "events": [
+    "changed",
+    "session",
+    "sounds.playing",
+    "notification",
+    "monitor.sample",
+    "pairing.pending",
+    "pairing.result",
+    "auth.revoked",
+    "audio.level",
+    "update.progress",
+    "relay.status",
+    "profile.active"
+  ]
+}

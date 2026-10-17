@@ -1,0 +1,286 @@
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import {
+  Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, Play, RotateCcw,
+  Smartphone, Square, Star, Swords, Wifi, Zap,
+} from "lucide-react";
+import { client } from "../lib/rpc";
+import { t } from "../lib/i18n";
+import { useEvent, useMediaQuery, useRpc, toast } from "../lib/hooks";
+import { useAppState } from "../lib/state";
+import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
+import { bytes, clock, gradientFor, relTime, since } from "../lib/format";
+import { IconByName } from "../lib/nav";
+import type { LibraryItem, MetricsSample, Notification, QuickAction } from "../lib/types";
+import { Banner, Button, Card, Empty, Meter, PageHead, Thumb } from "../components/ui";
+import { DownloadCard } from "../components/DownloadCard";
+
+function launch(item: LibraryItem) {
+  client.call("library.launch", { id: item.id }).then(() => toast(t("{name} wird gestartet", { name: item.name }), "success")).catch((e) => toast(e.message, "error"));
+}
+
+function StatusWidget() {
+  const { state, updatedAt } = useAppState();
+  if (!state) return <div className="skeleton" style={{ height: 120 }} />;
+  const relay = state.relay.state;
+  return (
+    <div className="stack">
+      <div className="row nowrap">
+        <div className="grow">
+          <div className="eyebrow">{t("Dein Gaming-PC")}</div>
+          <h2 style={{ fontSize: "1.4rem" }}>{state.pcName}</h2>
+          <div className="small muted">{state.platform} · Companion v{state.version}</div>
+        </div>
+        <span className="badge ok"><span className="dot ok" />{t("Online")}</span>
+      </div>
+      <div className="row">
+        <span className="badge info"><Wifi size={12} />{state.me.transport === "relay" ? t("Über Relay") : t("Lokal verbunden")}</span>
+        <span className={`badge ${relay === "connected" ? "ok" : relay === "disabled" ? "" : "warn"}`}>{t("Relay")}: {relay === "connected" ? t("verbunden") : relay === "disabled" ? t("aus") : relay}</span>
+        <span className="badge">{state.me.isLocal ? t("Am PC") : state.me.name}</span>
+      </div>
+      <div className="tiny muted">{t("Aktualisiert {t}", { t: updatedAt ? clock(updatedAt) : "–" })}</div>
+    </div>
+  );
+}
+
+function SessionWidget() {
+  const { state } = useAppState();
+  const running = state?.running ?? [];
+  if (!running.length) return <Empty icon={<Gamepad2 size={26} />} title={t("Kein Spiel aktiv")} text={t("Erkannt werden Spiele aus deiner Bibliothek mit Prozessname oder Installationsordner.")} />;
+  return (
+    <div className="stack">
+      {running.map((r) => (
+        <div key={r.itemId} className="row nowrap">
+          <span className="dot ok pulse" />
+          <div className="grow"><b className="ellipsis">{r.name}</b><div className="small muted">{t("läuft seit {d}", { d: since(r.since) })}</div></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ProfileWidget() {
+  const { state } = useAppState();
+  const p = state?.activeProfile;
+  if (!p) return <Empty icon={<Swords size={26} />} title={t("Kein Profil aktiv")} />;
+  return (
+    <div className="stack">
+      <div className="row nowrap">
+        <div className="thumb" style={{ background: p.color, color: "#04121a" }}><IconByName name={p.icon} size={20} /></div>
+        <div className="grow"><b>{p.name}</b><div className="small muted">{p.reason}</div></div>
+      </div>
+      <div className="row">
+        <Link to="/profiles" className="btn sm">{t("Wechseln")}</Link>
+        <span className="tiny muted">{state?.autoSwitch ? t("Automatischer Wechsel an") : t("Automatischer Wechsel aus")}</span>
+      </div>
+    </div>
+  );
+}
+
+function QuickWidget() {
+  const q = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);
+  const actions = (q.data?.actions ?? []).filter((a) => a.showOnDashboard).slice(0, 8);
+  if (!q.loading && !actions.length) return <Empty icon={<Zap size={26} />} title={t("Keine Quick Actions")} action={<Link to="/quick" className="btn sm">{t("Erstellen")}</Link>} />;
+  return (
+    <div className="qa-grid">
+      {actions.map((a) => (
+        <button key={a.id} className="card flat qa-tile" style={{ padding: 12 }} onClick={() => client.call("quick.run", { id: a.id }).then(() => toast(t("„{n}“ ausgeführt", { n: a.name }), "success")).catch((e) => toast(e.message, "error"))}>
+          <span className="ico"><IconByName name={a.icon} /></span>
+          <b className="small">{a.name}</b>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ItemsWidget({ mode }: { mode: "favorites" | "recent" }) {
+  const lib = useRpc<{ items: LibraryItem[]; running: string[] }>("library.list", {}, ["library"]);
+  const hist = useRpc<{ launches: { itemId: string; at: string }[] }>("history.get", {}, ["history"], mode === "recent");
+  const items = lib.data?.items ?? [];
+  const list = mode === "favorites"
+    ? items.filter((i) => i.favorite).slice(0, 12)
+    : [...new Map((hist.data?.launches ?? []).map((l) => [l.itemId, l])).values()].map((l) => ({ item: items.find((i) => i.id === l.itemId), at: l.at })).filter((x) => x.item).slice(0, 6).map((x) => x.item!);
+  if (!lib.loading && !list.length)
+    return <Empty icon={mode === "favorites" ? <Star size={26} /> : <Clock size={26} />} title={mode === "favorites" ? t("Noch keine Favoriten") : t("Noch nichts gestartet")} text={mode === "favorites" ? t("Markiere Spiele oder Programme mit dem Stern.") : undefined} action={<Link to="/games" className="btn sm">{t("Zur Bibliothek")}</Link>} />;
+  return (
+    <div className="list">
+      {list.map((i) => (
+        <div key={i.id} className="list-item">
+          <Thumb name={i.name} icon={i.iconData} cover={i.coverUrl} gradient={gradientFor(i.name)} />
+          <div className="grow"><div className="title ellipsis">{i.name}</div><div className="sub">{i.kind === "game" ? t("Spiel") : t("Programm")}{lib.data?.running.includes(i.id) ? " · " + t("läuft") : ""}</div></div>
+          <Button size="sm" variant="primary" icon={<Play size={14} />} onClick={() => launch(i)} aria-label={t("{name} starten", { name: i.name })} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SystemWidget() {
+  const [m, setM] = useState<MetricsSample | null>(null);
+  useEffect(() => {
+    client.call<MetricsSample>("monitor.subscribe").then(setM).catch(() => {});
+    return () => { client.call("monitor.unsubscribe").catch(() => {}); };
+  }, []);
+  useEvent<MetricsSample>("monitor.sample", setM);
+  if (!m) return <div className="skeleton" style={{ height: 110 }} />;
+  const ram = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
+  const gpu = m.gpus[0];
+  const Row = ({ k, v, val }: { k: string; v: string; val?: number | null }) => (
+    <div className="stack-sm"><div className="row between small"><span className="muted">{k}</span><b>{v}</b></div><Meter value={val} /></div>
+  );
+  return (
+    <div className="stack">
+      <Row k="CPU" v={m.cpuPercent != null ? `${m.cpuPercent.toFixed(0)} %` : t("Nicht verfügbar")} val={m.cpuPercent} />
+      <Row k="RAM" v={ram != null ? `${bytes(m.memUsedBytes)} / ${bytes(m.memTotalBytes)}` : t("Nicht verfügbar")} val={ram} />
+      <Row k={gpu?.name ? `GPU · ${gpu.name}` : "GPU"} v={gpu?.utilPercent != null ? `${gpu.utilPercent.toFixed(0)} %${gpu.tempC != null ? ` · ${gpu.tempC} °C` : ""}` : t("Nicht verfügbar")} val={gpu?.utilPercent} />
+      <div className="tiny muted">{t("Live · {t}", { t: clock(m.at) })} · <Link to="/monitor">{t("Details")}</Link></div>
+    </div>
+  );
+}
+
+function AudioWidget() {
+  const { state } = useAppState();
+  if (!state) return null;
+  const a = state.audio;
+  if (!a.supported) return <Banner kind="info">{t("Audio wird nur vom Windows-Companion unterstützt.")}</Banner>;
+  return (
+    <div className="stack">
+      <div className="small"><span className="muted">{t("Ausgabe")}:</span> <b>{a.output}</b></div>
+      <div className="small"><span className="muted">{t("Mikrofon")}:</span> <b>{a.mic}</b></div>
+      <div className="stack-sm"><div className="row between small"><span className="muted">{t("Lautstärke Soundboard")}</span><b>{a.volume} %</b></div><Meter value={a.volume} /></div>
+      {a.missing.length > 0 && <Banner kind="warn">{t("Fehlt: {x}", { x: a.missing.join(", ") })}</Banner>}
+    </div>
+  );
+}
+
+function PlayingWidget() {
+  const { state } = useAppState();
+  const playing = state?.playing.playing ?? [];
+  if (!playing.length) return <Empty icon={<Music size={26} />} title={t("Kein Sound aktiv")} action={<Link to="/soundboard" className="btn sm">{t("Soundboard")}</Link>} />;
+  return (
+    <div className="stack">
+      {playing.map((p) => (
+        <div key={p.playbackId} className="row nowrap"><span className="dot ok pulse" /><span className="grow ellipsis">{p.name}</span>
+          <Button size="sm" icon={<Square size={13} />} onClick={() => client.call("sounds.stop", { playbackId: p.playbackId })} aria-label={t("Stopp")} /></div>
+      ))}
+      <Button size="sm" variant="danger" onClick={() => client.call("sounds.stopAll")}>{t("Alle stoppen")}</Button>
+    </div>
+  );
+}
+
+function NotificationsWidget() {
+  const q = useRpc<{ items: Notification[] }>("notifications.list", {}, ["notifications"]);
+  useEvent("notification", q.reload);
+  const items = (q.data?.items ?? []).slice(0, 4);
+  if (!q.loading && !items.length) return <Empty icon={<Check size={26} />} title={t("Alles in Ordnung")} text={t("Keine offenen Meldungen.")} />;
+  return (
+    <div className="list">
+      {items.map((n) => (
+        <div key={n.id} className="list-item">
+          <span className={`dot ${n.severity === "error" ? "error" : n.severity === "warning" ? "warn" : "ok"}`} />
+          <div className="grow"><div className="title small">{n.title}{n.count > 1 ? ` (${n.count}×)` : ""}</div><div className="sub ellipsis">{n.message} · {relTime(n.at)}</div></div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function DevicesWidget() {
+  const { state } = useAppState();
+  return (
+    <div className="stack">
+      <div className="stat"><span className="v">{state?.counts.devices ?? "–"}</span><span className="k">{t("Gekoppelte Geräte")}</span></div>
+      <div className="row"><Link to="/devices" className="btn sm">{t("Verwalten")}</Link>{state?.me.isLocal && <Link to="/pair" className="btn sm primary">{t("Koppeln")}</Link>}</div>
+    </div>
+  );
+}
+
+const META: Record<WidgetId, { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string }> = {
+  status: { icon: <Activity size={18} />, title: () => t("Verbindung & PC"), render: () => <StatusWidget /> },
+  session: { icon: <Gamepad2 size={18} />, title: () => t("Aktuelle Spielesitzung"), render: () => <SessionWidget /> },
+  profile: { icon: <Swords size={18} />, title: () => t("Gaming-Profil"), render: () => <ProfileWidget />, link: "/profiles" },
+  quick: { icon: <Zap size={18} />, title: () => t("Quick Actions"), render: () => <QuickWidget />, link: "/quick" },
+  favorites: { icon: <Star size={18} />, title: () => t("Favoriten"), render: () => <ItemsWidget mode="favorites" />, link: "/games" },
+  recent: { icon: <Clock size={18} />, title: () => t("Zuletzt gestartet"), render: () => <ItemsWidget mode="recent" />, link: "/history" },
+  system: { icon: <Activity size={18} />, title: () => t("PC-Auslastung"), render: () => <SystemWidget />, link: "/monitor" },
+  audio: { icon: <Headphones size={18} />, title: () => t("Audio"), render: () => <AudioWidget />, link: "/audio" },
+  playing: { icon: <Music size={18} />, title: () => t("Laufende Sounds"), render: () => <PlayingWidget />, link: "/soundboard" },
+  notifications: { icon: <Bell size={18} />, title: () => t("Benachrichtigungen"), render: () => <NotificationsWidget />, link: "/notifications" },
+  download: { icon: <LayoutDashboard size={18} />, title: () => t("Begleiter & Updates"), render: () => null },
+  devices: { icon: <Smartphone size={18} />, title: () => t("Geräte"), render: () => <DevicesWidget />, link: "/devices" },
+};
+
+export default function Dashboard() {
+  const prefs = usePrefs();
+  const { state } = useAppState();
+  const mobile = useMediaQuery("(max-width: 699px)");
+  const [edit, setEdit] = useState(false);
+  const profileLayout = state?.activeProfile?.dashboardLayoutId;
+  const layoutId = profileLayout && prefs.layouts.some((l) => l.id === profileLayout) ? profileLayout : mobile ? prefs.activeLayout.mobile : prefs.activeLayout.desktop;
+  const layout = prefs.layouts.find((l) => l.id === layoutId) ?? prefs.layouts[0];
+
+  const updateWidgets = (fn: (w: WidgetConf[]) => WidgetConf[]) =>
+    setPrefs((p) => ({ ...p, layouts: p.layouts.map((l) => (l.id === layout.id ? { ...l, widgets: fn(l.widgets) } : l)) }));
+  const move = (id: WidgetId, d: number) => updateWidgets((ws) => {
+    const visible = ws.filter((w) => w.visible);
+    const i = visible.findIndex((w) => w.id === id);
+    const j = i + d;
+    if (j < 0 || j >= visible.length) return ws;
+    const a = ws.findIndex((w) => w.id === visible[i].id), b = ws.findIndex((w) => w.id === visible[j].id);
+    const n = [...ws]; [n[a], n[b]] = [n[b], n[a]]; return n;
+  });
+  const cycleSize = (id: WidgetId) => updateWidgets((ws) => ws.map((w) => {
+    if (w.id !== id) return w;
+    const sizes = ALL_WIDGETS.find((x) => x.id === id)!.sizes;
+    return { ...w, size: sizes[(sizes.indexOf(w.size) + 1) % sizes.length] as WidgetSize };
+  }));
+  const toggle = (id: WidgetId) => updateWidgets((ws) => ws.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)));
+
+  const visible = layout.widgets.filter((w) => w.visible);
+  const hidden = layout.widgets.filter((w) => !w.visible);
+  const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
+
+  return (
+    <>
+      <PageHead eyebrow={greeting} title={t("Gaming-Zentrale")} text={state ? t("{g} Spiele · {p} Programme · {s} Sounds", { g: state.counts.games, p: state.counts.programs, s: state.counts.sounds }) : undefined}
+        actions={<>
+          {edit && <Button icon={<RotateCcw size={16} />} onClick={() => updateWidgets(() => structuredClone(DEFAULT_LAYOUT.widgets))}>{t("Standard")}</Button>}
+          <Button variant={edit ? "primary" : undefined} icon={edit ? <Check size={16} /> : <LayoutDashboard size={16} />} onClick={() => setEdit(!edit)}>{edit ? t("Fertig") : t("Anpassen")}</Button>
+        </>} />
+      {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}
+      <div className="dash" style={{ marginTop: edit ? 16 : 0 }}>
+        {visible.map((w, i) => {
+          const meta = META[w.id];
+          if (w.id === "download") return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><DownloadCard compact />{edit && <EditOverlay />}</div>;
+          return (
+            <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}>
+              <Card title={meta.title()} icon={meta.icon} className={w.id === "status" ? "hero" : ""} style={{ height: "100%" }}
+                actions={meta.link && !edit ? <Link to={meta.link} className="btn ghost sm">{t("Alle")}</Link> : undefined}>
+                {meta.render()}
+              </Card>
+              {edit && <EditOverlay />}
+            </div>
+          );
+          function EditOverlay() {
+            return (
+              <div className="widget-edit">
+                <b>{meta.title()}</b>
+                <div className="row">
+                  <Button size="sm" icon={<ArrowUp size={15} />} disabled={i === 0} onClick={() => move(w.id, -1)} aria-label={t("Nach vorne")} />
+                  <Button size="sm" icon={<ArrowDown size={15} />} disabled={i === visible.length - 1} onClick={() => move(w.id, 1)} aria-label={t("Nach hinten")} />
+                  <Button size="sm" icon={<Maximize2 size={15} />} onClick={() => cycleSize(w.id)}>{w.size.toUpperCase()}</Button>
+                  <Button size="sm" icon={<EyeOff size={15} />} onClick={() => toggle(w.id)} aria-label={t("Ausblenden")} />
+                </div>
+              </div>
+            );
+          }
+        })}
+      </div>
+      {edit && hidden.length > 0 && (
+        <Card title={t("Ausgeblendete Widgets")} icon={<EyeOff size={18} />} style={{ marginTop: 16 }}>
+          <div className="row">{hidden.map((w) => <Button key={w.id} size="sm" icon={<Eye size={15} />} onClick={() => toggle(w.id)}>{META[w.id].title()}</Button>)}</div>
+        </Card>
+      )}
+    </>
+  );
+}

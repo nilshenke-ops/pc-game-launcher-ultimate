@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Company>PC Game Launcher Ultimate</Company>
+    <Product>PC Game Launcher Ultimate</Product>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,231 @@
+import { useCallback, useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import QRCode from "qrcode";
+import { CheckCircle2, Clock, KeyRound, Link2, LogOut, QrCode, ShieldCheck, Smartphone, XCircle } from "lucide-react";
+import { client, readJson, RpcError, writeJson } from "../lib/rpc";
+import { t } from "../lib/i18n";
+import { useConn, useEvent, useNow, toast } from "../lib/hooks";
+import { Banner, Button, Card, Field, PageHead } from "../components/ui";
+
+const PENDING_KEY = "pgl.pairing";
+
+function guessDeviceName() {
+  const ua = navigator.userAgent;
+  const dev = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? "iPad" : /iPhone/.test(ua) ? "iPhone" : /Android/.test(ua) ? "Android" : /Windows/.test(ua) ? "Windows-PC" : /Mac/.test(ua) ? "Mac" : t("Browser");
+  const br = /Edg\//.test(ua) ? "Edge" : /CriOS|Chrome\//.test(ua) ? "Chrome" : /FxiOS|Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "";
+  return `${dev}${br ? " · " + br : ""}`;
+}
+
+type PairState = { step: "form" } | { step: "sending" } | { step: "waiting"; requestId: string } | { step: "approved" } | { step: "denied" };
+
+/** Pairing on a new device (phone, tablet, other browser). */
+export function DevicePairScreen() {
+  const conn = useConn();
+  const [params] = useSearchParams();
+  const [code, setCode] = useState(params.get("code") ?? "");
+  const [name, setName] = useState(guessDeviceName());
+  const [state, setState] = useState<PairState>(() => {
+    const p = readJson<{ requestId: string }>(PENDING_KEY, "session");
+    return p ? { step: "waiting", requestId: p.requestId } : { step: "form" };
+  });
+  const [error, setError] = useState<{ code: string; message: string } | null>(null);
+
+  const finish = useCallback(async (token: string, deviceId: string) => {
+    writeJson(PENDING_KEY, null, "session");
+    setState({ step: "approved" });
+    await client.savePairing(token, deviceId);
+  }, []);
+
+  useEvent<{ approved: boolean; token?: string; deviceId?: string }>("pairing.result", (r) => {
+    if (r.approved && r.token && r.deviceId) finish(r.token, r.deviceId);
+    else { writeJson(PENDING_KEY, null, "session"); setState({ step: "denied" }); }
+  });
+
+  // After a reconnect (or page reload) the decision is fetched with the one-time claim secret.
+  useEffect(() => {
+    if (state.step !== "waiting" || conn.phase !== "online") return;
+    const p = readJson<{ requestId: string; claimSecret: string }>(PENDING_KEY, "session");
+    if (!p) return;
+    const poll = async () => {
+      try {
+        const r = await client.call<{ state: string; token?: string; deviceId?: string }>("pairing.claim", p);
+        if (r.state === "approved" && r.token && r.deviceId) finish(r.token, r.deviceId);
+        else if (r.state === "denied") { writeJson(PENDING_KEY, null, "session"); setState({ step: "denied" }); }
+        else if (r.state === "unknown") { writeJson(PENDING_KEY, null, "session"); setState({ step: "form" }); setError({ code: "expired", message: t("Die Anfrage ist abgelaufen. Bitte erneut koppeln.") }); }
+      } catch { /* retry */ }
+    };
+    poll();
+    const id = setInterval(poll, 4000);
+    return () => clearInterval(id);
+  }, [state.step, conn.phase, finish]);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setState({ step: "sending" });
+    try {
+      const r = await client.call<{ requestId: string; claimSecret: string }>("pairing.request", { code, deviceName: name, platform: navigator.platform || "web" });
+      writeJson(PENDING_KEY, { requestId: r.requestId, claimSecret: r.claimSecret }, "session");
+      setState({ step: "waiting", requestId: r.requestId });
+    } catch (err) {
+      const x = err as RpcError;
+      setError({ code: x.code, message: x.message });
+      setState({ step: "form" });
+    }
+  };
+
+  const pc = conn.hello?.info.pcName;
+  return (
+    <div className="center-screen">
+      <div className="center-card stack fade-in">
+        <div style={{ textAlign: "center" }} className="stack-sm">
+          <div className="state-icon"><Link2 size={34} /></div>
+          <h1>{t("Gerät koppeln")}</h1>
+          <p className="muted">{pc ? t("Verbunden mit „{pc}“. Gib den Code ein, der im Companion am PC angezeigt wird.", { pc }) : t("Gib den Code ein, der im Companion am PC angezeigt wird.")}</p>
+        </div>
+        {conn.auth === "revoked" && <Banner kind="warn" title={t("Kopplung wurde aufgehoben")}>{conn.authError ?? t("Dieses Gerät wurde am PC entfernt.")}</Banner>}
+        {conn.auth === "failed" && <Banner kind="warn" title={t("Anmeldung nicht mehr gültig")}>{conn.authError}</Banner>}
+        {conn.relayCompanion === "offline" && <Banner kind="error" title={t("Relay erreichbar – PC nicht verbunden")}>{t("Starte den Companion auf dem PC und prüfe die Relay-Einstellungen.")}</Banner>}
+
+        <Card>
+          {(state.step === "form" || state.step === "sending") && (
+            <form className="stack" onSubmit={submit}>
+              <Field label={t("Kopplungscode")} error={error?.message}>
+                <input className="input code-input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="XXXX-XXXX" maxLength={9} autoComplete="one-time-code" autoCapitalize="characters" spellCheck={false} required aria-invalid={!!error} />
+              </Field>
+              <Field label={t("Name dieses Geräts")} hint={t("So erscheint das Gerät später in der Geräteliste am PC.")}>
+                <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
+              </Field>
+              <Button variant="primary" size="lg" block busy={state.step === "sending"} disabled={code.replace(/[^A-Z0-9]/gi, "").length < 8} type="submit" icon={<KeyRound size={18} />}>{t("Koppeln")}</Button>
+            </form>
+          )}
+          {state.step === "waiting" && (
+            <div className="stack" style={{ textAlign: "center" }}>
+              <div className="state-icon"><Clock size={32} className="dot pulse" style={{ background: "none", boxShadow: "none", width: "auto", height: "auto" }} /></div>
+              <h2>{t("Bestätigung am PC ausstehend")}</h2>
+              <p className="muted">{t("Am PC ist jetzt ein Fenster „Neue Kopplungsanfrage“ geöffnet. Klicke dort auf „Erlauben“.")}</p>
+              <Button onClick={() => { writeJson(PENDING_KEY, null, "session"); setState({ step: "form" }); }}>{t("Abbrechen")}</Button>
+            </div>
+          )}
+          {state.step === "approved" && (
+            <div className="stack" style={{ textAlign: "center" }}>
+              <div className="state-icon"><CheckCircle2 size={34} /></div>
+              <h2>{t("Kopplung erfolgreich")}</h2>
+              <p className="muted">{t("Anmeldung läuft …")}</p>
+            </div>
+          )}
+          {state.step === "denied" && (
+            <div className="stack" style={{ textAlign: "center" }}>
+              <div className="state-icon error"><XCircle size={34} /></div>
+              <h2>{t("Anfrage abgelehnt")}</h2>
+              <p className="muted">{t("Die Kopplung wurde am PC abgelehnt.")}</p>
+              <Button onClick={() => setState({ step: "form" })}>{t("Neuer Versuch")}</Button>
+            </div>
+          )}
+        </Card>
+        <p className="tiny muted" style={{ textAlign: "center" }}>
+          <ShieldCheck size={13} style={{ verticalAlign: -2 }} /> {t("Der Code ist 5 Minuten gültig und nur einmal verwendbar. Ohne Bestätigung am PC erhält kein Gerät Zugriff.")}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Pairing page inside the app: generates codes on the PC, explains the process on other devices. */
+export function PairPage() {
+  const conn = useConn();
+  const now = useNow(1000);
+  const [code, setCode] = useState<{ code: string; expiresAt: string; urls: string[] } | null>(null);
+  const [qr, setQr] = useState<string>("");
+  const [urlIndex, setUrlIndex] = useState(0);
+  const isLocal = !!conn.me?.isLocal;
+
+  const load = useCallback(() => {
+    if (!isLocal) return;
+    client.call<{ code?: string; expiresAt?: string; urls?: string[] }>("pairing.pending").then((r) => setCode(r.code ? { code: r.code, expiresAt: r.expiresAt!, urls: r.urls ?? [] } : null)).catch(() => {});
+  }, [isLocal]);
+  useEffect(load, [load]);
+  useEvent<{ topic: string }>("changed", (d) => { if (d.topic === "pairing") load(); });
+  useEvent("pairing.pending", load);
+
+  const url = code?.urls[urlIndex] ?? code?.urls[0];
+  useEffect(() => {
+    if (!url) { setQr(""); return; }
+    QRCode.toDataURL(url, { margin: 1, width: 440, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
+  }, [url]);
+
+  const create = async () => {
+    try { setCode(await client.call("pairing.create")); setUrlIndex(0); }
+    catch (e) { toast((e as Error).message, "error"); }
+  };
+  const left = code ? Math.max(0, Math.floor((Date.parse(code.expiresAt) - now) / 1000)) : 0;
+  const expired = code && left <= 0;
+
+  if (!isLocal) {
+    return (
+      <>
+        <PageHead eyebrow={t("Verbindung")} title={t("Gerät koppeln")} />
+        <div className="grid-2">
+          <Card title={t("Dieses Gerät ist gekoppelt")} icon={<Smartphone size={18} />}>
+            <div className="stack">
+              <p className="muted">{t("Angemeldet als „{n}“.", { n: conn.me?.device?.name ?? "" })}</p>
+              <Banner kind="info">{t("Neue Geräte werden aus Sicherheitsgründen nur direkt am PC gekoppelt: Companion öffnen → „Gerät koppeln“ → Code erzeugen.")}</Banner>
+              <div><Button variant="danger" icon={<LogOut size={16} />} onClick={() => client.logout()}>{t("Dieses Gerät abmelden")}</Button></div>
+            </div>
+          </Card>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <PageHead eyebrow={t("Verbindung")} title={t("Gerät koppeln")} text={t("Verbinde iPhone, iPad, Android oder einen anderen Browser sicher mit diesem PC.")} />
+      <div className="grid-2">
+        <Card title={t("Kopplungscode")} icon={<KeyRound size={18} />} className={code && !expired ? "glow" : ""}>
+          <div className="stack">
+            {code && !expired ? (
+              <>
+                <div className="code-display" aria-label={t("Kopplungscode")}>{code.code}</div>
+                <div className="row between small">
+                  <span className="muted">{t("Gültig noch {m}:{s}", { m: Math.floor(left / 60), s: String(left % 60).padStart(2, "0") })}</span>
+                  <Button size="sm" onClick={() => client.call("pairing.cancel").then(load)}>{t("Code verwerfen")}</Button>
+                </div>
+              </>
+            ) : (
+              <div className="empty">
+                <div className="icon-wrap"><QrCode size={28} /></div>
+                <b>{expired ? t("Code abgelaufen") : t("Noch kein Code aktiv")}</b>
+                <p>{t("Erzeuge einen einmaligen Code. Er ist 5 Minuten gültig.")}</p>
+              </div>
+            )}
+            <Button variant="primary" size="lg" block onClick={create} icon={<KeyRound size={18} />}>{t("Neuen Code erzeugen")}</Button>
+            <ol className="steps small">
+              <li>{t("QR-Code mit der Handykamera scannen oder die Adresse im Browser öffnen.")}</li>
+              <li>{t("Code eingeben (wird beim Scannen automatisch ausgefüllt).")}</li>
+              <li>{t("Anfrage hier am PC mit „Erlauben“ bestätigen.")}</li>
+            </ol>
+          </div>
+        </Card>
+
+        <Card title={t("QR-Code & Adresse")} icon={<QrCode size={18} />}>
+          {code && !expired && url ? (
+            <div className="stack">
+              <div className="qr">{qr ? <img src={qr} alt={t("QR-Code zur Kopplung")} /> : null}</div>
+              {code.urls.length > 1 && (
+                <div className="chips">{code.urls.map((u, i) => <button key={u} className={`chip ${i === urlIndex ? "on" : ""}`} onClick={() => setUrlIndex(i)}>{new URL(u).host}</button>)}</div>
+              )}
+              <code style={{ textAlign: "center" }}>{url.split("#")[0]}</code>
+              <p className="tiny muted">{t("Der QR-Code enthält nur die Adresse und den einmaligen Code – keinen dauerhaften Zugang. Ohne deine Bestätigung passiert nichts.")}</p>
+            </div>
+          ) : (
+            <div className="stack">
+              <p className="muted small">{t("Nach dem Erzeugen eines Codes erscheint hier der QR-Code.")}</p>
+              {code?.urls.length === 0 && <Banner kind="warn">{t("Keine WLAN-Adresse gefunden. Ist „Im WLAN erreichbar“ in den Einstellungen aktiv?")}</Banner>}
+            </div>
+          )}
+        </Card>
+      </div>
+    </>
+  );
+}

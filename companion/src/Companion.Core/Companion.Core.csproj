@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Pgl.Core</RootNamespace>
+    <AssemblyName>Pgl.Core</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <!-- The built web app (web/dist) is embedded so a single companion executable serves the UI. -->
+  <ItemGroup Condition="Exists('../../../web/dist/index.html')">
+    <EmbeddedResource Include="../../../web/dist/**/*" LogicalName="webapp/%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="../../../protocol/protocol.json" LogicalName="protocol.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Pgl.Core.Tests" />
+  </ItemGroup>
+</Project>

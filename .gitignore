@@ -1,0 +1,13 @@
+node_modules/
+dist/
+bin/
+obj/
+*.user
+.vs/
+artifacts/
+relay/data/
+relay/downloads/*
+!relay/downloads/.gitkeep
+web/test-results/
+web/playwright-report/
+*.log

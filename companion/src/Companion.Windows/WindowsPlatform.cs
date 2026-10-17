@@ -1,0 +1,437 @@
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Text;
+using Microsoft.Win32;
+using Pgl.Core.Infrastructure;
+using Pgl.Core.Models;
+using Pgl.Core.Platform;
+using Pgl.Core.Services;
+
+namespace Pgl.Windows;
+
+/// <summary>Native Windows implementation of all platform services.</summary>
+sealed class WindowsPlatform : IPlatform
+{
+    public WindowsPlatform(UiInvoker ui, Func<TrayIcon?> tray)
+    {
+        Desktop = new WindowsDesktop(ui, tray);
+        Hotkeys = new HotkeyRegistrar(ui);
+    }
+
+    public string Name => $"Windows {Environment.OSVersion.Version}";
+    public ILauncher Launcher { get; } = new WindowsLauncher();
+    public IProcessSource Processes { get; } = new WindowsProcessSource();
+    public IAudioEngine Audio { get; } = new NAudioEngine();
+    public IHotkeyRegistrar Hotkeys { get; }
+    public IMetricsSource Metrics { get; } = new WindowsMetrics();
+    public IAutostart Autostart { get; } = new WindowsAutostart();
+    public ISecretProtector Secrets { get; } = new DpapiProtector();
+    public IDesktopIntegration Desktop { get; }
+    public IEnumerable<IDetector> Detectors { get; } = new IDetector[] { new SteamDetector(SteamDetector.DefaultRoots()), new EpicDetector(EpicDetector.DefaultManifestDir()) };
+    public IUpdateInstaller UpdateInstaller { get; } = new SelfReplaceInstaller();
+}
+
+/// <summary>Runs code on the WinForms UI thread.</summary>
+public sealed class UiInvoker(Control control)
+{
+    public T Invoke<T>(Func<T> f) => control.InvokeRequired ? (T)control.Invoke(f) : f();
+    public void Invoke(Action a) { if (control.InvokeRequired) control.Invoke(a); else a(); }
+    public void Post(Action a) { try { control.BeginInvoke(a); } catch (InvalidOperationException) { } }
+}
+
+sealed class WindowsLauncher : ILauncher
+{
+    public LaunchResult Launch(LibraryItem item)
+    {
+        try
+        {
+            switch (item.Source)
+            {
+                case LaunchSource.Exe:
+                    if (!File.Exists(item.Target)) return new LaunchResult(false, $"Datei nicht gefunden: {item.Target}. Wurde das Programm verschoben oder deinstalliert?", "not-found");
+                    var psi = new ProcessStartInfo(item.Target)
+                    {
+                        UseShellExecute = true, // required for .lnk and for programs that request elevation themselves
+                        Arguments = item.Args ?? "",
+                        WorkingDirectory = item.WorkingDir ?? Path.GetDirectoryName(item.Target)!,
+                    };
+                    Process.Start(psi)?.Dispose();
+                    return new LaunchResult(true, "Gestartet");
+                case LaunchSource.Steam:
+                    Process.Start(new ProcessStartInfo($"steam://rungameid/{item.Target}") { UseShellExecute = true })?.Dispose();
+                    return new LaunchResult(true, "An Steam übergeben");
+                case LaunchSource.Epic:
+                    var p = item.Target.Split(':');
+                    var id = p.Length == 3 ? $"{p[0]}%3A{p[1]}%3A{p[2]}" : p[^1];
+                    Process.Start(new ProcessStartInfo($"com.epicgames.launcher://apps/{id}?action=launch&silent=true") { UseShellExecute = true })?.Dispose();
+                    return new LaunchResult(true, "An Epic Games Launcher übergeben");
+                case LaunchSource.AppsFolder:
+                    var explorer = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe");
+                    var start = new ProcessStartInfo(explorer) { UseShellExecute = false };
+                    start.ArgumentList.Add(@"shell:AppsFolder\" + item.Target);
+                    Process.Start(start)?.Dispose();
+                    return new LaunchResult(true, "Gestartet");
+            }
+            return new LaunchResult(false, "Unbekannte Startmethode.", "invalid-target");
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == 1155)
+        {
+            var who = item.Source == LaunchSource.Steam ? "Steam" : item.Source == LaunchSource.Epic ? "Epic Games Launcher" : "das zugehörige Programm";
+            return new LaunchResult(false, $"{who} ist auf diesem PC nicht installiert.", "launcher-missing");
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
+        {
+            return new LaunchResult(false, "Start wurde in der Windows-Sicherheitsabfrage abgebrochen.", "cancelled");
+        }
+    }
+
+    public string? ValidateExecutable(string path)
+    {
+        if (!File.Exists(path)) return "Datei existiert nicht.";
+        var ext = Path.GetExtension(path).ToLowerInvariant();
+        if (ext is not (".exe" or ".lnk")) return "Nur .exe- und .lnk-Dateien können freigegeben werden.";
+        var name = Path.GetFileNameWithoutExtension(path).ToLowerInvariant();
+        // Command interpreters would turn the allow list into arbitrary command execution.
+        if (name is "cmd" or "powershell" or "pwsh" or "wscript" or "cscript" or "mshta" or "rundll32" or "regsvr32" or "wsl" or "bash")
+            return "Kommandozeilen und Skript-Hosts können aus Sicherheitsgründen nicht freigegeben werden.";
+        return null;
+    }
+
+    public string? ExtractIcon(string path)
+    {
+        using var icon = Icon.ExtractAssociatedIcon(path);
+        if (icon == null) return null;
+        using var bmp = new Bitmap(icon.ToBitmap(), new Size(48, 48));
+        using var ms = new MemoryStream();
+        bmp.Save(ms, ImageFormat.Png);
+        return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+    }
+}
+
+sealed class WindowsProcessSource : IProcessSource
+{
+    [DllImport("kernel32.dll", SetLastError = true)] static extern IntPtr OpenProcess(uint access, bool inherit, int pid);
+    [DllImport("kernel32.dll", SetLastError = true)] static extern bool CloseHandle(IntPtr h);
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern bool QueryFullProcessImageName(IntPtr h, int flags, StringBuilder name, ref int size);
+    const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
+
+    public IReadOnlyList<ProcessInfo> Snapshot()
+    {
+        var list = new List<ProcessInfo>();
+        var sb = new StringBuilder(1024);
+        foreach (var p in Process.GetProcesses())
+        {
+            using (p)
+            {
+                string? path = null;
+                var h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, p.Id);
+                if (h != IntPtr.Zero)
+                {
+                    int size = sb.Capacity;
+                    if (QueryFullProcessImageName(h, 0, sb, ref size)) path = sb.ToString(0, size);
+                    CloseHandle(h);
+                }
+                try { list.Add(new ProcessInfo(p.Id, p.ProcessName, path)); } catch { }
+            }
+        }
+        return list;
+    }
+}
+
+sealed class WindowsAutostart : IAutostart
+{
+    const string Key = @"Software\Microsoft\Windows\CurrentVersion\Run";
+    const string Name = "PCGameLauncherUltimate";
+    public bool Supported => true;
+
+    public bool IsEnabled()
+    {
+        using var k = Registry.CurrentUser.OpenSubKey(Key);
+        return k?.GetValue(Name) is string v && v.Contains(Environment.ProcessPath ?? "\0", StringComparison.OrdinalIgnoreCase);
+    }
+
+    public string? SetEnabled(bool enabled)
+    {
+        try
+        {
+            using var k = Registry.CurrentUser.CreateSubKey(Key);
+            if (enabled) k.SetValue(Name, $"\"{Environment.ProcessPath}\" --minimized");
+            else k.DeleteValue(Name, false);
+            return null;
+        }
+        catch (Exception ex) { return "Autostart konnte nicht geändert werden: " + ex.Message; }
+    }
+}
+
+sealed class DpapiProtector : ISecretProtector
+{
+    public string Description => "Mit Windows-Datenschutz (DPAPI, nur dieses Benutzerkonto) verschlüsselt.";
+    public string Protect(string plain) => "dpapi:" + Convert.ToBase64String(ProtectedData.Protect(Encoding.UTF8.GetBytes(plain), null, DataProtectionScope.CurrentUser));
+    public string? Unprotect(string v)
+    {
+        try
+        {
+            if (v.StartsWith("dpapi:")) return Encoding.UTF8.GetString(ProtectedData.Unprotect(Convert.FromBase64String(v[6..]), null, DataProtectionScope.CurrentUser));
+            if (v.StartsWith("plain:")) return v[6..];
+        }
+        catch (CryptographicException) { }
+        return null;
+    }
+}
+
+sealed class WindowsDesktop(UiInvoker ui, Func<TrayIcon?> tray) : IDesktopIntegration
+{
+    public bool CanPickFiles => true;
+
+    public Task<string?> PickExecutableAsync()
+    {
+        var tcs = new TaskCompletionSource<string?>();
+        ui.Post(() =>
+        {
+            using var dlg = new OpenFileDialog
+            {
+                Title = "Programm oder Spiel freigeben",
+                Filter = "Programme und Verknüpfungen (*.exe;*.lnk)|*.exe;*.lnk",
+                DereferenceLinks = false,
+                CheckFileExists = true,
+            };
+            tcs.TrySetResult(dlg.ShowDialog() == DialogResult.OK ? dlg.FileName : null);
+        });
+        return tcs.Task;
+    }
+
+    public void OpenFolder(string path)
+    {
+        if (!Directory.Exists(path)) return;
+        var psi = new ProcessStartInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "explorer.exe")) { UseShellExecute = false };
+        psi.ArgumentList.Add(path);
+        Process.Start(psi)?.Dispose();
+    }
+
+    public void ShowPairingRequest(string deviceName) => ui.Post(() => tray()?.PairingRequest(deviceName));
+    public void ShowToast(string title, string message) => ui.Post(() => tray()?.Balloon(title, message));
+
+    /// <summary>Lists start-menu apps (desktop, Microsoft Store and Xbox) through the shell's AppsFolder.</summary>
+    public IReadOnlyList<DetectedItem> StartMenuApps()
+    {
+        var result = new List<DetectedItem>();
+        var t = new Thread(() =>
+        {
+            try
+            {
+                var type = Type.GetTypeFromProgID("Shell.Application");
+                if (type == null) return;
+                dynamic shell = Activator.CreateInstance(type)!;
+                dynamic folder = shell.NameSpace("shell:AppsFolder");
+                foreach (dynamic item in folder.Items())
+                {
+                    string name = item.Name;
+                    string id = item.Path;
+                    if (string.IsNullOrWhiteSpace(id) || id.StartsWith("http", StringComparison.OrdinalIgnoreCase)) continue;
+                    var ext = Path.GetExtension(id).ToLowerInvariant();
+                    if (ext is ".url" or ".chm" or ".txt" or ".html" or ".htm" or ".pdf" or ".ini") continue;
+                    if (LaunchValidator.ValidateTarget(LaunchSource.AppsFolder, id) != null) continue;
+                    var isStore = id.Contains('!');
+                    result.Add(new DetectedItem("apps:" + id, ItemKind.Program, name, LaunchSource.AppsFolder, id, null,
+                        ext == ".exe" ? new List<string> { Path.GetFileNameWithoutExtension(id) } : new List<string>(), null,
+                        isStore ? "Microsoft Store / Xbox" : "Startmenü", false));
+                }
+            }
+            catch (Exception ex) { Log.Warn("detect", "Startmenü-Apps nicht lesbar: " + ex.Message); }
+        });
+        t.SetApartmentState(ApartmentState.STA);
+        t.Start();
+        t.Join(TimeSpan.FromSeconds(20));
+        return result.OrderBy(r => r.Name).ToList();
+    }
+}
+
+/// <summary>
+/// Windows allows renaming a running executable. The update is installed by renaming the current file to *.old,
+/// moving the verified download into place and starting it. The old file is removed on the next start.
+/// </summary>
+sealed class SelfReplaceInstaller : IUpdateInstaller
+{
+    public bool Supported => Environment.ProcessPath?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true;
+
+    public string? Install(string newFile)
+    {
+        var exe = Environment.ProcessPath!;
+        var old = exe + ".old";
+        try
+        {
+            if (File.Exists(old)) File.Delete(old);
+            File.Move(exe, old);
+            try { File.Copy(newFile, exe); }
+            catch { File.Move(old, exe); throw; }
+            Process.Start(new ProcessStartInfo(exe, "--updated") { UseShellExecute = false })?.Dispose();
+            Program.RequestExit();
+            return null;
+        }
+        catch (Exception ex) { return "Installation fehlgeschlagen (Ordner evtl. schreibgeschützt): " + ex.Message; }
+    }
+
+    public static void CleanupOld()
+    {
+        try { var old = Environment.ProcessPath + ".old"; if (File.Exists(old)) File.Delete(old); } catch { }
+    }
+}
+
+sealed class WindowsMetrics : IMetricsSource
+{
+    [StructLayout(LayoutKind.Sequential)] struct FILETIME { public uint Low, High; public ulong V => ((ulong)High << 32) | Low; }
+    [DllImport("kernel32.dll")] static extern bool GetSystemTimes(out FILETIME idle, out FILETIME kernel, out FILETIME user);
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
+    sealed class MEMORYSTATUSEX
+    {
+        public uint dwLength = (uint)Marshal.SizeOf<MEMORYSTATUSEX>();
+        public uint dwMemoryLoad; public ulong ullTotalPhys, ullAvailPhys, ullTotalPageFile, ullAvailPageFile, ullTotalVirtual, ullAvailVirtual, ullAvailExtendedVirtual;
+    }
+    [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)] static extern bool GlobalMemoryStatusEx([In, Out] MEMORYSTATUSEX m);
+
+    (ulong idle, ulong total)? _lastCpu;
+    readonly string? _cpuName = ReadCpuName();
+    readonly List<string> _gpuNames = ReadGpuNames();
+    readonly string? _nvidiaSmi = FindNvidiaSmi();
+    Dictionary<string, CounterSample>? _lastGpu;
+    DateTime _lastSmi = DateTime.MinValue;
+    List<GpuSample>? _smiCache;
+    bool _gpuCountersBroken;
+
+    public MetricsSample Sample()
+    {
+        var s = new MetricsSample { CpuName = _cpuName, CpuCores = Environment.ProcessorCount, CpuTempSource = "Nicht verfügbar – Windows stellt die CPU-Temperatur ohne Hersteller-Treiber bzw. Administratorrechte nicht zuverlässig bereit." };
+        if (GetSystemTimes(out var idle, out var kernel, out var user))
+        {
+            ulong total = kernel.V + user.V; // kernel time includes idle
+            if (_lastCpu is { } l && total > l.total) s.CpuPercent = Math.Round(100.0 * (1 - (double)(idle.V - l.idle) / (total - l.total)), 1);
+            _lastCpu = (idle.V, total);
+            s.Sources["cpu"] = "GetSystemTimes";
+        }
+        var m = new MEMORYSTATUSEX();
+        if (GlobalMemoryStatusEx(m))
+        {
+            s.MemTotalBytes = (long)m.ullTotalPhys;
+            s.MemUsedBytes = (long)(m.ullTotalPhys - m.ullAvailPhys);
+            s.Sources["ram"] = "GlobalMemoryStatusEx";
+        }
+        s.UptimeHours = Math.Round(Environment.TickCount64 / 3_600_000.0, 1);
+        s.Disks = DiskInfo.Read();
+        s.Gpus = SampleGpus();
+        return s;
+    }
+
+    List<GpuSample> SampleGpus()
+    {
+        // NVIDIA: nvidia-smi delivers utilisation, temperature and memory (queried at most every 4 s).
+        if (_nvidiaSmi != null)
+        {
+            if (DateTime.UtcNow - _lastSmi > TimeSpan.FromSeconds(4) || _smiCache == null)
+            {
+                _lastSmi = DateTime.UtcNow;
+                _smiCache = QueryNvidiaSmi(_nvidiaSmi) ?? _smiCache;
+            }
+            if (_smiCache is { Count: > 0 }) return _smiCache;
+        }
+        // Others: Windows "GPU Engine" performance counters (same source as Task Manager), no temperature.
+        var util = GpuEngineUtilization();
+        var list = new List<GpuSample>();
+        if (_gpuNames.Count == 0 && util == null) return list;
+        var name = _gpuNames.Count == 1 ? _gpuNames[0] : string.Join(" / ", _gpuNames);
+        list.Add(new GpuSample { Name = name.Length > 0 ? name : "GPU", UtilPercent = util, Source = util == null ? "Name aus Registry; Auslastung nicht verfügbar" : "Leistungsindikatoren „GPU Engine“" });
+        return list;
+    }
+
+    double? GpuEngineUtilization()
+    {
+        if (_gpuCountersBroken) return null;
+        try
+        {
+            var cat = new PerformanceCounterCategory("GPU Engine");
+            var data = cat.ReadCategory()["Utilization Percentage"];
+            if (data == null) return null;
+            var current = new Dictionary<string, CounterSample>();
+            foreach (InstanceData d in data.Values) current[d.InstanceName] = d.Sample;
+            double? result = null;
+            if (_lastGpu != null)
+            {
+                var perEngine = new Dictionary<string, double>();
+                foreach (var (inst, sample) in current)
+                {
+                    if (!_lastGpu.TryGetValue(inst, out var prev)) continue;
+                    var v = CounterSample.Calculate(prev, sample);
+                    var luid = inst.Contains("_luid_") ? inst[inst.IndexOf("_luid_")..] : inst;
+                    var key = luid[..(luid.IndexOf("_eng_") is var e and > 0 ? e : luid.Length)] + inst[(inst.LastIndexOf("engtype_") is var t and >= 0 ? t : 0)..];
+                    perEngine[key] = perEngine.GetValueOrDefault(key) + v;
+                }
+                if (perEngine.Count > 0) result = Math.Round(Math.Min(100, perEngine.Values.Max()), 1);
+            }
+            _lastGpu = current;
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _gpuCountersBroken = true;
+            Log.Warn("monitor", "GPU-Leistungsindikatoren nicht verfügbar: " + ex.Message);
+            return null;
+        }
+    }
+
+    static List<GpuSample>? QueryNvidiaSmi(string exe)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo(exe) { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true };
+            psi.ArgumentList.Add("--query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.total");
+            psi.ArgumentList.Add("--format=csv,noheader,nounits");
+            using var p = Process.Start(psi)!;
+            var output = p.StandardOutput.ReadToEnd();
+            if (!p.WaitForExit(2000)) { p.Kill(); return null; }
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            return output.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(line =>
+            {
+                var f = line.Split(',').Select(x => x.Trim()).ToArray();
+                double? D(int i) => i < f.Length && double.TryParse(f[i], System.Globalization.NumberStyles.Float, inv, out var v) ? v : null;
+                return new GpuSample { Name = f[0], UtilPercent = D(1), TempC = D(2), MemUsedBytes = (long?)(D(3) * 1024 * 1024), MemTotalBytes = (long?)(D(4) * 1024 * 1024), Source = "nvidia-smi" };
+            }).ToList();
+        }
+        catch { return null; }
+    }
+
+    static string? FindNvidiaSmi()
+    {
+        foreach (var p in new[] { Path.Combine(Environment.SystemDirectory, "nvidia-smi.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "NVIDIA Corporation", "NVSMI", "nvidia-smi.exe") })
+            if (File.Exists(p)) return p;
+        return null;
+    }
+
+    static string? ReadCpuName()
+    {
+        try { using var k = Registry.LocalMachine.OpenSubKey(@"HARDWARE\DESCRIPTION\System\CentralProcessor\0"); return (k?.GetValue("ProcessorNameString") as string)?.Trim(); }
+        catch { return null; }
+    }
+
+    static List<string> ReadGpuNames()
+    {
+        var names = new List<string>();
+        try
+        {
+            using var cls = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}");
+            if (cls == null) return names;
+            foreach (var sub in cls.GetSubKeyNames().Where(n => n.Length == 4 && n.All(char.IsDigit)))
+            {
+                try
+                {
+                    using var k = cls.OpenSubKey(sub);
+                    if (k?.GetValue("DriverDesc") is string d && !d.Contains("Basic Display") && !d.Contains("Remote")) names.Add(d);
+                }
+                catch { }
+            }
+        }
+        catch { }
+        return names.Distinct().ToList();
+    }
+}

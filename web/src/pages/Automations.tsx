@@ -1,0 +1,117 @@
+import { useState } from "react";
+import { Bot, Copy, FlaskConical, Pencil, Plus } from "lucide-react";
+import { client } from "../lib/rpc";
+import { t } from "../lib/i18n";
+import { useConn, useRpc, toast } from "../lib/hooks";
+import { dateTime } from "../lib/format";
+import type { AutomationRule, TriggerType } from "../lib/types";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
+import { describeStep, StepEditor, stepsValid, useStepRefs } from "../components/StepEditor";
+
+export function triggerLabels(): Record<TriggerType, string> {
+  return {
+    gameStarted: t("Wenn ein Spiel startet"),
+    gameStopped: t("Wenn ein Spiel beendet wird"),
+    companionStarted: t("Wenn der Companion startet"),
+    audioDeviceMissing: t("Wenn ein Audiogerät fehlt"),
+    relayDisconnected: t("Wenn die Relay-Verbindung abbricht"),
+    updateFailed: t("Wenn ein Update fehlschlägt"),
+    profileActivated: t("Wenn ein Profil aktiviert wird"),
+  };
+}
+
+const blank: AutomationRule = { id: "", name: "", enabled: true, trigger: "gameStarted", triggerRef: null, actions: [{ type: "activateProfile", ref: null }], runCount: 0 };
+
+export default function Automations() {
+  const q = useRpc<{ rules: AutomationRule[] }>("automations.list", {}, ["automations"]);
+  const refs = useStepRefs();
+  const conn = useConn();
+  const canManage = conn.me?.permissions.includes("manage");
+  const [edit, setEdit] = useState<AutomationRule | null>(null);
+  const labels = triggerLabels();
+  const refName = (r: AutomationRule) => r.trigger.startsWith("game") ? refs.items.find((i) => i.id === r.triggerRef)?.name ?? t("beliebig") : r.trigger === "profileActivated" ? refs.profiles.find((p) => p.id === r.triggerRef)?.name ?? t("beliebig") : null;
+
+  const toggle = (r: AutomationRule) => client.call("automations.save", { ...r, enabled: !r.enabled }).catch((e) => toast(e.message, "error"));
+  const test = async (r: AutomationRule) => {
+    if (!(await confirmDialog(t("Regel jetzt testen?"), t("Die Aktionen von „{n}“ werden sofort tatsächlich ausgeführt.", { n: r.name })))) return;
+    try { const res = await client.call<{ results: string[] }>("automations.test", { id: r.id }); toast(res.results.join(" · "), "info"); }
+    catch (e) { toast((e as Error).message, "error"); }
+  };
+
+  return (
+    <>
+      <PageHead eyebrow={t("Gaming")} title={t("Automatisierungen")} text={t("Wenn-Dann-Regeln, die der Companion selbstständig ausführt. Schutz vor Endlosschleifen ist eingebaut.")}
+        actions={canManage && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setEdit(structuredClone(blank))}>{t("Neue Regel")}</Button>} />
+      <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
+        {(q.data?.rules.length ?? 0) === 0 ? <Card><Empty icon={<Bot size={28} />} title={t("Keine Regeln")} /></Card> : (
+          <div className="stack">
+            {q.data!.rules.map((r) => (
+              <Card key={r.id}>
+                <div className="row nowrap" style={{ alignItems: "flex-start" }}>
+                  <div className="grow stack-sm">
+                    <div className="row"><h3>{r.name}</h3>{!r.enabled && <span className="badge">{t("Aus")}</span>}</div>
+                    <div className="small"><span className="badge accent">{labels[r.trigger]}{refName(r) ? `: ${refName(r)}` : ""}</span></div>
+                    <div className="small muted">→ {r.actions.map((a) => describeStep(a, refs)).join(" → ")}</div>
+                    <div className="tiny muted">{r.lastRunAt ? t("Zuletzt ausgeführt {d} · {n}× insgesamt", { d: dateTime(r.lastRunAt), n: r.runCount }) : t("Noch nie ausgeführt")}{r.lastResult ? ` · ${r.lastResult}` : ""}</div>
+                  </div>
+                  {canManage && <Switch checked={r.enabled} onChange={() => toggle(r)} label={<span className="sr-only">{t("Aktiv")}</span>} />}
+                </div>
+                {canManage && (
+                  <div className="card-foot">
+                    <Button size="sm" icon={<Pencil size={14} />} onClick={() => setEdit(structuredClone(r))}>{t("Bearbeiten")}</Button>
+                    <Button size="sm" icon={<FlaskConical size={14} />} onClick={() => test(r)}>{t("Testen")}</Button>
+                    <Button size="sm" variant="ghost" icon={<Copy size={14} />} onClick={() => client.call("automations.copy", { id: r.id })}>{t("Kopieren")}</Button>
+                  </div>
+                )}
+              </Card>
+            ))}
+          </div>
+        )}
+      </Loadable>
+      {edit && <RuleEditor rule={edit} onClose={() => setEdit(null)} />}
+    </>
+  );
+}
+
+function RuleEditor({ rule, onClose }: { rule: AutomationRule; onClose: () => void }) {
+  const [r, setR] = useState(rule);
+  const refs = useStepRefs();
+  const set = (p: Partial<AutomationRule>) => setR((x) => ({ ...x, ...p }));
+  const save = async () => {
+    try { await client.call("automations.save", r); toast(t("Gespeichert"), "success"); onClose(); }
+    catch (e) { toast((e as Error).message, "error"); }
+  };
+  const remove = async () => {
+    if (!(await confirmDialog(t("Regel löschen?"), r.name, { danger: true, ok: t("Löschen") }))) return;
+    await client.call("automations.remove", { id: r.id });
+    onClose();
+  };
+  const refOptions = r.trigger === "gameStarted" || r.trigger === "gameStopped" ? refs.items.filter((i) => i.kind === "game") : r.trigger === "profileActivated" ? refs.profiles : null;
+  return (
+    <Modal title={r.id ? t("Regel bearbeiten") : t("Neue Regel")} onClose={onClose} wide footer={<>
+      {r.id && <Button variant="danger" onClick={remove} style={{ marginRight: "auto" }}>{t("Löschen")}</Button>}
+      <Button onClick={onClose}>{t("Abbrechen")}</Button>
+      <Button variant="primary" disabled={!r.name.trim() || !stepsValid(r.actions)} onClick={save}>{t("Speichern")}</Button>
+    </>}>
+      <Field label={t("Name")}><input className="input" value={r.name} maxLength={60} onChange={(e) => set({ name: e.target.value })} placeholder={t("z. B. Competitive bei Valorant")} /></Field>
+      <div className="grid-2">
+        <Field label={t("Auslöser")}>
+          <select className="input" value={r.trigger} onChange={(e) => set({ trigger: e.target.value as TriggerType, triggerRef: null })}>
+            {Object.entries(triggerLabels()).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          </select>
+        </Field>
+        {refOptions && (
+          <Field label={t("Nur für")}>
+            <select className="input" value={r.triggerRef ?? ""} onChange={(e) => set({ triggerRef: e.target.value || null })}>
+              <option value="">{t("beliebig")}</option>
+              {refOptions.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+            </select>
+          </Field>
+        )}
+      </div>
+      <Field label={t("Dann …")}><StepEditor steps={r.actions} onChange={(actions) => set({ actions })} max={10} /></Field>
+      <Switch checked={r.enabled} onChange={(enabled) => set({ enabled })} label={t("Regel aktiv")} />
+      <Banner kind="info">{t("Aktionen einer Regel lösen keine weiteren Regeln aus. Jede Regel läuft höchstens einmal pro 3 Sekunden und 20-mal pro Minute.")}</Banner>
+    </Modal>
+  );
+}
