@@ -70,7 +70,7 @@ export default function Soundboard() {
 
       {q.data && !q.data.supported && <div style={{ marginBottom: 16 }}><Banner kind="warn" title={t("Wiedergabe auf diesem Server nicht möglich")}>{q.data.reason}</Banner></div>}
 
-      <Card className="nowplaying" style={{ marginBottom: 16, padding: 14 }}>
+      {audio.data && <Card className="nowplaying" style={{ marginBottom: 16, padding: 14 }}>
         <div className="row">
           <div className="row nowrap grow" style={{ minWidth: 220 }}>
             <Volume2 size={18} className="muted" />
@@ -93,7 +93,7 @@ export default function Soundboard() {
             ))}
           </div>
         )}
-      </Card>
+      </Card>}
 
       <div className="stack" style={{ marginBottom: 16 }}>
         <div className="row">

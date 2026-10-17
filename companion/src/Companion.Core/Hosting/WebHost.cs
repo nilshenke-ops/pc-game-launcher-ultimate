@@ -171,8 +171,14 @@ public sealed class WebHost : IAsyncDisposable
         }
     }
 
+    /// <summary>Addresses other devices in the home network use. Never loopback: 127.0.0.1 on an iPad is the iPad itself.</summary>
     public IReadOnlyList<string> LanUrls() =>
-        LanAccess ? NetworkDiagnostics.LocalIPv4().Select(ip => $"http://{ip}:{Port}").ToList() : new List<string> { $"http://127.0.0.1:{Port}" };
+        // Automated tests run "PC" and "iPad" on one machine; they name the address that plays the Wi-Fi address.
+        Environment.GetEnvironmentVariable("PGL_TEST_LAN_HOST") is { Length: > 0 } testHost ? new List<string> { $"http://{testHost}:{Port}" } :
+        LanAccess ? NetworkDiagnostics.LocalIPv4().Select(ip => $"http://{ip}:{Port}").ToList() : new List<string>();
+
+    /// <summary>Address for this PC only (companion window, browser on the PC).</summary>
+    public string LocalUrl => $"http://127.0.0.1:{Port}";
 
     static bool IsForwarded(HttpRequest r) =>
         r.Headers.ContainsKey("X-Forwarded-For") || r.Headers.ContainsKey("CF-Connecting-IP") || r.Headers.ContainsKey("Forwarded") || r.Headers.ContainsKey("X-Real-IP");

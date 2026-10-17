@@ -14,6 +14,14 @@ export function pcAddressToWs(input: string, pageIsHttps: boolean): string | nul
   return `${secure ? "wss" : "ws"}://${u.host}${path}${u.search}`;
 }
 
+/** 127.0.0.1 / localhost always mean "this device" – on an iPad that is the iPad, never the PC. */
+export function isLoopbackAddress(wsOrHost: string): boolean {
+  let host = wsOrHost;
+  try { host = new URL(wsOrHost).hostname; } catch { /* plain host */ }
+  host = host.replace(/^\[|\]$/g, "").toLowerCase();
+  return host === "localhost" || host.endsWith(".localhost") || host === "::1" || /^127\./.test(host);
+}
+
 /** Short form for display and for the "pc" parameter in pairing links. */
 export function wsToPcAddress(ws: string): string {
   try {

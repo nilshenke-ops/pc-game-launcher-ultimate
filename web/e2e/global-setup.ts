@@ -45,7 +45,7 @@ export default async function setup() {
 
   const tokenFile = join(work, "admin.txt");
   const dotnet = process.env.DOTNET ?? (existsSync("/opt/dotnet/dotnet") ? "/opt/dotnet/dotnet" : "dotnet");
-  const companion = spawn(dotnet, [dll, "--data", dataDir], { env: { ...process.env, PGL_WEB_DIR: join(ROOT, "web/dist"), PGL_ADMIN_TOKEN_FILE: tokenFile }, stdio: "ignore", detached: true });
+  const companion = spawn(dotnet, [dll, "--data", dataDir], { env: { ...process.env, PGL_WEB_DIR: join(ROOT, "web/dist"), PGL_ADMIN_TOKEN_FILE: tokenFile, PGL_TEST_LAN_HOST: "127.0.0.1" }, stdio: "ignore", detached: true });
   const relay = spawn(process.execPath, [relayMain], { env: { ...process.env, PGL_RELAY_CONFIG: relayCfg }, stdio: "ignore", detached: true });
   // Stand-in for the static host (Cloudflare Pages / GitHub Pages): serves the hosted build on its own origin.
   const staticServer = spawn(process.execPath, ["-e", `

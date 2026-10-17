@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { CheckCircle2, Clock, Eye, KeyRound, Link2, LogOut, MonitorSmartphone, Palette, QrCode, ShieldCheck, Smartphone, XCircle } from "lucide-react";
 import { client, enterDemo, HOSTED, readJson, RpcError, serverConfigured, serverUrl, setServerUrl, writeJson } from "../lib/rpc";
-import { pcAddressToWs, wsToPcAddress } from "../lib/address";
+import { pcAddressToWs, wsToPcAddress, isLoopbackAddress } from "../lib/address";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useNow, toast } from "../lib/hooks";
 import { Banner, Button, Card, Field, PageHead } from "../components/ui";
@@ -89,6 +89,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
     if (HOSTED) {
       const ws = pcAddressToWs(address, location.protocol === "https:");
       if (!ws) { setError({ code: "address", message: t("Bitte eine gültige PC-Adresse eingeben, z. B. gaming-pc.tail1234.ts.net") }); return; }
+      if (isLoopbackAddress(ws) && !isLoopbackAddress(location.hostname)) { setError({ code: "address", message: t("127.0.0.1 und localhost bedeuten immer „dieses Gerät“ – damit sucht das iPad sich selbst, nicht deinen PC. Nimm die Adresse aus dem PC Game Launcher unter „Gerät koppeln“ (z. B. https://gaming-pc.tail1234.ts.net) oder scanne den QR-Code.") }); return; }
       if (location.protocol === "https:" && ws.startsWith("ws:")) { setError({ code: "address", message: t("Diese Seite braucht eine https-Adresse des PCs (z. B. den Tailscale-Funnel-Link).") }); return; }
       if (ws !== serverUrl() || conn.phase !== "online") {
         setServerUrl(ws);
@@ -108,7 +109,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
     else if (conn.phase === "offline" && conn.lastError) {
       setConnecting(false);
       setState({ step: "form" });
-      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Ist der PC an, läuft der Companion und ist der Tailscale-Link aktiv?") });
+      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der PC Game Launcher? Ist der Tailscale-Funnel aktiv („tailscale funnel --bg 8787“)? Stimmt die Adresse mit der im PC Game Launcher unter „Gerät koppeln“ überein? Im selben WLAN geht es auch ohne Tailscale: QR-Code am PC scannen.") });
     }
   }, [connecting, conn.phase, conn.hello, conn.lastError, request]);
 

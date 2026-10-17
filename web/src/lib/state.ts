@@ -20,7 +20,7 @@ export function refreshState(delay = 150) {
   if (timer) clearTimeout(timer);
   timer = window.setTimeout(async () => {
     timer = null;
-    if (client.status.auth !== "ok" && !client.preview) return;
+    if (client.status.auth !== "ok") return;
     try {
       state = await client.call<AppState>("state.get");
       error = null;
@@ -31,9 +31,7 @@ export function refreshState(delay = 150) {
 }
 
 const TOPICS = new Set(["profiles", "library", "audio", "settings", "sounds", "devices", "notifications", "updates", "history"]);
-client.on("authenticated", () => { state = null; refreshState(0); });
-// Preview without PC: example overview right away (replaced once the PC is logged in).
-queueMicrotask(() => { if (client.preview) refreshState(0); });
+client.on("authenticated", () => refreshState(0));
 client.on("changed", (d) => { if (TOPICS.has((d as { topic: string }).topic)) refreshState(); });
 client.on("session", () => refreshState());
 client.on("profile.active", () => refreshState());

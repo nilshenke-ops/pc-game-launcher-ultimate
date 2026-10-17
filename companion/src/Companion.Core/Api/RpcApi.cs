@@ -338,17 +338,71 @@ public static class RpcApi
     static object Diagnostics(CompanionServices s, RpcSession session)
     {
         var checks = new List<object>();
-        void Add(string area, string label, string status, string detail) => checks.Add(new { area, label, status, detail });
-        Add("companion", "Companion", "ok", $"Version {UpdateService.CurrentVersion} auf {s.Platform.Name}, läuft seit {s.StartedAt:u}");
-        Add("web", "Webserver", s.Web.StartError == null ? "ok" : "error", s.Web.StartError ?? $"Port {s.Web.Port}, {(s.Web.LanAccess ? "im WLAN erreichbar" : "nur lokal")}, Web-App: {s.Web.Assets.Source}");
-        Add("web", "Web-App-Dateien", s.Web.Assets.Available ? "ok" : "error", s.Web.Assets.Available ? "Vorhanden" : "Fehlen – Web-App wurde nicht mitgebaut.");
-        var relay = s.Relay.Status();
-        Add("relay", "Relay", s.Relay.State switch { "connected" => "ok", "disabled" => "info", _ => "warn" }, JsonSerializer.Serialize(relay, Json.Options));
-        Add("devices", "Gekoppelte Geräte", "info", $"{s.Devices.List().Count} gekoppelt, {s.Rpc.Sessions.Count(x => x.Authenticated)} verbunden");
+        void Add(string area, string label, string status, string detail, string? fix = null) => checks.Add(new { area, label, status, detail, fix });
+        var set = s.Settings.Get();
+        Add("companion", "PC-Begleiter", "ok", $"Version {UpdateService.CurrentVersion} auf {s.Platform.Name}, läuft seit {s.StartedAt:u}");
+
+        // Web server + WebSocket endpoint (what every browser, also the iPad, connects to).
+        if (s.Web.StartError != null)
+            Add("web", "WebSocket-Endpunkt", "error", s.Web.StartError, "Ein anderes Programm belegt den Port, oder der Begleiter läuft doppelt. Doppelte Instanz beenden oder unter Einstellungen → Verbindung einen anderen Port wählen und neu starten.");
+        else
+            Add("web", "WebSocket-Endpunkt", "ok", $"Lauscht auf Port {s.Web.Port} ({(s.Web.LanAccess ? "alle Netzwerkadressen" : "nur dieser PC")}), Endpunkt /ws");
+        Add("web", "Web-App-Dateien", s.Web.Assets.Available ? "ok" : "error", s.Web.Assets.Available ? "Vorhanden" : "Fehlen – Web-App wurde nicht mitgebaut.", s.Web.Assets.Available ? null : "Offizielle EXE verwenden oder mit scripts/publish-companion.sh neu bauen.");
+
+        // Address that an iPad/phone in the same Wi-Fi uses. Never 127.0.0.1 (that is the iPad itself).
+        var lan = s.Web.LanUrls();
+        if (!s.Web.LanAccess)
+            Add("address", "Adresse für iPad/Handy (WLAN)", "error", "„Im WLAN erreichbar“ ist ausgeschaltet – nur dieser PC selbst kann die App öffnen.", "Einstellungen → Verbindung → „Im WLAN erreichbar“ einschalten (Neustart des Begleiters nötig).");
+        else if (lan.Count == 0)
+            Add("address", "Adresse für iPad/Handy (WLAN)", "error", "Keine Adresse im Heimnetz gefunden (kein aktiver WLAN-/LAN-Adapter).", "PC mit dem Router verbinden (WLAN oder Kabel) und Diagnose erneut ausführen.");
+        else
+            Add("address", "Adresse für iPad/Handy (WLAN)", "ok", string.Join("  ", lan), "Am iPad im selben WLAN genau diese Adresse öffnen oder den QR-Code unter „Gerät koppeln“ scannen. Fragt Windows nach der Firewall: „Private Netzwerke“ erlauben.");
+
+        // Hosted web app (https) needs an https address of the PC – browsers block https → ws:// (mixed content).
+        var webHttps = set.WebAppUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
+        var pubHttps = set.PublicUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
+        if (set.WebAppUrl == null)
+            Add("address", "Webseite → PC", "info", "Keine gehostete Webseite eingetragen. Das iPad nutzt die WLAN-Adresse.");
+        else if (webHttps && !pubHttps)
+            Add("address", "Webseite → PC", "warn", $"{set.WebAppUrl} ist eine https-Seite und darf den PC nur über eine https-Adresse erreichen. Eine öffentliche https-Adresse ist nicht eingetragen.",
+                "Im WLAN: QR-Code unter „Gerät koppeln“ scannen (öffnet die App direkt vom PC über http). Für die Webseite und unterwegs: Tailscale Funnel einrichten („tailscale funnel --bg " + s.Web.Port + "“) und die https://…ts.net-Adresse unter Einstellungen → Verbindung → „Öffentliche Adresse“ eintragen.");
+        else
+            Add("address", "Webseite → PC", "ok", $"{set.WebAppUrl} verbindet sich mit {set.PublicUrl ?? lan.FirstOrDefault()}");
+
+        // Relay (optional).
+        var relayProblem = set.RelayEnabled && set.RelayUrl != null ? AddressRules.RelayProblem(set.RelayUrl, set.Port) : null;
+        if (!set.RelayEnabled)
+            Add("relay", "Relay-Dienst", "info", "Ausgeschaltet – im WLAN und mit Tailscale Funnel nicht nötig.");
+        else if (relayProblem != null)
+            Add("relay", "Relay-Dienst", "error", relayProblem, "Einstellungen → Verbindung → Relay-Adresse korrigieren oder „Mit eigenem Relay verbinden“ ausschalten.");
+        else if (s.Relay.State == "connected")
+            Add("relay", "Relay-Dienst", "ok", $"Verbunden mit {s.Relay.Url} seit {s.Relay.ConnectedAt:u}");
+        else
+            Add("relay", "Relay-Dienst", "error", $"{s.Relay.State}: {s.Relay.LastError ?? "noch keine Verbindung"}", "Läuft der Relay-Server und stimmen Adresse, Companion-ID und Schlüssel mit relay.config.json überein? Ohne eigenen Server: Relay ausschalten und Tailscale Funnel nutzen.");
+
+        // Pairing and connected devices.
+        var active = s.Pairing.ActiveCode();
+        var devices = s.Devices.List();
+        var connected = s.Rpc.Sessions.Where(x => x.Authenticated && !x.IsLocalAdmin).ToList();
+        Add("pairing", "Kopplung", "info", (active != null ? $"Code aktiv bis {active.Value.expiresAt:HH:mm:ss} UTC. " : "Kein Kopplungscode aktiv. ") + $"{devices.Count} Gerät(e) gekoppelt.",
+            devices.Count == 0 ? "Am PC „Gerät koppeln → Neuen Code erzeugen“, QR-Code mit dem iPad scannen und am PC „Erlauben“ klicken." : null);
+        Add("devices", "Verbundene Geräte (iPad/Handy)", connected.Count > 0 ? "ok" : "info",
+            connected.Count > 0 ? string.Join(", ", connected.Select(x => $"{x.Who} ({(x.Channel.Transport == "relay" ? "über Relay" : x.Channel.RemoteIp)})")) : "Gerade ist kein gekoppeltes Gerät verbunden.",
+            connected.Count > 0 ? null : "Am iPad die App öffnen. Wenn sie keine Verbindung bekommt: dieselbe WLAN-Adresse wie oben verwenden und die Firewall-Freigabe prüfen.");
+
+        // Permissions of the session that runs the diagnosis.
+        var perms = string.Join(", ", session.Permissions.OrderBy(p => p));
+        var missing = new[] { Permissions.View, Permissions.Launch, Permissions.Soundboard, Permissions.Manage }.Where(p => !session.Has(p)).ToList();
+        Add("permissions", "Berechtigungen dieser Sitzung", missing.Count == 0 ? "ok" : "warn", $"{session.Who}: {perms}",
+            missing.Count == 0 ? null : $"Es fehlt: {string.Join(", ", missing)}. Am PC unter Geräte → Gerät → Berechtigungen freigeben.");
+
+        Add("devices", "Gekoppelte Geräte", "info", $"{devices.Count} gekoppelt, {s.Rpc.Sessions.Count(x => x.Authenticated)} Sitzung(en) angemeldet");
         Add("audio", "Audio", s.Audio.Engine.Supported ? "ok" : "unsupported", s.Audio.Engine.Supported ? $"{s.Audio.Devices().Count} Geräte" : s.Audio.Engine.UnsupportedReason ?? "");
         var hk = s.Hotkeys.List();
         Add("hotkeys", "Hotkeys", !s.Platform.Hotkeys.Supported ? "unsupported" : "ok", s.Platform.Hotkeys.Supported ? $"{hk.Count} konfiguriert" : "Nur im Windows-Companion");
-        Add("autostart", "Autostart", s.Platform.Autostart.Supported ? "ok" : "unsupported", s.Platform.Autostart.Supported ? (s.Platform.Autostart.IsEnabled() ? "Aktiv" : "Aus") : "Nicht unterstützt");
+        if (!s.Platform.Autostart.Supported) Add("autostart", "Autostart", "unsupported", "Nur im Windows-Begleiter.");
+        else if (s.Platform.Autostart.IsEnabled()) Add("autostart", "Autostart", "ok", "Aktiv – der Begleiter startet mit Windows, das iPad kann sich nach dem Einschalten des PCs sofort verbinden.");
+        else Add("autostart", "Autostart", "warn", "Aus – nach einem PC-Neustart ist der Begleiter nicht erreichbar, bis er von Hand gestartet wird.", "Einstellungen → Autostart & Hintergrund → „Mit Windows starten“ einschalten.");
         Add("sessions", "Spielerkennung", "ok", $"Prüft alle {s.Settings.Get().ProcessScanSeconds} s, {s.Sessions.Running().Count} Spiel(e) laufen");
         try
         {

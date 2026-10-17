@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Globe, Laptop, Monitor, Play, ScrollText, Stethoscope, Volume2 } from "lucide-react";
-import { client } from "../lib/rpc";
+import { client, type RpcError } from "../lib/rpc";
+import { isLoopbackAddress } from "../lib/address";
 import { t } from "../lib/i18n";
 import { useConn, useRpc } from "../lib/hooks";
 import { clock } from "../lib/format";
@@ -10,18 +11,52 @@ import { Button, Card, CheckList, PageHead } from "../components/ui";
 
 interface Report { at: string; checks: CheckResult[] }
 
-/** Checks that run inside the browser itself – they tell apart "no internet" from "PC not reachable". */
+/** Checks that run inside the browser itself (e.g. on the iPad) – they work even when the PC is not reachable. */
 function browserChecks(conn: ReturnType<typeof useConn>): CheckResult[] {
   let storage = true;
   try { localStorage.setItem("pgl.test", "1"); localStorage.removeItem("pgl.test"); } catch { storage = false; }
-  return [
-    { label: t("Internet laut Browser"), status: navigator.onLine ? "ok" : "error", detail: navigator.onLine ? t("Online") : t("Das Gerät meldet keine Netzwerkverbindung.") },
-    { label: t("Verbindung zum Companion"), status: conn.phase === "online" ? "ok" : "error", detail: `${conn.url} · ${conn.phase}${conn.lastError ? " · " + conn.lastError : ""}` },
-    { label: t("Antwortzeit (Ping)"), status: conn.latencyMs == null ? "untested" : conn.latencyMs < 150 ? "ok" : "warn", detail: conn.latencyMs == null ? t("Noch nicht gemessen") : `${conn.latencyMs} ms` },
-    { label: t("Verbindungsart"), status: "info", detail: conn.hello?.transport === "relay" ? t("Über Relay") : t("Direkt (lokal)") },
-    { label: t("Sicherer Kontext (https)"), status: window.isSecureContext ? "ok" : "info", detail: window.isSecureContext ? t("Ja – Offline-Cache (PWA) verfügbar") : t("Nein (http im WLAN) – App funktioniert, aber ohne Offline-Cache") },
-    { label: t("Lokaler Speicher"), status: storage ? "ok" : "error", detail: storage ? t("Verfügbar") : t("Blockiert (privater Modus?) – Kopplung wird nach dem Schließen vergessen.") },
-  ];
+  const checks: CheckResult[] = [];
+  const add = (label: string, status: CheckResult["status"], detail: string, fix?: string) => checks.push({ label, status, detail, fix });
+  const pageHttps = location.protocol === "https:";
+  const url = conn.url;
+
+  add(t("Internet laut Browser"), navigator.onLine ? "ok" : "error", navigator.onLine ? t("Online") : t("Das Gerät meldet keine Netzwerkverbindung."),
+    navigator.onLine ? undefined : t("WLAN oder mobile Daten am Gerät einschalten."));
+
+  // Address of the PC this device connects to.
+  if (client.demo) add(t("PC-Adresse"), "info", t("Demo – es wird keine Verbindung aufgebaut."));
+  else if (conn.needsServer || !url) add(t("PC-Adresse"), "error", t("Noch keine PC-Adresse gespeichert."), t("Unten auf „Verbinden“ tippen und den QR-Code vom PC scannen oder Code und PC-Adresse eingeben."));
+  else if (isLoopbackAddress(url) && !isLoopbackAddress(location.hostname))
+    add(t("PC-Adresse"), "error", t("{u} zeigt auf dieses Gerät selbst, nicht auf den PC.", { u: url }), t("Unter „Verbinden“ abmelden und die Adresse aus dem PC Game Launcher („Gerät koppeln“) verwenden."));
+  else if (pageHttps && url.startsWith("ws:"))
+    add(t("PC-Adresse"), "error", t("Diese https-Seite darf keine unverschlüsselte Verbindung ({u}) öffnen – der Browser blockiert sie.", { u: url }), t("Im WLAN den QR-Code am PC scannen (öffnet die App direkt vom PC), oder am PC Tailscale Funnel einrichten und die https-Adresse verwenden."));
+  else add(t("PC-Adresse"), "ok", url);
+
+  // WebSocket connection (real state of this page's connection).
+  const wsStatus = conn.phase === "online" ? "ok" : client.preview && !url ? "info" : "error";
+  add(t("WebSocket-Verbindung"), wsStatus,
+    conn.phase === "online" ? t("Verbunden ({how})", { how: conn.hello?.transport === "relay" ? t("über Relay") : t("direkt") })
+      : `${conn.phase === "connecting" ? t("Verbinde …") : t("Getrennt")}${conn.attempt ? " · " + t("Versuch {n}", { n: conn.attempt }) : ""}${conn.lastError ? " · " + conn.lastError : ""}`,
+    conn.phase === "online" ? undefined : t("PC einschalten und PC Game Launcher starten (Symbol im Infobereich). Gleiche WLAN-Adresse wie im PC Game Launcher verwenden. Fragt Windows nach der Firewall: „Private Netzwerke“ erlauben. Die App verbindet sich danach automatisch neu."));
+  add(t("Antwortzeit (Ping)"), conn.latencyMs == null ? "untested" : conn.latencyMs < 150 ? "ok" : "warn", conn.latencyMs == null ? t("Noch nicht gemessen") : `${conn.latencyMs} ms`,
+    conn.latencyMs != null && conn.latencyMs >= 150 ? t("Langsames WLAN oder Umweg über das Internet. Näher an den Router gehen oder im selben WLAN die direkte Adresse nutzen.") : undefined);
+  if (conn.relayCompanion === "offline") add(t("Relay-Dienst"), "error", t("Das Relay ist erreichbar, aber der PC ist dort nicht angemeldet."), t("Am PC Diagnose öffnen: Relay-Adresse, Companion-ID und Schlüssel prüfen."));
+
+  // Pairing / login of this device.
+  const cred = !!client.credentials;
+  if (conn.auth === "ok") add(t("Kopplungsstatus"), "ok", conn.me?.isLocal ? t("Direkt am PC angemeldet") : t("Gekoppelt und angemeldet als „{n}“", { n: conn.me?.device?.name ?? "" }));
+  else if (conn.auth === "revoked") add(t("Kopplungsstatus"), "error", conn.authError ?? t("Dieses Gerät wurde am PC entfernt."), t("Neu koppeln: „Verbinden“ → QR-Code scannen."));
+  else if (conn.auth === "failed") add(t("Kopplungsstatus"), "error", conn.authError ?? t("Anmeldung abgelehnt."), t("Neu koppeln: „Verbinden“ → QR-Code scannen."));
+  else if (cred) add(t("Kopplungsstatus"), "info", t("Gekoppelt – Anmeldung erfolgt, sobald der PC erreichbar ist."));
+  else add(t("Kopplungsstatus"), "warn", t("Dieses Gerät ist noch nicht gekoppelt."), t("Am PC „Gerät koppeln → Neuen Code erzeugen“, QR-Code scannen, am PC „Erlauben“."));
+  if (conn.me) {
+    const missing = ["view", "launch", "soundboard", "manage"].filter((p) => !conn.me!.permissions.includes(p));
+    add(t("Berechtigungen"), missing.length ? "warn" : "ok", conn.me.permissions.join(", "), missing.length ? t("Am PC unter Geräte → dieses Gerät → Berechtigungen freigeben: {m}", { m: missing.join(", ") }) : undefined);
+  }
+
+  add(t("Sicherer Kontext (https)"), window.isSecureContext ? "ok" : "info", window.isSecureContext ? t("Ja – Offline-Cache (PWA) verfügbar") : t("Nein (http im WLAN) – App funktioniert, aber ohne Offline-Cache"));
+  add(t("Lokaler Speicher"), storage ? "ok" : "error", storage ? t("Verfügbar") : t("Blockiert (privater Modus?) – Kopplung wird nach dem Schließen vergessen."), storage ? undefined : t("Privaten Modus beenden bzw. Website-Daten für diese Seite erlauben."));
+  return checks;
 }
 
 export default function Diagnostics() {
@@ -38,7 +73,8 @@ export default function Diagnostics() {
   const run = async () => {
     setBusy(true); setErr(null);
     const [a, b, c] = await Promise.allSettled([client.call<Report>("diagnostics.run"), client.call<Report>("network.diagnose"), client.call<Report>("audio.diagnose")]);
-    if (a.status === "fulfilled") setSys(a.value); else setErr((a.reason as Error).message);
+    if (a.status === "fulfilled") setSys(a.value);
+    else setErr((a.reason as RpcError).code === "needs-pc" || (a.reason as RpcError).code === "offline" ? t("Die PC-Prüfungen brauchen eine Verbindung zum PC. Die Prüfungen dieses Geräts oben zeigen, woran es liegt.") : (a.reason as Error).message);
     if (b.status === "fulfilled") setNet(b.value);
     if (c.status === "fulfilled") setAudio(c.value);
     setBusy(false);
@@ -52,7 +88,7 @@ export default function Diagnostics() {
         actions={<Button variant="primary" icon={<Play size={16} />} busy={busy} onClick={run}>{t("Diagnose ausführen")}</Button>} />
       {err && <p className="small" style={{ color: "var(--danger)" }}>{err}</p>}
       <div className="grid-2">
-        <Card title={t("Dieser Browser")} icon={<Laptop size={18} />}><CheckList checks={browserChecks(conn)} /></Card>
+        <Card title={t("Dieses Gerät (z. B. iPad)")} icon={<Laptop size={18} />}><CheckList checks={browserChecks(conn)} /></Card>
         <Card title={t("Companion")} icon={<Monitor size={18} />} meta={sys && clock(sys.at)}>{sys ? <CheckList checks={sys.checks} /> : <p className="small muted">{t("Noch nicht ausgeführt.")}</p>}</Card>
         <Card title={t("Netzwerk")} icon={<Globe size={18} />} meta={net && clock(net.at)}>{net ? <CheckList checks={net.checks} /> : <p className="small muted">{t("Internet, DNS, Router, Ping und Relay – vom PC aus geprüft.")}</p>}</Card>
         <Card title={t("Audio")} icon={<Volume2 size={18} />} meta={audio && clock(audio.at)}>{audio ? <CheckList checks={audio.checks} /> : <p className="small muted">{t("Noch nicht ausgeführt.")}</p>}</Card>

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Eye, Gamepad2, Home, Menu, MonitorSmartphone, Music, Search, Smartphone, Zap } from "lucide-react";
+import { Bell, Gamepad2, Home, Menu, MonitorSmartphone, Music, Search, Smartphone, Zap } from "lucide-react";
 import { client, exitDemo } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo";
 import { t } from "../lib/i18n";
@@ -161,9 +161,9 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         {preview && loc.pathname !== "/connect" && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
-            <Banner kind={conn.auth === "revoked" ? "warn" : "info"} title={conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Vorschau – noch kein PC verbunden")} actions={
+            <Banner kind="warn" title={conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden")} actions={
               <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}>
-              <Eye size={14} style={{ verticalAlign: -2 }} /> {t("Beispielinhalte. Design und Layout kannst du schon ändern.")}
+              {t("Design und Layout kannst du schon ändern.")}
             </Banner>
           </div>
         )}

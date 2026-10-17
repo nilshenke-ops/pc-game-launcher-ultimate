@@ -75,12 +75,12 @@ public sealed class SettingsService
     public Settings SaveSecurity(SecurityUpdate u, ISecretProtector secrets)
     {
         if (u.Port is { } port && (port < 1024 || port > 65535)) throw new RpcException("invalid-params", "Port muss zwischen 1024 und 65535 liegen.");
-        if (u.PublicUrl is { Length: > 0 } pu && !(Uri.TryCreate(pu, UriKind.Absolute, out var puri) && puri.Scheme is "https" or "http"))
-            throw new RpcException("invalid-params", "Öffentliche Adresse muss mit https:// beginnen.");
+        if (u.PublicUrl is { Length: > 0 } pu && AddressRules.PublicUrlProblem(pu) is { } puProblem)
+            throw new RpcException("invalid-params", puProblem);
         if (u.WebAppUrl is { Length: > 0 } wa && !(Uri.TryCreate(wa, UriKind.Absolute, out var wau) && wau.Scheme is "https" or "http"))
             throw new RpcException("invalid-params", "Adresse der Web-App muss mit https:// beginnen.");
-        if (u.RelayUrl is { Length: > 0 } ru && !(Uri.TryCreate(ru, UriKind.Absolute, out var ruri) && ruri.Scheme is "wss" or "ws"))
-            throw new RpcException("invalid-params", "Relay-Adresse muss mit wss:// beginnen (ws:// nur im lokalen Netz).");
+        if (u.RelayUrl is { Length: > 0 } ru && AddressRules.RelayProblem(ru, u.Port ?? Get().Port) is { } ruProblem)
+            throw new RpcException("invalid-params", ruProblem);
         if (u.UpdateManifestUrl is { Length: > 0 } um && !(Uri.TryCreate(um, UriKind.Absolute, out var umu) && umu.Scheme == "https"))
             throw new RpcException("invalid-params", "Update-Quelle muss eine https-Adresse sein.");
         if (u.RelayCompanionId is { Length: > 0 } rid && !System.Text.RegularExpressions.Regex.IsMatch(rid, "^[a-z0-9-]{3,40}$"))

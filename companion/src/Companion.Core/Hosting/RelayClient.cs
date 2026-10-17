@@ -37,6 +37,15 @@ public sealed class RelayClient : IAsyncDisposable
         return u.AbsolutePath is "" or "/" ? relayUrl.TrimEnd('/') + "/companion" : relayUrl;
     }
 
+    /// <summary>Shows a configuration problem instead of connecting (e.g. the address is this companion itself).</summary>
+    public void Block(string url, string problem)
+    {
+        _ = StopAsync();
+        Url = url;
+        SetState("error", problem);
+        Log.Warn("relay", problem);
+    }
+
     public void Start(string url, string companionId, string secret)
     {
         _ = StopAsync();
@@ -75,6 +84,9 @@ public sealed class RelayClient : IAsyncDisposable
                 using (var doc = JsonDocument.Parse(first ?? "{}"))
                 {
                     var t = doc.RootElement.TryGetProperty("t", out var te) ? te.GetString() : null;
+                    // A PC companion (not a relay) answers with an RPC response {v,id,ok:false,...}.
+                    if (t == null && doc.RootElement.TryGetProperty("v", out _))
+                        throw new InvalidOperationException($"Unter {endpoint} antwortet ein PC-Begleiter, kein Relay. Trage die Adresse deines Relay-Servers ein (Standard-Port 8788) oder schalte das Relay aus – im WLAN wird es nicht gebraucht.");
                     if (t != "ok")
                     {
                         var msg = doc.RootElement.TryGetProperty("message", out var m) ? m.GetString() : "Relay hat die Anmeldung abgelehnt.";
@@ -97,8 +109,9 @@ public sealed class RelayClient : IAsyncDisposable
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
             catch (Exception ex)
             {
-                SetState("error", ex.Message);
-                Log.Warn("relay", $"Relay nicht erreichbar: {ex.Message}");
+                var msg = Explain(ex, endpoint);
+                SetState("error", msg);
+                Log.Warn("relay", $"Relay nicht erreichbar: {msg}");
             }
             finally
             {
@@ -110,6 +123,21 @@ public sealed class RelayClient : IAsyncDisposable
             delay = TimeSpan.FromSeconds(Math.Min(60, delay.TotalSeconds * 2));
         }
         SetState("disabled");
+    }
+
+    static string Explain(Exception ex, string endpoint)
+    {
+        for (Exception? e = ex; e != null; e = e.InnerException)
+            if (e is System.Net.Sockets.SocketException se)
+                return se.SocketErrorCode switch
+                {
+                    System.Net.Sockets.SocketError.ConnectionRefused => $"Unter {endpoint} läuft kein Dienst (Verbindung abgelehnt). Läuft der Relay-Server (npm run start:relay, Standard-Port 8788)?",
+                    System.Net.Sockets.SocketError.HostNotFound or System.Net.Sockets.SocketError.NoData => $"Der Name in {endpoint} wurde nicht gefunden (DNS). Adresse prüfen.",
+                    System.Net.Sockets.SocketError.TimedOut => $"{endpoint} antwortet nicht (Zeitüberschreitung). Firewall oder Adresse prüfen.",
+                    _ => $"{endpoint}: {se.Message}",
+                };
+        if (ex is OperationCanceledException) return $"{endpoint} antwortet nicht (Zeitüberschreitung nach 15 s).";
+        return ex.Message;
     }
 
     static async Task<string?> Receive(ClientWebSocket ws, CancellationToken ct)

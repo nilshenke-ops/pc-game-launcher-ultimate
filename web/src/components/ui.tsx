@@ -1,8 +1,9 @@
 import { cloneElement, isValidElement, useEffect, useId, useRef, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
-import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, X, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, MonitorSmartphone, RefreshCw, WifiOff, X, XCircle } from "lucide-react";
+import { Link } from "react-router-dom";
 import { dismissToast, useToasts } from "../lib/hooks";
 import { t } from "../lib/i18n";
-import type { RpcError } from "../lib/rpc";
+import { client, type RpcError } from "../lib/rpc";
 
 export function Button({ children, variant, size, icon, busy, block, className = "", ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "danger" | "ghost"; size?: "sm" | "lg"; icon?: ReactNode; busy?: boolean; block?: boolean }) {
   const cls = ["btn", variant, size, block && "block", !children && "icon", className].filter(Boolean).join(" ");
@@ -104,10 +105,30 @@ export function Empty({ icon, title, text, action }: { icon: ReactNode; title: s
 
 /** Loading / error / empty wrapper so no page ever hangs on an endless spinner. */
 export function Loadable({ loading, error, onRetry, children }: { loading: boolean; error: RpcError | null; onRetry?: () => void; children: ReactNode }) {
+  if (error && (error.code === "offline" || error.code === "needs-pc")) return <OfflineState />;
   if (error && loading === false && children == null) return null;
   if (error) return <Banner kind="error" title={t("Daten konnten nicht geladen werden")} actions={onRetry && <Button size="sm" onClick={onRetry}>{t("Erneut versuchen")}</Button>}>{error.message}</Banner>;
   if (loading) return <div className="stack" aria-busy><div className="skeleton" style={{ height: 22, width: "40%" }} /><div className="skeleton" style={{ height: 120 }} /><div className="skeleton" style={{ height: 120 }} /></div>;
   return <>{children}</>;
+}
+
+/** Shown instead of a section's content while no PC is connected. */
+export function OfflineState() {
+  const paired = !!client.credentials || !!client.status.me;
+  return (
+    <div className="card offline-state">
+      <div className="state-icon warn"><WifiOff size={30} /></div>
+      <h2>{t("Offline")}</h2>
+      <p className="muted">{paired
+        ? t("Dein PC ist gerade nicht erreichbar. Sobald er an ist und der PC Game Launcher läuft, erscheinen hier deine Inhalte.")
+        : t("Kein PC verbunden. Verbinde deinen PC, um diesen Bereich zu nutzen.")}</p>
+      <div className="row" style={{ justifyContent: "center" }}>
+        {paired
+          ? <Button variant="primary" icon={<RefreshCw size={16} />} onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
+          : <Link to="/connect" className="btn primary"><MonitorSmartphone size={16} />{t("PC verbinden")}</Link>}
+      </div>
+    </div>
+  );
 }
 
 export function Modal({ title, onClose, children, footer, wide, className = "" }: { title: ReactNode; onClose: () => void; children: ReactNode; footer?: ReactNode; wide?: boolean; className?: string }) {
@@ -190,7 +211,7 @@ export function statusLabel(s: string) {
   return ({ ok: t("OK"), warn: t("Warnung"), error: t("Fehler"), untested: t("Nicht getestet"), unsupported: t("Nicht unterstützt"), info: t("Info") } as Record<string, string>)[s] ?? s;
 }
 
-export function CheckList({ checks }: { checks: { label: string; status: string; detail: string; ms?: number }[] }) {
+export function CheckList({ checks }: { checks: { label: string; status: string; detail: string; ms?: number; fix?: string | null }[] }) {
   return (
     <div>
       {checks.map((c, i) => (
@@ -199,6 +220,7 @@ export function CheckList({ checks }: { checks: { label: string; status: string;
           <div className="grow">
             <div className="row between"><b>{c.label}</b><span className={`badge ${c.status === "ok" ? "ok" : c.status === "error" ? "error" : c.status === "warn" || c.status === "untested" ? "warn" : ""}`}>{statusLabel(c.status)}</span></div>
             <div className="small muted" style={{ wordBreak: "break-word" }}>{c.detail}</div>
+            {c.fix && <div className="small check-fix"><b>{t("Lösung:")}</b> {c.fix}</div>}
           </div>
         </div>
       ))}

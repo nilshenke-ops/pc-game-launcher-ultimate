@@ -123,7 +123,7 @@ export interface AudioSettings {
   maxConcurrent: number;
 }
 
-export interface CheckResult { id?: string; area?: string; label: string; status: "ok" | "warn" | "error" | "info" | "untested" | "unsupported"; detail: string; ms?: number }
+export interface CheckResult { id?: string; area?: string; label: string; status: "ok" | "warn" | "error" | "info" | "untested" | "unsupported"; detail: string; ms?: number; fix?: string | null }
 
 export interface Notification { id: string; key: string; severity: "info" | "success" | "warning" | "error"; title: string; message?: string; at: string; count: number; link?: string }
 

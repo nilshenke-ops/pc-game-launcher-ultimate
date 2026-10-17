@@ -23,21 +23,16 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
   const [state, setState] = useState<{ data?: T; error: RpcError | null; loading: boolean; updatedAt: number | null }>({ error: null, loading: true, updatedAt: null });
   const paramKey = JSON.stringify(params ?? {});
   const seq = useRef(0);
-  // Preview without PC: example content from lib/demo.ts; replaced by real data as soon as the PC is logged in.
-  const mode = conn.auth === "ok" && conn.phase === "online" ? "pc" : client.preview ? "preview" : "off";
-  const ready = mode !== "off" && enabled;
-  const shownMode = useRef(mode);
+  const ready = conn.auth === "ok" && conn.phase === "online" && enabled;
 
   const load = useCallback(() => {
     if (!ready) return;
     const my = ++seq.current;
-    const switched = shownMode.current !== mode;
-    shownMode.current = mode;
-    setState((s) => (switched ? { error: null, loading: true, updatedAt: null } : { ...s, loading: true }));
+    setState((s) => ({ ...s, loading: true }));
     client.call<T>(method, JSON.parse(paramKey))
       .then((data) => { if (my === seq.current) setState({ data, error: null, loading: false, updatedAt: Date.now() }); })
       .catch((error: RpcError) => { if (my === seq.current) setState((s) => ({ ...s, error, loading: false })); });
-  }, [method, paramKey, ready, mode]);
+  }, [method, paramKey, ready]);
 
   useEffect(() => { load(); }, [load]);
   const topicKey = topics.join(",");
@@ -47,8 +42,8 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
     return client.on("changed", (d) => { if (list.includes((d as { topic: string }).topic)) load(); });
   }, [topicKey, load]);
 
-  // Never an endless skeleton: while the PC is unreachable, pages show a clear offline message instead.
-  if (!ready && enabled && conn.phase !== "online" && !state.data)
+  // Never an endless skeleton: without a logged-in PC, pages show "Offline" (see Loadable) instead.
+  if (!ready && enabled && !state.data && (conn.phase !== "online" || (conn.auth !== "ok" && conn.auth !== "checking")))
     return { data: undefined, error: new RpcError("offline", t("Der PC ist gerade nicht erreichbar. Die Inhalte erscheinen automatisch, sobald der PC an ist und der Companion läuft.")), loading: false, reload: () => client.reconnectNow(), updatedAt: null };
   return { data: state.data, error: state.error, loading: state.loading && !state.data, reload: load, updatedAt: state.updatedAt };
 }

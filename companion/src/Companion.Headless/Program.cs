@@ -14,7 +14,9 @@ if (services.Web.StartError != null) { Console.Error.WriteLine(services.Web.Star
 var adminUrl = $"http://127.0.0.1:{services.Web.Port}/#admin={services.Rpc.AdminToken}";
 Console.WriteLine("PC Game Launcher Ultimate – Companion (headless)");
 Console.WriteLine($"PC-Ansicht (nur auf diesem Rechner öffnen): {adminUrl}");
-foreach (var u in services.Web.LanUrls()) Console.WriteLine($"Im WLAN: {u}");
+Console.WriteLine($"Auf diesem PC: {services.Web.LocalUrl}");
+foreach (var u in services.Web.LanUrls()) Console.WriteLine($"Im WLAN (iPad/Handy): {u}");
+if (services.Web.LanUrls().Count == 0) Console.WriteLine("Im WLAN: keine Adresse (WLAN-Zugriff aus oder kein Netzwerkadapter im Heimnetz). 127.0.0.1 funktioniert nur auf diesem PC selbst.");
 var adminFile = Environment.GetEnvironmentVariable("PGL_ADMIN_TOKEN_FILE");
 if (!string.IsNullOrEmpty(adminFile)) File.WriteAllText(adminFile, services.Rpc.AdminToken);
 

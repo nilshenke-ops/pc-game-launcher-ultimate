@@ -81,6 +81,44 @@ public sealed class MonitorService : IDisposable
 
 // ============================================================ Network diagnostics
 
+/// <summary>
+/// Rules for addresses that other devices or the relay client use. "localhost"/127.0.0.1 always means "this device",
+/// so it can never be the address an iPad uses to reach the PC, and the companion's own /ws endpoint is not a relay.
+/// </summary>
+public static class AddressRules
+{
+    public static bool IsLoopbackHost(string host) =>
+        host.Equals("localhost", StringComparison.OrdinalIgnoreCase) || host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase) ||
+        (IPAddress.TryParse(host.Trim('[', ']'), out var ip) && IPAddress.IsLoopback(ip));
+
+    /// <summary>Host names/addresses under which this PC itself is reachable.</summary>
+    public static bool IsThisPc(string host) =>
+        IsLoopbackHost(host) || host.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase) ||
+        NetworkDiagnostics.LocalIPv4().Contains(host);
+
+    /// <summary>Explains why a relay address cannot work, or null if it is plausible.</summary>
+    public static string? RelayProblem(string relayUrl, int companionPort)
+    {
+        if (!Uri.TryCreate(relayUrl, UriKind.Absolute, out var u) || u.Scheme is not ("ws" or "wss"))
+            return "Relay-Adresse muss mit wss:// beginnen (ws:// nur im lokalen Netz).";
+        if (IsThisPc(u.Host) && u.Port == companionPort)
+            return $"{relayUrl} ist die Adresse dieses PC-Begleiters selbst (Port {companionPort}, /ws ist der Endpunkt für Browser) – kein Relay. " +
+                   "Der Begleiter würde sich mit sich selbst verbinden. Das Relay ist ein eigener Server (Standard-Port 8788, Endpunkt /companion). " +
+                   "Im WLAN wird kein Relay gebraucht: Relay ausschalten oder die Adresse deines Relay-Servers eintragen, z. B. wss://relay.example.com.";
+        return null;
+    }
+
+    /// <summary>Explains why an address meant for other devices (QR code, "Öffentliche Adresse") cannot work, or null.</summary>
+    public static string? PublicUrlProblem(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme is not ("https" or "http"))
+            return "Öffentliche Adresse muss mit https:// beginnen.";
+        if (IsLoopbackHost(u.Host))
+            return $"{u.Host} zeigt auf jedem Gerät auf das Gerät selbst – ein iPad würde damit sich selbst statt deinen PC suchen. Trage die https-Adresse deines Tunnels ein (z. B. https://mein-pc.tail1234.ts.net) oder lass das Feld leer.";
+        return null;
+    }
+}
+
 public sealed class NetworkDiagnostics
 {
     readonly Func<object> _relayStatus;
@@ -110,13 +148,19 @@ public sealed class NetworkDiagnostics
     public async Task<object> Run()
     {
         var checks = new List<object>();
-        void Add(string id, string label, string status, string detail, double? ms = null) => checks.Add(new { id, label, status, detail, ms });
+        void Add(string id, string label, string status, string detail, double? ms = null, string? fix = null) => checks.Add(new { id, label, status, detail, ms, fix });
 
         var ips = LocalIPv4();
-        Add("lan", "Lokales Netzwerk", ips.Count > 0 ? "ok" : "error", ips.Count > 0 ? "IP-Adresse(n): " + string.Join(", ", ips) : "Keine aktive Netzwerkverbindung gefunden.");
+        Add("lan", "Lokales Netzwerk", ips.Count > 0 ? "ok" : "error", ips.Count > 0 ? "IP-Adresse(n): " + string.Join(", ", ips) : "Keine Adresse im Heimnetz gefunden.",
+            fix: ips.Count > 0 ? null : "PC per WLAN oder Kabel mit dem Router verbinden. (VPN-/virtuelle Adapter zählen nicht.)");
         var s = _settings();
-        Add("listen", "Companion im WLAN erreichbar", s.LanAccess ? "ok" : "warn",
-            s.LanAccess ? "Web-App: " + string.Join("  ", _lanUrls()) : "WLAN-Zugriff ist ausgeschaltet – nur dieser PC kann die Web-App öffnen.");
+        var lan = _lanUrls();
+        if (!s.LanAccess)
+            Add("listen", "Begleiter im WLAN erreichbar", "error", "WLAN-Zugriff ist ausgeschaltet – nur dieser PC kann die Web-App öffnen.", fix: "Einstellungen → Verbindung → „Im WLAN erreichbar“ einschalten.");
+        else if (lan.Count == 0)
+            Add("listen", "Begleiter im WLAN erreichbar", "error", "Der Begleiter lauscht, aber es gibt keine Heimnetz-Adresse, über die ein iPad ihn erreichen kann.", fix: "PC mit dem Router verbinden.");
+        else
+            Add("listen", "Begleiter im WLAN erreichbar", "ok", "Web-App: " + string.Join("  ", lan), fix: null);
 
         var gw = NetworkInterface.GetAllNetworkInterfaces().Where(n => n.OperationalStatus == OperationalStatus.Up)
             .SelectMany(n => n.GetIPProperties().GatewayAddresses).Select(g => g.Address).FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork && !a.Equals(IPAddress.Any));
@@ -148,7 +192,9 @@ public sealed class NetworkDiagnostics
         var ping = await PingAsync(IPAddress.Parse("1.1.1.1"));
         Add("ping", "Ping ins Internet (1.1.1.1)", ping.ok ? "ok" : "warn", ping.ok ? $"{ping.ms} ms" : "Keine Antwort (ICMP evtl. durch Firewall blockiert).", ping.ok ? ping.ms : null);
 
-        if (s.RelayEnabled && s.RelayUrl != null)
+        if (s.RelayEnabled && s.RelayUrl != null && AddressRules.RelayProblem(s.RelayUrl, s.Port) is { } relayProblem)
+            Add("relay", "Relay", "error", relayProblem, fix: "Einstellungen → Verbindung → Relay-Adresse korrigieren oder Relay ausschalten.");
+        else if (s.RelayEnabled && s.RelayUrl != null)
         {
             var health = s.RelayUrl.Replace("wss://", "https://").Replace("ws://", "http://");
             health = health[..(health.IndexOf('/', health.IndexOf("//") + 2) is var i && i > 0 ? i : health.Length)] + "/healthz";
@@ -160,7 +206,11 @@ public sealed class NetworkDiagnostics
                 Add("relay-http", "Relay erreichbar", resp.IsSuccessStatusCode ? "ok" : "error", $"{health} → HTTP {(int)resp.StatusCode} ({sw.ElapsedMilliseconds} ms)", sw.ElapsedMilliseconds);
             }
             catch (Exception ex) { Add("relay-http", "Relay erreichbar", "error", $"{health}: {ex.Message}"); }
-            Add("relay-ws", "Relay-Verbindung", "info", JsonSerializer.Serialize(_relayStatus(), Json.Options));
+            var st = JsonSerializer.SerializeToElement(_relayStatus(), Json.Options);
+            var state = st.TryGetProperty("state", out var se) ? se.GetString() : null;
+            var lastError = st.TryGetProperty("lastError", out var le) && le.ValueKind == JsonValueKind.String ? le.GetString() : null;
+            Add("relay-ws", "Relay-Verbindung", state == "connected" ? "ok" : "error", state == "connected" ? "Verbunden" : $"{state}: {lastError ?? "noch keine Verbindung"}",
+                fix: state == "connected" ? null : "Companion-ID und Schlüssel müssen mit relay.config.json übereinstimmen; Relay-Server läuft?");
         }
         else Add("relay", "Relay", "info", "Nicht eingerichtet (nur nötig für Zugriff von unterwegs).");
         return new { at = DateTime.UtcNow, checks };

@@ -207,6 +207,13 @@ public sealed class CompanionServices : IAsyncDisposable
         if (fp == _relayFingerprint) return;
         _relayFingerprint = fp;
         if (fp == null) { _ = Relay.StopAsync(); return; }
+        // Settings from older versions may still point the relay at this companion itself (e.g. ws://127.0.0.1:8787/ws).
+        if (AddressRules.RelayProblem(s.RelayUrl!, s.Port) is { } problem)
+        {
+            Relay.Block(s.RelayUrl!, problem);
+            Notifications.Push("relay-config", Severity.Error, "Relay-Adresse ungültig", problem, "/settings?s=connection");
+            return;
+        }
         Relay.Start(s.RelayUrl!, s.RelayCompanionId!, secret!);
     }
 

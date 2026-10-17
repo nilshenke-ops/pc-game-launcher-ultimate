@@ -89,7 +89,7 @@ describe("hotkey recording", () => {
   });
 });
 
-import { pcAddressToWs, wsToPcAddress } from "./address";
+import { isLoopbackAddress, pcAddressToWs, wsToPcAddress } from "./address";
 describe("PC-Adresse", () => {
   it("turns typed or scanned addresses into WebSocket URLs", () => {
     expect(pcAddressToWs("gaming-pc.tail1234.ts.net", true)).toBe("wss://gaming-pc.tail1234.ts.net/ws");
@@ -105,5 +105,12 @@ describe("PC-Adresse", () => {
       const short = wsToPcAddress(ws);
       expect(pcAddressToWs(short.startsWith("ws") ? short : (ws.startsWith("wss") ? short : "http://" + short), ws.startsWith("wss"))).toBe(ws);
     }
+  });
+});
+
+describe("loopback detection (127.0.0.1 is never the PC for another device)", () => {
+  it("recognises loopback addresses", () => {
+    for (const a of ["ws://127.0.0.1:8787/ws", "wss://localhost/ws", "ws://[::1]:8787/ws", "127.0.0.5", "localhost"]) expect(isLoopbackAddress(a)).toBe(true);
+    for (const a of ["ws://192.168.178.116:8787/ws", "wss://gaming-pc.tail1234.ts.net/ws", "nilshenke-ops.github.io"]) expect(isLoopbackAddress(a)).toBe(false);
   });
 });

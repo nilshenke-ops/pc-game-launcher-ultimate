@@ -259,20 +259,35 @@ export default function Dashboard() {
   const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
 
   const conn = useConn();
-  if (!state && conn.phase !== "online") {
+  if (!state && (conn.phase !== "online" || (conn.auth !== "ok" && conn.auth !== "checking"))) {
+    const paired = !!client.credentials || !!conn.me;
+    const tile = (k: string, v: string, warn = false) => (
+      <Card className="flat"><div className="stat"><span className="k">{k}</span><span className="v" style={warn ? { color: "var(--warning)" } : undefined}>{v}</span></div></Card>
+    );
     return (
       <>
         <PageHead eyebrow={greeting} title={t("Gaming-Zentrale")} />
-        <Card className="hero">
-          <div className="stack">
-            <h2>{t("Warte auf deinen PC …")}</h2>
-            <p className="muted">{t("Sobald der PC an ist und der Companion läuft, erscheinen hier deine Spiele, Sounds und Live-Werte – ohne dass du etwas tun musst.")}</p>
-            <div className="row">
-              <Link to="/settings?s=design" className="btn primary">{t("Design & Layout anpassen")}</Link>
-              <Button onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
+        <div className="stack">
+          <Card className="hero">
+            <div className="stack">
+              <h2>{paired ? t("Warte auf deinen PC …") : t("Offline – kein PC verbunden")}</h2>
+              <p className="muted">{paired
+                ? t("Sobald der PC an ist und der Companion läuft, erscheinen hier deine Spiele, Sounds und Live-Werte – ohne dass du etwas tun musst.")
+                : t("Verbinde deinen PC: Öffne am PC den PC Game Launcher → „Gerät koppeln“ und scanne den QR-Code oder gib den Code ein. Danach erscheinen hier deine Spiele, Sounds und Live-Werte.")}</p>
+              <div className="row">
+                {paired ? <Button variant="primary" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
+                  : <Link to="/connect" className="btn primary">{t("PC verbinden")}</Link>}
+                <Link to="/settings?s=design" className="btn">{t("Design & Layout anpassen")}</Link>
+              </div>
             </div>
+          </Card>
+          <div className="grid-4">
+            {tile(t("Spiele"), "–")}
+            {tile(t("Sounds"), "–")}
+            {tile(t("Quick Actions"), "–")}
+            {tile(t("PC-Status"), t("Offline"), true)}
           </div>
-        </Card>
+        </div>
       </>
     );
   }

@@ -6,7 +6,7 @@ import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { relTime, dateTime } from "../lib/format";
 import type { PairedDevice } from "../lib/types";
-import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, OfflineState, PageHead } from "../components/ui";
 
 export function permLabels(): Record<string, string> {
   return { view: t("Ansehen"), launch: t("Starten"), soundboard: t("Soundboard"), manage: t("Verwalten"), admin: t("Administration") };
@@ -28,7 +28,7 @@ export default function Devices() {
     <>
       <PageHead eyebrow={t("System")} title={t("Geräte & Verbindungen")} text={t("Alle gekoppelten Smartphones, Tablets und Browser. Entfernte Geräte verlieren sofort den Zugriff.")}
         actions={conn.me?.isLocal && <Link to="/pair" className="btn primary"><Link2 size={17} />{t("Gerät koppeln")}</Link>} />
-      <div className="stack">
+      {!conn.me ? <OfflineState /> : <div className="stack">
         <Card title={t("Diese Sitzung")} icon={conn.me?.isLocal ? <Laptop size={18} /> : <Smartphone size={18} />}>
           <div className="row">
             <div className="grow">
@@ -60,7 +60,7 @@ export default function Devices() {
             </Card>
           </Loadable>
         )}
-      </div>
+      </div>}
       {edit && <EditDevice device={edit} onClose={() => setEdit(null)} />}
     </>
   );

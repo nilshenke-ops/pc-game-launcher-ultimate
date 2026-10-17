@@ -5,7 +5,7 @@ import { t } from "../lib/i18n";
 import { useConn, useEvent } from "../lib/hooks";
 import { bytes, clock } from "../lib/format";
 import type { MetricsSample } from "../lib/types";
-import { Banner, Card, Gauge, Meter, PageHead, Sparkline } from "../components/ui";
+import { Banner, Card, OfflineState, Gauge, Meter, PageHead, Sparkline } from "../components/ui";
 
 const NA = () => t("Nicht verfügbar");
 
@@ -36,8 +36,8 @@ export default function Monitor() {
   return (
     <>
       <PageHead eyebrow={t("System")} title={t("PC Monitor")} text={t("Live-Werte deines Gaming-PCs. Abgefragt wird nur, solange diese Ansicht offen ist (alle 2 Sekunden).")} />
-      {err && <Banner kind={client.preview ? "info" : "error"}>{client.preview ? t("Live-Werte erscheinen, sobald dein PC verbunden ist.") : err}</Banner>}
-      {!m && client.preview ? null : !m ? <div className="grid-3">{[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 220 }} />)}</div> : (
+      {!m && !authed ? <OfflineState /> : err && <Banner kind="error">{err}</Banner>}
+      {!m && !authed ? null : !m ? <div className="grid-3">{[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 220 }} />)}</div> : (
         <div className="stack">
           <div className="grid-3">
             <Card title="CPU" icon={<Cpu size={18} />} meta={m.sources.cpu}>

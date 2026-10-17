@@ -50,11 +50,8 @@ const SERVER_KEY = "pgl.server";
 const ADMIN_KEY = "pgl.admin";
 const REQUEST_TIMEOUT_MS = 20000;
 
-// Preview (no PC connected yet): these read-only requests are answered with clearly marked example content,
-// so every section can be looked at. Everything else needs the PC and opens the "PC verbinden" hint instead.
-const PREVIEW_READ = new Set(["state.get", "library.list", "quick.list", "profiles.list", "automations.list", "hotkeys.list", "history.get",
-  "sounds.list", "audio.state", "notifications.list", "settings.get", "autostart.get", "updates.status", "devices.list"]);
-/** Requests that pages make by themselves (loading data); they fail quietly in the preview instead of opening the hint. */
+// Without a logged-in PC every section can be opened, but shows "Offline" instead of content (no example data).
+/** Requests that pages make by themselves (loading data); they fail quietly instead of opening the "PC verbinden" hint. */
 const QUIET = /\.(list|get|status|state|logs|subscribe|unsubscribe|diagnose|run|me|pending|getPrefs)$/;
 // Requests that work without login (connection setup and pairing) always go to the PC.
 const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim"]);
@@ -108,6 +105,7 @@ class Client {
   private statusListeners = new Set<() => void>();
   private retryTimer: number | null = null;
   private pingTimer: number | null = null;
+  private pingNow: (() => void) | null = null;
   private attempt = 0;
   private started = false;
   private closeReason: string | null = null;
@@ -134,7 +132,12 @@ class Client {
     if (this.started) return;
     this.started = true;
     window.addEventListener("online", () => this.reconnectNow());
-    document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && this.status.phase === "offline") this.reconnectNow(); });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState !== "visible") return;
+      // Back from sleep/background: reconnect at once, or check right away that the open connection still works.
+      if (this.status.phase === "offline") this.reconnectNow();
+      else if (this.status.phase === "online") this.pingNow?.();
+    });
     this.connect();
   }
 
@@ -167,7 +170,7 @@ class Client {
     this.connect();
   }
 
-  /** No PC logged in yet on this page: pages show example content, actions ask to connect the PC first. */
+  /** No PC paired on this device yet: pages show "Offline", actions ask to connect the PC first. */
   get preview() { return !this.demo && this.status.auth !== "ok" && !this.status.everAuthed && !this.credentials; }
 
   /** Opens the app shell while the PC is off. Paired devices log in automatically once the PC is reachable. */
@@ -238,9 +241,15 @@ class Client {
   private startPing() {
     if (this.pingTimer) clearInterval(this.pingTimer);
     const ping = async () => {
-      const t = performance.now();
-      try { await this.call("ping"); this.set({ latencyMs: Math.round(performance.now() - t) }); } catch { /* reconnect handles it */ }
+      const started = performance.now();
+      try { await this.call("ping"); this.set({ latencyMs: Math.round(performance.now() - started) }); }
+      catch (e) {
+        // No answer (e.g. the iPad slept, Wi-Fi changed, PC went off without closing): the socket is dead even if
+        // the browser has not noticed yet. Closing it starts the automatic reconnect with a clear reason.
+        if ((e as RpcError).code === "timeout") { this.closeReason = t("Der PC antwortet nicht mehr (keine Antwort auf Ping)."); this.ws?.close(); }
+      }
     };
+    this.pingNow = ping;
     ping();
     this.pingTimer = window.setInterval(ping, 15000);
   }
@@ -280,7 +289,6 @@ class Client {
     if (this.demo) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
     if (this.status.auth !== "ok" && !NO_LOGIN.has(method) && !this.status.me) {
       if (method === "ui.savePrefs" || method === "ui.getPrefs") return Promise.resolve((method === "ui.getPrefs" ? { prefs: null } : true) as T); // design stays on this device
-      if (this.preview && PREVIEW_READ.has(method)) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
       if (!QUIET.test(method)) this.emit("needs-pc", { method });
       return Promise.reject(new RpcError("needs-pc", needsPcMessage()));
     }
@@ -294,7 +302,7 @@ class Client {
       const timer = window.setTimeout(() => {
         this.pending.delete(id);
         reject(new RpcError("timeout", t("Der PC hat nicht rechtzeitig geantwortet.")));
-      }, method === "network.diagnose" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
+      }, method === "ping" ? 8000 : method === "network.diagnose" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, timer });
       ws.send(JSON.stringify({ v: PROTOCOL_VERSION, id, m: method, p: params ?? {} }));
     });
