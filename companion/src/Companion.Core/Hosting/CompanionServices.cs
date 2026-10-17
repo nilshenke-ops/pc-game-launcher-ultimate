@@ -109,8 +109,9 @@ public sealed class CompanionServices : IAsyncDisposable
         {
             History.SessionStarted(item, at);
             var p = Profiles.Get();
-            if (p.AutoSwitch && item.ProfileId != null && p.ActiveProfileId != item.ProfileId && Profiles.Find(item.ProfileId) != null)
-                Profiles.Activate(item.ProfileId, $"Spiel gestartet: {item.Name}");
+            var profileId = ProfileFor(item, p);
+            if (p.AutoSwitch && profileId != null && p.ActiveProfileId != profileId)
+                Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStarted, item.Id);
         };
@@ -118,7 +119,10 @@ public sealed class CompanionServices : IAsyncDisposable
         {
             History.SessionEnded(item.Id, at);
             var p = Profiles.Get();
-            if (p.AutoSwitch && item.ProfileId != null && p.ActiveProfileId == item.ProfileId)
+            var profileId = ProfileFor(item, p);
+            // Only switch back if no other running game still wants this profile.
+            var stillNeeded = Sessions.Running().Any(r => r.itemId != item.Id && Library.Get(r.itemId) is { } other && ProfileFor(other, p) == profileId);
+            if (p.AutoSwitch && profileId != null && p.ActiveProfileId == profileId && !stillNeeded)
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStopped, item.Id);
@@ -180,6 +184,13 @@ public sealed class CompanionServices : IAsyncDisposable
         Notifications.OnDesktop = n => { try { Platform.Desktop.ShowToast(n.Title, n.Message ?? ""); } catch { } };
 
         Settings.Saved += s => ApplyRelaySettings(s);
+    }
+
+    /// <summary>The profile linked to a game: set on the game itself, or the game is listed in a profile.</summary>
+    public static string? ProfileFor(LibraryItem item, ProfilesFile p)
+    {
+        if (item.ProfileId != null && p.Profiles.Any(x => x.Id == item.ProfileId)) return item.ProfileId;
+        return p.Profiles.FirstOrDefault(x => x.GameIds.Contains(item.Id))?.Id;
     }
 
     public List<object> RunningList() =>

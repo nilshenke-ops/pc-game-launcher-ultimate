@@ -188,7 +188,7 @@ public sealed class EpicDetector(string? manifestDir) : IDetector
         if (r.TryGetProperty("bIsIncompleteInstall", out var inc) && inc.ValueKind == JsonValueKind.True) return null;
         var target = $"{ns}:{cat}:{app}";
         if (LaunchValidator.ValidateTarget(LaunchSource.Epic, target) != null) return null;
-        var procs = exe == null ? new List<string>() : new List<string> { Path.GetFileNameWithoutExtension(exe) };
+        var procs = exe == null ? new List<string>() : new List<string> { Path.GetFileNameWithoutExtension(exe.Replace('\\', '/')) };
         return new DetectedItem("epic:" + app, ItemKind.Game, name, LaunchSource.Epic, target, install, procs, null, "Epic Games", false);
     }
 }
