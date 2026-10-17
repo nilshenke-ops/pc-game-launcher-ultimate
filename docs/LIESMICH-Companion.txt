@@ -1,0 +1,32 @@
+PC GAME LAUNCHER ULTIMATE – WINDOWS-COMPANION
+=============================================
+
+Starten
+-------
+1. PCGameLauncherCompanion.exe in einen eigenen Ordner legen (z. B. Dokumente\GameLauncher)
+   und doppelklicken. Keine Installation, keine Administratorrechte.
+2. Windows SmartScreen: Die Datei ist nicht signiert. Falls „Der Computer wurde durch Windows
+   geschützt“ erscheint: „Weitere Informationen“ -> „Trotzdem ausführen“.
+   Vorher optional die Prüfsumme kontrollieren (siehe unten).
+3. Windows-Firewall: Beim ersten Start „Private Netzwerke“ erlauben – sonst kann dein Handy
+   den PC im WLAN nicht erreichen. „Öffentliche Netzwerke“ NICHT nötig.
+4. Das Fenster zeigt die Gaming-Zentrale. Unter „Gerät koppeln“ -> „Neuen Code erzeugen“
+   den QR-Code mit dem Handy scannen und die Anfrage am PC mit „Erlauben“ bestätigen.
+
+Adresse fürs Handy (gleiches WLAN): http://<IP-des-PCs>:8787
+Die genaue Adresse steht im Companion unter „Gerät koppeln“ bzw. „Hilfe“.
+
+Hinweise
+--------
+- Schließen des Fensters lässt den Companion im Infobereich (Taskleiste, ^) weiterlaufen.
+  Beenden: Rechtsklick auf das Symbol -> „Beenden“.
+- Die Oberfläche benötigt die Microsoft Edge WebView2-Runtime (bei Windows 10/11 meist
+  vorhanden). Fehlt sie, bietet der Companion „Im Browser öffnen“ an.
+- Daten liegen in %APPDATA%\PCGameLauncherUltimate (Bibliothek, Profile, Sounds, Einstellungen).
+- Discord-Soundboard: benötigt ein virtuelles Audiokabel (z. B. VB-Audio Virtual Cable).
+  Anleitung im Companion unter „Audio Center“.
+
+Prüfsumme kontrollieren (PowerShell / Eingabeaufforderung)
+-----------------------------------------------------------
+certutil -hashfile PCGameLauncherCompanion.exe SHA256
+Das Ergebnis muss mit SHA256SUMS.txt übereinstimmen.

@@ -1,0 +1,16 @@
+{
+  "name": "pc-game-launcher-ultimate",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Gaming-Control-Center: Windows-Companion, Web-App und optionales Relay",
+  "scripts": {
+    "install:all": "cd web && npm ci && cd ../relay && npm ci",
+    "build:web": "cd web && npm run build",
+    "build:relay": "cd relay && npm run build",
+    "build:companion": "bash scripts/publish-companion.sh",
+    "test": "bash scripts/test-all.sh",
+    "dev": "bash scripts/dev.sh",
+    "start:relay": "bash scripts/start-relay.sh",
+    "start:headless": "bash scripts/start-headless.sh"
+  }
+}

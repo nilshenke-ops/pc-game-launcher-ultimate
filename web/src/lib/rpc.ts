@@ -88,6 +88,7 @@ class Client {
   private pingTimer: number | null = null;
   private attempt = 0;
   private started = false;
+  private closeReason: string | null = null;
   status: ConnStatus = { phase: "connecting", attempt: 0, everConnected: false, auth: "none", url: "" };
 
   start() {
@@ -153,14 +154,18 @@ class Client {
         this.startPing();
       } catch (e) {
         if ((e as RpcError).code === "relay-companion-offline") return;
-        this.set({ lastError: (e as Error).message });
+        // e.g. incompatible protocol version: show the reason and retry later instead of spinning forever.
+        this.closeReason = (e as RpcError).code === "protocol" ? t("Companion-Version passt nicht zu dieser Web-App: {m}", { m: (e as Error).message }) : (e as Error).message;
+        ws.close();
       }
     };
     ws.onmessage = (ev) => this.onMessage(String(ev.data));
     ws.onclose = (ev) => {
       clearTimeout(openTimeout);
       if (this.ws !== ws) return;
-      this.onClosed(ev.reason || (this.status.everConnected ? t("Verbindung unterbrochen") : t("Companion nicht erreichbar")));
+      const reason = this.closeReason ?? (ev.reason || (this.status.everConnected ? t("Verbindung unterbrochen") : t("Companion nicht erreichbar")));
+      this.closeReason = null;
+      this.onClosed(reason);
     };
     ws.onerror = () => { /* onclose follows */ };
   }

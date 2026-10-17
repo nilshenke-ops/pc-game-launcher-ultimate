@@ -633,6 +633,7 @@ export const en: Record<string, string> = {
   "Verbindung unterbrochen": "Connection lost",
   "Ungültige Serveradresse: {e}": "Invalid server address: {e}",
   "Companion nicht erreichbar": "Companion not reachable",
+  "Companion-Version passt nicht zu dieser Web-App: {m}": "Companion version does not match this web app: {m}",
   "Der PC ist gerade nicht mit dem Relay verbunden.": "The PC is currently not connected to the relay.",
   "Keine Verbindung zum PC.": "No connection to the PC.",
   "Der PC hat nicht rechtzeitig geantwortet.": "The PC did not respond in time.",
