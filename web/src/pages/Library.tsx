@@ -75,6 +75,9 @@ export default function Library({ kind }: { kind: ItemKind }) {
       </div>
 
       {cat === "__gamepass" ? <GamePassView search={search} /> : cat === "__steam" ? <SteamView search={search} /> : cat === "__epic" || cat === "__ea" ? <LauncherView key={cat} source={cat === "__epic" ? "epic" : "ea"} search={search} /> : (<>
+      {q.stale && !q.updatedAt && <div style={{ marginBottom: 14 }}><Banner kind="info" title={t("Noch kein PC verbunden")}>{isGame
+        ? t("Deine installierten Spiele erkennt der PC beim ersten Verbinden. Steam-Spiele kannst du schon jetzt unter „Steam“ zur Bibliothek hinzufügen; Bewertung, Favorit und Kategorien lassen sich bearbeiten – übertragen wird später.")
+        : t("Programme gibt der PC selbst frei (aus Sicherheitsgründen nur direkt am PC). Sie erscheinen hier nach dem Verbinden.")}</Banner></div>}
       {q.stale && q.updatedAt && <div style={{ marginBottom: 14 }}><Banner kind="info" title={t("Gespeicherte Liste (Stand {d})", { d: new Date(q.updatedAt).toLocaleString() })}>{t("Dein PC ist gerade nicht verbunden. Du siehst die Spiele vom letzten Mal – starten kannst du sie, sobald der PC verbunden ist.")}</Banner></div>}
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {items.length === 0 ? (

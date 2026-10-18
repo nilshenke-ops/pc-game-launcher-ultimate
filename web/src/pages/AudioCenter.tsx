@@ -68,6 +68,7 @@ export default function AudioCenter() {
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {q.data && !q.data.supported ? <Banner kind="warn" title={t("Nicht unterstützt")}>{q.data.unsupportedReason}</Banner> : s && q.data && (
           <div className="stack">
+            {q.stale && <Banner kind="info" title={t("PC nicht verbunden")}>{t("Lautstärken, Wiedergabe-Modus, Monitoring und Mikrofon-Durchleitung kannst du schon einstellen – übertragen werden nur die Werte, die du hier änderst. Audiogeräte (z. B. das virtuelle Kabel) kennt nur der PC; sie erscheinen nach dem Verbinden. Testton und Mikrofon-Test brauchen den PC.")}</Banner>}
             {q.data.missing.length > 0 && <Banner kind="error" title={t("Gerät fehlt")}>{t("Nicht gefunden: {x}. Gerät anschließen oder anderes wählen.", { x: q.data.missing.join(", ") })}</Banner>}
             <div className="grid-2">
               <Card title={t("Soundboard-Ausgabe")} icon={<Speaker size={18} />}>

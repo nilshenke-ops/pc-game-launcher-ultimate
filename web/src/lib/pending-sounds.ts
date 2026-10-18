@@ -6,6 +6,10 @@ import { useSyncExternalStore } from "react";
 import { client } from "./rpc";
 import { t } from "./i18n";
 import type { Sound } from "./types";
+import { outbox, substituteIds } from "./outbox";
+
+/** Hotkeys, quick actions … made offline may refer to a waiting sound as "pending:<id>"; replaced by the PC's id after upload. */
+export const pendingRef = (id: string) => `pending:${id}`;
 
 export const MAX_SOUND_BYTES = 20 * 1024 * 1024;
 const CHUNK = 256 * 1024;
@@ -123,7 +127,15 @@ export async function uploadBytes(name: string, data: Uint8Array, onProgress?: (
 const connected = () => client.status.phase === "online" && client.status.auth === "ok";
 
 /** Sends all waiting sounds to the PC. Failed ones stay with the PC's reason (e.g. duplicate) until removed. */
-export async function syncPending(): Promise<{ sent: number; failed: number }> {
+let inFlight: Promise<{ sent: number; failed: number }> | null = null;
+/** Callers that come while an upload is running wait for that same run (the change queue needs the new sound ids). */
+export function syncPending(): Promise<{ sent: number; failed: number }> {
+  if (inFlight) return inFlight;
+  inFlight = runPending().finally(() => { inFlight = null; });
+  return inFlight;
+}
+
+async function runPending(): Promise<{ sent: number; failed: number }> {
   if (syncing || !connected() || !client.can("manage")) return { sent: 0, failed: 0 };
   syncing = true;
   publish();
@@ -133,8 +145,10 @@ export async function syncPending(): Promise<{ sent: number; failed: number }> {
     for (const p of items.filter((x) => !x.error)) {
       if (!connected()) break;
       try {
-        if (p.kind === "file" && p.data) await uploadBytes(p.name, new Uint8Array(p.data));
-        else if (p.url) await client.call<Sound>("sounds.importUrl", { url: p.url });
+        let sound: Sound | undefined;
+        if (p.kind === "file" && p.data) sound = await uploadBytes(p.name, new Uint8Array(p.data));
+        else if (p.url) sound = await client.call<Sound>("sounds.importUrl", { url: p.url });
+        if (sound?.id) outbox.replaceAll(outbox.all().map((x) => ({ ...x, params: substituteIds(x.params, new Map([[pendingRef(p.id), sound!.id]])) })));
         await tx("readwrite", (s) => s.delete(p.id));
         sent++;
       } catch (e) {

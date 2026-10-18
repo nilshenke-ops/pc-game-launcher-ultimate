@@ -1290,4 +1290,13 @@ export const en: Record<string, string> = {
   "Maus-Seitentaste hinten (4)": "Mouse side button back (4)",
   "Maus-Seitentaste vorne (5)": "Mouse side button forward (5)",
   "Wartet auf PC – wird beim nächsten Verbinden installiert": "Waiting for PC – will be installed at the next connection",
+  "Bezieht sich auf einen Sound, der noch nicht auf dem PC ist (siehe Soundboard → Wartet auf PC).": "Refers to a sound that is not on the PC yet (see Soundboard → Waiting for PC).",
+  "Deine installierten Spiele erkennt der PC beim ersten Verbinden. Steam-Spiele kannst du schon jetzt unter „Steam“ zur Bibliothek hinzufügen; Bewertung, Favorit und Kategorien lassen sich bearbeiten – übertragen wird später.": "The PC detects your installed games when it first connects. You can already add Steam games to the library under “Steam”; rating, favourite and categories can be edited – everything is sent later.",
+  "In der Bibliothek": "In the library",
+  "Lautstärken, Wiedergabe-Modus, Monitoring und Mikrofon-Durchleitung kannst du schon einstellen – übertragen werden nur die Werte, die du hier änderst. Audiogeräte (z. B. das virtuelle Kabel) kennt nur der PC; sie erscheinen nach dem Verbinden. Testton und Mikrofon-Test brauchen den PC.": "You can already set volumes, play mode, monitoring and mic passthrough – only the values you change here are sent. Audio devices (e.g. the virtual cable) are only known to the PC; they appear after connecting. Test tone and microphone test need the PC.",
+  "Noch kein PC verbunden": "No PC connected yet",
+  "Programme gibt der PC selbst frei (aus Sicherheitsgründen nur direkt am PC). Sie erscheinen hier nach dem Verbinden.": "Programs are released by the PC itself (for security only directly at the PC). They appear here after connecting.",
+  "Steam-Spiel zur Bibliothek hinzufügen {n}": "Add Steam game to the library {n}",
+  "„{n}“ zur Bibliothek hinzufügen": "Add “{n}” to the library",
+  "„{n}“ zur Bibliothek hinzugefügt": "“{n}” added to the library",
 };

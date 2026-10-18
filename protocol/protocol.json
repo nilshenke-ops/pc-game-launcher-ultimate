@@ -26,6 +26,7 @@
     "library.list": "view",
     "library.detect": "manage",
     "library.addDetected": "manage",
+    "library.addSteam": "manage",
     "library.addPath": "local",
     "library.pickFile": "local",
     "library.update": "manage",

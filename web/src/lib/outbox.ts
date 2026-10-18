@@ -30,6 +30,7 @@ const name = (p: Params, k = "name") => (typeof p[k] === "string" && p[k] ? `„
 /** Methods that may be queued, with a readable label. Everything else needs a connected PC. */
 export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "library.update": (p) => t("Spiel/Programm bearbeiten {n}", { n: name(p) }),
+  "library.addSteam": (p) => t("Steam-Spiel zur Bibliothek hinzufügen {n}", { n: name(p) }),
   "quick.save": (p) => t("Quick Action speichern {n}", { n: name(p) }),
   "quick.remove": () => t("Quick Action löschen"),
   "quick.reorder": () => t("Quick Actions sortieren"),
@@ -96,7 +97,14 @@ export const isTemp = (id: unknown) => typeof id === "string" && id.startsWith("
  * Returns what the PC would return (e.g. the saved object with its – temporary – id).
  */
 export function enqueue(method: string, params: Params, extra: Partial<OutboxEntry> = {}): unknown {
-  const p = structuredClone(params ?? {});
+  let p = structuredClone(params ?? {});
+  // The audio form always sends all values. Only what was changed here is kept, so devices chosen at the PC
+  // (e.g. the virtual cable) are not overwritten later by "Windows-Standard".
+  if (method === "audio.save") {
+    const before = (readCache<{ settings: Params }>("audio.state")?.data ?? OFFLINE_DEFAULTS["audio.state"] as { settings: Params }).settings;
+    p = Object.fromEntries(Object.entries(p).filter(([k, v]) => JSON.stringify(v) !== JSON.stringify(before[k])));
+    if (Object.keys(p).length === 0) return params;
+  }
   const result = applyLocally(method, p);
   entries = [...entries, { id: Math.random().toString(36).slice(2), method, params: p, label: QUEUEABLE[method]?.(p) ?? method, at: Date.now(), pc: currentPc(), ...extra }];
   persist();
@@ -111,6 +119,26 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "profiles.list": { profiles: [], autoSwitch: true },
   "automations.list": { rules: [] },
   "hotkeys.list": { supported: true, hotkeys: [] },
+  // Games come from the PC; until then only games picked here (e.g. from the Steam library) are listed.
+  "library.list": { items: [], installed: {}, running: [], coversFromCdn: true },
+  "history.get": { enabled: true, sessions: [], launches: [], stats: [], launchStats: [], failures: [] },
+  // Same defaults as the companion (Models.cs); only the values changed here are sent later (settings.save is a patch).
+  "settings.get": {
+    relaySecretSet: false, restartRequired: false,
+    settings: {
+      language: "de", lanAccess: true, port: 8787, webAppUrl: "https://nilshenke-ops.github.io/pc-game-launcher-ultimate", relayEnabled: false,
+      historyEnabled: true, startMinimized: true, keepRunningInTray: true, processScanSeconds: 5, recordSessionPerf: true,
+      updateManifestUrl: "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/update.json",
+      pluginCatalogUrl: "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/catalog.json",
+      notifyInfo: true, quietWhileGaming: true, mutedNotificationKeys: [], steamCoversFromCdn: true, gamePassEnabled: false, gamePassMarket: "DE",
+      coverSearch: true, steamEnabled: false, epicEnabled: false, eaEnabled: false,
+    },
+  },
+  // Audio devices are only known on the PC; until then "Windows-Standard" is shown and only changed values are sent.
+  "audio.state": {
+    supported: true, devices: [], missing: [], micPassthroughActive: false, offlineDefaults: true,
+    settings: { outputDeviceId: null, soundboardVolume: 80, monitorEnabled: false, monitorDeviceId: null, monitorVolume: 60, micPassthrough: false, micDeviceId: null, micVolume: 100, playMode: "overlap", maxConcurrent: 8 },
+  },
   "plugins.list": { appVersion: WEB_VERSION, apiVersion: 1, permissions: PERMISSION_LABELS, plugins: [],
     categories: ["launcher", "audio", "discord", "performance", "design", "automation", "device", "information", "productivity", "community"] },
 };
@@ -127,6 +155,12 @@ const upsert = <X extends WithId>(list: X[], item: X) => (list.some((x) => x.id 
 function applyLocally(method: string, p: Params): unknown {
   const ensureId = (o: Params, prefix: string) => { if (!o.id) o.id = tmpId(prefix); return o; };
   switch (method) {
+    case "library.addSteam": {
+      p.tempId = tmpId("item"); // later changes that refer to this game are switched to the PC's id
+      const item = { id: p.tempId as string, kind: "game", name: (p.name as string) || "Steam " + p.appId, source: "steam", target: p.appId, categories: [], favorite: false, processNames: [], addedAt: new Date().toISOString(), pending: true } as WithId & Params;
+      patch<{ items: (WithId & Params)[] }>("library.list", (d) => d.items.some((i) => i.source === "steam" && i.target === p.appId) ? d : ({ ...d, items: [...d.items, item] }));
+      return item;
+    }
     case "library.update":
       patch<{ items: WithId[] }>("library.list", (d) => ({ ...d, items: d.items.map((i) => (i.id === p.id ? { ...i, ...p } : i)) }));
       return p;
@@ -214,5 +248,6 @@ export function prepareForPc(method: string, params: Params): { params: Params; 
   const strip = (o: Params) => { const id = o.id; if (isTemp(id)) { o.id = ""; return id as string; } return undefined; };
   if (method === "profiles.save" && p.profile) return { params: p, tempId: strip(p.profile as Params) };
   if (["quick.save", "automations.save", "hotkeys.save", "sounds.saveCollection"].includes(method)) return { params: p, tempId: strip(p) };
+  if (method === "library.addSteam") return { params: p, tempId: p.tempId as string | undefined };
   return { params: p };
 }

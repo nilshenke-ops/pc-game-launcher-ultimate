@@ -137,6 +137,7 @@ public static class RpcApi
         rpc.Register("library.list", ctx => new { items = s.Library.List(), installed = s.Library.InstallState(), running = s.Sessions.Running().Select(r => r.itemId), coversFromCdn = s.Settings.Get().SteamCoversFromCdn });
         rpc.Register("library.detect", ctx => new { items = s.Library.Detect(), detectors = s.Platform.Detectors.Select(d => d.Name).Concat(s.Platform.Desktop.CanListApps ? new[] { "Startmenü / Microsoft Store / Xbox" } : Array.Empty<string>()) });
         rpc.Register("library.addDetected", ctx => s.Library.AddDetected(ctx.Str("key", 400), ParseKind(ctx.OptStr("kind", 20))));
+        rpc.Register("library.addSteam", ctx => s.Library.AddSteam(ctx.Str("appId", 12), ctx.OptStr("name", 80)));
         rpc.Register("library.addPath", ctx => s.Library.AddPath(ctx.Str("path", 400), ParseKind(ctx.OptStr("kind", 20)) ?? ItemKind.Program, ctx.OptStr("name", 80), ctx.OptStr("args", 500)));
         rpc.Register("library.pickFile", async ctx =>
         {

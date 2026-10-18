@@ -72,10 +72,11 @@ test("Ungekoppeltes Handy: Bereiche zeigen „Offline“, Aktionen fragen nach d
   phone = await ctx.newPage();
   await phone.goto(`${COMPANION}/#/games`);
   await expect(phone.getByText("Offline – kein PC verbunden")).toBeVisible();
-  await expect(phone.getByText("Kein PC verbunden. Verbinde deinen PC, um diesen Bereich zu nutzen.")).toBeVisible();
-  await expect(phone.getByText("E2E Testspiel")).toHaveCount(0); // no data without pairing, and no invented examples
+  // Games come from the PC: without pairing the list is empty with an explanation – no invented examples.
+  await expect(phone.getByText("Noch kein PC verbunden")).toBeVisible();
+  await expect(phone.getByText("E2E Testspiel")).toHaveCount(0);
   await expect(phone.getByText("Counter-Strike 2")).toHaveCount(0);
-  await phone.getByRole("main").getByRole("link", { name: "PC verbinden" }).last().click();
+  await phone.getByRole("link", { name: "PC verbinden" }).first().click();
   await expect(phone.getByRole("heading", { name: "Gerät koppeln" })).toBeVisible();
   await phone.locator("input.code-input").fill("ABCD-EFGH");
   await phone.getByRole("button", { name: "Koppeln" }).click();
@@ -232,6 +233,19 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.reload(); // survives closing the page
   await expect(tablet.getByText("Wartet auf PC (1)")).toBeVisible();
 
+  // Quick action without PC that plays the sound which itself still waits on the tablet.
+  await tablet.goto(`${HOSTED_SITE}/#/quick`);
+  await tablet.getByRole("button", { name: "Neue Aktion" }).click();
+  await tablet.getByLabel("Name").fill("Offline-Aktion");
+  if (await tablet.getByRole("combobox", { name: "Aktion" }).count() === 0) await tablet.getByRole("button", { name: "Schritt hinzufügen" }).click();
+  await tablet.getByRole("combobox", { name: "Aktion" }).first().selectOption("playSound");
+  const target = tablet.getByRole("combobox", { name: "Ziel" }).first();
+  const waitingSound = await target.locator("option", { hasText: /e2e-offline-sound.*wartet auf PC/ }).getAttribute("value");
+  expect(waitingSound).toMatch(/^pending:/);
+  await target.selectOption(waitingSound!);
+  await tablet.getByRole("button", { name: "Speichern" }).click();
+  await expect(tablet.getByText("Offline-Aktion")).toBeVisible();
+
   // Hotkey without PC: mouse side button (gaming mouse) → stop all sounds. Kept on the tablet, sent after pairing.
   await tablet.goto(`${HOSTED_SITE}/#/hotkeys`);
   await tablet.getByRole("button", { name: "Neuer Hotkey" }).click();
@@ -245,9 +259,9 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.goto(`${HOSTED_SITE}/#/plugins?tab=dev`);
   await tablet.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.cpu-mini-1.0.0.pglplugin"));
   await expect(tablet.getByText(/„CPU & RAM Mini“ vorgemerkt/)).toBeVisible();
-  await expect(tablet.getByText("2 Änderungen warten auf den PC")).toBeVisible();
+  await expect(tablet.getByText("3 Änderungen warten auf den PC")).toBeVisible();
   await tablet.reload();
-  await expect(tablet.getByText("2 Änderungen warten auf den PC")).toBeVisible(); // survives closing the page
+  await expect(tablet.getByText("3 Änderungen warten auf den PC")).toBeVisible(); // survives closing the page
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -284,6 +298,10 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.keyboard.press("Escape");
   await pc.goto(`${COMPANION}/#/hotkeys`);
   await expect(pc.getByText("Maus-Seitentaste hinten (4)")).toBeVisible();
+  // The quick action now plays the uploaded sound (its waiting id was replaced by the PC's id).
+  await pc.goto(`${COMPANION}/#/quick`);
+  await expect(pc.locator(".card, .list-item", { hasText: "Offline-Aktion" }).first()).toContainText("e2e-offline-sound");
+  await expect(pc.getByText("(fehlt)")).toHaveCount(0);
   await pc.goto(`${COMPANION}/#/plugins`);
   await expect(pc.locator(".card", { hasText: "CPU & RAM Mini" })).toHaveCount(0);
 

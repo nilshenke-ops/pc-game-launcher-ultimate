@@ -100,6 +100,20 @@ public sealed class LibraryService
         return Add(item);
     }
 
+    /// <summary>Adds a Steam game by app id (e.g. picked on the phone from the Steam library before the PC was connected).
+    /// Launching it via steam:// also offers the installation if it is not installed yet. Existing entries are returned unchanged.</summary>
+    public LibraryItem AddSteam(string appId, string? name)
+    {
+        if (LaunchValidator.ValidateTarget(LaunchSource.Steam, appId) is { } err) throw new RpcException("invalid-params", err);
+        var existing = List().FirstOrDefault(i => i.Source == LaunchSource.Steam && i.Target == appId);
+        if (existing != null) return existing;
+        return Add(new LibraryItem
+        {
+            Id = Ids.New("item"), Kind = ItemKind.Game, Name = Security.DeviceStore.Sanitize(name, 80, "Steam-Spiel " + appId),
+            Source = LaunchSource.Steam, Target = appId,
+        });
+    }
+
     public LibraryItem AddPath(string path, ItemKind kind, string? name, string? args)
     {
         path = path.Trim();

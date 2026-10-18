@@ -69,3 +69,17 @@ public class HotkeyHardwareTests
     [Fact]
     public void Plain_letters_stay_refused() => Assert.Null(Pgl.Core.Services.HotkeyService.Normalize("Q"));
 }
+
+public class AddSteamTests
+{
+    [Fact]
+    public void Steam_game_is_added_once_and_ids_are_checked()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        var a = s.Library.AddSteam("1086940", "Baldur's Gate 3");
+        Assert.Equal(LaunchSource.Steam, a.Source);
+        Assert.Equal(a.Id, s.Library.AddSteam("1086940", "anders").Id); // no duplicate
+        Assert.Throws<Pgl.Core.Rpc.RpcException>(() => s.Library.AddSteam("12; rm -rf", "x"));
+    }
+}

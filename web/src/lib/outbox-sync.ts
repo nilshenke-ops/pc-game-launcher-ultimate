@@ -5,6 +5,7 @@ import { client, RpcError } from "./rpc";
 import { t } from "./i18n";
 import { outbox, prepareForPc, substituteIds, type OutboxEntry } from "./outbox";
 import { uploadQueuedPluginFile } from "./plugins-offline";
+import { syncPending } from "./pending-sounds";
 
 let running = false;
 
@@ -13,6 +14,7 @@ export async function syncOutbox(opts: { retryFailed?: boolean } = {}): Promise<
   running = true;
   let sent = 0, failed = 0;
   try {
+    await syncPending(); // sounds first: queued hotkeys/actions may refer to them
     for (const e of [...outbox.list()]) {
       const entry = outbox.all().find((x) => x.id === e.id);
       if (!entry || (entry.error && !opts.retryFailed)) { if (entry?.error) failed++; continue; }
@@ -36,7 +38,13 @@ export async function syncOutbox(opts: { retryFailed?: boolean } = {}): Promise<
 }
 
 async function send(e: OutboxEntry): Promise<unknown> {
+  if (JSON.stringify(e.params).includes('"pending:')) throw new RpcError("pending-sound", t("Bezieht sich auf einen Sound, der noch nicht auf dem PC ist (siehe Soundboard → Wartet auf PC)."));
   if (e.method === "plugins.importFile") return uploadQueuedPluginFile(e);
+  // Only the audio values changed offline are applied on top of the PC's current settings.
+  if (e.method === "audio.save") {
+    const st = await client.call<{ settings: Record<string, unknown> }>("audio.state");
+    return client.call("audio.save", { ...st.settings, ...e.params });
+  }
   return client.call(e.method, prepareForPc(e.method, e.params).params);
 }
 

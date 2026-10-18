@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, ExternalLink, Link2, Play, RefreshCw, Search, Unlink } from "lucide-react";
+import { Download, ExternalLink, Link2, Play, Plus, RefreshCw, Search, Unlink } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast, useCan } from "../lib/hooks";
@@ -67,6 +67,10 @@ export function SteamView({ search }: { search: string }) {
     try { await fn(); if (ok) toast(ok, "success"); } catch (e) { toast((e as Error).message, "error"); }
     setBusy(null);
   };
+  // Games already in the library (also ones picked here without the PC) – the rest can be added, even before the PC is connected.
+  const lib = useRpc<{ items: { source: string; target: string }[] }>("library.list", {}, ["library"]);
+  const inLibrary = new Set((lib.data?.items ?? []).filter((i) => i.source === "steam").map((i) => i.target));
+  const addToLibrary = (g: SteamGame) => act("add:" + g.appId, () => client.call("library.addSteam", { appId: g.appId, name: g.name }), t("„{n}“ zur Bibliothek hinzugefügt", { n: g.name }));
   const play = (g: SteamGame) => act("play", async () => { bumpUsage("item:" + g.itemId); await client.call("library.launch", { id: g.itemId }); }, t("{name} wird gestartet", { name: g.name }));
   const install = (g: SteamGame) => act("install", () => client.call("steam.install", { appId: g.appId }), t("Steam am PC geöffnet: „{n}“ installieren", { n: g.name }));
   const link = () => act("link", async () => { await client.call("steam.link", { profile: profile || d?.localAccount?.steamId || "", apiKey: key }); setKey(""); setLinkOpen(false); }, t("Steam-Bibliothek verbunden"));
@@ -155,7 +159,12 @@ export function SteamView({ search }: { search: string }) {
                       <b>{g.name}</b>
                       {g.installed && g.itemId
                         ? <Button variant="primary" size="sm" className="play" icon={<Play size={14} />} onClick={() => play(g)}>{t("Spielen")}</Button>
-                        : <Button size="sm" className="play" icon={<Download size={14} />} onClick={() => install(g)} style={{ background: "rgba(0,0,0,.55)", color: "#fff" }}>{t("Installieren")}</Button>}
+                        : <div className="row nowrap" style={{ gap: 6 }}>
+                            <Button size="sm" className="play grow" icon={<Download size={14} />} onClick={() => install(g)} style={{ background: "rgba(0,0,0,.55)", color: "#fff" }}>{t("Installieren")}</Button>
+                            {canManage && !g.itemId && (inLibrary.has(g.appId)
+                              ? <span className="badge ok" title={t("In der Bibliothek")}>✓</span>
+                              : <Button size="sm" busy={busy === "add:" + g.appId} icon={<Plus size={14} />} aria-label={t("„{n}“ zur Bibliothek hinzufügen", { n: g.name })} onClick={() => addToLibrary(g)} style={{ background: "rgba(0,0,0,.55)", color: "#fff" }} />)}
+                          </div>}
                     </div>
                   </article>
                 ))}

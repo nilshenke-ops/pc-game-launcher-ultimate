@@ -1,7 +1,8 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useRpc } from "../lib/hooks";
-import type { ActionStep, AudioDevice, LibraryItem, ProfilesFile, SoundsFile, StepType } from "../lib/types";
+import type { ActionStep, AudioDevice, LibraryItem, ProfilesFile, Sound, SoundsFile, StepType } from "../lib/types";
+import { pendingRef, usePendingSounds } from "../lib/pending-sounds";
 import { Button } from "./ui";
 
 export function stepLabels(): Record<StepType, string> {
@@ -24,10 +25,12 @@ export function useStepRefs() {
   const prof = useRpc<ProfilesFile>("profiles.list", {}, ["profiles"]);
   const snd = useRpc<{ data: SoundsFile }>("sounds.list", {}, ["sounds"]);
   const audio = useRpc<{ devices: AudioDevice[] }>("audio.state", {}, ["audio"]);
+  const pending = usePendingSounds();
   return {
     items: lib.data?.items ?? [],
     profiles: prof.data?.profiles ?? [],
-    sounds: snd.data?.data.sounds ?? [],
+    // Sounds that still wait on this device can already be chosen; the PC's id is filled in after the upload.
+    sounds: [...(snd.data?.data.sounds ?? []), ...pending.items.filter((p) => !p.error).map((p) => ({ id: pendingRef(p.id), name: `${p.name} (${t("wartet auf PC")})` } as unknown as Sound))],
     collections: snd.data?.data.collections ?? [],
     outputs: (audio.data?.devices ?? []).filter((d) => d.flow === "render"),
   };
