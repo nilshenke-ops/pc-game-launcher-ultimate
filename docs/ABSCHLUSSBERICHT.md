@@ -1,4 +1,4 @@
-# Abschlussbericht – PC Game Launcher Ultimate 1.2.0
+# Abschlussbericht – PC Game Launcher Ultimate 1.3.0
 
 Stand: 17.10.2026. Entwickelt und getestet in einer Linux-Cloud-Umgebung (kein Windows-PC, keine Audiogeräte, kein Discord verfügbar). Die Statusangaben unten folgen genau dieser Einschränkung.
 
@@ -118,6 +118,12 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
   - *Weitere Funktionen:* Netzwerk-Monitor (Ping/Jitter/Verlust/Verlauf, nur sichtbar), Speicherplatz (Laufwerke, Spielgrößen), Energiezentrale (Windows), Leistungswerte und Notizen je Sitzung, Bewertungen, Wiederherstellungspunkte, Konsistenzprüfung, mehrere PCs, Plugins in der Suche. GETESTET: C#-Tests, E2E Monitor. Energie, GPU-Werte und Ping unter Windows: NICHT TESTBAR hier.
   - *Tests gesamt:* Web 14, Relay 6, C# 132, E2E 14 – alle grün; Windows-Build erfolgreich.
   - *Offen:* Secret `PGL_UPDATE_SIGNING_KEY` in GitHub hinterlegen (sonst muss jedes Release lokal signiert werden); Test auf echtem Windows-PC und echten Handys; RGB/Peripherie (keine herstellerübergreifende Schnittstelle – nicht vorgetäuscht); FPS; Code-Signatur-Zertifikat (SmartScreen); Plugins sind noch nicht Teil des Backups.
+
+- **Version 1.3.0 – alles schon ohne PC einrichten:**
+  - *Offline-Warteschlange* (`web/src/lib/outbox.ts`, `outbox-sync.ts`): Hotkeys, Quick Actions, Profile, Automatisierungen, Sounds/Sammlungen, Audio- und allgemeine Einstellungen, Bewertungen/Spiel-Bearbeitung, Sitzungsnotizen und Plugins werden ohne PC auf dem Gerät gespeichert, sofort angezeigt und nach dem nächsten Login der Reihe nach übertragen (vorläufige IDs werden durch die echten ersetzt). Der PC prüft jede Änderung wie bei direkter Eingabe; Abgelehntes bleibt mit Grund unter „Wartende Änderungen“ (erneut senden/verwerfen). Nie vorgemerkt: Spiele starten, Sounds abspielen, Profile wechseln, Energie, Updates, Kopplung.
+  - *Plugins ohne PC:* Store direkt von der Webseite (Signatur im Browser geprüft), Paket wird geladen und gegen Größe/SHA-256 geprüft, Designs und Widgets sofort auf dem Gerät; eigene Plugin-Dateien werden auf dem Gerät gehalten (Installation braucht beim PC das Admin-Recht).
+  - *Hotkeys für Gaming-Hardware:* Maus-Seitentasten (Maus 4/5, auch mit Strg/Alt/Shift) über eine Maus-Überwachung im Windows-Begleiter, die nur bei eingerichteten Maus-Hotkeys läuft und nur Seitentasten auswertet; Vorschläge für 60-%-Tastaturen, F13–F24, Doppel-Prüfung schon bei der Eingabe.
+  - GETESTET: C# 138 (inkl. Tastennamen), E2E 14 (u. a. nie gekoppeltes Tablet legt Hotkey mit Maus-Seitentaste an und merkt Plugin-Datei vor → nach Kopplung ist der Hotkey auf dem PC; die Plugin-Datei wird mangels Admin-Recht mit Grund abgelehnt), Plugin-Store ohne PC gegen den echten Katalog (Handy-Emulation: installiert, aktiviert, Design angewendet, 2 Änderungen wartend). NICHT TESTBAR hier: Maus-Seitentasten unter Windows mit echter Maus.
 
 ## 6. Offene Punkte
 1. **Test auf einem echten Windows-PC** (Fenster, Tray, Audio, Hotkeys, Steam/Epic-Start, Autostart, Firewall-Abfrage). Das ist der wichtigste nächste Schritt.
