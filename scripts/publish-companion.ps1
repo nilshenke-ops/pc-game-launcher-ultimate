@@ -5,8 +5,7 @@ $Root = Split-Path -Parent $PSScriptRoot
 $Out = Join-Path $Root "artifacts"
 if (-not (Get-Command node -ErrorAction SilentlyContinue)) { throw "Node.js fehlt (https://nodejs.org)" }
 if (-not (Get-Command dotnet -ErrorAction SilentlyContinue)) { throw ".NET 8 SDK fehlt (https://dotnet.microsoft.com/download)" }
-[xml]$props = Get-Content (Join-Path $Root "companion\Directory.Build.props")
-$Version = $props.Project.PropertyGroup.Version
+$Version = (Get-Content (Join-Path $Root "VERSION") -Raw).Trim()   # single version source
 
 Write-Host "==> Web-App bauen"
 Push-Location (Join-Path $Root "web")

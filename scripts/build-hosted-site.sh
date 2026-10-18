@@ -4,7 +4,7 @@
 # to the PC address that is scanned (QR code) or typed in.
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$ROOT/companion/Directory.Build.props")"
+VERSION="$(tr -d '[:space:]' < "$ROOT/VERSION")"
 (cd "$ROOT/web" && { [ -d node_modules ] || npm ci; } && npm run build:hosted)
 mkdir -p "$ROOT/artifacts"
 ZIP="$ROOT/artifacts/GameLauncher-Webseite-$VERSION.zip"

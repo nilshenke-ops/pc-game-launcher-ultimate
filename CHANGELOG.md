@@ -6,14 +6,25 @@ für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
 ## 1.2.0 – 2026-10-18
 ### Neu
-- Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: installierte und neueste Version, Datum, Größe, Änderungen, direkter Download
-- Updates werden signiert (ECDSA) und vor der Installation auf Signatur, Größe, Prüfsumme und Dateityp geprüft
-- Vorherige Version wiederherstellen (Update-Zentrale oder Tray-Menü); Wiederherstellungspunkt vor jedem Update
-- Veröffentlichung über GitHub Releases mit automatischer Prüfung der Downloads und der Update-Erkennung
+- Plugin Center: Plugins aus dem signierten Store oder als Datei installieren, aktivieren, Rechte einzeln erteilen und entziehen, aktualisieren, zurücksetzen, exportieren
+- Plugin-SDK mit Anleitung und vier Beispiel-Plugins (Spielzeit heute, CPU & RAM Mini, Neon-Themes, Discord-Schnellton); Widgets laufen abgeschottet in einer Sandbox
+- Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: Version, Datum, Größe, Änderungen, direkter Download von GitHub Releases
+- Signierte Updates (ECDSA) mit Prüfung von Signatur, Größe, Prüfsumme und Dateityp; vorherige Version wiederherstellen; Wiederherstellungspunkt vor jedem Update
+- Netzwerk-Monitor mit Ping, Jitter, Paketverlust und Verlauf
+- Speicherplatz-Manager mit Laufwerken und Spielgrößen
+- Energiezentrale: Sperren, Energiesparen, Neustart, Herunterfahren (mit Verzögerung und Abbrechen)
+- Leistungswerte (CPU/GPU/RAM) und Notizen je Spielsitzung
+- Bewertungen (1–5 Sterne) für Spiele und Programme
+- Wiederherstellungspunkte: wöchentlich automatisch, manuell, vor Updates; prüfen und wiederherstellen
+- Mehrere Windows-PCs auf einem Handy verwalten und wechseln
+- Konsistenzprüfung in der Diagnose: fehlende Programme, verwaiste Verweise, doppelte Hotkeys
 ### Verbessert
 - Eine Versionsquelle (Datei VERSION) für Begleiter und Webseite
+- Universelle Suche findet auch Plugins und ihre Aktionen
+- Veröffentlichung über GitHub Releases mit automatischer Prüfung der Downloads und der Update-Erkennung
 ### Behoben
 - Nach einem Update startete der Begleiter nicht neu, solange die alte Version noch lief
+- Webseite zeigte bei älteren Update-Angaben keine Download-Datei
 
 ## 1.1.0 – 2026-10-18
 ### Neu

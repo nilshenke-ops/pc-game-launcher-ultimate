@@ -4,7 +4,7 @@
 
 **Voraussetzungen:** Windows 10 (64 Bit) oder Windows 11. Kein .NET nötig (die EXE ist „self-contained“). Für das eingebaute Fenster wird die Microsoft Edge **WebView2-Runtime** genutzt (bei Windows 11 und aktuellem Windows 10 vorhanden); fehlt sie, bietet der Companion „Im Browser öffnen“ an.
 
-1. ZIP `PCGameLauncherCompanion-<Version>-win-x64.zip` entpacken, z. B. nach `Dokumente\GameLauncher`.
+1. Herunterladen: https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/latest (EXE direkt oder ZIP `PCGameLauncherCompanion-<Version>-win-x64.zip`) – auch vom Handy über die Webseite → „Updates & Versionen“ möglich; die Datei dann z. B. per OneDrive/Google Drive/USB auf den PC bringen. In einen eigenen Ordner legen bzw. entpacken, z. B. `Dokumente\GameLauncher` (ein Ordner, in den dein Benutzer schreiben darf – dann brauchen Updates keine Administratorrechte).
 2. Optional Prüfsumme kontrollieren: `certutil -hashfile PCGameLauncherCompanion.exe SHA256` → muss mit `SHA256SUMS.txt` übereinstimmen.
 3. `PCGameLauncherCompanion.exe` starten. Die Datei ist nicht code-signiert; SmartScreen zeigt ggf. „Weitere Informationen → Trotzdem ausführen“.
 4. **Firewall-Abfrage:** „Private Netzwerke“ erlauben. Ohne diese Freigabe erreicht das Handy den PC nicht.
@@ -64,6 +64,15 @@ npm start                      # lauscht auf Port 8788
 ```
 Davor einen Reverse-Proxy mit TLS (z. B. Caddy/nginx) setzen, `trustProxy: true` aktivieren. Im Companion unter **Einstellungen → Verbindung**: Relay-Adresse `wss://relay.deinedomain.de`, Companion-ID und Schlüssel eintragen, „Mit eigenem Relay verbinden“ einschalten. Die Web-App ist dann unter `https://relay.deinedomain.de/` erreichbar; das Relay liefert auch `Begleiter herunterladen` aus (Datei aus `relay/downloads`, erzeugt von `scripts/publish-companion.sh`).
 
+## Updates
+
+- Der Begleiter prüft 2 Minuten nach dem Start und danach täglich die offizielle Quelle (`download/update.json` auf der Webseite). Bei einer neuen Version erscheint im Begleiter-Fenster „Update verfügbar“ mit „Jetzt aktualisieren“, „Später“ und „Details anzeigen“; zusätzlich eine Benachrichtigung.
+- Manuell: **Updates & Versionen → Dein PC → Nach Updates suchen**.
+- Ablauf: Herunterladen → Prüfung von Signatur (Schlüssel des Projekts), Größe, SHA-256 und Dateityp → **Jetzt aktualisieren** (nur am PC, mit Bestätigung) → Wiederherstellungspunkt der Einstellungen → EXE wird ersetzt (alte Version bleibt als `PCGameLauncherCompanion.exe.old`) → Neustart.
+- Schlägt etwas fehl, bleibt die bisherige Version unverändert nutzbar. Zurück zur vorherigen Version: **Updates & Versionen → Vorherige Version** oder **Tray-Menü → Vorherige Version wiederherstellen**.
+- Einstellungen, Spiele, Profile, Sounds und Plugins liegen im Datenordner und bleiben bei Updates erhalten.
+- Von 1.0.0 auf 1.2.0: einmal manuell herunterladen und die EXE ersetzen (1.0.0 kennt die Update-Prüfung noch nicht). 1.1.0 findet 1.2.0 selbst.
+
 ## 4. Aus dem Quellcode bauen (Entwickler)
 
 Voraussetzungen: **Node.js 20+**, **.NET 8 SDK**, optional `zip`.
@@ -82,3 +91,18 @@ Voraussetzungen: **Node.js 20+**, **.NET 8 SDK**, optional `zip`.
 Reihenfolge beim manuellen Start: zuerst Companion, dann (optional) Relay – der Companion verbindet sich automatisch neu, wenn das Relay später startet.
 
 Der Windows-Companion lässt sich auch unter Linux/macOS bauen (Cross-Compile, `EnableWindowsTargeting`). Ausführen kann man ihn nur unter Windows.
+
+## 5. Veröffentlichen (Maintainer)
+
+Version und Änderungen:
+1. `VERSION` erhöhen (MAJOR.MINOR.PATCH) – das ist die einzige Versionsangabe; Begleiter und Webseite lesen sie beim Bauen.
+2. In `CHANGELOG.md` einen Abschnitt `## X.Y.Z – Datum` mit `### Neu/Verbessert/Behoben` schreiben.
+3. Auf `main` pushen und auf GitHub → Actions → **„Release veröffentlichen“** → „Run workflow“.
+
+Der Workflow testet, baut EXE/ZIP/Webseite, erzeugt `update.json`/`releases.json`/Prüfsummen, legt das GitHub-Release `vX.Y.Z` an, lädt alle Dateien zur Kontrolle erneut herunter (Größe + SHA-256), veröffentlicht die Webseite und prüft mit dem echten Begleiter (`--check-update … --assume-version 0.0.1 --download`), dass das Update erkannt, geladen und verifiziert wird.
+
+**Signaturschlüssel:** Updates und der Plugin-Katalog werden mit einem ECDSA-P-256-Schlüssel signiert. Den privaten Schlüssel als Repository-Secret `PGL_UPDATE_SIGNING_KEY` hinterlegen (Settings → Secrets and variables → Actions). Ohne Secret legt der Workflow das Release an, stellt die Webseite aber nicht um; dann lokal signieren:
+`node scripts/sign-release.mjs X.Y.Z --key <schlüssel.pem> --out out --history <gh-pages>/download/releases.json` und `out/*` nach `gh-pages/download/` kopieren.
+Den privaten Schlüssel niemals ins Repository legen und sicher aufbewahren – geht er verloren, können installierte Begleiter keine neuen Updates mehr annehmen (dann wäre ein manueller Download nötig).
+
+Plugin-Katalog: `node scripts/plugin-catalog.mjs --out <gh-pages>/plugins --base-url https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins --key <schlüssel.pem>`.
