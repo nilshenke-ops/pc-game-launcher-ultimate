@@ -92,8 +92,8 @@
     {
       "id": "de.pgl.game-overlay",
       "name": "Game-Overlay",
-      "version": "1.0.0",
-      "description": "Overlay im Spiel wie die Xbox Game Bar: CPU, RAM und GPU live, Aufnahme starten/stoppen, Replay-Puffer und „Replay speichern“ (über OBS Studio). Dazu Aktionen für frei wählbare Tastenkürzel – einstellbar unter „Overlay & Aufnahme“.",
+      "version": "1.1.0",
+      "description": "Overlay im Spiel wie die Xbox Game Bar: CPU, RAM und GPU live, Aufnahme starten/stoppen, Replay-Puffer und „Replay speichern“ – mit OBS Studio, NVIDIA, Xbox Game Bar, Steam oder Discord (wählbar unter „Overlay & Aufnahme“). Dazu Aktionen für frei wählbare Tastenkürzel.",
       "author": "PC Game Launcher",
       "category": "performance",
       "platforms": [
@@ -105,12 +105,19 @@
         "capture.control",
         "overlay.show"
       ],
-      "minAppVersion": "1.4.0",
+      "minAppVersion": "1.5.0",
       "trust": "official",
-      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.game-overlay-1.0.0.pglplugin",
-      "sha256": "c61cd127c3e6ee83d18f81a62b4b4324a9e03532b67efe08b49851926a465db2",
-      "size": 3338,
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.game-overlay-1.1.0.pglplugin",
+      "sha256": "129e44e0dd6b12c7100786b71672e1d54aed74023b31aaf247461e06966c9c83",
+      "size": 3772,
       "changelog": [
+        {
+          "version": "1.1.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Aufnahme auch mit NVIDIA, Xbox Game Bar, Steam oder Discord"
+          ]
+        },
         {
           "version": "1.0.0",
           "date": "2026-10-18",

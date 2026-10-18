@@ -1,5 +1,34 @@
 [
   {
+    "version": "1.5.0",
+    "date": "2026-10-18",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.5.0/PCGameLauncherCompanion.exe",
+    "size": 84346840,
+    "sha256": "b991057e9a72d63c99c7cc1e6a06ba03123d44146572027f8e26f41ef94daa74",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-1.5.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.5.0/PCGameLauncherCompanion-1.5.0-win-x64.zip",
+      "size": 78675165,
+      "sha256": "cca66f12a777b6f358a7cdabd52b6b0cdedbf5c75f0af4b40c660a75c91fce9a"
+    },
+    "notes": "Aufnahme-Programm wählbar: OBS Studio, NVIDIA App / GeForce Experience, Xbox Game Bar, Steam oder Discord – der Launcher drückt deren Tastenkürzel (Werkseinstellungen vorausgefüllt, frei änderbar) · Großes Overlay wahlweise das eigene oder das von NVIDIA, Xbox Game Bar, Steam oder Discord · Auswahl und Tasten auch ohne PC auf dem Handy einstellbar",
+    "changes": {
+      "neu": [
+        "Aufnahme-Programm wählbar: OBS Studio, NVIDIA App / GeForce Experience, Xbox Game Bar, Steam oder Discord – der Launcher drückt deren Tastenkürzel (Werkseinstellungen vorausgefüllt, frei änderbar)",
+        "Großes Overlay wahlweise das eigene oder das von NVIDIA, Xbox Game Bar, Steam oder Discord",
+        "Auswahl und Tasten auch ohne PC auf dem Handy einstellbar",
+        "Plugin „Game-Overlay“ 1.1.0 nutzt das gewählte Programm"
+      ],
+      "verbessert": [
+        "Warnung und Schutz, wenn eine Taste zugleich Launcher-Hotkey ist (sonst bekäme das andere Programm sie nie)"
+      ],
+      "behoben": []
+    },
+    "signature": "UbAXmSXfvNaHDbSYABiYNpwX93MPNU92qFbaOO4F6UgsXBLul1E5cSQHexEh33e1Tde7FfzA0jdhcMavu/28Dg=="
+  },
+  {
     "version": "1.4.1",
     "date": "2026-10-18",
     "channel": "stable",
