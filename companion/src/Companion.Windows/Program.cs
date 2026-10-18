@@ -135,6 +135,11 @@ sealed class TrayIcon : IDisposable
         menu.Items.Add("Relay trennen / verbinden", null, async (_, _) =>
         {
             var set = _s.Settings.Get();
+            if (string.IsNullOrWhiteSpace(set.RelayUrl) || string.IsNullOrWhiteSpace(set.RelayCompanionId))
+            {
+                MessageBox.Show("Es ist noch kein Relay eingerichtet. Einstellungen → Verbindung → Relay.", "PC Game Launcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
             _s.Settings.SaveSecurity(new SettingsService.SecurityUpdate { RelayEnabled = !set.RelayEnabled }, _s.Platform.Secrets);
             await Task.Delay(300);
             Update();

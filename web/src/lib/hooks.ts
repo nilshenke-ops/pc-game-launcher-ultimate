@@ -7,6 +7,29 @@ export function useConn(): ConnStatus {
   return useSyncExternalStore(client.subscribe, client.getStatus);
 }
 
+const visibleNow = () => typeof document === "undefined" || document.visibilityState !== "hidden";
+const onVisibility = (cb: () => void) => { document.addEventListener("visibilitychange", cb); return () => document.removeEventListener("visibilitychange", cb); };
+/** False while the tab/app is in the background (iPad home screen, hidden PC window) – live subscriptions pause then. */
+export function usePageVisible(): boolean {
+  return useSyncExternalStore(onVisibility, visibleNow, () => true);
+}
+
+/**
+ * Live data from the PC (e.g. "monitor", "audio"): subscribes only while connected and the page is visible,
+ * unsubscribes otherwise – so the PC does no sampling for views nobody is looking at.
+ */
+export function useLiveSubscription<T>(topic: string, onFirst?: (data: T) => void, onError?: (e: Error) => void) {
+  const authed = useConn().auth === "ok";
+  const visible = usePageVisible();
+  const first = useRef(onFirst); first.current = onFirst;
+  const fail = useRef(onError); fail.current = onError;
+  useEffect(() => {
+    if (!authed || !visible) return;
+    client.call<T>(`${topic}.subscribe`).then((d) => first.current?.(d)).catch((e) => fail.current?.(e as Error));
+    return () => { client.call(`${topic}.unsubscribe`).catch(() => {}); };
+  }, [topic, authed, visible]);
+}
+
 export function useEvent<T = unknown>(event: string, fn: (data: T) => void) {
   const ref = useRef(fn);
   ref.current = fn;

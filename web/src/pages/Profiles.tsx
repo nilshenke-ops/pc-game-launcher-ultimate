@@ -125,10 +125,12 @@ function ProfileEditor({ profile, onClose }: { profile: Profile; onClose: () => 
             {p.soundboardVolume != null && <Button size="sm" variant="ghost" onClick={() => set({ soundboardVolume: null })}>{t("Zurücksetzen")}</Button>}
           </div>
         </Field>
-        <Field label={t("Dashboard-Layout")}>
-          <select className="input" value={p.dashboardLayoutId ?? ""} onChange={(e) => set({ dashboardLayoutId: e.target.value || null })}>
+        <Field label={t("Dashboard-Layout")} hint={t("Layouts gehören zu jedem Gerät. Gespeichert wird der Name – auf anderen Geräten wird das Layout mit gleichem Namen genutzt, sonst bleibt deren Layout.")}>
+          {/* Stored by name: layout ids differ per device, names can match across devices. Old profiles may still hold an id. */}
+          <select className="input" value={prefs.layouts.find((l) => l.id === p.dashboardLayoutId)?.name ?? p.dashboardLayoutId ?? ""} onChange={(e) => set({ dashboardLayoutId: e.target.value || null })}>
             <option value="">{t("Nicht ändern")}</option>
-            {prefs.layouts.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+            {p.dashboardLayoutId && !prefs.layouts.some((l) => l.id === p.dashboardLayoutId || l.name === p.dashboardLayoutId) && <option value={p.dashboardLayoutId}>{t("„{n}“ (auf diesem Gerät nicht vorhanden)", { n: p.dashboardLayoutId })}</option>}
+            {[...new Set(prefs.layouts.map((l) => l.name))].map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
         </Field>
       </div>

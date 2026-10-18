@@ -51,6 +51,9 @@ public sealed class LibraryFile
 {
     public int Version { get; set; } = 1;
     public List<LibraryItem> Items { get; set; } = new();
+    /// <summary>Automatically added games the user removed ("Source:Target"); the Steam/Epic/EA/Game Pass sync does not add them again.
+    /// Cleared when the game is uninstalled or added again by hand.</summary>
+    public List<string> Hidden { get; set; } = new();
 }
 
 /// <summary>Result of a platform scan. Not persisted until the user adds it.</summary>
@@ -292,7 +295,8 @@ public sealed class Settings
     public bool StartMinimized { get; set; } = true;
     public bool KeepRunningInTray { get; set; } = true;
     public int ProcessScanSeconds { get; set; } = 5;
-    public string? UpdateManifestUrl { get; set; }
+    /// <summary>Update manifest (version, download link, SHA-256). Default: the project's GitHub Pages site. Empty = no checks.</summary>
+    public string? UpdateManifestUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/update.json";
     public bool NotifyInfo { get; set; } = true;
     public bool QuietWhileGaming { get; set; } = true;
     public List<string> MutedNotificationKeys { get; set; } = new();

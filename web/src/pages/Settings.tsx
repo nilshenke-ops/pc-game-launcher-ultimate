@@ -412,7 +412,7 @@ function Updates() {
     try {
       // The companion reports failed checks/downloads in the status (state "error") instead of throwing.
       const r = await client.call<{ state?: string; error?: string } | null>(m);
-      if (r && r.state === "error") toast(r.error ?? t("Fehlgeschlagen"), "error"); else toast(label, "success");
+      if (r && (r.state === "error" || r.state === "no-source")) toast(r.error ?? t("Fehlgeschlagen"), "error"); else toast(label, "success");
     } catch (e) { toast((e as Error).message, "error"); }
     setBusy(null); setProgress(null); q.reload();
   };
@@ -422,7 +422,7 @@ function Updates() {
       {u && (
         <Card title={t("Updates")} icon={<RefreshCw size={18} />} meta={`${t("Installiert")}: v${u.current}`}>
           <div className="stack">
-            <Field label={t("Update-Quelle (Manifest-URL)")} hint={t("https-Adresse einer update.json mit Version, Download-Link und SHA-256. Wird nie automatisch installiert.")}>
+            <Field label={t("Update-Quelle (Manifest-URL)")} hint={t("Standard: die offizielle Download-Seite. Wird 2 Minuten nach dem Start und dann einmal täglich geprüft; bei einer neuen Version kommt eine Benachrichtigung. Leer = keine Prüfung. Es wird nie automatisch installiert.")}>
               <div className="row nowrap"><input className="input mono" value={src} onChange={(e) => setSrc(e.target.value)} placeholder="https://…/update.json" />
                 <Button onClick={() => s.save({ updateManifestUrl: src }, true)}>{t("Speichern")}</Button></div>
             </Field>
@@ -513,7 +513,7 @@ function Backup() {
     <>
       <Card title={t("Backup erstellen")} icon={<Download size={18} />}>
         <div className="stack">
-          <p className="small muted">{t("Sichert Bibliothek, Favoriten, Kategorien, Profile, Layouts, Design, Soundboard, Hotkeys, Automatisierungen und Einstellungen als ZIP. Gekoppelte Geräte und Schlüssel werden nie exportiert.")}</p>
+          <p className="small muted">{t("Sichert Bibliothek, Favoriten, Kategorien, Profile, Soundboard, Hotkeys, Automatisierungen, Einstellungen sowie Design und Layouts des PC-Fensters als ZIP. Gekoppelte Geräte, Schlüssel und Relay-Zugang werden nie exportiert bzw. übernommen. Die Bibliothek lässt sich nur direkt am PC wiederherstellen.")}</p>
           <Switch checked={withSounds} onChange={setWithSounds} label={t("Audiodateien mitsichern")} />
           {busy === "export" && <div className="progress-bar"><i style={{ width: `${progress * 100}%` }} /></div>}
           <div className="row">

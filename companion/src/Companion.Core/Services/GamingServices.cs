@@ -117,7 +117,7 @@ public sealed class SettingsService
             if (u.RelayUrl != null) s.RelayUrl = u.RelayUrl == "" ? null : u.RelayUrl;
             if (u.RelayCompanionId != null) s.RelayCompanionId = u.RelayCompanionId == "" ? null : u.RelayCompanionId;
             if (u.RelaySecret != null) s.RelaySecretProtected = u.RelaySecret == "" ? null : secrets.Protect(u.RelaySecret);
-            if (u.UpdateManifestUrl != null) s.UpdateManifestUrl = u.UpdateManifestUrl == "" ? null : u.UpdateManifestUrl;
+            if (u.UpdateManifestUrl != null) s.UpdateManifestUrl = u.UpdateManifestUrl.Trim(); // "" = switched off (null would fall back to the default)
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");
@@ -134,8 +134,14 @@ public sealed class SettingsService
         s.PublicUrl = keepSecurityFrom.PublicUrl;   // allowed web origins are never changed by a backup file
         s.WebAppUrl = keepSecurityFrom.WebAppUrl;
         s.SteamApiKeyProtected = keepSecurityFrom.SteamApiKeyProtected; // secrets never come from a backup file
+        // The relay address decides where the companion sends its relay secret – only changeable at the PC (settings.save).
+        s.RelayEnabled = keepSecurityFrom.RelayEnabled;
+        s.RelayUrl = keepSecurityFrom.RelayUrl;
+        s.RelayCompanionId = keepSecurityFrom.RelayCompanionId;
+        s.UpdateManifestUrl = keepSecurityFrom.UpdateManifestUrl; // where updates are downloaded from
         _store.Replace(s);
         _hub.Changed("settings");
+        Saved?.Invoke(_store.Snapshot()); // restored Steam/Epic/EA/Game Pass/cover settings take effect immediately
     }
 }
 
@@ -292,10 +298,19 @@ public sealed class SessionTracker : IDisposable
         _library = library; _processes = processes; _settings = settings;
     }
 
+    public int PeriodSeconds { get; private set; }
+
     public void Start()
     {
-        var period = TimeSpan.FromSeconds(Math.Clamp(_settings.Get().ProcessScanSeconds, 2, 60));
-        _timer = new Timer(_ => Tick(), null, TimeSpan.FromSeconds(1), period);
+        PeriodSeconds = Math.Clamp(_settings.Get().ProcessScanSeconds, 2, 60);
+        _timer = new Timer(_ => Tick(), null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(PeriodSeconds));
+        _settings.Saved += s =>
+        {
+            var p = Math.Clamp(s.ProcessScanSeconds, 2, 60);
+            if (p == PeriodSeconds) return;
+            PeriodSeconds = p;
+            _timer?.Change(TimeSpan.FromSeconds(p), TimeSpan.FromSeconds(p)); // new scan interval applies without a restart
+        };
     }
 
     public IReadOnlyList<(string itemId, DateTime since)> Running()
@@ -426,7 +441,7 @@ public sealed class ProfileService
 
     public void SetAutoSwitch(bool on) { _store.Update(f => f.AutoSwitch = on); _hub.Changed("profiles"); }
 
-    public Profile Activate(string id, string reason, bool rememberPrevious = true)
+    public Profile Activate(string id, string reason, bool rememberPrevious = true, bool launchPrograms = true)
     {
         var current = CurrentAudio?.Invoke();
         var (p, plan) = _store.Update(f =>
@@ -440,7 +455,7 @@ public sealed class ProfileService
             return (p, Plan(f.Baseline, p, prev, current));
         });
         try { Apply?.Invoke(p, plan); } catch (Exception ex) { Log.Warn("profiles", $"Profil teilweise angewendet: {ex.Message}"); }
-        foreach (var progId in p.LaunchProgramIds) LaunchItem?.Invoke(progId, $"Profil {p.Name}");
+        if (launchPrograms) foreach (var progId in p.LaunchProgramIds) LaunchItem?.Invoke(progId, $"Profil {p.Name}");
         Log.Info("profiles", $"Profil aktiviert: {p.Name} ({reason})");
         _hub.Broadcast("profile.active", new { id = p.Id, name = p.Name, reason });
         _hub.Changed("profiles");
@@ -473,7 +488,8 @@ public sealed class ProfileService
     public Profile? Revert(string reason)
     {
         var prev = _store.Get(f => f.PreviousProfileId);
-        return prev == null ? null : Activate(prev, reason, rememberPrevious: false);
+        // Going back must not start the profile's programs a second time (they are usually still running).
+        return prev == null ? null : Activate(prev, reason, rememberPrevious: false, launchPrograms: false);
     }
 
     internal void Import(ProfilesFile f) { _store.Replace(f); _hub.Changed("profiles"); }
@@ -731,6 +747,8 @@ public sealed class HotkeyService
     readonly Dictionary<string, HotkeyStatus> _status = new();
     readonly Dictionary<string, int> _nativeIds = new();
     public Func<Hotkey, Task>? OnPressed { get; set; }
+    /// <summary>False if the hotkey belongs to profiles that are not active right now.</summary>
+    public Func<Hotkey, bool>? ActiveNow { get; set; }
 
     public HotkeyService(AppPaths paths, IHotkeyRegistrar registrar, IHub hub)
     {
@@ -802,6 +820,8 @@ public sealed class HotkeyService
     {
         h.Keys = Normalize(h.Keys) ?? throw new RpcException("invalid-params", "Ungültige Tastenkombination. Beispiel: Strg+Alt+F9 (einzelne Buchstaben nur mit Strg/Alt/Shift/Win).");
         if (h.Enabled && Conflict(h) is { } c) throw new RpcException("conflict", c);
+        if (h.QuickActionId == null && h.Action.Type is StepType.LaunchItem or StepType.ActivateProfile or StepType.PlaySound && string.IsNullOrEmpty(h.Action.Ref))
+            throw new RpcException("invalid-params", "Bitte ein Ziel wählen (Spiel, Profil oder Sound) – sonst würde der Hotkey nichts tun.");
         var r = _store.Update(f =>
         {
             if (string.IsNullOrEmpty(h.Id)) h.Id = Ids.New("hk");
@@ -828,6 +848,9 @@ public sealed class HotkeyService
             {
                 if (!h.Enabled) { _status[h.Id] = new HotkeyStatus(h.Id, "disabled", null); continue; }
                 if (Reserved.Contains(h.Keys)) { _status[h.Id] = new HotkeyStatus(h.Id, "error", "Reserviert"); continue; }
+                // Profile-only hotkeys are registered only while their profile is active – otherwise Windows would swallow
+                // the key in every other profile without anything happening.
+                if (ActiveNow?.Invoke(h) == false) { _status[h.Id] = new HotkeyStatus(h.Id, "inactive", "Nur in einem anderen Profil aktiv"); continue; }
                 var id = nextId++;
                 var captured = h;
                 var err = _registrar.Register(id, h.Keys, () => _ = OnPressed?.Invoke(captured));
@@ -836,6 +859,7 @@ public sealed class HotkeyService
                 _nativeIds[h.Id] = id;
             }
         }
+        _hub.Changed("hotkeys");
     }
 
     internal HotkeysFile Export() => _store.Snapshot();

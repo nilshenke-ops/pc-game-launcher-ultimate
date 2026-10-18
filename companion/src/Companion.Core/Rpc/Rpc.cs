@@ -95,6 +95,7 @@ public interface IHub
     void Broadcast(string ev, object? data, string permission = Security.Permissions.View);
     void Changed(string topic) => Broadcast("changed", new { topic });
     void SendTo(RpcSession session, string ev, object? data);
+    void BroadcastTo(Func<RpcSession, bool> filter, string ev, object? data);
 }
 
 /// <summary>

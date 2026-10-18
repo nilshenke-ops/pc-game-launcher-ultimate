@@ -91,6 +91,8 @@ public sealed class NullAudioEngine(string reason) : IAudioEngine
     public bool MicPassthroughActive => false;
     public float? MicLevel => null;
     public string? PlayTestTone(string? deviceId, float volume) => reason;
+    public Task<MicTestResult> MicTestAsync(string? deviceId, TimeSpan duration, Action<float> onLevel) => Task.FromResult(new MicTestResult(null, 0, 0, reason));
+    public event Action? DevicesChanged { add { } remove { } }
 }
 
 public sealed class NullHotkeys : IHotkeyRegistrar

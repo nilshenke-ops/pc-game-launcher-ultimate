@@ -154,9 +154,11 @@ public sealed class LibraryService
                 }
                 else if (i.Categories.Remove(GamePassService.Category)) i.GamePassId = null;
             }
+            ForgetHidden(f, LaunchSource.AppsFolder, installedByPfn.Values);
             foreach (var (pfn, aumid) in installedByPfn)
             {
                 if (!byPfn.TryGetValue(pfn, out var game)) continue;
+                if (IsHidden(f, LaunchSource.AppsFolder, aumid)) continue;
                 if (f.Items.Any(i => string.Equals(PfnOf(i), pfn, StringComparison.OrdinalIgnoreCase))) continue;
                 if (LaunchValidator.ValidateTarget(LaunchSource.AppsFolder, aumid) != null) continue;
                 f.Items.Add(new LibraryItem
@@ -183,9 +185,11 @@ public sealed class LibraryService
         _store.Update(f =>
         {
             removed = f.Items.RemoveAll(i => i.AutoAdded && i.Source == LaunchSource.Steam && !ids.Contains(i.Target));
+            ForgetHidden(f, LaunchSource.Steam, ids);
             foreach (var d in installed)
             {
                 if (f.Items.Any(i => i.Source == LaunchSource.Steam && i.Target == d.Target)) continue;
+                if (IsHidden(f, LaunchSource.Steam, d.Target)) continue;
                 if (LaunchValidator.ValidateTarget(LaunchSource.Steam, d.Target) != null) continue;
                 f.Items.Add(new LibraryItem
                 {
@@ -208,9 +212,12 @@ public sealed class LibraryService
         _store.Update(f =>
         {
             removed = f.Items.RemoveAll(i => i.AutoAdded && i.AutoSource == autoSource && !targets.Contains(i.Target));
+            foreach (var src in installed.Select(d => d.Source).Append(autoSource == LauncherService.Epic ? LaunchSource.Epic : LaunchSource.Exe).Distinct())
+                ForgetHidden(f, src, installed.Where(d => d.Source == src).Select(d => d.Target));
             foreach (var d in installed)
             {
                 if (f.Items.Any(i => i.Source == d.Source && string.Equals(i.Target, d.Target, StringComparison.OrdinalIgnoreCase))) continue;
+                if (IsHidden(f, d.Source, d.Target)) continue;
                 if (LaunchValidator.ValidateTarget(d.Source, d.Target) != null) continue;
                 f.Items.Add(new LibraryItem
                 {
@@ -253,9 +260,19 @@ public sealed class LibraryService
         if (changed) _hub.Changed("library");
     }
 
+    internal static string HiddenKey(LaunchSource source, string target) => $"{source}:{target}".ToLowerInvariant();
+    static bool IsHidden(LibraryFile f, LaunchSource source, string target) => f.Hidden.Contains(HiddenKey(source, target));
+    /// <summary>Forgets removed games that are no longer installed – reinstalling one adds it again.</summary>
+    static void ForgetHidden(LibraryFile f, LaunchSource source, IEnumerable<string> installedTargets)
+    {
+        var keep = installedTargets.Select(t => HiddenKey(source, t)).ToHashSet();
+        var prefix = (source + ":").ToLowerInvariant();
+        f.Hidden.RemoveAll(h => h.StartsWith(prefix, StringComparison.Ordinal) && !keep.Contains(h));
+    }
+
     LibraryItem Add(LibraryItem item)
     {
-        _store.Update(f => f.Items.Add(item));
+        _store.Update(f => { f.Items.Add(item); f.Hidden.Remove(HiddenKey(item.Source, item.Target)); });
         Log.Info("library", $"Hinzugefügt: {item.Name} ({item.Source})");
         _hub.Changed("library");
         Added?.Invoke(1);
@@ -332,7 +349,15 @@ public sealed class LibraryService
 
     public bool Remove(string id)
     {
-        var ok = _store.Update(f => f.Items.RemoveAll(i => i.Id == id) > 0);
+        var ok = _store.Update(f =>
+        {
+            var item = f.Items.FirstOrDefault(i => i.Id == id);
+            if (item == null) return false;
+            f.Items.Remove(item);
+            // Removing a synced game is meant to last – otherwise the next sync would add it straight back.
+            if (item.AutoAdded && !IsHidden(f, item.Source, item.Target)) f.Hidden.Add(HiddenKey(item.Source, item.Target));
+            return true;
+        });
         if (ok) _hub.Changed("library");
         return ok;
     }
@@ -341,7 +366,8 @@ public sealed class LibraryService
     {
         var item = Get(id);
         if (item == null) return new LaunchResult(false, "Eintrag nicht gefunden.", "not-found");
-        var err = LaunchValidator.ValidateTarget(item.Source, item.Target) ?? LaunchValidator.ValidateArgs(item.Args);
+        var err = LaunchValidator.ValidateTarget(item.Source, item.Target) ?? LaunchValidator.ValidateArgs(item.Args)
+            ?? (item.Source == LaunchSource.Exe ? _platform.Launcher.ValidateExecutable(item.Target) : null); // also covers entries from a restored backup
         LaunchResult result;
         if (err != null) result = new LaunchResult(false, err, "invalid-target");
         else

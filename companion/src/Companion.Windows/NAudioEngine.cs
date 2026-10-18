@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using NAudio.CoreAudioApi;
+using NAudio.CoreAudioApi.Interfaces;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using Pgl.Core.Infrastructure;
@@ -32,6 +33,88 @@ public sealed class NAudioEngine : IAudioEngine
 
     public bool Supported => true;
     public string? UnsupportedReason => null;
+
+    // Device notifications: Windows calls back only when something changes – no polling.
+    MMDeviceEnumerator? _notifyEnumerator;
+    DeviceNotifications? _notifications;
+    Action? _devicesChanged;
+    public event Action? DevicesChanged
+    {
+        add
+        {
+            _devicesChanged += value;
+            if (_notifyEnumerator != null) return;
+            try
+            {
+                _notifyEnumerator = new MMDeviceEnumerator();
+                _notifications = new DeviceNotifications(() => _devicesChanged?.Invoke());
+                _notifyEnumerator.RegisterEndpointNotificationCallback(_notifications);
+            }
+            catch (Exception ex) { Log.Warn("audio", "Geräte-Benachrichtigungen nicht verfügbar: " + ex.Message); }
+        }
+        remove => _devicesChanged -= value;
+    }
+
+    sealed class DeviceNotifications(Action changed) : IMMNotificationClient
+    {
+        public void OnDeviceStateChanged(string deviceId, DeviceState newState) => changed();
+        public void OnDeviceAdded(string pwstrDeviceId) => changed();
+        public void OnDeviceRemoved(string deviceId) => changed();
+        public void OnDefaultDeviceChanged(DataFlow flow, Role role, string defaultDeviceId) { if (role == Role.Multimedia) changed(); }
+        public void OnPropertyValueChanged(string pwstrDeviceId, PropertyKey key) { } // fires very often (volume etc.) – ignored
+    }
+
+    /// <summary>Peak level 0..1 of a capture buffer (32-bit float or 16/24/32-bit PCM).</summary>
+    static float Peak(WaveFormat f, byte[] buf, int count)
+    {
+        float peak = 0;
+        if (f.Encoding == WaveFormatEncoding.IeeeFloat || (f.Encoding == WaveFormatEncoding.Extensible && f.BitsPerSample == 32 && f is WaveFormatExtensible { SubFormat: var sf } && sf == NAudio.Dmo.AudioMediaSubtypes.MEDIASUBTYPE_IEEE_FLOAT))
+            for (int i = 0; i + 4 <= count; i += 4) peak = Math.Max(peak, Math.Abs(BitConverter.ToSingle(buf, i)));
+        else if (f.BitsPerSample == 16)
+            for (int i = 0; i + 2 <= count; i += 2) peak = Math.Max(peak, Math.Abs(BitConverter.ToInt16(buf, i) / 32768f));
+        else if (f.BitsPerSample == 24)
+            for (int i = 0; i + 3 <= count; i += 3) peak = Math.Max(peak, Math.Abs(((buf[i] << 8) | (buf[i + 1] << 16) | (buf[i + 2] << 24)) / 2147483648f));
+        else if (f.BitsPerSample == 32)
+            for (int i = 0; i + 4 <= count; i += 4) peak = Math.Max(peak, Math.Abs(BitConverter.ToInt32(buf, i) / 2147483648f));
+        return Math.Min(peak, 1f);
+    }
+
+    public async Task<MicTestResult> MicTestAsync(string? deviceId, TimeSpan duration, Action<float> onLevel)
+    {
+        MMDevice mic;
+        try { mic = Device(deviceId, DataFlow.Capture); }
+        catch (Exception ex) { return new MicTestResult(null, 0, 0, "Mikrofon nicht gefunden: " + ex.Message); }
+        var name = mic.FriendlyName;
+        float max = 0, sum = 0, window = 0; int n = 0;
+        var last = DateTime.UtcNow;
+        var gate = new object();
+        WasapiCapture capture;
+        try { capture = new WasapiCapture(mic, true, 50); }
+        catch (Exception ex) { return new MicTestResult(name, 0, 0, "Mikrofon kann nicht geöffnet werden: " + ex.Message); }
+        capture.DataAvailable += (_, e) =>
+        {
+            var p = Peak(capture.WaveFormat, e.Buffer, e.BytesRecorded);
+            float? report = null;
+            lock (gate)
+            {
+                max = Math.Max(max, p); window = Math.Max(window, p);
+                if ((DateTime.UtcNow - last).TotalMilliseconds >= 100) { report = window; sum += window; n++; window = 0; last = DateTime.UtcNow; }
+            }
+            if (report is { } r) onLevel(r);
+        };
+        try
+        {
+            capture.StartRecording();
+            await Task.Delay(duration);
+        }
+        catch (Exception ex) { return new MicTestResult(name, 0, 0, "Aufnahme fehlgeschlagen (Windows-Datenschutz → Mikrofonzugriff für Desktop-Apps prüfen): " + ex.Message); }
+        finally
+        {
+            try { capture.StopRecording(); } catch { }
+            capture.Dispose();
+        }
+        lock (gate) return new MicTestResult(name, max, n == 0 ? 0 : sum / n, null);
+    }
 
     static MMDeviceEnumerator Enumerator() => new();
 
@@ -159,12 +242,8 @@ public sealed class NAudioEngine : IAudioEngine
                 capture.DataAvailable += (_, e) =>
                 {
                     buffer.AddSamples(e.Buffer, 0, e.BytesRecorded);
-                    if (capture.WaveFormat.Encoding == WaveFormatEncoding.IeeeFloat)
-                    {
-                        float peak = 0;
-                        for (int i = 0; i + 4 <= e.BytesRecorded; i += 4) peak = Math.Max(peak, Math.Abs(BitConverter.ToSingle(e.Buffer, i)));
-                        if (peak > _micPeak) _micPeak = peak;
-                    }
+                    var peak = Peak(capture.WaveFormat, e.Buffer, e.BytesRecorded);
+                    if (peak > _micPeak) _micPeak = peak;
                 };
                 var volumeProvider = new VolumeSampleProvider(buffer.ToSampleProvider()) { Volume = Math.Clamp(volume, 0f, 2f) };
                 var output2 = new WasapiOut(output, AudioClientShareMode.Shared, true, 40);

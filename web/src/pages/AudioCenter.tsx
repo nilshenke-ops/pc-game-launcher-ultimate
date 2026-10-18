@@ -2,9 +2,17 @@ import { useEffect, useState } from "react";
 import { Cable, ExternalLink, Headphones, Mic, RefreshCw, Speaker, Stethoscope, Volume2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useEvent, useRpc, toast } from "../lib/hooks";
+import { useEvent, useLiveSubscription, useRpc, toast } from "../lib/hooks";
 import type { AudioDevice, AudioSettings, CheckResult } from "../lib/types";
 import { Banner, Button, Card, CheckList, Field, Loadable, Meter, PageHead, Segmented, Switch } from "../components/ui";
+
+interface MicTestResult { device?: string; peak: number; average: number; verdict: "silent" | "quiet" | "ok" | "clipping" }
+const VERDICT: Record<MicTestResult["verdict"], { kind: "ok" | "warn" | "error"; text: () => string }> = {
+  ok: { kind: "ok", text: () => t("Mikrofon funktioniert – Pegel im guten Bereich.") },
+  quiet: { kind: "warn", text: () => t("Sehr leise. Näher ans Mikrofon gehen oder die Eingangslautstärke in Windows erhöhen.") },
+  silent: { kind: "error", text: () => t("Kein Signal. Stummschaltung, Kabel und Windows-Datenschutz (Mikrofonzugriff für Desktop-Apps) prüfen.") },
+  clipping: { kind: "warn", text: () => t("Übersteuert. Eingangslautstärke in Windows etwas senken.") },
+};
 
 interface AudioState { supported: boolean; unsupportedReason?: string; settings: AudioSettings; devices: AudioDevice[]; virtualCable?: AudioDevice; micPassthroughActive: boolean; missing: string[] }
 
@@ -16,7 +24,20 @@ export default function AudioCenter() {
   const [mic, setMic] = useState<number | null>(null);
   const [diag, setDiag] = useState<{ at: string; checks: CheckResult[] } | null>(null);
   useEffect(() => { if (q.data && !dirty) setS(q.data.settings); }, [q.data, dirty]);
+  // The live mic level is only sent while this page is open and visible.
+  useLiveSubscription("audio");
   useEvent<{ mic: number }>("audio.level", (d) => setMic(d.mic));
+  const [testing, setTesting] = useState(false);
+  const [testLevel, setTestLevel] = useState<number | null>(null);
+  const [testResult, setTestResult] = useState<MicTestResult | null>(null);
+  useEvent<{ level: number }>("audio.micTest", (d) => setTestLevel(d.level));
+  const micTest = async () => {
+    if (!s) return;
+    setTesting(true); setTestResult(null); setTestLevel(0);
+    try { setTestResult(await client.call<MicTestResult>("audio.micTest", { deviceId: s.micDeviceId ?? "" })); }
+    catch (e) { toast((e as Error).message, "error"); }
+    setTesting(false); setTestLevel(null);
+  };
 
   const set = (p: Partial<AudioSettings>) => { setS((x) => (x ? { ...x, ...p } : x)); setDirty(true); };
   const save = async () => {
@@ -27,7 +48,10 @@ export default function AudioCenter() {
     setBusy(false);
   };
   const runDiag = async () => { try { setDiag(await client.call("audio.diagnose")); } catch (e) { toast((e as Error).message, "error"); } };
-  const tone = (target: string) => client.call("audio.testTone", { target }).then(() => toast(t("Testton wird abgespielt"), "info")).catch((e) => toast(e.message, "error"));
+  // Uses the device and volume currently chosen in the form, even before "Speichern".
+  const tone = (target: "output" | "monitor") => client.call("audio.testTone", target === "monitor"
+    ? { target, deviceId: s?.monitorDeviceId ?? "", volume: s?.monitorVolume }
+    : { target, deviceId: s?.outputDeviceId ?? "", volume: s?.soundboardVolume }).then(() => toast(t("Testton wird abgespielt"), "info")).catch((e) => toast(e.message, "error"));
 
   const outs = q.data?.devices.filter((d) => d.flow === "render") ?? [];
   const caps = q.data?.devices.filter((d) => d.flow === "capture") ?? [];
@@ -86,8 +110,13 @@ export default function AudioCenter() {
                   <Field label={t("Mikrofon-Lautstärke: {v} %", { v: s.micVolume })}><input type="range" min={0} max={200} value={s.micVolume} onChange={(e) => set({ micVolume: +e.target.value })} /></Field>
                   <div className="stack-sm">
                     <span className="label">{t("Mikrofonpegel")}</span>
-                    {q.data.micPassthroughActive ? <Meter value={(mic ?? 0) * 100} /> : <span className="small muted">{t("Nur sichtbar, wenn die Durchleitung aktiv ist.")}</span>}
+                    {testing ? <Meter value={(testLevel ?? 0) * 100} /> : q.data.micPassthroughActive ? <Meter value={(mic ?? 0) * 100} /> : <span className="small muted">{t("Live nur bei aktiver Durchleitung – oder den Mikrofon-Test starten.")}</span>}
                   </div>
+                  <Button icon={<Mic size={16} />} busy={testing} onClick={micTest}>{testing ? t("Sprich jetzt … (4 s)") : t("Mikrofon testen")}</Button>
+                  {testResult && <Banner kind={VERDICT[testResult.verdict].kind} title={testResult.device ?? undefined}>
+                    {VERDICT[testResult.verdict].text()} {t("Spitze {p} %, Mittel {a} %", { p: Math.round(testResult.peak * 100), a: Math.round(testResult.average * 100) })}
+                  </Banner>}
+                  <p className="tiny muted">{t("Der Test nimmt 4 Sekunden am PC auf und zeigt nur den Pegel. Es wird nichts gespeichert oder übertragen.")}</p>
                 </div>
               </Card>
               <Card title={t("Discord einrichten")} icon={<Cable size={18} />} meta={cable ? <span className="badge ok">{t("Kabel gefunden")}</span> : <span className="badge warn">{t("Kein virtuelles Kabel")}</span>}>

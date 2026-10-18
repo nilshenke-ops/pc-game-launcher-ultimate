@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, Play, RotateCcw,
@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useEvent, useMediaQuery, useRpc, toast } from "../lib/hooks";
+import { useConn, useEvent, useLiveSubscription, useMediaQuery, useRpc, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
 import { bytes, clock, gradientFor, relTime, since } from "../lib/format";
@@ -139,11 +139,7 @@ function ItemsWidget({ mode }: { mode: "favorites" | "recent" }) {
 
 function SystemWidget() {
   const [m, setM] = useState<MetricsSample | null>(null);
-  const authed = useConn().auth === "ok";
-  useEffect(() => {
-    client.call<MetricsSample>("monitor.subscribe").then(setM).catch(() => {});
-    return () => { client.call("monitor.unsubscribe").catch(() => {}); };
-  }, [authed]);
+  useLiveSubscription<MetricsSample>("monitor", setM);
   useEvent<MetricsSample>("monitor.sample", setM);
   if (!m && client.preview) return <p className="small muted">{t("Live-Werte erscheinen, sobald dein PC verbunden ist.")}</p>;
   if (!m) return <div className="skeleton" style={{ height: 110 }} />;
@@ -240,7 +236,9 @@ export default function Dashboard() {
   const mobile = useMediaQuery("(max-width: 699px)");
   const [edit, setEdit] = useState(false);
   const profileLayout = state?.activeProfile?.dashboardLayoutId;
-  const layoutId = profileLayout && prefs.layouts.some((l) => l.id === profileLayout) ? profileLayout : mobile ? prefs.activeLayout.mobile : prefs.activeLayout.desktop;
+  // Profiles store the layout name (ids are per device); older profiles store an id.
+  const fromProfile = profileLayout ? (prefs.layouts.find((l) => l.id === profileLayout) ?? prefs.layouts.find((l) => l.name === profileLayout))?.id : undefined;
+  const layoutId = fromProfile ?? (mobile ? prefs.activeLayout.mobile : prefs.activeLayout.desktop);
   const layout = prefs.layouts.find((l) => l.id === layoutId) ?? prefs.layouts[0];
 
   const updateWidgets = (fn: (w: WidgetConf[]) => WidgetConf[]) =>

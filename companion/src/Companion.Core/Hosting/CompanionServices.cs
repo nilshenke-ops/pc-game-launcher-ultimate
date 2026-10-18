@@ -67,6 +67,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Network = new NetworkDiagnostics(Relay.Status, Settings.Get, Web.LanUrls);
         Updates = new UpdateService(paths, Settings.Get, platform.UpdateInstaller, Rpc);
         Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
+        Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Einstellungen → Updates: herunterladen und installieren. Es wird nie automatisch installiert.", "/settings?s=updates");
         Backup = new BackupService(paths, this);
         GamePass = new GamePassService(paths, Library, platform, Settings.Get, Rpc);
         Covers = new CoverService(Library, Settings.Get);
@@ -156,13 +157,23 @@ public sealed class CompanionServices : IAsyncDisposable
         };
         Profiles.Activated += (p, reason) => _ = Automations.Fire(TriggerType.ProfileActivated, p.Id);
 
+        Hotkeys.ActiveNow = h =>
+        {
+            var f = Profiles.Get();
+            var owners = f.Profiles.Where(p => p.HotkeyIds.Contains(h.Id)).Select(p => p.Id).ToList();
+            return owners.Count == 0 || owners.Contains(f.ActiveProfileId ?? "");
+        };
         Hotkeys.OnPressed = async h =>
         {
-            var owners = Profiles.Get().Profiles.Where(p => p.HotkeyIds.Contains(h.Id)).Select(p => p.Id).ToList();
-            if (owners.Count > 0 && !owners.Contains(Profiles.Get().ActiveProfileId ?? "")) return; // profile-specific hotkey
-            if (h.QuickActionId != null && QuickActions.Get(h.QuickActionId) is { } qa) await Runner.RunAsync(qa.Steps, "Hotkey " + h.Keys);
-            else await Runner.RunAsync(new[] { h.Action }, "Hotkey " + h.Keys);
+            if (!Hotkeys.ActiveNow(h)) return; // profile-specific hotkey
+            List<string> results;
+            if (h.QuickActionId != null) results = QuickActions.Get(h.QuickActionId) is { } qa ? await Runner.RunAsync(qa.Steps, "Hotkey " + h.Keys) : new() { "Fehler: Schnellaktion wurde gelöscht" };
+            else results = await Runner.RunAsync(new[] { h.Action }, "Hotkey " + h.Keys);
+            // A hotkey has no screen of its own – failures would otherwise go unnoticed.
+            if (results.FirstOrDefault(r => r.StartsWith("Fehler", StringComparison.Ordinal)) is { } err)
+                Notifications.Push("hotkey-" + h.Id, Severity.Warning, $"Hotkey {h.Keys} fehlgeschlagen", err, "/hotkeys");
         };
+        Profiles.Activated += (_, _) => Hotkeys.RegisterAll(); // profile-only hotkeys follow the active profile
 
         Pairing.PendingAdded += p =>
         {
@@ -262,8 +273,14 @@ public sealed class CompanionServices : IAsyncDisposable
             Notifications.Push("audio-missing", Severity.Warning, "Audiogerät fehlt", string.Join(", ", missing) + " nicht gefunden.", "/audio");
             _ = Automations.Fire(TriggerType.AudioDeviceMissing, null);
         }
+        Audio.WatchDevices(missing =>
+        {
+            Notifications.Push("audio-missing", Severity.Warning, "Audiogerät fehlt", string.Join(", ", missing) + " nicht gefunden.", "/audio");
+            _ = Automations.Fire(TriggerType.AudioDeviceMissing, null);
+        });
         Sessions.Start();
         GamePass.Start();
+        Updates.StartAutoCheck();
         Covers.Start();
         Steam.Start();
         Launchers.Start();
@@ -277,6 +294,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Sessions.Dispose();
         Monitor.Dispose();
         GamePass.Dispose();
+        Updates.Dispose();
         Covers.Dispose();
         Steam.Dispose();
         Launchers.Dispose();

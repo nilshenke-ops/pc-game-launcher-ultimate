@@ -4,6 +4,8 @@ import { Clock, MonitorSmartphone, Download, FileAudio, Headphones, Link2, ListM
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useRpc, toast } from "../lib/hooks";
+
+const fail = (e: unknown) => toast((e as Error).message, "error");
 import { bytes } from "../lib/format";
 import type { AudioSettings, PlayingState, Sound, SoundCollection, SoundsFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented } from "../components/ui";
@@ -105,7 +107,7 @@ export default function Soundboard() {
           </div>
           <div className="row nowrap">
             {now.playing.length > 0 ? <span className="badge ok"><span className="dot ok pulse" />{t("{n} aktiv", { n: now.playing.length })}{now.queued ? ` · ${t("{n} in Warteschlange", { n: now.queued })}` : ""}</span> : <span className="badge">{t("Ruhe")}</span>}
-            <Button variant="danger" size="sm" icon={<Square size={14} />} disabled={!now.playing.length && !now.queued} onClick={() => client.call("sounds.stopAll")}>{t("Alle stoppen")}</Button>
+            <Button variant="danger" size="sm" icon={<Square size={14} />} disabled={!now.playing.length && !now.queued} onClick={() => client.call("sounds.stopAll").catch(fail)}>{t("Alle stoppen")}</Button>
           </div>
         </div>
         {now.playing.length > 0 && (
@@ -113,8 +115,8 @@ export default function Soundboard() {
             {now.playing.map((p) => (
               <span key={p.playbackId} className="badge info" style={{ gap: 8 }}>
                 {p.name}
-                <button className="btn ghost icon sm" style={{ width: 22, minHeight: 22 }} onClick={() => client.call(p.paused ? "sounds.resume" : "sounds.pause", { playbackId: p.playbackId })} aria-label={p.paused ? t("Fortsetzen") : t("Pause")}>{p.paused ? <Play size={12} /> : <Pause size={12} />}</button>
-                <button className="btn ghost icon sm" style={{ width: 22, minHeight: 22 }} onClick={() => client.call("sounds.stop", { playbackId: p.playbackId })} aria-label={t("Stopp")}><Square size={12} /></button>
+                <button className="btn ghost icon sm" style={{ width: 22, minHeight: 22 }} onClick={() => client.call(p.paused ? "sounds.resume" : "sounds.pause", { playbackId: p.playbackId }).catch(fail)} aria-label={p.paused ? t("Fortsetzen") : t("Pause")}>{p.paused ? <Play size={12} /> : <Pause size={12} />}</button>
+                <button className="btn ghost icon sm" style={{ width: 22, minHeight: 22 }} onClick={() => client.call("sounds.stop", { playbackId: p.playbackId }).catch(fail)} aria-label={t("Stopp")}><Square size={12} /></button>
               </span>
             ))}
           </div>
@@ -280,8 +282,8 @@ function EditSound({ sound, onClose }: { sound: Sound; onClose: () => void }) {
   };
   const remove = async () => {
     if (!(await confirmDialog(t("Sound löschen?"), t("„{n}“ und die Audiodatei werden vom PC gelöscht.", { n: sound.name }), { danger: true, ok: t("Löschen") }))) return;
-    await client.call("sounds.remove", { id: sound.id });
-    onClose();
+    try { await client.call("sounds.remove", { id: sound.id }); onClose(); }
+    catch (e) { fail(e); }
   };
   return (
     <Modal title={t("Sound bearbeiten")} onClose={onClose} footer={<>
@@ -308,7 +310,7 @@ function CollectionEditor({ col, sounds, onClose }: { col: SoundCollection; soun
     try { const saved = await client.call<SoundCollection>("sounds.saveCollection", c); await client.call("sounds.setActiveCollection", { id: saved.id }); onClose(); }
     catch (e) { toast((e as Error).message, "error"); }
   };
-  const remove = async () => { await client.call("sounds.removeCollection", { id: c.id }); onClose(); };
+  const remove = async () => { try { await client.call("sounds.removeCollection", { id: c.id }); onClose(); } catch (e) { fail(e); } };
   return (
     <Modal title={c.id ? t("Sammlung bearbeiten") : t("Neue Sammlung")} onClose={onClose} footer={<>
       {c.id && <Button variant="danger" onClick={remove} style={{ marginRight: "auto" }}>{t("Löschen")}</Button>}

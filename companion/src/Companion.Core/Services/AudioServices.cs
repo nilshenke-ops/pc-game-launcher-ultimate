@@ -120,20 +120,82 @@ public sealed class AudioService
         if (err == null && s.MicPassthrough && _engine.Supported)
             _levelTimer ??= new Timer(_ =>
             {
+                // Only sent to devices that have the Audio Center open (audio.subscribe) – nothing goes out otherwise.
                 var level = _engine.MicLevel;
-                if (level != null) _hub.Broadcast("audio.level", new { mic = Math.Round(level.Value, 3) });
+                if (level != null) _hub.BroadcastTo(x => x.Authenticated && x.Subscriptions.Contains(LevelTopic), "audio.level", new { mic = Math.Round(level.Value, 3) });
             }, null, 250, 250);
         else { _levelTimer?.Dispose(); _levelTimer = null; }
         if (err != null) Log.Warn("audio", err);
         return err;
     }
 
-    public string? TestTone(string target)
+    public const string LevelTopic = "audio.level";
+
+    /// <summary>Plays a short tone. <paramref name="deviceId"/>/<paramref name="volume"/> come from the form (not saved yet);
+    /// without them the saved settings are used. "" = Windows default device.</summary>
+    public string? TestTone(string target, string? deviceId = null, int? volume = null)
     {
         var s = Settings();
-        var device = target == "monitor" ? s.MonitorDeviceId : s.OutputDeviceId;
-        var vol = (target == "monitor" ? s.MonitorVolume : s.SoundboardVolume) / 100f;
+        var device = deviceId ?? (target == "monitor" ? s.MonitorDeviceId : s.OutputDeviceId);
+        if (device == "") device = null;
+        if (device != null && Devices().All(d => d.Id != device || d.Flow != "render")) return "Das gewählte Ausgabegerät ist nicht angeschlossen.";
+        var vol = Math.Clamp(volume ?? (target == "monitor" ? s.MonitorVolume : s.SoundboardVolume), 0, 100) / 100f;
         return _engine.PlayTestTone(device, vol);
+    }
+
+    int _micTest;
+
+    /// <summary>Records the microphone for 4 seconds; the level goes live only to the requesting device. Nothing is stored.</summary>
+    public async Task<object> MicTest(RpcSession session, string? deviceId)
+    {
+        if (!_engine.Supported) throw new RpcException("unsupported", _engine.UnsupportedReason ?? "Audio wird auf diesem System nicht unterstützt.");
+        if (deviceId == "") deviceId = null;
+        if (deviceId != null && Devices().All(d => d.Id != deviceId || d.Flow != "capture")) throw new RpcException("not-found", "Das gewählte Mikrofon ist nicht angeschlossen.");
+        if (Interlocked.Exchange(ref _micTest, 1) == 1) throw new RpcException("busy", "Es läuft bereits ein Mikrofon-Test.");
+        try
+        {
+            var r = await _engine.MicTestAsync(deviceId, TimeSpan.FromSeconds(4), level => _hub.SendTo(session, "audio.micTest", new { level = Math.Round(level, 3) }));
+            if (r.Error != null) throw new RpcException("audio", r.Error);
+            // Thresholds: below -50 dBFS (0.003) is practically silence; above 0.98 the signal clips.
+            var verdict = r.Peak < 0.003f ? "silent" : r.Peak < 0.05f ? "quiet" : r.Peak >= 0.98f ? "clipping" : "ok";
+            return new { device = r.Device, peak = Math.Round(r.Peak, 3), average = Math.Round(r.Average, 3), verdict };
+        }
+        finally { Volatile.Write(ref _micTest, 0); }
+    }
+
+    Timer? _deviceDebounce;
+    string _lastMissing = "";
+
+    /// <summary>Reacts to devices being plugged in/removed (Windows notification, debounced): refreshes the UI, warns once per
+    /// change about missing saved devices and restarts the mic passthrough when its devices are back.</summary>
+    public void WatchDevices(Action<IReadOnlyList<string>> missingChanged)
+    {
+        if (!_engine.Supported) return;
+        _lastMissing = string.Join("|", MissingDevices(Settings(), Devices())); // the start-up check already warned about these
+        _engine.DevicesChanged += () =>
+        {
+            lock (this)
+            {
+                _deviceDebounce?.Dispose();
+                _deviceDebounce = new Timer(_ =>
+                {
+                    try
+                    {
+                        _hub.Changed("audio");
+                        var s = Settings();
+                        var missing = MissingDevices(s, Devices());
+                        var key = string.Join("|", missing);
+                        if (key != _lastMissing)
+                        {
+                            _lastMissing = key;
+                            if (missing.Count > 0) missingChanged(missing);
+                            else if (s.MicPassthrough && !_engine.MicPassthroughActive) ApplyMic(); // device is back
+                        }
+                    }
+                    catch (Exception ex) { Log.Warn("audio", ex.Message); }
+                }, null, 1500, Timeout.Infinite);
+            }
+        };
     }
 
     public List<object> Diagnose()
@@ -168,7 +230,7 @@ public sealed class AudioService
     }
 
     internal AudioSettings Export() => Settings();
-    internal void Import(AudioSettings s) { _store.Replace(s); _hub.Changed("audio"); }
+    internal void Import(AudioSettings s) { _store.Replace(s); ApplyMic(); _hub.Changed("audio"); }
 }
 
 public sealed class SoundboardService

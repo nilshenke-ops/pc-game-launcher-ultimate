@@ -1,8 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Cpu, Gauge as GaugeIcon, HardDrive, MemoryStick, MonitorPlay, Timer } from "lucide-react";
-import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useEvent } from "../lib/hooks";
+import { useConn, useEvent, useLiveSubscription } from "../lib/hooks";
 import { bytes, clock } from "../lib/format";
 import type { MetricsSample } from "../lib/types";
 import { Banner, Card, OfflineState, Gauge, Meter, PageHead, Sparkline } from "../components/ui";
@@ -22,20 +21,16 @@ export default function Monitor() {
     h.gpu = [...h.gpu, s.gpus[0]?.utilPercent].slice(-60);
     setM(s);
   };
-  // Sampling on the PC only runs while this page (or the dashboard widget) is open.
+  // Sampling on the PC only runs while this page (or the dashboard widget) is open and visible.
   const authed = useConn().auth === "ok";
-  useEffect(() => {
-    setErr(null);
-    client.call<MetricsSample>("monitor.subscribe").then(push).catch((e) => setErr(e.message));
-    return () => { client.call("monitor.unsubscribe").catch(() => {}); };
-  }, [authed]);
+  useLiveSubscription<MetricsSample>("monitor", (d) => { setErr(null); push(d); }, (e) => setErr(e.message));
   useEvent<MetricsSample>("monitor.sample", push);
 
   const ramPct = m?.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
   const gpu = m?.gpus[0];
   return (
     <>
-      <PageHead eyebrow={t("System")} title={t("PC Monitor")} text={t("Live-Werte deines Gaming-PCs. Abgefragt wird nur, solange diese Ansicht offen ist (alle 2 Sekunden).")} />
+      <PageHead eyebrow={t("System")} title={t("PC Monitor")} text={t("Live-Werte deines Gaming-PCs. Abgefragt wird nur, solange diese Ansicht oder das System-Widget auf einem Gerät sichtbar ist (alle 2 Sekunden).")} />
       {!m && !authed ? <OfflineState /> : err && <Banner kind="error">{err}</Banner>}
       {!m && !authed ? null : !m ? <div className="grid-3">{[0, 1, 2].map((i) => <div key={i} className="skeleton" style={{ height: 220 }} />)}</div> : (
         <div className="stack">

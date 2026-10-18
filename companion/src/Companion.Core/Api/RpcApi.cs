@@ -135,7 +135,7 @@ public static class RpcApi
 
         // ------------------------------------------------------------ library
         rpc.Register("library.list", ctx => new { items = s.Library.List(), installed = s.Library.InstallState(), running = s.Sessions.Running().Select(r => r.itemId), coversFromCdn = s.Settings.Get().SteamCoversFromCdn });
-        rpc.Register("library.detect", ctx => new { items = s.Library.Detect(), detectors = s.Platform.Detectors.Select(d => d.Name).Append("Startmenü / Microsoft Store / Xbox") });
+        rpc.Register("library.detect", ctx => new { items = s.Library.Detect(), detectors = s.Platform.Detectors.Select(d => d.Name).Concat(s.Platform.Desktop.CanListApps ? new[] { "Startmenü / Microsoft Store / Xbox" } : Array.Empty<string>()) });
         rpc.Register("library.addDetected", ctx => s.Library.AddDetected(ctx.Str("key", 400), ParseKind(ctx.OptStr("kind", 20))));
         rpc.Register("library.addPath", ctx => s.Library.AddPath(ctx.Str("path", 400), ParseKind(ctx.OptStr("kind", 20)) ?? ItemKind.Program, ctx.OptStr("name", 80), ctx.OptStr("args", 500)));
         rpc.Register("library.pickFile", async ctx =>
@@ -170,9 +170,11 @@ public static class RpcApi
         {
             if (ctx.Params.TryGetProperty("autoSwitch", out var a) && a.ValueKind is JsonValueKind.True or JsonValueKind.False && !ctx.Params.TryGetProperty("profile", out _))
             { s.Profiles.SetAutoSwitch(a.GetBoolean()); return true; }
-            return s.Profiles.Save(ctx.Params.GetProperty("profile").Deserialize<Profile>(Json.Options) ?? throw new RpcException("invalid-params", "Profil fehlt."));
+            var saved = s.Profiles.Save(ctx.Params.GetProperty("profile").Deserialize<Profile>(Json.Options) ?? throw new RpcException("invalid-params", "Profil fehlt."));
+            s.Hotkeys.RegisterAll(); // the profile's hotkey list may have changed
+            return saved;
         });
-        rpc.Register("profiles.remove", ctx => { s.Profiles.Remove(ctx.Str("id", 64)); return true; });
+        rpc.Register("profiles.remove", ctx => { s.Profiles.Remove(ctx.Str("id", 64)); s.Hotkeys.RegisterAll(); return true; });
         rpc.Register("profiles.copy", ctx => s.Profiles.Copy(ctx.Str("id", 64)));
         rpc.Register("profiles.activate", ctx => s.Profiles.Activate(ctx.Str("id", 64), $"Manuell ({ctx.Session.Who})"));
         rpc.Register("profiles.revert", ctx => (object?)s.Profiles.Revert($"Manuell ({ctx.Session.Who})") ?? throw new RpcException("none", "Kein vorheriges Profil gespeichert."));
@@ -215,7 +217,14 @@ public static class RpcApi
         // ------------------------------------------------------------ audio
         rpc.Register("audio.state", ctx => s.Audio.State());
         rpc.Register("audio.save", ctx => s.Audio.Save(ctx.Bind<AudioSettings>()));
-        rpc.Register("audio.testTone", ctx => s.Audio.TestTone(ctx.Str("target", 20, false)) is { } err ? throw new RpcException("audio", err) : true);
+        rpc.Register("audio.testTone", ctx =>
+        {
+            int? volume = ctx.Params.TryGetProperty("volume", out var v) && v.ValueKind == System.Text.Json.JsonValueKind.Number ? v.GetInt32() : null;
+            return s.Audio.TestTone(ctx.Str("target", 20, false), ctx.Params.TryGetProperty("deviceId", out _) ? ctx.OptStr("deviceId", 512) ?? "" : null, volume) is { } err ? throw new RpcException("audio", err) : true;
+        });
+        rpc.Register("audio.micTest", async ctx => await s.Audio.MicTest(ctx.Session, ctx.OptStr("deviceId", 512)));
+        rpc.Register("audio.subscribe", ctx => { lock (ctx.Session.Subscriptions) ctx.Session.Subscriptions.Add(AudioService.LevelTopic); return true; });
+        rpc.Register("audio.unsubscribe", ctx => { lock (ctx.Session.Subscriptions) ctx.Session.Subscriptions.Remove(AudioService.LevelTopic); return true; });
         rpc.Register("audio.diagnose", ctx => new { at = DateTime.UtcNow, checks = s.Audio.Diagnose() });
 
         // ------------------------------------------------------------ monitor / network
@@ -300,7 +309,7 @@ public static class RpcApi
         rpc.Register("backup.restore", ctx =>
         {
             var parts = ctx.Params.GetProperty("parts").EnumerateArray().Select(x => x.GetString() ?? "").ToList();
-            return s.Backup.Restore(ctx.Str("uploadId", 64), parts);
+            return s.Backup.Restore(ctx.Str("uploadId", 64), parts, ctx.Session.IsLocalAdmin);
         });
 
         // ------------------------------------------------------------ diagnostics
@@ -417,13 +426,14 @@ public static class RpcApi
             missing.Count == 0 ? null : $"Es fehlt: {string.Join(", ", missing)}. Am PC unter Geräte → Gerät → Berechtigungen freigeben.");
 
         Add("devices", "Gekoppelte Geräte", "info", $"{devices.Count} gekoppelt, {s.Rpc.Sessions.Count(x => x.Authenticated)} Sitzung(en) angemeldet");
+        SecurityChecks(s, set, devices, session.Has(Permissions.Admin), Add);
         Add("audio", "Audio", s.Audio.Engine.Supported ? "ok" : "unsupported", s.Audio.Engine.Supported ? $"{s.Audio.Devices().Count} Geräte" : s.Audio.Engine.UnsupportedReason ?? "");
         var hk = s.Hotkeys.List();
         Add("hotkeys", "Hotkeys", !s.Platform.Hotkeys.Supported ? "unsupported" : "ok", s.Platform.Hotkeys.Supported ? $"{hk.Count} konfiguriert" : "Nur im Windows-Companion");
         if (!s.Platform.Autostart.Supported) Add("autostart", "Autostart", "unsupported", "Nur im Windows-Begleiter.");
         else if (s.Platform.Autostart.IsEnabled()) Add("autostart", "Autostart", "ok", "Aktiv – der Begleiter startet mit Windows, das iPad kann sich nach dem Einschalten des PCs sofort verbinden.");
         else Add("autostart", "Autostart", "warn", "Aus – nach einem PC-Neustart ist der Begleiter nicht erreichbar, bis er von Hand gestartet wird.", "Einstellungen → Autostart & Hintergrund → „Mit Windows starten“ einschalten.");
-        Add("sessions", "Spielerkennung", "ok", $"Prüft alle {s.Settings.Get().ProcessScanSeconds} s, {s.Sessions.Running().Count} Spiel(e) laufen");
+        Add("sessions", "Spielerkennung", "ok", $"Prüft alle {s.Sessions.PeriodSeconds} s, {s.Sessions.Running().Count} Spiel(e) laufen");
         try
         {
             var drive = new DriveInfo(Path.GetPathRoot(s.Paths.DataDir)!);
@@ -433,5 +443,44 @@ public static class RpcApi
         var errors = Log.Recent(300).Where(e => e.Level >= LogLevel.Warn).Take(15).ToList();
         Add("log", "Letzte Warnungen/Fehler", errors.Count == 0 ? "ok" : "warn", errors.Count == 0 ? "Keine" : $"{errors.Count} Einträge (siehe Protokoll)");
         return new { at = DateTime.UtcNow, checks, recentErrors = session.Has(Permissions.Admin) ? errors : null };
+    }
+
+    /// <summary>Security check: only facts read from the current configuration – nothing is guessed.</summary>
+    internal static void SecurityChecks(CompanionServices s, Settings set, IReadOnlyList<PairedDevice> devices, bool showNames, Action<string, string, string, string, string?> add)
+    {
+        string Names(List<PairedDevice> l) => showNames ? string.Join(", ", l.Select(d => d.Name)) : $"{l.Count} Gerät(e)"; // names only for admins (like devices.list)
+        SecurityChecksInner(s, set, devices, Names, add);
+    }
+
+    static void SecurityChecksInner(CompanionServices s, Settings set, IReadOnlyList<PairedDevice> devices, Func<List<PairedDevice>, string> names, Action<string, string, string, string, string?> add)
+    {
+        var dpapi = s.Platform.Secrets is not Pgl.Core.Platform.PlainSecretProtector;
+        add("sec-secrets", "Sicherheit: Schlüssel-Speicher", dpapi ? "ok" : "warn", s.Platform.Secrets.Description,
+            dpapi ? null : "Nur der Windows-Begleiter verschlüsselt Schlüssel mit dem Benutzerkonto. Datenordner nicht weitergeben.");
+        add("sec-lan", "Sicherheit: Erreichbarkeit", "info", set.LanAccess
+            ? "Im WLAN erreichbar – Zugriff nur mit Kopplung (Code + Bestätigung am PC). Router-Ports werden nicht geöffnet."
+            : "Nur auf diesem PC erreichbar.", null);
+        if (!string.IsNullOrWhiteSpace(set.PublicUrl))
+        {
+            var https = set.PublicUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
+            add("sec-public", "Sicherheit: Öffentliche Adresse", https ? "ok" : "error", https ? $"{set.PublicUrl} (verschlüsselt über https)" : $"{set.PublicUrl} ist nicht verschlüsselt.",
+                https ? null : "Nur https-Adressen verwenden (z. B. Tailscale Funnel) – sonst lassen sich Anmeldedaten mitlesen.");
+        }
+        if (set.RelayEnabled && set.RelayUrl is { } relay && relay.StartsWith("ws://", StringComparison.OrdinalIgnoreCase) && !AddressRules.IsLoopbackHost(new Uri(relay).Host))
+            add("sec-relay", "Sicherheit: Relay", "warn", $"{relay} ist unverschlüsselt (ws://).", "Relay hinter https betreiben und wss:// eintragen.");
+        var admins = devices.Where(d => d.Permissions.Contains(Permissions.Admin)).ToList();
+        add("sec-admin", "Sicherheit: Geräte mit Admin-Recht", admins.Count == 0 ? "ok" : "warn",
+            admins.Count == 0 ? "Kein gekoppeltes Gerät hat Admin-Rechte." : $"{names(admins)} – darf Einstellungen, Geräte, Protokoll und Backups verwalten.",
+            admins.Count == 0 ? null : "Nur behalten, wenn nötig: am PC unter Geräte → Berechtigungen „Admin“ entfernen.");
+        var cutoff = DateTime.UtcNow.AddDays(-60);
+        var stale = devices.Where(d => (d.LastSeenAt ?? d.PairedAt) < cutoff).ToList();
+        add("sec-stale", "Sicherheit: Lange nicht genutzte Geräte", stale.Count == 0 ? "ok" : "warn",
+            stale.Count == 0 ? "Alle gekoppelten Geräte waren in den letzten 60 Tagen verbunden." : $"{names(stale)} – seit über 60 Tagen nicht verbunden.",
+            stale.Count == 0 ? null : "Unter Geräte widerrufen, wenn das Gerät nicht mehr genutzt wird (verloren, verkauft, ersetzt).");
+        var src = set.UpdateManifestUrl;
+        if (string.IsNullOrEmpty(src)) add("sec-updates", "Sicherheit: Updates", "info", "Update-Prüfung ist ausgeschaltet.", "Einstellungen → Updates: Quelle eintragen, um Sicherheitskorrekturen zu bekommen.");
+        else add("sec-updates", "Sicherheit: Updates", src == new Settings().UpdateManifestUrl ? "ok" : "warn",
+            src == new Settings().UpdateManifestUrl ? "Offizielle Quelle, Download wird per SHA-256 geprüft und nie automatisch installiert." : $"Eigene Quelle: {src}",
+            src == new Settings().UpdateManifestUrl ? null : "Nur Quellen eintragen, denen du vertraust – sie bestimmen, welche EXE installiert werden kann.");
     }
 }

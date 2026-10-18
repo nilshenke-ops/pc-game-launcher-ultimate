@@ -1,4 +1,4 @@
-# Abschlussbericht – PC Game Launcher Ultimate 1.0.0
+# Abschlussbericht – PC Game Launcher Ultimate 1.1.0
 
 Stand: 17.10.2026. Entwickelt und getestet in einer Linux-Cloud-Umgebung (kein Windows-PC, keine Audiogeräte, kein Discord verfügbar). Die Statusangaben unten folgen genau dieser Einschränkung.
 
@@ -59,18 +59,19 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
 | Gaming-Profile inkl. Auto-Wechsel | FERTIG UND GETESTET | Logik; Anwendung auf Audiogeräte nur Windows |
 | Quick Actions, globale Suche | FERTIG UND GETESTET | |
 | Automatisierungen | FERTIG UND GETESTET | Schleifenschutz, Cooldown, Widerspruchserkennung |
-| Globale Hotkeys | IMPLEMENTIERT, NOCH NICHT VOLLSTÄNDIG GETESTET | Konfiguration/Konflikte getestet; RegisterHotKey nur Windows |
+| Globale Hotkeys | IMPLEMENTIERT, NOCH NICHT VOLLSTÄNDIG GETESTET | Konfiguration/Konflikte/Ziel-Pflicht getestet; profilgebundene Hotkeys nur im aktiven Profil registriert; RegisterHotKey nur Windows |
 | Soundboard: Import, Validierung, Sammlungen | FERTIG UND GETESTET | Upload, Duplikate, Formatprüfung, SSRF-Schutz |
 | MyInstants-Import | IMPLEMENTIERT, NOCH NICHT VOLLSTÄNDIG GETESTET | aus der Testumgebung nicht gegen die echte Seite geprüft; nutzt den öffentlich in der Seite enthaltenen MP3-Pfad |
-| Audio-Wiedergabe, Monitoring, Testton, Mikrofon-Durchleitung | NICHT TESTBAR | NAudio/WASAPI benötigt Windows + Audiogeräte |
+| Audio-Wiedergabe, Monitoring, Testton, Mikrofon-Durchleitung, Mikrofon-Test, Geräte-Erkennung | NICHT TESTBAR | NAudio/WASAPI benötigt Windows + Audiogeräte; Logik (Geräteprüfung, „nicht unterstützt“) per Test geprüft |
 | Discord-Workflow | NICHT TESTBAR | ob andere Teilnehmer den Sound hören, wird bewusst nicht behauptet |
 | PC-Monitor | TEILWEISE IMPLEMENTIERT | CPU/RAM/Datenträger echt; GPU über Leistungsindikatoren bzw. nvidia-smi (Windows, nicht getestet); **CPU-Temperatur und FPS/Frametime: nicht verfügbar** (ehrlich gekennzeichnet) |
 | Netzwerkdiagnose | IMPLEMENTIERT, NOCH NICHT VOLLSTÄNDIG GETESTET | läuft; Internet-Checks hängen von der Umgebung ab |
+| Sicherheitsprüfung (Diagnose) | FERTIG UND GETESTET | Schlüssel-Speicher, Erreichbarkeit, https, Relay, Admin-Geräte, lange inaktive Geräte, Update-Quelle – nur echte Konfigurationswerte |
 | Benachrichtigungen | FERTIG UND GETESTET | Entstehung über echte Ereignisse; Toasts unter Windows nicht getestet |
 | Design-/Layout-Editor | FERTIG UND GETESTET | Persistenz lokal + auf dem PC |
 | Deutsch/Englisch | FERTIG UND GETESTET | Meldungen des Companions selbst nur Deutsch |
-| Backup/Wiederherstellung | FERTIG UND GETESTET | |
-| Updatecenter | IMPLEMENTIERT, NOCH NICHT VOLLSTÄNDIG GETESTET | Prüfung/Download/SHA-256 implementiert; keine echte Update-Quelle vorhanden; Selbstersetzung nur Windows |
+| Backup/Wiederherstellung | FERTIG UND GETESTET | 1.1.0: Bibliothek nur am PC wiederherstellbar, Relay-/Update-Quelle nie aus Backup (Test) |
+| Updatecenter | IMPLEMENTIERT, NOCH NICHT VOLLSTÄNDIG GETESTET | echte Quelle (`download/update.json` auf GitHub Pages), Prüfung 2 min nach Start + täglich, Benachrichtigung; Prüfung/Download/SHA-256 per Test mit Testserver; Selbstersetzung nur Windows (nicht ausgeführt) |
 | Autostart, Tray, WebView2-Fenster, DPAPI | IMPLEMENTIERT, NOCH NICHT VOLLSTÄNDIG GETESTET | kompiliert, nicht unter Windows ausgeführt |
 | Code-Signatur, Installer (MSI) | NOCH NICHT IMPLEMENTIERT | kein Zertifikat; EXE läuft ohne Installation |
 | Push-Benachrichtigungen aufs Handy | NOCH NICHT IMPLEMENTIERT | Meldungen erscheinen in der App, nicht als System-Push |
@@ -82,7 +83,7 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
 - **Fernzugriff ohne Domain:** Anleitung für Tailscale Funnel (INSTALLATION.md).
 - Behoben: Seitlicher Überlauf auf Handys bei langen Namen (untere Leiste verschwand), leere Seite bei nicht zwischengespeicherten Bereichen (jetzt Fehlermeldung + vollständiger Offline-Speicher).
 
-- **Veröffentlicht (GitHub Pages, geprüft):** Webseite https://nilshenke-ops.github.io/pc-game-launcher-ultimate/ lädt fehlerfrei (Chromium, iPad-Größe). Download https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/PCGameLauncherCompanion-1.0.0-win-x64.zip bzw. `/download/PCGameLauncherCompanion.exe` – per curl heruntergeladen, Größe 84 288 968 Bytes und SHA-256 `ef327ecd…31f0` stimmen.
+- **Veröffentlicht (GitHub Pages, geprüft):** Webseite https://nilshenke-ops.github.io/pc-game-launcher-ultimate/ lädt fehlerfrei (Chromium, iPad-Größe). Download (damals 1.0.0, aktuell siehe README) https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/PCGameLauncherCompanion-1.1.0-win-x64.zip bzw. `/download/PCGameLauncherCompanion.exe` – per curl heruntergeladen, Größe 84 288 968 Bytes und SHA-256 `ef327ecd…31f0` stimmen.
 - **Vorschau ohne PC + Punkt „Verbinden“:** Ohne gekoppelten PC öffnet die Webseite direkt die ganze App mit deutlich gekennzeichneten Beispielinhalten („Vorschau – noch kein PC verbunden“). Design und Layout funktionieren lokal; jede Aktion (Starten, Sounds, Speichern …) öffnet stattdessen „Erst PC verbinden“ mit Weg zur Verbindungsseite. Die untere Leiste hat den neuen Punkt „Verbinden“ (Status-Punkt rot/grün): QR-Code/Code + PC-Adresse, bei bestehender Verbindung Status und Abmelden. Gekoppelte Geräte sehen bei ausgeschaltetem PC keine Beispieldaten, sondern „Warte auf deinen PC …“. Behoben dabei: Der eingegebene Code ging beim Verbinden verloren (Bereich wurde neu aufgebaut). FERTIG UND GETESTET (E2E: Vorschau, Hinweisfenster, Design ohne PC, Kopplung über die Webseite; alle 11 Tests grün).
 - **Verbindungsreparatur (Ursache ws://127.0.0.1:8787/ws):** Mit dem echten Headless-Begleiter reproduziert: Relay-Adresse = eigener /ws-Endpunkt → Begleiter verbindet sich mit sich selbst → „Relay hat die Anmeldung abgelehnt“ in Endlosschleife. Behoben: Adresse wird beim Speichern abgelehnt und bei alten Einstellungen beim Start blockiert (mit Erklärung); WLAN-Adressen fallen nie mehr auf 127.0.0.1 zurück; Öffentliche Adresse darf nicht loopback sein; Relay-Fehler werden verständlich übersetzt; Web-App lehnt 127.0.0.1 als PC-Adresse ab; tote Verbindungen werden per Ping-Zeitüberschreitung (8 s) erkannt und neu aufgebaut, nach dem Aufwachen sofort geprüft. FERTIG UND GETESTET (C#-Tests, E2E, Reproduktion).
 - **Diagnose mit Lösungen:** WebSocket-Endpunkt, iPad-Adresse (WLAN), Webseite→PC (https), Relay, Kopplung, verbundene Geräte, Berechtigungen, Autostart – auf dem PC; Adresse, WebSocket, Ping, Kopplung, Berechtigungen auf dem iPad selbst. Jeder Fehler mit Ursache und „Lösung“. FERTIG UND GETESTET (Linux/Chromium).
@@ -97,6 +98,17 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
 - **Epic und EA verknüpfen:** Spiele → „Epic“ / „EA“ → „Verknüpfen“ (standardmäßig aus, kein Login). Epic und EA haben keine offizielle Schnittstelle für die Spieleliste; ein Login im Namen ihrer Launcher wird bewusst nicht gemacht. Epic: installierte Spiele (Launcher-Manifeste) automatisch in die Bibliothek, bei Deinstallation wieder raus; zusätzlich Spiele aus dem Bibliotheks-Zwischenspeicher des Epic Games Launchers (`catcache.bin`, auch nicht installierte, ohne DLC/Apps) mit Cover und „Installieren“ (com.epicgames.launcher://…?action=install). EA: installierte EA-app-Spiele aus den Windows-Deinstallationseinträgen (Herausgeber Electronic Arts), Start über die Spiel-EXE; keine Gesamtbibliothek. Fehlende Cover per Titel (Steam/Microsoft Store). Ohne PC: zuletzt geladene Liste auf dem Gerät. Getestet: C#-Tests (Cache-Auswertung, Abgleich, EA-Erkennung) und echter Lauf mit nachgebauten Epic-Dateien. NICHT TESTBAR hier: echter Epic-Launcher-Cache, EA-Registrierung und Starten/Installieren unter Windows.
 - **Zugangscode:** Beim ersten Öffnen auf einem Gerät/einer Webadresse fragt die App einen vierstelligen Code ab; danach merkt sich das Gerät den Zugang (localStorage). Im Projekt steht nur eine gesalzene SHA-256-Prüfsumme (`web/src/lib/access.ts`), nicht der Code. Nach 3 Fehlversuchen Wartezeit. Das Companion-Fenster am PC und die Demo fragen nicht. Hinweis: Prüfung im Browser = Sichtsperre gegen Link-Besitzer, keine Sicherheitsgrenze (4 Ziffern sind von Technikkundigen ermittelbar); die PC-Steuerung bleibt durch Kopplung + Bestätigung am PC geschützt. FERTIG UND GETESTET (E2E: falscher Code abgelehnt, richtiger Code öffnet, nach Neuladen nicht mehr gefragt).
 - **Hintergründe:** 12 eingebaute Hintergründe (Cartoon, Candy, Comic, Pixel Retro, Synthwave, Weltraum, Neon City, Arcade, Polarlicht, Ozean, Wald, Vulkan) als selbst gezeichnete SVG-Grafiken in `web/public/backgrounds` (lizenzfrei, zusammen ca. 240 KB, offline verfügbar). Auswahl unter Einstellungen → Design → Hintergrund mit Vorschau; beim Wählen werden passende Farben gesetzt (änderbar); eigenes Bild weiterhin möglich. Auf Handys im Hochformat werden Landschaften unten ausgerichtet statt stark vergrößert. Behoben dabei: Hauptknöpfe verloren in hellen Designs ihre Farbe; Warnfarbe in hellen Designs besser lesbar. FERTIG UND GETESTET (Chromium, Handy-Format).
+
+- **Version 1.1.0 – Prüfung aller Bereiche und Fertigstellung:** Code-Audit aller Bedienelemente (echt / teilweise / Platzhalter). Ergebnis: fast alles echt; behoben wurden:
+  - *Sicherheit:* Ein Backup konnte über einen Admin aus der Ferne beliebige Programme freigeben (z. B. cmd.exe) und die Relay-Adresse umbiegen (dorthin ginge der Relay-Schlüssel). Jetzt: Bibliothek nur am PC wiederherstellbar, Programme werden auch beim Start und beim Wiederherstellen gegen die Sperrliste geprüft, Relay-Adresse/-ID/-Schalter und Update-Quelle werden nie aus einem Backup übernommen; wiederhergestellte Einstellungen wirken sofort. (C#-Test)
+  - *Updates:* echte Quelle `https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/update.json` (Version, EXE, SHA-256), Prüfung 2 min nach Start und dann täglich, Benachrichtigung „Update … verfügbar“, nie automatische Installation; „Keine Quelle“ wird als Fehler statt „Prüfung abgeschlossen“ gemeldet. (C#-Tests mit Testserver: neuere Version, gleiche Version, falsche Prüfsumme)
+  - *Spiele:* Entfernte Steam-/Epic-/EA-/Game-Pass-Spiele kommen beim nächsten Abgleich nicht mehr zurück (bis zur Deinstallation oder erneutem Hinzufügen von Hand). (C#-Test)
+  - *Audio:* Testton nutzt das gerade gewählte Gerät und die Lautstärke (auch ungespeichert); neuer Mikrofon-Test (4 s Aufnahme am PC, Live-Pegel nur an das anfragende Gerät, Ergebnis „funktioniert / leise / kein Signal / übersteuert“, nichts wird gespeichert); An-/Abstecken von Audiogeräten wird über Windows-Benachrichtigungen erkannt (kein Abfragen): Warnung + Automatisierung „Audiogerät fehlt“, Mikrofon-Durchleitung startet wieder, wenn das Gerät zurück ist; Pegelanzeige für 16/24/32-Bit-Mikrofone. NICHT TESTBAR hier (Windows-Audio), kompiliert.
+  - *Hintergrundlast:* Live-Werte (PC-Monitor, Mikrofonpegel) werden nur gesendet/abgefragt, solange die Ansicht auf einem Gerät sichtbar ist – im Hintergrund (iPad-Homescreen, verstecktes PC-Fenster) wird abgemeldet. Neues Scan-Intervall der Spielerkennung gilt sofort.
+  - *Hotkeys/Profile:* Hotkeys ohne Ziel lassen sich nicht mehr speichern; fehlgeschlagene Hotkeys melden sich als Benachrichtigung; profilgebundene Hotkeys belegen die Taste nur im passenden Profil; Zurückwechseln startet die Programme eines Profils nicht erneut; Profil-Layouts werden per Name gespeichert und gelten so auf allen Geräten mit gleichnamigem Layout.
+  - *Kleinigkeiten:* Fehlermeldungen bei Stopp/Pause/Löschen im Soundboard, Tray „Relay trennen/verbinden“ ohne eingerichtetes Relay erklärt sich, Erkennungsquellen zeigen nur, was die Plattform kann, Backup-Text ehrlich (Design/Layouts nur des PC-Fensters).
+  - *Neu in der Diagnose:* Sicherheitsprüfung (siehe Statustabelle).
+  Tests: Web 14, Relay 6, C# 109, E2E 12 – alle grün; Windows-Build erfolgreich. Bewusst nicht ergänzt: neue Menüs.
 
 ## 6. Offene Punkte
 1. **Test auf einem echten Windows-PC** (Fenster, Tray, Audio, Hotkeys, Steam/Epic-Start, Autostart, Firewall-Abfrage). Das ist der wichtigste nächste Schritt.
@@ -120,7 +132,7 @@ npm test           # alle Tests
 ```
 
 ## 9. Companion starten
-`PCGameLauncherCompanion.exe` doppelklicken (aus `PCGameLauncherCompanion-1.0.0-win-x64.zip`). Firewall „Private Netzwerke“ erlauben. Details in INSTALLATION.md.
+`PCGameLauncherCompanion.exe` doppelklicken (aus `PCGameLauncherCompanion-1.1.0-win-x64.zip`). Firewall „Private Netzwerke“ erlauben. Details in INSTALLATION.md.
 
 ## 10. Smartphone und PC verbinden
 Companion → **Gerät koppeln** → **Neuen Code erzeugen** → QR-Code mit dem Handy scannen → am PC **Erlauben**. Das Handy und der PC müssen im selben WLAN sein. Die Adresse lautet `http://<IP-des-PCs>:8787`.
@@ -134,7 +146,7 @@ Companion → **Gerät koppeln** → **Neuen Code erzeugen** → QR-Code mit dem
 | Datei | Pfad |
 |---|---|
 | Windows-EXE | `artifacts/companion/PCGameLauncherCompanion.exe` (84 288 968 Bytes) |
-| ZIP für Nutzer | `artifacts/PCGameLauncherCompanion-1.0.0-win-x64.zip` (+ `.sha256`) |
+| ZIP für Nutzer | `artifacts/PCGameLauncherCompanion-1.1.0-win-x64.zip` (+ `.sha256`) |
 | SHA-256 der EXE | `ef327ecd6865109a2e6a4c45980ae0b0b92eeb9d5f2c520d5218ae6fe1ff31f0` |
 | Quellcode | gesamtes Repository (`git log` zeigt die Entwicklungsschritte) |
 
@@ -144,6 +156,8 @@ Companion → **Gerät koppeln** → **Neuen Code erzeugen** → QR-Code mit dem
 - WLAN-Modus nutzt unverschlüsseltes http (Anmeldung trotzdem replay-geschützt). Für fremde Netze/unterwegs nur https/wss verwenden.
 - EXE ist nicht signiert (SmartScreen-Warnung; Authentizität nur über Prüfsumme).
 - Ein gekoppeltes Gerät mit Start-Berechtigung kann alle freigegebenen Einträge starten.
+- Updates werden per SHA-256 aus demselben Manifest geprüft, nicht per Signatur: wer die Update-Quelle (GitHub-Konto) kontrolliert, kann eine andere EXE anbieten. Installiert wird nur nach Klick am PC.
+- Der vierstellige Zugangscode der Webseite ist eine Sichtsperre im Browser, keine Sicherheitsgrenze.
 - Wer das Windows-Benutzerkonto kontrolliert, kontrolliert die Companion-Daten.
 Details: SECURITY.md.
 

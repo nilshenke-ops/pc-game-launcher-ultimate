@@ -65,7 +65,14 @@ public interface IAudioEngine
     /// <summary>Current mic peak level 0..1 while passthrough is active; null otherwise.</summary>
     float? MicLevel { get; }
     string? PlayTestTone(string? deviceId, float volume);
+    /// <summary>Records the microphone for <paramref name="duration"/> and reports its peak level (0..1) about 10× per second.
+    /// Independent of the passthrough; nothing is stored or sent anywhere.</summary>
+    Task<MicTestResult> MicTestAsync(string? deviceId, TimeSpan duration, Action<float> onLevel);
+    /// <summary>Raised when an audio device is plugged in/removed, enabled/disabled or the Windows default changes.</summary>
+    event Action? DevicesChanged;
 }
+
+public sealed record MicTestResult(string? Device, float Peak, float Average, string? Error);
 
 public interface IHotkeyRegistrar
 {

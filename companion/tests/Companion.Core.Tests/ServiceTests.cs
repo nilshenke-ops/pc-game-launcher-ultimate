@@ -312,6 +312,25 @@ public class StorageAndBackupTests
         Assert.NotEmpty(Directory.GetFiles(s.Paths.BackupsDir, "vor-wiederherstellung-*.zip"));
     }
 
+    [Fact]
+    public void Remote_restore_cannot_release_programs_or_change_the_relay()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        var zip = s.Backup.CreateZip(includeSounds: false);
+        // Library: only at the PC itself.
+        var ex = Assert.Throws<Pgl.Core.Rpc.RpcException>(() => s.Backup.Restore(UploadFile(s, zip), new[] { "library" }, fromThisPc: false));
+        Assert.Equal("local-only", ex.Code);
+        // Settings from a backup never set the relay address (it receives the relay secret).
+        var crafted = s.Settings.Get();
+        crafted.RelayEnabled = true;
+        crafted.RelayUrl = "wss://evil.example";
+        crafted.RelayCompanionId = "x";
+        s.Settings.Import(crafted, s.Settings.Get());
+        Assert.False(s.Settings.Get().RelayEnabled);
+        Assert.Null(s.Settings.Get().RelayUrl);
+    }
+
     static string UploadFile(CompanionServices s, string path)
     {
         var bytes = File.ReadAllBytes(path);

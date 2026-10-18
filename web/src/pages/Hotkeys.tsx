@@ -5,10 +5,10 @@ import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import type { Hotkey, HotkeyStatus, QuickAction } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
-import { describeStep, StepEditor, useStepRefs } from "../components/StepEditor";
+import { describeStep, StepEditor, stepsValid, useStepRefs } from "../components/StepEditor";
 import { comboFromEvent } from "./hotkey-combo";
 
-const STATE_BADGE: Record<string, [string, string]> = { active: ["ok", "Aktiv"], error: ["error", "Fehler"], disabled: ["", "Aus"], pending: ["warn", "Ausstehend"] };
+const STATE_BADGE: Record<string, [string, string]> = { active: ["ok", "Aktiv"], error: ["error", "Fehler"], disabled: ["", "Aus"], pending: ["warn", "Ausstehend"], inactive: ["", "Anderes Profil"] };
 
 export default function Hotkeys() {
   const q = useRpc<{ supported: boolean; hotkeys: { hotkey: Hotkey; status: HotkeyStatus }[] }>("hotkeys.list", {}, ["hotkeys"]);
@@ -33,7 +33,7 @@ export default function Hotkeys() {
                 return (
                   <div key={h.id} className="list-item">
                     <kbd style={{ fontSize: "0.85rem", padding: "5px 10px" }}>{h.keys.replace(/\+/g, " + ")}</kbd>
-                    <div className="grow"><div className="title small ellipsis">{describe(h)}</div>{status.message && <div className="sub" style={{ color: "var(--danger)" }}>{status.message}</div>}</div>
+                    <div className="grow"><div className="title small ellipsis">{describe(h)}</div>{status.message && <div className="sub" style={status.state === "error" ? { color: "var(--danger)" } : undefined}>{t(status.message)}</div>}</div>
                     <span className={`badge ${cls}`}>{t(label)}</span>
                     {canManage && <Button size="sm" variant="ghost" icon={<Pencil size={14} />} onClick={() => setEdit(structuredClone(h))} aria-label={t("Bearbeiten")} />}
                   </div>
@@ -65,7 +65,7 @@ function HotkeyEditor({ hk, quick, onClose }: { hk: Hotkey; quick: QuickAction[]
     <Modal title={h.id ? t("Hotkey bearbeiten") : t("Neuer Hotkey")} onClose={onClose} footer={<>
       {h.id && <Button variant="danger" onClick={remove} style={{ marginRight: "auto" }}>{t("Löschen")}</Button>}
       <Button onClick={onClose}>{t("Abbrechen")}</Button>
-      <Button variant="primary" disabled={!h.keys || (mode === "quick" ? !h.quickActionId : false)} onClick={save}>{t("Speichern")}</Button>
+      <Button variant="primary" disabled={!h.keys || (mode === "quick" ? !h.quickActionId : !stepsValid([h.action]))} onClick={save}>{t("Speichern")}</Button>
     </>}>
       <Field label={t("Tastenkombination")} hint={t("Ins Feld tippen und die Kombination drücken – oder eintippen, z. B. Ctrl+Alt+F9.")}>
         <input className="input mono" value={h.keys} placeholder={recording ? t("Kombination drücken …") : "Ctrl+Alt+F9"}

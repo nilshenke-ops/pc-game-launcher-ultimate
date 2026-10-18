@@ -238,7 +238,11 @@ public sealed class UpdateService
     readonly IHub _hub;
     /// <summary>Raised when checking or downloading an update fails (automation trigger "Update fehlgeschlagen").</summary>
     public event Action<string>? Failed;
-    readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(10) };
+    readonly HttpClient _http;
+    /// <summary>Raised once per new version found by the automatic daily check.</summary>
+    public event Action<Manifest>? Available;
+    Timer? _timer;
+    string? _announced;
     public static string CurrentVersion => typeof(UpdateService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
     public sealed class Manifest
@@ -256,10 +260,25 @@ public sealed class UpdateService
     string? _error;
     DateTime? _checkedAt;
 
-    public UpdateService(AppPaths paths, Func<Settings> settings, IUpdateInstaller installer, IHub hub)
+    public UpdateService(AppPaths paths, Func<Settings> settings, IUpdateInstaller installer, IHub hub, HttpMessageHandler? http = null)
     {
         _paths = paths; _settings = settings; _installer = installer; _hub = hub;
+        _http = http == null ? new HttpClient() : new HttpClient(http);
+        _http.Timeout = TimeSpan.FromMinutes(10);
     }
+
+    /// <summary>Checks 2 minutes after start and then once a day (one small download). Never installs on its own.</summary>
+    public void StartAutoCheck()
+    {
+        _timer = new Timer(async _ =>
+        {
+            if (string.IsNullOrEmpty(_settings().UpdateManifestUrl) || _state is "downloading") return;
+            await Check();
+            if (_available is { } m && _announced != m.Version) { _announced = m.Version; Available?.Invoke(m); }
+        }, null, TimeSpan.FromMinutes(2), TimeSpan.FromHours(24));
+    }
+
+    public void Dispose() => _timer?.Dispose();
 
     public object Status() => new
     {
@@ -534,9 +553,16 @@ public sealed class BackupService
     }
 
     /// <summary>Restores the selected parts. A safety backup of the current state is written first.</summary>
-    public object Restore(string id, IReadOnlyCollection<string> selected)
+    /// <param name="fromThisPc">Programs can only be released at the PC itself (library.addPath is local), so a library from a
+    /// backup file is only restored there – otherwise a remote admin could release any program via a crafted backup.</param>
+    public object Restore(string id, IReadOnlyCollection<string> selected, bool fromThisPc = true)
     {
         var v = Validate(id);
+        if (!fromThisPc && selected.Contains("library") && v.Parts.ContainsKey("library"))
+            throw new RpcException("local-only", "Die Spiele-/Programmliste kann nur direkt am PC wiederhergestellt werden (Programme werden nur dort freigegeben). Wähle „Bibliothek“ ab oder stelle am PC wieder her.");
+        if (v.Parts.TryGetValue("library", out var libPart))
+            foreach (var i in ((LibraryFile)libPart).Items.Where(i => i.Source == LaunchSource.Exe))
+                if (_svc.Platform.Launcher.ValidateExecutable(i.Target) is { } bad) throw new RpcException("invalid-backup", $"Eintrag „{i.Name}“: {bad}");
         var safety = CreateZip(includeSounds: false, Path.Combine(_paths.BackupsDir, $"vor-wiederherstellung-{DateTime.Now:yyyyMMdd-HHmmss}.zip"));
         var restored = new List<string>();
         foreach (var part in Parts.Where(p => selected.Contains(p) && v.Parts.ContainsKey(p)))

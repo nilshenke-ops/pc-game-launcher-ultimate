@@ -81,6 +81,9 @@
     "audio.save": "manage",
     "audio.testTone": "soundboard",
     "audio.diagnose": "view",
+    "audio.micTest": "manage",
+    "audio.subscribe": "view",
+    "audio.unsubscribe": "view",
 
     "monitor.subscribe": "view",
     "monitor.unsubscribe": "view",
@@ -136,6 +139,7 @@
     "pairing.result",
     "auth.revoked",
     "audio.level",
+    "audio.micTest",
     "update.progress",
     "relay.status",
     "profile.active"
