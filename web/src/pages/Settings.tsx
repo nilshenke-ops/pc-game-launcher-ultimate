@@ -9,7 +9,7 @@ import { t } from "../lib/i18n";
 import { useConn, useEvent, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import {
-  ALL_WIDGETS, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme,
+  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme,
 } from "../lib/prefs";
 import type { Settings, UpdateStatus } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
@@ -161,13 +161,25 @@ function Design() {
           <Switch checked={th.reduceMotion} onChange={(reduceMotion) => setTheme({ reduceMotion })} label={t("Animationen reduzieren")} />
         </div>
       </Card>
-      <Card title={t("Hintergrundbild")} icon={<ImagePlus size={18} />}>
+      <Card title={t("Hintergrund")} icon={<ImagePlus size={18} />}>
         <div className="stack">
-          <div className="row">
-            <label className="btn"><Upload size={16} />{t("Bild wählen")}<input type="file" accept="image/*" hidden onChange={(e) => uploadBg(e.target.files?.[0])} /></label>
-            {th.bgImage && <Button variant="ghost" icon={<Trash2 size={16} />} onClick={() => setTheme({ bgImage: null })}>{t("Entfernen")}</Button>}
+          <div className="scene-grid" role="radiogroup" aria-label={t("Hintergrund")}>
+            <button className={`scene ${!th.bgScene && !th.bgImage ? "on" : ""}`} role="radio" aria-checked={!th.bgScene && !th.bgImage} onClick={() => setTheme({ bgScene: null, bgImage: null })}
+              style={{ background: `linear-gradient(135deg, ${th.background}, ${th.primary}55)` }}><span>{t("Ohne")}</span></button>
+            {BG_SCENES.map((sc) => (
+              <button key={sc.id} className={`scene ${th.bgScene === sc.id && !th.bgImage ? "on" : ""}`} role="radio" aria-checked={th.bgScene === sc.id && !th.bgImage}
+                style={{ backgroundImage: `url("backgrounds/${sc.id}.svg")` }}
+                onClick={() => setTheme({ bgScene: sc.id, bgImage: null, mode: sc.mode, primary: sc.primary, accent: sc.accent, background: sc.background, bgDim: sc.dim, preset: "scene:" + sc.id })}>
+                <span>{t(sc.name)}</span>
+              </button>
+            ))}
           </div>
-          {th.bgImage && <Field label={t("Abdunkeln: {v} %", { v: Math.round(th.bgDim * 100) })}><input type="range" min={0} max={0.9} step={0.05} value={th.bgDim} onChange={(e) => setTheme({ bgDim: +e.target.value })} /></Field>}
+          <p className="tiny muted" style={{ margin: 0 }}>{t("Beim Auswählen werden passende Farben gesetzt – du kannst sie oben jederzeit ändern.")}</p>
+          <div className="row">
+            <label className="btn"><Upload size={16} />{t("Eigenes Bild wählen")}<input type="file" accept="image/*" hidden onChange={(e) => uploadBg(e.target.files?.[0])} /></label>
+            {th.bgImage && <Button variant="ghost" icon={<Trash2 size={16} />} onClick={() => setTheme({ bgImage: null })}>{t("Eigenes Bild entfernen")}</Button>}
+          </div>
+          {(th.bgImage || th.bgScene) && <Field label={t("Abdunkeln: {v} %", { v: Math.round(th.bgDim * 100) })}><input type="range" min={0} max={0.9} step={0.05} value={th.bgDim} onChange={(e) => setTheme({ bgDim: +e.target.value })} /></Field>}
         </div>
       </Card>
       <Layouts />

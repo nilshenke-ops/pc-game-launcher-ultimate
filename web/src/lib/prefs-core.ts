@@ -15,8 +15,25 @@ export interface Theme {
   fontScale: number; // 0.85 .. 1.3
   reduceMotion: boolean;
   bgImage?: string | null; // data URL or https URL
+  bgScene?: string | null; // built-in background (public/backgrounds/<id>.svg)
   bgDim: number; // 0 .. 0.9
 }
+
+/** Built-in backgrounds (drawn SVGs in public/backgrounds) with matching colours that are applied on selection. */
+export const BG_SCENES: { id: string; name: string; mode: "dark" | "light"; primary: string; accent: string; background: string; dim: number; sky?: string }[] = [
+  { id: "cartoon", name: "Cartoon", mode: "light", primary: "#0284c7", accent: "#f59e0b", background: "#e0f2fe", dim: 0.35, sky: "#4fc3f7" },
+  { id: "candy", name: "Candy", mode: "light", primary: "#db2777", accent: "#7c3aed", background: "#fdf2f8", dim: 0.35, sky: "#fbcfe8" },
+  { id: "comic", name: "Comic", mode: "light", primary: "#dc2626", accent: "#2563eb", background: "#fff7d6", dim: 0.3 },
+  { id: "pixel", name: "Pixel Retro", mode: "light", primary: "#2563eb", accent: "#d97706", background: "#eef6ff", dim: 0.3, sky: "#5c94fc" },
+  { id: "synthwave", name: "Synthwave", mode: "dark", primary: "#f472b6", accent: "#818cf8", background: "#0d0716", dim: 0.35, sky: "#0b0221" },
+  { id: "space", name: "Weltraum", mode: "dark", primary: "#a78bfa", accent: "#22d3ee", background: "#05050f", dim: 0.3 },
+  { id: "neon-city", name: "Neon City", mode: "dark", primary: "#22d3ee", accent: "#f472b6", background: "#0b0726", dim: 0.4, sky: "#0b0726" },
+  { id: "arcade", name: "Arcade", mode: "dark", primary: "#f0abfc", accent: "#22d3ee", background: "#140a2e", dim: 0.3 },
+  { id: "aurora", name: "Polarlicht", mode: "dark", primary: "#2dd4bf", accent: "#a78bfa", background: "#041016", dim: 0.35, sky: "#020617" },
+  { id: "ocean", name: "Ozean", mode: "dark", primary: "#38bdf8", accent: "#fb923c", background: "#061a2b", dim: 0.4, sky: "#1e3a8a" },
+  { id: "forest", name: "Wald", mode: "dark", primary: "#34d399", accent: "#fbbf24", background: "#06110f", dim: 0.45, sky: "#9fd1c0" },
+  { id: "lava", name: "Vulkan", mode: "dark", primary: "#fb923c", accent: "#ef4444", background: "#120806", dim: 0.35, sky: "#1c0a06" },
+];
 
 export const PRESETS: Record<string, Palette & { mode: "dark" | "light" }> = {
   neon: { name: "Neon Cyan", primary: "#22d3ee", accent: "#a78bfa", background: "#070b16", mode: "dark" },
@@ -29,7 +46,7 @@ export const PRESETS: Record<string, Palette & { mode: "dark" | "light" }> = {
 
 export const DEFAULT_THEME: Theme = {
   preset: "neon", mode: "dark", primary: "#22d3ee", accent: "#a78bfa", background: "#070b16",
-  surfaceAlpha: 0.72, radius: 16, fontScale: 1, reduceMotion: false, bgImage: null, bgDim: 0.55,
+  surfaceAlpha: 0.72, radius: 16, fontScale: 1, reduceMotion: false, bgImage: null, bgScene: null, bgDim: 0.55,
 };
 
 // ------------------------------------------------------------------ dashboard layouts
@@ -110,6 +127,7 @@ export function sanitizePrefs(input: unknown): Prefs {
     fontScale: num(t.fontScale, 0.85, 1.35, d.theme.fontScale),
     reduceMotion: !!t.reduceMotion,
     bgImage: typeof t.bgImage === "string" && (t.bgImage.startsWith("data:image/") || t.bgImage.startsWith("https://")) && t.bgImage.length < 1_200_000 ? t.bgImage : null,
+    bgScene: typeof t.bgScene === "string" && BG_SCENES.some((s) => s.id === t.bgScene) ? t.bgScene : null,
     bgDim: num(t.bgDim, 0, 0.9, d.theme.bgDim),
   };
   const ids = new Set(ALL_WIDGETS.map((w) => w.id));

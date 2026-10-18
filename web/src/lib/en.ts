@@ -948,4 +948,13 @@ export const en: Record<string, string> = {
   "Gib den vierstelligen Code ein. Danach merkt sich dieses Gerät den Zugang.": "Enter the four-digit code. This device then remembers the access.",
   "Zu viele Versuche – bitte {s} s warten.": "Too many attempts – please wait {s} s.",
   "Falscher Code.": "Wrong code.",
+  "Ohne": "None",
+  "Beim Auswählen werden passende Farben gesetzt – du kannst sie oben jederzeit ändern.": "Selecting one sets matching colours – you can change them above at any time.",
+  "Eigenes Bild wählen": "Choose own picture",
+  "Eigenes Bild entfernen": "Remove own picture",
+  "Weltraum": "Space",
+  "Polarlicht": "Aurora",
+  "Ozean": "Ocean",
+  "Wald": "Forest",
+  "Vulkan": "Volcano",
 };
