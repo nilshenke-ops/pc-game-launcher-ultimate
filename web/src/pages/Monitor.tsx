@@ -4,6 +4,7 @@ import { t } from "../lib/i18n";
 import { useConn, useEvent, useLiveSubscription } from "../lib/hooks";
 import { bytes, clock } from "../lib/format";
 import type { MetricsSample } from "../lib/types";
+import { NetworkCard, PowerCard, StorageCard } from "../components/MonitorExtras";
 import { Banner, Card, OfflineState, Gauge, Meter, PageHead, Sparkline } from "../components/ui";
 
 const NA = () => t("Nicht verfügbar");
@@ -76,6 +77,13 @@ export default function Monitor() {
               </div>
             </Card>
           </div>
+        </div>
+      )}
+      {authed && (
+        <div className="grid-2" style={{ marginTop: 16 }}>
+          <NetworkCard />
+          <StorageCard />
+          <PowerCard />
         </div>
       )}
     </>

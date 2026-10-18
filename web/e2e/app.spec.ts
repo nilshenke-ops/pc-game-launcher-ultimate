@@ -171,6 +171,18 @@ test("Plugin: Datei prüfen, installieren, mit Berechtigung aktivieren, Widget l
   expect(result).not.toContain(":open");
 });
 
+test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
+  await pc.goto(`${COMPANION}/#/monitor`);
+  // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).
+  await expect(pc.getByText("Internet (Cloudflare)")).toBeVisible({ timeout: 10000 });
+  await expect(pc.locator(".card", { hasText: "Netzwerk" }).getByText(/Verlust \d/).first()).toBeVisible({ timeout: 10000 });
+  await expect(pc.locator(".card", { hasText: "Speicherplatz" }).getByText(/frei von/).first()).toBeVisible();
+  // The headless companion has no power control – said so instead of offering buttons.
+  await expect(pc.getByText("Energie-Aktionen sind nur im Windows-Begleiter verfügbar.")).toBeVisible();
+  // Leaving the page stops the pings (subscription removed).
+  await pc.goto(`${COMPANION}/#/`);
+});
+
 test("Zugriff über das Relay mit Ende-zu-Ende-Kopplung", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["Pixel 7"], locale: "de-DE" });
   const remote = await ctx.newPage();

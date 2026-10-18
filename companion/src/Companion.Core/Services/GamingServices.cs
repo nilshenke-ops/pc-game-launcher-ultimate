@@ -27,6 +27,7 @@ public sealed class SettingsService
         public string? PcName { get; set; }
         public string? Language { get; set; }
         public bool? HistoryEnabled { get; set; }
+        public bool? RecordSessionPerf { get; set; }
         public bool? StartMinimized { get; set; }
         public bool? KeepRunningInTray { get; set; }
         public int? ProcessScanSeconds { get; set; }
@@ -52,6 +53,7 @@ public sealed class SettingsService
             if (u.PcName != null) s.PcName = DeviceStore.Sanitize(u.PcName, 40, s.PcName);
             if (u.Language != null) s.Language = u.Language;
             if (u.HistoryEnabled != null) s.HistoryEnabled = u.HistoryEnabled.Value;
+            if (u.RecordSessionPerf != null) s.RecordSessionPerf = u.RecordSessionPerf.Value;
             if (u.StartMinimized != null) s.StartMinimized = u.StartMinimized.Value;
             if (u.KeepRunningInTray != null) s.KeepRunningInTray = u.KeepRunningInTray.Value;
             if (u.ProcessScanSeconds != null) s.ProcessScanSeconds = u.ProcessScanSeconds.Value;
@@ -248,6 +250,32 @@ public sealed class HistoryService
         _hub.Changed("history");
     }
 
+    /// <summary>Note for one session (identified by game and start time).</summary>
+    public void SetNote(string itemId, DateTime startedAt, string? note)
+    {
+        var text = string.IsNullOrWhiteSpace(note) ? null : note.Trim().Length > 1000 ? note.Trim()[..1000] : note.Trim();
+        var ok = _store.Update(f =>
+        {
+            var s = f.Sessions.FirstOrDefault(x => x.ItemId == itemId && Math.Abs((x.StartedAt - startedAt.ToUniversalTime()).TotalSeconds) < 1);
+            if (s == null) return false;
+            s.Note = text;
+            return true;
+        });
+        if (!ok) throw new RpcException("not-found", "Sitzung nicht gefunden.");
+        _hub.Changed("history");
+    }
+
+    public void AttachPerf(string itemId, SessionPerf perf)
+    {
+        if (!Enabled || perf.Samples == 0) return;
+        _store.Update(f =>
+        {
+            var s = f.Sessions.FirstOrDefault(x => x.ItemId == itemId);
+            if (s != null) s.Perf = perf;
+        });
+        _hub.Changed("history");
+    }
+
     /// <summary>Closes sessions left open by a crash or shutdown so durations stay plausible.</summary>
     public void CloseDanglingSessions()
     {
@@ -270,7 +298,7 @@ public sealed class HistoryService
         return new
         {
             enabled = Enabled,
-            sessions = f.Sessions.Take(100).Select(s => new { s.ItemId, s.Name, s.StartedAt, s.EndedAt, minutes = Math.Round(s.Minutes, 1) }),
+            sessions = f.Sessions.Take(100).Select(s => new { s.ItemId, s.Name, s.StartedAt, s.EndedAt, minutes = Math.Round(s.Minutes, 1), s.Note, s.Perf }),
             launches = f.Launches.Take(100),
             stats,
             launchStats,

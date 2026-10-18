@@ -1,13 +1,17 @@
-import { BarChart3, History as HistoryIcon, Trash2, XCircle } from "lucide-react";
+import { BarChart3, History as HistoryIcon, Pencil, Trash2, XCircle } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { dateTime, duration, relTime } from "../lib/format";
 import { Banner, Button, Card, confirmDialog, Empty, Loadable, Meter, PageHead, Switch } from "../components/ui";
 
+interface SessionPerf { samples: number; cpuAvg?: number; cpuMax?: number; ramAvg?: number; gpuAvg?: number; gpuMax?: number }
+
+const pct = (v?: number) => (v == null ? "–" : `${Math.round(v)} %`);
+
 interface HistoryData {
   enabled: boolean;
-  sessions: { itemId: string; name: string; startedAt: string; endedAt?: string; minutes: number }[];
+  sessions: { itemId: string; name: string; startedAt: string; endedAt?: string; minutes: number; note?: string | null; perf?: SessionPerf | null }[];
   launches: { itemId: string; name: string; at: string; ok: boolean; error?: string; by?: string }[];
   stats: { itemId: string; name: string; sessions: number; totalMinutes: number; lastPlayed: string }[];
   launchStats: { itemId: string; name: string; launches: number; failures: number }[];
@@ -59,12 +63,28 @@ export default function History() {
               </Card>
             </div>
             <Card title={t("Letzte Sitzungen")}>
-              {d.sessions.length === 0 ? <p className="muted small">{t("Keine Sitzungen.")}</p> : (
+              {d.sessions.length === 0 ? <p className="muted small">{t("Keine Sitzungen.")}</p> : (<>
                 <div className="table-wrap"><table className="table">
-                  <thead><tr><th>{t("Spiel")}</th><th>{t("Start")}</th><th>{t("Dauer")}</th></tr></thead>
-                  <tbody>{d.sessions.slice(0, 30).map((s, i) => <tr key={i}><td>{s.name}</td><td>{dateTime(s.startedAt)}</td><td>{s.endedAt ? duration(s.minutes) : <span className="badge ok">{t("läuft")}</span>}</td></tr>)}</tbody>
+                  <thead><tr><th>{t("Spiel")}</th><th>{t("Start")}</th><th>{t("Dauer")}</th><th title={t("Mittel / Spitze, gemessen während des Spiels")}>{t("CPU")}</th><th>{t("GPU")}</th><th>{t("RAM")}</th><th>{t("Notiz")}</th></tr></thead>
+                  <tbody>{d.sessions.slice(0, 30).map((s, i) => (
+                    <tr key={i}>
+                      <td>{s.name}</td><td>{dateTime(s.startedAt)}</td><td>{s.endedAt ? duration(s.minutes) : <span className="badge ok">{t("läuft")}</span>}</td>
+                      <td>{s.perf ? `${pct(s.perf.cpuAvg)} / ${pct(s.perf.cpuMax)}` : "–"}</td>
+                      <td>{s.perf ? `${pct(s.perf.gpuAvg)} / ${pct(s.perf.gpuMax)}` : "–"}</td>
+                      <td>{s.perf ? pct(s.perf.ramAvg) : "–"}</td>
+                      <td style={{ minWidth: 160 }}>
+                        <span className="small">{s.note ?? ""}</span>{" "}
+                        {canManage && <Button size="sm" variant="ghost" aria-label={t("Notiz bearbeiten")} icon={<Pencil size={13} />} onClick={async () => {
+                          const note = window.prompt(t("Notiz zur Sitzung ({n}, {d})", { n: s.name, d: dateTime(s.startedAt) }), s.note ?? "");
+                          if (note == null) return;
+                          client.call("history.setNote", { itemId: s.itemId, startedAt: s.startedAt, note }).then(() => toast(t("Notiz gespeichert"), "success")).catch((e) => toast((e as Error).message, "error"));
+                        }} />}
+                      </td>
+                    </tr>
+                  ))}</tbody>
                 </table></div>
-              )}
+                <p className="tiny muted">{t("CPU/GPU: Mittel / Spitze, gemessen alle 10 s während des Spiels (abschaltbar unter Einstellungen → Datenschutz). FPS misst Windows ohne Overlay nicht – daher keine FPS-Werte.")}</p>
+              </>)}
             </Card>
             {d.failures.length > 0 && (
               <Card title={t("Letzte Startfehler")} icon={<XCircle size={18} />}>

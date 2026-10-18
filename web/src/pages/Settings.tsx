@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ArchiveRestore, Bell, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
+  ArchiveRestore, Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
   Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Upload, UserX,
 } from "lucide-react";
 import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
@@ -470,6 +470,18 @@ function Backup() {
     } catch (e) { toast((e as Error).message, "error"); }
     setBusy(null);
   };
+  const points = useRpc<{ points: { name: string; kind: string; size: number; createdAt: string }[] }>("backup.points", {}, ["backup"]);
+  const openPoint = async (name: string) => {
+    setBusy("validate"); setUpload(null);
+    try {
+      const { uploadId } = await client.call<{ uploadId: string }>("backup.openPoint", { name });
+      const summary = await client.call<Record<string, unknown> & { parts: string[] }>("backup.validate", { uploadId });
+      setUpload({ id: uploadId, summary });
+      setSelected(summary.parts.filter((p) => p !== "history" && (p !== "library" || !!conn.me?.isLocal)));
+      toast(t("Punkt geprüft – unten die Bereiche wählen"), "info");
+    } catch (e) { toast((e as Error).message, "error"); }
+    setBusy(null);
+  };
   const restore = async () => {
     if (!upload || !(await confirmDialog(t("Wiederherstellen?"), t("Die ausgewählten Bereiche werden ersetzt. Vorher wird automatisch eine Sicherung des aktuellen Stands angelegt."), { ok: t("Wiederherstellen") }))) return;
     setBusy("restore");
@@ -494,6 +506,21 @@ function Backup() {
           </div>
           {s.data?.dataDir && <p className="tiny muted">{t("Datenordner")}: <code>{s.data.dataDir}</code></p>}
         </div>
+      </Card>
+      <Card title={t("Wiederherstellungspunkte")} icon={<History size={18} />} actions={<Button size="sm" onClick={() => client.call("backup.createPoint").then(() => { toast(t("Wiederherstellungspunkt angelegt"), "success"); points.reload(); }).catch((e) => toast((e as Error).message, "error"))}>{t("Jetzt anlegen")}</Button>}>
+        <Loadable loading={points.loading} error={points.error} onRetry={points.reload}>
+          <div className="stack">
+            <p className="small muted">{t("Automatisch: einmal pro Woche, vor jedem Update und vor jeder Wiederherstellung (ohne Audiodateien). Die letzten 5 automatischen Punkte bleiben erhalten.")}</p>
+            {(points.data?.points.length ?? 0) === 0 ? <p className="small">{t("Noch keine Punkte.")}</p> : (
+              <div className="list">{points.data!.points.slice(0, 12).map((p) => (
+                <div key={p.name} className="list-item">
+                  <div className="grow"><div className="title small">{dateTime(p.createdAt)} · {t(p.kind)}</div><div className="sub tiny mono">{p.name} · {bytes(p.size)}</div></div>
+                  <Button size="sm" busy={busy === "validate"} onClick={() => openPoint(p.name)}>{t("Prüfen & wiederherstellen")}</Button>
+                </div>
+              ))}</div>
+            )}
+          </div>
+        </Loadable>
       </Card>
       <Card title={t("Wiederherstellen")} icon={<Upload size={18} />}>
         <div className="stack">
@@ -528,6 +555,7 @@ function Privacy() {
         <Card title={t("Datenschutz")} icon={<UserX size={18} />}>
           <div className="stack">
             <Switch checked={set.historyEnabled} onChange={(v) => s.save({ historyEnabled: v })} label={t("Spielverlauf aufzeichnen")} hint={t("Startzeiten und Spieldauer, nur lokal auf dem PC.")} />
+            <Switch checked={set.recordSessionPerf !== false} disabled={!set.historyEnabled} onChange={(v) => s.save({ recordSessionPerf: v })} label={t("Leistungswerte während Spielsitzungen aufzeichnen")} hint={t("CPU-, RAM- und GPU-Auslastung alle 10 Sekunden, nur solange ein Spiel läuft. Bleibt auf dem PC.")} />
             <Switch checked={set.coverSearch ?? true} onChange={(v) => s.save({ coverSearch: v })} label={t("Cover automatisch suchen")} hint={t("Der PC sucht für Spiele ohne Bild das echte Cover bei Steam und im Microsoft Store (nur bei exakt gleichem Titel). Dabei wird der Spielname an diese Shops gesendet.")} />
             <Switch checked={set.steamCoversFromCdn} onChange={(v) => s.save({ steamCoversFromCdn: v })} label={t("Steam-Cover aus dem Steam-CDN laden")} hint={t("Dein Gerät ruft die Bilder direkt bei Steam ab (dabei sieht Steam deine IP-Adresse).")} />
             <div className="divider" />

@@ -32,6 +32,7 @@ sealed class WindowsPlatform : IPlatform
     public IDesktopIntegration Desktop { get; }
     public IEnumerable<IDetector> Detectors { get; } = new IDetector[] { new SteamDetector(SteamDetector.DefaultRoots()), new EpicDetector(EpicDetector.DefaultManifestDir()) };
     public IUpdateInstaller UpdateInstaller { get; } = new SelfReplaceInstaller();
+    public IPowerControl Power { get; } = new WindowsPower();
 }
 
 /// <summary>Runs code on the WinForms UI thread.</summary>
@@ -283,6 +284,39 @@ sealed class WindowsDesktop(UiInvoker ui, Func<TrayIcon?> tray) : IDesktopIntegr
 /// Windows allows renaming a running executable. The update is installed by renaming the current file to *.old,
 /// moving the verified download into place and starting it. The old file is removed on the next start.
 /// </summary>
+/// <summary>Power actions with the means Windows itself offers (no administrator rights needed for the current user).</summary>
+sealed class WindowsPower : IPowerControl
+{
+    [DllImport("user32.dll", SetLastError = true)] static extern bool LockWorkStation();
+    [DllImport("powrprof.dll", SetLastError = true)] static extern bool SetSuspendState(bool hibernate, bool forceCritical, bool disableWakeEvent);
+    public bool Supported => true;
+
+    public string? Run(string action, int delaySeconds)
+    {
+        var delay = Math.Clamp(delaySeconds, 0, 600).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        static string? Shutdown(params string[] args)
+        {
+            using var p = Process.Start(new ProcessStartInfo("shutdown.exe") { UseShellExecute = false, CreateNoWindow = true }.With(args));
+            p?.WaitForExit(5000);
+            return p == null ? "shutdown.exe konnte nicht gestartet werden." : p.ExitCode == 0 ? null : p.ExitCode == 1116 ? "Es war kein Herunterfahren geplant." : $"Windows meldet Fehler {p.ExitCode}.";
+        }
+        switch (action)
+        {
+            case "lock": return LockWorkStation() ? null : "PC konnte nicht gesperrt werden.";
+            case "sleep": return SetSuspendState(false, false, false) ? null : "Energiesparen nicht möglich (evtl. in Windows deaktiviert).";
+            case "restart": return Shutdown("/r", "/t", delay, "/c", "PC Game Launcher: Neustart angefordert");
+            case "shutdown": return Shutdown("/s", "/t", delay, "/c", "PC Game Launcher: Herunterfahren angefordert");
+            case "cancel": return Shutdown("/a");
+            default: return "Unbekannte Aktion.";
+        }
+    }
+}
+
+static class PsiExtensions
+{
+    public static ProcessStartInfo With(this ProcessStartInfo psi, string[] args) { foreach (var a in args) psi.ArgumentList.Add(a); return psi; }
+}
+
 sealed class SelfReplaceInstaller : IUpdateInstaller
 {
     public bool Supported => Environment.ProcessPath?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true;

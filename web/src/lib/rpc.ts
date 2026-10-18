@@ -87,6 +87,28 @@ export function setServerUrl(url: string | null) {
   writeJson(SERVER_KEY, url && url.trim() ? url.trim() : null);
 }
 
+// ------------------------------------------------------------------ several PCs
+// Every paired PC is remembered with its own address and device key. Only one is connected at a time; profiles,
+// games and sounds stay on the respective PC. Switching clears the data cache of the previous PC on this device.
+
+const PCS_KEY = "pgl.pcs";
+export interface SavedPc { id: string; name: string; server: string | null; cred: Credentials; lastUsed: number }
+
+export function savedPcs(): SavedPc[] { return readJson<SavedPc[]>(PCS_KEY) ?? []; }
+
+function rememberPc(name: string | undefined) {
+  const cred = readJson<Credentials>(CRED_KEY);
+  if (!cred) return;
+  const server = readJson<string>(SERVER_KEY);
+  const list = savedPcs().filter((p) => p.cred.deviceId !== cred.deviceId);
+  const id = savedPcs().find((p) => p.cred.deviceId === cred.deviceId)?.id ?? Math.random().toString(36).slice(2, 10);
+  writeJson(PCS_KEY, [{ id, name: name || cred.pcName || "PC", server, cred, lastUsed: Date.now() }, ...list].slice(0, 10));
+}
+
+export function forgetPc(id: string) { writeJson(PCS_KEY, savedPcs().filter((p) => p.id !== id)); }
+
+export function isActivePc(p: SavedPc) { return readJson<Credentials>(CRED_KEY)?.deviceId === p.cred.deviceId; }
+
 /** Reads the PC session token (injected by the companion window or passed as #admin=... from the tray menu). */
 export function captureAdminToken() {
   const w = window as unknown as { __PGL_ADMIN__?: string };
@@ -328,6 +350,7 @@ class Client {
         ? await this.call<Me>("auth.login", { adminToken: admin })
         : await this.call<Me>("auth.login", { deviceId: cred!.deviceId, proof: loginProof(cred!.token, hello.nonce) });
       this.set({ auth: "ok", me, authError: undefined, everAuthed: true });
+      if (!admin) rememberPc(hello.info?.pcName);
       this.emit("authenticated", me);
     } catch (e) {
       const err = e as RpcError;
@@ -339,6 +362,26 @@ class Client {
     }
   }
 
+  /** Connects to another remembered PC (its own address and device key). */
+  switchPc(id: string) {
+    const pc = savedPcs().find((p) => p.id === id);
+    if (!pc) return;
+    writeJson(CRED_KEY, pc.cred);
+    writeJson(SERVER_KEY, pc.server);
+    clearCaches();
+    this.set({ auth: "none", me: undefined, everAuthed: false });
+    this.restart();
+  }
+
+  /** Keeps all remembered PCs, but leaves the current one so a further PC can be paired. */
+  addAnotherPc() {
+    writeJson(CRED_KEY, null);
+    if (HOSTED) setServerUrl(null);
+    clearCaches();
+    this.set({ auth: "none", me: undefined, everAuthed: false });
+    this.restart();
+  }
+
   async savePairing(token: string, deviceId: string) {
     writeJson(CRED_KEY, { deviceId, token, pcName: this.status.hello?.info.pcName });
     await this.authenticate();
@@ -347,6 +390,8 @@ class Client {
   async logout() {
     if (this.demo) { exitDemo(); return; }
     try { await this.call("auth.logout"); } catch { /* ignore */ }
+    const cur = readJson<Credentials>(CRED_KEY);
+    if (cur) writeJson(PCS_KEY, savedPcs().filter((p) => p.cred.deviceId !== cur.deviceId)); // signed out = this PC is forgotten here
     writeJson(CRED_KEY, null);
     writeJson(ADMIN_KEY, null, "session");
     clearCaches();

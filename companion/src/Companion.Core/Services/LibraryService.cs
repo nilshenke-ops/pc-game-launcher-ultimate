@@ -291,6 +291,7 @@ public sealed class LibraryService
         public string? ProfileId { get; set; }
         public List<string>? ProcessNames { get; set; }
         public string? Notes { get; set; }
+        public int? Rating { get; set; }
     }
 
     /// <summary>Changes display data only. Launch target and arguments need <see cref="UpdateTarget"/> (PC only).</summary>
@@ -314,6 +315,7 @@ public sealed class LibraryService
             if (u.ProfileId != null) i.ProfileId = u.ProfileId == "" ? null : u.ProfileId;
             if (u.ProcessNames != null) i.ProcessNames = u.ProcessNames.Select(p => Path.GetFileNameWithoutExtension(p.Trim())).Where(p => p.Length is > 0 and < 100).Distinct().Take(10).ToList();
             if (u.Notes != null) i.Notes = u.Notes.Length > 1000 ? u.Notes[..1000] : u.Notes;
+            if (u.Rating != null) i.Rating = Math.Clamp(u.Rating.Value, 0, 5);
             return Clone(i);
         });
         _hub.Changed("library");

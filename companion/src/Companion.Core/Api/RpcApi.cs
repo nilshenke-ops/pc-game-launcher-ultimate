@@ -294,6 +294,26 @@ public static class RpcApi
         rpc.Register("updates.install", ctx => s.Updates.Install() is { } err ? throw new RpcException("update", err) : true);
         rpc.Register("updates.rollback", ctx => s.Updates.Rollback() is { } err ? throw new RpcException("update", err) : true);
 
+        // ------------------------------------------------------------ network, storage, power, notes
+        rpc.Register("network.subscribe", ctx => s.NetMonitor.Subscribe(ctx.Session));
+        rpc.Register("network.unsubscribe", ctx => { s.NetMonitor.Unsubscribe(ctx.Session); return true; });
+        rpc.Register("network.history", _ => s.NetMonitor.History());
+        rpc.Register("storage.get", _ => s.Storage.Get());
+        rpc.Register("storage.scan", ctx => s.Storage.Scan(ctx.OptStr("id", 64)));
+        rpc.Register("storage.openFolder", ctx => { s.Storage.OpenFolder(ctx.Str("id", 64)); return true; });
+        rpc.Register("power.status", _ => new { supported = s.Platform.Power.Supported });
+        rpc.Register("power.run", ctx =>
+        {
+            var action = ctx.Str("action", 20);
+            if (action is not ("lock" or "sleep" or "restart" or "shutdown" or "cancel")) throw new RpcException("invalid-params", "Unbekannte Aktion.");
+            Log.Info("power", $"{action} angefordert von {ctx.Session.Who}");
+            return s.Platform.Power.Run(action, ctx.Int("delay", 60, 0, 600)) is { } err ? throw new RpcException("power", err) : true;
+        });
+        rpc.Register("history.setNote", ctx => { s.History.SetNote(ctx.Str("itemId", 64), ctx.Params.GetProperty("startedAt").GetDateTime(), ctx.OptStr("note", 1000)); return true; });
+        rpc.Register("backup.points", _ => s.Backup.Points());
+        rpc.Register("backup.createPoint", _ => s.Backup.CreatePoint());
+        rpc.Register("backup.openPoint", ctx => new { uploadId = s.Backup.OpenPoint(ctx.Str("name", 130)) });
+
         // ------------------------------------------------------------ plugins
         rpc.Register("plugins.list", _ => s.Plugins.List());
         rpc.Register("plugins.files", ctx => s.Plugins.Files(ctx.Str("id", 64), ctx.Bool("preview")));
@@ -448,6 +468,8 @@ public static class RpcApi
 
         Add("devices", "Gekoppelte Geräte", "info", $"{devices.Count} gekoppelt, {s.Rpc.Sessions.Count(x => x.Authenticated)} Sitzung(en) angemeldet");
         SecurityChecks(s, set, devices, session.Has(Permissions.Admin), Add);
+        try { foreach (var c in ConsistencyCheck.Run(s)) Add(c.area, c.label, c.status, c.detail, c.fix); }
+        catch (Exception ex) { Add("check", "Prüfung: Einstellungen", "warn", "Konnte nicht prüfen: " + ex.Message); }
         Add("audio", "Audio", s.Audio.Engine.Supported ? "ok" : "unsupported", s.Audio.Engine.Supported ? $"{s.Audio.Devices().Count} Geräte" : s.Audio.Engine.UnsupportedReason ?? "");
         var hk = s.Hotkeys.List();
         Add("hotkeys", "Hotkeys", !s.Platform.Hotkeys.Supported ? "unsupported" : "ok", s.Platform.Hotkeys.Supported ? $"{hk.Count} konfiguriert" : "Nur im Windows-Companion");

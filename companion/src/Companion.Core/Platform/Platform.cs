@@ -20,6 +20,22 @@ public interface IPlatform
     IDesktopIntegration Desktop { get; }
     IEnumerable<IDetector> Detectors { get; }
     IUpdateInstaller UpdateInstaller { get; }
+    /// <summary>Lock, sleep, restart, shut down (Windows companion only).</summary>
+    IPowerControl Power => NullPower.Instance;
+}
+
+public interface IPowerControl
+{
+    bool Supported { get; }
+    /// <summary>Runs "lock", "sleep", "restart", "shutdown" or "cancel". Restart/shutdown wait <paramref name="delaySeconds"/> and can be cancelled.</summary>
+    string? Run(string action, int delaySeconds);
+}
+
+public sealed class NullPower : IPowerControl
+{
+    public static readonly NullPower Instance = new();
+    public bool Supported => false;
+    public string? Run(string action, int delaySeconds) => "Energie-Aktionen sind nur im Windows-Begleiter verfügbar.";
 }
 
 public interface ILauncher

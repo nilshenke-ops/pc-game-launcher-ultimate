@@ -19,6 +19,7 @@ export interface LibraryItem {
   coverUrl?: string;
   profileId?: string;
   notes?: string;
+  rating?: number;
   addedAt: string;
   gamePassId?: string;
   autoAdded?: boolean;
@@ -157,6 +158,7 @@ export interface Settings {
   relayUrl?: string;
   relayCompanionId?: string;
   historyEnabled: boolean;
+  recordSessionPerf?: boolean;
   startMinimized: boolean;
   keepRunningInTray: boolean;
   processScanSeconds: number;

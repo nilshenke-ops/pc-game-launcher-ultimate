@@ -33,6 +33,9 @@ public sealed class CompanionServices : IAsyncDisposable
     public NetworkDiagnostics Network { get; }
     public UpdateService Updates { get; }
     public PluginService Plugins { get; }
+    public PerformanceRecorder Perf { get; }
+    public NetworkMonitor NetMonitor { get; }
+    public StorageService Storage { get; }
     public GamePassService GamePass { get; }
     public CoverService Covers { get; }
     public SteamService Steam { get; }
@@ -70,6 +73,9 @@ public sealed class CompanionServices : IAsyncDisposable
         Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
         Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Updates & Versionen: Änderungen ansehen, herunterladen und installieren. Es wird nie automatisch installiert.", "/updates");
         Plugins = new PluginService(paths, Rpc, Settings.Get);
+        Perf = new PerformanceRecorder(platform.Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
+        NetMonitor = new NetworkMonitor(Rpc);
+        Storage = new StorageService(paths, Library, platform, Rpc);
         Updates.CreateRestorePoint = name =>
         {
             try { return Path.GetFileName(Backup.CreateZip(includeSounds: false, Path.Combine(paths.BackupsDir, $"{name}-{DateTime.Now:yyyyMMdd-HHmmss}.zip"))); }
@@ -127,6 +133,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Sessions.Started += (item, at) =>
         {
             History.SessionStarted(item, at);
+            Perf.GameStarted(item.Id);
             var p = Profiles.Get();
             var profileId = ProfileFor(item, p);
             if (p.AutoSwitch && profileId != null && p.ActiveProfileId != profileId)
@@ -137,6 +144,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Sessions.Stopped += (item, at) =>
         {
             History.SessionEnded(item.Id, at);
+            if (Perf.GameStopped(item.Id) is { } perf) History.AttachPerf(item.Id, perf);
             var p = Profiles.Get();
             var profileId = ProfileFor(item, p);
             // Only switch back if no other running game still wants this profile.
@@ -292,6 +300,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Updates.StartAutoCheck();
         Covers.Start();
         Plugins.Start();
+        _ = Task.Run(Backup.EnsureAutoPoint);
         Steam.Start();
         Launchers.Start();
         ApplyRelaySettings(Settings.Get());
@@ -307,6 +316,8 @@ public sealed class CompanionServices : IAsyncDisposable
         Updates.Dispose();
         Covers.Dispose();
         Plugins.Dispose();
+        Perf.Dispose();
+        NetMonitor.Dispose();
         Steam.Dispose();
         Launchers.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }

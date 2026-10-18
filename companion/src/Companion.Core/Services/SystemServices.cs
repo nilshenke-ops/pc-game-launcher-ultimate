@@ -529,6 +529,48 @@ public sealed class BackupService
         return new { data = Convert.ToBase64String(buf, 0, n), done = offset + n >= fs.Length };
     }
 
+    // ------------------------------------------------------------ restore points (ZIPs in the backups folder)
+
+    static string PointKind(string name) =>
+        name.StartsWith("auto-") ? "Automatisch (wöchentlich)" : name.StartsWith("vor-update-") ? "Vor einem Update" :
+        name.StartsWith("vor-wiederherstellung-") ? "Vor einer Wiederherstellung" : name.StartsWith("punkt-") ? "Manuell" : "Export";
+
+    public object Points() => new
+    {
+        points = new DirectoryInfo(_paths.BackupsDir).EnumerateFiles("*.zip")
+            .Where(f => !f.Name.StartsWith("upload-", StringComparison.Ordinal))
+            .OrderByDescending(f => f.CreationTimeUtc)
+            .Select(f => new { name = f.Name, kind = PointKind(f.Name), size = f.Length, createdAt = f.CreationTimeUtc }).Take(50).ToList(),
+    };
+
+    public object CreatePoint() => new { name = Path.GetFileName(CreateZip(includeSounds: false, Path.Combine(_paths.BackupsDir, $"punkt-{DateTime.Now:yyyyMMdd-HHmmss}.zip"))) };
+
+    /// <summary>Opens a restore point for the normal check-and-restore flow (backup.validate / backup.restore).</summary>
+    public string OpenPoint(string name)
+    {
+        if (!System.Text.RegularExpressions.Regex.IsMatch(name, @"^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,120}\.zip$") || name.StartsWith("upload-", StringComparison.Ordinal))
+            throw new RpcException("invalid-params", "Ungültiger Name.");
+        var path = Path.Combine(_paths.BackupsDir, name);
+        if (!File.Exists(path)) throw new RpcException("not-found", "Wiederherstellungspunkt nicht gefunden.");
+        return Register(path);
+    }
+
+    /// <summary>Once a week a small automatic restore point (without sound files); the newest 5 are kept.</summary>
+    public void EnsureAutoPoint()
+    {
+        try
+        {
+            var autos = new DirectoryInfo(_paths.BackupsDir).EnumerateFiles("auto-*.zip").OrderByDescending(f => f.CreationTimeUtc).ToList();
+            if (autos.Count == 0 || DateTime.UtcNow - autos[0].CreationTimeUtc > TimeSpan.FromDays(7))
+            {
+                CreateZip(includeSounds: false, Path.Combine(_paths.BackupsDir, $"auto-{DateTime.Now:yyyyMMdd-HHmmss}.zip"));
+                autos = new DirectoryInfo(_paths.BackupsDir).EnumerateFiles("auto-*.zip").OrderByDescending(f => f.CreationTimeUtc).ToList();
+            }
+            foreach (var old in autos.Skip(5)) old.Delete();
+        }
+        catch (Exception ex) { Log.Warn("backup", "Automatischer Wiederherstellungspunkt fehlgeschlagen: " + ex.Message); }
+    }
+
     public string UploadBegin(long size)
     {
         if (size <= 0 || size > MaxBackupBytes) throw new RpcException("too-large", "Backup ist zu groß.");

@@ -36,6 +36,8 @@ public sealed class LibraryItem
     public string? CoverUrl { get; set; }
     public string? ProfileId { get; set; }
     public string? Notes { get; set; }
+    /// <summary>Own rating 0 (none) … 5 stars.</summary>
+    public int Rating { get; set; }
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
     /// <summary>Microsoft Store product id if the game is (or was) in the PC Game Pass catalog.</summary>
     public string? GamePassId { get; set; }
@@ -255,6 +257,20 @@ public sealed class GameSession
     public DateTime StartedAt { get; set; }
     public DateTime? EndedAt { get; set; }
     public double Minutes => ((EndedAt ?? DateTime.UtcNow) - StartedAt).TotalMinutes;
+    /// <summary>Personal note (max. 1000 characters).</summary>
+    public string? Note { get; set; }
+    /// <summary>Load measured on the PC while this game ran (every 10 s). No FPS: Windows offers no source without overlays/drivers.</summary>
+    public SessionPerf? Perf { get; set; }
+}
+
+public sealed class SessionPerf
+{
+    public int Samples { get; set; }
+    public double? CpuAvg { get; set; }
+    public double? CpuMax { get; set; }
+    public double? RamAvg { get; set; }
+    public double? GpuAvg { get; set; }
+    public double? GpuMax { get; set; }
 }
 
 public sealed class LaunchRecord
@@ -297,6 +313,8 @@ public sealed class Settings
     public int ProcessScanSeconds { get; set; } = 5;
     /// <summary>Update manifest (version, download link, SHA-256). Default: the project's GitHub Pages site. Empty = no checks.</summary>
     public string? UpdateManifestUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/update.json";
+    /// <summary>Record CPU/RAM/GPU load during game sessions (one sample every 10 s, only while a game runs).</summary>
+    public bool RecordSessionPerf { get; set; } = true;
     /// <summary>Plugin store: signed catalog of official/reviewed plugins. "" = no catalog (local plugin files still work).</summary>
     public string? PluginCatalogUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/catalog.json";
     public bool NotifyInfo { get; set; } = true;

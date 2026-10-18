@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, CornerDownLeft, Gamepad2, LayoutGrid, Music, Search, Settings, SquareTerminal, Swords, Zap } from "lucide-react";
+import { Bot, Puzzle, CornerDownLeft, Gamepad2, LayoutGrid, Music, Search, Settings, SquareTerminal, Swords, Zap } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { navItems } from "../lib/nav";
+import type { InstalledPlugin, PluginList } from "../lib/plugins";
 import { bumpUsage, getPrefs, setPrefs } from "../lib/prefs";
 import { toast } from "../lib/hooks";
 import type { AutomationRule, LibraryItem, ProfilesFile, QuickAction, SoundsFile } from "../lib/types";
@@ -19,7 +20,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
   const nav = useNavigate();
   const [q, setQ] = useState("");
   const [sel, setSel] = useState(0);
-  const [data, setData] = useState<{ items: LibraryItem[]; sounds: SoundsFile | null; quick: QuickAction[]; profiles: ProfilesFile | null; rules: AutomationRule[] }>({ items: [], sounds: null, quick: [], profiles: null, rules: [] });
+  const [data, setData] = useState<{ items: LibraryItem[]; sounds: SoundsFile | null; quick: QuickAction[]; profiles: ProfilesFile | null; rules: AutomationRule[]; plugins: InstalledPlugin[] }>({ items: [], sounds: null, quick: [], profiles: null, rules: [], plugins: [] });
 
   useEffect(() => {
     if (client.status.auth !== "ok") return;
@@ -29,12 +30,14 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       client.call<{ actions: QuickAction[] }>("quick.list"),
       client.call<ProfilesFile>("profiles.list"),
       client.call<{ rules: AutomationRule[] }>("automations.list"),
-    ]).then(([l, s, qa, p, r]) => setData({
+      client.call<PluginList>("plugins.list"),
+    ]).then(([l, s, qa, p, r, pl]) => setData({
       items: l.status === "fulfilled" ? l.value.items : [],
       sounds: s.status === "fulfilled" ? s.value.data : null,
       quick: qa.status === "fulfilled" ? qa.value.actions : [],
       profiles: p.status === "fulfilled" ? p.value : null,
       rules: r.status === "fulfilled" ? r.value.rules : [],
+      plugins: pl.status === "fulfilled" ? pl.value.plugins : [],
     }));
   }, []);
 
@@ -53,6 +56,12 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     for (const s of data.sounds?.sounds ?? []) list.push({ key: "snd:" + s.id, group: t("Sounds"), label: s.name, sub: t("Abspielen"), icon: <Music size={18} />, run: call("sounds.play", { id: s.id }, t("Sound gestartet")), keywords: s.categories.join(" ") });
     for (const a of data.quick) list.push({ key: "qa:" + a.id, group: t("Quick Actions"), label: a.name, sub: t("Ausführen"), icon: <Zap size={18} />, run: () => { onClose(); runQuickAction(a); }, keywords: a.category ?? "" });
     for (const p of data.profiles?.profiles ?? []) list.push({ key: "prof:" + p.id, group: t("Gaming-Profile"), label: p.name, sub: t("Aktivieren"), icon: <Swords size={18} />, run: call("profiles.activate", { id: p.id }, t("Profil aktiviert")) });
+    for (const pl of data.plugins) {
+      if (!pl.manifest) continue;
+      list.push({ key: "plg:" + pl.id, group: t("Plugins"), label: pl.manifest.name, sub: pl.enabled ? t("Aktiv") : t("Aus"), icon: <Puzzle size={18} />, run: go("/plugins"), keywords: pl.manifest.description });
+      if (pl.enabled) for (const a of pl.manifest.contributes.actions)
+        list.push({ key: `plga:${pl.id}:${a.id}`, group: t("Plugins"), label: a.name, sub: pl.manifest.name, icon: <Puzzle size={18} />, run: call("plugins.runAction", { id: pl.id, actionId: a.id }, t("Aktion ausgeführt")) });
+    }
     for (const r of data.rules) list.push({ key: "rule:" + r.id, group: t("Automatisierungen"), label: r.name, sub: t("Öffnen"), icon: <Bot size={18} />, run: go("/automations") });
     list.push(
       { key: "cmd:stop", group: t("Befehle"), label: t("Alle Sounds stoppen"), icon: <SquareTerminal size={18} />, run: call("sounds.stopAll", {}, t("Alle Sounds gestoppt")) },

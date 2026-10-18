@@ -11,7 +11,7 @@ import { GamePassView } from "./GamePass";
 import { SteamView } from "./Steam";
 import { LauncherView } from "./Launchers";
 
-type Sort = "name" | "recent" | "added";
+type Sort = "name" | "recent" | "added" | "rating";
 const SOURCE_LABEL: Record<string, string> = { steam: "Steam", epic: "Epic Games", appsFolder: "Store / Startmenü", exe: "Datei" };
 
 interface ListResult { items: LibraryItem[]; installed: Record<string, boolean | null>; running: string[]; coversFromCdn: boolean }
@@ -42,7 +42,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
     const s = search.trim().toLowerCase();
     let list = items.filter((i) => (!s || i.name.toLowerCase().includes(s) || i.categories.some((c) => c.toLowerCase().includes(s))) &&
       (cat === "__all" || (cat === "__fav" ? i.favorite : cat === "__running" ? q.data?.running.includes(i.id) : cat.startsWith("src:") ? i.source === cat.slice(4) : i.categories.includes(cat))));
-    list = [...list].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "recent" ? (lastLaunch.get(b.id) ?? 0) - (lastLaunch.get(a.id) ?? 0) : Date.parse(b.addedAt) - Date.parse(a.addedAt));
+    list = [...list].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) || a.name.localeCompare(b.name) : sort === "recent" ? (lastLaunch.get(b.id) ?? 0) - (lastLaunch.get(a.id) ?? 0) : Date.parse(b.addedAt) - Date.parse(a.addedAt));
     return [...list.filter((i) => i.favorite), ...list.filter((i) => !i.favorite)];
   }, [items, search, cat, sort, lastLaunch, q.data]);
 
@@ -66,7 +66,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
             <Search size={17} />
             <input className="input" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={isGame ? t("Spiele durchsuchen …") : t("Programme durchsuchen …")} aria-label={t("Suche")} />
           </div>
-          <Segmented<Sort> value={sort} onChange={setSort} label={t("Sortierung")} options={[{ value: "name", label: t("A–Z") }, { value: "recent", label: t("Zuletzt") }, { value: "added", label: t("Neu") }]} />
+          <Segmented<Sort> value={sort} onChange={setSort} label={t("Sortierung")} options={[{ value: "name", label: t("A–Z") }, { value: "recent", label: t("Zuletzt") }, { value: "added", label: t("Neu") }, { value: "rating", label: "★ " + t("Bewertung") }]} />
         </div>
         <div className="chips" role="toolbar" aria-label={t("Filter")}>
           {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ["__running", t("Läuft")], ...(isGame ? [["__steam", "Steam"], ["__epic", "Epic"], ["__ea", "EA"], ["__gamepass", "Game Pass"]] : []), ...sources.filter((s) => !(isGame && (s === "steam" || s === "epic"))).map((s) => ["src:" + s, SOURCE_LABEL[s] ?? s]), ...categories.map((c) => [c, c])].map(([k, label]) => (
@@ -103,6 +103,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
                   </div>
                   <div className="bottom">
                     <b>{i.name}</b>
+                    {(i.rating ?? 0) > 0 && <span className="tiny" aria-label={t("{n} von 5 Sternen", { n: i.rating! })} style={{ color: "#fde047" }}>{"★".repeat(i.rating!)}<span style={{ opacity: 0.35 }}>{"★".repeat(5 - i.rating!)}</span></span>}
                     <div className="row nowrap">
                       <Button variant="primary" size="sm" className="play grow" icon={<Play size={14} />} onClick={() => launch(i)}>{t("Spielen")}</Button>
                       {canManage && <Button size="sm" icon={<MoreVertical size={15} />} onClick={() => setEditing(i)} aria-label={t("Bearbeiten")} style={{ background: "rgba(0,0,0,.45)", color: "#fff" }} />}
@@ -148,7 +149,7 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
     setBusy(true);
     try {
       await client.call("library.update", {
-        id: item.id, name: f.name, kind: f.kind, favorite: f.favorite, coverUrl: f.coverUrl ?? "", profileId: f.profileId ?? "", notes: f.notes ?? "",
+        id: item.id, name: f.name, kind: f.kind, favorite: f.favorite, coverUrl: f.coverUrl ?? "", profileId: f.profileId ?? "", notes: f.notes ?? "", rating: f.rating ?? 0,
         categories: f.categoriesText.split(",").map((s) => s.trim()).filter(Boolean),
         processNames: f.processText.split(",").map((s) => s.trim()).filter(Boolean),
       });
@@ -216,6 +217,14 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
         <Field label={t("Startziel")} hint={SOURCE_LABEL[item.source]}><input className="input mono" value={f.target} disabled={!isLocal || item.source !== "exe"} onChange={(e) => set({ target: e.target.value })} /></Field>
         <Field label={t("Startparameter")}><input className="input mono" value={f.args} disabled={!isLocal || item.source !== "exe"} maxLength={500} onChange={(e) => set({ args: e.target.value })} placeholder="-fullscreen" /></Field>
       </div>
+      <Field label={t("Bewertung")}>
+        <div className="row" role="radiogroup" aria-label={t("Bewertung")} style={{ gap: 4 }}>
+          {[1, 2, 3, 4, 5].map((n) => (
+            <button key={n} type="button" role="radio" aria-checked={(f.rating ?? 0) === n} aria-label={t("{n} von 5 Sternen", { n })} className="btn icon sm ghost"
+              onClick={() => set({ rating: (f.rating ?? 0) === n ? 0 : n })}><Star size={18} fill={(f.rating ?? 0) >= n ? "#fde047" : "none"} color="#fde047" /></button>
+          ))}
+        </div>
+      </Field>
       <Field label={t("Notizen")}><textarea className="input" value={f.notes ?? ""} maxLength={1000} onChange={(e) => set({ notes: e.target.value })} /></Field>
     </Modal>
   );
