@@ -214,6 +214,20 @@ sealed class WindowsDesktop(UiInvoker ui, Func<TrayIcon?> tray) : IDesktopIntegr
     public void ShowPairingRequest(string deviceName) => ui.Post(() => tray()?.PairingRequest(deviceName));
     public void ShowToast(string title, string message) => ui.Post(() => tray()?.Balloon(title, message));
 
+    public bool CanListApps => true;
+
+    /// <summary>Opens the product page in the Xbox app (Game Pass install); falls back to the Microsoft Store app.</summary>
+    public string? OpenStoreProduct(string productId)
+    {
+        if (GamePassService.ValidProductId(productId) == null) return "Ungültige Produkt-ID.";
+        foreach (var uri in new[] { $"msxbox://game/?productId={productId}", $"ms-windows-store://pdp/?productid={productId}" })
+        {
+            try { Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true })?.Dispose(); return null; }
+            catch (Win32Exception) { /* app/protocol not installed – try the next one */ }
+        }
+        return "Weder die Xbox-App noch der Microsoft Store sind installiert.";
+    }
+
     /// <summary>Lists start-menu apps (desktop, Microsoft Store and Xbox) through the shell's AppsFolder.</summary>
     public IReadOnlyList<DetectedItem> StartMenuApps()
     {

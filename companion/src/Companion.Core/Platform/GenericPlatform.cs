@@ -117,6 +117,8 @@ public sealed class PlainSecretProtector : ISecretProtector
 
 public sealed class NullDesktop : IDesktopIntegration
 {
+    public bool CanListApps => false;
+    public string? OpenStoreProduct(string productId) => "Installieren über die Xbox-App geht nur mit dem Windows-Begleiter.";
     public bool CanPickFiles => false;
     public Task<string?> PickExecutableAsync() => Task.FromResult<string?>(null);
     public void OpenFolder(string path) { }

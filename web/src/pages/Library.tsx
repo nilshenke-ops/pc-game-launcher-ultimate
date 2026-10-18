@@ -7,6 +7,7 @@ import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials } from "../lib/format";
 import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Thumb } from "../components/ui";
+import { GamePassView } from "./GamePass";
 
 type Sort = "name" | "recent" | "added";
 const SOURCE_LABEL: Record<string, string> = { steam: "Steam", epic: "Epic Games", appsFolder: "Store / Startmenü", exe: "Datei" };
@@ -26,7 +27,8 @@ export default function Library({ kind }: { kind: ItemKind }) {
   const isGame = kind === "game";
 
   const items = useMemo(() => (q.data?.items ?? []).filter((i) => i.kind === kind), [q.data, kind]);
-  const categories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].sort(), [items]);
+  // "Game Pass" has its own chip (whole catalog), so it is not repeated as a normal category.
+  const categories = useMemo(() => [...new Set(items.flatMap((i) => i.categories))].filter((c) => c !== "Game Pass").sort(), [items]);
   const lastLaunch = useMemo(() => {
     const m = new Map<string, number>();
     for (const l of hist.data?.launches ?? []) if (!m.has(l.itemId)) m.set(l.itemId, Date.parse(l.at));
@@ -64,12 +66,13 @@ export default function Library({ kind }: { kind: ItemKind }) {
           <Segmented<Sort> value={sort} onChange={setSort} label={t("Sortierung")} options={[{ value: "name", label: t("A–Z") }, { value: "recent", label: t("Zuletzt") }, { value: "added", label: t("Neu") }]} />
         </div>
         <div className="chips" role="toolbar" aria-label={t("Filter")}>
-          {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ["__running", t("Läuft")], ...sources.map((s) => ["src:" + s, SOURCE_LABEL[s] ?? s]), ...categories.map((c) => [c, c])].map(([k, label]) => (
+          {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ["__running", t("Läuft")], ...(isGame ? [["__gamepass", "Game Pass"]] : []), ...sources.map((s) => ["src:" + s, SOURCE_LABEL[s] ?? s]), ...categories.map((c) => [c, c])].map(([k, label]) => (
             <button key={k} className={`chip ${cat === k ? "on" : ""}`} onClick={() => setCat(k)}>{label}</button>
           ))}
         </div>
       </div>
 
+      {cat === "__gamepass" ? <GamePassView search={search} /> : (
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {items.length === 0 ? (
           <Card><Empty icon={isGame ? <Gamepad2 size={28} /> : <LayoutGrid size={28} />} title={isGame ? t("Noch keine Spiele") : t("Noch keine Programme")}
@@ -91,6 +94,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
                   <div className="top">
                     {running && <span className="badge ok">● {t("Läuft")}</span>}
                     {installed === false && <span className="badge error">{t("Nicht gefunden")}</span>}
+                    {i.gamePassId && <span className="badge gp">Game Pass</span>}
                     <button className={`btn icon sm fav ${i.favorite ? "on" : ""}`} onClick={() => fav(i)} aria-label={i.favorite ? t("Favorit entfernen") : t("Als Favorit markieren")} aria-pressed={i.favorite}><Star size={15} fill={i.favorite ? "currentColor" : "none"} /></button>
                   </div>
                   <div className="bottom">
@@ -120,6 +124,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
           </div>
         )}
       </Loadable>
+      )}
 
       {editing && <EditItem item={editing} onClose={() => setEditing(null)} />}
       {adding && <AddItems kind={kind} onClose={() => setAdding(false)} />}

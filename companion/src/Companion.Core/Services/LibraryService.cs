@@ -125,6 +125,50 @@ public sealed class LibraryService
         try { return _platform.Launcher.ExtractIcon(path); } catch { return null; }
     }
 
+    /// <summary>
+    /// Game Pass sync: installed catalog games are added (category "Game Pass", marked AutoAdded); auto-added games that are
+    /// uninstalled or left Game Pass are removed. Games the user added by hand only gain or lose the category.
+    /// </summary>
+    public (int added, int removed) ReconcileGamePass(IReadOnlyList<GamePassGame> catalog, IReadOnlyDictionary<string, string> installedByPfn)
+    {
+        int added = 0, removed = 0;
+        var byPfn = catalog.Where(g => g.Pfn != null).GroupBy(g => g.Pfn!, StringComparer.OrdinalIgnoreCase).ToDictionary(g => g.Key, g => g.First(), StringComparer.OrdinalIgnoreCase);
+        var catalogIds = catalog.Select(g => g.Id).ToHashSet();
+        static string? PfnOf(LibraryItem i) => i.Source == LaunchSource.AppsFolder && i.Target.IndexOf('!') is var b && b > 0 ? i.Target[..b] : null;
+        _store.Update(f =>
+        {
+            foreach (var i in f.Items.ToList())
+            {
+                var pfn = PfnOf(i);
+                var game = pfn != null && byPfn.TryGetValue(pfn, out var g) ? g : null;
+                var inPass = game != null || (i.GamePassId != null && catalogIds.Contains(i.GamePassId));
+                var installed = pfn != null && installedByPfn.ContainsKey(pfn);
+                if (i.AutoAdded && (!inPass || !installed)) { f.Items.Remove(i); removed++; continue; }
+                if (inPass)
+                {
+                    i.GamePassId ??= game?.Id;
+                    if (!i.Categories.Contains(GamePassService.Category)) i.Categories.Add(GamePassService.Category);
+                    if (i.CoverUrl == null && game?.Cover != null) i.CoverUrl = game.Cover;
+                }
+                else if (i.Categories.Remove(GamePassService.Category)) i.GamePassId = null;
+            }
+            foreach (var (pfn, aumid) in installedByPfn)
+            {
+                if (!byPfn.TryGetValue(pfn, out var game)) continue;
+                if (f.Items.Any(i => string.Equals(PfnOf(i), pfn, StringComparison.OrdinalIgnoreCase))) continue;
+                if (LaunchValidator.ValidateTarget(LaunchSource.AppsFolder, aumid) != null) continue;
+                f.Items.Add(new LibraryItem
+                {
+                    Id = Ids.New("item"), Kind = ItemKind.Game, Name = game.Title, Source = LaunchSource.AppsFolder, Target = aumid,
+                    Categories = new() { GamePassService.Category }, CoverUrl = game.Cover, GamePassId = game.Id, AutoAdded = true,
+                });
+                added++;
+            }
+        });
+        if (added + removed > 0) _hub.Changed("library");
+        return (added, removed);
+    }
+
     LibraryItem Add(LibraryItem item)
     {
         _store.Update(f => f.Items.Add(item));

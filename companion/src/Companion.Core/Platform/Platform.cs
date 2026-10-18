@@ -132,6 +132,10 @@ public interface IDesktopIntegration
     void ShowPairingRequest(string deviceName);
     void ShowToast(string title, string message);
     IReadOnlyList<DetectedItem> StartMenuApps();
+    /// <summary>True if <see cref="StartMenuApps"/> really lists installed apps (needed to recognise installed Game Pass games).</summary>
+    bool CanListApps { get; }
+    /// <summary>Opens a Microsoft Store product (already validated id) in the Xbox app or Store. Returns an error text or null.</summary>
+    string? OpenStoreProduct(string productId);
 }
 
 public interface IDetector

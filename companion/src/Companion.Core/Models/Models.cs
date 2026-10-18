@@ -37,6 +37,10 @@ public sealed class LibraryItem
     public string? ProfileId { get; set; }
     public string? Notes { get; set; }
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
+    /// <summary>Microsoft Store product id if the game is (or was) in the PC Game Pass catalog.</summary>
+    public string? GamePassId { get; set; }
+    /// <summary>Added automatically by the Game Pass sync – removed again automatically when uninstalled or no longer in Game Pass.</summary>
+    public bool AutoAdded { get; set; }
 }
 
 public sealed class LibraryFile
@@ -289,6 +293,10 @@ public sealed class Settings
     public bool QuietWhileGaming { get; set; } = true;
     public List<string> MutedNotificationKeys { get; set; } = new();
     public bool SteamCoversFromCdn { get; set; } = true;
+    /// <summary>Keep the "Game Pass" category in sync with the PC Game Pass catalog (reads Microsoft's public catalog).</summary>
+    public bool GamePassEnabled { get; set; }
+    /// <summary>Store market for the Game Pass catalog (two letters, e.g. DE).</summary>
+    public string GamePassMarket { get; set; } = "DE";
 }
 
 // ---------------------------------------------------------------- Notifications

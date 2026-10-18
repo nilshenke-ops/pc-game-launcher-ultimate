@@ -20,6 +20,8 @@ export interface LibraryItem {
   profileId?: string;
   notes?: string;
   addedAt: string;
+  gamePassId?: string;
+  autoAdded?: boolean;
 }
 
 export interface DetectedItem {
@@ -163,6 +165,8 @@ export interface Settings {
   quietWhileGaming: boolean;
   mutedNotificationKeys: string[];
   steamCoversFromCdn: boolean;
+  gamePassEnabled?: boolean;
+  gamePassMarket?: string;
 }
 
 export interface Features { audio: boolean; hotkeys: boolean; autostart: boolean; pickFile: boolean; installUpdates: boolean }

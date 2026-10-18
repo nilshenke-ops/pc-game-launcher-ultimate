@@ -34,11 +34,14 @@ public sealed class SettingsService
         public bool? QuietWhileGaming { get; set; }
         public List<string>? MutedNotificationKeys { get; set; }
         public bool? SteamCoversFromCdn { get; set; }
+        public bool? GamePassEnabled { get; set; }
+        public string? GamePassMarket { get; set; }
     }
 
     public Settings SaveGeneral(GeneralUpdate u)
     {
         if (u.Language is { } l && l is not ("de" or "en")) throw new RpcException("invalid-params", "Sprache muss de oder en sein.");
+        if (u.GamePassMarket is { } gm && !System.Text.RegularExpressions.Regex.IsMatch(gm, "^[A-Z]{2}$")) throw new RpcException("invalid-params", "Markt muss ein Ländercode aus zwei Großbuchstaben sein (z. B. DE).");
         if (u.ProcessScanSeconds is { } p && (p < 2 || p > 60)) throw new RpcException("invalid-params", "Prüfintervall muss zwischen 2 und 60 Sekunden liegen.");
         var s = _store.Update(s =>
         {
@@ -52,6 +55,8 @@ public sealed class SettingsService
             if (u.QuietWhileGaming != null) s.QuietWhileGaming = u.QuietWhileGaming.Value;
             if (u.MutedNotificationKeys != null) s.MutedNotificationKeys = u.MutedNotificationKeys.Take(50).ToList();
             if (u.SteamCoversFromCdn != null) s.SteamCoversFromCdn = u.SteamCoversFromCdn.Value;
+            if (u.GamePassEnabled != null) s.GamePassEnabled = u.GamePassEnabled.Value;
+            if (u.GamePassMarket != null) s.GamePassMarket = u.GamePassMarket;
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");

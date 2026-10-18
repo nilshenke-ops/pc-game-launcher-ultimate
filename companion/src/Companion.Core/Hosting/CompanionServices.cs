@@ -32,6 +32,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public MonitorService Monitor { get; }
     public NetworkDiagnostics Network { get; }
     public UpdateService Updates { get; }
+    public GamePassService GamePass { get; }
     public BackupService Backup { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
@@ -64,6 +65,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Updates = new UpdateService(paths, Settings.Get, platform.UpdateInstaller, Rpc);
         Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
         Backup = new BackupService(paths, this);
+        GamePass = new GamePassService(paths, Library, platform, Settings.Get, Rpc);
 
         Wire();
         Rpc.HelloInfo = HelloInfo;
@@ -186,6 +188,12 @@ public sealed class CompanionServices : IAsyncDisposable
         Notifications.OnDesktop = n => { try { Platform.Desktop.ShowToast(n.Title, n.Message ?? ""); } catch { } };
 
         Settings.Saved += s => ApplyRelaySettings(s);
+        var gamePassWasOn = Settings.Get().GamePassEnabled;
+        Settings.Saved += s =>
+        {
+            if (s.GamePassEnabled && !gamePassWasOn) _ = GamePass.SyncAsync(force: true).ContinueWith(t => { if (t.Exception != null) Log.Warn("gamepass", t.Exception.GetBaseException().Message); });
+            gamePassWasOn = s.GamePassEnabled;
+        };
     }
 
     /// <summary>The profile linked to a game: set on the game itself, or the game is listed in a profile.</summary>
@@ -232,6 +240,7 @@ public sealed class CompanionServices : IAsyncDisposable
             _ = Automations.Fire(TriggerType.AudioDeviceMissing, null);
         }
         Sessions.Start();
+        GamePass.Start();
         ApplyRelaySettings(Settings.Get());
         _ = Automations.Fire(TriggerType.CompanionStarted, null);
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
@@ -241,6 +250,7 @@ public sealed class CompanionServices : IAsyncDisposable
     {
         Sessions.Dispose();
         Monitor.Dispose();
+        GamePass.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
         await Relay.DisposeAsync();
