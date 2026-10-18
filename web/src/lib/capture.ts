@@ -5,8 +5,12 @@ import type { ObsStatus } from "./types";
 
 export type CaptureAction = "record" | "replay" | "buffer" | "overlay";
 export interface CaptureProviderInfo { id: string; name: string; actions: CaptureAction[]; note: string; defaults: Partial<Record<CaptureAction, string>>; effective?: Partial<Record<CaptureAction, string | null>> }
+export type CaptureFunction = "record" | "replay" | "buffer";
+export const FUNCTIONS: CaptureFunction[] = ["record", "replay", "buffer"];
 export interface CaptureStatus {
   provider: string; overlayProvider: string; keys: Record<string, string>; canSendKeys?: boolean;
+  /** Own program per function (e.g. replays as Discord clips); missing = main program. */
+  actionProviders?: Record<string, string>; effectiveProviders?: Record<CaptureFunction, string>;
   providers: CaptureProviderInfo[]; obs?: ObsStatus | null;
 }
 
@@ -32,9 +36,16 @@ export function effectiveKey(keys: Record<string, string>, provider: string, act
   return CAPTURE_PROVIDERS.find((p) => p.id === provider)?.defaults[action] ?? null;
 }
 
-export function offlineCaptureStatus(provider = "obs", overlayProvider = "own", keys: Record<string, string> = {}): CaptureStatus {
+/** Program used for one function – same rule as the companion (CaptureService.ProviderFor). */
+export function providerFor(provider: string, actionProviders: Record<string, string> | undefined, action: CaptureFunction): string {
+  const own = actionProviders?.[action];
+  return own && CAPTURE_PROVIDERS.find((p) => p.id === own)?.actions.includes(action) ? own : provider;
+}
+
+export function offlineCaptureStatus(provider = "obs", overlayProvider = "own", keys: Record<string, string> = {}, actionProviders: Record<string, string> = {}): CaptureStatus {
   return {
-    provider, overlayProvider, keys,
+    provider, overlayProvider, keys, actionProviders,
+    effectiveProviders: Object.fromEntries(FUNCTIONS.map((a) => [a, providerFor(provider, actionProviders, a)])) as Record<CaptureFunction, string>,
     providers: CAPTURE_PROVIDERS.map((p) => ({ ...p, effective: Object.fromEntries(p.actions.map((a) => [a, effectiveKey(keys, p.id, a)])) })),
   };
 }

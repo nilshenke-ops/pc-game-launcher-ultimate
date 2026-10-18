@@ -81,6 +81,34 @@ public class CaptureTests
     }
 
     [Fact]
+    public async Task Programs_can_be_mixed_per_function()
+    {
+        using var fake = new FakeObs();
+        var (svc, settings, keys, dir) = Make();
+        using var _d = dir;
+        settings.SetObs(fake.Url, null, true, null);
+        // OBS records, Discord saves clips, the replay buffer stays with OBS (main program).
+        svc.Configure("obs", null, new() { ["discord.replay"] = "Ctrl+Shift+C" }, new() { ["replay"] = "discord" });
+        Assert.Equal("Aufnahme gestartet", await svc.Run("record"));
+        Assert.True(fake.Recording);
+        await svc.Run("replay");
+        Assert.Equal("Ctrl+Shift+C", keys.Sent.Single());
+        Assert.Equal("Replay-Puffer läuft", await svc.Run("buffer"));
+        // Steam records, Xbox Game Bar keeps the last moments; back to "same as main program" with null.
+        svc.Configure("steam", null, new() { ["steam.record"] = "Ctrl+F11" }, new() { ["replay"] = "xbox" });
+        await svc.Run("record");
+        await svc.Run("replay");
+        Assert.Equal(new[] { "Ctrl+Shift+C", "Ctrl+F11", "Alt+Win+G" }, keys.Sent);
+        svc.Configure(null, null, null, new() { ["replay"] = null });
+        Assert.Equal("steam", CaptureService.ProviderFor(settings.Get(), "replay"));
+        // A program that cannot do a function is refused for it.
+        Assert.Throws<RpcException>(() => svc.Configure(null, null, null, new() { ["record"] = "discord" }));
+        Assert.Throws<RpcException>(() => svc.Configure(null, null, null, new() { ["buffer"] = "xbox" }));
+        var status = JsonSerializer.SerializeToElement(await svc.Status(), Json.Options);
+        Assert.Equal("steam", status.GetProperty("effectiveProviders").GetProperty("record").GetString());
+    }
+
+    [Fact]
     public async Task A_shortcut_that_is_also_a_launcher_hotkey_is_not_sent_in_a_loop()
     {
         var (svc, _, keys, dir) = Make();

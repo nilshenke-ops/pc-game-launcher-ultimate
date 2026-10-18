@@ -1391,4 +1391,8 @@ export const en: Record<string, string> = {
   "Der Launcher drückt die Tastenkürzel der Game Bar. „Replay speichern“ braucht „Im Hintergrund aufzeichnen“ in den Windows-Einstellungen (Spielen → Aufzeichnungen).": "The launcher presses the Game Bar shortcuts. “Save replay” needs “Record in the background” in the Windows settings (Gaming → Captures).",
   "Funktioniert in Spielen, die über Steam laufen. Die Tasten für Aufnahme und Clip wie in Steam → Einstellungen → Spielaufnahme eintragen.": "Works in games running through Steam. Enter the keys for recording and clip as set in Steam → Settings → Game Recording.",
   "Discord kann keine durchgehende Aufnahme, nur Clips (die letzten Sekunden). Die Tasten wie in Discord → Einstellungen → Clips bzw. Overlay eintragen.": "Discord cannot record continuously, only clips (the last seconds). Enter the keys as set in Discord → Settings → Clips or Overlay.",
+  "Pro Funktion ein anderes Programm (z. B. Aufnahme mit OBS, Replays als Discord-Clip)": "A different program per function (e.g. recording with OBS, replays as Discord clips)",
+  "Programm für {a}": "Program for {a}",
+  "Wie Hauptprogramm ({p})": "Same as main program ({p})",
+  "{p} kann das nicht": "{p} cannot do this",
 };

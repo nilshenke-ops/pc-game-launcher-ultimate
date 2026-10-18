@@ -154,7 +154,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStarted, item.Id);
-            if (Settings.Get() is { ObsReplayWhilePlaying: true, CaptureProvider: "obs" }) _ = ObsReplayBuffer(true);
+            if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs") _ = ObsReplayBuffer(true);
         };
         Sessions.Stopped += (item, at) =>
         {
@@ -168,7 +168,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStopped, item.Id);
-            if (Settings.Get() is { ObsReplayWhilePlaying: true, CaptureProvider: "obs" } && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
+            if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs" && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
         };
 
         Profiles.LaunchItem = (id, by) => Library.Launch(id, by);

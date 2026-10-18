@@ -349,6 +349,8 @@ public sealed class Settings
     public string OverlayProvider { get; set; } = "own";
     /// <summary>Shortcut per "provider.action" as set up in that program; missing = factory default, "" = none.</summary>
     public Dictionary<string, string> CaptureKeys { get; set; } = new();
+    /// <summary>Own program per function ("record", "replay", "buffer"), e.g. replays as Discord clips while OBS records. Missing = CaptureProvider.</summary>
+    public Dictionary<string, string> CaptureActionProviders { get; set; } = new();
 }
 
 // ---------------------------------------------------------------- Notifications

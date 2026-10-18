@@ -219,7 +219,9 @@ function applyLocally(method: string, p: Params): unknown {
       patch<Params>("capture.status", (d) => {
         const keys = { ...(d.keys as Record<string, string>) };
         for (const [k, v] of Object.entries((p.keys as Record<string, string | null>) ?? {})) { if (v === null) delete keys[k]; else keys[k] = v; }
-        return { ...d, ...offlineCaptureStatus((p.provider as string) ?? (d.provider as string), (p.overlayProvider as string) ?? (d.overlayProvider as string), keys), obs: d.obs };
+        const perFunction = { ...((d.actionProviders as Record<string, string>) ?? {}) };
+        for (const [k, v] of Object.entries((p.actionProviders as Record<string, string | null>) ?? {})) { if (v === null) delete perFunction[k]; else perFunction[k] = v; }
+        return { ...d, ...offlineCaptureStatus((p.provider as string) ?? (d.provider as string), (p.overlayProvider as string) ?? (d.overlayProvider as string), keys, perFunction), obs: d.obs };
       });
       return readCache("capture.status")?.data;
     }

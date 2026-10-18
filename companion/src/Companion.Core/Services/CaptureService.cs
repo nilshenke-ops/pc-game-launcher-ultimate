@@ -50,6 +50,12 @@ public sealed class CaptureService(Func<Settings> settings, SettingsService stor
         s.CaptureKeys.TryGetValue($"{provider}.{action}", out var k) ? (string.IsNullOrEmpty(k) ? null : k)
         : CaptureProviders.Get(provider)?.Defaults.GetValueOrDefault(action);
 
+    public static readonly string[] Functions = { "record", "replay", "buffer" };
+
+    /// <summary>Program for one function: own choice for it (e.g. replays as Discord clips), else the main program.</summary>
+    public static string ProviderFor(Settings s, string action) =>
+        s.CaptureActionProviders.TryGetValue(action, out var p) && CaptureProviders.Get(p)?.Actions.Contains(action) == true ? p : s.CaptureProvider;
+
     public async Task<object> Status()
     {
         var s = settings();
@@ -57,6 +63,8 @@ public sealed class CaptureService(Func<Settings> settings, SettingsService stor
         {
             provider = s.CaptureProvider,
             overlayProvider = s.OverlayProvider,
+            actionProviders = s.CaptureActionProviders,
+            effectiveProviders = Functions.ToDictionary(a => a, a => ProviderFor(s, a)),
             keys = s.CaptureKeys,
             canSendKeys = platform.KeySender.Supported,
             providers = CaptureProviders.All.Select(p => new
@@ -64,12 +72,18 @@ public sealed class CaptureService(Func<Settings> settings, SettingsService stor
                 p.Id, p.Name, p.Actions, p.Note, defaults = p.Defaults,
                 effective = p.Actions.ToDictionary(a => a, a => KeyFor(s, p.Id, a)),
             }),
-            obs = s.CaptureProvider == "obs" ? await obs.Status() : null,
+            obs = Functions.Any(a => ProviderFor(s, a) == "obs") ? await obs.Status() : null,
         };
     }
 
-    public Settings Configure(string? provider, string? overlayProvider, Dictionary<string, string?>? keys)
+    public Settings Configure(string? provider, string? overlayProvider, Dictionary<string, string?>? keys, Dictionary<string, string?>? actionProviders = null)
     {
+        foreach (var (a, p) in actionProviders ?? new())
+        {
+            if (!Functions.Contains(a)) throw new RpcException("invalid-params", $"Unbekannte Funktion „{a}“.");
+            if (p != null && CaptureProviders.Get(p)?.Actions.Contains(a) != true)
+                throw new RpcException("invalid-params", $"{CaptureProviders.Get(p)?.Name ?? p} kann „{CaptureProviders.Label(a)}“ nicht.");
+        }
         if (provider != null && CaptureProviders.Get(provider) == null) throw new RpcException("invalid-params", "Unbekanntes Aufnahme-Programm.");
         if (overlayProvider != null && overlayProvider != "own" && CaptureProviders.Get(overlayProvider)?.Actions.Contains("overlay") != true)
             throw new RpcException("invalid-params", "Dieses Programm hat kein Overlay, das der Launcher öffnen kann.");
@@ -84,16 +98,17 @@ public sealed class CaptureService(Func<Settings> settings, SettingsService stor
             if (n == null || n.Contains("Mouse")) throw new RpcException("invalid-params", $"„{v}“ ist keine sendbare Tastenkombination (Maustasten können nicht gesendet werden).");
             clean[k] = n;
         }
-        return store.SetCapture(provider, overlayProvider, clean);
+        return store.SetCapture(provider, overlayProvider, clean, actionProviders ?? new());
     }
 
-    /// <summary>Runs "record", "replay" or "buffer" with the chosen program. Returns a readable result.</summary>
+    /// <summary>Runs "record", "replay" or "buffer" with the program chosen for it. Returns a readable result.</summary>
     public async Task<string> Run(string action)
     {
         var s = settings();
-        if (s.CaptureProvider == "obs")
+        var provider = ProviderFor(s, action);
+        if (provider == "obs")
             return action switch { "record" => await obs.RecordToggle(), "replay" => await obs.ReplaySave(), _ => await obs.ReplayBufferToggle() };
-        return await Press(s, s.CaptureProvider, action);
+        return await Press(s, provider, action);
     }
 
     /// <summary>"mini" is always the launcher's own window; "full" opens the chosen program's overlay or the launcher's own one.</summary>

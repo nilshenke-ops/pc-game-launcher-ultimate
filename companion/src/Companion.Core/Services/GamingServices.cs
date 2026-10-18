@@ -98,13 +98,14 @@ public sealed class SettingsService
     }
 
     /// <summary>Recording program, overlay program and shortcuts (already validated by CaptureService). Key value null = back to the default.</summary>
-    public Settings SetCapture(string? provider, string? overlayProvider, Dictionary<string, string?> keys)
+    public Settings SetCapture(string? provider, string? overlayProvider, Dictionary<string, string?> keys, Dictionary<string, string?> actionProviders)
     {
         var r = _store.Update(s =>
         {
             if (provider != null) s.CaptureProvider = provider;
             if (overlayProvider != null) s.OverlayProvider = overlayProvider;
             foreach (var (k, v) in keys) { if (v == null) s.CaptureKeys.Remove(k); else s.CaptureKeys[k] = v; }
+            foreach (var (a, p) in actionProviders) { if (p == null) s.CaptureActionProviders.Remove(a); else s.CaptureActionProviders[a] = p; }
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");

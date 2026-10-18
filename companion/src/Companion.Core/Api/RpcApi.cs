@@ -331,7 +331,9 @@ public static class RpcApi
         {
             var keys = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("keys", out var k) && k.ValueKind == JsonValueKind.Object
                 ? k.EnumerateObject().Take(50).ToDictionary(p => p.Name, p => p.Value.ValueKind == JsonValueKind.String ? p.Value.GetString() : null) : null;
-            s.Capture.Configure(ctx.OptStr("provider", 20), ctx.OptStr("overlayProvider", 20), keys);
+            var perFunction = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("actionProviders", out var ap) && ap.ValueKind == JsonValueKind.Object
+                ? ap.EnumerateObject().Take(10).ToDictionary(p => p.Name, p => p.Value.ValueKind == JsonValueKind.String ? p.Value.GetString() : null) : null;
+            s.Capture.Configure(ctx.OptStr("provider", 20), ctx.OptStr("overlayProvider", 20), keys, perFunction);
             return await s.Capture.Status();
         });
         rpc.Register("capture.recordToggle", async _ => (object)new { message = await s.Capture.Run("record") });

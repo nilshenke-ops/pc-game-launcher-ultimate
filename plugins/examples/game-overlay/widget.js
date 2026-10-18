@@ -2,7 +2,7 @@
 // The launcher talks to the program chosen under "Overlay & Aufnahme" (OBS with feedback; NVIDIA, Xbox Game Bar, Steam,
 // Discord by pressing their shortcuts) – this widget never connects to any of them itself.
 const $ = (id) => document.getElementById(id);
-let status = null; // OBS status (only with OBS)
+let status = null; // OBS status (only when a function uses OBS)
 let cap = null;
 
 function bar(id, pct, hot) {
@@ -23,7 +23,8 @@ pgl.on("monitor.sample", (m) => {
 function message(text, error) { $("msg").textContent = text || ""; $("msg").className = "msg" + (error ? " err" : ""); }
 
 function render() {
-  if (cap && cap.provider !== "obs") return renderKeys();
+  const fp = cap && cap.effectiveProviders ? cap.effectiveProviders : { record: "obs", replay: "obs", buffer: "obs" };
+  if (cap && Object.values(fp).some((p) => p !== "obs")) return renderMixed(fp);
   $("title").textContent = "Aufnahme (OBS)";
   const s = status;
   const connected = !!(s && s.connected);
@@ -39,19 +40,26 @@ function render() {
   $("save").disabled = !connected || !s.replayBuffer;
 }
 
-/** NVIDIA, Xbox Game Bar, Steam, Discord: no feedback – the buttons press the program's shortcuts. */
-function renderKeys() {
-  const p = cap.providers.find((x) => x.id === cap.provider);
-  const has = (a) => p.actions.includes(a) && !!p.effective[a];
-  $("title").textContent = "Aufnahme (" + p.name + ")";
-  $("dot").className = "dot";
-  $("state").textContent = "Tastenkürzel an " + p.name + " – den Status zeigt " + p.name + " selbst";
-  $("rec").disabled = !has("record");
-  $("rec").textContent = "● Aufnahme an/aus";
-  $("rec").className = "primary";
-  $("buffer").disabled = !has("buffer");
+/**
+ * One or more functions use NVIDIA, Xbox Game Bar, Steam or Discord (no feedback – the launcher presses their shortcuts).
+ * Functions that use OBS still show OBS's state.
+ */
+function renderMixed(fp) {
+  const info = (id) => cap.providers.find((x) => x.id === id);
+  const short = (id) => (info(id) ? info(id).name.split(" ")[0] : id);
+  const obsOk = !!(status && status.connected);
+  const can = (a) => { const p = info(fp[a]); return !!p && p.actions.includes(a) && (fp[a] === "obs" ? obsOk : !!p.effective[a]); };
+  const names = [...new Set(Object.values(fp))];
+  $("title").textContent = "Aufnahme (" + names.map(short).join(" + ") + ")";
+  const recObs = fp.record === "obs" && status && status.recording;
+  $("dot").className = "dot" + (recObs ? " rec" : "");
+  $("state").textContent = "Aufnahme: " + short(fp.record) + " · Replay: " + short(fp.replay) + (recObs ? " · läuft" : "");
+  $("rec").disabled = !can("record");
+  $("rec").textContent = recObs ? "■ Aufnahme stoppen" : fp.record === "obs" ? "● Aufnahme starten" : "● Aufnahme an/aus";
+  $("rec").className = recObs ? "stop" : "primary";
+  $("buffer").disabled = !can("buffer");
   $("buffer").textContent = "Replay-Puffer an/aus";
-  $("save").disabled = !has("replay");
+  $("save").disabled = !can("replay") || (fp.replay === "obs" && status && status.replayBuffer === false);
 }
 
 async function refresh() {

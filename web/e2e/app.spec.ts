@@ -266,8 +266,8 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
 
   // The Game-Overlay plugin: installed, activated, its widget controls OBS – on the dashboard and on the overlay page.
   await pc.goto(`${COMPANION}/#/plugins?tab=dev`);
-  await pc.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.game-overlay-1.1.0.pglplugin"));
-  await expect(pc.getByText("Prüfung bestanden: Game-Overlay 1.1.0")).toBeVisible();
+  await pc.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.game-overlay-1.2.0.pglplugin"));
+  await expect(pc.getByText("Prüfung bestanden: Game-Overlay 1.2.0")).toBeVisible();
   await pc.getByRole("button", { name: "Installieren (deaktiviert)" }).click();
   await pc.goto(`${COMPANION}/#/plugins`);
   await pc.locator(".card", { hasText: "Game-Overlay" }).getByRole("button", { name: "Details" }).click();
@@ -291,6 +291,28 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
   await w.getByRole("button", { name: "⟲ Replay speichern" }).click();
   await expect.poll(async () => (await obsState()).savedReplays).toBe(2);
 
+  // Mixed: OBS keeps recording, replays become Discord clips.
+  await pc.goto(`${COMPANION}/#/overlay-settings`);
+  await pc.getByText("Pro Funktion ein anderes Programm").click();
+  await pc.getByLabel("Programm für Replay speichern").selectOption("discord");
+  await pc.getByRole("textbox", { name: "Replay speichern – Discord" }).fill("Ctrl+Shift+C");
+  await pc.getByRole("button", { name: "Speichern", exact: true }).first().click();
+  await expect(pc.getByText("Gespeichert").first()).toBeVisible();
+  await pc.goto(`${COMPANION}/#/overlay`);
+  await expect(w.locator("#state")).toHaveText(/Aufnahme: OBS · Replay: Discord/, { timeout: 15000 });
+  await w.getByRole("button", { name: "● Aufnahme starten" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(true); // still OBS
+  await w.getByRole("button", { name: "■ Aufnahme stoppen" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(false);
+  const saves = (await obsState()).savedReplays;
+  await w.getByRole("button", { name: "⟲ Replay speichern" }).click();
+  await expect(w.locator("#msg")).toHaveText(/nur im Windows-Begleiter/); // Discord would get the key – not OBS
+  expect((await obsState()).savedReplays).toBe(saves);
+  await pc.goto(`${COMPANION}/#/overlay-settings`);
+  await pc.getByLabel("Programm für Replay speichern").selectOption("");
+  await pc.getByRole("button", { name: "Speichern", exact: true }).first().click();
+  await expect(pc.getByText("Gespeichert").first()).toBeVisible();
+
   // Another recording program: NVIDIA. Its factory shortcuts are filled in; the launcher would press them.
   await pc.goto(`${COMPANION}/#/overlay-settings`);
   await pc.getByRole("button", { name: "NVIDIA App / GeForce Experience" }).click();
@@ -313,7 +335,7 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
   await pc.getByRole("button", { name: "Jetzt: Aufnahme starten/stoppen" }).click();
   await expect(pc.getByText("Tastenkürzel an andere Programme senden geht nur im Windows-Begleiter.").first()).toBeVisible();
   await pc.goto(`${COMPANION}/#/overlay`);
-  await expect(w.locator("#title")).toHaveText("Aufnahme (NVIDIA App / GeForce Experience)", { timeout: 15000 });
+  await expect(w.locator("#title")).toHaveText("Aufnahme (NVIDIA)", { timeout: 15000 });
   await expect(w.getByRole("button", { name: "⟲ Replay speichern" })).toBeEnabled();
   expect(await toggles()).toBe(before);
   // Back to OBS for the following tests.

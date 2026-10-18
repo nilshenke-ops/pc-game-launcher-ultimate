@@ -9,7 +9,7 @@ import type { PluginList } from "../lib/plugins";
 import { Banner, Button, Card, Field, PageHead, Switch } from "../components/ui";
 import { ComboInput } from "../components/ComboInput";
 import { describeCombo } from "./hotkey-combo";
-import { actionLabel, CAPTURE_PROVIDERS, effectiveKey, type CaptureAction, type CaptureStatus } from "../lib/capture";
+import { actionLabel, CAPTURE_PROVIDERS, effectiveKey, FUNCTIONS, providerFor, type CaptureAction, type CaptureFunction, type CaptureStatus } from "../lib/capture";
 
 export const OVERLAY_PLUGIN_ID = "de.pgl.game-overlay";
 
@@ -38,7 +38,8 @@ export default function OverlaySettings() {
   const set = useRpc<{ settings: Settings }>("settings.get", {}, ["settings"]);
   const plugins = useRpc<PluginList>("plugins.list", {}, ["plugins"]);
   const cap = useRpc<CaptureStatus>("capture.status", {}, ["capture", "settings", "obs"]);
-  const provider = cap.data?.provider ?? "obs";
+  const usesObs = FUNCTIONS.some((a) => providerFor(cap.data?.provider ?? "obs", cap.data?.actionProviders, a) === "obs");
+  const replayWithObs = providerFor(cap.data?.provider ?? "obs", cap.data?.actionProviders, "replay") === "obs";
   const overlayPlugin = plugins.data?.plugins.find((p) => p.id === OVERLAY_PLUGIN_ID);
 
   const run = async (method: string, params?: object) => {
@@ -83,20 +84,21 @@ export default function OverlaySettings() {
           <p className="tiny muted" style={{ marginTop: 8 }}>{t("Funktioniert über Spielen im Fenster- oder randlosen Vollbildmodus. Im exklusiven Vollbild verdeckt Windows andere Fenster – dann im Spiel „Randlos“ bzw. „Borderless“ wählen. Es wird nichts in Spiele eingeschleust (sicher für Anti-Cheat).")}</p>
         </Card>
 
-        {provider === "obs" && <ObsCard status={obs.data} online={online} canManage={canManage} canLaunch={canLaunch} run={run} />}
+        {usesObs && <ObsCard status={obs.data} online={online} canManage={canManage} canLaunch={canLaunch} run={run} replayWithObs={replayWithObs} />}
       </div>
     </>
   );
 }
 
 function ShortcutEditor({ hotkeys, statuses, canManage, cap }: { hotkeys: Hotkey[]; statuses: HotkeyStatus[]; canManage: boolean; cap?: CaptureStatus }) {
-  const provider = CAPTURE_PROVIDERS.find((p) => p.id === (cap?.provider ?? "obs"))!;
+  const programFor = (a: CaptureFunction) => CAPTURE_PROVIDERS.find((p) => p.id === providerFor(cap?.provider ?? "obs", cap?.actionProviders, a))!;
   const overlayProvider = CAPTURE_PROVIDERS.find((p) => p.id === cap?.overlayProvider);
-  // Only actions the chosen program can do (an existing hotkey is still shown so it can be removed).
-  const rows = shortcuts().filter((r) => !r.action || r.key === "full" || provider.actions.includes(r.action) || hotkeys.some((h) => matches(h, r)));
+  // Only actions the chosen programs can do (an existing hotkey is still shown so it can be removed).
+  const rows = shortcuts().filter((r) => !r.action || r.key === "full" || programFor(r.action as CaptureFunction).actions.includes(r.action) || hotkeys.some((h) => matches(h, r)));
   /** The program reacts to its own key directly – the same key as launcher hotkey would never reach it. */
   const sameAsProgram = (r: (typeof rows)[number], keys: string) => {
-    const prog = r.key === "full" ? overlayProvider : provider.id === "obs" ? undefined : provider;
+    const fn = r.key === "full" ? undefined : programFor(r.action as CaptureFunction);
+    const prog = r.key === "full" ? overlayProvider : fn?.id === "obs" ? undefined : fn;
     if (!prog || !r.action || !keys) return null;
     const k = effectiveKey(cap?.keys ?? {}, prog.id, r.action);
     return k && k.toLowerCase() === keys.trim().toLowerCase() ? prog.name : null;
@@ -152,7 +154,7 @@ function ShortcutEditor({ hotkeys, statuses, canManage, cap }: { hotkeys: Hotkey
   );
 }
 
-function ObsCard({ status, online, canManage, canLaunch, run }: { status?: ObsStatus; online: boolean; canManage: boolean; canLaunch: boolean; run: (m: string, p?: object) => Promise<void> }) {
+function ObsCard({ status, online, canManage, canLaunch, run, replayWithObs }: { status?: ObsStatus; online: boolean; canManage: boolean; canLaunch: boolean; run: (m: string, p?: object) => Promise<void>; replayWithObs: boolean }) {
   const [url, setUrl] = useState(status?.url ?? "ws://127.0.0.1:4455");
   const [password, setPassword] = useState("");
   const [replay, setReplay] = useState(!!status?.replayWhilePlaying);
@@ -190,8 +192,8 @@ function ObsCard({ status, online, canManage, canLaunch, run }: { status?: ObsSt
           <input className="input" type="password" autoComplete="off" value={password} onChange={(e) => setPassword(e.target.value)} disabled={!canManage}
             placeholder={status?.passwordSet ? "••••••••" : ""} />
         </Field>
-        <Switch checked={replay} onChange={setReplay} disabled={!canManage} label={t("Replay-Puffer automatisch, solange ein Spiel läuft")}
-          hint={t("Dann kannst du jederzeit „Replay speichern“ drücken (wie „Letzte 30 Sekunden aufnehmen“ der Game Bar). Die Länge stellst du in OBS ein.")} />
+        {replayWithObs && <Switch checked={replay} onChange={setReplay} disabled={!canManage} label={t("Replay-Puffer automatisch, solange ein Spiel läuft")}
+          hint={t("Dann kannst du jederzeit „Replay speichern“ drücken (wie „Letzte 30 Sekunden aufnehmen“ der Game Bar). Die Länge stellst du in OBS ein.")} />}
         <div className="row">
           <Button variant="primary" busy={busy} disabled={!canManage} onClick={() => save({ url: url.trim(), replayWhilePlaying: replay, ...(password ? { password } : {}) })}>{online ? t("Speichern und verbinden") : t("Speichern")}</Button>
           {status?.passwordSet && <Button variant="ghost" disabled={!canManage} onClick={() => save({ password: "" })}>{t("Passwort entfernen")}</Button>}
@@ -213,41 +215,65 @@ function ObsCard({ status, online, canManage, canLaunch, run }: { status?: ObsSt
 function CaptureCard({ cap, online, canManage, canLaunch, run }: { cap: CaptureStatus; online: boolean; canManage: boolean; canLaunch: boolean; run: (m: string, p?: object) => Promise<void> }) {
   const [provider, setProvider] = useState(cap.provider);
   const [overlayProvider, setOverlayProvider] = useState(cap.overlayProvider);
-  const keysOf = (id: string) => Object.fromEntries((CAPTURE_PROVIDERS.find((p) => p.id === id)?.actions ?? []).map((a) => [a, effectiveKey(cap.keys, id, a) ?? ""]));
-  const [keys, setKeys] = useState<Record<string, string>>(() => keysOf(cap.provider));
-  const capKey = JSON.stringify([cap.provider, cap.overlayProvider, cap.keys]);
-  useEffect(() => { setProvider(cap.provider); setOverlayProvider(cap.overlayProvider); setKeys(keysOf(cap.provider)); }, [capKey]);
-  const info = CAPTURE_PROVIDERS.find((p) => p.id === provider)!;
-  const choose = (id: string) => { setProvider(id); setKeys(keysOf(id)); };
+  const [perFunction, setPerFunction] = useState<Record<string, string>>(cap.actionProviders ?? {});
+  const allKeys = () => Object.fromEntries(CAPTURE_PROVIDERS.flatMap((p) => p.actions.map((a) => [`${p.id}.${a}`, effectiveKey(cap.keys, p.id, a) ?? ""])));
+  const [keys, setKeys] = useState<Record<string, string>>(allKeys);
+  const capKey = JSON.stringify([cap.provider, cap.overlayProvider, cap.keys, cap.actionProviders]);
+  useEffect(() => { setProvider(cap.provider); setOverlayProvider(cap.overlayProvider); setPerFunction(cap.actionProviders ?? {}); setKeys(allKeys()); }, [capKey]);
+  const info = (id: string) => CAPTURE_PROVIDERS.find((p) => p.id === id)!;
+  const main = info(provider);
+  const programOf = (a: CaptureFunction) => providerFor(provider, perFunction, a);
+
+  // Keys needed for the current choice, grouped by program (OBS needs none).
+  const needed = new Map<string, CaptureAction[]>();
+  for (const a of FUNCTIONS) { const p = programOf(a); if (p !== "obs" && info(p).actions.includes(a)) needed.set(p, [...(needed.get(p) ?? []), a]); }
+  if (overlayProvider !== "own") needed.set(overlayProvider, [...(needed.get(overlayProvider) ?? []), "overlay"]);
 
   const save = async () => {
     // Back to the factory default when the field shows it (null), explicitly none when emptied ("").
     const diff: Record<string, string | null> = {};
-    if (provider !== "obs") for (const a of info.actions) { const v = (keys[a] ?? "").trim(); diff[`${provider}.${a}`] = v === (info.defaults[a] ?? "") ? null : v; }
+    for (const [p, actions] of needed) for (const a of actions) { const v = (keys[`${p}.${a}`] ?? "").trim(); diff[`${p}.${a}`] = v === (info(p).defaults[a] ?? "") ? null : v; }
+    const fn: Record<string, string | null> = Object.fromEntries(FUNCTIONS.map((a) => [a, perFunction[a] && perFunction[a] !== provider ? perFunction[a] : null]));
     try {
-      await client.call("capture.configure", { provider, overlayProvider, keys: diff });
+      await client.call("capture.configure", { provider, overlayProvider, keys: diff, actionProviders: fn });
       toast(online ? t("Gespeichert") : t("Gespeichert – wird beim Verbinden auf den PC übertragen"), "success");
     } catch (e) { toast((e as Error).message, "error"); }
   };
+  const saved = JSON.stringify([provider, perFunction]) === JSON.stringify([cap.provider, cap.actionProviders ?? {}]);
 
   return (
     <Card title={t("Aufnahme-Programm")} icon={<Clapperboard size={18} />}>
       <div className="stack-sm">
         <div className="chips" role="group" aria-label={t("Aufnahme-Programm")}>
-          {CAPTURE_PROVIDERS.map((p) => <button key={p.id} type="button" className={`chip ${provider === p.id ? "on" : ""}`} aria-pressed={provider === p.id} disabled={!canManage} onClick={() => choose(p.id)}>{p.name}</button>)}
+          {CAPTURE_PROVIDERS.map((p) => <button key={p.id} type="button" className={`chip ${provider === p.id ? "on" : ""}`} aria-pressed={provider === p.id} disabled={!canManage} onClick={() => setProvider(p.id)}>{p.name}</button>)}
         </div>
-        <p className="small muted">{t(info.note)}</p>
-        {provider !== "obs" && <>
-          <Banner kind="info">{t("{p} hat keine Schnittstelle für andere Programme: Der Launcher drückt dessen Tastenkürzel für dich – vom Handy, aus dem Overlay oder per eigenem Hotkey (z. B. Maus-Seitentaste). Die Tasten müssen mit denen in {p} übereinstimmen.", { p: info.name })}</Banner>
-          {info.actions.map((a) => (
-            <Field key={a} label={`${actionLabel(a)} – ${t("Taste in {p}", { p: info.name })}`} hint={info.defaults[a] ? t("Werkseinstellung: {k}", { k: describeCombo(info.defaults[a]!, t) }) : t("Keine Werkseinstellung bekannt – so eintragen, wie in {p} eingestellt.", { p: info.name })}>
+        <p className="small muted">{t(main.note)}</p>
+        <details open={Object.keys(perFunction).length > 0}>
+          <summary className="small">{t("Pro Funktion ein anderes Programm (z. B. Aufnahme mit OBS, Replays als Discord-Clip)")}</summary>
+          <div className="stack-sm" style={{ marginTop: 8 }}>
+            {FUNCTIONS.map((a) => (
+              <Field key={a} label={actionLabel(a)}>
+                <select className="input" value={perFunction[a] ?? ""} disabled={!canManage} aria-label={t("Programm für {a}", { a: actionLabel(a) })}
+                  onChange={(e) => { const n = { ...perFunction }; if (e.target.value) n[a] = e.target.value; else delete n[a]; setPerFunction(n); }}>
+                  <option value="">{t("Wie Hauptprogramm ({p})", { p: main.actions.includes(a) ? main.name : t("{p} kann das nicht", { p: main.name }) })}</option>
+                  {CAPTURE_PROVIDERS.filter((p) => p.actions.includes(a)).map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+              </Field>
+            ))}
+          </div>
+        </details>
+        {[...needed.keys()].length > 0 && <Banner kind="info">{t("{p} hat keine Schnittstelle für andere Programme: Der Launcher drückt dessen Tastenkürzel für dich – vom Handy, aus dem Overlay oder per eigenem Hotkey (z. B. Maus-Seitentaste). Die Tasten müssen mit denen in {p} übereinstimmen.", { p: [...needed.keys()].map((p) => info(p).name).join(", ") })}</Banner>}
+        {[...needed.entries()].map(([p, actions]) => actions.map((a) => {
+          const k = `${p}.${a}`, d = info(p).defaults[a];
+          return (
+            <Field key={k} label={`${actionLabel(a)} – ${t("Taste in {p}", { p: info(p).name })}`} hint={d ? t("Werkseinstellung: {k}", { k: describeCombo(d, t) }) : t("Keine Werkseinstellung bekannt – so eintragen, wie in {p} eingestellt.", { p: info(p).name })}>
               <div className="row" style={{ gap: 8, flexWrap: "nowrap" }}>
-                <div className="grow"><ComboInput value={keys[a] ?? ""} onChange={(v) => setKeys({ ...keys, [a]: v })} label={`${actionLabel(a)} – ${info.name}`} placeholder={t("nicht belegt")} /></div>
-                {info.defaults[a] && keys[a] !== info.defaults[a] && <Button size="sm" variant="ghost" onClick={() => setKeys({ ...keys, [a]: info.defaults[a]! })}>{t("Standard")}</Button>}
+                <div className="grow"><ComboInput value={keys[k] ?? ""} onChange={(v) => setKeys({ ...keys, [k]: v })} label={`${actionLabel(a)} – ${info(p).name}`} placeholder={t("nicht belegt")} /></div>
+                {d && keys[k] !== d && <Button size="sm" variant="ghost" onClick={() => setKeys({ ...keys, [k]: d })}>{t("Standard")}</Button>}
               </div>
             </Field>
-          ))}
-        </>}
+          );
+        }))}
         <Field label={t("Großes Overlay (Tastenkürzel „Overlay öffnen“)")}>
           <select className="input" value={overlayProvider} disabled={!canManage} onChange={(e) => setOverlayProvider(e.target.value)}>
             <option value="own">{t("Eigenes Overlay des Launchers (Plugin-Widgets)")}</option>
@@ -256,11 +282,11 @@ function CaptureCard({ cap, online, canManage, canLaunch, run }: { cap: CaptureS
         </Field>
         <div className="row">
           <Button variant="primary" icon={<Save size={16} />} disabled={!canManage} onClick={save}>{t("Speichern")}</Button>
-          {online && provider === cap.provider && provider !== "obs" && info.actions.filter((a) => a !== "overlay").map((a) => (
+          {online && saved && FUNCTIONS.filter((a) => programOf(a) !== "obs" && info(programOf(a)).actions.includes(a)).map((a) => (
             <Button key={a} disabled={!canLaunch} onClick={() => run(a === "record" ? "capture.recordToggle" : a === "replay" ? "capture.replaySave" : "capture.replayToggle")}>{t("Jetzt: {a}", { a: actionLabel(a) })}</Button>
           ))}
         </div>
-        {online && cap.canSendKeys === false && provider !== "obs" && <p className="tiny muted">{t("Tastenkürzel an andere Programme senden geht nur im Windows-Begleiter.")}</p>}
+        {online && cap.canSendKeys === false && needed.size > 0 && <p className="tiny muted">{t("Tastenkürzel an andere Programme senden geht nur im Windows-Begleiter.")}</p>}
       </div>
     </Card>
   );
