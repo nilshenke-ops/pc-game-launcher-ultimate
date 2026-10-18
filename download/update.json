@@ -1,42 +1,30 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.1",
   "date": "2026-10-18",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.2.0/PCGameLauncherCompanion.exe",
-  "size": 84337875,
-  "sha256": "fd2a4835f83ac95f4e1b60193d1cb1a1ebc4ff13e056bdd817201a113a807af4",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.3.1/PCGameLauncherCompanion.exe",
+  "size": 84350392,
+  "sha256": "74f0894bfb5365b46ad6bd502bd95255d6a5bc1f1d4fac19972440337a0c7443",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-1.2.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.2.0/PCGameLauncherCompanion-1.2.0-win-x64.zip",
-    "size": 78631431,
-    "sha256": "545b3685efe60d461f75d90c84f12004e4cb581299e716a8415f02128c26bde6"
+    "fileName": "PCGameLauncherCompanion-1.3.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.3.1/PCGameLauncherCompanion-1.3.1-win-x64.zip",
+    "size": 78644603,
+    "sha256": "76acec347016d77e72b6ebd3d7c55a269c2d56734502192a5f2b50e83dceeabb"
   },
-  "notes": "Plugin Center: Plugins aus dem signierten Store oder als Datei installieren, aktivieren, Rechte einzeln erteilen und entziehen, aktualisieren, zurücksetzen, exportieren · Plugin-SDK mit Anleitung und vier Beispiel-Plugins (Spielzeit heute, CPU & RAM Mini, Neon-Themes, Discord-Schnellton); Widgets laufen abgeschottet in einer Sandbox · Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: Version, Datum, Größe, Änderungen, direkter Download von GitHub Releases",
+  "notes": "Ohne PC nutzbar: Einstellungen (Allgemein, Benachrichtigungen, Datenschutz), Audio Center (nur geänderte Werte werden übertragen), Gaming-Verlauf, Spiele- und Programmliste · Steam-Spiele aus der Steam-Liste zur Bibliothek hinzufügen – auch ohne PC vorgemerkt · Hotkeys und Quick Actions können Sounds nutzen, die noch auf dem Handy warten; nach dem Hochladen zeigen sie automatisch auf den Sound am PC",
   "changes": {
     "neu": [
-      "Plugin Center: Plugins aus dem signierten Store oder als Datei installieren, aktivieren, Rechte einzeln erteilen und entziehen, aktualisieren, zurücksetzen, exportieren",
-      "Plugin-SDK mit Anleitung und vier Beispiel-Plugins (Spielzeit heute, CPU & RAM Mini, Neon-Themes, Discord-Schnellton); Widgets laufen abgeschottet in einer Sandbox",
-      "Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: Version, Datum, Größe, Änderungen, direkter Download von GitHub Releases",
-      "Signierte Updates (ECDSA) mit Prüfung von Signatur, Größe, Prüfsumme und Dateityp; vorherige Version wiederherstellen; Wiederherstellungspunkt vor jedem Update",
-      "Netzwerk-Monitor mit Ping, Jitter, Paketverlust und Verlauf",
-      "Speicherplatz-Manager mit Laufwerken und Spielgrößen",
-      "Energiezentrale: Sperren, Energiesparen, Neustart, Herunterfahren (mit Verzögerung und Abbrechen)",
-      "Leistungswerte (CPU/GPU/RAM) und Notizen je Spielsitzung",
-      "Bewertungen (1–5 Sterne) für Spiele und Programme",
-      "Wiederherstellungspunkte: wöchentlich automatisch, manuell, vor Updates; prüfen und wiederherstellen",
-      "Mehrere Windows-PCs auf einem Handy verwalten und wechseln",
-      "Konsistenzprüfung in der Diagnose: fehlende Programme, verwaiste Verweise, doppelte Hotkeys"
+      "Ohne PC nutzbar: Einstellungen (Allgemein, Benachrichtigungen, Datenschutz), Audio Center (nur geänderte Werte werden übertragen), Gaming-Verlauf, Spiele- und Programmliste",
+      "Steam-Spiele aus der Steam-Liste zur Bibliothek hinzufügen – auch ohne PC vorgemerkt",
+      "Hotkeys und Quick Actions können Sounds nutzen, die noch auf dem Handy warten; nach dem Hochladen zeigen sie automatisch auf den Sound am PC"
     ],
     "verbessert": [
-      "Eine Versionsquelle (Datei VERSION) für Begleiter und Webseite",
-      "Universelle Suche findet auch Plugins und ihre Aktionen",
-      "Veröffentlichung über GitHub Releases mit automatischer Prüfung der Downloads und der Update-Erkennung"
+      "Wartende Sounds werden vor den übrigen Änderungen übertragen"
     ],
     "behoben": [
-      "Nach einem Update startete der Begleiter nicht neu, solange die alte Version noch lief",
-      "Webseite zeigte bei älteren Update-Angaben keine Download-Datei"
+      "Offline geänderte Audio-Werte hätten am PC gewählte Geräte (z. B. das virtuelle Kabel) überschreiben können"
     ]
   },
-  "signature": "xoJ65I1Ypb6V5lSDp6xAYLTHATAjRU15RSJws4ZHNLoXEHjaEoe+Nvu/FothLDaOT+MpR7YH+sAX/N7EN/DyLA=="
+  "signature": "rLhW8W0bjCB7XSzToJFJ0tBPaTZICyqEITqGFz59ZOVO/ODXS/EzP3z25hhk7dup75WQksjhPw6MrOEGgaGsFg=="
 }
