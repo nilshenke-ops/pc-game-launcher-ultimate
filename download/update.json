@@ -1,30 +1,24 @@
 {
-  "version": "1.3.1",
+  "version": "1.4.1",
   "date": "2026-10-18",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.3.1/PCGameLauncherCompanion.exe",
-  "size": 84350392,
-  "sha256": "74f0894bfb5365b46ad6bd502bd95255d6a5bc1f1d4fac19972440337a0c7443",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.4.1/PCGameLauncherCompanion.exe",
+  "size": 84335163,
+  "sha256": "f016052305fae0db9a11b5b87fc9a8d7f63148a00b792c27354e882e5fd86c1c",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-1.3.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.3.1/PCGameLauncherCompanion-1.3.1-win-x64.zip",
-    "size": 78644603,
-    "sha256": "76acec347016d77e72b6ebd3d7c55a269c2d56734502192a5f2b50e83dceeabb"
+    "fileName": "PCGameLauncherCompanion-1.4.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.4.1/PCGameLauncherCompanion-1.4.1-win-x64.zip",
+    "size": 78664609,
+    "sha256": "bcaadf6d231367dfb3887d31ee465153c08ad8a8ee13c1267648918f33ca4e7b"
   },
-  "notes": "Ohne PC nutzbar: Einstellungen (Allgemein, Benachrichtigungen, Datenschutz), Audio Center (nur geänderte Werte werden übertragen), Gaming-Verlauf, Spiele- und Programmliste · Steam-Spiele aus der Steam-Liste zur Bibliothek hinzufügen – auch ohne PC vorgemerkt · Hotkeys und Quick Actions können Sounds nutzen, die noch auf dem Handy warten; nach dem Hochladen zeigen sie automatisch auf den Sound am PC",
+  "notes": "",
   "changes": {
-    "neu": [
-      "Ohne PC nutzbar: Einstellungen (Allgemein, Benachrichtigungen, Datenschutz), Audio Center (nur geänderte Werte werden übertragen), Gaming-Verlauf, Spiele- und Programmliste",
-      "Steam-Spiele aus der Steam-Liste zur Bibliothek hinzufügen – auch ohne PC vorgemerkt",
-      "Hotkeys und Quick Actions können Sounds nutzen, die noch auf dem Handy warten; nach dem Hochladen zeigen sie automatisch auf den Sound am PC"
-    ],
-    "verbessert": [
-      "Wartende Sounds werden vor den übrigen Änderungen übertragen"
-    ],
+    "neu": [],
+    "verbessert": [],
     "behoben": [
-      "Offline geänderte Audio-Werte hätten am PC gewählte Geräte (z. B. das virtuelle Kabel) überschreiben können"
+      "Plugin-Widgets wurden im dunklen Design auf weißem Hintergrund mit heller Schrift angezeigt (abhängig von der Farbeinstellung des Geräts)"
     ]
   },
-  "signature": "rLhW8W0bjCB7XSzToJFJ0tBPaTZICyqEITqGFz59ZOVO/ODXS/EzP3z25hhk7dup75WQksjhPw6MrOEGgaGsFg=="
+  "signature": "0qDNNFF1HWDUA5P9bqf5NhwsOLsXrrwcat9ylmgdbVO8cfcvzTlLlg7JZBp7A/nKukSwNa9KleMDoQYlhy0g2w=="
 }

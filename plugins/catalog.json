@@ -90,6 +90,37 @@
       ]
     },
     {
+      "id": "de.pgl.game-overlay",
+      "name": "Game-Overlay",
+      "version": "1.0.0",
+      "description": "Overlay im Spiel wie die Xbox Game Bar: CPU, RAM und GPU live, Aufnahme starten/stoppen, Replay-Puffer und „Replay speichern“ (über OBS Studio). Dazu Aktionen für frei wählbare Tastenkürzel – einstellbar unter „Overlay & Aufnahme“.",
+      "author": "PC Game Launcher",
+      "category": "performance",
+      "platforms": [
+        "windows",
+        "web"
+      ],
+      "permissions": [
+        "monitor.read",
+        "capture.control",
+        "overlay.show"
+      ],
+      "minAppVersion": "1.4.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.game-overlay-1.0.0.pglplugin",
+      "sha256": "c61cd127c3e6ee83d18f81a62b4b4324a9e03532b67efe08b49851926a465db2",
+      "size": 3338,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.gaming-abend",
       "name": "Gaming-Abend & Feierabend",
       "version": "1.0.0",
