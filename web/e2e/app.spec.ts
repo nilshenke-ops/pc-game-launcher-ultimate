@@ -261,13 +261,13 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
   await pc.getByRole("button", { name: "Tastenkürzel speichern" }).click();
   await expect(pc.getByText("Tastenkürzel gespeichert")).toBeVisible();
   await pc.goto(`${COMPANION}/#/hotkeys`);
-  await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 5" })).toContainText("Aufnahme starten/stoppen (OBS)");
+  await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 5" })).toContainText("Aufnahme starten/stoppen");
   await expect(pc.locator(".list-item", { hasText: "Ctrl + Shift + G" })).toContainText("Overlay ein/aus: Groß (wie Game Bar)");
 
   // The Game-Overlay plugin: installed, activated, its widget controls OBS – on the dashboard and on the overlay page.
   await pc.goto(`${COMPANION}/#/plugins?tab=dev`);
-  await pc.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.game-overlay-1.0.0.pglplugin"));
-  await expect(pc.getByText("Prüfung bestanden: Game-Overlay 1.0.0")).toBeVisible();
+  await pc.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.game-overlay-1.1.0.pglplugin"));
+  await expect(pc.getByText("Prüfung bestanden: Game-Overlay 1.1.0")).toBeVisible();
   await pc.getByRole("button", { name: "Installieren (deaktiviert)" }).click();
   await pc.goto(`${COMPANION}/#/plugins`);
   await pc.locator(".card", { hasText: "Game-Overlay" }).getByRole("button", { name: "Details" }).click();
@@ -290,6 +290,38 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
   await expect.poll(async () => (await obsState()).recording).toBe(false);
   await w.getByRole("button", { name: "⟲ Replay speichern" }).click();
   await expect.poll(async () => (await obsState()).savedReplays).toBe(2);
+
+  // Another recording program: NVIDIA. Its factory shortcuts are filled in; the launcher would press them.
+  await pc.goto(`${COMPANION}/#/overlay-settings`);
+  await pc.getByRole("button", { name: "NVIDIA App / GeForce Experience" }).click();
+  const nvRecord = pc.getByRole("textbox", { name: "Aufnahme starten/stoppen – NVIDIA App / GeForce Experience" });
+  await expect(nvRecord).toHaveValue("Alt+F9");
+  await expect(pc.getByRole("textbox", { name: "Replay speichern – NVIDIA App / GeForce Experience" })).toHaveValue("Alt+F10");
+  // Same key as the launcher's own record hotkey: warned, and refused when used (it would never reach NVIDIA).
+  await nvRecord.fill("Ctrl+Alt+5");
+  await pc.locator("select").filter({ hasText: "Eigenes Overlay des Launchers" }).selectOption("nvidia");
+  await pc.getByRole("button", { name: "Speichern", exact: true }).first().click();
+  await expect(pc.getByText("Gleiche Taste wie in NVIDIA App / GeForce Experience").first()).toBeVisible();
+  await pc.getByRole("button", { name: "Jetzt: Aufnahme starten/stoppen" }).click();
+  await expect(pc.getByText(/Ctrl\+Alt\+5 ist auch ein Hotkey des Launchers/)).toBeVisible();
+  await nvRecord.fill("Alt+F9");
+  await pc.getByRole("button", { name: "Speichern", exact: true }).first().click();
+  await expect(pc.getByText("Gespeichert").first()).toBeVisible();
+  // This PC has no Windows companion: said so instead of pretending the key was pressed. OBS gets nothing.
+  const toggles = async () => (await obsState()).requests.filter((r) => r === "ToggleRecord").length;
+  const before = await toggles();
+  await pc.getByRole("button", { name: "Jetzt: Aufnahme starten/stoppen" }).click();
+  await expect(pc.getByText("Tastenkürzel an andere Programme senden geht nur im Windows-Begleiter.").first()).toBeVisible();
+  await pc.goto(`${COMPANION}/#/overlay`);
+  await expect(w.locator("#title")).toHaveText("Aufnahme (NVIDIA App / GeForce Experience)", { timeout: 15000 });
+  await expect(w.getByRole("button", { name: "⟲ Replay speichern" })).toBeEnabled();
+  expect(await toggles()).toBe(before);
+  // Back to OBS for the following tests.
+  await pc.goto(`${COMPANION}/#/overlay-settings`);
+  await pc.getByRole("button", { name: "OBS Studio" }).click();
+  await pc.locator("select").filter({ hasText: "Eigenes Overlay des Launchers" }).selectOption("own");
+  await pc.getByRole("button", { name: "Speichern", exact: true }).first().click();
+  await expect(pc.getByText("Verbunden · obs-websocket 5.5.4")).toBeVisible();
   await pc.goto(`${COMPANION}/#/`);
 });
 
@@ -390,12 +422,15 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.getByRole("button", { name: "Tastenkürzel speichern" }).click();
   await expect(tablet.getByText("Tastenkürzel gespeichert")).toBeVisible();
   await tablet.getByRole("switch", { name: /Replay-Puffer automatisch/ }).check();
-  await tablet.getByRole("button", { name: "Speichern", exact: true }).click();
+  await tablet.getByRole("button", { name: "Speichern", exact: true }).last().click(); // OBS card
   await expect(tablet.getByText("Gespeichert – wird beim Verbinden auf den PC übertragen")).toBeVisible();
-  await expect(tablet.getByText("5 Änderungen warten auf den PC")).toBeVisible();
+  await tablet.getByRole("button", { name: "Xbox Game Bar" }).click();
+  await expect(tablet.getByRole("textbox", { name: "Aufnahme starten/stoppen – Xbox Game Bar" })).toHaveValue("Alt+Win+R");
+  await tablet.getByRole("button", { name: "Speichern", exact: true }).first().click();
+  await expect(tablet.getByText("6 Änderungen warten auf den PC")).toBeVisible();
   await tablet.reload();
+  await expect(tablet.getByRole("button", { name: "Xbox Game Bar" })).toHaveAttribute("aria-pressed", "true");
   await expect(tablet.getByRole("textbox", { name: "Replay speichern (die letzten Sekunden)", exact: true })).toHaveValue("Ctrl+Alt+7");
-  await expect(tablet.getByRole("switch", { name: /Replay-Puffer automatisch/ })).toBeChecked();
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -432,8 +467,11 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.keyboard.press("Escape");
   await pc.goto(`${COMPANION}/#/hotkeys`);
   await expect(pc.getByText("Maus-Seitentaste hinten (4)")).toBeVisible();
-  await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 7" })).toContainText("Replay speichern (OBS)");
+  await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 7" })).toContainText("Replay speichern");
   await pc.goto(`${COMPANION}/#/overlay-settings`);
+  await expect(pc.getByRole("button", { name: "Xbox Game Bar" })).toHaveAttribute("aria-pressed", "true"); // chosen on the tablet
+  await pc.getByRole("button", { name: "OBS Studio" }).click();
+  await pc.getByRole("button", { name: "Speichern", exact: true }).first().click();
   await expect(pc.getByRole("switch", { name: /Replay-Puffer automatisch/ })).toBeChecked();
   // The quick action now plays the uploaded sound (its waiting id was replaced by the PC's id).
   await pc.goto(`${COMPANION}/#/quick`);

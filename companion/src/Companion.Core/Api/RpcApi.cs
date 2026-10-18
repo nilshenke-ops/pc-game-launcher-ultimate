@@ -308,11 +308,11 @@ public static class RpcApi
         rpc.Register("storage.openFolder", ctx => { s.Storage.OpenFolder(ctx.Str("id", 64)); return true; });
         // ------------------------------------------------------------ overlay + OBS (recording, replays)
         rpc.Register("overlay.status", _ => new { supported = s.Platform.Overlay.Supported, visible = s.Platform.Overlay.Visible, reason = s.Platform.Overlay.Supported ? null : NullOverlay.Instance.Toggle("full") });
-        rpc.Register("overlay.toggle", ctx =>
+        rpc.Register("overlay.toggle", async ctx =>
         {
             var mode = ctx.OptStr("mode", 10) ?? "full";
             if (mode is not ("full" or "mini")) throw new RpcException("invalid-params", "Modus muss „full“ oder „mini“ sein.");
-            return s.Platform.Overlay.Toggle(mode) is { } err ? throw new RpcException("unsupported", err) : (object)new { visible = s.Platform.Overlay.Visible };
+            return await s.Capture.ToggleOverlay(mode) is { } err ? throw new RpcException("unsupported", err) : (object)new { visible = s.Platform.Overlay.Visible };
         });
         rpc.Register("overlay.hide", _ => { s.Platform.Overlay.Hide(); return true; });
         rpc.Register("obs.status", async _ => await s.Obs.Status());
@@ -326,9 +326,21 @@ public static class RpcApi
             s.Obs.Reconnect();
             return await s.Obs.Status();
         });
-        rpc.Register("obs.recordToggle", async _ => (object)new { message = await s.Obs.RecordToggle() });
-        rpc.Register("obs.replaySave", async _ => (object)new { message = await s.Obs.ReplaySave() });
-        rpc.Register("obs.replayToggle", async _ => (object)new { message = await s.Obs.ReplayBufferToggle() });
+        rpc.Register("capture.status", async _ => await s.Capture.Status());
+        rpc.Register("capture.configure", async ctx =>
+        {
+            var keys = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("keys", out var k) && k.ValueKind == JsonValueKind.Object
+                ? k.EnumerateObject().Take(50).ToDictionary(p => p.Name, p => p.Value.ValueKind == JsonValueKind.String ? p.Value.GetString() : null) : null;
+            s.Capture.Configure(ctx.OptStr("provider", 20), ctx.OptStr("overlayProvider", 20), keys);
+            return await s.Capture.Status();
+        });
+        rpc.Register("capture.recordToggle", async _ => (object)new { message = await s.Capture.Run("record") });
+        rpc.Register("capture.replaySave", async _ => (object)new { message = await s.Capture.Run("replay") });
+        rpc.Register("capture.replayToggle", async _ => (object)new { message = await s.Capture.Run("buffer") });
+        // Names of 1.4 (plugin "Game-Overlay" 1.0.0); they now also use the chosen program.
+        rpc.Register("obs.recordToggle", async _ => (object)new { message = await s.Capture.Run("record") });
+        rpc.Register("obs.replaySave", async _ => (object)new { message = await s.Capture.Run("replay") });
+        rpc.Register("obs.replayToggle", async _ => (object)new { message = await s.Capture.Run("buffer") });
 
         rpc.Register("power.status", _ => new { supported = s.Platform.Power.Supported });
         rpc.Register("power.run", ctx =>

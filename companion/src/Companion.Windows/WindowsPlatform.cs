@@ -36,6 +36,7 @@ sealed class WindowsPlatform : IPlatform
     public IPowerControl Power { get; } = new WindowsPower();
     public WindowsOverlay OverlayWindows { get; }
     public IOverlay Overlay => OverlayWindows;
+    public IKeySender KeySender { get; } = new WindowsKeySender();
 }
 
 /// <summary>Runs code on the WinForms UI thread.</summary>

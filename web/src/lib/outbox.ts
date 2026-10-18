@@ -9,6 +9,7 @@ import { t } from "./i18n";
 import { readCache, saveCache } from "./offline-cache";
 import { PERMISSION_LABELS } from "./plugins";
 import { WEB_VERSION } from "./release";
+import { offlineCaptureStatus } from "./capture";
 
 type Params = Record<string, unknown>;
 export interface OutboxEntry {
@@ -49,6 +50,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "settings.save": () => t("Einstellungen speichern"),
   // The OBS password waits on this device until the PC takes it (then it is only kept protected on the PC).
   "obs.configure": () => t("OBS-Verbindung speichern"),
+  "capture.configure": () => t("Aufnahme-Programm und Tasten speichern"),
   "history.setNote": () => t("Notiz zur Spielsitzung"),
   "plugins.installCatalog": (p) => t("Plugin installieren {n}", { n: name(p, "label") }),
   "plugins.importFile": (p) => t("Plugin-Datei installieren {n}", { n: name(p, "label") }),
@@ -137,6 +139,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
       obsUrl: "ws://127.0.0.1:4455", obsReplayWhilePlaying: false, overlayCorner: "top-right",
     },
   },
+  "capture.status": offlineCaptureStatus(),
   "obs.status": { url: "ws://127.0.0.1:4455", passwordSet: false, replayWhilePlaying: false, connected: false, offline: true },
   // Whether this PC can show the overlay is only known once it is connected.
   "overlay.status": { supported: false, visible: null, unknown: true },
@@ -212,6 +215,14 @@ function applyLocally(method: string, p: Params): unknown {
     case "sounds.setActiveCollection": patch<{ data: Params }>("sounds.list", (d) => ({ ...d, data: { ...d.data, activeCollectionId: p.id ?? null } })); return true;
     case "audio.save": patch<{ settings: Params }>("audio.state", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
     case "settings.save": patch<{ settings: Params }>("settings.get", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
+    case "capture.configure": {
+      patch<Params>("capture.status", (d) => {
+        const keys = { ...(d.keys as Record<string, string>) };
+        for (const [k, v] of Object.entries((p.keys as Record<string, string | null>) ?? {})) { if (v === null) delete keys[k]; else keys[k] = v; }
+        return { ...d, ...offlineCaptureStatus((p.provider as string) ?? (d.provider as string), (p.overlayProvider as string) ?? (d.overlayProvider as string), keys), obs: d.obs };
+      });
+      return readCache("capture.status")?.data;
+    }
     case "obs.configure": {
       patch<Params>("obs.status", (d) => ({
         ...d, ...(typeof p.url === "string" ? { url: p.url } : {}), ...(typeof p.password === "string" ? { passwordSet: p.password !== "" } : {}),

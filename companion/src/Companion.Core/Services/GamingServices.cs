@@ -97,6 +97,21 @@ public sealed class SettingsService
         return r;
     }
 
+    /// <summary>Recording program, overlay program and shortcuts (already validated by CaptureService). Key value null = back to the default.</summary>
+    public Settings SetCapture(string? provider, string? overlayProvider, Dictionary<string, string?> keys)
+    {
+        var r = _store.Update(s =>
+        {
+            if (provider != null) s.CaptureProvider = provider;
+            if (overlayProvider != null) s.OverlayProvider = overlayProvider;
+            foreach (var (k, v) in keys) { if (v == null) s.CaptureKeys.Remove(k); else s.CaptureKeys[k] = v; }
+            return Json.Deserialize<Settings>(Json.Serialize(s))!;
+        });
+        _hub.Changed("settings");
+        _hub.Changed("capture");
+        return r;
+    }
+
     /// <summary>Stores the protected Steam Web API key (or removes it). keep = leave the current key.</summary>
     public void SetSteamKey(string? protectedKey, bool keep)
     {
@@ -567,7 +582,7 @@ public sealed class ActionRunner
     public Func<Task<object>>? RunDiagnostics { get; set; }
     public Action<string>? Notify { get; set; }
     /// <summary>Shows/hides the overlay ("full" or "mini"); returns an error text or null.</summary>
-    public Func<string, string?>? ToggleOverlay { get; set; }
+    public Func<string, Task<string?>>? ToggleOverlay { get; set; }
     public Func<Task<string>>? ObsRecordToggle { get; set; }
     public Func<Task<string>>? ObsReplaySave { get; set; }
     public Func<Task<string>>? ObsReplayBufferToggle { get; set; }
@@ -612,7 +627,7 @@ public sealed class ActionRunner
                         Notify!(DeviceStore.Sanitize(s.Ref, 120, "Hinweis")); results.Add("Hinweis angezeigt");
                         break;
                     case StepType.ToggleOverlay:
-                        results.Add(ToggleOverlay!(s.Ref == "mini" ? "mini" : "full") is { } oe ? "Fehler: " + oe : "Overlay umgeschaltet");
+                        results.Add(await ToggleOverlay!(s.Ref == "mini" ? "mini" : "full") is { } oe ? "Fehler: " + oe : "Overlay umgeschaltet");
                         break;
                     case StepType.ObsRecordToggle:
                         results.Add(await ObsRecordToggle!());

@@ -17,9 +17,9 @@ export function stepLabels(): Record<StepType, string> {
     runDiagnostics: t("Diagnose ausführen"),
     notify: t("Hinweis anzeigen"),
     toggleOverlay: t("Overlay ein/aus"),
-    obsRecordToggle: t("Aufnahme starten/stoppen (OBS)"),
-    obsReplaySave: t("Replay speichern (OBS)"),
-    obsReplayBufferToggle: t("Replay-Puffer an/aus (OBS)"),
+    obsRecordToggle: t("Aufnahme starten/stoppen"),
+    obsReplaySave: t("Replay speichern"),
+    obsReplayBufferToggle: t("Replay-Puffer an/aus"),
   };
 }
 

@@ -343,6 +343,12 @@ public sealed class Settings
     public bool ObsReplayWhilePlaying { get; set; }
     /// <summary>Screen corner of the small in-game overlay (Windows companion).</summary>
     public string OverlayCorner { get; set; } = "top-right";
+    /// <summary>Program used for recording and replays: obs, nvidia, xbox, steam or discord (see CaptureProviders).</summary>
+    public string CaptureProvider { get; set; } = "obs";
+    /// <summary>Large overlay: "own" (launcher overlay) or the overlay of nvidia, xbox, steam or discord.</summary>
+    public string OverlayProvider { get; set; } = "own";
+    /// <summary>Shortcut per "provider.action" as set up in that program; missing = factory default, "" = none.</summary>
+    public Dictionary<string, string> CaptureKeys { get; set; } = new();
 }
 
 // ---------------------------------------------------------------- Notifications

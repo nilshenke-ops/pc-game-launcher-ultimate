@@ -24,6 +24,22 @@ public interface IPlatform
     IPowerControl Power => NullPower.Instance;
     /// <summary>In-game overlay window (Windows companion only).</summary>
     IOverlay Overlay => NullOverlay.Instance;
+    /// <summary>Presses keyboard shortcuts of other programs (NVIDIA, Xbox Game Bar …). Windows companion only.</summary>
+    IKeySender KeySender => NullKeySender.Instance;
+}
+
+public interface IKeySender
+{
+    bool Supported { get; }
+    /// <summary>Presses a normalized combination such as "Alt+F9" once. Returns an error text or null.</summary>
+    Task<string?> SendAsync(string combo);
+}
+
+public sealed class NullKeySender : IKeySender
+{
+    public static readonly NullKeySender Instance = new();
+    public bool Supported => false;
+    public Task<string?> SendAsync(string combo) => Task.FromResult<string?>("Tastenkürzel an andere Programme senden geht nur im Windows-Begleiter.");
 }
 
 public interface IOverlay

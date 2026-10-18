@@ -219,7 +219,7 @@ public class ObsTests
         var runner = new ActionRunner
         {
             ObsRecordToggle = obs.RecordToggle, ObsReplaySave = obs.ReplaySave, ObsReplayBufferToggle = obs.ReplayBufferToggle,
-            ToggleOverlay = NullOverlay.Instance.Toggle,
+            ToggleOverlay = m => Task.FromResult(NullOverlay.Instance.Toggle(m)),
         };
         var results = await runner.RunAsync(new[]
         {

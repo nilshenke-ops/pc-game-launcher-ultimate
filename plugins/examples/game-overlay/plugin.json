@@ -1,24 +1,101 @@
 {
   "id": "de.pgl.game-overlay",
   "name": "Game-Overlay",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "apiVersion": 1,
-  "minAppVersion": "1.4.0",
+  "minAppVersion": "1.5.0",
   "author": "PC Game Launcher",
-  "description": "Overlay im Spiel wie die Xbox Game Bar: CPU, RAM und GPU live, Aufnahme starten/stoppen, Replay-Puffer und „Replay speichern“ (über OBS Studio). Dazu Aktionen für frei wählbare Tastenkürzel – einstellbar unter „Overlay & Aufnahme“.",
+  "description": "Overlay im Spiel wie die Xbox Game Bar: CPU, RAM und GPU live, Aufnahme starten/stoppen, Replay-Puffer und „Replay speichern“ – mit OBS Studio, NVIDIA, Xbox Game Bar, Steam oder Discord (wählbar unter „Overlay & Aufnahme“). Dazu Aktionen für frei wählbare Tastenkürzel.",
   "category": "performance",
-  "platforms": ["windows", "web"],
-  "permissions": ["monitor.read", "capture.control", "overlay.show"],
+  "platforms": [
+    "windows",
+    "web"
+  ],
+  "permissions": [
+    "monitor.read",
+    "capture.control",
+    "overlay.show"
+  ],
   "homepage": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate",
   "contributes": {
-    "widgets": [{ "id": "overlay", "title": "Game-Overlay", "entry": "widget.html", "height": 300, "overlay": true }],
+    "widgets": [
+      {
+        "id": "overlay",
+        "title": "Game-Overlay",
+        "entry": "widget.html",
+        "height": 300,
+        "overlay": true
+      }
+    ],
     "actions": [
-      { "id": "overlay", "name": "Overlay ein/aus", "icon": "monitor", "steps": [{ "type": "toggleOverlay", "ref": "full" }] },
-      { "id": "mini", "name": "Mini-Overlay ein/aus", "icon": "gauge", "steps": [{ "type": "toggleOverlay", "ref": "mini" }] },
-      { "id": "aufnahme", "name": "Aufnahme starten/stoppen", "icon": "radio", "steps": [{ "type": "obsRecordToggle" }] },
-      { "id": "replay", "name": "Replay speichern", "icon": "star", "steps": [{ "type": "obsReplaySave" }] },
-      { "id": "puffer", "name": "Replay-Puffer an/aus", "icon": "timer", "steps": [{ "type": "obsReplayBufferToggle" }] }
+      {
+        "id": "overlay",
+        "name": "Overlay ein/aus",
+        "icon": "monitor",
+        "steps": [
+          {
+            "type": "toggleOverlay",
+            "ref": "full"
+          }
+        ]
+      },
+      {
+        "id": "mini",
+        "name": "Mini-Overlay ein/aus",
+        "icon": "gauge",
+        "steps": [
+          {
+            "type": "toggleOverlay",
+            "ref": "mini"
+          }
+        ]
+      },
+      {
+        "id": "aufnahme",
+        "name": "Aufnahme starten/stoppen",
+        "icon": "radio",
+        "steps": [
+          {
+            "type": "obsRecordToggle"
+          }
+        ]
+      },
+      {
+        "id": "replay",
+        "name": "Replay speichern",
+        "icon": "star",
+        "steps": [
+          {
+            "type": "obsReplaySave"
+          }
+        ]
+      },
+      {
+        "id": "puffer",
+        "name": "Replay-Puffer an/aus",
+        "icon": "timer",
+        "steps": [
+          {
+            "type": "obsReplayBufferToggle"
+          }
+        ]
+      }
     ]
   },
-  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+  "changelog": [
+    {
+      "version": "1.1.0",
+      "date": "2026-10-18",
+      "changes": [
+        "Aufnahme auch mit NVIDIA, Xbox Game Bar, Steam oder Discord"
+      ]
+    },
+    {
+      "version": "1.0.0",
+      "date": "2026-10-18",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
 }

@@ -41,6 +41,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public SteamService Steam { get; }
     public LauncherService Launchers { get; }
     public ObsService Obs { get; }
+    public CaptureService Capture { get; }
     public BackupService Backup { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
@@ -87,6 +88,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Covers = new CoverService(Library, Settings.Get);
         Steam = new SteamService(paths, Library, platform, Settings, Rpc);
         Obs = new ObsService(Settings.Get, platform.Secrets, Rpc);
+        Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
 
         Wire();
@@ -102,6 +104,7 @@ public sealed class CompanionServices : IAsyncDisposable
         pickFile = Platform.Desktop.CanPickFiles,
         installUpdates = Platform.UpdateInstaller.Supported,
         overlay = Platform.Overlay.Supported,
+        sendKeys = Platform.KeySender.Supported,
     };
 
     object HelloInfo(RpcSession s) => new
@@ -124,10 +127,11 @@ public sealed class CompanionServices : IAsyncDisposable
         Runner.SetAudioOutput = id => Audio.Update(a => a.OutputDeviceId = id);
         Runner.RunDiagnostics = async () => await Network.Run();
         Runner.Notify = text => Notifications.Push("automation:" + text, Severity.Info, text);
-        Runner.ToggleOverlay = mode => Platform.Overlay.Toggle(mode);
-        Runner.ObsRecordToggle = Obs.RecordToggle;
-        Runner.ObsReplaySave = Obs.ReplaySave;
-        Runner.ObsReplayBufferToggle = Obs.ReplayBufferToggle;
+        // The step names say "obs" for historical reasons; they run with the program chosen under "Overlay & Aufnahme".
+        Runner.ToggleOverlay = Capture.ToggleOverlay;
+        Runner.ObsRecordToggle = () => Capture.Run("record");
+        Runner.ObsReplaySave = () => Capture.Run("replay");
+        Runner.ObsReplayBufferToggle = () => Capture.Run("buffer");
         Platform.Overlay.Changed += () => Rpc.Changed("overlay");
         Obs.RecordingChanged += (active, path) => Notifications.Push("obs-record", Severity.Success, active ? "Aufnahme läuft" : "Aufnahme gespeichert", active ? "OBS nimmt auf." : path, "/overlay-settings");
         Obs.ReplaySaved += path => Notifications.Push("obs-replay", Severity.Success, "Replay gespeichert", path, "/overlay-settings");
@@ -150,7 +154,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStarted, item.Id);
-            if (Settings.Get().ObsReplayWhilePlaying) _ = ObsReplayBuffer(true);
+            if (Settings.Get() is { ObsReplayWhilePlaying: true, CaptureProvider: "obs" }) _ = ObsReplayBuffer(true);
         };
         Sessions.Stopped += (item, at) =>
         {
@@ -164,7 +168,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStopped, item.Id);
-            if (Settings.Get().ObsReplayWhilePlaying && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
+            if (Settings.Get() is { ObsReplayWhilePlaying: true, CaptureProvider: "obs" } && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
         };
 
         Profiles.LaunchItem = (id, by) => Library.Launch(id, by);

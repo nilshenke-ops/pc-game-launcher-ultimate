@@ -94,7 +94,7 @@ Die Felder im Einzelnen:
 | `diagnostics.run` | `pgl.call("diagnostics.run")`, Schritt `runDiagnostics` |
 | `notify` | `pgl.notify(text)`, Schritt `notify` |
 | `network` | `fetch`/Bilder von `https://`-Adressen aus dem Widget |
-| `capture.control` | `obs.status`, `obs.recordToggle`, `obs.replaySave`, `obs.replayToggle`; Schritte `obsRecordToggle`, `obsReplaySave`, `obsReplayBufferToggle` (Aufnahme über OBS Studio, ab 1.4.0) |
+| `capture.control` | `capture.status`, `capture.recordToggle`, `capture.replaySave`, `capture.replayToggle` (mit dem unter „Overlay & Aufnahme“ gewählten Programm, ab 1.5.0), `obs.status`; Schritte `obsRecordToggle`, `obsReplaySave`, `obsReplayBufferToggle` (Aufnahme über OBS Studio, ab 1.4.0) |
 | `overlay.show` | `overlay.status`, `overlay.toggle`, `overlay.hide`; Schritt `toggleOverlay` (ab 1.4.0) |
 
 So läuft die Freigabe ab:

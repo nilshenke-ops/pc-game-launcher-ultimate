@@ -1,7 +1,9 @@
-// Game overlay widget: live values from the PC ("monitor.sample") and OBS control through the launcher
-// ("obs.*" – the launcher talks to OBS Studio's WebSocket server; this widget never connects to OBS itself).
+// Game overlay widget: live values from the PC ("monitor.sample") and recording through the launcher ("capture.*").
+// The launcher talks to the program chosen under "Overlay & Aufnahme" (OBS with feedback; NVIDIA, Xbox Game Bar, Steam,
+// Discord by pressing their shortcuts) – this widget never connects to any of them itself.
 const $ = (id) => document.getElementById(id);
-let status = null;
+let status = null; // OBS status (only with OBS)
+let cap = null;
 
 function bar(id, pct, hot) {
   $(id).textContent = pct == null ? "n. v." : `${pct.toFixed(0)} %`;
@@ -21,6 +23,8 @@ pgl.on("monitor.sample", (m) => {
 function message(text, error) { $("msg").textContent = text || ""; $("msg").className = "msg" + (error ? " err" : ""); }
 
 function render() {
+  if (cap && cap.provider !== "obs") return renderKeys();
+  $("title").textContent = "Aufnahme (OBS)";
   const s = status;
   const connected = !!(s && s.connected);
   $("dot").className = "dot" + (s && s.recording ? " rec" : connected ? " ok" : "");
@@ -35,9 +39,26 @@ function render() {
   $("save").disabled = !connected || !s.replayBuffer;
 }
 
+/** NVIDIA, Xbox Game Bar, Steam, Discord: no feedback – the buttons press the program's shortcuts. */
+function renderKeys() {
+  const p = cap.providers.find((x) => x.id === cap.provider);
+  const has = (a) => p.actions.includes(a) && !!p.effective[a];
+  $("title").textContent = "Aufnahme (" + p.name + ")";
+  $("dot").className = "dot";
+  $("state").textContent = "Tastenkürzel an " + p.name + " – den Status zeigt " + p.name + " selbst";
+  $("rec").disabled = !has("record");
+  $("rec").textContent = "● Aufnahme an/aus";
+  $("rec").className = "primary";
+  $("buffer").disabled = !has("buffer");
+  $("buffer").textContent = "Replay-Puffer an/aus";
+  $("save").disabled = !has("replay");
+}
+
 async function refresh() {
-  try { status = await pgl.call("obs.status"); }
-  catch (e) { status = { connected: false, error: e.message }; }
+  try {
+    cap = await pgl.call("capture.status");
+    status = cap.obs || null;
+  } catch (e) { cap = null; status = { connected: false, error: e.message }; }
   render();
 }
 
@@ -48,12 +69,12 @@ async function act(method, button) {
   await refresh();
 }
 
-$("rec").onclick = () => act("obs.recordToggle", $("rec"));
-$("buffer").onclick = () => act("obs.replayToggle", $("buffer"));
-$("save").onclick = () => act("obs.replaySave", $("save"));
+$("rec").onclick = () => act("capture.recordToggle", $("rec"));
+$("buffer").onclick = () => act("capture.replayToggle", $("buffer"));
+$("save").onclick = () => act("capture.replaySave", $("save"));
 
 refresh();
-pgl.on("changed", (d) => { if (d.topic === "obs" || d.topic === "settings") refresh(); });
+pgl.on("changed", (d) => { if (d.topic === "obs" || d.topic === "capture" || d.topic === "settings") refresh(); });
 // The recording time only changes while recording: then ask every 2 s, otherwise every 15 s (OBS may be started later).
 setInterval(() => { if (status && status.recording) refresh(); }, 2000);
 setInterval(() => { if (!status || !status.recording) refresh(); }, 15000);
