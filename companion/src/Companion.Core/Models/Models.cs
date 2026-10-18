@@ -297,6 +297,8 @@ public sealed class Settings
     public int ProcessScanSeconds { get; set; } = 5;
     /// <summary>Update manifest (version, download link, SHA-256). Default: the project's GitHub Pages site. Empty = no checks.</summary>
     public string? UpdateManifestUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/update.json";
+    /// <summary>Plugin store: signed catalog of official/reviewed plugins. "" = no catalog (local plugin files still work).</summary>
+    public string? PluginCatalogUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/catalog.json";
     public bool NotifyInfo { get; set; } = true;
     public bool QuietWhileGaming { get; set; } = true;
     public List<string> MutedNotificationKeys { get; set; } = new();

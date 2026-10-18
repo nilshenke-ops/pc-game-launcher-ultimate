@@ -161,6 +161,7 @@ export interface Settings {
   keepRunningInTray: boolean;
   processScanSeconds: number;
   updateManifestUrl?: string;
+  pluginCatalogUrl?: string | null;
   notifyInfo: boolean;
   quietWhileGaming: boolean;
   mutedNotificationKeys: string[];

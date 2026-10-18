@@ -294,6 +294,26 @@ public static class RpcApi
         rpc.Register("updates.install", ctx => s.Updates.Install() is { } err ? throw new RpcException("update", err) : true);
         rpc.Register("updates.rollback", ctx => s.Updates.Rollback() is { } err ? throw new RpcException("update", err) : true);
 
+        // ------------------------------------------------------------ plugins
+        rpc.Register("plugins.list", _ => s.Plugins.List());
+        rpc.Register("plugins.files", ctx => s.Plugins.Files(ctx.Str("id", 64), ctx.Bool("preview")));
+        rpc.Register("plugins.catalog", async ctx => await s.Plugins.CatalogInfo(ctx.Bool("refresh")));
+        rpc.Register("plugins.installCatalog", async ctx => await s.Plugins.InstallFromCatalog(ctx.Str("id", 64)));
+        rpc.Register("plugins.update", async ctx => await s.Plugins.Update(ctx.Str("id", 64)));
+        rpc.Register("plugins.importBegin", ctx => new { importId = s.Plugins.ImportBegin(ctx.Params.GetProperty("size").GetInt64()) });
+        rpc.Register("plugins.importChunk", ctx => { s.Plugins.ImportChunk(ctx.Str("importId", 64), ctx.Str("data", 800_000)); return true; });
+        rpc.Register("plugins.importEnd", ctx => s.Plugins.ImportEnd(ctx.Str("importId", 64), ctx.Bool("check"), ctx.Session.Who));
+        rpc.Register("plugins.export", ctx => s.Plugins.Export(ctx.Str("id", 64), ctx.Params.TryGetProperty("offset", out var o) ? o.GetInt64() : 0));
+        rpc.Register("plugins.enable", ctx => { s.Plugins.Enable(ctx.Str("id", 64), ctx.Params.GetProperty("grant").EnumerateArray().Select(x => x.GetString() ?? "").ToList()); return true; });
+        rpc.Register("plugins.disable", ctx => { s.Plugins.Disable(ctx.Str("id", 64)); return true; });
+        rpc.Register("plugins.revoke", ctx => { s.Plugins.Revoke(ctx.Str("id", 64), ctx.Str("permission", 40)); return true; });
+        rpc.Register("plugins.uninstall", ctx => { s.Plugins.Uninstall(ctx.Str("id", 64)); return true; });
+        rpc.Register("plugins.rollback", ctx => s.Plugins.Rollback(ctx.Str("id", 64)));
+        rpc.Register("plugins.setFlags", ctx => { s.Plugins.SetFlags(ctx.Str("id", 64), ctx.Params.TryGetProperty("favorite", out var f) ? f.GetBoolean() : null, ctx.Params.TryGetProperty("autoUpdate", out var a) ? a.GetBoolean() : null); return true; });
+        rpc.Register("plugins.setConfig", ctx => s.Plugins.SetConfig(ctx.Str("id", 64), ctx.Params.GetProperty("config")));
+        rpc.Register("plugins.runAction", async ctx => new { results = await s.Plugins.RunAction(ctx.Str("id", 64), ctx.Str("actionId", 32), ctx.Session.Who) });
+        rpc.Register("plugins.reportError", ctx => { s.Plugins.ReportError(ctx.Str("id", 64), ctx.Str("message", 2000)); return true; });
+
         // ------------------------------------------------------------ backup
         rpc.Register("backup.export", ctx =>
         {

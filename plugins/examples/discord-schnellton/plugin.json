@@ -1,0 +1,24 @@
+{
+  "id": "de.pgl.discord-schnellton",
+  "name": "Discord-Schnellton",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Aktionen für Sprachchats: Lieblingssound abspielen, alle Sounds stoppen, in ein Voice-Profil wechseln. Ton und Profil wählst du in den Einstellungen.",
+  "category": "discord",
+  "platforms": ["windows", "web"],
+  "permissions": ["sounds.play", "profiles.activate"],
+  "contributes": {
+    "settings": [
+      { "key": "sound", "label": "Sound für „Schnellton“", "type": "sound" },
+      { "key": "profil", "label": "Profil für „Voice-Modus“", "type": "profile" }
+    ],
+    "actions": [
+      { "id": "schnellton", "name": "Schnellton", "icon": "volume", "steps": [{ "type": "playSound", "ref": "{config:sound}" }] },
+      { "id": "stille", "name": "Alle Sounds stoppen", "icon": "moon", "steps": [{ "type": "stopAllSounds" }] },
+      { "id": "voice", "name": "Voice-Modus", "icon": "headphones", "steps": [{ "type": "activateProfile", "ref": "{config:profil}" }] }
+    ]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

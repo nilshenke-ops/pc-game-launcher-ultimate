@@ -34,11 +34,17 @@ export default async function setup() {
   writeFileSync(join(dataDir, "settings.json"), JSON.stringify({
     port: COMPANION_PORT, lanAccess: false, pcName: "E2E-Gaming-PC", webAppUrl: HOSTED_SITE,
     relayEnabled: true, relayUrl: `ws://127.0.0.1:${RELAY_PORT}`, relayCompanionId: "e2e-pc", relaySecretProtected: "plain:" + SECRET,
+    pluginCatalogUrl: "", updateManifestUrl: "",
   }));
   // A fake "game": a script that writes a marker file when started.
   const game = join(work, "fake-game.sh");
   writeFileSync(game, `#!/bin/sh\necho started > "${join(work, "game-started.txt")}"\n`);
   chmodSync(game, 0o755);
+
+  // Plugin packages: a real example plugin and a probe that tries everything the sandbox must block.
+  const { pack } = await import("../../plugins/sdk/pack.mjs");
+  pack(join(ROOT, "plugins/examples/spielzeit-heute"), work);
+  pack(join(ROOT, "web/e2e/fixtures/sandbox-test"), work);
 
   const relayCfg = join(work, "relay.json");
   writeFileSync(relayCfg, JSON.stringify({ port: RELAY_PORT, host: "127.0.0.1", webDir: join(ROOT, "web/dist"), downloadsDir: join(work, "downloads"), companions: [{ id: "e2e-pc", secretSha256: createHash("sha256").update(SECRET).digest("hex") }] }));

@@ -1,0 +1,17 @@
+{
+  "id": "de.pgl.spielzeit-heute",
+  "name": "Spielzeit heute",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: wie lange du heute gespielt hast und welche Spiele – aus dem echten Spielverlauf des PCs.",
+  "category": "information",
+  "platforms": ["web"],
+  "permissions": ["history.read"],
+  "contributes": {
+    "widgets": [{ "id": "heute", "title": "Spielzeit heute", "entry": "widget.html", "height": 200 }],
+    "settings": [{ "key": "ziel", "label": "Tagesziel in Minuten (0 = keins)", "type": "number", "default": 0 }]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

@@ -1,6 +1,6 @@
 import {
   Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, HardDrive, Headphones, Heart, HelpCircle, History, Home,
-  Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Radio, Rocket, Settings, ShieldCheck, Smartphone, Sparkles, Star,
+  Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, ShieldCheck, Smartphone, Sparkles, Star,
   Stethoscope, Swords, Timer, Trophy, Tv, Volume2, Wand2, Zap, type LucideIcon,
 } from "lucide-react";
 import { t } from "./i18n";
@@ -27,6 +27,7 @@ export function navItems(): NavItem[] {
     { path: "/notifications", label: t("Benachrichtigungen"), icon: Bell, group: t("System") },
     { path: "/settings", label: t("Einstellungen"), icon: Settings, group: t("System"), keywords: "design sprache backup update" },
     { path: "/diagnostics", label: t("Diagnose"), icon: Stethoscope, group: t("System"), keywords: "netzwerk fehler logs ping" },
+    { path: "/plugins", label: t("Plugin Center"), icon: Puzzle, group: t("System"), keywords: "plugins erweiterungen store widgets themes addons module" },
     { path: "/updates", label: t("Updates & Versionen"), icon: Download, group: t("System"), keywords: "update version download herunterladen neueste windows exe änderungen" },
     { path: "/help", label: t("Hilfe"), icon: HelpCircle, group: t("System"), keywords: "anleitung download begleiter" },
   ];

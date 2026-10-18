@@ -76,6 +76,14 @@ const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https:; media-src 'self' blob: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 };
 
+/** Plugin widget frame: runs only inside a sandboxed iframe of this app; its own strict policy (see web/public/plugin-frame.html). */
+const PLUGIN_FRAME_HEADERS: Record<string, string> = {
+  ...SECURITY_HEADERS,
+  "X-Frame-Options": "SAMEORIGIN",
+  "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: https:; font-src data:; media-src data:; connect-src https:; form-action 'none'; base-uri 'none'; frame-src 'none'; worker-src 'none'; frame-ancestors 'self'",
+};
+const headersFor = (rel: string) => (rel === "plugin-frame.html" ? PLUGIN_FRAME_HEADERS : SECURITY_HEADERS);
+
 interface CompanionConn { ws: WebSocket; id: string; clients: Map<string, WebSocket>; alive: boolean }
 
 export interface Relay { server: Server; close: () => Promise<void>; port: () => number; online: () => string[] }
@@ -132,9 +140,9 @@ export function createRelay(cfg: RelayConfig): Relay {
     }
     const st = statSync(file);
     const etag = `"${st.size.toString(16)}-${st.mtimeMs.toString(16)}"`;
-    if (req.headers["if-none-match"] === etag) { res.writeHead(304, SECURITY_HEADERS); res.end(); return; }
+    if (req.headers["if-none-match"] === etag) { res.writeHead(304, headersFor(rel)); res.end(); return; }
     res.writeHead(200, {
-      ...SECURITY_HEADERS,
+      ...headersFor(rel),
       "Content-Type": MIME[extname(file).toLowerCase()] ?? "application/octet-stream",
       "Content-Length": st.size,
       ETag: etag,

@@ -1,0 +1,11 @@
+<!doctype html><html><head></head><body>probe<script>
+(async () => {
+  const out = [];
+  try { localStorage.getItem("pgl.access"); out.push("storage:open"); } catch { out.push("storage:blocked"); }
+  try { void parent.document.title; out.push("parent:open"); } catch { out.push("parent:blocked"); }
+  try { await fetch("https://example.org/"); out.push("fetch:open"); } catch { out.push("fetch:blocked"); }
+  try { await pgl.call("library.list"); out.push("call:open"); } catch (e) { out.push("call:" + e.message); }
+  try { await pgl.call("settings.saveSecurity", { lanAccess: true }); out.push("admin:open"); } catch { out.push("admin:blocked"); }
+  document.body.dataset.result = out.join(",");
+})();
+</script></body></html>

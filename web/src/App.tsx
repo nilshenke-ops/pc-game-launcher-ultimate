@@ -25,6 +25,7 @@ const SettingsPage = lazy(() => import("./pages/Settings"));
 const Diagnostics = lazy(() => import("./pages/Diagnostics"));
 const Help = lazy(() => import("./pages/Help"));
 const Updates = lazy(() => import("./pages/Updates"));
+const Plugins = lazy(() => import("./pages/Plugins"));
 const Connect = lazy(() => import("./pages/Connect"));
 const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
@@ -86,6 +87,7 @@ function Gate() {
           <Route path="/diagnostics" element={<Diagnostics />} />
           <Route path="/help" element={<Help />} />
           <Route path="/updates" element={<Updates />} />
+          <Route path="/plugins" element={<Plugins />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

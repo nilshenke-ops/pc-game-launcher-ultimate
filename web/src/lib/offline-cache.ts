@@ -3,7 +3,8 @@
 // Cleared when this device signs out or is removed on the PC.
 
 const PREFIX = "pgl.cache.";
-export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.list", "launchers.list"]);
+// Plugins: list and files of installed plugins, so their widgets and themes also work while the PC is off.
+export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.list", "launchers.list", "plugins.list", "plugins.files"]);
 const key = (method: string, params?: string) => PREFIX + method + (params && params !== "{}" ? params : "");
 
 export function saveCache(method: string, data: unknown, params?: string) {

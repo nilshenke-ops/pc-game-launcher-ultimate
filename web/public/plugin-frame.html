@@ -1,0 +1,11 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Plugin</title></head><body><script>
+// Host for one plugin widget. Loaded only into a sandboxed iframe (sandbox="allow-scripts", no same-origin): the code
+// cannot reach the app, its storage or the PC. It receives the prepared widget document once from the parent window.
+addEventListener("message", function load(e) {
+  if (e.source !== parent || !e.data || e.data.pgl !== 1 || e.data.type !== "load" || typeof e.data.html !== "string") return;
+  removeEventListener("message", load);
+  document.open(); document.write(e.data.html); document.close();
+});
+parent.postMessage({ pgl: 1, type: "ready" }, "*");
+</script></body></html>

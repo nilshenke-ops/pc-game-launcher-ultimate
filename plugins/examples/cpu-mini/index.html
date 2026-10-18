@@ -1,0 +1,18 @@
+<!doctype html>
+<html><head><style>
+  body { margin: 0; font: 14px system-ui, sans-serif; color: var(--pgl-text); }
+  .row { display: flex; justify-content: space-between; margin: 6px 0 2px; }
+  .bar { height: 8px; border-radius: 4px; background: var(--pgl-border); overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--pgl-accent); width: 0; transition: width .4s; }
+</style></head>
+<body>
+  <div class="row"><span>CPU</span><b id="cpu">–</b></div><div class="bar"><i id="cpuBar"></i></div>
+  <div class="row"><span>RAM</span><b id="ram">–</b></div><div class="bar"><i id="ramBar"></i></div>
+  <script>
+    const set = (id, pct) => { document.getElementById(id).textContent = pct == null ? "nicht verfügbar" : pct.toFixed(0) + " %"; document.getElementById(id + "Bar").style.width = (pct ?? 0) + "%"; };
+    pgl.on("monitor.sample", (m) => {
+      set("cpu", m.cpuPercent ?? null);
+      set("ram", m.memTotalBytes ? (m.memUsedBytes / m.memTotalBytes) * 100 : null);
+    });
+  </script>
+</body></html>

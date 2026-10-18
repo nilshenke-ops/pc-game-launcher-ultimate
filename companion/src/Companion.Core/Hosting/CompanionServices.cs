@@ -32,6 +32,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public MonitorService Monitor { get; }
     public NetworkDiagnostics Network { get; }
     public UpdateService Updates { get; }
+    public PluginService Plugins { get; }
     public GamePassService GamePass { get; }
     public CoverService Covers { get; }
     public SteamService Steam { get; }
@@ -68,6 +69,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Updates = new UpdateService(paths, Settings.Get, platform.UpdateInstaller, Rpc);
         Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
         Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Updates & Versionen: Änderungen ansehen, herunterladen und installieren. Es wird nie automatisch installiert.", "/updates");
+        Plugins = new PluginService(paths, Rpc, Settings.Get);
         Updates.CreateRestorePoint = name =>
         {
             try { return Path.GetFileName(Backup.CreateZip(includeSounds: false, Path.Combine(paths.BackupsDir, $"{name}-{DateTime.Now:yyyyMMdd-HHmmss}.zip"))); }
@@ -113,6 +115,8 @@ public sealed class CompanionServices : IAsyncDisposable
         Runner.SetAudioOutput = id => Audio.Update(a => a.OutputDeviceId = id);
         Runner.RunDiagnostics = async () => await Network.Run();
         Runner.Notify = text => Notifications.Push("automation:" + text, Severity.Info, text);
+        Plugins.RunSteps = (steps, by) => Runner.RunAsync(steps, by);
+        Plugins.Notify = (title, text) => Notifications.Push("plugin:" + title, Severity.Warning, title, text, "/plugins");
 
         Library.Launched += (item, result, by) =>
         {
@@ -287,6 +291,7 @@ public sealed class CompanionServices : IAsyncDisposable
         GamePass.Start();
         Updates.StartAutoCheck();
         Covers.Start();
+        Plugins.Start();
         Steam.Start();
         Launchers.Start();
         ApplyRelaySettings(Settings.Get());
@@ -301,6 +306,7 @@ public sealed class CompanionServices : IAsyncDisposable
         GamePass.Dispose();
         Updates.Dispose();
         Covers.Dispose();
+        Plugins.Dispose();
         Steam.Dispose();
         Launchers.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }

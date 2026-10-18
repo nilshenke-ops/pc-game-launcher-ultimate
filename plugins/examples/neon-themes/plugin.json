@@ -1,0 +1,48 @@
+{
+  "id": "de.pgl.neon-themes",
+  "name": "Neon-Themes",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Zwei Farbschemata (Neon Pink, Matrix Grün) für den Design-Editor. Ohne Code, ohne Berechtigungen.",
+  "category": "design",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [],
+  "contributes": {
+    "themes": [
+      {
+        "id": "neon-pink",
+        "name": "Neon Pink",
+        "theme": {
+          "mode": "dark",
+          "primary": "#ff2bd6",
+          "accent": "#7c3aed",
+          "background": "#0d0614"
+        }
+      },
+      {
+        "id": "matrix",
+        "name": "Matrix Grün",
+        "theme": {
+          "mode": "dark",
+          "primary": "#22ff88",
+          "accent": "#0ea5e9",
+          "background": "#020a05",
+          "radius": 6
+        }
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-18",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

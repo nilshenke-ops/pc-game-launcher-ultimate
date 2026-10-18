@@ -131,6 +131,46 @@ test("Design wird gespeichert und übersteht das Neuladen", async () => {
   expect(await primary()).toBe("#34d399");
 });
 
+test("Plugin: Datei prüfen, installieren, mit Berechtigung aktivieren, Widget läuft abgeschottet", async () => {
+  const work = state().workDir;
+  const importFile = async (name: string, title: RegExp) => {
+    await pc.goto(`${COMPANION}/#/plugins?tab=dev`);
+    await pc.locator('input[type="file"]').setInputFiles(join(work, name));
+    await expect(pc.getByText(title)).toBeVisible();
+    await pc.getByRole("button", { name: "Installieren (deaktiviert)" }).click();
+    await expect(pc.getByText("Installiert (deaktiviert) – jetzt testen und aktivieren")).toBeVisible();
+  };
+  await importFile("de.pgl.spielzeit-heute-1.0.0.pglplugin", /Prüfung bestanden: Spielzeit heute 1\.0\.0/);
+  await importFile("de.test.sandbox-1.0.0.pglplugin", /Prüfung bestanden: Sandbox-Test 1\.0\.0/);
+
+  // Activation lists the permissions and needs explicit consent.
+  const activate = async (name: string, permissionText?: string) => {
+    await pc.goto(`${COMPANION}/#/plugins`);
+    await pc.locator(".card", { hasText: name }).getByRole("button", { name: "Details" }).click();
+    await pc.getByRole("button", { name: "Aktivieren" }).click();
+    if (permissionText) await expect(pc.getByText(permissionText)).toBeVisible();
+    await pc.getByRole("button", { name: "Erlauben und aktivieren" }).click();
+    await expect(pc.getByText("Plugin aktiviert")).toBeVisible();
+    await pc.getByRole("button", { name: /aufs Dashboard/ }).first().click();
+    await pc.keyboard.press("Escape");
+  };
+  await activate("Spielzeit heute", "Das Plugin erhält: Spielverlauf und Spielzeit lesen. Du kannst einzelne Rechte später entziehen.");
+  await activate("Sandbox-Test");
+
+  await pc.goto(`${COMPANION}/#/`);
+  const widget = pc.frameLocator('iframe[title="Spielzeit heute: Spielzeit heute"]');
+  await expect(widget.locator("#total")).toHaveText(/^\d+ (min|h)/, { timeout: 15000 }); // real data from history.get
+  const probe = pc.frameLocator('iframe[title="Sandbox-Test: Sandbox-Probe"]').locator("body");
+  await expect(probe).toHaveAttribute("data-result", /.+/, { timeout: 15000 });
+  const result = await probe.getAttribute("data-result");
+  expect(result).toContain("storage:blocked");
+  expect(result).toContain("parent:blocked");
+  expect(result).toContain("fetch:blocked");
+  expect(result).toContain("call:Berechtigung fehlt: library.read");
+  expect(result).toContain("admin:blocked");
+  expect(result).not.toContain(":open");
+});
+
 test("Zugriff über das Relay mit Ende-zu-Ende-Kopplung", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["Pixel 7"], locale: "de-DE" });
   const remote = await ctx.newPage();

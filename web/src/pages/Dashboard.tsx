@@ -3,12 +3,16 @@ import { Link } from "react-router-dom";
 import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, Play, RotateCcw,
   Smartphone, Square, Star, Swords, Wifi, Zap,
+  Puzzle,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useLiveSubscription, useMediaQuery, useRpc, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
+import type { BuiltinWidgetId } from "../lib/prefs-core";
+import { parsePluginWidgetId, pluginWidgetId, type PluginList } from "../lib/plugins";
+import { PluginFrame } from "../components/PluginFrame";
 import { bytes, clock, gradientFor, relTime, since } from "../lib/format";
 import { IconByName } from "../lib/nav";
 import type { LibraryItem, MetricsSample, Notification, QuickAction } from "../lib/types";
@@ -215,7 +219,7 @@ function DevicesWidget() {
   );
 }
 
-const META: Record<WidgetId, { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string }> = {
+const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string }> = {
   status: { icon: <Activity size={18} />, title: () => t("Verbindung & PC"), render: () => <StatusWidget /> },
   session: { icon: <Gamepad2 size={18} />, title: () => t("Aktuelle Spielesitzung"), render: () => <SessionWidget /> },
   profile: { icon: <Swords size={18} />, title: () => t("Gaming-Profil"), render: () => <ProfileWidget />, link: "/profiles" },
@@ -241,6 +245,19 @@ export default function Dashboard() {
   const layoutId = fromProfile ?? (mobile ? prefs.activeLayout.mobile : prefs.activeLayout.desktop);
   const layout = prefs.layouts.find((l) => l.id === layoutId) ?? prefs.layouts[0];
 
+  // Plugin widgets: only from enabled plugins that run in the web app.
+  const pl = useRpc<PluginList>("plugins.list", {}, ["plugins"]);
+  const pluginWidgets = (pl.data?.plugins ?? []).filter((p) => p.enabled && p.manifest?.platforms.includes("web"))
+    .flatMap((p) => p.manifest!.contributes.widgets.map((w) => ({ id: pluginWidgetId(p.id, w.id), plugin: p, widget: w })));
+  type Meta = { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string; missing?: boolean };
+  const metaFor = (id: WidgetId): Meta => {
+    if (!parsePluginWidgetId(id)) return META[id as BuiltinWidgetId];
+    const pw = pluginWidgets.find((x) => x.id === id);
+    return pw
+      ? { icon: <Puzzle size={18} />, title: () => pw.widget.title, render: () => <PluginFrame plugin={pw.plugin} widget={pw.widget} />, link: "/plugins" }
+      : { icon: <Puzzle size={18} />, title: () => t("Plugin-Widget (nicht verfügbar)"), render: () => <p className="small muted">{t("Das Plugin ist deaktiviert oder entfernt.")}</p>, missing: true };
+  };
+
   const updateWidgets = (fn: (w: WidgetConf[]) => WidgetConf[]) =>
     setPrefs((p) => ({ ...p, layouts: p.layouts.map((l) => (l.id === layout.id ? { ...l, widgets: fn(l.widgets) } : l)) }));
   const move = (id: WidgetId, d: number) => updateWidgets((ws) => {
@@ -253,13 +270,14 @@ export default function Dashboard() {
   });
   const cycleSize = (id: WidgetId) => updateWidgets((ws) => ws.map((w) => {
     if (w.id !== id) return w;
-    const sizes = ALL_WIDGETS.find((x) => x.id === id)!.sizes;
+    const sizes = ALL_WIDGETS.find((x) => x.id === id)?.sizes ?? (["s", "m", "l"] as WidgetSize[]);
     return { ...w, size: sizes[(sizes.indexOf(w.size) + 1) % sizes.length] as WidgetSize };
   }));
-  const toggle = (id: WidgetId) => updateWidgets((ws) => ws.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)));
+  const toggle = (id: WidgetId) => updateWidgets((ws) => ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)) : [...ws, { id, visible: true, size: "m" }]);
 
-  const visible = layout.widgets.filter((w) => w.visible);
-  const hidden = layout.widgets.filter((w) => !w.visible);
+  const visible = layout.widgets.filter((w) => w.visible && (edit || !metaFor(w.id).missing));
+  const hidden = [...layout.widgets.filter((w) => !w.visible && !metaFor(w.id).missing),
+    ...pluginWidgets.filter((x) => !layout.widgets.some((w) => w.id === x.id)).map((x) => ({ id: x.id, visible: false, size: "m" as WidgetSize }))];
   const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
 
   const conn = useConn();
@@ -306,7 +324,7 @@ export default function Dashboard() {
       {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}
       <div className="dash" style={{ marginTop: edit ? 16 : 0 }}>
         {visible.map((w, i) => {
-          const meta = META[w.id];
+          const meta = metaFor(w.id);
           if (w.id === "download") return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><DownloadCard compact />{edit && <EditOverlay />}</div>;
           return (
             <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}>
@@ -334,7 +352,7 @@ export default function Dashboard() {
       </div>
       {edit && hidden.length > 0 && (
         <Card title={t("Ausgeblendete Widgets")} icon={<EyeOff size={18} />} style={{ marginTop: 16 }}>
-          <div className="row">{hidden.map((w) => <Button key={w.id} size="sm" icon={<Eye size={15} />} onClick={() => toggle(w.id)}>{META[w.id].title()}</Button>)}</div>
+          <div className="row">{hidden.map((w) => <Button key={w.id} size="sm" icon={<Eye size={15} />} onClick={() => toggle(w.id)}>{metaFor(w.id).title()}</Button>)}</div>
         </Card>
       )}
     </>

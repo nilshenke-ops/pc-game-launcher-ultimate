@@ -18,16 +18,16 @@ export function usePageVisible(): boolean {
  * Live data from the PC (e.g. "monitor", "audio"): subscribes only while connected and the page is visible,
  * unsubscribes otherwise – so the PC does no sampling for views nobody is looking at.
  */
-export function useLiveSubscription<T>(topic: string, onFirst?: (data: T) => void, onError?: (e: Error) => void) {
+export function useLiveSubscription<T>(topic: string, onFirst?: (data: T) => void, onError?: (e: Error) => void, enabled = true) {
   const authed = useConn().auth === "ok";
   const visible = usePageVisible();
   const first = useRef(onFirst); first.current = onFirst;
   const fail = useRef(onError); fail.current = onError;
   useEffect(() => {
-    if (!authed || !visible) return;
+    if (!authed || !visible || !enabled) return;
     client.call<T>(`${topic}.subscribe`).then((d) => first.current?.(d)).catch((e) => fail.current?.(e as Error));
     return () => { client.call(`${topic}.unsubscribe`).catch(() => {}); };
-  }, [topic, authed, visible]);
+  }, [topic, authed, visible, enabled]);
 }
 
 export function useEvent<T = unknown>(event: string, fn: (data: T) => void) {

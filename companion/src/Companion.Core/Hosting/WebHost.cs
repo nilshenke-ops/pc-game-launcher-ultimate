@@ -102,6 +102,9 @@ sealed class NoopHostLifetime : Microsoft.Extensions.Hosting.IHostLifetime
 
 public sealed class WebHost : IAsyncDisposable
 {
+    /// <summary>Upper bound for plugin widget frames; each widget document narrows it further (no network unless granted).</summary>
+    public const string PluginFrameCsp = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: https:; font-src data:; media-src data:; connect-src https:; form-action 'none'; base-uri 'none'; frame-src 'none'; worker-src 'none'; frame-ancestors 'self'";
+
     readonly CompanionServices _svc;
     readonly WebAssets _assets;
     WebApplication? _app;
@@ -145,7 +148,14 @@ public sealed class WebHost : IAsyncDisposable
             h["X-Content-Type-Options"] = "nosniff";
             h["Referrer-Policy"] = "no-referrer";
             h["X-Frame-Options"] = "DENY";
-            h["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https:; media-src 'self' blob: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+            if (ctx.Request.Path.Equals("/plugin-frame.html", StringComparison.OrdinalIgnoreCase))
+            {
+                // Plugin widgets: only ever loaded into a sandboxed iframe of this app (opaque origin, no access to the app).
+                h["X-Frame-Options"] = "SAMEORIGIN";
+                h["Content-Security-Policy"] = PluginFrameCsp;
+            }
+            else
+                h["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https:; media-src 'self' blob: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
             await next();
         });
 

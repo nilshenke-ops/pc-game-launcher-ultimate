@@ -91,6 +91,7 @@ public sealed class SettingsService
         public string? RelayCompanionId { get; set; }
         public string? RelaySecret { get; set; }
         public string? UpdateManifestUrl { get; set; }
+        public string? PluginCatalogUrl { get; set; }
     }
 
     public Settings SaveSecurity(SecurityUpdate u, ISecretProtector secrets)
@@ -104,6 +105,8 @@ public sealed class SettingsService
             throw new RpcException("invalid-params", ruProblem);
         if (u.UpdateManifestUrl is { Length: > 0 } um && !(Uri.TryCreate(um, UriKind.Absolute, out var umu) && umu.Scheme == "https"))
             throw new RpcException("invalid-params", "Update-Quelle muss eine https-Adresse sein.");
+        if (u.PluginCatalogUrl is { Length: > 0 } pc && !(Uri.TryCreate(pc, UriKind.Absolute, out var pcu) && pcu.Scheme == "https"))
+            throw new RpcException("invalid-params", "Plugin-Katalog muss eine https-Adresse sein.");
         if (u.RelayCompanionId is { Length: > 0 } rid && !System.Text.RegularExpressions.Regex.IsMatch(rid, "^[a-z0-9-]{3,40}$"))
             throw new RpcException("invalid-params", "Companion-ID: 3–40 Zeichen, nur a–z, 0–9 und Bindestrich.");
         if (u.RelaySecret is { Length: > 0 and < 24 }) throw new RpcException("invalid-params", "Relay-Schlüssel muss mindestens 24 Zeichen lang sein.");
@@ -118,6 +121,7 @@ public sealed class SettingsService
             if (u.RelayCompanionId != null) s.RelayCompanionId = u.RelayCompanionId == "" ? null : u.RelayCompanionId;
             if (u.RelaySecret != null) s.RelaySecretProtected = u.RelaySecret == "" ? null : secrets.Protect(u.RelaySecret);
             if (u.UpdateManifestUrl != null) s.UpdateManifestUrl = u.UpdateManifestUrl.Trim(); // "" = switched off (null would fall back to the default)
+            if (u.PluginCatalogUrl != null) s.PluginCatalogUrl = u.PluginCatalogUrl.Trim();
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");
@@ -139,6 +143,7 @@ public sealed class SettingsService
         s.RelayUrl = keepSecurityFrom.RelayUrl;
         s.RelayCompanionId = keepSecurityFrom.RelayCompanionId;
         s.UpdateManifestUrl = keepSecurityFrom.UpdateManifestUrl; // where updates are downloaded from
+        s.PluginCatalogUrl = keepSecurityFrom.PluginCatalogUrl;
         _store.Replace(s);
         _hub.Changed("settings");
         Saved?.Invoke(_store.Snapshot()); // restored Steam/Epic/EA/Game Pass/cover settings take effect immediately

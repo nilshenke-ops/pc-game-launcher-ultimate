@@ -51,12 +51,15 @@ export const DEFAULT_THEME: Theme = {
 
 // ------------------------------------------------------------------ dashboard layouts
 
-export type WidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices";
+export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices";
+/** Built-in widget or a plugin widget "plugin:<plugin-id>:<widget-id>". */
+export type WidgetId = BuiltinWidgetId | `plugin:${string}`;
+export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
 export type WidgetSize = "s" | "m" | "l";
 export interface WidgetConf { id: WidgetId; visible: boolean; size: WidgetSize }
 export interface Layout { id: string; name: string; widgets: WidgetConf[] }
 
-export const ALL_WIDGETS: { id: WidgetId; label: string; sizes: WidgetSize[] }[] = [
+export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSize[] }[] = [
   { id: "status", label: "Verbindung & PC", sizes: ["s", "m"] },
   { id: "session", label: "Aktuelle Spielesitzung", sizes: ["s", "m", "l"] },
   { id: "profile", label: "Gaming-Profil", sizes: ["s", "m"] },
@@ -134,7 +137,9 @@ export function sanitizePrefs(input: unknown): Prefs {
   const layouts = Array.isArray(p.layouts)
     ? p.layouts.filter((l) => l && typeof l.id === "string" && Array.isArray(l.widgets)).slice(0, 20).map((l) => {
         const seen = new Set<string>();
-        const widgets = l.widgets.filter((w) => ids.has(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize }));
+        let plugins = 0;
+        const known = (id: string) => ids.has(id as BuiltinWidgetId) || (PLUGIN_WIDGET.test(id) && ++plugins <= 12);
+        const widgets: WidgetConf[] = l.widgets.filter((w) => typeof w?.id === "string" && known(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize }));
         for (const w of ALL_WIDGETS) if (!seen.has(w.id)) widgets.push({ id: w.id, visible: false, size: w.sizes[0] });
         return { id: l.id.slice(0, 40), name: String(l.name ?? "Layout").slice(0, 40), widgets };
       })

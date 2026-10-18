@@ -1,0 +1,14 @@
+{
+  "id": "de.pgl.cpu-mini",
+  "name": "CPU & RAM Mini",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Kleines Live-Widget mit CPU- und RAM-Auslastung des PCs (echte Messwerte, nur solange sichtbar).",
+  "category": "performance",
+  "platforms": ["web"],
+  "permissions": ["monitor.read"],
+  "contributes": { "widgets": [{ "id": "mini", "title": "CPU & RAM", "entry": "index.html", "height": 120 }] },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

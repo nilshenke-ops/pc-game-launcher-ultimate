@@ -1,0 +1,13 @@
+{
+  "id": "de.test.sandbox",
+  "name": "Sandbox-Test",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "E2E",
+  "description": "Versucht verbotene Dinge – alles muss blockiert werden.",
+  "category": "community",
+  "platforms": ["web"],
+  "permissions": [],
+  "contributes": { "widgets": [{ "id": "probe", "title": "Sandbox-Probe", "entry": "probe.html", "height": 80 }] }
+}

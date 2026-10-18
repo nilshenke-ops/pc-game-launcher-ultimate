@@ -401,7 +401,8 @@ function Autostart() {
 function Updates() {
   const s = useSettings();
   const [src, setSrc] = useState("");
-  useEffect(() => { setSrc(s.data?.settings.updateManifestUrl ?? ""); }, [s.data]);
+  const [cat, setCat] = useState("");
+  useEffect(() => { setSrc(s.data?.settings.updateManifestUrl ?? ""); setCat(s.data?.settings.pluginCatalogUrl ?? ""); }, [s.data]);
   return (
     <>
       <Card title={t("Update-Quelle")} icon={<RefreshCw size={18} />} actions={<Link className="btn sm" to="/updates">{t("Updates & Versionen")}</Link>}>
@@ -410,6 +411,10 @@ function Updates() {
             <Button onClick={() => s.save({ updateManifestUrl: src }, true)}>{t("Speichern")}</Button></div>
         </Field>
         <p className="tiny muted">{t("Updates der offiziellen Quelle müssen mit dem Schlüssel des Projekts signiert sein. Eigene Quellen dürfen unsigniert sein und werden dann so gekennzeichnet.")}</p>
+        <Field label={t("Plugin-Katalog (Store)")} hint={t("Standard: offizieller, signierter Katalog des Projekts. Leer = kein Store; Plugin-Dateien lassen sich trotzdem importieren.")}>
+          <div className="row nowrap"><input className="input mono" value={cat} onChange={(e) => setCat(e.target.value)} placeholder="https://…/catalog.json" />
+            <Button onClick={() => s.save({ pluginCatalogUrl: cat }, true)}>{t("Speichern")}</Button></div>
+        </Field>
       </Card>
       <PcUpdates />
     </>
