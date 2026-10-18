@@ -228,6 +228,14 @@ sealed class WindowsDesktop(UiInvoker ui, Func<TrayIcon?> tray) : IDesktopIntegr
         return "Weder die Xbox-App noch der Microsoft Store sind installiert.";
     }
 
+    /// <summary>Hands the install request to the Epic Games Launcher (com.epicgames.launcher://apps/…?action=install).</summary>
+    public string? OpenEpicInstall(string epicId)
+    {
+        if (LaunchValidator.ValidateTarget(LaunchSource.Epic, epicId) != null || epicId.Split(':').Length != 3) return "Ungültige Epic-Kennung.";
+        try { Process.Start(new ProcessStartInfo($"com.epicgames.launcher://apps/{epicId.Replace(":", "%3A")}?action=install") { UseShellExecute = true })?.Dispose(); return null; }
+        catch (Win32Exception) { return "Der Epic Games Launcher ist auf diesem PC nicht installiert."; }
+    }
+
     /// <summary>Hands the install request to the Steam client (steam://install/&lt;appid&gt;).</summary>
     public string? OpenSteamInstall(string appId)
     {

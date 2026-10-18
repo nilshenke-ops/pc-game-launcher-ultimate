@@ -31,7 +31,7 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
     const my = ++seq.current;
     setState((s) => ({ ...s, loading: true }));
     client.call<T>(method, JSON.parse(paramKey))
-      .then((data) => { saveCache(method, data); if (my === seq.current) setState({ data, error: null, loading: false, updatedAt: Date.now() }); })
+      .then((data) => { saveCache(method, data, paramKey); if (my === seq.current) setState({ data, error: null, loading: false, updatedAt: Date.now() }); })
       .catch((error: RpcError) => { if (my === seq.current) setState((s) => ({ ...s, error, loading: false })); });
   }, [method, paramKey, ready]);
 
@@ -46,7 +46,7 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
   // Never an endless skeleton: without a logged-in PC, pages show "Offline" (see Loadable) instead.
   if (!ready && enabled && !state.data && (conn.phase !== "online" || (conn.auth !== "ok" && conn.auth !== "checking"))) {
     // Lists last loaded from the PC stay visible (marked "stale" with their date); everything else shows "Offline".
-    const cached = readCache<T>(method);
+    const cached = readCache<T>(method, paramKey);
     if (cached) return { data: cached.data, error: null, loading: false, reload: () => client.reconnectNow(), updatedAt: cached.at, stale: true };
     return { data: undefined, error: new RpcError("offline", t("Der PC ist gerade nicht erreichbar. Die Inhalte erscheinen automatisch, sobald der PC an ist und der Companion läuft.")), loading: false, reload: () => client.reconnectNow(), updatedAt: null };
   }

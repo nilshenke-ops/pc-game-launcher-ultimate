@@ -38,6 +38,8 @@ public sealed class SettingsService
         public string? GamePassMarket { get; set; }
         public bool? CoverSearch { get; set; }
         public bool? SteamEnabled { get; set; }
+        public bool? EpicEnabled { get; set; }
+        public bool? EaEnabled { get; set; }
     }
 
     public Settings SaveGeneral(GeneralUpdate u)
@@ -61,6 +63,8 @@ public sealed class SettingsService
             if (u.GamePassMarket != null) s.GamePassMarket = u.GamePassMarket;
             if (u.CoverSearch != null) s.CoverSearch = u.CoverSearch.Value;
             if (u.SteamEnabled != null) s.SteamEnabled = u.SteamEnabled.Value;
+            if (u.EpicEnabled != null) s.EpicEnabled = u.EpicEnabled.Value;
+            if (u.EaEnabled != null) s.EaEnabled = u.EaEnabled.Value;
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");

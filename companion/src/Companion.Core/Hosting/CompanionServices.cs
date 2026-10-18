@@ -35,6 +35,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public GamePassService GamePass { get; }
     public CoverService Covers { get; }
     public SteamService Steam { get; }
+    public LauncherService Launchers { get; }
     public BackupService Backup { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
@@ -70,6 +71,7 @@ public sealed class CompanionServices : IAsyncDisposable
         GamePass = new GamePassService(paths, Library, platform, Settings.Get, Rpc);
         Covers = new CoverService(Library, Settings.Get);
         Steam = new SteamService(paths, Library, platform, Settings, Rpc);
+        Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
 
         Wire();
         Rpc.HelloInfo = HelloInfo;
@@ -192,6 +194,17 @@ public sealed class CompanionServices : IAsyncDisposable
         Notifications.OnDesktop = n => { try { Platform.Desktop.ShowToast(n.Title, n.Message ?? ""); } catch { } };
 
         Settings.Saved += s => ApplyRelaySettings(s);
+        var (epicWasOn, eaWasOn) = (Settings.Get().EpicEnabled, Settings.Get().EaEnabled);
+        Settings.Saved += s =>
+        {
+            try
+            {
+                if (s.EpicEnabled && !epicWasOn) Launchers.Sync(LauncherService.Epic);
+                if (s.EaEnabled && !eaWasOn) Launchers.Sync(LauncherService.Ea);
+            }
+            catch (Exception ex) { Log.Warn("launchers", ex.Message); }
+            (epicWasOn, eaWasOn) = (s.EpicEnabled, s.EaEnabled);
+        };
         var steamWasOn = Settings.Get().SteamEnabled;
         Settings.Saved += s =>
         {
@@ -253,6 +266,7 @@ public sealed class CompanionServices : IAsyncDisposable
         GamePass.Start();
         Covers.Start();
         Steam.Start();
+        Launchers.Start();
         ApplyRelaySettings(Settings.Get());
         _ = Automations.Fire(TriggerType.CompanionStarted, null);
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
@@ -265,6 +279,7 @@ public sealed class CompanionServices : IAsyncDisposable
         GamePass.Dispose();
         Covers.Dispose();
         Steam.Dispose();
+        Launchers.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
         await Relay.DisposeAsync();

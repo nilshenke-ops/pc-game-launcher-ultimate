@@ -238,6 +238,9 @@ public static class RpcApi
             return new { settings = set, relaySecretSet = hasSecret, dataDir = ctx.Session.IsLocalAdmin ? s.Paths.DataDir : null, restartRequired = set.Port != s.Web.Port || set.LanAccess != s.Web.LanAccess, webStartError = s.Web.StartError };
         });
         rpc.Register("library.findCover", async ctx => (object?)new { cover = await s.Covers.FindForAsync(ctx.Str("id", 64)) });
+        rpc.Register("launchers.list", ctx => s.Launchers.List(ctx.Str("source", 10)));
+        rpc.Register("launchers.sync", ctx => s.Launchers.Sync(ctx.Str("source", 10)));
+        rpc.Register("launchers.install", ctx => s.Launchers.Install(ctx.Str("source", 10), ctx.Str("id", 128)) is { } err ? throw new RpcException("unsupported", err) : (object)true);
         rpc.Register("steam.list", _ => s.Steam.List());
         rpc.Register("steam.sync", async _ => await s.Steam.SyncAsync(force: true));
         rpc.Register("steam.link", async ctx => await s.Steam.Link(ctx.Str("profile", 200), ctx.Params.TryGetProperty("apiKey", out var k) ? k.GetString() : null));

@@ -138,6 +138,8 @@ public interface IDesktopIntegration
     string? OpenStoreProduct(string productId);
     /// <summary>Asks the Steam client to install a game (already validated numeric app id). Returns an error text or null.</summary>
     string? OpenSteamInstall(string appId);
+    /// <summary>Asks the Epic Games Launcher to install a game ("namespace:catalogItemId:appName", already validated).</summary>
+    string? OpenEpicInstall(string epicId);
 }
 
 public interface IDetector

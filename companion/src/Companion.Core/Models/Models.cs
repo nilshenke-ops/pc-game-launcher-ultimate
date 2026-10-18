@@ -41,6 +41,8 @@ public sealed class LibraryItem
     public string? GamePassId { get; set; }
     /// <summary>Added automatically by the Game Pass sync – removed again automatically when uninstalled or no longer in Game Pass.</summary>
     public bool AutoAdded { get; set; }
+    /// <summary>Which sync added it automatically ("epic", "ea"); only that sync removes it again.</summary>
+    public string? AutoSource { get; set; }
     /// <summary>When the automatic cover search last looked for this game (null = not yet).</summary>
     public DateTime? CoverLookupAt { get; set; }
 }
@@ -305,6 +307,10 @@ public sealed class Settings
     public bool SteamEnabled { get; set; }
     /// <summary>Optional Steam Web API key (protected like the relay secret) for the whole Steam library.</summary>
     public string? SteamApiKeyProtected { get; set; }
+    /// <summary>Epic link: installed games kept in the library, owned games from the launcher's cache shown.</summary>
+    public bool EpicEnabled { get; set; }
+    /// <summary>EA link: installed EA app games kept in the library.</summary>
+    public bool EaEnabled { get; set; }
 }
 
 // ---------------------------------------------------------------- Notifications

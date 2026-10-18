@@ -83,6 +83,14 @@ public sealed partial class CoverService : IDisposable
         return cover;
     }
 
+    /// <summary>Cover by title only (Steam, then Microsoft Store; exact title). Null if switched off or not found.</summary>
+    public async Task<string?> FindByNameAsync(string name)
+    {
+        if (!_settings().CoverSearch) return null;
+        try { return await FindAsync(new LibraryItem { Name = name, Source = LaunchSource.Exe, Target = "-" }); }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { return null; }
+    }
+
     async Task<string?> FindAsync(LibraryItem item)
     {
         var market = _settings().GamePassMarket;

@@ -200,6 +200,31 @@ public sealed class LibraryService
         return (added, removed);
     }
 
+    /// <summary>Epic/EA link: like the Steam sync – adds installed games, removes the ones this sync added once they are uninstalled.</summary>
+    public (int added, int removed) ReconcileLauncher(string autoSource, IReadOnlyList<DetectedItem> installed)
+    {
+        int added = 0, removed = 0;
+        var targets = installed.Select(d => d.Target).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        _store.Update(f =>
+        {
+            removed = f.Items.RemoveAll(i => i.AutoAdded && i.AutoSource == autoSource && !targets.Contains(i.Target));
+            foreach (var d in installed)
+            {
+                if (f.Items.Any(i => i.Source == d.Source && string.Equals(i.Target, d.Target, StringComparison.OrdinalIgnoreCase))) continue;
+                if (LaunchValidator.ValidateTarget(d.Source, d.Target) != null) continue;
+                f.Items.Add(new LibraryItem
+                {
+                    Id = Ids.New("item"), Kind = ItemKind.Game, Name = d.Name, Source = d.Source, Target = d.Target, InstallDir = d.InstallDir,
+                    ProcessNames = d.ProcessNames, CoverUrl = d.CoverUrl, AutoAdded = true, AutoSource = autoSource,
+                });
+                added++;
+            }
+        });
+        if (added + removed > 0) _hub.Changed("library");
+        if (added > 0) Added?.Invoke(added);
+        return (added, removed);
+    }
+
     /// <summary>Replaces missing or old-style (now broken) Steam cover paths with the real ones. Covers the user chose stay.</summary>
     public void ReplaceSteamCovers(IReadOnlyDictionary<string, string> covers)
     {

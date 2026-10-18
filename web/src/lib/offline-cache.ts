@@ -3,18 +3,19 @@
 // Cleared when this device signs out or is removed on the PC.
 
 const PREFIX = "pgl.cache.";
-export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.list"]);
+export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.list", "launchers.list"]);
+const key = (method: string, params?: string) => PREFIX + method + (params && params !== "{}" ? params : "");
 
-export function saveCache(method: string, data: unknown) {
+export function saveCache(method: string, data: unknown, params?: string) {
   if (!CACHED_METHODS.has(method)) return;
-  try { localStorage.setItem(PREFIX + method, JSON.stringify({ at: Date.now(), data })); } catch { /* storage full or blocked */ }
+  try { localStorage.setItem(key(method, params), JSON.stringify({ at: Date.now(), data })); } catch { /* storage full or blocked */ }
 }
 
-export function readCache<T>(method: string): { at: number; data: T } | null {
+export function readCache<T>(method: string, params?: string): { at: number; data: T } | null {
   if (!CACHED_METHODS.has(method)) return null;
-  try { const v = localStorage.getItem(PREFIX + method); return v ? JSON.parse(v) : null; } catch { return null; }
+  try { const v = localStorage.getItem(key(method, params)); return v ? JSON.parse(v) : null; } catch { return null; }
 }
 
 export function clearCaches() {
-  try { for (const m of CACHED_METHODS) localStorage.removeItem(PREFIX + m); } catch { /* blocked */ }
+  try { for (const k of Object.keys(localStorage)) if (k.startsWith(PREFIX)) localStorage.removeItem(k); } catch { /* blocked */ }
 }

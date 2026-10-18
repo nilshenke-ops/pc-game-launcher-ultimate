@@ -156,8 +156,9 @@ public sealed class SteamDetector(IEnumerable<string> roots) : IDetector
 public sealed class EpicDetector(string? manifestDir) : IDetector
 {
     public string Name => "Epic Games";
+    public string? ManifestDir => manifestDir;
 
-    public static string? DefaultManifestDir() => OperatingSystem.IsWindows()
+    public static string? DefaultManifestDir() => Environment.GetEnvironmentVariable("PGL_EPIC_MANIFESTS") is { Length: > 0 } dev ? dev : OperatingSystem.IsWindows()
         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "Epic", "EpicGamesLauncher", "Data", "Manifests")
         : null;
 
@@ -190,5 +191,66 @@ public sealed class EpicDetector(string? manifestDir) : IDetector
         if (LaunchValidator.ValidateTarget(LaunchSource.Epic, target) != null) return null;
         var procs = exe == null ? new List<string>() : new List<string> { Path.GetFileNameWithoutExtension(exe.Replace('\\', '/')) };
         return new DetectedItem("epic:" + app, ItemKind.Game, name, LaunchSource.Epic, target, install, procs, null, "Epic Games", false);
+    }
+}
+
+/// <summary>
+/// Installed EA app games, from the Windows uninstall entries that Electronic Arts' installer writes
+/// (publisher "Electronic Arts", install folder and game executable). The EA app itself is left out.
+/// </summary>
+public static class EaDetector
+{
+    public sealed record Entry(string DisplayName, string? Publisher, string? InstallLocation, string? DisplayIcon);
+
+    public static bool Present()
+    {
+        if (!OperatingSystem.IsWindows()) return false;
+        try
+        {
+            using var k = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Electronic Arts\EA Desktop") ?? Microsoft.Win32.Registry.LocalMachine.OpenSubKey(@"SOFTWARE\WOW6432Node\Electronic Arts\EA Desktop");
+            return k != null || Detect().Count > 0;
+        }
+        catch { return false; }
+    }
+
+    public static IReadOnlyList<DetectedItem> Detect()
+    {
+        var entries = new List<Entry>();
+        if (OperatingSystem.IsWindows())
+            foreach (var path in new[] { @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall" })
+            {
+                try
+                {
+                    using var root = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(path);
+                    if (root == null) continue;
+                    foreach (var name in root.GetSubKeyNames())
+                    {
+                        using var k = root.OpenSubKey(name);
+                        if (k?.GetValue("DisplayName") is string dn)
+                            entries.Add(new Entry(dn, k.GetValue("Publisher") as string, k.GetValue("InstallLocation") as string, k.GetValue("DisplayIcon") as string));
+                    }
+                }
+                catch (Exception ex) { Log.Warn("detect", "EA-Einträge nicht lesbar: " + ex.Message); }
+            }
+        return FromEntries(entries, File.Exists);
+    }
+
+    public static IReadOnlyList<DetectedItem> FromEntries(IEnumerable<Entry> entries, Func<string, bool> fileExists)
+    {
+        var list = new List<DetectedItem>();
+        foreach (var e in entries)
+        {
+            if (e.Publisher == null || !e.Publisher.Contains("Electronic Arts", StringComparison.OrdinalIgnoreCase)) continue;
+            if (e.DisplayName.Contains("EA app", StringComparison.OrdinalIgnoreCase) || e.DisplayName.Contains("EA Desktop", StringComparison.OrdinalIgnoreCase) || e.DisplayName.StartsWith("Origin", StringComparison.OrdinalIgnoreCase)) continue;
+            // DisplayIcon is "C:\Games\X\game.exe,0" or quoted; it points at the game executable.
+            var exe = e.DisplayIcon?.Split(',')[0].Trim().Trim('"');
+            if (exe == null || !exe.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) || !fileExists(exe)) continue;
+            if (Path.GetFileName(exe).StartsWith("unins", StringComparison.OrdinalIgnoreCase) || Path.GetFileName(exe).Contains("Cleanup", StringComparison.OrdinalIgnoreCase)) continue;
+            if (LaunchValidator.ValidateTarget(LaunchSource.Exe, exe) != null) continue;
+            if (list.Any(x => string.Equals(x.Target, exe, StringComparison.OrdinalIgnoreCase))) continue;
+            list.Add(new DetectedItem("ea:" + exe, ItemKind.Game, e.DisplayName.Trim(), LaunchSource.Exe, exe, e.InstallLocation ?? Path.GetDirectoryName(exe),
+                new List<string> { Path.GetFileNameWithoutExtension(exe) }, null, "EA app", false));
+        }
+        return list;
     }
 }

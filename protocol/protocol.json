@@ -92,6 +92,9 @@
 
     "settings.get": "view",
     "library.findCover": "manage",
+    "launchers.list": "view",
+    "launchers.sync": "manage",
+    "launchers.install": "launch",
     "steam.list": "view",
     "steam.sync": "manage",
     "steam.link": "admin",
