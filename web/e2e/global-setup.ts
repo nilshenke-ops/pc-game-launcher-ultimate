@@ -45,6 +45,7 @@ export default async function setup() {
   const { pack } = await import("../../plugins/sdk/pack.mjs");
   pack(join(ROOT, "plugins/examples/spielzeit-heute"), work);
   pack(join(ROOT, "web/e2e/fixtures/sandbox-test"), work);
+  pack(join(ROOT, "plugins/examples/cpu-mini"), work);
 
   const relayCfg = join(work, "relay.json");
   writeFileSync(relayCfg, JSON.stringify({ port: RELAY_PORT, host: "127.0.0.1", webDir: join(ROOT, "web/dist"), downloadsDir: join(work, "downloads"), companions: [{ id: "e2e-pc", secretSha256: createHash("sha256").update(SECRET).digest("hex") }] }));

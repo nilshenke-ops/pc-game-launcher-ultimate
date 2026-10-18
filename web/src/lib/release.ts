@@ -66,6 +66,15 @@ export async function verifySignature(r: Release): Promise<boolean | null> {
   } catch { return false; }
 }
 
+/** Checks a project signature over raw bytes (plugin catalog). Null = browser cannot check. */
+export async function verifyProjectSignature(data: Uint8Array, signatureB64: string): Promise<boolean | null> {
+  if (!globalThis.crypto?.subtle) return null;
+  try {
+    const key = await crypto.subtle.importKey("spki", fromB64(PUBLIC_KEY_SPKI_B64), { name: "ECDSA", namedCurve: "P-256" }, false, ["verify"]);
+    return await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, key, fromB64(signatureB64.trim()), data as BufferSource);
+  } catch { return false; }
+}
+
 /** -1 / 0 / 1 for MAJOR.MINOR.PATCH strings. */
 export function compareVersions(a: string, b: string): number {
   const pa = a.split(".").map(Number), pb = b.split(".").map(Number);

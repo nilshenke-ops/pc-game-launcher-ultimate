@@ -58,8 +58,76 @@ public sealed class HotkeyRegistrar : IHotkeyRegistrar
         return key == null ? null : (mods, key.Value);
     }
 
+    // ------------------------------------------------------------ mouse side buttons (Mouse4 = back, Mouse5 = forward)
+    // RegisterHotKey only knows keyboard keys. Side buttons need a low-level mouse hook; it is installed only while at
+    // least one mouse hotkey exists, only looks at side-button presses and hands the action to a worker thread at once,
+    // so mouse movement is never delayed. A matching press is consumed (like a keyboard hotkey).
+
+    delegate IntPtr LowLevelProc(int nCode, IntPtr wParam, IntPtr lParam);
+    [DllImport("user32.dll", SetLastError = true)] static extern IntPtr SetWindowsHookEx(int idHook, LowLevelProc fn, IntPtr hMod, uint threadId);
+    [DllImport("user32.dll")] static extern bool UnhookWindowsHookEx(IntPtr hook);
+    [DllImport("user32.dll")] static extern IntPtr CallNextHookEx(IntPtr hook, int nCode, IntPtr wParam, IntPtr lParam);
+    [DllImport("user32.dll")] static extern short GetAsyncKeyState(int vk);
+    [DllImport("kernel32.dll")] static extern IntPtr GetModuleHandle(string? name);
+    const int WH_MOUSE_LL = 14, WM_XBUTTONDOWN = 0x020B, WM_XBUTTONUP = 0x020C;
+    readonly Dictionary<int, (uint mods, int button, Action action)> _mouse = new();
+    LowLevelProc? _proc; // kept referenced so the GC does not collect the callback
+    IntPtr _hook;
+    int _swallowUp; // button whose release belongs to a consumed press
+
+    static uint CurrentMods()
+    {
+        bool Down(int vk) => (GetAsyncKeyState(vk) & 0x8000) != 0;
+        return (Down(0x11) ? MOD_CONTROL : 0) | (Down(0x12) ? MOD_ALT : 0) | (Down(0x10) ? MOD_SHIFT : 0) | (Down(0x5B) || Down(0x5C) ? MOD_WIN : 0);
+    }
+
+    IntPtr OnMouse(int nCode, IntPtr wParam, IntPtr lParam)
+    {
+        if (nCode >= 0 && (wParam == WM_XBUTTONDOWN || wParam == WM_XBUTTONUP))
+        {
+            var button = (Marshal.ReadInt32(lParam, 8) >> 16) & 0xFFFF; // MSLLHOOKSTRUCT.mouseData high word: 1 = XBUTTON1, 2 = XBUTTON2
+            if (wParam == WM_XBUTTONUP && _swallowUp == button) { _swallowUp = 0; return 1; }
+            if (wParam == WM_XBUTTONDOWN)
+            {
+                var mods = CurrentMods();
+                foreach (var (_, m) in _mouse)
+                    if (m.button == button && (m.mods & ~MOD_NOREPEAT) == mods)
+                    {
+                        _swallowUp = button;
+                        var a = m.action;
+                        ThreadPool.QueueUserWorkItem(_ => { try { a(); } catch { } });
+                        return 1;
+                    }
+            }
+        }
+        return CallNextHookEx(_hook, nCode, wParam, lParam);
+    }
+
+    void UpdateHook()
+    {
+        if (_mouse.Count > 0 && _hook == IntPtr.Zero)
+        {
+            _proc ??= OnMouse;
+            _hook = SetWindowsHookEx(WH_MOUSE_LL, _proc, GetModuleHandle(null), 0);
+        }
+        else if (_mouse.Count == 0 && _hook != IntPtr.Zero) { UnhookWindowsHookEx(_hook); _hook = IntPtr.Zero; }
+    }
+
     public string? Register(int id, string keys, Action onPressed)
     {
+        if (keys.EndsWith("Mouse4") || keys.EndsWith("Mouse5"))
+        {
+            uint mods = 0;
+            foreach (var part in keys.Split('+')[..^1]) mods |= part switch { "Ctrl" => MOD_CONTROL, "Alt" => MOD_ALT, "Shift" => MOD_SHIFT, "Win" => MOD_WIN, _ => 0u };
+            var button = keys.EndsWith("Mouse4") ? 1 : 2;
+            return _ui.Invoke(() =>
+            {
+                if (_mouse.Values.Any(m => m.button == button && m.mods == mods)) return "Diese Maustaste ist bereits belegt.";
+                _mouse[id] = (mods, button, onPressed);
+                UpdateHook();
+                return _hook == IntPtr.Zero ? $"Maustasten-Überwachung nicht möglich (Fehler {Marshal.GetLastWin32Error()})." : (string?)null;
+            });
+        }
         var parsed = Parse(keys);
         if (parsed == null) return "Taste wird nicht unterstützt.";
         return _ui.Invoke(() =>
@@ -79,11 +147,14 @@ public sealed class HotkeyRegistrar : IHotkeyRegistrar
     {
         if (_window != null) UnregisterHotKey(_window.Handle, id);
         _handlers.Remove(id);
+        if (_mouse.Remove(id)) UpdateHook();
     });
 
     public void UnregisterAll() => _ui.Invoke(() =>
     {
         if (_window != null) foreach (var id in _handlers.Keys.ToList()) UnregisterHotKey(_window.Handle, id);
         _handlers.Clear();
+        _mouse.Clear();
+        UpdateHook();
     });
 }

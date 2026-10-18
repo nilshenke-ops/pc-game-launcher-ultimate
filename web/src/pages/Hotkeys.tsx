@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Keyboard, Pencil, Plus } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useRpc, toast, useCan } from "../lib/hooks";
 import type { Hotkey, HotkeyStatus, QuickAction } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { describeStep, StepEditor, stepsValid, useStepRefs } from "../components/StepEditor";
-import { comboFromEvent } from "./hotkey-combo";
+import { COMPACT_SUGGESTIONS, comboFromEvent, comboFromMouse, describeCombo } from "./hotkey-combo";
 
 const STATE_BADGE: Record<string, [string, string]> = { active: ["ok", "Aktiv"], error: ["error", "Fehler"], disabled: ["", "Aus"], pending: ["warn", "Ausstehend"], inactive: ["", "Anderes Profil"] };
 
@@ -14,8 +14,7 @@ export default function Hotkeys() {
   const q = useRpc<{ supported: boolean; hotkeys: { hotkey: Hotkey; status: HotkeyStatus }[] }>("hotkeys.list", {}, ["hotkeys"]);
   const quick = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);
   const refs = useStepRefs();
-  const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const [edit, setEdit] = useState<Hotkey | null>(null);
   const describe = (h: Hotkey) => h.quickActionId ? `${t("Quick Action")}: ${quick.data?.actions.find((a) => a.id === h.quickActionId)?.name ?? "?"}` : describeStep(h.action, refs);
 
@@ -32,7 +31,7 @@ export default function Hotkeys() {
                 const [cls, label] = STATE_BADGE[status.state] ?? ["", status.state];
                 return (
                   <div key={h.id} className="list-item">
-                    <kbd style={{ fontSize: "0.85rem", padding: "5px 10px" }}>{h.keys.replace(/\+/g, " + ")}</kbd>
+                    <kbd style={{ fontSize: "0.85rem", padding: "5px 10px" }}>{describeCombo(h.keys, t)}</kbd>
                     <div className="grow"><div className="title small ellipsis">{describe(h)}</div>{status.message && <div className="sub" style={status.state === "error" ? { color: "var(--danger)" } : undefined}>{t(status.message)}</div>}</div>
                     <span className={`badge ${cls}`}>{t(label)}</span>
                     {canManage && <Button size="sm" variant="ghost" icon={<Pencil size={14} />} onClick={() => setEdit(structuredClone(h))} aria-label={t("Bearbeiten")} />}
@@ -43,16 +42,18 @@ export default function Hotkeys() {
           </Card>
         )}
       </Loadable>
-      {edit && <HotkeyEditor hk={edit} quick={quick.data?.actions ?? []} onClose={() => setEdit(null)} />}
+      {edit && <HotkeyEditor hk={edit} quick={quick.data?.actions ?? []} taken={(q.data?.hotkeys ?? []).filter((x) => x.hotkey.id !== edit.id && x.hotkey.enabled).map((x) => x.hotkey.keys)} onClose={() => setEdit(null)} />}
     </>
   );
 }
 
-function HotkeyEditor({ hk, quick, onClose }: { hk: Hotkey; quick: QuickAction[]; onClose: () => void }) {
+function HotkeyEditor({ hk, quick, taken, onClose }: { hk: Hotkey; quick: QuickAction[]; taken: string[]; onClose: () => void }) {
   const [h, setH] = useState(hk);
   const [mode, setMode] = useState<"step" | "quick">(hk.quickActionId ? "quick" : "step");
   const [recording, setRecording] = useState(false);
   const save = async () => {
+    // Checked here too, so a clash is noticed right away – also without the PC (the PC checks again when saving).
+    if (h.enabled && taken.some((k) => k.toLowerCase() === h.keys.toLowerCase())) { toast(t("Diese Kombination ist schon einem anderen Hotkey zugeordnet."), "error"); return; }
     try { await client.call("hotkeys.save", { ...h, quickActionId: mode === "quick" ? h.quickActionId : null }); toast(t("Gespeichert"), "success"); onClose(); }
     catch (e) { toast((e as Error).message, "error"); }
   };
@@ -75,8 +76,20 @@ function HotkeyEditor({ hk, quick, onClose }: { hk: Hotkey; quick: QuickAction[]
             if (["Control", "Alt", "Shift", "Meta", "Backspace"].includes(e.key) || e.key === "Tab") return;
             const c = comboFromEvent(e);
             if (c) { e.preventDefault(); setH({ ...h, keys: c }); }
-          }} />
+          }}
+          // Mouse side buttons pressed while the field is active (would otherwise navigate back/forward).
+          onMouseDown={(e) => { const c = comboFromMouse(e); if (c) { e.preventDefault(); setH({ ...h, keys: c }); } }}
+          onMouseUp={(e) => { if (e.button === 3 || e.button === 4) e.preventDefault(); }} />
       </Field>
+      {h.keys && <p className="tiny muted">{describeCombo(h.keys, t)}</p>}
+      <details>
+        <summary className="small">{t("Vorschläge für 60-%-Tastatur und Gaming-Maus")}</summary>
+        <div className="stack-sm" style={{ marginTop: 8 }}>
+          <div className="chips">{COMPACT_SUGGESTIONS.map((c) => <button key={c} type="button" className={`chip ${h.keys === c ? "on" : ""}`} onClick={() => setH({ ...h, keys: c })}>{describeCombo(c, t)}</button>)}</div>
+          <p className="tiny muted">{t("60-%-Tastaturen (z. B. Royal Kludge): F-Tasten über Fn + Zahl drücken – die App erkennt dann F1 … F12. Besonders gut: in der Tastatur-Software eine Taste auf F13–F24 legen; die nutzt kein Spiel.")}</p>
+          <p className="tiny muted">{t("Gaming-Maus (z. B. Attack Shark): Seitentasten hier im Feld drücken oder oben wählen. Solange der Hotkey aktiv ist, löst die Taste nur die Aktion aus (nicht mehr „Zurück“ im Browser). Alternativ in der Maus-Software die Seitentaste auf F13–F24 legen.")}</p>
+        </div>
+      </details>
       <Segmented value={mode} onChange={setMode} options={[{ value: "step", label: t("Einzelne Aktion") }, { value: "quick", label: t("Quick Action") }]} />
       {mode === "step" ? (
         <StepEditor steps={[h.action]} onChange={(s) => s[0] && setH({ ...h, action: s[0] })} max={1} />

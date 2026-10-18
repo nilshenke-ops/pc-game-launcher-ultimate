@@ -10,6 +10,8 @@ import { useAppState } from "../lib/state";
 import { Banner, Button, Modal } from "./ui";
 import { CommandPalette } from "./CommandPalette";
 import { UpdatePrompt } from "./UpdateCenter";
+import { outbox, useOutbox } from "../lib/outbox";
+import { startOutboxSync, syncMessage, syncOutbox } from "../lib/outbox-sync";
 import { startPendingSync } from "../lib/pending-sounds";
 
 function ConnPill() {
@@ -111,6 +113,12 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (r.failed) toast(t("{n} Sounds konnten nicht übertragen werden – Details im Soundboard", { n: r.failed }), "warning");
   }), []);
 
+  // Changes made without the PC are sent after every login, in order.
+  useEffect(() => startOutboxSync((r) => toast(syncMessage(r), r.failed ? "warning" : "success")), []);
+  useEffect(() => client.on("queued", () => toast(t("Gespeichert – wird übertragen, sobald der PC verbunden ist"), "info")), []);
+  const waiting = useOutbox();
+  const [showOutbox, setShowOutbox] = useState(false);
+
   const groups = [...new Set(items.map((i) => i.group))];
   const preview = client.preview;
   const notifCount = preview ? 0 : state?.counts.notifications ?? 0;
@@ -170,10 +178,19 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
             <Banner kind="warn" title={conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden")} actions={
               <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}>
-              {t("Design und Layout kannst du schon ändern.")}
+              {t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.")}
             </Banner>
           </div>
         )}
+        {waiting.length > 0 && (
+          <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
+            <Banner kind={waiting.some((w) => w.error) ? "error" : "info"} title={t("{n} Änderungen warten auf den PC", { n: waiting.length })}
+              actions={<Button size="sm" onClick={() => setShowOutbox(true)}>{t("Anzeigen")}</Button>}>
+              {waiting.some((w) => w.error) ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.") : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")}
+            </Banner>
+          </div>
+        )}
+        {showOutbox && <OutboxDialog onClose={() => setShowOutbox(false)} />}
         {!preview && conn.phase !== "online" && !client.demo && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
             <Banner kind="warn" title={conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")}
@@ -218,5 +235,33 @@ export function AppShell({ children }: { children: ReactNode }) {
       <NeedsPc />
       <UpdatePrompt />
     </div>
+  );
+}
+
+/** "Wartende Änderungen": everything changed without the PC, in the order it will be sent. */
+function OutboxDialog({ onClose }: { onClose: () => void }) {
+  const list = useOutbox();
+  const conn = useConn();
+  const [busy, setBusy] = useState(false);
+  const retry = async () => { setBusy(true); const r = await syncOutbox({ retryFailed: true }); if (r.sent || r.failed) toast(syncMessage(r), r.failed ? "warning" : "success"); setBusy(false); };
+  return (
+    <Modal title={t("Wartende Änderungen")} onClose={onClose} footer={<>
+      {conn.auth === "ok" && <Button variant="primary" busy={busy} onClick={retry}>{t("Jetzt übertragen")}</Button>}
+      <Button onClick={onClose}>{t("Schließen")}</Button>
+    </>}>
+      <div className="stack">
+        <p className="small muted">{conn.auth === "ok" ? t("Der PC ist verbunden.") : t("Wird übertragen, sobald der PC verbunden ist – in dieser Reihenfolge. Der PC prüft jede Änderung wie bei einer direkten Eingabe.")}</p>
+        {list.length === 0 ? <p>{t("Alles übertragen.")}</p> : (
+          <div className="list">{list.map((e) => (
+            <div key={e.id} className="list-item">
+              <span className={`dot ${e.error ? "error" : "warn"}`} />
+              <div className="grow"><div className="title small">{e.label}</div><div className="sub tiny">{new Date(e.at).toLocaleString()}{e.error ? " · " + e.error : ""}</div></div>
+              <Button size="sm" variant="ghost" onClick={() => outbox.remove(e.id)}>{t("Verwerfen")}</Button>
+            </div>
+          ))}</div>
+        )}
+        <p className="tiny muted">{t("Spiele starten, Sounds abspielen oder den PC ausschalten wird nie vorgemerkt – das geht nur, wenn der PC verbunden ist.")}</p>
+      </div>
+    </Modal>
   );
 }

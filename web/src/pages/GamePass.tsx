@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, Gamepad2, Play, RefreshCw, Search } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useRpc, toast, useCan } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials, relTime } from "../lib/format";
 import { Banner, Button, Card, Empty, Loadable, OfflineState, Segmented } from "../components/ui";
@@ -16,8 +16,7 @@ const PAGE = 60;
 /** "Game Pass" category in the games library: the whole PC Game Pass catalog, installed games marked and playable. */
 export function GamePassView({ search }: { search: string }) {
   const q = useRpc<GamePassList>("gamepass.list", {}, ["gamepass", "library", "settings"]);
-  const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const [show, setShow] = useState<Show>("all");
   const [limit, setLimit] = useState(PAGE);
   const [busy, setBusy] = useState<string | null>(null);

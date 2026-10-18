@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Clock, MonitorSmartphone, Download, FileAudio, Headphones, Link2, ListMusic, Music, Pause, Pencil, Play, Plus, Search, Square, Star, Trash2, Upload, Volume2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useEvent, useRpc, toast } from "../lib/hooks";
+import { useConn, useEvent, useRpc, toast, useCan } from "../lib/hooks";
 
 const fail = (e: unknown) => toast((e as Error).message, "error");
 import { bytes } from "../lib/format";
@@ -55,7 +55,7 @@ export default function Soundboard() {
   const q = useRpc<{ data: SoundsFile; playing: PlayingState; supported: boolean; reason?: string }>("sounds.list", {}, ["sounds"]);
   const audio = useRpc<{ settings: AudioSettings }>("audio.state", {}, ["audio"]);
   const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const online = conn.phase === "online" && conn.auth === "ok";
   // Without a PC, sounds can still be added: they wait on this device and are uploaded once the PC is connected.
   const canAdd = online ? !!canManage : true;

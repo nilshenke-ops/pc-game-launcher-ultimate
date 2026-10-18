@@ -54,3 +54,18 @@ public class SecurityCheckTests
         Assert.Equal("ok", areas["sec-updates"]);     // official source by default
     }
 }
+
+public class HotkeyHardwareTests
+{
+    [Theory]
+    [InlineData("mouse4", "Mouse4")]
+    [InlineData("Maus5", "Mouse5")]
+    [InlineData("ctrl + mouse4", "Ctrl+Mouse4")]
+    [InlineData("F13", "F13")]
+    [InlineData("alt+ctrl+1", "Ctrl+Alt+1")]
+    public void Gaming_mouse_buttons_and_extra_keys_are_accepted(string input, string expected) =>
+        Assert.Equal(expected, Pgl.Core.Services.HotkeyService.Normalize(input));
+
+    [Fact]
+    public void Plain_letters_stay_refused() => Assert.Null(Pgl.Core.Services.HotkeyService.Normalize("Q"));
+}

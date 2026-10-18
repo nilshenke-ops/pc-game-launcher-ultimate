@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Check, Copy, Pencil, Plus, Undo2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useRpc, toast, useCan } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { ICONS, IconByName } from "../lib/nav";
 import { usePrefs } from "../lib/prefs";
@@ -14,8 +14,7 @@ const blank: Profile = { id: "", name: "", icon: "gamepad-2", color: "#22d3ee", 
 
 export default function Profiles() {
   const q = useRpc<ProfilesFile>("profiles.list", {}, ["profiles"]);
-  const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const [edit, setEdit] = useState<Profile | null>(null);
   const data = q.data;
   const activate = (p: Profile) => client.call("profiles.activate", { id: p.id }).then(() => toast(t("Profil „{n}“ aktiv", { n: p.name }), "success")).catch((e) => toast(e.message, "error"));

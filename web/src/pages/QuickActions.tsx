@@ -2,7 +2,7 @@ import { useState } from "react";
 import { ArrowLeft, ArrowRight, Pencil, Plus, Zap } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useRpc, toast, useCan } from "../lib/hooks";
 import { ICONS, IconByName } from "../lib/nav";
 import type { QuickAction } from "../lib/types";
 import { Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
@@ -15,8 +15,7 @@ import { runQuickAction } from "../components/run-quick";
 export default function QuickActions() {
   const q = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);
   const refs = useStepRefs();
-  const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const [edit, setEdit] = useState<QuickAction | null>(null);
   const [cat, setCat] = useState("__all");
   const actions = q.data?.actions ?? [];

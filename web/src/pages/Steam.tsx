@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Download, ExternalLink, Link2, Play, RefreshCw, Search, Unlink } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useConn, useRpc, toast, useCan } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials, relTime } from "../lib/format";
 import { Banner, Button, Card, Empty, Field, Loadable, Segmented } from "../components/ui";
@@ -35,7 +35,7 @@ function SteamCover({ g }: { g: SteamGame }) {
 export function SteamView({ search }: { search: string }) {
   const q = useRpc<SteamList>("steam.list", {}, ["steam", "library", "settings"]);
   const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const isAdmin = conn.me?.permissions.includes("admin");
   const [show, setShow] = useState<Show>("all");
   const [limit, setLimit] = useState(PAGE);

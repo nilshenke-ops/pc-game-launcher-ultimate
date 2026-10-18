@@ -1,7 +1,7 @@
 import { BarChart3, History as HistoryIcon, Pencil, Trash2, XCircle } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useRpc, toast, useCan } from "../lib/hooks";
 import { dateTime, duration, relTime } from "../lib/format";
 import { Banner, Button, Card, confirmDialog, Empty, Loadable, Meter, PageHead, Switch } from "../components/ui";
 
@@ -20,8 +20,7 @@ interface HistoryData {
 
 export default function History() {
   const q = useRpc<HistoryData>("history.get", {}, ["history", "settings"]);
-  const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const d = q.data;
   const max = Math.max(1, ...(d?.stats.map((s) => s.totalMinutes) ?? [1]));
   const clear = async () => {

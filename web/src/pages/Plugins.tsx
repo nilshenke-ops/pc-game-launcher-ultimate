@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { BadgeCheck, Code2, Download, FileUp, LayoutGrid, Play, Plug, Puzzle, RefreshCw, RotateCcw, Search, ShieldAlert, ShieldCheck, Star, Trash2, Upload } from "lucide-react";
 import { client } from "../lib/rpc";
@@ -9,8 +9,9 @@ import { setPrefs, usePrefs } from "../lib/prefs";
 import { sanitizePrefs } from "../lib/prefs-core";
 import { CATEGORY_LABELS, platformText, pluginWidgetId, type CatalogInfo, type InstalledPlugin, type PluginList, type PluginManifest, type PluginTrust } from "../lib/plugins";
 import { useStepRefs } from "../components/StepEditor";
+import { importFileOffline, installFromStoreOffline, loadOfflineCatalog } from "../lib/plugins-offline";
 import { PluginFrame } from "../components/PluginFrame";
-import { Banner, Button, Card, confirmDialog, Field, Loadable, Modal, OfflineState, PageHead, Segmented, Switch } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { IconByName } from "../lib/nav";
 
 type Tab = "installed" | "store" | "dev";
@@ -36,9 +37,9 @@ export default function Plugins() {
         <Segmented value={tab} onChange={(v) => setParams({ tab: v })} label={t("Bereich")}
           options={[{ value: "installed", label: t("Installiert") }, { value: "store", label: t("Store") }, { value: "dev", label: t("Entwickler") }]} />
       </div>
-      {q.stale && <Banner kind="info">{t("PC nicht verbunden – zuletzt gespeicherter Stand. Installieren und Ändern geht, sobald der PC erreichbar ist.")}</Banner>}
+      {q.stale && <Banner kind="info">{t("PC nicht verbunden: Du kannst trotzdem Plugins installieren, aktivieren und einstellen. Designs und Widgets gehen sofort auf diesem Gerät; auf den PC kommt alles beim nächsten Verbinden.")}</Banner>}
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
-        {q.data && (tab === "installed" ? <Installed list={q.data} /> : tab === "store" ? (conn.auth === "ok" ? <Store list={q.data} /> : <OfflineState />) : <Developer list={q.data} />)}
+        {q.data && (tab === "installed" ? <Installed list={q.data} /> : tab === "store" ? (conn.auth === "ok" ? <Store list={q.data} /> : <OfflineStore list={q.data} />) : <Developer list={q.data} />)}
       </Loadable>
     </>
   );
@@ -76,6 +77,7 @@ function PluginCard({ p, onOpen }: { p: InstalledPlugin; onOpen: () => void }) {
       <div className="stack-sm">
         <div className="row" style={{ gap: 6 }}>
           <TrustBadge trust={p.trust} />
+          {p.pending && <span className="badge warn">{t("Wartet auf PC")}</span>}
           <span className={`badge ${p.enabled ? "ok" : ""}`}>{p.enabled ? t("Aktiv") : t("Aus")}</span>
           {m && <span className="badge">{t(CATEGORY_LABELS[m.category] ?? m.category)}</span>}
           {m && <span className="badge">{t(platformText(m.platforms))}</span>}
@@ -310,6 +312,48 @@ function Store({ list }: { list: PluginList }) {
   );
 }
 
+/** Store without a PC: read directly from the project website, plugins are checked here and installed on the PC later. */
+function OfflineStore({ list }: { list: PluginList }) {
+  const [cat, setCat] = useState<CatalogInfo | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const load = () => { setErr(null); loadOfflineCatalog().then(setCat).catch((e) => setErr((e as Error).message)); };
+  useEffect(load, []);
+  const installed = new Map(list.plugins.map((p) => [p.id, p.version]));
+  const install = async (c: CatalogInfo["plugins"][number]) => {
+    const perms = c.permissions.length ? t("Das Plugin erhält: {l}. Du kannst einzelne Rechte später entziehen.", { l: c.permissions.map((x) => t(list.permissions[x] ?? x)).join(", ") }) : t("Das Plugin benötigt keine Berechtigungen.");
+    const activate = await confirmDialog(t("„{n}“ installieren und aktivieren?", { n: c.name }), perms + " " + t("Auf diesem Gerät sofort nutzbar, auf dem PC nach dem nächsten Verbinden."), { ok: t("Erlauben und aktivieren") });
+    if (!activate) return;
+    setBusy(c.id);
+    try { await installFromStoreOffline(c.id, c.permissions); toast(t("„{n}“ vorgemerkt und aktiviert", { n: c.name }), "success"); }
+    catch (e) { toast((e as Error).message, "error"); }
+    setBusy(null);
+  };
+  if (err) return <Banner kind="error" actions={<Button size="sm" onClick={load}>{t("Erneut versuchen")}</Button>}>{err}</Banner>;
+  if (!cat) return <div className="skeleton" style={{ height: 160 }} />;
+  const items = cat.plugins.filter((p) => `${p.name} ${p.description}`.toLowerCase().includes(query.toLowerCase()));
+  return (
+    <div className="stack">
+      <Banner kind="info">{t("Ohne PC: Der Store kommt direkt von der Projekt-Webseite (Signatur hier geprüft). Plugins werden heruntergeladen und geprüft, sind auf diesem Gerät sofort nutzbar und werden beim nächsten Verbinden auf dem PC installiert.")}</Banner>
+      <div className="input-icon"><Search size={16} /><input className="input" placeholder={t("Store durchsuchen")} value={query} onChange={(e) => setQuery(e.target.value)} aria-label={t("Store durchsuchen")} /></div>
+      <div className="grid-2">
+        {items.map((c) => (
+          <Card key={c.id} title={c.name} icon={<Plug size={18} />} meta={`v${c.version}`}>
+            <div className="stack-sm">
+              <div className="row" style={{ gap: 6 }}><TrustBadge trust={c.trust} /><span className="badge">{t(CATEGORY_LABELS[c.category] ?? c.category)}</span><span className="badge">{t(platformText(c.platforms))}</span><span className="badge">{bytes(c.size)}</span></div>
+              <p className="small muted">{c.description}</p>
+              <p className="tiny muted">{c.permissions.length ? t("Rechte: {l}", { l: c.permissions.map((x) => t(list.permissions[x] ?? x)).join(", ") }) : t("Keine Berechtigungen")}</p>
+              {installed.has(c.id) ? <span className="badge ok">{t("Installiert")}</span>
+                : <div><Button variant="primary" busy={busy === c.id} icon={<Download size={16} />} onClick={() => install(c)}>{t("Installieren")}</Button></div>}
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ developer
 
 function Developer({ list }: { list: PluginList }) {
@@ -319,19 +363,26 @@ function Developer({ list }: { list: PluginList }) {
   const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
   const [lines, setLines] = useState<string[]>([]);
-  const admin = !!conn.me?.permissions?.includes("admin") || !!conn.me?.isLocal;
+  const online = conn.auth === "ok";
+  // Offline the file is kept on this device; the PC checks the rights (admin) and the package again when it is connected.
+  const admin = online ? !!conn.me?.permissions?.includes("admin") || !!conn.me?.isLocal : true;
 
   const pick = async (f: File) => {
     setBusy(true); setCheck(null);
     try {
       if (!f.name.endsWith(".pglplugin") && !f.name.endsWith(".zip")) throw new Error(t("Bitte eine .pglplugin-Datei wählen."));
+      if (!online) {
+        const m = await importFileOffline(f);
+        toast(t("„{n}“ vorgemerkt – wird beim nächsten Verbinden auf dem PC geprüft und installiert", { n: m.name }), "success");
+        return;
+      }
       const data = new Uint8Array(await f.arrayBuffer());
       const { importId } = await client.call<{ importId: string }>("plugins.importBegin", { size: data.length });
       for (let o = 0; o < data.length; o += 512 * 1024) await client.call("plugins.importChunk", { importId, data: toB64(data.subarray(o, o + 512 * 1024)) });
       const report = await client.call<NonNullable<typeof check>["report"]>("plugins.importEnd", { importId, check: true });
       setCheck({ importId, report });
     } catch (e) { toast((e as Error).message, "error"); }
-    setBusy(false);
+    finally { setBusy(false); }
   };
   const install = async () => {
     if (!check) return;
@@ -346,7 +397,7 @@ function Developer({ list }: { list: PluginList }) {
           <p className="small muted">{t("Eigene oder fremde Plugins als .pglplugin-Datei. Die Datei wird zuerst vollständig geprüft (Testmodus) – installiert wird erst nach deiner Bestätigung, und zwar deaktiviert.")}</p>
           <input ref={file} type="file" accept=".pglplugin,.zip" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) pick(f); e.target.value = ""; }} />
           <div className="row">
-            <Button icon={<Upload size={16} />} busy={busy} disabled={!admin || conn.auth !== "ok"} onClick={() => file.current?.click()}>{t("Datei wählen und prüfen")}</Button>
+            <Button icon={<Upload size={16} />} busy={busy} disabled={!admin} onClick={() => file.current?.click()}>{t("Datei wählen und prüfen")}</Button>
             <a className="btn ghost" href="https://github.com/nilshenke-ops/pc-game-launcher-ultimate/tree/main/plugins/sdk" target="_blank" rel="noreferrer noopener"><Code2 size={16} />{t("Plugin-SDK und Anleitung")}</a>
           </div>
           {!admin && <p className="tiny muted">{t("Nicht verifizierte Plugin-Dateien importieren darf nur der PC selbst oder ein Gerät mit Admin-Recht. Plugins aus dem Store gehen auch so.")}</p>}

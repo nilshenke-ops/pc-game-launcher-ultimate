@@ -231,6 +231,23 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByText("Wartet auf PC (1)")).toBeVisible();
   await tablet.reload(); // survives closing the page
   await expect(tablet.getByText("Wartet auf PC (1)")).toBeVisible();
+
+  // Hotkey without PC: mouse side button (gaming mouse) → stop all sounds. Kept on the tablet, sent after pairing.
+  await tablet.goto(`${HOSTED_SITE}/#/hotkeys`);
+  await tablet.getByRole("button", { name: "Neuer Hotkey" }).click();
+  await tablet.getByText("Vorschläge für 60-%-Tastatur und Gaming-Maus").click();
+  await tablet.getByRole("button", { name: "Maus-Seitentaste hinten (4)", exact: true }).click();
+  await tablet.getByRole("combobox", { name: "Aktion" }).selectOption("stopAllSounds");
+  await tablet.getByRole("button", { name: "Speichern" }).click();
+  await expect(tablet.getByText("Maus-Seitentaste hinten (4)").first()).toBeVisible();
+  await expect(tablet.getByText("Wartet auf PC").first()).toBeVisible();
+  // Plugin file without PC: checked on the tablet, kept until the PC is connected.
+  await tablet.goto(`${HOSTED_SITE}/#/plugins?tab=dev`);
+  await tablet.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.cpu-mini-1.0.0.pglplugin"));
+  await expect(tablet.getByText(/„CPU & RAM Mini“ vorgemerkt/)).toBeVisible();
+  await expect(tablet.getByText("2 Änderungen warten auf den PC")).toBeVisible();
+  await tablet.reload();
+  await expect(tablet.getByText("2 Änderungen warten auf den PC")).toBeVisible(); // survives closing the page
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -257,6 +274,18 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Sounds" }).click();
   await expect(tablet.getByRole("button", { name: /e2e-offline-sound abspielen/ })).toBeVisible({ timeout: 15000 });
   await expect(tablet.getByText(/Wartet auf PC/)).toHaveCount(0);
+  // The offline hotkey reached the PC. The own plugin file needs admin rights (unverified code) – the tablet only has
+  // the standard rights, so the PC refuses it and the reason stays visible instead of the change silently vanishing.
+  await expect(tablet.getByText("1 Änderungen warten auf den PC")).toBeVisible({ timeout: 15000 });
+  await tablet.getByRole("button", { name: "Anzeigen" }).click();
+  await expect(tablet.getByText(/Diesem Gerät fehlt die Berechtigung „admin“/)).toBeVisible();
+  await tablet.getByRole("button", { name: "Verwerfen" }).click();
+  await expect(tablet.getByText("Alles übertragen.")).toBeVisible();
+  await tablet.keyboard.press("Escape");
+  await pc.goto(`${COMPANION}/#/hotkeys`);
+  await expect(pc.getByText("Maus-Seitentaste hinten (4)")).toBeVisible();
+  await pc.goto(`${COMPANION}/#/plugins`);
+  await expect(pc.locator(".card", { hasText: "CPU & RAM Mini" })).toHaveCount(0);
 
   // QR path: the link fills in code and PC address automatically.
   const phone2 = await (await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" })).newPage();

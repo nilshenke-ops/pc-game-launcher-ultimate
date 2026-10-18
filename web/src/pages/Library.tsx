@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { FolderOpen, Gamepad2, LayoutGrid, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useConn, useRpc, toast, useCan } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials } from "../lib/format";
 import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
@@ -19,14 +19,13 @@ interface ListResult { items: LibraryItem[]; installed: Record<string, boolean |
 export default function Library({ kind }: { kind: ItemKind }) {
   const q = useRpc<ListResult>("library.list", {}, ["library"]);
   const hist = useRpc<{ launches: { itemId: string; at: string }[] }>("history.get", {}, ["history"]);
-  const conn = useConn();
   const [search, setSearch] = useState("");
   // Nothing remembered from the PC yet and no PC: start with the Game Pass catalog, which can be shown without a PC.
   const [cat, setCat] = useState<string>(() => kind === "game" && !q.data && q.error?.code === "offline" ? "__gamepass" : "__all");
   const [sort, setSort] = useState<Sort>("name");
   const [editing, setEditing] = useState<LibraryItem | null>(null);
   const [adding, setAdding] = useState(false);
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const isGame = kind === "game";
 
   const items = useMemo(() => (q.data?.items ?? []).filter((i) => i.kind === kind), [q.data, kind]);

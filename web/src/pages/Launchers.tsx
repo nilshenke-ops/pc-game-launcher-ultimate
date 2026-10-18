@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Download, Link2, Play, RefreshCw, Search } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useRpc, toast, useCan } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials } from "../lib/format";
 import { Banner, Button, Card, Empty, Loadable, Segmented } from "../components/ui";
@@ -16,8 +16,7 @@ const PAGE = 60;
 /** "Epic" and "EA" categories in the games library: only what the launchers store on the PC (no login, no official APIs). */
 export function LauncherView({ source, search }: { source: Source; search: string }) {
   const q = useRpc<LauncherList>("launchers.list", { source }, ["launchers", "library", "settings"]);
-  const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const [show, setShow] = useState<"all" | "installed">("all");
   const [limit, setLimit] = useState(PAGE);
   const [busy, setBusy] = useState<string | null>(null);

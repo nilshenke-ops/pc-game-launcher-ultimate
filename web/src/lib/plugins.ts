@@ -15,6 +15,8 @@ export interface PluginManifest {
   changelog: PluginChange[];
 }
 export interface InstalledPlugin {
+  /** Installed on this device only, waiting for the PC (see lib/plugins-offline.ts). */
+  pending?: boolean;
   id: string; version: string; trust: PluginTrust; source: string; enabled: boolean; granted: string[]; favorite: boolean; autoUpdate: boolean;
   config: Record<string, unknown>; previousVersion?: string; installedAt: string; updatedAt: string; disabledReason?: string;
   log: { at: string; level: string; message: string }[];
@@ -28,6 +30,14 @@ export interface CatalogEntry {
   minAppVersion: string; trust: PluginTrust; size: number; changelog: PluginChange[]; compatible: boolean; installedVersion?: string;
 }
 export interface CatalogInfo { url?: string; verified: boolean; error?: string; loadedAt?: string; plugins: CatalogEntry[] }
+
+/** Same descriptions as the companion (used while no PC is connected). */
+export const PERMISSION_LABELS: Record<string, string> = {
+  "library.read": "Spiele und Programme lesen", "library.launch": "Spiele und Programme starten", "history.read": "Spielverlauf und Spielzeit lesen",
+  "monitor.read": "Live-Leistungswerte des PCs lesen", "sounds.read": "Soundboard-Liste lesen", "sounds.play": "Sounds abspielen und stoppen",
+  "profiles.read": "Gaming-Profile lesen", "profiles.activate": "Gaming-Profile wechseln", "audio.output": "Audio-Ausgabegerät wechseln",
+  "diagnostics.run": "Diagnose ausführen", notify: "Hinweise in der App anzeigen", network: "Internetzugriff (nur https) aus dem Widget",
+};
 
 export const CATEGORY_LABELS: Record<string, string> = {
   launcher: "Game-Launcher", audio: "Audio", discord: "Discord", performance: "Performance", design: "Design", automation: "Automatisierung",

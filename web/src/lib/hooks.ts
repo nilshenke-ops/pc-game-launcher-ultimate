@@ -2,6 +2,13 @@ import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "
 import { client, needsPcMessage, RpcError, type ConnStatus } from "./rpc";
 import { t } from "./i18n";
 import { readCache, saveCache } from "./offline-cache";
+import { OFFLINE_DEFAULTS, outbox } from "./outbox";
+
+/** Whether this device may do something (offline: rights of its last login; never connected: everything except PC-only). */
+export function useCan(permission: string): boolean {
+  useConn();
+  return client.can(permission);
+}
 
 export function useConn(): ConnStatus {
   return useSyncExternalStore(client.subscribe, client.getStatus);
@@ -44,6 +51,7 @@ export interface Query<T> { data: T | undefined; error: RpcError | null; loading
  */
 export function useRpc<T>(method: string, params?: unknown, topics: string[] = [], enabled = true): Query<T> {
   const conn = useConn();
+  useSyncExternalStore(outbox.subscribe, outbox.version); // offline changes update the shown copy right away
   const [state, setState] = useState<{ data?: T; error: RpcError | null; loading: boolean; updatedAt: number | null }>({ error: null, loading: true, updatedAt: null });
   const paramKey = JSON.stringify(params ?? {});
   const seq = useRef(0);
@@ -69,8 +77,8 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
   // Never an endless skeleton: without a logged-in PC, pages show "Offline" (see Loadable) instead.
   if (!ready && enabled && !state.data && (conn.phase !== "online" || (conn.auth !== "ok" && conn.auth !== "checking"))) {
     // Lists last loaded from the PC stay visible (marked "stale" with their date); everything else shows "Offline".
-    const cached = readCache<T>(method, paramKey);
-    if (cached) return { data: cached.data, error: null, loading: false, reload: () => client.reconnectNow(), updatedAt: cached.at, stale: true };
+    const cached = readCache<T>(method, paramKey) ?? (method in OFFLINE_DEFAULTS && paramKey === "{}" ? { at: 0, data: OFFLINE_DEFAULTS[method] as T } : null);
+    if (cached) return { data: cached.data, error: null, loading: false, reload: () => client.reconnectNow(), updatedAt: cached.at || null, stale: true };
     return { data: undefined, error: new RpcError("offline", t("Der PC ist gerade nicht erreichbar. Die Inhalte erscheinen automatisch, sobald der PC an ist und der Companion läuft.")), loading: false, reload: () => client.reconnectNow(), updatedAt: null };
   }
   return { data: state.data, error: state.error, loading: state.loading && !state.data, reload: load, updatedAt: state.updatedAt };

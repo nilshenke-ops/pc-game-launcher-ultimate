@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Bot, Copy, FlaskConical, Pencil, Plus } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast } from "../lib/hooks";
+import { useRpc, toast, useCan } from "../lib/hooks";
 import { dateTime } from "../lib/format";
 import type { AutomationRule, TriggerType } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
@@ -25,8 +25,7 @@ const blank: AutomationRule = { id: "", name: "", enabled: true, trigger: "gameS
 export default function Automations() {
   const q = useRpc<{ rules: AutomationRule[] }>("automations.list", {}, ["automations"]);
   const refs = useStepRefs();
-  const conn = useConn();
-  const canManage = conn.me?.permissions.includes("manage");
+  const canManage = useCan("manage");
   const [edit, setEdit] = useState<AutomationRule | null>(null);
   const labels = triggerLabels();
   const refName = (r: AutomationRule) => r.trigger.startsWith("game") ? refs.items.find((i) => i.id === r.triggerRef)?.name ?? t("beliebig") : r.trigger === "profileActivated" ? refs.profiles.find((p) => p.id === r.triggerRef)?.name ?? t("beliebig") : null;

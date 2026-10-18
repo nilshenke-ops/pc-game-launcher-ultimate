@@ -807,7 +807,8 @@ public sealed class HotkeyService
         }
         if (key == null) return null;
         bool isFKey = key.Length >= 2 && key[0] == 'F' && int.TryParse(key[1..], out var fn) && fn is >= 1 and <= 24;
-        if (mods.Count == 0 && !isFKey && !key.StartsWith("Num") && key != "Pause" && key != "ScrollLock") return null; // plain letters would break typing
+        // Mouse side buttons (e.g. gaming mice) may be used alone – they do not interfere with typing.
+        if (mods.Count == 0 && !isFKey && !key.StartsWith("Num") && !key.StartsWith("Mouse") && key != "Pause" && key != "ScrollLock") return null; // plain letters would break typing
         var ordered = Modifiers.Where(mods.Contains).ToList();
         ordered.Add(key);
         return string.Join("+", ordered);
@@ -824,6 +825,7 @@ public sealed class HotkeyService
             "space" or "leertaste" => "Space", "enter" => "Enter", "escape" or "esc" => "Escape", "tab" => "Tab", "delete" or "entf" => "Delete",
             "insert" or "einfg" => "Insert", "home" or "pos1" => "Home", "end" or "ende" => "End", "pageup" => "PageUp", "pagedown" => "PageDown",
             "up" => "Up", "down" => "Down", "left" => "Left", "right" => "Right", "pause" => "Pause", "scrolllock" => "ScrollLock", "printscreen" or "druck" => "PrintScreen",
+            "mouse4" or "maus4" or "xbutton1" => "Mouse4", "mouse5" or "maus5" or "xbutton2" => "Mouse5",
             "numadd" or "numplus" => "NumAdd", "numsubtract" or "numminus" => "NumSubtract", "nummultiply" => "NumMultiply", "numdivide" => "NumDivide",
             _ => null,
         };

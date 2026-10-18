@@ -2,6 +2,7 @@ import { loginProof } from "./sha256";
 import { t } from "./i18n";
 import { attachDemo, demoCall } from "./demo";
 import { clearCaches } from "./offline-cache";
+import { enqueue, outbox, QUEUEABLE } from "./outbox";
 
 export const PROTOCOL_VERSION = 1;
 
@@ -92,6 +93,7 @@ export function setServerUrl(url: string | null) {
 // games and sounds stay on the respective PC. Switching clears the data cache of the previous PC on this device.
 
 const PCS_KEY = "pgl.pcs";
+const PERMS_KEY = "pgl.lastPermissions";
 export interface SavedPc { id: string; name: string; server: string | null; cred: Credentials; lastUsed: number }
 
 export function savedPcs(): SavedPc[] { return readJson<SavedPc[]>(PCS_KEY) ?? []; }
@@ -313,13 +315,15 @@ class Client {
     if (this.demo) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
     if (this.status.auth !== "ok" && !NO_LOGIN.has(method) && !this.status.me) {
       if (method === "ui.savePrefs" || method === "ui.getPrefs") return Promise.resolve((method === "ui.getPrefs" ? { prefs: null } : true) as T); // design stays on this device
+      if (QUEUEABLE[method]) return Promise.resolve(this.queue(method, params) as T);
       if (!QUIET.test(method)) this.emit("needs-pc", { method });
       return Promise.reject(new RpcError("needs-pc", needsPcMessage()));
     }
     return new Promise<T>((resolve, reject) => {
       const ws = this.ws;
       if (!ws || ws.readyState !== WebSocket.OPEN) {
-        // A button was used while the PC is unreachable (e.g. "Spielen" in a remembered list): explain instead of a bare error.
+        // Configuration changes wait on this device; actions (start, play …) need the PC: explain instead of a bare error.
+        if (QUEUEABLE[method]) { resolve(this.queue(method, params) as T); return; }
         if (!QUIET.test(method) && !NO_LOGIN.has(method)) this.emit("needs-pc", { method });
         reject(new RpcError("offline", needsPcMessage()));
         return;
@@ -351,6 +355,7 @@ class Client {
         : await this.call<Me>("auth.login", { deviceId: cred!.deviceId, proof: loginProof(cred!.token, hello.nonce) });
       this.set({ auth: "ok", me, authError: undefined, everAuthed: true });
       if (!admin) rememberPc(hello.info?.pcName);
+      writeJson(PERMS_KEY, me.permissions);
       this.emit("authenticated", me);
     } catch (e) {
       const err = e as RpcError;
@@ -382,6 +387,13 @@ class Client {
     this.restart();
   }
 
+  /** Keeps a configuration change on this device until the PC is connected (see lib/outbox.ts). */
+  queue(method: string, params: unknown) {
+    const result = enqueue(method, (params ?? {}) as Record<string, unknown>);
+    this.emit("queued", { method });
+    return result;
+  }
+
   async savePairing(token: string, deviceId: string) {
     writeJson(CRED_KEY, { deviceId, token, pcName: this.status.hello?.info.pcName });
     await this.authenticate();
@@ -400,13 +412,17 @@ class Client {
   }
 
   can(permission: string) {
-    // Preview: show all controls (except PC-only ones); using them asks to connect the PC first.
-    if (!this.status.me && this.preview) return permission !== "local" && permission !== "admin";
-    return this.status.me?.permissions.includes(permission) ?? false;
+    if (this.status.me) return this.status.me.permissions.includes(permission);
+    // Offline: the rights this device had at its last login (changes are queued and checked by the PC again).
+    const last = readJson<string[]>(PERMS_KEY);
+    if (last && this.credentials) return last.includes(permission);
+    // Never connected: everything can be prepared (except PC-only things); the PC decides when it is connected.
+    return permission !== "local" && permission !== "admin";
   }
 }
 
 export const client = new Client();
+outbox.setCurrentPc(() => readJson<Credentials>(CRED_KEY)?.deviceId ?? null);
 
 export function needsPcMessage() { return t("Dafür muss zuerst dein PC verbunden sein."); }
 
