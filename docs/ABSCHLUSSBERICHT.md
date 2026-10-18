@@ -1,4 +1,4 @@
-# Abschlussbericht – PC Game Launcher Ultimate 1.3.0
+# Abschlussbericht – PC Game Launcher Ultimate 1.3.1
 
 Stand: 17.10.2026. Entwickelt und getestet in einer Linux-Cloud-Umgebung (kein Windows-PC, keine Audiogeräte, kein Discord verfügbar). Die Statusangaben unten folgen genau dieser Einschränkung.
 
@@ -124,6 +124,8 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
   - *Plugins ohne PC:* Store direkt von der Webseite (Signatur im Browser geprüft), Paket wird geladen und gegen Größe/SHA-256 geprüft, Designs und Widgets sofort auf dem Gerät; eigene Plugin-Dateien werden auf dem Gerät gehalten (Installation braucht beim PC das Admin-Recht).
   - *Hotkeys für Gaming-Hardware:* Maus-Seitentasten (Maus 4/5, auch mit Strg/Alt/Shift) über eine Maus-Überwachung im Windows-Begleiter, die nur bei eingerichteten Maus-Hotkeys läuft und nur Seitentasten auswertet; Vorschläge für 60-%-Tastaturen, F13–F24, Doppel-Prüfung schon bei der Eingabe.
   - GETESTET: C# 138 (inkl. Tastennamen), E2E 14 (u. a. nie gekoppeltes Tablet legt Hotkey mit Maus-Seitentaste an und merkt Plugin-Datei vor → nach Kopplung ist der Hotkey auf dem PC; die Plugin-Datei wird mangels Admin-Recht mit Grund abgelehnt), Plugin-Store ohne PC gegen den echten Katalog (Handy-Emulation: installiert, aktiviert, Design angewendet, 2 Änderungen wartend). NICHT TESTBAR hier: Maus-Seitentasten unter Windows mit echter Maus.
+
+- **Version 1.3.1 – restliche Bereiche ohne PC:** Einstellungen (Allgemein, Benachrichtigungen, Datenschutz), Audio Center, Gaming-Verlauf, Spiele- und Programmliste sind ohne PC bedienbar. Audio: übertragen werden nur die offline geänderten Werte, auf die aktuellen PC-Einstellungen gesetzt (am PC gewählte Geräte bleiben). Steam-Spiele aus der Steam-Liste lassen sich zur Bibliothek hinzufügen (neu: `library.addSteam`, Recht „manage“). Hotkeys/Quick Actions können wartende Sounds nutzen (`pending:<id>`), die Sounds werden zuerst übertragen und die Verweise auf die echte Sound-ID umgestellt. Weiterhin nur mit PC (reine Live-Daten bzw. Sicherheit): PC-Monitor, Geräteliste, PC-Benachrichtigungen, Backup, Update-Installation, Programme freigeben. GETESTET: C# 139, E2E 14 (Tablet ohne PC: Quick Action mit wartendem Sound → nach Kopplung zeigt sie am PC auf den hochgeladenen Sound), live auf der Webseite in Handy-Emulation (alle genannten Bereiche nutzbar, Steam-Spiel vorgemerkt), live: Update-Erkennung 1.2.0 → 1.3.1 signiert, geladen, geprüft. Release v1.3.0 wurde nicht freigegeben (durch 1.3.1 ersetzt).
 
 ## 6. Offene Punkte
 1. **Test auf einem echten Windows-PC** (Fenster, Tray, Audio, Hotkeys, Steam/Epic-Start, Autostart, Firewall-Abfrage). Das ist der wichtigste nächste Schritt.
