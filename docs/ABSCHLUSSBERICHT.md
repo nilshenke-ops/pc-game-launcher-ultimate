@@ -1,4 +1,4 @@
-# Abschlussbericht – PC Game Launcher Ultimate 1.1.0
+# Abschlussbericht – PC Game Launcher Ultimate 1.2.0
 
 Stand: 17.10.2026. Entwickelt und getestet in einer Linux-Cloud-Umgebung (kein Windows-PC, keine Audiogeräte, kein Discord verfügbar). Die Statusangaben unten folgen genau dieser Einschränkung.
 
@@ -109,6 +109,15 @@ Während der Tests gefundene und behobene Fehler (Auswahl): statische CSS/JS-Dat
   - *Kleinigkeiten:* Fehlermeldungen bei Stopp/Pause/Löschen im Soundboard, Tray „Relay trennen/verbinden“ ohne eingerichtetes Relay erklärt sich, Erkennungsquellen zeigen nur, was die Plattform kann, Backup-Text ehrlich (Design/Layouts nur des PC-Fensters).
   - *Neu in der Diagnose:* Sicherheitsprüfung (siehe Statustabelle).
   Tests: Web 14, Relay 6, C# 109, E2E 12 – alle grün; Windows-Build erfolgreich. Bewusst nicht ergänzt: neue Menüs.
+
+- **Version 1.2.0 – Gaming-Zentrale, Update-System, Plugin-System** (Plan und Bestandsaufnahme: `docs/UMSETZUNGSPLAN-1.2.md`):
+  - *Veröffentlicht und live geprüft:* GitHub Release https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/tag/v1.2.0 (EXE 84 337 875 Bytes, SHA-256 `fd2a4835…7af4`, ZIP, Prüfsummen), Update-Angaben https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/update.json (signiert), Plugin-Katalog …/plugins/catalog.json (signiert, 4 Plugins).
+  - *Update-System:* eine Versionsquelle (`VERSION`), `CHANGELOG.md` → Update-Zentrale; Signatur ECDSA P-256 + Größe + SHA-256 + Dateityp; Wiederherstellungspunkt vor Installation; alte EXE bleibt (Rücksetzen in App und Tray); behoben: Neustart nach Update scheiterte an der Einzelinstanz-Sperre. Release-Workflow `release.yml` (Tests, Build, Release, Download-Prüfung, Webseite, Update-Erkennung). GETESTET: C#-Tests (signiert/unsigniert/gefälscht/beschädigt/falscher Dateityp, Node↔.NET-Signatur), Workflow-Lauf auf GitHub erfolgreich (Release + Download-Prüfung), **echte Update-Erkennung gegen die Live-Seite** mit dem Begleiter-Code (als 1.1.0: 1.2.0 gefunden, Signatur gültig, 84 MB geladen und geprüft). NICHT TESTBAR: Austausch der EXE und Neustart unter Windows.
+  - *Webseite/Handy:* Seite „Updates & Versionen“ (Version, Datum, Größe, Quelle, SHA-256, Änderungen, Verlauf, direkter Download von GitHub Releases, Hinweis für iPhone/iPad/Android, Signaturprüfung im Browser, kein Cache). GETESTET live in iPhone-, iPad- und Android-Emulation (kein seitliches Überlaufen); echte Geräte NICHT TESTBAR.
+  - *Plugin-System:* Pakete `.pglplugin`, Manifest-Prüfung, Berechtigungen (einzeln entziehbar), Sandbox-Widgets (eigene Seite mit strenger CSP, opaker Ursprung), Aktionen aus geprüften Schritten, Themes, Einstellungen, Abhängigkeiten, Updates/Auto-Update/Rücksetzen, Export/Import, Testmodus, Entwickleransicht, signierter Katalog, Vertrauensstufen, automatische Deaktivierung bei Fehlern, Offline-Anzeige. SDK `plugins/sdk` mit 4 Beispielen. GETESTET: 13 C#-Tests (u. a. Pfad-Tricks, EXE im Paket, gefälschter Katalog, manipuliertes Paket), E2E (Import → Prüfung → Aktivierung → Widget mit echten Daten; Prüf-Plugin kommt nicht an Speicher, Elternseite, Internet oder nicht erlaubte Befehle), **live: Installation aus dem echten Katalog**. Bewusst nicht: Plugin-Code im Begleiter-Prozess.
+  - *Weitere Funktionen:* Netzwerk-Monitor (Ping/Jitter/Verlust/Verlauf, nur sichtbar), Speicherplatz (Laufwerke, Spielgrößen), Energiezentrale (Windows), Leistungswerte und Notizen je Sitzung, Bewertungen, Wiederherstellungspunkte, Konsistenzprüfung, mehrere PCs, Plugins in der Suche. GETESTET: C#-Tests, E2E Monitor. Energie, GPU-Werte und Ping unter Windows: NICHT TESTBAR hier.
+  - *Tests gesamt:* Web 14, Relay 6, C# 132, E2E 14 – alle grün; Windows-Build erfolgreich.
+  - *Offen:* Secret `PGL_UPDATE_SIGNING_KEY` in GitHub hinterlegen (sonst muss jedes Release lokal signiert werden); Test auf echtem Windows-PC und echten Handys; RGB/Peripherie (keine herstellerübergreifende Schnittstelle – nicht vorgetäuscht); FPS; Code-Signatur-Zertifikat (SmartScreen); Plugins sind noch nicht Teil des Backups.
 
 ## 6. Offene Punkte
 1. **Test auf einem echten Windows-PC** (Fenster, Tray, Audio, Hotkeys, Steam/Epic-Start, Autostart, Firewall-Abfrage). Das ist der wichtigste nächste Schritt.
