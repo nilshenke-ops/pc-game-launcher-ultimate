@@ -1,0 +1,118 @@
+{
+  "version": 1,
+  "generated": "2026-10-18",
+  "plugins": [
+    {
+      "id": "de.pgl.cpu-mini",
+      "name": "CPU & RAM Mini",
+      "version": "1.0.0",
+      "description": "Kleines Live-Widget mit CPU- und RAM-Auslastung des PCs (echte Messwerte, nur solange sichtbar).",
+      "author": "PC Game Launcher",
+      "category": "performance",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "monitor.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.cpu-mini-1.0.0.pglplugin",
+      "sha256": "603365b68afcffd972c00b45e59c0be845bff4f82444fb3624d40bc82251c71e",
+      "size": 1106,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.discord-schnellton",
+      "name": "Discord-Schnellton",
+      "version": "1.0.0",
+      "description": "Aktionen für Sprachchats: Lieblingssound abspielen, alle Sounds stoppen, in ein Voice-Profil wechseln. Ton und Profil wählst du in den Einstellungen.",
+      "author": "PC Game Launcher",
+      "category": "discord",
+      "platforms": [
+        "windows",
+        "web"
+      ],
+      "permissions": [
+        "sounds.play",
+        "profiles.activate"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.discord-schnellton-1.0.0.pglplugin",
+      "sha256": "981804c52f9fd408f3c7e09fc22b837bfcb4d8ebb9c20f5eec749e8da8e3cdc4",
+      "size": 657,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.neon-themes",
+      "name": "Neon-Themes",
+      "version": "1.0.0",
+      "description": "Zwei Farbschemata (Neon Pink, Matrix Grün) für den Design-Editor. Ohne Code, ohne Berechtigungen.",
+      "author": "PC Game Launcher",
+      "category": "design",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.neon-themes-1.0.0.pglplugin",
+      "sha256": "d497985ca5c3b1f9e96d99d930a8bafa9b02826350e917f0822b2298cc63f1e5",
+      "size": 556,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.spielzeit-heute",
+      "name": "Spielzeit heute",
+      "version": "1.0.0",
+      "description": "Widget: wie lange du heute gespielt hast und welche Spiele – aus dem echten Spielverlauf des PCs.",
+      "author": "PC Game Launcher",
+      "category": "information",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.spielzeit-heute-1.0.0.pglplugin",
+      "sha256": "afd95a0179d5deac467561b1969995c05137cecc03f2094a8fae55a538266f14",
+      "size": 1992,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    }
+  ]
+}

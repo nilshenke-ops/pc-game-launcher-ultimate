@@ -1,0 +1,44 @@
+[
+  {
+    "version": "1.2.0",
+    "date": "2026-10-18",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.2.0/PCGameLauncherCompanion.exe",
+    "size": 84337875,
+    "sha256": "fd2a4835f83ac95f4e1b60193d1cb1a1ebc4ff13e056bdd817201a113a807af4",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-1.2.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.2.0/PCGameLauncherCompanion-1.2.0-win-x64.zip",
+      "size": 78631431,
+      "sha256": "545b3685efe60d461f75d90c84f12004e4cb581299e716a8415f02128c26bde6"
+    },
+    "notes": "Plugin Center: Plugins aus dem signierten Store oder als Datei installieren, aktivieren, Rechte einzeln erteilen und entziehen, aktualisieren, zurücksetzen, exportieren · Plugin-SDK mit Anleitung und vier Beispiel-Plugins (Spielzeit heute, CPU & RAM Mini, Neon-Themes, Discord-Schnellton); Widgets laufen abgeschottet in einer Sandbox · Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: Version, Datum, Größe, Änderungen, direkter Download von GitHub Releases",
+    "changes": {
+      "neu": [
+        "Plugin Center: Plugins aus dem signierten Store oder als Datei installieren, aktivieren, Rechte einzeln erteilen und entziehen, aktualisieren, zurücksetzen, exportieren",
+        "Plugin-SDK mit Anleitung und vier Beispiel-Plugins (Spielzeit heute, CPU & RAM Mini, Neon-Themes, Discord-Schnellton); Widgets laufen abgeschottet in einer Sandbox",
+        "Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: Version, Datum, Größe, Änderungen, direkter Download von GitHub Releases",
+        "Signierte Updates (ECDSA) mit Prüfung von Signatur, Größe, Prüfsumme und Dateityp; vorherige Version wiederherstellen; Wiederherstellungspunkt vor jedem Update",
+        "Netzwerk-Monitor mit Ping, Jitter, Paketverlust und Verlauf",
+        "Speicherplatz-Manager mit Laufwerken und Spielgrößen",
+        "Energiezentrale: Sperren, Energiesparen, Neustart, Herunterfahren (mit Verzögerung und Abbrechen)",
+        "Leistungswerte (CPU/GPU/RAM) und Notizen je Spielsitzung",
+        "Bewertungen (1–5 Sterne) für Spiele und Programme",
+        "Wiederherstellungspunkte: wöchentlich automatisch, manuell, vor Updates; prüfen und wiederherstellen",
+        "Mehrere Windows-PCs auf einem Handy verwalten und wechseln",
+        "Konsistenzprüfung in der Diagnose: fehlende Programme, verwaiste Verweise, doppelte Hotkeys"
+      ],
+      "verbessert": [
+        "Eine Versionsquelle (Datei VERSION) für Begleiter und Webseite",
+        "Universelle Suche findet auch Plugins und ihre Aktionen",
+        "Veröffentlichung über GitHub Releases mit automatischer Prüfung der Downloads und der Update-Erkennung"
+      ],
+      "behoben": [
+        "Nach einem Update startete der Begleiter nicht neu, solange die alte Version noch lief",
+        "Webseite zeigte bei älteren Update-Angaben keine Download-Datei"
+      ]
+    },
+    "signature": "xoJ65I1Ypb6V5lSDp6xAYLTHATAjRU15RSJws4ZHNLoXEHjaEoe+Nvu/FothLDaOT+MpR7YH+sAX/N7EN/DyLA=="
+  }
+]
