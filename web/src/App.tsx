@@ -2,6 +2,7 @@ import { Component, lazy, Suspense, useEffect, type ReactNode } from "react";
 import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { DEMO_BUILD } from "./lib/demo";
 import { AppShell } from "./components/AppShell";
+import { AccessGate } from "./components/AccessGate";
 import { ConfirmHost, Toasts } from "./components/ui";
 import { useConn } from "./lib/hooks";
 import { loadRemotePrefs, usePrefs } from "./lib/prefs";
@@ -97,7 +98,7 @@ export default function App() {
   return (
     <Router>
       <div className="app-bg" aria-hidden><div className="img" /><div className="grid" /></div>
-      <Gate />
+      <AccessGate><Gate /></AccessGate>
       <Toasts />
       <ConfirmHost />
     </Router>

@@ -499,3 +499,11 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 .check-fix { margin-top: 4px; padding: 6px 10px; border-radius: var(--radius-sm); background: rgba(var(--primary-rgb), 0.08); word-break: break-word; }
 .game-card.not-installed .cover img { filter: saturate(0.55) brightness(0.8); }
 .badge.gp { background: #107c10; color: #fff; }
+
+/* Access code */
+.pin { position: relative; display: flex; gap: 12px; justify-content: center; cursor: text; }
+.pin-box { width: 56px; height: 64px; border-radius: var(--radius-sm); border: 1px solid var(--border-strong); background: rgba(var(--surface-rgb), 0.9);
+  display: grid; place-items: center; font-size: 1.8rem; font-weight: 700; transition: border-color .15s, box-shadow .15s; }
+.pin-box.active { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.25); }
+.pin-box.error { border-color: var(--danger); }
+.pin-input { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; font-size: 16px; }

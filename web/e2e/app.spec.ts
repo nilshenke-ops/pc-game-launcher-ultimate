@@ -2,15 +2,23 @@ import { expect, test, devices, type Browser, type Page } from "@playwright/test
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { COMPANION, HOSTED_SITE, RELAY, state } from "./env";
+import { ACCESS_HASH } from "../src/lib/access";
 
 // The tests build on each other (pairing → launching → revoking), so they run in order.
 test.describe.configure({ mode: "serial" });
 
 let pc: Page;
+
+/** Every test device has already entered the access code once (the code screen itself is tested separately). */
+async function newCtx(browser: Browser, opts: Parameters<Browser["newContext"]>[0] = {}) {
+  const ctx = await browser.newContext(opts);
+  await ctx.addInitScript((hash) => { try { localStorage.setItem("pgl.access", hash); } catch { /* ignore */ } }, ACCESS_HASH);
+  return ctx;
+}
 let phone: Page;
 
 async function adminPage(browser: Browser) {
-  const ctx = await browser.newContext({ viewport: { width: 1400, height: 900 }, locale: "de-DE" });
+  const ctx = await newCtx(browser, { viewport: { width: 1400, height: 900 }, locale: "de-DE" });
   const page = await ctx.newPage();
   await page.goto(`${COMPANION}/#admin=${state().adminToken}`);
   return page;
@@ -34,6 +42,23 @@ async function pair(device: Page, base: string) {
   await expect(device.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
 }
 
+test("Zugangscode: einmal pro Gerät, falscher Code wird abgelehnt", async ({ browser }) => {
+  const page = await (await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" })).newPage();
+  await page.goto(`${HOSTED_SITE}/`);
+  await expect(page.getByRole("heading", { name: "Zugangscode" })).toBeVisible();
+  await page.getByLabel("Zugangscode").fill("0000");
+  await expect(page.getByText("Falscher Code.")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Zugangscode" })).toBeVisible();
+  // The real code is not stored in the repository; it is passed in when the tests run.
+  const code = process.env.PGL_ACCESS_CODE;
+  if (code) {
+    await page.getByLabel("Zugangscode").fill(code);
+    await expect(page.getByText("Offline – kein PC verbunden").first()).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole("heading", { name: "Zugangscode" })).toHaveCount(0); // remembered on this device
+  }
+});
+
 test("PC-Ansicht zeigt den echten Zustand", async ({ browser }) => {
   pc = await adminPage(browser);
   await expect(pc.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
@@ -43,7 +68,7 @@ test("PC-Ansicht zeigt den echten Zustand", async ({ browser }) => {
 });
 
 test("Ungekoppeltes Handy: Bereiche zeigen „Offline“, Aktionen fragen nach dem PC, falscher Code wird abgelehnt", async ({ browser }) => {
-  const ctx = await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" });
+  const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   phone = await ctx.newPage();
   await phone.goto(`${COMPANION}/#/games`);
   await expect(phone.getByText("Offline – kein PC verbunden")).toBeVisible();
@@ -107,7 +132,7 @@ test("Design wird gespeichert und übersteht das Neuladen", async () => {
 });
 
 test("Zugriff über das Relay mit Ende-zu-Ende-Kopplung", async ({ browser }) => {
-  const ctx = await browser.newContext({ ...devices["Pixel 7"], locale: "de-DE" });
+  const ctx = await newCtx(browser, { ...devices["Pixel 7"], locale: "de-DE" });
   const remote = await ctx.newPage();
   await pair(remote, RELAY);
   await remote.goto(`${RELAY}/#/games`);
@@ -136,7 +161,7 @@ test("Download-Status ist ehrlich (Entwicklungsserver hat keine EXE)", async () 
 
 test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async ({ browser }) => {
   // Opens without any PC information and shows "PC verbinden".
-  const ctx = await browser.newContext({ ...devices["iPad (gen 7)"], locale: "de-DE" });
+  const ctx = await newCtx(browser, { ...devices["iPad (gen 7)"], locale: "de-DE" });
   const tablet = await ctx.newPage();
   await tablet.goto(`${HOSTED_SITE}/`);
   await expect(tablet.getByText("Offline – kein PC verbunden").first()).toBeVisible();
@@ -182,7 +207,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByText(/Wartet auf PC/)).toHaveCount(0);
 
   // QR path: the link fills in code and PC address automatically.
-  const phone2 = await (await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" })).newPage();
+  const phone2 = await (await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" })).newPage();
   await pc.goto(`${COMPANION}/#/pair`);
   await pc.getByRole("button", { name: "Neuen Code erzeugen" }).click();
   const code2 = (await pc.locator(".code-display").textContent())!.trim();
@@ -196,7 +221,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
 });
 
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
-  const ctx = await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" });
+  const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();
   await pair(ipad, COMPANION);
   // The offline cache (service worker) must be active before the PC goes away.

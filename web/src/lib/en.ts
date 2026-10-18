@@ -944,4 +944,8 @@ export const en: Record<string, string> = {
   "{n} wurde auf dem PC nicht gefunden": "{n} was not found on the PC",
   "Nicht installierte Epic-Spiele erscheinen, sobald der Epic Games Launcher auf dem PC einmal deine Bibliothek geladen hat.": "Epic games that are not installed appear once the Epic Games Launcher on the PC has loaded your library.",
   "EA bietet keine Schnittstelle für die ganze Bibliothek – angezeigt werden die auf dem PC installierten EA-Spiele.": "EA offers no interface for the whole library – the EA games installed on the PC are shown.",
+  "Zugangscode": "Access code",
+  "Gib den vierstelligen Code ein. Danach merkt sich dieses Gerät den Zugang.": "Enter the four-digit code. This device then remembers the access.",
+  "Zu viele Versuche – bitte {s} s warten.": "Too many attempts – please wait {s} s.",
+  "Falscher Code.": "Wrong code.",
 };
