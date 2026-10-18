@@ -1,5 +1,9 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { readFileSync } from "node:fs";
+
+// Single version source shared with the companion build.
+const version = readFileSync(new URL("../VERSION", import.meta.url), "utf8").trim();
 
 // During development the companion (headless or Windows) runs on port 8787; Vite proxies the WebSocket and downloads.
 const companion = process.env.PGL_COMPANION ?? "http://127.0.0.1:8787";
@@ -21,7 +25,7 @@ const hosted = process.env.VITE_HOSTED === "1";
 export default defineConfig({
   plugins: [react(), offlineManifest()],
   // A new build id makes the browser install a fresh service worker, which stores the new app files.
-  define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)) },
+  define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)), __APP_VERSION__: JSON.stringify(version) },
   base: "./",
   server: {
     port: 5173,

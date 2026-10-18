@@ -292,6 +292,7 @@ public static class RpcApi
         rpc.Register("updates.check", async ctx => await s.Updates.Check());
         rpc.Register("updates.download", async ctx => await s.Updates.Download());
         rpc.Register("updates.install", ctx => s.Updates.Install() is { } err ? throw new RpcException("update", err) : true);
+        rpc.Register("updates.rollback", ctx => s.Updates.Rollback() is { } err ? throw new RpcException("update", err) : true);
 
         // ------------------------------------------------------------ backup
         rpc.Register("backup.export", ctx =>

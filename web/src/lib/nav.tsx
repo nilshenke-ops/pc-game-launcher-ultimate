@@ -27,6 +27,7 @@ export function navItems(): NavItem[] {
     { path: "/notifications", label: t("Benachrichtigungen"), icon: Bell, group: t("System") },
     { path: "/settings", label: t("Einstellungen"), icon: Settings, group: t("System"), keywords: "design sprache backup update" },
     { path: "/diagnostics", label: t("Diagnose"), icon: Stethoscope, group: t("System"), keywords: "netzwerk fehler logs ping" },
+    { path: "/updates", label: t("Updates & Versionen"), icon: Download, group: t("System"), keywords: "update version download herunterladen neueste windows exe änderungen" },
     { path: "/help", label: t("Hilfe"), icon: HelpCircle, group: t("System"), keywords: "anleitung download begleiter" },
   ];
 }

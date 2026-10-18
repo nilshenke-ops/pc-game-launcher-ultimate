@@ -230,6 +230,35 @@ public sealed class NetworkDiagnostics
 
 // ============================================================ Updates
 
+/// <summary>
+/// Update signature: ECDSA P-256 / SHA-256 over "pgl-update-v1\n{version}\n{sha256}\n{size}" (IEEE P1363, Base64).
+/// Only the public key is in the program; the private key stays with the publisher (GitHub secret).
+/// </summary>
+public static class UpdateSignature
+{
+    public const string OfficialPublicKey = """
+        -----BEGIN PUBLIC KEY-----
+        MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE/hiMoSFzmijh6kpNVq6is8OV4+aS
+        oL4zBwKfkXibFAkVJtzToNjtJEoYEx0O6B19dMMLko/XKEXUzIIz6EzM7g==
+        -----END PUBLIC KEY-----
+        """;
+
+    public static byte[] Payload(string version, string sha256, long size) => System.Text.Encoding.UTF8.GetBytes($"pgl-update-v1\n{version}\n{sha256.ToLowerInvariant()}\n{size}");
+
+    public static bool Verify(string version, string sha256, long size, string? signature, string publicKeyPem = OfficialPublicKey)
+    {
+        if (string.IsNullOrWhiteSpace(signature)) return false;
+        try
+        {
+            using var key = ECDsa.Create();
+            key.ImportFromPem(publicKeyPem);
+            return key.VerifyData(Payload(version, sha256, size), Convert.FromBase64String(signature), HashAlgorithmName.SHA256, DSASignatureFormat.IeeeP1363FixedFieldConcatenation);
+        }
+        catch (FormatException) { return false; }
+        catch (CryptographicException) { return false; }
+    }
+}
+
 public sealed class UpdateService
 {
     readonly AppPaths _paths;
@@ -241,17 +270,37 @@ public sealed class UpdateService
     readonly HttpClient _http;
     /// <summary>Raised once per new version found by the automatic daily check.</summary>
     public event Action<Manifest>? Available;
+    /// <summary>Creates a restore point (backup of all settings and lists) before an update is installed; returns its file name.</summary>
+    public Func<string, string?>? CreateRestorePoint { get; set; }
     Timer? _timer;
     string? _announced;
     public static string CurrentVersion => typeof(UpdateService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
+    /// <summary>Overridable for the release check (pretend an older installed version); null = real version.</summary>
+    public string? VersionOverride { get; set; }
+    string Installed => VersionOverride ?? CurrentVersion;
+    public string PublicKeyPem { get; set; } = UpdateSignature.OfficialPublicKey;
+
+    public sealed class Changes
+    {
+        public List<string> Neu { get; set; } = new();
+        public List<string> Verbessert { get; set; } = new();
+        public List<string> Behoben { get; set; } = new();
+    }
 
     public sealed class Manifest
     {
         public string Version { get; set; } = "";
+        public string? Date { get; set; }
         public string Url { get; set; } = "";
+        public string? FileName { get; set; }
         public string Sha256 { get; set; } = "";
         public long? Size { get; set; }
         public string? Notes { get; set; }
+        public Changes? Changes { get; set; }
+        public string? Signature { get; set; }
+        /// <summary>Set by the companion: signature checked against the built-in key.</summary>
+        public bool Signed { get; set; }
+        public string? Source { get; set; }
     }
 
     Manifest? _available;
@@ -265,7 +314,10 @@ public sealed class UpdateService
         _paths = paths; _settings = settings; _installer = installer; _hub = hub;
         _http = http == null ? new HttpClient() : new HttpClient(http);
         _http.Timeout = TimeSpan.FromMinutes(10);
+        _http.DefaultRequestHeaders.UserAgent.ParseAdd("PCGameLauncherUltimate/" + CurrentVersion);
     }
+
+    bool Official => _settings().UpdateManifestUrl == new Settings().UpdateManifestUrl;
 
     /// <summary>Checks 2 minutes after start and then once a day (one small download). Never installs on its own.</summary>
     public void StartAutoCheck()
@@ -282,14 +334,16 @@ public sealed class UpdateService
 
     public object Status() => new
     {
-        current = CurrentVersion,
+        current = Installed,
         source = _settings().UpdateManifestUrl,
+        official = Official,
         state = _state,
         error = _error,
         checkedAt = _checkedAt,
         available = _available,
         downloaded = _downloaded != null,
         canInstall = _installer.Supported,
+        canRollback = _installer.CanRollback,
     };
 
     public async Task<object> Check()
@@ -298,19 +352,37 @@ public sealed class UpdateService
         if (string.IsNullOrEmpty(url)) { _state = "no-source"; _error = "Keine Update-Quelle eingetragen (Einstellungen → Updates)."; return Status(); }
         try
         {
-            var m = JsonSerializer.Deserialize<Manifest>(await _http.GetStringAsync(url), Json.Options) ?? throw new Exception("Leeres Manifest");
-            if (!Version.TryParse(m.Version, out var v)) throw new Exception("Ungültige Versionsangabe im Manifest");
-            if (!Regex.IsMatch(m.Sha256 ?? "", "^[0-9a-fA-F]{64}$")) throw new Exception("Manifest enthält keine gültige SHA-256-Prüfsumme");
-            if (!Uri.TryCreate(new Uri(url), m.Url, out var abs) || abs.Scheme != "https") throw new Exception("Download-Adresse muss https sein");
-            m.Url = abs.ToString();
+            // Cache-busting query: a CDN must never hand out an old manifest.
+            var fetchUrl = url + (url.Contains('?') ? "&" : "?") + "t=" + DateTime.UtcNow.Ticks;
+            using var req = new HttpRequestMessage(HttpMethod.Get, fetchUrl);
+            req.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue { NoCache = true };
+            using var resp = await _http.SendAsync(req);
+            resp.EnsureSuccessStatusCode();
+            var m = JsonSerializer.Deserialize<Manifest>(await resp.Content.ReadAsStringAsync(), Json.Options) ?? throw new Exception("Leeres Manifest");
+            Validate(m, url);
             _checkedAt = DateTime.UtcNow;
-            _available = v > Version.Parse(CurrentVersion) ? m : null;
+            _available = Version.Parse(m.Version) > Version.Parse(Installed) ? m : null;
             _state = _available != null ? "available" : "up-to-date";
             _error = null;
+            if (_downloaded != null && _available?.Version is { } av && !_downloaded.Contains(av)) _downloaded = null;
         }
         catch (Exception ex) { _state = "error"; _error = "Prüfung fehlgeschlagen: " + ex.Message; Failed?.Invoke(_error); }
         _hub.Changed("updates");
         return Status();
+    }
+
+    /// <summary>Checks a manifest. Official source: a valid signature is required. Own source: a signature, if present, must be valid.</summary>
+    internal void Validate(Manifest m, string manifestUrl)
+    {
+        if (!Regex.IsMatch(m.Version ?? "", @"^\d+\.\d+\.\d+$") || !Version.TryParse(m.Version, out _)) throw new Exception("Ungültige Versionsangabe im Manifest (erwartet MAJOR.MINOR.PATCH)");
+        if (!Regex.IsMatch(m.Sha256 ?? "", "^[0-9a-fA-F]{64}$")) throw new Exception("Manifest enthält keine gültige SHA-256-Prüfsumme");
+        if (m.Size is not > 0) throw new Exception("Manifest enthält keine Dateigröße");
+        if (!Uri.TryCreate(new Uri(manifestUrl), m.Url, out var abs) || abs.Scheme != "https") throw new Exception("Download-Adresse muss https sein");
+        m.Url = abs.ToString();
+        m.Source = abs.Host;
+        m.Signed = UpdateSignature.Verify(m.Version!, m.Sha256!, m.Size.Value, m.Signature, PublicKeyPem);
+        if (!m.Signed && (Official || !string.IsNullOrWhiteSpace(m.Signature)))
+            throw new Exception(string.IsNullOrWhiteSpace(m.Signature) ? "Update ist nicht signiert – aus Sicherheitsgründen abgelehnt." : "Signatur des Updates ist ungültig – Update wurde abgelehnt.");
     }
 
     public async Task<object> Download()
@@ -318,11 +390,13 @@ public sealed class UpdateService
         var m = _available ?? throw new RpcException("no-update", "Kein Update verfügbar. Bitte zuerst prüfen.");
         var target = Path.Combine(_paths.UpdatesDir, $"PCGameLauncherCompanion-{m.Version}.exe");
         _state = "downloading";
+        _hub.Changed("updates");
         try
         {
             using var resp = await _http.GetAsync(m.Url, HttpCompletionOption.ResponseHeadersRead);
             resp.EnsureSuccessStatusCode();
             var total = resp.Content.Headers.ContentLength ?? m.Size;
+            if (total > m.Size) throw new Exception("Datei ist größer als angekündigt.");
             await using var input = await resp.Content.ReadAsStreamAsync();
             await using (var output = File.Create(target + ".part"))
             {
@@ -330,8 +404,9 @@ public sealed class UpdateService
                 long done = 0; int n; var lastReport = DateTime.MinValue;
                 while ((n = await input.ReadAsync(buf)) > 0)
                 {
-                    await output.WriteAsync(buf.AsMemory(0, n));
                     done += n;
+                    if (done > m.Size) throw new Exception("Datei ist größer als angekündigt.");
+                    await output.WriteAsync(buf.AsMemory(0, n));
                     if (DateTime.UtcNow - lastReport > TimeSpan.FromMilliseconds(400))
                     {
                         lastReport = DateTime.UtcNow;
@@ -339,30 +414,48 @@ public sealed class UpdateService
                     }
                 }
             }
-            await using (var check = File.OpenRead(target + ".part"))
-            {
-                var hash = Convert.ToHexString(await SHA256.HashDataAsync(check)).ToLowerInvariant();
-                if (hash != m.Sha256.ToLowerInvariant())
-                {
-                    File.Delete(target + ".part");
-                    throw new Exception("Prüfsumme stimmt nicht – Datei wurde verworfen.");
-                }
-            }
+            if (VerifyFile(target + ".part", m) is { } bad) { File.Delete(target + ".part"); throw new Exception(bad); }
             File.Move(target + ".part", target, true);
             _downloaded = target;
             _state = "ready";
             _error = null;
         }
-        catch (Exception ex) { _state = "error"; _error = "Download fehlgeschlagen: " + ex.Message; Failed?.Invoke(_error); }
+        catch (Exception ex)
+        {
+            try { File.Delete(target + ".part"); } catch { }
+            _state = "error"; _error = "Download fehlgeschlagen: " + ex.Message; Failed?.Invoke(_error);
+        }
         _hub.Changed("updates");
         return Status();
     }
 
+    static string? VerifyFile(string path, Manifest m)
+    {
+        var info = new FileInfo(path);
+        if (!info.Exists) return "Datei fehlt.";
+        if (info.Length != m.Size) return $"Unvollständiger Download ({info.Length} statt {m.Size} Bytes) – Datei wurde verworfen.";
+        using var f = File.OpenRead(path);
+        var hash = Convert.ToHexString(SHA256.HashData(f)).ToLowerInvariant();
+        if (hash != m.Sha256.ToLowerInvariant()) return "Prüfsumme stimmt nicht – Datei wurde verworfen.";
+        // Windows executables start with "MZ"; anything else is not a supported update file.
+        f.Position = 0;
+        if (f.ReadByte() != 'M' || f.ReadByte() != 'Z') return "Keine Windows-Programmdatei – Datei wurde verworfen.";
+        return null;
+    }
+
+    /// <summary>Installs only after consent at the PC (local permission). Checks the file again right before replacing the program.</summary>
     public string? Install()
     {
-        if (_downloaded == null || !File.Exists(_downloaded)) return "Kein heruntergeladenes Update vorhanden.";
-        return _installer.Install(_downloaded);
+        if (_downloaded == null || !File.Exists(_downloaded) || _available == null) return "Kein heruntergeladenes Update vorhanden.";
+        if (VerifyFile(_downloaded, _available) is { } bad) { try { File.Delete(_downloaded); } catch { } _downloaded = null; return bad; }
+        var point = CreateRestorePoint?.Invoke($"vor-update-{_available.Version}");
+        Log.Info("updates", $"Installiere {_available.Version} (Wiederherstellungspunkt: {point ?? "keiner"})");
+        var err = _installer.Install(_downloaded);
+        if (err != null) { _state = "error"; _error = err + " Die bisherige Version bleibt unverändert nutzbar."; Failed?.Invoke(_error); _hub.Changed("updates"); }
+        return err;
     }
+
+    public string? Rollback() => _installer.CanRollback ? _installer.Rollback() : "Keine vorherige Version vorhanden.";
 }
 
 // ============================================================ Backup

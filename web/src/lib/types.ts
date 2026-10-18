@@ -198,9 +198,11 @@ export interface UpdateStatus {
   state: string;
   error?: string;
   checkedAt?: string;
-  available?: { version: string; url: string; sha256: string; size?: number; notes?: string };
+  official?: boolean;
+  available?: { version: string; date?: string; url: string; sha256: string; size?: number; notes?: string; changes?: import("./release").ReleaseChanges; signed: boolean; source?: string };
   downloaded: boolean;
   canInstall: boolean;
+  canRollback?: boolean;
 }
 
 export interface PairedDevice {

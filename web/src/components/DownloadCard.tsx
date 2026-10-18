@@ -34,8 +34,10 @@ export function DownloadCard({ compact }: { compact?: boolean }) {
 
   const start = async () => {
     if (!info?.url) return;
-    // Phones and very old browsers: plain download link (progress not available).
-    if (!("ReadableStream" in window) || /iPhone|iPad|Android/i.test(navigator.userAgent)) {
+    // Phones, very old browsers and files on another server (GitHub Releases – not readable by this page):
+    // plain download link (no progress; the checksum is shown for checking).
+    const crossOrigin = new URL(info.url, location.href).origin !== location.origin;
+    if (crossOrigin || !("ReadableStream" in window) || /iPhone|iPad|Android/i.test(navigator.userAgent)) {
       setPhase("done");
       setMsg(t("Download wurde im Browser gestartet."));
       location.href = info.url;

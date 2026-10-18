@@ -1,0 +1,111 @@
+# Publishes the version from the VERSION file:
+#   1. tests (C# + web), builds the Windows companion and the website
+#   2. creates release metadata from CHANGELOG.md (update.json, releases.json, checksums), signed with the
+#      repository secret PGL_UPDATE_SIGNING_KEY (ECDSA P-256 private key, PEM)
+#   3. creates the GitHub Release "vX.Y.Z" with EXE, ZIP, checksums and update.json (permanent download links)
+#   4. downloads every release file again and compares size + SHA-256
+#   5. signed: updates the website (gh-pages) incl. download/update.json, then runs the companion's real update
+#      check against the live manifest (as an older version, incl. download + verification)
+# Without the secret the release is created, but the website/update manifest is NOT switched over (installed
+# companions accept only signed updates). The maintainer can then sign it with scripts/sign-release.mjs.
+name: Release veröffentlichen
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SITE: https://nilshenke-ops.github.io/pc-game-launcher-ultimate
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Version prüfen
+        working-directory: main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="$(tr -d '[:space:]' < VERSION)"
+          [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::VERSION '$V' ist nicht MAJOR.MINOR.PATCH"; exit 1; }
+          if gh release view "v$V" >/dev/null 2>&1; then echo "::error::Release v$V existiert bereits – VERSION erhöhen"; exit 1; fi
+          grep -q "^## $V " CHANGELOG.md || { echo "::error::CHANGELOG.md hat keinen Eintrag für $V"; exit 1; }
+          echo "V=$V" >> "$GITHUB_ENV"
+      - name: Tests
+        working-directory: main
+        run: |
+          (cd web && npm ci && npm test)
+          dotnet test companion/tests/Companion.Core.Tests --nologo
+      - name: Windows-Begleiter und Webseite bauen
+        working-directory: main
+        run: |
+          bash scripts/publish-companion.sh
+          (cd web && npm run build:hosted)
+      - name: Release-Daten erzeugen
+        working-directory: main
+        env:
+          PGL_UPDATE_SIGNING_KEY: ${{ secrets.PGL_UPDATE_SIGNING_KEY }}
+        run: |
+          EXTRA=""
+          if [ -z "$PGL_UPDATE_SIGNING_KEY" ]; then EXTRA="--allow-unsigned"; echo "::warning::Secret PGL_UPDATE_SIGNING_KEY fehlt – Release wird unsigniert erstellt, die Webseite wird nicht umgestellt."; fi
+          node scripts/release-manifest.mjs --exe artifacts/companion/PCGameLauncherCompanion.exe \
+            --zip "artifacts/PCGameLauncherCompanion-$V-win-x64.zip" \
+            --base-url "https://github.com/${{ github.repository }}/releases/download/v$V" \
+            --history ../site/download/releases.json --out ../out $EXTRA
+          if grep -q '"signature": null' ../out/update.json; then echo "SIGNED=0" >> "$GITHUB_ENV"; else echo "SIGNED=1" >> "$GITHUB_ENV"; fi
+      - name: GitHub Release erstellen
+        working-directory: main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$V" --target "$GITHUB_SHA" --title "Version $V" --notes-file ../out/release-notes.md \
+            artifacts/companion/PCGameLauncherCompanion.exe "artifacts/PCGameLauncherCompanion-$V-win-x64.zip" \
+            ../out/SHA256SUMS.txt ../out/update.json
+      - name: Downloads prüfen (Erreichbarkeit, Größe, SHA-256)
+        run: |
+          check() { # url size sha
+            for i in 1 2 3 4 5 6; do curl -fsSL -o /tmp/f "$1" && break; sleep 10; done
+            [ "$(stat -c %s /tmp/f)" = "$2" ] || { echo "::error::$1: Größe stimmt nicht"; exit 1; }
+            [ "$(sha256sum /tmp/f | cut -d' ' -f1)" = "$3" ] || { echo "::error::$1: Prüfsumme stimmt nicht"; exit 1; }
+            echo "OK $1"
+          }
+          check "$(jq -r .url out/update.json)" "$(jq -r .size out/update.json)" "$(jq -r .sha256 out/update.json)"
+          check "$(jq -r .zip.url out/update.json)" "$(jq -r .zip.size out/update.json)" "$(jq -r .zip.sha256 out/update.json)"
+      - name: Webseite und Update-Manifest veröffentlichen
+        if: env.SIGNED == '1'
+        working-directory: site
+        run: |
+          git rm -rq --ignore-unmatch assets icons index.html manifest.webmanifest offline-files.json sw.js download/*.exe download/*.zip
+          cp -r ../main/web/dist-hosted/. .
+          mkdir -p download
+          cp ../out/update.json ../out/releases.json ../out/info download/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Version $V veröffentlicht"
+          git push
+      - name: Update-Erkennung mit dem echten Begleiter prüfen
+        if: env.SIGNED == '1'
+        working-directory: main
+        run: |
+          for i in $(seq 1 30); do
+            [ "$(curl -fsS "$SITE/download/update.json?t=$(date +%s)" | jq -r .version)" = "$V" ] && break
+            sleep 20
+          done
+          dotnet run --project companion/src/Companion.Headless -- --check-update "$SITE/download/update.json" --assume-version 0.0.1 --download

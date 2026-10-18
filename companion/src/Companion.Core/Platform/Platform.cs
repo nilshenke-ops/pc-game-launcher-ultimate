@@ -160,4 +160,7 @@ public interface IUpdateInstaller
     bool Supported { get; }
     /// <summary>Replaces the running executable with <paramref name="newFile"/> and restarts. Returns error or null.</summary>
     string? Install(string newFile);
+    /// <summary>True if the previous version is kept and can be restored.</summary>
+    bool CanRollback => false;
+    string? Rollback() => "Nur im Windows-Begleiter möglich.";
 }

@@ -9,6 +9,7 @@ import { useConn, useEvent, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { Banner, Button, Modal } from "./ui";
 import { CommandPalette } from "./CommandPalette";
+import { UpdatePrompt } from "./UpdateCenter";
 import { startPendingSync } from "../lib/pending-sounds";
 
 function ConnPill() {
@@ -215,6 +216,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {palette && <CommandPalette onClose={() => setPalette(false)} />}
       <PairingRequests />
       <NeedsPc />
+      <UpdatePrompt />
     </div>
   );
 }

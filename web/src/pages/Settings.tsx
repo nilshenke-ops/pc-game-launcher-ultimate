@@ -6,14 +6,14 @@ import {
 } from "lucide-react";
 import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useEvent, useRpc, toast } from "../lib/hooks";
+import { useConn, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import {
   ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme,
 } from "../lib/prefs";
-import type { Settings, UpdateStatus } from "../lib/types";
+import type { Settings } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
-import { DownloadCard } from "../components/DownloadCard";
+import { PcUpdates } from "../components/UpdateCenter";
 
 type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy";
 
@@ -399,53 +399,20 @@ function Autostart() {
 // ------------------------------------------------------------------ updates
 
 function Updates() {
-  const q = useRpc<UpdateStatus>("updates.status", {}, ["updates"]);
   const s = useSettings();
-  const conn = useConn();
-  const [progress, setProgress] = useState<{ done: number; total?: number } | null>(null);
   const [src, setSrc] = useState("");
-  const [busy, setBusy] = useState<string | null>(null);
   useEffect(() => { setSrc(s.data?.settings.updateManifestUrl ?? ""); }, [s.data]);
-  useEvent<{ done: number; total?: number }>("update.progress", setProgress);
-  const act = async (m: string, label: string) => {
-    setBusy(m);
-    try {
-      // The companion reports failed checks/downloads in the status (state "error") instead of throwing.
-      const r = await client.call<{ state?: string; error?: string } | null>(m);
-      if (r && (r.state === "error" || r.state === "no-source")) toast(r.error ?? t("Fehlgeschlagen"), "error"); else toast(label, "success");
-    } catch (e) { toast((e as Error).message, "error"); }
-    setBusy(null); setProgress(null); q.reload();
-  };
-  const u = q.data;
   return (
-    <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
-      {u && (
-        <Card title={t("Updates")} icon={<RefreshCw size={18} />} meta={`${t("Installiert")}: v${u.current}`}>
-          <div className="stack">
-            <Field label={t("Update-Quelle (Manifest-URL)")} hint={t("Standard: die offizielle Download-Seite. Wird 2 Minuten nach dem Start und dann einmal täglich geprüft; bei einer neuen Version kommt eine Benachrichtigung. Leer = keine Prüfung. Es wird nie automatisch installiert.")}>
-              <div className="row nowrap"><input className="input mono" value={src} onChange={(e) => setSrc(e.target.value)} placeholder="https://…/update.json" />
-                <Button onClick={() => s.save({ updateManifestUrl: src }, true)}>{t("Speichern")}</Button></div>
-            </Field>
-            <div className="row">
-              <span className={`badge ${u.state === "available" || u.state === "ready" ? "info" : u.state === "error" ? "error" : u.state === "up-to-date" ? "ok" : ""}`}>
-                {({ idle: t("Noch nicht geprüft"), "no-source": t("Keine Quelle"), "up-to-date": t("Aktuell"), available: t("Update verfügbar"), downloading: t("Lädt …"), ready: t("Bereit zur Installation"), error: t("Fehler") } as Record<string, string>)[u.state] ?? u.state}
-              </span>
-              {u.checkedAt && <span className="tiny muted">{t("Geprüft {d}", { d: dateTime(u.checkedAt) })}</span>}
-            </div>
-            {u.error && <Banner kind="error">{u.error}</Banner>}
-            {u.available && <Banner kind="info" title={t("Version {v} verfügbar", { v: u.available.version })}>{u.available.notes}{u.available.size ? ` (${bytes(u.available.size)})` : ""}</Banner>}
-            {progress && <div className="progress-bar"><i style={{ width: progress.total ? `${(progress.done / progress.total) * 100}%` : "30%" }} /></div>}
-            <div className="row">
-              <Button busy={busy === "updates.check"} onClick={() => act("updates.check", t("Prüfung abgeschlossen"))}>{t("Nach Updates suchen")}</Button>
-              <Button disabled={!u.available} busy={busy === "updates.download"} onClick={() => act("updates.download", t("Download abgeschlossen und geprüft"))}>{t("Herunterladen")}</Button>
-              <Button variant="primary" disabled={!u.downloaded || !u.canInstall || !conn.me?.isLocal} onClick={async () => { if (await confirmDialog(t("Update installieren?"), t("Der Companion wird beendet, ersetzt und neu gestartet."))) act("updates.install", t("Update wird installiert")); }}>{t("Installieren & neu starten")}</Button>
-            </div>
-            <p className="tiny muted">{t("Falls die automatische Installation nicht möglich ist: neue EXE herunterladen, Companion beenden, alte Datei ersetzen, neu starten. Deine Daten liegen getrennt im Datenordner und bleiben erhalten.")}</p>
-          </div>
-        </Card>
-      )}
-      <DownloadCard />
-    </Loadable>
+    <>
+      <Card title={t("Update-Quelle")} icon={<RefreshCw size={18} />} actions={<Link className="btn sm" to="/updates">{t("Updates & Versionen")}</Link>}>
+        <Field label={t("Update-Quelle (Manifest-URL)")} hint={t("Standard: die offizielle Download-Seite. Wird 2 Minuten nach dem Start und dann einmal täglich geprüft; bei einer neuen Version kommt eine Benachrichtigung. Leer = keine Prüfung. Es wird nie automatisch installiert.")}>
+          <div className="row nowrap"><input className="input mono" value={src} onChange={(e) => setSrc(e.target.value)} placeholder="https://…/update.json" />
+            <Button onClick={() => s.save({ updateManifestUrl: src }, true)}>{t("Speichern")}</Button></div>
+        </Field>
+        <p className="tiny muted">{t("Updates der offiziellen Quelle müssen mit dem Schlüssel des Projekts signiert sein. Eigene Quellen dürfen unsigniert sein und werden dann so gekennzeichnet.")}</p>
+      </Card>
+      <PcUpdates />
+    </>
   );
 }
 

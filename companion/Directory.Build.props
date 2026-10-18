@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <Version>1.1.0</Version>
+    <!-- Single version source for companion and web app: the VERSION file in the repository root. -->
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../VERSION').Trim())</Version>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>

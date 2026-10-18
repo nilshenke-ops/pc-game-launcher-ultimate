@@ -286,27 +286,50 @@ sealed class WindowsDesktop(UiInvoker ui, Func<TrayIcon?> tray) : IDesktopIntegr
 sealed class SelfReplaceInstaller : IUpdateInstaller
 {
     public bool Supported => Environment.ProcessPath?.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) == true;
+    static string Exe => Environment.ProcessPath!;
+    static string Old => Exe + ".old";
+    public bool CanRollback => Supported && File.Exists(Old);
 
+    /// <summary>Keeps the running version as "&lt;exe&gt;.old", copies the new file in place and restarts.
+    /// If copying fails, the old file is moved back – the installed version stays usable. No administrator rights are
+    /// needed as long as the program folder is writable for the user (e.g. Documents, Desktop, own folder).</summary>
     public string? Install(string newFile)
     {
-        var exe = Environment.ProcessPath!;
-        var old = exe + ".old";
+        var exe = Exe;
         try
         {
-            if (File.Exists(old)) File.Delete(old);
-            File.Move(exe, old);
+            if (File.Exists(Old)) File.Delete(Old);
+            File.Move(exe, Old);
             try { File.Copy(newFile, exe); }
-            catch { File.Move(old, exe); throw; }
-            Process.Start(new ProcessStartInfo(exe, "--updated") { UseShellExecute = false })?.Dispose();
-            Program.RequestExit();
+            catch { File.Move(Old, exe); throw; }
+            Restart(exe);
             return null;
         }
-        catch (Exception ex) { return "Installation fehlgeschlagen (Ordner evtl. schreibgeschützt): " + ex.Message; }
+        catch (Exception ex) { return "Installation fehlgeschlagen (Ordner evtl. schreibgeschützt – Programm z. B. nach Dokumente verschieben): " + ex.Message; }
     }
 
-    public static void CleanupOld()
+    /// <summary>Swaps current and previous version (the current one becomes "&lt;exe&gt;.old", so this can be undone again).</summary>
+    public string? Rollback()
     {
-        try { var old = Environment.ProcessPath + ".old"; if (File.Exists(old)) File.Delete(old); } catch { }
+        if (!CanRollback) return "Keine vorherige Version vorhanden.";
+        var exe = Exe; var tmp = exe + ".swap";
+        try
+        {
+            if (File.Exists(tmp)) File.Delete(tmp);
+            File.Move(exe, tmp);
+            try { File.Move(Old, exe); }
+            catch { File.Move(tmp, exe); throw; }
+            File.Move(tmp, Old);
+            Restart(exe);
+            return null;
+        }
+        catch (Exception ex) { return "Zurücksetzen fehlgeschlagen: " + ex.Message; }
+    }
+
+    static void Restart(string exe)
+    {
+        Process.Start(new ProcessStartInfo(exe, "--updated") { UseShellExecute = false })?.Dispose();
+        Program.RequestExit();
     }
 }
 

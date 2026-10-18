@@ -15,13 +15,19 @@ static class Program
     static int Main(string[] args)
     {
         using var mutex = new Mutex(true, @"Local\PCGameLauncherUltimate.Companion", out var first);
+        // After an update/rollback the previous process is still shutting down: wait for it instead of exiting.
+        if (!first && args.Contains("--updated"))
+        {
+            try { first = mutex.WaitOne(TimeSpan.FromSeconds(30)); }
+            catch (AbandonedMutexException) { first = true; }
+        }
         if (!first)
         {
             // Already running: bring the existing window to front instead of starting twice.
             try { using var ev = EventWaitHandle.OpenExisting(@"Local\PCGameLauncherUltimate.Show"); ev.Set(); } catch { }
             return 0;
         }
-        SelfReplaceInstaller.CleanupOld();
+        // The previous version is kept as "<exe>.old" so it can be restored (Updates → Vorherige Version, or tray menu).
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
@@ -145,6 +151,14 @@ sealed class TrayIcon : IDisposable
             Update();
         });
         menu.Items.Add("Datenordner öffnen", null, (_, _) => _s.Platform.Desktop.OpenFolder(_s.Paths.DataDir));
+        // Works even if the new version's window does not load: tray → back to the previous version.
+        var rollback = new ToolStripMenuItem("Vorherige Version wiederherstellen…", null, (_, _) =>
+        {
+            if (MessageBox.Show("Zur vorherigen Version zurückkehren? Der Begleiter startet neu. Einstellungen und Listen bleiben erhalten.", "PC Game Launcher", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            if (_s.Updates.Rollback() is { } err) MessageBox.Show(err, "PC Game Launcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+        });
+        menu.Items.Add(rollback);
+        menu.Opening += (_, _) => rollback.Visible = _s.Platform.UpdateInstaller.CanRollback;
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add("Beenden", null, (_, _) => _app.ExitApp());
         menu.Opening += (_, _) => Update();

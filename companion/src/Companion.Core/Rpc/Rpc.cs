@@ -283,3 +283,11 @@ public sealed class RpcServer : IHub
 
     public void Changed(string topic) => Broadcast("changed", new { topic });
 }
+
+/// <summary>Hub without connections (command-line tools such as the release check).</summary>
+public sealed class NullHub : IHub
+{
+    public void Broadcast(string ev, object? data, string permission = Security.Permissions.View) { }
+    public void SendTo(RpcSession session, string ev, object? data) { }
+    public void BroadcastTo(Func<RpcSession, bool> filter, string ev, object? data) { }
+}

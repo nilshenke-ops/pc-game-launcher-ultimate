@@ -4,6 +4,23 @@ using Pgl.Core.Services;
 
 // Cross-platform companion without desktop features (no audio, hotkeys, tray).
 // Used for development, automated tests and for running the web app on non-Windows machines.
+// Release check: "--check-update <manifest-url> [--assume-version 1.1.0] [--download]" runs the companion's real update
+// check (manifest, https, signature) and optionally the download with size/checksum/file check. Exit code 0 = OK.
+if (args.Length > 1 && args[0] == "--check-update")
+{
+    var tmp = Directory.CreateTempSubdirectory("pgl-update-check").FullName;
+    var settings = new Pgl.Core.Models.Settings { UpdateManifestUrl = args[1] };
+    var updates = new UpdateService(new AppPaths(tmp), () => settings, new NullUpdateInstaller(), new Pgl.Core.Rpc.NullHub());
+    var assume = Array.IndexOf(args, "--assume-version") is var ai && ai > 0 && ai + 1 < args.Length ? args[ai + 1] : null;
+    updates.VersionOverride = assume;
+    var status = System.Text.Json.JsonSerializer.SerializeToElement(await updates.Check(), Json.Options);
+    if (args.Contains("--download") && status.GetProperty("state").GetString() == "available")
+        status = System.Text.Json.JsonSerializer.SerializeToElement(await updates.Download(), Json.Options);
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(status, Json.Pretty));
+    try { Directory.Delete(tmp, true); } catch { }
+    return status.GetProperty("state").GetString() is "available" or "ready" or "up-to-date" ? 0 : 2;
+}
+
 string? dataDir = null;
 for (int i = 0; i < args.Length - 1; i++) if (args[i] == "--data") dataDir = args[i + 1];
 

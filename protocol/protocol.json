@@ -116,6 +116,7 @@
     "updates.check": "admin",
     "updates.download": "admin",
     "updates.install": "local",
+    "updates.rollback": "local",
 
     "backup.export": "admin",
     "backup.validate": "admin",

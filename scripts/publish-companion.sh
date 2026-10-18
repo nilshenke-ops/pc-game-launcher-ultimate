@@ -5,7 +5,7 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 OUT="$ROOT/artifacts"
-VERSION="$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' "$ROOT/companion/Directory.Build.props")"
+VERSION="$(tr -d "[:space:]" < "$ROOT/VERSION")"
 SELF_CONTAINED=true
 [[ "${1:-}" == "--framework-dependent" ]] && SELF_CONTAINED=false
 

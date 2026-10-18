@@ -67,7 +67,12 @@ public sealed class CompanionServices : IAsyncDisposable
         Network = new NetworkDiagnostics(Relay.Status, Settings.Get, Web.LanUrls);
         Updates = new UpdateService(paths, Settings.Get, platform.UpdateInstaller, Rpc);
         Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
-        Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Einstellungen → Updates: herunterladen und installieren. Es wird nie automatisch installiert.", "/settings?s=updates");
+        Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Updates & Versionen: Änderungen ansehen, herunterladen und installieren. Es wird nie automatisch installiert.", "/updates");
+        Updates.CreateRestorePoint = name =>
+        {
+            try { return Path.GetFileName(Backup.CreateZip(includeSounds: false, Path.Combine(paths.BackupsDir, $"{name}-{DateTime.Now:yyyyMMdd-HHmmss}.zip"))); }
+            catch (Exception ex) { Log.Warn("updates", "Wiederherstellungspunkt nicht erstellt: " + ex.Message); return null; }
+        };
         Backup = new BackupService(paths, this);
         GamePass = new GamePassService(paths, Library, platform, Settings.Get, Rpc);
         Covers = new CoverService(Library, Settings.Get);
