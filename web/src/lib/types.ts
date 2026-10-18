@@ -173,7 +173,7 @@ export interface AppState {
   platform: string;
   startedAt: string;
   features: Features;
-  activeProfile?: { id: string; name: string; color: string; icon: string; reason?: string; since?: string; dashboardLayoutId?: string };
+  activeProfile?: { id: string; name: string; color: string; icon: string; reason?: string; since?: string; dashboardLayoutId?: string; quickActionIds?: string[] };
   autoSwitch: boolean;
   running: { itemId: string; name: string; since: string }[];
   playing: PlayingState;

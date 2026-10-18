@@ -335,7 +335,9 @@ public sealed class ProfileService
     readonly IHub _hub;
     public event Action<Profile, string>? Activated;
     /// <summary>Applies audio/soundboard parts of a profile. Set by the composition root.</summary>
-    public Action<Profile>? Apply { get; set; }
+    public Action<Profile, ProfileAudioPlan>? Apply { get; set; }
+    /// <summary>Current output device, soundboard volume and active collection (to remember the user's own values).</summary>
+    public Func<(string? output, int volume, string? collection)>? CurrentAudio { get; set; }
     public Func<string, string, LaunchResult>? LaunchItem { get; set; }
 
     public ProfileService(AppPaths paths, IHub hub)
@@ -404,22 +406,46 @@ public sealed class ProfileService
 
     public Profile Activate(string id, string reason, bool rememberPrevious = true)
     {
-        var p = _store.Update(f =>
+        var current = CurrentAudio?.Invoke();
+        var (p, plan) = _store.Update(f =>
         {
             var p = f.Profiles.FirstOrDefault(x => x.Id == id) ?? throw new RpcException("not-found", "Profil nicht gefunden.");
+            var prev = f.Profiles.FirstOrDefault(x => x.Id == f.ActiveProfileId);
             if (rememberPrevious && f.ActiveProfileId != id) f.PreviousProfileId = f.ActiveProfileId;
             f.ActiveProfileId = id;
             f.ActiveReason = reason;
             f.ActiveSince = DateTime.UtcNow;
-            return p;
+            return (p, Plan(f.Baseline, p, prev, current));
         });
-        try { Apply?.Invoke(p); } catch (Exception ex) { Log.Warn("profiles", $"Profil teilweise angewendet: {ex.Message}"); }
+        try { Apply?.Invoke(p, plan); } catch (Exception ex) { Log.Warn("profiles", $"Profil teilweise angewendet: {ex.Message}"); }
         foreach (var progId in p.LaunchProgramIds) LaunchItem?.Invoke(progId, $"Profil {p.Name}");
         Log.Info("profiles", $"Profil aktiviert: {p.Name} ({reason})");
         _hub.Broadcast("profile.active", new { id = p.Id, name = p.Name, reason });
         _hub.Changed("profiles");
         Activated?.Invoke(p, reason);
         return p;
+    }
+
+    /// <summary>
+    /// A value set by the profile wins. A value the profile leaves open falls back to the user's own value from before the
+    /// previous profile overrode it – so "Ruhemodus (30 %) → Allgemein" brings the volume back instead of keeping 30 %.
+    /// </summary>
+    internal static ProfileAudioPlan Plan(ProfileBaseline b, Profile p, Profile? prev, (string? output, int volume, string? collection)? current)
+    {
+        // Remember the user's own value the first time a profile overrides it.
+        if (current is { } c)
+        {
+            if (p.AudioOutputDeviceId != null && prev?.AudioOutputDeviceId == null) { b.HasOutput = true; b.OutputDeviceId = c.output; }
+            if (p.SoundboardVolume != null && prev?.SoundboardVolume == null) b.SoundboardVolume = c.volume;
+            if (p.SoundCollectionId != null && prev?.SoundCollectionId == null) { b.HasCollection = true; b.SoundCollectionId = c.collection; }
+        }
+        var restoreOutput = p.AudioOutputDeviceId == null && prev?.AudioOutputDeviceId != null && b.HasOutput;
+        var restoreVolume = p.SoundboardVolume == null && prev?.SoundboardVolume != null && b.SoundboardVolume != null;
+        var restoreCollection = p.SoundCollectionId == null && prev?.SoundCollectionId != null && b.HasCollection;
+        return new ProfileAudioPlan(
+            p.AudioOutputDeviceId != null || restoreOutput, p.AudioOutputDeviceId ?? (restoreOutput ? b.OutputDeviceId : null),
+            p.SoundboardVolume ?? (restoreVolume ? b.SoundboardVolume : null),
+            p.SoundCollectionId != null || restoreCollection, p.SoundCollectionId ?? (restoreCollection ? b.SoundCollectionId : null));
     }
 
     public Profile? Revert(string reason)

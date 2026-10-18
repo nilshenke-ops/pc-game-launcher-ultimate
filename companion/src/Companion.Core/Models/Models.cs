@@ -106,7 +106,21 @@ public sealed class ProfilesFile
     public string? PreviousProfileId { get; set; }
     /// <summary>Automatically activate a game's profile while it runs and revert afterwards.</summary>
     public bool AutoSwitch { get; set; } = true;
+    /// <summary>The user's own audio values from before a profile overrode them; restored by profiles that leave a value open.</summary>
+    public ProfileBaseline Baseline { get; set; } = new();
 }
+
+public sealed class ProfileBaseline
+{
+    public bool HasOutput { get; set; }
+    public string? OutputDeviceId { get; set; }
+    public int? SoundboardVolume { get; set; }
+    public bool HasCollection { get; set; }
+    public string? SoundCollectionId { get; set; }
+}
+
+/// <summary>What a profile activation changes: set = profile value, or the saved baseline when switching away from an override.</summary>
+public sealed record ProfileAudioPlan(bool SetOutput, string? OutputDeviceId, int? SoundboardVolume, bool SetCollection, string? SoundCollectionId);
 
 public enum TriggerType { GameStarted, GameStopped, CompanionStarted, AudioDeviceMissing, RelayDisconnected, UpdateFailed, ProfileActivated }
 

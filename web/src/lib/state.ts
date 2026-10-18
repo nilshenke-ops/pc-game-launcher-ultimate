@@ -32,6 +32,10 @@ export function refreshState(delay = 150) {
 
 const TOPICS = new Set(["profiles", "library", "audio", "settings", "sounds", "devices", "notifications", "updates", "history"]);
 client.on("authenticated", () => refreshState(0));
+// Connection lost: forget the overview, so nothing (e.g. "Rocket League läuft") is shown as current while the PC is unreachable.
+client.subscribe(() => {
+  if (state && (client.status.phase !== "online" || client.status.auth !== "ok")) { state = null; error = null; updatedAt = null; publish(); }
+});
 client.on("changed", (d) => { if (TOPICS.has((d as { topic: string }).topic)) refreshState(); });
 client.on("session", () => refreshState());
 client.on("profile.active", () => refreshState());

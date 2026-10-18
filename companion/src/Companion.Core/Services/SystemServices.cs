@@ -236,6 +236,8 @@ public sealed class UpdateService
     readonly Func<Settings> _settings;
     readonly IUpdateInstaller _installer;
     readonly IHub _hub;
+    /// <summary>Raised when checking or downloading an update fails (automation trigger "Update fehlgeschlagen").</summary>
+    public event Action<string>? Failed;
     readonly HttpClient _http = new() { Timeout = TimeSpan.FromMinutes(10) };
     public static string CurrentVersion => typeof(UpdateService).Assembly.GetName().Version?.ToString(3) ?? "0.0.0";
 
@@ -287,7 +289,7 @@ public sealed class UpdateService
             _state = _available != null ? "available" : "up-to-date";
             _error = null;
         }
-        catch (Exception ex) { _state = "error"; _error = "Prüfung fehlgeschlagen: " + ex.Message; }
+        catch (Exception ex) { _state = "error"; _error = "Prüfung fehlgeschlagen: " + ex.Message; Failed?.Invoke(_error); }
         _hub.Changed("updates");
         return Status();
     }
@@ -332,7 +334,7 @@ public sealed class UpdateService
             _state = "ready";
             _error = null;
         }
-        catch (Exception ex) { _state = "error"; _error = "Download fehlgeschlagen: " + ex.Message; }
+        catch (Exception ex) { _state = "error"; _error = "Download fehlgeschlagen: " + ex.Message; Failed?.Invoke(_error); }
         _hub.Changed("updates");
         return Status();
     }

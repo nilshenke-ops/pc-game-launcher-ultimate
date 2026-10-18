@@ -8,6 +8,7 @@ import { bumpUsage, getPrefs, setPrefs } from "../lib/prefs";
 import { toast } from "../lib/hooks";
 import type { AutomationRule, LibraryItem, ProfilesFile, QuickAction, SoundsFile } from "../lib/types";
 import { Modal } from "./ui";
+import { runQuickAction } from "./run-quick";
 import { score } from "./search-score";
 
 interface Entry { key: string; group: string; label: string; sub?: string; icon: React.ReactNode; run: () => void; keywords?: string }
@@ -49,8 +50,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       icon: i.iconData ? <img src={i.iconData} alt="" width={22} /> : i.kind === "game" ? <Gamepad2 size={18} /> : <LayoutGrid size={18} />,
       run: call("library.launch", { id: i.id }, t("{name} wird gestartet", { name: i.name })), keywords: i.categories.join(" "),
     });
-    for (const s of data.sounds?.sounds ?? []) list.push({ key: "snd:" + s.id, group: t("Sounds"), label: s.name, sub: t("Abspielen"), icon: <Music size={18} />, run: call("sounds.play", { id: s.id }, t("Sound läuft")), keywords: s.categories.join(" ") });
-    for (const a of data.quick) list.push({ key: "qa:" + a.id, group: t("Quick Actions"), label: a.name, sub: t("Ausführen"), icon: <Zap size={18} />, run: call("quick.run", { id: a.id }, t("Quick Action ausgeführt")), keywords: a.category ?? "" });
+    for (const s of data.sounds?.sounds ?? []) list.push({ key: "snd:" + s.id, group: t("Sounds"), label: s.name, sub: t("Abspielen"), icon: <Music size={18} />, run: call("sounds.play", { id: s.id }, t("Sound gestartet")), keywords: s.categories.join(" ") });
+    for (const a of data.quick) list.push({ key: "qa:" + a.id, group: t("Quick Actions"), label: a.name, sub: t("Ausführen"), icon: <Zap size={18} />, run: () => { onClose(); runQuickAction(a); }, keywords: a.category ?? "" });
     for (const p of data.profiles?.profiles ?? []) list.push({ key: "prof:" + p.id, group: t("Gaming-Profile"), label: p.name, sub: t("Aktivieren"), icon: <Swords size={18} />, run: call("profiles.activate", { id: p.id }, t("Profil aktiviert")) });
     for (const r of data.rules) list.push({ key: "rule:" + r.id, group: t("Automatisierungen"), label: r.name, sub: t("Öffnen"), icon: <Bot size={18} />, run: go("/automations") });
     list.push(

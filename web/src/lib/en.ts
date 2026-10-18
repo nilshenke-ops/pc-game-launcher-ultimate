@@ -839,4 +839,8 @@ export const en: Record<string, string> = {
   "WebSocket-Verbindung": "WebSocket connection",
   "{u} zeigt auf dieses Gerät selbst, nicht auf den PC.": "{u} points to this device itself, not to the PC.",
   "über Relay": "via relay",
+  "Fehlgeschlagen": "Failed",
+  "Lautstärke ändern braucht die Berechtigung „Verwalten“ (am PC unter Geräte).": "Changing the volume needs the “Manage” permission (on the PC under Devices).",
+  "Nicht verbunden": "Not connected",
+  "Sound gestartet": "Sound started",
 };

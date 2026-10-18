@@ -3,7 +3,6 @@ import { ArrowLeft, ArrowRight, Pencil, Plus, Zap } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
-import { bumpUsage } from "../lib/prefs";
 import { ICONS, IconByName } from "../lib/nav";
 import type { QuickAction } from "../lib/types";
 import { Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
@@ -11,15 +10,7 @@ import { describeStep, StepEditor, stepsValid, useStepRefs } from "../components
 
 const blank: QuickAction = { id: "", name: "", icon: "zap", category: "", favorite: false, showOnDashboard: true, requireConfirm: false, steps: [{ type: "launchItem", ref: null }] };
 
-export async function runQuickAction(a: QuickAction) {
-  if (a.requireConfirm && !(await confirmDialog(t("„{n}“ ausführen?", { n: a.name }), t("Diese Quick Action ist als bestätigungspflichtig markiert.")))) return;
-  bumpUsage("qa:" + a.id);
-  try {
-    const r = await client.call<{ results: string[] }>("quick.run", { id: a.id });
-    const failed = r.results.filter((x) => x.startsWith("Fehler"));
-    toast(failed.length ? failed.join(" · ") : t("„{n}“ ausgeführt", { n: a.name }), failed.length ? "warning" : "success");
-  } catch (e) { toast((e as Error).message, "error"); }
-}
+import { runQuickAction } from "../components/run-quick";
 
 export default function QuickActions() {
   const q = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);

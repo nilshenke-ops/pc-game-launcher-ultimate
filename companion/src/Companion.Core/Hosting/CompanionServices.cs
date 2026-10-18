@@ -62,6 +62,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Web = new WebHost(this, assets);
         Network = new NetworkDiagnostics(Relay.Status, Settings.Get, Web.LanUrls);
         Updates = new UpdateService(paths, Settings.Get, platform.UpdateInstaller, Rpc);
+        Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
         Backup = new BackupService(paths, this);
 
         Wire();
@@ -129,15 +130,16 @@ public sealed class CompanionServices : IAsyncDisposable
         };
 
         Profiles.LaunchItem = (id, by) => Library.Launch(id, by);
-        Profiles.Apply = p =>
+        Profiles.CurrentAudio = () => { var a = Audio.Settings(); return (a.OutputDeviceId, a.SoundboardVolume, Soundboard.Get().ActiveCollectionId); };
+        Profiles.Apply = (p, plan) =>
         {
-            if (p.AudioOutputDeviceId != null || p.SoundboardVolume != null)
+            if (plan.SetOutput || plan.SoundboardVolume != null)
                 Audio.Update(a =>
                 {
-                    if (p.AudioOutputDeviceId != null) a.OutputDeviceId = p.AudioOutputDeviceId;
-                    if (p.SoundboardVolume != null) a.SoundboardVolume = p.SoundboardVolume.Value;
+                    if (plan.SetOutput) a.OutputDeviceId = plan.OutputDeviceId;
+                    if (plan.SoundboardVolume != null) a.SoundboardVolume = plan.SoundboardVolume.Value;
                 });
-            if (p.SoundCollectionId != null) Soundboard.SetActiveCollection(p.SoundCollectionId);
+            if (plan.SetCollection) Soundboard.SetActiveCollection(plan.SoundCollectionId);
             if (p.AudioOutputDeviceId != null && Audio.Engine.Supported && Audio.Devices().All(d => d.Id != p.AudioOutputDeviceId))
             {
                 Notifications.Push("audio-missing", Severity.Warning, "Audiogerät des Profils fehlt", $"Profil „{p.Name}“ nutzt ein Gerät, das nicht angeschlossen ist.", "/audio");

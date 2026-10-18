@@ -73,3 +73,27 @@ public class ConnectionTests
         Assert.False(string.IsNullOrEmpty(relay.GetProperty("fix").GetString()));
     }
 }
+
+/// <summary>Profiles must not leave their audio values behind when switching to a profile that leaves them open.</summary>
+public class ProfileAudioTests
+{
+    [Fact]
+    public async Task Switching_back_restores_the_users_own_volume_and_output()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        s.Audio.Update(a => { a.SoundboardVolume = 80; a.OutputDeviceId = "speakers"; });
+        var admin = await Fixtures.Admin(s);
+        var saved = await admin.Ok("profiles.save", new { profile = new { id = "", name = "Leise", icon = "moon", color = "#34d399", gameIds = Array.Empty<string>(), launchProgramIds = Array.Empty<string>(), quickActionIds = Array.Empty<string>(), hotkeyIds = Array.Empty<string>(), soundboardVolume = 30, audioOutputDeviceId = "headset", quietNotifications = true } });
+        var quietId = saved.GetProperty("id").GetString();
+        var general = s.Profiles.Get().Profiles.First(p => p.SoundboardVolume == null && p.AudioOutputDeviceId == null);
+
+        await admin.Ok("profiles.activate", new { id = quietId });
+        Assert.Equal(30, s.Audio.Settings().SoundboardVolume);
+        Assert.Equal("headset", s.Audio.Settings().OutputDeviceId);
+
+        await admin.Ok("profiles.activate", new { id = general.Id });
+        Assert.Equal(80, s.Audio.Settings().SoundboardVolume);
+        Assert.Equal("speakers", s.Audio.Settings().OutputDeviceId);
+    }
+}

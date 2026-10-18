@@ -93,17 +93,23 @@ public sealed class AudioService
         u.MicVolume = Math.Clamp(u.MicVolume, 0, 200);
         u.MaxConcurrent = Math.Clamp(u.MaxConcurrent, 1, 16);
         if (u.PlayMode is not ("overlap" or "queue" or "replace")) u.PlayMode = "overlap";
+        var before = Settings();
         _store.Replace(u);
-        var err = ApplyMic();
+        // Restarting the mic passthrough causes a short dropout in Discord – only do it when mic settings changed.
+        var err = MicChanged(before, u) ? ApplyMic() : null;
         _hub.Changed("audio");
         if (err != null) throw new RpcException("audio", "Gespeichert, aber Mikrofon-Durchleitung fehlgeschlagen: " + err);
         return u;
     }
 
+    static bool MicChanged(AudioSettings a, AudioSettings b) =>
+        a.MicPassthrough != b.MicPassthrough || a.MicDeviceId != b.MicDeviceId || a.MicVolume != b.MicVolume || a.OutputDeviceId != b.OutputDeviceId;
+
     public void Update(Action<AudioSettings> change)
     {
+        var before = Settings();
         _store.Update(change);
-        ApplyMic();
+        if (MicChanged(before, Settings())) ApplyMic();
         _hub.Changed("audio");
     }
 
@@ -465,6 +471,7 @@ public sealed class SoundboardService
 
     public void StopAll()
     {
+        lock (_lock) _queue.Clear(); // first, so the end of the stopped sounds cannot start the next queued one
         _audio.Engine.StopAll();
         lock (_lock) { _playing.Clear(); _queue.Clear(); }
         PublishPlaying();

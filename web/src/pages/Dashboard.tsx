@@ -14,6 +14,7 @@ import { IconByName } from "../lib/nav";
 import type { LibraryItem, MetricsSample, Notification, QuickAction } from "../lib/types";
 import { Banner, Button, Card, Empty, Meter, PageHead, Thumb } from "../components/ui";
 import { DownloadCard } from "../components/DownloadCard";
+import { runQuickAction } from "../components/run-quick";
 
 function launch(item: LibraryItem) {
   client.call("library.launch", { id: item.id }).then(() => toast(t("{name} wird gestartet", { name: item.name }), "success")).catch((e) => toast(e.message, "error"));
@@ -21,7 +22,8 @@ function launch(item: LibraryItem) {
 
 function StatusWidget() {
   const { state, updatedAt } = useAppState();
-  useConn();
+  const conn = useConn();
+  const online = conn.phase === "online" && conn.auth === "ok"; // real connection state, not the last known data
   if (client.preview) {
     return (
       <div className="stack">
@@ -47,7 +49,7 @@ function StatusWidget() {
           <h2 style={{ fontSize: "1.4rem" }}>{state.pcName}</h2>
           <div className="small muted">{state.platform} · Companion v{state.version}</div>
         </div>
-        <span className="badge ok"><span className="dot ok" />{t("Online")}</span>
+        {online ? <span className="badge ok"><span className="dot ok" />{t("Online")}</span> : <span className="badge"><span className="dot error" />{t("Nicht verbunden")}</span>}
       </div>
       <div className="row">
         <span className="badge info"><Wifi size={12} />{state.me.transport === "relay" ? t("Über Relay") : t("Lokal verbunden")}</span>
@@ -95,12 +97,16 @@ function ProfileWidget() {
 
 function QuickWidget() {
   const q = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);
-  const actions = (q.data?.actions ?? []).filter((a) => a.showOnDashboard).slice(0, 8);
+  const { state } = useAppState();
+  // The active gaming profile's quick actions come first (in the profile's order); otherwise the ones marked for the dashboard.
+  const all = q.data?.actions ?? [];
+  const fromProfile = (state?.activeProfile?.quickActionIds ?? []).map((id) => all.find((a) => a.id === id)).filter((a): a is QuickAction => !!a);
+  const actions = (fromProfile.length ? fromProfile : all.filter((a) => a.showOnDashboard)).slice(0, 8);
   if (!q.loading && !actions.length) return <Empty icon={<Zap size={26} />} title={t("Keine Quick Actions")} action={<Link to="/quick" className="btn sm">{t("Erstellen")}</Link>} />;
   return (
     <div className="qa-grid">
       {actions.map((a) => (
-        <button key={a.id} className="card flat qa-tile" style={{ padding: 12 }} onClick={() => client.call("quick.run", { id: a.id }).then(() => toast(t("„{n}“ ausgeführt", { n: a.name }), "success")).catch((e) => toast(e.message, "error"))}>
+        <button key={a.id} className="card flat qa-tile" style={{ padding: 12 }} onClick={() => runQuickAction(a)}>
           <span className="ico"><IconByName name={a.icon} /></span>
           <b className="small">{a.name}</b>
         </button>

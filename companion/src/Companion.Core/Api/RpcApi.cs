@@ -104,7 +104,7 @@ public static class RpcApi
                 platform = s.Platform.Name,
                 startedAt = s.StartedAt,
                 features = s.Features(),
-                activeProfile = active == null ? null : new { active.Id, active.Name, active.Color, active.Icon, reason = prof.ActiveReason, since = prof.ActiveSince, active.DashboardLayoutId },
+                activeProfile = active == null ? null : new { active.Id, active.Name, active.Color, active.Icon, reason = prof.ActiveReason, since = prof.ActiveSince, active.DashboardLayoutId, active.QuickActionIds },
                 autoSwitch = prof.AutoSwitch,
                 running = s.RunningList(),
                 playing = s.Soundboard.Playing(),

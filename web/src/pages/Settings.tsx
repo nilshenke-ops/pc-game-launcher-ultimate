@@ -397,7 +397,11 @@ function Updates() {
   useEvent<{ done: number; total?: number }>("update.progress", setProgress);
   const act = async (m: string, label: string) => {
     setBusy(m);
-    try { await client.call(m); toast(label, "success"); } catch (e) { toast((e as Error).message, "error"); }
+    try {
+      // The companion reports failed checks/downloads in the status (state "error") instead of throwing.
+      const r = await client.call<{ state?: string; error?: string } | null>(m);
+      if (r && r.state === "error") toast(r.error ?? t("Fehlgeschlagen"), "error"); else toast(label, "success");
+    } catch (e) { toast((e as Error).message, "error"); }
     setBusy(null); setProgress(null); q.reload();
   };
   const u = q.data;

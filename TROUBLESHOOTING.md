@@ -12,6 +12,16 @@ Erster Schritt bei jedem Problem: **Diagnose → Diagnose ausführen**. Sie tren
 | WLAN-Zugriff ausgeschaltet | Einstellungen → Verbindung → „Im WLAN erreichbar“, danach Companion neu starten |
 | Gast-WLAN / Client-Isolation | Router trennt Geräte voneinander → normales WLAN nutzen |
 
+## Relay-Fehler mit `ws://127.0.0.1:8787/ws` („Relay hat die Anmeldung abgelehnt“)
+Ursache: Als Relay-Adresse war die Adresse des PC-Begleiters selbst eingetragen. `ws://…:8787/ws` ist der Endpunkt, mit dem sich Browser (iPad, Handy) mit dem Begleiter verbinden – kein Relay. Der Begleiter hat sich mit sich selbst verbunden und wurde abgewiesen.
+Lösung: Im WLAN wird **kein Relay** gebraucht → Einstellungen → Verbindung → „Mit eigenem Relay verbinden“ ausschalten. Für unterwegs Tailscale Funnel nutzen (siehe INSTALLATION.md). Ein Relay ist ein eigener Server (`npm run start:relay`, Standard-Port 8788, Endpunkt `/companion`). Ab dieser Version lehnt der Begleiter solche Adressen ab und erklärt das in der Diagnose.
+
+## iPad findet den PC nicht / Adresse `127.0.0.1` oder `localhost`
+`127.0.0.1` und `localhost` bedeuten auf jedem Gerät „dieses Gerät selbst“. Auf dem iPad eingetippt sucht das iPad sich selbst. Verwende die WLAN-Adresse aus dem PC Game Launcher („Gerät koppeln“, z. B. `http://192.168.178.116:8787`) oder die Tailscale-Adresse (`https://…ts.net`). Der Begleiter zeigt `127.0.0.1` nicht mehr als Adresse für andere Geräte an; die Web-App lehnt sie mit Erklärung ab.
+
+## Die Webseite (github.io) verbindet sich nicht mit `http://192.168…`
+Eine https-Seite darf im Browser keine unverschlüsselte Verbindung (`ws://`) öffnen. Entweder im WLAN den QR-Code am PC scannen (öffnet die App direkt vom PC über http) oder Tailscale Funnel einrichten und die `https://…ts.net`-Adresse als „Öffentliche Adresse“ eintragen. Die Diagnoseseite zeigt diesen Fall mit Lösung an.
+
 ## „Preview unavailable“ oder leere Seite nach Link aus WhatsApp
 Der Link zeigte auf eine temporäre Entwicklungsvorschau. Verwende die Adresse aus dem Companion (`http://<PC-IP>:8787`) oder eine eigene dauerhafte https-Adresse (Cloudflare Tunnel mit eigener Domain oder eigenes Relay), siehe INSTALLATION.md.
 
