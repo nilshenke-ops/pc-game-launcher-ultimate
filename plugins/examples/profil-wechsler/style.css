@@ -1,0 +1,9 @@
+body { margin: 0; font: 14px/1.4 system-ui, sans-serif; color: var(--pgl-text); }
+.muted { color: var(--pgl-muted); font-size: 12px; }
+.err { color: #f87171; font-size: 12px; min-height: 1em; }
+button { font: inherit; color: var(--pgl-text); background: transparent; border: 1px solid var(--pgl-border); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--pgl-accent); }
+button:disabled { opacity: .5; cursor: default; }
+.list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.list button { border-left: 4px solid var(--c, var(--pgl-border)); }
+.list button.on { background: var(--pgl-accent); color: var(--pgl-bg); border-color: var(--pgl-accent); font-weight: 600; }

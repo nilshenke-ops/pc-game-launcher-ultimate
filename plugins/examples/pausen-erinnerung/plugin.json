@@ -1,0 +1,17 @@
+{
+  "id": "de.pgl.pausen-erinnerung",
+  "name": "Pausen-Erinnerung",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: zeigt, wie lange das laufende Spiel schon läuft, und erinnert nach einstellbarer Zeit an eine Pause. Der Hinweis erscheint in der App, solange das Widget auf dem Dashboard sichtbar ist.",
+  "category": "productivity",
+  "platforms": ["web"],
+  "permissions": ["history.read", "notify"],
+  "contributes": {
+    "widgets": [{ "id": "pause", "title": "Pausen-Erinnerung", "entry": "widget.html", "height": 150 }],
+    "settings": [{ "key": "minuten", "label": "Pause erinnern nach Minuten (15–480)", "type": "number", "default": 60 }]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

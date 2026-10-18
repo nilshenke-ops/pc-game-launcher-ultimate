@@ -1,0 +1,52 @@
+<!doctype html>
+<html><head><style>
+  body { margin: 0; font: 12px system-ui, sans-serif; color: var(--pgl-text); }
+  canvas { width: 100%; height: 140px; display: block; }
+  .legend { display: flex; gap: 12px; margin-top: 4px; }
+  .legend i { display: inline-block; width: 10px; height: 3px; vertical-align: middle; margin-right: 4px; }
+  .muted { color: var(--pgl-muted); }
+</style></head>
+<body>
+  <canvas id="c"></canvas>
+  <div class="legend" id="legend"></div>
+  <script>
+    // Keeps the samples received while visible ("monitor.sample") and draws them as lines (0–100 %).
+    const series = [
+      { label: "CPU", color: "--pgl-accent", get: (m) => m.cpuPercent },
+      { label: "RAM", color: "--pgl-muted", get: (m) => (m.memTotalBytes ? (m.memUsedBytes / m.memTotalBytes) * 100 : null) },
+      { label: "GPU", color: "#f59e0b", get: (m) => (m.gpus && m.gpus[0] ? m.gpus[0].utilPercent : null) },
+    ];
+    let max = 90;
+    const data = [];
+    pgl.config().then((c) => { max = Math.max(20, Math.min(300, Number(c.punkte) || 90)); }).catch(() => {});
+    const css = (v) => (v.startsWith("--") ? getComputedStyle(document.documentElement).getPropertyValue(v).trim() || "#888" : v);
+
+    function draw() {
+      const cv = document.getElementById("c"), dpr = window.devicePixelRatio || 1;
+      cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr;
+      const g = cv.getContext("2d"), w = cv.width, h = cv.height;
+      g.clearRect(0, 0, w, h);
+      g.strokeStyle = css("--pgl-border"); g.lineWidth = 1;
+      for (const p of [0.25, 0.5, 0.75]) { g.beginPath(); g.moveTo(0, h * p); g.lineTo(w, h * p); g.stroke(); }
+      const step = w / Math.max(1, max - 1), off = max - data.length;
+      const legend = [];
+      for (const s of series) {
+        g.strokeStyle = css(s.color); g.lineWidth = 2 * dpr; g.beginPath();
+        let open = false, last = null;
+        data.forEach((m, i) => {
+          const v = s.get(m);
+          if (v == null) { open = false; return; } // gap instead of an invented value
+          const x = (off + i) * step, y = h - (Math.max(0, Math.min(100, v)) / 100) * h;
+          open ? g.lineTo(x, y) : g.moveTo(x, y); open = true; last = v;
+        });
+        g.stroke();
+        legend.push(`<span><i style="background:${css(s.color)}"></i>${s.label} ${last == null ? '<span class="muted">n. v.</span>' : last.toFixed(0) + " %"}</span>`);
+      }
+      document.getElementById("legend").innerHTML = legend.join("");
+    }
+
+    pgl.on("monitor.sample", (m) => { data.push(m); while (data.length > max) data.shift(); draw(); });
+    window.addEventListener("resize", draw);
+    draw();
+  </script>
+</body></html>

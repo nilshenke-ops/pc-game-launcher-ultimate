@@ -1,0 +1,16 @@
+{
+  "id": "de.pgl.profil-wechsler",
+  "name": "Profil-Wechsler",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: alle Gaming-Profile als Knöpfe, das aktive Profil hervorgehoben, dazu „Zurück zum vorherigen Profil“.",
+  "category": "automation",
+  "platforms": ["web"],
+  "permissions": ["profiles.read", "profiles.activate"],
+  "contributes": {
+    "widgets": [{ "id": "wechsler", "title": "Profil wechseln", "entry": "widget.html", "height": 200 }]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

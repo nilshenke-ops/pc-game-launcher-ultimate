@@ -1,0 +1,17 @@
+{
+  "id": "de.pgl.top-woche",
+  "name": "Top-Spiele der Woche",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: die meistgespielten Spiele der letzten 7, 14 oder 30 Tage mit Balken und Gesamtzeit – aus dem echten Spielverlauf des PCs (letzte 100 Sitzungen).",
+  "category": "information",
+  "platforms": ["web"],
+  "permissions": ["history.read"],
+  "contributes": {
+    "widgets": [{ "id": "top", "title": "Top-Spiele", "entry": "widget.html", "height": 230 }],
+    "settings": [{ "key": "tage", "label": "Zeitraum", "type": "select", "options": ["7", "14", "30"], "default": "7" }]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

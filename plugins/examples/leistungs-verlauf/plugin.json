@@ -1,0 +1,17 @@
+{
+  "id": "de.pgl.leistungs-verlauf",
+  "name": "Leistungs-Verlauf",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: Liniendiagramm von CPU-, RAM- und GPU-Auslastung der letzten Minuten. Werte kommen live vom PC, solange das Widget sichtbar ist; nicht verfügbare Werte werden nicht gezeichnet.",
+  "category": "performance",
+  "platforms": ["web"],
+  "permissions": ["monitor.read"],
+  "contributes": {
+    "widgets": [{ "id": "verlauf", "title": "Leistungs-Verlauf", "entry": "widget.html", "height": 200 }],
+    "settings": [{ "key": "punkte", "label": "Anzahl Messpunkte im Diagramm (20–300)", "type": "number", "default": 90 }]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

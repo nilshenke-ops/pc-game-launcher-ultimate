@@ -1,5 +1,5 @@
 import { expect, test, devices, type Browser, type Page } from "@playwright/test";
-import { existsSync } from "node:fs";
+import { existsSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { COMPANION, HOSTED_SITE, RELAY, state } from "./env";
 import { ACCESS_HASH } from "../src/lib/access";
@@ -172,6 +172,56 @@ test("Plugin: Datei prüfen, installieren, mit Berechtigung aktivieren, Widget l
   expect(result).not.toContain(":open");
 });
 
+test("Weitere Beispiel-Plugins laufen mit echten Daten vom PC", async () => {
+  const work = state().workDir;
+  const plugins: [string, string, string][] = [
+    ["de.pgl.favoriten-start-1.0.0.pglplugin", "Favoriten-Start", "Favoriten starten"],
+    ["de.pgl.top-woche-1.0.0.pglplugin", "Top-Spiele der Woche", "Top-Spiele"],
+    ["de.pgl.sound-pad-1.0.0.pglplugin", "Sound-Pad", "Sound-Pad"],
+    ["de.pgl.profil-wechsler-1.0.0.pglplugin", "Profil-Wechsler", "Profil wechseln"],
+    ["de.pgl.pc-check-1.0.0.pglplugin", "PC-Check", "PC-Check"],
+    ["de.pgl.leistungs-verlauf-1.0.0.pglplugin", "Leistungs-Verlauf", "Leistungs-Verlauf"],
+  ];
+  for (const [file, name] of plugins) {
+    await pc.goto(`${COMPANION}/#/plugins?tab=dev`);
+    await pc.locator('input[type="file"]').setInputFiles(join(work, file));
+    await expect(pc.getByText(`Prüfung bestanden: ${name} 1.0.0`)).toBeVisible();
+    await pc.getByRole("button", { name: "Installieren (deaktiviert)" }).click();
+    await expect(pc.getByText("Installiert (deaktiviert) – jetzt testen und aktivieren")).toBeVisible();
+    await pc.goto(`${COMPANION}/#/plugins`);
+    await pc.locator(".card", { hasText: name }).getByRole("button", { name: "Details" }).click();
+    await pc.getByRole("button", { name: "Aktivieren" }).click();
+    await pc.getByRole("button", { name: "Erlauben und aktivieren" }).click();
+    await expect(pc.getByText("Plugin aktiviert")).toBeVisible();
+    await pc.getByRole("button", { name: /aufs Dashboard/ }).first().click();
+    await pc.keyboard.press("Escape");
+  }
+  // A favourite game appears as a launch button in the widget and really starts on the PC.
+  await pc.goto(`${COMPANION}/#/games`);
+  await pc.getByRole("button", { name: "Als Favorit markieren" }).first().click();
+  await expect(pc.getByRole("button", { name: "Favorit entfernen" }).first()).toBeVisible();
+  await pc.goto(`${COMPANION}/#/`);
+  const frame = (name: string, title: string) => pc.frameLocator(`iframe[title="${name}: ${title}"]`);
+  const fav = frame("Favoriten-Start", "Favoriten starten");
+  rmSync(join(work, "game-started.txt"), { force: true });
+  await fav.getByRole("button", { name: /E2E Testspiel/ }).click({ timeout: 15000 });
+  await expect.poll(() => existsSync(join(work, "game-started.txt")), { timeout: 10000 }).toBe(true);
+  await expect(fav.locator("#err")).toHaveText("");
+
+  const top = frame("Top-Spiele der Woche", "Top-Spiele");
+  await expect(top.locator("#range")).toHaveText("Letzte 7 Tage", { timeout: 15000 });
+  await expect(top.locator("#total")).toHaveText(/^\d+ (min|h)/);
+  // Headless PC has no sounds and no profiles: the widgets say so instead of showing fake entries.
+  await expect(frame("Sound-Pad", "Sound-Pad").locator("#info")).toHaveText(/Noch keine (Favoriten|Sounds)/, { timeout: 15000 });
+  await expect(frame("Profil-Wechsler", "Profil wechseln").locator("#active")).toHaveText(/Aktiv: |Kein Profil aktiv\./, { timeout: 15000 });
+  const check = frame("PC-Check", "PC-Check");
+  await check.getByRole("button", { name: "Prüfen" }).click();
+  await expect(check.locator("#summary")).toHaveText(/\d+ Fehler, \d+ Warnungen|Alles in Ordnung/, { timeout: 20000 });
+  const perf = pc.locator('iframe[title="Leistungs-Verlauf: Leistungs-Verlauf"]');
+  await perf.scrollIntoViewIfNeeded();
+  await expect(frame("Leistungs-Verlauf", "Leistungs-Verlauf").locator("#legend")).toHaveText(/CPU \d+ %/, { timeout: 20000 });
+});
+
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
   await pc.goto(`${COMPANION}/#/monitor`);
   // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).
@@ -283,7 +333,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
   await tablet.reload();
   await tablet.locator(".bottom-nav, .sidebar").getByRole("link", { name: "Spiele" }).first().click();
-  await expect(tablet.getByText("E2E Testspiel")).toBeVisible({ timeout: 15000 });
+  await expect(tablet.getByText("E2E Testspiel").first()).toBeVisible({ timeout: 15000 });
   // After pairing the waiting sound was uploaded automatically and is now a real sound on the PC.
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Sounds" }).click();
   await expect(tablet.getByRole("button", { name: /e2e-offline-sound abspielen/ })).toBeVisible({ timeout: 15000 });

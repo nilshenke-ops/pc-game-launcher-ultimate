@@ -1,0 +1,17 @@
+{
+  "id": "de.pgl.pc-check",
+  "name": "PC-Check",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: führt auf Knopfdruck die Diagnose des Launchers aus und zeigt eine Ampel (OK, Warnungen, Fehler) mit den Punkten, die Aufmerksamkeit brauchen. Dazu eine Aktion „Diagnose ausführen“.",
+  "category": "information",
+  "platforms": ["web", "windows"],
+  "permissions": ["diagnostics.run", "notify"],
+  "contributes": {
+    "widgets": [{ "id": "check", "title": "PC-Check", "entry": "widget.html", "height": 220 }],
+    "actions": [{ "id": "pruefen", "name": "Diagnose ausführen", "icon": "gauge", "steps": [{ "type": "runDiagnostics" }, { "type": "notify", "ref": "Diagnose ausgeführt – Ergebnis unter „Diagnose“." }] }]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

@@ -1,0 +1,10 @@
+body { margin: 0; font: 14px/1.4 system-ui, sans-serif; color: var(--pgl-text); }
+.muted { color: var(--pgl-muted); font-size: 12px; }
+.err { color: #f87171; font-size: 12px; min-height: 1em; }
+button { font: inherit; color: var(--pgl-text); background: transparent; border: 1px solid var(--pgl-border); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--pgl-accent); }
+button:disabled { opacity: .5; cursor: default; }
+.big { font-size: 1.8rem; font-weight: 700; color: var(--pgl-accent); }
+.big.over { color: #f59e0b; }
+.bar { height: 6px; border-radius: 3px; background: var(--pgl-border); overflow: hidden; margin: 6px 0; }
+.bar i { display: block; height: 100%; background: var(--pgl-accent); }

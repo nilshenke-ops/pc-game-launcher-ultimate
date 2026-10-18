@@ -126,7 +126,20 @@ Sandbox-Regeln:
 
 ## Entwickeln, testen, installieren
 
-1. **Vorlage kopieren:** `plugins/examples/spielzeit-heute` (Widget), `discord-schnellton` (Aktionen + Einstellungen), `neon-themes` (Themes), `cpu-mini` (Live-Werte).
+1. **Vorlage kopieren** aus `plugins/examples/` (alle sind im offiziellen Katalog):
+
+   | Ordner | Zeigt | Berechtigungen |
+   |---|---|---|
+   | `spielzeit-heute` | Widget mit Verlauf und Einstellung | history.read |
+   | `top-woche` | Widget, Auswahl-Einstellung (`select`) | history.read |
+   | `pausen-erinnerung` | Widget mit Timer und `pgl.notify` | history.read, notify |
+   | `favoriten-start` | Widget, das Spiele startet | library.read, library.launch |
+   | `sound-pad` | Widget mit Sound-Tasten | sounds.read, sounds.play |
+   | `profil-wechsler` | Widget, das Profile wechselt | profiles.read, profiles.activate |
+   | `cpu-mini`, `leistungs-verlauf` | Live-Werte, Diagramm mit `<canvas>` | monitor.read |
+   | `pc-check` | Widget **und** Aktion (Diagnose) | diagnostics.run, notify |
+   | `discord-schnellton`, `gaming-abend` | nur Aktionen mit Einstellungen (Spiel, Programm, Profil, Sound) | je nach Schritt |
+   | `neon-themes`, `retro-themes` | nur Themes | keine |
 2. **Packen:** `node plugins/sdk/pack.mjs plugins/examples/mein-plugin dist-plugins` erzeugt `de.meinname.mein-plugin-1.0.0.pglplugin`. Dabei werden die Grundregeln geprüft.
 3. **Importieren:** Plugin Center → Entwickler → „Datei wählen und prüfen“.
    - Erlaubt am PC selbst oder auf einem Gerät mit Admin-Recht.

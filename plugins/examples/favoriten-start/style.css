@@ -1,0 +1,11 @@
+body { margin: 0; font: 14px/1.4 system-ui, sans-serif; color: var(--pgl-text); }
+.muted { color: var(--pgl-muted); font-size: 12px; }
+.err { color: #f87171; font-size: 12px; min-height: 1em; }
+button { font: inherit; color: var(--pgl-text); background: transparent; border: 1px solid var(--pgl-border); border-radius: 8px; padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--pgl-accent); }
+button:disabled { opacity: .5; cursor: default; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 6px; }
+.grid button { display: flex; align-items: center; gap: 8px; text-align: left; overflow: hidden; }
+.grid img { width: 24px; height: 24px; border-radius: 4px; flex: none; }
+.grid span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.grid button.run { border-color: var(--pgl-accent); }

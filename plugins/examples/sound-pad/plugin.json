@@ -1,0 +1,20 @@
+{
+  "id": "de.pgl.sound-pad",
+  "name": "Sound-Pad",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: bis zu 16 Sounds als farbige Tasten (Favoriten, aktive Sammlung oder alle) plus Stopp-Taste. Abgespielt wird am PC über das gewählte Ausgabegerät.",
+  "category": "audio",
+  "platforms": ["web"],
+  "permissions": ["sounds.read", "sounds.play"],
+  "contributes": {
+    "widgets": [{ "id": "pad", "title": "Sound-Pad", "entry": "widget.html", "height": 240 }],
+    "settings": [
+      { "key": "auswahl", "label": "Welche Sounds", "type": "select", "options": ["Favoriten", "Aktive Sammlung", "Alle"], "default": "Favoriten" },
+      { "key": "anzahl", "label": "Höchstens so viele Tasten (1–16)", "type": "number", "default": 12 }
+    ]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

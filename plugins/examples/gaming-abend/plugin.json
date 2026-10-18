@@ -1,0 +1,40 @@
+{
+  "id": "de.pgl.gaming-abend",
+  "name": "Gaming-Abend & Feierabend",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Aktionen: „Gaming-Abend“ wechselt ins Profil, startet Voice-Chat-Programm und Spiel; „Stream-Start“ startet Profil und Aufnahme-/Streaming-Programm; „Feierabend“ stoppt alle Sounds und stellt das vorherige Profil wieder her. Spiel, Programme und Profil wählst du in den Einstellungen.",
+  "category": "automation",
+  "platforms": ["windows", "web"],
+  "permissions": ["library.launch", "profiles.activate", "sounds.play", "notify"],
+  "contributes": {
+    "settings": [
+      { "key": "profil", "label": "Profil für den Gaming-Abend", "type": "profile" },
+      { "key": "voice", "label": "Voice-Chat-Programm (z. B. Discord)", "type": "program" },
+      { "key": "spiel", "label": "Spiel für den Gaming-Abend", "type": "game" },
+      { "key": "streamProfil", "label": "Profil für Stream/Aufnahme", "type": "profile" },
+      { "key": "streamProgramm", "label": "Streaming-/Aufnahme-Programm (z. B. OBS)", "type": "program" }
+    ],
+    "actions": [
+      { "id": "abend", "name": "Gaming-Abend", "icon": "gamepad-2", "steps": [
+        { "type": "activateProfile", "ref": "{config:profil}" },
+        { "type": "launchItem", "ref": "{config:voice}" },
+        { "type": "launchItem", "ref": "{config:spiel}" },
+        { "type": "notify", "ref": "Gaming-Abend gestartet – viel Spaß!" }
+      ] },
+      { "id": "stream", "name": "Stream-Start", "icon": "radio", "steps": [
+        { "type": "activateProfile", "ref": "{config:streamProfil}" },
+        { "type": "launchItem", "ref": "{config:streamProgramm}" },
+        { "type": "notify", "ref": "Stream-Profil aktiv, Streaming-Programm gestartet." }
+      ] },
+      { "id": "feierabend", "name": "Feierabend", "icon": "moon", "steps": [
+        { "type": "stopAllSounds" },
+        { "type": "revertProfile" },
+        { "type": "notify", "ref": "Feierabend: Sounds gestoppt, vorheriges Profil wiederhergestellt." }
+      ] }
+    ]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

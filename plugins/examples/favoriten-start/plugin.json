@@ -1,0 +1,20 @@
+{
+  "id": "de.pgl.favoriten-start",
+  "name": "Favoriten-Start",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: deine mit Stern markierten Spiele und Programme als Startknöpfe direkt auf dem Dashboard. Laufende Einträge sind markiert.",
+  "category": "launcher",
+  "platforms": ["web"],
+  "permissions": ["library.read", "library.launch"],
+  "contributes": {
+    "widgets": [{ "id": "start", "title": "Favoriten starten", "entry": "widget.html", "height": 220 }],
+    "settings": [
+      { "key": "anzahl", "label": "Höchstens so viele Einträge", "type": "number", "default": 8 },
+      { "key": "nurSpiele", "label": "Nur Spiele (keine Programme)", "type": "boolean", "default": false }
+    ]
+  },
+  "changelog": [{ "version": "1.0.0", "date": "2026-10-18", "changes": ["Erste Version"] }]
+}

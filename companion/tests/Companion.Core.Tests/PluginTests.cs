@@ -58,10 +58,13 @@ public class PluginTests
     public void Example_plugins_in_the_repository_are_valid()
     {
         var examples = Path.Combine(RepoRoot(), "plugins", "examples");
-        var ids = Directory.GetDirectories(examples).Select(d => PluginService.Validate(Folder(d)).Manifest.Id).ToList();
+        var packages = Directory.GetDirectories(examples).Select(d => PluginService.Validate(Folder(d))).ToList();
+        var ids = packages.Select(p => p.Manifest.Id).ToList();
         Assert.Contains("de.pgl.spielzeit-heute", ids);
         Assert.Contains("de.pgl.neon-themes", ids);
-        Assert.True(ids.Count >= 3);
+        Assert.Contains("de.pgl.gaming-abend", ids);
+        Assert.True(ids.Count >= 13);
+        Assert.All(packages, p => Assert.Empty(p.Warnings));
     }
 
     [Theory]
