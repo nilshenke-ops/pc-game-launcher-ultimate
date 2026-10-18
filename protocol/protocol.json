@@ -92,6 +92,11 @@
 
     "settings.get": "view",
     "library.findCover": "manage",
+    "steam.list": "view",
+    "steam.sync": "manage",
+    "steam.link": "admin",
+    "steam.unlink": "admin",
+    "steam.install": "launch",
     "gamepass.list": "view",
     "gamepass.sync": "manage",
     "gamepass.install": "launch",

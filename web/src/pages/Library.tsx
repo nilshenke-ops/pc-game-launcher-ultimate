@@ -8,6 +8,7 @@ import { gradientFor, initials } from "../lib/format";
 import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Thumb } from "../components/ui";
 import { GamePassView } from "./GamePass";
+import { SteamView } from "./Steam";
 
 type Sort = "name" | "recent" | "added";
 const SOURCE_LABEL: Record<string, string> = { steam: "Steam", epic: "Epic Games", appsFolder: "Store / Startmenü", exe: "Datei" };
@@ -67,13 +68,13 @@ export default function Library({ kind }: { kind: ItemKind }) {
           <Segmented<Sort> value={sort} onChange={setSort} label={t("Sortierung")} options={[{ value: "name", label: t("A–Z") }, { value: "recent", label: t("Zuletzt") }, { value: "added", label: t("Neu") }]} />
         </div>
         <div className="chips" role="toolbar" aria-label={t("Filter")}>
-          {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ["__running", t("Läuft")], ...(isGame ? [["__gamepass", "Game Pass"]] : []), ...sources.map((s) => ["src:" + s, SOURCE_LABEL[s] ?? s]), ...categories.map((c) => [c, c])].map(([k, label]) => (
+          {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ["__running", t("Läuft")], ...(isGame ? [["__steam", "Steam"], ["__gamepass", "Game Pass"]] : []), ...sources.filter((s) => !(isGame && s === "steam")).map((s) => ["src:" + s, SOURCE_LABEL[s] ?? s]), ...categories.map((c) => [c, c])].map(([k, label]) => (
             <button key={k} className={`chip ${cat === k ? "on" : ""}`} onClick={() => setCat(k)}>{label}</button>
           ))}
         </div>
       </div>
 
-      {cat === "__gamepass" ? <GamePassView search={search} /> : (<>
+      {cat === "__gamepass" ? <GamePassView search={search} /> : cat === "__steam" ? <SteamView search={search} /> : (<>
       {q.stale && q.updatedAt && <div style={{ marginBottom: 14 }}><Banner kind="info" title={t("Gespeicherte Liste (Stand {d})", { d: new Date(q.updatedAt).toLocaleString() })}>{t("Dein PC ist gerade nicht verbunden. Du siehst die Spiele vom letzten Mal – starten kannst du sie, sobald der PC verbunden ist.")}</Banner></div>}
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {items.length === 0 ? (

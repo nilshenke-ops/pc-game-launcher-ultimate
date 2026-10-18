@@ -234,13 +234,25 @@ public static class RpcApi
             var set = s.Settings.Get();
             var hasSecret = set.RelaySecretProtected != null;
             set.RelaySecretProtected = null;
+            set.SteamApiKeyProtected = null; // secrets never leave the PC
             return new { settings = set, relaySecretSet = hasSecret, dataDir = ctx.Session.IsLocalAdmin ? s.Paths.DataDir : null, restartRequired = set.Port != s.Web.Port || set.LanAccess != s.Web.LanAccess, webStartError = s.Web.StartError };
         });
         rpc.Register("library.findCover", async ctx => (object?)new { cover = await s.Covers.FindForAsync(ctx.Str("id", 64)) });
+        rpc.Register("steam.list", _ => s.Steam.List());
+        rpc.Register("steam.sync", async _ => await s.Steam.SyncAsync(force: true));
+        rpc.Register("steam.link", async ctx => await s.Steam.Link(ctx.Str("profile", 200), ctx.Params.TryGetProperty("apiKey", out var k) ? k.GetString() : null));
+        rpc.Register("steam.unlink", _ => s.Steam.Unlink());
+        rpc.Register("steam.install", ctx => s.Steam.Install(ctx.Str("appId", 10)) is { } err ? throw new RpcException("unsupported", err) : (object)true);
         rpc.Register("gamepass.list", _ => s.GamePass.List());
         rpc.Register("gamepass.sync", async _ => await s.GamePass.SyncAsync(force: true));
         rpc.Register("gamepass.install", ctx => s.GamePass.OpenInstallPage(ctx.Str("id", 12)) is { } err ? throw new RpcException("unsupported", err) : (object)true);
-        rpc.Register("settings.save", ctx => s.Settings.SaveGeneral(ctx.Bind<SettingsService.GeneralUpdate>()));
+        rpc.Register("settings.save", ctx =>
+        {
+            var r = s.Settings.SaveGeneral(ctx.Bind<SettingsService.GeneralUpdate>());
+            r.RelaySecretProtected = null; // secrets never leave the PC
+            r.SteamApiKeyProtected = null;
+            return r;
+        });
         rpc.Register("settings.saveSecurity", ctx =>
         {
             var u = ctx.Bind<SettingsService.SecurityUpdate>();
@@ -249,6 +261,7 @@ public static class RpcApi
                 throw new RpcException("forbidden", "Verbindungseinstellungen können nur direkt am PC geändert werden.");
             var r = s.Settings.SaveSecurity(u, s.Platform.Secrets);
             r.RelaySecretProtected = null;
+            r.SteamApiKeyProtected = null;
             return r;
         });
 

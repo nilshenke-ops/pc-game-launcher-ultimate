@@ -136,6 +136,8 @@ public interface IDesktopIntegration
     bool CanListApps { get; }
     /// <summary>Opens a Microsoft Store product (already validated id) in the Xbox app or Store. Returns an error text or null.</summary>
     string? OpenStoreProduct(string productId);
+    /// <summary>Asks the Steam client to install a game (already validated numeric app id). Returns an error text or null.</summary>
+    string? OpenSteamInstall(string appId);
 }
 
 public interface IDetector

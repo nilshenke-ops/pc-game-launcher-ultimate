@@ -172,6 +172,34 @@ public sealed class LibraryService
         return (added, removed);
     }
 
+    /// <summary>
+    /// Steam link: installed Steam games that are not in the library yet are added (AutoAdded); auto-added Steam games that are
+    /// no longer installed are removed. Games the user added by hand stay.
+    /// </summary>
+    public (int added, int removed) ReconcileSteam(IReadOnlyList<DetectedItem> installed)
+    {
+        int added = 0, removed = 0;
+        var ids = installed.Select(d => d.Target).ToHashSet();
+        _store.Update(f =>
+        {
+            removed = f.Items.RemoveAll(i => i.AutoAdded && i.Source == LaunchSource.Steam && !ids.Contains(i.Target));
+            foreach (var d in installed)
+            {
+                if (f.Items.Any(i => i.Source == LaunchSource.Steam && i.Target == d.Target)) continue;
+                if (LaunchValidator.ValidateTarget(LaunchSource.Steam, d.Target) != null) continue;
+                f.Items.Add(new LibraryItem
+                {
+                    Id = Ids.New("item"), Kind = ItemKind.Game, Name = d.Name, Source = LaunchSource.Steam, Target = d.Target,
+                    InstallDir = d.InstallDir, ProcessNames = d.ProcessNames, CoverUrl = d.CoverUrl, AutoAdded = true,
+                });
+                added++;
+            }
+        });
+        if (added + removed > 0) _hub.Changed("library");
+        if (added > 0) Added?.Invoke(added);
+        return (added, removed);
+    }
+
     /// <summary>Result of the automatic cover search. Never overwrites a cover the user set in the meantime.</summary>
     public void SetCover(string id, string? coverUrl)
     {

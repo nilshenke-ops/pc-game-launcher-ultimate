@@ -20,7 +20,7 @@ Gaming-Zentrale für deinen Windows-PC: Spiele und Programme starten, Soundboard
 
 - **Webseite „PC verbinden“:** https://nilshenke-ops.github.io/pc-game-launcher-ultimate/
 - **PC-Software (Windows):** https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/PCGameLauncherCompanion-1.0.0-win-x64.zip
-  (SHA-256 der EXE: `18bf45ea7a52613f38e54e0c9674b76f39316dac1cadbc794db60f6791083e47`)
+  (SHA-256 der EXE: `20190d0d48ebb4c305b41418eecb10dc70d1a38ca6731dad5e76881af272e86e`)
 
 Die Webseite liegt im Zweig `gh-pages` (gebaut mit `npm run build:hosted` im Ordner `web`).
 

@@ -375,6 +375,7 @@ public sealed class BackupService
         }
         var settings = _svc.Settings.Get();
         settings.RelaySecretProtected = null; // secrets never leave the PC
+        settings.SteamApiKeyProtected = null;
         Put("manifest.json", new { format = Format, version = Version, createdAt = DateTime.UtcNow, app = UpdateService.CurrentVersion, includesSounds = includeSounds, pc = settings.PcName });
         Put("settings.json", settings);
         Put("library.json", _svc.Library.Export());

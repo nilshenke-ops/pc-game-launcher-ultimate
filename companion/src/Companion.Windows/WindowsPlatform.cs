@@ -228,6 +228,14 @@ sealed class WindowsDesktop(UiInvoker ui, Func<TrayIcon?> tray) : IDesktopIntegr
         return "Weder die Xbox-App noch der Microsoft Store sind installiert.";
     }
 
+    /// <summary>Hands the install request to the Steam client (steam://install/&lt;appid&gt;).</summary>
+    public string? OpenSteamInstall(string appId)
+    {
+        if (!System.Text.RegularExpressions.Regex.IsMatch(appId, @"^\d{1,10}$")) return "Ungültige Steam-App-ID.";
+        try { Process.Start(new ProcessStartInfo($"steam://install/{appId}") { UseShellExecute = true })?.Dispose(); return null; }
+        catch (Win32Exception) { return "Steam ist auf diesem PC nicht installiert."; }
+    }
+
     /// <summary>Lists start-menu apps (desktop, Microsoft Store and Xbox) through the shell's AppsFolder.</summary>
     public IReadOnlyList<DetectedItem> StartMenuApps()
     {

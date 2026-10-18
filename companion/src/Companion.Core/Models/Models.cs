@@ -301,6 +301,10 @@ public sealed class Settings
     public string GamePassMarket { get; set; } = "DE";
     /// <summary>Look up real cover art (Steam / Microsoft Store) for games without one.</summary>
     public bool CoverSearch { get; set; } = true;
+    /// <summary>Steam link: installed Steam games are kept in the library automatically.</summary>
+    public bool SteamEnabled { get; set; }
+    /// <summary>Optional Steam Web API key (protected like the relay secret) for the whole Steam library.</summary>
+    public string? SteamApiKeyProtected { get; set; }
 }
 
 // ---------------------------------------------------------------- Notifications

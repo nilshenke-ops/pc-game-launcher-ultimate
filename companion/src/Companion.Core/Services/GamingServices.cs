@@ -37,6 +37,7 @@ public sealed class SettingsService
         public bool? GamePassEnabled { get; set; }
         public string? GamePassMarket { get; set; }
         public bool? CoverSearch { get; set; }
+        public bool? SteamEnabled { get; set; }
     }
 
     public Settings SaveGeneral(GeneralUpdate u)
@@ -59,11 +60,20 @@ public sealed class SettingsService
             if (u.GamePassEnabled != null) s.GamePassEnabled = u.GamePassEnabled.Value;
             if (u.GamePassMarket != null) s.GamePassMarket = u.GamePassMarket;
             if (u.CoverSearch != null) s.CoverSearch = u.CoverSearch.Value;
+            if (u.SteamEnabled != null) s.SteamEnabled = u.SteamEnabled.Value;
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");
         Saved?.Invoke(s);
         return s;
+    }
+
+    /// <summary>Stores the protected Steam Web API key (or removes it). keep = leave the current key.</summary>
+    public void SetSteamKey(string? protectedKey, bool keep)
+    {
+        if (keep) return;
+        _store.Update(s => s.SteamApiKeyProtected = protectedKey);
+        _hub.Changed("settings");
     }
 
     public sealed class SecurityUpdate
@@ -119,6 +129,7 @@ public sealed class SettingsService
         s.Port = keepSecurityFrom.Port;
         s.PublicUrl = keepSecurityFrom.PublicUrl;   // allowed web origins are never changed by a backup file
         s.WebAppUrl = keepSecurityFrom.WebAppUrl;
+        s.SteamApiKeyProtected = keepSecurityFrom.SteamApiKeyProtected; // secrets never come from a backup file
         _store.Replace(s);
         _hub.Changed("settings");
     }

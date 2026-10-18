@@ -3,7 +3,7 @@
 // Cleared when this device signs out or is removed on the PC.
 
 const PREFIX = "pgl.cache.";
-export const CACHED_METHODS = new Set(["library.list", "gamepass.list"]);
+export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.list"]);
 
 export function saveCache(method: string, data: unknown) {
   if (!CACHED_METHODS.has(method)) return;
