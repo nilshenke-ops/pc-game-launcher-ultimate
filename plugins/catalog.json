@@ -61,6 +61,95 @@
       ]
     },
     {
+      "id": "de.pgl.favoriten-start",
+      "name": "Favoriten-Start",
+      "version": "1.0.0",
+      "description": "Widget: deine mit Stern markierten Spiele und Programme als Startknöpfe direkt auf dem Dashboard. Laufende Einträge sind markiert.",
+      "author": "PC Game Launcher",
+      "category": "launcher",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "library.read",
+        "library.launch"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.favoriten-start-1.0.0.pglplugin",
+      "sha256": "bfd65617cc5514b7929b7c679462901231e999f3636e5a9f15623f32e7850201",
+      "size": 2239,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.gaming-abend",
+      "name": "Gaming-Abend & Feierabend",
+      "version": "1.0.0",
+      "description": "Aktionen: „Gaming-Abend“ wechselt ins Profil, startet Voice-Chat-Programm und Spiel; „Stream-Start“ startet Profil und Aufnahme-/Streaming-Programm; „Feierabend“ stoppt alle Sounds und stellt das vorherige Profil wieder her. Spiel, Programme und Profil wählst du in den Einstellungen.",
+      "author": "PC Game Launcher",
+      "category": "automation",
+      "platforms": [
+        "windows",
+        "web"
+      ],
+      "permissions": [
+        "library.launch",
+        "profiles.activate",
+        "sounds.play",
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.gaming-abend-1.0.0.pglplugin",
+      "sha256": "2bcc5477e53efbcaa2b1150730610002487d7000ddef9cad046c48af165ec4bf",
+      "size": 902,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.leistungs-verlauf",
+      "name": "Leistungs-Verlauf",
+      "version": "1.0.0",
+      "description": "Widget: Liniendiagramm von CPU-, RAM- und GPU-Auslastung der letzten Minuten. Werte kommen live vom PC, solange das Widget sichtbar ist; nicht verfügbare Werte werden nicht gezeichnet.",
+      "author": "PC Game Launcher",
+      "category": "performance",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "monitor.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.leistungs-verlauf-1.0.0.pglplugin",
+      "sha256": "4b6e5546f75ffe59e6f6162fc7fa353c7f79293f413d26232829e04b59d59a5b",
+      "size": 1977,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.neon-themes",
       "name": "Neon-Themes",
       "version": "1.0.0",
@@ -76,6 +165,149 @@
       "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.neon-themes-1.0.0.pglplugin",
       "sha256": "d497985ca5c3b1f9e96d99d930a8bafa9b02826350e917f0822b2298cc63f1e5",
       "size": 556,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.pausen-erinnerung",
+      "name": "Pausen-Erinnerung",
+      "version": "1.0.0",
+      "description": "Widget: zeigt, wie lange das laufende Spiel schon läuft, und erinnert nach einstellbarer Zeit an eine Pause. Der Hinweis erscheint in der App, solange das Widget auf dem Dashboard sichtbar ist.",
+      "author": "PC Game Launcher",
+      "category": "productivity",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read",
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.pausen-erinnerung-1.0.0.pglplugin",
+      "sha256": "a33ab8ad552bad89f21ccebb81588da8c8d90c50f8dc684d96a189b31f6858f9",
+      "size": 2347,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.pc-check",
+      "name": "PC-Check",
+      "version": "1.0.0",
+      "description": "Widget: führt auf Knopfdruck die Diagnose des Launchers aus und zeigt eine Ampel (OK, Warnungen, Fehler) mit den Punkten, die Aufmerksamkeit brauchen. Dazu eine Aktion „Diagnose ausführen“.",
+      "author": "PC Game Launcher",
+      "category": "information",
+      "platforms": [
+        "web",
+        "windows"
+      ],
+      "permissions": [
+        "diagnostics.run",
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.pc-check-1.0.0.pglplugin",
+      "sha256": "fa900544d63aa98b43bdbea1e74fc5b81e4c2b697640d5fc27e9428346b80019",
+      "size": 2273,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.profil-wechsler",
+      "name": "Profil-Wechsler",
+      "version": "1.0.0",
+      "description": "Widget: alle Gaming-Profile als Knöpfe, das aktive Profil hervorgehoben, dazu „Zurück zum vorherigen Profil“.",
+      "author": "PC Game Launcher",
+      "category": "automation",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "profiles.read",
+        "profiles.activate"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.profil-wechsler-1.0.0.pglplugin",
+      "sha256": "8847ca382c642a0ac181064d1054eb9f157420a469d2a960fd67734669fa3bd1",
+      "size": 1868,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.retro-themes",
+      "name": "Retro- & Natur-Themes",
+      "version": "1.0.0",
+      "description": "Fünf Farbschemata für den Design-Editor: Handheld Grün, Arcade Rot, Ozean, Lava und ein helles Papier-Design. Ohne Code, ohne Berechtigungen.",
+      "author": "PC Game Launcher",
+      "category": "design",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.retro-themes-1.0.0.pglplugin",
+      "sha256": "5bba0992d4da1c0e44fe11a359fc14b0ea856b0f29655699738c22b2b3a33fe1",
+      "size": 673,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.sound-pad",
+      "name": "Sound-Pad",
+      "version": "1.0.0",
+      "description": "Widget: bis zu 16 Sounds als farbige Tasten (Favoriten, aktive Sammlung oder alle) plus Stopp-Taste. Abgespielt wird am PC über das gewählte Ausgabegerät.",
+      "author": "PC Game Launcher",
+      "category": "audio",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "sounds.read",
+        "sounds.play"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.sound-pad-1.0.0.pglplugin",
+      "sha256": "981b13eff73e3c1fea808cf9f70fd378914748f3f6677d9bffba9beb12eb0e78",
+      "size": 2273,
       "changelog": [
         {
           "version": "1.0.0",
@@ -104,6 +336,34 @@
       "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.spielzeit-heute-1.0.0.pglplugin",
       "sha256": "afd95a0179d5deac467561b1969995c05137cecc03f2094a8fae55a538266f14",
       "size": 1992,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.top-woche",
+      "name": "Top-Spiele der Woche",
+      "version": "1.0.0",
+      "description": "Widget: die meistgespielten Spiele der letzten 7, 14 oder 30 Tage mit Balken und Gesamtzeit – aus dem echten Spielverlauf des PCs (letzte 100 Sitzungen).",
+      "author": "PC Game Launcher",
+      "category": "information",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.top-woche-1.0.0.pglplugin",
+      "sha256": "c4e4c708c2328fc83a0d4716d04a9c089a09b7e23b78955506456a29715cf82d",
+      "size": 2401,
       "changelog": [
         {
           "version": "1.0.0",
