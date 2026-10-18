@@ -96,7 +96,7 @@ resize:(height)=>parent.postMessage({pgl:1,type:"resize",height:Number(height)},
  * Builds the iframe document for a widget: strict Content-Security-Policy (no network unless "network" is granted,
  * no forms, no navigation), the bridge, theme colours, and the package's own CSS/JS/images inlined.
  */
-export function buildSrcdoc(files: Record<string, string>, entry: string, opts: { network: boolean; vars: Record<string, string> }): string {
+export function buildSrcdoc(files: Record<string, string>, entry: string, opts: { network: boolean; vars: Record<string, string>; scheme?: "dark" | "light" }): string {
   const text = (name: string) => (files[name] ? decode(files[name]) : null);
   let html = text(entry) ?? "<p>Einstiegsdatei fehlt</p>";
   html = html.replace(/<script\b[^>]*?\bsrc=["']([^"']+)["'][^>]*>\s*<\/script>/gi, (_all, src: string) => {
@@ -117,7 +117,7 @@ export function buildSrcdoc(files: Record<string, string>, entry: string, opts: 
     `connect-src ${opts.network ? "https:" : "'none'"}`, "form-action 'none'", "base-uri 'none'", "frame-src 'none'", "worker-src 'none'",
   ].join("; ");
   const vars = Object.entries(opts.vars).map(([k, v]) => `--pgl-${k}:${v}`).join(";");
-  const head = `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><style>:root{${vars};color-scheme:dark light}html,body{background:transparent}</style><script>${BRIDGE_SCRIPT}</script>`;
+  const head = `<meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${csp}"><style>:root{${vars};color-scheme:${opts.scheme ?? "dark"}}html,body{background:transparent}</style><script>${BRIDGE_SCRIPT}</script>`;
   // Our head must come first so the policy and the bridge apply before any plugin code.
   return /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, (h) => h + head) : `<!doctype html><html><head>${head}</head><body>${html}</body></html>`;
 }

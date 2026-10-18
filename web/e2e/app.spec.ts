@@ -280,6 +280,9 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
   const w = pc.frameLocator('iframe[title="Game-Overlay: Game-Overlay"]');
   await expect(w.locator("#state")).toHaveText(/Bereit/, { timeout: 15000 });
   await expect(w.locator("#cpu")).toHaveText(/\d+ %/, { timeout: 15000 }); // live values from the PC
+  // Widget and page use the same color scheme – otherwise the browser paints the widget white (unreadable light text).
+  const outerScheme = await pc.locator('iframe[title="Game-Overlay: Game-Overlay"]').evaluate((e) => getComputedStyle(e).colorScheme);
+  expect(await w.locator("html").evaluate((e) => getComputedStyle(e).colorScheme)).toBe(outerScheme);
   await w.getByRole("button", { name: "● Aufnahme starten" }).click();
   await expect.poll(async () => (await obsState()).recording).toBe(true);
   await expect(w.locator("#state")).toHaveText(/Aufnahme läuft/);

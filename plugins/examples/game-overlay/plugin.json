@@ -11,7 +11,7 @@
   "permissions": ["monitor.read", "capture.control", "overlay.show"],
   "homepage": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate",
   "contributes": {
-    "widgets": [{ "id": "overlay", "title": "Game-Overlay", "entry": "widget.html", "height": 340, "overlay": true }],
+    "widgets": [{ "id": "overlay", "title": "Game-Overlay", "entry": "widget.html", "height": 300, "overlay": true }],
     "actions": [
       { "id": "overlay", "name": "Overlay ein/aus", "icon": "monitor", "steps": [{ "type": "toggleOverlay", "ref": "full" }] },
       { "id": "mini", "name": "Mini-Overlay ein/aus", "icon": "gauge", "steps": [{ "type": "toggleOverlay", "ref": "mini" }] },

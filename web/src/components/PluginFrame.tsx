@@ -24,10 +24,11 @@ export function PluginFrame({ plugin, widget, preview = false, onLog }: { plugin
   const [wantsMonitor, setWantsMonitor] = useState(false);
   const calls = useRef<number[]>([]);
   const granted = useMemo(() => new Set(preview ? [] : plugin.granted), [preview, plugin.granted]);
+  const scheme = document.documentElement.dataset.mode === "light" ? "light" : "dark";
   const log = (line: string) => onLog?.(`${new Date().toLocaleTimeString()} ${line}`);
 
   const srcdoc = useMemo(() => q.data && q.data.version === plugin.version
-    ? buildSrcdoc(q.data.files, widget.entry, { network: granted.has("network"), vars: themeVars() })
+    ? buildSrcdoc(q.data.files, widget.entry, { network: granted.has("network"), vars: themeVars(), scheme })
     : null, [q.data, plugin.version, widget.entry, granted]);
 
   const post = (msg: object) => frame.current?.contentWindow?.postMessage({ pgl: 1, ...msg }, "*");
@@ -93,6 +94,8 @@ export function PluginFrame({ plugin, widget, preview = false, onLog }: { plugin
     // Own page with its own strict Content-Security-Policy (the app's policy would block the widget's inline code);
     // sandbox without "allow-same-origin" gives it an opaque origin: no access to this app, its storage or cookies.
     <iframe key={`${plugin.version}-${srcdoc.length}`} ref={frame} title={`${plugin.manifest?.name ?? plugin.id}: ${widget.title}`} src="plugin-frame.html" sandbox="allow-scripts" referrerPolicy="no-referrer"
-      style={{ width: "100%", height, border: 0, display: "block", background: "transparent" }} />
+      // Same color scheme as the widget document: otherwise browsers paint an opaque white backdrop behind the widget
+      // (dark design, light system setting) and its light text becomes unreadable.
+      style={{ width: "100%", height, border: 0, display: "block", background: "transparent", colorScheme: scheme }} />
   );
 }
