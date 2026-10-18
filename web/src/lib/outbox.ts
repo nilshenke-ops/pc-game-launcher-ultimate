@@ -47,6 +47,8 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "sounds.setActiveCollection": () => t("Aktive Sammlung wählen"),
   "audio.save": () => t("Audio-Einstellungen speichern"),
   "settings.save": () => t("Einstellungen speichern"),
+  // The OBS password waits on this device until the PC takes it (then it is only kept protected on the PC).
+  "obs.configure": () => t("OBS-Verbindung speichern"),
   "history.setNote": () => t("Notiz zur Spielsitzung"),
   "plugins.installCatalog": (p) => t("Plugin installieren {n}", { n: name(p, "label") }),
   "plugins.importFile": (p) => t("Plugin-Datei installieren {n}", { n: name(p, "label") }),
@@ -132,8 +134,12 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
       pluginCatalogUrl: "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/catalog.json",
       notifyInfo: true, quietWhileGaming: true, mutedNotificationKeys: [], steamCoversFromCdn: true, gamePassEnabled: false, gamePassMarket: "DE",
       coverSearch: true, steamEnabled: false, epicEnabled: false, eaEnabled: false,
+      obsUrl: "ws://127.0.0.1:4455", obsReplayWhilePlaying: false, overlayCorner: "top-right",
     },
   },
+  "obs.status": { url: "ws://127.0.0.1:4455", passwordSet: false, replayWhilePlaying: false, connected: false, offline: true },
+  // Whether this PC can show the overlay is only known once it is connected.
+  "overlay.status": { supported: false, visible: null, unknown: true },
   // Audio devices are only known on the PC; until then "Windows-Standard" is shown and only changed values are sent.
   "audio.state": {
     supported: true, devices: [], missing: [], micPassthroughActive: false, offlineDefaults: true,
@@ -206,6 +212,13 @@ function applyLocally(method: string, p: Params): unknown {
     case "sounds.setActiveCollection": patch<{ data: Params }>("sounds.list", (d) => ({ ...d, data: { ...d.data, activeCollectionId: p.id ?? null } })); return true;
     case "audio.save": patch<{ settings: Params }>("audio.state", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
     case "settings.save": patch<{ settings: Params }>("settings.get", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
+    case "obs.configure": {
+      patch<Params>("obs.status", (d) => ({
+        ...d, ...(typeof p.url === "string" ? { url: p.url } : {}), ...(typeof p.password === "string" ? { passwordSet: p.password !== "" } : {}),
+        ...(typeof p.replayWhilePlaying === "boolean" ? { replayWhilePlaying: p.replayWhilePlaying } : {}),
+      }));
+      return readCache("obs.status")?.data;
+    }
     case "history.setNote":
       patch<{ sessions: { itemId: string; startedAt: string; note?: string }[] }>("history.get", (d) => ({ ...d, sessions: d.sessions.map((s) => (s.itemId === p.itemId && s.startedAt === p.startedAt ? { ...s, note: p.note as string } : s)) }));
       return true;

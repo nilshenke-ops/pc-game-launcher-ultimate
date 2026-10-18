@@ -16,6 +16,10 @@ export function stepLabels(): Record<StepType, string> {
     setAudioOutput: t("Soundboard-Ausgabe setzen"),
     runDiagnostics: t("Diagnose ausführen"),
     notify: t("Hinweis anzeigen"),
+    toggleOverlay: t("Overlay ein/aus"),
+    obsRecordToggle: t("Aufnahme starten/stoppen (OBS)"),
+    obsReplaySave: t("Replay speichern (OBS)"),
+    obsReplayBufferToggle: t("Replay-Puffer an/aus (OBS)"),
   };
 }
 
@@ -45,6 +49,7 @@ export function describeStep(s: ActionStep, refs: ReturnType<typeof useStepRefs>
       case "setCollection": return refs.collections.find((p) => p.id === s.ref)?.name ?? t("keine");
       case "setAudioOutput": return refs.outputs.find((p) => p.id === s.ref)?.name ?? t("Windows-Standard");
       case "notify": return s.ref ?? "";
+      case "toggleOverlay": return s.ref === "mini" ? t("Mini (Werte in der Ecke)") : t("Groß (wie Game Bar)");
       default: return null;
     }
   })();
@@ -65,6 +70,12 @@ function RefSelect({ step, refs, onChange }: { step: ActionStep; refs: ReturnTyp
     case "setCollection": return sel(refs.collections, t("Alle Sounds"));
     case "setAudioOutput": return sel(refs.outputs, t("Windows-Standardgerät"));
     case "notify": return <input className="input" value={step.ref ?? ""} maxLength={120} placeholder={t("Text des Hinweises")} onChange={(e) => onChange(e.target.value)} />;
+    case "toggleOverlay": return (
+      <select className="input" value={step.ref === "mini" ? "mini" : "full"} onChange={(e) => onChange(e.target.value)} aria-label={t("Overlay-Art")}>
+        <option value="full">{t("Groß (wie Game Bar)")}</option>
+        <option value="mini">{t("Mini (Werte in der Ecke)")}</option>
+      </select>
+    );
     default: return <span className="small muted">{t("Keine weiteren Angaben nötig")}</span>;
   }
 }

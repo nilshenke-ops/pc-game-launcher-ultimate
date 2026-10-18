@@ -65,12 +65,12 @@ public sealed record LaunchResult(bool Ok, string Message, string? Code = null);
 
 // ---------------------------------------------------------------- Quick actions, profiles, automations
 
-public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify }
+public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify, ToggleOverlay, ObsRecordToggle, ObsReplaySave, ObsReplayBufferToggle }
 
 public sealed class ActionStep
 {
     public StepType Type { get; set; }
-    /// <summary>Id of item / profile / sound / collection, or device id, or text for Notify.</summary>
+    /// <summary>Id of item / profile / sound / collection, or device id, or text for Notify, or "full"/"mini" for ToggleOverlay.</summary>
     public string? Ref { get; set; }
 }
 
@@ -335,6 +335,14 @@ public sealed class Settings
     public bool EpicEnabled { get; set; }
     /// <summary>EA link: installed EA app games kept in the library.</summary>
     public bool EaEnabled { get; set; }
+    /// <summary>OBS Studio WebSocket server (obs-websocket 5) used for recording and replays.</summary>
+    public string? ObsUrl { get; set; } = "ws://127.0.0.1:4455";
+    /// <summary>Password of the OBS WebSocket server (protected like the relay secret, never sent to devices).</summary>
+    public string? ObsPasswordProtected { get; set; }
+    /// <summary>Keep the OBS replay buffer running while a game from the library runs.</summary>
+    public bool ObsReplayWhilePlaying { get; set; }
+    /// <summary>Screen corner of the small in-game overlay (Windows companion).</summary>
+    public string OverlayCorner { get; set; } = "top-right";
 }
 
 // ---------------------------------------------------------------- Notifications

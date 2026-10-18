@@ -6,7 +6,8 @@ import { useRpc, toast, useCan } from "../lib/hooks";
 import type { Hotkey, HotkeyStatus, QuickAction } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { describeStep, StepEditor, stepsValid, useStepRefs } from "../components/StepEditor";
-import { COMPACT_SUGGESTIONS, comboFromEvent, comboFromMouse, describeCombo } from "./hotkey-combo";
+import { COMPACT_SUGGESTIONS, describeCombo } from "./hotkey-combo";
+import { ComboInput } from "../components/ComboInput";
 
 const STATE_BADGE: Record<string, [string, string]> = { active: ["ok", "Aktiv"], error: ["error", "Fehler"], disabled: ["", "Aus"], pending: ["warn", "Ausstehend"], inactive: ["", "Anderes Profil"] };
 
@@ -50,7 +51,6 @@ export default function Hotkeys() {
 function HotkeyEditor({ hk, quick, taken, onClose }: { hk: Hotkey; quick: QuickAction[]; taken: string[]; onClose: () => void }) {
   const [h, setH] = useState(hk);
   const [mode, setMode] = useState<"step" | "quick">(hk.quickActionId ? "quick" : "step");
-  const [recording, setRecording] = useState(false);
   const save = async () => {
     // Checked here too, so a clash is noticed right away – also without the PC (the PC checks again when saving).
     if (h.enabled && taken.some((k) => k.toLowerCase() === h.keys.toLowerCase())) { toast(t("Diese Kombination ist schon einem anderen Hotkey zugeordnet."), "error"); return; }
@@ -69,17 +69,7 @@ function HotkeyEditor({ hk, quick, taken, onClose }: { hk: Hotkey; quick: QuickA
       <Button variant="primary" disabled={!h.keys || (mode === "quick" ? !h.quickActionId : !stepsValid([h.action]))} onClick={save}>{t("Speichern")}</Button>
     </>}>
       <Field label={t("Tastenkombination")} hint={t("Ins Feld tippen und die Kombination drücken – oder eintippen, z. B. Ctrl+Alt+F9.")}>
-        <input className="input mono" value={h.keys} placeholder={recording ? t("Kombination drücken …") : "Ctrl+Alt+F9"}
-          onFocus={() => setRecording(true)} onBlur={() => setRecording(false)}
-          onChange={(e) => setH({ ...h, keys: e.target.value })}
-          onKeyDown={(e) => {
-            if (["Control", "Alt", "Shift", "Meta", "Backspace"].includes(e.key) || e.key === "Tab") return;
-            const c = comboFromEvent(e);
-            if (c) { e.preventDefault(); setH({ ...h, keys: c }); }
-          }}
-          // Mouse side buttons pressed while the field is active (would otherwise navigate back/forward).
-          onMouseDown={(e) => { const c = comboFromMouse(e); if (c) { e.preventDefault(); setH({ ...h, keys: c }); } }}
-          onMouseUp={(e) => { if (e.button === 3 || e.button === 4) e.preventDefault(); }} />
+        <ComboInput value={h.keys} onChange={(keys) => setH({ ...h, keys })} label={t("Tastenkombination")} />
       </Field>
       {h.keys && <p className="tiny muted">{describeCombo(h.keys, t)}</p>}
       <details>

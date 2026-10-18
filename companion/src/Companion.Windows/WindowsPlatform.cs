@@ -19,6 +19,7 @@ sealed class WindowsPlatform : IPlatform
     {
         Desktop = new WindowsDesktop(ui, tray);
         Hotkeys = new HotkeyRegistrar(ui);
+        OverlayWindows = new WindowsOverlay(ui, Metrics);
     }
 
     public string Name => $"Windows {Environment.OSVersion.Version}";
@@ -33,6 +34,8 @@ sealed class WindowsPlatform : IPlatform
     public IEnumerable<IDetector> Detectors { get; } = new IDetector[] { new SteamDetector(SteamDetector.DefaultRoots()), new EpicDetector(EpicDetector.DefaultManifestDir()) };
     public IUpdateInstaller UpdateInstaller { get; } = new SelfReplaceInstaller();
     public IPowerControl Power { get; } = new WindowsPower();
+    public WindowsOverlay OverlayWindows { get; }
+    public IOverlay Overlay => OverlayWindows;
 }
 
 /// <summary>Runs code on the WinForms UI thread.</summary>

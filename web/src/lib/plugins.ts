@@ -4,7 +4,7 @@
 export type PluginTrust = "official" | "reviewed" | "unverified";
 
 export interface PluginSetting { key: string; label: string; type: "text" | "number" | "boolean" | "select" | "game" | "program" | "sound" | "profile"; default?: unknown; options?: string[] }
-export interface PluginWidgetDef { id: string; title: string; entry: string; height: number }
+export interface PluginWidgetDef { id: string; title: string; entry: string; height: number; /** also shown in the in-game overlay */ overlay?: boolean }
 export interface PluginActionDef { id: string; name: string; icon: string; steps: { type: string; ref?: string }[] }
 export interface PluginThemeDef { id: string; name: string; theme: Record<string, unknown> }
 export interface PluginChange { version: string; date?: string; changes: string[] }
@@ -37,6 +37,7 @@ export const PERMISSION_LABELS: Record<string, string> = {
   "monitor.read": "Live-Leistungswerte des PCs lesen", "sounds.read": "Soundboard-Liste lesen", "sounds.play": "Sounds abspielen und stoppen",
   "profiles.read": "Gaming-Profile lesen", "profiles.activate": "Gaming-Profile wechseln", "audio.output": "Audio-Ausgabegerät wechseln",
   "diagnostics.run": "Diagnose ausführen", notify: "Hinweise in der App anzeigen", network: "Internetzugriff (nur https) aus dem Widget",
+  "capture.control": "Aufnahme und Replays in OBS steuern", "overlay.show": "Overlay im Spiel ein- und ausblenden",
 };
 
 export const CATEGORY_LABELS: Record<string, string> = {
@@ -56,6 +57,13 @@ export const BRIDGE_METHODS: Record<string, string> = {
   "profiles.activate": "profiles.activate",
   "profiles.revert": "profiles.activate",
   "diagnostics.run": "diagnostics.run",
+  "obs.status": "capture.control",
+  "obs.recordToggle": "capture.control",
+  "obs.replaySave": "capture.control",
+  "obs.replayToggle": "capture.control",
+  "overlay.status": "overlay.show",
+  "overlay.toggle": "overlay.show",
+  "overlay.hide": "overlay.show",
 };
 /** Events a widget may subscribe to, with the permission each needs (null = always). */
 export const BRIDGE_EVENTS: Record<string, string | null> = { "monitor.sample": "monitor.read", changed: null };

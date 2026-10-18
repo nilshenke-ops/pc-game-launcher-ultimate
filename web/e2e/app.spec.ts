@@ -1,7 +1,7 @@
 import { expect, test, devices, type Browser, type Page } from "@playwright/test";
 import { existsSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { COMPANION, HOSTED_SITE, RELAY, state } from "./env";
+import { COMPANION, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, OBS_URL, RELAY, state } from "./env";
 import { ACCESS_HASH } from "../src/lib/access";
 
 // The tests build on each other (pairing → launching → revoking), so they run in order.
@@ -222,6 +222,74 @@ test("Weitere Beispiel-Plugins laufen mit echten Daten vom PC", async () => {
   await expect(frame("Leistungs-Verlauf", "Leistungs-Verlauf").locator("#legend")).toHaveText(/CPU \d+ %/, { timeout: 20000 });
 });
 
+const obsState = async () => (await (await fetch(`http://127.0.0.1:${OBS_PORT}/state`)).json()) as { recording: boolean; replayBuffer: boolean; savedReplays: number; requests: string[] };
+
+test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkürzel, Overlay-Plugin", async () => {
+  await pc.goto(`${COMPANION}/#/overlay-settings`);
+  await expect(pc.getByRole("heading", { name: "Overlay & Aufnahme" })).toBeVisible();
+  // Without the Windows companion there is no overlay window – said so, no fake button.
+  await expect(pc.getByText("Das Overlay gibt es nur im Windows-Begleiter.")).toBeVisible();
+  await expect(pc.getByRole("button", { name: "Overlay jetzt zeigen" })).toHaveCount(0);
+
+  // Wrong password first: OBS refuses, the reason is shown.
+  await pc.getByLabel("OBS-WebSocket-Adresse").fill(OBS_URL);
+  await pc.getByLabel("OBS-WebSocket-Passwort").fill("falsch");
+  await pc.getByRole("button", { name: "Speichern und verbinden" }).click();
+  await expect(pc.getByText(/OBS hat das Passwort abgelehnt/).first()).toBeVisible();
+  await pc.getByLabel("OBS-WebSocket-Passwort").fill(OBS_PASSWORD);
+  await pc.getByRole("button", { name: "Speichern und verbinden" }).click();
+  await expect(pc.getByText("Mit OBS verbunden")).toBeVisible();
+  await expect(pc.getByText(/Verbunden · obs-websocket 5\.5\.4/)).toBeVisible();
+
+  // Recording and replay go through the companion to OBS.
+  await pc.getByRole("button", { name: "Aufnahme starten" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(true);
+  await expect(pc.getByRole("button", { name: "Aufnahme stoppen" })).toBeVisible();
+  await expect(pc.getByRole("button", { name: "Replay speichern" })).toBeDisabled(); // replay buffer not running yet
+  await pc.getByRole("button", { name: "Replay-Puffer starten" }).click();
+  await expect(pc.getByRole("button", { name: "Replay speichern" })).toBeEnabled();
+  await pc.getByRole("button", { name: "Replay speichern" }).click();
+  await expect.poll(async () => (await obsState()).savedReplays).toBe(1);
+  await pc.getByRole("button", { name: "Aufnahme stoppen" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(false);
+
+  // Shortcuts are freely editable and become normal hotkeys.
+  await pc.getByRole("textbox", { name: "Aufnahme starten/stoppen", exact: true }).fill("Ctrl+Alt+5");
+  await pc.getByRole("button", { name: "Vorschläge einsetzen" }).click();
+  await expect(pc.getByRole("textbox", { name: "Aufnahme starten/stoppen", exact: true })).toHaveValue("Ctrl+Alt+5"); // own choice is kept
+  await expect(pc.getByRole("textbox", { name: "Overlay öffnen/schließen (groß, wie die Xbox Game Bar)", exact: true })).toHaveValue("Ctrl+Shift+G");
+  await pc.getByRole("button", { name: "Tastenkürzel speichern" }).click();
+  await expect(pc.getByText("Tastenkürzel gespeichert")).toBeVisible();
+  await pc.goto(`${COMPANION}/#/hotkeys`);
+  await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 5" })).toContainText("Aufnahme starten/stoppen (OBS)");
+  await expect(pc.locator(".list-item", { hasText: "Ctrl + Shift + G" })).toContainText("Overlay ein/aus: Groß (wie Game Bar)");
+
+  // The Game-Overlay plugin: installed, activated, its widget controls OBS – on the dashboard and on the overlay page.
+  await pc.goto(`${COMPANION}/#/plugins?tab=dev`);
+  await pc.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.game-overlay-1.0.0.pglplugin"));
+  await expect(pc.getByText("Prüfung bestanden: Game-Overlay 1.0.0")).toBeVisible();
+  await pc.getByRole("button", { name: "Installieren (deaktiviert)" }).click();
+  await pc.goto(`${COMPANION}/#/plugins`);
+  await pc.locator(".card", { hasText: "Game-Overlay" }).getByRole("button", { name: "Details" }).click();
+  await pc.getByRole("button", { name: "Aktivieren" }).click();
+  await expect(pc.getByText(/Aufnahme und Replays in OBS steuern/).first()).toBeVisible();
+  await pc.getByRole("button", { name: "Erlauben und aktivieren" }).click();
+  await expect(pc.getByText("Plugin aktiviert")).toBeVisible();
+  await pc.keyboard.press("Escape");
+  await pc.goto(`${COMPANION}/#/overlay`);
+  const w = pc.frameLocator('iframe[title="Game-Overlay: Game-Overlay"]');
+  await expect(w.locator("#state")).toHaveText(/Bereit/, { timeout: 15000 });
+  await expect(w.locator("#cpu")).toHaveText(/\d+ %/, { timeout: 15000 }); // live values from the PC
+  await w.getByRole("button", { name: "● Aufnahme starten" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(true);
+  await expect(w.locator("#state")).toHaveText(/Aufnahme läuft/);
+  await w.getByRole("button", { name: "■ Aufnahme stoppen" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(false);
+  await w.getByRole("button", { name: "⟲ Replay speichern" }).click();
+  await expect.poll(async () => (await obsState()).savedReplays).toBe(2);
+  await pc.goto(`${COMPANION}/#/`);
+});
+
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
   await pc.goto(`${COMPANION}/#/monitor`);
   // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).
@@ -312,6 +380,19 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByText("3 Änderungen warten auf den PC")).toBeVisible();
   await tablet.reload();
   await expect(tablet.getByText("3 Änderungen warten auf den PC")).toBeVisible(); // survives closing the page
+  // Overlay shortcut and OBS option prepared on the tablet, before the PC was ever connected.
+  await tablet.goto(`${HOSTED_SITE}/#/overlay-settings`);
+  await expect(tablet.getByText(/PC nicht verbunden: Tastenkürzel, OBS-Verbindung/)).toBeVisible();
+  await tablet.getByRole("textbox", { name: "Replay speichern (die letzten Sekunden)", exact: true }).fill("Ctrl+Alt+7");
+  await tablet.getByRole("button", { name: "Tastenkürzel speichern" }).click();
+  await expect(tablet.getByText("Tastenkürzel gespeichert")).toBeVisible();
+  await tablet.getByRole("switch", { name: /Replay-Puffer automatisch/ }).check();
+  await tablet.getByRole("button", { name: "Speichern", exact: true }).click();
+  await expect(tablet.getByText("Gespeichert – wird beim Verbinden auf den PC übertragen")).toBeVisible();
+  await expect(tablet.getByText("5 Änderungen warten auf den PC")).toBeVisible();
+  await tablet.reload();
+  await expect(tablet.getByRole("textbox", { name: "Replay speichern (die letzten Sekunden)", exact: true })).toHaveValue("Ctrl+Alt+7");
+  await expect(tablet.getByRole("switch", { name: /Replay-Puffer automatisch/ })).toBeChecked();
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -348,6 +429,9 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.keyboard.press("Escape");
   await pc.goto(`${COMPANION}/#/hotkeys`);
   await expect(pc.getByText("Maus-Seitentaste hinten (4)")).toBeVisible();
+  await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 7" })).toContainText("Replay speichern (OBS)");
+  await pc.goto(`${COMPANION}/#/overlay-settings`);
+  await expect(pc.getByRole("switch", { name: /Replay-Puffer automatisch/ })).toBeChecked();
   // The quick action now plays the uploaded sound (its waiting id was replaced by the PC's id).
   await pc.goto(`${COMPANION}/#/quick`);
   await expect(pc.locator(".card, .list-item", { hasText: "Offline-Aktion" }).first()).toContainText("e2e-offline-sound");

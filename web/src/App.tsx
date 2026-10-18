@@ -26,6 +26,8 @@ const Diagnostics = lazy(() => import("./pages/Diagnostics"));
 const Help = lazy(() => import("./pages/Help"));
 const Updates = lazy(() => import("./pages/Updates"));
 const Plugins = lazy(() => import("./pages/Plugins"));
+const OverlaySettings = lazy(() => import("./pages/OverlaySettings"));
+const Overlay = lazy(() => import("./pages/Overlay"));
 const Connect = lazy(() => import("./pages/Connect"));
 const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
@@ -63,6 +65,9 @@ function Gate() {
     return <div className="center-screen"><div className="center-card"><Loading /></div></div>;
   const pcLoggedIn = client.demo || conn.auth === "ok" || !!conn.me || !!client.credentials;
 
+  // The in-game overlay window (Windows companion) shows only the overlay, without navigation.
+  if (loc.pathname === "/overlay") return <Suspense fallback={null}><Overlay /></Suspense>;
+
   return (
     <AppShell>
       <PageErrorBoundary key={loc.pathname}>
@@ -88,6 +93,7 @@ function Gate() {
           <Route path="/help" element={<Help />} />
           <Route path="/updates" element={<Updates />} />
           <Route path="/plugins" element={<Plugins />} />
+          <Route path="/overlay-settings" element={<OverlaySettings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

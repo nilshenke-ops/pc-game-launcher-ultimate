@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Pgl.Core.Infrastructure;
 using Pgl.Core.Models;
+using Pgl.Core.Platform;
 using Pgl.Core.Rpc;
 using Pgl.Core.Security;
 using Pgl.Core.Services;
@@ -245,6 +246,7 @@ public static class RpcApi
             var hasSecret = set.RelaySecretProtected != null;
             set.RelaySecretProtected = null;
             set.SteamApiKeyProtected = null; // secrets never leave the PC
+            set.ObsPasswordProtected = null;
             return new { settings = set, relaySecretSet = hasSecret, dataDir = ctx.Session.IsLocalAdmin ? s.Paths.DataDir : null, restartRequired = set.Port != s.Web.Port || set.LanAccess != s.Web.LanAccess, webStartError = s.Web.StartError };
         });
         rpc.Register("library.findCover", async ctx => (object?)new { cover = await s.Covers.FindForAsync(ctx.Str("id", 64)) });
@@ -264,6 +266,7 @@ public static class RpcApi
             var r = s.Settings.SaveGeneral(ctx.Bind<SettingsService.GeneralUpdate>());
             r.RelaySecretProtected = null; // secrets never leave the PC
             r.SteamApiKeyProtected = null;
+            r.ObsPasswordProtected = null;
             return r;
         });
         rpc.Register("settings.saveSecurity", ctx =>
@@ -275,6 +278,7 @@ public static class RpcApi
             var r = s.Settings.SaveSecurity(u, s.Platform.Secrets);
             r.RelaySecretProtected = null;
             r.SteamApiKeyProtected = null;
+            r.ObsPasswordProtected = null;
             return r;
         });
 
@@ -302,6 +306,30 @@ public static class RpcApi
         rpc.Register("storage.get", _ => s.Storage.Get());
         rpc.Register("storage.scan", ctx => s.Storage.Scan(ctx.OptStr("id", 64)));
         rpc.Register("storage.openFolder", ctx => { s.Storage.OpenFolder(ctx.Str("id", 64)); return true; });
+        // ------------------------------------------------------------ overlay + OBS (recording, replays)
+        rpc.Register("overlay.status", _ => new { supported = s.Platform.Overlay.Supported, visible = s.Platform.Overlay.Visible, reason = s.Platform.Overlay.Supported ? null : NullOverlay.Instance.Toggle("full") });
+        rpc.Register("overlay.toggle", ctx =>
+        {
+            var mode = ctx.OptStr("mode", 10) ?? "full";
+            if (mode is not ("full" or "mini")) throw new RpcException("invalid-params", "Modus muss „full“ oder „mini“ sein.");
+            return s.Platform.Overlay.Toggle(mode) is { } err ? throw new RpcException("unsupported", err) : (object)new { visible = s.Platform.Overlay.Visible };
+        });
+        rpc.Register("overlay.hide", _ => { s.Platform.Overlay.Hide(); return true; });
+        rpc.Register("obs.status", async _ => await s.Obs.Status());
+        rpc.Register("obs.configure", async ctx =>
+        {
+            // The password is protected on the PC right away and never returned (like the Steam key).
+            var hasPw = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("password", out var pw) && pw.ValueKind == JsonValueKind.String;
+            var password = hasPw ? ctx.Str("password", 200, required: false) : null;
+            bool? replay = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("replayWhilePlaying", out var r) && r.ValueKind is JsonValueKind.True or JsonValueKind.False ? r.GetBoolean() : null;
+            s.Settings.SetObs(ctx.OptStr("url", 200), string.IsNullOrEmpty(password) ? null : s.Platform.Secrets.Protect(password), keepPassword: !hasPw, replay);
+            s.Obs.Reconnect();
+            return await s.Obs.Status();
+        });
+        rpc.Register("obs.recordToggle", async _ => (object)new { message = await s.Obs.RecordToggle() });
+        rpc.Register("obs.replaySave", async _ => (object)new { message = await s.Obs.ReplaySave() });
+        rpc.Register("obs.replayToggle", async _ => (object)new { message = await s.Obs.ReplayBufferToggle() });
+
         rpc.Register("power.status", _ => new { supported = s.Platform.Power.Supported });
         rpc.Register("power.run", ctx =>
         {

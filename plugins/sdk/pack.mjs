@@ -8,7 +8,7 @@ import { join, relative, sep } from "node:path";
 import { crc32, deflateRawSync } from "node:zlib";
 
 const ALLOWED = [".json", ".html", ".js", ".css", ".png", ".svg", ".jpg", ".jpeg", ".webp", ".txt", ".md"];
-const PERMISSIONS = ["library.read", "library.launch", "history.read", "monitor.read", "sounds.read", "sounds.play", "profiles.read", "profiles.activate", "audio.output", "diagnostics.run", "notify", "network"];
+const PERMISSIONS = ["library.read", "library.launch", "history.read", "monitor.read", "sounds.read", "sounds.play", "profiles.read", "profiles.activate", "audio.output", "diagnostics.run", "notify", "network", "capture.control", "overlay.show"];
 const CATEGORIES = ["launcher", "audio", "discord", "performance", "design", "automation", "device", "information", "productivity", "community"];
 
 export function checkManifest(m, files) {

@@ -75,7 +75,8 @@ Die Felder im Einzelnen:
   - Der Launcher zeigt an, wo ein Plugin funktioniert.
 - **dependencies:** Andere Plugins, die installiert und aktiv sein müssen. Angabe als `>=X.Y.Z` oder genau `X.Y.Z`.
 - **Aktionen:** Schritte, die ein Spiel, einen Sound, ein Profil, eine Sammlung oder ein Gerät brauchen, verweisen immer auf eine Einstellung (`{config:schlüssel}`). Diese IDs sind auf jedem PC anders. Feste IDs werden abgelehnt.
-  - Erlaubte Schritt-Typen: `launchItem`, `activateProfile`, `revertProfile`, `playSound`, `stopAllSounds`, `setCollection`, `setAudioOutput`, `runDiagnostics`, `notify`.
+  - Erlaubte Schritt-Typen: `launchItem`, `activateProfile`, `revertProfile`, `playSound`, `stopAllSounds`, `setCollection`, `setAudioOutput`, `runDiagnostics`, `notify`, ab Launcher 1.4.0 außerdem `toggleOverlay` (`ref`: `full` oder `mini`), `obsRecordToggle`, `obsReplaySave`, `obsReplayBufferToggle`.
+- **Overlay-Widgets** (ab 1.4.0): `"overlay": true` an einem Widget zeigt es zusätzlich im großen Overlay im Spiel (Windows-Begleiter). Beispiel: `plugins/examples/game-overlay`.
 
 ## Berechtigungen
 
@@ -93,6 +94,8 @@ Die Felder im Einzelnen:
 | `diagnostics.run` | `pgl.call("diagnostics.run")`, Schritt `runDiagnostics` |
 | `notify` | `pgl.notify(text)`, Schritt `notify` |
 | `network` | `fetch`/Bilder von `https://`-Adressen aus dem Widget |
+| `capture.control` | `obs.status`, `obs.recordToggle`, `obs.replaySave`, `obs.replayToggle`; Schritte `obsRecordToggle`, `obsReplaySave`, `obsReplayBufferToggle` (Aufnahme über OBS Studio, ab 1.4.0) |
+| `overlay.show` | `overlay.status`, `overlay.toggle`, `overlay.hide`; Schritt `toggleOverlay` (ab 1.4.0) |
 
 So läuft die Freigabe ab:
 - Vor dem Aktivieren sieht der Nutzer jede Berechtigung und muss zustimmen.
@@ -140,6 +143,7 @@ Sandbox-Regeln:
    | `pc-check` | Widget **und** Aktion (Diagnose) | diagnostics.run, notify |
    | `discord-schnellton`, `gaming-abend` | nur Aktionen mit Einstellungen (Spiel, Programm, Profil, Sound) | je nach Schritt |
    | `neon-themes`, `retro-themes` | nur Themes | keine |
+   | `game-overlay` | Overlay-Widget (`"overlay": true`), OBS-Steuerung, Aktionen für Tastenkürzel | monitor.read, capture.control, overlay.show |
 2. **Packen:** `node plugins/sdk/pack.mjs plugins/examples/mein-plugin dist-plugins` erzeugt `de.meinname.mein-plugin-1.0.0.pglplugin`. Dabei werden die Grundregeln geprüft.
 3. **Importieren:** Plugin Center → Entwickler → „Datei wählen und prüfen“.
    - Erlaubt am PC selbst oder auf einem Gerät mit Admin-Recht.

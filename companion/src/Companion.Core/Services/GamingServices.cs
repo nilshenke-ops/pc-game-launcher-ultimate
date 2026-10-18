@@ -41,12 +41,14 @@ public sealed class SettingsService
         public bool? SteamEnabled { get; set; }
         public bool? EpicEnabled { get; set; }
         public bool? EaEnabled { get; set; }
+        public string? OverlayCorner { get; set; }
     }
 
     public Settings SaveGeneral(GeneralUpdate u)
     {
         if (u.Language is { } l && l is not ("de" or "en")) throw new RpcException("invalid-params", "Sprache muss de oder en sein.");
         if (u.GamePassMarket is { } gm && !System.Text.RegularExpressions.Regex.IsMatch(gm, "^[A-Z]{2}$")) throw new RpcException("invalid-params", "Markt muss ein Ländercode aus zwei Großbuchstaben sein (z. B. DE).");
+        if (u.OverlayCorner is { } oc && oc is not ("top-left" or "top-right" or "bottom-left" or "bottom-right")) throw new RpcException("invalid-params", "Ecke muss top-left, top-right, bottom-left oder bottom-right sein.");
         if (u.ProcessScanSeconds is { } p && (p < 2 || p > 60)) throw new RpcException("invalid-params", "Prüfintervall muss zwischen 2 und 60 Sekunden liegen.");
         var s = _store.Update(s =>
         {
@@ -67,11 +69,32 @@ public sealed class SettingsService
             if (u.SteamEnabled != null) s.SteamEnabled = u.SteamEnabled.Value;
             if (u.EpicEnabled != null) s.EpicEnabled = u.EpicEnabled.Value;
             if (u.EaEnabled != null) s.EaEnabled = u.EaEnabled.Value;
+            if (u.OverlayCorner != null) s.OverlayCorner = u.OverlayCorner;
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");
         Saved?.Invoke(s);
         return s;
+    }
+
+    /// <summary>OBS connection: address (ws/wss), password (already protected; keep = unchanged) and replay buffer while playing.</summary>
+    public Settings SetObs(string? url, string? protectedPassword, bool keepPassword, bool? replayWhilePlaying)
+    {
+        if (url != null)
+        {
+            url = url.Trim();
+            if (url.Length > 200 || !Uri.TryCreate(url, UriKind.Absolute, out var u) || u.Scheme is not ("ws" or "wss") || !string.IsNullOrEmpty(u.UserInfo))
+                throw new RpcException("invalid-params", "OBS-Adresse muss mit ws:// oder wss:// beginnen, z. B. ws://127.0.0.1:4455.");
+        }
+        var r = _store.Update(s =>
+        {
+            if (url != null) s.ObsUrl = url;
+            if (!keepPassword) s.ObsPasswordProtected = protectedPassword;
+            if (replayWhilePlaying != null) s.ObsReplayWhilePlaying = replayWhilePlaying.Value;
+            return Json.Deserialize<Settings>(Json.Serialize(s))!;
+        });
+        _hub.Changed("settings");
+        return r;
     }
 
     /// <summary>Stores the protected Steam Web API key (or removes it). keep = leave the current key.</summary>
@@ -140,6 +163,8 @@ public sealed class SettingsService
         s.PublicUrl = keepSecurityFrom.PublicUrl;   // allowed web origins are never changed by a backup file
         s.WebAppUrl = keepSecurityFrom.WebAppUrl;
         s.SteamApiKeyProtected = keepSecurityFrom.SteamApiKeyProtected; // secrets never come from a backup file
+        s.ObsPasswordProtected = keepSecurityFrom.ObsPasswordProtected;
+        s.ObsUrl = keepSecurityFrom.ObsUrl; // decides where the OBS password is sent
         // The relay address decides where the companion sends its relay secret – only changeable at the PC (settings.save).
         s.RelayEnabled = keepSecurityFrom.RelayEnabled;
         s.RelayUrl = keepSecurityFrom.RelayUrl;
@@ -541,6 +566,11 @@ public sealed class ActionRunner
     public Action<string?>? SetAudioOutput { get; set; }
     public Func<Task<object>>? RunDiagnostics { get; set; }
     public Action<string>? Notify { get; set; }
+    /// <summary>Shows/hides the overlay ("full" or "mini"); returns an error text or null.</summary>
+    public Func<string, string?>? ToggleOverlay { get; set; }
+    public Func<Task<string>>? ObsRecordToggle { get; set; }
+    public Func<Task<string>>? ObsReplaySave { get; set; }
+    public Func<Task<string>>? ObsReplayBufferToggle { get; set; }
 
     /// <summary>Executes steps in order. Returns a human readable result per step.</summary>
     public async Task<List<string>> RunAsync(IEnumerable<ActionStep> steps, string by)
@@ -580,6 +610,18 @@ public sealed class ActionRunner
                         break;
                     case StepType.Notify:
                         Notify!(DeviceStore.Sanitize(s.Ref, 120, "Hinweis")); results.Add("Hinweis angezeigt");
+                        break;
+                    case StepType.ToggleOverlay:
+                        results.Add(ToggleOverlay!(s.Ref == "mini" ? "mini" : "full") is { } oe ? "Fehler: " + oe : "Overlay umgeschaltet");
+                        break;
+                    case StepType.ObsRecordToggle:
+                        results.Add(await ObsRecordToggle!());
+                        break;
+                    case StepType.ObsReplaySave:
+                        results.Add(await ObsReplaySave!());
+                        break;
+                    case StepType.ObsReplayBufferToggle:
+                        results.Add(await ObsReplayBufferToggle!());
                         break;
                 }
             }

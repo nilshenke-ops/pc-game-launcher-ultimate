@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><link rel="stylesheet" href="style.css"></head>
+<body>
+  <section>
+    <h3>Leistung</h3>
+    <div class="row"><span>CPU</span><b id="cpu">–</b></div><div class="bar"><i id="cpuBar"></i></div>
+    <div class="row"><span>RAM</span><b id="ram">–</b></div><div class="bar"><i id="ramBar"></i></div>
+    <div class="row"><span id="gpuName">GPU</span><b id="gpu">–</b></div><div class="bar"><i id="gpuBar"></i></div>
+  </section>
+  <section>
+    <h3>Aufnahme (OBS)</h3>
+    <div class="state"><span class="dot" id="dot"></span><span id="state">…</span></div>
+    <div class="buttons">
+      <button id="rec" class="primary" disabled>● Aufnahme starten</button>
+      <button id="buffer" disabled>Replay-Puffer an</button>
+      <button id="save" class="wide" disabled>⟲ Replay speichern</button>
+    </div>
+    <div class="msg" id="msg"></div>
+  </section>
+  <script src="widget.js"></script>
+</body></html>

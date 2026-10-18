@@ -22,6 +22,29 @@ public interface IPlatform
     IUpdateInstaller UpdateInstaller { get; }
     /// <summary>Lock, sleep, restart, shut down (Windows companion only).</summary>
     IPowerControl Power => NullPower.Instance;
+    /// <summary>In-game overlay window (Windows companion only).</summary>
+    IOverlay Overlay => NullOverlay.Instance;
+}
+
+public interface IOverlay
+{
+    bool Supported { get; }
+    /// <summary>"full" (interactive panel), "mini" (small click-through window in a corner) or null (hidden).</summary>
+    string? Visible { get; }
+    /// <summary>Shows the overlay in this mode, or hides it if it is already shown in this mode. Returns an error text or null.</summary>
+    string? Toggle(string mode);
+    void Hide();
+    event Action? Changed;
+}
+
+public sealed class NullOverlay : IOverlay
+{
+    public static readonly NullOverlay Instance = new();
+    public bool Supported => false;
+    public string? Visible => null;
+    public string? Toggle(string mode) => "Das Overlay gibt es nur im Windows-Begleiter.";
+    public void Hide() { }
+    public event Action? Changed { add { } remove { } }
 }
 
 public interface IPowerControl

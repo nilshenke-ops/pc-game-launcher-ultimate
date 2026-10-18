@@ -48,6 +48,7 @@ sealed class TrayAppContext : ApplicationContext
     readonly MainForm _form;
     readonly TrayIcon _tray;
     readonly CompanionServices _services;
+    readonly WindowsOverlay _overlay;
     readonly EventWaitHandle _showSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Show");
     bool _exiting;
 
@@ -57,7 +58,11 @@ sealed class TrayAppContext : ApplicationContext
         _ = _form.Handle; // creates the UI thread's synchronization context target
         var ui = new UiInvoker(_form);
         TrayIcon? trayRef = null;
-        _services = new CompanionServices(new WindowsPlatform(ui, () => trayRef), new AppPaths());
+        var platform = new WindowsPlatform(ui, () => trayRef);
+        _overlay = platform.OverlayWindows;
+        _services = new CompanionServices(platform, new AppPaths());
+        _overlay.Corner = () => _services.Settings.Get().OverlayCorner;
+        _services.Obs.RecordingChanged += (active, _) => _overlay.Recording = active;
         _tray = new TrayIcon(this, _services);
         trayRef = _tray;
         _form.Attach(_services, this);
@@ -83,6 +88,10 @@ sealed class TrayAppContext : ApplicationContext
         await _services.StartAsync();
         _tray.Update();
         await _form.LoadUiAsync();
+        // The overlay uses the same WebView2 environment and the same per-launch admin token as the main window.
+        _overlay.Environment = _form.WebEnvironment;
+        _overlay.Origin = $"http://127.0.0.1:{_services.Web.Port}";
+        _overlay.AdminToken = _services.Rpc.AdminToken;
         if (_services.Web.StartError != null)
             MessageBox.Show(_services.Web.StartError, "PC Game Launcher – Webserver", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
@@ -115,6 +124,7 @@ sealed class TrayAppContext : ApplicationContext
         _showSignal.Set();
         _tray.Dispose();
         _form.Hide();
+        try { _overlay.Dispose(); } catch { }
         try { await _services.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
         _form.Close();
         ExitThread();
@@ -212,6 +222,7 @@ sealed class MainForm : Form
 
     WebView2? _web;
     CompanionServices? _s;
+    public CoreWebView2Environment? WebEnvironment { get; private set; }
     TrayAppContext? _app;
     readonly Panel _fallback = new() { Dock = DockStyle.Fill, Visible = false, BackColor = Color.FromArgb(10, 14, 26) };
     readonly Label _fallbackText = new() { Dock = DockStyle.Top, Height = 140, ForeColor = Color.Gainsboro, Font = new Font("Segoe UI", 11f), Padding = new Padding(24) };
@@ -257,6 +268,7 @@ sealed class MainForm : Form
         {
             var dataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "PCGameLauncherUltimate", "WebView2");
             var env = await CoreWebView2Environment.CreateAsync(null, dataDir);
+            WebEnvironment = env;
             _web = new WebView2 { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(10, 14, 26) };
             Controls.Add(_web);
             _web.BringToFront();

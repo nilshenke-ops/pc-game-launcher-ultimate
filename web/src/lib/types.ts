@@ -38,7 +38,8 @@ export interface DetectedItem {
   alreadyAdded: boolean;
 }
 
-export type StepType = "launchItem" | "activateProfile" | "revertProfile" | "playSound" | "stopAllSounds" | "setCollection" | "setAudioOutput" | "runDiagnostics" | "notify";
+export type StepType = "launchItem" | "activateProfile" | "revertProfile" | "playSound" | "stopAllSounds" | "setCollection" | "setAudioOutput" | "runDiagnostics" | "notify"
+  | "toggleOverlay" | "obsRecordToggle" | "obsReplaySave" | "obsReplayBufferToggle";
 export interface ActionStep { type: StepType; ref?: string | null }
 
 export interface QuickAction {
@@ -171,9 +172,19 @@ export interface Settings {
   gamePassEnabled?: boolean;
   gamePassMarket?: string;
   coverSearch?: boolean;
+  obsUrl?: string | null;
+  obsReplayWhilePlaying?: boolean;
+  overlayCorner?: OverlayCorner;
 }
 
-export interface Features { audio: boolean; hotkeys: boolean; autostart: boolean; pickFile: boolean; installUpdates: boolean }
+export type OverlayCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+export interface ObsStatus {
+  url?: string | null; passwordSet: boolean; replayWhilePlaying: boolean; connected: boolean; version?: string | null;
+  recording?: boolean | null; recordTimecode?: string | null; replayBuffer?: boolean | null; error?: string | null;
+}
+export interface OverlayStatus { supported: boolean; visible?: "full" | "mini" | null; reason?: string | null }
+
+export interface Features { audio: boolean; hotkeys: boolean; autostart: boolean; pickFile: boolean; installUpdates: boolean; overlay?: boolean }
 
 export interface AppState {
   pcName: string;

@@ -36,6 +36,8 @@ public static class PluginPermissions
         ["diagnostics.run"] = "Diagnose ausführen",
         ["notify"] = "Hinweise in der App anzeigen",
         ["network"] = "Internetzugriff (nur https) aus dem Widget",
+        ["capture.control"] = "Aufnahme und Replays in OBS steuern",
+        ["overlay.show"] = "Overlay im Spiel ein- und ausblenden",
     };
 
     /// <summary>Permission an action step needs.</summary>
@@ -46,11 +48,18 @@ public static class PluginPermissions
         StepType.PlaySound or StepType.StopAllSounds or StepType.SetCollection => "sounds.play",
         StepType.SetAudioOutput => "audio.output",
         StepType.RunDiagnostics => "diagnostics.run",
+        StepType.ToggleOverlay => "overlay.show",
+        StepType.ObsRecordToggle or StepType.ObsReplaySave or StepType.ObsReplayBufferToggle => "capture.control",
         _ => "notify",
     };
 }
 
-public sealed class PluginWidget { public string Id { get; set; } = ""; public string Title { get; set; } = ""; public string Entry { get; set; } = ""; public int Height { get; set; } = 180; }
+public sealed class PluginWidget
+{
+    public string Id { get; set; } = ""; public string Title { get; set; } = ""; public string Entry { get; set; } = ""; public int Height { get; set; } = 180;
+    /// <summary>Also shown in the in-game overlay (Windows companion), not only on the dashboard.</summary>
+    public bool Overlay { get; set; }
+}
 public sealed class PluginAction { public string Id { get; set; } = ""; public string Name { get; set; } = ""; public string Icon { get; set; } = "zap"; public List<ActionStep> Steps { get; set; } = new(); }
 public sealed class PluginTheme { public string Id { get; set; } = ""; public string Name { get; set; } = ""; public JsonObject Theme { get; set; } = new(); }
 public sealed class PluginSetting
@@ -288,6 +297,7 @@ public sealed partial class PluginService : IDisposable
                     if (!mm.Success || c.Settings.All(s => s.Key != mm.Groups[1].Value)) throw Bad($"Aktion „{a.Id}“: Schritt {st.Type} muss auf eine Einstellung verweisen ({{config:schlüssel}}).");
                 }
                 else if (st.Type == StepType.Notify && (st.Ref?.Length ?? 0) > 200) throw Bad($"Aktion „{a.Id}“: Hinweistext zu lang.");
+                else if (st.Type == StepType.ToggleOverlay && st.Ref is not (null or "full" or "mini")) throw Bad($"Aktion „{a.Id}“: Overlay-Modus muss „full“ oder „mini“ sein.");
             }
         }
         foreach (var t in c.Themes)

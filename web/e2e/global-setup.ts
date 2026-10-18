@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
-import { COMPANION, COMPANION_PORT, HOSTED_PORT, HOSTED_SITE, RELAY, RELAY_PORT, STATE_FILE } from "./env";
+import { COMPANION, COMPANION_PORT, HOSTED_PORT, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, RELAY, RELAY_PORT, STATE_FILE } from "./env";
 
 const ROOT = resolve(fileURLToPath(new URL(".", import.meta.url)), "../..");
 const SECRET = "e2e-relay-secret-0123456789abcdef";
@@ -46,7 +46,7 @@ export default async function setup() {
   pack(join(ROOT, "plugins/examples/spielzeit-heute"), work);
   pack(join(ROOT, "web/e2e/fixtures/sandbox-test"), work);
   pack(join(ROOT, "plugins/examples/cpu-mini"), work);
-  for (const p of ["favoriten-start", "top-woche", "sound-pad", "profil-wechsler", "pc-check", "leistungs-verlauf"]) pack(join(ROOT, "plugins/examples", p), work);
+  for (const p of ["game-overlay", "favoriten-start", "top-woche", "sound-pad", "profil-wechsler", "pc-check", "leistungs-verlauf"]) pack(join(ROOT, "plugins/examples", p), work);
 
   const relayCfg = join(work, "relay.json");
   writeFileSync(relayCfg, JSON.stringify({ port: RELAY_PORT, host: "127.0.0.1", webDir: join(ROOT, "web/dist"), downloadsDir: join(work, "downloads"), companions: [{ id: "e2e-pc", secretSha256: createHash("sha256").update(SECRET).digest("hex") }] }));
@@ -67,12 +67,16 @@ export default async function setup() {
       fs.createReadStream(f).pipe(res);
     }).listen(${HOSTED_PORT}, "127.0.0.1");`], { stdio: "ignore", detached: true });
   staticServer.unref();
+  // Stand-in for OBS Studio's WebSocket server (recording and replay buffer).
+  const obs = spawn(process.execPath, [join(ROOT, "web/e2e/fixtures/fake-obs.mjs"), String(OBS_PORT), OBS_PASSWORD], { stdio: "ignore", detached: true });
+  obs.unref();
   companion.unref(); relay.unref();
   await waitFor(`${COMPANION}/healthz`);
   await waitFor(`${RELAY}/healthz`);
   await waitFor(`${HOSTED_SITE}/`);
+  await waitFor(`http://127.0.0.1:${OBS_PORT}/state`);
   // Wait until the companion is connected to the relay.
   const end = Date.now() + 20000;
   while (Date.now() < end && (await (await fetch(`${RELAY}/healthz`)).json()).companionsOnline < 1) await new Promise((r) => setTimeout(r, 300));
-  writeFileSync(STATE_FILE, JSON.stringify({ dataDir, workDir: work, adminToken: readFileSync(tokenFile, "utf8").trim(), pids: [companion.pid, relay.pid, staticServer.pid] }));
+  writeFileSync(STATE_FILE, JSON.stringify({ dataDir, workDir: work, adminToken: readFileSync(tokenFile, "utf8").trim(), pids: [companion.pid, relay.pid, staticServer.pid, obs.pid] }));
 }
