@@ -9,6 +9,7 @@ import { useConn, useEvent, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { Banner, Button, Modal } from "./ui";
 import { CommandPalette } from "./CommandPalette";
+import { startPendingSync } from "../lib/pending-sounds";
 
 function ConnPill() {
   const conn = useConn();
@@ -103,6 +104,11 @@ export function AppShell({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
   useEffect(() => { setMore(false); window.scrollTo({ top: 0 }); }, [loc.pathname]);
+  // Sounds added while the PC was off are uploaded after every login.
+  useEffect(() => startPendingSync((r) => {
+    if (r.sent) toast(t("{n} gespeicherte Sounds auf den PC übertragen", { n: r.sent }), "success");
+    if (r.failed) toast(t("{n} Sounds konnten nicht übertragen werden – Details im Soundboard", { n: r.failed }), "warning");
+  }), []);
 
   const groups = [...new Set(items.map((i) => i.group))];
   const preview = client.preview;

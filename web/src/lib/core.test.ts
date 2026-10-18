@@ -90,6 +90,7 @@ describe("hotkey recording", () => {
 });
 
 import { isLoopbackAddress, pcAddressToWs, wsToPcAddress } from "./address";
+import { sniffAudio } from "./pending-sounds";
 describe("PC-Adresse", () => {
   it("turns typed or scanned addresses into WebSocket URLs", () => {
     expect(pcAddressToWs("gaming-pc.tail1234.ts.net", true)).toBe("wss://gaming-pc.tail1234.ts.net/ws");
@@ -112,5 +113,18 @@ describe("loopback detection (127.0.0.1 is never the PC for another device)", ()
   it("recognises loopback addresses", () => {
     for (const a of ["ws://127.0.0.1:8787/ws", "wss://localhost/ws", "ws://[::1]:8787/ws", "127.0.0.5", "localhost"]) expect(isLoopbackAddress(a)).toBe(true);
     for (const a of ["ws://192.168.178.116:8787/ws", "wss://gaming-pc.tail1234.ts.net/ws", "nilshenke-ops.github.io"]) expect(isLoopbackAddress(a)).toBe(false);
+  });
+});
+
+describe("sounds added without PC: format check before storing", () => {
+  const b = (...x: (number | string)[]) => new Uint8Array(x.flatMap((v) => (typeof v === "string" ? [...v].map((c) => c.charCodeAt(0)) : [v])).concat(Array(16).fill(0)));
+  it("recognises supported formats and refuses others", () => {
+    expect(sniffAudio(b("ID3", 4, 0))).toBe("mp3");
+    expect(sniffAudio(b(0xff, 0xfb, 0x90))).toBe("mp3");
+    expect(sniffAudio(b("RIFF", 0, 0, 0, 0, "WAVE"))).toBe("wav");
+    expect(sniffAudio(b("fLaC"))).toBe("flac");
+    expect(sniffAudio(b(0, 0, 0, 0x20, "ftypM4A "))).toBe("m4a");
+    expect(sniffAudio(b("OggS"))).toBeNull();
+    expect(sniffAudio(b("<html>"))).toBeNull();
   });
 });

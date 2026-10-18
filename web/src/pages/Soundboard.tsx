@@ -1,32 +1,52 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Download, FileAudio, Link2, ListMusic, Music, Pause, Pencil, Play, Plus, Search, Square, Star, Trash2, Upload, Volume2 } from "lucide-react";
+import { Clock, MonitorSmartphone, Download, FileAudio, Headphones, Link2, ListMusic, Music, Pause, Pencil, Play, Plus, Search, Square, Star, Trash2, Upload, Volume2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useRpc, toast } from "../lib/hooks";
 import { bytes } from "../lib/format";
 import type { AudioSettings, PlayingState, Sound, SoundCollection, SoundsFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented } from "../components/ui";
+import { addPendingFiles, addPendingUrl, MAX_SOUND_BYTES, previewPending, removePending, retryPending, uploadBytes, usePendingSounds } from "../lib/pending-sounds";
 
 const COLORS = ["#22d3ee", "#a78bfa", "#f472b6", "#34d399", "#fbbf24", "#fb923c", "#f87171", "#60a5fa"];
-const CHUNK = 256 * 1024;
-
-function toBase64(buf: Uint8Array) {
-  let s = "";
-  for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
-  return btoa(s);
+/** Uploads a local audio file to the PC (used by the import dialog while connected). */
+export async function uploadSound(file: File, onProgress?: (p: number) => void) {
+  if (file.size > MAX_SOUND_BYTES) throw new Error(t("{f}: Datei ist zu groß (max. 20 MB).", { f: file.name }));
+  return uploadBytes(file.name, new Uint8Array(await file.arrayBuffer()), onProgress);
 }
 
-/** Uploads a local audio file to the PC in 256 KB chunks over the existing connection (works via relay, too). */
-export async function uploadSound(file: File, onProgress?: (p: number) => void) {
-  if (file.size > 20 * 1024 * 1024) throw new Error(t("{f}: Datei ist zu groß (max. 20 MB).", { f: file.name }));
-  const { uploadId } = await client.call<{ uploadId: string }>("sounds.uploadBegin", { name: file.name, size: file.size });
-  const data = new Uint8Array(await file.arrayBuffer());
-  for (let off = 0; off < data.length; off += CHUNK) {
-    await client.call("sounds.uploadChunk", { uploadId, data: toBase64(data.subarray(off, off + CHUNK)) });
-    onProgress?.(Math.min(1, (off + CHUNK) / data.length));
-  }
-  return client.call<Sound>("sounds.uploadEnd", { uploadId });
+/** Sounds added on this device that the PC does not have yet. */
+function PendingCard() {
+  const { items, syncing, available } = usePendingSounds();
+  const conn = useConn();
+  const online = conn.phase === "online" && conn.auth === "ok";
+  if (!available) return <div style={{ marginBottom: 16 }}><Banner kind="warn">{t("Dieser Browser erlaubt keinen Gerätespeicher (privater Modus?). Sounds können nur bei verbundenem PC hinzugefügt werden.")}</Banner></div>;
+  if (!items.length) return null;
+  return (
+    <Card title={t("Wartet auf PC ({n})", { n: items.length })} icon={<Clock size={18} />} style={{ marginBottom: 16 }}
+      meta={syncing ? t("Wird übertragen …") : undefined}>
+      <p className="small muted" style={{ marginTop: 0 }}>{online
+        ? t("Diese Sounds werden gerade bzw. wurden nicht übertragen. Abspielen auf dem PC geht erst nach der Übertragung.")
+        : t("Nur auf diesem Gerät gespeichert. Sobald dein PC verbunden ist, werden sie automatisch übertragen – dann kannst du sie abspielen.")}</p>
+      {online && !conn.me?.permissions.includes("manage") && <Banner kind="warn">{t("Zum Übertragen braucht dieses Gerät die Berechtigung „Verwalten“ (am PC unter Geräte).")}</Banner>}
+      <div className="list">
+        {items.map((p) => (
+          <div key={p.id} className="list-item">
+            <span className={`dot ${p.error ? "error" : "warn"}`} />
+            <div className="grow" style={{ minWidth: 0 }}>
+              <div className="title small" style={{ overflowWrap: "anywhere" }}>{p.name}</div>
+              <div className="sub">{p.error ? p.error : p.kind === "url" ? t("Link – der PC lädt ihn beim Verbinden herunter") : `${bytes(p.size)} · ${t("wartet auf PC")}`}</div>
+            </div>
+            {p.kind === "file" && <Button size="sm" variant="ghost" icon={<Headphones size={15} />} onClick={() => previewPending(p)} aria-label={t("Auf diesem Gerät anhören")} title={t("Auf diesem Gerät anhören")} />}
+            {p.error && online && <Button size="sm" onClick={() => retryPending(p.id)}>{t("Erneut")}</Button>}
+            <Button size="sm" variant="ghost" icon={<Trash2 size={15} />} onClick={() => removePending(p.id)} aria-label={t("Entfernen")} />
+          </div>
+        ))}
+      </div>
+      {!online && <div style={{ marginTop: 12 }}><Link to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</Link></div>}
+    </Card>
+  );
 }
 
 export default function Soundboard() {
@@ -34,6 +54,12 @@ export default function Soundboard() {
   const audio = useRpc<{ settings: AudioSettings }>("audio.state", {}, ["audio"]);
   const conn = useConn();
   const canManage = conn.me?.permissions.includes("manage");
+  const online = conn.phase === "online" && conn.auth === "ok";
+  // Without a PC, sounds can still be added: they wait on this device and are uploaded once the PC is connected.
+  const canAdd = online ? !!canManage : true;
+  const pending = usePendingSounds();
+  // No PC and no data: show only what works offline (add sounds, waiting list) instead of empty search/filters.
+  const offlineView = !online && !q.data;
   const [playing, setPlaying] = useState<PlayingState | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("__all");
@@ -66,7 +92,7 @@ export default function Soundboard() {
   return (
     <>
       <PageHead eyebrow={t("Audio")} title={t("Soundboard")} text={t("Sounds werden auf dem PC abgespielt – mit virtuellem Audiokabel auch für alle im Discord-Sprachkanal hörbar.")}
-        actions={canManage && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setImporting(true)}>{t("Sounds importieren")}</Button>} />
+        actions={canAdd && !(offlineView && !pending.items.length) && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setImporting(true)}>{online ? t("Sounds importieren") : t("Sounds hinzufügen")}</Button>} />
 
       {q.data && !q.data.supported && <div style={{ marginBottom: 16 }}><Banner kind="warn" title={t("Wiedergabe auf diesem Server nicht möglich")}>{q.data.reason}</Banner></div>}
 
@@ -95,6 +121,19 @@ export default function Soundboard() {
         )}
       </Card>}
 
+      {offlineView ? (
+        <>
+          <PendingCard />
+          {!pending.items.length && pending.available && (
+            <Card><Empty icon={<Music size={28} />} title={t("PC nicht verbunden")}
+              text={t("Du kannst schon Sounds hinzufügen. Sie werden auf diesem Gerät gespeichert und automatisch übertragen, sobald dein PC verbunden ist.")}
+              action={<div className="row" style={{ justifyContent: "center" }}>
+                <Button variant="primary" icon={<Plus size={16} />} onClick={() => setImporting(true)}>{t("Sounds hinzufügen")}</Button>
+                <Link to="/connect" className="btn"><MonitorSmartphone size={16} />{t("PC verbinden")}</Link>
+              </div>} /></Card>
+          )}
+        </>
+      ) : (<>
       <div className="stack" style={{ marginBottom: 16 }}>
         <div className="row">
           <div className="input-icon grow" style={{ minWidth: 200 }}><Search size={17} /><input className="input" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("Sounds durchsuchen …")} aria-label={t("Suche")} /></div>
@@ -108,6 +147,8 @@ export default function Soundboard() {
           {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ...cats.map((c) => [c, c])].map(([k, l]) => <button key={k} className={`chip ${filter === k ? "on" : ""}`} onClick={() => setFilter(k)}>{l}</button>)}
         </div>
       </div>
+
+      <PendingCard />
 
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {(data?.sounds.length ?? 0) === 0 ? (
@@ -128,16 +169,18 @@ export default function Soundboard() {
         )}
       </Loadable>
 
+      </>)}
+
       <p className="tiny muted" style={{ marginTop: 18 }}>{t("Andere in Discord hören die Sounds nur, wenn die Soundboard-Ausgabe auf ein virtuelles Kabel geht.")} <Link to="/audio">{t("Audio einrichten")}</Link></p>
 
-      {importing && <ImportDialog onClose={() => setImporting(false)} />}
+      {importing && <ImportDialog offline={!online} onClose={() => setImporting(false)} />}
       {editing && <EditSound sound={editing} onClose={() => setEditing(null)} />}
       {colEdit && data && <CollectionEditor col={colEdit} sounds={data.sounds} onClose={() => setColEdit(null)} />}
     </>
   );
 }
 
-function ImportDialog({ onClose }: { onClose: () => void }) {
+function ImportDialog({ onClose, offline }: { onClose: () => void; offline: boolean }) {
   const [tab, setTab] = useState<"file" | "url" | "config">("file");
   const [progress, setProgress] = useState<{ name: string; p: number }[]>([]);
   const [results, setResults] = useState<{ name: string; ok: boolean; msg: string }[]>([]);
@@ -148,6 +191,7 @@ function ImportDialog({ onClose }: { onClose: () => void }) {
   const uploadAll = async (files: FileList | null) => {
     if (!files?.length) return;
     setBusy(true);
+    if (offline) { setResults((r) => [...r]); const res = await addPendingFiles(Array.from(files)); setResults((r) => [...r, ...res]); setBusy(false); return; }
     const res: typeof results = [];
     for (const f of Array.from(files)) {
       setProgress([{ name: f.name, p: 0 }]);
@@ -160,6 +204,12 @@ function ImportDialog({ onClose }: { onClose: () => void }) {
   };
   const importUrl = async () => {
     setBusy(true);
+    if (offline) {
+      try { await addPendingUrl(url); setResults((r) => [...r, { name: url, ok: true, msg: t("Gespeichert – der PC lädt den Link, sobald er verbunden ist") }]); setUrl(""); }
+      catch (e) { setResults((r) => [...r, { name: url, ok: false, msg: (e as Error).message }]); }
+      setBusy(false);
+      return;
+    }
     try { const s = await client.call<Sound>("sounds.importUrl", { url }); setResults((r) => [...r, { name: url, ok: true, msg: t("Importiert als „{n}“", { n: s.name }) }]); setUrl(""); }
     catch (e) { setResults((r) => [...r, { name: url, ok: false, msg: (e as Error).message }]); }
     setBusy(false);
@@ -178,8 +228,9 @@ function ImportDialog({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <Modal title={t("Sounds importieren")} onClose={onClose} wide>
-      <Segmented value={tab} onChange={setTab} options={[{ value: "file", label: t("Dateien") }, { value: "url", label: t("Link / MyInstants") }, { value: "config", label: t("Konfiguration") }]} />
+    <Modal title={offline ? t("Sounds hinzufügen") : t("Sounds importieren")} onClose={onClose} wide>
+      {offline && <Banner kind="info" title={t("PC nicht verbunden")}>{t("Die Sounds werden auf diesem Gerät gespeichert und automatisch auf den PC übertragen, sobald er verbunden ist. Abspielen über den PC geht erst danach.")}</Banner>}
+      <Segmented value={tab} onChange={setTab} options={[{ value: "file", label: t("Dateien") }, { value: "url", label: t("Link / MyInstants") }, ...(offline ? [] : [{ value: "config" as const, label: t("Konfiguration") }])]} />
       {tab === "file" && (
         <div className="stack">
           <label className="card flat" style={{ borderStyle: "dashed", textAlign: "center", cursor: "pointer", padding: 30 }}

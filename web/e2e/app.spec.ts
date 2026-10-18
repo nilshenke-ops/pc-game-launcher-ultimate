@@ -145,6 +145,15 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.goto(`${HOSTED_SITE}/#/settings?s=design`);
   await tablet.getByRole("button", { name: "Emerald" }).click();
   expect(await tablet.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#34d399");
+  // Add a sound without PC: stored on the iPad, marked "wartet auf PC".
+  await tablet.goto(`${HOSTED_SITE}/#/soundboard`);
+  await tablet.getByRole("button", { name: "Sounds hinzufügen" }).click();
+  await tablet.locator('input[type="file"][accept^="audio"]').setInputFiles({ name: "e2e-offline-sound.wav", mimeType: "audio/wav", buffer: wav() });
+  await expect(tablet.getByText("Gespeichert – wird übertragen, sobald der PC verbunden ist")).toBeVisible();
+  await tablet.keyboard.press("Escape");
+  await expect(tablet.getByText("Wartet auf PC (1)")).toBeVisible();
+  await tablet.reload(); // survives closing the page
+  await expect(tablet.getByText("Wartet auf PC (1)")).toBeVisible();
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -167,6 +176,10 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.reload();
   await tablet.locator(".bottom-nav, .sidebar").getByRole("link", { name: "Spiele" }).first().click();
   await expect(tablet.getByText("E2E Testspiel")).toBeVisible({ timeout: 15000 });
+  // After pairing the waiting sound was uploaded automatically and is now a real sound on the PC.
+  await tablet.locator(".bottom-nav").getByRole("link", { name: "Sounds" }).click();
+  await expect(tablet.getByRole("button", { name: /e2e-offline-sound abspielen/ })).toBeVisible({ timeout: 15000 });
+  await expect(tablet.getByText(/Wartet auf PC/)).toHaveCount(0);
 
   // QR path: the link fills in code and PC address automatically.
   const phone2 = await (await browser.newContext({ ...devices["iPhone 13"], locale: "de-DE" })).newPage();
@@ -218,3 +231,14 @@ test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch
     process.kill(proc.pid!, "SIGTERM");
   }
 });
+
+/** A real, tiny 16-bit mono WAV file (0.1 s of a 440 Hz tone). */
+function wav() {
+  const rate = 8000, n = 800, data = Buffer.alloc(n * 2);
+  for (let i = 0; i < n; i++) data.writeInt16LE(Math.round(Math.sin((2 * Math.PI * 440 * i) / rate) * 8000), i * 2);
+  const h = Buffer.alloc(44);
+  h.write("RIFF", 0); h.writeUInt32LE(36 + data.length, 4); h.write("WAVE", 8); h.write("fmt ", 12); h.writeUInt32LE(16, 16);
+  h.writeUInt16LE(1, 20); h.writeUInt16LE(1, 22); h.writeUInt32LE(rate, 24); h.writeUInt32LE(rate * 2, 28); h.writeUInt16LE(2, 32); h.writeUInt16LE(16, 34);
+  h.write("data", 36); h.writeUInt32LE(data.length, 40);
+  return Buffer.concat([h, data]);
+}
