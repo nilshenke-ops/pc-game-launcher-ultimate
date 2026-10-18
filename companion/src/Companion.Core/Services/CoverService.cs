@@ -50,6 +50,13 @@ public sealed partial class CoverService : IDisposable
         var found = 0;
         try
         {
+            var steamIds = _library.List().Where(i => i.Source == LaunchSource.Steam && (string.IsNullOrEmpty(i.CoverUrl) || i.CoverUrl == SteamArt.OldCover(i.Target))).Select(i => i.Target).ToList();
+            if (steamIds.Count > 0)
+            {
+                var steam = await SteamArt.ResolveAsync(_http, steamIds);
+                _library.ReplaceSteamCovers(steam);
+                found += steam.Count;
+            }
             var due = _library.List().Where(i => i.Kind == ItemKind.Game && string.IsNullOrEmpty(i.CoverUrl)
                 && (force || i.CoverLookupAt == null || DateTime.UtcNow - i.CoverLookupAt > RetryAfter)).Take(25).ToList();
             foreach (var item in due)

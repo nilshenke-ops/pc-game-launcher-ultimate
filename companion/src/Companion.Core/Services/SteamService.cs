@@ -119,7 +119,7 @@ public sealed partial class SteamService : IDisposable
             {
                 appId = kv.Key,
                 name = kv.Value.name,
-                cover = $"https://cdn.cloudflare.steamstatic.com/steam/apps/{kv.Key}/library_600x900.jpg",
+                cover = f.Covers.TryGetValue(kv.Key, out var c) ? c : SteamArt.OldCover(kv.Key),
                 installed = installedIds.Contains(kv.Key),
                 itemId = items.FirstOrDefault(i => i.Source == LaunchSource.Steam && i.Target == kv.Key)?.Id,
                 playtimeMinutes = kv.Value.playtime,
@@ -180,6 +180,7 @@ public sealed partial class SteamService : IDisposable
                 var (added, removed) = _library.ReconcileSteam(_installed);
                 if (added + removed > 0) Log.Info("steam", $"Bibliothek abgeglichen: {added} hinzugefügt, {removed} entfernt.");
             }
+            await ResolveCovers();
             var f = _store.Snapshot();
             if (f.SteamId != null && _settings.Get().SteamApiKeyProtected != null && (force || f.LastSync == null || DateTime.UtcNow - f.LastSync > OwnedInterval))
                 await FetchOwned(f.SteamId);
@@ -216,6 +217,7 @@ public sealed partial class SteamService : IDisposable
             string? persona = null;
             try { persona = XDocument.Parse(await _http.GetStringAsync($"https://steamcommunity.com/profiles/{steamId}/?xml=1")).Root?.Element("steamID")?.Value; } catch { /* optional */ }
             _store.Update(x => { x.Owned = owned; x.LastSync = DateTime.UtcNow; x.Error = null; x.Persona = persona ?? x.Persona; });
+            await ResolveCovers();
             Log.Info("steam", $"Steam-Bibliothek geladen: {owned.Count} Spiele.");
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or InvalidOperationException or KeyNotFoundException)
@@ -224,6 +226,20 @@ public sealed partial class SteamService : IDisposable
             _store.Update(x => x.Error = msg);
             Log.Warn("steam", msg);
         }
+    }
+
+    /// <summary>Looks up real covers for Steam games that do not have one yet and fixes library items with the old, broken path.</summary>
+    async Task ResolveCovers()
+    {
+        var known = _store.Get(x => x.Covers.Keys.ToHashSet());
+        var ids = _store.Get(x => x.Owned.Select(o => o.AppId.ToString()).ToList()).Concat(_installed.Select(i => i.Target))
+            .Concat(_library.List().Where(i => i.Source == LaunchSource.Steam).Select(i => i.Target)).Where(id => !known.Contains(id)).Distinct().ToList();
+        if (ids.Count > 0)
+        {
+            var found = await SteamArt.ResolveAsync(_http, ids);
+            if (found.Count > 0) _store.Update(x => { foreach (var (k, v) in found) x.Covers[k] = v; });
+        }
+        _library.ReplaceSteamCovers(_store.Get(x => new Dictionary<string, string>(x.Covers)));
     }
 
     public string? Install(string appId)
@@ -246,6 +262,45 @@ public sealed class SteamFile
     public string? SteamId { get; set; }
     public string? Persona { get; set; }
     public List<SteamOwnedGame> Owned { get; set; } = new();
+    /// <summary>App id → real cover URL (from the store API).</summary>
+    public Dictionary<string, string> Covers { get; set; } = new();
     public DateTime? LastSync { get; set; }
     public string? Error { get; set; }
+}
+
+/// <summary>
+/// Real Steam cover art. Newer games only have hashed image paths (the old cdn …/apps/&lt;id&gt;/library_600x900.jpg returns 404),
+/// so the paths come from Steam's public store API (IStoreBrowseService/GetItems, no key needed). Portrait art first, else header.
+/// </summary>
+public static class SteamArt
+{
+    public static string OldCover(string appId) => $"https://cdn.cloudflare.steamstatic.com/steam/apps/{appId}/library_600x900.jpg";
+
+    public static async Task<Dictionary<string, string>> ResolveAsync(HttpClient http, IEnumerable<string> appIds, string apiBase = "https://api.steampowered.com")
+    {
+        var result = new Dictionary<string, string>();
+        foreach (var batch in appIds.Where(id => Regex.IsMatch(id, @"^\d{1,10}$")).Distinct().Chunk(50))
+        {
+            var input = JsonSerializer.Serialize(new
+            {
+                ids = batch.Select(id => new { appid = long.Parse(id) }),
+                context = new { language = "german", country_code = "DE" },
+                data_request = new { include_assets = true },
+            });
+            try
+            {
+                using var doc = JsonDocument.Parse(await http.GetStringAsync($"{apiBase}/IStoreBrowseService/GetItems/v1/?input_json={Uri.EscapeDataString(input)}"));
+                if (!doc.RootElement.TryGetProperty("response", out var r) || !r.TryGetProperty("store_items", out var items)) continue;
+                foreach (var it in items.EnumerateArray())
+                {
+                    if (!it.TryGetProperty("appid", out var aid) || !it.TryGetProperty("assets", out var a) || !a.TryGetProperty("asset_url_format", out var fmt)) continue;
+                    var file = a.TryGetProperty("library_capsule", out var lc) ? lc.GetString() : a.TryGetProperty("header", out var h) ? h.GetString() : null;
+                    if (file == null || fmt.GetString() is not { } f) continue;
+                    result[aid.GetInt64().ToString()] = "https://shared.akamai.steamstatic.com/store_item_assets/" + f.Replace("${FILENAME}", file);
+                }
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { Log.Warn("steam", "Cover nicht abrufbar: " + ex.Message); }
+        }
+        return result;
+    }
 }

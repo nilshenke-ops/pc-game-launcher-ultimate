@@ -51,5 +51,19 @@ const list = games.filter((g) => g.name).map((g) => ({
   playtimeMinutes: g.playtime_forever || undefined,
   lastPlayed: g.rtime_last_played ? new Date(g.rtime_last_played * 1000).toISOString() : undefined,
 })).sort((a, b) => a.name.localeCompare(b.name, "de"));
+// Real cover art: newer games only have hashed image paths, which Steam's public store API reports (no key needed).
+const STORE = process.env.STEAM_STORE_API_BASE ?? "https://api.steampowered.com";
+for (let i = 0; i < list.length; i += 50) {
+  const ids = list.slice(i, i + 50).map((g) => ({ appid: Number(g.appId) }));
+  try {
+    const input = JSON.stringify({ ids, context: { language: "german", country_code: "DE" }, data_request: { include_assets: true } });
+    const r = JSON.parse(await get(`${STORE}/IStoreBrowseService/GetItems/v1/?input_json=${encodeURIComponent(input)}`));
+    for (const it of r?.response?.store_items ?? []) {
+      const a = it.assets, file = a?.library_capsule ?? a?.header;
+      const g = list.find((x) => x.appId === String(it.appid));
+      if (g && a?.asset_url_format && file) g.cover = "https://shared.akamai.steamstatic.com/store_item_assets/" + a.asset_url_format.replace("${FILENAME}", file);
+    }
+  } catch (e) { console.log("Cover teilweise nicht abrufbar: " + e.message); }
+}
 writeFileSync(out, JSON.stringify({ fetchedAt: new Date().toISOString(), persona, games: list }));
 console.log(`${list.length} Steam-Spiele → ${out}`);

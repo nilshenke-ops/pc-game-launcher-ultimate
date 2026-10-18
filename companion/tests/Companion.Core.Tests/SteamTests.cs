@@ -31,7 +31,7 @@ public class SteamTests
         var s = Fixtures.Services(dir);
         var root = FakeSteam(dir, ("730", "Counter-Strike 2"), ("1145360", "Hades"));
         s.Settings.SaveGeneral(new SettingsService.GeneralUpdate { SteamEnabled = true });
-        using var steam = new SteamService(new AppPaths(dir.Path), s.Library, s.Platform, s.Settings, s.Rpc, new[] { root });
+        using var steam = new SteamService(new AppPaths(dir.Path), s.Library, s.Platform, s.Settings, s.Rpc, new[] { root }, new FakeSteamApi());
 
         await steam.SyncAsync(force: true);
         Assert.Equal(new[] { "Counter-Strike 2", "Hades" }, s.Library.List().Select(i => i.Name).OrderBy(x => x));
@@ -103,5 +103,29 @@ public class SteamTests
         Assert.Contains("32 Zeichen", e.Message);
         e = await Assert.ThrowsAsync<RpcException>(() => steam.Link("bad profile!!", "0123456789ABCDEF0123456789ABCDEF"));
         Assert.Contains("Profillink", e.Message);
+    }
+
+    [Fact]
+    public async Task Real_cover_paths_replace_the_old_broken_ones()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        File.WriteAllText(Path.Combine(dir.Path, "library.json"), Json.Serialize(new LibraryFile { Items = {
+            new LibraryItem { Id = "peak", Kind = ItemKind.Game, Name = "PEAK", Source = LaunchSource.Steam, Target = "3527290", CoverUrl = SteamArt.OldCover("3527290") },
+            new LibraryItem { Id = "mine", Kind = ItemKind.Game, Name = "CS", Source = LaunchSource.Steam, Target = "730", CoverUrl = "https://example.com/mine.jpg" } } }));
+        s = Fixtures.Services(dir);
+        using var http = new HttpClient(new StoreItems());
+        var covers = await SteamArt.ResolveAsync(http, new[] { "3527290", "730" });
+        Assert.Equal("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3527290/abc/library_600x900.jpg?t=1", covers["3527290"]);
+        s.Library.ReplaceSteamCovers(covers);
+        Assert.Equal(covers["3527290"], s.Library.Get("peak")!.CoverUrl);
+        Assert.Equal("https://example.com/mine.jpg", s.Library.Get("mine")!.CoverUrl); // the user's own picture stays
+    }
+
+    sealed class StoreItems : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(
+                "{\"response\":{\"store_items\":[{\"appid\":3527290,\"assets\":{\"asset_url_format\":\"steam/apps/3527290/${FILENAME}?t=1\",\"library_capsule\":\"abc/library_600x900.jpg\",\"header\":\"abc/header.jpg\"}},{\"appid\":730,\"assets\":{\"asset_url_format\":\"steam/apps/730/${FILENAME}?t=2\",\"library_capsule\":\"library_600x900.jpg\"}}]}}", Encoding.UTF8) });
     }
 }

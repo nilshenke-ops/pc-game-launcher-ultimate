@@ -200,6 +200,19 @@ public sealed class LibraryService
         return (added, removed);
     }
 
+    /// <summary>Replaces missing or old-style (now broken) Steam cover paths with the real ones. Covers the user chose stay.</summary>
+    public void ReplaceSteamCovers(IReadOnlyDictionary<string, string> covers)
+    {
+        var changed = _store.Update(f =>
+        {
+            var n = 0;
+            foreach (var i in f.Items.Where(i => i.Source == LaunchSource.Steam && covers.ContainsKey(i.Target)))
+                if ((string.IsNullOrEmpty(i.CoverUrl) || i.CoverUrl == SteamArt.OldCover(i.Target)) && i.CoverUrl != covers[i.Target]) { i.CoverUrl = covers[i.Target]; n++; }
+            return n;
+        });
+        if (changed > 0) _hub.Changed("library");
+    }
+
     /// <summary>Result of the automatic cover search. Never overwrites a cover the user set in the meantime.</summary>
     public void SetCover(string id, string? coverUrl)
     {

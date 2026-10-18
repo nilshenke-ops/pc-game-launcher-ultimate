@@ -24,7 +24,7 @@ function SteamCover({ g }: { g: SteamGame }) {
   return (
     <>
       <div className="cover" style={{ background: gradientFor(g.name) }}>
-        {!failed && <img src={src} alt="" loading="lazy" onError={() => { if (src.endsWith("library_600x900.jpg")) setSrc(src.replace("library_600x900.jpg", "header.jpg")); else setFailed(true); }} />}
+        {!failed && <img src={src} alt="" loading="lazy" onError={() => { if (src.includes("cdn.cloudflare.steamstatic.com") && src.endsWith("library_600x900.jpg")) setSrc(src.replace("library_600x900.jpg", "header.jpg")); else setFailed(true); }} />}
       </div>
       {failed && <div className="initials">{initials(g.name)}</div>}
     </>
@@ -48,9 +48,9 @@ export function SteamView({ search }: { search: string }) {
   const [web, setWeb] = useState<SteamList | null | "none">(null);
   useEffect(() => {
     if (!offline || web) return;
-    fetch("steam.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : Promise.reject())).then((s: { fetchedAt: string; persona?: string; games: Omit<SteamGame, "cover" | "installed">[] }) => setWeb({
+    fetch("steam.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : Promise.reject())).then((s: { fetchedAt: string; persona?: string; games: (Omit<SteamGame, "cover" | "installed"> & { cover?: string })[] }) => setWeb({
       enabled: true, steamFound: true, linked: true, persona: s.persona, keySet: true, lastSync: s.fetchedAt, syncing: false,
-      games: s.games.map((g) => ({ ...g, installed: false, cover: `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appId}/library_600x900.jpg` })),
+      games: s.games.map((g) => ({ ...g, installed: false, cover: g.cover ?? `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appId}/library_600x900.jpg` })),
     })).catch(() => setWeb("none"));
   }, [offline, web]);
   const fromWeb = offline && web && web !== "none";
