@@ -29,7 +29,7 @@ jobs:
           sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Katalog abrufen
         run: node main/scripts/gamepass-snapshot.mjs site/gamepass.json DE de-de
       - name: Veröffentlichen

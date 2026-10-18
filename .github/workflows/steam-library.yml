@@ -30,7 +30,7 @@ jobs:
           sparse-checkout-cone-mode: false
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
       - name: Steam-Bibliothek abrufen
         env:
           STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}

@@ -32,9 +32,16 @@ if (!/^\d{17}$/.test(id)) {
   id = found[1];
 }
 
+// Diagnosis in the log (public profile data only): which account is used and how Steam reports its visibility.
+try {
+  const xml = await get(`${COMMUNITY}/profiles/${id}/?xml=1`);
+  const tag = (t) => xml.match(new RegExp(`<${t}>(?:<!\\[CDATA\\[)?(.*?)(?:\\]\\]>)?</${t}>`))?.[1];
+  console.log(`Profil: „${tag("steamID") ?? "?"}“ · Sichtbarkeit: ${tag("privacyState") ?? "?"}`);
+} catch (e) { console.log("Profil-Info nicht abrufbar: " + e.message); }
+
 const data = JSON.parse(await get(`${API}/IPlayerService/GetOwnedGames/v1/?key=${key}&steamid=${id}&include_appinfo=1&include_played_free_games=1&format=json`));
 const games = data?.response?.games;
-if (!Array.isArray(games)) throw new Error("Steam liefert keine Spiele – in Steam unter Profil → Privatsphäre „Spieldetails“ auf „Öffentlich“ stellen.");
+if (!Array.isArray(games)) throw new Error(`Steam liefert keine Spiele für das Profil oben (Antwort: ${JSON.stringify(data?.response ?? data).slice(0, 80)}). Ist es das Konto mit deinen Spielen? Dann in Steam unter Profil → Privatsphäre „Spieldetails“ auf „Öffentlich“ stellen (Änderungen brauchen manchmal einige Minuten).`);
 let persona;
 try { persona = (await get(`${COMMUNITY}/profiles/${id}/?xml=1`)).match(/<steamID><!\[CDATA\[(.*?)\]\]><\/steamID>/)?.[1]; } catch { /* optional */ }
 
