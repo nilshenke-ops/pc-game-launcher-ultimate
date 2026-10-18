@@ -1,0 +1,46 @@
+# Publishes the Steam library (owned games, names, playtime) as gh-pages/steam.json every 6 hours, so the
+# "Steam" category can be looked at without a PC. Needs the repository secrets STEAM_API_KEY and STEAM_ID
+# (Settings → Secrets and variables → Actions). Without them this workflow does nothing.
+name: Steam-Bibliothek aktualisieren
+on:
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          sparse-checkout: scripts
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: steam.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Steam-Bibliothek abrufen
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+          STEAM_ID: ${{ secrets.STEAM_ID }}
+        run: node main/scripts/steam-snapshot.mjs site/steam.json
+      - name: Veröffentlichen
+        working-directory: site
+        run: |
+          [ -f steam.json ] || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add steam.json
+          git diff --cached --quiet || { git commit -m "Steam-Bibliothek aktualisieren"; git push; }

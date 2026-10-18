@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Download, ExternalLink, Link2, Play, RefreshCw, Search, Unlink } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -6,6 +6,8 @@ import { useConn, useRpc, toast } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials, relTime } from "../lib/format";
 import { Banner, Button, Card, Empty, Field, Loadable, Segmented } from "../components/ui";
+
+const REPO_SECRETS = "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/settings/secrets/actions";
 
 interface SteamGame { appId: string; name: string; cover: string; installed: boolean; itemId?: string; playtimeMinutes?: number; lastPlayed?: string }
 interface SteamList {
@@ -41,7 +43,19 @@ export function SteamView({ search }: { search: string }) {
   const [linkOpen, setLinkOpen] = useState(false);
   const [profile, setProfile] = useState("");
   const [key, setKey] = useState("");
-  const d = q.data;
+  // Without a PC: the last list from the PC (q.stale), otherwise the copy GitHub publishes with the website (steam.json).
+  const offline = !!q.error && q.error.code === "offline" && !q.data;
+  const [web, setWeb] = useState<SteamList | null | "none">(null);
+  useEffect(() => {
+    if (!offline || web) return;
+    fetch("steam.json", { cache: "no-cache" }).then((r) => (r.ok ? r.json() : Promise.reject())).then((s: { fetchedAt: string; persona?: string; games: Omit<SteamGame, "cover" | "installed">[] }) => setWeb({
+      enabled: true, steamFound: true, linked: true, persona: s.persona, keySet: true, lastSync: s.fetchedAt, syncing: false,
+      games: s.games.map((g) => ({ ...g, installed: false, cover: `https://cdn.cloudflare.steamstatic.com/steam/apps/${g.appId}/library_600x900.jpg` })),
+    })).catch(() => setWeb("none"));
+  }, [offline, web]);
+  const fromWeb = offline && web && web !== "none";
+  const d = q.data ?? (fromWeb ? (web as SteamList) : undefined);
+  const notLive = !!q.stale || !!fromWeb;
 
   const games = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -57,8 +71,10 @@ export function SteamView({ search }: { search: string }) {
   const install = (g: SteamGame) => act("install", () => client.call("steam.install", { appId: g.appId }), t("Steam am PC geöffnet: „{n}“ installieren", { n: g.name }));
   const link = () => act("link", async () => { await client.call("steam.link", { profile: profile || d?.localAccount?.steamId || "", apiKey: key }); setKey(""); setLinkOpen(false); }, t("Steam-Bibliothek verbunden"));
 
+  if (offline && !web) return <div className="skeleton" style={{ height: 220 }} />;
+  if (offline && web === "none") return <SteamWithoutPc />;
   return (
-    <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
+    <Loadable loading={q.loading} error={fromWeb ? null : q.error} onRetry={q.reload}>
       {d && !d.enabled ? (
         <Card>
           <Empty icon={<Link2 size={28} />} title={t("Steam verknüpfen")}
@@ -68,22 +84,23 @@ export function SteamView({ search }: { search: string }) {
         </Card>
       ) : d && (
         <div className="stack">
+          {fromWeb && <Banner kind="info" title={t("Steam-Bibliothek{p} (Stand {d})", { p: d.persona ? ` von ${d.persona}` : "", d: new Date(d.lastSync ?? "").toLocaleString() })}>{t("Dein PC ist nicht verbunden. Welche Spiele installiert sind, siehst du – und spielen oder installieren kannst du –, sobald der PC verbunden ist.")}</Banner>}
           {q.stale && q.updatedAt && <Banner kind="info" title={t("Gespeicherte Liste (Stand {d})", { d: new Date(q.updatedAt).toLocaleString() })}>{t("Dein PC ist gerade nicht verbunden. Spielen und Installieren geht, sobald er verbunden ist.")}</Banner>}
           <div className="row between">
             <span className="small muted">
-              {t("{n} Steam-Spiele · {i} installiert", { n: d.games.length, i: d.games.filter((g) => g.installed).length })}
+              {fromWeb ? t("{n} Steam-Spiele", { n: d.games.length }) : t("{n} Steam-Spiele · {i} installiert", { n: d.games.length, i: d.games.filter((g) => g.installed).length })}
               {d.linked && d.persona ? " · " + d.persona : ""}
-              {d.lastSync && !q.stale ? " · " + t("aktualisiert {t}", { t: relTime(d.lastSync) }) : ""}
+              {d.lastSync && !notLive ? " · " + t("aktualisiert {t}", { t: relTime(d.lastSync) }) : ""}
             </span>
             <div className="row nowrap">
-              <Segmented<Show> value={show} onChange={(v) => { setShow(v); setLimit(PAGE); }} label={t("Anzeige")} options={[{ value: "all", label: t("Alle") }, { value: "installed", label: t("Installiert") }]} />
-              {canManage && !q.stale && <Button size="sm" icon={<RefreshCw size={15} />} busy={busy === "sync" || d.syncing} onClick={() => act("sync", () => client.call("steam.sync"))} aria-label={t("Aktualisieren")} />}
+              {!fromWeb && <Segmented<Show> value={show} onChange={(v) => { setShow(v); setLimit(PAGE); }} label={t("Anzeige")} options={[{ value: "all", label: t("Alle") }, { value: "installed", label: t("Installiert") }]} />}
+              {canManage && !notLive && <Button size="sm" icon={<RefreshCw size={15} />} busy={busy === "sync" || d.syncing} onClick={() => act("sync", () => client.call("steam.sync"))} aria-label={t("Aktualisieren")} />}
             </div>
           </div>
-          {!d.steamFound && !q.stale && <Banner kind="warn" title={t("Steam wurde auf dem PC nicht gefunden")}>{t("Ist Steam installiert? Der PC sucht im Steam-Ordner (Standard: C:\\Program Files (x86)\\Steam).")}</Banner>}
-          {d.error && !q.stale && <Banner kind="warn">{d.error}</Banner>}
+          {!d.steamFound && !notLive && <Banner kind="warn" title={t("Steam wurde auf dem PC nicht gefunden")}>{t("Ist Steam installiert? Der PC sucht im Steam-Ordner (Standard: C:\\Program Files (x86)\\Steam).")}</Banner>}
+          {d.error && !notLive && <Banner kind="warn">{d.error}</Banner>}
 
-          {!q.stale && (d.linked ? (
+          {!notLive && (d.linked ? (
             <div className="row small muted">
               <span>{t("Ganze Steam-Bibliothek verbunden{p}", { p: d.persona ? ` (${d.persona})` : "" })}</span>
               {isAdmin && <Button size="sm" variant="ghost" icon={<Unlink size={14} />} onClick={() => act("unlink", () => client.call("steam.unlink"), t("Steam-Bibliothek getrennt"))}>{t("Trennen")}</Button>}
@@ -131,7 +148,7 @@ export function SteamView({ search }: { search: string }) {
                     <SteamCover g={g} />
                     <div className="shade" />
                     <div className="top">
-                      {g.installed ? <span className="badge ok">✓ {t("Installiert")}</span> : <span className="badge">{t("Nicht installiert")}</span>}
+                      {g.installed ? <span className="badge ok">✓ {t("Installiert")}</span> : !fromWeb && <span className="badge">{t("Nicht installiert")}</span>}
                       {!!g.playtimeMinutes && <span className="badge">{t("{h} Std.", { h: Math.round(g.playtimeMinutes / 60) })}</span>}
                     </div>
                     <div className="bottom">
@@ -149,5 +166,29 @@ export function SteamView({ search }: { search: string }) {
         </div>
       )}
     </Loadable>
+  );
+}
+
+/** No PC and no published Steam list yet: explains both ways to see the Steam games. */
+function SteamWithoutPc() {
+  return (
+    <Card title={t("Steam-Spiele ohne PC sehen")}>
+      <div className="stack">
+        <p className="small muted" style={{ margin: 0 }}>{t("Steam erlaubt Webseiten nicht, deine Spieleliste direkt abzurufen. Es gibt zwei Wege:")}</p>
+        <div className="stack-sm">
+          <b className="small">{t("A) Einmal mit dem PC verbinden")}</b>
+          <span className="small muted">{t("Spiele → Steam → „Verknüpfen“ (und optional „Ganze Bibliothek verbinden“). Danach merkt sich dieses Gerät die Liste und zeigt sie auch ohne PC.")}</span>
+        </div>
+        <div className="stack-sm">
+          <b className="small">{t("B) Ganz ohne PC – über GitHub (alle 6 Stunden aktuell)")}</b>
+          <ol className="steps small">
+            <li>{t("Steam-Web-API-Schlüssel erstellen: steamcommunity.com/dev/apikey (Domain z. B. „localhost“).")} <a href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noreferrer">{t("Öffnen")} <ExternalLink size={12} /></a></li>
+            <li>{t("In Steam unter Profil → Privatsphäre-Einstellungen „Spieldetails“ auf „Öffentlich“ stellen.")}</li>
+            <li>{t("In deinem GitHub-Projekt unter Settings → Secrets and variables → Actions zwei Secrets anlegen: STEAM_API_KEY (der Schlüssel) und STEAM_ID (dein Profillink oder deine Steam-ID).")} <a href={`${REPO_SECRETS}/new`} target="_blank" rel="noreferrer">{t("Öffnen")} <ExternalLink size={12} /></a></li>
+          </ol>
+          <span className="tiny muted">{t("Der Schlüssel bleibt geheim bei GitHub. Veröffentlicht werden nur Spielnamen und Spielzeit – dieselben Angaben, die bei „Spieldetails: Öffentlich“ ohnehin auf deinem Steam-Profil sichtbar sind.")}</span>
+        </div>
+      </div>
+    </Card>
   );
 }
