@@ -36,6 +36,7 @@ public sealed class SettingsService
         public bool? SteamCoversFromCdn { get; set; }
         public bool? GamePassEnabled { get; set; }
         public string? GamePassMarket { get; set; }
+        public bool? CoverSearch { get; set; }
     }
 
     public Settings SaveGeneral(GeneralUpdate u)
@@ -57,6 +58,7 @@ public sealed class SettingsService
             if (u.SteamCoversFromCdn != null) s.SteamCoversFromCdn = u.SteamCoversFromCdn.Value;
             if (u.GamePassEnabled != null) s.GamePassEnabled = u.GamePassEnabled.Value;
             if (u.GamePassMarket != null) s.GamePassMarket = u.GamePassMarket;
+            if (u.CoverSearch != null) s.CoverSearch = u.CoverSearch.Value;
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");

@@ -236,6 +236,7 @@ public static class RpcApi
             set.RelaySecretProtected = null;
             return new { settings = set, relaySecretSet = hasSecret, dataDir = ctx.Session.IsLocalAdmin ? s.Paths.DataDir : null, restartRequired = set.Port != s.Web.Port || set.LanAccess != s.Web.LanAccess, webStartError = s.Web.StartError };
         });
+        rpc.Register("library.findCover", async ctx => (object?)new { cover = await s.Covers.FindForAsync(ctx.Str("id", 64)) });
         rpc.Register("gamepass.list", _ => s.GamePass.List());
         rpc.Register("gamepass.sync", async _ => await s.GamePass.SyncAsync(force: true));
         rpc.Register("gamepass.install", ctx => s.GamePass.OpenInstallPage(ctx.Str("id", 12)) is { } err ? throw new RpcException("unsupported", err) : (object)true);

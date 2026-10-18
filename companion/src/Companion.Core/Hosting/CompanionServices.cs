@@ -33,6 +33,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public NetworkDiagnostics Network { get; }
     public UpdateService Updates { get; }
     public GamePassService GamePass { get; }
+    public CoverService Covers { get; }
     public BackupService Backup { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
@@ -66,6 +67,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
         Backup = new BackupService(paths, this);
         GamePass = new GamePassService(paths, Library, platform, Settings.Get, Rpc);
+        Covers = new CoverService(Library, Settings.Get);
 
         Wire();
         Rpc.HelloInfo = HelloInfo;
@@ -241,6 +243,7 @@ public sealed class CompanionServices : IAsyncDisposable
         }
         Sessions.Start();
         GamePass.Start();
+        Covers.Start();
         ApplyRelaySettings(Settings.Get());
         _ = Automations.Fire(TriggerType.CompanionStarted, null);
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
@@ -251,6 +254,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Sessions.Dispose();
         Monitor.Dispose();
         GamePass.Dispose();
+        Covers.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
         await Relay.DisposeAsync();

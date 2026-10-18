@@ -167,6 +167,7 @@ export interface Settings {
   steamCoversFromCdn: boolean;
   gamePassEnabled?: boolean;
   gamePassMarket?: string;
+  coverSearch?: boolean;
 }
 
 export interface Features { audio: boolean; hotkeys: boolean; autostart: boolean; pickFile: boolean; installUpdates: boolean }

@@ -39,6 +39,8 @@ public sealed class LibraryService
     readonly IPlatform _platform;
     readonly IHub _hub;
     public event Action<LibraryItem, LaunchResult, string>? Launched;
+    /// <summary>Raised after items were added (manually or by the Game Pass sync), e.g. to look up covers.</summary>
+    public event Action<int>? Added;
 
     public LibraryService(AppPaths paths, IPlatform platform, IHub hub)
     {
@@ -166,7 +168,23 @@ public sealed class LibraryService
             }
         });
         if (added + removed > 0) _hub.Changed("library");
+        if (added > 0) Added?.Invoke(added);
         return (added, removed);
+    }
+
+    /// <summary>Result of the automatic cover search. Never overwrites a cover the user set in the meantime.</summary>
+    public void SetCover(string id, string? coverUrl)
+    {
+        var changed = _store.Update(f =>
+        {
+            var i = f.Items.FirstOrDefault(x => x.Id == id);
+            if (i == null) return false;
+            i.CoverLookupAt = DateTime.UtcNow;
+            if (coverUrl == null || !string.IsNullOrEmpty(i.CoverUrl)) return false;
+            i.CoverUrl = coverUrl;
+            return true;
+        });
+        if (changed) _hub.Changed("library");
     }
 
     LibraryItem Add(LibraryItem item)
@@ -174,6 +192,7 @@ public sealed class LibraryService
         _store.Update(f => f.Items.Add(item));
         Log.Info("library", $"Hinzugefügt: {item.Name} ({item.Source})");
         _hub.Changed("library");
+        Added?.Invoke(1);
         return item;
     }
 

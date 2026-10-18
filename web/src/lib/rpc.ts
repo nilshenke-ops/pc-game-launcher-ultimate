@@ -1,6 +1,7 @@
 import { loginProof } from "./sha256";
 import { t } from "./i18n";
 import { attachDemo, demoCall } from "./demo";
+import { clearCaches } from "./offline-cache";
 
 export const PROTOCOL_VERSION = 1;
 
@@ -270,6 +271,7 @@ class Client {
     if (msg.ev) {
       if (msg.ev === "auth.revoked") {
         writeJson(CRED_KEY, null);
+        clearCaches();
         this.set({ auth: "revoked", me: undefined, everAuthed: false, authError: (msg.d as { reason?: string })?.reason });
       }
       this.emit(msg.ev, msg.d);
@@ -295,7 +297,9 @@ class Client {
     return new Promise<T>((resolve, reject) => {
       const ws = this.ws;
       if (!ws || ws.readyState !== WebSocket.OPEN) {
-        reject(new RpcError("offline", t("Keine Verbindung zum PC.")));
+        // A button was used while the PC is unreachable (e.g. "Spielen" in a remembered list): explain instead of a bare error.
+        if (!QUIET.test(method) && !NO_LOGIN.has(method)) this.emit("needs-pc", { method });
+        reject(new RpcError("offline", needsPcMessage()));
         return;
       }
       const id = this.nextId++;
@@ -345,6 +349,7 @@ class Client {
     try { await this.call("auth.logout"); } catch { /* ignore */ }
     writeJson(CRED_KEY, null);
     writeJson(ADMIN_KEY, null, "session");
+    clearCaches();
     if (HOSTED) { setServerUrl(null); this.restart(); }
     this.set({ auth: "none", me: undefined, everAuthed: false });
   }

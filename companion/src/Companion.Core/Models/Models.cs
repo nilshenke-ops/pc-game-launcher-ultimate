@@ -41,6 +41,8 @@ public sealed class LibraryItem
     public string? GamePassId { get; set; }
     /// <summary>Added automatically by the Game Pass sync – removed again automatically when uninstalled or no longer in Game Pass.</summary>
     public bool AutoAdded { get; set; }
+    /// <summary>When the automatic cover search last looked for this game (null = not yet).</summary>
+    public DateTime? CoverLookupAt { get; set; }
 }
 
 public sealed class LibraryFile
@@ -297,6 +299,8 @@ public sealed class Settings
     public bool GamePassEnabled { get; set; }
     /// <summary>Store market for the Game Pass catalog (two letters, e.g. DE).</summary>
     public string GamePassMarket { get; set; } = "DE";
+    /// <summary>Look up real cover art (Steam / Microsoft Store) for games without one.</summary>
+    public bool CoverSearch { get; set; } = true;
 }
 
 // ---------------------------------------------------------------- Notifications

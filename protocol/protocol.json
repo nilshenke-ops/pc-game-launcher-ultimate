@@ -91,6 +91,7 @@
     "notifications.dismissAll": "view",
 
     "settings.get": "view",
+    "library.findCover": "manage",
     "gamepass.list": "view",
     "gamepass.sync": "manage",
     "gamepass.install": "launch",

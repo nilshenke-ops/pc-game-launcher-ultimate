@@ -19,7 +19,8 @@ export default function Library({ kind }: { kind: ItemKind }) {
   const hist = useRpc<{ launches: { itemId: string; at: string }[] }>("history.get", {}, ["history"]);
   const conn = useConn();
   const [search, setSearch] = useState("");
-  const [cat, setCat] = useState<string>("__all");
+  // Nothing remembered from the PC yet and no PC: start with the Game Pass catalog, which can be shown without a PC.
+  const [cat, setCat] = useState<string>(() => kind === "game" && !q.data && q.error?.code === "offline" ? "__gamepass" : "__all");
   const [sort, setSort] = useState<Sort>("name");
   const [editing, setEditing] = useState<LibraryItem | null>(null);
   const [adding, setAdding] = useState(false);
@@ -72,7 +73,8 @@ export default function Library({ kind }: { kind: ItemKind }) {
         </div>
       </div>
 
-      {cat === "__gamepass" ? <GamePassView search={search} /> : (
+      {cat === "__gamepass" ? <GamePassView search={search} /> : (<>
+      {q.stale && q.updatedAt && <div style={{ marginBottom: 14 }}><Banner kind="info" title={t("Gespeicherte Liste (Stand {d})", { d: new Date(q.updatedAt).toLocaleString() })}>{t("Dein PC ist gerade nicht verbunden. Du siehst die Spiele vom letzten Mal – starten kannst du sie, sobald der PC verbunden ist.")}</Banner></div>}
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {items.length === 0 ? (
           <Card><Empty icon={isGame ? <Gamepad2 size={28} /> : <LayoutGrid size={28} />} title={isGame ? t("Noch keine Spiele") : t("Noch keine Programme")}
@@ -124,7 +126,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
           </div>
         )}
       </Loadable>
-      )}
+      </>)}
 
       {editing && <EditItem item={editing} onClose={() => setEditing(null)} />}
       {adding && <AddItems kind={kind} onClose={() => setAdding(false)} />}
@@ -160,6 +162,16 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
     await client.call("library.remove", { id: item.id }).catch((e) => toast(e.message, "error"));
     onClose();
   };
+  // Asks the PC to look up the real cover (Steam / Microsoft Store, exact title only).
+  const findCover = async () => {
+    setBusy(true);
+    try {
+      const r = await client.call<{ cover: string | null }>("library.findCover", { id: item.id });
+      if (r.cover) { set({ coverUrl: r.cover }); toast(t("Cover gefunden"), "success"); }
+      else toast(t("Kein passendes Cover gefunden – du kannst ein eigenes Bild hochladen."), "info");
+    } catch (e) { toast((e as Error).message, "error"); }
+    setBusy(false);
+  };
   const uploadCover = (file?: File) => {
     if (!file) return;
     if (file.size > 500_000) { toast(t("Bild ist zu groß (max. 500 KB)."), "error"); return; }
@@ -190,6 +202,7 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
           <div className="row nowrap">
             <input className="input" value={f.coverUrl?.startsWith("data:") ? t("(eigenes Bild)") : f.coverUrl ?? ""} onChange={(e) => set({ coverUrl: e.target.value })} placeholder="https://…" />
             <label className="btn icon" aria-label={t("Bild hochladen")}><FolderOpen size={16} /><input type="file" accept="image/*" hidden onChange={(e) => uploadCover(e.target.files?.[0])} /></label>
+            {f.kind === "game" && <Button icon={<Search size={16} />} busy={busy} onClick={findCover} aria-label={t("Cover automatisch suchen")} title={t("Cover automatisch suchen")} />}
           </div>
         </Field>
         <Field label={t("Prozessnamen zur Erkennung")} hint={t("Ohne .exe, kommagetrennt. Leer = Erkennung über Installationsordner.")}><input className="input mono" value={f.processText} onChange={(e) => set({ processText: e.target.value })} /></Field>
