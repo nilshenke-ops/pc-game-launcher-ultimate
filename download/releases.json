@@ -1,5 +1,36 @@
 [
   {
+    "version": "2.9.0",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.9.0/PCGameLauncherCompanion.exe",
+    "size": 87317060,
+    "sha256": "18535c508214f8298eed815616f67c7b791a28c9e6b1752dda2e99e22eb2a1bd",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.9.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.9.0/PCGameLauncherCompanion-2.9.0-win-x64.zip",
+      "size": 81581391,
+      "sha256": "62ce7653411d99d176c8efde73c7dcb63ca0a00baac8a254362fd4a648324618"
+    },
+    "notes": "Echte Logos: Discord, OBS, Spotify, Steam, Epic, EA, Battle.net, Twitch, YouTube, Valorant, Browser und gut 40 weitere Programme zeigen ihr Logo in der Markenfarbe – auf den App-Kacheln, im Deck (neuer Reiter „Logo“ im Tasten-Editor) und auch ohne PC · Der PC liest jetzt auch die Symbole von Startmenü- und Store-Apps (z. B. Minecraft Launcher, Spotify aus dem Store) und ergänzt sie einmalig für schon vorhandene Programme · Untere Leiste und Menü: Symbole „Farbig“ oder „Schlicht“ (wie früher) wählbar – beim Anpassen der Leiste oder unter Einstellungen → Navigation",
+    "changes": {
+      "neu": [
+        "Echte Logos: Discord, OBS, Spotify, Steam, Epic, EA, Battle.net, Twitch, YouTube, Valorant, Browser und gut 40 weitere Programme zeigen ihr Logo in der Markenfarbe – auf den App-Kacheln, im Deck (neuer Reiter „Logo“ im Tasten-Editor) und auch ohne PC",
+        "Der PC liest jetzt auch die Symbole von Startmenü- und Store-Apps (z. B. Minecraft Launcher, Spotify aus dem Store) und ergänzt sie einmalig für schon vorhandene Programme",
+        "Untere Leiste und Menü: Symbole „Farbig“ oder „Schlicht“ (wie früher) wählbar – beim Anpassen der Leiste oder unter Einstellungen → Navigation"
+      ],
+      "verbessert": [
+        "Deck-Tasten und App-Kacheln im Glanz-Look (Licht von oben, Tiefe unten); „Aus meinen Sachen erstellen“ nutzt kräftige Farben und Logos statt Grau"
+      ],
+      "behoben": [
+        "Deck ohne PC: Ein neues Deck wurde zwar für den PC vorgemerkt, aber auf dem Handy nicht angezeigt („Noch kein Deck“) – jetzt sofort sichtbar und bearbeitbar",
+        "Grau dargestellte 🎵-Taste aus dem ersten Deck wird als farbiges Symbol gezeigt"
+      ]
+    },
+    "signature": "9gWzAbTJAsB3Gt/0u3Xlz7z4mnhAw1d9uicwwccWpPDKBVRm0heAndj+E4x98zYxdYm4Fb5FR9dfAibVoXYH8Q=="
+  },
+  {
     "version": "2.8.0",
     "date": "2026-10-19",
     "channel": "stable",
