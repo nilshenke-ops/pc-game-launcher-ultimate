@@ -63,7 +63,11 @@ jobs:
           PGL_UPDATE_SIGNING_KEY: ${{ secrets.PGL_UPDATE_SIGNING_KEY }}
         run: |
           EXTRA=""
-          if [ -z "$PGL_UPDATE_SIGNING_KEY" ]; then EXTRA="--allow-unsigned"; echo "::warning::Secret PGL_UPDATE_SIGNING_KEY fehlt – Release wird unsigniert erstellt, die Webseite wird nicht umgestellt."; fi
+          if [ -z "$PGL_UPDATE_SIGNING_KEY" ]; then EXTRA="--allow-unsigned"; echo "::warning::Secret PGL_UPDATE_SIGNING_KEY fehlt – Release wird unsigniert erstellt, die Webseite wird nicht umgestellt."
+          elif ! node scripts/release-manifest.mjs --check-key; then
+            echo "::warning::Secret PGL_UPDATE_SIGNING_KEY ist gesetzt, enthält aber keinen lesbaren Schlüssel (Form siehe Meldung oben) – Release wird unsigniert erstellt, die Webseite wird nicht umgestellt."
+            PGL_UPDATE_SIGNING_KEY=""; export PGL_UPDATE_SIGNING_KEY; EXTRA="--allow-unsigned"
+          fi
           node scripts/release-manifest.mjs --exe artifacts/companion/PCGameLauncherCompanion.exe \
             --zip "artifacts/PCGameLauncherCompanion-$V-win-x64.zip" \
             --base-url "https://github.com/${{ github.repository }}/releases/download/v$V" \

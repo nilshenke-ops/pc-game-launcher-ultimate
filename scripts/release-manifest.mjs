@@ -10,6 +10,7 @@
 //
 // Usage: node scripts/release-manifest.mjs --exe <exe> --zip <zip> --base-url <https://…/download/vX.Y.Z> --out <dir>
 //        [--history <releases.json>] [--date YYYY-MM-DD] [--key <pem>] [--allow-unsigned]
+//        node scripts/release-manifest.mjs --check-key   (only checks PGL_UPDATE_SIGNING_KEY)
 import { createHash, createPrivateKey, createPublicKey, sign, verify } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, join } from "node:path";
@@ -18,6 +19,15 @@ const root = new URL("..", import.meta.url).pathname;
 const arg = (name, def) => { const i = process.argv.indexOf("--" + name); return i > 0 ? process.argv[i + 1] : def; };
 const flag = (name) => process.argv.includes("--" + name);
 const fail = (msg) => { console.error("Fehler: " + msg); process.exit(1); };
+
+// --check-key: only checks that PGL_UPDATE_SIGNING_KEY is a readable private key (used by the release workflow).
+if (flag("check-key")) {
+  const raw = process.env.PGL_UPDATE_SIGNING_KEY || "";
+  if (!raw.trim()) fail("PGL_UPDATE_SIGNING_KEY ist leer.");
+  loadSigningKey(raw);
+  console.log("Signaturschlüssel lesbar.");
+  process.exit(0);
+}
 
 const version = readFileSync(join(root, "VERSION"), "utf8").trim();
 if (!/^\d+\.\d+\.\d+$/.test(version)) fail(`VERSION „${version}“ ist nicht MAJOR.MINOR.PATCH`);
