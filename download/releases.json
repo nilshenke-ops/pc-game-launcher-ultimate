@@ -1,5 +1,36 @@
 [
   {
+    "version": "2.8.0",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.8.0/PCGameLauncherCompanion.exe",
+    "size": 87280589,
+    "sha256": "2c7338df88d7c67a3358a52d75c43a598a03383a5b9650949dc047c32940ba0a",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.8.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.8.0/PCGameLauncherCompanion-2.8.0-win-x64.zip",
+      "size": 81544851,
+      "sha256": "0373269898c734f170307da48fd76b3a3c21904c331c409b263577c913026c44"
+    },
+    "notes": "KI-Assistent ohne PC: Hilfe-Modus direkt im Browser (0 €, ohne Internet) – beantwortet Fragen zur App aus derselben Wissensbasis wie der PC-Assistent, öffnet Seiten („Öffne das Deck“), kennt die zuletzt vom PC geladenen Spiele und den Backlog; Starten, Live-Werte und Sounds brauchen den PC – das sagt er ehrlich · Spiele: Cover antippen startet das Spiel sofort am PC (Drehsymbol, dann „… wird gestartet“); Programme als App-Symbole wie auf dem Handy – antippen startet, drei Punkte öffnen die Einstellungen, grüner Punkt = läuft · Home: neue Widgets Medien & Lautstärke, Stoppuhr & Countdown, Mini-Deck; Favoriten/Zuletzt gestartet als antippbare App-Kacheln",
+    "changes": {
+      "neu": [
+        "KI-Assistent ohne PC: Hilfe-Modus direkt im Browser (0 €, ohne Internet) – beantwortet Fragen zur App aus derselben Wissensbasis wie der PC-Assistent, öffnet Seiten („Öffne das Deck“), kennt die zuletzt vom PC geladenen Spiele und den Backlog; Starten, Live-Werte und Sounds brauchen den PC – das sagt er ehrlich",
+        "Spiele: Cover antippen startet das Spiel sofort am PC (Drehsymbol, dann „… wird gestartet“); Programme als App-Symbole wie auf dem Handy – antippen startet, drei Punkte öffnen die Einstellungen, grüner Punkt = läuft",
+        "Home: neue Widgets Medien & Lautstärke, Stoppuhr & Countdown, Mini-Deck; Favoriten/Zuletzt gestartet als antippbare App-Kacheln",
+        "Widget-Baukasten: neue Bausteine Symbol und Stoppuhr/Countdown, Knöpfe auch für Medientasten und „Seite öffnen“",
+        "Overlay: zusätzlich Mini-Deck, Medien, Timer, Uhr, Notizen und „Als Nächstes spielen“ hinzufügbar"
+      ],
+      "verbessert": [
+        "Farbige Symbole in Navigation, „Mehr“-Menü und unterer Leiste statt grau",
+        "Deck und eigene Widgets teilen sich jetzt einen Ausführungsweg für Tasten (gleiches Verhalten überall)"
+      ],
+      "behoben": []
+    },
+    "signature": "EasnVjpfWnjWl3o8fWyE5dIkPoR4vyw5VRuA+jMVrrEQHImOWZVKvTB5WChQv79cshhuBspQjfkMPi/NIuKBYA=="
+  },
+  {
     "version": "2.7.0",
     "date": "2026-10-19",
     "channel": "stable",
