@@ -59,9 +59,11 @@ public sealed class LocalAssistant
             var r = _d.Running();
             return new AssistantReply { Text = r.Count == 0 ? "Gerade läuft kein Spiel und kein Programm aus deiner Bibliothek." : "Läuft gerade: " + string.Join(", ", r) + ".", Sources = { "Spielerkennung" } };
         }
+        if (Has(t, @" (welche|was fuer|meine|alle|which|my) (spiele|games|programme) ") || Has(t, @" (zeig|liste|list) (mir )?(meine |alle )?(spiele|games|bibliothek) "))
+            return Library();
         if (Has(t, @" (wie lange|wie viel|wieviel|spielzeit|gespielt|played|playtime|stunden) ") && !Has(t, @" (quest|ziel|level|xp) "))
             return PlayTime(t);
-        if (Has(t, @" (level|xp|erfolg|erfolge|achievement|quest|quests|ziele|ziel) ") && !Has(t, @" (wie (lege|richte|erstelle)|anlegen|einrichten) "))
+        if (Has(t, @" (level|xp|erfolg|erfolge|achievement|quest|quests|ziele|ziel) ") && !Has(t, @" (wie (lege|richte|erstelle)|anlegen|einrichten|vorschlagen|vorschlag|setzen|neues|neue|empfiehl|suggest) "))
             return Quests();
         if (Has(t, @" (deal|deals|angebot|angebote|wunschliste|sale|rabatt|zielpreis|guenstig|preis|preise) ") && !Has(t, @" (wie (richte|stelle)|einrichten|einschalten) "))
             return Deals();
@@ -111,7 +113,8 @@ public sealed class LocalAssistant
                 if (sound is { } sd && (item == null || sd.score > item.Value.score + 0.1)) return new AssistantReply { Text = $"Sound „{sd.item.Name}“ abspielen?", Actions = { AssistantData.SoundAction(sd.item) }, Sources = { "Soundboard" } };
                 if (item is { } it)
                     return new AssistantReply { Text = $"„{it.item.Name}“ starten?" + (_d.Running().Contains(it.item.Name) ? " Es läuft bereits." : ""), Actions = { _d.LaunchAction(it.item) }, Sources = { "Bibliothek" } };
-                if (name.Length > 0)
+                // Only a short name is a command ("Starte Hollow Knight"); a long sentence is a question for the help/model.
+                if (name.Length > 0 && name.Split(' ').Length <= 5 && !_raw.Contains('?'))
                     return new AssistantReply { Text = $"„{Original(_raw, name)}“ habe ich in deiner Bibliothek nicht gefunden. Unter Spiele → „Hinzufügen“ kannst du installierte Spiele übernehmen.", Actions = { _d.Navigate("/games") } };
             }
         }
@@ -137,6 +140,25 @@ public sealed class LocalAssistant
         Suggestions = Examples.Skip(1).Take(6).ToList(),
         Sources = { "Assistent" },
     };
+
+    AssistantReply Library()
+    {
+        var items = _d.Library();
+        var games = items.Where(i => i.Kind == Models.ItemKind.Game).ToList();
+        if (games.Count == 0) return new AssistantReply { Text = "In deiner Bibliothek ist noch kein Spiel. Unter Spiele → „Hinzufügen“ übernimmst du installierte Spiele.", Actions = { _d.Navigate("/games") }, Sources = { "Bibliothek" } };
+        var (_, _, per) = _d.PlayTime("month");
+        var played = per.Select(p => p.game).ToHashSet();
+        var fav = games.Where(g => g.Favorite).Select(g => g.Name).ToList();
+        var text = $"Du hast {games.Count} Spiel{(games.Count == 1 ? "" : "e")}" + (items.Count > games.Count ? $" und {items.Count - games.Count} Programm{(items.Count - games.Count == 1 ? "" : "e")}" : "") + ": " +
+            string.Join(", ", games.Take(12).Select(g => g.Name)) + (games.Count > 12 ? " …" : "") + ".";
+        if (fav.Count > 0) text += " Favoriten: " + string.Join(", ", fav.Take(5)) + ".";
+        var notPlayed = games.Where(g => !played.Contains(g.Name)).Take(3).ToList();
+        if (notPlayed.Count > 0 && per.Count > 0) text += " Diesen Monat noch nicht gespielt: " + string.Join(", ", notPlayed.Select(g => g.Name)) + ".";
+        var reply = new AssistantReply { Text = text, Sources = { "Bibliothek" } };
+        foreach (var g in (fav.Count > 0 ? games.Where(x => x.Favorite) : games).Take(2)) reply.Actions.Add(_d.LaunchAction(g));
+        reply.Actions.Add(_d.Navigate("/games"));
+        return reply;
+    }
 
     AssistantReply PcStatus()
     {

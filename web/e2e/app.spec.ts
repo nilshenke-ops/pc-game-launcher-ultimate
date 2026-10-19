@@ -576,10 +576,17 @@ test("KI-Assistent: lokal, ohne Internet – beantwortet App-Fragen, schlägt Ak
   // Set-up on the PC: key field only here; local mode is the default.
   await pc.getByRole("button", { name: "Einrichten", exact: true }).click();
   const dlg = pc.getByRole("dialog", { name: "Assistent einrichten" });
-  await expect(dlg.getByRole("radio", { name: "Lokal (kostenlos)" })).toHaveAttribute("aria-checked", "true");
-  await dlg.getByRole("radio", { name: "Claude" }).click();
-  await expect(pc.getByText("Für Claude zuerst am PC einen API-Schlüssel eintragen.")).toBeVisible();
+  await expect(dlg.getByRole("radio", { name: "Lokal (0 €)" })).toHaveAttribute("aria-checked", "true");
+  await dlg.getByRole("radio", { name: "Lokale KI (0 €)" }).click();
+  await expect(dlg.getByText("Lokale KI (Ollama) – kostenlos")).toBeVisible();
+  await dlg.getByRole("radio", { name: "Lokal (0 €)" }).click();
+  await dlg.getByRole("radio", { name: "Claude (kostenpflichtig)" }).click();
+  await expect(dlg.getByText("Claude kostet pro Anfrage Geld")).toBeVisible();
   await expect(dlg.getByLabel("Anthropic-API-Schlüssel")).toBeVisible();
+  // Without a key the mode stays free.
+  await dlg.getByRole("button", { name: "Fertig" }).click();
+  await expect(pc.locator(".page-head .badge")).toHaveText("Lokal · 0 €");
+  await pc.getByRole("button", { name: "Einrichten", exact: true }).click();
   await dlg.getByRole("button", { name: "Fertig" }).click();
   await pc.getByRole("button", { name: "Neues Gespräch" }).click();
   await expect(pc.locator(".as-turn")).toHaveCount(0);

@@ -19,8 +19,12 @@ public sealed class AssistantUsageMonth
 
 public sealed class AssistantFile
 {
-    /// <summary>local = only the built-in assistant; claude = Claude answers (needs a key).</summary>
+    /// <summary>local = built-in assistant (free); ollama = language model on this PC via Ollama (free); claude = Claude (paid, needs a key).</summary>
     public string Mode { get; set; } = "local";
+    public string OllamaUrl { get; set; } = OllamaAssistant.DefaultUrl;
+    public string? OllamaModel { get; set; }
+    /// <summary>Use the local model also while a game runs (it needs the graphics card). Off = the built-in assistant answers then.</summary>
+    public bool OllamaWhileGaming { get; set; }
     public string Model { get; set; } = ClaudeAssistant.DefaultModel;
     /// <summary>Recognised commands ("Starte …") are answered locally even in Claude mode – instant and free.</summary>
     public bool LocalFirst { get; set; } = true;
@@ -40,17 +44,19 @@ public sealed class AssistantService
     public AssistantData Data { get; }
     public LocalAssistant Local { get; }
     public ClaudeAssistant Claude { get; }
+    public OllamaAssistant Ollama { get; }
 
-    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
+    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
         Local = new LocalAssistant(data);
         Claude = claude ?? new ClaudeAssistant(data);
+        Ollama = ollama ?? new OllamaAssistant(data);
     }
 
     string MonthKey => _now().ToString("yyyy-MM");
@@ -63,6 +69,8 @@ public sealed class AssistantService
         {
             mode = f.Mode, model = f.Model, localFirst = f.LocalFirst, monthlyLimitUsd = f.MonthlyLimitUsd, keySet = f.KeyProtected != null,
             claudeReady = f.Mode == "claude" && f.KeyProtected != null,
+            ollama = new { url = f.OllamaUrl, model = f.OllamaModel, whileGaming = f.OllamaWhileGaming, recommended = OllamaAssistant.Recommended.Select(r => new { r.id, r.label, r.note }) },
+            free = f.Mode != "claude",
             models = ClaudeAssistant.Models.Select(m => new { m.Id, m.Label, m.Input, m.Output, m.CacheRead, m.Note }),
             usage = month, history = f.Usage.OrderByDescending(u => u.Month).Take(6),
             examples = LocalAssistant.Examples,
@@ -70,13 +78,32 @@ public sealed class AssistantService
         };
     }
 
-    public sealed class Config { public string? Mode { get; set; } public string? Model { get; set; } public bool? LocalFirst { get; set; } public double? MonthlyLimitUsd { get; set; } public string? ApiKey { get; set; } }
+    public sealed class Config
+    {
+        public string? Mode { get; set; } public string? Model { get; set; } public bool? LocalFirst { get; set; } public double? MonthlyLimitUsd { get; set; } public string? ApiKey { get; set; }
+        public string? OllamaUrl { get; set; } public string? OllamaModel { get; set; } public bool? OllamaWhileGaming { get; set; }
+    }
+
+    /// <summary>Ollama address: http(s), this PC or a device in the home network only (no internet hosts).</summary>
+    static string CheckOllamaUrl(string url)
+    {
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(u.UserInfo))
+            throw new RpcException("invalid-params", "Ollama-Adresse z. B. http://127.0.0.1:11434");
+        var local = u.IsLoopback || u.Host == "localhost" ||
+            (System.Net.IPAddress.TryParse(u.Host, out var ip) && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && ip.GetAddressBytes() is var b &&
+             (b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168)));
+        if (!local) throw new RpcException("invalid-params", "Ollama muss auf diesem PC oder im Heimnetz laufen (localhost oder 192.168.x.x/10.x.x.x).");
+        return u.GetLeftPart(UriPartial.Authority);
+    }
 
     /// <param name="atPc">The key may only be set or removed at the PC itself (it costs money and leaves the home network).</param>
     public object Configure(Config c, bool atPc)
     {
         if (c.ApiKey != null && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
-        if (c.Mode is not (null or "local" or "claude")) throw new RpcException("invalid-params", "Modus muss „local“ oder „claude“ sein.");
+        if (c.OllamaUrl != null && !atPc) throw new RpcException("forbidden", "Die Ollama-Adresse kannst du nur direkt am PC ändern.");
+        if (c.Mode is not (null or "local" or "ollama" or "claude")) throw new RpcException("invalid-params", "Modus muss „local“, „ollama“ oder „claude“ sein.");
+        var ollamaUrl = c.OllamaUrl == null ? null : CheckOllamaUrl(c.OllamaUrl);
+        if (c.OllamaModel is { Length: > 100 } || (c.OllamaModel != null && !Regex.IsMatch(c.OllamaModel, @"^[A-Za-z0-9._:/-]*$"))) throw new RpcException("invalid-params", "Ungültiger Modellname.");
         if (c.Model != null && ClaudeAssistant.Models.All(m => m.Id != c.Model)) throw new RpcException("invalid-params", "Unbekanntes Modell.");
         if (c.MonthlyLimitUsd is < 0 or > 500) throw new RpcException("invalid-params", "Monatslimit zwischen 0 und 500 $.");
         var key = c.ApiKey?.Trim();
@@ -90,6 +117,9 @@ public sealed class AssistantService
                 f.Mode = c.Mode;
             }
             if (c.Model != null) f.Model = c.Model;
+            if (ollamaUrl != null) f.OllamaUrl = ollamaUrl;
+            if (c.OllamaModel != null) f.OllamaModel = c.OllamaModel.Length == 0 ? null : c.OllamaModel;
+            if (c.OllamaWhileGaming != null) f.OllamaWhileGaming = c.OllamaWhileGaming.Value;
             if (c.LocalFirst != null) f.LocalFirst = c.LocalFirst.Value;
             if (c.MonthlyLimitUsd != null) f.MonthlyLimitUsd = Math.Round(c.MonthlyLimitUsd.Value, 2);
             if (key != null)
@@ -141,17 +171,33 @@ public sealed class AssistantService
             var f = _store.Snapshot();
             AssistantReply reply;
             var useClaude = f.Mode == "claude" && f.KeyProtected != null;
+            var useOllama = f.Mode == "ollama";
+            if (useOllama && !f.OllamaWhileGaming && Data.GameRunning())
+            {
+                reply = await Local.AnswerAsync(text);
+                reply.Sources.Add("lokal beantwortet – während eines Spiels bleibt die Grafikkarte frei");
+                return Done(conversationId, reply, note);
+            }
             // Short single requests only – "Wie geht es meinem PC und …" needs Claude to answer every part.
             var simple = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 8 && !Regex.IsMatch(" " + text.ToLowerInvariant() + " ", @" (und|and|dann|then|aber|but|oder|or) ");
-            if (useClaude && f.LocalFirst && simple)
+            // Local model: the exact local assistant always goes first – small models invent numbers (measured with
+            // qwen2.5:1.5b) – so commands, live values and help answers never come from the model. Claude: only short single requests.
+            if ((useOllama && f.LocalFirst) || (useClaude && f.LocalFirst && simple))
             {
                 var local = await Local.AnswerAsync(text);
                 // Only commands and live-data answers count; help-text guesses go to Claude, which explains better.
-                if (local.Confident && (local.Actions.Any(a => a.Kind != "navigate") || local.Sources.Any(s => !s.Contains(':'))))
+                // Claude explains help topics better than the stored text, so only commands/live data stay local there.
+                // A small local model does not – every confident local answer (including help texts) stays local.
+                if (local.Confident && (useOllama || local.Actions.Any(a => a.Kind != "navigate") || local.Sources.Any(s => !s.Contains(':'))))
                 {
                     local.Sources.Add("lokal beantwortet (kostenlos)");
                     return Done(conversationId, local, note);
                 }
+            }
+            if (useOllama)
+            {
+                var o = await Ollama.AskAsync(f.OllamaUrl, f.OllamaModel ?? "", conv.Ollama, text, $"[Kontext – nicht vom Nutzer: Zeit {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]", ct);
+                return Done(conversationId, o.Reply, note);
             }
             if (!useClaude)
             {
@@ -188,6 +234,13 @@ public sealed class AssistantService
     {
         if (note != null) reply.Text = note + "\n\n" + reply.Text;
         return new { conversationId, reply };
+    }
+
+    public async Task<object> OllamaModelsAsync(CancellationToken ct = default)
+    {
+        var f = _store.Snapshot();
+        var models = await Ollama.ModelsAsync(f.OllamaUrl, ct);
+        return new { url = f.OllamaUrl, models = models.Select(m => new { m.name, sizeGb = Math.Round(m.size / 1e9, 1) }) };
     }
 
     internal AssistantFile Export() => _store.Snapshot();

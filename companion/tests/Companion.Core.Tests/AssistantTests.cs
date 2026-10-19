@@ -87,6 +87,12 @@ public class AssistantTests
         Assert.Equal("sounds.stopAll", Assert.Single(r.Actions).Method);
         r = await local.AnswerAsync("Öffne Deal Radar");
         Assert.Equal("/deals", Assert.Single(r.Actions).Path);
+        r = await local.AnswerAsync("Mir ist langweilig. Welche Spiele habe ich überhaupt?");
+        Assert.Contains("Rocket League", r.Text);
+        Assert.Contains("Counter-Strike 2", r.Text);
+        Assert.DoesNotContain("nicht gefunden", r.Text);
+        r = await local.AnswerAsync("Ich weiß nicht so recht was ich heute Abend spielen soll mit meinen Freunden");
+        Assert.DoesNotContain("nicht gefunden", r.Text); // a sentence is not a game name
         r = await local.AnswerAsync("Starte Minecraft");
         Assert.Contains("nicht gefunden", r.Text);
         Assert.DoesNotContain(r.Actions, x => x.Method != null);
@@ -175,7 +181,9 @@ public class AssistantTests
         public string Url { get; }
         public List<JsonElement> Requests { get; } = new();
         public Queue<string> Responses { get; } = new();
+        public List<string> Paths { get; } = new();
         public int Status = 200;
+        public string? ErrorBody;
         public FakeClaude()
         {
             var probe = new TcpListener(IPAddress.Loopback, 0); probe.Start(); var port = ((IPEndPoint)probe.LocalEndpoint).Port; probe.Stop();
@@ -190,8 +198,8 @@ public class AssistantTests
                     try { ctx = await _l.GetContextAsync(); } catch { return; }
                     using var rd = new StreamReader(ctx.Request.InputStream);
                     var body = await rd.ReadToEndAsync();
-                    lock (Requests) Requests.Add(JsonDocument.Parse(body).RootElement.Clone());
-                    var resp = Status == 200 ? Responses.Count > 0 ? Responses.Dequeue() : Text("leer") : "{\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid x-api-key\"}}";
+                    lock (Requests) { Paths.Add(ctx.Request.Url!.AbsolutePath); if (body.Length > 0) Requests.Add(JsonDocument.Parse(body).RootElement.Clone()); }
+                    var resp = Status == 200 ? Responses.Count > 0 ? Responses.Dequeue() : Text("leer") : ErrorBody ?? "{\"type\":\"error\",\"error\":{\"type\":\"authentication_error\",\"message\":\"invalid x-api-key\"}}";
                     ctx.Response.StatusCode = Status;
                     ctx.Response.ContentType = "application/json";
                     var bytes = Encoding.UTF8.GetBytes(resp);
@@ -326,6 +334,135 @@ public class AssistantTests
         Assert.Equal("assistant-key", ex.Code);
         Assert.DoesNotContain("sk-ant", ex.Message);
         Assert.Equal(0, J(a.Status()).GetProperty("usage").GetProperty("requests").GetInt32());
+    }
+
+    // ---------------------------------------------------------------- free local model (Ollama) against a fake server
+
+    static string OllamaMsg(string content, object[]? toolCalls = null) => JsonSerializer.Serialize(new
+    {
+        model = "qwen2.5:7b", created_at = "2026-10-19T12:00:00Z", done = true, done_reason = "stop", prompt_eval_count = 900, eval_count = 40,
+        message = toolCalls == null ? (object)new { role = "assistant", content } : new { role = "assistant", content, tool_calls = toolCalls },
+    });
+
+    static AssistantService WithOllama(CompanionServices s, TempDir dir, FakeClaude fake, Func<bool>? gameRunning = null)
+    {
+        var data = new AssistantData(s, gameRunning: gameRunning);
+        var a = new AssistantService(new AppPaths(Path.Combine(dir.Path, "o")), new GenericPlatform().Secrets, new NullHub(), data, ollama: new OllamaAssistant(data));
+        a.Configure(new AssistantService.Config { Mode = "ollama", OllamaUrl = fake.Url, OllamaModel = "qwen2.5:7b" }, atPc: true);
+        return a;
+    }
+
+    [Fact]
+    public async Task Free_local_model_uses_the_same_tools_and_costs_nothing()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        fake.Responses.Enqueue(OllamaMsg("", new object[]
+        {
+            new { function = new { name = "get_pc_status", arguments = new { } } },
+            new { function = new { name = "suggest_action", arguments = new { kind = "launch", target = "Rocket Leage" } } },
+        }));
+        fake.Responses.Enqueue(OllamaMsg("Dein PC ist entspannt. Tippe auf „Rocket League starten“."));
+        var a = WithOllama(s, dir, fake);
+        a.Configure(new AssistantService.Config { LocalFirst = false }, atPc: true); // force the model for this check
+
+        var r = J(await a.AskAsync("local", "PC", null, "Wie geht es meinem PC und kannst du Rocket League starten?"));
+        var reply = r.GetProperty("reply");
+        Assert.Equal("ollama", reply.GetProperty("mode").GetString());
+        Assert.Equal(0, reply.GetProperty("costUsd").GetDouble());
+        Assert.Equal("library.launch", Assert.Single(reply.GetProperty("actions").EnumerateArray()).GetProperty("method").GetString());
+        Assert.Contains("lokales Modell (kostenlos)", reply.GetProperty("sources").EnumerateArray().Select(x => x.GetString()));
+        Assert.Empty(s.Sessions.Running());
+
+        Assert.Equal(new[] { "/api/chat", "/api/chat" }, fake.Paths);
+        var first = fake.Requests[0];
+        Assert.Equal("qwen2.5:7b", first.GetProperty("model").GetString());
+        Assert.False(first.GetProperty("stream").GetBoolean());
+        Assert.Equal("2m", first.GetProperty("keep_alive").GetString());
+        Assert.Equal("system", first.GetProperty("messages")[0].GetProperty("role").GetString());
+        Assert.Contains(first.GetProperty("tools").EnumerateArray(), t => t.GetProperty("function").GetProperty("name").GetString() == "suggest_action");
+        var msgs = fake.Requests[1].GetProperty("messages").EnumerateArray().ToList();
+        Assert.Equal(new[] { "system", "user", "assistant", "tool", "tool" }, msgs.Select(m => m.GetProperty("role").GetString()));
+        Assert.Contains("CPU", msgs[3].GetProperty("content").GetString());
+        Assert.Equal(0, J(a.Status()).GetProperty("usage").GetProperty("costUsd").GetDouble());
+        Assert.True(J(a.Status()).GetProperty("free").GetBoolean());
+
+        // Help questions get the matching help sections along (small models have little context).
+        fake.Responses.Enqueue(OllamaMsg("So geht's …"));
+        await a.AskAsync("local", "PC", r.GetProperty("conversationId").GetString(), "Wie hören meine Freunde in Discord meine Sounds?");
+        var last = fake.Requests[^1].GetProperty("messages").EnumerateArray().Last(m => m.GetProperty("role").GetString() == "user").GetProperty("content").GetString();
+        Assert.Contains("CABLE Input", last);
+    }
+
+    [Fact]
+    public async Task Live_values_commands_and_help_never_come_from_the_local_model()
+    {
+        // Measured with a real small model (qwen2.5:1.5b): asked for CPU/RAM it invented "CPU 100 %, RAM 95 %".
+        // So with the default settings the exact local assistant answers these, the model is not asked at all.
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        var a = WithOllama(s, dir, fake);
+        foreach (var q in new[] { "Wie geht es meinem PC und wie viel RAM ist frei?", "Starte Rocket League", "Wie hören meine Freunde in Discord meine Sounds?", "Wie lange habe ich diese Woche gespielt?" })
+        {
+            var r = J(await a.AskAsync("local", "PC", null, q)).GetProperty("reply");
+            Assert.Equal("local", r.GetProperty("mode").GetString());
+        }
+        Assert.Empty(fake.Requests);
+        // Free conversation goes to the model.
+        fake.Responses.Enqueue(OllamaMsg("Probier mal ein Koop-Spiel."));
+        var free = J(await a.AskAsync("local", "PC", null, "Mir ist langweilig, hast du eine Idee für heute Abend?")).GetProperty("reply");
+        Assert.Equal("ollama", free.GetProperty("mode").GetString());
+        Assert.Single(fake.Requests);
+    }
+
+    [Fact]
+    public async Task Local_model_problems_are_explained_and_gaming_keeps_the_gpu_free()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude { Status = 404, ErrorBody = "{\"error\":\"model 'qwen2.5:7b' not found\"}" };
+        var gaming = false;
+        var a = WithOllama(s, dir, fake, () => gaming);
+        var ex = await Assert.ThrowsAsync<RpcException>(() => a.AskAsync("local", "PC", null, "Erzähl mir etwas über Rocket League und Autoball"));
+        Assert.Contains("ollama pull qwen2.5:7b", ex.Message);
+
+        gaming = true;
+        var n = fake.Requests.Count;
+        var r = J(await a.AskAsync("local", "PC", null, "Erzähl mir etwas über Rocket League und Autoball"));
+        Assert.Equal(n, fake.Requests.Count); // no request while a game runs
+        Assert.Contains(r.GetProperty("reply").GetProperty("sources").EnumerateArray(), x => x.GetString()!.Contains("Grafikkarte frei"));
+
+        // Not installed / not running.
+        a.Configure(new AssistantService.Config { OllamaUrl = "http://127.0.0.1:1" }, atPc: true);
+        gaming = false;
+        ex = await Assert.ThrowsAsync<RpcException>(() => a.AskAsync("local", "PC", null, "Erzähl mir etwas über Rocket League und Autoball"));
+        Assert.Contains("ollama.com", ex.Message);
+        ex = await Assert.ThrowsAsync<RpcException>(() => a.OllamaModelsAsync());
+        Assert.Equal("assistant-ollama", ex.Code);
+
+        // Only this PC or the home network, and only set at the PC.
+        Assert.Throws<RpcException>(() => a.Configure(new AssistantService.Config { OllamaUrl = "https://example.com" }, atPc: true));
+        Assert.Throws<RpcException>(() => a.Configure(new AssistantService.Config { OllamaUrl = "http://user:pw@127.0.0.1:11434" }, atPc: true));
+        Assert.Equal("forbidden", Assert.Throws<RpcException>(() => a.Configure(new AssistantService.Config { OllamaUrl = "http://192.168.1.20:11434" }, atPc: false)).Code);
+        a.Configure(new AssistantService.Config { OllamaUrl = "http://192.168.1.20:11434/irgendwas" }, atPc: true);
+        Assert.Equal("http://192.168.1.20:11434", J(a.Status()).GetProperty("ollama").GetProperty("url").GetString());
+        Assert.Throws<RpcException>(() => a.Configure(new AssistantService.Config { OllamaModel = "qwen; rm -rf" }, atPc: false));
+    }
+
+    [Fact]
+    public async Task Installed_models_are_listed()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        fake.Responses.Enqueue("{\"models\":[{\"name\":\"qwen2.5:7b\",\"size\":4683087332},{\"name\":\"llama3.1:8b\",\"size\":4920753328}]}");
+        var a = WithOllama(s, dir, fake);
+        var m = J(await a.OllamaModelsAsync()).GetProperty("models");
+        Assert.Equal("qwen2.5:7b", m[0].GetProperty("name").GetString());
+        Assert.Equal(4.7, m[0].GetProperty("sizeGb").GetDouble());
+        Assert.Equal("/api/tags", fake.Paths.Single());
     }
 
     [Fact]

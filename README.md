@@ -82,7 +82,7 @@ Unter Windows ohne Bash: `powershell -ExecutionPolicy Bypass -File scripts\publi
 - **Widget-Baukasten:** eigene Widgets frei gestalten – für Dashboard, Overlay und als Windows-Desktop-Widget.
 - **Netzwerkdiagnose (Ping Doctor):** Ping, Jitter, Paketverlust, Verbindungsqualität, eigene Ziele (z. B. Spiel-Server).
 - **GameQuest:** eigene Ziele, XP, Level und Erfolge aus der erkannten Spielzeit; Siege und Matches trägst du selbst ein (die App liest keine Spielstatistiken aus).
-- **KI-Assistent:** kennt die ganze App und deinen PC; lokal ohne Internet und kostenlos, optional mit Claude (eigener Schlüssel). Aktionen nur als Knopf zum Antippen.
+- **KI-Assistent:** kennt die ganze App und deinen PC; lokal ohne Internet für 0 €, optional mit einem freien Sprachmodell auf dem PC (Ollama, 0 €) oder mit Claude (eigener Schlüssel, kostenpflichtig). Aktionen nur als Knopf zum Antippen.
 - **Deal Radar:** Wunschliste mit Zielpreis; Preise aus dem Steam-Shop, nur wenn eingeschaltet, mit Benachrichtigung bei Erreichen.
 - **Navigation** in Kategorien, anpassbar (Reihenfolge, Ausblenden, Handy-Leiste).
 - **Plugins** (Widgets, Aktionen, Themes) aus einem signierten Katalog, ohne Code auf dem PC.

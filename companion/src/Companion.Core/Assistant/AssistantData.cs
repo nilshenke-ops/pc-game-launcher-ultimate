@@ -45,9 +45,11 @@ public sealed class AssistantData
     readonly Func<DateTime> _now;
     public KnowledgeBase Knowledge { get; }
 
-    public AssistantData(CompanionServices s, KnowledgeBase? knowledge = null, Func<DateTime>? now = null, TimeZoneInfo? zone = null)
+    readonly Func<bool>? _gameRunning;
+
+    public AssistantData(CompanionServices s, KnowledgeBase? knowledge = null, Func<DateTime>? now = null, TimeZoneInfo? zone = null, Func<bool>? gameRunning = null)
     {
-        _s = s; Knowledge = knowledge ?? KnowledgeBase.Embedded; _now = now ?? (() => DateTime.UtcNow); _zone = zone ?? TimeZoneInfo.Local;
+        _s = s; Knowledge = knowledge ?? KnowledgeBase.Embedded; _now = now ?? (() => DateTime.UtcNow); _zone = zone ?? TimeZoneInfo.Local; _gameRunning = gameRunning;
     }
 
     static readonly CultureInfo De = new("de-DE");
@@ -164,6 +166,8 @@ public sealed class AssistantData
         var (m, text) = PcStatus();
         return new { text, cpuPercent = m.CpuPercent, cpuTempC = m.CpuTempC, memUsedBytes = m.MemUsedBytes, memTotalBytes = m.MemTotalBytes, gpus = m.Gpus, disks = m.Disks, fps = m.FpsStatus, running = Running() };
     }
+
+    public bool GameRunning() => _gameRunning?.Invoke() ?? _s.Sessions.AnyGameRunning();
 
     public List<string> Running() => _s.Sessions.Running().Select(r => _s.Library.Get(r.itemId)?.Name ?? r.itemId).ToList();
 

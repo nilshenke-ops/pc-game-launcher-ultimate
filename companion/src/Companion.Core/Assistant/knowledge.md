@@ -171,10 +171,11 @@ Strg+K (oder die Lupe) durchsucht Bereiche, Spiele, Programme, Sounds, Profile u
 
 ## KI-Assistent
 Seite: /assistant
-Stichworte: assistent ki claude frage chat befehl sprache kosten schlüssel
-Zwei Modi:
-- **Lokal** (Standard, kostenlos, ohne Internet): versteht Befehle wie „Starte Rocket League“, „Spiel Sound Airhorn“, „Profil Streaming“, „Wie heiß ist meine GPU?“, „Wie lange habe ich diese Woche gespielt?“ und beantwortet Fragen zur App aus dieser Wissensbasis.
-- **Claude** (optional): freie Fragen und Gespräche. Braucht einen eigenen Anthropic-API-Schlüssel, der nur am PC eingetragen und verschlüsselt gespeichert wird. Kostet pro Anfrage; Monatslimit einstellbar. Dabei gehen deine Frage und die dafür nötigen Daten (z. B. Spielnamen, PC-Werte) an Anthropic.
+Stichworte: assistent ki claude ollama lokal kostenlos gratis frage chat befehl sprache kosten schlüssel modell
+Drei Modi (Assistent → Einrichten):
+- **Lokal** (Standard, 0 €, ohne Internet): versteht Befehle wie „Starte Rocket League“, „Spiel Sound Airhorn“, „Profil Streaming“, „Wie heiß ist meine GPU?“, „Wie lange habe ich diese Woche gespielt?“, „Welche Spiele habe ich?“ und beantwortet Fragen zur App aus dieser Wissensbasis.
+- **Lokale KI** (0 €, ohne Konto, nichts verlässt den PC): zusätzlich ein freies Sprachmodell über Ollama (ollama.com) für freie Fragen. Installation: Ollama installieren, dann z. B. „ollama pull qwen2.5:7b“. Empfohlen mindestens 7B (braucht etwa 8 GB Grafikspeicher); kleinere Modelle machen viele Fehler. Befehle, PC-Werte und App-Fragen beantwortet weiter der genaue lokale Teil. Während eines Spiels antwortet standardmäßig nur der lokale Teil (schont die Grafikkarte).
+- **Claude** (kostenpflichtig, optional): beste Antworten. Braucht einen eigenen Anthropic-API-Schlüssel, der nur am PC eingetragen und verschlüsselt gespeichert wird. Kostet pro Anfrage; Monatslimit einstellbar. Dabei gehen deine Frage und die dafür nötigen Daten (z. B. Spielnamen, PC-Werte) an Anthropic.
 Der Assistent führt nie selbst etwas aus: Aktionen erscheinen als Knopf und laufen erst, wenn du tippst – mit den Rechten deines Geräts.
 
 ## Zugriff von unterwegs

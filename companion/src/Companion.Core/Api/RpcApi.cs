@@ -159,6 +159,7 @@ public static class RpcApi
         rpc.Register("assistant.status", _ => s.Assistant.Status());
         rpc.Register("assistant.ask", async ctx => await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000)));
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
+        rpc.Register("assistant.ollamaModels", async ctx => await s.Assistant.OllamaModelsAsync());
         rpc.Register("assistant.configure", ctx => s.Assistant.Configure(ctx.Bind<Assistant.AssistantService.Config>(), ctx.Session.IsLocalAdmin));
 
         // ------------------------------------------------------------ GameQuest

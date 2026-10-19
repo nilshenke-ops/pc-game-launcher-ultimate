@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bot, KeyRound, Mic, MicOff, Plus, Send, Settings2, Sparkles, User } from "lucide-react";
+import { Bot, Cpu, KeyRound, Mic, MicOff, Plus, RefreshCw, Send, Settings2, Sparkles, User } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
@@ -8,7 +8,8 @@ import { Banner, Button, Card, confirmDialog, Field, Modal, PageHead, Segmented,
 import { CHAT_KEY, emptyChat, formatCost, readChat, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
 
 interface Status {
-  mode: "local" | "claude"; model: string; localFirst: boolean; monthlyLimitUsd: number; keySet: boolean; claudeReady: boolean;
+  mode: "local" | "ollama" | "claude"; model: string; free: boolean;
+  ollama: { url: string; model?: string | null; whileGaming: boolean; recommended: { id: string; label: string; note: string }[] }; localFirst: boolean; monthlyLimitUsd: number; keySet: boolean; claudeReady: boolean;
   models: { id: string; label: string; input: number; output: number; cacheRead: number; note: string }[];
   usage: { month: string; requests: number; inputTokens: number; outputTokens: number; costUsd: number };
   examples: string[];
@@ -24,24 +25,75 @@ type Recognition = { lang: string; interimResults: boolean; start: () => void; s
 const SpeechCtor = (window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition }).SpeechRecognition
   ?? (window as unknown as { webkitSpeechRecognition?: new () => Recognition }).webkitSpeechRecognition;
 
+function OllamaCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
+  const [models, setModels] = useState<{ name: string; sizeGb: number }[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [url, setUrl] = useState(st.ollama.url);
+  const load = () => { setErr(null); client.call<{ models: { name: string; sizeGb: number }[] }>("assistant.ollamaModels").then((r) => setModels(r.models), (e: Error) => { setModels(null); setErr(e.message); }); };
+  useEffect(load, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const installed = new Set((models ?? []).map((m) => m.name));
+  return (
+    <Card title={t("Lokale KI (Ollama) – kostenlos")} icon={<Cpu size={18} />} className="flat">
+      <div className="stack-sm">
+        <p className="small muted">{t("Ein freies Sprachmodell läuft direkt auf deinem PC: 0 €, kein Konto, nichts verlässt den PC. Befehle, PC-Werte und App-Fragen beantwortet trotzdem der genaue lokale Assistent – das Modell nur freie Fragen.")}</p>
+        {err ? (
+          <Banner kind="warn" title={t("Ollama nicht gefunden")}>
+            {t("1. Ollama kostenlos installieren: ollama.com/download (Windows). 2. Im Terminal ein Modell laden, z. B. „ollama pull qwen2.5:7b“. 3. Hier auf „Neu prüfen“ tippen.")}
+            <div style={{ marginTop: 8 }}><Button size="sm" icon={<RefreshCw size={15} />} onClick={load}>{t("Neu prüfen")}</Button></div>
+          </Banner>
+        ) : models == null ? <p className="small muted">{t("Suche Ollama …")}</p> : (
+          <Field label={t("Modell")} hint={t("Größere Modelle antworten besser, brauchen aber mehr Grafikspeicher. Im Test machten 1,5B- und 3B-Modelle viele Fehler; empfohlen ist mindestens 7B.")}>
+            <select className="input" value={st.ollama.model ?? ""} onChange={(e) => save({ ollamaModel: e.target.value })}>
+              <option value="">{t("– Modell wählen –")}</option>
+              {models.map((m) => <option key={m.name} value={m.name}>{m.name} · {m.sizeGb.toLocaleString()} GB</option>)}
+            </select>
+          </Field>
+        )}
+        {models != null && (
+          <ul className="plain-list small">
+            {st.ollama.recommended.map((r) => (
+              <li key={r.id} className="row between"><span><b>{r.label}</b> <span className="muted">{r.note}</span></span>
+                {installed.has(r.id) ? <span className="badge ok">{t("installiert")}</span> : <code className="tiny">ollama pull {r.id}</code>}</li>
+            ))}
+          </ul>
+        )}
+        <Switch checked={st.ollama.whileGaming} onChange={(ollamaWhileGaming) => save({ ollamaWhileGaming })} label={t("Auch während eines Spiels benutzen")}
+          hint={t("Aus (empfohlen): Läuft ein Spiel, antwortet der einfache lokale Assistent – das Modell würde Grafikkarte und Speicher belasten und FPS kosten. Das Modell wird 2 Minuten nach der letzten Frage aus dem Speicher entfernt.")} />
+        {atPc && (
+          <form className="row" onSubmit={(e) => { e.preventDefault(); save({ ollamaUrl: url }).then(load); }}>
+            <Field label={t("Ollama-Adresse")} hint={t("Normalerweise dieser PC. Ein anderer PC im Heimnetz geht auch.")}><input className="input mono" value={url} onChange={(e) => setUrl(e.target.value)} /></Field>
+            <Button type="submit">{t("Übernehmen")}</Button>
+          </form>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 function SettingsDialog({ st, onClose }: { st: Status; onClose: () => void }) {
   const conn = useConn();
   const atPc = !!conn.me?.isLocal;
   const [key, setKey] = useState("");
   const [limit, setLimit] = useState(String(st.monthlyLimitUsd));
-  const save = (p: Record<string, unknown>, ok = t("Gespeichert")) => client.call("assistant.configure", p).then(() => toast(ok, "success"), (e: Error) => toast(e.message, "error"));
+  // Which option is shown: Claude can be opened before a key exists (the key is entered there).
+  const [view, setView] = useState(st.mode);
+  useEffect(() => setView(st.mode), [st.mode]);
+  const choose = (m: Status["mode"]) => { setView(m); if (m !== "claude" || st.keySet) void save({ mode: m }); };
+  const save = (p: Record<string, unknown>, ok = t("Gespeichert")) => client.call("assistant.configure", p).then(() => toast(ok, "success"), (e: Error) => toast(e.message, "error")) as Promise<void>;
   const model = st.models.find((m) => m.id === st.model);
   return (
     <Modal title={t("Assistent einrichten")} onClose={onClose} wide footer={<Button onClick={onClose}>{t("Fertig")}</Button>}>
       <div className="stack">
-        <Field label={t("Wer antwortet?")} hint={st.mode === "local" ? t("Lokal: läuft auf deinem PC, ohne Internet, kostenlos. Versteht Befehle und Fragen zur App.") : t("Claude: freie Fragen und Gespräche. Kostet pro Anfrage (dein Anthropic-Konto).")}>
-          <Segmented value={st.mode} onChange={(mode) => save({ mode })} label={t("Wer antwortet?")}
-            options={[{ value: "local", label: t("Lokal (kostenlos)") }, { value: "claude", label: "Claude" }]} />
+        <Field label={t("Wer antwortet?")} hint={view === "local" ? t("Lokal: läuft auf deinem PC, ohne Internet, kostenlos. Versteht Befehle und Fragen zur App.") : view === "ollama" ? t("Lokale KI: zusätzlich ein freies Sprachmodell auf deinem PC für freie Fragen – ebenfalls 0 €.") : t("Claude: freie Fragen und Gespräche. Kostet pro Anfrage (dein Anthropic-Konto).")}>
+          <Segmented value={view} onChange={choose} label={t("Wer antwortet?")}
+            options={[{ value: "local", label: t("Lokal (0 €)") }, { value: "ollama", label: t("Lokale KI (0 €)") }, { value: "claude", label: t("Claude (kostenpflichtig)") }]} />
         </Field>
-        <Card title={t("Claude")} icon={<Sparkles size={18} />} className="flat">
+        {view === "ollama" && <OllamaCard st={st} atPc={atPc} save={save} />}
+        {view === "claude" && !st.keySet && <Banner kind="info">{t("Claude kostet pro Anfrage Geld (dein Anthropic-Konto). Für 0 € nimm „Lokal“ oder „Lokale KI“.")}</Banner>}
+        {view === "claude" && <Card title={t("Claude")} icon={<Sparkles size={18} />} className="flat">
           <div className="stack-sm">
             {atPc ? (
-              <form className="row" onSubmit={(e) => { e.preventDefault(); if (key.trim()) save({ apiKey: key.trim() }, t("Schlüssel gespeichert")).then(() => setKey("")); }}>
+              <form className="row" onSubmit={(e) => { e.preventDefault(); if (key.trim()) save({ apiKey: key.trim(), mode: "claude" }, t("Schlüssel gespeichert")).then(() => setKey("")); }}>
                 <Field label={st.keySet ? t("API-Schlüssel (gespeichert – neu eintragen zum Ersetzen)") : t("Anthropic-API-Schlüssel")} hint={t("Bekommst du auf console.anthropic.com → API Keys. Wird nur auf diesem PC verschlüsselt gespeichert, nie angezeigt und nie ins Backup geschrieben.")}>
                   <input className="input mono" type="password" autoComplete="off" value={key} placeholder="sk-ant-…" onChange={(e) => setKey(e.target.value)} />
                 </Field>
@@ -66,7 +118,7 @@ function SettingsDialog({ st, onClose }: { st: Status; onClose: () => void }) {
             <p className="small">{t("Diesen Monat: {n} Anfragen, etwa {c} (geschätzt aus den Token-Zahlen von Anthropic; maßgeblich ist deine Abrechnung).", { n: st.usage.requests, c: formatCost(st.usage.costUsd) })}</p>
             <p className="tiny muted">{t("Datenschutz: Mit Claude gehen deine Frage, der Gesprächsverlauf und die Daten, die Claude dafür abfragt (z. B. Spielnamen, PC-Werte, Spielzeit), an Anthropic. Passwörter und Schlüssel der App sind nie dabei. Im lokalen Modus verlässt nichts den PC.")}</p>
           </div>
-        </Card>
+        </Card>}
       </div>
     </Modal>
   );
@@ -101,7 +153,7 @@ function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest
         )}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : t("Lokal")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
       </div>
@@ -169,9 +221,9 @@ export default function Assistant() {
   return (
     <div className="as-page">
       <PageHead eyebrow={t("Dashboard")} title={t("KI-Assistent")}
-        text={s?.claudeReady ? t("Frag alles zu deinem PC, deinen Spielen und der App. Antworten kommen von Claude – Befehle erledigt der lokale Assistent kostenlos.") : t("Frag alles zu deinem PC, deinen Spielen und der App. Der lokale Assistent läuft auf deinem PC – ohne Internet und kostenlos.")}
+        text={s?.claudeReady ? t("Frag alles zu deinem PC, deinen Spielen und der App. Antworten kommen von Claude – Befehle erledigt der lokale Assistent kostenlos.") : s?.mode === "ollama" ? t("Frag alles zu deinem PC, deinen Spielen und der App. Alles läuft auf deinem PC – 0 €, ohne Konto.") : t("Frag alles zu deinem PC, deinen Spielen und der App. Der lokale Assistent läuft auf deinem PC – ohne Internet und kostenlos.")}
         actions={<>
-          {s && <span className={`badge ${s.claudeReady ? "accent" : "info"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : t("Lokal")}</span>}
+          {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "ollama" ? t("Lokale KI · 0 €") : t("Lokal · 0 €")}</span>}
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />

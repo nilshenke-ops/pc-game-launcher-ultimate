@@ -38,6 +38,7 @@
     "assistant.ask": "view",
     "assistant.reset": "view",
     "assistant.configure": "admin",
+    "assistant.ollamaModels": "admin",
     "quests.get": "view",
     "quests.saveGoal": "manage",
     "quests.removeGoal": "manage",

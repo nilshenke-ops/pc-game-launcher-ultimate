@@ -1,7 +1,7 @@
 // Types and small helpers for the assistant page (unit-tested in assistant.test.ts).
 
 export interface AssistantAction { kind: string; label: string; method?: string | null; params?: Record<string, unknown>; path?: string | null; confirm?: boolean }
-export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "claude"; model?: string | null; costUsd?: number | null }
+export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "ollama" | "claude"; model?: string | null; costUsd?: number | null }
 export interface ChatState { conversationId: string | null; turns: { role: "user" | "bot"; text?: string; reply?: AssistantReply }[] }
 
 export const CHAT_KEY = "pgl.assistant.chat";

@@ -43,6 +43,7 @@ Plugins bringen **keinen Code auf den PC**: Pakete dürfen nur Daten- und Webdat
 - Der Anthropic-API-Schlüssel lässt sich nur direkt am PC eintragen oder löschen, liegt DPAPI-geschützt in `assistant.json`, wird nie zurückgegeben, nie protokolliert und nie ins Backup geschrieben.
 - Daten aus Werkzeugen (Spielnamen, Meldungen) gelten für Claude ausdrücklich als Daten, nicht als Anweisungen. Ein manipulierter Spielname kann trotzdem höchstens einen Knopf erzeugen, den du selbst antippen müsstest.
 - Monatslimit (Standard 5 $): Ist es erreicht, antwortet der lokale Assistent.
+- „Lokale KI“ (Ollama): Die Adresse ist nur am PC änderbar und muss dieser PC oder ein Gerät im Heimnetz sein (keine Internet-Adressen, keine Zugangsdaten in der Adresse). Das Modell hat dieselben Werkzeuge und Grenzen wie Claude.
 
 ## Wartende Änderungen (ohne PC gemacht)
 Sofort-Aktionen (Starten, Abspielen, Energie, Updates) werden nie vorgemerkt. Vorgemerkte Änderungen tragen eine eindeutige Kennung (`op`); der PC wendet jede nur einmal an, auch wenn sie nach einer verlorenen Antwort erneut oder doppelt gleichzeitig ankommt (gespeichert im Arbeitsspeicher, nach einem PC-Neustart nicht mehr). Änderungen, die Plugins installieren oder Rechte vergeben, und Änderungen älter als 7 Tage werden **erst nach erneuter Bestätigung** gesendet.
