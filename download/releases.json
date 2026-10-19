@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.3.1",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.3.1/PCGameLauncherCompanion.exe",
+    "size": 87223873,
+    "sha256": "70b8438c93154ce40a6b099033a073e0c4a2c529de6544c5dc390ad5134dc4d7",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.3.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.3.1/PCGameLauncherCompanion-2.3.1-win-x64.zip",
+      "size": 81489676,
+      "sha256": "d217320fd2025522237f6fdbfc785e0f6ba7e9db2094b84c64e9a07f68e4af72"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "KI-Assistent mit Claude Haiku 5.5: Die Anfrage enthielt ein leeres Ersatzmodell-Feld, das die API ablehnen kann – jetzt wird es nur bei Opus/Sonnet gesendet (mit Test)"
+      ]
+    },
+    "signature": "ORXzLXfl9s0O3v2o+ljVeyOroHcJHWycomCcVAFJTSwFfyY8wIKj6VLjbLkpPwNuU4TUmx7sguDkgufFNfDUsw=="
+  },
+  {
     "version": "2.2.0",
     "date": "2026-10-19",
     "channel": "stable",
