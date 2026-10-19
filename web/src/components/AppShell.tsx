@@ -5,10 +5,13 @@ import { client, exitDemo } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
 import { arrangeNav, DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "../lib/nav";
+
+/** Colour of an area's symbol – only when colourful symbols are switched on (Leiste anpassen / Navigation). */
+const icStyle = (path: string, on: boolean) => (on ? { ["--ic" as string]: navColor(path) } : undefined);
 import { setPrefs, usePrefs } from "../lib/prefs";
 import { useConn, useEvent, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
-import { Banner, Button, Modal } from "./ui";
+import { Banner, Button, Modal, Segmented } from "./ui";
 import { CommandPalette } from "./CommandPalette";
 import { UpdatePrompt } from "./UpdateCenter";
 import { CONFIRM_METHODS, needsConfirm, outbox, useOutbox } from "../lib/outbox";
@@ -101,6 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const all = navItems();
   const items = arrangeNav(all, prefs.nav);
   const current = all.find((i) => i.path !== "/" && loc.pathname.startsWith(i.path)) ?? all[0];
+  useEffect(() => { document.documentElement.toggleAttribute("data-nav-plain", !prefs.nav.colors); }, [prefs.nav.colors]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -141,7 +145,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <nav className="nav-group" key={g} aria-label={g}>
             <span>{g}</span>
             {items.filter((i) => i.group === g).map((i) => (
-              <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} style={{ ["--ic" as string]: navColor(i.path) }}>
+              <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} style={icStyle(i.path, prefs.nav.colors)}>
                 <i.icon size={18} />{i.label}
                 {i.path === "/notifications" && notifCount > 0 && <span className="count">{notifCount}</span>}
               </NavLink>
@@ -235,7 +239,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <h3>{g}</h3>
               <div className="sheet-grid">
                 {items.filter((i) => i.group === g).map((i) => (
-                  <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={{ ["--ic" as string]: navColor(i.path) }}><span className="nav-tile"><i.icon size={22} /></span>{i.label}</NavLink>
+                  <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={icStyle(i.path, prefs.nav.colors)}><span className="nav-tile"><i.icon size={22} /></span>{i.label}</NavLink>
                 ))}
               </div>
             </section>
@@ -294,7 +298,7 @@ function BottomBar({ items, preview, more, onMore, onEdit }: { items: NavItem[];
     <nav className="bottom-nav" aria-label={t("Schnellnavigation")} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
       onPointerDown={start} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel} onContextMenu={(e) => { e.preventDefault(); cancel(); onEdit(); }}>
       {shown.map((i) => (
-        <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={{ ["--ic" as string]: navColor(i.path) }}>
+        <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={icStyle(i.path, prefs.nav.colors)}>
           <span className="bn-icon"><i.icon size={22} /></span><span className="bn-label">{i.short ?? i.label}</span>
         </NavLink>
       ))}
@@ -313,13 +317,14 @@ function BottomBar({ items, preview, more, onMore, onEdit }: { items: NavItem[];
 function BarEditor({ items, onClose }: { items: NavItem[]; onClose: () => void }) {
   const prefs = usePrefs();
   const [sel, setSel] = useState<string[]>(prefs.nav.bottom.filter((p) => p !== "/connect").slice(0, MAX_BAR));
+  const [colors, setColors] = useState(prefs.nav.colors);
   const toggle = (p: string) => setSel((x) => (x.includes(p) ? x.filter((y) => y !== p) : x.length >= MAX_BAR ? x : [...x, p]));
   const move = (p: string, d: number) => setSel((x) => { const i = x.indexOf(p), j = i + d; if (j < 0 || j >= x.length) return x; const n = [...x]; [n[i], n[j]] = [n[j], n[i]]; return n; });
-  const save = () => { setPrefs((p) => ({ ...p, nav: { ...p.nav, bottom: sel.length ? sel : [...DEFAULT_BOTTOM] } })); toast(t("Leiste gespeichert"), "success"); onClose(); };
+  const save = () => { setPrefs((p) => ({ ...p, nav: { ...p.nav, bottom: sel.length ? sel : [...DEFAULT_BOTTOM], colors } })); toast(t("Leiste gespeichert"), "success"); onClose(); };
   const byPath = new Map(items.map((i) => [i.path, i]));
   return (
     <Modal title={t("Untere Leiste anpassen")} onClose={onClose} footer={<>
-      <Button icon={<RotateCcw size={15} />} onClick={() => setSel([...DEFAULT_BOTTOM])} style={{ marginRight: "auto" }}>{t("Standard")}</Button>
+      <Button icon={<RotateCcw size={15} />} onClick={() => { setSel([...DEFAULT_BOTTOM]); setColors(true); }} style={{ marginRight: "auto" }}>{t("Standard")}</Button>
       <Button onClick={onClose}>{t("Abbrechen")}</Button>
       <Button variant="primary" onClick={save}>{t("Speichern")}</Button>
     </>}>
@@ -327,7 +332,7 @@ function BarEditor({ items, onClose }: { items: NavItem[]; onClose: () => void }
         <p className="small muted" style={{ margin: 0 }}>{t("Bis zu {n} Bereiche für den schnellen Zugriff – alles andere steht unter „Mehr“. Tipp: Lange auf die Leiste drücken öffnet diese Einstellung.", { n: MAX_BAR })}</p>
         <div className="bar-preview" aria-label={t("Vorschau")}>
           {sel.map((p) => { const i = byPath.get(p); if (!i) return null; return (
-            <div key={p} className="bar-preview-item">
+            <div key={p} className="bar-preview-item" style={icStyle(p, colors)}>
               <i.icon size={20} /><span>{i.short ?? i.label}</span>
               <div className="row nowrap" style={{ gap: 2 }}>
                 <button type="button" className="link" aria-label={t("Nach links")} onClick={() => move(p, -1)}>‹</button>
@@ -337,6 +342,8 @@ function BarEditor({ items, onClose }: { items: NavItem[]; onClose: () => void }
           ); })}
           <div className="bar-preview-item muted"><Menu size={20} /><span>{t("Mehr")}</span></div>
         </div>
+        <Segmented value={colors ? "color" : "plain"} onChange={(v) => setColors(v === "color")} label={t("Symbole")}
+          options={[{ value: "color", label: t("Farbig") }, { value: "plain", label: t("Schlicht") }]} />
         <div className="chips" role="group" aria-label={t("Bereiche")} style={{ flexWrap: "wrap" }}>
           {items.filter((i) => i.path !== "/connect" && !prefs.nav.hidden.includes(i.path)).map((i) => (
             <button key={i.path} type="button" aria-pressed={sel.includes(i.path)} disabled={!sel.includes(i.path) && sel.length >= MAX_BAR}

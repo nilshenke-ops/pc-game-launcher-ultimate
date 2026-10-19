@@ -1,6 +1,8 @@
 // Symbols for deck keys and custom widgets. Only loaded with the pages that show them (not part of the main bundle).
 import type { DeckKey } from "../lib/deck";
 import type { LibraryItem } from "../lib/types";
+import { brandById, brandFor } from "../lib/brands";
+import { BrandLogo } from "./brand-logo";
 import {
   ArrowLeft, AudioLines, Bell, Bomb, Camera, Cat, Circle, Clapperboard, Coffee, Command, Cpu, Crosshair, Crown, Download, Eye, EyeOff, Flame, Folder, Gamepad2, Gauge, Ghost,
   Gift, Globe, HardDrive, Headphones, Heart, Home, Image, Joystick, Keyboard, Laugh, Layers, LayoutGrid, Lightbulb, Lock, Megaphone, MessageCircle, Mic, MicOff, Monitor, Moon,
@@ -28,12 +30,17 @@ export function DeckIcon({ name, size = 28 }: { name: string; size?: number }) {
 
 /** Face of a deck key: symbol, emoji, picture of the game or own picture, plus the label. */
 export function KeyFace({ k, item }: { k: DeckKey; item?: LibraryItem }) {
-  const icon = k.icon ?? "";
+  // The 2.7 starter deck used the 🎵 emoji, which many phones draw grey – shown as the coloured symbol instead.
+  const icon = k.icon === "emoji:🎵" ? "icon:music" : k.icon ?? "";
+  // "cover" = picture of the item: programs show their real logo (Discord, OBS …), games their cover.
+  const itemBrand = icon === "cover" && item ? brandFor(item) : undefined;
+  const brand = icon.startsWith("brand:") ? brandById(icon.slice(6)) : itemBrand && (item!.kind === "program" || !(item!.iconData || item!.coverUrl)) ? itemBrand : undefined;
   const cover = icon === "cover" ? item?.iconData || item?.coverUrl : undefined;
   return (
     <>
       <span className="deck-icon" aria-hidden>
-        {icon.startsWith("icon:") ? <DeckIcon name={icon.slice(5)} size={30} />
+        {brand ? <BrandLogo brand={brand} size="70%" />
+          : icon.startsWith("icon:") ? <DeckIcon name={icon.slice(5)} size={30} />
           : icon.startsWith("emoji:") ? <span className="deck-emoji">{icon.slice(6)}</span>
           : icon.startsWith("data:image/") ? <img src={icon} alt="" />
           : cover ? <img src={cover} alt="" className={item?.iconData ? "" : "cover"} />

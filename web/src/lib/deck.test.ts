@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { commandFor, gridFor, moveKey, resize, slots, starterDeck, textOn, type Deck, type DeckPage } from "./deck";
 import type { LibraryItem, Profile } from "./types";
+import { readFileSync } from "node:fs";
+import { CACHED_METHODS } from "./offline-cache";
 
 const page: DeckPage = { id: "p", name: "P", keys: [
   { id: "a", slot: 0, action: { type: "none" } }, { id: "b", slot: 1, action: { type: "none" } }, { id: "c", slot: 11, action: { type: "none" } },
@@ -58,5 +60,15 @@ describe("deck", () => {
     expect(textOn("#ffffff")).toBe("#04121a");
     expect(textOn("#0b1220")).toBe("#ffffff");
     expect(textOn(null)).toBe("#ffffff");
+  });
+});
+
+describe("offline copy", () => {
+  // Found on a phone (2.8): a deck made without the PC was queued but not shown, because its list had no device copy.
+  it("every list changed offline is also kept on the device", () => {
+    const src = readFileSync(new URL("./outbox.ts", import.meta.url), "utf8");
+    const patched = [...src.matchAll(/patch<[^>]*>\("([a-zA-Z.]+)"/g)].map((m) => m[1]);
+    expect(patched).toContain("deck.list");
+    for (const m of new Set(patched)) expect(CACHED_METHODS.has(m), m).toBe(true);
   });
 });

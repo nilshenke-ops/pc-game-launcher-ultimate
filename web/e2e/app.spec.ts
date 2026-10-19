@@ -765,6 +765,20 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByRole("switch", { name: /Im Overlay/ })).toBeChecked();
   await tablet.reload();
   await expect(tablet.locator(".ws-item", { hasText: "Tablet-Widget" })).toBeVisible(); // kept on the tablet
+  // Deck built on the tablet without the PC: shown right away (2.8 kept it only in the queue), with a real logo.
+  await tablet.goto(`${HOSTED_SITE}/#/deck`);
+  await tablet.getByRole("button", { name: "Leeres Deck" }).click();
+  await tablet.locator(".deck-key.empty").first().click();
+  const keyDialog = tablet.getByRole("dialog");
+  await keyDialog.getByLabel("Aktion").selectOption("open");
+  await keyDialog.getByLabel("Beschriftung").fill("Tablet-Taste");
+  await keyDialog.getByLabel("Seite").selectOption("/soundboard");
+  await keyDialog.getByRole("radio", { name: "Logo" }).click();
+  await keyDialog.getByRole("button", { name: "Discord" }).click();
+  await keyDialog.getByRole("button", { name: "Speichern" }).click();
+  await tablet.getByRole("button", { name: "Bearbeiten beenden" }).click();
+  await tablet.reload();
+  await expect(tablet.locator(".deck-key", { hasText: "Tablet-Taste" }).locator('svg[aria-label="Discord"]')).toBeVisible();
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -822,6 +836,10 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(pc.getByText("(fehlt)")).toHaveCount(0);
   await pc.goto(`${COMPANION}/#/plugins`);
   await expect(pc.locator(".card", { hasText: "CPU & RAM Mini" })).toHaveCount(0);
+  // The deck from the tablet is on the PC, with its logo key.
+  await pc.goto(`${COMPANION}/#/deck`);
+  await pc.getByLabel("Deck wählen").selectOption({ label: "Neues Deck" }); // waits until the PC's decks are loaded (two now)
+  await expect(pc.locator(".deck-key", { hasText: "Tablet-Taste" }).locator('svg[aria-label="Discord"]')).toBeVisible();
 
   // QR path: the link fills in code and PC address automatically.
   const phone2 = await (await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" })).newPage();

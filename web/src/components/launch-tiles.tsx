@@ -8,6 +8,8 @@ import { toast } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials } from "../lib/format";
 import type { LibraryItem } from "../lib/types";
+import { brandBg, brandFor } from "../lib/brands";
+import { BrandLogo } from "./brand-logo";
 
 /** Starts an item; while the PC answers the tile shows a spinner and further taps are ignored. */
 export function useLaunch() {
@@ -27,14 +29,27 @@ export function useLaunch() {
   return { launch, launching };
 }
 
+const tileBg = (item: LibraryItem, coverAllowed: boolean) => { const b = tileArt(item, coverAllowed).brand; return b ? brandBg(b) : gradientFor(item.name); };
+
 const onKey = (fn: () => void) => (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
 const stop = (fn: () => void) => (e: MouseEvent) => { e.stopPropagation(); fn(); };
 
-/** Picture for an item: own icon, cover, otherwise colourful initials (never a grey box). */
+/** What a tile shows: programs prefer the real brand logo (Discord, OBS …), games their cover; otherwise the PC's icon,
+ * and only as a last resort colourful initials (never a grey box). */
+export function tileArt(item: LibraryItem, coverAllowed = true) {
+  const brand = brandFor(item);
+  const cover = coverAllowed ? item.coverUrl : undefined;
+  if (item.kind === "program" && brand) return { brand };
+  if (item.iconData) return { pic: item.iconData };
+  if (brand && !cover) return { brand };
+  return cover ? { pic: cover } : {};
+}
+
 function Art({ item, coverAllowed }: { item: LibraryItem; coverAllowed: boolean }) {
   const [broken, setBroken] = useState(false);
-  const pic = item.iconData ?? (coverAllowed ? item.coverUrl : undefined);
-  if (pic && !broken) return <img src={pic} alt="" loading="lazy" onError={() => setBroken(true)} />;
+  const art = tileArt(item, coverAllowed);
+  if (art.brand) return <span className="tile-brand"><BrandLogo brand={art.brand} size="56%" /></span>;
+  if (art.pic && !broken) return <img src={art.pic} alt="" loading="lazy" onError={() => setBroken(true)} />;
   return <span className="tile-initials">{initials(item.name)}</span>;
 }
 
@@ -42,7 +57,7 @@ function Art({ item, coverAllowed }: { item: LibraryItem; coverAllowed: boolean 
 export function AppTile({ item, running, busy, onLaunch, onEdit, coverAllowed = true }: { item: LibraryItem; running?: boolean; busy?: boolean; onLaunch: () => void; onEdit?: () => void; coverAllowed?: boolean }) {
   return (
     <div className={`app-tile ${busy ? "busy" : ""}`} role="button" tabIndex={0} aria-label={t("{name} starten", { name: item.name })} aria-busy={busy} onClick={onLaunch} onKeyDown={onKey(onLaunch)}>
-      <span className="app-icon" style={{ background: gradientFor(item.name) }}>
+      <span className="app-icon" style={{ background: tileBg(item, coverAllowed) }}>
         <Art item={item} coverAllowed={coverAllowed} />
         {busy && <span className="tile-busy"><Loader2 size={22} className="spin" /></span>}
         {running && <span className="tile-dot" aria-label={t("läuft")} />}

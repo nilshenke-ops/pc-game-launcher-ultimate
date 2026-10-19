@@ -10,6 +10,8 @@ import { BG_SCENES } from "../lib/prefs";
 import { ACTION_TYPES, gridFor, keyImage, MEDIA_KEYS, moveKey, newId, resize, slots, starterDeck, textOn, type Deck, type DeckAction, type DeckKey, type DeckPage } from "../lib/deck";
 import type { LibraryItem, Profile, QuickAction, SoundsFile } from "../lib/types";
 import { DECK_ICONS, DeckIcon, KeyFace } from "../components/deck-icons";
+import { BrandLogo } from "../components/brand-logo";
+import { BRANDS, brandBg, brandFor } from "../lib/brands";
 import { runDeckAction } from "../lib/deck-run";
 import { Banner, Button, confirmDialog, Empty, Field, Loadable, Modal, Segmented } from "../components/ui";
 
@@ -161,7 +163,7 @@ export default function DeckPage() {
     <div ref={rootRef} className={`deck-root ${focus ? "focus" : ""} ${edit ? "editing" : ""}`} style={bgStyle}>
       <Loadable loading={decks.loading} error={decks.error} onRetry={decks.reload}>
         {!deck ? (
-          <Empty icon={<LayoutGridIcon />} title={t("Noch kein Deck")} text={t("Ein Deck ist ein Raster großer Tasten zum Antippen – wie ein Stream Deck auf dem Handy: Spiele starten, Sounds, Profile, Lautstärke, Ordner. Gespeichert auf dem PC, gleich auf allen Geräten.")}
+          <Empty icon={<LayoutGridIcon />} title={t("Noch kein Deck")} text={t("Ein Deck ist ein Raster großer Tasten zum Antippen – wie ein Stream Deck auf dem Handy: Spiele starten, Sounds, Profile, Lautstärke, Ordner. Erstellen geht auch ohne PC; gespeichert wird es auf dem PC, gleich auf allen Geräten.")}
             action={canManage ? <div className="row" style={{ justifyContent: "center" }}>
               <Button variant="primary" icon={<Wand2 size={16} />} onClick={createStarter}>{t("Deck aus meinen Sachen erstellen")}</Button>
               <Button icon={<Plus size={16} />} onClick={createEmpty}>{t("Leeres Deck")}</Button>
@@ -237,7 +239,7 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
   onClose: () => void; onSave: (k: DeckKey) => void; onDelete: () => void; onMove: () => void; onNewFolder: (name: string) => { deck: Deck; pageId: string };
 }) {
   const [k, setK] = useState<DeckKey>(value);
-  const [iconTab, setIconTab] = useState<"symbol" | "emoji" | "cover" | "image">(k.icon?.startsWith("emoji:") ? "emoji" : k.icon === "cover" ? "cover" : k.icon?.startsWith("data:") ? "image" : "symbol");
+  const [iconTab, setIconTab] = useState<"symbol" | "logo" | "emoji" | "cover" | "image">(k.icon?.startsWith("emoji:") ? "emoji" : k.icon?.startsWith("brand:") ? "logo" : k.icon === "cover" ? "cover" : k.icon?.startsWith("data:") ? "image" : "symbol");
   const [pendingDeck, setPendingDeck] = useState<Deck | null>(null);
   const set = (x: Partial<DeckKey>) => setK((o) => ({ ...o, ...x }));
   const setAction = (a: DeckAction) => set({ action: a });
@@ -314,14 +316,19 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
         </div>
         <div className="stack">
           <div className="deck-preview"><span className="deck-key" style={{ background: k.color ?? undefined, color: k.textColor ?? textOn(k.color) }}><KeyFace k={{ ...k, label: k.label || targetName(k.action) || "" }} item={item} /></span></div>
-          <Segmented value={iconTab} onChange={setIconTab} label={t("Symbol")} options={[{ value: "symbol", label: t("Symbol") }, { value: "emoji", label: "Emoji" }, ...(item && (item.coverUrl || item.iconData) ? [{ value: "cover" as const, label: t("Cover") }] : []), { value: "image", label: t("Bild") }]} />
+          <Segmented value={iconTab} onChange={setIconTab} label={t("Symbol")} options={[{ value: "symbol", label: t("Symbol") }, { value: "logo", label: t("Logo") }, { value: "emoji", label: "Emoji" }, ...(item && (item.coverUrl || item.iconData || brandFor(item)) ? [{ value: "cover" as const, label: t("Cover") }] : []), { value: "image", label: t("Bild") }]} />
           {iconTab === "symbol" && (
             <div className="deck-icon-pick">
               {Object.keys(DECK_ICONS).map((n) => <button key={n} type="button" className={k.icon === `icon:${n}` ? "on" : ""} aria-label={n} onClick={() => set({ icon: `icon:${n}` })}><DeckIcon name={n} size={20} /></button>)}
             </div>
           )}
+          {iconTab === "logo" && (
+            <div className="deck-icon-pick logos">
+              {BRANDS.map((b) => <button key={b.id} type="button" className={k.icon === `brand:${b.id}` ? "on" : ""} aria-label={b.name} title={b.name} style={{ background: brandBg(b) }} onClick={() => set({ icon: `brand:${b.id}`, color: brandBg(b), textColor: null })}><BrandLogo brand={b} size={20} /></button>)}
+            </div>
+          )}
           {iconTab === "emoji" && <Field label={t("Emoji")}><input className="input" value={k.icon?.startsWith("emoji:") ? k.icon.slice(6) : ""} maxLength={8} placeholder="🎮" onChange={(e) => set({ icon: e.target.value ? `emoji:${e.target.value}` : "icon:zap" })} /></Field>}
-          {iconTab === "cover" && <Button onClick={() => set({ icon: "cover" })} variant={k.icon === "cover" ? "primary" : undefined}>{t("Bild des Spiels verwenden")}</Button>}
+          {iconTab === "cover" && <Button onClick={() => set({ icon: "cover" })} variant={k.icon === "cover" ? "primary" : undefined}>{item?.kind === "program" ? t("Logo bzw. Bild des Programms verwenden") : t("Bild des Spiels verwenden")}</Button>}
           {iconTab === "image" && (
             <label className="btn"><Upload size={15} />{t("Bild hochladen")}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }} /></label>
           )}

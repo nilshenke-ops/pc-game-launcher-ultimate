@@ -134,8 +134,9 @@ export interface Prefs {
   homeShortcuts: string[];
 }
 
-export interface NavPrefs { order: string[]; hidden: string[]; bottom: string[] }
-export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [], bottom: ["/", "/deck", "/games", "/soundboard"] };
+/** colors: coloured symbols in the navigation and the bottom bar (false = plain, like before 2.8). */
+export interface NavPrefs { order: string[]; hidden: string[]; bottom: string[]; colors: boolean }
+export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [], bottom: ["/", "/deck", "/games", "/soundboard"], colors: true };
 /** The bar before 2.7.0 – untouched old defaults get the new bar (with the deck). */
 const OLD_DEFAULT_BOTTOM = "/,/games,/soundboard,/quick";
 
@@ -208,7 +209,7 @@ function sanitizeNav(n: unknown): NavPrefs {
   const paths = (x: unknown, max: number) => (Array.isArray(x) ? [...new Set(x.filter((p): p is string => typeof p === "string" && NAV_PATH.test(p)))].slice(0, max) : []);
   const bottom = paths(v.bottom, 4);
   const migrated = bottom.join() === OLD_DEFAULT_BOTTOM ? [...DEFAULT_NAV.bottom] : bottom;
-  return { order: paths(v.order, 60), hidden: paths(v.hidden, 60), bottom: migrated.length ? migrated : [...DEFAULT_NAV.bottom] };
+  return { order: paths(v.order, 60), hidden: paths(v.hidden, 60), bottom: migrated.length ? migrated : [...DEFAULT_NAV.bottom], colors: v.colors !== false };
 }
 
 // ------------------------------------------------------------------ colours & theme application

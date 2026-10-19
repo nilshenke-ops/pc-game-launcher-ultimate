@@ -1,6 +1,7 @@
 // Nexus Deck: Stream-Deck-like key grid. The layout is stored on the PC (deck.save); a key press calls the same
 // command as everywhere else in the app (library.launch, sounds.play …) with the rights of the device.
 import { t } from "./i18n";
+import { brandBg, brandFor } from "./brands";
 import type { LibraryItem, Profile, QuickAction, Sound } from "./types";
 
 export type DeckActionType = "launch" | "quick" | "sound" | "stopSounds" | "profile" | "revertProfile" | "media" | "overlay" | "record" | "replay" | "folder" | "back" | "open" | "none";
@@ -102,19 +103,25 @@ export function starterDeck(items: LibraryItem[], quick: QuickAction[], sounds: 
   const cols = 3, rows = 5, total = cols * rows;
   const add = (p: DeckPage, k: Omit<DeckKey, "id" | "slot">) => { const s = firstFreeSlot(p, total); if (s >= 0) p.keys.push({ ...k, id: newId("key"), slot: s }); };
   const games = [...items].sort((a, b) => Number(b.favorite) - Number(a.favorite));
-  for (const i of games.filter((g) => g.kind === "game").slice(0, 6)) add(main, { label: i.name.slice(0, 24), icon: i.coverUrl || i.iconData ? "cover" : "icon:gamepad-2", color: "#1e293b", action: { type: "launch", ref: i.id } });
-  for (const i of games.filter((g) => g.kind === "program").slice(0, 3)) add(main, { label: i.name.slice(0, 24), icon: i.iconData || i.coverUrl ? "cover" : "icon:monitor", color: "#1e293b", action: { type: "launch", ref: i.id } });
+  // Real logos where known (Discord, OBS, Valorant …) on the brand's colour, otherwise the game's picture.
+  const face = (i: LibraryItem, fallback: string): Pick<DeckKey, "icon" | "color"> => {
+    const b = brandFor(i);
+    if (b && (i.kind === "program" || !(i.coverUrl || i.iconData))) return { icon: `brand:${b.id}`, color: brandBg(b) };
+    return i.coverUrl || i.iconData ? { icon: "cover", color: "#1e293b" } : { icon: fallback, color: "#4f46e5" };
+  };
+  for (const i of games.filter((g) => g.kind === "game").slice(0, 6)) add(main, { label: i.name.slice(0, 24), ...face(i, "icon:gamepad-2"), action: { type: "launch", ref: i.id } });
+  for (const i of games.filter((g) => g.kind === "program").slice(0, 3)) add(main, { label: i.name.slice(0, 24), ...face(i, "icon:monitor"), action: { type: "launch", ref: i.id } });
   for (const q of quick.slice(0, 2)) add(main, { label: q.name.slice(0, 24), icon: "icon:zap", color: "#7c3aed", action: { type: "quick", ref: q.id } });
-  add(main, { label: t("Sounds"), icon: "emoji:🎵", color: "#0e7490", action: { type: "folder", ref: "sounds" } });
-  add(main, { label: t("Profile"), icon: "icon:swords", color: "#be185d", action: { type: "folder", ref: "profiles" } });
-  add(main, { label: t("Leiser"), icon: "icon:volume-1", color: "#334155", action: { type: "media", ref: "voldown" } });
-  add(main, { label: t("Lauter"), icon: "icon:volume-2", color: "#334155", action: { type: "media", ref: "volup" } });
-  add(soundsPage, { label: t("Zurück"), icon: "icon:arrow-left", color: "#334155", action: { type: "back" } });
-  add(soundsPage, { label: t("Stopp"), icon: "icon:square", color: "#b91c1c", action: { type: "stopSounds" } });
+  add(main, { label: t("Sounds"), icon: "icon:music", color: "#0284c7", action: { type: "folder", ref: "sounds" } });
+  add(main, { label: t("Profile"), icon: "icon:swords", color: "#db2777", action: { type: "folder", ref: "profiles" } });
+  add(main, { label: t("Leiser"), icon: "icon:volume-1", color: "#0d9488", action: { type: "media", ref: "voldown" } });
+  add(main, { label: t("Lauter"), icon: "icon:volume-2", color: "#16a34a", action: { type: "media", ref: "volup" } });
+  add(soundsPage, { label: t("Zurück"), icon: "icon:arrow-left", color: "#475569", action: { type: "back" } });
+  add(soundsPage, { label: t("Stopp"), icon: "icon:square", color: "#dc2626", action: { type: "stopSounds" } });
   for (const s of [...sounds].sort((a, b) => Number(b.favorite) - Number(a.favorite)).slice(0, total - 2)) add(soundsPage, { label: s.name.slice(0, 24), icon: "icon:music", color: s.color && /^#[0-9a-f]{6}$/i.test(s.color) ? s.color : "#0f766e", action: { type: "sound", ref: s.id } });
-  add(profPage, { label: t("Zurück"), icon: "icon:arrow-left", color: "#334155", action: { type: "back" } });
+  add(profPage, { label: t("Zurück"), icon: "icon:arrow-left", color: "#475569", action: { type: "back" } });
   for (const p of profiles.slice(0, total - 2)) add(profPage, { label: p.name.slice(0, 24), icon: `icon:${p.icon}`, color: /^#[0-9a-f]{6}$/i.test(p.color) ? p.color : "#1e293b", textColor: "#04121a", action: { type: "profile", ref: p.id } });
-  add(profPage, { label: t("Vorheriges"), icon: "icon:undo-2", color: "#334155", action: { type: "revertProfile" } });
+  add(profPage, { label: t("Vorheriges"), icon: "icon:undo-2", color: "#475569", action: { type: "revertProfile" } });
   return { id: newId("deck"), name: t("Mein Deck"), cols, rows, pages: [main, soundsPage, profPage] };
 }
 

@@ -103,3 +103,11 @@ Das Deck rechnet die Tastengröße nur bei Größenänderung (ResizeObserver) ne
 | Startzeiten | – | nicht erneut gemessen |
 
 Timer und Stoppuhr laufen nur, solange sie sichtbar sind und gestartet wurden (ein Intervall pro laufendem Timer); Medien-Widget sendet nur beim Tippen.
+
+## 2.9.0 (19.10.2026)
+
+| | 2.8.0 | 2.9.0 |
+|---|---|---|
+| Haupt-Chunk | 373 KB (119 KB gzip) | 374 KB (119 KB gzip) |
+| Logos | – | 71 KB (31 KB gzip), eigener Chunk – nur geladen mit Programme/Spiele, Deck, Home-Kacheln |
+| Programmsymbole am PC | beim Hinzufügen (nur EXE) | beim Hinzufügen + einmalig im Hintergrund für alte Einträge (höchstens 50 je Lauf, außerhalb der Datei-Sperre, nicht während eines Spiels) |

@@ -2,7 +2,7 @@ import { ArrowDown, ArrowUp, Eye, EyeOff, Menu, RotateCcw } from "lucide-react";
 import { t } from "../lib/i18n";
 import { arrangeNav, NAV_FIXED, navItems } from "../lib/nav";
 import { DEFAULT_NAV, setPrefs, usePrefs } from "../lib/prefs";
-import { Button, Card } from "./ui";
+import { Button, Card, Segmented } from "./ui";
 
 /** Order and visibility of the sections, and the four shortcuts of the phone bar. Stored with the design (synced to the PC). */
 export function NavEditor() {
@@ -46,7 +46,7 @@ export function NavEditor() {
         </div>
         <div>
           <b className="small">{t("Leiste unten auf dem Handy")}</b>
-          <p className="tiny muted">{t("Vier Bereiche für den schnellen Zugriff – „Verbinden“ und „Mehr“ sind immer dabei.")}</p>
+          <p className="tiny muted">{t("Vier Bereiche für den schnellen Zugriff – „Mehr“ ist immer dabei, „Verbinden“ nur solange kein PC gekoppelt ist.")}</p>
           <div className="grid-4" style={{ marginTop: 8 }}>
             {[0, 1, 2, 3].map((slot) => (
               <select key={slot} className="input" aria-label={t("Platz {n}", { n: slot + 1 })} value={prefs.nav.bottom[slot] ?? ""} onChange={(e) => setBottom(slot, e.target.value)}>
@@ -55,6 +55,11 @@ export function NavEditor() {
               </select>
             ))}
           </div>
+        </div>
+        <div className="row" style={{ justifyContent: "space-between" }}>
+          <div><b className="small">{t("Farbige Symbole")}</b><p className="tiny muted" style={{ margin: 0 }}>{t("Jeder Bereich mit eigener Farbe in Leiste, Menü und „Mehr“ – aus: schlicht wie früher.")}</p></div>
+          <Segmented value={prefs.nav.colors ? "color" : "plain"} onChange={(v) => setNav((n) => ({ ...n, colors: v === "color" }))} label={t("Symbole")}
+            options={[{ value: "color", label: t("Farbig") }, { value: "plain", label: t("Schlicht") }]} />
         </div>
       </div>
     </Card>

@@ -33,6 +33,8 @@ public sealed class LibraryItem
     public List<string> Categories { get; set; } = new();
     public bool Favorite { get; set; }
     public string? IconData { get; set; }
+    /// <summary>The PC already tried to read the program's own icon (or the user removed it) – not tried again.</summary>
+    public bool IconChecked { get; set; }
     public string? CoverUrl { get; set; }
     public string? ProfileId { get; set; }
     public string? Notes { get; set; }

@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.8.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.9.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -17,8 +17,8 @@ Die Startseite zeigt Widgets: laufendes Spiel, Favoriten, Quick Actions, PC-Wert
 
 ## Deck
 Seite: /deck
-Stichworte: deck stream deck elgato tasten knöpfe raster fernbedienung buttons vollbild ordner tablet
-Raster großer Tasten wie ein Stream Deck auf dem Handy oder Tablet. „Deck aus meinen Sachen erstellen“ legt ein erstes Deck aus Favoriten, Programmen, Quick Actions, Sounds und Profilen an (mit Ordnern „Sounds“ und „Profile“). Jede Taste: Spiel/Programm starten, Quick Action, Sound abspielen, alle Sounds stoppen, Profil aktivieren oder zurück, Medientasten (Play/Pause, Lauter, Leiser, Ton aus), Overlay ein/aus, Aufnahme, Replay speichern, Ordner öffnen, Zurück oder eine Seite der App öffnen. Aussehen je Taste: Symbol, Emoji, Bild des Spiels oder eigenes Bild (wird verkleinert), Farbe, Schriftfarbe, Beschriftung. Bleistift = bearbeiten (Taste antippen zum Ändern, leeren Platz für neue Taste, „Verschieben“ und Zielplatz antippen). Zahnrad: Name, Raster (2–8 Spalten, 2–10 Zeilen; im Querformat getauscht), Hintergrund, Seiten, „Automatisch zeigen bei Profil“ (z. B. eigenes Deck, wenn ein Spiel läuft). Vollbild-Knopf, Sonne = Bildschirm anlassen (wenn der Browser das kann). Laufende Spiele, spielende Sounds und das aktive Profil leuchten auf der Taste. Gespeichert auf dem PC, also auf allen Geräten gleich; bearbeiten braucht das Recht „Verwalten“, Tasten nutzen die Rechte des Geräts. Ohne PC lässt sich das Deck gestalten, aber keine Taste ausführen.
+Stichworte: deck stream deck elgato tasten knöpfe raster fernbedienung buttons vollbild ordner tablet logo logos ohne pc
+Raster großer Tasten wie ein Stream Deck auf dem Handy oder Tablet. „Deck aus meinen Sachen erstellen“ legt ein erstes Deck aus Favoriten, Programmen, Quick Actions, Sounds und Profilen an (mit Ordnern „Sounds“ und „Profile“). Jede Taste: Spiel/Programm starten, Quick Action, Sound abspielen, alle Sounds stoppen, Profil aktivieren oder zurück, Medientasten (Play/Pause, Lauter, Leiser, Ton aus), Overlay ein/aus, Aufnahme, Replay speichern, Ordner öffnen, Zurück oder eine Seite der App öffnen. Aussehen je Taste: Symbol, Emoji, Bild des Spiels oder eigenes Bild (wird verkleinert), Farbe, Schriftfarbe, Beschriftung. Bleistift = bearbeiten (Taste antippen zum Ändern, leeren Platz für neue Taste, „Verschieben“ und Zielplatz antippen). Zahnrad: Name, Raster (2–8 Spalten, 2–10 Zeilen; im Querformat getauscht), Hintergrund, Seiten, „Automatisch zeigen bei Profil“ (z. B. eigenes Deck, wenn ein Spiel läuft). Vollbild-Knopf, Sonne = Bildschirm anlassen (wenn der Browser das kann). Laufende Spiele, spielende Sounds und das aktive Profil leuchten auf der Taste. Gespeichert auf dem PC, also auf allen Geräten gleich; bearbeiten braucht das Recht „Verwalten“, Tasten nutzen die Rechte des Geräts. Ohne PC lässt sich ein Deck erstellen und gestalten (wird beim Verbinden übertragen), aber keine Taste ausführen. Logos: im Tasten-Editor unter „Logo“ echte Logos (Discord, OBS, Spotify, Steam, Epic, Twitch, YouTube, Valorant …) – Taste bekommt automatisch die Markenfarbe.
 
 ## Spiele (Bibliothek)
 Seite: /games
@@ -44,7 +44,7 @@ Chip „Game Pass“ zeigt den öffentlichen Katalog (Markt einstellbar). Muss i
 ## Programme
 Seite: /programs
 Stichworte: programme apps discord browser obs starten freigeben
-Wie Spiele, aber für Programme (Discord, Browser, OBS …), angezeigt als App-Symbole wie auf dem Handy: Symbol antippen startet das Programm am PC, die drei Punkte öffnen die Einstellungen. Ein grüner Punkt heißt: läuft gerade. Freigabe einer EXE nur am PC.
+Wie Spiele, aber für Programme (Discord, Browser, OBS …), angezeigt als App-Symbole wie auf dem Handy: Symbol antippen startet das Programm am PC, die drei Punkte öffnen die Einstellungen. Ein grüner Punkt heißt: läuft gerade. Bekannte Programme (Discord, OBS, Spotify, Steam, Browser …) zeigen ihr echtes Logo, auch ohne PC; andere bekommen das Programmsymbol vom PC (auch Startmenü- und Store-Apps wie der Minecraft Launcher, ab Version 2.9 auch für schon vorhandene Einträge). Freigabe einer EXE nur am PC.
 
 ## Quick Actions
 Seite: /quick
@@ -158,7 +158,7 @@ Bereiche: Allgemein (Sprache, PC-Name), Design & Layout (Dunkel/Hell, Themes, Fa
 ## Navigation anpassen
 Seite: /settings?s=design
 Stichworte: navigation menü reihenfolge ausblenden leiste handy unten
-Einstellungen → Design & Layout → Navigation: Bereiche sortieren, ausblenden (Home, Einstellungen und PC verbinden bleiben immer), Handy-Leiste unten wählen. Ausgeblendete Bereiche findet die Suche weiterhin. Jeder Bereich hat ein eigenes farbiges Symbol.
+Einstellungen → Design & Layout → Navigation: Bereiche sortieren, ausblenden (Home, Einstellungen und PC verbinden bleiben immer), Handy-Leiste unten wählen. Ausgeblendete Bereiche findet die Suche weiterhin. Jeder Bereich hat ein eigenes farbiges Symbol; „Farbig/Schlicht“ umschalten unter Einstellungen → Design & Layout → Navigation oder beim Anpassen der unteren Leiste (lange drücken).
 
 ## Backup und Wiederherstellung
 Seite: /settings?s=backup

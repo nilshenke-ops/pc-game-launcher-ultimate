@@ -96,7 +96,8 @@ public sealed class LibraryService
             ProcessNames = d.ProcessNames,
             CoverUrl = d.CoverUrl,
         };
-        if (d.Source == LaunchSource.Exe) item.IconData = SafeIcon(d.Target);
+        item.IconData = SafeIcon(d.Source, d.Target);
+        item.IconChecked = true;
         return Add(item);
     }
 
@@ -131,14 +132,46 @@ public sealed class LibraryService
             Args = args ?? "",
             InstallDir = Path.GetDirectoryName(path),
             ProcessNames = Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase) ? new() { Path.GetFileNameWithoutExtension(path) } : new(),
-            IconData = SafeIcon(path),
+            IconData = SafeIcon(LaunchSource.Exe, path),
+            IconChecked = true,
         };
         return Add(item);
     }
 
-    string? SafeIcon(string path)
+    /// <summary>The program's own icon from Windows (EXE file or start-menu/Store app). Null where there is none.</summary>
+    string? SafeIcon(LaunchSource source, string target)
     {
-        try { return _platform.Launcher.ExtractIcon(path); } catch { return null; }
+        try
+        {
+            return source switch
+            {
+                LaunchSource.Exe => _platform.Launcher.ExtractIcon(target),
+                LaunchSource.AppsFolder => _platform.Launcher.ExtractIcon(@"shell:AppsFolder\" + target),
+                _ => null,
+            };
+        }
+        catch { return null; }
+    }
+
+    /// <summary>Reads the icon of programs added before icons were read for start-menu and Store apps (once per item).
+    /// Runs in the background; reading happens outside the store lock.</summary>
+    public int FillMissingIcons()
+    {
+        var todo = List().Where(i => !i.IconChecked && i.IconData == null && i.Source is LaunchSource.Exe or LaunchSource.AppsFolder).Take(50).ToList();
+        if (todo.Count == 0) return 0;
+        var found = todo.ToDictionary(i => i.Id, i => SafeIcon(i.Source, i.Target));
+        var n = 0;
+        _store.Update(f =>
+        {
+            foreach (var i in f.Items.Where(x => found.ContainsKey(x.Id) && !x.IconChecked))
+            {
+                i.IconChecked = true;
+                if (i.IconData == null && found[i.Id] is { } ic && ic.Length <= 200_000) { i.IconData = ic; n++; }
+            }
+            return n;
+        });
+        if (n > 0) _hub.Changed("library");
+        return n;
     }
 
     /// <summary>
@@ -334,7 +367,7 @@ public sealed class LibraryService
             if (u.Categories != null) i.Categories = u.Categories.Select(x => Security.DeviceStore.Sanitize(x, 30, "")).Where(x => x != "").Distinct().Take(10).ToList();
             if (u.Favorite != null) i.Favorite = u.Favorite.Value;
             if (u.CoverUrl != null) i.CoverUrl = u.CoverUrl == "" ? null : u.CoverUrl;
-            if (u.IconData != null) i.IconData = u.IconData == "" ? null : u.IconData;
+            if (u.IconData != null) { i.IconData = u.IconData == "" ? null : u.IconData; i.IconChecked = true; }
             if (u.ProfileId != null) i.ProfileId = u.ProfileId == "" ? null : u.ProfileId;
             if (u.ProcessNames != null) i.ProcessNames = u.ProcessNames.Select(p => Path.GetFileNameWithoutExtension(p.Trim())).Where(p => p.Length is > 0 and < 100).Distinct().Take(10).ToList();
             if (u.Notes != null) i.Notes = u.Notes.Length > 1000 ? u.Notes[..1000] : u.Notes;

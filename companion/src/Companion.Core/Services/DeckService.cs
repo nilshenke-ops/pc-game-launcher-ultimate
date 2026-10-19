@@ -63,7 +63,7 @@ public sealed class DeckService
     public const int MaxDecks = 20, MaxPages = 30, MaxKeys = 64, MaxImageChars = 60_000;
     static readonly Regex Id = new(@"^[A-Za-z0-9_-]{1,64}$");
     static readonly Regex Hex = new("^#[0-9a-fA-F]{6}$");
-    static readonly Regex IconName = new("^icon:[a-z0-9-]{1,40}$");
+    static readonly Regex IconName = new("^(icon|brand):[a-z0-9-]{1,40}$"); // brand: = logo shipped with the app (Discord, OBS …)
     static readonly Regex Bg = new("^(#[0-9a-fA-F]{6}|[a-z0-9-]{1,40})$");
     static readonly Regex AppPath = new(@"^/[a-z-]{0,30}$");
     static readonly Regex Image = new(@"^data:image/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$");

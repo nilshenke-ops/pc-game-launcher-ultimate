@@ -146,14 +146,66 @@ sealed class WindowsLauncher : ILauncher
         return null;
     }
 
+    /// <summary>The program's own icon as PNG (96 px, transparent) – from the shell, so it also works for start-menu and
+    /// Microsoft Store apps ("shell:AppsFolder\&lt;id&gt;", e.g. Spotify, Minecraft Launcher). Falls back to the EXE's icon.</summary>
     public string? ExtractIcon(string path)
     {
+        string? result = null;
+        // Shell objects want a single-threaded apartment (like the start-menu listing).
+        var t = new Thread(() => { try { result = ShellIcon(path, 96); } catch (Exception ex) { Log.Warn("icon", ex.Message); } });
+        t.SetApartmentState(ApartmentState.STA);
+        t.Start();
+        t.Join(TimeSpan.FromSeconds(10));
+        if (result != null || path.StartsWith("shell:", StringComparison.OrdinalIgnoreCase) || !File.Exists(path)) return result;
         using var icon = Icon.ExtractAssociatedIcon(path);
         if (icon == null) return null;
         using var bmp = new Bitmap(icon.ToBitmap(), new Size(48, 48));
+        return Png(bmp);
+    }
+
+    static string Png(Bitmap bmp)
+    {
         using var ms = new MemoryStream();
         bmp.Save(ms, ImageFormat.Png);
         return "data:image/png;base64," + Convert.ToBase64String(ms.ToArray());
+    }
+
+    [ComImport, Guid("bcc18b79-ba16-442f-80c4-8a59c30c463b"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    interface IShellItemImageFactory { [PreserveSig] int GetImage(NativeSize size, int flags, out IntPtr phbm); }
+    [StructLayout(LayoutKind.Sequential)] struct NativeSize { public int cx, cy; }
+    [DllImport("shell32.dll", CharSet = CharSet.Unicode, PreserveSig = true)]
+    static extern int SHCreateItemFromParsingName(string path, IntPtr pbc, [MarshalAs(UnmanagedType.LPStruct)] Guid riid, [MarshalAs(UnmanagedType.Interface)] out IShellItemImageFactory? ppv);
+    [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr h);
+    const int SIIGBF_BIGGERSIZEOK = 0x1, SIIGBF_ICONONLY = 0x4;
+
+    static string? ShellIcon(string parsingName, int size)
+    {
+        if (SHCreateItemFromParsingName(parsingName, IntPtr.Zero, typeof(IShellItemImageFactory).GUID, out var factory) != 0 || factory == null) return null;
+        try
+        {
+            if (factory.GetImage(new NativeSize { cx = size, cy = size }, SIIGBF_ICONONLY | SIIGBF_BIGGERSIZEOK, out var hbm) != 0 || hbm == IntPtr.Zero) return null;
+            try
+            {
+                // Image.FromHbitmap drops the alpha channel; the shell bitmap is 32-bit premultiplied ARGB, so its bits are copied as such.
+                using var raw = Image.FromHbitmap(hbm);
+                var rect = new Rectangle(0, 0, raw.Width, raw.Height);
+                var data = raw.LockBits(rect, ImageLockMode.ReadOnly, raw.PixelFormat);
+                try
+                {
+                    using var view = new Bitmap(data.Width, data.Height, data.Stride, PixelFormat.Format32bppPArgb, data.Scan0);
+                    using var copy = new Bitmap(size, size, PixelFormat.Format32bppArgb);
+                    using (var g = Graphics.FromImage(copy))
+                    {
+                        g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                        g.DrawImage(view, new Rectangle(0, 0, size, size));
+                    }
+                    return Png(copy);
+                }
+                finally { raw.UnlockBits(data); }
+            }
+            finally { DeleteObject(hbm); }
+        }
+        finally { Marshal.ReleaseComObject(factory); }
     }
 }
 

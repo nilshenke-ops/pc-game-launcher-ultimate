@@ -36,7 +36,8 @@ public sealed partial class CoverService : IDisposable
     /// <summary>Runs shortly after start and then hourly; new games are handled right after they are added.</summary>
     public void Start()
     {
-        _timer = new Timer(_ => GameActivity.RunWhenIdle("covers", () => FillMissingAsync()), null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
+        // Program icons come from Windows itself (no network), covers from the cover search.
+        _timer = new Timer(_ => GameActivity.RunWhenIdle("covers", () => { _library.FillMissingIcons(); return FillMissingAsync(); }), null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
         _library.Added += count => { _ = FillMissingAsync(); };
     }
 

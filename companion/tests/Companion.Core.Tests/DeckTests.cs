@@ -22,12 +22,12 @@ public class DeckTests
         var admin = await Fixtures.Admin(s);
         var (viewer, _, _) = await Fixtures.PairedDevice(s, admin, new[] { "view", "launch" });
 
-        var ok = DeckJson(Key("a", 0, "launch", "item_1", "cover"), Key("f", 1, "folder", "p2", "emoji:🎵"), Key("m", 2, "media", "volup", "icon:volume-2"), Key("o", 3, "open", "/soundboard"));
+        var ok = DeckJson(Key("a", 0, "launch", "item_1", "cover"), Key("f", 1, "folder", "p2", "emoji:🎵"), Key("m", 2, "media", "volup", "icon:volume-2"), Key("o", 3, "open", "/soundboard"), Key("d", 4, "launch", "item_2", "brand:discord"));
         Assert.Equal("forbidden", await viewer.Error("deck.save", ok));
         var r = await admin.Ok("deck.save", ok);
         Assert.Equal("Gaming", r.GetProperty("name").GetString());
         var list = await viewer.Ok("deck.list"); // every device sees the same deck
-        Assert.Equal(4, list.GetProperty("decks")[0].GetProperty("pages")[0].GetProperty("keys").GetArrayLength());
+        Assert.Equal(5, list.GetProperty("decks")[0].GetProperty("pages")[0].GetProperty("keys").GetArrayLength());
 
         // Refused: key outside the grid, two keys on one slot, folder to nowhere, unknown action, unknown media key, bad image, foreign app path.
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 12, "none"))));
@@ -36,6 +36,7 @@ public class DeckTests
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "shell", "calc.exe"))));
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "media", "shutdown"))));
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "none", null, "javascript:alert(1)"))));
+        Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "none", null, "brand:../../x"))));
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "open", "https://evil.example"))));
 
         // Media keys need the launch right; on Linux the headless companion has no key sender – an honest error, no silent success.
