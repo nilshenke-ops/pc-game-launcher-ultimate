@@ -32,9 +32,29 @@ export function useLiveSubscription<T>(topic: string, onFirst?: (data: T) => voi
   const fail = useRef(onError); fail.current = onError;
   useEffect(() => {
     if (!authed || !visible || !enabled) return;
-    client.call<T>(`${topic}.subscribe`).then((d) => first.current?.(d)).catch((e) => fail.current?.(e as Error));
-    return () => { client.call(`${topic}.unsubscribe`).catch(() => {}); };
+    acquire<T>(topic).then((d) => first.current?.(d)).catch((e) => fail.current?.(e as Error));
+    return () => release(topic);
   }, [topic, authed, visible, enabled]);
+}
+
+// The PC keeps one subscription per topic and connection. Several views on the same topic (dashboard card, own
+// widget, plugin) share it: subscribed by the first, unsubscribed after the last – one closing view no longer stops
+// the live values of the others.
+const subs = new Map<string, { count: number; first: Promise<unknown> }>();
+function acquire<T>(topic: string): Promise<T> {
+  const s = subs.get(topic);
+  if (s) { s.count++; return s.first as Promise<T>; }
+  const first = client.call<T>(`${topic}.subscribe`);
+  subs.set(topic, { count: 1, first });
+  first.catch(() => { if (subs.get(topic)?.first === first) subs.delete(topic); });
+  return first;
+}
+function release(topic: string) {
+  const s = subs.get(topic);
+  if (!s) return;
+  if (--s.count > 0) return;
+  subs.delete(topic);
+  client.call(`${topic}.unsubscribe`).catch(() => {});
 }
 
 export function useEvent<T = unknown>(event: string, fn: (data: T) => void) {
@@ -135,7 +155,13 @@ export function useMediaQuery(q: string) {
 
 export function useNow(intervalMs = 1000) {
   const [now, setNow] = useState(Date.now());
-  useEffect(() => { const t = setInterval(() => setNow(Date.now()), intervalMs); return () => clearInterval(t); }, [intervalMs]);
+  // No ticking while the page is hidden (screen off, other tab); on return the time is current at once.
+  useEffect(() => {
+    const tick = () => { if (document.visibilityState === "visible") setNow(Date.now()); };
+    const t = setInterval(tick, intervalMs);
+    document.addEventListener("visibilitychange", tick);
+    return () => { clearInterval(t); document.removeEventListener("visibilitychange", tick); };
+  }, [intervalMs]);
   return now;
 }
 

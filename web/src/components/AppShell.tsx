@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, Menu, MonitorSmartphone, Search, Smartphone } from "lucide-react";
 import { client, exitDemo } from "../lib/rpc";
-import { DEMO_BUILD } from "../lib/demo";
+import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
 import { arrangeNav, navItems } from "../lib/nav";
 import { usePrefs } from "../lib/prefs";
@@ -11,7 +11,7 @@ import { useAppState } from "../lib/state";
 import { Banner, Button, Modal } from "./ui";
 import { CommandPalette } from "./CommandPalette";
 import { UpdatePrompt } from "./UpdateCenter";
-import { outbox, useOutbox } from "../lib/outbox";
+import { CONFIRM_METHODS, needsConfirm, outbox, useOutbox } from "../lib/outbox";
 import { startOutboxSync, syncMessage, syncOutbox } from "../lib/outbox-sync";
 import { startPendingSync } from "../lib/pending-sounds";
 
@@ -120,6 +120,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => startOutboxSync((r) => toast(syncMessage(r), r.failed ? "warning" : "success")), []);
   useEffect(() => client.on("queued", () => toast(t("Gespeichert – wird übertragen, sobald der PC verbunden ist"), "info")), []);
   const waiting = useOutbox();
+  const [appUpdated, setAppUpdated] = useState(false);
+  useEffect(() => { const on = () => setAppUpdated(true); window.addEventListener("pgl-app-updated", on); return () => window.removeEventListener("pgl-app-updated", on); }, []);
   const [showOutbox, setShowOutbox] = useState(false);
 
   const groups = [...new Set(items.map((i) => i.group))];
@@ -185,11 +187,20 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Banner>
           </div>
         )}
+        {appUpdated && (
+          <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
+            <Banner kind="info" title={t("Neue Version der App geladen")} actions={<Button size="sm" variant="primary" onClick={() => location.reload()}>{t("Neu laden")}</Button>}>
+              {t("Neu laden, um sie zu verwenden. Nicht gespeicherte Eingaben auf dieser Seite gehen dabei verloren.")}
+            </Banner>
+          </div>
+        )}
         {waiting.length > 0 && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
-            <Banner kind={waiting.some((w) => w.error) ? "error" : "info"} title={t("{n} Änderungen warten auf den PC", { n: waiting.length })}
+            <Banner kind={waiting.some((w) => w.error) ? "error" : waiting.some((w) => needsConfirm(w)) ? "warn" : "info"} title={t("{n} Änderungen warten auf den PC", { n: waiting.length })}
               actions={<Button size="sm" onClick={() => setShowOutbox(true)}>{t("Anzeigen")}</Button>}>
-              {waiting.some((w) => w.error) ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.") : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")}
+              {waiting.some((w) => w.error) ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.")
+                : waiting.some((w) => needsConfirm(w)) ? t("Einige Änderungen (Plugins oder ältere) werden erst nach deiner Bestätigung übertragen.")
+                : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")}
             </Banner>
           </div>
         )}
@@ -220,7 +231,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <MonitorSmartphone size={22} />{t("Verbinden")}
           <span className={`dot ${conn.auth === "ok" && conn.phase === "online" ? "ok" : client.demo ? "warn" : "error"}`} aria-hidden />
         </NavLink>
-        <button onClick={() => setMore(true)} className={more ? "active" : ""}><Menu size={22} />{t("Mehr")}</button>
+        <button onClick={() => setMore(true)} className={more ? "active" : ""} aria-expanded={more} aria-haspopup="dialog"><Menu size={22} />{t("Mehr")}</button>
       </nav>
 
       {more && (
@@ -262,7 +273,9 @@ function OutboxDialog({ onClose }: { onClose: () => void }) {
           <div className="list">{list.map((e) => (
             <div key={e.id} className="list-item">
               <span className={`dot ${e.error ? "error" : "warn"}`} />
-              <div className="grow"><div className="title small">{e.label}</div><div className="sub tiny">{new Date(e.at).toLocaleString()}{e.error ? " · " + e.error : ""}{!e.error && e.attempts ? " · " + t("{n} Versuche ohne Antwort – wird erneut gesendet", { n: e.attempts }) : ""}</div></div>
+              <div className="grow"><div className="title small">{e.label}</div><div className="sub tiny">{new Date(e.at).toLocaleString()}{e.error ? " · " + e.error : ""}{!e.error && e.attempts ? " · " + t("{n} Versuche ohne Antwort – wird erneut gesendet", { n: e.attempts }) : ""}
+                {needsConfirm(e) && <b className="text-warn"> · {CONFIRM_METHODS.has(e.method) ? t("Bringt neue Plugin-Dateien oder Rechte auf den PC – erst nach Bestätigung") : t("Älter als 7 Tage – erst nach Bestätigung")}</b>}</div></div>
+              {needsConfirm(e) && <Button size="sm" variant="primary" onClick={() => { outbox.confirm(e.id); if (conn.auth === "ok") void retry(); }}>{t("Bestätigen")}</Button>}
               <Button size="sm" variant="ghost" onClick={() => outbox.remove(e.id)}>{t("Verwerfen")}</Button>
             </div>
           ))}</div>

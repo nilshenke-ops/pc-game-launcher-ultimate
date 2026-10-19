@@ -107,7 +107,12 @@ public class RpcTests
         var (phone, _, _) = await Fixtures.PairedDevice(s, admin, new[] { "view", "manage", "admin" });
         Assert.Equal("forbidden", await phone.Error("settings.saveSecurity", new { lanAccess = false }));
         Assert.Equal("forbidden", await phone.Error("settings.saveSecurity", new { relayUrl = "wss://evil.example" }));
-        await phone.Ok("settings.saveSecurity", new { publicUrl = "https://games.example.com" });
+        // Update source, plugin catalog and allowed web pages: only at the PC (no switch to unsigned updates from afar).
+        Assert.Equal("forbidden", await phone.Error("settings.saveSecurity", new { publicUrl = "https://games.example.com" }));
+        Assert.Equal("forbidden", await phone.Error("settings.saveSecurity", new { updateManifestUrl = "https://evil.example/update.json" }));
+        Assert.Equal("forbidden", await phone.Error("settings.saveSecurity", new { pluginCatalogUrl = "https://evil.example/c.json" }));
+        Assert.Equal("forbidden", await phone.Error("settings.saveSecurity", new { webAppUrl = "https://evil.example" }));
+        await admin.Ok("settings.saveSecurity", new { publicUrl = "https://games.example.com" });
     }
 
     [Fact]

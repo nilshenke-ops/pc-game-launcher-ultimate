@@ -302,6 +302,10 @@ public static class RpcApi
             // Changing how the PC is reachable is only allowed from the PC itself.
             if (!ctx.Session.IsLocalAdmin && (u.LanAccess != null || u.Port != null || u.RelayEnabled != null || u.RelayUrl != null || u.RelaySecret != null || u.RelayCompanionId != null))
                 throw new RpcException("forbidden", "Verbindungseinstellungen können nur direkt am PC geändert werden.");
+            // Where updates and plugins come from and which web pages may connect: only at the PC – a remote device could
+            // otherwise switch to an unsigned update source or let a foreign page in.
+            if (!ctx.Session.IsLocalAdmin && (u.UpdateManifestUrl != null || u.PluginCatalogUrl != null || u.WebAppUrl != null || u.PublicUrl != null))
+                throw new RpcException("forbidden", "Update-Quelle, Plugin-Katalog und erlaubte Web-Adressen können nur direkt am PC geändert werden.");
             var r = s.Settings.SaveSecurity(u, s.Platform.Secrets);
             r.RelaySecretProtected = null;
             r.SteamApiKeyProtected = null;

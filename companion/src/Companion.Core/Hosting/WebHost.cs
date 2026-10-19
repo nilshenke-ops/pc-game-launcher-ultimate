@@ -190,17 +190,11 @@ public sealed class WebHost : IAsyncDisposable
     /// <summary>Address for this PC only (companion window, browser on the PC).</summary>
     public string LocalUrl => $"http://127.0.0.1:{Port}";
 
-    static bool IsForwarded(HttpRequest r) =>
-        r.Headers.ContainsKey("X-Forwarded-For") || r.Headers.ContainsKey("CF-Connecting-IP") || r.Headers.ContainsKey("Forwarded") || r.Headers.ContainsKey("X-Real-IP");
 
     async Task HandleWebSocket(HttpContext ctx)
     {
         if (!ctx.WebSockets.IsWebSocketRequest) { ctx.Response.StatusCode = 400; return; }
-        var remote = ctx.Connection.RemoteIpAddress ?? IPAddress.None;
-        if (remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
-        var forwarded = IsForwarded(ctx.Request);
-        var ip = forwarded ? (ctx.Request.Headers["CF-Connecting-IP"].FirstOrDefault() ?? ctx.Request.Headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0].Trim() ?? remote.ToString()) : remote.ToString();
-        var loopback = IPAddress.IsLoopback(remote) && !forwarded;
+        var (ip, loopback) = RequestOrigin.Client(ctx.Connection.RemoteIpAddress, ctx.Request.Headers);
 
         if (!OriginAllowed(ctx.Request)) { ctx.Response.StatusCode = 403; Log.Warn("web", $"WebSocket von fremder Herkunft abgelehnt: {ctx.Request.Headers.Origin}"); return; }
         if (!_connectLimiter.TryHit(ip)) { ctx.Response.StatusCode = 429; return; }
@@ -240,8 +234,10 @@ public sealed class WebHost : IAsyncDisposable
         var origin = req.Headers.Origin.FirstOrDefault();
         if (string.IsNullOrEmpty(origin)) return true; // non-browser client; still needs a token
         if (!Uri.TryCreate(origin, UriKind.Absolute, out var o)) return false;
-        if (string.Equals(o.Authority, req.Host.Value, StringComparison.OrdinalIgnoreCase)) return true;
         var set = _svc.Settings.Get();
+        // Same page as this server – but only under an address of this PC. A foreign domain that points to this PC
+        // (DNS rebinding) is refused.
+        if (string.Equals(o.Authority, req.Host.Value, StringComparison.OrdinalIgnoreCase)) return RequestOrigin.HostAllowed(req.Host.Host, set.PublicUrl);
         foreach (var allowed in new[] { set.PublicUrl, set.WebAppUrl })
             if (allowed != null && Uri.TryCreate(allowed, UriKind.Absolute, out var a) && string.Equals(a.Scheme, o.Scheme, StringComparison.OrdinalIgnoreCase) && string.Equals(a.Authority, o.Authority, StringComparison.OrdinalIgnoreCase)) return true;
         // Vite dev server during development.
@@ -304,5 +300,37 @@ public sealed class WebHost : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         if (_app != null) { await _app.StopAsync(); await _app.DisposeAsync(); }
+    }
+}
+
+/// <summary>Who is asking and under which address – kept apart so it can be tested without a server.</summary>
+public static class RequestOrigin
+{
+    static readonly string[] ProxyHeaders = { "CF-Connecting-IP", "X-Forwarded-For", "Forwarded", "X-Real-IP" };
+
+    /// <summary>
+    /// Client address. Proxy headers are only believed from a proxy on this PC itself (e.g. a tunnel); any other device
+    /// could otherwise invent addresses and slip past every per-address limit. A forwarded request is never "this PC".
+    /// </summary>
+    public static (string ip, bool loopback) Client(IPAddress? remoteAddress, IHeaderDictionary headers)
+    {
+        var remote = remoteAddress ?? IPAddress.None;
+        if (remote.IsIPv4MappedToIPv6) remote = remote.MapToIPv4();
+        var forwarded = ProxyHeaders.Any(headers.ContainsKey);
+        if (!IPAddress.IsLoopback(remote) || !forwarded) return (remote.ToString(), IPAddress.IsLoopback(remote));
+        var claimed = headers["CF-Connecting-IP"].FirstOrDefault() ?? headers["X-Forwarded-For"].FirstOrDefault()?.Split(',')[0].Trim() ?? headers["X-Real-IP"].FirstOrDefault();
+        return (claimed != null && IPAddress.TryParse(claimed, out var c) ? c.ToString() : "proxy", false);
+    }
+
+    /// <summary>Addresses under which this PC's own page may talk to it: IP addresses, localhost, the PC name, the public address.</summary>
+    public static bool HostAllowed(string host, string? publicUrl)
+    {
+        host = host.Trim('[', ']');
+        if (IPAddress.TryParse(host, out _)) return true; // an IP address cannot be re-pointed by someone else's DNS
+        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) return true;
+        var pc = Environment.MachineName;
+        if (host.Equals(pc, StringComparison.OrdinalIgnoreCase) || host.Equals(pc + ".local", StringComparison.OrdinalIgnoreCase) || host.Equals(pc + ".fritz.box", StringComparison.OrdinalIgnoreCase)) return true;
+        if (Environment.GetEnvironmentVariable("PGL_TEST_LAN_HOST") is { Length: > 0 } test && host.Equals(test.Split(':')[0], StringComparison.OrdinalIgnoreCase)) return true;
+        return publicUrl != null && Uri.TryCreate(publicUrl, UriKind.Absolute, out var p) && host.Equals(p.Host, StringComparison.OrdinalIgnoreCase);
     }
 }

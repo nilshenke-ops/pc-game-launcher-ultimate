@@ -131,6 +131,24 @@ public class QueuedChangeTests
     }
 }
 
+public class QueuedChangeInFlightTests
+{
+    [Fact]
+    public async Task A_copy_arriving_while_the_first_runs_waits_for_it()
+    {
+        using var dir = new TempDir();
+        await using var s = Fixtures.Services(dir);
+        var admin = await Fixtures.Admin(s);
+        var notes = new List<string>();
+        s.Runner.Notify = n => { lock (notes) notes.Add(n); };
+        var qa = await admin.Ok("quick.save", new { name = "Langsam", steps = new object[] { new { type = "wait", @ref = "2" }, new { type = "notify", @ref = "einmal" } } });
+        string Msg(long id) => JsonSerializer.Serialize(new { v = 1, id, m = "quick.run", p = new { id = qa.GetProperty("id").GetString() }, op = "q_run1" });
+        // Both copies arrive while the first is still waiting.
+        await Task.WhenAll(s.Rpc.OnMessageAsync(admin.Channel, Msg(500)), s.Rpc.OnMessageAsync(admin.Channel, Msg(501)));
+        Assert.Single(notes);
+    }
+}
+
 public class SoundLabTests
 {
     [Fact]

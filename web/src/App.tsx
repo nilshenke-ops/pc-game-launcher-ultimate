@@ -1,13 +1,13 @@
 import { Component, lazy, Suspense, useEffect, type ReactNode } from "react";
 import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { DEMO_BUILD } from "./lib/demo";
+import { DEMO_BUILD } from "./lib/demo-flag";
 import { AppShell } from "./components/AppShell";
 import { AccessGate } from "./components/AccessGate";
 import { ConfirmHost, Toasts } from "./components/ui";
 import { useConn } from "./lib/hooks";
 import { loadRemotePrefs, usePrefs } from "./lib/prefs";
 import { client } from "./lib/rpc";
-import { t } from "./lib/i18n";
+import { t, useLanguageVersion } from "./lib/i18n";
 
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Library = lazy(() => import("./pages/Library"));
@@ -58,8 +58,10 @@ function Gate() {
   const conn = useConn();
   const loc = useLocation(); // resets the error boundary per page (window.location would be stale here)
   usePrefs(); // re-render on language/theme change
+  useLanguageVersion(); // … and when the English texts have been loaded
 
-  useEffect(() => client.on("authenticated", () => { loadRemotePrefs(); }), []);
+  // Also when the login already happened before this view existed (fast connection, texts still loading).
+  useEffect(() => { if (client.status.auth === "ok") void loadRemotePrefs(); return client.on("authenticated", () => { loadRemotePrefs(); }); }, []);
 
   // Without a logged-in PC the whole app is shown as a preview: example content, design and layout work locally,
   // everything else asks to connect the PC first ("Verbinden" in the navigation). Logged-in devices keep the app

@@ -1,6 +1,5 @@
 import { loginProof } from "./sha256";
 import { t } from "./i18n";
-import { attachDemo, demoCall } from "./demo";
 import { clearCaches } from "./offline-cache";
 import { enqueue, outbox, QUEUEABLE } from "./outbox";
 
@@ -138,12 +137,14 @@ class Client {
 
   /** True while the app shows example data instead of a real PC (preview link or "Demo ansehen"). */
   demo = false;
+  private demoMod: Promise<typeof import("./demo")> | null = null;
 
   /** Starts the demo: no network connection, every request is answered by lib/demo.ts. */
   startDemo() {
     this.demo = true;
     this.started = true;
-    attachDemo((ev, d) => this.emit(ev, d));
+    // The example data is only downloaded when the demo is used.
+    this.demoMod = import("./demo").then((m) => { m.attachDemo((ev, d) => this.emit(ev, d)); return m; });
     const permissions = ["view", "launch", "soundboard", "manage", "admin"];
     this.set({
       phase: "online", everConnected: true, auth: "ok", url: "demo",
@@ -265,18 +266,27 @@ class Client {
 
   private startPing() {
     if (this.pingTimer) clearInterval(this.pingTimer);
-    const ping = async () => {
+    let last = 0;
+    const ping = async (force?: boolean) => {
+      // Hidden tab / screen off: only every 60 s (keeps the connection, saves battery); visible: every 15 s.
+      if (force !== true && document.visibilityState === "hidden" && Date.now() - last < 55_000) return;
+      last = Date.now();
       const started = performance.now();
-      try { await this.call("ping"); this.set({ latencyMs: Math.round(performance.now() - started) }); }
+      try {
+        await this.call("ping");
+        // Only a noticeable change is published – every published status re-renders all views that show the connection.
+        const ms = Math.round(performance.now() - started);
+        if (this.status.latencyMs == null || Math.abs(ms - this.status.latencyMs) >= Math.max(5, this.status.latencyMs * 0.2)) this.set({ latencyMs: ms });
+      }
       catch (e) {
         // No answer (e.g. the iPad slept, Wi-Fi changed, PC went off without closing): the socket is dead even if
         // the browser has not noticed yet. Closing it starts the automatic reconnect with a clear reason.
         if ((e as RpcError).code === "timeout") { this.closeReason = t("Der PC antwortet nicht mehr (keine Antwort auf Ping)."); this.ws?.close(); }
       }
     };
-    this.pingNow = ping;
-    ping();
-    this.pingTimer = window.setInterval(ping, 15000);
+    this.pingNow = () => ping(true);
+    void ping(true);
+    this.pingTimer = window.setInterval(() => void ping(), 15000);
   }
 
   private onMessage(text: string) {
@@ -313,7 +323,7 @@ class Client {
 
   /** opts.op: id of a queued change – the PC applies it only once, even if it is sent again after a lost answer. */
   call<T = unknown>(method: string, params?: unknown, opts?: { op?: string }): Promise<T> {
-    if (this.demo) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
+    if (this.demo) return this.demoMod!.then((m) => m.demoCall(method, (params ?? {}) as Record<string, unknown>)) as Promise<T>;
     if (this.status.auth !== "ok" && !NO_LOGIN.has(method) && !this.status.me) {
       if (method === "ui.savePrefs" || method === "ui.getPrefs") return Promise.resolve((method === "ui.getPrefs" ? { prefs: null } : true) as T); // design stays on this device
       if (QUEUEABLE[method]) return Promise.resolve(this.queue(method, params) as T);

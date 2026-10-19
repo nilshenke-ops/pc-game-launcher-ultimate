@@ -10,6 +10,7 @@ import { contrast, defaultPrefs, sanitizePrefs } from "./prefs-core";
 import { templates } from "./custom-widgets";
 import { connectionQuality } from "./net-quality";
 import { arrangeNav, navItems } from "./nav";
+import { needsConfirm, STALE_MS } from "./outbox-rules";
 import { score } from "../components/search-score";
 import { comboFromEvent, describeCombo } from "../pages/hotkey-combo";
 
@@ -110,6 +111,16 @@ describe("navigation", () => {
     expect(p.nav.order).toEqual(["/games"]);
     expect(p.nav.hidden).toEqual([]);
     expect(p.nav.bottom).toEqual(["/", "/games", "/soundboard", "/quick"]);
+  });
+});
+
+describe("queued changes", () => {
+  it("plugins and old changes wait for a confirmation, normal ones go", () => {
+    const now = Date.now();
+    expect(needsConfirm({ method: "quick.save", at: now }, now)).toBe(false);
+    expect(needsConfirm({ method: "plugins.enable", at: now }, now)).toBe(true);
+    expect(needsConfirm({ method: "plugins.importFile", at: now, confirmed: true }, now)).toBe(false);
+    expect(needsConfirm({ method: "quick.save", at: now - STALE_MS - 1 }, now)).toBe(true);
   });
 });
 

@@ -50,9 +50,9 @@ pages/          je Bereich eine Seite (lazy geladen)
 
 ## Performance-Maßnahmen
 - Prozess-Erkennung: ein Snapshot alle 5 s (einstellbar 2–60 s), nur wenn Einträge mit Erkennungsregeln existieren.
-- PC-Monitor: Messung nur, solange mindestens ein Client abonniert ist (2 s Intervall, keine Überlappung); `nvidia-smi` höchstens alle 4 s.
+- PC-Monitor: Messung nur, solange mindestens ein Client abonniert ist (2 s Intervall, keine Überlappung). `nvidia-smi` läuft bei Bedarf als ein Dauerprozess (`-lms 2000`) und endet 30 s nach der letzten Abfrage; Windows-GPU-Zähler höchstens alle 4 s, Laufwerke alle 60 s. In der Web-App teilen sich mehrere Ansichten ein Abo (Zähler), bis die letzte geschlossen wird.
 - Kein Polling in der Web-App außer einem Ping alle 15 s; Daten werden per Event nachgeladen.
-- Seiten werden lazy geladen; Hauptbundle ~126 KB gzip (gemessen beim Build).
+- Seiten werden lazy geladen; die englischen Texte und der Demo-Modus werden nur bei Bedarf geladen. Hauptbundle 2.1.0: 359 KB (114 KB gzip), vorher 503 KB (162 KB gzip) – Messungen und Messplan in `docs/PERFORMANCE.md`.
 - Statische Dateien mit ETag und `immutable`-Caching für gehashte Assets.
 
 Gemessene Werte und Grenzen: siehe ABSCHLUSSBERICHT.md. Es wurden keine Last-/Langzeitmessungen auf einem echten Windows-Gaming-PC durchgeführt.

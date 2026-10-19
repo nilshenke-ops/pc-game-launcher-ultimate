@@ -138,7 +138,12 @@ public sealed class PairingService
     const string Alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
     public static readonly TimeSpan CodeLifetime = TimeSpan.FromMinutes(5);
     public static readonly TimeSpan PendingLifetime = TimeSpan.FromMinutes(5);
+    /// <summary>Wrong guesses per address before that address may not try this code any more.</summary>
     public const int MaxFailuresPerCode = 5;
+    /// <summary>Wrong guesses from all addresses together before the code is withdrawn. 40 bit and the rate limits make
+    /// guessing hopeless anyway; locking after 5 from anyone would let any device in the Wi-Fi block pairing for everyone.</summary>
+    public const int MaxFailuresTotal = 50;
+    readonly Dictionary<string, int> _failuresByIp = new();
 
     readonly DeviceStore _devices;
     readonly Func<DateTime> _now;
@@ -173,6 +178,7 @@ public sealed class PairingService
             _code = new string(chars);
             _codeExpires = _now() + CodeLifetime;
             _failures = 0;
+            _failuresByIp.Clear();
             _locked = false;
             Log.Info("pairing", "Neuer Kopplungscode erzeugt (gültig 5 Minuten).");
             return (Format(_code), _codeExpires);
@@ -197,6 +203,7 @@ public sealed class PairingService
         {
             if (_code == null) return (_locked ? PairingError.Locked : PairingError.NoActiveCode, null, null, default);
             if (_locked) return (PairingError.Locked, null, null, default);
+            if (_failuresByIp.GetValueOrDefault(ip) >= MaxFailuresPerCode) return (PairingError.Locked, null, null, default);
             var normalized = Normalize(code);
             var match = CryptographicOperations.FixedTimeEquals(Encoding.ASCII.GetBytes(normalized.PadRight(8)), Encoding.ASCII.GetBytes(_code));
             if (_now() >= _codeExpires)
@@ -207,7 +214,8 @@ public sealed class PairingService
             if (!match)
             {
                 _failures++;
-                if (_failures >= MaxFailuresPerCode)
+                _failuresByIp[ip] = _failuresByIp.GetValueOrDefault(ip) + 1;
+                if (_failures >= MaxFailuresTotal)
                 {
                     _locked = true;
                     _code = null;

@@ -164,6 +164,22 @@ sealed class WindowsAutostart : IAutostart
         return k?.GetValue(Name) is string v && v.Contains(Environment.ProcessPath ?? "\0", StringComparison.OrdinalIgnoreCase);
     }
 
+    /// <summary>The user had autostart on, but the program was moved: the entry is pointed at the new place
+    /// (otherwise Windows would start a missing file and the app would show autostart as off).</summary>
+    public void RepairMovedPath()
+    {
+        try
+        {
+            using var k = Registry.CurrentUser.OpenSubKey(Key, writable: true);
+            if (k?.GetValue(Name) is not string v || Environment.ProcessPath is not { } exe || v.Contains(exe, StringComparison.OrdinalIgnoreCase)) return;
+            var old = v.Trim().Split('"', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            if (old != null && File.Exists(old)) return; // another copy that still exists keeps its entry
+            k.SetValue(Name, $"\"{exe}\" --minimized");
+            Log.Info("autostart", $"Autostart-Eintrag auf den neuen Ort umgestellt: {exe}");
+        }
+        catch (Exception ex) { Log.Warn("autostart", "Autostart-Eintrag nicht geprüft: " + ex.Message); }
+    }
+
     public string? SetEnabled(bool enabled)
     {
         try

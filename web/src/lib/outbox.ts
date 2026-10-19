@@ -25,7 +25,11 @@ export interface OutboxEntry {
   error?: string;
   /** Sending attempts that ended without an answer (connection lost / timeout). */
   attempts?: number;
+  /** Confirmed by the user for sending (needed for changes with consequences and for old ones, see needsConfirm). */
+  confirmed?: boolean;
 }
+
+export { CONFIRM_METHODS, needsConfirm, STALE_MS } from "./outbox-rules";
 
 const KEY = "pgl.outbox";
 const name = (p: Params, k = "name") => (typeof p[k] === "string" && p[k] ? `„${p[k]}“` : "");
@@ -91,6 +95,7 @@ export const outbox = {
   setCurrentPc(fn: () => string | null) { currentPc = fn; },
   remove(id: string) { entries = entries.filter((e) => e.id !== id); persist(); },
   setError(id: string, error: string | undefined) { entries = entries.map((e) => (e.id === id ? { ...e, error } : e)); persist(); },
+  confirm(id: string) { entries = entries.map((e) => (e.id === id ? { ...e, confirmed: true } : e)); persist(); },
   countAttempt(id: string) { entries = entries.map((e) => (e.id === id ? { ...e, attempts: (e.attempts ?? 0) + 1 } : e)); persist(); },
   replaceAll(next: OutboxEntry[]) { entries = next; persist(); },
 };

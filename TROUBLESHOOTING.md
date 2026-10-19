@@ -41,6 +41,17 @@ Der Link zeigte auf eine temporäre Entwicklungsvorschau. Verwende die Adresse a
 Im Spiel-Eintrag „Prozessnamen zur Erkennung“ eintragen (Task-Manager → Details, ohne `.exe`). Steam/Epic-Spiele werden zusätzlich über den Installationsordner erkannt. Automatischer Wechsel muss unter Gaming-Profile aktiv sein.
 
 ## Soundboard / Discord
+
+Hinweis: Der Weg über ein virtuelles Kabel ist eingebaut, wurde aber **nicht in einer echten Discord-Runde getestet** (keine Windows-/Discord-Umgebung beim Entwickeln). Ob andere dich hören, prüfst du am einfachsten mit Discords „Mikrofon testen“ (Einstellungen → Sprache & Video) oder mit einem zweiten Gerät.
+
+**Einrichtung:**
+1. VB-Audio Virtual Cable installieren (kostenlos, vb-audio.com; nicht automatisch – Treiber brauchen deine Zustimmung und Administratorrechte), PC neu starten.
+2. Nexus → Audio Center: **Soundboard-Ausgabe = „CABLE Input“**. Damit du die Sounds selbst hörst: „Mithören“ auf deine Kopfhörer einschalten.
+3. Nexus → Audio Center: **Mikrofon-Durchleitung** einschalten und dein echtes Mikrofon wählen – sonst hören die anderen nur noch Sounds, nicht mehr dich.
+4. Discord → Einstellungen → Sprache & Video: **Eingabegerät = „CABLE Output“**.
+5. Echo/Rückkopplung vermeiden: Mithören nie auf dasselbe Gerät wie die Soundboard-Ausgabe legen (die App verhindert das); in Discord „Rauschunterdrückung“ ggf. aus, sonst werden Sounds als Geräusch weggefiltert.
+
+**Was die App anzeigen kann:** ob ein Sound läuft und auf welchem Gerät er ausgegeben wird, ob die Durchleitung aktiv ist und ein Pegel ankommt. **Nicht** feststellbar ist, ob Discord das Kabel tatsächlich als Mikrofon nutzt und andere etwas hören.
 - **Kein Ton:** Audio Center → Testton. Gerät „fehlt“ → anschließen oder anderes wählen.
 - **Andere hören nichts:** virtuelles Kabel installiert? Soundboard-Ausgabe = „CABLE Input“, Discord-Eingabegerät = „CABLE Output“.
 - **Man hört mich nicht mehr in Discord:** „Mikrofon-Durchleitung“ einschalten (Discord nutzt dann das Kabel als Mikrofon).

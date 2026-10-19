@@ -88,6 +88,8 @@ public sealed class SettingsService
         }
         var r = _store.Update(s =>
         {
+            // The stored password never follows a new address – otherwise a device could send it to a computer of its choice.
+            if (url != null && keepPassword && !string.Equals(url, s.ObsUrl, StringComparison.OrdinalIgnoreCase)) s.ObsPasswordProtected = null;
             if (url != null) s.ObsUrl = url;
             if (!keepPassword) s.ObsPasswordProtected = protectedPassword;
             if (replayWhilePlaying != null) s.ObsReplayWhilePlaying = replayWhilePlaying.Value;

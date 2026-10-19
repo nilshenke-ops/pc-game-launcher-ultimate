@@ -18,7 +18,16 @@ self.addEventListener("install", (e) => {
 });
 
 self.addEventListener("activate", (e) => {
-  e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil((async () => {
+    await Promise.all((await caches.keys()).filter((k) => k !== CACHE).map((k) => caches.delete(k)));
+    // Files of older builds are removed – otherwise every update would leave a few hundred KB behind on the device.
+    try {
+      const files = new Set((await (await fetch("./offline-files.json", { cache: "no-store" })).json()).map((f) => new URL("./" + f, self.registration.scope).href));
+      const c = await caches.open(CACHE);
+      for (const req of await c.keys()) if (new URL(req.url).pathname.includes("/assets/") && !files.has(req.url)) await c.delete(req);
+    } catch { /* offline: tidy up next time */ }
+    await self.clients.claim();
+  })());
 });
 
 function put(req, res) {
@@ -46,7 +55,8 @@ self.addEventListener("fetch", (e) => {
         fetch(e.request),
         new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), isNav ? NAV_TIMEOUT_MS : 15000)),
       ]);
-      if (res.ok) { put(isNav ? new Request("./index.html") : e.request, res); return res; }
+      // Only the app page itself is kept, not every file that was ever requested.
+      if (res.ok) { if (isNav || url.pathname.endsWith("/index.html") || url.pathname.endsWith(".webmanifest")) put(isNav ? new Request("./index.html") : e.request, res); return res; }
       throw new Error("HTTP " + res.status);
     } catch {
       const hit = isNav ? await caches.match("./index.html") : await caches.match(e.request);

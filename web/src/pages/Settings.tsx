@@ -574,8 +574,16 @@ function Privacy() {
               <li>{t("Auf dem PC (Datenordner): Bibliothek, Profile, Regeln, Hotkeys, Sounds, Verlauf, Einstellungen und Hashes der Geräteschlüssel.")}</li>
               <li>{t("Auf diesem Gerät (Browser-Speicher): Gerätekennung und Schlüssel, Design, Layouts, Spracheinstellung.")}</li>
               <li>{t("Auf einem Relay: nichts dauerhaft – es leitet nur Nachrichten weiter und protokolliert Verbindungszeiten ohne Inhalte.")}</li>
-              <li>{t("Keine Telemetrie, keine Werbung, keine Weitergabe an Dritte.")}</li>
+              <li>{t("Keine Telemetrie, keine Werbung, kein Konto.")}</li>
             </ul>
+            <b className="small">{t("Wer erfährt etwas? (nur wenn die Funktion genutzt wird)")}</b>
+            <ul className="small muted" style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6 }}>
+              <li>{t("GitHub Pages: Update-Prüfung und Plugin-Katalog (täglich, nicht während eines Spiels) – sieht die IP-Adresse des PCs.")}</li>
+              <li>{t("Steam / Microsoft Store: Cover-Suche (Spielname), Steam-CDN für Bilder (IP-Adresse), Steam Web API mit deinem Schlüssel, Game-Pass-Katalog.")}</li>
+              <li>{t("Netzwerkdiagnose: Ping an Cloudflare (1.1.1.1), Google (8.8.8.8) und deine eigenen Ziele – nur solange die Seite offen ist.")}</li>
+              <li>{t("Sound-Links, Bild-Adressen in Widgets und Plugins mit Netzwerk-Recht: die jeweilige Adresse.")}</li>
+            </ul>
+            <a className="small" href="https://github.com/nilshenke-ops/pc-game-launcher-ultimate/blob/main/docs/DATENSCHUTZ.md" target="_blank" rel="noreferrer">{t("Vollständige Datenschutz-Übersicht (Speicherorte, Löschen, alle Online-Ziele)")}</a>
           </div>
         </Card>
       )}

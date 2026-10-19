@@ -8,7 +8,7 @@ import {
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useLiveSubscription, useMediaQuery, useRpc, toast } from "../lib/hooks";
-import { useAppState } from "../lib/state";
+import { useAppState, usePlaying } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
 import type { BuiltinWidgetId } from "../lib/prefs-core";
 import { parsePluginWidgetId, pluginWidgetId, type PluginList } from "../lib/plugins";
@@ -181,8 +181,7 @@ function AudioWidget() {
 }
 
 function PlayingWidget() {
-  const { state } = useAppState();
-  const playing = state?.playing.playing ?? [];
+  const playing = usePlaying()?.playing ?? [];
   if (!playing.length) return <Empty icon={<Music size={26} />} title={t("Kein Sound aktiv")} action={<Link to="/soundboard" className="btn sm">{t("Soundboard")}</Link>} />;
   return (
     <div className="stack">

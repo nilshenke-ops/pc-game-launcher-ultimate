@@ -14,7 +14,8 @@ static class Program
     [STAThread]
     static int Main(string[] args)
     {
-        using var mutex = new Mutex(true, @"Local\PCGameLauncherUltimate.Companion", out var first);
+        // One companion per PC (all Windows sessions): two would fight for the same port.
+        using var mutex = new Mutex(true, @"Global\PCGameLauncherUltimate.Companion", out var first);
         // After an update/rollback the previous process is still shutting down: wait for it instead of exiting.
         if (!first && args.Contains("--updated"))
         {
@@ -24,7 +25,12 @@ static class Program
         if (!first)
         {
             // Already running: bring the existing window to front instead of starting twice.
-            try { using var ev = EventWaitHandle.OpenExisting(@"Local\PCGameLauncherUltimate.Show"); ev.Set(); } catch { }
+            try { using var ev = EventWaitHandle.OpenExisting(@"Local\PCGameLauncherUltimate.Show"); ev.Set(); }
+            catch
+            {
+                // Not in this Windows session: another user on this PC runs it.
+                MessageBox.Show("Nexus Gaming Hub läuft bereits in einer anderen Windows-Sitzung (anderer Benutzer) auf diesem PC. Es kann nur einer gleichzeitig laufen.", "Nexus Gaming Hub", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
             return 0;
         }
         // The previous version is kept as "<exe>.old" so it can be restored (Updates → Vorherige Version, or tray menu).
@@ -60,6 +66,7 @@ sealed class TrayAppContext : ApplicationContext
         var ui = new UiInvoker(_form);
         TrayIcon? trayRef = null;
         var platform = new WindowsPlatform(ui, () => trayRef);
+        ((WindowsAutostart)platform.Autostart).RepairMovedPath();
         _overlay = platform.OverlayWindows;
         _desktopWidgets = platform.DesktopWidgetWindows;
         _services = new CompanionServices(platform, new AppPaths());

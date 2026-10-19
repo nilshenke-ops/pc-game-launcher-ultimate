@@ -248,6 +248,15 @@ public sealed class NAudioEngine : IAudioEngine
                 var volumeProvider = new VolumeSampleProvider(buffer.ToSampleProvider()) { Volume = Math.Clamp(volume, 0f, 2f) };
                 var output2 = new WasapiOut(output, AudioClientShareMode.Shared, true, 40);
                 output2.Init(volumeProvider);
+                // Microphone unplugged or failed: release both sides, so "active" is reported honestly and the
+                // passthrough starts again by itself when the device is back (DevicesChanged → ApplyMic).
+                capture.RecordingStopped += (_, e) =>
+                {
+                    if (Volatile.Read(ref _stoppingMic)) return;
+                    Log.Warn("audio", "Mikrofon-Durchleitung unterbrochen" + (e.Exception != null ? ": " + e.Exception.Message : " (Mikrofon getrennt?)") + " – startet wieder, sobald das Gerät zurück ist.");
+                    // No immediate restart here (a broken device would loop); Windows reports the device's return.
+                    Task.Run(() => { lock (_micLock) if (_micCapture == capture) StopMic(); });
+                };
                 capture.StartRecording();
                 output2.Play();
                 _micCapture = capture;
@@ -263,12 +272,16 @@ public sealed class NAudioEngine : IAudioEngine
         }
     }
 
+    volatile bool _stoppingMic;
+
     void StopMic()
     {
+        _stoppingMic = true;
         try { _micCapture?.StopRecording(); } catch { }
         try { _micOut?.Stop(); } catch { }
         _micCapture?.Dispose(); _micOut?.Dispose();
         _micCapture = null; _micOut = null;
+        _stoppingMic = false;
     }
 
     public string? PlayTestTone(string? deviceId, float volume)

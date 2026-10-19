@@ -41,9 +41,18 @@ client.on("session", () => refreshState());
 client.on("profile.active", () => refreshState());
 client.on("relay.status", () => refreshState());
 client.on("notification", () => refreshState(400));
-client.on("sounds.playing", (d) => {
-  if (state) { state = { ...state, playing: d as PlayingState }; publish(); }
-});
+// Running sounds change often (every play/stop). They have their own small store, so they do not re-render the whole
+// app shell and every dashboard card – only the views that show them.
+let playing: PlayingState | null = null;
+const playingListeners = new Set<() => void>();
+client.on("sounds.playing", (d) => { playing = d as PlayingState; playingListeners.forEach((l) => l()); });
+client.on("authenticated", () => { playing = null; });
+
+/** Running sounds: live from events, before the first event from the overview. */
+export function usePlaying(): PlayingState | null {
+  const live = useSyncExternalStore((fn) => { playingListeners.add(fn); return () => playingListeners.delete(fn); }, () => playing);
+  return live ?? snapshot.state?.playing ?? null;
+}
 
 export function useAppState() {
   return useSyncExternalStore((fn) => { listeners.add(fn); return () => listeners.delete(fn); }, () => snapshot);

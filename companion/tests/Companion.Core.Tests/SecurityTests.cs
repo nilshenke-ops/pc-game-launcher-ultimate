@@ -55,15 +55,27 @@ public class PairingTests
     }
 
     [Fact]
-    public void Code_is_locked_after_five_wrong_guesses()
+    public void Wrong_guesses_lock_out_only_that_address_and_many_withdraw_the_code()
     {
-        var (p, _, _, dir) = Make();
+        var (p, _, clock, dir) = Make();
         using var _d = dir;
         var (code, _) = p.CreateCode();
         for (int i = 0; i < PairingService.MaxFailuresPerCode; i++)
-            Assert.Equal(PairingError.Invalid, p.Request("ZZZZ-ZZZ" + i, "A", "x", $"10.0.0.{i}", "ch").error);
-        Assert.NotEqual(PairingError.None, p.Request(code, "A", "x", "10.0.0.99", "ch").error);
+            Assert.Equal(PairingError.Invalid, p.Request("ZZZZ-ZZZ" + i, "A", "x", "10.0.0.66", "ch").error);
+        // The guessing device may not try any more – not even with the right code …
+        Assert.Equal(PairingError.Locked, p.Request(code, "A", "x", "10.0.0.66", "ch").error);
+        // … but it cannot block pairing for everyone else in the Wi-Fi.
+        Assert.Equal(PairingError.None, p.Request(code, "Handy", "x", "10.0.0.7", "ch").error);
+
+        // Very many wrong guesses from many addresses withdraw the code.
+        (code, _) = p.CreateCode();
+        for (int i = 0; i < PairingService.MaxFailuresTotal; i++)
+        {
+            clock.Now += TimeSpan.FromSeconds(3); // stay below the global rate limit
+            p.Request("ZZZZ-ZZZZ", "A", "x", $"10.1.{i / 200}.{i % 200}", "ch");
+        }
         Assert.Null(p.ActiveCode());
+        Assert.NotEqual(PairingError.None, p.Request(code, "A", "x", "10.2.0.1", "ch").error);
     }
 
     [Fact]

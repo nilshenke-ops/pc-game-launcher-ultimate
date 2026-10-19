@@ -6,7 +6,7 @@ Transport: WebSocket, Textnachrichten mit JSON. Lokal: `ws://<PC>:8787/ws`. Übe
 
 | Richtung | Form |
 |---|---|
-| Anfrage | `{"v":1,"id":<streng steigende Zahl>,"m":"<methode>","p":{…}}` |
+| Anfrage | `{"v":1,"id":<streng steigende Zahl>,"m":"<methode>","p":{…}}`, optional `"op":"<Kennung>"` (bis 64 Zeichen) für vorgemerkte Änderungen: der PC führt dieselbe `op` je Gerät und Methode nur einmal aus und liefert bei Wiederholung die gespeicherte Antwort (auch wenn die Kopie eintrifft, während die erste noch läuft; im Arbeitsspeicher, die letzten 2000) |
 | Antwort | `{"v":1,"id":n,"ok":true,"r":…}` oder `{"v":1,"id":n,"ok":false,"e":{"code":"…","message":"…"}}` |
 | Ereignis | `{"v":1,"ev":"<name>","d":…}` |
 | Relay-Status (nur über Relay) | `{"type":"relay","state":"companion-online"|"companion-offline"}` |

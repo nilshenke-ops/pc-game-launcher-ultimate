@@ -133,15 +133,31 @@ export function OfflineState() {
 
 export function Modal({ title, onClose, children, footer, wide, className = "" }: { title: ReactNode; onClose: () => void; children: ReactNode; footer?: ReactNode; wide?: boolean; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  // Callers pass a new onClose on every render: kept in a ref, so a re-render (live values, a reload) does not run the
+  // effect again – that used to put the focus back into the first field while typing.
+  const close = useRef(onClose); close.current = onClose;
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      // Only the dialog on top reacts (e.g. a confirmation opened from an editor).
+      const open = document.querySelectorAll(".modal");
+      if (open[open.length - 1] !== ref.current) return;
+      if (e.key === "Escape") { close.current(); return; }
+      // Tab stays inside the dialog (focus trap); the page behind is inert for keyboard users too.
+      if (e.key !== "Tab" || !ref.current) return;
+      const items = [...ref.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+        .filter((el) => el.offsetParent !== null);
+      if (!items.length) return;
+      const firstEl = items[0], lastEl = items[items.length - 1];
+      if (e.shiftKey && (document.activeElement === firstEl || !ref.current.contains(document.activeElement))) { e.preventDefault(); lastEl.focus(); }
+      else if (!e.shiftKey && (document.activeElement === lastEl || !ref.current.contains(document.activeElement))) { e.preventDefault(); firstEl.focus(); }
+    };
     document.addEventListener("keydown", onKey);
     const first = ref.current?.querySelector<HTMLElement>("input, select, textarea, button:not(.modal-close)");
     first?.focus();
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; prev?.focus?.(); };
-  }, [onClose]);
+  }, []);
   return (
     <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={ref} className={`modal ${wide ? "wide" : ""} ${className}`} role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined}>
@@ -234,14 +250,15 @@ export function Meter({ value, max = 100 }: { value?: number | null; max?: numbe
 }
 
 export function Gauge({ value, label, sub }: { value?: number | null; label: string; sub?: string }) {
+  const gid = "g" + useId().replace(/:/g, ""); // unique per gauge – several on one page must not share it
   const r = 50, c = 2 * Math.PI * r;
   const pct = value == null ? 0 : Math.min(100, value);
   return (
     <div className="gauge" role="img" aria-label={`${label}: ${value == null ? t("Nicht verfügbar") : Math.round(value) + " %"}`}>
       <svg viewBox="0 0 120 120" width="120" height="120">
         <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(127,127,127,0.15)" strokeWidth="10" />
-        <circle cx="60" cy="60" r={r} fill="none" stroke="url(#g)" strokeWidth="10" strokeLinecap="round" strokeDasharray={`${(pct / 100) * c} ${c}`} style={{ transition: "stroke-dasharray .6s" }} />
-        <defs><linearGradient id="g"><stop offset="0" stopColor="var(--primary)" /><stop offset="1" stopColor="var(--accent)" /></linearGradient></defs>
+        <circle cx="60" cy="60" r={r} fill="none" stroke={`url(#${gid})`} strokeWidth="10" strokeLinecap="round" strokeDasharray={`${(pct / 100) * c} ${c}`} style={{ transition: "stroke-dasharray .6s" }} />
+        <defs><linearGradient id={gid}><stop offset="0" stopColor="var(--primary)" /><stop offset="1" stopColor="var(--accent)" /></linearGradient></defs>
       </svg>
       <div className="val"><div><b>{value == null ? "–" : `${Math.round(value)}%`}</b><small>{sub ?? label}</small></div></div>
     </div>
@@ -249,14 +266,15 @@ export function Gauge({ value, label, sub }: { value?: number | null; label: str
 }
 
 export function Sparkline({ values, max = 100 }: { values: (number | null | undefined)[]; max?: number }) {
+  const gid = "sf" + useId().replace(/:/g, "");
   const pts = values.map((v, i) => [i, v ?? 0] as const);
   if (pts.length < 2) return <svg className="spark" />;
   const w = 300, h = 56;
   const d = pts.map(([i, v], k) => `${k ? "L" : "M"}${(i / (pts.length - 1)) * w},${h - (Math.min(v, max) / max) * (h - 4) - 2}`).join(" ");
   return (
     <svg className="spark" viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" aria-hidden>
-      <defs><linearGradient id="sf" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="var(--primary)" stopOpacity="0.35" /><stop offset="1" stopColor="var(--primary)" stopOpacity="0" /></linearGradient></defs>
-      <path d={`${d} L${w},${h} L0,${h} Z`} fill="url(#sf)" />
+      <defs><linearGradient id={gid} x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="var(--primary)" stopOpacity="0.35" /><stop offset="1" stopColor="var(--primary)" stopOpacity="0" /></linearGradient></defs>
+      <path d={`${d} L${w},${h} L0,${h} Z`} fill={`url(#${gid})`} />
       <path d={d} fill="none" stroke="var(--primary)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
     </svg>
   );

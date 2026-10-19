@@ -182,6 +182,11 @@ export function createRelay(cfg: RelayConfig): Relay {
   const wss = new WebSocketServer({ noServer: true, maxPayload: cfg.maxPayloadBytes });
 
   server.on("upgrade", (req, socket, head) => {
+    // A malformed request must never take the relay down for everyone.
+    try { onUpgrade(req, socket, head); } catch (e) { log("warn", "upgrade failed", { error: String(e) }); socket.destroy(); }
+  });
+
+  const onUpgrade = (req: import("node:http").IncomingMessage, socket: import("node:stream").Duplex, head: Buffer) => {
     const ip = clientIp(req);
     const url = new URL(req.url ?? "/", "http://relay.local");
     const reject = (code: number, text: string) => { socket.write(`HTTP/1.1 ${code} ${text}\r\nConnection: close\r\n\r\n`); socket.destroy(); };
@@ -193,7 +198,9 @@ export function createRelay(cfg: RelayConfig): Relay {
     if (url.pathname.endsWith("/ws")) {
       const origin = req.headers.origin;
       if (origin) {
-        const o = new URL(origin);
+        // "Origin: null" (sandboxed page, file://) or garbage must be refused – not crash the relay.
+        let o: URL;
+        try { o = new URL(origin); } catch { reject(403, "Forbidden"); return; }
         const sameHost = o.host === req.headers.host;
         if (!sameHost && !cfg.allowedOrigins.includes(o.origin)) { reject(403, "Forbidden"); return; }
       }
@@ -204,7 +211,7 @@ export function createRelay(cfg: RelayConfig): Relay {
       return;
     }
     reject(404, "Not Found");
-  });
+  };
 
   function onCompanion(ws: WebSocket, ip: string) {
     let conn: CompanionConn | null = null;

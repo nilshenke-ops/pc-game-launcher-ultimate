@@ -445,6 +445,26 @@ test("Widget-Baukasten: eigenes Widget bauen, frei verschieben, auf Dashboard, O
   await pc.goto(`${COMPANION}/#/`);
 });
 
+test("Dialoge: Tastatur bleibt im Dialog, Fokus springt beim Tippen nicht zurück", async () => {
+  await pc.goto(`${COMPANION}/#/quick`);
+  await pc.getByRole("button", { name: "Neue Aktion" }).click();
+  const dialog = pc.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+  for (let i = 0; i < 25; i++) await pc.keyboard.press("Tab");
+  expect(await pc.evaluate(() => !!document.activeElement?.closest(".modal"))).toBe(true);
+  for (let i = 0; i < 25; i++) await pc.keyboard.press("Shift+Tab");
+  expect(await pc.evaluate(() => !!document.activeElement?.closest(".modal"))).toBe(true);
+  // Typing in a later field while the app re-renders (live updates) must not jump back to the first field.
+  const fields = dialog.locator("input.input");
+  await fields.nth(1).click();
+  await pc.evaluate(() => window.dispatchEvent(new Event("online"))); // triggers a reconnect check / re-render
+  await pc.keyboard.type("abc");
+  await pc.waitForTimeout(1000);
+  expect(await pc.evaluate(() => document.activeElement === document.querySelectorAll(".modal input.input")[1])).toBe(true);
+  await pc.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+});
+
 test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => {
   await pc.goto(`${COMPANION}/#/network`);
   await expect(pc.getByRole("heading", { name: "Netzwerkdiagnose" })).toBeVisible();
@@ -624,7 +644,10 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   // the standard rights, so the PC refuses it and the reason stays visible instead of the change silently vanishing.
   await expect(tablet.getByText("1 Änderungen warten auf den PC")).toBeVisible({ timeout: 15000 });
   await tablet.getByRole("button", { name: "Anzeigen" }).click();
-  await expect(tablet.getByText(/Diesem Gerät fehlt die Berechtigung „admin“/)).toBeVisible();
+  // A plugin file brings new code/rights: it is not sent by itself after pairing, only after a confirmation.
+  await expect(tablet.getByText(/Bringt neue Plugin-Dateien oder Rechte auf den PC – erst nach Bestätigung/)).toBeVisible();
+  await tablet.getByRole("button", { name: "Bestätigen" }).click();
+  await expect(tablet.getByText(/Diesem Gerät fehlt die Berechtigung „admin“/)).toBeVisible({ timeout: 15000 });
   await tablet.getByRole("button", { name: "Verwerfen" }).click();
   await expect(tablet.getByText("Alles übertragen.")).toBeVisible();
   await tablet.keyboard.press("Escape");

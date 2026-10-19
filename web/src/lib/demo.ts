@@ -5,7 +5,7 @@
 import { RpcError } from "./rpc";
 import type { AppState, AudioDevice, AutomationRule, Hotkey, LibraryItem, MetricsSample, Notification, Profile, ProfilesFile, QuickAction, Sound, SoundsFile } from "./types";
 
-export const DEMO_BUILD = import.meta.env.VITE_DEMO === "1";
+export { DEMO_BUILD } from "./demo-flag";
 const now = () => new Date().toISOString();
 const ago = (min: number) => new Date(Date.now() - min * 60000).toISOString();
 

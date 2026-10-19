@@ -92,6 +92,9 @@ test("unknown pc and foreign origins are refused", async () => {
   const { relay, base } = await start();
   await assert.rejects(open(`ws://${base}/ws?pc=fremd`), /404/);
   await assert.rejects(open(`ws://${base}/ws?pc=mein-pc`, { Origin: "https://evil.example" }), /403/);
+  // "Origin: null" (sandboxed page) is refused and does not crash the relay.
+  await assert.rejects(open(`ws://${base}/ws?pc=mein-pc`, { Origin: "null" }), /403/);
+  assert.equal((await fetch(`http://${base}/healthz`)).status, 200);
   await relay.close();
 });
 

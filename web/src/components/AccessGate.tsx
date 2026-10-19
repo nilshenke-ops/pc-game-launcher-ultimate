@@ -3,7 +3,7 @@ import { Lock } from "lucide-react";
 import { t } from "../lib/i18n";
 import { isUnlocked, unlock } from "../lib/access";
 import { client } from "../lib/rpc";
-import { DEMO_BUILD } from "../lib/demo";
+import { DEMO_BUILD } from "../lib/demo-flag";
 
 /** Asks once per device for the 4-digit access code. The PC's own window (admin session) and the demo are not asked. */
 export function AccessGate({ children }: { children: ReactNode }) {

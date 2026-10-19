@@ -1,6 +1,8 @@
-# PC Game Launcher Ultimate
+# Nexus Gaming Hub (früher PC Game Launcher Ultimate)
 
-Gaming-Zentrale für deinen Windows-PC: Spiele und Programme starten, Soundboard (auch für Discord), Gaming-Profile, Automatisierungen, Hotkeys und Live-PC-Monitor – bedienbar am PC und vom iPhone, iPad oder Android-Handy.
+Gaming-Zentrale für deinen Windows-PC: Spiele und Programme starten, Soundboard (für Discord über ein virtuelles Audiokabel – in einer echten Discord-Runde nicht getestet), Gaming-Profile, Automatisierungen, Hotkeys & Makros, Overlay & Aufnahme, eigene Widgets, Netzwerkdiagnose und Live-PC-Monitor – bedienbar am PC und vom iPhone, iPad oder Android-Handy.
+
+Seit 2.0.0 heißt die Oberfläche „Nexus Gaming Hub“. EXE-Name (`PCGameLauncherCompanion.exe`), Datenordner (`%APPDATA%\PCGameLauncherUltimate`) und Update-Adresse behalten bewusst den alten Namen, damit Updates und gekoppelte Geräte weiter funktionieren.
 
 ```
 ┌──────────────────────┐   WLAN (http/ws)    ┌─────────────────────────────────────┐
@@ -12,7 +14,7 @@ Gaming-Zentrale für deinen Windows-PC: Spiele und Programme starten, Soundboard
 ┌──────────────────────┐   ausgehend (wss)   │  • Tray, Autostart, WebView2-Fenster│
 │ Relay (optional,     │ ◀────────────────── │                                     │
 │ Node.js, eigener     │                     └─────────────────────────────────────┘
-│ Server)              │  leitet nur weiter – Anmeldung bleibt Ende-zu-Ende beim PC
+│ Server)              │  leitet nur weiter – nur die Anmeldung ist Ende-zu-Ende geschützt
 └──────────────────────┘
 ```
 
@@ -76,5 +78,12 @@ Unter Windows ohne Bash: `powershell -ExecutionPolicy Bypass -File scripts\publi
 - **Dashboard** mit Widgets, mehreren Layouts (Handy/Desktop getrennt), Design-Editor (Themes, Farben, Kontrastprüfung, Schrift, Rundung, Hintergrundbild), Import/Export.
 - **PC-Monitor** (CPU, RAM, GPU, Datenträger) – nur echte Werte mit Quellenangabe, nur während geöffnet.
 - **Diagnose** (Companion, Netzwerk, Relay, Audio, Browser), Benachrichtigungszentrale, Verlauf/Statistik, Backup/Wiederherstellung, Updatecenter, Deutsch/Englisch, globale Suche (Strg+K).
+- **Overlay & Aufnahme:** Overlay im Stil der Xbox Game Bar mit frei verschiebbaren Widgets; Aufnahme/Replay über OBS (WebSocket) oder per Tastenkürzel an NVIDIA, Xbox Game Bar, Steam, Discord.
+- **Widget-Baukasten:** eigene Widgets frei gestalten – für Dashboard, Overlay und als Windows-Desktop-Widget.
+- **Netzwerkdiagnose (Ping Doctor):** Ping, Jitter, Paketverlust, Verbindungsqualität, eigene Ziele (z. B. Spiel-Server).
+- **Navigation** in Kategorien, anpassbar (Reihenfolge, Ausblenden, Handy-Leiste).
+- **Plugins** (Widgets, Aktionen, Themes) aus einem signierten Katalog, ohne Code auf dem PC.
+
+Datenschutz: [docs/DATENSCHUTZ.md](docs/DATENSCHUTZ.md) · Sicherheit: [SECURITY.md](SECURITY.md) · Stand der Prüfung: [docs/BESTANDSAUFNAHME.md](docs/BESTANDSAUFNAHME.md) · Leistung: [docs/PERFORMANCE.md](docs/PERFORMANCE.md)
 
 Was getestet ist und was nicht: siehe [docs/ABSCHLUSSBERICHT.md](docs/ABSCHLUSSBERICHT.md).

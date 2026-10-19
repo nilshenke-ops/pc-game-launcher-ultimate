@@ -111,6 +111,7 @@ public sealed class RpcServer : IHub
     readonly Dictionary<string, (string perm, RpcHandler handler)> _methods = new();
     readonly ConcurrentDictionary<string, string> _done = new();
     readonly ConcurrentQueue<string> _doneOrder = new();
+    readonly ConcurrentDictionary<string, Lazy<Task<string>>> _running = new();
 
     void Remember(string op, string json)
     {
@@ -250,9 +251,15 @@ public sealed class RpcServer : IHub
                 await SafeSend(session, $"{{\"v\":{ProtocolVersion},\"id\":{id},\"ok\":true,\"r\":{cached}}}");
                 return;
             }
-            var result = await entry.handler(new RpcContext { Session = session, Params = p });
-            var json = Json.Serialize(result);
-            if (op != null) Remember(op, json);
+            string json;
+            if (op == null) json = Json.Serialize(await entry.handler(new RpcContext { Session = session, Params = p }));
+            else
+            {
+                // A copy that arrives while the first is still running waits for its answer instead of running again.
+                var run = _running.GetOrAdd(op, _ => new Lazy<Task<string>>(async () => Json.Serialize(await entry.handler(new RpcContext { Session = session, Params = p }))));
+                try { json = await run.Value; Remember(op, json); }
+                finally { _running.TryRemove(op, out _); }
+            }
             await SafeSend(session, $"{{\"v\":{ProtocolVersion},\"id\":{id},\"ok\":true,\"r\":{json}}}");
         }
         catch (Exception ex)

@@ -3,21 +3,24 @@
 
 import { client, RpcError } from "./rpc";
 import { t } from "./i18n";
-import { outbox, prepareForPc, substituteIds, type OutboxEntry } from "./outbox";
+import { needsConfirm, outbox, prepareForPc, substituteIds, type OutboxEntry } from "./outbox";
 import { uploadQueuedPluginFile } from "./plugins-offline";
 import { syncPending } from "./pending-sounds";
 
 let running = false;
 
-export async function syncOutbox(opts: { retryFailed?: boolean } = {}): Promise<{ sent: number; failed: number }> {
+export async function syncOutbox(opts: { retryFailed?: boolean } = {}): Promise<{ sent: number; failed: number; waiting?: number }> {
   if (running || client.status.auth !== "ok") return { sent: 0, failed: 0 };
   running = true;
-  let sent = 0, failed = 0;
+  let sent = 0, failed = 0, waiting = 0;
   try {
     await syncPending(); // sounds first: queued hotkeys/actions may refer to them
     for (const e of [...outbox.list()]) {
       const entry = outbox.all().find((x) => x.id === e.id);
       if (!entry || (entry.error && !opts.retryFailed)) { if (entry?.error) failed++; continue; }
+      // Plugins (new code, new rights) and very old changes go only after a confirmation; the others are sent meanwhile
+      // (they do not depend on a plugin – plugin changes all wait together).
+      if (needsConfirm(entry)) { waiting++; continue; }
       try {
         const result = await send(entry);
         outbox.remove(entry.id);
@@ -39,7 +42,7 @@ export async function syncOutbox(opts: { retryFailed?: boolean } = {}): Promise<
       }
     }
   } finally { running = false; }
-  return { sent, failed };
+  return { sent, failed, waiting };
 }
 
 async function send(e: OutboxEntry): Promise<unknown> {
@@ -65,11 +68,12 @@ let started = false;
 export function startOutboxSync(onDone: (r: { sent: number; failed: number }) => void) {
   if (started) return;
   started = true;
-  const run = () => syncOutbox().then((r) => { if (r.sent || r.failed) onDone(r); });
+  const run = () => syncOutbox().then((r) => { if (r.sent || r.failed || r.waiting) onDone(r); });
   client.on("authenticated", run);
   if (client.status.auth === "ok") run();
 }
 
-export const syncMessage = (r: { sent: number; failed: number }) =>
-  r.failed ? t("{s} Änderungen übertragen, {f} vom PC abgelehnt – Details unter „Wartende Änderungen“", { s: r.sent, f: r.failed })
+export const syncMessage = (r: { sent: number; failed: number; waiting?: number }) =>
+  r.waiting && !r.sent && !r.failed ? t("{n} Änderungen warten auf deine Bestätigung – unter „Wartende Änderungen“ ansehen", { n: r.waiting })
+  : r.failed ? t("{s} Änderungen übertragen, {f} vom PC abgelehnt – Details unter „Wartende Änderungen“", { s: r.sent, f: r.failed })
     : t("{s} offline gemachte Änderungen auf den PC übertragen", { s: r.sent });
