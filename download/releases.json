@@ -1,5 +1,33 @@
 [
   {
+    "version": "2.5.1",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.5.1/PCGameLauncherCompanion.exe",
+    "size": 87211739,
+    "sha256": "4bf7140f644beb80d2a0c0c0c70e44f40adfb6ce473ddf3dc4af7b536d1e05c2",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.5.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.5.1/PCGameLauncherCompanion-2.5.1-win-x64.zip",
+      "size": 81476931,
+      "sha256": "13abf6478d92461ed2aefec40d7f76ac1e936a26c8310473d8c247640af39fc2"
+    },
+    "notes": "Der PC meldet, wenn der Router ihm eine neue WLAN-Adresse gegeben hat (gekoppelte Handys suchen ihn sonst unter der alten), mit Lösung: QR-Code neu scannen, feste IP im Router; dieselbe Ursache steht auf dem Handy bei „PC nicht erreichbar“ · Hauptfunktion geprüft – Handy einmal koppeln, danach automatisch verbunden, Programme am PC starten: im Test 31–175 ms vom Tippen bis das Programm am PC läuft, 0,5 s vom Öffnen der App bis zum laufenden Programm, keine erneute Kopplung nach Schließen des Browsers oder Neustart des PCs · Schnelleres Wiederverbinden: Solange die App auf dem Bildschirm ist, versucht sie es höchstens alle 3 s (vorher bis 15 s) – nach dem Einschalten des PCs im Test nach 0,8–1,4 s wieder verbunden; ein Tippen auf „Spielen“ ohne Verbindung startet sofort einen neuen Verbindungsversuch (der Start selbst wird nie aufgehoben und später ausgeführt)",
+    "changes": {
+      "neu": [
+        "Der PC meldet, wenn der Router ihm eine neue WLAN-Adresse gegeben hat (gekoppelte Handys suchen ihn sonst unter der alten), mit Lösung: QR-Code neu scannen, feste IP im Router; dieselbe Ursache steht auf dem Handy bei „PC nicht erreichbar“"
+      ],
+      "verbessert": [
+        "Hauptfunktion geprüft – Handy einmal koppeln, danach automatisch verbunden, Programme am PC starten: im Test 31–175 ms vom Tippen bis das Programm am PC läuft, 0,5 s vom Öffnen der App bis zum laufenden Programm, keine erneute Kopplung nach Schließen des Browsers oder Neustart des PCs",
+        "Schnelleres Wiederverbinden: Solange die App auf dem Bildschirm ist, versucht sie es höchstens alle 3 s (vorher bis 15 s) – nach dem Einschalten des PCs im Test nach 0,8–1,4 s wieder verbunden; ein Tippen auf „Spielen“ ohne Verbindung startet sofort einen neuen Verbindungsversuch (der Start selbst wird nie aufgehoben und später ausgeführt)",
+        "Gerät koppeln am PC: Ist der Autostart aus, wird er mit einem Klick angeboten – sonst ist der PC nach einem Neustart für das Handy nicht erreichbar"
+      ],
+      "behoben": []
+    },
+    "signature": "lUst+obEn0FYsWllSSclzKFaOMYdjqMW9pIbaCBARL8Gxim2lFYvCCRNZlfUfj+IZ8fV6bp1Ix2ty3BF0+NOzw=="
+  },
+  {
     "version": "2.5.0",
     "date": "2026-10-19",
     "channel": "stable",
