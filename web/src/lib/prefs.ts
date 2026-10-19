@@ -93,7 +93,8 @@ export function applyTheme(t: Theme) {
   const scene = !t.bgImage && t.bgScene ? BG_SCENES.find((s) => s.id === t.bgScene) : undefined;
   root.dataset.bgfit = scene?.phone ? "phone" : scene?.sky ? "bottom" : "cover";
   root.style.setProperty("--bg-sky", scene?.sky ?? "transparent");
-  root.dataset.motion = t.reduceMotion ? "reduce" : "full";
+  root.dataset.motion = t.reduceMotion || t.lite ? "reduce" : "full";
+  root.dataset.lite = t.lite ? "1" : "0";
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", t.background);
 }
 

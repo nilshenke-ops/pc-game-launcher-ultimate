@@ -132,7 +132,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Runner.ObsRecordToggle = () => Capture.Run("record");
         Runner.ObsReplaySave = () => Capture.Run("replay");
         Runner.ObsReplayBufferToggle = () => Capture.Run("buffer");
-        Platform.Overlay.Changed += () => Rpc.Changed("overlay");
+        Platform.Overlay.Changed += () => { Rpc.Changed("overlay"); UpdateGameMode(); };
         Obs.RecordingChanged += (active, path) => Notifications.Push("obs-record", Severity.Success, active ? "Aufnahme läuft" : "Aufnahme gespeichert", active ? "OBS nimmt auf." : path, "/overlay-settings");
         Obs.ReplaySaved += path => Notifications.Push("obs-replay", Severity.Success, "Replay gespeichert", path, "/overlay-settings");
         Plugins.RunSteps = (steps, by) => Runner.RunAsync(steps, by);
@@ -154,6 +154,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStarted, item.Id);
+            UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs") _ = ObsReplayBuffer(true);
         };
         Sessions.Stopped += (item, at) =>
@@ -168,6 +169,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStopped, item.Id);
+            UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs" && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
         };
 
@@ -322,6 +324,23 @@ public sealed class CompanionServices : IAsyncDisposable
         ApplyRelaySettings(Settings.Get());
         _ = Automations.Fire(TriggerType.CompanionStarted, null);
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
+    }
+
+    (bool, bool)? _gameMode;
+
+    /// <summary>
+    /// While a game runs: background work waits (GameActivity) and the companion steps back (lower priority, efficiency
+    /// mode, smaller memory footprint). While the large overlay is open, the companion runs normally so it reacts at once.
+    /// </summary>
+    void UpdateGameMode()
+    {
+        var gaming = Sessions.AnyGameRunning();
+        GameActivity.Set(gaming);
+        var step = gaming && Platform.Overlay.Visible != "full";
+        var audioLive = Audio.Engine.MicPassthroughActive;
+        if (_gameMode == (step, audioLive)) return;
+        _gameMode = (step, audioLive);
+        if (Platform.GameMode.Apply(step, audioLive) is { Length: > 0 } what) Log.Info("gamemode", what);
     }
 
     async Task ObsReplayBuffer(bool on)

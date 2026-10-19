@@ -288,8 +288,8 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
 
   // The Game-Overlay plugin: installed, activated, its widget controls OBS – on the dashboard and on the overlay page.
   await pc.goto(`${COMPANION}/#/plugins?tab=dev`);
-  await pc.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.game-overlay-1.2.0.pglplugin"));
-  await expect(pc.getByText("Prüfung bestanden: Game-Overlay 1.2.0")).toBeVisible();
+  await pc.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.game-overlay-1.2.1.pglplugin"));
+  await expect(pc.getByText("Prüfung bestanden: Game-Overlay 1.2.1")).toBeVisible();
   await pc.getByRole("button", { name: "Installieren (deaktiviert)" }).click();
   await pc.goto(`${COMPANION}/#/plugins`);
   await pc.locator(".card", { hasText: "Game-Overlay" }).getByRole("button", { name: "Details" }).click();
@@ -490,7 +490,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByText("Wartet auf PC").first()).toBeVisible();
   // Plugin file without PC: checked on the tablet, kept until the PC is connected.
   await tablet.goto(`${HOSTED_SITE}/#/plugins?tab=dev`);
-  await tablet.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.cpu-mini-1.0.0.pglplugin"));
+  await tablet.locator('input[type="file"]').setInputFiles(join(state().workDir, "de.pgl.cpu-mini-1.0.1.pglplugin"));
   await expect(tablet.getByText(/„CPU & RAM Mini“ vorgemerkt/)).toBeVisible();
   await expect(tablet.getByText("3 Änderungen warten auf den PC")).toBeVisible();
   await tablet.reload();

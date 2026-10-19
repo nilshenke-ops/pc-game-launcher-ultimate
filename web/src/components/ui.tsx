@@ -230,7 +230,7 @@ export function CheckList({ checks }: { checks: { label: string; status: string;
 
 export function Meter({ value, max = 100 }: { value?: number | null; max?: number }) {
   const pct = value == null ? 0 : Math.min(100, (value / max) * 100);
-  return <div className={`meter ${pct > 90 ? "error" : pct > 75 ? "warn" : ""}`} role="meter" aria-valuenow={value ?? undefined} aria-valuemin={0} aria-valuemax={max}><i style={{ width: `${pct}%` }} /></div>;
+  return <div className={`meter ${pct > 90 ? "error" : pct > 75 ? "warn" : ""}`} role="meter" aria-valuenow={value ?? undefined} aria-valuemin={0} aria-valuemax={max}><i style={{ transform: `scaleX(${pct / 100})` }} /></div>;
 }
 
 export function Gauge({ value, label, sub }: { value?: number | null; label: string; sub?: string }) {

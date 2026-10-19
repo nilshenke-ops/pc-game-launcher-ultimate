@@ -1421,4 +1421,6 @@ export const en: Record<string, string> = {
   "Cartoon Nacht": "Cartoon Night",
   "Cartoon Unterwasser": "Cartoon Underwater",
   "Cartoon Weltall": "Cartoon Space",
+  "Leichte Darstellung (spart Leistung)": "Light rendering (saves performance)",
+  "Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.": "Without blur effects, glow and animations. For weaker devices, longer battery life or when the app is open next to a game.",
 };

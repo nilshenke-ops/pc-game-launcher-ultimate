@@ -322,12 +322,12 @@ public sealed class UpdateService
     /// <summary>Checks 2 minutes after start and then once a day (one small download). Never installs on its own.</summary>
     public void StartAutoCheck()
     {
-        _timer = new Timer(async _ =>
+        _timer = new Timer(_ => GameActivity.RunWhenIdle("update-check", async () =>
         {
             if (string.IsNullOrEmpty(_settings().UpdateManifestUrl) || _state is "downloading") return;
             await Check();
             if (_available is { } m && _announced != m.Version) { _announced = m.Version; Available?.Invoke(m); }
-        }, null, TimeSpan.FromMinutes(2), TimeSpan.FromHours(24));
+        }), null, TimeSpan.FromMinutes(2), TimeSpan.FromHours(24));
     }
 
     public void Dispose() => _timer?.Dispose();

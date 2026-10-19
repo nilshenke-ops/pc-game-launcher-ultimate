@@ -26,6 +26,24 @@ public interface IPlatform
     IOverlay Overlay => NullOverlay.Instance;
     /// <summary>Presses keyboard shortcuts of other programs (NVIDIA, Xbox Game Bar …). Windows companion only.</summary>
     IKeySender KeySender => NullKeySender.Instance;
+    /// <summary>Makes the companion step back while a game runs (priority, efficiency mode, memory). No-op elsewhere.</summary>
+    IGameMode GameMode => NullGameMode.Instance;
+}
+
+public interface IGameMode
+{
+    /// <summary>
+    /// true while a game runs (and the large overlay is not open). audioLive: the microphone is passed through right now –
+    /// then priority and clock speed stay normal so voice chat does not crackle; only memory is given back.
+    /// Returns a readable description of what was applied.
+    /// </summary>
+    string Apply(bool gaming, bool audioLive);
+}
+
+public sealed class NullGameMode : IGameMode
+{
+    public static readonly NullGameMode Instance = new();
+    public string Apply(bool gaming, bool audioLive) => "";
 }
 
 public interface IKeySender
@@ -91,6 +109,34 @@ public sealed record ProcessInfo(int Pid, string Name, string? Path);
 public interface IProcessSource
 {
     IReadOnlyList<ProcessInfo> Snapshot();
+    /// <summary>Without paths it is much cheaper (no handle per process) – paths are only needed for games detected by folder.</summary>
+    IReadOnlyList<ProcessInfo> Snapshot(bool withPaths) => Snapshot();
+}
+
+/// <summary>
+/// Remembers the executable path per process id, so each process is opened only once instead of every scan.
+/// A recycled id with a different process name is looked up again.
+/// </summary>
+public sealed class ProcessPathCache
+{
+    readonly Dictionary<int, (string name, string? path)> _known = new();
+
+    /// <summary>Paths for the current processes; <paramref name="resolve"/> is only called for processes not seen before.</summary>
+    public IReadOnlyList<ProcessInfo> Resolve(IEnumerable<(int pid, string name)> current, Func<int, string?> resolve)
+    {
+        var list = new List<ProcessInfo>();
+        var seen = new HashSet<int>();
+        foreach (var (pid, name) in current)
+        {
+            seen.Add(pid);
+            if (!_known.TryGetValue(pid, out var k) || k.name != name) _known[pid] = k = (name, resolve(pid));
+            list.Add(new ProcessInfo(pid, name, k.path));
+        }
+        foreach (var gone in _known.Keys.Where(p => !seen.Contains(p)).ToList()) _known.Remove(gone);
+        return list;
+    }
+
+    public int Count => _known.Count;
 }
 
 public sealed class PlayRequest

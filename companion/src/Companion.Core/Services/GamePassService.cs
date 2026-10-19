@@ -54,7 +54,7 @@ public sealed partial class GamePassService : IDisposable
     public void Start()
     {
         _timer?.Dispose();
-        _timer = new Timer(_ => { if (_settings().GamePassEnabled) _ = SyncAsync(force: false); }, null, TimeSpan.FromSeconds(20), InstallScanInterval);
+        _timer = new Timer(_ => { if (_settings().GamePassEnabled) GameActivity.RunWhenIdle("gamepass", () => SyncAsync(force: false)); }, null, TimeSpan.FromSeconds(20), InstallScanInterval);
     }
 
     public void Dispose() { _timer?.Dispose(); _http.Dispose(); }

@@ -315,7 +315,7 @@ function OverlayWidgetPicker({ plugins, canManage, online }: { plugins?: PluginL
         })}
       </div>
       <Field label={t("Deckkraft der Widgets: {p} %", { p: Math.round(layout.opacity * 100) })}>
-        <input type="range" min={40} max={100} step={5} value={Math.round(layout.opacity * 100)} disabled={!canManage} aria-label={t("Deckkraft")}
+        <input type="range" min={50} max={100} step={5} value={Math.round(layout.opacity * 100)} disabled={!canManage} aria-label={t("Deckkraft")}
           onChange={(e) => save({ ...layout, opacity: Number(e.target.value) / 100 })} />
       </Field>
       <div><Button size="sm" variant="ghost" disabled={!canManage || !q.data?.layout} onClick={() => save(null)}>{t("Anordnung zurücksetzen")}</Button></div>

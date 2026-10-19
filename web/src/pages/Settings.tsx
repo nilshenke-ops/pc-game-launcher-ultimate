@@ -159,6 +159,8 @@ function Design() {
           <Field label={t("Ecken-Rundung: {v} px", { v: th.radius })}><input type="range" min={0} max={28} value={th.radius} onChange={(e) => setTheme({ radius: +e.target.value })} /></Field>
           <Field label={t("Deckkraft der Karten: {v} %", { v: Math.round(th.surfaceAlpha * 100) })}><input type="range" min={0.35} max={1} step={0.01} value={th.surfaceAlpha} onChange={(e) => setTheme({ surfaceAlpha: +e.target.value })} /></Field>
           <Switch checked={th.reduceMotion} onChange={(reduceMotion) => setTheme({ reduceMotion })} label={t("Animationen reduzieren")} />
+          <Switch checked={!!th.lite} onChange={(lite) => setTheme({ lite })} label={t("Leichte Darstellung (spart Leistung)")}
+            hint={t("Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.")} />
         </div>
       </Card>
       <Card title={t("Hintergrund")} icon={<ImagePlus size={18} />}>

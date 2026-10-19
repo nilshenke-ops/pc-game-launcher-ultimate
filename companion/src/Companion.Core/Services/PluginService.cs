@@ -179,7 +179,7 @@ public sealed partial class PluginService : IDisposable
     }
 
     /// <summary>Daily: refresh the catalog and apply updates the user allowed (auto update) – only if no new permissions are needed.</summary>
-    public void Start() => _timer = new Timer(async _ =>
+    public void Start() => _timer = new Timer(_ => GameActivity.RunWhenIdle("plugin-updates", async () =>
     {
         try
         {
@@ -190,7 +190,7 @@ public sealed partial class PluginService : IDisposable
                 catch (Exception ex) { AddLog(p.Id, "warn", "Automatisches Update übersprungen: " + ex.Message); }
         }
         catch (Exception ex) { Log.Warn("plugins", ex.Message); }
-    }, null, TimeSpan.FromMinutes(3), TimeSpan.FromHours(24));
+    }), null, TimeSpan.FromMinutes(3), TimeSpan.FromHours(24));
 
     public void Dispose() { _timer?.Dispose(); _http.Dispose(); }
 

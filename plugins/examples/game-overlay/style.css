@@ -4,13 +4,12 @@ section + section { margin-top: 12px; }
 .row { display: flex; justify-content: space-between; align-items: baseline; margin: 5px 0 2px; }
 .row b { font-variant-numeric: tabular-nums; }
 .bar { height: 7px; border-radius: 4px; background: var(--pgl-border); overflow: hidden; }
-.bar i { display: block; height: 100%; width: 0; background: var(--pgl-accent); transition: width .4s; }
+.bar i { display: block; height: 100%; width: 100%; transform: scaleX(0); transform-origin: left; background: var(--pgl-accent); transition: transform .4s; }
 .bar i.hot { background: #f59e0b; }
 .state { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; min-height: 22px; }
 .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--pgl-border); flex: none; }
-.dot.rec { background: #ef4444; animation: blink 1.2s infinite; }
+.dot.rec { background: #ef4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, .3); }
 .dot.ok { background: #22c55e; }
-@keyframes blink { 50% { opacity: .35; } }
 .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 button { font: inherit; color: var(--pgl-text); background: transparent; border: 1px solid var(--pgl-border); border-radius: 8px; padding: 8px 10px; cursor: pointer; }
 button:hover:not(:disabled) { border-color: var(--pgl-accent); }

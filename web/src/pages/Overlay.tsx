@@ -52,7 +52,7 @@ export default function Overlay() {
   }, [menu]);
   useEffect(() => { if (conn.auth === "ok") refreshState(0); }, [conn.auth]);
   // Take the stored arrangement – but not while something is being dragged here (that would make it jump back).
-  useEffect(() => { if (saved.data && plugins.data && !editing.current) setLayout(layoutOrDefault(saved.data.layout, overlayPluginWidgets(plugins.data))); }, [saved.data, plugins.data]);
+  useEffect(() => { if (saved.data && plugins.data && !editing.current) setLayout(layoutOrDefault(saved.data.layout, overlayPluginWidgets(plugins.data), { w: window.innerWidth, h: window.innerHeight })); }, [saved.data, plugins.data]);
   // Like the Game Bar: the widget clicked last is in front.
   const [front, setFront] = useState<string[]>([]);
   const toFront = (id: string) => setFront((f) => (f[f.length - 1] === id ? f : [...f.filter((x) => x !== id), id]));
@@ -112,13 +112,13 @@ export default function Overlay() {
                 <span className="gb-menu-icon">{c.icon}</span>
                 <span className="grow">{c.title}</span>
                 <input type="checkbox" checked={on} aria-label={c.title}
-                  onChange={() => { editing.current = true; save(on ? removeWidget(l, c.id) : addWidget(l, c.id)); }} />
+                  onChange={() => { editing.current = true; save(on ? removeWidget(l, c.id) : addWidget(l, c.id, view)); }} />
               </label>
             );
           })}
           <label className="gb-menu-item">
             <span className="grow">{t("Deckkraft")} {Math.round(l.opacity * 100)} %</span>
-            <input type="range" min={40} max={100} step={5} value={Math.round(l.opacity * 100)} aria-label={t("Deckkraft")}
+            <input type="range" min={50} max={100} step={5} value={Math.round(l.opacity * 100)} aria-label={t("Deckkraft")}
               onChange={(e) => { editing.current = true; save({ ...l, opacity: Number(e.target.value) / 100 }); }} />
           </label>
           <button className="gb-btn wide" onClick={() => { editing.current = true; save(null); }}><RotateCcw size={14} /> {t("Anordnung zurücksetzen")}</button>

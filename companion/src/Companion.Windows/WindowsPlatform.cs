@@ -37,6 +37,7 @@ sealed class WindowsPlatform : IPlatform
     public WindowsOverlay OverlayWindows { get; }
     public IOverlay Overlay => OverlayWindows;
     public IKeySender KeySender { get; } = new WindowsKeySender();
+    public IGameMode GameMode { get; } = new WindowsGameMode();
 }
 
 /// <summary>Runs code on the WinForms UI thread.</summary>
@@ -123,26 +124,28 @@ sealed class WindowsProcessSource : IProcessSource
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)] static extern bool QueryFullProcessImageName(IntPtr h, int flags, StringBuilder name, ref int size);
     const uint PROCESS_QUERY_LIMITED_INFORMATION = 0x1000;
 
-    public IReadOnlyList<ProcessInfo> Snapshot()
+    readonly ProcessPathCache _paths = new();
+    readonly StringBuilder _sb = new(1024);
+    readonly object _lock = new();
+
+    public IReadOnlyList<ProcessInfo> Snapshot() => Snapshot(withPaths: true);
+
+    public IReadOnlyList<ProcessInfo> Snapshot(bool withPaths)
     {
-        var list = new List<ProcessInfo>();
-        var sb = new StringBuilder(1024);
+        var current = new List<(int pid, string name)>();
         foreach (var p in Process.GetProcesses())
-        {
-            using (p)
-            {
-                string? path = null;
-                var h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, p.Id);
-                if (h != IntPtr.Zero)
-                {
-                    int size = sb.Capacity;
-                    if (QueryFullProcessImageName(h, 0, sb, ref size)) path = sb.ToString(0, size);
-                    CloseHandle(h);
-                }
-                try { list.Add(new ProcessInfo(p.Id, p.ProcessName, path)); } catch { }
-            }
-        }
-        return list;
+            using (p) { try { current.Add((p.Id, p.ProcessName)); } catch { /* exited meanwhile */ } }
+        if (!withPaths) return current.Select(c => new ProcessInfo(c.pid, c.name, null)).ToList();
+        // Each process is opened only the first time it is seen (not ~300 handles every scan).
+        lock (_lock) return _paths.Resolve(current, PathOf);
+    }
+
+    string? PathOf(int pid)
+    {
+        var h = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid);
+        if (h == IntPtr.Zero) return null;
+        try { int size = _sb.Capacity; return QueryFullProcessImageName(h, 0, _sb, ref size) ? _sb.ToString(0, size) : null; }
+        finally { CloseHandle(h); }
     }
 }
 
@@ -386,10 +389,10 @@ sealed class WindowsMetrics : IMetricsSource
     (ulong idle, ulong total)? _lastCpu;
     readonly string? _cpuName = ReadCpuName();
     readonly List<string> _gpuNames = ReadGpuNames();
-    readonly string? _nvidiaSmi = FindNvidiaSmi();
+    readonly NvidiaSmiStream? _smi = FindNvidiaSmi() is { } exe ? new NvidiaSmiStream(exe) : null;
     Dictionary<string, CounterSample>? _lastGpu;
-    DateTime _lastSmi = DateTime.MinValue;
-    List<GpuSample>? _smiCache;
+    DateTime _lastCounters = DateTime.MinValue;
+    double? _counterCache;
     bool _gpuCountersBroken;
 
     public MetricsSample Sample()
@@ -410,25 +413,20 @@ sealed class WindowsMetrics : IMetricsSource
             s.Sources["ram"] = "GlobalMemoryStatusEx";
         }
         s.UptimeHours = Math.Round(Environment.TickCount64 / 3_600_000.0, 1);
-        s.Disks = DiskInfo.Read();
+        s.Disks = DiskInfo.ReadCached(TimeSpan.FromSeconds(60)); // free space changes slowly; avoids waking sleeping disks
         s.Gpus = SampleGpus();
         return s;
     }
 
     List<GpuSample> SampleGpus()
     {
-        // NVIDIA: nvidia-smi delivers utilisation, temperature and memory (queried at most every 4 s).
-        if (_nvidiaSmi != null)
-        {
-            if (DateTime.UtcNow - _lastSmi > TimeSpan.FromSeconds(4) || _smiCache == null)
-            {
-                _lastSmi = DateTime.UtcNow;
-                _smiCache = QueryNvidiaSmi(_nvidiaSmi) ?? _smiCache;
-            }
-            if (_smiCache is { Count: > 0 }) return _smiCache;
-        }
+        // NVIDIA: one nvidia-smi keeps running in loop mode while values are needed (instead of starting a new
+        // process every few seconds) and ends itself 30 s after the last request.
+        if (_smi?.Latest() is { Count: > 0 } smi) return smi;
         // Others: Windows "GPU Engine" performance counters (same source as Task Manager), no temperature.
-        var util = GpuEngineUtilization();
+        // Reading them is expensive (hundreds of instances), so at most every 4 s.
+        if (DateTime.UtcNow - _lastCounters > TimeSpan.FromSeconds(4)) { _lastCounters = DateTime.UtcNow; _counterCache = GpuEngineUtilization(); }
+        var util = _counterCache;
         var list = new List<GpuSample>();
         if (_gpuNames.Count == 0 && util == null) return list;
         var name = _gpuNames.Count == 1 ? _gpuNames[0] : string.Join(" / ", _gpuNames);
@@ -471,27 +469,6 @@ sealed class WindowsMetrics : IMetricsSource
         }
     }
 
-    static List<GpuSample>? QueryNvidiaSmi(string exe)
-    {
-        try
-        {
-            var psi = new ProcessStartInfo(exe) { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true };
-            psi.ArgumentList.Add("--query-gpu=name,utilization.gpu,temperature.gpu,memory.used,memory.total");
-            psi.ArgumentList.Add("--format=csv,noheader,nounits");
-            using var p = Process.Start(psi)!;
-            var output = p.StandardOutput.ReadToEnd();
-            if (!p.WaitForExit(2000)) { p.Kill(); return null; }
-            var inv = System.Globalization.CultureInfo.InvariantCulture;
-            return output.Split('\n', StringSplitOptions.RemoveEmptyEntries).Select(line =>
-            {
-                var f = line.Split(',').Select(x => x.Trim()).ToArray();
-                double? D(int i) => i < f.Length && double.TryParse(f[i], System.Globalization.NumberStyles.Float, inv, out var v) ? v : null;
-                return new GpuSample { Name = f[0], UtilPercent = D(1), TempC = D(2), MemUsedBytes = (long?)(D(3) * 1024 * 1024), MemTotalBytes = (long?)(D(4) * 1024 * 1024), Source = "nvidia-smi" };
-            }).ToList();
-        }
-        catch { return null; }
-    }
-
     static string? FindNvidiaSmi()
     {
         foreach (var p in new[] { Path.Combine(Environment.SystemDirectory, "nvidia-smi.exe"), Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "NVIDIA Corporation", "NVSMI", "nvidia-smi.exe") })
@@ -524,5 +501,67 @@ sealed class WindowsMetrics : IMetricsSource
         }
         catch { }
         return names.Distinct().ToList();
+    }
+}
+
+/// <summary>
+/// nvidia-smi in loop mode ("-lms 2000"): one long-running process prints a line per GPU every 2 s. Started on the
+/// first request, stopped 30 s after the last one – so nothing runs while nobody looks at GPU values.
+/// </summary>
+sealed class NvidiaSmiStream(string exe)
+{
+    readonly object _lock = new();
+    readonly Dictionary<int, GpuSample> _gpus = new();
+    Process? _proc;
+    DateTime _lastRequest, _lastLine;
+    System.Threading.Timer? _idleTimer;
+    bool _broken;
+
+    public List<GpuSample>? Latest()
+    {
+        lock (_lock)
+        {
+            if (_broken) return null;
+            _lastRequest = DateTime.UtcNow;
+            if (_proc == null || _proc.HasExited) Start();
+            // Values older than 10 s are not shown as current.
+            return DateTime.UtcNow - _lastLine < TimeSpan.FromSeconds(10) ? _gpus.OrderBy(g => g.Key).Select(g => g.Value).ToList() : null;
+        }
+    }
+
+    void Start()
+    {
+        try
+        {
+            var psi = new ProcessStartInfo(exe) { RedirectStandardOutput = true, UseShellExecute = false, CreateNoWindow = true };
+            psi.ArgumentList.Add(NvidiaSmi.Query);
+            psi.ArgumentList.Add("--format=csv,noheader,nounits");
+            psi.ArgumentList.Add("-lms");
+            psi.ArgumentList.Add("2000");
+            var p = new Process { StartInfo = psi, EnableRaisingEvents = true };
+            p.OutputDataReceived += (_, e) =>
+            {
+                if (e.Data is not { } line || NvidiaSmi.ParseLine(line) is not { } r) return;
+                lock (_lock) { _gpus[r.index] = r.gpu; _lastLine = DateTime.UtcNow; }
+            };
+            p.Start();
+            try { p.PriorityClass = ProcessPriorityClass.BelowNormal; } catch { }
+            p.BeginOutputReadLine();
+            _proc = p;
+            _idleTimer ??= new System.Threading.Timer(_ => StopIfIdle(), null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+        }
+        catch (Exception ex) { _broken = true; Log.Warn("monitor", "nvidia-smi nicht nutzbar: " + ex.Message); }
+    }
+
+    void StopIfIdle()
+    {
+        lock (_lock)
+        {
+            if (_proc == null || DateTime.UtcNow - _lastRequest < TimeSpan.FromSeconds(30)) return;
+            try { if (!_proc.HasExited) _proc.Kill(); } catch { }
+            _proc.Dispose();
+            _proc = null;
+            _gpus.Clear();
+        }
     }
 }

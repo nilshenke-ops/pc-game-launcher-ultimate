@@ -313,6 +313,34 @@ sealed class MainForm : Form
         _fallback.BringToFront();
     }
 
+    // Hidden in the tray or minimized (typical while gaming): the browser engine is suspended and gives memory back,
+    // so it uses no CPU at all. It continues where it was as soon as the window is shown again.
+    protected override void OnVisibleChanged(EventArgs e) { base.OnVisibleChanged(e); _ = WebActive(Visible && WindowState != FormWindowState.Minimized); }
+    protected override void OnResize(EventArgs e) { base.OnResize(e); _ = WebActive(Visible && WindowState != FormWindowState.Minimized); }
+
+    bool _webActive = true;
+    async Task WebActive(bool active)
+    {
+        if (_web?.CoreWebView2 is not { } core || active == _webActive) return;
+        _webActive = active;
+        try
+        {
+            if (active)
+            {
+                _web.Visible = true;
+                if (core.IsSuspended) core.Resume();
+                core.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Normal;
+            }
+            else
+            {
+                _web.Visible = false; // suspending needs an invisible WebView
+                core.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+                await core.TrySuspendAsync();
+            }
+        }
+        catch (Exception ex) { Log.Warn("ui", "WebView2 ruhen/aufwecken: " + ex.Message); }
+    }
+
     public void Navigate(string hash)
     {
         if (_web?.CoreWebView2 == null) return;

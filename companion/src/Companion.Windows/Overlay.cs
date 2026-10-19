@@ -129,7 +129,13 @@ sealed class FullOverlayForm : Form
                 core.NewWindowRequested += (_, e) => e.Handled = true;
                 core.Navigate(_origin + "/#/overlay");
             }
-            else await _web.CoreWebView2.ExecuteScriptAsync("window.dispatchEvent(new Event('pgl-overlay-shown'))");
+            else
+            {
+                _web.Visible = true;
+                if (_web.CoreWebView2.IsSuspended) _web.CoreWebView2.Resume();
+                _web.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Normal;
+                await _web.CoreWebView2.ExecuteScriptAsync("window.dispatchEvent(new Event('pgl-overlay-shown'))");
+            }
             _web.Focus();
         }
         catch (Exception ex) { Log.Error("overlay", "Overlay-Oberfläche konnte nicht starten: " + ex.Message); }
@@ -149,6 +155,23 @@ sealed class FullOverlayForm : Form
     {
         Hide();
         if (_previous != IntPtr.Zero) SetForegroundWindow(_previous); // back to the game
+        BackgroundImage = null; // the screenshot is only needed while the overlay is open
+        _backdrop?.Dispose();
+        _backdrop = null;
+        _ = Rest();
+    }
+
+    /// <summary>While hidden, the overlay's browser engine is suspended: no CPU, less memory, during the game.</summary>
+    async Task Rest()
+    {
+        if (_web.CoreWebView2 is not { } core) return;
+        try
+        {
+            _web.Visible = false;
+            core.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+            await core.TrySuspendAsync();
+        }
+        catch (Exception ex) { Log.Warn("overlay", "Overlay ruhen lassen: " + ex.Message); }
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)

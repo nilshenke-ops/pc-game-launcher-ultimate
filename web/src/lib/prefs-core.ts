@@ -14,6 +14,8 @@ export interface Theme {
   radius: number; // px
   fontScale: number; // 0.85 .. 1.3
   reduceMotion: boolean;
+  /** Light rendering: no blur effects, no animations, no glow – for weaker devices, battery, or next to a game. */
+  lite?: boolean;
   bgImage?: string | null; // data URL or https URL
   bgScene?: string | null; // built-in background (public/backgrounds/<id>.svg)
   bgDim: number; // 0 .. 0.9
@@ -135,6 +137,7 @@ export function sanitizePrefs(input: unknown): Prefs {
     radius: num(t.radius, 0, 28, d.theme.radius),
     fontScale: num(t.fontScale, 0.85, 1.35, d.theme.fontScale),
     reduceMotion: !!t.reduceMotion,
+    lite: !!t.lite,
     bgImage: typeof t.bgImage === "string" && (t.bgImage.startsWith("data:image/") || t.bgImage.startsWith("https://")) && t.bgImage.length < 1_200_000 ? t.bgImage : null,
     bgScene: typeof t.bgScene === "string" && BG_SCENES.some((s) => s.id === t.bgScene) ? t.bgScene : null,
     bgDim: num(t.bgDim, 0, 0.9, d.theme.bgDim),

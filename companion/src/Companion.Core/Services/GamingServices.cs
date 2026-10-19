@@ -426,7 +426,8 @@ public sealed class SessionTracker : IDisposable
         var items = _library.List().Where(i => i.ProcessNames.Count > 0 || i.InstallDir != null).ToList();
         if (items.Count == 0 && _running.Count == 0) return;
         IReadOnlyList<ProcessInfo> snapshot;
-        try { snapshot = _processes.Snapshot(); } catch (Exception ex) { Log.Warn("sessions", ex.Message); return; }
+        var needPaths = items.Any(i => i.InstallDir != null);
+        try { snapshot = _processes.Snapshot(needPaths); } catch (Exception ex) { Log.Warn("sessions", ex.Message); return; }
         var names = snapshot.Select(p => p.Name).ToHashSet(StringComparer.OrdinalIgnoreCase);
         var paths = snapshot.Where(p => p.Path != null).Select(p => p.Path!).ToList();
         var now = DateTime.UtcNow;

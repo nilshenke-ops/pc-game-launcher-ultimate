@@ -8,7 +8,7 @@ let cap = null;
 function bar(id, pct, hot) {
   $(id).textContent = pct == null ? "n. v." : `${pct.toFixed(0)} %`;
   const el = $(id + "Bar");
-  el.style.width = `${pct ?? 0}%`;
+  el.style.transform = `scaleX(${(pct ?? 0) / 100})`; // GPU-friendly: no layout work on every sample
   el.classList.toggle("hot", pct != null && pct >= (hot ?? 90));
 }
 

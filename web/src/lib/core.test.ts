@@ -128,3 +128,21 @@ describe("sounds added without PC: format check before storing", () => {
     expect(sniffAudio(b("<html>"))).toBeNull();
   });
 });
+
+describe("overlay layout", () => {
+  it("places new widgets on free places of the real screen, never on top of each other", async () => {
+    const { addWidget, DEFAULT_OVERLAY_LAYOUT } = await import("./overlay-layout");
+    for (const view of [{ w: 1920, h: 1080 }, { w: 1400, h: 900 }, { w: 2560, h: 1440 }]) {
+      let l = { ...DEFAULT_OVERLAY_LAYOUT, widgets: [] as typeof DEFAULT_OVERLAY_LAYOUT.widgets };
+      for (const id of ["system", "capture", "quick", "soundboard", "favorites", "audio"]) l = addWidget(l, id, view);
+      const rects = l.widgets.map((w) => ({ x: w.x * view.w, y: w.y * view.h, w: w.w, h: 340 }));
+      const fitting = Math.floor((view.w - 32) / 352) * Math.floor((view.h - 80) / 340);
+      for (let i = 0; i < Math.min(rects.length, fitting); i++)
+        for (let j = 0; j < i; j++) {
+          const a = rects[i], b = rects[j];
+          expect(a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y, `${view.w}x${view.h}: ${l.widgets[i].id} overlaps ${l.widgets[j].id}`).toBe(false);
+        }
+      for (const r of rects) { expect(r.x).toBeGreaterThanOrEqual(0); expect(r.x + r.w).toBeLessThanOrEqual(view.w); }
+    }
+  });
+});

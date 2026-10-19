@@ -162,13 +162,30 @@ public sealed class GenericMetrics : IMetricsSource
             }
             catch { }
         }
-        s.Disks = DiskInfo.Read();
+        s.Disks = DiskInfo.ReadCached(TimeSpan.FromSeconds(60));
         return s;
     }
 }
 
 public static class DiskInfo
 {
+    static List<DiskSample>? _cache;
+    static DateTime _cacheAt;
+    static readonly object Lock = new();
+
+    /// <summary>
+    /// Free space changes slowly; asking the drives every 2 s costs time and can wake sleeping hard disks.
+    /// Live values therefore reuse the last reading for up to a minute.
+    /// </summary>
+    public static List<DiskSample> ReadCached(TimeSpan maxAge)
+    {
+        lock (Lock)
+        {
+            if (_cache == null || DateTime.UtcNow - _cacheAt > maxAge) { _cache = Read(); _cacheAt = DateTime.UtcNow; }
+            return _cache;
+        }
+    }
+
     public static List<DiskSample> Read()
     {
         var list = new List<DiskSample>();
@@ -208,5 +225,20 @@ public static class ArgSplitter
         }
         if (cur.Length > 0 || any) result.Add(cur.ToString());
         return result;
+    }
+}
+
+/// <summary>Reads lines of "nvidia-smi --query-gpu=index,name,utilization.gpu,temperature.gpu,memory.used,memory.total --format=csv,noheader,nounits".</summary>
+public static class NvidiaSmi
+{
+    public const string Query = "--query-gpu=index,name,utilization.gpu,temperature.gpu,memory.used,memory.total";
+
+    public static (int index, GpuSample gpu)? ParseLine(string line)
+    {
+        var f = line.Split(',').Select(x => x.Trim()).ToArray();
+        if (f.Length < 6 || !int.TryParse(f[0], out var index)) return null;
+        var inv = System.Globalization.CultureInfo.InvariantCulture;
+        double? D(int i) => double.TryParse(f[i], System.Globalization.NumberStyles.Float, inv, out var v) ? v : null; // "[N/A]" → null
+        return (index, new GpuSample { Name = f[1], UtilPercent = D(2), TempC = D(3), MemUsedBytes = (long?)(D(4) * 1024 * 1024), MemTotalBytes = (long?)(D(5) * 1024 * 1024), Source = "nvidia-smi" });
     }
 }

@@ -51,11 +51,12 @@ public sealed partial class LauncherService : IDisposable
 
     public void Start()
     {
-        _timer = new Timer(_ =>
+        _timer = new Timer(_ => GameActivity.RunWhenIdle("launchers", () =>
         {
             try { foreach (var s in new[] { Epic, Ea }) if (Enabled(s)) Sync(s); }
             catch (Exception ex) { Log.Warn("launchers", ex.Message); }
-        }, null, TimeSpan.FromSeconds(25), TimeSpan.FromMinutes(10));
+            return Task.CompletedTask;
+        }), null, TimeSpan.FromSeconds(25), TimeSpan.FromMinutes(10));
     }
 
     public void Dispose() => _timer?.Dispose();

@@ -61,3 +61,35 @@ sealed class WindowsKeySender : IKeySender
             : $"Windows hat die Tastenkombination nicht angenommen (Fehler {Marshal.GetLastWin32Error()}). Läuft das Spiel als Administrator, muss der Launcher es auch.";
     }
 }
+
+/// <summary>
+/// While a game runs the companion steps back: priority "below normal", Windows efficiency mode (EcoQoS, Windows 11)
+/// and its working set is trimmed once (memory goes back to the game). Everything is undone when the game ends.
+/// </summary>
+sealed class WindowsGameMode : IGameMode
+{
+    [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetProcessInformation(IntPtr process, int infoClass, ref PROCESS_POWER_THROTTLING_STATE info, int size);
+    [DllImport("kernel32.dll", SetLastError = true)] static extern bool SetProcessWorkingSetSizeEx(IntPtr process, nint min, nint max, uint flags);
+    [StructLayout(LayoutKind.Sequential)] struct PROCESS_POWER_THROTTLING_STATE { public uint Version, ControlMask, StateMask; }
+    const int ProcessPowerThrottling = 4;
+    const uint PROCESS_POWER_THROTTLING_EXECUTION_SPEED = 1;
+
+    public string Apply(bool gaming, bool audioLive)
+    {
+        var parts = new List<string>();
+        using var me = System.Diagnostics.Process.GetCurrentProcess();
+        var stepBack = gaming && !audioLive; // live microphone: keep audio smooth
+        try { me.PriorityClass = stepBack ? System.Diagnostics.ProcessPriorityClass.BelowNormal : System.Diagnostics.ProcessPriorityClass.Normal; parts.Add(stepBack ? "Priorität niedriger" : "Priorität normal"); }
+        catch (Exception ex) { parts.Add("Priorität: " + ex.Message); }
+        // EcoQoS: lets Windows run the companion on efficiency cores / lower clocks. Unknown before Windows 10 1709 → just false.
+        var state = new PROCESS_POWER_THROTTLING_STATE { Version = 1, ControlMask = PROCESS_POWER_THROTTLING_EXECUTION_SPEED, StateMask = stepBack ? PROCESS_POWER_THROTTLING_EXECUTION_SPEED : 0 };
+        if (SetProcessInformation(me.Handle, ProcessPowerThrottling, ref state, Marshal.SizeOf<PROCESS_POWER_THROTTLING_STATE>())) parts.Add(stepBack ? "Effizienzmodus an" : "Effizienzmodus aus");
+        if (gaming && audioLive) parts.Add("Mikrofon-Durchleitung aktiv – Priorität bleibt normal");
+        if (gaming)
+        {
+            GC.Collect(2, GCCollectionMode.Optimized, blocking: false);
+            if (SetProcessWorkingSetSizeEx(me.Handle, -1, -1, 0)) parts.Add("Arbeitsspeicher freigegeben");
+        }
+        return (gaming ? "Spiel läuft: " : "Kein Spiel mehr: ") + string.Join(", ", parts);
+    }
+}

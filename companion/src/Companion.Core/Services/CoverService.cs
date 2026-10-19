@@ -36,7 +36,7 @@ public sealed partial class CoverService : IDisposable
     /// <summary>Runs shortly after start and then hourly; new games are handled right after they are added.</summary>
     public void Start()
     {
-        _timer = new Timer(_ => _ = FillMissingAsync(), null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
+        _timer = new Timer(_ => GameActivity.RunWhenIdle("covers", () => FillMissingAsync()), null, TimeSpan.FromSeconds(30), TimeSpan.FromHours(1));
         _library.Added += count => { _ = FillMissingAsync(); };
     }
 
