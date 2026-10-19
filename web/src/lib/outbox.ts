@@ -61,6 +61,8 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "network.setTargets": () => t("Eigene Ping-Ziele speichern"),
   "widgets.save": (p) => t("Eigenes Widget speichern {n}", { n: name(p) }),
   "widgets.remove": () => t("Eigenes Widget löschen"),
+  "deck.save": (p) => t("Deck speichern {n}", { n: name(p) }),
+  "deck.remove": () => t("Deck löschen"),
   "quests.saveGoal": (p) => t("Ziel speichern {n}", { n: name(p, "title") }),
   "quests.removeGoal": () => t("Ziel löschen"),
   "quests.addMatch": (p) => t("Match eintragen {n}", { n: name(p, "game") }),
@@ -129,6 +131,7 @@ export function enqueue(method: string, params: Params, extra: Partial<OutboxEnt
     if (Object.keys(p).length === 0) return params;
   }
   const result = applyLocally(method, p);
+  if (method === "deck.save") entries = entries.filter((e) => !(e.method === "deck.save" && e.params.id === p.id && !e.confirmed));
   entries = [...entries, { id: Math.random().toString(36).slice(2), method, params: p, label: QUEUEABLE[method]?.(p) ?? method, at: Date.now(), pc: currentPc(), ...extra }];
   persist();
   return result;
@@ -161,6 +164,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "capture.status": offlineCaptureStatus(),
   "overlay.layout": {},
   "widgets.list": { widgets: [] },
+  "deck.list": { decks: [] },
   "network.targets": { targets: [] },
   // Progress, XP and achievements are calculated on the PC; offline only the own goals and matches are shown.
   "quests.get": { offline: true, xp: 0, level: 1, levelFrom: 0, levelTo: 100, goals: [], achievements: [], matchStats: [], matches: [], ledger: [],
@@ -245,6 +249,9 @@ function applyLocally(method: string, p: Params): unknown {
     case "network.setTargets": patch<Params>("network.targets", () => ({ targets: p.targets ?? [] })); return { targets: p.targets ?? [] };
     case "widgets.save": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: upsert(d.widgets, p as unknown as WithId) })); return p;
     case "widgets.remove": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: d.widgets.filter((w) => w.id !== p.id) })); return true;
+    // Deck ids are made on the device; only the newest version of a deck waits (each edit replaces the queued one).
+    case "deck.save": patch<{ decks: WithId[] }>("deck.list", (d) => ({ ...d, decks: upsert(d.decks, p as unknown as WithId) })); return p;
+    case "deck.remove": patch<{ decks: WithId[] }>("deck.list", (d) => ({ ...d, decks: d.decks.filter((x) => x.id !== p.id) })); return true;
     // Goal, match and wish ids are made on the device (goal_/match_/wish_…), so a repeated send changes nothing on the PC.
     case "quests.saveGoal":
       patch<{ goals: WithId[] }>("quests.get", (d) => ({ ...d, goals: upsert(d.goals.map((g) => (g.id === p.id ? { ...g, value: null, done: false } : g)), { value: null, done: false, ...p } as unknown as WithId) }));

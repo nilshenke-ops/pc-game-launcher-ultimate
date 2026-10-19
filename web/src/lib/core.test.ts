@@ -65,7 +65,7 @@ describe("prefs", () => {
     expect(p.theme.bgImage).toBeNull();
     expect(p.layouts[0].widgets.find((w) => w.id === "status")!.size).toBe("m");
     expect(p.layouts[0].widgets.some((w) => (w.id as string) === "evil")).toBe(false);
-    expect(p.layouts[0].widgets.length).toBe(12);
+    expect(p.layouts[0].widgets.length).toBe(17); // all built-in widgets, each once
     expect(["de", "en"]).toContain(p.lang);
   });
   it("keeps own widgets from the widget editor (custom:cw_…) and drops malformed ones", () => {
@@ -110,7 +110,19 @@ describe("navigation", () => {
     const p = sanitizePrefs({ nav: { order: ["/games", "javascript:x", 5], hidden: ["/x/../y"], bottom: [] } });
     expect(p.nav.order).toEqual(["/games"]);
     expect(p.nav.hidden).toEqual([]);
-    expect(p.nav.bottom).toEqual(["/", "/games", "/soundboard", "/quick"]);
+    expect(p.nav.bottom).toEqual(["/", "/deck", "/games", "/soundboard"]);
+    // The untouched bar from before 2.7.0 gets the deck; an own choice stays as it is.
+    expect(sanitizePrefs({ nav: { bottom: ["/", "/games", "/soundboard", "/quick"] } }).nav.bottom).toEqual(["/", "/deck", "/games", "/soundboard"]);
+    expect(sanitizePrefs({ nav: { bottom: ["/quick", "/"] } }).nav.bottom).toEqual(["/quick", "/"]);
+  });
+  it("old dashboard layouts get the new home widgets once, own choices stay", () => {
+    const old = sanitizePrefs({ layouts: [{ id: "l", name: "L", widgets: [{ id: "status", visible: true, size: "m" }, { id: "system", visible: true, size: "l" }] }] });
+    const ids = old.layouts[0].widgets.filter((w) => w.visible).map((w) => w.id);
+    expect(ids).toEqual(["status", "shortcuts", "next", "system"]);
+    const again = sanitizePrefs(old);
+    expect(again.layouts[0].widgets.filter((w) => w.visible).map((w) => w.id)).toEqual(ids);
+    const hiddenByUser = sanitizePrefs({ layouts: [{ ...old.layouts[0], widgets: old.layouts[0].widgets.map((w) => (w.id === "next" ? { ...w, visible: false } : w)) }] });
+    expect(hiddenByUser.layouts[0].widgets.find((w) => w.id === "next")!.visible).toBe(false);
   });
 });
 

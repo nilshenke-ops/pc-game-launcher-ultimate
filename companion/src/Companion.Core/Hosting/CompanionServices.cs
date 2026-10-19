@@ -46,6 +46,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public ObsService Obs { get; }
     public CaptureService Capture { get; }
     public CustomWidgetService Widgets { get; }
+    public DeckService Decks { get; }
     public BackupService Backup { get; }
     public QuestService Quests { get; }
     public DealService Deals { get; }
@@ -106,6 +107,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Steam = new SteamService(paths, Library, platform, Settings, Rpc);
         Obs = new ObsService(Settings.Get, platform.Secrets, Rpc);
         Widgets = new CustomWidgetService(paths, Rpc);
+        Decks = new DeckService(paths, Rpc);
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
         Quests = new QuestService(paths, () => History.Export().Sessions, id => Library.Get(id)?.Name, Rpc);

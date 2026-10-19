@@ -82,3 +82,13 @@ Gleiche Skripte wie oben (`scripts/perf/web-start.mjs`, `scripts/perf/companion-
 Die Unterschiede bei den Startzeiten liegen im Messrauschen dieser Umgebung (Einzelläufe Handy 2.5.1: 1838–2212 ms, 2.6.0: 1535–1627 ms). Aussage: 2.6.0 macht den Start nicht messbar langsamer. Auffällig gegenüber 2.1.0 (Handy 1331 ms): Die App ist seitdem gewachsen – wird in Phase 7 untersucht.
 
 **Hauptfunktion (2.5.1, echter Ablauf mit Handy-Browser über die Netzwerkadresse):** Tippen auf „Spielen“ bis das Programm am PC läuft 31–175 ms; nach dem Einschalten des PCs wieder verbunden nach 0,8–1,4 s (vorher bis 5,9 s gemessen).
+
+## 2.7.0 (19.10.2026)
+
+| | 2.6.0 | 2.7.0 |
+|---|---|---|
+| Haupt-Chunk | 366 KB (116 KB gzip) | 372 KB (118 KB gzip) – neue Home-Widgets und Leiste gehören zur Startseite |
+| Deck | – | 42 KB, nur beim Öffnen des Decks geladen (inkl. Symbolauswahl) |
+| Startzeiten | – | nicht erneut gemessen |
+
+Das Deck rechnet die Tastengröße nur bei Größenänderung (ResizeObserver) neu; es gibt keine Abfrage im Hintergrund – Live-Zustände (läuft, spielt, aktives Profil) kommen aus den vorhandenen Ereignissen.

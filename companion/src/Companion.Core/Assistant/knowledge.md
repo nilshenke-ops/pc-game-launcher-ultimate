@@ -12,8 +12,13 @@ Alle Daten liegen auf dem PC. Keine Telemetrie, keine Werbung, kein Konto.
 
 ## Home / Dashboard
 Seite: /
-Stichworte: start übersicht widgets layout dashboard startseite
-Die Startseite zeigt Widgets: laufendes Spiel, Favoriten, Quick Actions, PC-Werte, Soundboard, eigene Widgets und Plugin-Widgets. Anordnung und Größen: Einstellungen → Design & Layout → Dashboard-Layouts (Handy und Desktop getrennt, mehrere Layouts möglich). Ein Profil kann ein Layout mitbringen.
+Stichworte: start übersicht widgets layout dashboard startseite home schnellstart notizen uhr erste schritte leiste untere leiste navigation anpassen
+Die Startseite zeigt Widgets: laufendes Spiel, Favoriten, Quick Actions, PC-Werte, Soundboard, eigene Widgets und Plugin-Widgets, außerdem Schnellstart (große Kacheln zu Deck, Backlog, Assistent …; im „Anpassen“-Modus wählbar), Uhr & Datum, Notizen (nur auf dem Gerät), „Als Nächstes spielen“ (aus dem Backlog) und „Erste Schritte“. Ohne PC-Verbindung zeigt Home nur, was ohne PC funktioniert, und darunter, wie viele Widgets mit dem PC dazukommen. „Anpassen“ oben rechts: Widgets verschieben, Größe ändern, aus- und einblenden – geht auch ohne PC. Weitere Layouts (Handy und Desktop getrennt): Einstellungen → Design & Layout. Ein Profil kann ein Layout mitbringen. Untere Leiste am Handy: bis zu 4 eigene Bereiche plus „Mehr“; ändern durch langes Drücken auf die Leiste oder „Mehr“ → „Leiste anpassen“. „Verbinden“ steht nur in der Leiste, solange kein PC gekoppelt ist – danach zeigt der Punkt oben den Verbindungsstatus.
+
+## Deck
+Seite: /deck
+Stichworte: deck stream deck elgato tasten knöpfe raster fernbedienung buttons vollbild ordner tablet
+Raster großer Tasten wie ein Stream Deck auf dem Handy oder Tablet. „Deck aus meinen Sachen erstellen“ legt ein erstes Deck aus Favoriten, Programmen, Quick Actions, Sounds und Profilen an (mit Ordnern „Sounds“ und „Profile“). Jede Taste: Spiel/Programm starten, Quick Action, Sound abspielen, alle Sounds stoppen, Profil aktivieren oder zurück, Medientasten (Play/Pause, Lauter, Leiser, Ton aus), Overlay ein/aus, Aufnahme, Replay speichern, Ordner öffnen, Zurück oder eine Seite der App öffnen. Aussehen je Taste: Symbol, Emoji, Bild des Spiels oder eigenes Bild (wird verkleinert), Farbe, Schriftfarbe, Beschriftung. Bleistift = bearbeiten (Taste antippen zum Ändern, leeren Platz für neue Taste, „Verschieben“ und Zielplatz antippen). Zahnrad: Name, Raster (2–8 Spalten, 2–10 Zeilen; im Querformat getauscht), Hintergrund, Seiten, „Automatisch zeigen bei Profil“ (z. B. eigenes Deck, wenn ein Spiel läuft). Vollbild-Knopf, Sonne = Bildschirm anlassen (wenn der Browser das kann). Laufende Spiele, spielende Sounds und das aktive Profil leuchten auf der Taste. Gespeichert auf dem PC, also auf allen Geräten gleich; bearbeiten braucht das Recht „Verwalten“, Tasten nutzen die Rechte des Geräts. Ohne PC lässt sich das Deck gestalten, aber keine Taste ausführen.
 
 ## Spiele (Bibliothek)
 Seite: /games

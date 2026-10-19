@@ -12,7 +12,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Profile (inkl. eigenem Theme je Profil), Quick Actions, Automatisierungen (inkl. letzte 10 Ausführungen), Hotkeys | `profiles.json`, `quickactions.json`, `automations.json`, `hotkeys.json` | in der App |
 | Sounds (Audiodateien und Namen) | `sounds\`, `sounds.json` | Soundboard → Löschen |
 | Spielverlauf (Start/Ende, Dauer, optional CPU/RAM/GPU-Mittelwerte) | `history.json` | Gaming-Verlauf → „Verlauf löschen“; abschaltbar unter Einstellungen → Datenschutz |
-| Eigene Widgets, Overlay-Anordnung, eigene Ping-Ziele, Design je Gerät | `widgets.json`, `settings.json`, `devices.json` | in der App |
+| Eigene Widgets, Decks (Tasten, Beschriftungen, kleine Tastenbilder), Overlay-Anordnung, eigene Ping-Ziele, Design je Gerät | `widgets.json`, `decks.json`, `settings.json`, `devices.json` | in der App |
 | Gekoppelte Geräte: Name, Rechte, letzte IP, **nur ein Hash** des Geräteschlüssels | `devices.json` | Geräte → Entfernen |
 | Geheimnisse: Relay-Schlüssel, Steam-API-Schlüssel, OBS-Passwort | `settings.json`, mit Windows-DPAPI verschlüsselt | Einstellungen → Feld leeren |
 | GameQuest: Ziele, selbst eingetragene Matches, verdiente XP | `quests.json` | GameQuest → Ziel/Match löschen, oder Datei löschen |

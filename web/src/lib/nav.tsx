@@ -1,4 +1,4 @@
-import { Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
 export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
@@ -6,13 +6,14 @@ export interface NavItem { path: string; label: string; short?: string; icon: Lu
 /** Sections that cannot be hidden – otherwise the app could lock itself out of its own settings or the PC connection. */
 export const NAV_FIXED = new Set(["/", "/settings", "/connect"]);
 /** Default shortcuts in the phone bar (besides "Verbinden" and "Mehr", which are always there). */
-export const DEFAULT_BOTTOM = ["/", "/games", "/soundboard", "/quick"];
+export const DEFAULT_BOTTOM = ["/", "/deck", "/games", "/soundboard"];
 
 /** Single definition of all sections, used by sidebar, mobile menu and global search. */
 export function navItems(): NavItem[] {
   const g = { dash: t("Dashboard"), ctrl: t("Steuerung"), audio: t("Audio"), sys: t("System"), conn: t("Verbindung"), ext: t("Erweiterungen"), admin: t("Verwaltung") };
   return [
     { path: "/", label: t("Home"), icon: Home, group: g.dash, keywords: "dashboard übersicht" },
+    { path: "/deck", label: t("Deck"), icon: Grid3x3, group: g.dash, keywords: "stream deck tasten knöpfe raster tablet fernbedienung buttons elgato streamdeck" },
     { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
     { path: "/backlog", label: t("Backlog"), icon: ListTodo, group: g.dash, keywords: "noch spielen als nächstes durchgespielt pausiert priorität zufall spielplanung liste" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },

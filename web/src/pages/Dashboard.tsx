@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, Play, RotateCcw,
-  Smartphone, Square, Star, Swords, Wifi, Zap,
+  LayoutGrid, ListTodo, Rocket, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
   Puzzle, Shapes,
 } from "lucide-react";
 import { client } from "../lib/rpc";
@@ -10,7 +10,8 @@ import { t } from "../lib/i18n";
 import { useConn, useEvent, useLiveSubscription, useMediaQuery, useRpc, toast } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
-import type { BuiltinWidgetId } from "../lib/prefs-core";
+import { OFFLINE_WIDGETS, type BuiltinWidgetId } from "../lib/prefs-core";
+import { ClockWidget, NextWidget, NotesWidget, ShortcutsWidget, StartWidget } from "../components/home-widgets";
 import { parsePluginWidgetId, pluginWidgetId, type PluginList } from "../lib/plugins";
 import { PluginFrame } from "../components/PluginFrame";
 import { bytes, clock, gradientFor, relTime, since } from "../lib/format";
@@ -37,16 +38,31 @@ function StatusWidget() {
         <div className="row nowrap">
           <div className="grow">
             <div className="eyebrow">{t("Dein Gaming-PC")}</div>
-            <h2 style={{ fontSize: "1.4rem" }}>{t("Kein PC verbunden")}</h2>
-            <div className="small muted">{t("Scanne den QR-Code aus dem Nexus Gaming Hub oder gib den Code ein.")}</div>
+            <h2 style={{ fontSize: "1.4rem" }}>{t("Offline – kein PC verbunden")}</h2>
+            <div className="small muted">{t("Öffne am PC den Nexus Gaming Hub → „Gerät koppeln“ und scanne den QR-Code. Bis dahin kannst du schon alles einrichten.")}</div>
           </div>
           <span className="badge"><span className="dot error" />{t("Offline")}</span>
         </div>
-        <div><Link to="/connect" className="btn primary sm">{t("PC verbinden")}</Link></div>
+        <div className="row"><Link to="/connect" className="btn primary sm">{t("PC verbinden")}</Link><Link to="/settings?s=design" className="btn sm">{t("Design & Layout anpassen")}</Link></div>
       </div>
     );
   }
-  if (!state) return <div className="skeleton" style={{ height: 120 }} />;
+  if (!state) {
+    if (conn.phase === "online" && (conn.auth === "ok" || conn.auth === "checking")) return <div className="skeleton" style={{ height: 120 }} />;
+    return (
+      <div className="stack">
+        <div className="row nowrap">
+          <div className="grow">
+            <div className="eyebrow">{t("Dein Gaming-PC")}</div>
+            <h2 style={{ fontSize: "1.4rem" }}>{t("Warte auf deinen PC …")}</h2>
+            <div className="small muted">{t("Sobald der PC an ist und der Begleiter läuft, verbindet sich die App von selbst.")}</div>
+          </div>
+          <span className="badge"><span className="dot error" />{t("Offline")}</span>
+        </div>
+        <div className="row"><Button size="sm" variant="primary" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button><Link to="/settings?s=design" className="btn sm">{t("Design & Layout anpassen")}</Link></div>
+      </div>
+    );
+  }
   const relay = state.relay.state;
   return (
     <div className="stack">
@@ -235,6 +251,11 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   notifications: { icon: <Bell size={18} />, title: () => t("Benachrichtigungen"), render: () => <NotificationsWidget />, link: "/notifications" },
   download: { icon: <LayoutDashboard size={18} />, title: () => t("Begleiter & Updates"), render: () => null },
   devices: { icon: <Smartphone size={18} />, title: () => t("Geräte"), render: () => <DevicesWidget />, link: "/devices" },
+  shortcuts: { icon: <LayoutGrid size={18} />, title: () => t("Schnellstart"), render: () => <ShortcutsWidget edit={false} /> },
+  clock: { icon: <Clock size={18} />, title: () => t("Uhr & Datum"), render: () => <ClockWidget /> },
+  notes: { icon: <StickyNote size={18} />, title: () => t("Notizen"), render: () => <NotesWidget /> },
+  next: { icon: <ListTodo size={18} />, title: () => t("Als Nächstes spielen"), render: () => <NextWidget />, link: "/backlog" },
+  start: { icon: <Rocket size={18} />, title: () => t("Erste Schritte"), render: () => <StartWidget /> },
 };
 
 export default function Dashboard() {
@@ -263,6 +284,7 @@ export default function Dashboard() {
         ? { icon: <Shapes size={18} />, title: () => w.name, render: () => <CustomWidgetView widget={w} interactive={!edit} />, link: "/widgets", bare: true }
         : { icon: <Shapes size={18} />, title: () => t("Eigenes Widget (gelöscht)"), render: () => <p className="small muted">{t("Dieses Widget wurde im Widget-Baukasten gelöscht.")}</p>, missing: true };
     }
+    if (id === "shortcuts") return { ...META.shortcuts, render: () => <ShortcutsWidget edit={edit} /> };
     if (!parsePluginWidgetId(id)) return META[id as BuiltinWidgetId];
     const pw = pluginWidgets.find((x) => x.id === id);
     return pw
@@ -293,39 +315,13 @@ export default function Dashboard() {
     ...customWidgets.map((x) => `${CUSTOM_PREFIX}${x.id}` as WidgetId).filter((id) => !layout.widgets.some((w) => w.id === id)).map((id) => ({ id, visible: false, size: "s" as WidgetSize }))];
   const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
 
-  const conn = useConn();
-  if (!state && (conn.phase !== "online" || (conn.auth !== "ok" && conn.auth !== "checking"))) {
-    const paired = !!client.credentials || !!conn.me;
-    const tile = (k: string, v: string, warn = false) => (
-      <Card className="flat"><div className="stat"><span className="k">{k}</span><span className="v" style={warn ? { color: "var(--warning)" } : undefined}>{v}</span></div></Card>
-    );
-    return (
-      <>
-        <PageHead eyebrow={greeting} title={t("Gaming-Zentrale")} />
-        <div className="stack">
-          <Card className="hero">
-            <div className="stack">
-              <h2>{paired ? t("Warte auf deinen PC …") : t("Offline – kein PC verbunden")}</h2>
-              <p className="muted">{paired
-                ? t("Sobald der PC an ist und der Companion läuft, erscheinen hier deine Spiele, Sounds und Live-Werte – ohne dass du etwas tun musst.")
-                : t("Verbinde deinen PC: Öffne am PC den Nexus Gaming Hub → „Gerät koppeln“ und scanne den QR-Code oder gib den Code ein. Danach erscheinen hier deine Spiele, Sounds und Live-Werte.")}</p>
-              <div className="row">
-                {paired ? <Button variant="primary" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
-                  : <Link to="/connect" className="btn primary">{t("PC verbinden")}</Link>}
-                <Link to="/settings?s=design" className="btn">{t("Design & Layout anpassen")}</Link>
-              </div>
-            </div>
-          </Card>
-          <div className="grid-4">
-            {tile(t("Spiele"), "–")}
-            {tile(t("Sounds"), "–")}
-            {tile(t("Quick Actions"), "–")}
-            {tile(t("PC-Status"), t("Offline"), true)}
-          </div>
-        </div>
-      </>
-    );
-  }
+  // Without the PC only widgets that show something real; the others come back as soon as the PC is connected.
+  const offline = !state;
+  const offlineShown = visible.filter((w) => OFFLINE_WIDGETS.has(w.id) || CUSTOM_WIDGET.test(w.id));
+  const fallback = (["status", "shortcuts", "next", "start"] as WidgetId[]).map((id) => ({ id, visible: true, size: (id === "status" ? "m" : "m") as WidgetSize }));
+  const shownWidgets = !offline || edit ? visible
+    : [...(offlineShown.some((w) => w.id === "status") ? [] : [fallback[0]]), ...(offlineShown.length > 0 ? offlineShown : fallback.slice(1))];
+  const waitingForPc = offline && !edit ? visible.filter((w) => !OFFLINE_WIDGETS.has(w.id) && !CUSTOM_WIDGET.test(w.id)).length : 0;
 
   return (
     <>
@@ -336,7 +332,7 @@ export default function Dashboard() {
         </>} />
       {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}
       <div className="dash" style={{ marginTop: edit ? 16 : 0 }}>
-        {visible.map((w, i) => {
+        {shownWidgets.map((w, i) => {
           const meta = metaFor(w.id);
           if (w.id === "download") return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><DownloadCard compact />{edit && <EditOverlay />}</div>;
           if (meta.bare) return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><div style={{ maxWidth: 720, marginInline: "auto" }}>{meta.render()}</div>{edit && <EditOverlay />}</div>;
@@ -364,6 +360,7 @@ export default function Dashboard() {
           }
         })}
       </div>
+      {waitingForPc > 0 && <p className="tiny muted" style={{ marginTop: 12, textAlign: "center" }}>{t("{n} weitere Widgets erscheinen, sobald der PC verbunden ist.", { n: waitingForPc })}</p>}
       {edit && hidden.length > 0 && (
         <Card title={t("Ausgeblendete Widgets")} icon={<EyeOff size={18} />} style={{ marginTop: 16 }}>
           <div className="row">{hidden.map((w) => <Button key={w.id} size="sm" icon={<Eye size={15} />} onClick={() => toggle(w.id)}>{metaFor(w.id).title()}</Button>)}</div>

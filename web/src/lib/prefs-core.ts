@@ -59,7 +59,9 @@ export const DEFAULT_THEME: Theme = {
 
 // ------------------------------------------------------------------ dashboard layouts
 
-export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices";
+export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start";
+/** Widgets that are useful without a connected PC (shown on the home screen while offline). */
+export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download"]);
 /** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
 export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`;
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
@@ -81,6 +83,11 @@ export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSiz
   { id: "notifications", label: "Benachrichtigungen", sizes: ["s", "m", "l"] },
   { id: "download", label: "Begleiter & Updates", sizes: ["s", "m"] },
   { id: "devices", label: "Geräte", sizes: ["s", "m"] },
+  { id: "shortcuts", label: "Schnellstart", sizes: ["m", "l"] },
+  { id: "clock", label: "Uhr & Datum", sizes: ["s", "m"] },
+  { id: "notes", label: "Notizen", sizes: ["s", "m", "l"] },
+  { id: "next", label: "Als Nächstes spielen", sizes: ["s", "m", "l"] },
+  { id: "start", label: "Erste Schritte", sizes: ["m", "l"] },
 ];
 
 export const DEFAULT_LAYOUT: Layout = {
@@ -88,6 +95,9 @@ export const DEFAULT_LAYOUT: Layout = {
   name: "Standard",
   widgets: [
     { id: "status", visible: true, size: "m" },
+    { id: "shortcuts", visible: true, size: "m" },
+    { id: "start", visible: true, size: "m" },
+    { id: "next", visible: true, size: "m" },
     { id: "profile", visible: true, size: "s" },
     { id: "session", visible: true, size: "s" },
     { id: "favorites", visible: true, size: "l" },
@@ -99,6 +109,8 @@ export const DEFAULT_LAYOUT: Layout = {
     { id: "notifications", visible: true, size: "m" },
     { id: "download", visible: false, size: "s" },
     { id: "devices", visible: false, size: "s" },
+    { id: "clock", visible: false, size: "s" },
+    { id: "notes", visible: false, size: "m" },
   ],
 };
 
@@ -115,15 +127,19 @@ export interface Prefs {
   nav: NavPrefs;
   /** Show the theme of the active gaming profile (e.g. switched on by a game start). Off = always the own design on this device. */
   profileThemes: boolean;
+  /** Areas in the "Schnellstart" home widget (paths); empty = default set. */
+  homeShortcuts: string[];
 }
 
 export interface NavPrefs { order: string[]; hidden: string[]; bottom: string[] }
-export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [], bottom: ["/", "/games", "/soundboard", "/quick"] };
+export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [], bottom: ["/", "/deck", "/games", "/soundboard"] };
+/** The bar before 2.7.0 – untouched old defaults get the new bar (with the deck). */
+const OLD_DEFAULT_BOTTOM = "/,/games,/soundboard,/quick";
 
 
 export function defaultPrefs(): Prefs {
   const lang = (navigator.language || "de").toLowerCase().startsWith("de") ? "de" : "en";
-  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV), profileThemes: true };
+  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV), profileThemes: true, homeShortcuts: [] };
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -157,6 +173,8 @@ export function sanitizePrefs(input: unknown): Prefs {
         let plugins = 0, custom = 0;
         const known = (id: string) => ids.has(id as BuiltinWidgetId) || (PLUGIN_WIDGET.test(id) && ++plugins <= 12) || (CUSTOM_WIDGET.test(id) && ++custom <= 30);
         const widgets: WidgetConf[] = l.widgets.filter((w) => typeof w?.id === "string" && known(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize }));
+        // Layouts from before 2.7.0 get the new home widgets "Schnellstart" and "Als Nächstes spielen" right after the first widget.
+        for (const id of ["next", "shortcuts"] as BuiltinWidgetId[]) if (!seen.has(id)) { seen.add(id); widgets.splice(Math.min(1, widgets.length), 0, { id, visible: true, size: "m" }); }
         for (const w of ALL_WIDGETS) if (!seen.has(w.id)) widgets.push({ id: w.id, visible: false, size: w.sizes[0] });
         return { id: l.id.slice(0, 40), name: String(l.name ?? "Layout").slice(0, 40), widgets };
       })
@@ -176,6 +194,7 @@ export function sanitizePrefs(input: unknown): Prefs {
     },
     nav: sanitizeNav(p.nav),
     profileThemes: p.profileThemes !== false,
+    homeShortcuts: Array.isArray(p.homeShortcuts) ? [...new Set(p.homeShortcuts.filter((x): x is string => typeof x === "string" && NAV_PATH.test(x)))].slice(0, 8) : [],
     usage: p.usage && typeof p.usage === "object" ? Object.fromEntries(Object.entries(p.usage).filter(([, v]) => typeof v === "number").slice(0, 300)) : {},
   };
 }
@@ -185,7 +204,8 @@ function sanitizeNav(n: unknown): NavPrefs {
   const v = (n && typeof n === "object" ? n : {}) as Partial<NavPrefs>;
   const paths = (x: unknown, max: number) => (Array.isArray(x) ? [...new Set(x.filter((p): p is string => typeof p === "string" && NAV_PATH.test(p)))].slice(0, max) : []);
   const bottom = paths(v.bottom, 4);
-  return { order: paths(v.order, 60), hidden: paths(v.hidden, 60), bottom: bottom.length ? bottom : [...DEFAULT_NAV.bottom] };
+  const migrated = bottom.join() === OLD_DEFAULT_BOTTOM ? [...DEFAULT_NAV.bottom] : bottom;
+  return { order: paths(v.order, 60), hidden: paths(v.hidden, 60), bottom: migrated.length ? migrated : [...DEFAULT_NAV.bottom] };
 }
 
 // ------------------------------------------------------------------ colours & theme application

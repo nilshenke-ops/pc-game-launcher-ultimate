@@ -194,6 +194,18 @@ public static class RpcApi
         rpc.Register("deals.refresh", async ctx => await s.Deals.CheckAllAsync(force: true));
 
         // ------------------------------------------------------------ quick actions
+        // ------------------------------------------------------------ deck (Stream-Deck-like keys; keys run the existing commands on the device)
+        rpc.Register("deck.list", _ => new { decks = s.Decks.List() });
+        rpc.Register("deck.save", ctx => s.Decks.Save(ctx.Bind<Deck>()));
+        rpc.Register("deck.remove", ctx => { s.Decks.Remove(ctx.Str("id", 64)); return true; });
+        rpc.Register("media.key", async ctx =>
+        {
+            var key = ctx.Str("key", 20);
+            if (!ActionRunner.MediaKeys.ContainsKey(key)) throw new RpcException("invalid-params", "Unbekannte Medientaste.");
+            var r = await s.Runner.RunAsync(new[] { new ActionStep { Type = StepType.MediaKey, Ref = key } }, ctx.Session.Who);
+            if (r.FirstOrDefault() is { } m && m.StartsWith("Fehler: ")) throw new RpcException("media-key", m["Fehler: ".Length..]);
+            return true;
+        });
         rpc.Register("widgets.list", _ => new { widgets = s.Widgets.List(), desktopSupported = s.Platform.DesktopWidgets.Supported });
         rpc.Register("widgets.save", ctx => s.Widgets.Save(ctx.Bind<CustomWidget>()));
         rpc.Register("widgets.remove", ctx => { s.Widgets.Remove(ctx.Str("id", 64)); return true; });

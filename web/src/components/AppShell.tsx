@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Menu, MonitorSmartphone, Search, Smartphone } from "lucide-react";
+import { Bell, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartphone } from "lucide-react";
 import { client, exitDemo } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
-import { arrangeNav, navItems } from "../lib/nav";
-import { usePrefs } from "../lib/prefs";
+import { arrangeNav, DEFAULT_BOTTOM, navItems, type NavItem } from "../lib/nav";
+import { setPrefs, usePrefs } from "../lib/prefs";
 import { useConn, useEvent, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { Banner, Button, Modal } from "./ui";
@@ -93,6 +93,7 @@ function NeedsPc() {
 export function AppShell({ children }: { children: ReactNode }) {
   const [palette, setPalette] = useState(false);
   const [more, setMore] = useState(false);
+  const [barEdit, setBarEdit] = useState(false);
   const loc = useLocation();
   const conn = useConn();
   const { state } = useAppState();
@@ -179,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Banner>
           </div>
         )}
-        {preview && loc.pathname !== "/connect" && (
+        {preview && loc.pathname !== "/connect" && loc.pathname !== "/" && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
             <Banner kind="warn" title={conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden")} actions={
               <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}>
@@ -205,7 +206,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         )}
         {showOutbox && <OutboxDialog onClose={() => setShowOutbox(false)} />}
-        {!preview && conn.phase !== "online" && !client.demo && (
+        {!preview && conn.phase !== "online" && !client.demo && loc.pathname !== "/" && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
             <Banner kind="warn" title={conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")}
               actions={<Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}>
@@ -223,19 +224,12 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main id="main" className="content" key={loc.pathname}>{children}</main>
       </div>
 
-      <nav className="bottom-nav" aria-label={t("Schnellnavigation")}>
-        {prefs.nav.bottom.flatMap((p) => all.filter((i) => i.path === p && p !== "/connect")).map((i) => (
-          <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")}><i.icon size={22} />{i.short ?? i.label}</NavLink>
-        ))}
-        <NavLink to="/connect" className={({ isActive }) => `connect-item ${isActive ? "active" : ""}`}>
-          <MonitorSmartphone size={22} />{t("Verbinden")}
-          <span className={`dot ${conn.auth === "ok" && conn.phase === "online" ? "ok" : client.demo ? "warn" : "error"}`} aria-hidden />
-        </NavLink>
-        <button onClick={() => setMore(true)} className={more ? "active" : ""} aria-expanded={more} aria-haspopup="dialog"><Menu size={22} />{t("Mehr")}</button>
-      </nav>
+      <BottomBar items={all} preview={preview} more={more} onMore={() => setMore(true)} onEdit={() => setBarEdit(true)} />
 
+      {barEdit && <BarEditor items={all} onClose={() => setBarEdit(false)} />}
       {more && (
-        <Modal title={t("Alle Bereiche")} onClose={() => setMore(false)}>
+        <Modal title={t("Alle Bereiche")} onClose={() => setMore(false)}
+          footer={<Button icon={<PanelBottom size={16} />} onClick={() => { setMore(false); setBarEdit(true); }}>{t("Leiste anpassen")}</Button>}>
           {groups.map((g) => (
             <section key={g} className="sheet-group" aria-label={g}>
               <h3>{g}</h3>
@@ -281,6 +275,74 @@ function OutboxDialog({ onClose }: { onClose: () => void }) {
           ))}</div>
         )}
         <p className="tiny muted">{t("Spiele starten, Sounds abspielen oder den PC ausschalten wird nie vorgemerkt – das geht nur, wenn der PC verbunden ist.")}</p>
+      </div>
+    </Modal>
+  );
+}
+
+const MAX_BAR = 4;
+
+/** Phone bar: up to four own entries + "Mehr". "Verbinden" only while no PC is paired (afterwards the dot at the top shows the state). Long press = edit. */
+function BottomBar({ items, preview, more, onMore, onEdit }: { items: NavItem[]; preview: boolean; more: boolean; onMore: () => void; onEdit: () => void }) {
+  const prefs = usePrefs();
+  const press = useRef<number | null>(null);
+  const shown = prefs.nav.bottom.flatMap((p) => items.filter((i) => i.path === p && p !== "/connect")).slice(0, MAX_BAR);
+  const start = () => { press.current = window.setTimeout(() => { press.current = null; navigator.vibrate?.(20); onEdit(); }, 600); };
+  const cancel = () => { if (press.current) { clearTimeout(press.current); press.current = null; } };
+  const cols = shown.length + (preview ? 1 : 0) + 1;
+  return (
+    <nav className="bottom-nav" aria-label={t("Schnellnavigation")} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+      onPointerDown={start} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel} onContextMenu={(e) => { e.preventDefault(); cancel(); onEdit(); }}>
+      {shown.map((i) => (
+        <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")}>
+          <span className="bn-icon"><i.icon size={22} /></span><span className="bn-label">{i.short ?? i.label}</span>
+        </NavLink>
+      ))}
+      {preview && (
+        <NavLink to="/connect" className={({ isActive }) => `connect-item ${isActive ? "active" : ""}`}>
+          <span className="bn-icon"><MonitorSmartphone size={22} /><span className="dot error" aria-hidden /></span><span className="bn-label">{t("Verbinden")}</span>
+        </NavLink>
+      )}
+      <button type="button" onClick={onMore} className={more ? "active" : ""} aria-expanded={more} aria-haspopup="dialog">
+        <span className="bn-icon"><Menu size={22} /></span><span className="bn-label">{t("Mehr")}</span>
+      </button>
+    </nav>
+  );
+}
+
+function BarEditor({ items, onClose }: { items: NavItem[]; onClose: () => void }) {
+  const prefs = usePrefs();
+  const [sel, setSel] = useState<string[]>(prefs.nav.bottom.filter((p) => p !== "/connect").slice(0, MAX_BAR));
+  const toggle = (p: string) => setSel((x) => (x.includes(p) ? x.filter((y) => y !== p) : x.length >= MAX_BAR ? x : [...x, p]));
+  const move = (p: string, d: number) => setSel((x) => { const i = x.indexOf(p), j = i + d; if (j < 0 || j >= x.length) return x; const n = [...x]; [n[i], n[j]] = [n[j], n[i]]; return n; });
+  const save = () => { setPrefs((p) => ({ ...p, nav: { ...p.nav, bottom: sel.length ? sel : [...DEFAULT_BOTTOM] } })); toast(t("Leiste gespeichert"), "success"); onClose(); };
+  const byPath = new Map(items.map((i) => [i.path, i]));
+  return (
+    <Modal title={t("Untere Leiste anpassen")} onClose={onClose} footer={<>
+      <Button icon={<RotateCcw size={15} />} onClick={() => setSel([...DEFAULT_BOTTOM])} style={{ marginRight: "auto" }}>{t("Standard")}</Button>
+      <Button onClick={onClose}>{t("Abbrechen")}</Button>
+      <Button variant="primary" onClick={save}>{t("Speichern")}</Button>
+    </>}>
+      <div className="stack">
+        <p className="small muted" style={{ margin: 0 }}>{t("Bis zu {n} Bereiche für den schnellen Zugriff – alles andere steht unter „Mehr“. Tipp: Lange auf die Leiste drücken öffnet diese Einstellung.", { n: MAX_BAR })}</p>
+        <div className="bar-preview" aria-label={t("Vorschau")}>
+          {sel.map((p) => { const i = byPath.get(p); if (!i) return null; return (
+            <div key={p} className="bar-preview-item">
+              <i.icon size={20} /><span>{i.short ?? i.label}</span>
+              <div className="row nowrap" style={{ gap: 2 }}>
+                <button type="button" className="link" aria-label={t("Nach links")} onClick={() => move(p, -1)}>‹</button>
+                <button type="button" className="link" aria-label={t("Nach rechts")} onClick={() => move(p, 1)}>›</button>
+              </div>
+            </div>
+          ); })}
+          <div className="bar-preview-item muted"><Menu size={20} /><span>{t("Mehr")}</span></div>
+        </div>
+        <div className="chips" role="group" aria-label={t("Bereiche")} style={{ flexWrap: "wrap" }}>
+          {items.filter((i) => i.path !== "/connect" && !prefs.nav.hidden.includes(i.path)).map((i) => (
+            <button key={i.path} type="button" aria-pressed={sel.includes(i.path)} disabled={!sel.includes(i.path) && sel.length >= MAX_BAR}
+              className={`chip ${sel.includes(i.path) ? "on" : ""}`} onClick={() => toggle(i.path)}><i.icon size={14} /> {i.short ?? i.label}</button>
+          ))}
+        </div>
       </div>
     </Modal>
   );

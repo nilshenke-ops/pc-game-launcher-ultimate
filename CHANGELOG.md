@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.7.0 – 2026-10-19
+### Neu
+- Deck (wie ein Stream Deck auf dem Handy): Raster großer, frei gestaltbarer Tasten – Spiel/Programm starten, Quick Action, Sound, alle Sounds stoppen, Profil wechseln, Medientasten (Play/Pause, Lauter, Leiser, Ton aus), Overlay, Aufnahme, Replay, Ordner und Seiten der App
+- Deck: Symbol, Emoji, Bild des Spiels oder eigenes Bild je Taste, Farben, Beschriftung; mehrere Decks und Seiten, Raster 2–8 × 2–10, Hoch- und Querformat (Spalten/Zeilen getauscht), Vollbild, Bildschirm anlassen, eigener Hintergrund, automatisch passendes Deck beim aktiven Gaming-Profil
+- Deck: „Aus meinen Sachen erstellen“ legt ein erstes Deck aus Favoriten, Programmen, Quick Actions, Sounds und Profilen an; laufende Spiele, spielende Sounds und das aktive Profil leuchten auf der Taste
+- Deck wird auf dem PC gespeichert (alle Geräte gleich, im Backup); Tasten nutzen die vorhandenen Befehle mit den Rechten des Geräts; ohne PC gestaltbar
+- Home: neue Widgets Schnellstart, Uhr & Datum, Notizen, „Als Nächstes spielen“ (Backlog) und „Erste Schritte“; ohne PC zeigt Home nur, was ohne PC funktioniert, statt leerer Felder; „Anpassen“ geht jetzt auch ohne PC
+- Untere Leiste am Handy: neues schwebendes Design, bis zu 4 eigene Bereiche plus „Mehr“, bearbeiten durch langes Drücken oder „Mehr“ → „Leiste anpassen“; „Verbinden“ nur noch, solange kein PC gekoppelt ist
+### Verbessert
+- Home zeigt den Offline-Hinweis nur noch einmal (vorher dreifach)
+
 ## 2.6.0 – 2026-10-19
 ### Neu
 - Backlog (Dashboard → Backlog): Status (Noch spielen, Als Nächstes, Gerade aktiv, Pausiert, Durchgespielt, Nicht mehr interessant), Priorität, eigenes Ziel in Stunden mit Fortschritt aus dem Gaming-Verlauf, Filter nach Status/Plattform/Kategorie/Spielzeit, Sortierung, Zufallsauswahl (optional nach Priorität gewichtet), Export als JSON/CSV, Import mit Vorschau; nichts wird automatisch als durchgespielt markiert

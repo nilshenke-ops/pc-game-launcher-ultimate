@@ -32,6 +32,7 @@ const WidgetStudio = lazy(() => import("./pages/WidgetStudio"));
 const Network = lazy(() => import("./pages/Network"));
 const Quests = lazy(() => import("./pages/Quests"));
 const Backlog = lazy(() => import("./pages/Backlog"));
+const Deck = lazy(() => import("./pages/Deck"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Deals = lazy(() => import("./pages/Deals"));
 const DesktopWidget = lazy(() => import("./pages/DesktopWidget"));
@@ -110,6 +111,7 @@ function Gate() {
           <Route path="/network" element={<Network />} />
           <Route path="/quests" element={<Quests />} />
           <Route path="/backlog" element={<Backlog />} />
+          <Route path="/deck" element={<Deck />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/deals" element={<Deals />} />
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -114,6 +114,35 @@ test("Programm am PC freigeben und vom Handy starten", async () => {
   await phone.keyboard.press("Escape");
 });
 
+test("Deck am Handy: aus eigenen Sachen erstellen, Taste startet das Spiel am PC, Ordner und Bearbeiten", async () => {
+  const started = join(state().workDir, "game-started.txt");
+  rmSync(started, { force: true });
+  await phone.goto(`${COMPANION}/#/deck`);
+  await phone.getByRole("button", { name: "Deck aus meinen Sachen erstellen" }).click();
+  const key = phone.locator(".deck-key", { hasText: "E2E Testspiel" });
+  await expect(key).toBeVisible();
+  await key.click();
+  await expect(phone.getByText("E2E Testspiel wird gestartet")).toBeVisible();
+  await expect.poll(() => existsSync(started), { timeout: 10000 }).toBe(true);
+  // Folder and back.
+  await phone.locator(".deck-key", { hasText: "Profile" }).click();
+  await expect(phone.locator(".deck-key", { hasText: "Allgemein" })).toBeVisible();
+  await phone.locator(".deck-key", { hasText: "Zurück" }).click();
+  await expect(key).toBeVisible();
+  // Edit: a new key on an empty place, stored on the PC – the PC window shows the same deck.
+  await phone.getByRole("button", { name: "Bearbeiten" }).click();
+  await phone.locator(".deck-key.empty").first().click();
+  await phone.getByRole("dialog").getByLabel("Aktion").selectOption("open");
+  await phone.getByRole("dialog").getByLabel("Beschriftung").fill("Zu den Sounds");
+  await phone.getByRole("dialog").getByLabel("Seite").selectOption("/soundboard");
+  await phone.getByRole("dialog").getByRole("button", { name: "Speichern" }).click();
+  await phone.getByRole("button", { name: "Bearbeiten beenden" }).click();
+  await pc.goto(`${COMPANION}/#/deck`);
+  await expect(pc.locator(".deck-key", { hasText: "Zu den Sounds" })).toBeVisible();
+  await phone.locator(".deck-key", { hasText: "Zu den Sounds" }).click();
+  await expect(phone).toHaveURL(/#\/soundboard/);
+});
+
 test("Backlog am Handy: Spiel aufnehmen, Status ändern, Zufallsauswahl, Export", async () => {
   await phone.goto(`${COMPANION}/#/backlog`);
   await expect(phone.getByText("Noch nichts im Backlog")).toBeVisible();
