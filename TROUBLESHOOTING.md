@@ -9,6 +9,7 @@ Erster Schritt bei jedem Problem: **Diagnose → Diagnose ausführen**. Sie tren
 | Anderes Netz | Handy ins selbe WLAN, mobile Daten aus |
 | Firewall blockiert | Windows-Sicherheit → Firewall → „App durch die Firewall zulassen“ → PCGameLauncherCompanion für **Privat** erlauben. Netzwerkprofil des WLANs muss „Privat“ sein |
 | Falsche/alte Adresse | Aktuelle Adresse steht im Companion unter „Gerät koppeln“. Vorschau-Links aus Entwicklungsumgebungen (`…style.dev`, `trycloudflare.com` nach Neustart) funktionieren nicht dauerhaft |
+| PC hat vom Router eine neue IP-Adresse bekommen (ging vorher, Handy wurde nie abgemeldet) | Der PC meldet das als Benachrichtigung „WLAN-Adresse des PCs hat sich geändert“. QR-Code unter „Gerät koppeln“ einmal neu scannen. Dauerhaft: im Router dem PC immer dieselbe IP geben (FRITZ!Box: Heimnetz → Netzwerk → Gerät bearbeiten → „Diesem Netzwerkgerät immer die gleiche IPv4-Adresse zuweisen“) |
 | WLAN-Zugriff ausgeschaltet | Einstellungen → Verbindung → „Im WLAN erreichbar“, danach Companion neu starten |
 | Gast-WLAN / Client-Isolation | Router trennt Geräte voneinander → normales WLAN nutzen |
 

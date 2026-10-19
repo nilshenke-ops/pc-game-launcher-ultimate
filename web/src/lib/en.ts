@@ -1860,4 +1860,7 @@ export const en: Record<string, string> = {
   "Freier Speicher der Laufwerke": "Free space on drives",
   "Wird ohnehin nur jede Minute gelesen.": "Is only read once a minute anyway.",
   "Spielmodus-Programme": "Game mode programs",
+  "Der Router hat dem PC eine neue Adresse gegeben (der PC meldet das als Benachrichtigung). Dann den QR-Code unter „Gerät koppeln“ einmal neu scannen – dauerhaft hilft eine feste IP-Adresse für den PC im Router.": "The router gave the PC a new address (the PC reports this as a notification). Then scan the QR code under “Pair device” once more – a fixed IP address for the PC in the router prevents this for good.",
+  "Autostart ist aus": "Autostart is off",
+  "Einmal koppeln reicht – aber nach einem Neustart des PCs findet dein Handy ihn erst, wenn der Begleiter wieder läuft. Mit Autostart ist er nach dem Einschalten sofort erreichbar.": "Pairing once is enough – but after the PC restarts, your phone only finds it once the companion is running again. With autostart it is reachable right after switching on.",
 };

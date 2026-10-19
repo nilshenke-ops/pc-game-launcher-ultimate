@@ -815,6 +815,11 @@ test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch
   const proc = spawn(dotnet, [dll, "--data", s.dataDir], { env: { ...process.env, PGL_TEST_LAN_HOST: "127.0.0.1", PGL_WEB_DIR: new URL("../dist", import.meta.url).pathname }, stdio: "ignore", detached: true });
   proc.unref();
   try {
+    // The open app reconnects by itself, without reloading: at most 3 s between tries while it is on screen.
+    await expect.poll(async () => { try { return (await fetch(`${COMPANION}/healthz`)).ok; } catch { return false; } }, { timeout: 30000 }).toBe(true);
+    const up = Date.now();
+    await expect(ipad.locator(".connect-item .dot.ok, .conn-pill .dot.ok").first()).toBeVisible({ timeout: 10000 });
+    expect(Date.now() - up).toBeLessThan(5000);
     await ipad.goto(`${COMPANION}/#/games`).catch(() => {});
     await expect(ipad.getByText("E2E Testspiel")).toBeVisible({ timeout: 30000 });
   } finally {

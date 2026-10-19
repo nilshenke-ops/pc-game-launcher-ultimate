@@ -117,8 +117,8 @@ Overlay im Stil der Xbox Game Bar mit frei verschiebbaren Widgets. Aufnahme und 
 
 ## PC verbinden
 Seite: /connect
-Stichworte: verbinden koppeln adresse qr code pc nicht erreichbar abmelden
-Verbindung zu deinem PC herstellen oder wechseln. Bei mehreren PCs: hier umschalten. „Abmelden“ löscht die Kopplung auf diesem Gerät.
+Stichworte: verbinden koppeln adresse qr code pc nicht erreichbar abmelden automatisch wieder verbinden neu koppeln ip geändert feste ip
+Verbindung zu deinem PC herstellen oder wechseln. Bei mehreren PCs: hier umschalten. „Abmelden“ löscht die Kopplung auf diesem Gerät. Einmal koppeln reicht: Das Handy bleibt gekoppelt (auch nach Neustart von Handy oder PC) und verbindet sich von selbst, sobald der PC an ist – bei geöffneter App innerhalb weniger Sekunden. Gespeichert ist die Kopplung für die Adresse, unter der die App geöffnet wurde (z. B. http://192.168.178.20:8787) – am besten als Lesezeichen oder „Zum Home-Bildschirm“. Gibt der Router dem PC eine neue IP, meldet der PC das; dann den QR-Code einmal neu scannen und im Router eine feste IP für den PC einstellen.
 
 ## Geräte
 Seite: /devices

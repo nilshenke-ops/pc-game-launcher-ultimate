@@ -256,8 +256,10 @@ class Client {
     if (this.pingTimer) { clearInterval(this.pingTimer); this.pingTimer = null; }
     for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new RpcError("offline", t("Verbindung unterbrochen"))); }
     this.pending.clear();
-    // Exponential backoff with jitter: 1, 2, 4, 8, 15, 30 s.
-    const delay = Math.min(15000, 1000 * 2 ** Math.min(this.attempt, 4)) * (0.8 + Math.random() * 0.4);
+    // Exponential backoff with jitter: 1, 2, 4, 8, 15 s. While the app is on screen at most 3 s, so the phone is back
+    // within a few seconds after the PC is switched on (an attempt to a PC that is off costs next to nothing).
+    const cap = typeof document !== "undefined" && document.visibilityState === "visible" ? 3000 : 15000;
+    const delay = Math.min(cap, 1000 * 2 ** Math.min(this.attempt, 4)) * (0.8 + Math.random() * 0.4);
     this.attempt++;
     const auth = this.status.auth === "revoked" ? "revoked" : this.status.auth === "ok" ? "checking" : this.status.auth;
     this.set({ phase: "offline", lastError: reason, retryAt: Date.now() + delay, attempt: this.attempt, auth, relayCompanion: undefined });
@@ -336,6 +338,8 @@ class Client {
         // Configuration changes wait on this device; actions (start, play …) need the PC: explain instead of a bare error.
         if (QUEUEABLE[method]) { resolve(this.queue(method, params) as T); return; }
         if (!QUIET.test(method) && !NO_LOGIN.has(method)) this.emit("needs-pc", { method });
+        // The tap itself is not kept for later (a game must never start by surprise), but the next try connects at once.
+        if (!QUIET.test(method)) this.reconnectNow();
         reject(new RpcError("offline", needsPcMessage()));
         return;
       }

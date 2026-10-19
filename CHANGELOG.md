@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.5.1 – 2026-10-19
+### Verbessert
+- Hauptfunktion geprüft – Handy einmal koppeln, danach automatisch verbunden, Programme am PC starten: im Test 31–175 ms vom Tippen bis das Programm am PC läuft, 0,5 s vom Öffnen der App bis zum laufenden Programm, keine erneute Kopplung nach Schließen des Browsers oder Neustart des PCs
+- Schnelleres Wiederverbinden: Solange die App auf dem Bildschirm ist, versucht sie es höchstens alle 3 s (vorher bis 15 s) – nach dem Einschalten des PCs im Test nach 0,8–1,4 s wieder verbunden; ein Tippen auf „Spielen“ ohne Verbindung startet sofort einen neuen Verbindungsversuch (der Start selbst wird nie aufgehoben und später ausgeführt)
+- Gerät koppeln am PC: Ist der Autostart aus, wird er mit einem Klick angeboten – sonst ist der PC nach einem Neustart für das Handy nicht erreichbar
+### Neu
+- Der PC meldet, wenn der Router ihm eine neue WLAN-Adresse gegeben hat (gekoppelte Handys suchen ihn sonst unter der alten), mit Lösung: QR-Code neu scannen, feste IP im Router; dieselbe Ursache steht auf dem Handy bei „PC nicht erreichbar“
+
 ## 2.5.0 – 2026-10-19
 ### Neu
 - Update-Wächter: Stürzt eine neu installierte Version zweimal ab, bevor sie eine Minute stabil lief, startet der Begleiter beim nächsten Start von selbst wieder die letzte stabile Version und meldet das; normales Beenden und Herunterfahren zählen nie als Absturz. Die Update-Zentrale zeigt den Zustand

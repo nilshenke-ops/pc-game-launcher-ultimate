@@ -5,7 +5,7 @@ import { CheckCircle2, Clock, Eye, KeyRound, Link2, LogOut, MonitorSmartphone, P
 import { client, enterDemo, HOSTED, readJson, RpcError, serverConfigured, serverUrl, setServerUrl, writeJson } from "../lib/rpc";
 import { pcAddressToWs, wsToPcAddress, isLoopbackAddress } from "../lib/address";
 import { t } from "../lib/i18n";
-import { useConn, useEvent, useNow, toast } from "../lib/hooks";
+import { useConn, useEvent, useNow, useRpc, toast } from "../lib/hooks";
 import { Banner, Button, Card, Field, PageHead } from "../components/ui";
 
 const PENDING_KEY = "pgl.pairing";
@@ -201,6 +201,9 @@ export function PairPage() {
   useEvent<{ topic: string }>("changed", (d) => { if (d.topic === "pairing") load(); });
   useEvent("pairing.pending", load);
 
+  // Paired phones only find the PC after a restart if the companion starts with Windows.
+  const autostart = useRpc<{ supported: boolean; enabled: boolean }>("autostart.get", {}, ["autostart"], isLocal);
+  const enableAutostart = () => client.call("autostart.set", { enabled: true }).then(() => { toast(t("Autostart aktiviert"), "success"); autostart.reload(); }, (e: Error) => toast(e.message, "error"));
   const url = code?.urls[urlIndex] ?? code?.urls[0];
   useEffect(() => {
     if (!url) { setQr(""); return; }
@@ -234,6 +237,13 @@ export function PairPage() {
   return (
     <>
       <PageHead eyebrow={t("Verbindung")} title={t("Gerät koppeln")} text={t("Verbinde iPhone, iPad, Android oder einen anderen Browser sicher mit diesem PC.")} />
+      {autostart.data?.supported && !autostart.data.enabled && (
+        <div style={{ marginBottom: 16 }}>
+          <Banner kind="warn" title={t("Autostart ist aus")} actions={<Button variant="primary" onClick={enableAutostart}>{t("Mit Windows starten")}</Button>}>
+            {t("Einmal koppeln reicht – aber nach einem Neustart des PCs findet dein Handy ihn erst, wenn der Begleiter wieder läuft. Mit Autostart ist er nach dem Einschalten sofort erreichbar.")}
+          </Banner>
+        </div>
+      )}
       <div className="grid-2">
         <Card title={t("Kopplungscode")} icon={<KeyRound size={18} />} className={code && !expired ? "glow" : ""}>
           <div className="stack">

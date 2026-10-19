@@ -35,6 +35,7 @@ export function ConnectScreen({ embedded = false }: { embedded?: boolean }) {
                 <li>{t("Der PC ist aus oder der Companion wurde beendet (Symbol im Infobereich prüfen).")}</li>
                 <li>{t("Dein Handy ist nicht im selben WLAN wie der PC (mobile Daten ausschalten).")}</li>
                 <li>{t("Die Windows-Firewall blockiert den Zugriff – beim ersten Start „Private Netzwerke“ erlauben.")}</li>
+                <li>{t("Der Router hat dem PC eine neue Adresse gegeben (der PC meldet das als Benachrichtigung). Dann den QR-Code unter „Gerät koppeln“ einmal neu scannen – dauerhaft hilft eine feste IP-Adresse für den PC im Router.")}</li>
                 <li>{t("Der Link ist veraltet, z. B. eine alte Vorschau-Adresse. Die richtige Adresse zeigt der Companion unter „Gerät koppeln“.")}</li>
               </ul>
               <div className="row between">

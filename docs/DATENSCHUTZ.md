@@ -20,6 +20,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | KI-Assistent: Modus, Modell, Ollama-Adresse, Monatslimit, Kosten je Monat, **Anthropic-Schlüssel nur DPAPI-geschützt** | `assistant.json` | Assistent → Einrichten → Schlüssel löschen, oder Datei löschen |
 | Benachrichtigungen mit Verlauf (gelesen/geschlossen, höchstens 200, älter als 30 Tage wird gelöscht) | `notifications.json` | Benachrichtigungen → Verlauf löschen |
 | Spielmodus: Programmliste, Schalter und – während eines Spiels – die Pfade der geschlossenen Programme (zum Wiederöffnen) | `gamemode-programs.json` | Profile → Spielmodus |
+| Zuletzt gesehene WLAN-Adresse(n) des PCs (um eine Änderung zu melden) | `lan-address.json` | Datei löschen |
 | Update-Wächter: Version, ob sie stabil lief, Zahl fehlgeschlagener Starts | `update-guard.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |
