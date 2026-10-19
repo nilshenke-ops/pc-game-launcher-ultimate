@@ -779,6 +779,19 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.getByRole("button", { name: "Bearbeiten beenden" }).click();
   await tablet.reload();
   await expect(tablet.locator(".deck-key", { hasText: "Tablet-Taste" }).locator('svg[aria-label="Discord"]')).toBeVisible();
+  // The assistant sets the app up without the PC: the request becomes a button, applied on tap, undoable.
+  await tablet.goto(`${HOSTED_SITE}/#/assistant`);
+  const say = tablet.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  await say.fill("Pack den Backlog in die Leiste");
+  await say.press("Enter");
+  await tablet.locator(".as-turn.bot").last().getByRole("button", { name: "statt „Sounds“" }).click();
+  await expect(tablet.locator(".bottom-nav").getByRole("link", { name: "Backlog" })).toBeVisible();
+  await tablet.locator(".as-turn.bot").last().getByRole("button", { name: "Rückgängig" }).click();
+  await expect(tablet.locator(".bottom-nav").getByRole("link", { name: "Sounds" })).toBeVisible();
+  await say.fill("Leiste schlicht wie früher");
+  await say.press("Enter");
+  await tablet.locator(".as-turn.bot").last().getByRole("button", { name: "Symbole schlicht" }).click();
+  await expect.poll(() => tablet.evaluate(() => document.documentElement.hasAttribute("data-nav-plain"))).toBe(true);
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 

@@ -111,3 +111,10 @@ Timer und Stoppuhr laufen nur, solange sie sichtbar sind und gestartet wurden (e
 | Haupt-Chunk | 373 KB (119 KB gzip) | 374 KB (119 KB gzip) |
 | Logos | – | 71 KB (31 KB gzip), eigener Chunk – nur geladen mit Programme/Spiele, Deck, Home-Kacheln |
 | Programmsymbole am PC | beim Hinzufügen (nur EXE) | beim Hinzufügen + einmalig im Hintergrund für alte Einträge (höchstens 50 je Lauf, außerhalb der Datei-Sperre, nicht während eines Spiels) |
+
+## 2.10.0 (19.10.2026)
+
+| | 2.9.0 | 2.10.0 |
+|---|---|---|
+| Haupt-Chunk | 374 KB (119 KB gzip) | 374 KB (119 KB gzip) – unverändert |
+| Einrichten per Auftrag | – | 10 KB (4 KB gzip), erst bei der ersten Frage an den Assistenten geladen |

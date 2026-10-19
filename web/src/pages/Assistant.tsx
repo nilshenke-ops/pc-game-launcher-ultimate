@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bot, Cpu, KeyRound, Mic, MicOff, Plus, RefreshCw, Send, Settings2, Sparkles, User } from "lucide-react";
+import { Bot, Cpu, KeyRound, Mic, MicOff, Plus, RefreshCw, Send, Settings2, Sparkles, Undo2, User } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, confirmDialog, Field, Modal, PageHead, Segmented, Switch } from "../components/ui";
-import { CHAT_KEY, emptyChat, formatCost, offlineExamples, readChat, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
+import { CHAT_KEY, emptyChat, formatCost, offlineExamples, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
+import { getPrefs, setPrefs } from "../lib/prefs";
+import { navItems } from "../lib/nav";
+import type { SetupOp } from "../lib/assistant-setup";
 import type { LibraryItem } from "../lib/types";
 
 interface Status {
@@ -128,10 +131,23 @@ function SettingsDialog({ st, onClose }: { st: Status; onClose: () => void }) {
 function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
+  // Settings before a set-up change, to undo it with one tap.
+  const [before, setBefore] = useState<ReturnType<typeof getPrefs> | null>(null);
   if (turn.role === "user") return <div className="as-turn me"><div className="as-bubble">{turn.text}</div><User size={18} aria-hidden /></div>;
   const r = turn.reply!;
   const run = async (a: AssistantAction, i: number) => {
     if (a.kind === "navigate" && a.path) { nav(a.path); return; }
+    if (a.kind === "setup" && a.params) {
+      const o = a.params as unknown as SetupOp;
+      const { applySetup } = await import("../lib/assistant-setup");
+      const prev = getPrefs();
+      setPrefs((p) => applySetup(p, o, window.matchMedia("(max-width: 699px)").matches));
+      if (o.op === "lang") client.call("settings.save", { language: o.value }).catch(() => {});
+      setBefore(prev);
+      setDone({ [i]: true });
+      toast(t("Erledigt: {n}", { n: a.label }), "success");
+      return;
+    }
     if (!a.method) return;
     if (a.confirm && !(await confirmDialog(a.label + "?", t("Das wird jetzt auf deinem PC ausgeführt."), { ok: t("Ausführen") }))) return;
     try {
@@ -150,11 +166,12 @@ function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest
             {r.actions.map((a, i) => (
               <Button key={i} size="sm" variant={a.kind === "navigate" ? "ghost" : "primary"} disabled={done[i]} onClick={() => run(a, i)}>{done[i] ? "✓ " : ""}{a.label}</Button>
             ))}
+            {before && <Button size="sm" variant="ghost" icon={<Undo2 size={15} />} onClick={() => { const b = before; setPrefs(() => b); setBefore(null); setDone({}); toast(t("Rückgängig gemacht"), "info"); }}>{t("Rückgängig")}</Button>}
           </div>
         )}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
       </div>
@@ -186,6 +203,10 @@ export default function Assistant() {
     setChat((c) => ({ ...c, turns: [...c.turns, { role: "user", text: question }] }));
     setBusy(true);
     try {
+      // Setting up this device ("Mach das Design hell", "Pack das Deck in die Leiste") is answered here – with or without the PC.
+      const { setupReply } = await import("../lib/assistant-setup");
+      const setup = setupReply(question, getPrefs(), navItems());
+      if (setup) { setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: setup }] })); return; }
       if (!online) {
         // Without a PC: the help built into the app answers right here in the browser (no internet, 0 €).
         const [{ answerOffline }, lib] = await Promise.all([import("../lib/assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
@@ -235,7 +256,7 @@ export default function Assistant() {
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />
-      {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät, ohne Internet. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
+      {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich richte die App für dich ein (Design, Leiste, Home, Sprache), beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät, ohne Internet. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
 
       <Card className="as-chat">
         <div className="as-log" aria-live="polite">
@@ -243,7 +264,7 @@ export default function Assistant() {
             <div className="as-empty">
               <Sparkles size={28} aria-hidden />
               <p>{t("Ich kenne jede Seite der App, deine Bibliothek, Sounds, Profile und die Live-Werte deines PCs. Aktionen schlage ich als Knopf vor – ausgeführt wird erst, wenn du tippst.")}</p>
-              <div className="chips">{(online ? s?.examples ?? [] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
+              <div className="chips">{(online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
           {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={ask} />)}

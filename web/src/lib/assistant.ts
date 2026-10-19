@@ -3,13 +3,15 @@
 import { t } from "./i18n";
 
 export interface AssistantAction { kind: string; label: string; method?: string | null; params?: Record<string, unknown>; path?: string | null; confirm?: boolean }
-export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "ollama" | "claude" | "offline"; model?: string | null; costUsd?: number | null }
+export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "ollama" | "claude" | "offline" | "device"; model?: string | null; costUsd?: number | null }
 export interface ChatState { conversationId: string | null; turns: { role: "user" | "bot"; text?: string; reply?: AssistantReply }[] }
 
 export const CHAT_KEY = "pgl.assistant.chat";
 
 /** Example questions for the help mode without a PC (kept here so the page does not load the help texts just for these). */
-export const offlineExamples = () => [t("Wie richte ich Discord mit dem Soundboard ein?"), t("Öffne das Deck"), t("Was soll ich als Nächstes spielen?"), t("Welche Spiele habe ich?"), t("Wie verbinde ich mein Handy?")];
+export const offlineExamples = () => [t("Mach das Design hell"), t("Pack den Backlog in die Leiste"), t("Zeig die Uhr auf Home"), t("Wie richte ich Discord mit dem Soundboard ein?"), t("Öffne das Deck"), t("Was soll ich als Nächstes spielen?"), t("Wie verbinde ich mein Handy?")];
+/** Set-up requests that work everywhere (answered on this device, also with the PC connected). */
+export const setupChips = () => [t("Mach das Design hell"), t("Pack den Backlog in die Leiste")];
 export const emptyChat = (): ChatState => ({ conversationId: null, turns: [] });
 
 /** The chat of this tab (sessionStorage – gone when the tab closes; the PC keeps the conversation at most 3 hours). */

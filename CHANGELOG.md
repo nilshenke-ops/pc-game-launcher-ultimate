@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.10.0 – 2026-10-19
+### Neu
+- KI-Assistent richtet die App per Auftrag ein – auch ohne PC, 0 €, direkt auf dem Gerät: Design hell/dunkel, Farben, Hintergrund, Schriftgröße, Animationen, untere Leiste (hinzufügen, entfernen, farbig/schlicht; ist sie voll, fragt er, welchen Platz er ersetzen soll), Home-Widgets ein-/ausblenden, Bereiche im Menü ausblenden, Sprache, Profil-Designs
+- Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen
+
 ## 2.9.0 – 2026-10-19
 ### Neu
 - Echte Logos: Discord, OBS, Spotify, Steam, Epic, EA, Battle.net, Twitch, YouTube, Valorant, Browser und gut 40 weitere Programme zeigen ihr Logo in der Markenfarbe – auf den App-Kacheln, im Deck (neuer Reiter „Logo“ im Tasten-Editor) und auch ohne PC

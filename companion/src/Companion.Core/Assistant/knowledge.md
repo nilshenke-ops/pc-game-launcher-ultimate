@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.9.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.10.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -186,7 +186,8 @@ Strg+K (oder die Lupe) durchsucht Bereiche, Spiele, Programme, Sounds, Profile u
 
 ## KI-Assistent
 Seite: /assistant
-Stichworte: assistent ki claude ollama lokal kostenlos gratis frage chat befehl sprache kosten schlüssel modell
+Stichworte: assistent ki claude ollama lokal kostenlos gratis frage chat befehl sprache kosten schlüssel modell einrichten auftrag design leiste
+Einrichten per Auftrag (mit und ohne PC, 0 €, auf diesem Gerät): „Mach das Design hell/dunkel“, „Mach die Farben grün“, „Hintergrund Weltall“, „Schrift größer“, „Pack den Backlog in die Leiste“ (ist die Leiste voll, fragt er, welchen Platz er ersetzen soll), „Nimm Sounds aus der Leiste“, „Leiste schlicht wie früher“, „Zeig die Uhr auf Home“, „Blende Deal Radar aus“, „Stell die Sprache auf Englisch“. Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen.
 Ohne PC (Hilfe-Modus, 0 €, läuft komplett im Browser): beantwortet Fragen zur App aus dieser Wissensbasis, öffnet Seiten („Öffne das Deck“), kennt die zuletzt vom PC geladenen Spiele und den Backlog („Was soll ich als Nächstes spielen?“). Starten, Live-Werte und Sounds brauchen den PC – das sagt er ehrlich, statt zu raten.
 Mit PC drei Modi (Assistent → Einrichten):
 - **Lokal** (Standard, 0 €, ohne Internet): versteht Befehle wie „Starte Rocket League“, „Spiel Sound Airhorn“, „Profil Streaming“, „Wie heiß ist meine GPU?“, „Wie lange habe ich diese Woche gespielt?“, „Welche Spiele habe ich?“ und beantwortet Fragen zur App aus dieser Wissensbasis.
