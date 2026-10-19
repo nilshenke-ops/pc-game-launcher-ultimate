@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.5.0 – 2026-10-19
+### Neu
+- Update-Wächter: Stürzt eine neu installierte Version zweimal ab, bevor sie eine Minute stabil lief, startet der Begleiter beim nächsten Start von selbst wieder die letzte stabile Version und meldet das; normales Beenden und Herunterfahren zählen nie als Absturz. Die Update-Zentrale zeigt den Zustand
+- Benachrichtigungen bleiben gespeichert (30 Tage, höchstens 200): „Offen“ und „Verlauf“, gelesen/ungelesen mit Punkt, Kategorien als Filter (Updates, Starts, Automatisierungen, Spielmodus, Plugins, GameQuest, Deal Radar, Aufnahme, Assistent, System), Verlauf löschen
+- Ruhemodus während eines Spiels gilt jetzt auch für die Windows-Hinweise des PCs: dann nur noch Fehler
+- Spielmodus für Programme (Profile → „Spielmodus: Programme schließen“): gewählte Programme werden beim Spielstart gebeten, sich zu schließen – wie ein Klick auf ihr X, nie hart beendet – und nach dem letzten Spiel wieder geöffnet; Vorschau zeigt, was gerade laufen würde; Windows-Prozesse, Spiele-Launcher, Anti-Cheat und der Begleiter sind gesperrt, das laufende Spiel wird nie angefasst
+- Messwerte einzeln abschaltbar (PC Monitor → Messwerte): CPU, Arbeitsspeicher, Grafikkarte, Laufwerke – ausgeschaltet wird der Wert gar nicht erst gemessen (bei der Grafikkarte läuft dann kein nvidia-smi), auch nicht für Overlay, Spiel-Statistik und Assistent
+### Verbessert
+- Backup: Widgets, GameQuest, Deal Radar und die Spielmodus-Liste sind beim Einspielen einzeln abwählbar
+- KI-Assistent kennt Update-Wächter, Spielmodus, Messwert-Schalter und den Benachrichtigungs-Verlauf
+### Datenschutz
+- docs/DATENSCHUTZ.md: neue Dateien `notifications.json`, `gamemode-programs.json`, `update-guard.json`; Benachrichtigungen liegen nicht mehr nur im Arbeitsspeicher
+
 ## 2.4.0 – 2026-10-19
 ### Neu
 - KI-Assistent „Lokale KI“ für 0 €: ein freies Sprachmodell über Ollama direkt auf deinem PC – ohne Konto, ohne Kosten, nichts verlässt den PC; installierte Modelle werden angezeigt, Empfehlungen mit Größe und Grafikspeicher

@@ -433,7 +433,7 @@ function Updates() {
 
 // ------------------------------------------------------------------ backup
 
-const PARTS: [string, string][] = [["settings", "Einstellungen"], ["library", "Spiele & Programme"], ["quickactions", "Quick Actions"], ["profiles", "Gaming-Profile"], ["automations", "Automatisierungen"], ["hotkeys", "Hotkeys"], ["sounds", "Soundboard"], ["audio", "Audio-Einstellungen"], ["history", "Verlauf"], ["uiprefs", "Design & Layouts (PC)"]];
+const PARTS: [string, string][] = [["settings", "Einstellungen"], ["library", "Spiele & Programme"], ["quickactions", "Quick Actions"], ["profiles", "Gaming-Profile"], ["automations", "Automatisierungen"], ["hotkeys", "Hotkeys"], ["sounds", "Soundboard"], ["audio", "Audio-Einstellungen"], ["history", "Verlauf"], ["uiprefs", "Design & Layouts (PC)"], ["widgets", "Eigene Widgets"], ["quests", "GameQuest"], ["deals", "Deal Radar"], ["gamemode", "Spielmodus-Programme"]];
 
 function toB64(buf: Uint8Array) { let s = ""; for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000)); return btoa(s); }
 

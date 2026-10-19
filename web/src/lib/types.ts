@@ -131,7 +131,7 @@ export interface AudioSettings {
 
 export interface CheckResult { id?: string; area?: string; label: string; status: "ok" | "warn" | "error" | "info" | "untested" | "unsupported"; detail: string; ms?: number; fix?: string | null }
 
-export interface Notification { id: string; key: string; severity: "info" | "success" | "warning" | "error"; title: string; message?: string; at: string; count: number; link?: string }
+export interface Notification { id: string; key: string; severity: "info" | "success" | "warning" | "error"; title: string; message?: string; at: string; count: number; link?: string; read?: boolean; dismissed?: boolean; category: string }
 
 export interface GpuSample { name: string; utilPercent?: number; tempC?: number; memUsedBytes?: number; memTotalBytes?: number; source: string }
 export interface MetricsSample {
@@ -148,10 +148,15 @@ export interface MetricsSample {
   uptimeHours?: number;
   fpsStatus?: string;
   sources: Record<string, string>;
+  /** Values switched off in the settings – not measured. */
+  off?: ("cpu" | "ram" | "gpu" | "disks")[];
 }
+
+export interface MetricSwitches { cpu: boolean; ram: boolean; gpu: boolean; disks: boolean }
 
 export interface Settings {
   pcName: string;
+  metrics?: MetricSwitches;
   language: "de" | "en";
   lanAccess: boolean;
   port: number;
@@ -219,6 +224,7 @@ export interface UpdateStatus {
   downloaded: boolean;
   canInstall: boolean;
   canRollback?: boolean;
+  guard?: { stable: boolean; lastStable?: string | null; failures: number } | null;
 }
 
 export interface PairedDevice {

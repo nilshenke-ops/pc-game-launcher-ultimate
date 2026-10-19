@@ -1,13 +1,15 @@
 import { useRef, useState } from "react";
 import { Cpu, Gauge as GaugeIcon, HardDrive, MemoryStick, MonitorPlay, Timer } from "lucide-react";
 import { t } from "../lib/i18n";
-import { useConn, useEvent, useLiveSubscription } from "../lib/hooks";
+import { client } from "../lib/rpc";
+import { toast, useCan, useConn, useEvent, useLiveSubscription, useRpc } from "../lib/hooks";
 import { bytes, clock } from "../lib/format";
-import type { MetricsSample } from "../lib/types";
+import type { MetricSwitches, MetricsSample, Settings } from "../lib/types";
 import { NetworkCard, PowerCard, StorageCard } from "../components/MonitorExtras";
-import { Banner, Card, OfflineState, Gauge, Meter, PageHead, Sparkline } from "../components/ui";
+import { Banner, Card, OfflineState, Gauge, Meter, PageHead, Sparkline, Switch } from "../components/ui";
 
 const NA = () => t("Nicht verfügbar");
+const Off = () => <p className="muted small">{t("Ausgeschaltet – wird nicht gemessen.")}</p>;
 
 export default function Monitor() {
   const [m, setM] = useState<MetricsSample | null>(null);
@@ -29,6 +31,7 @@ export default function Monitor() {
 
   const ramPct = m?.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
   const gpu = m?.gpus[0];
+  const off = (k: "cpu" | "ram" | "gpu" | "disks") => !!m?.off?.includes(k);
   return (
     <>
       <PageHead eyebrow={t("System")} title={t("PC Monitor")} text={t("Live-Werte deines Gaming-PCs. Abgefragt wird nur, solange diese Ansicht oder das System-Widget auf einem Gerät sichtbar ist (alle 2 Sekunden).")} />
@@ -37,16 +40,20 @@ export default function Monitor() {
         <div className="stack">
           <div className="grid-3">
             <Card title="CPU" icon={<Cpu size={18} />} meta={m.sources.cpu}>
+              {off("cpu") ? <Off /> : <>
               <div className="row nowrap"><Gauge value={m.cpuPercent} label="CPU" /><div className="stack-sm grow"><b className="small">{m.cpuName ?? NA()}</b><span className="small muted">{m.cpuCores} {t("Kerne")}</span><span className="small muted">{t("Temperatur")}: {m.cpuTempC != null ? `${m.cpuTempC} °C` : NA()}</span></div></div>
               <Sparkline values={hist.current.cpu} />
               {m.cpuTempC == null && <p className="tiny muted">{m.cpuTempSource}</p>}
+              </>}
             </Card>
             <Card title={t("Arbeitsspeicher")} icon={<MemoryStick size={18} />} meta={m.sources.ram}>
+              {off("ram") ? <Off /> : <>
               <div className="row nowrap"><Gauge value={ramPct} label="RAM" /><div className="stack-sm grow"><b>{bytes(m.memUsedBytes)}</b><span className="small muted">{t("von {x}", { x: bytes(m.memTotalBytes) })}</span></div></div>
               <Sparkline values={hist.current.ram} />
+              </>}
             </Card>
             <Card title={t("Grafikkarte")} icon={<MonitorPlay size={18} />} meta={gpu?.source}>
-              {gpu ? (
+              {off("gpu") ? <Off /> : gpu ? (
                 <>
                   <div className="row nowrap"><Gauge value={gpu.utilPercent} label="GPU" /><div className="stack-sm grow"><b className="small">{gpu.name}</b>
                     <span className="small muted">{t("Temperatur")}: {gpu.tempC != null ? `${gpu.tempC} °C` : NA()}</span>
@@ -59,7 +66,7 @@ export default function Monitor() {
           <div className="grid-2">
             <Card title={t("Datenträger")} icon={<HardDrive size={18} />}>
               <div className="stack">
-                {m.disks.length === 0 && <p className="muted small">{NA()}</p>}
+                {off("disks") ? <Off /> : m.disks.length === 0 && <p className="muted small">{NA()}</p>}
                 {m.disks.map((d) => (
                   <div key={d.name} className="stack-sm">
                     <div className="row between small"><b>{d.name} {d.label && d.label !== d.name ? `· ${d.label}` : ""}</b><span className="muted">{t("{f} frei von {t}", { f: bytes(d.freeBytes), t: bytes(d.totalBytes) })}</span></div>
@@ -79,6 +86,7 @@ export default function Monitor() {
           </div>
         </div>
       )}
+      {authed && <MetricSwitchesCard />}
       {authed && (
         <div className="grid-2" style={{ marginTop: 16 }}>
           <NetworkCard />
@@ -87,5 +95,29 @@ export default function Monitor() {
         </div>
       )}
     </>
+  );
+}
+
+const METRICS: [keyof MetricSwitches, string, string][] = [
+  ["cpu", "CPU-Auslastung", ""],
+  ["ram", "Arbeitsspeicher", ""],
+  ["gpu", "Grafikkarte (Auslastung, Speicher, Temperatur)", "Spart am meisten: Bei NVIDIA läuft dann kein nvidia-smi mehr, sonst werden die Windows-Leistungsindikatoren nicht gelesen."],
+  ["disks", "Freier Speicher der Laufwerke", "Wird ohnehin nur jede Minute gelesen."],
+];
+
+/** Each value can be switched off – it is then not measured at all (also not for the overlay, session statistics and assistant). */
+function MetricSwitchesCard() {
+  const q = useRpc<{ settings: Settings }>("settings.get", {}, ["settings"]);
+  const canManage = useCan("manage");
+  const cur: MetricSwitches = { cpu: true, ram: true, gpu: true, disks: true, ...q.data?.settings.metrics };
+  if (!q.data) return null;
+  const set = (k: keyof MetricSwitches, v: boolean) => client.call("settings.save", { metrics: { ...cur, [k]: v } }).catch((e: Error) => toast(e.message, "error"));
+  return (
+    <Card title={t("Messwerte")} style={{ marginTop: 16 }}>
+      <p className="small muted" style={{ marginTop: 0 }}>{t("Ausgeschaltete Werte werden auf dem PC gar nicht erst abgefragt – auch nicht für Overlay, Spiel-Statistik und Assistent.")}</p>
+      {METRICS.map(([k, label, hint]) => (
+        <Switch key={k} checked={cur[k]} disabled={!canManage} onChange={(v) => set(k, v)} label={t(label)} hint={hint ? t(hint) : undefined} />
+      ))}
+    </Card>
   );
 }

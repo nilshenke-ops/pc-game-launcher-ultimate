@@ -152,14 +152,15 @@ function SystemWidget() {
   if (!m) return <div className="skeleton" style={{ height: 110 }} />;
   const ram = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
   const gpu = m.gpus[0];
+  const na = (k: "cpu" | "ram" | "gpu") => m.off?.includes(k) ? t("Ausgeschaltet") : t("Nicht verfügbar");
   const Row = ({ k, v, val }: { k: string; v: string; val?: number | null }) => (
     <div className="stack-sm"><div className="row between small"><span className="muted">{k}</span><b>{v}</b></div><Meter value={val} /></div>
   );
   return (
     <div className="stack">
-      <Row k="CPU" v={m.cpuPercent != null ? `${m.cpuPercent.toFixed(0)} %` : t("Nicht verfügbar")} val={m.cpuPercent} />
-      <Row k="RAM" v={ram != null ? `${bytes(m.memUsedBytes)} / ${bytes(m.memTotalBytes)}` : t("Nicht verfügbar")} val={ram} />
-      <Row k={gpu?.name ? `GPU · ${gpu.name}` : "GPU"} v={gpu?.utilPercent != null ? `${gpu.utilPercent.toFixed(0)} %${gpu.tempC != null ? ` · ${gpu.tempC} °C` : ""}` : t("Nicht verfügbar")} val={gpu?.utilPercent} />
+      <Row k="CPU" v={m.cpuPercent != null ? `${m.cpuPercent.toFixed(0)} %` : na("cpu")} val={m.cpuPercent} />
+      <Row k="RAM" v={ram != null ? `${bytes(m.memUsedBytes)} / ${bytes(m.memTotalBytes)}` : na("ram")} val={ram} />
+      <Row k={gpu?.name ? `GPU · ${gpu.name}` : "GPU"} v={gpu?.utilPercent != null ? `${gpu.utilPercent.toFixed(0)} %${gpu.tempC != null ? ` · ${gpu.tempC} °C` : ""}` : na("gpu")} val={gpu?.utilPercent} />
       <div className="tiny muted">{t("Live · {t}", { t: clock(m.at) })} · <Link to="/monitor">{t("Details")}</Link></div>
     </div>
   );

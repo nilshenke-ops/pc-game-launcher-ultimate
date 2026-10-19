@@ -85,7 +85,7 @@ function seed(): DemoDb {
       { id: "h2", keys: "Ctrl+Alt+F12", enabled: true, action: { type: "stopAllSounds" } },
     ],
     notifications: [
-      { id: "n1", key: "demo", severity: "info", title: "Willkommen in der Demo", message: "Alle Inhalte sind Beispiele. Mit dem Companion auf deinem PC werden daraus echte Daten.", at: now(), count: 1 },
+      { id: "n1", key: "demo", severity: "info", title: "Willkommen in der Demo", message: "Alle Inhalte sind Beispiele. Mit dem Companion auf deinem PC werden daraus echte Daten.", at: now(), count: 1, category: "system" },
     ],
     settings: { pcName: "Demo-PC", language: "de", lanAccess: true, port: 8787, relayEnabled: false, historyEnabled: true, startMinimized: true, keepRunningInTray: true, processScanSeconds: 5, notifyInfo: true, quietWhileGaming: true, mutedNotificationKeys: [], steamCoversFromCdn: true },
     audio: { outputDeviceId: "d3", soundboardVolume: 80, monitorEnabled: true, monitorDeviceId: "d2", monitorVolume: 60, micPassthrough: true, micDeviceId: "m1", micVolume: 100, playMode: "overlap", maxConcurrent: 8 },
@@ -244,7 +244,8 @@ export async function demoCall(method: string, p: Record<string, any> = {}): Pro
     case "network.diagnose": case "diagnostics.run": return { at: now(), checks: [{ label: "Demo-Modus", status: "info", detail: "Keine Verbindung zu einem PC. Mit dem Companion zeigt die Diagnose hier echte Prüfungen." }] };
     case "diagnostics.logs": return { entries: [] };
 
-    case "notifications.list": return { items: db.notifications };
+    case "notifications.list": return { items: db.notifications, unread: 0 };
+    case "gamemode.get": return { enabled: false, restore: true, supported: true, waitingToReopen: 0, programs: [], preview: [] };
     case "notifications.dismiss": db.notifications = db.notifications.filter((n) => n.id !== p.id); changed("notifications"); return true;
     case "notifications.dismissAll": db.notifications = []; changed("notifications"); return true;
 

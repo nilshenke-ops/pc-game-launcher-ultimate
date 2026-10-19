@@ -766,3 +766,7 @@ html.desktop-widget-mode .app-bg { display: none; }
   .as-input { position: sticky; bottom: calc(var(--bottom-h) + 10px + env(safe-area-inset-bottom)); z-index: 5; padding: 8px; margin: 0 -8px -8px; border-radius: 16px; background: rgba(var(--surface-rgb), 0.97); box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.25); }
   .as-bubble { max-width: 100%; }
 }
+
+/* Notifications */
+.ntf-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); margin-right: 8px; vertical-align: middle; }
+.list-item.ntf.closed { opacity: 0.6; }

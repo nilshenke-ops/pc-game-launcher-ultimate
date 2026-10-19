@@ -30,6 +30,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public AudioService Audio { get; }
     public SoundboardService Soundboard { get; }
     public MonitorService Monitor { get; }
+    /// <summary>PC values with the user's switches applied (switched-off values are not measured).</summary>
+    public IMetricsSource Metrics { get; }
     public NetworkDiagnostics Network { get; }
     public UpdateService Updates { get; }
     public PluginService Plugins { get; }
@@ -46,6 +48,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public BackupService Backup { get; }
     public QuestService Quests { get; }
     public DealService Deals { get; }
+    public GameModePrograms GameModePrograms { get; }
     public Assistant.AssistantService Assistant { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
@@ -61,7 +64,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Rpc = new RpcServer(Devices);
         Pairing = new PairingService(Devices);
         Settings = new SettingsService(paths, Rpc);
-        Notifications = new NotificationCenter(Rpc, Settings);
+        Notifications = new NotificationCenter(Rpc, Settings, paths);
         Library = new LibraryService(paths, platform, Rpc);
         History = new HistoryService(paths, Settings, Rpc);
         Sessions = new SessionTracker(Library, platform.Processes, Settings);
@@ -71,15 +74,20 @@ public sealed class CompanionServices : IAsyncDisposable
         Hotkeys = new HotkeyService(paths, platform.Hotkeys, Rpc);
         Audio = new AudioService(paths, platform.Audio, Rpc);
         Soundboard = new SoundboardService(paths, Audio, Rpc);
-        Monitor = new MonitorService(platform.Metrics, Rpc);
+        Metrics = new SwitchedMetrics(platform.Metrics, () => Settings.Get().Metrics ?? new());
+        Metrics.Apply(Settings.Get().Metrics ?? new());
+        Monitor = new MonitorService(Metrics, Rpc);
         Relay = new RelayClient(Rpc);
         Web = new WebHost(this, assets);
         Network = new NetworkDiagnostics(Relay.Status, Settings.Get, Web.LanUrls);
         Updates = new UpdateService(paths, Settings.Get, platform.UpdateInstaller, Rpc);
         Updates.Failed += message => { _ = Automations.Fire(TriggerType.UpdateFailed, null); };
+        if (new UpdateGuard(paths).TakeRollbackNote(UpdateService.CurrentVersion) is { } rb)
+            Notifications.Push("update-rolled-back", Severity.Warning, $"Update {rb.from} automatisch zurückgesetzt",
+                $"Version {rb.from} ist zweimal kurz nach dem Start abgestürzt. Der Begleiter läuft wieder mit Version {UpdateService.CurrentVersion}. Fehlerdetails: Diagnose → Protokoll.", "/updates");
         Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Updates & Versionen: Änderungen ansehen, herunterladen und installieren. Es wird nie automatisch installiert.", "/updates");
         Plugins = new PluginService(paths, Rpc, Settings.Get);
-        Perf = new PerformanceRecorder(platform.Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
+        Perf = new PerformanceRecorder(Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
         NetMonitor = new NetworkMonitor(Rpc, () => Settings.Get().PingTargets);
         Storage = new StorageService(paths, Library, platform, Rpc);
         Updates.CreateRestorePoint = name =>
@@ -97,6 +105,9 @@ public sealed class CompanionServices : IAsyncDisposable
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
         Quests = new QuestService(paths, () => History.Export().Sessions, id => Library.Get(id)?.Name, Rpc);
         Deals = new DealService(paths, Rpc);
+        // Games from the library are never closed by the game mode (process names and the started EXE).
+        GameModePrograms = new GameModePrograms(paths, platform.Processes, platform.ProcessControl, Rpc, () => Library.List().Where(i => i.Kind == ItemKind.Game)
+            .SelectMany(i => i.ProcessNames.Concat(i.Source == LaunchSource.Exe ? new[] { Path.GetFileNameWithoutExtension(i.Target) } : Array.Empty<string>())));
         Assistant = new Assistant.AssistantService(paths, platform.Secrets, Rpc, new Assistant.AssistantData(this));
 
         Wire();
@@ -155,6 +166,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Obs.RecordingChanged += (active, path) => Notifications.Push("obs-record", Severity.Success, active ? "Aufnahme läuft" : "Aufnahme gespeichert", active ? "OBS nimmt auf." : path, "/overlay-settings");
         Obs.ReplaySaved += path => Notifications.Push("obs-replay", Severity.Success, "Replay gespeichert", path, "/overlay-settings");
         Plugins.RunSteps = (steps, by) => Runner.RunAsync(steps, by);
+        GameModePrograms.Report = (key, title, text) => Notifications.Push("gamemode:" + key, Severity.Info, title, text, "/profiles");
         Quests.Reached = (title, text) => Notifications.Push("quest:" + title, Severity.Success, title, text, "/quests");
         Deals.TargetReached = (title, text) => Notifications.Push("deal:" + title, Severity.Success, title, text, "/deals");
         Plugins.Notify = (title, text) => Notifications.Push("plugin:" + title, Severity.Warning, title, text, "/plugins");
@@ -175,6 +187,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStarted, item.Id);
+            _ = GameModePrograms.GameStartedAsync();
             UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs") _ = ObsReplayBuffer(true);
         };
@@ -190,6 +203,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStopped, item.Id);
+            if (Sessions.Running().Count == 0) _ = GameModePrograms.AllGamesStoppedAsync();
             GameActivity.RunWhenIdle("quests", () => { try { Quests.Get(); } catch (Exception ex) { Log.Warn("quests", ex.Message); } return Task.CompletedTask; });
             UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs" && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
@@ -253,6 +267,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Notifications.OnDesktop = n => { try { Platform.Desktop.ShowToast(n.Title, n.Message ?? ""); } catch { } };
 
         Settings.Saved += s => ApplyRelaySettings(s);
+        Settings.Saved += s => Metrics.Apply(s.Metrics ?? new());
         var (epicWasOn, eaWasOn) = (Settings.Get().EpicEnabled, Settings.Get().EaEnabled);
         Settings.Saved += s =>
         {

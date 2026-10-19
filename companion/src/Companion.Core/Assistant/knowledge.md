@@ -51,6 +51,11 @@ Seite: /profiles
 Stichworte: profil competitive streaming wechsel automatisch audio layout
 Ein Profil bündelt Audio-Ausgabe, Soundboard-Lautstärke und -Sammlung, Programme, Quick Actions, Hotkeys und Dashboard-Layout. „Automatischer Wechsel“: Startet ein Spiel, das einem Profil zugeordnet ist, wird das Profil aktiv; endet es, kehrt die App zum vorherigen zurück.
 
+
+## Spielmodus: Programme beim Spielen schließen
+Seite: /profiles
+Stichworte: spielmodus programme schließen beenden chrome discord browser hintergrund ressourcen wieder öffnen gaming modus
+Unter Profile → „Spielmodus: Programme schließen“ trägst du Programme ein (z. B. chrome, Discord). Startet ein Spiel, werden sie gebeten, sich zu schließen – wie ein Klick auf ihr X, nie hart beendet. Fragt ein Programm nach dem Speichern oder hat es kein Fenster (nur im Infobereich), bleibt es offen und es kommt eine Benachrichtigung. Wenn das letzte Spiel endet, werden die geschlossenen Programme wieder gestartet (abschaltbar; offene Tabs stellt nur das Programm selbst wieder her). Nicht eintragbar: Windows-Prozesse, Spiele-Launcher (Steam, Epic, EA, Battle.net …), Anti-Cheat und der Begleiter. Das laufende Spiel wird nie geschlossen. Die Vorschau zeigt, was gerade laufen würde. Einstellen nur mit Admin-Recht. Nur im Windows-Begleiter.
 ## Automatisierungen
 Seite: /automations
 Stichworte: automatisierung wenn dann regel auslöser trigger spielstart
@@ -82,8 +87,8 @@ Prüfen: Discord „Mikrofon testen“. Hinweis: nicht in einer echten Discord-R
 
 ## PC Monitor
 Seite: /monitor
-Stichworte: cpu ram gpu temperatur auslastung speicher festplatte vram leistung monitor fps
-Live-Werte: CPU-Auslastung, RAM, GPU-Auslastung, Laufwerke, Netzwerk, Energie. VRAM und GPU-Temperatur nur mit NVIDIA. CPU-Temperatur meist nicht verfügbar (Windows bietet ohne Treiber keine Quelle). FPS werden nicht gemessen – dafür bräuchte es einen Frame-Capture-Dienst. Werte werden nur abgefragt, solange die Seite oder ein System-Widget sichtbar ist.
+Stichworte: cpu ram gpu temperatur auslastung speicher festplatte vram leistung monitor fps messwerte ausschalten abschalten
+Live-Werte: CPU-Auslastung, RAM, GPU-Auslastung, Laufwerke, Netzwerk, Energie. VRAM und GPU-Temperatur nur mit NVIDIA. CPU-Temperatur meist nicht verfügbar (Windows bietet ohne Treiber keine Quelle). FPS werden nicht gemessen – dafür bräuchte es einen Frame-Capture-Dienst. Werte werden nur abgefragt, solange die Seite oder ein System-Widget sichtbar ist. Unter „Messwerte“ (unten auf der Seite, Recht „Verwalten“) lässt sich jeder Wert einzeln ausschalten: CPU, Arbeitsspeicher, Grafikkarte, Laufwerke. Ausgeschaltet wird er gar nicht erst gemessen – auch nicht für Overlay, Spiel-Statistik und Assistent; bei der Grafikkarte spart das am meisten (kein nvidia-smi).
 
 ## Netzwerkdiagnose (Ping Doctor)
 Seite: /network
@@ -133,7 +138,7 @@ Plugins aus einem signierten Katalog oder als Datei: Widgets, Themes, Aktionen. 
 ## Benachrichtigungen
 Seite: /notifications
 Stichworte: benachrichtigungen hinweise meldungen glocke stumm ruhemodus
-Echte Ereignisse vom PC (Startfehler, Updates, erreichte Ziele, Zielpreise …), nach Wichtigkeit sortiert. Einzelne Meldungen lassen sich stummschalten. Ruhemodus während eines Spiels: Einstellungen → Benachrichtigungen. Liegen nur im Arbeitsspeicher (nach Neustart des Begleiters weg).
+Echte Ereignisse vom PC (Startfehler, Updates, erreichte Ziele, Zielpreise, Spielmodus …), nach Wichtigkeit sortiert. „Offen“ zeigt die nicht geschlossenen, „Verlauf“ alle der letzten 30 Tage (höchstens 200). Ungelesene haben einen Punkt; beim Öffnen der Seite gelten sie als gelesen. Filter nach Kategorie (Updates, Starts, Automatisierungen, Spielmodus, Plugins, GameQuest, Deal Radar, Aufnahme, Assistent, System). Einzelne Meldungen lassen sich stummschalten (Fehler kommen immer). Ruhemodus während eines Spiels: Einstellungen → Benachrichtigungen – dann zeigt der PC nur noch Fehler als Windows-Hinweis. Gespeichert auf dem PC (notifications.json), bleiben also nach einem Neustart erhalten.
 
 ## Einstellungen
 Seite: /settings
@@ -152,8 +157,8 @@ Backup als ZIP: Bibliothek, Profile, Quick Actions, Automatisierungen, Hotkeys, 
 
 ## Updates & Versionen
 Seite: /updates
-Stichworte: update version neueste herunterladen installieren aktualisieren änderungen
-Zeigt installierte und neueste Version mit Änderungen. Download der Windows-EXE auch vom Handy. Updates sind signiert; der Begleiter lehnt unsignierte oder veränderte Dateien ab. Es wird nie automatisch installiert. Prüfung 2 Minuten nach dem Start, dann täglich, nie während eines Spiels.
+Stichworte: update version neueste herunterladen installieren aktualisieren änderungen zurück rollback absturz wächter
+Zeigt installierte und neueste Version mit Änderungen. Download der Windows-EXE auch vom Handy. Updates sind signiert; der Begleiter lehnt unsignierte oder veränderte Dateien ab. Es wird nie automatisch installiert. Prüfung 2 Minuten nach dem Start, dann täglich, nie während eines Spiels. Update-Wächter: Stürzt eine neu installierte Version zweimal ab, bevor sie eine Minute stabil lief, startet der Begleiter beim nächsten Start von selbst wieder die letzte stabile Version und meldet das (Benachrichtigung „Update … automatisch zurückgesetzt“). Normales Beenden oder Herunterfahren zählt nicht als Absturz.
 
 ## Diagnose
 Seite: /diagnostics

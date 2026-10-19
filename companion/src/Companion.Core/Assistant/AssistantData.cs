@@ -144,9 +144,9 @@ public sealed class AssistantData
     /// <summary>One measurement right now (CPU, RAM, GPU, drives), with the honest "not available" where there is no source.</summary>
     public (MetricsSample sample, string text) PcStatus()
     {
-        var m = _s.Monitor.Last is { } last && _now() - last.At < TimeSpan.FromSeconds(10) ? last : _s.Platform.Metrics.Sample();
+        var m = _s.Monitor.Last is { } last && _now() - last.At < TimeSpan.FromSeconds(10) ? last : _s.Metrics.Sample();
         // CPU load needs two measurements; right after the start the first one has none yet.
-        if (m.CpuPercent == null && _s.Monitor.Last == null) { Thread.Sleep(700); m = _s.Platform.Metrics.Sample(); }
+        if (m.CpuPercent == null && _s.Monitor.Last == null) { Thread.Sleep(700); m = _s.Metrics.Sample(); }
         static string F(FormattableString f) => f.ToString(De);
         const double GB = 1073741824.0;
         var parts = new List<string>();

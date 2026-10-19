@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Copy, Pencil, Plus, Undo2 } from "lucide-react";
+import { Check, Copy, Pencil, Plus, Undo2, X } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useRpc, toast, useCan } from "../lib/hooks";
@@ -35,6 +35,7 @@ export default function Profiles() {
               <Switch checked={data.autoSwitch} disabled={!canManage} onChange={(v) => client.call("profiles.save", { autoSwitch: v })}
                 label={t("Automatischer Profilwechsel")} hint={t("Startet ein Spiel mit zugeordnetem Profil, wird das Profil aktiviert und beim Beenden zum vorherigen zurückgewechselt. Erkennung über Prozessname/Installationsordner.")} />
             </Card>
+            <GameModeCard />
             <div className="grid-3">
               {data.profiles.map((p) => {
                 const active = p.id === data.activeProfileId;
@@ -138,5 +139,60 @@ function ProfileEditor({ profile, onClose }: { profile: Profile; onClose: () => 
       <Switch checked={p.quietNotifications} onChange={(quietNotifications) => set({ quietNotifications })} label={t("Benachrichtigungen reduzieren")} hint={t("Nur Warnungen und Fehler anzeigen, solange das Profil aktiv ist.")} />
       <Banner kind="info">{t("Profile ändern nur Einstellungen dieser App – keine Windows-Systemeinstellungen.")}</Banner>
     </Modal>
+  );
+}
+
+type GameModeState = {
+  enabled: boolean; restore: boolean; supported: boolean; waitingToReopen: number;
+  programs: { name: string; label?: string | null }[];
+  preview: { name: string; label?: string | null; running: number; protectedAsGame: boolean }[];
+};
+
+/** Game mode for other programs: close chosen programs while gaming, reopen them afterwards. */
+function GameModeCard() {
+  const q = useRpc<GameModeState>("gamemode.get", {}, ["gamemode", "library"]);
+  const canAdmin = useCan("admin");
+  const [name, setName] = useState("");
+  const [cands, setCands] = useState<string[] | null>(null);
+  const d = q.data;
+  if (!d) return null;
+  const save = (p: Partial<Pick<GameModeState, "enabled" | "restore" | "programs">>) => client.call("gamemode.save", p).then(q.reload, (e: Error) => toast(e.message, "error"));
+  const add = () => {
+    const n = name.trim().replace(/\.exe$/i, "");
+    if (!n) return;
+    if (d.programs.some((p) => p.name.toLowerCase() === n.toLowerCase())) { setName(""); return; }
+    save({ programs: [...d.programs, { name: n }] }).then(() => setName(""));
+  };
+  const loadCands = () => { if (cands == null && canAdmin) client.call<{ names: string[] }>("gamemode.candidates").then((r) => setCands(r.names), () => setCands([])); };
+  return (
+    <Card title={t("Spielmodus: Programme schließen")}>
+      {!d.supported && <Banner kind="warn">{t("Nur mit dem Windows-Begleiter möglich – auf diesem PC läuft eine Version ohne Fenster-Steuerung.")}</Banner>}
+      <Switch checked={d.enabled} disabled={!canAdmin} onChange={(v) => save({ enabled: v })} label={t("Beim Spielstart Programme schließen")}
+        hint={t("Die Programme werden gebeten, sich zu schließen – wie ein Klick auf ihr X. Nichts wird hart beendet: Fragt ein Programm z. B. nach dem Speichern, bleibt es offen und du bekommst eine Meldung.")} />
+      <Switch checked={d.restore} disabled={!canAdmin} onChange={(v) => save({ restore: v })} label={t("Nach dem Spiel wieder öffnen")}
+        hint={t("Wenn das letzte Spiel endet, werden die geschlossenen Programme neu gestartet. Offene Tabs oder Dokumente stellt das Programm nur selbst wieder her, falls es das kann.")} />
+      {d.waitingToReopen > 0 && <div className="small muted" style={{ marginTop: 8 }}>{t("{n} Programm(e) warten darauf, nach dem Spiel wieder geöffnet zu werden.", { n: d.waitingToReopen })}</div>}
+      <div className="list" style={{ marginTop: 12 }}>
+        {d.preview.length === 0 && <div className="small muted">{t("Noch keine Programme gewählt.")}</div>}
+        {d.preview.map((p) => (
+          <div key={p.name} className="list-item">
+            <div className="grow">
+              <div className="title">{p.label ?? p.name}</div>
+              <div className="sub">{p.protectedAsGame ? t("Ist ein Spiel aus der Bibliothek – wird nie geschlossen") : p.running > 0 ? p.running === 1 ? t("läuft gerade – würde jetzt geschlossen") : t("läuft gerade ({n} Prozesse) – würde jetzt geschlossen", { n: p.running }) : t("läuft gerade nicht")}</div>
+            </div>
+            {canAdmin && <Button size="sm" variant="ghost" icon={<X size={15} />} aria-label={t("Entfernen")} onClick={() => save({ programs: d.programs.filter((x) => x.name !== p.name) })} />}
+          </div>
+        ))}
+      </div>
+      {canAdmin && (
+        <div className="row" style={{ marginTop: 12 }}>
+          <input className="input grow" value={name} list="gm-cands" placeholder={t("Programmname, z. B. chrome oder Discord")} aria-label={t("Programm hinzufügen")}
+            onFocus={loadCands} onChange={(e) => setName(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") add(); }} maxLength={80} />
+          <datalist id="gm-cands">{(cands ?? []).map((c) => <option key={c} value={c} />)}</datalist>
+          <Button icon={<Plus size={16} />} onClick={add} disabled={!name.trim() || d.programs.length >= 30}>{t("Hinzufügen")}</Button>
+        </div>
+      )}
+      <div className="tiny muted" style={{ marginTop: 8 }}>{t("Windows, Spiele-Launcher (Steam, Epic …), Anti-Cheat und der Begleiter selbst lassen sich nicht eintragen. Programme ohne Fenster (nur im Infobereich) werden nicht geschlossen.")}</div>
+    </Card>
   );
 }

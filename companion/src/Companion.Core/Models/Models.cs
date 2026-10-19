@@ -309,6 +309,8 @@ public sealed class PingTarget { public string Label { get; set; } = ""; public 
 public sealed class Settings
 {
     public int Version { get; set; } = 1;
+    /// <summary>Which values the PC monitor measures (off = not queried).</summary>
+    public Pgl.Core.Platform.MetricSwitches Metrics { get; set; } = new();
     public string PcName { get; set; } = Environment.MachineName;
     public string Language { get; set; } = "de";
     /// <summary>Listen on all interfaces so phones in the same Wi-Fi can connect. Off = only this PC.</summary>
@@ -407,4 +409,13 @@ public sealed class Notification
     public int Count { get; set; } = 1;
     public bool Dismissed { get; set; }
     public string? Link { get; set; }
+    /// <summary>Seen by the user (opened the list or marked as read).</summary>
+    public bool Read { get; set; }
+    /// <summary>update, launch, automation, plugin, quest, deal, recording, assistant, system</summary>
+    public string Category { get; set; } = "system";
+}
+
+public sealed class NotificationsFile
+{
+    public List<Notification> Items { get; set; } = new();
 }

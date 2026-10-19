@@ -42,6 +42,7 @@ public sealed class SettingsService
         public bool? EpicEnabled { get; set; }
         public bool? EaEnabled { get; set; }
         public string? OverlayCorner { get; set; }
+        public Pgl.Core.Platform.MetricSwitches? Metrics { get; set; }
     }
 
     public Settings SaveGeneral(GeneralUpdate u)
@@ -70,6 +71,7 @@ public sealed class SettingsService
             if (u.EpicEnabled != null) s.EpicEnabled = u.EpicEnabled.Value;
             if (u.EaEnabled != null) s.EaEnabled = u.EaEnabled.Value;
             if (u.OverlayCorner != null) s.OverlayCorner = u.OverlayCorner;
+            if (u.Metrics != null) s.Metrics = u.Metrics.Copy();
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");
@@ -243,20 +245,47 @@ public sealed class NotificationCenter
 {
     readonly IHub _hub;
     readonly SettingsService _settings;
-    readonly List<Notification> _items = new();
+    readonly JsonStore<NotificationsFile>? _store;
+    readonly List<Notification> _items;
     readonly object _lock = new();
+    public const int MaxItems = 200;
+    public static readonly TimeSpan KeepFor = TimeSpan.FromDays(30);
     public Func<bool> IsGaming { get; set; } = () => false;
     public Func<bool> ProfileQuiet { get; set; } = () => false;
     public Action<Notification>? OnDesktop { get; set; }
 
-    public NotificationCenter(IHub hub, SettingsService settings) { _hub = hub; _settings = settings; }
+    /// <param name="paths">Where the history is kept (notifications.json); null = only in memory.</param>
+    public NotificationCenter(IHub hub, SettingsService settings, AppPaths? paths = null)
+    {
+        _hub = hub; _settings = settings;
+        if (paths != null) _store = new JsonStore<NotificationsFile>(paths.File("notifications.json"));
+        _items = _store?.Snapshot().Items.Where(n => DateTime.UtcNow - n.At < KeepFor).Take(MaxItems).ToList() ?? new();
+    }
+
+    /// <summary>Category from the key prefix, so the list can be filtered without every caller naming one.</summary>
+    public static string CategoryOf(string key) => key.Split(':', '-')[0] switch
+    {
+        "update" or "updates" => "update",
+        "launch" => "launch",
+        "automation" => "automation",
+        "plugin" => "plugin",
+        "quest" => "quest",
+        "deal" => "deal",
+        "obs" or "capture" => "recording",
+        "assistant" => "assistant",
+        "gamemode" => "gamemode",
+        _ => "system",
+    };
+
+    void Save() { if (_store != null) { List<Notification> copy; lock (_lock) copy = _items.ToList(); _store.Replace(new NotificationsFile { Items = copy }); } }
 
     /// <summary>Adds a notification. Repeats of the same key within 10 minutes are merged into one entry with a counter.</summary>
     public Notification? Push(string key, Severity severity, string title, string? message = null, string? link = null)
     {
         var s = _settings.Get();
         if (s.MutedNotificationKeys.Contains(key) && severity < Severity.Error) return null;
-        if (severity <= Severity.Success && (!s.NotifyInfo || ProfileQuiet() || (s.QuietWhileGaming && IsGaming()))) return null;
+        var quiet = ProfileQuiet() || (s.QuietWhileGaming && IsGaming());
+        if (severity <= Severity.Success && (!s.NotifyInfo || quiet)) return null;
         Notification n;
         lock (_lock)
         {
@@ -266,23 +295,47 @@ public sealed class NotificationCenter
                 existing.Count++;
                 existing.At = DateTime.UtcNow;
                 existing.Message = message;
+                existing.Read = false;
                 n = existing;
             }
             else
             {
-                n = new Notification { Id = Ids.New("ntf"), Key = key, Severity = severity, Title = title, Message = message, At = DateTime.UtcNow, Link = link };
+                n = new Notification { Id = Ids.New("ntf"), Key = key, Severity = severity, Title = title, Message = message, At = DateTime.UtcNow, Link = link, Category = CategoryOf(key) };
                 _items.Insert(0, n);
-                if (_items.Count > 200) _items.RemoveAt(_items.Count - 1);
+                if (_items.Count > MaxItems) _items.RemoveRange(MaxItems, _items.Count - MaxItems);
             }
         }
+        Save();
         _hub.Broadcast("notification", n);
-        if (severity >= Severity.Warning) OnDesktop?.Invoke(n);
+        // Windows pop-ups: warnings and errors – but while gaming (quiet mode) only errors, so a game is not interrupted.
+        if (severity >= Severity.Error || (severity >= Severity.Warning && !quiet)) OnDesktop?.Invoke(n);
         return n;
     }
 
-    public List<Notification> List() { lock (_lock) return _items.Where(n => !n.Dismissed).OrderByDescending(n => n.Severity).ThenByDescending(n => n.At).ToList(); }
-    public void Dismiss(string id) { lock (_lock) foreach (var n in _items.Where(n => n.Id == id)) n.Dismissed = true; _hub.Changed("notifications"); }
-    public void DismissAll() { lock (_lock) foreach (var n in _items) n.Dismissed = true; _hub.Changed("notifications"); }
+    /// <summary>Open notifications (not closed), most important first. <paramref name="history"/> = all of the last 30 days, newest first.</summary>
+    public List<Notification> List(bool history = false, string? category = null)
+    {
+        lock (_lock)
+        {
+            var q = _items.Where(n => (history || !n.Dismissed) && (category == null || n.Category == category));
+            return (history ? q.OrderByDescending(n => n.At) : q.OrderByDescending(n => n.Severity).ThenByDescending(n => n.At)).ToList();
+        }
+    }
+
+    public int Unread() { lock (_lock) return _items.Count(n => !n.Dismissed && !n.Read); }
+
+    void Change(Func<Notification, bool> which, Action<Notification> what)
+    {
+        lock (_lock) foreach (var n in _items.Where(which)) what(n);
+        Save();
+        _hub.Changed("notifications");
+    }
+
+    public void Dismiss(string id) => Change(n => n.Id == id, n => { n.Dismissed = true; n.Read = true; });
+    public void DismissAll() => Change(n => !n.Dismissed, n => { n.Dismissed = true; n.Read = true; });
+    public void MarkRead(string? id) => Change(n => id == null ? !n.Read : n.Id == id, n => n.Read = true);
+    /// <summary>Deletes the history (closed ones); open notifications stay.</summary>
+    public void ClearHistory() { lock (_lock) _items.RemoveAll(n => n.Dismissed); Save(); _hub.Changed("notifications"); }
 }
 
 // ============================================================ History & running games

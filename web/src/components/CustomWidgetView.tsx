@@ -33,11 +33,12 @@ function useNow(enabled: boolean, everyMs: number) {
 function metricValue(m: MetricsSample | null, kind?: string | null): { pct: number | null; text: string } {
   if (!m) return { pct: null, text: "–" };
   const gpu = m.gpus[0];
+  const na = (k: "cpu" | "ram" | "gpu") => m.off?.includes(k) ? t("aus") : t("n. v.");
   switch (kind) {
-    case "cpu": return { pct: m.cpuPercent ?? null, text: m.cpuPercent != null ? `${m.cpuPercent.toFixed(0)} %` : t("n. v.") };
-    case "ram": { const p = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null; return { pct: p, text: p != null ? `${p.toFixed(0)} %` : t("n. v.") }; }
-    case "gpu": return { pct: gpu?.utilPercent ?? null, text: gpu?.utilPercent != null ? `${gpu.utilPercent.toFixed(0)} %` : t("n. v.") };
-    case "gputemp": return { pct: gpu?.tempC ?? null, text: gpu?.tempC != null ? `${gpu.tempC.toFixed(0)} °C` : t("n. v.") };
+    case "cpu": return { pct: m.cpuPercent ?? null, text: m.cpuPercent != null ? `${m.cpuPercent.toFixed(0)} %` : na("cpu") };
+    case "ram": { const p = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null; return { pct: p, text: p != null ? `${p.toFixed(0)} %` : na("ram") }; }
+    case "gpu": return { pct: gpu?.utilPercent ?? null, text: gpu?.utilPercent != null ? `${gpu.utilPercent.toFixed(0)} %` : na("gpu") };
+    case "gputemp": return { pct: gpu?.tempC ?? null, text: gpu?.tempC != null ? `${gpu.tempC.toFixed(0)} °C` : na("gpu") };
     default: return { pct: null, text: "–" };
   }
 }

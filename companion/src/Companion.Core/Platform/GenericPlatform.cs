@@ -140,6 +140,8 @@ public sealed class NullUpdateInstaller : IUpdateInstaller
 public sealed class GenericMetrics : IMetricsSource
 {
     (ulong idle, ulong total)? _last;
+    volatile MetricSwitches _on = new();
+    public void Apply(MetricSwitches on) => _on = on.Copy();
 
     public MetricsSample Sample()
     {
@@ -162,8 +164,8 @@ public sealed class GenericMetrics : IMetricsSource
             }
             catch { }
         }
-        s.Disks = DiskInfo.ReadCached(TimeSpan.FromSeconds(60));
-        return s;
+        if (_on.Disks) s.Disks = DiskInfo.ReadCached(TimeSpan.FromSeconds(60));
+        return _on.Strip(s);
     }
 }
 

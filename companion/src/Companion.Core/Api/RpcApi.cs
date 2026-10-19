@@ -127,7 +127,7 @@ public static class RpcApi
                     programs = s.Library.List().Count(i => i.Kind == ItemKind.Program),
                     sounds = s.Soundboard.Get().Sounds.Count,
                     devices = s.Devices.List().Count,
-                    notifications = s.Notifications.List().Count,
+                    notifications = s.Notifications.Unread(),
                 },
                 me = new { isLocal = ctx.Session.IsLocalAdmin, name = ctx.Session.Who, permissions = ctx.Session.Permissions, transport = ctx.Session.Channel.Transport },
                 updates = s.Updates.Status(),
@@ -153,6 +153,17 @@ public static class RpcApi
             var r = s.Library.Launch(ctx.Str("id", 64), ctx.Session.Who);
             if (!r.Ok) throw new RpcException(r.Code ?? "launch-failed", r.Message);
             return r;
+        });
+
+        // ------------------------------------------------------------ game mode: close chosen programs
+        rpc.Register("gamemode.get", _ => s.GameModePrograms.Get());
+        rpc.Register("gamemode.candidates", _ => new { names = s.GameModePrograms.RunningCandidates() });
+        rpc.Register("gamemode.save", ctx =>
+        {
+            var p = ctx.Bind<GameModeProgramsFile>();
+            bool? B(string n) => ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty(n, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
+            var hasPrograms = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("programs", out _);
+            return s.GameModePrograms.Save(B("enabled"), B("restore"), hasPrograms ? p.Programs : null);
         });
 
         // ------------------------------------------------------------ assistant
@@ -288,7 +299,9 @@ public static class RpcApi
         rpc.Register("network.diagnose", async ctx => (object?)await s.Network.Run());
 
         // ------------------------------------------------------------ notifications
-        rpc.Register("notifications.list", ctx => new { items = s.Notifications.List() });
+        rpc.Register("notifications.list", ctx => new { items = s.Notifications.List(ctx.Bool("history"), ctx.OptStr("category", 20)), unread = s.Notifications.Unread() });
+        rpc.Register("notifications.markRead", ctx => { s.Notifications.MarkRead(ctx.OptStr("id", 64)); return true; });
+        rpc.Register("notifications.clearHistory", ctx => { s.Notifications.ClearHistory(); return true; });
         rpc.Register("notifications.dismiss", ctx => { s.Notifications.Dismiss(ctx.Str("id", 64)); return true; });
         rpc.Register("notifications.dismissAll", ctx => { s.Notifications.DismissAll(); return true; });
 

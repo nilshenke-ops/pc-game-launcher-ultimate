@@ -30,6 +30,25 @@ public interface IPlatform
     IGameMode GameMode => NullGameMode.Instance;
     /// <summary>Own widgets as small windows on the Windows desktop (Windows companion only).</summary>
     IDesktopWidgets DesktopWidgets => NullDesktopWidgets.Instance;
+    /// <summary>Closes and reopens chosen programs for the game mode (Windows companion only).</summary>
+    IProcessControl ProcessControl => NullProcessControl.Instance;
+}
+
+/// <summary>Gentle closing of a program (like clicking its X) and starting it again. Never forced.</summary>
+public interface IProcessControl
+{
+    bool Supported { get; }
+    /// <summary>Asks the program to close and waits. Returns null when it ended, otherwise why not.</summary>
+    string? CloseGracefully(int pid, TimeSpan wait);
+    string? Start(string exePath);
+}
+
+public sealed class NullProcessControl : IProcessControl
+{
+    public static readonly NullProcessControl Instance = new();
+    public bool Supported => false;
+    public string? CloseGracefully(int pid, TimeSpan wait) => "Nur im Windows-Begleiter möglich.";
+    public string? Start(string exePath) => "Nur im Windows-Begleiter möglich.";
 }
 
 /// <summary>
@@ -227,6 +246,8 @@ public sealed class MetricsSample
     public double? UptimeHours { get; set; }
     public string? FpsStatus { get; set; } = "Nicht verfügbar – benötigt einen Frame-Capture-Dienst (z. B. PresentMon), der nicht eingebunden ist.";
     public Dictionary<string, string> Sources { get; set; } = new();
+    /// <summary>Values switched off in the settings (cpu, ram, gpu, disks) – not measured, so the UI says "ausgeschaltet" instead of "nicht verfügbar".</summary>
+    public List<string> Off { get; set; } = new();
 }
 
 public sealed class GpuSample
@@ -244,6 +265,39 @@ public sealed record DiskSample(string Name, string Label, long TotalBytes, long
 public interface IMetricsSource
 {
     MetricsSample Sample();
+    /// <summary>Which values are measured. Sources that can skip expensive queries (e.g. nvidia-smi) do so for switched-off values.</summary>
+    void Apply(MetricSwitches on) { }
+}
+
+/// <summary>Each value of the PC monitor can be switched off; off means not measured at all (not just hidden).</summary>
+public sealed class MetricSwitches
+{
+    public bool Cpu { get; set; } = true;
+    public bool Ram { get; set; } = true;
+    /// <summary>Utilization, graphics memory and temperature of the graphics card.</summary>
+    public bool Gpu { get; set; } = true;
+    /// <summary>Free space per drive.</summary>
+    public bool Disks { get; set; } = true;
+
+    public MetricSwitches Copy() => new() { Cpu = Cpu, Ram = Ram, Gpu = Gpu, Disks = Disks };
+
+    /// <summary>Removes switched-off values from a sample (for sources that measured them anyway) and lists them in <see cref="MetricsSample.Off"/>.</summary>
+    public MetricsSample Strip(MetricsSample s)
+    {
+        s.Off.Clear();
+        if (!Cpu) { s.CpuPercent = null; s.CpuTempC = null; s.Sources.Remove("cpu"); s.Off.Add("cpu"); }
+        if (!Ram) { s.MemUsedBytes = null; s.MemTotalBytes = null; s.Sources.Remove("ram"); s.Off.Add("ram"); }
+        if (!Gpu) { s.Gpus = new(); s.Off.Add("gpu"); }
+        if (!Disks) { s.Disks = new(); s.Off.Add("disks"); }
+        return s;
+    }
+}
+
+/// <summary>The platform source with the user's switches applied – used by everything in the companion that reads values.</summary>
+public sealed class SwitchedMetrics(IMetricsSource inner, Func<MetricSwitches> on) : IMetricsSource
+{
+    public MetricsSample Sample() => on().Strip(inner.Sample());
+    public void Apply(MetricSwitches s) => inner.Apply(s);
 }
 
 public interface IAutostart

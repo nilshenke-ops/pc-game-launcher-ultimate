@@ -34,6 +34,12 @@ static class Program
             return 0;
         }
         // The previous version is kept as "<exe>.old" so it can be restored (Updates → Vorherige Version, or tray menu).
+        // Update guard: a new version that crashed twice before running stable goes back to the last stable one by itself.
+        Guard = new UpdateGuard(new AppPaths());
+        var installer = new SelfReplaceInstaller();
+        if (Guard.OnStart(UpdateService.CurrentVersion, installer.CanRollback) == UpdateGuard.Decision.RollBack && installer.Rollback() == null)
+            return 0; // the previous version is starting and takes over (it waits for this process to end)
+        Microsoft.Win32.SystemEvents.SessionEnding += (_, _) => Guard.CleanExit(); // Windows shutdown is not a crash
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
@@ -46,6 +52,7 @@ static class Program
     }
 
     public static void RequestExit() => _context?.ExitApp();
+    public static UpdateGuard Guard { get; private set; } = null!;
 }
 
 /// <summary>Owns the tray icon, the main window and the companion services for the whole app lifetime.</summary>
@@ -58,6 +65,7 @@ sealed class TrayAppContext : ApplicationContext
     readonly WindowsDesktopWidgets _desktopWidgets;
     readonly EventWaitHandle _showSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Show");
     bool _exiting;
+    System.Threading.Timer? _stableTimer;
 
     public TrayAppContext(bool startMinimized)
     {
@@ -78,6 +86,7 @@ sealed class TrayAppContext : ApplicationContext
 
         var settings = _services.Settings.Get();
         if (!(startMinimized && settings.StartMinimized)) _form.Show();
+        _stableTimer = new System.Threading.Timer(_ => Program.Guard.MarkStable(UpdateService.CurrentVersion), null, UpdateGuard.StableAfter, Timeout.InfiniteTimeSpan);
 
         new Thread(() =>
         {
@@ -131,6 +140,8 @@ sealed class TrayAppContext : ApplicationContext
     {
         if (_exiting) return;
         _exiting = true;
+        _stableTimer?.Dispose();
+        Program.Guard.CleanExit();
         _showSignal.Set();
         _tray.Dispose();
         _form.Hide();

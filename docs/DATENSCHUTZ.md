@@ -18,11 +18,14 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | GameQuest: Ziele, selbst eingetragene Matches, verdiente XP | `quests.json` | GameQuest → Ziel/Match löschen, oder Datei löschen |
 | Deal Radar: Wunschliste, Zielpreise, selbst gesehene Preise | `deals.json` | Deal Radar → Entfernen |
 | KI-Assistent: Modus, Modell, Ollama-Adresse, Monatslimit, Kosten je Monat, **Anthropic-Schlüssel nur DPAPI-geschützt** | `assistant.json` | Assistent → Einrichten → Schlüssel löschen, oder Datei löschen |
+| Benachrichtigungen mit Verlauf (gelesen/geschlossen, höchstens 200, älter als 30 Tage wird gelöscht) | `notifications.json` | Benachrichtigungen → Verlauf löschen |
+| Spielmodus: Programmliste, Schalter und – während eines Spiels – die Pfade der geschlossenen Programme (zum Wiederöffnen) | `gamemode-programs.json` | Profile → Spielmodus |
+| Update-Wächter: Version, ob sie stabil lief, Zahl fehlgeschlagener Starts | `update-guard.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |
 | Backups und Wiederherstellungspunkte | `backups\` (automatisch die neuesten 5) | Einstellungen → Backup oder Ordner löschen |
 
-**Benachrichtigungen** und **Assistent-Gespräche** liegen nur im Arbeitsspeicher und sind nach einem Neustart weg (Gespräche spätestens nach 3 Stunden). Auf dem Gerät steht der Chat nur im Speicher des Browser-Tabs.
+**Assistent-Gespräche** liegen nur im Arbeitsspeicher und sind nach einem Neustart weg (spätestens nach 3 Stunden). Auf dem Gerät steht der Chat nur im Speicher des Browser-Tabs.
 
 ## 2. Was auf dem Handy, Tablet oder im Browser gespeichert wird
 

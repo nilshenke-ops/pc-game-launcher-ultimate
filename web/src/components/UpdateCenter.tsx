@@ -152,6 +152,14 @@ export function PcUpdates() {
               <Button variant="primary" icon={<CheckCircle2 size={16} />} disabled={!u.downloaded || !u.canInstall || !local} onClick={install}>{t("Jetzt aktualisieren")}</Button>
               {u.canRollback && <Button variant="ghost" icon={<Undo2 size={16} />} disabled={!local} onClick={rollback}>{t("Vorherige Version")}</Button>}
             </div>
+            {u.guard && (
+              <p className="tiny muted">
+                {u.guard.stable ? t("Update-Wächter: Diese Version läuft stabil.")
+                  : u.guard.lastStable && u.guard.lastStable !== u.current ? t("Update-Wächter: Diese Version wird noch beobachtet – stürzt sie zweimal kurz nach dem Start ab, kehrt der Begleiter automatisch zu v{v} zurück.", { v: u.guard.lastStable })
+                  : t("Update-Wächter: Diese Version wird noch beobachtet. Eine stabile Vorversion ist nicht bekannt – automatisch zurückgesetzt wird deshalb nicht.")}
+                {u.guard.failures > 0 && " " + t("Bisher {n} Absturz/Abstürze.", { n: u.guard.failures })}
+              </p>
+            )}
             {!local && <p className="tiny muted">{t("Installieren und Zurücksetzen nur direkt am PC (Sicherheit). Prüfen und Herunterladen geht auch von hier.")}</p>}
             {!u.canInstall && <p className="tiny muted">{t("Automatisches Installieren kann nur der Windows-Begleiter. Sonst: neue EXE herunterladen, Begleiter beenden, Datei ersetzen, neu starten – deine Daten liegen getrennt im Datenordner.")}</p>}
           </div>

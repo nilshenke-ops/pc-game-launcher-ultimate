@@ -39,8 +39,45 @@ sealed class WindowsPlatform : IPlatform
     public IOverlay Overlay => OverlayWindows;
     public IKeySender KeySender { get; } = new WindowsKeySender();
     public IGameMode GameMode { get; } = new WindowsGameMode();
+    public IProcessControl ProcessControl { get; } = new WindowsProcessControl();
     public WindowsDesktopWidgets DesktopWidgetWindows { get; }
     public IDesktopWidgets DesktopWidgets => DesktopWidgetWindows;
+}
+
+/// <summary>Closes programs like a click on their X (WM_CLOSE via CloseMainWindow) – never kills them.</summary>
+sealed class WindowsProcessControl : IProcessControl
+{
+    public bool Supported => true;
+
+    public string? CloseGracefully(int pid, TimeSpan wait)
+    {
+        Process p;
+        try { p = Process.GetProcessById(pid); }
+        catch (ArgumentException) { return null; } // already gone (e.g. a helper process that ended with the main window)
+        using (p)
+        {
+            try
+            {
+                if (p.HasExited) return null;
+                if (p.MainWindowHandle == IntPtr.Zero) return "hat kein offenes Fenster (z. B. nur im Infobereich) – wird nicht geschlossen";
+                if (!p.CloseMainWindow()) return "reagiert nicht auf Schließen – bleibt offen";
+                return p.WaitForExit(wait) ? null : "hat sich nicht beendet (evtl. Rückfrage zum Speichern) – bleibt offen";
+            }
+            catch (Win32Exception) { return "läuft mit Administratorrechten – wird nicht geschlossen"; }
+            catch (InvalidOperationException) { return null; } // ended meanwhile
+        }
+    }
+
+    public string? Start(string exePath)
+    {
+        try
+        {
+            if (!File.Exists(exePath)) return "Datei nicht mehr vorhanden";
+            Process.Start(new ProcessStartInfo(exePath) { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(exePath) ?? "" })?.Dispose();
+            return null;
+        }
+        catch (Exception ex) when (ex is Win32Exception or InvalidOperationException) { return ex.Message; }
+    }
 }
 
 /// <summary>Runs code on the WinForms UI thread.</summary>
@@ -414,10 +451,15 @@ sealed class WindowsMetrics : IMetricsSource
     double? _counterCache;
     bool _gpuCountersBroken;
 
+    volatile MetricSwitches _on = new();
+    public void Apply(MetricSwitches on) => _on = on.Copy();
+
     public MetricsSample Sample()
     {
+        var on = _on;
         var s = new MetricsSample { CpuName = _cpuName, CpuCores = Environment.ProcessorCount, CpuTempSource = "Nicht verfügbar – Windows stellt die CPU-Temperatur ohne Hersteller-Treiber bzw. Administratorrechte nicht zuverlässig bereit." };
-        if (GetSystemTimes(out var idle, out var kernel, out var user))
+        if (!on.Cpu) _lastCpu = null; // after switching on again, the first value comes with the second sample
+        else if (GetSystemTimes(out var idle, out var kernel, out var user))
         {
             ulong total = kernel.V + user.V; // kernel time includes idle
             if (_lastCpu is { } l && total > l.total) s.CpuPercent = Math.Round(100.0 * (1 - (double)(idle.V - l.idle) / (total - l.total)), 1);
@@ -425,16 +467,17 @@ sealed class WindowsMetrics : IMetricsSource
             s.Sources["cpu"] = "GetSystemTimes";
         }
         var m = new MEMORYSTATUSEX();
-        if (GlobalMemoryStatusEx(m))
+        if (on.Ram && GlobalMemoryStatusEx(m))
         {
             s.MemTotalBytes = (long)m.ullTotalPhys;
             s.MemUsedBytes = (long)(m.ullTotalPhys - m.ullAvailPhys);
             s.Sources["ram"] = "GlobalMemoryStatusEx";
         }
         s.UptimeHours = Math.Round(Environment.TickCount64 / 3_600_000.0, 1);
-        s.Disks = DiskInfo.ReadCached(TimeSpan.FromSeconds(60)); // free space changes slowly; avoids waking sleeping disks
-        s.Gpus = SampleGpus();
-        return s;
+        if (on.Disks) s.Disks = DiskInfo.ReadCached(TimeSpan.FromSeconds(60)); // free space changes slowly; avoids waking sleeping disks
+        // GPU off: nvidia-smi is not asked, so its loop process ends 30 s later; the "GPU Engine" counters are not read.
+        if (on.Gpu) s.Gpus = SampleGpus();
+        return on.Strip(s);
     }
 
     List<GpuSample> SampleGpus()

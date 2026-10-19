@@ -34,6 +34,9 @@
     "library.remove": "manage",
     "library.launch": "launch",
 
+    "gamemode.get": "view",
+    "gamemode.candidates": "admin",
+    "gamemode.save": "admin",
     "assistant.status": "view",
     "assistant.ask": "view",
     "assistant.reset": "view",
@@ -112,6 +115,8 @@
 
     "notifications.list": "view",
     "notifications.dismiss": "view",
+    "notifications.markRead": "view",
+    "notifications.clearHistory": "manage",
     "notifications.dismissAll": "view",
 
     "settings.get": "view",
