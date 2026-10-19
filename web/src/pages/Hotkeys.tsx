@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Keyboard, Pencil, Plus } from "lucide-react";
+import { FlaskConical, Keyboard, Pencil, Plus } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useRpc, toast, useCan } from "../lib/hooks";
+import { useRpc, toast, useCan, useConn } from "../lib/hooks";
 import type { Hotkey, HotkeyStatus, QuickAction } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { describeStep, StepEditor, stepsValid, useStepRefs } from "../components/StepEditor";
-import { COMPACT_SUGGESTIONS, describeCombo } from "./hotkey-combo";
+import { COMPACT_SUGGESTIONS, describeCombo, MEDIA_SUGGESTIONS } from "./hotkey-combo";
 import { ComboInput } from "../components/ComboInput";
 
 const STATE_BADGE: Record<string, [string, string]> = { active: ["ok", "Aktiv"], error: ["error", "Fehler"], disabled: ["", "Aus"], pending: ["warn", "Ausstehend"], inactive: ["", "Anderes Profil"] };
@@ -16,12 +16,18 @@ export default function Hotkeys() {
   const quick = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);
   const refs = useStepRefs();
   const canManage = useCan("manage");
+  const canLaunch = useCan("launch");
+  const conn = useConn();
+  const online = conn.auth === "ok" && conn.phase === "online";
   const [edit, setEdit] = useState<Hotkey | null>(null);
+  // Runs the action exactly as if the key had been pressed on the PC – never queued (an action is meant for now).
+  const test = (h: Hotkey) => client.call<{ results: string[] }>("hotkeys.test", { id: h.id })
+    .then((r) => toast(r.results.join(" · "), r.results.some((x) => x.startsWith("Fehler")) ? "error" : "success"), (e: Error) => toast(e.message, "error"));
   const describe = (h: Hotkey) => h.quickActionId ? `${t("Quick Action")}: ${quick.data?.actions.find((a) => a.id === h.quickActionId)?.name ?? "?"}` : describeStep(h.action, refs);
 
   return (
     <>
-      <PageHead eyebrow={t("Gaming")} title={t("Hotkeys")} text={t("Globale Tastenkombinationen auf dem PC – funktionieren auch, während ein Spiel im Vordergrund ist.")}
+      <PageHead eyebrow={t("Steuerung")} title={t("Hotkeys & Makros")} text={t("Globale Tastenkombinationen auf dem PC – funktionieren auch, während ein Spiel im Vordergrund ist. Für Abfolgen mehrerer Schritte eine Quick Action anlegen und hier zuweisen.")}
         actions={canManage && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setEdit({ id: "", keys: "", enabled: true, action: { type: "playSound", ref: null } })}>{t("Neuer Hotkey")}</Button>} />
       {q.data && !q.data.supported && <div style={{ marginBottom: 16 }}><Banner kind="warn">{t("Globale Hotkeys werden nur vom Windows-Companion registriert. Du kannst sie trotzdem hier vorbereiten.")}</Banner></div>}
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
@@ -35,6 +41,7 @@ export default function Hotkeys() {
                     <kbd style={{ fontSize: "0.85rem", padding: "5px 10px" }}>{describeCombo(h.keys, t)}</kbd>
                     <div className="grow"><div className="title small ellipsis">{describe(h)}</div>{status.message && <div className="sub" style={status.state === "error" ? { color: "var(--danger)" } : undefined}>{t(status.message)}</div>}</div>
                     <span className={`badge ${cls}`}>{t(label)}</span>
+                    {canLaunch && online && <Button size="sm" variant="ghost" icon={<FlaskConical size={14} />} onClick={() => test(h)} aria-label={t("{k} jetzt testen", { k: h.keys })} title={t("Jetzt testen")} />}
                     {canManage && <Button size="sm" variant="ghost" icon={<Pencil size={14} />} onClick={() => setEdit(structuredClone(h))} aria-label={t("Bearbeiten")} />}
                   </div>
                 );
@@ -73,8 +80,10 @@ function HotkeyEditor({ hk, quick, taken, onClose }: { hk: Hotkey; quick: QuickA
       </Field>
       {h.keys && <p className="tiny muted">{describeCombo(h.keys, t)}</p>}
       <details>
-        <summary className="small">{t("Vorschläge für 60-%-Tastatur und Gaming-Maus")}</summary>
+        <summary className="small">{t("Vorschläge: Medientasten, 60-%-Tastatur und Gaming-Maus")}</summary>
         <div className="stack-sm" style={{ marginTop: 8 }}>
+          <div className="chips">{MEDIA_SUGGESTIONS.map((c) => <button key={c} type="button" className={`chip ${h.keys === c ? "on" : ""}`} onClick={() => setH({ ...h, keys: c })}>{describeCombo(c, t)}</button>)}</div>
+          <p className="tiny muted">{t("Medientasten: Solange ein Hotkey darauf liegt, steuert die Taste nicht mehr Musik-Apps, sondern nur die Aktion.")}</p>
           <div className="chips">{COMPACT_SUGGESTIONS.map((c) => <button key={c} type="button" className={`chip ${h.keys === c ? "on" : ""}`} onClick={() => setH({ ...h, keys: c })}>{describeCombo(c, t)}</button>)}</div>
           <p className="tiny muted">{t("60-%-Tastaturen (z. B. Royal Kludge): F-Tasten über Fn + Zahl drücken – die App erkennt dann F1 … F12. Besonders gut: in der Tastatur-Software eine Taste auf F13–F24 legen; die nutzt kein Spiel.")}</p>
           <p className="tiny muted">{t("Gaming-Maus (z. B. Attack Shark): Seitentasten hier im Feld drücken oder oben wählen. Solange der Hotkey aktiv ist, löst die Taste nur die Aktion aus (nicht mehr „Zurück“ im Browser). Alternativ in der Maus-Software die Seitentaste auf F13–F24 legen.")}</p>
@@ -91,6 +100,7 @@ function HotkeyEditor({ hk, quick, taken, onClose }: { hk: Hotkey; quick: QuickA
       )}
       <Switch checked={h.enabled} onChange={(enabled) => setH({ ...h, enabled })} label={t("Aktiv")} />
       <Banner kind="info">{t("Von Windows reservierte Kombinationen (z. B. Alt+Tab, Win+L) werden abgelehnt. Belegt ein anderes Programm die Kombination, zeigt die Liste einen Fehler.")}</Banner>
+      <p className="tiny muted">{t("Erlaubt sind nur die Aktionen dieser Liste. Makros, die in Online-Spielen Eingaben automatisieren (z. B. Tasten spammen, automatisch bauen oder Waffen wechseln), gibt es bewusst nicht – sie verstoßen gegen die Regeln der meisten Spiele und können zu Sperren führen.")}</p>
     </Modal>
   );
 }

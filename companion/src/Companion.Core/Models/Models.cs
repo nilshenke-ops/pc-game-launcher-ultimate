@@ -65,12 +65,13 @@ public sealed record LaunchResult(bool Ok, string Message, string? Code = null);
 
 // ---------------------------------------------------------------- Quick actions, profiles, automations
 
-public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify, ToggleOverlay, ObsRecordToggle, ObsReplaySave, ObsReplayBufferToggle }
+public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify, ToggleOverlay, ObsRecordToggle, ObsReplaySave, ObsReplayBufferToggle, Wait, IfRunning, IfNotRunning, MediaKey }
 
 public sealed class ActionStep
 {
     public StepType Type { get; set; }
-    /// <summary>Id of item / profile / sound / collection, or device id, or text for Notify, or "full"/"mini" for ToggleOverlay.</summary>
+    /// <summary>Id of item / profile / sound / collection, or device id, or text for Notify, or "full"/"mini" for ToggleOverlay,
+    /// seconds for Wait, game/program id for IfRunning / IfNotRunning (the remaining steps only run if the condition holds).</summary>
     public string? Ref { get; set; }
 }
 
@@ -149,6 +150,16 @@ public sealed class AutomationRule
     public DateTime? LastRunAt { get; set; }
     public string? LastResult { get; set; }
     public int RunCount { get; set; }
+    /// <summary>Last runs, newest first (at most 10).</summary>
+    public List<RuleRun> Runs { get; set; } = new();
+}
+
+public sealed class RuleRun
+{
+    public DateTime At { get; set; }
+    public string By { get; set; } = "";
+    public bool Ok { get; set; }
+    public List<string> Results { get; set; } = new();
 }
 
 public sealed class AutomationsFile
@@ -190,6 +201,8 @@ public sealed class Sound
     public int Volume { get; set; } = 100;
     public string? SourceUrl { get; set; }
     public string? Color { get; set; }
+    /// <summary>Repeat until stopped (stop button or "stop all sounds").</summary>
+    public bool Loop { get; set; }
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;
 }
 
@@ -291,6 +304,8 @@ public sealed class HistoryFile
 
 // ---------------------------------------------------------------- Settings
 
+public sealed class PingTarget { public string Label { get; set; } = ""; public string Host { get; set; } = ""; }
+
 public sealed class Settings
 {
     public int Version { get; set; } = 1;
@@ -341,6 +356,8 @@ public sealed class Settings
     public string? ObsPasswordProtected { get; set; }
     /// <summary>Keep the OBS replay buffer running while a game from the library runs.</summary>
     public bool ObsReplayWhilePlaying { get; set; }
+    /// <summary>Own ping targets for the network diagnosis (e.g. a game server), at most 3.</summary>
+    public List<PingTarget> PingTargets { get; set; } = new();
     /// <summary>Screen corner of the small in-game overlay (Windows companion).</summary>
     public string OverlayCorner { get; set; } = "top-right";
     /// <summary>Program used for recording and replays: obs, nvidia, xbox, steam or discord (see CaptureProviders).</summary>

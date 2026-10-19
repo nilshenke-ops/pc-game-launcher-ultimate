@@ -27,7 +27,7 @@ function browserChecks(conn: ReturnType<typeof useConn>): CheckResult[] {
   if (client.demo) add(t("PC-Adresse"), "info", t("Demo – es wird keine Verbindung aufgebaut."));
   else if (conn.needsServer || !url) add(t("PC-Adresse"), "error", t("Noch keine PC-Adresse gespeichert."), t("Unten auf „Verbinden“ tippen und den QR-Code vom PC scannen oder Code und PC-Adresse eingeben."));
   else if (isLoopbackAddress(url) && !isLoopbackAddress(location.hostname))
-    add(t("PC-Adresse"), "error", t("{u} zeigt auf dieses Gerät selbst, nicht auf den PC.", { u: url }), t("Unter „Verbinden“ abmelden und die Adresse aus dem PC Game Launcher („Gerät koppeln“) verwenden."));
+    add(t("PC-Adresse"), "error", t("{u} zeigt auf dieses Gerät selbst, nicht auf den PC.", { u: url }), t("Unter „Verbinden“ abmelden und die Adresse aus dem Nexus Gaming Hub („Gerät koppeln“) verwenden."));
   else if (pageHttps && url.startsWith("ws:"))
     add(t("PC-Adresse"), "error", t("Diese https-Seite darf keine unverschlüsselte Verbindung ({u}) öffnen – der Browser blockiert sie.", { u: url }), t("Im WLAN den QR-Code am PC scannen (öffnet die App direkt vom PC), oder am PC Tailscale Funnel einrichten und die https-Adresse verwenden."));
   else add(t("PC-Adresse"), "ok", url);
@@ -37,7 +37,7 @@ function browserChecks(conn: ReturnType<typeof useConn>): CheckResult[] {
   add(t("WebSocket-Verbindung"), wsStatus,
     conn.phase === "online" ? t("Verbunden ({how})", { how: conn.hello?.transport === "relay" ? t("über Relay") : t("direkt") })
       : `${conn.phase === "connecting" ? t("Verbinde …") : t("Getrennt")}${conn.attempt ? " · " + t("Versuch {n}", { n: conn.attempt }) : ""}${conn.lastError ? " · " + conn.lastError : ""}`,
-    conn.phase === "online" ? undefined : t("PC einschalten und PC Game Launcher starten (Symbol im Infobereich). Gleiche WLAN-Adresse wie im PC Game Launcher verwenden. Fragt Windows nach der Firewall: „Private Netzwerke“ erlauben. Die App verbindet sich danach automatisch neu."));
+    conn.phase === "online" ? undefined : t("PC einschalten und Nexus Gaming Hub starten (Symbol im Infobereich). Gleiche WLAN-Adresse wie im Nexus Gaming Hub verwenden. Fragt Windows nach der Firewall: „Private Netzwerke“ erlauben. Die App verbindet sich danach automatisch neu."));
   add(t("Antwortzeit (Ping)"), conn.latencyMs == null ? "untested" : conn.latencyMs < 150 ? "ok" : "warn", conn.latencyMs == null ? t("Noch nicht gemessen") : `${conn.latencyMs} ms`,
     conn.latencyMs != null && conn.latencyMs >= 150 ? t("Langsames WLAN oder Umweg über das Internet. Näher an den Router gehen oder im selben WLAN die direkte Adresse nutzen.") : undefined);
   if (conn.relayCompanion === "offline") add(t("Relay-Dienst"), "error", t("Das Relay ist erreichbar, aber der PC ist dort nicht angemeldet."), t("Am PC Diagnose öffnen: Relay-Adresse, Companion-ID und Schlüssel prüfen."));

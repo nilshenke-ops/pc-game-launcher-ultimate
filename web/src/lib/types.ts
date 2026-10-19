@@ -39,7 +39,7 @@ export interface DetectedItem {
 }
 
 export type StepType = "launchItem" | "activateProfile" | "revertProfile" | "playSound" | "stopAllSounds" | "setCollection" | "setAudioOutput" | "runDiagnostics" | "notify"
-  | "toggleOverlay" | "obsRecordToggle" | "obsReplaySave" | "obsReplayBufferToggle";
+  | "toggleOverlay" | "obsRecordToggle" | "obsReplaySave" | "obsReplayBufferToggle" | "wait" | "ifRunning" | "ifNotRunning" | "mediaKey";
 export interface ActionStep { type: StepType; ref?: string | null }
 
 export interface QuickAction {
@@ -89,6 +89,7 @@ export interface AutomationRule {
   lastRunAt?: string;
   lastResult?: string;
   runCount: number;
+  runs?: { at: string; by: string; ok: boolean; results: string[] }[];
 }
 
 export interface Hotkey { id: string; keys: string; enabled: boolean; action: ActionStep; quickActionId?: string | null }
@@ -106,6 +107,7 @@ export interface Sound {
   volume: number;
   sourceUrl?: string;
   color?: string;
+  loop?: boolean;
   addedAt: string;
 }
 export interface SoundCollection { id: string; name: string; soundIds: string[] }

@@ -22,7 +22,7 @@ export function ConnectScreen({ embedded = false }: { embedded?: boolean }) {
           <div className={`state-icon ${first ? "" : "warn"}`}>{first ? <PlugZap size={34} /> : <WifiOff size={34} />}</div>
           <h1>{first ? t("Verbinde mit deinem PC …") : t("PC nicht erreichbar")}</h1>
           <p className="muted">
-            {first ? t("Einen Moment – die Verbindung zum PC Game Launcher Companion wird aufgebaut.")
+            {first ? t("Einen Moment – die Verbindung zum Nexus Gaming Hub Companion wird aufgebaut.")
               : t("Diese Seite konnte keine Verbindung zum Companion auf deinem Gaming-PC herstellen.")}
           </p>
         </div>

@@ -96,7 +96,7 @@ sealed class TrayAppContext : ApplicationContext
         _overlay.AdminToken = _services.Rpc.AdminToken;
         _desktopWidgets.Ready(_form.WebEnvironment, _overlay.Origin, _services.Rpc.AdminToken);
         if (_services.Web.StartError != null)
-            MessageBox.Show(_services.Web.StartError, "PC Game Launcher – Webserver", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            MessageBox.Show(_services.Web.StartError, "Nexus Gaming Hub – Webserver", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
 
     public string LocalUrl(string hash = "") => $"http://127.0.0.1:{_services.Web.Port}/{hash}";
@@ -157,7 +157,7 @@ sealed class TrayIcon : IDisposable
             var set = _s.Settings.Get();
             if (string.IsNullOrWhiteSpace(set.RelayUrl) || string.IsNullOrWhiteSpace(set.RelayCompanionId))
             {
-                MessageBox.Show("Es ist noch kein Relay eingerichtet. Einstellungen → Verbindung → Relay.", "PC Game Launcher", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Es ist noch kein Relay eingerichtet. Einstellungen → Verbindung → Relay.", "Nexus Gaming Hub", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
             _s.Settings.SaveSecurity(new SettingsService.SecurityUpdate { RelayEnabled = !set.RelayEnabled }, _s.Platform.Secrets);
@@ -168,8 +168,8 @@ sealed class TrayIcon : IDisposable
         // Works even if the new version's window does not load: tray → back to the previous version.
         var rollback = new ToolStripMenuItem("Vorherige Version wiederherstellen…", null, (_, _) =>
         {
-            if (MessageBox.Show("Zur vorherigen Version zurückkehren? Der Begleiter startet neu. Einstellungen und Listen bleiben erhalten.", "PC Game Launcher", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
-            if (_s.Updates.Rollback() is { } err) MessageBox.Show(err, "PC Game Launcher", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            if (MessageBox.Show("Zur vorherigen Version zurückkehren? Der Begleiter startet neu. Einstellungen und Listen bleiben erhalten.", "Nexus Gaming Hub", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+            if (_s.Updates.Rollback() is { } err) MessageBox.Show(err, "Nexus Gaming Hub", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         });
         menu.Items.Add(rollback);
         menu.Opening += (_, _) => rollback.Visible = _s.Platform.UpdateInstaller.CanRollback;
@@ -180,7 +180,7 @@ sealed class TrayIcon : IDisposable
         _icon = new NotifyIcon
         {
             Icon = stream != null ? new Icon(stream) : SystemIcons.Application,
-            Text = "PC Game Launcher Ultimate",
+            Text = "Nexus Gaming Hub",
             ContextMenuStrip = menu,
             Visible = true,
         };
@@ -193,7 +193,7 @@ sealed class TrayIcon : IDisposable
         var clients = _s.Rpc.Sessions.Count(x => x.Authenticated && !x.IsLocalAdmin);
         var relay = _s.Relay.State switch { "connected" => "Relay verbunden", "disabled" => "Relay aus", _ => "Relay: " + _s.Relay.State };
         _status.Text = _s.Web.StartError != null ? "Webserver-Fehler" : $"Bereit · {clients} Gerät(e) · {relay}";
-        var text = $"PC Game Launcher · {clients} Gerät(e)";
+        var text = $"Nexus Gaming Hub · {clients} Gerät(e)";
         _icon.Text = text.Length > 63 ? text[..63] : text;
     }
 
@@ -233,7 +233,7 @@ sealed class MainForm : Form
 
     public MainForm()
     {
-        Text = "PC Game Launcher Ultimate";
+        Text = "Nexus Gaming Hub";
         Size = new Size(1320, 860);
         MinimumSize = new Size(820, 560);
         StartPosition = FormStartPosition.CenterScreen;

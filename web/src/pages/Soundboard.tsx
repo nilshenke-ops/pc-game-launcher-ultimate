@@ -52,7 +52,8 @@ function PendingCard() {
 }
 
 export default function Soundboard() {
-  const q = useRpc<{ data: SoundsFile; playing: PlayingState; supported: boolean; reason?: string }>("sounds.list", {}, ["sounds"]);
+  const q = useRpc<{ data: SoundsFile; playing: PlayingState; supported: boolean; reason?: string; missing?: string[] }>("sounds.list", {}, ["sounds"]);
+  const missing = new Set(q.data?.missing ?? []);
   const audio = useRpc<{ settings: AudioSettings }>("audio.state", {}, ["audio"]);
   const conn = useConn();
   const canManage = useCan("manage");
@@ -156,18 +157,21 @@ export default function Soundboard() {
         {(data?.sounds.length ?? 0) === 0 ? (
           <Card><Empty icon={<Music size={28} />} title={t("Noch keine Sounds")} text={t("Importiere MP3/WAV-Dateien vom Gerät oder füge einen MyInstants-Link ein.")} action={canManage && <Button variant="primary" onClick={() => setImporting(true)}>{t("Sounds importieren")}</Button>} /></Card>
         ) : shown.length === 0 ? <Card><Empty icon={<Search size={26} />} title={t("Keine Treffer")} /></Card> : (
+          <>
+          {missing.size > 0 && <Banner kind="warn" title={t("{n} Sounds ohne Audiodatei", { n: missing.size })}>{t("Die Datei wurde auf dem PC gelöscht oder verschoben. Diese Sounds sind gestrichelt markiert – neu importieren oder löschen.")}</Banner>}
           <div className="pads">
             {shown.map((s, i) => {
               const live = now.playing.find((p) => p.soundId === s.id);
               return (
-                <button key={s.id} className={`pad ${playingIds.has(s.id) ? "playing" : ""}`} style={{ ["--pad" as string]: s.color ?? COLORS[i % COLORS.length], ["--dur" as string]: `${(live?.durationMs ?? 2000) / 1000}s` }} onClick={() => play(s)} aria-label={t("{n} abspielen", { n: s.name })}>
+                <button key={s.id} className={`pad ${playingIds.has(s.id) ? "playing" : ""} ${missing.has(s.id) ? "missing" : ""}`} style={{ ["--pad" as string]: s.color ?? COLORS[i % COLORS.length], ["--dur" as string]: `${(live?.durationMs ?? 2000) / 1000}s` }} onClick={() => play(s)} aria-label={t("{n} abspielen", { n: s.name })}>
                   <b>{s.name}</b>
-                  <span className="pad-meta">{s.favorite && <Star size={12} fill="currentColor" color="#fde047" />}{s.categories[0] ?? s.format.toUpperCase()}{s.volume !== 100 ? ` · ${s.volume}%` : ""}</span>
+                  <span className="pad-meta">{s.favorite && <Star size={12} fill="currentColor" color="#fde047" />}{missing.has(s.id) ? <b className="pad-missing">{t("Datei fehlt")}</b> : <>{s.categories[0] ?? s.format.toUpperCase()}{s.volume !== 100 ? ` · ${s.volume}%` : ""}{s.loop ? " · ↻" : ""}</>}</span>
                   {canManage && <span className="pad-edit btn ghost icon sm" role="button" tabIndex={0} aria-label={t("Bearbeiten")} onClick={(e) => { e.stopPropagation(); setEditing(s); }} onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditing(s); } }}><Pencil size={13} /></span>}
                 </button>
               );
             })}
           </div>
+          </>
         )}
       </Loadable>
 
@@ -239,7 +243,7 @@ function ImportDialog({ onClose, offline }: { onClose: () => void; offline: bool
             onDragOver={(e) => e.preventDefault()} onDrop={(e) => { e.preventDefault(); uploadAll(e.dataTransfer.files); }}>
             <Upload size={28} style={{ color: "var(--primary)" }} />
             <div><b>{t("Dateien auswählen oder hierher ziehen")}</b></div>
-            <div className="small muted">{t("MP3, WAV, FLAC, M4A · max. 20 MB pro Datei · Duplikate werden erkannt")}</div>
+            <div className="small muted">{t("Unterstützt: MP3, WAV, FLAC, M4A, WMA · nicht: OGG/Opus (fehlt Windows) · max. 20 MB pro Datei · Duplikate werden erkannt")}</div>
             <input ref={fileRef} type="file" accept="audio/*,.mp3,.wav,.flac,.m4a,.wma" multiple hidden onChange={(e) => uploadAll(e.target.files)} />
           </label>
           {progress.map((p) => <div key={p.name} className="stack-sm"><span className="small">{p.name}</span><div className="progress-bar"><i style={{ width: `${p.p * 100}%` }} /></div></div>)}
@@ -277,7 +281,7 @@ function ImportDialog({ onClose, offline }: { onClose: () => void; offline: bool
 function EditSound({ sound, onClose }: { sound: Sound; onClose: () => void }) {
   const [s, setS] = useState({ ...sound, cats: sound.categories.join(", ") });
   const save = async () => {
-    try { await client.call("sounds.update", { id: s.id, name: s.name, favorite: s.favorite, volume: s.volume, color: s.color ?? "", categories: s.cats.split(",").map((x) => x.trim()).filter(Boolean) }); onClose(); }
+    try { await client.call("sounds.update", { id: s.id, name: s.name, favorite: s.favorite, volume: s.volume, loop: !!s.loop, color: s.color ?? "", categories: s.cats.split(",").map((x) => x.trim()).filter(Boolean) }); onClose(); }
     catch (e) { toast((e as Error).message, "error"); }
   };
   const remove = async () => {
@@ -298,6 +302,7 @@ function EditSound({ sound, onClose }: { sound: Sound; onClose: () => void }) {
         <div className="row">{COLORS.map((c) => <button key={c} type="button" onClick={() => setS({ ...s, color: c })} aria-label={c} style={{ width: 34, height: 34, borderRadius: 10, background: c, border: s.color === c ? "3px solid var(--text)" : "1px solid var(--border)", cursor: "pointer" }} />)}</div>
       </Field>
       <label className="checkbox"><input type="checkbox" checked={s.favorite} onChange={(e) => setS({ ...s, favorite: e.target.checked })} />{t("Favorit")}</label>
+      <label className="checkbox"><input type="checkbox" checked={!!s.loop} onChange={(e) => setS({ ...s, loop: e.target.checked })} />{t("Wiederholen, bis gestoppt (↻)")}</label>
       <p className="tiny muted">{sound.format.toUpperCase()} · {bytes(sound.size)}{sound.sourceUrl ? ` · ${t("Quelle")}: ${sound.sourceUrl}` : ""}</p>
     </Modal>
   );

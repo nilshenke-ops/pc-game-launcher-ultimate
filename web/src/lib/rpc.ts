@@ -147,7 +147,7 @@ class Client {
     const permissions = ["view", "launch", "soundboard", "manage", "admin"];
     this.set({
       phase: "online", everConnected: true, auth: "ok", url: "demo",
-      hello: { protocol: PROTOCOL_VERSION, nonce: "", transport: "local", info: { app: "PC Game Launcher Ultimate", version: "1.0.0", pcName: "Demo-PC", platform: "Demo", features: { audio: true, hotkeys: true, autostart: true, pickFile: false, installUpdates: true } } },
+      hello: { protocol: PROTOCOL_VERSION, nonce: "", transport: "local", info: { app: "Nexus Gaming Hub", version: "1.0.0", pcName: "Demo-PC", platform: "Demo", features: { audio: true, hotkeys: true, autostart: true, pickFile: false, installUpdates: true } } },
       me: { isLocal: false, permissions, device: { id: "demo", name: "Dieses Gerät" } },
     });
     queueMicrotask(() => this.emit("authenticated", this.status.me));
@@ -311,7 +311,8 @@ class Client {
     }
   }
 
-  call<T = unknown>(method: string, params?: unknown): Promise<T> {
+  /** opts.op: id of a queued change – the PC applies it only once, even if it is sent again after a lost answer. */
+  call<T = unknown>(method: string, params?: unknown, opts?: { op?: string }): Promise<T> {
     if (this.demo) return demoCall(method, (params ?? {}) as Record<string, unknown>) as Promise<T>;
     if (this.status.auth !== "ok" && !NO_LOGIN.has(method) && !this.status.me) {
       if (method === "ui.savePrefs" || method === "ui.getPrefs") return Promise.resolve((method === "ui.getPrefs" ? { prefs: null } : true) as T); // design stays on this device
@@ -334,7 +335,7 @@ class Client {
         reject(new RpcError("timeout", t("Der PC hat nicht rechtzeitig geantwortet.")));
       }, method === "ping" ? 8000 : method === "network.diagnose" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, timer });
-      ws.send(JSON.stringify({ v: PROTOCOL_VERSION, id, m: method, p: params ?? {} }));
+      ws.send(JSON.stringify({ v: PROTOCOL_VERSION, id, m: method, p: params ?? {}, ...(opts?.op ? { op: opts.op } : {}) }));
     });
   }
 

@@ -51,7 +51,7 @@ export default function Help() {
         </Section>
       </div>
       <div style={{ marginTop: 16 }}><DownloadCard /></div>
-      <p className="tiny muted" style={{ marginTop: 16 }}><BookOpen size={13} style={{ verticalAlign: -2 }} /> PC Game Launcher Ultimate {state ? `v${state.version}` : ""}</p>
+      <p className="tiny muted" style={{ marginTop: 16 }}><BookOpen size={13} style={{ verticalAlign: -2 }} /> Nexus Gaming Hub {state ? `v${state.version}` : ""}</p>
     </>
   );
 }

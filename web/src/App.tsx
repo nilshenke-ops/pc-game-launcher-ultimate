@@ -29,6 +29,7 @@ const Plugins = lazy(() => import("./pages/Plugins"));
 const OverlaySettings = lazy(() => import("./pages/OverlaySettings"));
 const Overlay = lazy(() => import("./pages/Overlay"));
 const WidgetStudio = lazy(() => import("./pages/WidgetStudio"));
+const Network = lazy(() => import("./pages/Network"));
 const DesktopWidget = lazy(() => import("./pages/DesktopWidget"));
 const Connect = lazy(() => import("./pages/Connect"));
 const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
@@ -100,6 +101,7 @@ function Gate() {
           <Route path="/plugins" element={<Plugins />} />
           <Route path="/overlay-settings" element={<OverlaySettings />} />
           <Route path="/widgets" element={<WidgetStudio />} />
+          <Route path="/network" element={<Network />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

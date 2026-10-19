@@ -27,7 +27,8 @@ sealed class WindowsKeySender : IKeySender
     static bool ModifierDown() => new[] { VK_SHIFT, VK_CONTROL, VK_MENU, VK_LWIN, VK_RWIN }.Any(vk => (GetAsyncKeyState(vk) & 0x8000) != 0);
 
     static bool Extended(Keys k) => k is Keys.Insert or Keys.Delete or Keys.Home or Keys.End or Keys.PageUp or Keys.PageDown
-        or Keys.Up or Keys.Down or Keys.Left or Keys.Right or Keys.Divide or Keys.LWin or Keys.RWin;
+        or Keys.Up or Keys.Down or Keys.Left or Keys.Right or Keys.Divide or Keys.LWin or Keys.RWin
+        or Keys.MediaPlayPause or Keys.MediaNextTrack or Keys.MediaPreviousTrack or Keys.MediaStop or Keys.VolumeMute or Keys.VolumeUp or Keys.VolumeDown;
 
     static INPUT Key(ushort vk, bool up, bool extended) => new()
     {

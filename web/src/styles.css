@@ -1,5 +1,5 @@
 /* ==========================================================================
-   PC Game Launcher Ultimate – design system
+   Nexus Gaming Hub – design system
    Colours come from CSS variables set by the theme editor (lib/prefs.ts).
    ========================================================================== */
 
@@ -676,3 +676,42 @@ html.desktop-widget-mode .app-bg { display: none; }
 .dw-root { height: 100vh; cursor: grab; user-select: none; }
 .dw-root .cw { box-shadow: none; border-radius: 0 !important; } /* the window itself is rounded; buttons keep their corners */
 .dw-msg { height: 100vh; display: grid; place-items: center; color: #cbd5e1; font: 13px system-ui, sans-serif; padding: 12px; text-align: center; }
+.sheet-group + .sheet-group { margin-top: 14px; }
+.sheet-group h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 8px 2px; }
+.nav-editor { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); }
+.nav-editor h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 0 0 6px; }
+.nav-editor-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 10px; }
+.nav-editor-row > svg { color: var(--primary); flex: none; }
+.nav-editor-row.off { opacity: 0.45; }
+.nav-editor-row:hover { background: rgba(255, 255, 255, 0.04); }
+
+/* network diagnosis (Ping Doctor) */
+.nd-tiles { display: grid; gap: 12px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.nd-tile { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; border-radius: var(--radius); border: 1px solid var(--border); background: rgba(var(--surface-rgb), var(--surface-alpha)); }
+.nd-tile-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 700; }
+.nd-tile-value { font-size: 2.2rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; color: var(--text); }
+.nd-tile-value small { font-size: 0.9rem; font-weight: 600; color: var(--muted); margin-left: 4px; }
+.nd-row { display: grid; gap: 16px; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; }
+.nd-chart { position: relative; }
+.nd-chart svg { width: 100%; height: auto; display: block; touch-action: pan-y; }
+.nd-grid { stroke: var(--border); stroke-width: 1; }
+.nd-axis { fill: var(--muted); font-size: 11px; }
+.nd-line { fill: none; stroke: var(--primary); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.nd-loss { stroke: var(--danger); stroke-width: 2; opacity: 0.35; }
+.nd-cross { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.nd-dot { fill: var(--primary); stroke: rgb(var(--surface-rgb)); stroke-width: 2; }
+.nd-tip { position: absolute; top: 4px; right: 4px; font-size: 0.78rem; padding: 4px 8px; border-radius: 8px; background: rgba(var(--surface-rgb), 0.95); border: 1px solid var(--border); }
+.nd-quality { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 8px 0; }
+.nd-q { font-size: 1.8rem; font-weight: 800; }
+.nd-q.ok { color: var(--success); } .nd-q.warn { color: var(--warning); } .nd-q.error { color: var(--danger); }
+.nd-bars { display: flex; align-items: flex-end; gap: 5px; height: 26px; }
+.nd-bars i { width: 22px; border-radius: 3px; background: rgba(255, 255, 255, 0.12); }
+.nd-bars i.on.ok { background: var(--success); } .nd-bars i.on.warn { background: var(--warning); } .nd-bars i.on.error { background: var(--danger); }
+.nd-quality details { text-align: left; }
+.nd-quality ul { margin: 6px 0; padding-left: 18px; }
+@media (max-width: 900px) { .nd-row { grid-template-columns: minmax(0, 1fr); } .nd-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.run-log { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.run-log li { padding: 6px 8px; border-radius: 8px; background: rgba(255, 255, 255, 0.03); border-left: 3px solid var(--success); }
+.run-log li.fail { border-left-color: var(--danger); }
+.pad.missing { opacity: 0.55; border-style: dashed; }
+.pad-missing { color: var(--danger); font-weight: 700; }

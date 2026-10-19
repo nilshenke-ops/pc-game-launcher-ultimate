@@ -111,12 +111,17 @@ export interface Prefs {
   layouts: Layout[];
   activeLayout: { desktop: string; mobile: string };
   usage: Record<string, number>;
+  /** Navigation: own order and hidden sections, shortcuts in the phone bar (paths like "/games"). */
+  nav: NavPrefs;
 }
+
+export interface NavPrefs { order: string[]; hidden: string[]; bottom: string[] }
+export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [], bottom: ["/", "/games", "/soundboard", "/quick"] };
 
 
 export function defaultPrefs(): Prefs {
   const lang = (navigator.language || "de").toLowerCase().startsWith("de") ? "de" : "en";
-  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {} };
+  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV) };
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -167,8 +172,17 @@ export function sanitizePrefs(input: unknown): Prefs {
       desktop: has(p.activeLayout?.desktop) ? p.activeLayout!.desktop : layouts[0].id,
       mobile: has(p.activeLayout?.mobile) ? p.activeLayout!.mobile : layouts[0].id,
     },
+    nav: sanitizeNav(p.nav),
     usage: p.usage && typeof p.usage === "object" ? Object.fromEntries(Object.entries(p.usage).filter(([, v]) => typeof v === "number").slice(0, 300)) : {},
   };
+}
+
+const NAV_PATH = /^\/[a-z-]{0,30}$/;
+function sanitizeNav(n: unknown): NavPrefs {
+  const v = (n && typeof n === "object" ? n : {}) as Partial<NavPrefs>;
+  const paths = (x: unknown, max: number) => (Array.isArray(x) ? [...new Set(x.filter((p): p is string => typeof p === "string" && NAV_PATH.test(p)))].slice(0, max) : []);
+  const bottom = paths(v.bottom, 4);
+  return { order: paths(v.order, 60), hidden: paths(v.hidden, 60), bottom: bottom.length ? bottom : [...DEFAULT_NAV.bottom] };
 }
 
 // ------------------------------------------------------------------ colours & theme application

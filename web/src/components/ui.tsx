@@ -31,7 +31,7 @@ export function Card({ title, icon, meta, actions, children, className = "", sty
 }
 
 export function PageHead({ eyebrow, title, text, actions }: { eyebrow?: string; title: string; text?: ReactNode; actions?: ReactNode }) {
-  useEffect(() => { document.title = `${title} · PC Game Launcher`; }, [title]);
+  useEffect(() => { document.title = `${title} · Nexus Gaming Hub`; }, [title]);
   return (
     <header className="page-head fade-in">
       <div className="text">
@@ -120,7 +120,7 @@ export function OfflineState() {
       <div className="state-icon warn"><WifiOff size={30} /></div>
       <h2>{t("Offline")}</h2>
       <p className="muted">{paired
-        ? t("Dein PC ist gerade nicht erreichbar. Sobald er an ist und der PC Game Launcher läuft, erscheinen hier deine Inhalte.")
+        ? t("Dein PC ist gerade nicht erreichbar. Sobald er an ist und der Nexus Gaming Hub läuft, erscheinen hier deine Inhalte.")
         : t("Kein PC verbunden. Verbinde deinen PC, um diesen Bereich zu nutzen.")}</p>
       <div className="row" style={{ justifyContent: "center" }}>
         {paired

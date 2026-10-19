@@ -173,6 +173,8 @@ public sealed class PlayRequest
     public float Volume { get; init; } = 1f;
     public string? MonitorDeviceId { get; init; }
     public float MonitorVolume { get; init; } = 1f;
+    /// <summary>Repeat until stopped.</summary>
+    public bool Loop { get; init; }
 }
 
 public interface IAudioEngine

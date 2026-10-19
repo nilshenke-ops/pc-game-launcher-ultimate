@@ -1,38 +1,52 @@
 import {
   Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, HardDrive, Headphones, Heart, HelpCircle, History, Home,
-  Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star,
+  Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, Wifi, ShieldCheck, Smartphone, Sparkles, Star,
   Stethoscope, Swords, Timer, Trophy, Tv, Video, Volume2, Wand2, Zap, type LucideIcon,
 } from "lucide-react";
 import { t } from "./i18n";
 
-export interface NavItem { path: string; label: string; icon: LucideIcon; group: string; keywords?: string }
+export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
+
+/** Sections that cannot be hidden – otherwise the app could lock itself out of its own settings or the PC connection. */
+export const NAV_FIXED = new Set(["/", "/settings", "/connect"]);
+/** Default shortcuts in the phone bar (besides "Verbinden" and "Mehr", which are always there). */
+export const DEFAULT_BOTTOM = ["/", "/games", "/soundboard", "/quick"];
 
 /** Single definition of all sections, used by sidebar, mobile menu and global search. */
 export function navItems(): NavItem[] {
+  const g = { dash: t("Dashboard"), ctrl: t("Steuerung"), audio: t("Audio"), sys: t("System"), conn: t("Verbindung"), ext: t("Erweiterungen"), admin: t("Verwaltung") };
   return [
-    { path: "/", label: t("Home"), icon: Home, group: t("Start"), keywords: "dashboard übersicht" },
-    { path: "/games", label: t("Spiele"), icon: Gamepad2, group: t("Start"), keywords: "steam epic xbox launcher" },
-    { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: t("Start"), keywords: "apps discord browser" },
-    { path: "/quick", label: t("Quick Actions"), icon: Zap, group: t("Start"), keywords: "schnellstart makro" },
-    { path: "/soundboard", label: t("Soundboard"), icon: Music, group: t("Audio"), keywords: "sounds myinstants" },
-    { path: "/audio", label: t("Audio Center"), icon: Headphones, group: t("Audio"), keywords: "mikrofon discord kabel ausgabe" },
-    { path: "/profiles", label: t("Gaming-Profile"), icon: Swords, group: t("Gaming"), keywords: "competitive streaming" },
-    { path: "/automations", label: t("Automatisierungen"), icon: Bot, group: t("Gaming"), keywords: "regeln wenn dann" },
-    { path: "/hotkeys", label: t("Hotkeys"), icon: Keyboard, group: t("Gaming"), keywords: "tastenkürzel tasten" },
-    { path: "/history", label: t("Gaming-Verlauf"), icon: History, group: t("Gaming"), keywords: "statistik spielzeit" },
-    { path: "/overlay-settings", label: t("Overlay & Aufnahme"), icon: Video, group: t("Gaming"), keywords: "overlay game bar aufnahme video replay clip obs fps hud" },
-    { path: "/widgets", label: t("Widget-Baukasten"), icon: Shapes, group: t("Gaming"), keywords: "widgets eigene editor desktop baukasten design uhr knopf" },
-    { path: "/monitor", label: t("PC Monitor"), icon: Activity, group: t("System"), keywords: "cpu ram gpu temperatur" },
-    { path: "/connect", label: t("PC verbinden"), icon: MonitorSmartphone, group: t("System"), keywords: "verbinden koppeln qr code adresse anmelden" },
-    { path: "/devices", label: t("Geräte"), icon: Smartphone, group: t("System"), keywords: "verbindungen gekoppelt" },
-    { path: "/pair", label: t("Gerät koppeln"), icon: Link2, group: t("System"), keywords: "qr code kopplung" },
-    { path: "/notifications", label: t("Benachrichtigungen"), icon: Bell, group: t("System") },
-    { path: "/settings", label: t("Einstellungen"), icon: Settings, group: t("System"), keywords: "design sprache backup update" },
-    { path: "/diagnostics", label: t("Diagnose"), icon: Stethoscope, group: t("System"), keywords: "netzwerk fehler logs ping" },
-    { path: "/plugins", label: t("Plugin Center"), icon: Puzzle, group: t("System"), keywords: "plugins erweiterungen store widgets themes addons module" },
-    { path: "/updates", label: t("Updates & Versionen"), icon: Download, group: t("System"), keywords: "update version download herunterladen neueste windows exe änderungen" },
-    { path: "/help", label: t("Hilfe"), icon: HelpCircle, group: t("System"), keywords: "anleitung download begleiter" },
+    { path: "/", label: t("Home"), icon: Home, group: g.dash, keywords: "dashboard übersicht" },
+    { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
+    { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
+    { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
+    { path: "/widgets", label: t("Widget-Baukasten"), short: t("Widgets"), icon: Shapes, group: g.dash, keywords: "widgets eigene editor desktop baukasten design uhr knopf setup designer" },
+    { path: "/profiles", label: t("Gaming-Profile"), short: t("Profile"), icon: Swords, group: g.ctrl, keywords: "competitive streaming" },
+    { path: "/automations", label: t("Automatisierungen"), short: t("Abläufe"), icon: Bot, group: g.ctrl, keywords: "regeln wenn dann automation hub ablauf" },
+    { path: "/hotkeys", label: t("Hotkeys & Makros"), short: t("Hotkeys"), icon: Keyboard, group: g.ctrl, keywords: "tastenkürzel tasten macro studio makro medientasten" },
+    { path: "/soundboard", label: t("Soundboard"), short: t("Sounds"), icon: Music, group: g.audio, keywords: "sounds myinstants soundlab discord" },
+    { path: "/audio", label: t("Audio Center"), short: t("Audio"), icon: Headphones, group: g.audio, keywords: "mikrofon discord kabel ausgabe" },
+    { path: "/monitor", label: t("PC Monitor"), short: t("Monitor"), icon: Activity, group: g.sys, keywords: "cpu ram gpu temperatur vram performance center" },
+    { path: "/network", label: t("Netzwerkdiagnose"), short: t("Netzwerk"), icon: Wifi, group: g.sys, keywords: "ping jitter paketverlust latenz ping doctor lag server" },
+    { path: "/history", label: t("Gaming-Verlauf"), short: t("Verlauf"), icon: History, group: g.sys, keywords: "statistik spielzeit" },
+    { path: "/overlay-settings", label: t("Overlay & Aufnahme"), short: t("Overlay"), icon: Video, group: g.sys, keywords: "overlay game bar aufnahme video replay clip obs fps hud" },
+    { path: "/connect", label: t("PC verbinden"), short: t("Verbinden"), icon: MonitorSmartphone, group: g.conn, keywords: "verbinden koppeln qr code adresse anmelden" },
+    { path: "/devices", label: t("Geräte"), icon: Smartphone, group: g.conn, keywords: "verbindungen gekoppelt" },
+    { path: "/pair", label: t("Gerät koppeln"), short: t("Koppeln"), icon: Link2, group: g.conn, keywords: "qr code kopplung" },
+    { path: "/plugins", label: t("Plugin Center"), short: t("Plugins"), icon: Puzzle, group: g.ext, keywords: "plugins erweiterungen store widgets themes addons module" },
+    { path: "/notifications", label: t("Benachrichtigungen"), short: t("Hinweise"), icon: Bell, group: g.admin },
+    { path: "/settings", label: t("Einstellungen"), short: t("Einstell."), icon: Settings, group: g.admin, keywords: "design sprache backup update navigation" },
+    { path: "/diagnostics", label: t("Diagnose"), icon: Stethoscope, group: g.admin, keywords: "netzwerk fehler logs" },
+    { path: "/updates", label: t("Updates & Versionen"), short: t("Updates"), icon: Download, group: g.admin, keywords: "update version download herunterladen neueste windows exe änderungen" },
+    { path: "/help", label: t("Hilfe"), icon: HelpCircle, group: g.admin, keywords: "anleitung download begleiter" },
   ];
+}
+
+/** The user's own order and hidden sections (Einstellungen → Design → Navigation). Order is kept inside each category. */
+export function arrangeNav(items: NavItem[], nav: { order: string[]; hidden: string[] }): NavItem[] {
+  const pos = (p: string) => { const i = nav.order.indexOf(p); return i < 0 ? 1000 + items.findIndex((x) => x.path === p) : i; };
+  const groups = [...new Set(items.map((i) => i.group))];
+  return groups.flatMap((g) => items.filter((i) => i.group === g && (NAV_FIXED.has(i.path) || !nav.hidden.includes(i.path))).sort((a, b) => pos(a.path) - pos(b.path)));
 }
 
 export const ICONS: Record<string, LucideIcon> = {

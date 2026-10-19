@@ -28,7 +28,12 @@ export async function syncOutbox(opts: { retryFailed?: boolean } = {}): Promise<
         if (tempId && realId) outbox.replaceAll(outbox.all().map((x) => ({ ...x, params: substituteIds(x.params, new Map([[tempId, realId]])) })));
       } catch (err) {
         const er = err as RpcError;
-        if (er.code === "offline" || er.code === "timeout" || er.code === "needs-pc") break; // connection gone: try again later
+        if (er.code === "offline" || er.code === "timeout" || er.code === "needs-pc") {
+          // No answer: maybe applied, maybe not. Sent again later with the same id – the PC applies it only once.
+          outbox.countAttempt(entry.id);
+          retryLater(outbox.all().find((x) => x.id === entry.id)?.attempts ?? 1);
+          break;
+        }
         outbox.setError(entry.id, er.message);
         failed++;
       }
@@ -43,9 +48,17 @@ async function send(e: OutboxEntry): Promise<unknown> {
   // Only the audio values changed offline are applied on top of the PC's current settings.
   if (e.method === "audio.save") {
     const st = await client.call<{ settings: Record<string, unknown> }>("audio.state");
-    return client.call("audio.save", { ...st.settings, ...e.params });
+    return client.call("audio.save", { ...st.settings, ...e.params }, { op: e.id });
   }
-  return client.call(e.method, prepareForPc(e.method, e.params).params);
+  return client.call(e.method, prepareForPc(e.method, e.params).params, { op: e.id });
+}
+
+let retryTimer: number | undefined;
+/** Next try after 5 s, 10 s, 20 s … at most 5 min – while still connected (a new login retries at once anyway). */
+function retryLater(attempts: number) {
+  window.clearTimeout(retryTimer);
+  const ms = Math.min(300_000, 5000 * 2 ** Math.max(0, attempts - 1));
+  retryTimer = window.setTimeout(() => { if (client.status.auth === "ok") void syncOutbox(); }, ms);
 }
 
 let started = false;

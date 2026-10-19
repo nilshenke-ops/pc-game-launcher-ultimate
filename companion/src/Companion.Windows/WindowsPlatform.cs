@@ -314,8 +314,8 @@ sealed class WindowsPower : IPowerControl
         {
             case "lock": return LockWorkStation() ? null : "PC konnte nicht gesperrt werden.";
             case "sleep": return SetSuspendState(false, false, false) ? null : "Energiesparen nicht möglich (evtl. in Windows deaktiviert).";
-            case "restart": return Shutdown("/r", "/t", delay, "/c", "PC Game Launcher: Neustart angefordert");
-            case "shutdown": return Shutdown("/s", "/t", delay, "/c", "PC Game Launcher: Herunterfahren angefordert");
+            case "restart": return Shutdown("/r", "/t", delay, "/c", "Nexus Gaming Hub: Neustart angefordert");
+            case "shutdown": return Shutdown("/s", "/t", delay, "/c", "Nexus Gaming Hub: Herunterfahren angefordert");
             case "cancel": return Shutdown("/a");
             default: return "Unbekannte Aktion.";
         }

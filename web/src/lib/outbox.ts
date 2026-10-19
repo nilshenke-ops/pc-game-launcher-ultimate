@@ -23,6 +23,8 @@ export interface OutboxEntry {
   /** Local plugin file waiting for upload (bytes kept in IndexedDB). */
   fileKey?: string;
   error?: string;
+  /** Sending attempts that ended without an answer (connection lost / timeout). */
+  attempts?: number;
 }
 
 const KEY = "pgl.outbox";
@@ -52,6 +54,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "obs.configure": () => t("OBS-Verbindung speichern"),
   "capture.configure": () => t("Aufnahme-Programm und Tasten speichern"),
   "overlay.saveLayout": () => t("Overlay-Widgets speichern"),
+  "network.setTargets": () => t("Eigene Ping-Ziele speichern"),
   "widgets.save": (p) => t("Eigenes Widget speichern {n}", { n: name(p) }),
   "widgets.remove": () => t("Eigenes Widget löschen"),
   "history.setNote": () => t("Notiz zur Spielsitzung"),
@@ -88,6 +91,7 @@ export const outbox = {
   setCurrentPc(fn: () => string | null) { currentPc = fn; },
   remove(id: string) { entries = entries.filter((e) => e.id !== id); persist(); },
   setError(id: string, error: string | undefined) { entries = entries.map((e) => (e.id === id ? { ...e, error } : e)); persist(); },
+  countAttempt(id: string) { entries = entries.map((e) => (e.id === id ? { ...e, attempts: (e.attempts ?? 0) + 1 } : e)); persist(); },
   replaceAll(next: OutboxEntry[]) { entries = next; persist(); },
 };
 
@@ -145,6 +149,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "capture.status": offlineCaptureStatus(),
   "overlay.layout": {},
   "widgets.list": { widgets: [] },
+  "network.targets": { targets: [] },
   "obs.status": { url: "ws://127.0.0.1:4455", passwordSet: false, replayWhilePlaying: false, connected: false, offline: true },
   // Whether this PC can show the overlay is only known once it is connected.
   "overlay.status": { supported: false, visible: null, unknown: true },
@@ -221,6 +226,7 @@ function applyLocally(method: string, p: Params): unknown {
     case "audio.save": patch<{ settings: Params }>("audio.state", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
     case "settings.save": patch<{ settings: Params }>("settings.get", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
     // Widget ids are made on the device (cw_…), so a new widget can be placed on the dashboard/overlay at once.
+    case "network.setTargets": patch<Params>("network.targets", () => ({ targets: p.targets ?? [] })); return { targets: p.targets ?? [] };
     case "widgets.save": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: upsert(d.widgets, p as unknown as WithId) })); return p;
     case "widgets.remove": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: d.widgets.filter((w) => w.id !== p.id) })); return true;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};

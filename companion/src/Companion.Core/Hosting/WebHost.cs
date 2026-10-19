@@ -159,7 +159,7 @@ public sealed class WebHost : IAsyncDisposable
             await next();
         });
 
-        app.MapGet("/healthz", () => Results.Json(new { ok = true, app = "PC Game Launcher Ultimate", version = UpdateService.CurrentVersion, role = "companion" }));
+        app.MapGet("/healthz", () => Results.Json(new { ok = true, app = "Nexus Gaming Hub", version = UpdateService.CurrentVersion, role = "companion" }));
         app.MapGet("/download/info", DownloadInfo);
         app.MapGet("/download/{file}", Download);
         app.Map("/ws", HandleWebSocket);

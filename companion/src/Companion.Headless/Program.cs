@@ -29,7 +29,7 @@ await services.StartAsync();
 if (services.Web.StartError != null) { Console.Error.WriteLine(services.Web.StartError); return 1; }
 
 var adminUrl = $"http://127.0.0.1:{services.Web.Port}/#admin={services.Rpc.AdminToken}";
-Console.WriteLine("PC Game Launcher Ultimate – Companion (headless)");
+Console.WriteLine("Nexus Gaming Hub – Companion (headless)");
 Console.WriteLine($"PC-Ansicht (nur auf diesem Rechner öffnen): {adminUrl}");
 Console.WriteLine($"Auf diesem PC: {services.Web.LocalUrl}");
 foreach (var u in services.Web.LanUrls()) Console.WriteLine($"Im WLAN (iPad/Handy): {u}");

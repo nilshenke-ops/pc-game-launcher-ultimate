@@ -9,11 +9,12 @@ import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import {
-  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme,
+  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme, type WidgetSize,
 } from "../lib/prefs";
 import type { Settings } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
 import { PcUpdates } from "../components/UpdateCenter";
+import { NavEditor } from "../components/NavEditor";
 
 type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy";
 
@@ -163,6 +164,7 @@ function Design() {
             hint={t("Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.")} />
         </div>
       </Card>
+      <NavEditor />
       <Card title={t("Hintergrund")} icon={<ImagePlus size={18} />}>
         <div className="stack">
           <div className="scene-grid" role="radiogroup" aria-label={t("Hintergrund")}>
@@ -196,6 +198,8 @@ function Design() {
 }
 
 function Layouts() {
+  const cw = useRpc<{ widgets: { id: string; name: string }[] }>("widgets.list", {}, ["widgets"]);
+  const customNames = new Map((cw.data?.widgets ?? []).map((w) => [w.id, w.name]));
   const prefs = usePrefs();
   const [sel, setSel] = useState(prefs.layouts[0].id);
   const layout = prefs.layouts.find((l) => l.id === sel) ?? prefs.layouts[0];
@@ -247,10 +251,14 @@ function Layouts() {
         </div>
         <div className="list">
           {layout.widgets.map((w) => {
-            const meta = ALL_WIDGETS.find((x) => x.id === w.id)!;
+            // Own widgets (widget editor) and plugin widgets are not in the built-in list.
+            const meta = ALL_WIDGETS.find((x) => x.id === w.id) ?? {
+              label: w.id.startsWith("custom:") ? `${customNames.get(w.id.slice(7)) ?? t("Eigenes Widget (gelöscht)")} (${t("eigenes")})` : `${w.id.split(":")[2] ?? w.id} (${t("Plugin")})`,
+              sizes: ["s", "m", "l"] as WidgetSize[],
+            };
             return (
               <div key={w.id} className="list-item">
-                <label className="checkbox grow"><input type="checkbox" checked={w.visible} onChange={(e) => update((l) => ({ ...l, widgets: l.widgets.map((x) => (x.id === w.id ? { ...x, visible: e.target.checked } : x)) }))} />{t(meta.label)}</label>
+                <label className="checkbox grow"><input type="checkbox" checked={w.visible} onChange={(e) => update((l) => ({ ...l, widgets: l.widgets.map((x) => (x.id === w.id ? { ...x, visible: e.target.checked } : x)) }))} />{ALL_WIDGETS.some((x) => x.id === w.id) ? t(meta.label) : meta.label}</label>
                 <Segmented value={w.size} onChange={(size) => update((l) => ({ ...l, widgets: l.widgets.map((x) => (x.id === w.id ? { ...x, size } : x)) }))} options={meta.sizes.map((s) => ({ value: s, label: s === "s" ? t("Klein") : s === "m" ? t("Mittel") : t("Breit") }))} />
               </div>
             );

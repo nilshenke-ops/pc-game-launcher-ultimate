@@ -155,7 +155,7 @@ public sealed class NAudioEngine : IAudioEngine
             readers.Add(main);
             duration = main.TotalTime;
             var mainOut = new WasapiOut(Device(r.OutputDeviceId, DataFlow.Render), AudioClientShareMode.Shared, true, 60);
-            mainOut.Init(main);
+            mainOut.Init(r.Loop ? new LoopStream(main) : main);
             outputs.Add(mainOut);
 
             if (r.MonitorDeviceId != null)
@@ -167,7 +167,7 @@ public sealed class NAudioEngine : IAudioEngine
                     var mon = new AudioFileReader(r.FilePath) { Volume = Math.Clamp(r.MonitorVolume, 0f, 2f) };
                     readers.Add(mon);
                     var monOut = new WasapiOut(monDevice, AudioClientShareMode.Shared, true, 60);
-                    monOut.Init(mon);
+                    monOut.Init(r.Loop ? new LoopStream(mon) : mon);
                     outputs.Add(monOut);
                 }
             }
@@ -283,5 +283,30 @@ public sealed class NAudioEngine : IAudioEngine
             return null;
         }
         catch (Exception ex) { return "Testton fehlgeschlagen: " + ex.Message; }
+    }
+}
+
+/// <summary>Starts the file again from the beginning when it ends (sound with "repeat"); ends only when stopped.</summary>
+sealed class LoopStream(WaveStream source) : WaveStream
+{
+    public override WaveFormat WaveFormat => source.WaveFormat;
+    public override long Length => source.Length;
+    public override long Position { get => source.Position; set => source.Position = value; }
+
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        var total = 0;
+        while (total < count)
+        {
+            var n = source.Read(buffer, offset + total, count - total);
+            if (n == 0)
+            {
+                if (source.Position == 0) break; // empty file: never spin
+                source.Position = 0;
+                continue;
+            }
+            total += n;
+        }
+        return total;
     }
 }

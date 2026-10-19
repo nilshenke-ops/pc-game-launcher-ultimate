@@ -38,7 +38,7 @@ function StatusWidget() {
           <div className="grow">
             <div className="eyebrow">{t("Dein Gaming-PC")}</div>
             <h2 style={{ fontSize: "1.4rem" }}>{t("Kein PC verbunden")}</h2>
-            <div className="small muted">{t("Scanne den QR-Code aus dem PC Game Launcher oder gib den Code ein.")}</div>
+            <div className="small muted">{t("Scanne den QR-Code aus dem Nexus Gaming Hub oder gib den Code ein.")}</div>
           </div>
           <span className="badge"><span className="dot error" />{t("Offline")}</span>
         </div>
@@ -308,7 +308,7 @@ export default function Dashboard() {
               <h2>{paired ? t("Warte auf deinen PC …") : t("Offline – kein PC verbunden")}</h2>
               <p className="muted">{paired
                 ? t("Sobald der PC an ist und der Companion läuft, erscheinen hier deine Spiele, Sounds und Live-Werte – ohne dass du etwas tun musst.")
-                : t("Verbinde deinen PC: Öffne am PC den PC Game Launcher → „Gerät koppeln“ und scanne den QR-Code oder gib den Code ein. Danach erscheinen hier deine Spiele, Sounds und Live-Werte.")}</p>
+                : t("Verbinde deinen PC: Öffne am PC den Nexus Gaming Hub → „Gerät koppeln“ und scanne den QR-Code oder gib den Code ein. Danach erscheinen hier deine Spiele, Sounds und Live-Werte.")}</p>
               <div className="row">
                 {paired ? <Button variant="primary" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
                   : <Link to="/connect" className="btn primary">{t("PC verbinden")}</Link>}

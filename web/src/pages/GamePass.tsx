@@ -93,7 +93,7 @@ export function GamePassView({ search }: { search: string }) {
             {fromSnapshot ? t("Dein PC ist nicht verbunden. Ob ein Spiel installiert ist, siehst du – und spielen oder installieren kannst du –, sobald der PC verbunden ist.") : t("Dein PC ist gerade nicht verbunden. Spielen und Installieren geht, sobald er verbunden ist.")}
           </Banner>}
           {d.error && !notLive && <Banner kind="warn">{d.error}</Banner>}
-          {!d.installScanSupported && !notLive && <Banner kind="info">{t("Welche Spiele installiert sind, erkennt nur der PC Game Launcher unter Windows.")}</Banner>}
+          {!d.installScanSupported && !notLive && <Banner kind="info">{t("Welche Spiele installiert sind, erkennt nur der Nexus Gaming Hub unter Windows.")}</Banner>}
           {d.games.length === 0 ? (
             <Card><Empty icon={<RefreshCw size={26} />} title={d.syncing ? t("Katalog wird geladen …") : t("Noch kein Katalog")} text={d.syncing ? undefined : t("Auf „Aktualisieren“ tippen.")} /></Card>
           ) : games.length === 0 ? (

@@ -6,16 +6,18 @@ import { useConn, useEvent, useLiveSubscription, useRpc, toast } from "../lib/ho
 import { bytes, dateTime } from "../lib/format";
 import { Banner, Button, Card, confirmDialog, Loadable, Meter, Sparkline } from "./ui";
 
-interface NetTarget { id: string; label: string; host: string; samples: number; avg?: number | null; min?: number | null; max?: number | null; jitter?: number | null; lossPercent?: number | null; points: { at: string; ms: number | null }[] }
+export interface NetTarget { id: string; label: string; host: string; samples: number; avg?: number | null; min?: number | null; max?: number | null; jitter?: number | null; lossPercent?: number | null; points: { at: string; ms: number | null }[] }
 interface NetSample { at: string; targets: { id: string; label: string; host: string; ms: number | null }[] }
 
-/** Live ping (router + internet) with loss and jitter – pings run only while this card is visible on a device. */
-export function NetworkCard() {
+/** Live ping history of all targets; pings run on the PC only while a view using this is open. */
+export function useNetworkHistory() {
   const [hist, setHist] = useState<NetTarget[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
   useLiveSubscription<{ targets: NetTarget[] }>("network", (d) => { setErr(null); setHist(d.targets); }, (e) => setErr(e.message));
   useEvent<NetSample>("network.sample", (s) => setHist((h) => {
-    const base = h ?? s.targets.map((x) => ({ ...x, samples: 0, points: [] as NetTarget["points"] }));
+    const fresh = (x: NetSample["targets"][number]) => ({ ...x, samples: 0, points: [] as NetTarget["points"] });
+    // Targets added meanwhile (own game server) join; removed ones disappear.
+    const base = s.targets.map((x) => h?.find((tg) => tg.id === x.id) ?? fresh(x));
     return base.map((tg) => {
       const now = s.targets.find((x) => x.id === tg.id);
       if (!now) return tg;
@@ -26,6 +28,12 @@ export function NetworkCard() {
         max: ok.length ? Math.max(...ok) : null, jitter, lossPercent: (100 * points.filter((p) => p.ms == null).length) / points.length };
     });
   }));
+  return { hist, err };
+}
+
+/** Live ping (router + internet) with loss and jitter – pings run only while this card is visible on a device. */
+export function NetworkCard() {
+  const { hist, err } = useNetworkHistory();
   const fmt = (v?: number | null, unit = " ms") => (v == null ? "–" : `${Math.round(v)}${unit}`);
   return (
     <Card title={t("Netzwerk")} icon={<Wifi size={18} />} meta={t("Ping alle 2 s, nur solange sichtbar")}>

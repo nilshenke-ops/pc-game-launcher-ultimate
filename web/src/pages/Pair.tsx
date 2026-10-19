@@ -89,7 +89,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
     if (HOSTED) {
       const ws = pcAddressToWs(address, location.protocol === "https:");
       if (!ws) { setError({ code: "address", message: t("Bitte eine gültige PC-Adresse eingeben, z. B. gaming-pc.tail1234.ts.net") }); return; }
-      if (isLoopbackAddress(ws) && !isLoopbackAddress(location.hostname)) { setError({ code: "address", message: t("127.0.0.1 und localhost bedeuten immer „dieses Gerät“ – damit sucht das iPad sich selbst, nicht deinen PC. Nimm die Adresse aus dem PC Game Launcher unter „Gerät koppeln“ (z. B. https://gaming-pc.tail1234.ts.net) oder scanne den QR-Code.") }); return; }
+      if (isLoopbackAddress(ws) && !isLoopbackAddress(location.hostname)) { setError({ code: "address", message: t("127.0.0.1 und localhost bedeuten immer „dieses Gerät“ – damit sucht das iPad sich selbst, nicht deinen PC. Nimm die Adresse aus dem Nexus Gaming Hub unter „Gerät koppeln“ (z. B. https://gaming-pc.tail1234.ts.net) oder scanne den QR-Code.") }); return; }
       if (location.protocol === "https:" && ws.startsWith("ws:")) { setError({ code: "address", message: t("Diese Seite braucht eine https-Adresse des PCs (z. B. den Tailscale-Funnel-Link).") }); return; }
       if (ws !== serverUrl() || conn.phase !== "online") {
         setServerUrl(ws);
@@ -109,7 +109,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
     else if (conn.phase === "offline" && conn.lastError) {
       setConnecting(false);
       setState({ step: "form" });
-      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der PC Game Launcher? Ist der Tailscale-Funnel aktiv („tailscale funnel --bg 8787“)? Stimmt die Adresse mit der im PC Game Launcher unter „Gerät koppeln“ überein? Im selben WLAN geht es auch ohne Tailscale: QR-Code am PC scannen.") });
+      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der Nexus Gaming Hub? Ist der Tailscale-Funnel aktiv („tailscale funnel --bg 8787“)? Stimmt die Adresse mit der im Nexus Gaming Hub unter „Gerät koppeln“ überein? Im selben WLAN geht es auch ohne Tailscale: QR-Code am PC scannen.") });
     }
   }, [connecting, conn.phase, conn.hello, conn.lastError, request]);
 
@@ -121,7 +121,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
           <div className="state-icon">{HOSTED ? <MonitorSmartphone size={34} /> : <Link2 size={34} />}</div>
           <h1>{HOSTED ? t("PC verbinden") : t("Gerät koppeln")}</h1>
           <p className="muted">{HOSTED
-            ? t("Öffne am PC den PC Game Launcher → „Gerät koppeln“ → „Neuen Code erzeugen“. Scanne den QR-Code mit der Kamera oder gib Code und PC-Adresse hier ein.")
+            ? t("Öffne am PC den Nexus Gaming Hub → „Gerät koppeln“ → „Neuen Code erzeugen“. Scanne den QR-Code mit der Kamera oder gib Code und PC-Adresse hier ein.")
             : pc ? t("Verbunden mit „{pc}“. Gib den Code ein, der im Companion am PC angezeigt wird.", { pc }) : t("Gib den Code ein, der im Companion am PC angezeigt wird.")}</p>
         </div>
         {conn.auth === "revoked" && <Banner kind="warn" title={t("Kopplung wurde aufgehoben")}>{conn.authError ?? t("Dieses Gerät wurde am PC entfernt.")}</Banner>}
@@ -135,7 +135,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
                 <input className="input code-input" value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="XXXX-XXXX" maxLength={9} autoComplete="one-time-code" autoCapitalize="characters" spellCheck={false} required aria-invalid={!!error} />
               </Field>
               {HOSTED && (
-                <Field label={t("PC-Adresse")} hint={t("Steht im PC Game Launcher unter dem QR-Code. Beim Scannen wird sie automatisch ausgefüllt.")}>
+                <Field label={t("PC-Adresse")} hint={t("Steht im Nexus Gaming Hub unter dem QR-Code. Beim Scannen wird sie automatisch ausgefüllt.")}>
                   <input className="input mono" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="gaming-pc.tail1234.ts.net" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} required />
                 </Field>
               )}

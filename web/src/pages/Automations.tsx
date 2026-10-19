@@ -39,7 +39,7 @@ export default function Automations() {
 
   return (
     <>
-      <PageHead eyebrow={t("Gaming")} title={t("Automatisierungen")} text={t("Wenn-Dann-Regeln, die der Companion selbstständig ausführt. Schutz vor Endlosschleifen ist eingebaut.")}
+      <PageHead eyebrow={t("Steuerung")} title={t("Automatisierungen")} text={t("Wenn-Dann-Regeln, die der Companion selbstständig ausführt. Schutz vor Endlosschleifen ist eingebaut.")}
         actions={canManage && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setEdit(structuredClone(blank))}>{t("Neue Regel")}</Button>} />
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {(q.data?.rules.length ?? 0) === 0 ? <Card><Empty icon={<Bot size={28} />} title={t("Keine Regeln")} /></Card> : (
@@ -52,6 +52,19 @@ export default function Automations() {
                     <div className="small"><span className="badge accent">{labels[r.trigger]}{refName(r) ? `: ${refName(r)}` : ""}</span></div>
                     <div className="small muted">→ {r.actions.map((a) => describeStep(a, refs)).join(" → ")}</div>
                     <div className="tiny muted">{r.lastRunAt ? t("Zuletzt ausgeführt {d} · {n}× insgesamt", { d: dateTime(r.lastRunAt), n: r.runCount }) : t("Noch nie ausgeführt")}{r.lastResult ? ` · ${r.lastResult}` : ""}</div>
+                    {(r.runs?.length ?? 0) > 0 && (
+                      <details className="tiny">
+                        <summary className="muted">{t("Verlauf der letzten {n} Ausführungen", { n: r.runs!.length })}</summary>
+                        <ul className="run-log">
+                          {r.runs!.map((x, i) => (
+                            <li key={i} className={x.ok ? "" : "fail"}>
+                              <b>{x.ok ? "✓" : "✕"} {dateTime(x.at)}</b> <span className="muted">· {x.by}</span>
+                              <div className="muted">{x.results.join(" → ")}</div>
+                            </li>
+                          ))}
+                        </ul>
+                      </details>
+                    )}
                   </div>
                   {canManage && <Switch checked={r.enabled} onChange={() => toggle(r)} label={<span className="sr-only">{t("Aktiv")}</span>} />}
                 </div>

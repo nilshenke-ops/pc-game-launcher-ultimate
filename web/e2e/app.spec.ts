@@ -445,6 +445,34 @@ test("Widget-Baukasten: eigenes Widget bauen, frei verschieben, auf Dashboard, O
   await pc.goto(`${COMPANION}/#/`);
 });
 
+test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => {
+  await pc.goto(`${COMPANION}/#/network`);
+  await expect(pc.getByRole("heading", { name: "Netzwerkdiagnose" })).toBeVisible();
+  await expect(pc.locator(".nd-tile-label", { hasText: "Paketverlust" })).toBeVisible();
+  // Invalid address is refused with a reason; a host name is accepted and measured with the others.
+  await pc.getByRole("textbox", { name: "Name", exact: true }).fill("Testserver");
+  await pc.getByRole("textbox", { name: "Hostname oder IP-Adresse" }).fill("http://example.com/x");
+  await pc.getByRole("button", { name: "Ziel hinzufügen" }).click();
+  await expect(pc.getByText(/ist kein Hostname und keine IP-Adresse/)).toBeVisible();
+  await pc.getByRole("textbox", { name: "Hostname oder IP-Adresse" }).fill("127.0.0.1");
+  await pc.getByRole("button", { name: "Ziel hinzufügen" }).click();
+  await expect(pc.getByRole("radio", { name: "Testserver" })).toBeVisible({ timeout: 10000 });
+  await expect(pc.locator("table tr", { hasText: "Testserver" })).toBeVisible();
+  await pc.getByRole("button", { name: "Testserver entfernen" }).click();
+  await expect(pc.getByRole("button", { name: "Testserver entfernen" })).toHaveCount(0);
+
+  // Navigation: categories like in the plan, hide a section, it is gone from the sidebar but still found by search.
+  const sidebar = pc.locator(".sidebar");
+  for (const g of ["Dashboard", "Steuerung", "Audio", "System", "Verbindung", "Erweiterungen", "Verwaltung"]) await expect(sidebar.getByRole("navigation", { name: g })).toBeVisible();
+  await pc.goto(`${COMPANION}/#/settings?s=design`);
+  await pc.getByRole("button", { name: "Programme ausblenden" }).click();
+  await expect(sidebar.getByRole("link", { name: "Programme" })).toHaveCount(0);
+  await expect(pc.getByRole("button", { name: "Einstellungen ausblenden" })).toBeDisabled();
+  await pc.getByRole("button", { name: "Programme einblenden" }).click();
+  await expect(sidebar.getByRole("link", { name: "Programme" })).toBeVisible();
+  await pc.goto(`${COMPANION}/#/`);
+});
+
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
   await pc.goto(`${COMPANION}/#/monitor`);
   // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).
@@ -522,7 +550,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   // Hotkey without PC: mouse side button (gaming mouse) → stop all sounds. Kept on the tablet, sent after pairing.
   await tablet.goto(`${HOSTED_SITE}/#/hotkeys`);
   await tablet.getByRole("button", { name: "Neuer Hotkey" }).click();
-  await tablet.getByText("Vorschläge für 60-%-Tastatur und Gaming-Maus").click();
+  await tablet.getByText("Vorschläge: Medientasten, 60-%-Tastatur und Gaming-Maus").click();
   await tablet.getByRole("button", { name: "Maus-Seitentaste hinten (4)", exact: true }).click();
   await tablet.getByRole("combobox", { name: "Aktion" }).selectOption("stopAllSounds");
   await tablet.getByRole("button", { name: "Speichern" }).click();

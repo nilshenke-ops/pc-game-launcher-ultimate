@@ -57,6 +57,7 @@
     "automations.test": "manage",
 
     "hotkeys.list": "view",
+    "hotkeys.test": "launch",
     "hotkeys.save": "manage",
     "hotkeys.remove": "manage",
 
@@ -125,6 +126,8 @@
     "network.subscribe": "view",
     "network.unsubscribe": "view",
     "network.history": "view",
+    "network.targets": "view",
+    "network.setTargets": "manage",
     "storage.get": "view",
     "storage.scan": "manage",
     "storage.openFolder": "manage",

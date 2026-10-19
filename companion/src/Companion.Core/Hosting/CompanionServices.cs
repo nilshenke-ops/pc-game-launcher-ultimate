@@ -77,7 +77,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Updates & Versionen: Änderungen ansehen, herunterladen und installieren. Es wird nie automatisch installiert.", "/updates");
         Plugins = new PluginService(paths, Rpc, Settings.Get);
         Perf = new PerformanceRecorder(platform.Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
-        NetMonitor = new NetworkMonitor(Rpc);
+        NetMonitor = new NetworkMonitor(Rpc, () => Settings.Get().PingTargets);
         Storage = new StorageService(paths, Library, platform, Rpc);
         Updates.CreateRestorePoint = name =>
         {
@@ -112,7 +112,7 @@ public sealed class CompanionServices : IAsyncDisposable
 
     object HelloInfo(RpcSession s) => new
     {
-        app = "PC Game Launcher Ultimate",
+        app = "Nexus Gaming Hub",
         version = UpdateService.CurrentVersion,
         pcName = Settings.Get().PcName,
         platform = Platform.Name,
@@ -122,6 +122,13 @@ public sealed class CompanionServices : IAsyncDisposable
     void Wire()
     {
         Runner.LaunchItem = (id, by) => Library.Launch(id, by);
+        // A media key that is itself an active hotkey would trigger that hotkey again and again.
+        if (Platform.KeySender.Supported)
+            Runner.SendKey = async key => Hotkeys.List().Any(h => h.Enabled && h.Keys == key)
+                ? $"{key} ist selbst als Hotkey belegt – das würde sich endlos selbst auslösen."
+                : await Platform.KeySender.SendAsync(key);
+        Runner.IsRunning = id => Sessions.Running().Any(r => r.itemId == id);
+        Runner.ItemName = id => Library.Get(id)?.Name;
         Runner.ActivateProfile = (id, by) => Profiles.Activate(id, by);
         Runner.RevertProfile = by => Profiles.Revert(by);
         Runner.PlaySound = id => Soundboard.Play(id);
@@ -204,16 +211,7 @@ public sealed class CompanionServices : IAsyncDisposable
             var owners = f.Profiles.Where(p => p.HotkeyIds.Contains(h.Id)).Select(p => p.Id).ToList();
             return owners.Count == 0 || owners.Contains(f.ActiveProfileId ?? "");
         };
-        Hotkeys.OnPressed = async h =>
-        {
-            if (!Hotkeys.ActiveNow(h)) return; // profile-specific hotkey
-            List<string> results;
-            if (h.QuickActionId != null) results = QuickActions.Get(h.QuickActionId) is { } qa ? await Runner.RunAsync(qa.Steps, "Hotkey " + h.Keys) : new() { "Fehler: Schnellaktion wurde gelöscht" };
-            else results = await Runner.RunAsync(new[] { h.Action }, "Hotkey " + h.Keys);
-            // A hotkey has no screen of its own – failures would otherwise go unnoticed.
-            if (results.FirstOrDefault(r => r.StartsWith("Fehler", StringComparison.Ordinal)) is { } err)
-                Notifications.Push("hotkey-" + h.Id, Severity.Warning, $"Hotkey {h.Keys} fehlgeschlagen", err, "/hotkeys");
-        };
+        Hotkeys.OnPressed = async h => { if (Hotkeys.ActiveNow(h)) await RunHotkey(h); }; // profile-specific hotkeys only in their profile
         Profiles.Activated += (_, _) => Hotkeys.RegisterAll(); // profile-only hotkeys follow the active profile
 
         Pairing.PendingAdded += p =>
@@ -332,7 +330,19 @@ public sealed class CompanionServices : IAsyncDisposable
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
     }
 
-    (bool, bool)? _gameMode;
+    /// <summary>Runs a hotkey's action – on key press and for "Jetzt testen" in the app.</summary>
+    public async Task<List<string>> RunHotkey(Hotkey h)
+    {
+        List<string> results;
+        if (h.QuickActionId != null) results = QuickActions.Get(h.QuickActionId) is { } qa ? await Runner.RunAsync(qa.Steps, "Hotkey " + h.Keys) : new() { "Fehler: Schnellaktion wurde gelöscht" };
+        else results = await Runner.RunAsync(new[] { h.Action }, "Hotkey " + h.Keys);
+        // A hotkey has no screen of its own – failures would otherwise go unnoticed.
+        if (results.FirstOrDefault(r => r.StartsWith("Fehler", StringComparison.Ordinal)) is { } err)
+            Notifications.Push("hotkey-" + h.Id, Severity.Warning, $"Hotkey {h.Keys} fehlgeschlagen", err, "/hotkeys");
+        return results;
+    }
+
+        (bool, bool)? _gameMode;
 
     /// <summary>
     /// While a game runs: background work waits (GameActivity) and the companion steps back (lower priority, efficiency

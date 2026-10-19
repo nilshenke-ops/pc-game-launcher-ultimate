@@ -166,7 +166,18 @@ public static class RpcApi
         rpc.Register("quick.run", async ctx =>
         {
             var qa = s.QuickActions.Get(ctx.Str("id", 64)) ?? throw NotFound();
-            return (object?)new { results = await s.Runner.RunAsync(qa.Steps, $"{ctx.Session.Who} (Quick Action {qa.Name})") };
+            var by = $"{ctx.Session.Who} (Quick Action {qa.Name})";
+            // With waiting the run takes longer than a request may: it continues on the PC, the result comes as a notification.
+            if (ActionRunner.TakesLong(qa.Steps))
+            {
+                _ = Task.Run(async () =>
+                {
+                    var r = await s.Runner.RunAsync(qa.Steps, by);
+                    s.Notifications.Push("quick:" + qa.Id, r.Any(x => x.StartsWith("Fehler")) ? Severity.Warning : Severity.Success, $"Quick Action „{qa.Name}“ fertig", string.Join(" · ", r), "/quick");
+                });
+                return new { results = new[] { "Läuft auf dem PC – das Ergebnis kommt als Benachrichtigung." }, background = true };
+            }
+            return (object?)new { results = await s.Runner.RunAsync(qa.Steps, by) };
         });
 
         // ------------------------------------------------------------ profiles
@@ -189,9 +200,22 @@ public static class RpcApi
         rpc.Register("automations.save", ctx => s.Automations.Save(ctx.Bind<AutomationRule>()));
         rpc.Register("automations.remove", ctx => { s.Automations.Remove(ctx.Str("id", 64)); return true; });
         rpc.Register("automations.copy", ctx => s.Automations.Copy(ctx.Str("id", 64)));
-        rpc.Register("automations.test", async ctx => (object?)new { results = await s.Automations.Test(ctx.Str("id", 64)) });
+        rpc.Register("automations.test", async ctx =>
+        {
+            var id = ctx.Str("id", 64);
+            var rule = s.Automations.List().FirstOrDefault(r => r.Id == id) ?? throw NotFound();
+            if (ActionRunner.TakesLong(rule.Actions)) { _ = s.Automations.Test(id); return new { results = new[] { "Läuft auf dem PC – das Ergebnis steht gleich im Verlauf der Regel." }, background = true }; }
+            return (object?)new { results = await s.Automations.Test(id) };
+        });
 
         // ------------------------------------------------------------ hotkeys
+        rpc.Register("hotkeys.test", async ctx =>
+        {
+            var h = s.Hotkeys.List().FirstOrDefault(x => x.Id == ctx.Str("id", 64)) ?? throw NotFound();
+            if (h.QuickActionId != null && s.QuickActions.Get(h.QuickActionId) is { } qa && ActionRunner.TakesLong(qa.Steps))
+            { _ = s.RunHotkey(h); return new { results = new[] { "Läuft auf dem PC – Fehler kommen als Benachrichtigung." } }; }
+            return (object?)new { results = await s.RunHotkey(h) };
+        });
         rpc.Register("hotkeys.list", ctx => s.Hotkeys.ListWithStatus());
         rpc.Register("hotkeys.save", ctx => s.Hotkeys.Save(ctx.Bind<Hotkey>()));
         rpc.Register("hotkeys.remove", ctx => { s.Hotkeys.Remove(ctx.Str("id", 64)); return true; });
@@ -201,7 +225,7 @@ public static class RpcApi
         rpc.Register("history.clear", ctx => { s.History.Clear(); return true; });
 
         // ------------------------------------------------------------ sounds
-        rpc.Register("sounds.list", ctx => new { data = s.Soundboard.Get(), playing = s.Soundboard.Playing(), supported = s.Audio.Engine.Supported, reason = s.Audio.Engine.UnsupportedReason });
+        rpc.Register("sounds.list", ctx => new { data = s.Soundboard.Get(), missing = s.Soundboard.Missing(), playing = s.Soundboard.Playing(), supported = s.Audio.Engine.Supported, reason = s.Audio.Engine.UnsupportedReason });
         rpc.Register("sounds.uploadBegin", ctx => new { uploadId = s.Soundboard.UploadBegin(ctx.Str("name", 200), ctx.Params.GetProperty("size").GetInt64()) });
         rpc.Register("sounds.uploadChunk", ctx => { s.Soundboard.UploadChunk(ctx.Str("uploadId", 64), ctx.Str("data", 800_000)); return true; });
         rpc.Register("sounds.uploadEnd", ctx => s.Soundboard.UploadEnd(ctx.Str("uploadId", 64)));
@@ -306,6 +330,14 @@ public static class RpcApi
         rpc.Register("network.subscribe", ctx => s.NetMonitor.Subscribe(ctx.Session));
         rpc.Register("network.unsubscribe", ctx => { s.NetMonitor.Unsubscribe(ctx.Session); return true; });
         rpc.Register("network.history", _ => s.NetMonitor.History());
+        rpc.Register("network.targets", _ => new { targets = s.Settings.Get().PingTargets });
+        rpc.Register("network.setTargets", ctx =>
+        {
+            var list = ctx.Params.TryGetProperty("targets", out var t) && t.ValueKind == JsonValueKind.Array ? t.Deserialize<List<PingTarget>>(Json.Options) ?? new() : new();
+            var r = s.Settings.SetPingTargets(list).PingTargets;
+            s.NetMonitor.RefreshTargets();
+            return new { targets = r };
+        });
         rpc.Register("storage.get", _ => s.Storage.Get());
         rpc.Register("storage.scan", ctx => s.Storage.Scan(ctx.OptStr("id", 64)));
         rpc.Register("storage.openFolder", ctx => { s.Storage.OpenFolder(ctx.Str("id", 64)); return true; });

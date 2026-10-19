@@ -411,6 +411,7 @@ public sealed class SoundboardService
         public bool? Favorite { get; set; }
         public int? Volume { get; set; }
         public string? Color { get; set; }
+        public bool? Loop { get; set; }
     }
 
     public Sound Update(SoundUpdate u)
@@ -423,11 +424,15 @@ public sealed class SoundboardService
             if (u.Favorite != null) s.Favorite = u.Favorite.Value;
             if (u.Volume != null) s.Volume = Math.Clamp(u.Volume.Value, 0, 200);
             if (u.Color != null) s.Color = Regex.IsMatch(u.Color, "^#[0-9a-fA-F]{6}$") ? u.Color : null;
+            if (u.Loop != null) s.Loop = u.Loop.Value;
             return s;
         });
         _hub.Changed("sounds");
         return r;
     }
+
+    /// <summary>Sounds whose audio file is no longer on the PC (deleted or moved by hand).</summary>
+    public List<string> Missing() => Get().Sounds.Where(x => !File.Exists(Path.Combine(_paths.SoundsDir, x.FileName))).Select(x => x.Id).ToList();
 
     public void Remove(string id)
     {
@@ -503,6 +508,7 @@ public sealed class SoundboardService
                 Volume = Math.Clamp(vol, 0f, 2f),
                 MonitorDeviceId = a.MonitorEnabled ? a.MonitorDeviceId ?? "default" : null,
                 MonitorVolume = a.MonitorVolume / 100f * sound.Volume / 100f,
+                Loop = sound.Loop,
             }, OnEnded);
         }
         catch (Exception ex)
@@ -510,7 +516,7 @@ public sealed class SoundboardService
             Log.Warn("sounds", $"Wiedergabe fehlgeschlagen: {ex.Message}");
             return "Wiedergabe fehlgeschlagen: " + ex.Message;
         }
-        lock (_lock) _playing[playbackId] = (sound.Id, sound.Name, DateTime.UtcNow, duration?.TotalMilliseconds, false);
+        lock (_lock) _playing[playbackId] = (sound.Id, sound.Name, DateTime.UtcNow, sound.Loop ? null : duration?.TotalMilliseconds, false);
         PublishPlaying();
         Played?.Invoke(sound);
         return null;

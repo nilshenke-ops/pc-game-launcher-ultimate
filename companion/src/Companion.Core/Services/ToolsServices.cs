@@ -95,9 +95,19 @@ public sealed class NetworkMonitor : IDisposable
     List<Target> _targets = new();
     const int MaxPoints = 900; // 30 min at 2 s
 
-    public NetworkMonitor(RpcServer rpc, Func<string, IPAddress?, Task<double?>>? ping = null) { _rpc = rpc; _ping = ping ?? PingOnce; }
+    readonly Func<IEnumerable<PingTarget>> _custom;
 
-    static List<Target> DetectTargets()
+    public NetworkMonitor(RpcServer rpc, Func<IEnumerable<PingTarget>>? custom = null, Func<string, IPAddress?, Task<double?>>? ping = null)
+    { _rpc = rpc; _custom = custom ?? (() => Array.Empty<PingTarget>()); _ping = ping ?? PingOnce; }
+
+    /// <summary>Own targets changed: measured from the next ping on (history of removed targets is dropped).</summary>
+    public void RefreshTargets()
+    {
+        lock (_lock) if (_timer != null) _targets = DetectTargets();
+        foreach (var id in _history.Keys.Where(k => k.StartsWith("custom:") && _targets.All(t => t.Id != k)).ToList()) _history.TryRemove(id, out _);
+    }
+
+    List<Target> DetectTargets()
     {
         var list = new List<Target>();
         var gw = NetworkInterface.GetAllNetworkInterfaces().Where(n => n.OperationalStatus == OperationalStatus.Up)
@@ -106,6 +116,7 @@ public sealed class NetworkMonitor : IDisposable
         if (gw != null) list.Add(new Target("router", "Router", gw.ToString()));
         list.Add(new Target("internet", "Internet (Cloudflare)", "1.1.1.1"));
         list.Add(new Target("dns", "Internet (Google)", "8.8.8.8"));
+        foreach (var c in _custom()) list.Add(new Target("custom:" + c.Host.ToLowerInvariant(), c.Label, c.Host));
         return list;
     }
 

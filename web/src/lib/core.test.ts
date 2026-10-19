@@ -8,8 +8,10 @@ import { en } from "./en";
 import { collectKeys } from "../../scripts/i18n-keys.mjs";
 import { contrast, defaultPrefs, sanitizePrefs } from "./prefs-core";
 import { templates } from "./custom-widgets";
+import { connectionQuality } from "./net-quality";
+import { arrangeNav, navItems } from "./nav";
 import { score } from "../components/search-score";
-import { comboFromEvent } from "../pages/hotkey-combo";
+import { comboFromEvent, describeCombo } from "../pages/hotkey-combo";
 
 const SRC = new URL("..", import.meta.url).pathname;
 
@@ -92,6 +94,36 @@ describe("prefs", () => {
   });
 });
 
+describe("navigation", () => {
+  it("own order inside a category, hidden sections, fixed ones stay", () => {
+    const items = navItems();
+    const nav = arrangeNav(items, { order: ["/audio", "/soundboard"], hidden: ["/programs", "/settings", "/help"] });
+    const paths = nav.map((i) => i.path);
+    expect(paths).not.toContain("/programs");
+    expect(paths).not.toContain("/help");
+    expect(paths).toContain("/settings"); // cannot be hidden
+    expect(paths.indexOf("/audio")).toBeLessThan(paths.indexOf("/soundboard"));
+    expect(new Set(nav.map((i) => i.group)).size).toBe(7); // Dashboard, Steuerung, Audio, System, Verbindung, Erweiterungen, Verwaltung
+  });
+  it("sanitizes navigation prefs", () => {
+    const p = sanitizePrefs({ nav: { order: ["/games", "javascript:x", 5], hidden: ["/x/../y"], bottom: [] } });
+    expect(p.nav.order).toEqual(["/games"]);
+    expect(p.nav.hidden).toEqual([]);
+    expect(p.nav.bottom).toEqual(["/", "/games", "/soundboard", "/quick"]);
+  });
+});
+
+describe("connection quality", () => {
+  it("rates only measured values", () => {
+    expect(connectionQuality({ avg: 18, jitter: 2, lossPercent: 0, samples: 30 })).toBe("excellent");
+    expect(connectionQuality({ avg: 60, jitter: 8, lossPercent: 0.5, samples: 30 })).toBe("good");
+    expect(connectionQuality({ avg: 100, jitter: 15, lossPercent: 2, samples: 30 })).toBe("fair");
+    expect(connectionQuality({ avg: 18, jitter: 2, lossPercent: 10, samples: 30 })).toBe("poor");
+    expect(connectionQuality({ avg: 18, jitter: 2, lossPercent: 0, samples: 2 })).toBe("unknown");
+    expect(connectionQuality({ avg: null, jitter: null, lossPercent: null, samples: 30 })).toBe("unknown");
+  });
+});
+
 describe("search", () => {
   it("ranks prefix over word start over substring and ignores accents", () => {
     expect(score("Counter-Strike 2", "count")).toBeGreaterThan(score("Counter-Strike 2", "strike"));
@@ -106,6 +138,8 @@ describe("hotkey recording", () => {
   it("converts keyboard events to companion notation", () => {
     expect(comboFromEvent(ev({ key: "F9", code: "F9", ctrlKey: true, altKey: true }))).toBe("Ctrl+Alt+F9");
     expect(comboFromEvent(ev({ key: "ß", code: "KeyS", shiftKey: true }))).toBe("Shift+S");
+    expect(comboFromEvent(ev({ key: "MediaPlayPause", code: "MediaPlayPause" }))).toBe("MediaPlayPause");
+    expect(describeCombo("Ctrl+VolumeMute", (x) => x)).toBe("Ctrl + Ton aus");
     expect(comboFromEvent(ev({ key: "1", code: "Numpad1" }))).toBe("Num1");
     expect(comboFromEvent(ev({ key: "Dead", code: "Backquote" }))).toBeNull();
   });

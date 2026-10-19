@@ -109,6 +109,15 @@ public sealed class RpcServer : IHub
     public const int MaxMessageBytes = 1024 * 1024;
 
     readonly Dictionary<string, (string perm, RpcHandler handler)> _methods = new();
+    readonly ConcurrentDictionary<string, string> _done = new();
+    readonly ConcurrentQueue<string> _doneOrder = new();
+
+    void Remember(string op, string json)
+    {
+        if (json.Length > 200_000 || !_done.TryAdd(op, json)) return;
+        _doneOrder.Enqueue(op);
+        while (_doneOrder.Count > 2000 && _doneOrder.TryDequeue(out var old)) _done.TryRemove(old, out _);
+    }
     readonly ConcurrentDictionary<string, RpcSession> _sessions = new();
     readonly RateLimiter _loginLimiter = new(20, TimeSpan.FromMinutes(5));
     public IReadOnlyDictionary<string, string> ProtocolPermissions { get; }
@@ -233,8 +242,18 @@ public sealed class RpcServer : IHub
             if (!_methods.TryGetValue(method, out var entry)) throw new RpcException("unknown-method", $"Unbekannte Aktion: {method}");
             Authorize(session, entry.perm);
             var p = root.TryGetProperty("p", out var pe) ? pe.Clone() : default;
+            // Queued changes carry their own id ("op"). If the answer got lost (timeout) and the device sends the change
+            // again, it is not applied twice – the stored answer is returned instead.
+            var op = root.TryGetProperty("op", out var opEl) && opEl.ValueKind == JsonValueKind.String && opEl.GetString() is { Length: > 0 and <= 64 } o ? $"{session.PrefsKey}:{method}:{o}" : null;
+            if (op != null && _done.TryGetValue(op, out var cached))
+            {
+                await SafeSend(session, $"{{\"v\":{ProtocolVersion},\"id\":{id},\"ok\":true,\"r\":{cached}}}");
+                return;
+            }
             var result = await entry.handler(new RpcContext { Session = session, Params = p });
-            await SafeSend(session, Json.Serialize(new { v = ProtocolVersion, id, ok = true, r = result }));
+            var json = Json.Serialize(result);
+            if (op != null) Remember(op, json);
+            await SafeSend(session, $"{{\"v\":{ProtocolVersion},\"id\":{id},\"ok\":true,\"r\":{json}}}");
         }
         catch (Exception ex)
         {

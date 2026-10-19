@@ -94,7 +94,7 @@ sealed class FullOverlayForm : Form
     public FullOverlayForm(CoreWebView2Environment env, string origin, string token, Action requestHide)
     {
         _env = env; _origin = origin; _token = token; _requestHide = requestHide;
-        Text = "PC Game Launcher – Overlay";
+        Text = "Nexus Gaming Hub – Overlay";
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         TopMost = true;

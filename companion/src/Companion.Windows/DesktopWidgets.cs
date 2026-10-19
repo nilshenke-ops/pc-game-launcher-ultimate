@@ -91,7 +91,7 @@ sealed class DesktopWidgetForm : Form
     public DesktopWidgetForm(CoreWebView2Environment env, string origin, string token, string id, Action<double, double> moved)
     {
         _env = env; _origin = origin; _token = token; _id = id; _moved = moved;
-        Text = "PC Game Launcher – Widget";
+        Text = "Nexus Gaming Hub – Widget";
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         StartPosition = FormStartPosition.Manual;

@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Gamepad2, Home, Menu, MonitorSmartphone, Music, Search, Smartphone, Zap } from "lucide-react";
+import { Bell, Menu, MonitorSmartphone, Search, Smartphone } from "lucide-react";
 import { client, exitDemo } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo";
 import { t } from "../lib/i18n";
-import { navItems } from "../lib/nav";
+import { arrangeNav, navItems } from "../lib/nav";
+import { usePrefs } from "../lib/prefs";
 import { useConn, useEvent, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { Banner, Button, Modal } from "./ui";
@@ -82,8 +83,8 @@ function NeedsPc() {
       <div className="row nowrap">
         <div className="state-icon" style={{ margin: 0, width: 56, height: 56, flex: "none" }}><MonitorSmartphone size={28} /></div>
         <p className="muted" style={{ margin: 0 }}>{paired
-          ? t("Dein PC ist gerade nicht erreichbar. Sobald er an ist und der PC Game Launcher läuft, verbindet sich die App automatisch.")
-          : t("Das funktioniert, sobald dein PC verbunden ist. Scanne dazu den QR-Code aus dem PC Game Launcher auf deinem PC oder gib den Code ein. Design und Layout kannst du schon jetzt ändern.")}</p>
+          ? t("Dein PC ist gerade nicht erreichbar. Sobald er an ist und der Nexus Gaming Hub läuft, verbindet sich die App automatisch.")
+          : t("Das funktioniert, sobald dein PC verbunden ist. Scanne dazu den QR-Code aus dem Nexus Gaming Hub auf deinem PC oder gib den Code ein. Design und Layout kannst du schon jetzt ändern.")}</p>
       </div>
     </Modal>
   );
@@ -95,8 +96,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const loc = useLocation();
   const conn = useConn();
   const { state } = useAppState();
-  const items = navItems();
-  const current = items.find((i) => i.path !== "/" && loc.pathname.startsWith(i.path)) ?? items[0];
+  const prefs = usePrefs();
+  const all = navItems();
+  const items = arrangeNav(all, prefs.nav);
+  const current = all.find((i) => i.path !== "/" && loc.pathname.startsWith(i.path)) ?? all[0];
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -129,7 +132,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="sidebar" aria-label={t("Hauptnavigation")}>
         <div className="brand">
           <img src="icons/icon-192.png" alt="" />
-          <div><b>Game Launcher</b><small>Ultimate</small></div>
+          <div><b>Nexus</b><small>Gaming Hub</small></div>
         </div>
         {groups.map((g) => (
           <nav className="nav-group" key={g} aria-label={g}>
@@ -210,10 +213,9 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       <nav className="bottom-nav" aria-label={t("Schnellnavigation")}>
-        <NavLink to="/" end className={({ isActive }) => (isActive ? "active" : "")}><Home size={22} />{t("Home")}</NavLink>
-        <NavLink to="/games" className={({ isActive }) => (isActive ? "active" : "")}><Gamepad2 size={22} />{t("Spiele")}</NavLink>
-        <NavLink to="/soundboard" className={({ isActive }) => (isActive ? "active" : "")}><Music size={22} />{t("Sounds")}</NavLink>
-        <NavLink to="/quick" className={({ isActive }) => (isActive ? "active" : "")}><Zap size={22} />{t("Aktionen")}</NavLink>
+        {prefs.nav.bottom.flatMap((p) => all.filter((i) => i.path === p && p !== "/connect")).map((i) => (
+          <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")}><i.icon size={22} />{i.short ?? i.label}</NavLink>
+        ))}
         <NavLink to="/connect" className={({ isActive }) => `connect-item ${isActive ? "active" : ""}`}>
           <MonitorSmartphone size={22} />{t("Verbinden")}
           <span className={`dot ${conn.auth === "ok" && conn.phase === "online" ? "ok" : client.demo ? "warn" : "error"}`} aria-hidden />
@@ -223,11 +225,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {more && (
         <Modal title={t("Alle Bereiche")} onClose={() => setMore(false)}>
-          <div className="sheet-grid">
-            {items.map((i) => (
-              <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")}><i.icon size={22} />{i.label}</NavLink>
-            ))}
-          </div>
+          {groups.map((g) => (
+            <section key={g} className="sheet-group" aria-label={g}>
+              <h3>{g}</h3>
+              <div className="sheet-grid">
+                {items.filter((i) => i.group === g).map((i) => (
+                  <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")}><i.icon size={22} />{i.label}</NavLink>
+                ))}
+              </div>
+            </section>
+          ))}
         </Modal>
       )}
       {palette && <CommandPalette onClose={() => setPalette(false)} />}
@@ -255,7 +262,7 @@ function OutboxDialog({ onClose }: { onClose: () => void }) {
           <div className="list">{list.map((e) => (
             <div key={e.id} className="list-item">
               <span className={`dot ${e.error ? "error" : "warn"}`} />
-              <div className="grow"><div className="title small">{e.label}</div><div className="sub tiny">{new Date(e.at).toLocaleString()}{e.error ? " · " + e.error : ""}</div></div>
+              <div className="grow"><div className="title small">{e.label}</div><div className="sub tiny">{new Date(e.at).toLocaleString()}{e.error ? " · " + e.error : ""}{!e.error && e.attempts ? " · " + t("{n} Versuche ohne Antwort – wird erneut gesendet", { n: e.attempts }) : ""}</div></div>
               <Button size="sm" variant="ghost" onClick={() => outbox.remove(e.id)}>{t("Verwerfen")}</Button>
             </div>
           ))}</div>

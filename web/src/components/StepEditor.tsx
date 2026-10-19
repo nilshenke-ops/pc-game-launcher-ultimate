@@ -20,8 +20,19 @@ export function stepLabels(): Record<StepType, string> {
     obsRecordToggle: t("Aufnahme starten/stoppen"),
     obsReplaySave: t("Replay speichern"),
     obsReplayBufferToggle: t("Replay-Puffer an/aus"),
+    wait: t("Warten"),
+    ifRunning: t("Nur weiter, wenn … läuft"),
+    ifNotRunning: t("Nur weiter, wenn … nicht läuft"),
+    mediaKey: t("Medientaste drücken"),
   };
 }
+
+export const mediaKeyLabels = (): Record<string, string> => ({
+  playpause: t("Play/Pause"), next: t("Nächster Titel"), prev: t("Vorheriger Titel"), stop: t("Stopp"), mute: t("Ton aus/an"), volup: t("Lauter"), voldown: t("Leiser"),
+});
+
+/** Building blocks that control the flow – not available for a single hotkey action. */
+export const CONTROL_STEPS: StepType[] = ["wait", "ifRunning", "ifNotRunning"];
 
 /** Lists the selectable targets for steps (items, profiles, sounds …). */
 export function useStepRefs() {
@@ -50,6 +61,9 @@ export function describeStep(s: ActionStep, refs: ReturnType<typeof useStepRefs>
       case "setAudioOutput": return refs.outputs.find((p) => p.id === s.ref)?.name ?? t("Windows-Standard");
       case "notify": return s.ref ?? "";
       case "toggleOverlay": return s.ref === "mini" ? t("Mini (Werte in der Ecke)") : t("Groß (wie Game Bar)");
+      case "wait": return t("{n} s", { n: s.ref ?? "?" });
+      case "ifRunning": case "ifNotRunning": return refs.items.find((i) => i.id === s.ref)?.name;
+      case "mediaKey": return mediaKeyLabels()[s.ref ?? ""];
       default: return null;
     }
   })();
@@ -64,7 +78,15 @@ function RefSelect({ step, refs, onChange }: { step: ActionStep; refs: ReturnTyp
     </select>
   );
   switch (step.type) {
-    case "launchItem": return sel(refs.items.map((i) => ({ id: i.id, name: `${i.kind === "game" ? "🎮" : "🗔"} ${i.name}` })));
+    case "launchItem": case "ifRunning": case "ifNotRunning": return sel(refs.items.map((i) => ({ id: i.id, name: `${i.kind === "game" ? "🎮" : "🗔"} ${i.name}` })));
+    case "mediaKey": return sel(Object.entries(mediaKeyLabels()).map(([id, name]) => ({ id, name })));
+    case "wait": return (
+      <label className="row nowrap small" style={{ gap: 8 }}>
+        <input className="input" type="number" min={1} max={300} value={step.ref ?? ""} placeholder="5" style={{ maxWidth: 110 }} aria-label={t("Sekunden")}
+          onChange={(e) => onChange(e.target.value ? String(Math.max(1, Math.min(300, Math.round(+e.target.value)))) : null)} />
+        {t("Sekunden (zusammen höchstens 5 Minuten)")}
+      </label>
+    );
     case "activateProfile": return sel(refs.profiles);
     case "playSound": return sel(refs.sounds);
     case "setCollection": return sel(refs.collections, t("Alle Sounds"));
@@ -82,7 +104,8 @@ function RefSelect({ step, refs, onChange }: { step: ActionStep; refs: ReturnTyp
 
 export function StepEditor({ steps, onChange, max = 20 }: { steps: ActionStep[]; onChange: (s: ActionStep[]) => void; max?: number }) {
   const refs = useStepRefs();
-  const labels = stepLabels();
+  // A single hotkey action has no flow: waiting or conditions would do nothing there.
+  const labels = Object.fromEntries(Object.entries(stepLabels()).filter(([k]) => max > 1 || !CONTROL_STEPS.includes(k as StepType)));
   const update = (i: number, patch: Partial<ActionStep>) => onChange(steps.map((s, k) => (k === i ? { ...s, ...patch } : s)));
   const move = (i: number, d: number) => { const n = [...steps]; const [x] = n.splice(i, 1); n.splice(i + d, 0, x); onChange(n); };
   return (
@@ -106,5 +129,5 @@ export function StepEditor({ steps, onChange, max = 20 }: { steps: ActionStep[];
 }
 
 export function stepsValid(steps: ActionStep[]) {
-  return steps.length > 0 && steps.every((s) => !["launchItem", "activateProfile", "playSound"].includes(s.type) || !!s.ref);
+  return steps.length > 0 && steps.every((s) => !["launchItem", "activateProfile", "playSound", "wait", "ifRunning", "ifNotRunning", "mediaKey"].includes(s.type) || !!s.ref);
 }

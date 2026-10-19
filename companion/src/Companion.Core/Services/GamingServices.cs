@@ -99,6 +99,24 @@ public sealed class SettingsService
 
     static readonly System.Text.RegularExpressions.Regex OverlayWidgetId = new("^([a-z]{2,20}|plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}|custom:cw_[A-Za-z0-9_-]{1,40})$");
 
+    static readonly System.Text.RegularExpressions.Regex HostName = new(@"^(?=.{1,253}$)([A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*$");
+
+    /// <summary>Own ping targets: host name or IP address only (no addresses with port or path), at most 3.</summary>
+    public Settings SetPingTargets(List<PingTarget> targets)
+    {
+        if (targets.Count > 3) throw new RpcException("invalid-params", "Höchstens 3 eigene Ziele.");
+        foreach (var t in targets)
+        {
+            t.Host = (t.Host ?? "").Trim();
+            if (!System.Net.IPAddress.TryParse(t.Host, out _) && !HostName.IsMatch(t.Host))
+                throw new RpcException("invalid-params", $"„{t.Host}“ ist kein Hostname und keine IP-Adresse (ohne http://, Port oder Pfad).");
+            t.Label = Security.DeviceStore.Sanitize(t.Label, 40, t.Host);
+        }
+        var r = _store.Update(s => { s.PingTargets = targets; return Json.Deserialize<Settings>(Json.Serialize(s))!; });
+        _hub.Changed("network");
+        return r;
+    }
+
     /// <summary>Arrangement of the large overlay (checked: known id format, at most 24 widgets, positions on screen, sensible sizes).</summary>
     public Settings SetOverlayLayout(OverlayLayout? layout)
     {
@@ -612,17 +630,71 @@ public sealed class ActionRunner
     public Func<Task<string>>? ObsRecordToggle { get; set; }
     public Func<Task<string>>? ObsReplaySave { get; set; }
     public Func<Task<string>>? ObsReplayBufferToggle { get; set; }
+    /// <summary>Is this game/program from the library running right now (process detection)?</summary>
+    public Func<string, bool>? IsRunning { get; set; }
+    public Func<string, string?>? ItemName { get; set; }
+    /// <summary>Presses a media key (play/pause, next …) like the key on the keyboard; returns an error text or null.</summary>
+    public Func<string, Task<string?>>? SendKey { get; set; }
+    public static readonly Dictionary<string, string> MediaKeys = new()
+    {
+        ["playpause"] = "MediaPlayPause", ["next"] = "MediaNextTrack", ["prev"] = "MediaPreviousTrack", ["stop"] = "MediaStop",
+        ["mute"] = "VolumeMute", ["volup"] = "VolumeUp", ["voldown"] = "VolumeDown",
+    };
 
-    /// <summary>Executes steps in order. Returns a human readable result per step.</summary>
+    public const int MaxWaitSeconds = 300;
+    static readonly StepType[] Control = { StepType.Wait, StepType.IfRunning, StepType.IfNotRunning };
+
+    /// <summary>Checks building blocks that need a value: wait 1–300 s in total, conditions need a game/program.</summary>
+    public static void Check(IReadOnlyCollection<ActionStep> steps, bool allowControl = true)
+    {
+        static RpcException Bad(string m) => new("invalid-params", m);
+        var total = 0;
+        foreach (var st in steps)
+        {
+            if (!allowControl && Control.Contains(st.Type)) throw Bad("Warten und Bedingungen gibt es nur in Quick Actions und Automatisierungen.");
+            if (st.Type == StepType.Wait)
+            {
+                if (!int.TryParse(st.Ref, out var sec) || sec < 1 || sec > MaxWaitSeconds) throw Bad($"Warten: 1 bis {MaxWaitSeconds} Sekunden.");
+                total += sec;
+            }
+            if (st.Type is StepType.IfRunning or StepType.IfNotRunning && string.IsNullOrEmpty(st.Ref)) throw Bad("Die Bedingung braucht ein Spiel oder Programm.");
+            if (st.Type == StepType.MediaKey && !MediaKeys.ContainsKey(st.Ref ?? "")) throw Bad("Unbekannte Medientaste.");
+        }
+        if (total > MaxWaitSeconds) throw Bad($"Zusammen höchstens {MaxWaitSeconds} Sekunden warten.");
+    }
+
+    public static bool TakesLong(IEnumerable<ActionStep> steps) => steps.Where(s => s.Type == StepType.Wait).Sum(s => int.TryParse(s.Ref, out var v) ? v : 0) > 5;
+
+    /// <summary>Executes steps in order. Returns a human readable result per step. A condition that is not met ends the run.</summary>
     public async Task<List<string>> RunAsync(IEnumerable<ActionStep> steps, string by)
     {
         var results = new List<string>();
+        var waited = 0;
         foreach (var s in steps.Take(20))
         {
             try
             {
                 switch (s.Type)
                 {
+                    case StepType.Wait:
+                        var sec = Math.Clamp(int.TryParse(s.Ref, out var v) ? v : 1, 1, MaxWaitSeconds - waited);
+                        if (sec <= 0) { results.Add("Wartezeit übersprungen (zusammen höchstens 5 Minuten)"); break; }
+                        waited += sec;
+                        await Task.Delay(TimeSpan.FromSeconds(sec));
+                        results.Add($"{sec} s gewartet");
+                        break;
+                    case StepType.MediaKey:
+                        var key = MediaKeys.GetValueOrDefault(s.Ref ?? "") ?? throw new RpcException("invalid-params", "Unbekannte Medientaste.");
+                        results.Add(SendKey == null ? "Fehler: Medientasten gehen nur im Windows-Begleiter." : await SendKey(key) is { } ke ? "Fehler: " + ke : "Medientaste gedrückt");
+                        break;
+                    case StepType.IfRunning:
+                    case StepType.IfNotRunning:
+                        var name = ItemName?.Invoke(s.Ref ?? "") ?? "Eintrag";
+                        var running = IsRunning?.Invoke(s.Ref ?? "") ?? false;
+                        var go = s.Type == StepType.IfRunning ? running : !running;
+                        results.Add(go ? $"Bedingung erfüllt: {name} läuft{(running ? "" : " nicht")}" : $"Beendet: {name} läuft{(running ? "" : " nicht")}");
+                        if (!go) return results;
+                        break;
                     case StepType.LaunchItem:
                         var r = LaunchItem!(s.Ref ?? "", by);
                         results.Add(r.Ok ? "Gestartet" : "Fehler: " + r.Message);
@@ -696,6 +768,7 @@ public sealed class QuickActionService
         a.Category = a.Category == null ? null : DeviceStore.Sanitize(a.Category, 30, "");
         if (a.Steps.Count == 0) throw new RpcException("invalid-params", "Eine Quick Action braucht mindestens einen Schritt.");
         if (a.Steps.Count > 20) throw new RpcException("invalid-params", "Maximal 20 Schritte.");
+        ActionRunner.Check(a.Steps);
         var r = _store.Update(f =>
         {
             if (string.IsNullOrEmpty(a.Id)) a.Id = Ids.New("qa");
@@ -763,14 +836,15 @@ public sealed class AutomationEngine
         if (r.Actions.Count == 0) throw new RpcException("invalid-params", "Eine Regel braucht mindestens eine Aktion.");
         if (r.Actions.Count > 10) throw new RpcException("invalid-params", "Maximal 10 Aktionen pro Regel.");
         if (r.Actions.Any(a => !AllowedSteps.Contains(a.Type))) throw new RpcException("invalid-params", "Unbekannte Aktion.");
+        ActionRunner.Check(r.Actions);
         var conflict = Conflict(r);
         if (conflict != null) throw new RpcException("conflict", conflict);
         var res = _store.Update(f =>
         {
             if (string.IsNullOrEmpty(r.Id)) r.Id = Ids.New("rule");
             var i = f.Rules.FindIndex(x => x.Id == r.Id);
-            if (i >= 0) { r.LastRunAt = f.Rules[i].LastRunAt; r.LastResult = f.Rules[i].LastResult; r.RunCount = f.Rules[i].RunCount; f.Rules[i] = r; }
-            else f.Rules.Add(r);
+            if (i >= 0) { r.LastRunAt = f.Rules[i].LastRunAt; r.LastResult = f.Rules[i].LastResult; r.RunCount = f.Rules[i].RunCount; r.Runs = f.Rules[i].Runs; f.Rules[i] = r; }
+            else { r.Runs = new(); f.Rules.Add(r); }
             return r;
         });
         _hub.Changed("automations");
@@ -797,7 +871,7 @@ public sealed class AutomationEngine
     {
         var src = List().FirstOrDefault(r => r.Id == id) ?? throw new RpcException("not-found", "Regel nicht gefunden.");
         var c = Json.Deserialize<AutomationRule>(Json.Serialize(src))!;
-        c.Id = ""; c.Name += " (Kopie)"; c.Enabled = false; c.LastRunAt = null; c.LastResult = null; c.RunCount = 0;
+        c.Id = ""; c.Name += " (Kopie)"; c.Enabled = false; c.LastRunAt = null; c.LastResult = null; c.RunCount = 0; c.Runs = new();
         return Save(c);
     }
 
@@ -824,17 +898,22 @@ public sealed class AutomationEngine
         return await Execute(rule, "Test");
     }
 
+    readonly HashSet<string> _running = new();
+
     async Task<List<string>> Execute(AutomationRule rule, string by)
     {
+        // A rule that is still running (e.g. waiting) is not started a second time.
+        lock (_running) if (!_running.Add(rule.Id)) { Log.Info("automation", $"Regel „{rule.Name}“ läuft noch – nicht doppelt gestartet."); return new() { "Läuft noch – nicht doppelt gestartet" }; }
         _depth.Value++;
         List<string> results;
         try { results = await _runner.RunAsync(rule.Actions, $"{by}: {rule.Name}"); }
-        finally { _depth.Value--; }
+        finally { _depth.Value--; lock (_running) _running.Remove(rule.Id); }
         var summary = string.Join("; ", results);
+        var run = new RuleRun { At = DateTime.UtcNow, By = by, Ok = !results.Any(x => x.StartsWith("Fehler")), Results = results };
         _store.Update(f =>
         {
             var r = f.Rules.FirstOrDefault(x => x.Id == rule.Id);
-            if (r != null) { r.LastRunAt = DateTime.UtcNow; r.LastResult = summary; r.RunCount++; }
+            if (r != null) { r.LastRunAt = run.At; r.LastResult = summary; r.RunCount++; r.Runs.Insert(0, run); if (r.Runs.Count > 10) r.Runs.RemoveRange(10, r.Runs.Count - 10); }
         });
         Log.Info("automation", $"Regel „{rule.Name}“ ausgeführt: {summary}");
         _hub.Changed("automations");
@@ -891,7 +970,7 @@ public sealed class HotkeyService
         if (key == null) return null;
         bool isFKey = key.Length >= 2 && key[0] == 'F' && int.TryParse(key[1..], out var fn) && fn is >= 1 and <= 24;
         // Mouse side buttons (e.g. gaming mice) may be used alone – they do not interfere with typing.
-        if (mods.Count == 0 && !isFKey && !key.StartsWith("Num") && !key.StartsWith("Mouse") && key != "Pause" && key != "ScrollLock") return null; // plain letters would break typing
+        if (mods.Count == 0 && !isFKey && !key.StartsWith("Num") && !key.StartsWith("Mouse") && !key.StartsWith("Media") && !key.StartsWith("Volume") && key != "Pause" && key != "ScrollLock") return null; // plain letters would break typing
         var ordered = Modifiers.Where(mods.Contains).ToList();
         ordered.Add(key);
         return string.Join("+", ordered);
@@ -909,6 +988,9 @@ public sealed class HotkeyService
             "insert" or "einfg" => "Insert", "home" or "pos1" => "Home", "end" or "ende" => "End", "pageup" => "PageUp", "pagedown" => "PageDown",
             "up" => "Up", "down" => "Down", "left" => "Left", "right" => "Right", "pause" => "Pause", "scrolllock" => "ScrollLock", "printscreen" or "druck" => "PrintScreen",
             "mouse4" or "maus4" or "xbutton1" => "Mouse4", "mouse5" or "maus5" or "xbutton2" => "Mouse5",
+            // Media keys: registering one takes it away from music players while the hotkey is active.
+            "mediaplaypause" or "playpause" => "MediaPlayPause", "medianexttrack" or "medianext" => "MediaNextTrack", "mediaprevioustrack" or "mediaprev" => "MediaPreviousTrack",
+            "mediastop" => "MediaStop", "volumemute" => "VolumeMute", "volumeup" => "VolumeUp", "volumedown" => "VolumeDown",
             "numadd" or "numplus" => "NumAdd", "numsubtract" or "numminus" => "NumSubtract", "nummultiply" => "NumMultiply", "numdivide" => "NumDivide",
             _ => null,
         };
@@ -938,6 +1020,7 @@ public sealed class HotkeyService
     {
         h.Keys = Normalize(h.Keys) ?? throw new RpcException("invalid-params", "Ungültige Tastenkombination. Beispiel: Strg+Alt+F9 (einzelne Buchstaben nur mit Strg/Alt/Shift/Win).");
         if (h.Enabled && Conflict(h) is { } c) throw new RpcException("conflict", c);
+        ActionRunner.Check(new[] { h.Action }, allowControl: false);
         if (h.QuickActionId == null && h.Action.Type is StepType.LaunchItem or StepType.ActivateProfile or StepType.PlaySound && string.IsNullOrEmpty(h.Action.Ref))
             throw new RpcException("invalid-params", "Bitte ein Ziel wählen (Spiel, Profil oder Sound) – sonst würde der Hotkey nichts tun.");
         var r = _store.Update(f =>
