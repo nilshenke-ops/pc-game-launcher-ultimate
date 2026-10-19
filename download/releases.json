@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.4.0",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.4.0/PCGameLauncherCompanion.exe",
+    "size": 87193096,
+    "sha256": "5004f392aff90603ea0c2723429d7adf5e484c748447bad46c7b2e616ac5aff0",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.4.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.4.0/PCGameLauncherCompanion-2.4.0-win-x64.zip",
+      "size": 81458860,
+      "sha256": "d85c9212c7fd02208a7902a21bc8132a6ef72460700e16177c717629c7d0fddb"
+    },
+    "notes": "KI-Assistent „Lokale KI“ für 0 €: ein freies Sprachmodell über Ollama direkt auf deinem PC – ohne Konto, ohne Kosten, nichts verlässt den PC; installierte Modelle werden angezeigt, Empfehlungen mit Größe und Grafikspeicher · Befehle, PC-Werte, Spielzeit und App-Fragen beantwortet dabei immer der genaue lokale Assistent – das Sprachmodell nur freie Fragen (kleine Modelle erfanden im Test Messwerte) · Während eines Spiels antwortet standardmäßig nur der lokale Assistent, das Modell wird 2 Minuten nach der letzten Frage aus dem Grafikspeicher entfernt",
+    "changes": {
+      "neu": [
+        "KI-Assistent „Lokale KI“ für 0 €: ein freies Sprachmodell über Ollama direkt auf deinem PC – ohne Konto, ohne Kosten, nichts verlässt den PC; installierte Modelle werden angezeigt, Empfehlungen mit Größe und Grafikspeicher",
+        "Befehle, PC-Werte, Spielzeit und App-Fragen beantwortet dabei immer der genaue lokale Assistent – das Sprachmodell nur freie Fragen (kleine Modelle erfanden im Test Messwerte)",
+        "Während eines Spiels antwortet standardmäßig nur der lokale Assistent, das Modell wird 2 Minuten nach der letzten Frage aus dem Grafikspeicher entfernt",
+        "Lokaler Assistent: „Welche Spiele habe ich?“ listet die Bibliothek mit Favoriten und „diesen Monat noch nicht gespielt“",
+        "Modusauswahl zeigt die Kosten: „Lokal (0 €)“, „Lokale KI (0 €)“, „Claude (kostenpflichtig)“"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "Lange Sätze mit „spielen“ wurden als Startbefehl gelesen („… habe ich nicht gefunden“)"
+      ]
+    },
+    "signature": "omCAEi5N/ucYWiXJFQQksAa/Qt17Xqm4oJHt8Ffg0FNxiu3iAmJlbMSz9KdSCYqeM+/X6lvyE9IuSR1QhKDFjQ=="
+  },
+  {
     "version": "2.3.1",
     "date": "2026-10-19",
     "channel": "stable",
