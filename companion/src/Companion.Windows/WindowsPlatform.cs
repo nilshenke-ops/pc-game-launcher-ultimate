@@ -20,6 +20,7 @@ sealed class WindowsPlatform : IPlatform
         Desktop = new WindowsDesktop(ui, tray);
         Hotkeys = new HotkeyRegistrar(ui);
         OverlayWindows = new WindowsOverlay(ui, Metrics);
+        DesktopWidgetWindows = new WindowsDesktopWidgets(ui);
     }
 
     public string Name => $"Windows {Environment.OSVersion.Version}";
@@ -38,6 +39,8 @@ sealed class WindowsPlatform : IPlatform
     public IOverlay Overlay => OverlayWindows;
     public IKeySender KeySender { get; } = new WindowsKeySender();
     public IGameMode GameMode { get; } = new WindowsGameMode();
+    public WindowsDesktopWidgets DesktopWidgetWindows { get; }
+    public IDesktopWidgets DesktopWidgets => DesktopWidgetWindows;
 }
 
 /// <summary>Runs code on the WinForms UI thread.</summary>

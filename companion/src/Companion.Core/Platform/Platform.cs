@@ -28,6 +28,32 @@ public interface IPlatform
     IKeySender KeySender => NullKeySender.Instance;
     /// <summary>Makes the companion step back while a game runs (priority, efficiency mode, memory). No-op elsewhere.</summary>
     IGameMode GameMode => NullGameMode.Instance;
+    /// <summary>Own widgets as small windows on the Windows desktop (Windows companion only).</summary>
+    IDesktopWidgets DesktopWidgets => NullDesktopWidgets.Instance;
+}
+
+/// <summary>
+/// Widgets from the widget editor as small borderless windows at the bottom of the desktop (below all other windows).
+/// Start menu, lock screen and the Windows widget board are closed to normal programs, so there is nothing for them here.
+/// </summary>
+public interface IDesktopWidgets
+{
+    bool Supported { get; }
+    /// <summary>Shows exactly these widgets (windows of other widgets are closed). Called again after every change.</summary>
+    void Sync(IReadOnlyList<Services.CustomWidget> widgets);
+    /// <summary>While a game runs the windows are hidden and their browser engine is suspended (no CPU, less memory).</summary>
+    void SetPaused(bool paused);
+    /// <summary>The user moved a widget window: id, new position as share of the (virtual) screen.</summary>
+    event Action<string, double, double>? Moved;
+}
+
+public sealed class NullDesktopWidgets : IDesktopWidgets
+{
+    public static readonly NullDesktopWidgets Instance = new();
+    public bool Supported => false;
+    public void Sync(IReadOnlyList<Services.CustomWidget> widgets) { }
+    public void SetPaused(bool paused) { }
+    public event Action<string, double, double>? Moved { add { } remove { } }
 }
 
 public interface IGameMode

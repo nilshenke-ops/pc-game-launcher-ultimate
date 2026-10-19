@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, Play, RotateCcw,
   Smartphone, Square, Star, Swords, Wifi, Zap,
-  Puzzle,
+  Puzzle, Shapes,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -19,6 +19,9 @@ import type { LibraryItem, MetricsSample, Notification, QuickAction } from "../l
 import { Banner, Button, Card, Empty, Meter, PageHead, Thumb } from "../components/ui";
 import { DownloadCard } from "../components/DownloadCard";
 import { runQuickAction } from "../components/run-quick";
+import { CustomWidgetView } from "../components/CustomWidgetView";
+import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
+import { CUSTOM_WIDGET } from "../lib/prefs-core";
 
 function launch(item: LibraryItem) {
   client.call("library.launch", { id: item.id }).then(() => toast(t("{name} wird gestartet", { name: item.name }), "success")).catch((e) => toast(e.message, "error"));
@@ -249,8 +252,17 @@ export default function Dashboard() {
   const pl = useRpc<PluginList>("plugins.list", {}, ["plugins"]);
   const pluginWidgets = (pl.data?.plugins ?? []).filter((p) => p.enabled && p.manifest?.platforms.includes("web"))
     .flatMap((p) => p.manifest!.contributes.widgets.map((w) => ({ id: pluginWidgetId(p.id, w.id), plugin: p, widget: w })));
-  type Meta = { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string; missing?: boolean };
+  // Own widgets from the widget editor: shown in their own look (no card around them).
+  const cw = useRpc<{ widgets: CustomWidget[] }>("widgets.list", {}, ["widgets"]);
+  const customWidgets = cw.data?.widgets ?? [];
+  type Meta = { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string; missing?: boolean; bare?: boolean };
   const metaFor = (id: WidgetId): Meta => {
+    if (CUSTOM_WIDGET.test(id)) {
+      const w = customWidgets.find((x) => CUSTOM_PREFIX + x.id === id);
+      return w
+        ? { icon: <Shapes size={18} />, title: () => w.name, render: () => <CustomWidgetView widget={w} interactive={!edit} />, link: "/widgets", bare: true }
+        : { icon: <Shapes size={18} />, title: () => t("Eigenes Widget (gelöscht)"), render: () => <p className="small muted">{t("Dieses Widget wurde im Widget-Baukasten gelöscht.")}</p>, missing: true };
+    }
     if (!parsePluginWidgetId(id)) return META[id as BuiltinWidgetId];
     const pw = pluginWidgets.find((x) => x.id === id);
     return pw
@@ -273,11 +285,12 @@ export default function Dashboard() {
     const sizes = ALL_WIDGETS.find((x) => x.id === id)?.sizes ?? (["s", "m", "l"] as WidgetSize[]);
     return { ...w, size: sizes[(sizes.indexOf(w.size) + 1) % sizes.length] as WidgetSize };
   }));
-  const toggle = (id: WidgetId) => updateWidgets((ws) => ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)) : [...ws, { id, visible: true, size: "m" }]);
+  const toggle = (id: WidgetId) => updateWidgets((ws) => ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)) : [...ws, { id, visible: true, size: id.startsWith("custom:") ? "s" : "m" }]);
 
   const visible = layout.widgets.filter((w) => w.visible && (edit || !metaFor(w.id).missing));
   const hidden = [...layout.widgets.filter((w) => !w.visible && !metaFor(w.id).missing),
-    ...pluginWidgets.filter((x) => !layout.widgets.some((w) => w.id === x.id)).map((x) => ({ id: x.id, visible: false, size: "m" as WidgetSize }))];
+    ...pluginWidgets.filter((x) => !layout.widgets.some((w) => w.id === x.id)).map((x) => ({ id: x.id, visible: false, size: "m" as WidgetSize })),
+    ...customWidgets.map((x) => `${CUSTOM_PREFIX}${x.id}` as WidgetId).filter((id) => !layout.widgets.some((w) => w.id === id)).map((id) => ({ id, visible: false, size: "s" as WidgetSize }))];
   const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
 
   const conn = useConn();
@@ -326,6 +339,7 @@ export default function Dashboard() {
         {visible.map((w, i) => {
           const meta = metaFor(w.id);
           if (w.id === "download") return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><DownloadCard compact />{edit && <EditOverlay />}</div>;
+          if (meta.bare) return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><div style={{ maxWidth: 720, marginInline: "auto" }}>{meta.render()}</div>{edit && <EditOverlay />}</div>;
           return (
             <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}>
               <Card title={meta.title()} icon={meta.icon} className={w.id === "status" ? "hero" : ""} style={{ height: "100%" }}

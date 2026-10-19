@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Circle, Clapperboard, Keyboard, Layers, Puzzle, Save, Video } from "lucide-react";
 import { Link } from "react-router-dom";
+import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
@@ -296,11 +297,13 @@ function CaptureCard({ cap, online, canManage, canLaunch, run }: { cap: CaptureS
 /** Which widgets the large overlay shows (positions are changed in the overlay itself by dragging). Works without the PC too. */
 function OverlayWidgetPicker({ plugins, canManage, online }: { plugins?: PluginList; canManage: boolean; online: boolean }) {
   const q = useRpc<{ layout?: OverlayLayout }>("overlay.layout", {}, ["overlay"]);
+  const custom = useRpc<{ widgets: CustomWidget[] }>("widgets.list", {}, ["widgets"]);
   const layout = layoutOrDefault(q.data?.layout, overlayPluginWidgets(plugins));
   const all = [
     ...OVERLAY_BUILTINS.map((id) => ({ id: id as string, title: overlayBuiltinTitle(id) })),
     ...(plugins?.plugins ?? []).filter((p) => p.enabled && p.manifest?.platforms.includes("web"))
       .flatMap((p) => p.manifest!.contributes.widgets.map((w) => ({ id: pluginWidgetId(p.id, w.id), title: `${w.title} (${t("Plugin")})` }))),
+    ...(custom.data?.widgets ?? []).map((w) => ({ id: CUSTOM_PREFIX + w.id, title: `${w.name} (${t("eigenes")})` })),
   ];
   const save = (l: OverlayLayout | null) => client.call("overlay.saveLayout", { layout: l })
     .then(() => toast(online ? t("Gespeichert") : t("Gespeichert – wird beim Verbinden auf den PC übertragen"), "success"), (e: Error) => toast(e.message, "error"));

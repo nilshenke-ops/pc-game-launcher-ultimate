@@ -1,6 +1,6 @@
 import {
   Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, HardDrive, Headphones, Heart, HelpCircle, History, Home,
-  Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, ShieldCheck, Smartphone, Sparkles, Star,
+  Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star,
   Stethoscope, Swords, Timer, Trophy, Tv, Video, Volume2, Wand2, Zap, type LucideIcon,
 } from "lucide-react";
 import { t } from "./i18n";
@@ -21,6 +21,7 @@ export function navItems(): NavItem[] {
     { path: "/hotkeys", label: t("Hotkeys"), icon: Keyboard, group: t("Gaming"), keywords: "tastenkürzel tasten" },
     { path: "/history", label: t("Gaming-Verlauf"), icon: History, group: t("Gaming"), keywords: "statistik spielzeit" },
     { path: "/overlay-settings", label: t("Overlay & Aufnahme"), icon: Video, group: t("Gaming"), keywords: "overlay game bar aufnahme video replay clip obs fps hud" },
+    { path: "/widgets", label: t("Widget-Baukasten"), icon: Shapes, group: t("Gaming"), keywords: "widgets eigene editor desktop baukasten design uhr knopf" },
     { path: "/monitor", label: t("PC Monitor"), icon: Activity, group: t("System"), keywords: "cpu ram gpu temperatur" },
     { path: "/connect", label: t("PC verbinden"), icon: MonitorSmartphone, group: t("System"), keywords: "verbinden koppeln qr code adresse anmelden" },
     { path: "/devices", label: t("Geräte"), icon: Smartphone, group: t("System"), keywords: "verbindungen gekoppelt" },

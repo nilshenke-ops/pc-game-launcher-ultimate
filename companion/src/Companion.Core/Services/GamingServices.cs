@@ -97,7 +97,7 @@ public sealed class SettingsService
         return r;
     }
 
-    static readonly System.Text.RegularExpressions.Regex OverlayWidgetId = new("^([a-z]{2,20}|plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32})$");
+    static readonly System.Text.RegularExpressions.Regex OverlayWidgetId = new("^([a-z]{2,20}|plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}|custom:cw_[A-Za-z0-9_-]{1,40})$");
 
     /// <summary>Arrangement of the large overlay (checked: known id format, at most 24 widgets, positions on screen, sensible sizes).</summary>
     public Settings SetOverlayLayout(OverlayLayout? layout)

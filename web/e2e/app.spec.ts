@@ -405,6 +405,46 @@ test("Overlay wie die Game Bar: Widgets hinzufügen, entfernen, verschieben – 
   await pc.goto(`${COMPANION}/#/`);
 });
 
+test("Widget-Baukasten: eigenes Widget bauen, frei verschieben, auf Dashboard, Overlay und als Desktop-Fenster", async () => {
+  await pc.goto(`${COMPANION}/#/widgets`);
+  await pc.getByRole("button", { name: "Neues Widget" }).first().click();
+  await pc.locator(".ws-template", { hasText: "Uhr & Spielzeit" }).click();
+  await pc.getByRole("textbox", { name: "Name des Widgets" }).fill("E2E Uhr");
+  // Drag the play time element down/left; the position is kept in percent.
+  const handle = pc.locator(".ws-canvas .ws-handle").nth(2);
+  await handle.click();
+  const before = Number(await pc.getByRole("spinbutton", { name: "Y %" }).inputValue());
+  const box = (await handle.boundingBox())!;
+  await pc.mouse.move(box.x + 10, box.y + 10); await pc.mouse.down(); await pc.mouse.move(box.x - 30, box.y - 40, { steps: 6 }); await pc.mouse.up();
+  expect(Number(await pc.getByRole("spinbutton", { name: "Y %" }).inputValue())).toBeLessThan(before);
+  // A text element with own text; arrow keys move it.
+  await pc.locator(".ws-palette").getByRole("button", { name: "Text" }).click();
+  await pc.getByRole("textbox", { name: "Text", exact: true }).fill("GG EZ");
+  await pc.locator(".ws-handle.sel").press("ArrowRight");
+  await pc.getByRole("button", { name: "Speichern" }).click();
+  await expect(pc.getByText("Widget gespeichert")).toBeVisible();
+  await pc.getByRole("button", { name: "← Widget-Einstellungen" }).click();
+  await pc.getByRole("switch", { name: /Auf dem Dashboard/ }).check();
+  await pc.getByRole("switch", { name: /Im Overlay/ }).click();
+  await expect(pc.getByRole("switch", { name: /Im Overlay/ })).toBeChecked();
+  // Not a Windows companion here: the desktop switch says so instead of pretending.
+  await expect(pc.getByRole("switch", { name: /Auf dem Windows-Desktop/ })).toBeDisabled();
+  await expect(pc.getByText("Dieser PC kann keine Desktop-Widgets anzeigen (nur der Windows-Begleiter).")).toBeVisible();
+  await expect(pc.getByText(/Startmenü, Sperrbildschirm und die Windows-Widget-Leiste/)).toBeVisible();
+
+  await pc.goto(`${COMPANION}/#/`);
+  const onDash = pc.locator(".dash .cw", { hasText: "GG EZ" });
+  await expect(onDash).toBeVisible();
+  const id = await onDash.getAttribute("data-id");
+  await pc.goto(`${COMPANION}/#/overlay`);
+  await expect(pc.locator(".gb-panel", { hasText: "E2E Uhr" }).locator(".cw", { hasText: "GG EZ" })).toBeVisible();
+  // The page the Windows desktop window shows: only the widget, no navigation.
+  await pc.goto(`${COMPANION}/#/desktop-widget/${id}`);
+  await expect(pc.locator(".dw-root .cw", { hasText: "GG EZ" })).toBeVisible();
+  await expect(pc.locator(".sidebar")).toHaveCount(0);
+  await pc.goto(`${COMPANION}/#/`);
+});
+
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
   await pc.goto(`${COMPANION}/#/monitor`);
   // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).
@@ -514,6 +554,18 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   // Overlay widgets chosen on the tablet, too.
   await tablet.getByRole("button", { name: "+ Laufende Sounds" }).click();
   await expect(tablet.getByText("7 Änderungen warten auf den PC")).toBeVisible();
+  // Own widget built on the tablet without the PC: placed on the dashboard and in the overlay at once.
+  await tablet.goto(`${HOSTED_SITE}/#/widgets`);
+  await tablet.getByRole("button", { name: "Neues Widget" }).first().click();
+  await tablet.locator(".ws-template", { hasText: "Leistung" }).click();
+  await tablet.getByRole("textbox", { name: "Name des Widgets" }).fill("Tablet-Widget");
+  await tablet.getByRole("button", { name: "Speichern" }).click();
+  await expect(tablet.getByText("Gespeichert – wird beim Verbinden auf den PC übertragen")).toBeVisible();
+  await tablet.getByRole("switch", { name: /Auf dem Dashboard/ }).check();
+  await tablet.getByRole("switch", { name: /Im Overlay/ }).click();
+  await expect(tablet.getByRole("switch", { name: /Im Overlay/ })).toBeChecked();
+  await tablet.reload();
+  await expect(tablet.locator(".ws-item", { hasText: "Tablet-Widget" })).toBeVisible(); // kept on the tablet
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -548,11 +600,14 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.getByRole("button", { name: "Verwerfen" }).click();
   await expect(tablet.getByText("Alles übertragen.")).toBeVisible();
   await tablet.keyboard.press("Escape");
+  await tablet.goto(`${HOSTED_SITE}/#/`);
+  await expect(tablet.locator(".dash .cw", { hasText: "PC-Leistung" })).toBeVisible(); // placed on the dashboard before pairing
   await pc.goto(`${COMPANION}/#/hotkeys`);
   await expect(pc.getByText("Maus-Seitentaste hinten (4)")).toBeVisible();
   await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 7" })).toContainText("Replay speichern");
   await pc.goto(`${COMPANION}/#/overlay`);
   await expect(pc.locator(".gb-panel-title", { hasText: "Laufende Sounds" })).toBeVisible(); // chosen on the tablet
+  await expect(pc.locator(".gb-panel", { hasText: "Tablet-Widget" }).locator(".cw", { hasText: "PC-Leistung" })).toBeVisible(); // built on the tablet
   await pc.goto(`${COMPANION}/#/hotkeys`);
   await pc.goto(`${COMPANION}/#/overlay-settings`);
   await expect(pc.getByRole("button", { name: "Xbox Game Bar" })).toHaveAttribute("aria-pressed", "true"); // chosen on the tablet

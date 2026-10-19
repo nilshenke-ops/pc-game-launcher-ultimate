@@ -156,6 +156,9 @@ public static class RpcApi
         });
 
         // ------------------------------------------------------------ quick actions
+        rpc.Register("widgets.list", _ => new { widgets = s.Widgets.List(), desktopSupported = s.Platform.DesktopWidgets.Supported });
+        rpc.Register("widgets.save", ctx => s.Widgets.Save(ctx.Bind<CustomWidget>()));
+        rpc.Register("widgets.remove", ctx => { s.Widgets.Remove(ctx.Str("id", 64)); return true; });
         rpc.Register("quick.list", ctx => new { actions = s.QuickActions.List() });
         rpc.Register("quick.save", ctx => s.QuickActions.Save(ctx.Bind<QuickAction>()));
         rpc.Register("quick.remove", ctx => { s.QuickActions.Remove(ctx.Str("id", 64)); return true; });

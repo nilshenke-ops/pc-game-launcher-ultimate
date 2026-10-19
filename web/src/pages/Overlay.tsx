@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  Activity, AudioLines, Bell, Check, Clock, Gamepad2, Headphones, LayoutGrid, Music, Puzzle, RotateCcw, Star, Swords, Video, X, Zap,
+  Activity, AudioLines, Bell, Check, Clock, Gamepad2, Headphones, LayoutGrid, Music, Puzzle, RotateCcw, Shapes, Star, Swords, Video, X, Zap,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -14,6 +14,8 @@ import {
 import { PluginFrame } from "../components/PluginFrame";
 import { CaptureWidget, SoundboardWidget } from "../components/overlay-widgets";
 import { META } from "./Dashboard";
+import { CustomWidgetView } from "../components/CustomWidgetView";
+import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
 
 const ICONS: Record<OverlayBuiltin, ReactNode> = {
   system: <Activity size={18} />, capture: <Video size={18} />, quick: <Zap size={18} />, soundboard: <Music size={18} />, favorites: <Star size={18} />,
@@ -32,6 +34,7 @@ export default function Overlay() {
   const conn = useConn();
   const plugins = useRpc<PluginList>("plugins.list", {}, ["plugins"]);
   const saved = useRpc<{ layout?: OverlayLayout }>("overlay.layout", {}, ["overlay"]);
+  const custom = useRpc<{ widgets: CustomWidget[] }>("widgets.list", {}, ["widgets"]);
   const [layout, setLayout] = useState<OverlayLayout | null>(null);
   const [menu, setMenu] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -75,6 +78,7 @@ export default function Overlay() {
     ...(plugins.data?.plugins ?? []).filter((p) => p.enabled && p.manifest?.platforms.includes("web")).flatMap((p) => p.manifest!.contributes.widgets.map((w) => ({
       id: pluginWidgetId(p.id, w.id), title: w.title, icon: <Puzzle size={18} />, render: () => <PluginFrame plugin={p} widget={w} />,
     }))),
+    ...(custom.data?.widgets ?? []).map((w) => ({ id: CUSTOM_PREFIX + w.id, title: w.name, icon: <Shapes size={18} />, render: () => <CustomWidgetView widget={w} /> })),
   ];
   const entry = (id: string) => catalog.find((c) => c.id === id);
   const l = layout ?? DEFAULT_OVERLAY_LAYOUT;

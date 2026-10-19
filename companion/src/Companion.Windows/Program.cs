@@ -49,6 +49,7 @@ sealed class TrayAppContext : ApplicationContext
     readonly TrayIcon _tray;
     readonly CompanionServices _services;
     readonly WindowsOverlay _overlay;
+    readonly WindowsDesktopWidgets _desktopWidgets;
     readonly EventWaitHandle _showSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Show");
     bool _exiting;
 
@@ -60,6 +61,7 @@ sealed class TrayAppContext : ApplicationContext
         TrayIcon? trayRef = null;
         var platform = new WindowsPlatform(ui, () => trayRef);
         _overlay = platform.OverlayWindows;
+        _desktopWidgets = platform.DesktopWidgetWindows;
         _services = new CompanionServices(platform, new AppPaths());
         _overlay.Corner = () => _services.Settings.Get().OverlayCorner;
         _services.Obs.RecordingChanged += (active, _) => _overlay.Recording = active;
@@ -92,6 +94,7 @@ sealed class TrayAppContext : ApplicationContext
         _overlay.Environment = _form.WebEnvironment;
         _overlay.Origin = $"http://127.0.0.1:{_services.Web.Port}";
         _overlay.AdminToken = _services.Rpc.AdminToken;
+        _desktopWidgets.Ready(_form.WebEnvironment, _overlay.Origin, _services.Rpc.AdminToken);
         if (_services.Web.StartError != null)
             MessageBox.Show(_services.Web.StartError, "PC Game Launcher – Webserver", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
@@ -125,6 +128,7 @@ sealed class TrayAppContext : ApplicationContext
         _tray.Dispose();
         _form.Hide();
         try { _overlay.Dispose(); } catch { }
+        try { _desktopWidgets.Dispose(); } catch { }
         try { await _services.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
         _form.Close();
         ExitThread();

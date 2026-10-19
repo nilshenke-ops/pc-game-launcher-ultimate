@@ -34,6 +34,9 @@
     "library.remove": "manage",
     "library.launch": "launch",
 
+    "widgets.list": "view",
+    "widgets.save": "manage",
+    "widgets.remove": "manage",
     "quick.list": "view",
     "quick.save": "manage",
     "quick.remove": "manage",

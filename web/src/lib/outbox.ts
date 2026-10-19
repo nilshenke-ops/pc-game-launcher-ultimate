@@ -52,6 +52,8 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "obs.configure": () => t("OBS-Verbindung speichern"),
   "capture.configure": () => t("Aufnahme-Programm und Tasten speichern"),
   "overlay.saveLayout": () => t("Overlay-Widgets speichern"),
+  "widgets.save": (p) => t("Eigenes Widget speichern {n}", { n: name(p) }),
+  "widgets.remove": () => t("Eigenes Widget löschen"),
   "history.setNote": () => t("Notiz zur Spielsitzung"),
   "plugins.installCatalog": (p) => t("Plugin installieren {n}", { n: name(p, "label") }),
   "plugins.importFile": (p) => t("Plugin-Datei installieren {n}", { n: name(p, "label") }),
@@ -142,6 +144,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   },
   "capture.status": offlineCaptureStatus(),
   "overlay.layout": {},
+  "widgets.list": { widgets: [] },
   "obs.status": { url: "ws://127.0.0.1:4455", passwordSet: false, replayWhilePlaying: false, connected: false, offline: true },
   // Whether this PC can show the overlay is only known once it is connected.
   "overlay.status": { supported: false, visible: null, unknown: true },
@@ -217,6 +220,9 @@ function applyLocally(method: string, p: Params): unknown {
     case "sounds.setActiveCollection": patch<{ data: Params }>("sounds.list", (d) => ({ ...d, data: { ...d.data, activeCollectionId: p.id ?? null } })); return true;
     case "audio.save": patch<{ settings: Params }>("audio.state", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
     case "settings.save": patch<{ settings: Params }>("settings.get", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
+    // Widget ids are made on the device (cw_…), so a new widget can be placed on the dashboard/overlay at once.
+    case "widgets.save": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: upsert(d.widgets, p as unknown as WithId) })); return p;
+    case "widgets.remove": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: d.widgets.filter((w) => w.id !== p.id) })); return true;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
     case "capture.configure": {
       patch<Params>("capture.status", (d) => {

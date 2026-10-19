@@ -619,3 +619,60 @@ html.overlay-mode .app-bg { display: none; }
 }
 :root[data-lite="1"] .app-bg::before { display: none; }
 :root[data-lite="1"] .card { background: rgba(var(--surface-rgb), 0.94); box-shadow: none; }
+
+/* ------------------------------------------------------------------ own widgets (widget editor) */
+/* container-type: font sizes scale with the widget's width (cqw), so a widget looks the same everywhere. */
+.cw { position: relative; overflow: hidden; container-type: inline-size; isolation: isolate; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); }
+.cw-bgimg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1; pointer-events: none; }
+.cw-button { border: 0; font: inherit; padding: 0 0.5em; transition: filter 0.15s; }
+.cw-button:hover { filter: brightness(1.12); }
+.cw-button:active { filter: brightness(0.92); }
+.cw-button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+
+/* widget editor */
+.ws-layout { display: grid; gap: 16px; grid-template-columns: 220px minmax(0, 1fr); align-items: start; }
+.ws-list { display: flex; flex-direction: column; gap: 10px; position: sticky; top: calc(var(--topbar-h, 64px) + 12px); }
+.ws-item { display: grid; gap: 6px; padding: 8px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(var(--surface-rgb), var(--surface-alpha)); color: var(--text); text-align: left; cursor: pointer; font: inherit; grid-template-columns: minmax(0, 1fr) auto; }
+.ws-item .ws-thumb { grid-column: 1 / -1; pointer-events: none; }
+.ws-item.on { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary); }
+.ws-badges { color: var(--muted); display: flex; align-items: center; }
+.ws-main { display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) 340px; align-items: start; }
+.ws-toolbar { grid-column: 1 / -1; }
+.ws-name { flex: 1 1 200px; font-size: 1.1rem; font-weight: 700; }
+.ws-stage { display: flex; flex-direction: column; gap: 10px; align-items: stretch; min-width: 0; }
+.ws-canvas { width: 100%; margin-inline: auto; padding: 18px; border-radius: var(--radius); border: 1px dashed var(--border-strong);
+  background-color: rgba(var(--surface-rgb), 0.4);
+  background-image: linear-gradient(45deg, rgba(127,127,127,.08) 25%, transparent 25%, transparent 75%, rgba(127,127,127,.08) 75%), linear-gradient(45deg, rgba(127,127,127,.08) 25%, transparent 25%, transparent 75%, rgba(127,127,127,.08) 75%);
+  background-size: 20px 20px; background-position: 0 0, 10px 10px; }
+.ws-handles { position: absolute; inset: 0; z-index: 2; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 10% 10%; }
+.ws-handle { position: absolute; outline: 1px dashed rgba(255, 255, 255, 0.35); outline-offset: -1px; cursor: move; touch-action: none; border-radius: 3px; }
+.ws-handle:hover { outline-color: rgba(255, 255, 255, 0.7); }
+.ws-handle.sel { outline: 2px solid var(--primary); background: rgba(var(--primary-rgb), 0.08); }
+.ws-handle:focus-visible { outline: 2px solid var(--primary); }
+.ws-resize { position: absolute; right: -7px; bottom: -7px; width: 16px; height: 16px; border-radius: 4px; background: var(--primary); border: 2px solid #fff; cursor: nwse-resize; touch-action: none; }
+.ws-palette { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.ws-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ws-icons { display: flex; flex-wrap: wrap; gap: 4px; }
+.ws-icons button { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); cursor: pointer; }
+.ws-icons button.on { border-color: var(--primary); background: rgba(var(--primary-rgb), 0.18); }
+.ws-layers { display: flex; flex-direction: column; gap: 4px; }
+.ws-layers button { text-align: left; padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--text); font: inherit; font-size: 0.85rem; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ws-layers button:hover { border-color: var(--border-strong); }
+.ws-templates { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+.ws-template { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: transparent; color: var(--text); font: inherit; cursor: pointer; text-align: left; }
+.ws-template:hover, .ws-template:focus-visible { border-color: var(--primary); }
+.ws-template > .cw { pointer-events: none; }
+@media (max-width: 1100px) { .ws-main { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) {
+  .ws-layout { grid-template-columns: minmax(0, 1fr); }
+  .ws-list { position: static; flex-direction: row; overflow-x: auto; padding-bottom: 4px; }
+  .ws-item { flex: 0 0 150px; }
+  .ws-canvas { padding: 8px; }
+}
+.ws-side .grid-2, .ws-side .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+/* desktop widget window (Windows companion): only the widget, no app background */
+html.desktop-widget-mode, html.desktop-widget-mode body { background: #111827; overflow: hidden; margin: 0; }
+html.desktop-widget-mode .app-bg { display: none; }
+.dw-root { height: 100vh; cursor: grab; user-select: none; }
+.dw-root .cw { box-shadow: none; }
+.dw-msg { height: 100vh; display: grid; place-items: center; color: #cbd5e1; font: 13px system-ui, sans-serif; padding: 12px; text-align: center; }

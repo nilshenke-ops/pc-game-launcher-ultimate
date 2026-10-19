@@ -331,7 +331,7 @@ public class StorageAndBackupTests
         Assert.Null(s.Settings.Get().RelayUrl);
     }
 
-    static string UploadFile(CompanionServices s, string path)
+    internal static string UploadFile(CompanionServices s, string path)
     {
         var bytes = File.ReadAllBytes(path);
         var id = s.Backup.UploadBegin(bytes.Length);

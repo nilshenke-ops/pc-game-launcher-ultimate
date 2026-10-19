@@ -60,9 +60,10 @@ export const DEFAULT_THEME: Theme = {
 // ------------------------------------------------------------------ dashboard layouts
 
 export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices";
-/** Built-in widget or a plugin widget "plugin:<plugin-id>:<widget-id>". */
-export type WidgetId = BuiltinWidgetId | `plugin:${string}`;
+/** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
+export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`;
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
+export const CUSTOM_WIDGET = /^custom:cw_[A-Za-z0-9_-]{1,40}$/;
 export type WidgetSize = "s" | "m" | "l";
 export interface WidgetConf { id: WidgetId; visible: boolean; size: WidgetSize }
 export interface Layout { id: string; name: string; widgets: WidgetConf[] }
@@ -146,8 +147,8 @@ export function sanitizePrefs(input: unknown): Prefs {
   const layouts = Array.isArray(p.layouts)
     ? p.layouts.filter((l) => l && typeof l.id === "string" && Array.isArray(l.widgets)).slice(0, 20).map((l) => {
         const seen = new Set<string>();
-        let plugins = 0;
-        const known = (id: string) => ids.has(id as BuiltinWidgetId) || (PLUGIN_WIDGET.test(id) && ++plugins <= 12);
+        let plugins = 0, custom = 0;
+        const known = (id: string) => ids.has(id as BuiltinWidgetId) || (PLUGIN_WIDGET.test(id) && ++plugins <= 12) || (CUSTOM_WIDGET.test(id) && ++custom <= 30);
         const widgets: WidgetConf[] = l.widgets.filter((w) => typeof w?.id === "string" && known(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize }));
         for (const w of ALL_WIDGETS) if (!seen.has(w.id)) widgets.push({ id: w.id, visible: false, size: w.sizes[0] });
         return { id: l.id.slice(0, 40), name: String(l.name ?? "Layout").slice(0, 40), widgets };

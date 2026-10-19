@@ -28,6 +28,8 @@ const Updates = lazy(() => import("./pages/Updates"));
 const Plugins = lazy(() => import("./pages/Plugins"));
 const OverlaySettings = lazy(() => import("./pages/OverlaySettings"));
 const Overlay = lazy(() => import("./pages/Overlay"));
+const WidgetStudio = lazy(() => import("./pages/WidgetStudio"));
+const DesktopWidget = lazy(() => import("./pages/DesktopWidget"));
 const Connect = lazy(() => import("./pages/Connect"));
 const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
@@ -67,6 +69,9 @@ function Gate() {
 
   // The in-game overlay window (Windows companion) shows only the overlay, without navigation.
   if (loc.pathname === "/overlay") return <Suspense fallback={null}><Overlay /></Suspense>;
+  // A desktop widget window (Windows companion) shows only that widget.
+  if (loc.pathname.startsWith("/desktop-widget/"))
+    return <Suspense fallback={null}><Routes><Route path="/desktop-widget/:id" element={<DesktopWidget />} /></Routes></Suspense>;
 
   return (
     <AppShell>
@@ -94,6 +99,7 @@ function Gate() {
           <Route path="/updates" element={<Updates />} />
           <Route path="/plugins" element={<Plugins />} />
           <Route path="/overlay-settings" element={<OverlaySettings />} />
+          <Route path="/widgets" element={<WidgetStudio />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>

@@ -7,6 +7,7 @@ import { en } from "./en";
 // @ts-expect-error plain JS helper shared with the CLI script
 import { collectKeys } from "../../scripts/i18n-keys.mjs";
 import { contrast, defaultPrefs, sanitizePrefs } from "./prefs-core";
+import { templates } from "./custom-widgets";
 import { score } from "../components/search-score";
 import { comboFromEvent } from "../pages/hotkey-combo";
 
@@ -63,6 +64,27 @@ describe("prefs", () => {
     expect(p.layouts[0].widgets.some((w) => (w.id as string) === "evil")).toBe(false);
     expect(p.layouts[0].widgets.length).toBe(12);
     expect(["de", "en"]).toContain(p.lang);
+  });
+  it("keeps own widgets from the widget editor (custom:cw_…) and drops malformed ones", () => {
+    const p = sanitizePrefs({ layouts: [{ id: "x", name: "X", widgets: [
+      { id: "custom:cw_abc123", visible: true, size: "m" }, { id: "custom:../evil", visible: true, size: "m" }, { id: "custom:cw_abc123", visible: false, size: "s" },
+    ] }] });
+    const ids = p.layouts[0].widgets.map((w) => w.id as string);
+    expect(ids.filter((i) => i === "custom:cw_abc123")).toHaveLength(1);
+    expect(ids.some((i) => i.includes("evil"))).toBe(false);
+  });
+  it("widget templates are valid for the PC (ids, limits, percent boxes)", () => {
+    for (const tpl of templates()) {
+      const w = tpl.make();
+      expect(w.id).toMatch(/^cw_[A-Za-z0-9_-]{1,40}$/);
+      expect(w.elements.length).toBeLessThanOrEqual(40);
+      expect(new Set(w.elements.map((e) => e.id)).size).toBe(w.elements.length);
+      for (const e of w.elements) {
+        expect(e.id).toMatch(/^[a-z0-9_-]{1,40}$/);
+        expect(e.x + e.w).toBeLessThanOrEqual(100);
+        expect(e.y + e.h).toBeLessThanOrEqual(100);
+      }
+    }
   });
   it("computes WCAG contrast", () => {
     expect(contrast("#000000", "#ffffff")).toBeCloseTo(21, 0);

@@ -42,6 +42,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public LauncherService Launchers { get; }
     public ObsService Obs { get; }
     public CaptureService Capture { get; }
+    public CustomWidgetService Widgets { get; }
     public BackupService Backup { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
@@ -88,6 +89,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Covers = new CoverService(Library, Settings.Get);
         Steam = new SteamService(paths, Library, platform, Settings, Rpc);
         Obs = new ObsService(Settings.Get, platform.Secrets, Rpc);
+        Widgets = new CustomWidgetService(paths, Rpc);
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
 
@@ -105,6 +107,7 @@ public sealed class CompanionServices : IAsyncDisposable
         installUpdates = Platform.UpdateInstaller.Supported,
         overlay = Platform.Overlay.Supported,
         sendKeys = Platform.KeySender.Supported,
+        desktopWidgets = Platform.DesktopWidgets.Supported,
     };
 
     object HelloInfo(RpcSession s) => new
@@ -133,6 +136,9 @@ public sealed class CompanionServices : IAsyncDisposable
         Runner.ObsReplaySave = () => Capture.Run("replay");
         Runner.ObsReplayBufferToggle = () => Capture.Run("buffer");
         Platform.Overlay.Changed += () => { Rpc.Changed("overlay"); UpdateGameMode(); };
+        Widgets.Changed += () => Platform.DesktopWidgets.Sync(Widgets.DesktopWidgets());
+        Platform.DesktopWidgets.Moved += Widgets.SetDesktopPosition;
+        Platform.DesktopWidgets.Sync(Widgets.DesktopWidgets());
         Obs.RecordingChanged += (active, path) => Notifications.Push("obs-record", Severity.Success, active ? "Aufnahme läuft" : "Aufnahme gespeichert", active ? "OBS nimmt auf." : path, "/overlay-settings");
         Obs.ReplaySaved += path => Notifications.Push("obs-replay", Severity.Success, "Replay gespeichert", path, "/overlay-settings");
         Plugins.RunSteps = (steps, by) => Runner.RunAsync(steps, by);
@@ -336,6 +342,7 @@ public sealed class CompanionServices : IAsyncDisposable
     {
         var gaming = Sessions.AnyGameRunning();
         GameActivity.Set(gaming);
+        Platform.DesktopWidgets.SetPaused(gaming);
         var step = gaming && Platform.Overlay.Visible != "full";
         var audioLive = Audio.Engine.MicPassthroughActive;
         if (_gameMode == (step, audioLive)) return;
