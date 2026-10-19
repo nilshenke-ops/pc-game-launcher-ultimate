@@ -133,10 +133,10 @@ public sealed class ClaudeAssistant
                 // Chat answers: low effort keeps them quick and cheap; thinking stays adaptive (the model decides).
                 OutputConfig = new BetaOutputConfig { Effort = Effort.Low },
                 Messages = conv.Messages,
-                // On a policy decline the API answers with a suitable other model inside the same call (no model list to maintain).
-                Betas = supportsFallback ? ["server-side-fallback-2026-07-01"] : null,
-                Fallbacks = supportsFallback ? new Default() : null,
             };
+            // On a policy decline the API answers with a suitable other model inside the same call (no model list to maintain).
+            // Only for models that support it – a null value would still be sent as a field.
+            if (supportsFallback) p = p with { Betas = ["server-side-fallback-2026-07-01"], Fallbacks = new Default() };
             BetaMessage r;
             try { r = await client.Beta.Messages.Create(p, ct); }
             catch (AnthropicUnauthorizedException) { throw new RpcException("assistant-key", "Claude lehnt den API-Schlüssel ab. Bitte am PC unter Assistent → Claude neu eintragen."); }

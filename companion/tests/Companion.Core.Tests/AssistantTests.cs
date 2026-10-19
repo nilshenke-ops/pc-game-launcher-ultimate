@@ -281,6 +281,22 @@ public class AssistantTests
     }
 
     [Fact]
+    public async Task Cheaper_model_without_fallback_sends_no_fallback_fields()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        var a = WithFake(s, dir, fake);
+        a.Configure(new AssistantService.Config { Model = "claude-haiku-5-5" }, atPc: true);
+        fake.Responses.Enqueue(FakeClaude.Msg("end_turn", new object[] { new { type = "text", text = "Hallo!" } }, model: "claude-haiku-5-5"));
+        var r = J(await a.AskAsync("local", "PC", null, "Erzähl mir einen Witz über Gamer und Lag"));
+        Assert.Equal("Hallo!", r.GetProperty("reply").GetProperty("text").GetString());
+        var req = fake.Requests.Single();
+        Assert.Equal("claude-haiku-5-5", req.GetProperty("model").GetString());
+        Assert.False(req.TryGetProperty("fallbacks", out _), req.GetRawText()[..200]);
+    }
+
+    [Fact]
     public async Task Commands_stay_local_and_the_monthly_limit_is_respected()
     {
         using var dir = new TempDir();
