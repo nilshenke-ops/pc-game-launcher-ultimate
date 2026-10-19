@@ -27,7 +27,7 @@ export default function DesktopWidget() {
   if (!w) return <div className="dw-msg">{conn.auth !== "ok" ? t("Verbinde mit dem Begleiter …") : q.loading ? "" : t("Dieses Widget wurde im Widget-Baukasten gelöscht.")}</div>;
   return (
     <div className="dw-root" onPointerDown={drag} title={t("Ziehen zum Verschieben")}>
-      <CustomWidgetView widget={{ ...w, opacity: 1, radius: 0 }} height="100vh" />
+      <CustomWidgetView widget={{ ...w, opacity: 1 }} height="100vh" />
     </div>
   );
 }

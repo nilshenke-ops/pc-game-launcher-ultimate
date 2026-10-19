@@ -674,5 +674,5 @@ html.overlay-mode .app-bg { display: none; }
 html.desktop-widget-mode, html.desktop-widget-mode body { background: #111827; overflow: hidden; margin: 0; }
 html.desktop-widget-mode .app-bg { display: none; }
 .dw-root { height: 100vh; cursor: grab; user-select: none; }
-.dw-root .cw { box-shadow: none; }
+.dw-root .cw { box-shadow: none; border-radius: 0 !important; } /* the window itself is rounded; buttons keep their corners */
 .dw-msg { height: 100vh; display: grid; place-items: center; color: #cbd5e1; font: 13px system-ui, sans-serif; padding: 12px; text-align: center; }
