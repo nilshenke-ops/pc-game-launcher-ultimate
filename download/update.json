@@ -1,30 +1,31 @@
 {
-  "version": "2.4.0",
+  "version": "2.5.0",
   "date": "2026-10-19",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.4.0/PCGameLauncherCompanion.exe",
-  "size": 87193096,
-  "sha256": "5004f392aff90603ea0c2723429d7adf5e484c748447bad46c7b2e616ac5aff0",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.5.0/PCGameLauncherCompanion.exe",
+  "size": 87209456,
+  "sha256": "f8cc3fc5277cc5fb01cec6aa1262119c9ed3b55ebf12fcfafa1f377a4c3ffd21",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.4.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.4.0/PCGameLauncherCompanion-2.4.0-win-x64.zip",
-    "size": 81458860,
-    "sha256": "d85c9212c7fd02208a7902a21bc8132a6ef72460700e16177c717629c7d0fddb"
+    "fileName": "PCGameLauncherCompanion-2.5.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.5.0/PCGameLauncherCompanion-2.5.0-win-x64.zip",
+    "size": 81474826,
+    "sha256": "19d8979e3299b4fbae9562a37bcdbca71dce702130380f7bafeb6cbfbb5fba96"
   },
-  "notes": "KI-Assistent „Lokale KI“ für 0 €: ein freies Sprachmodell über Ollama direkt auf deinem PC – ohne Konto, ohne Kosten, nichts verlässt den PC; installierte Modelle werden angezeigt, Empfehlungen mit Größe und Grafikspeicher · Befehle, PC-Werte, Spielzeit und App-Fragen beantwortet dabei immer der genaue lokale Assistent – das Sprachmodell nur freie Fragen (kleine Modelle erfanden im Test Messwerte) · Während eines Spiels antwortet standardmäßig nur der lokale Assistent, das Modell wird 2 Minuten nach der letzten Frage aus dem Grafikspeicher entfernt",
+  "notes": "Update-Wächter: Stürzt eine neu installierte Version zweimal ab, bevor sie eine Minute stabil lief, startet der Begleiter beim nächsten Start von selbst wieder die letzte stabile Version und meldet das; normales Beenden und Herunterfahren zählen nie als Absturz. Die Update-Zentrale zeigt den Zustand · Benachrichtigungen bleiben gespeichert (30 Tage, höchstens 200): „Offen“ und „Verlauf“, gelesen/ungelesen mit Punkt, Kategorien als Filter (Updates, Starts, Automatisierungen, Spielmodus, Plugins, GameQuest, Deal Radar, Aufnahme, Assistent, System), Verlauf löschen · Ruhemodus während eines Spiels gilt jetzt auch für die Windows-Hinweise des PCs: dann nur noch Fehler",
   "changes": {
     "neu": [
-      "KI-Assistent „Lokale KI“ für 0 €: ein freies Sprachmodell über Ollama direkt auf deinem PC – ohne Konto, ohne Kosten, nichts verlässt den PC; installierte Modelle werden angezeigt, Empfehlungen mit Größe und Grafikspeicher",
-      "Befehle, PC-Werte, Spielzeit und App-Fragen beantwortet dabei immer der genaue lokale Assistent – das Sprachmodell nur freie Fragen (kleine Modelle erfanden im Test Messwerte)",
-      "Während eines Spiels antwortet standardmäßig nur der lokale Assistent, das Modell wird 2 Minuten nach der letzten Frage aus dem Grafikspeicher entfernt",
-      "Lokaler Assistent: „Welche Spiele habe ich?“ listet die Bibliothek mit Favoriten und „diesen Monat noch nicht gespielt“",
-      "Modusauswahl zeigt die Kosten: „Lokal (0 €)“, „Lokale KI (0 €)“, „Claude (kostenpflichtig)“"
+      "Update-Wächter: Stürzt eine neu installierte Version zweimal ab, bevor sie eine Minute stabil lief, startet der Begleiter beim nächsten Start von selbst wieder die letzte stabile Version und meldet das; normales Beenden und Herunterfahren zählen nie als Absturz. Die Update-Zentrale zeigt den Zustand",
+      "Benachrichtigungen bleiben gespeichert (30 Tage, höchstens 200): „Offen“ und „Verlauf“, gelesen/ungelesen mit Punkt, Kategorien als Filter (Updates, Starts, Automatisierungen, Spielmodus, Plugins, GameQuest, Deal Radar, Aufnahme, Assistent, System), Verlauf löschen",
+      "Ruhemodus während eines Spiels gilt jetzt auch für die Windows-Hinweise des PCs: dann nur noch Fehler",
+      "Spielmodus für Programme (Profile → „Spielmodus: Programme schließen“): gewählte Programme werden beim Spielstart gebeten, sich zu schließen – wie ein Klick auf ihr X, nie hart beendet – und nach dem letzten Spiel wieder geöffnet; Vorschau zeigt, was gerade laufen würde; Windows-Prozesse, Spiele-Launcher, Anti-Cheat und der Begleiter sind gesperrt, das laufende Spiel wird nie angefasst",
+      "Messwerte einzeln abschaltbar (PC Monitor → Messwerte): CPU, Arbeitsspeicher, Grafikkarte, Laufwerke – ausgeschaltet wird der Wert gar nicht erst gemessen (bei der Grafikkarte läuft dann kein nvidia-smi), auch nicht für Overlay, Spiel-Statistik und Assistent"
     ],
-    "verbessert": [],
-    "behoben": [
-      "Lange Sätze mit „spielen“ wurden als Startbefehl gelesen („… habe ich nicht gefunden“)"
-    ]
+    "verbessert": [
+      "Backup: Widgets, GameQuest, Deal Radar und die Spielmodus-Liste sind beim Einspielen einzeln abwählbar",
+      "KI-Assistent kennt Update-Wächter, Spielmodus, Messwert-Schalter und den Benachrichtigungs-Verlauf"
+    ],
+    "behoben": []
   },
-  "signature": "omCAEi5N/ucYWiXJFQQksAa/Qt17Xqm4oJHt8Ffg0FNxiu3iAmJlbMSz9KdSCYqeM+/X6lvyE9IuSR1QhKDFjQ=="
+  "signature": "1dkJ1ZlNjVNL4bHjdN070FTqoyTDdYjH2XkoaT9ISUH3W3zeP9hxQ5AtwgyW+Ss0Z5OqLoY+dy4z/GGpvixV4g=="
 }
