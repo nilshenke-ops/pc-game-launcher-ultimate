@@ -1,32 +1,29 @@
 {
-  "version": "1.8.0",
+  "version": "1.9.0",
   "date": "2026-10-19",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.8.0/PCGameLauncherCompanion.exe",
-  "size": 84376634,
-  "sha256": "e984c861451e329392f929a7746cef824c569924f1b4f3f35d2d6cdd1f064283",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.9.0/PCGameLauncherCompanion.exe",
+  "size": 84400970,
+  "sha256": "09b922789a9cba75fbe9731db0ec64514e44d8d2f7af627ea1fa9304fe2273b5",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-1.8.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.8.0/PCGameLauncherCompanion-1.8.0-win-x64.zip",
-    "size": 78705602,
-    "sha256": "1fb090a482226aeded198fef59e88c596f9a090727b804b642c13c33fe14d2f4"
+    "fileName": "PCGameLauncherCompanion-1.9.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.9.0/PCGameLauncherCompanion-1.9.0-win-x64.zip",
+    "size": 78730339,
+    "sha256": "9c96092833a9f73b29358f98586fd5700263159d7b7b0e9dc585858c52338f6f"
   },
-  "notes": "Spielmodus: Solange ein Spiel läuft, tritt der Begleiter zurück – niedrigere Priorität, Windows-Effizienzmodus, Arbeitsspeicher wird freigegeben (bei aktiver Mikrofon-Durchleitung bleibt die Priorität normal, damit der Sprachchat nicht knackt) · Hintergrundarbeit (Steam-, Game-Pass-, Epic/EA-Abgleich, Cover-Suche, Update- und Plugin-Prüfung) wartet, bis kein Spiel mehr läuft · Versteckte Oberflächen ruhen: Hauptfenster im Tray und geschlossenes Overlay brauchen keine Rechenzeit mehr",
+  "notes": "Widget-Baukasten: eigene Widgets frei gestalten – Text, Uhr/Datum, Live-Werte (CPU, RAM, GPU, GPU-Temperatur als Zahl, Balken oder Ring), Knöpfe, Bilder, Spielzeit, „Läuft gerade“ und Flächen · Elemente frei verschieben und in der Größe ändern (ziehen, Ecke, Pfeiltasten), Farben, Verlauf, Hintergrundbild, Deckkraft, Ecken-Rundung, Schriftgröße und Ausrichtung einstellbar; Vorlagen als Startpunkt, Duplizieren · Knöpfe im Widget: Aufnahme, Replay speichern, Overlay, alle Sounds stoppen, Quick Action, Spiel/Programm starten, Sound abspielen, Gaming-Profil aktivieren (nur Ziele dieses PCs, mit den Rechten des Geräts)",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Spielmodus: Solange ein Spiel läuft, tritt der Begleiter zurück – niedrigere Priorität, Windows-Effizienzmodus, Arbeitsspeicher wird freigegeben (bei aktiver Mikrofon-Durchleitung bleibt die Priorität normal, damit der Sprachchat nicht knackt)",
-      "Hintergrundarbeit (Steam-, Game-Pass-, Epic/EA-Abgleich, Cover-Suche, Update- und Plugin-Prüfung) wartet, bis kein Spiel mehr läuft",
-      "Versteckte Oberflächen ruhen: Hauptfenster im Tray und geschlossenes Overlay brauchen keine Rechenzeit mehr",
-      "GPU-Werte: nvidia-smi läuft bei Bedarf dauerhaft mit, statt alle paar Sekunden neu gestartet zu werden; Windows-GPU-Zähler höchstens alle 4 s; Laufwerke höchstens jede Minute",
-      "Spielerkennung öffnet jeden Prozess nur noch einmal (statt alle 5 s alle Prozesse) und liest Pfade nur, wenn ein Spiel über seinen Ordner erkannt wird",
-      "Overlay rechnet im Leerlauf halb so viel (gemessen: 248 → 124 ms in 20 s, Layout-Neuberechnungen 260 → 16): Balken ohne Layout-Neuberechnung, ohne Weichzeichner und Dauer-Animationen",
-      "Neue Overlay-Widgets suchen sich einen freien Platz; Widgets standardmäßig deckender (besser lesbar)",
-      "Design: Option „Leichte Darstellung (spart Leistung)“ ohne Unschärfe, Leuchten und Animationen",
-      "Plugins Game-Overlay 1.2.1 und CPU & RAM Mini 1.0.1: weniger Rechenlast"
+    "neu": [
+      "Widget-Baukasten: eigene Widgets frei gestalten – Text, Uhr/Datum, Live-Werte (CPU, RAM, GPU, GPU-Temperatur als Zahl, Balken oder Ring), Knöpfe, Bilder, Spielzeit, „Läuft gerade“ und Flächen",
+      "Elemente frei verschieben und in der Größe ändern (ziehen, Ecke, Pfeiltasten), Farben, Verlauf, Hintergrundbild, Deckkraft, Ecken-Rundung, Schriftgröße und Ausrichtung einstellbar; Vorlagen als Startpunkt, Duplizieren",
+      "Knöpfe im Widget: Aufnahme, Replay speichern, Overlay, alle Sounds stoppen, Quick Action, Spiel/Programm starten, Sound abspielen, Gaming-Profil aktivieren (nur Ziele dieses PCs, mit den Rechten des Geräts)",
+      "Eigene Widgets auf dem Dashboard (Website und PC-App) und frei verschiebbar im Overlay",
+      "Desktop-Widgets für Windows: eigene kleine Fenster ganz unten auf dem Desktop, per Ziehen verschiebbar; pausieren automatisch, solange ein Spiel läuft",
+      "Widgets ohne PC auf dem Handy/Tablet bauen und platzieren – sie werden beim nächsten Verbinden übertragen; im Backup enthalten"
     ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "7sXmYT8VFs12tMxqI/lVOvOnATnv27kEhL4qpIp2LH/tumCdtHYKeYa+NPYFtMIKgvdO1LUWX3oKdOFCrDeWUQ=="
+  "signature": "aP4MeCVa39NoegZh/huGES2YTltdrUsCO3BXWltjLWAMP+tJxeL1lNM9THyosDx1BFwQoixs5HsESmV9dcr7sQ=="
 }
