@@ -1,5 +1,30 @@
 [
   {
+    "version": "2.10.0",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.10.0/PCGameLauncherCompanion.exe",
+    "size": 87322501,
+    "sha256": "d8113038d03813cd20a661d329a82149f33f427789df85d87a1db7ebed948510",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.10.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.10.0/PCGameLauncherCompanion-2.10.0-win-x64.zip",
+      "size": 81586875,
+      "sha256": "f08e743690211a1bffeb0214e59630a2b5f92cc4950bcce9c12348780ef6fd82"
+    },
+    "notes": "KI-Assistent richtet die App per Auftrag ein – auch ohne PC, 0 €, direkt auf dem Gerät: Design hell/dunkel, Farben, Hintergrund, Schriftgröße, Animationen, untere Leiste (hinzufügen, entfernen, farbig/schlicht; ist sie voll, fragt er, welchen Platz er ersetzen soll), Home-Widgets ein-/ausblenden, Bereiche im Menü ausblenden, Sprache, Profil-Designs · Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen",
+    "changes": {
+      "neu": [
+        "KI-Assistent richtet die App per Auftrag ein – auch ohne PC, 0 €, direkt auf dem Gerät: Design hell/dunkel, Farben, Hintergrund, Schriftgröße, Animationen, untere Leiste (hinzufügen, entfernen, farbig/schlicht; ist sie voll, fragt er, welchen Platz er ersetzen soll), Home-Widgets ein-/ausblenden, Bereiche im Menü ausblenden, Sprache, Profil-Designs",
+        "Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "7dTDs65yD3/SfYiliGThlDXoyR5zx1f/klG5znN6lLsIrhquRZp4ajn11Hl0Obaxcl8b34axuc/YNF8XBmPVHg=="
+  },
+  {
     "version": "2.9.0",
     "date": "2026-10-19",
     "channel": "stable",
