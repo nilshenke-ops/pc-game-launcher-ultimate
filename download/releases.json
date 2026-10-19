@@ -1,5 +1,33 @@
 [
   {
+    "version": "2.2.0",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.2.0/PCGameLauncherCompanion.exe",
+    "size": 84454908,
+    "sha256": "b5842c0198217ec1e11dc89d3922c30cf889b8332bb70fcea26a8bfb0aea9f4e",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.2.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.2.0/PCGameLauncherCompanion-2.2.0-win-x64.zip",
+      "size": 78784092,
+      "sha256": "32e6cef5f7ae78d0286bd266019768d54987a756057dcc3e6a28566cf2d2b9b8"
+    },
+    "notes": "GameQuest: eigene Ziele (Spielzeit, Sitzungen, Siege, Matches; täglich, wöchentlich oder einmalig, für ein Spiel oder alle), XP und Level, 8 Erfolge, Match-Tagebuch mit Siegquote pro Spiel · GameQuest: Spielzeit und Sitzungen kommen aus der Spielerkennung, Siege und Matches nur aus eigenen Einträgen – jeder Wert ist entsprechend gekennzeichnet; erreichte Ziele und Erfolge melden sich als Benachrichtigung · Deal Radar: Wunschliste mit Zielpreis, Suche im Steam-Shop, Preisprüfung höchstens alle 6 Stunden (nie während eines Spiels), eigener Preisverlauf, Benachrichtigung bei erreichtem Zielpreis (erneut erst nach einem weiteren Preisrutsch)",
+    "changes": {
+      "neu": [
+        "GameQuest: eigene Ziele (Spielzeit, Sitzungen, Siege, Matches; täglich, wöchentlich oder einmalig, für ein Spiel oder alle), XP und Level, 8 Erfolge, Match-Tagebuch mit Siegquote pro Spiel",
+        "GameQuest: Spielzeit und Sitzungen kommen aus der Spielerkennung, Siege und Matches nur aus eigenen Einträgen – jeder Wert ist entsprechend gekennzeichnet; erreichte Ziele und Erfolge melden sich als Benachrichtigung",
+        "Deal Radar: Wunschliste mit Zielpreis, Suche im Steam-Shop, Preisprüfung höchstens alle 6 Stunden (nie während eines Spiels), eigener Preisverlauf, Benachrichtigung bei erreichtem Zielpreis (erneut erst nach einem weiteren Preisrutsch)",
+        "Deal Radar ist ausgeschaltet, bis du es einschaltest – vorher geht keine einzige Anfrage an Steam; Quelle und Zeitpunkt stehen bei jedem Preis",
+        "Beide Bereiche funktionieren ohne PC-Verbindung (Ziele, Matches und Wunschliste werden vorgemerkt) und sind im Backup enthalten"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "nG/74+8l1PJF1var1ccyOprfi8foxlwrGJtt6+c8mfIXO+BDoDH5vwsdQDPvjRa3JCg7cz09jXpPdN9RtHnNSg=="
+  },
+  {
     "version": "2.1.0",
     "date": "2026-10-19",
     "channel": "stable",
