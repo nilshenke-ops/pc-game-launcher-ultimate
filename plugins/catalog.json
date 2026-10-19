@@ -5,7 +5,7 @@
     {
       "id": "de.pgl.cpu-mini",
       "name": "CPU & RAM Mini",
-      "version": "1.0.0",
+      "version": "1.0.1",
       "description": "Kleines Live-Widget mit CPU- und RAM-Auslastung des PCs (echte Messwerte, nur solange sichtbar).",
       "author": "PC Game Launcher",
       "category": "performance",
@@ -17,10 +17,17 @@
       ],
       "minAppVersion": "1.2.0",
       "trust": "official",
-      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.cpu-mini-1.0.0.pglplugin",
-      "sha256": "603365b68afcffd972c00b45e59c0be845bff4f82444fb3624d40bc82251c71e",
-      "size": 1106,
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.cpu-mini-1.0.1.pglplugin",
+      "sha256": "b5baf320faa82dc9a8f55860072d41508e3846397f8868246afe808e69876a88",
+      "size": 1219,
       "changelog": [
+        {
+          "version": "1.0.1",
+          "date": "2026-10-19",
+          "changes": [
+            "Weniger Rechenlast: Balken ohne Layout-Neuberechnung"
+          ]
+        },
         {
           "version": "1.0.0",
           "date": "2026-10-18",
@@ -92,7 +99,7 @@
     {
       "id": "de.pgl.game-overlay",
       "name": "Game-Overlay",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "description": "Overlay im Spiel wie die Xbox Game Bar: CPU, RAM und GPU live, Aufnahme starten/stoppen, Replay-Puffer und „Replay speichern“ – mit OBS Studio, NVIDIA, Xbox Game Bar, Steam oder Discord (wählbar unter „Overlay & Aufnahme“, auch gemischt – z. B. Aufnahme mit OBS, Replays als Discord-Clip). Dazu Aktionen für frei wählbare Tastenkürzel.",
       "author": "PC Game Launcher",
       "category": "performance",
@@ -107,10 +114,17 @@
       ],
       "minAppVersion": "1.6.0",
       "trust": "official",
-      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.game-overlay-1.2.0.pglplugin",
-      "sha256": "c8ef1423be074361e6980a050e0577e72e5dc751dd9f46af73c4e71c0764929b",
-      "size": 4071,
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.game-overlay-1.2.1.pglplugin",
+      "sha256": "1850a7a3fd41c5613f8d98a7a65941c956c21305a4466f3b5db55e785cc8a181",
+      "size": 4182,
       "changelog": [
+        {
+          "version": "1.2.1",
+          "date": "2026-10-19",
+          "changes": [
+            "Weniger Rechenlast: Balken ohne Layout-Neuberechnung, keine Dauer-Animation"
+          ]
+        },
         {
           "version": "1.2.0",
           "date": "2026-10-18",

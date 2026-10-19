@@ -1,25 +1,32 @@
 {
-  "version": "1.7.1",
+  "version": "1.8.0",
   "date": "2026-10-19",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.1/PCGameLauncherCompanion.exe",
-  "size": 84370077,
-  "sha256": "14d2919818634c7a09a04c54cc2a6f1102ee3bf702f8db22ae12ab78bf1cf51f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.8.0/PCGameLauncherCompanion.exe",
+  "size": 84376634,
+  "sha256": "e984c861451e329392f929a7746cef824c569924f1b4f3f35d2d6cdd1f064283",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-1.7.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.1/PCGameLauncherCompanion-1.7.1-win-x64.zip",
-    "size": 78698339,
-    "sha256": "8d52cc3b1a90c9a6a2548fcff814577b751a6fa6f37ca018f2a5bb821b5c116e"
+    "fileName": "PCGameLauncherCompanion-1.8.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.8.0/PCGameLauncherCompanion-1.8.0-win-x64.zip",
+    "size": 78705602,
+    "sha256": "1fb090a482226aeded198fef59e88c596f9a090727b804b642c13c33fe14d2f4"
   },
-  "notes": "Drei neue Cartoon-Hintergründe: Cartoon Nacht, Cartoon Unterwasser, Cartoon Weltall · Cartoon-Hintergründe haben eine eigene Hochformat-Zeichnung fürs Handy (statt eines beschnittenen Querformat-Bilds); Figuren liegen am Rand, damit Text gut lesbar bleibt",
+  "notes": "Spielmodus: Solange ein Spiel läuft, tritt der Begleiter zurück – niedrigere Priorität, Windows-Effizienzmodus, Arbeitsspeicher wird freigegeben (bei aktiver Mikrofon-Durchleitung bleibt die Priorität normal, damit der Sprachchat nicht knackt) · Hintergrundarbeit (Steam-, Game-Pass-, Epic/EA-Abgleich, Cover-Suche, Update- und Plugin-Prüfung) wartet, bis kein Spiel mehr läuft · Versteckte Oberflächen ruhen: Hauptfenster im Tray und geschlossenes Overlay brauchen keine Rechenzeit mehr",
   "changes": {
-    "neu": [
-      "Drei neue Cartoon-Hintergründe: Cartoon Nacht, Cartoon Unterwasser, Cartoon Weltall",
-      "Cartoon-Hintergründe haben eine eigene Hochformat-Zeichnung fürs Handy (statt eines beschnittenen Querformat-Bilds); Figuren liegen am Rand, damit Text gut lesbar bleibt"
+    "neu": [],
+    "verbessert": [
+      "Spielmodus: Solange ein Spiel läuft, tritt der Begleiter zurück – niedrigere Priorität, Windows-Effizienzmodus, Arbeitsspeicher wird freigegeben (bei aktiver Mikrofon-Durchleitung bleibt die Priorität normal, damit der Sprachchat nicht knackt)",
+      "Hintergrundarbeit (Steam-, Game-Pass-, Epic/EA-Abgleich, Cover-Suche, Update- und Plugin-Prüfung) wartet, bis kein Spiel mehr läuft",
+      "Versteckte Oberflächen ruhen: Hauptfenster im Tray und geschlossenes Overlay brauchen keine Rechenzeit mehr",
+      "GPU-Werte: nvidia-smi läuft bei Bedarf dauerhaft mit, statt alle paar Sekunden neu gestartet zu werden; Windows-GPU-Zähler höchstens alle 4 s; Laufwerke höchstens jede Minute",
+      "Spielerkennung öffnet jeden Prozess nur noch einmal (statt alle 5 s alle Prozesse) und liest Pfade nur, wenn ein Spiel über seinen Ordner erkannt wird",
+      "Overlay rechnet im Leerlauf halb so viel (gemessen: 248 → 124 ms in 20 s, Layout-Neuberechnungen 260 → 16): Balken ohne Layout-Neuberechnung, ohne Weichzeichner und Dauer-Animationen",
+      "Neue Overlay-Widgets suchen sich einen freien Platz; Widgets standardmäßig deckender (besser lesbar)",
+      "Design: Option „Leichte Darstellung (spart Leistung)“ ohne Unschärfe, Leuchten und Animationen",
+      "Plugins Game-Overlay 1.2.1 und CPU & RAM Mini 1.0.1: weniger Rechenlast"
     ],
-    "verbessert": [],
     "behoben": []
   },
-  "signature": "kyU89O0lywk+4XUJRsCU95vPSr5P0Z/B4lGH+wG+gnloqsP8CVBM0I80Hg4VSbuhjB7mYWgI6UBmjrwekoN/yw=="
+  "signature": "7sXmYT8VFs12tMxqI/lVOvOnATnv27kEhL4qpIp2LH/tumCdtHYKeYa+NPYFtMIKgvdO1LUWX3oKdOFCrDeWUQ=="
 }
