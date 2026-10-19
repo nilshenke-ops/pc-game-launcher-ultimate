@@ -44,6 +44,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public CaptureService Capture { get; }
     public CustomWidgetService Widgets { get; }
     public BackupService Backup { get; }
+    public QuestService Quests { get; }
+    public DealService Deals { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
 
@@ -92,6 +94,8 @@ public sealed class CompanionServices : IAsyncDisposable
         Widgets = new CustomWidgetService(paths, Rpc);
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
+        Quests = new QuestService(paths, () => History.Export().Sessions, id => Library.Get(id)?.Name, Rpc);
+        Deals = new DealService(paths, Rpc);
 
         Wire();
         Rpc.HelloInfo = HelloInfo;
@@ -149,6 +153,8 @@ public sealed class CompanionServices : IAsyncDisposable
         Obs.RecordingChanged += (active, path) => Notifications.Push("obs-record", Severity.Success, active ? "Aufnahme läuft" : "Aufnahme gespeichert", active ? "OBS nimmt auf." : path, "/overlay-settings");
         Obs.ReplaySaved += path => Notifications.Push("obs-replay", Severity.Success, "Replay gespeichert", path, "/overlay-settings");
         Plugins.RunSteps = (steps, by) => Runner.RunAsync(steps, by);
+        Quests.Reached = (title, text) => Notifications.Push("quest:" + title, Severity.Success, title, text, "/quests");
+        Deals.TargetReached = (title, text) => Notifications.Push("deal:" + title, Severity.Success, title, text, "/deals");
         Plugins.Notify = (title, text) => Notifications.Push("plugin:" + title, Severity.Warning, title, text, "/plugins");
 
         Library.Launched += (item, result, by) =>
@@ -182,6 +188,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             _ = Automations.Fire(TriggerType.GameStopped, item.Id);
+            GameActivity.RunWhenIdle("quests", () => { try { Quests.Get(); } catch (Exception ex) { Log.Warn("quests", ex.Message); } return Task.CompletedTask; });
             UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs" && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
         };
@@ -383,6 +390,7 @@ public sealed class CompanionServices : IAsyncDisposable
         NetMonitor.Dispose();
         Steam.Dispose();
         Launchers.Dispose();
+        Deals.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
         await Relay.DisposeAsync();

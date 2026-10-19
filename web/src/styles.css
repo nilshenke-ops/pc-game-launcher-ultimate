@@ -716,3 +716,22 @@ html.desktop-widget-mode .app-bg { display: none; }
 .run-log li.fail { border-left-color: var(--danger); }
 .pad.missing { opacity: 0.55; border-style: dashed; }
 .pad-missing { color: var(--danger); font-weight: 700; }
+
+/* GameQuest & Deal Radar */
+.stack-xs { display: flex; flex-direction: column; gap: 3px; }
+.plain-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ok-text { color: var(--success); }
+.meter.q-done > i { background: linear-gradient(90deg, #34d399, #10b981); }
+.q-level { display: flex; flex-direction: column; gap: 10px; }
+.q-lvl { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; font-weight: 800; font-size: 1.2rem; color: var(--on-primary); background: linear-gradient(135deg, var(--primary), var(--accent)); }
+.q-goal { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); }
+.q-goal.muted { opacity: 0.65; }
+.q-ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.q-ach { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); color: var(--muted); }
+.q-ach.on { color: var(--text); border-color: rgba(var(--accent-rgb), 0.5); background: rgba(var(--accent-rgb), 0.08); }
+.q-ach .badge { align-self: flex-start; }
+.deal { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); }
+.deal.hit { border-color: rgba(52, 211, 153, 0.55); background: rgba(52, 211, 153, 0.06); }
+.deal-prices { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.deal-now { font-size: 1.25rem; font-weight: 800; }
+.deal-spark { max-width: 260px; height: 36px; }

@@ -1,0 +1,36 @@
+import { describe, expect, it } from "vitest";
+import { clientId, levelPercent, lowestSeen, money, parsePrice, progressPercent } from "./quest-deal";
+
+describe("quest/deal helpers", () => {
+  it("makes ids the PC accepts", () => {
+    expect(clientId("goal")).toMatch(/^goal_[A-Za-z0-9_-]{4,40}$/);
+    expect(clientId("match")).toMatch(/^match_[A-Za-z0-9_-]{4,40}$/);
+    expect(clientId("wish")).toMatch(/^wish_[A-Za-z0-9_-]{4,40}$/);
+    expect(clientId("wish")).not.toBe(clientId("wish"));
+  });
+
+  it("parses prices", () => {
+    expect(parsePrice("19,99")).toBe(1999);
+    expect(parsePrice("19.9")).toBe(1990);
+    expect(parsePrice(" 20 € ")).toBe(2000);
+    expect(parsePrice("")).toBeNull();
+    expect(parsePrice("abc")).toBeNaN();
+    expect(parsePrice("1.2.3")).toBeNaN();
+    expect(parsePrice("-5")).toBeNaN();
+  });
+
+  it("formats money and never invents a price", () => {
+    expect(money(null, "EUR")).toBe("–");
+    expect(money(1999, "EUR")).toMatch(/19,99/);
+    expect(money(1999, "XYZ1")).toBe("19.99 XYZ1"); // unknown currency code → plain text
+  });
+
+  it("calculates progress", () => {
+    expect(progressPercent(null, 10)).toBeNull();
+    expect(progressPercent(5, 10)).toBe(50);
+    expect(progressPercent(30, 10)).toBe(100);
+    expect(levelPercent(150, 100, 300)).toBe(25);
+    expect(lowestSeen([])).toBeNull();
+    expect(lowestSeen([{ final: 2999 }, { final: 1499 }, { final: 1999 }])).toBe(1499);
+  });
+});

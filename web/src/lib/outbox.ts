@@ -61,6 +61,13 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "network.setTargets": () => t("Eigene Ping-Ziele speichern"),
   "widgets.save": (p) => t("Eigenes Widget speichern {n}", { n: name(p) }),
   "widgets.remove": () => t("Eigenes Widget löschen"),
+  "quests.saveGoal": (p) => t("Ziel speichern {n}", { n: name(p, "title") }),
+  "quests.removeGoal": () => t("Ziel löschen"),
+  "quests.addMatch": (p) => t("Match eintragen {n}", { n: name(p, "game") }),
+  "quests.removeMatch": () => t("Match löschen"),
+  "deals.save": (p) => t("Wunschliste: {n} speichern", { n: name(p, "title") }),
+  "deals.remove": () => t("Von der Wunschliste entfernen"),
+  "deals.configure": (p) => (p.enabled === true ? t("Preisabfrage einschalten") : p.enabled === false ? t("Preisabfrage ausschalten") : t("Shop-Land ändern")),
   "history.setNote": () => t("Notiz zur Spielsitzung"),
   "plugins.installCatalog": (p) => t("Plugin installieren {n}", { n: name(p, "label") }),
   "plugins.importFile": (p) => t("Plugin-Datei installieren {n}", { n: name(p, "label") }),
@@ -155,6 +162,10 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "overlay.layout": {},
   "widgets.list": { widgets: [] },
   "network.targets": { targets: [] },
+  // Progress, XP and achievements are calculated on the PC; offline only the own goals and matches are shown.
+  "quests.get": { offline: true, xp: 0, level: 1, levelFrom: 0, levelTo: 100, goals: [], achievements: [], matchStats: [], matches: [], ledger: [],
+    totals: { minutes: 0, sessions: 0, games: 0, longestStreakDays: 0, wins: 0, matches: 0 }, historySessions: 0 },
+  "deals.list": { enabled: false, country: "de", lastRunAt: null, source: "Steam-Shop (store.steampowered.com)", intervalHours: 6, items: [] },
   "obs.status": { url: "ws://127.0.0.1:4455", passwordSet: false, replayWhilePlaying: false, connected: false, offline: true },
   // Whether this PC can show the overlay is only known once it is connected.
   "overlay.status": { supported: false, visible: null, unknown: true },
@@ -234,6 +245,22 @@ function applyLocally(method: string, p: Params): unknown {
     case "network.setTargets": patch<Params>("network.targets", () => ({ targets: p.targets ?? [] })); return { targets: p.targets ?? [] };
     case "widgets.save": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: upsert(d.widgets, p as unknown as WithId) })); return p;
     case "widgets.remove": patch<{ widgets: WithId[] }>("widgets.list", (d) => ({ ...d, widgets: d.widgets.filter((w) => w.id !== p.id) })); return true;
+    // Goal, match and wish ids are made on the device (goal_/match_/wish_…), so a repeated send changes nothing on the PC.
+    case "quests.saveGoal":
+      patch<{ goals: WithId[] }>("quests.get", (d) => ({ ...d, goals: upsert(d.goals.map((g) => (g.id === p.id ? { ...g, value: null, done: false } : g)), { value: null, done: false, ...p } as unknown as WithId) }));
+      return p;
+    case "quests.removeGoal": patch<{ goals: WithId[] }>("quests.get", (d) => ({ ...d, goals: d.goals.filter((g) => g.id !== p.id) })); return true;
+    case "quests.addMatch":
+      patch<{ matches: WithId[] }>("quests.get", (d) => ({ ...d, matches: d.matches.some((m) => m.id === p.id) ? d.matches : [{ ...p, game: p.game || "?" } as unknown as WithId, ...d.matches] }));
+      return p;
+    case "quests.removeMatch": patch<{ matches: WithId[] }>("quests.get", (d) => ({ ...d, matches: d.matches.filter((m) => m.id !== p.id) })); return true;
+    case "deals.save":
+      patch<{ items: WithId[] }>("deals.list", (d) => ({ ...d, items: upsert(d.items, { history: [], ...p } as unknown as WithId) }));
+      return p;
+    case "deals.remove": patch<{ items: WithId[] }>("deals.list", (d) => ({ ...d, items: d.items.filter((i) => i.id !== p.id) })); return true;
+    case "deals.configure":
+      patch<Params>("deals.list", (d) => ({ ...d, ...(typeof p.enabled === "boolean" ? { enabled: p.enabled } : {}), ...(typeof p.country === "string" ? { country: p.country } : {}) }));
+      return readCache("deals.list")?.data;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
     case "capture.configure": {
       patch<Params>("capture.status", (d) => {

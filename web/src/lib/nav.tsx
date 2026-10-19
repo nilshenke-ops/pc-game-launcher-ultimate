@@ -1,7 +1,7 @@
 import {
   Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, HardDrive, Headphones, Heart, HelpCircle, History, Home,
   Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, Wifi, ShieldCheck, Smartphone, Sparkles, Star,
-  Stethoscope, Swords, Timer, Trophy, Tv, Video, Volume2, Wand2, Zap, type LucideIcon,
+  Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Zap, type LucideIcon,
 } from "lucide-react";
 import { t } from "./i18n";
 
@@ -34,6 +34,8 @@ export function navItems(): NavItem[] {
     { path: "/devices", label: t("Geräte"), icon: Smartphone, group: g.conn, keywords: "verbindungen gekoppelt" },
     { path: "/pair", label: t("Gerät koppeln"), short: t("Koppeln"), icon: Link2, group: g.conn, keywords: "qr code kopplung" },
     { path: "/plugins", label: t("Plugin Center"), short: t("Plugins"), icon: Puzzle, group: g.ext, keywords: "plugins erweiterungen store widgets themes addons module" },
+    { path: "/quests", label: t("GameQuest"), short: t("Quests"), icon: Trophy, group: g.ext, keywords: "ziele xp level erfolge achievements matches siege statistik quest" },
+    { path: "/deals", label: t("Deal Radar"), short: t("Deals"), icon: Tag, group: g.ext, keywords: "wunschliste preis angebot sale rabatt steam zielpreis deal" },
     { path: "/notifications", label: t("Benachrichtigungen"), short: t("Hinweise"), icon: Bell, group: g.admin },
     { path: "/settings", label: t("Einstellungen"), short: t("Einstell."), icon: Settings, group: g.admin, keywords: "design sprache backup update navigation" },
     { path: "/diagnostics", label: t("Diagnose"), icon: Stethoscope, group: g.admin, keywords: "netzwerk fehler logs" },

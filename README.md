@@ -1,6 +1,6 @@
 # Nexus Gaming Hub (früher PC Game Launcher Ultimate)
 
-Gaming-Zentrale für deinen Windows-PC: Spiele und Programme starten, Soundboard (für Discord über ein virtuelles Audiokabel – in einer echten Discord-Runde nicht getestet), Gaming-Profile, Automatisierungen, Hotkeys & Makros, Overlay & Aufnahme, eigene Widgets, Netzwerkdiagnose und Live-PC-Monitor – bedienbar am PC und vom iPhone, iPad oder Android-Handy.
+Gaming-Zentrale für deinen Windows-PC: Spiele und Programme starten, Soundboard (für Discord über ein virtuelles Audiokabel – in einer echten Discord-Runde nicht getestet), Gaming-Profile, Automatisierungen, Hotkeys & Makros, Overlay & Aufnahme, eigene Widgets, Netzwerkdiagnose, GameQuest, Deal Radar und Live-PC-Monitor – bedienbar am PC und vom iPhone, iPad oder Android-Handy.
 
 Seit 2.0.0 heißt die Oberfläche „Nexus Gaming Hub“. EXE-Name (`PCGameLauncherCompanion.exe`), Datenordner (`%APPDATA%\PCGameLauncherUltimate`) und Update-Adresse behalten bewusst den alten Namen, damit Updates und gekoppelte Geräte weiter funktionieren.
 
@@ -81,6 +81,8 @@ Unter Windows ohne Bash: `powershell -ExecutionPolicy Bypass -File scripts\publi
 - **Overlay & Aufnahme:** Overlay im Stil der Xbox Game Bar mit frei verschiebbaren Widgets; Aufnahme/Replay über OBS (WebSocket) oder per Tastenkürzel an NVIDIA, Xbox Game Bar, Steam, Discord.
 - **Widget-Baukasten:** eigene Widgets frei gestalten – für Dashboard, Overlay und als Windows-Desktop-Widget.
 - **Netzwerkdiagnose (Ping Doctor):** Ping, Jitter, Paketverlust, Verbindungsqualität, eigene Ziele (z. B. Spiel-Server).
+- **GameQuest:** eigene Ziele, XP, Level und Erfolge aus der erkannten Spielzeit; Siege und Matches trägst du selbst ein (die App liest keine Spielstatistiken aus).
+- **Deal Radar:** Wunschliste mit Zielpreis; Preise aus dem Steam-Shop, nur wenn eingeschaltet, mit Benachrichtigung bei Erreichen.
 - **Navigation** in Kategorien, anpassbar (Reihenfolge, Ausblenden, Handy-Leiste).
 - **Plugins** (Widgets, Aktionen, Themes) aus einem signierten Katalog, ohne Code auf dem PC.
 

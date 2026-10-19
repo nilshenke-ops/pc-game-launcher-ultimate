@@ -155,6 +155,25 @@ public static class RpcApi
             return r;
         });
 
+        // ------------------------------------------------------------ GameQuest
+        rpc.Register("quests.get", _ => s.Quests.Get());
+        rpc.Register("quests.saveGoal", ctx => s.Quests.SaveGoal(ctx.Bind<QuestGoal>()));
+        rpc.Register("quests.removeGoal", ctx => { s.Quests.RemoveGoal(ctx.Str("id", 64)); return true; });
+        rpc.Register("quests.addMatch", ctx => s.Quests.AddMatch(ctx.Bind<MatchRecord>()));
+        rpc.Register("quests.removeMatch", ctx => { s.Quests.RemoveMatch(ctx.Str("id", 64)); return true; });
+
+        // ------------------------------------------------------------ Deal Radar
+        rpc.Register("deals.list", _ => s.Deals.List());
+        rpc.Register("deals.configure", ctx =>
+        {
+            bool? enabled = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("enabled", out var e) && e.ValueKind is JsonValueKind.True or JsonValueKind.False ? e.GetBoolean() : null;
+            return s.Deals.Configure(enabled, ctx.OptStr("country", 2));
+        });
+        rpc.Register("deals.search", async ctx => await s.Deals.SearchAsync(ctx.Str("term", 80)));
+        rpc.Register("deals.save", ctx => s.Deals.Save(ctx.Bind<WishItem>()));
+        rpc.Register("deals.remove", ctx => { s.Deals.Remove(ctx.Str("id", 64)); return true; });
+        rpc.Register("deals.refresh", async ctx => await s.Deals.CheckAllAsync(force: true));
+
         // ------------------------------------------------------------ quick actions
         rpc.Register("widgets.list", _ => new { widgets = s.Widgets.List(), desktopSupported = s.Platform.DesktopWidgets.Supported });
         rpc.Register("widgets.save", ctx => s.Widgets.Save(ctx.Bind<CustomWidget>()));

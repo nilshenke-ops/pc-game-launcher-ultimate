@@ -104,6 +104,17 @@ public sealed class JsonStore<T> where T : class, new()
 
     public void Update(Action<T> mutate) => Update<object?>(v => { mutate(v); return null; });
 
+    /// <summary>Like <see cref="Update"/>, but writes the file only when the callback reports a change (for reads that rarely book something).</summary>
+    public TOut UpdateIfChanged<TOut>(Func<T, (TOut result, bool changed)> mutate)
+    {
+        lock (_lock)
+        {
+            var (result, changed) = mutate(_value);
+            if (changed) Save();
+            return result;
+        }
+    }
+
     public void Replace(T value)
     {
         lock (_lock) { _value = value; Save(); }

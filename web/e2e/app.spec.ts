@@ -493,6 +493,58 @@ test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => 
   await pc.goto(`${COMPANION}/#/`);
 });
 
+test("GameQuest: Ziel anlegen, Match eintragen, Werte sind als automatisch/selbst eingetragen gekennzeichnet", async () => {
+  await pc.goto(`${COMPANION}/#/quests`);
+  await expect(pc.getByRole("heading", { name: "GameQuest" })).toBeVisible();
+  await expect(pc.getByText("Level 1", { exact: true })).toBeVisible();
+  await pc.getByRole("button", { name: "Neues Ziel" }).first().click();
+  const dlg = pc.getByRole("dialog", { name: "Neues Ziel" });
+  await dlg.getByRole("textbox", { name: "Name" }).fill("3 Siege am Tag");
+  await dlg.getByRole("radio", { name: "Siege" }).click();
+  await dlg.getByRole("radio", { name: "täglich" }).click();
+  await dlg.getByRole("button", { name: "Speichern" }).click();
+  const goal = pc.locator(".q-goal", { hasText: "3 Siege am Tag" });
+  await expect(goal).toBeVisible();
+  await expect(goal.getByText("selbst eingetragen")).toBeVisible();
+  await expect(goal.getByText(/0 \/ 3 Siege/)).toBeVisible();
+
+  const form = pc.locator(".card", { hasText: "Match eintragen" }).first();
+  await form.getByRole("textbox", { name: "Name des Spiels" }).fill("Schach");
+  await form.getByRole("textbox", { name: "Spielstand (optional)" }).fill("1:0");
+  await form.getByRole("button", { name: "Match eintragen" }).click();
+  await expect(goal.getByText(/1 \/ 3 Siege/)).toBeVisible();
+  await expect(pc.locator("table tr", { hasText: "Schach" })).toContainText("100 %");
+  await pc.getByRole("button", { name: "Match löschen" }).first().click();
+  await expect(goal.getByText(/0 \/ 3 Siege/)).toBeVisible();
+  await expect(pc.locator(".q-ach", { hasText: "Sieger" }).getByText("selbst eingetragen")).toBeVisible();
+  await expect(pc.locator(".q-ach", { hasText: "Erste Runde" }).getByText("automatisch erkannt")).toBeVisible();
+});
+
+test("Deal Radar: ohne Einschalten keine Anfrage, Eintrag von Hand, Zielpreis wird geprüft", async () => {
+  await pc.goto(`${COMPANION}/#/deals`);
+  await expect(pc.getByRole("heading", { name: "Deal Radar" })).toBeVisible();
+  await expect(pc.getByRole("switch", { name: /Preise im Steam-Shop abfragen/ })).not.toBeChecked();
+  await expect(pc.getByRole("button", { name: "Suchen" })).toBeDisabled();
+  await expect(pc.getByRole("button", { name: "Jetzt prüfen" })).toBeDisabled();
+  await pc.getByRole("button", { name: "Von Hand eintragen" }).click();
+  const dlg = pc.getByRole("dialog", { name: "Spiel von Hand eintragen" });
+  await dlg.getByRole("textbox", { name: "Spiel", exact: true }).fill("Hades II");
+  await dlg.getByRole("textbox", { name: /Steam-App-ID/ }).fill("abc");
+  await expect(dlg.getByText("Nur Ziffern")).toBeVisible();
+  await dlg.getByRole("textbox", { name: /Steam-App-ID/ }).fill("1145350");
+  await dlg.getByRole("textbox", { name: "Zielpreis" }).fill("19,99");
+  await dlg.getByRole("button", { name: "Speichern" }).click();
+  const item = pc.locator(".deal", { hasText: "Hades II" });
+  await expect(item).toBeVisible();
+  await expect(item.getByText(/Ziel 19,99/)).toBeVisible();
+  await expect(item.getByText("Preisabfrage ist aus.")).toBeVisible();
+  await expect(item.locator(".deal-now")).toHaveText("–"); // no price without a check – nothing invented
+  await item.getByRole("button", { name: "Hades II bearbeiten" }).click();
+  await pc.getByRole("dialog", { name: "Eintrag bearbeiten" }).getByRole("button", { name: "Entfernen" }).click();
+  await pc.getByRole("dialog", { name: "Von der Wunschliste entfernen?" }).getByRole("button", { name: "Entfernen" }).click();
+  await expect(item).toHaveCount(0);
+});
+
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
   await pc.goto(`${COMPANION}/#/monitor`);
   // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).

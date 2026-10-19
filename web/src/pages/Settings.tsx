@@ -580,6 +580,7 @@ function Privacy() {
             <ul className="small muted" style={{ margin: 0, paddingLeft: 18, display: "grid", gap: 6 }}>
               <li>{t("GitHub Pages: Update-Prüfung und Plugin-Katalog (täglich, nicht während eines Spiels) – sieht die IP-Adresse des PCs.")}</li>
               <li>{t("Steam / Microsoft Store: Cover-Suche (Spielname), Steam-CDN für Bilder (IP-Adresse), Steam Web API mit deinem Schlüssel, Game-Pass-Katalog.")}</li>
+              <li>{t("Deal Radar (nur wenn eingeschaltet, höchstens alle 6 Stunden): Steam-Shop – sieht die IP-Adresse des PCs und die App-IDs deiner Wunschliste.")}</li>
               <li>{t("Netzwerkdiagnose: Ping an Cloudflare (1.1.1.1), Google (8.8.8.8) und deine eigenen Ziele – nur solange die Seite offen ist.")}</li>
               <li>{t("Sound-Links, Bild-Adressen in Widgets und Plugins mit Netzwerk-Recht: die jeweilige Adresse.")}</li>
             </ul>
