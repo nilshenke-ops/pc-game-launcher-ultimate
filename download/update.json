@@ -1,28 +1,25 @@
 {
-  "version": "1.7.0",
+  "version": "1.7.1",
   "date": "2026-10-19",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.0/PCGameLauncherCompanion.exe",
-  "size": 84355645,
-  "sha256": "bde862bffad9fde26269b7bd0a583fdf5bd085b003e6ac030a26b0248da69368",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.1/PCGameLauncherCompanion.exe",
+  "size": 84370077,
+  "sha256": "14d2919818634c7a09a04c54cc2a6f1102ee3bf702f8db22ae12ab78bf1cf51f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-1.7.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.0/PCGameLauncherCompanion-1.7.0-win-x64.zip",
-    "size": 78683121,
-    "sha256": "9248c29e3f509687e9dbebac0664163b290026b7d755ee3de9ce63ee6b2f2aae"
+    "fileName": "PCGameLauncherCompanion-1.7.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.1/PCGameLauncherCompanion-1.7.1-win-x64.zip",
+    "size": 78698339,
+    "sha256": "8d52cc3b1a90c9a6a2548fcff814577b751a6fa6f37ca018f2a5bb821b5c116e"
   },
-  "notes": "Overlay im Stil der Xbox Game Bar: Leiste oben mit Uhr und Widget-Symbolen, Widgets als halbdurchsichtige Fenster frei auf dem ganzen Bildschirm verschiebbar und in der Größe änderbar · Widgets hinzufügen und entfernen: PC-Auslastung, Aufnahme, Quick Actions, Soundboard, Favoriten, Zuletzt gestartet, Audio, Laufende Sounds, Gaming-Profil, Spielesitzung, Benachrichtigungen und alle Plugin-Widgets · Deckkraft einstellbar, Anordnung wird auf dem PC gespeichert; Auswahl auch ohne PC auf dem Handy",
+  "notes": "Drei neue Cartoon-Hintergründe: Cartoon Nacht, Cartoon Unterwasser, Cartoon Weltall · Cartoon-Hintergründe haben eine eigene Hochformat-Zeichnung fürs Handy (statt eines beschnittenen Querformat-Bilds); Figuren liegen am Rand, damit Text gut lesbar bleibt",
   "changes": {
     "neu": [
-      "Overlay im Stil der Xbox Game Bar: Leiste oben mit Uhr und Widget-Symbolen, Widgets als halbdurchsichtige Fenster frei auf dem ganzen Bildschirm verschiebbar und in der Größe änderbar",
-      "Widgets hinzufügen und entfernen: PC-Auslastung, Aufnahme, Quick Actions, Soundboard, Favoriten, Zuletzt gestartet, Audio, Laufende Sounds, Gaming-Profil, Spielesitzung, Benachrichtigungen und alle Plugin-Widgets",
-      "Deckkraft einstellbar, Anordnung wird auf dem PC gespeichert; Auswahl auch ohne PC auf dem Handy"
+      "Drei neue Cartoon-Hintergründe: Cartoon Nacht, Cartoon Unterwasser, Cartoon Weltall",
+      "Cartoon-Hintergründe haben eine eigene Hochformat-Zeichnung fürs Handy (statt eines beschnittenen Querformat-Bilds); Figuren liegen am Rand, damit Text gut lesbar bleibt"
     ],
-    "verbessert": [
-      "Hinter dem Overlay bleibt das Spiel besser sichtbar (weniger abgedunkelt)"
-    ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "eFTbQPxDh8NKVK0sT+U7/QQh6wnmTNOStPjSJQJK0G/Iq6Ijx0mrwSQGfQcVDo234FhlqV9cIketg40RN02ejA=="
+  "signature": "kyU89O0lywk+4XUJRsCU95vPSr5P0Z/B4lGH+wG+gnloqsP8CVBM0I80Hg4VSbuhjB7mYWgI6UBmjrwekoN/yw=="
 }
