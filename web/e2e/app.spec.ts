@@ -545,6 +545,46 @@ test("Deal Radar: ohne Einschalten keine Anfrage, Eintrag von Hand, Zielpreis wi
   await expect(item).toHaveCount(0);
 });
 
+test("KI-Assistent: lokal, ohne Internet – beantwortet App-Fragen, schlägt Aktionen als Knopf vor, Suche leitet weiter", async () => {
+  await pc.goto(`${COMPANION}/#/assistant`);
+  await expect(pc.getByRole("heading", { name: "KI-Assistent" })).toBeVisible();
+  const input = pc.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  await input.fill("Wie richte ich Discord mit dem Soundboard ein?");
+  await input.press("Enter");
+  const last = pc.locator(".as-turn.bot").last();
+  await expect(last).toContainText("CABLE Input");
+  await expect(last).toContainText("Quelle: Wissen: Discord einrichten");
+  await input.fill("Öffne Deal Radar");
+  await input.press("Enter");
+  await pc.locator(".as-turn.bot").last().getByRole("button", { name: "Deal Radar öffnen" }).click();
+  await expect(pc.getByRole("heading", { name: "Deal Radar" })).toBeVisible();
+  // The conversation is still there after coming back.
+  await pc.goto(`${COMPANION}/#/assistant`);
+  await expect(pc.locator(".as-turn.me")).toHaveCount(2);
+  // A command becomes a button – nothing runs before tapping.
+  await input.fill("Stopp alle Sounds");
+  await input.press("Enter");
+  const stop = pc.locator(".as-turn.bot").last().getByRole("button", { name: "Alle Sounds stoppen" });
+  await expect(stop).toBeVisible();
+  await stop.click();
+  await expect(pc.getByText("Alle Sounds gestoppt")).toBeVisible();
+  // From the search: anything typed can be asked.
+  await pc.keyboard.press("Control+k");
+  await pc.getByPlaceholder("Spiele, Sounds, Einstellungen, Befehle …").fill("Wie geht es meinem PC");
+  await pc.getByText("Assistent fragen: „Wie geht es meinem PC“").click();
+  await expect(pc.locator(".as-turn.bot").last()).toContainText("CPU");
+  // Set-up on the PC: key field only here; local mode is the default.
+  await pc.getByRole("button", { name: "Einrichten", exact: true }).click();
+  const dlg = pc.getByRole("dialog", { name: "Assistent einrichten" });
+  await expect(dlg.getByRole("radio", { name: "Lokal (kostenlos)" })).toHaveAttribute("aria-checked", "true");
+  await dlg.getByRole("radio", { name: "Claude" }).click();
+  await expect(pc.getByText("Für Claude zuerst am PC einen API-Schlüssel eintragen.")).toBeVisible();
+  await expect(dlg.getByLabel("Anthropic-API-Schlüssel")).toBeVisible();
+  await dlg.getByRole("button", { name: "Fertig" }).click();
+  await pc.getByRole("button", { name: "Neues Gespräch" }).click();
+  await expect(pc.locator(".as-turn")).toHaveCount(0);
+});
+
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
   await pc.goto(`${COMPANION}/#/monitor`);
   // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).

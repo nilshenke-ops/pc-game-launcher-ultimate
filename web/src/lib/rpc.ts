@@ -343,7 +343,7 @@ class Client {
       const timer = window.setTimeout(() => {
         this.pending.delete(id);
         reject(new RpcError("timeout", t("Der PC hat nicht rechtzeitig geantwortet.")));
-      }, method === "ping" ? 8000 : method === "network.diagnose" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
+      }, method === "ping" ? 8000 : method === "assistant.ask" ? 180000 : method === "network.diagnose" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, timer });
       ws.send(JSON.stringify({ v: PROTOCOL_VERSION, id, m: method, p: params ?? {}, ...(opts?.op ? { op: opts.op } : {}) }));
     });

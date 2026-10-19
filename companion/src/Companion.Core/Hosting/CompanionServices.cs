@@ -46,6 +46,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public BackupService Backup { get; }
     public QuestService Quests { get; }
     public DealService Deals { get; }
+    public Assistant.AssistantService Assistant { get; }
     public RelayClient Relay { get; }
     public WebHost Web { get; }
 
@@ -96,6 +97,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
         Quests = new QuestService(paths, () => History.Export().Sessions, id => Library.Get(id)?.Name, Rpc);
         Deals = new DealService(paths, Rpc);
+        Assistant = new Assistant.AssistantService(paths, platform.Secrets, Rpc, new Assistant.AssistantData(this));
 
         Wire();
         Rpc.HelloInfo = HelloInfo;

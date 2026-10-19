@@ -1,0 +1,200 @@
+# Wissen des Nexus-Assistenten
+
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.3.
+
+## Was ist der Nexus Gaming Hub?
+Stichworte: überblick app was kann programm begleiter companion webseite
+Der Nexus Gaming Hub besteht aus drei Teilen:
+- **Begleiter (Companion)** auf dem Windows-PC: eine EXE ohne Installation. Er startet Spiele und Programme, spielt Sounds ab, misst den PC, führt Automatisierungen aus und liefert die Web-App aus.
+- **Web-App** für Handy, Tablet und PC: dieselbe Oberfläche überall, als Seite vom PC (im WLAN `http://<PC-IP>:8787`) oder als feste Webseite `https://nilshenke-ops.github.io/pc-game-launcher-ultimate`.
+- **Relay** (optional): ein eigener Server für den Zugriff von unterwegs.
+Alle Daten liegen auf dem PC. Keine Telemetrie, keine Werbung, kein Konto.
+
+## Home / Dashboard
+Seite: /
+Stichworte: start übersicht widgets layout dashboard startseite
+Die Startseite zeigt Widgets: laufendes Spiel, Favoriten, Quick Actions, PC-Werte, Soundboard, eigene Widgets und Plugin-Widgets. Anordnung und Größen: Einstellungen → Design & Layout → Dashboard-Layouts (Handy und Desktop getrennt, mehrere Layouts möglich). Ein Profil kann ein Layout mitbringen.
+
+## Spiele (Bibliothek)
+Seite: /games
+Stichworte: spiele bibliothek starten steam epic ea xbox game pass hinzufügen cover favorit kategorie
+Spiele von Steam, Epic, EA, Xbox/Microsoft Store und eigene EXE-Dateien. Hinzufügen: „Hinzufügen“ → erkannte Spiele übernehmen. Eine EXE kann nur **direkt am PC** freigegeben werden (Sicherheit: ein Handy darf keine beliebigen Programme freigeben). Pro Spiel: Favorit, Kategorien, Bewertung, Notiz, Startparameter, Prozessnamen zur Erkennung, Cover. Filter-Chips: Alle, Favoriten, Läuft, Steam, Epic, EA, Game Pass.
+Starten: Spiel antippen → „Starten“. Spiele mit Administratorrechten zeigen die Windows-Abfrage am PC.
+
+## Steam verknüpfen
+Seite: /games
+Stichworte: steam api schlüssel key steam id bibliothek importieren spielzeit
+Unter Spiele → Chip „Steam“: eigenen Steam-Web-API-Schlüssel und Steam-ID eintragen. Dann zeigt die App alle gekauften Spiele mit Spielzeit. Der Schlüssel wird nur verschlüsselt (Windows-DPAPI) auf dem PC gespeichert und nie angezeigt oder ins Backup geschrieben.
+
+## Game Pass
+Seite: /games
+Stichworte: xbox game pass katalog abo
+Chip „Game Pass“ zeigt den öffentlichen Katalog (Markt einstellbar). Muss in den Einstellungen eingeschaltet sein. Ob du ein Abo hast, kann die App nicht prüfen.
+
+## Programme
+Seite: /programs
+Stichworte: programme apps discord browser obs starten freigeben
+Wie Spiele, aber für Programme (Discord, Browser, OBS …). Freigabe einer EXE nur am PC.
+
+## Quick Actions
+Seite: /quick
+Stichworte: quick action schnellaktion mehrere schritte ein tipp makro ablauf
+Eigene Ein-Tipp-Aktionen aus mehreren Schritten, z. B. „Discord öffnen + Profil Streaming + Sound“. Bausteine: Programm/Spiel starten, Profil aktivieren, Sound abspielen, Medientaste, Overlay, Aufnahme/Replay, Benachrichtigung, Warten (Sekunden), „nur wenn läuft / nur wenn nicht läuft“. Optional „Vor dem Ausführen nachfragen“, Favorit, auf dem Dashboard zeigen. Einer Quick Action kann ein Hotkey zugewiesen werden.
+
+## Widget-Baukasten
+Seite: /widgets
+Stichworte: eigene widgets baukasten editor desktop widget uhr knopf gestalten
+Eigene Widgets frei gestalten: Texte, Uhr, Werte (CPU, RAM …), Knöpfe für Aktionen, Bilder, Formen. Verwendbar auf dem Dashboard, im Overlay und als Fenster auf dem Windows-Desktop. Auf dem Windows-Start- oder Sperrbildschirm geht das nicht – Windows erlaubt dort keine fremden Widgets.
+
+## Gaming-Profile
+Seite: /profiles
+Stichworte: profil competitive streaming wechsel automatisch audio layout
+Ein Profil bündelt Audio-Ausgabe, Soundboard-Lautstärke und -Sammlung, Programme, Quick Actions, Hotkeys und Dashboard-Layout. „Automatischer Wechsel“: Startet ein Spiel, das einem Profil zugeordnet ist, wird das Profil aktiv; endet es, kehrt die App zum vorherigen zurück.
+
+## Automatisierungen
+Seite: /automations
+Stichworte: automatisierung wenn dann regel auslöser trigger spielstart
+Wenn-Dann-Regeln, die der Begleiter selbst ausführt. Auslöser: Spiel startet/endet, Profil gewechselt, Audiogerät fehlt, Begleiter gestartet, Update fehlgeschlagen u. a. Schutz vor Endlosschleifen, Drosselung und Erkennung widersprüchlicher Regeln sind eingebaut. Die letzten 10 Ausführungen stehen bei jeder Regel.
+
+## Hotkeys & Makros
+Seite: /hotkeys
+Stichworte: hotkey tastenkürzel tastenkombination global medientasten makro belegt
+Globale Tastenkombinationen am PC, funktionieren auch im Spiel. Aktion: eine Quick Action, ein Sound, ein Profil, eine Medientaste u. a. Status „bereits belegt“ heißt: ein anderes Programm nutzt die Kombination. Von Windows reservierte Kombinationen werden abgelehnt. Makros, die Spiel-Eingaben automatisieren (Tasten spammen, Auto-Bauen, Waffenwechsel), gibt es bewusst nicht – das verstößt gegen die Regeln der meisten Spiele und kann zum Bann führen.
+
+## Soundboard
+Seite: /soundboard
+Stichworte: soundboard sound abspielen myinstants import sammlung lautstärke wiederholen discord
+Sounds werden auf dem PC abgespielt. Import: Datei hochladen (MP3, WAV; OGG braucht unter Windows einen Codec) oder Link (z. B. MyInstants mit öffentlichem MP3). Pro Sound: Name, Lautstärke, Farbe, Wiederholen, Hotkey. Sammlungen gruppieren Sounds; ein Profil kann eine Sammlung aktivieren. „Alle stoppen“ beendet alles. Abspielmodus: überlagern oder ersetzen, maximale Anzahl gleichzeitig.
+
+## Audio Center und Discord
+Seite: /audio
+Stichworte: audio ausgabe gerät mikrofon durchleitung discord virtuelles kabel vb cable mithören testton echo
+Ausgabegerät für das Soundboard, Mithören (Monitoring) auf Kopfhörer, Mikrofon-Durchleitung. Damit andere im Discord-Sprachkanal deine Sounds hören: VB-Audio Virtual Cable installieren, Soundboard-Ausgabe = „CABLE Input“, Mikrofon-Durchleitung an (echtes Mikrofon wählen), in Discord Eingabegerät = „CABLE Output“. Hinweis: Dieser Weg wurde nicht in einer echten Discord-Runde getestet. Die App kann nicht feststellen, ob Discord das Kabel wirklich nutzt.
+
+## Discord einrichten: Sounds für andere hörbar machen
+Seite: /audio
+Stichworte: discord einrichten soundboard sprachkanal andere hören freunde mikrofon kabel
+1. VB-Audio Virtual Cable installieren (kostenlos, vb-audio.com), PC neu starten.
+2. Audio Center: Soundboard-Ausgabe = „CABLE Input“, „Mithören“ auf deine Kopfhörer.
+3. Audio Center: Mikrofon-Durchleitung an und dein echtes Mikrofon wählen – sonst hört man dich nicht mehr.
+4. Discord → Einstellungen → Sprache & Video: Eingabegerät = „CABLE Output“. Rauschunterdrückung ggf. aus, sonst werden Sounds weggefiltert.
+Prüfen: Discord „Mikrofon testen“. Hinweis: nicht in einer echten Discord-Runde getestet; die App sieht nicht, ob Discord das Kabel nutzt.
+
+## PC Monitor
+Seite: /monitor
+Stichworte: cpu ram gpu temperatur auslastung speicher festplatte vram leistung monitor fps
+Live-Werte: CPU-Auslastung, RAM, GPU-Auslastung, Laufwerke, Netzwerk, Energie. VRAM und GPU-Temperatur nur mit NVIDIA. CPU-Temperatur meist nicht verfügbar (Windows bietet ohne Treiber keine Quelle). FPS werden nicht gemessen – dafür bräuchte es einen Frame-Capture-Dienst. Werte werden nur abgefragt, solange die Seite oder ein System-Widget sichtbar ist.
+
+## Netzwerkdiagnose (Ping Doctor)
+Seite: /network
+Stichworte: ping jitter paketverlust lag latenz internet server router verbindung qualität
+Ping, Jitter und Paketverlust zu Router, Internet (Cloudflare 1.1.1.1, Google 8.8.8.8) und bis zu 3 eigenen Zielen (z. B. Spiel-Server, wenn du die Adresse kennst). Gemessen vom PC, alle 2 Sekunden, nur solange die Seite offen ist. Bewertung: Ausgezeichnet bis Schlecht nach Faustregeln. Viele Router und manche Server beantworten keinen Ping – das erscheint als Verlust, obwohl alles geht.
+
+## Gaming-Verlauf
+Seite: /history
+Stichworte: verlauf spielzeit statistik sitzungen gespielt startfehler
+Erkannte Spielsitzungen mit Dauer, optional CPU/RAM/GPU-Mittelwerte, Starts und Startfehler. Abschaltbar; „Verlauf löschen“ löscht alles. Bleibt auf dem PC.
+
+## GameQuest
+Seite: /quests
+Stichworte: quest ziele xp level erfolge achievements match sieg niederlage statistik
+Eigene Ziele (Spielzeit, Sitzungen, Siege, Matches; täglich, wöchentlich, einmalig; ein Spiel oder alle) mit XP und Level, 8 Erfolge, Match-Tagebuch mit Siegquote. Spielzeit und Sitzungen kommen automatisch aus der Spielerkennung, Siege und Matches nur aus eigenen Einträgen – die App liest keine Statistiken aus Spielen. XP: täglich 20, wöchentlich 60, einmalig 100 pro erreichtem Ziel. Level L braucht insgesamt 50·L·(L−1) XP.
+
+## Deal Radar
+Seite: /deals
+Stichworte: deal preis angebot sale rabatt wunschliste zielpreis steam günstig
+Wunschliste mit Zielpreis. Preise kommen aus dem Steam-Shop, nur wenn „Preise im Steam-Shop abfragen“ eingeschaltet ist; dann höchstens alle 6 Stunden und nie während eines Spiels. Benachrichtigung, wenn der Zielpreis erreicht ist. Preisverlauf = nur selbst gesehene Preise. Andere Shops (Epic, GOG, Key-Seiten) werden nicht abgefragt.
+
+## Overlay & Aufnahme
+Seite: /overlay-settings
+Stichworte: overlay game bar aufnahme replay clip obs nvidia shadowplay xbox steam discord hud
+Overlay im Stil der Xbox Game Bar mit frei verschiebbaren Widgets. Aufnahme und Replay über OBS (WebSocket, Passwort bleibt geschützt auf dem PC) oder per Tastenkürzel an NVIDIA, Xbox Game Bar, Steam oder Discord. Anbieter pro Funktion wählbar.
+
+## PC verbinden
+Seite: /connect
+Stichworte: verbinden koppeln adresse qr code pc nicht erreichbar abmelden
+Verbindung zu deinem PC herstellen oder wechseln. Bei mehreren PCs: hier umschalten. „Abmelden“ löscht die Kopplung auf diesem Gerät.
+
+## Geräte
+Seite: /devices
+Stichworte: geräte gekoppelt entfernen rechte berechtigungen handy verloren
+Alle gekoppelten Geräte mit Rechten (ansehen, starten, Soundboard, verwalten, admin). Entfernen trennt sofort. Ein verlorenes Handy hier entfernen.
+
+## Gerät koppeln
+Seite: /pair
+Stichworte: koppeln code qr neues gerät iphone ipad android
+Am PC „Neuen Code erzeugen“, QR-Code mit dem Handy scannen oder Code eingeben, am PC „Erlauben“. Codes gelten 5 Minuten und nur einmal. Nach Fehlversuchen wird das ratende Gerät gesperrt.
+
+## Plugin Center
+Seite: /plugins
+Stichworte: plugins erweiterungen installieren katalog widgets themes aktionen
+Plugins aus einem signierten Katalog oder als Datei: Widgets, Themes, Aktionen. Plugins führen nie Code auf dem PC aus; Widgets laufen abgeschottet. Rechte (z. B. Netzwerk) musst du beim Aktivieren erlauben.
+
+## Benachrichtigungen
+Seite: /notifications
+Stichworte: benachrichtigungen hinweise meldungen glocke stumm ruhemodus
+Echte Ereignisse vom PC (Startfehler, Updates, erreichte Ziele, Zielpreise …), nach Wichtigkeit sortiert. Einzelne Meldungen lassen sich stummschalten. Ruhemodus während eines Spiels: Einstellungen → Benachrichtigungen. Liegen nur im Arbeitsspeicher (nach Neustart des Begleiters weg).
+
+## Einstellungen
+Seite: /settings
+Stichworte: einstellungen design farben theme sprache backup verbindung sicherheit autostart datenschutz navigation
+Bereiche: Allgemein (Sprache, PC-Name), Design & Layout (Dunkel/Hell, Themes, Farben, Hintergründe inkl. Cartoon-Szenen, Dashboard-Layouts, Navigation sortieren/ausblenden), Verbindung (WLAN, Port, Relay, öffentliche Adresse), Sicherheit (Zugangscode), Benachrichtigungen, Autostart & Hintergrund, Updates, Backup (erstellen, prüfen, wiederherstellen, Wiederherstellungspunkte), Datenschutz.
+
+## Navigation anpassen
+Seite: /settings?s=design
+Stichworte: navigation menü reihenfolge ausblenden leiste handy unten
+Einstellungen → Design & Layout → Navigation: Bereiche sortieren, ausblenden (Home, Einstellungen und PC verbinden bleiben immer), Handy-Leiste unten wählen. Ausgeblendete Bereiche findet die Suche weiterhin.
+
+## Backup und Wiederherstellung
+Seite: /settings?s=backup
+Stichworte: backup sichern wiederherstellen export import umzug neuer pc
+Backup als ZIP: Bibliothek, Profile, Quick Actions, Automatisierungen, Hotkeys, Sounds, Audio, Verlauf, Widgets, GameQuest, Deal Radar, Design. Geheimnisse (Schlüssel, Passwörter) sind nie enthalten. Vor dem Einspielen wird alles geprüft, einzelne Bereiche wählbar, vorher wird automatisch gesichert. Wöchentliche Wiederherstellungspunkte.
+
+## Updates & Versionen
+Seite: /updates
+Stichworte: update version neueste herunterladen installieren aktualisieren änderungen
+Zeigt installierte und neueste Version mit Änderungen. Download der Windows-EXE auch vom Handy. Updates sind signiert; der Begleiter lehnt unsignierte oder veränderte Dateien ab. Es wird nie automatisch installiert. Prüfung 2 Minuten nach dem Start, dann täglich, nie während eines Spiels.
+
+## Diagnose
+Seite: /diagnostics
+Stichworte: diagnose fehler prüfen problem logs protokoll verbindung test
+„Diagnose ausführen“ prüft Begleiter, Netzwerk, Relay, Audio und den Browser und zeigt Lösungen. Protokolle: `%APPDATA%\PCGameLauncherUltimate\logs`.
+
+## Hilfe
+Seite: /help
+Stichworte: hilfe anleitung erste schritte
+Kurzanleitung: Begleiter starten, Firewall „Private Netzwerke“ erlauben, Gerät koppeln, Spiele hinzufügen. iPhone: in Safari „Teilen → Zum Home-Bildschirm“.
+
+## Suche
+Stichworte: suche finden strg k
+Strg+K (oder die Lupe) durchsucht Bereiche, Spiele, Programme, Sounds, Profile und Quick Actions. Von dort lässt sich auch der Assistent fragen.
+
+## KI-Assistent
+Seite: /assistant
+Stichworte: assistent ki claude frage chat befehl sprache kosten schlüssel
+Zwei Modi:
+- **Lokal** (Standard, kostenlos, ohne Internet): versteht Befehle wie „Starte Rocket League“, „Spiel Sound Airhorn“, „Profil Streaming“, „Wie heiß ist meine GPU?“, „Wie lange habe ich diese Woche gespielt?“ und beantwortet Fragen zur App aus dieser Wissensbasis.
+- **Claude** (optional): freie Fragen und Gespräche. Braucht einen eigenen Anthropic-API-Schlüssel, der nur am PC eingetragen und verschlüsselt gespeichert wird. Kostet pro Anfrage; Monatslimit einstellbar. Dabei gehen deine Frage und die dafür nötigen Daten (z. B. Spielnamen, PC-Werte) an Anthropic.
+Der Assistent führt nie selbst etwas aus: Aktionen erscheinen als Knopf und laufen erst, wenn du tippst – mit den Rechten deines Geräts.
+
+## Zugriff von unterwegs
+Stichworte: unterwegs mobil daten 4g 5g außerhalb tunnel cloudflare tailscale relay
+Ohne Zusatz ist der PC nur im Heimnetz erreichbar (keine Router-Ports). Für unterwegs: Cloudflare Tunnel oder Tailscale Funnel (https-Adresse auf `http://localhost:8787`, als „Öffentliche Adresse“ eintragen) oder ein eigenes Relay. Über ein Relay ist nur die Anmeldung Ende-zu-Ende geschützt, der Inhalt danach nicht – Relay nur selbst oder bei jemandem betreiben, dem du vertraust.
+
+## Sicherheit
+Stichworte: sicherheit schutz zugangscode passwort hacker sicher rechte
+Kopplung mit Einmal-Code und Bestätigung am PC, Challenge-Response-Anmeldung, Rechte pro Gerät, Schutz gegen DNS-Rebinding und gefälschte Proxy-Header. Programme nur am PC freigeben. Update-Quelle und Plugin-Katalog nur am PC änderbar. Der Zugangscode der Webseite ist nur eine Sichtsperre, kein Schutz des PCs. Im WLAN ist der Inhalt unverschlüsselt (http) – in fremden Netzen nicht verwenden.
+
+## Leistung beim Zocken
+Stichworte: leistung fps ruckeln spielmodus ressourcen hintergrund langsam
+Während ein Spiel läuft, wartet Hintergrundarbeit (Update-Prüfung, Kataloge, Preisabfragen), Messungen werden seltener, die Oberfläche ruht. Der Begleiter braucht im Leerlauf kaum CPU. Programme beim Spielstart automatisch schließen kann die App noch nicht (geplant).
+
+## Was der Assistent und die App nicht können
+Stichworte: kann nicht grenzen geht nicht unmöglich
+- Keine Statistiken aus Spielen auslesen (Kills, Rang, Siege) – nur was du einträgst.
+- Keine FPS-Messung, keine CPU-Temperatur ohne Treiberquelle.
+- Keine Makros, die Spiel-Eingaben automatisieren.
+- Keine Widgets auf dem Windows-Start- oder Sperrbildschirm.
+- Kein automatisches Installieren von Updates oder Treibern (z. B. VB-Cable).
+- Keine Preise außer aus dem Steam-Shop.
+- Den PC herunterfahren o. Ä. schlägt der Assistent nicht vor – das geht nur über die Energie-Funktionen der App.

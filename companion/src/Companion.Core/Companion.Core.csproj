@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Anthropic" Version="12.58.0" />
   </ItemGroup>
   <!-- The built web app (web/dist) is embedded so a single companion executable serves the UI. -->
   <ItemGroup Condition="Exists('../../../web/dist/index.html')">
@@ -13,6 +14,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="../../../protocol/protocol.json" LogicalName="protocol.json" />
+    <!-- What the assistant knows: its own knowledge file plus the shipped troubleshooting and privacy docs. -->
+    <EmbeddedResource Include="Assistant/knowledge.md" LogicalName="assistant/knowledge.md" />
+    <EmbeddedResource Include="../../../TROUBLESHOOTING.md" LogicalName="assistant/TROUBLESHOOTING.md" />
+    <EmbeddedResource Include="../../../docs/DATENSCHUTZ.md" LogicalName="assistant/DATENSCHUTZ.md" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="Pgl.Core.Tests" />

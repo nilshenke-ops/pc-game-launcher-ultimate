@@ -20,6 +20,7 @@ export function navItems(): NavItem[] {
     { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
     { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
+    { path: "/assistant", label: t("KI-Assistent"), short: t("Assistent"), icon: Sparkles, group: g.dash, keywords: "ki ai claude chat frage hilfe sprache befehl assistent fragen" },
     { path: "/widgets", label: t("Widget-Baukasten"), short: t("Widgets"), icon: Shapes, group: g.dash, keywords: "widgets eigene editor desktop baukasten design uhr knopf setup designer" },
     { path: "/profiles", label: t("Gaming-Profile"), short: t("Profile"), icon: Swords, group: g.ctrl, keywords: "competitive streaming" },
     { path: "/automations", label: t("Automatisierungen"), short: t("Abläufe"), icon: Bot, group: g.ctrl, keywords: "regeln wenn dann automation hub ablauf" },

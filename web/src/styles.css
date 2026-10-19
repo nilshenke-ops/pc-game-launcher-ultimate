@@ -735,3 +735,34 @@ html.desktop-widget-mode .app-bg { display: none; }
 .deal-prices { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
 .deal-now { font-size: 1.25rem; font-weight: 800; }
 .deal-spark { max-width: 260px; height: 36px; }
+
+/* KI-Assistent */
+.as-page { display: flex; flex-direction: column; min-height: calc(100dvh - 140px); }
+.as-chat { flex: 1; display: flex; flex-direction: column; gap: 12px; min-height: 420px; }
+.as-log { flex: 1; display: flex; flex-direction: column; gap: 14px; overflow-y: auto; max-height: calc(100dvh - 330px); min-height: 280px; padding: 4px 2px; }
+.as-empty { margin: auto; max-width: 560px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(--muted); }
+.as-empty .chips { flex-wrap: wrap; justify-content: center; overflow: visible; }
+.as-turn { display: flex; gap: 10px; align-items: flex-start; }
+.as-turn > svg { flex: 0 0 auto; margin-top: 10px; color: var(--muted); }
+.as-turn.me { justify-content: flex-end; }
+.as-bubble { max-width: min(680px, 86%); padding: 10px 14px; border-radius: 16px; border: 1px solid var(--border); background: rgba(var(--surface-rgb), var(--surface-alpha)); display: flex; flex-direction: column; gap: 8px; }
+.as-turn.me .as-bubble { background: rgba(var(--primary-rgb), 0.16); border-color: rgba(var(--primary-rgb), 0.35); white-space: pre-wrap; }
+.as-text { white-space: pre-wrap; line-height: 1.5; overflow-wrap: anywhere; }
+.as-actions { gap: 8px; }
+.as-sugg { flex-wrap: wrap; overflow: visible; }
+.as-meta { opacity: 0.85; }
+.as-input { display: flex; gap: 8px; align-items: center; }
+.as-input .input { flex: 1; }
+.as-typing { flex-direction: row; gap: 5px; padding: 14px 16px; }
+.as-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: as-blink 1.2s infinite ease-in-out; }
+.as-typing i:nth-child(2) { animation-delay: 0.2s; } .as-typing i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes as-blink { 0%, 80%, 100% { opacity: 0.25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .as-typing i { animation: none; } }
+@media (max-width: 1023px) {
+  /* Phone: the page scrolls as a whole; the input stays above the bottom bar. */
+  .as-page { min-height: 0; }
+  .as-chat { min-height: 0; }
+  .as-log { max-height: none; overflow: visible; min-height: 160px; }
+  .as-input { position: sticky; bottom: calc(var(--bottom-h) + 10px + env(safe-area-inset-bottom)); z-index: 5; padding: 8px; margin: 0 -8px -8px; border-radius: 16px; background: rgba(var(--surface-rgb), 0.97); box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.25); }
+  .as-bubble { max-width: 100%; }
+}

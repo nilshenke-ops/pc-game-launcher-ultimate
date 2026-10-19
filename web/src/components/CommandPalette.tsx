@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, Puzzle, CornerDownLeft, Gamepad2, LayoutGrid, Music, Search, Settings, SquareTerminal, Swords, Zap } from "lucide-react";
+import { Bot, Puzzle, Sparkles, CornerDownLeft, Gamepad2, LayoutGrid, Music, Search, Settings, SquareTerminal, Swords, Zap } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { navItems } from "../lib/nav";
@@ -80,8 +80,10 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       .filter((x) => x.s > 0)
       .sort((a, b) => b.s - a.s)
       .slice(0, q ? 40 : 14)
-      .map((x) => x.e);
-  }, [entries, q]);
+      .map((x) => x.e)
+      // Anything typed can also go to the assistant (question or command in own words).
+      .concat(q.trim().length >= 3 ? [{ key: "ask", group: t("KI-Assistent"), label: t("Assistent fragen: „{q}“", { q: q.trim() }), icon: <Sparkles size={18} />, run: () => { onClose(); nav(`/assistant?q=${encodeURIComponent(q.trim())}`); } }] : []);
+  }, [entries, q, nav, onClose]);
 
   useEffect(() => setSel(0), [q]);
 

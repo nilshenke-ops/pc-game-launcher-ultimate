@@ -87,6 +87,17 @@ public sealed class TestClient
 
 public static class Fixtures
 {
+    /// <summary>Repository root (the folder that contains protocol/).</summary>
+    public static string RepoRoot
+    {
+        get
+        {
+            var d = new DirectoryInfo(AppContext.BaseDirectory);
+            while (d != null && !Directory.Exists(Path.Combine(d.FullName, "protocol"))) d = d.Parent;
+            return d?.FullName ?? throw new DirectoryNotFoundException("Repository-Wurzel nicht gefunden");
+        }
+    }
+
     public static CompanionServices Services(TempDir dir) => new(new GenericPlatform(), new AppPaths(dir.Path), new Hosting.WebAssets(dir.Path));
 
     /// <summary>Logs a PC (local admin) client in.</summary>

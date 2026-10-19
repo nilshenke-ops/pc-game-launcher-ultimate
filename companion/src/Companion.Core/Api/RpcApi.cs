@@ -155,6 +155,12 @@ public static class RpcApi
             return r;
         });
 
+        // ------------------------------------------------------------ assistant
+        rpc.Register("assistant.status", _ => s.Assistant.Status());
+        rpc.Register("assistant.ask", async ctx => await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000)));
+        rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
+        rpc.Register("assistant.configure", ctx => s.Assistant.Configure(ctx.Bind<Assistant.AssistantService.Config>(), ctx.Session.IsLocalAdmin));
+
         // ------------------------------------------------------------ GameQuest
         rpc.Register("quests.get", _ => s.Quests.Get());
         rpc.Register("quests.saveGoal", ctx => s.Quests.SaveGoal(ctx.Bind<QuestGoal>()));

@@ -34,6 +34,10 @@
     "library.remove": "manage",
     "library.launch": "launch",
 
+    "assistant.status": "view",
+    "assistant.ask": "view",
+    "assistant.reset": "view",
+    "assistant.configure": "admin",
     "quests.get": "view",
     "quests.saveGoal": "manage",
     "quests.removeGoal": "manage",

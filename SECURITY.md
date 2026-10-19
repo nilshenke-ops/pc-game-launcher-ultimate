@@ -37,6 +37,13 @@ Standard-Quelle ist GitHub Pages dieses Projekts (änderbar nur am PC, nur https
 ## Plugins
 Plugins bringen **keinen Code auf den PC**: Pakete dürfen nur Daten- und Webdateien enthalten. Aktionen eines Plugins sind 1–10 der eingebauten, geprüften Schritte (dieselben wie Quick Actions) und brauchen jeweils eine passende Berechtigung, die vor dem Aktivieren angezeigt und bestätigt wird. Widgets laufen in einem `<iframe sandbox="allow-scripts">` ohne eigenen Ursprung, mit strenger CSP (`connect-src 'none'`, außer mit Recht „Netzwerk“); die Brücke zur App ist eine Whitelist mit Rechteprüfung und Rate-Limit. **Grenze:** Das ist keine vollständige Sandbox im Sinn eines eigenen Prozesses – ein Plugin mit `library.launch` kann jeden freigegebenen Bibliothekseintrag starten. Plugins nur aus vertrauenswürdiger Quelle aktivieren.
 
+## KI-Assistent
+- Der Assistent führt nie selbst etwas aus und kennt keine Shell. Er kann nur feste, lesende Werkzeuge nutzen (PC-Werte, Bibliothek, Sounds, Spielzeit …) und Aktionen **vorschlagen**. Ein Vorschlag ist ein Knopf; erst das Antippen ruft die normale Funktion auf – mit den Rechten des Geräts, das tippt. Programmstarts und Quick Actions fragen zusätzlich nach.
+- Vorschläge sind auf eine feste Liste beschränkt (Starten, Sound, Sounds stoppen, Profil, Quick Action, Seite öffnen, GameQuest-Ziel, Wunschliste). Herunterfahren, Updates, Plugins und Einstellungen schlägt er nicht vor.
+- Der Anthropic-API-Schlüssel lässt sich nur direkt am PC eintragen oder löschen, liegt DPAPI-geschützt in `assistant.json`, wird nie zurückgegeben, nie protokolliert und nie ins Backup geschrieben.
+- Daten aus Werkzeugen (Spielnamen, Meldungen) gelten für Claude ausdrücklich als Daten, nicht als Anweisungen. Ein manipulierter Spielname kann trotzdem höchstens einen Knopf erzeugen, den du selbst antippen müsstest.
+- Monatslimit (Standard 5 $): Ist es erreicht, antwortet der lokale Assistent.
+
 ## Wartende Änderungen (ohne PC gemacht)
 Sofort-Aktionen (Starten, Abspielen, Energie, Updates) werden nie vorgemerkt. Vorgemerkte Änderungen tragen eine eindeutige Kennung (`op`); der PC wendet jede nur einmal an, auch wenn sie nach einer verlorenen Antwort erneut oder doppelt gleichzeitig ankommt (gespeichert im Arbeitsspeicher, nach einem PC-Neustart nicht mehr). Änderungen, die Plugins installieren oder Rechte vergeben, und Änderungen älter als 7 Tage werden **erst nach erneuter Bestätigung** gesendet.
 
