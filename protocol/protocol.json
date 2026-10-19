@@ -47,6 +47,7 @@
     "quests.removeGoal": "manage",
     "quests.addMatch": "manage",
     "quests.removeMatch": "manage",
+    "quests.configure": "manage",
     "deals.list": "view",
     "deals.configure": "manage",
     "deals.search": "manage",

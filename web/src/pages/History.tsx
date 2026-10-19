@@ -1,9 +1,11 @@
-import { BarChart3, History as HistoryIcon, Pencil, Trash2, XCircle } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { BarChart3, Download, History as HistoryIcon, Image as ImageIcon, Pencil, Trash2, XCircle } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useRpc, toast, useCan } from "../lib/hooks";
 import { dateTime, duration, relTime } from "../lib/format";
-import { Banner, Button, Card, confirmDialog, Empty, Loadable, Meter, PageHead, Switch } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Meter, Modal, PageHead, Segmented, Switch } from "../components/ui";
+import { compute, draw, toCsv, type CardOptions, type Period } from "../lib/stats-card";
 
 interface SessionPerf { samples: number; cpuAvg?: number; cpuMax?: number; ramAvg?: number; gpuAvg?: number; gpuMax?: number }
 
@@ -21,6 +23,7 @@ interface HistoryData {
 export default function History() {
   const q = useRpc<HistoryData>("history.get", {}, ["history", "settings"]);
   const canManage = useCan("manage");
+  const [card, setCard] = useState(false);
   const d = q.data;
   const max = Math.max(1, ...(d?.stats.map((s) => s.totalMinutes) ?? [1]));
   const clear = async () => {
@@ -30,7 +33,10 @@ export default function History() {
   return (
     <>
       <PageHead eyebrow={t("Gaming")} title={t("Gaming-Verlauf")} text={t("Lokale Statistik – bleibt auf deinem PC und wird nirgendwohin übertragen.")}
-        actions={canManage && <Button variant="danger" icon={<Trash2 size={16} />} onClick={clear}>{t("Verlauf löschen")}</Button>} />
+        actions={<>
+          <Button icon={<ImageIcon size={16} />} disabled={!d?.sessions.length} onClick={() => setCard(true)}>{t("Statistik-Karte")}</Button>
+          {canManage && <Button variant="danger" icon={<Trash2 size={16} />} onClick={clear}>{t("Verlauf löschen")}</Button>}
+        </>} />
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {d && (
           <div className="stack">
@@ -93,6 +99,45 @@ export default function History() {
           </div>
         )}
       </Loadable>
+      {card && d && <StatsCardDialog sessions={d.sessions} onClose={() => setCard(false)} />}
     </>
+  );
+}
+
+function StatsCardDialog({ sessions, onClose }: { sessions: HistoryData["sessions"]; onClose: () => void }) {
+  const [period, setPeriod] = useState<Period>("month");
+  const [o, setO] = useState<CardOptions>({ top: true, totals: true, longest: true, perf: true, compare: true, milestones: true, title: t("Meine Gaming-Statistik"), layout: "poster" });
+  const quests = useRpc<{ level: number; achievements: { unlocked: boolean }[] }>("quests.get", {}, ["quests"]);
+  const ref = useRef<HTMLCanvasElement>(null);
+  const data = compute(sessions, period);
+  const periodText = data.from ? `${data.from.toLocaleDateString()} – ${data.to.toLocaleDateString()}` : t("Gesamter Verlauf");
+  const milestone = quests.data ? t("Level {l} · {n} Erfolge freigeschaltet", { l: quests.data.level, n: quests.data.achievements.filter((a) => a.unlocked).length }) : undefined;
+  useEffect(() => { if (ref.current) draw(ref.current, data, o, periodText, milestone); });
+  const set = (x: Partial<CardOptions>) => setO((v) => ({ ...v, ...x }));
+  const save = (blob: Blob | null, name: string) => {
+    if (!blob) return;
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  };
+  const stamp = new Date().toISOString().slice(0, 10);
+  return (
+    <Modal title={t("Statistik-Karte")} onClose={onClose} wide footer={<>
+      <Button icon={<Download size={15} />} onClick={() => save(new Blob([toCsv(data)], { type: "text/csv" }), `gaming-statistik-${stamp}.csv`)}>{t("Daten (CSV)")}</Button>
+      <Button icon={<Download size={15} />} onClick={() => save(new Blob([JSON.stringify({ format: "nexus-stats", period, ...data }, null, 2)], { type: "application/json" }), `gaming-statistik-${stamp}.json`)}>{t("Daten (JSON)")}</Button>
+      <Button variant="primary" icon={<ImageIcon size={15} />} onClick={() => ref.current?.toBlob((b) => save(b, `gaming-statistik-${stamp}.png`), "image/png")}>{t("Als Bild speichern")}</Button>
+    </>}>
+      <div className="stats-card-editor">
+        <div className="stack-sm">
+          <Segmented value={period} onChange={setPeriod} label={t("Zeitraum")} options={[{ value: "week", label: t("7 Tage") }, { value: "month", label: t("Monat") }, { value: "year", label: t("Jahr") }, { value: "all", label: t("Alles") }]} />
+          <Segmented value={o.layout} onChange={(layout) => set({ layout })} label={t("Format")} options={[{ value: "poster", label: t("Hochformat") }, { value: "wide", label: t("Querformat") }]} />
+          <Field label={t("Titel")}><input className="input" value={o.title} maxLength={40} onChange={(e) => set({ title: e.target.value })} /></Field>
+          {([["totals", t("Spielzeit, Sitzungen, Spiele, Tage")], ["compare", t("Vergleich mit dem vorherigen Zeitraum")], ["top", t("Meistgespielte Spiele")], ["longest", t("Längste Sitzung")], ["perf", t("Auslastung beim Spielen (falls gemessen)")], ["milestones", t("Level und Erfolge (GameQuest)")]] as [keyof CardOptions, string][]).map(([k, label]) => (
+            <label key={k} className="checkbox small"><input type="checkbox" checked={!!o[k]} onChange={(e) => set({ [k]: e.target.checked } as Partial<CardOptions>)} />{label}</label>
+          ))}
+          <p className="tiny muted">{t("Die Karte wird nur auf diesem Gerät erstellt und nirgends veröffentlicht. Fehlende Werte (z. B. keine Leistungsmessung) werden weggelassen statt geschätzt.")}</p>
+        </div>
+        <canvas ref={ref} className="stats-card-canvas" role="img" aria-label={t("Vorschau der Statistik-Karte")} />
+      </div>
+    </Modal>
   );
 }

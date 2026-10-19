@@ -20,7 +20,8 @@ interface Match { id: string; itemId?: string | null; game: string; at: string; 
 interface QuestData {
   xp: number; level: number; levelFrom: number; levelTo: number; offline?: boolean;
   goals: Goal[];
-  achievements: { id: string; title: string; description: string; xp: number; source: "auto" | "manual"; value: number; target: number; unlocked: boolean; unlockedAt?: string | null }[];
+  achievements: { id: string; title: string; description: string; xp: number; source: "auto" | "manual" | "launcher"; value: number; target: number; unlocked: boolean; unlockedAt?: string | null }[];
+  launcherAchievements?: boolean;
   matchStats: { game: string; wins: number; losses: number; draws: number; winRate: number }[];
   matches: Match[];
   ledger: { key: string; title: string; xp: number; at: string }[];
@@ -42,7 +43,8 @@ function Progress({ pct, done, label }: { pct: number | null; done?: boolean; la
   );
 }
 
-function SourceBadge({ source }: { source?: "auto" | "manual" }) {
+function SourceBadge({ source }: { source?: "auto" | "manual" | "launcher" }) {
+  if (source === "launcher") return <span className="badge" title={t("Aus deinen Einstellungen in der App gezählt, wenn du GameQuest öffnest")}>{t("Launcher")}</span>;
   return source === "auto"
     ? <span className="badge info" title={t("Aus der Spielerkennung auf dem PC (Gaming-Verlauf)")}>{t("automatisch erkannt")}</span>
     : <span className="badge" title={t("Nur was du selbst einträgst – Spielstatistiken liest die App nicht aus.")}>{t("selbst eingetragen")}</span>;
@@ -210,6 +212,12 @@ export default function Quests() {
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+              {canManage && d.launcherAchievements !== undefined && (
+                <div style={{ marginTop: 12 }}>
+                  <Switch checked={d.launcherAchievements} onChange={(v) => client.call("quests.configure", { launcherAchievements: v }).then(q.reload, (e: Error) => toast(e.message, "error"))}
+                    label={t("Launcher-Erfolge")} hint={t("Erfolge fürs Einrichten der App (Profil, gekoppeltes Gerät, Automatisierungen, Backlog …). Gezählt wird nur beim Öffnen dieser Seite aus deinen vorhandenen Einstellungen – keine Hintergrundprüfung, nichts wird gesendet.")} />
                 </div>
               )}
             </Card>

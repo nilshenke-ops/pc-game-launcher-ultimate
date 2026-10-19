@@ -578,6 +578,7 @@ public sealed class ProfileService
     {
         p.Name = DeviceStore.Sanitize(p.Name, 40, "Profil");
         if (!System.Text.RegularExpressions.Regex.IsMatch(p.Color ?? "", "^#[0-9a-fA-F]{6}$")) p.Color = "#22d3ee";
+        if (p.Theme != null && !ValidTheme(p.Theme)) throw new RpcException("invalid-params", "Theme: Modus dark/light und Farben als #RRGGBB.");
         if (p.SoundboardVolume is { } v) p.SoundboardVolume = Math.Clamp(v, 0, 100);
         var r = _store.Update(f =>
         {
@@ -664,7 +665,18 @@ public sealed class ProfileService
         return prev == null ? null : Activate(prev, reason, rememberPrevious: false, launchPrograms: false);
     }
 
-    internal void Import(ProfilesFile f) { _store.Replace(f); _hub.Changed("profiles"); }
+    internal void Import(ProfilesFile f)
+    {
+        foreach (var p in f.Profiles) if (p.Theme != null && !ValidTheme(p.Theme)) p.Theme = null; // a broken theme must not break the restore
+        _store.Replace(f); _hub.Changed("profiles");
+    }
+
+    static bool ValidTheme(ProfileTheme th)
+    {
+        static bool Hex(string? v) => System.Text.RegularExpressions.Regex.IsMatch(v ?? "", "^#[0-9a-fA-F]{6}$");
+        if (th.BgScene != null && !System.Text.RegularExpressions.Regex.IsMatch(th.BgScene, "^[a-z0-9-]{1,40}$")) th.BgScene = null;
+        return th.Mode is "dark" or "light" && Hex(th.Primary) && Hex(th.Accent) && Hex(th.Background);
+    }
 }
 
 // ============================================================ Action execution (shared by quick actions, automations, hotkeys)

@@ -1,5 +1,5 @@
 import { expect, test, devices, type Browser, type Page } from "@playwright/test";
-import { existsSync, rmSync } from "node:fs";
+import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { COMPANION, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, OBS_URL, RELAY, state } from "./env";
 import { ACCESS_HASH } from "../src/lib/access";
@@ -112,6 +112,29 @@ test("Programm am PC freigeben und vom Handy starten", async () => {
   await phone.getByRole("radio", { name: "Datei freigeben" }).click();
   await expect(phone.getByText("Nur direkt am PC möglich")).toBeVisible();
   await phone.keyboard.press("Escape");
+});
+
+test("Backlog am Handy: Spiel aufnehmen, Status ändern, Zufallsauswahl, Export", async () => {
+  await phone.goto(`${COMPANION}/#/backlog`);
+  await expect(phone.getByText("Noch nichts im Backlog")).toBeVisible();
+  await phone.getByRole("button", { name: "Spiele hinzufügen" }).first().click();
+  await phone.getByRole("dialog").locator("label", { hasText: "E2E Testspiel" }).locator("input").check();
+  await phone.getByRole("button", { name: "1 hinzufügen" }).click();
+  await expect(phone.getByText("E2E Testspiel").first()).toBeVisible();
+  await phone.getByRole("combobox", { name: "Status von E2E Testspiel" }).selectOption("next");
+  await phone.getByRole("combobox", { name: "Priorität von E2E Testspiel" }).selectOption("3");
+  // Saved on the PC: the PC window shows the same.
+  await pc.goto(`${COMPANION}/#/backlog`);
+  await expect(pc.getByRole("combobox", { name: "Status von E2E Testspiel" })).toHaveValue("next");
+  await expect(pc.getByRole("combobox", { name: "Priorität von E2E Testspiel" })).toHaveValue("3");
+  await phone.getByRole("button", { name: "Zufallsauswahl" }).click();
+  await phone.getByRole("dialog").getByRole("button", { name: "Auswählen" }).click();
+  await expect(phone.getByRole("dialog").getByText("E2E Testspiel")).toBeVisible();
+  await phone.keyboard.press("Escape");
+  const dl = phone.waitForEvent("download");
+  await phone.getByRole("button", { name: "Export (JSON)" }).click();
+  const file = JSON.parse(readFileSync((await (await dl).path())!, "utf8"));
+  expect(file).toMatchObject({ format: "nexus-backlog", entries: [{ name: "E2E Testspiel", status: "next", priority: 3 }] });
 });
 
 test("Globale Suche findet das Spiel", async () => {

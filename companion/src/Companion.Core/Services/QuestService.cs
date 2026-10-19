@@ -50,7 +50,12 @@ public sealed class QuestsFile
     public List<QuestGoal> Goals { get; set; } = new();
     public List<MatchRecord> Matches { get; set; } = new();
     public List<XpEntry> Ledger { get; set; } = new();
+    /// <summary>Achievements for setting up the launcher (profiles, devices, automations …). Off = not counted, not shown.</summary>
+    public bool LauncherAchievements { get; set; } = true;
 }
+
+/// <summary>Counts read from the existing files when the GameQuest page is opened – no background checks.</summary>
+public sealed record LauncherCounts(int OwnProfiles, int PairedDevices, int OwnAutomations, int QuickActions, int BacklogCompleted, int Sounds, int CustomWidgets, int ProfileThemes);
 
 /// <summary>
 /// GameQuest: own goals, achievements, XP and level. Play time and sessions come from the game detection (history),
@@ -64,7 +69,7 @@ public sealed class QuestService
     static readonly Regex ClientId = new("^(goal|match)_[A-Za-z0-9_-]{4,40}$");
 
     sealed record Achievement(string Id, string Title, string Description, int Xp, string Source, Func<Stats, double> Value, double Target);
-    sealed record Stats(double TotalMinutes, int Sessions, int Games, int LongestStreakDays, int Wins, int Matches);
+    sealed record Stats(double TotalMinutes, int Sessions, int Games, int LongestStreakDays, int Wins, int Matches, LauncherCounts L);
 
     static readonly Achievement[] Achievements =
     {
@@ -76,7 +81,20 @@ public sealed class QuestService
         new("streak7", "Eine Woche dran", "7 Tage hintereinander gespielt", 100, "auto", s => s.LongestStreakDays, 7),
         new("wins10", "Sieger", "10 Siege eingetragen", 50, "manual", s => s.Wins, 10),
         new("matches50", "Dauerbrenner", "50 Matches eingetragen", 100, "manual", s => s.Matches, 50),
+        // Launcher: setting up and using the app itself (switchable).
+        new("profile1", "Eigene Note", "Ein eigenes Gaming-Profil angelegt", 25, "launcher", s => s.L.OwnProfiles, 1),
+        new("pair1", "Fernbedienung", "Ein Handy oder Tablet gekoppelt", 25, "launcher", s => s.L.PairedDevices, 1),
+        new("auto3", "Automatiker", "3 eigene Automatisierungen erstellt", 50, "launcher", s => s.L.OwnAutomations, 3),
+        new("quick3", "Ein Tipp genügt", "3 Quick Actions erstellt", 50, "launcher", s => s.L.QuickActions, 3),
+        new("sounds10", "DJ", "10 Sounds im Soundboard", 25, "launcher", s => s.L.Sounds, 10),
+        new("widget1", "Gestalter", "Ein eigenes Widget gebaut", 25, "launcher", s => s.L.CustomWidgets, 1),
+        new("theme1", "Farbenfroh", "Ein Gaming-Profil mit eigenem Theme", 25, "launcher", s => s.L.ProfileThemes, 1),
+        new("backlog1", "Abgehakt", "Ein Spiel im Backlog als durchgespielt markiert", 50, "launcher", s => s.L.BacklogCompleted, 1),
+        new("backlog5", "Backlog-Bezwinger", "5 Spiele durchgespielt (Backlog)", 100, "launcher", s => s.L.BacklogCompleted, 5),
     };
+    static readonly LauncherCounts NoCounts = new(0, 0, 0, 0, 0, 0, 0, 0);
+    /// <summary>Set by the companion; reads the counts from the existing data.</summary>
+    public Func<LauncherCounts>? Launcher { get; set; }
 
     readonly JsonStore<QuestsFile> _store;
     readonly Func<IReadOnlyList<GameSession>> _sessions;
@@ -175,14 +193,14 @@ public sealed class QuestService
         };
     }
 
-    Stats StatsOf(IReadOnlyList<GameSession> sessions, IReadOnlyList<MatchRecord> matches)
+    Stats StatsOf(IReadOnlyList<GameSession> sessions, IReadOnlyList<MatchRecord> matches, LauncherCounts launcher)
     {
         var now = _now();
         var days = sessions.Select(s => Local(s.StartedAt).Date).Distinct().OrderBy(d => d).ToList();
         int best = 0, run = 0; DateTime? prev = null;
         foreach (var d in days) { run = prev == d.AddDays(-1) ? run + 1 : 1; best = Math.Max(best, run); prev = d; }
         return new Stats(sessions.Sum(s => Math.Max(0, ((s.EndedAt ?? now) - s.StartedAt).TotalMinutes)), sessions.Count,
-            sessions.Select(s => s.ItemId).Distinct().Count(), best, matches.Count(m => m.Result == "win"), matches.Count);
+            sessions.Select(s => s.ItemId).Distinct().Count(), best, matches.Count(m => m.Result == "win"), matches.Count, launcher);
     }
 
     /// <summary>Everything for the GameQuest page. Newly reached goals and achievements are booked (XP) and reported once.</summary>
@@ -213,8 +231,8 @@ public sealed class QuestService
                 };
             }).ToList();
 
-            var stats = StatsOf(sessions, f.Matches);
-            var achievements = Achievements.Select(a =>
+            var stats = StatsOf(sessions, f.Matches, f.LauncherAchievements ? Launcher?.Invoke() ?? NoCounts : NoCounts);
+            var achievements = Achievements.Where(a => a.Source != "launcher" || f.LauncherAchievements).Select(a =>
             {
                 var v = a.Value(stats);
                 var key = $"ach:{a.Id}";
@@ -238,7 +256,7 @@ public sealed class QuestService
             }).OrderByDescending(x => x.wins + x.losses + x.draws).ToList();
             var r = new
             {
-                xp, level, levelFrom, levelTo, goals, achievements, matchStats = perGame,
+                xp, level, levelFrom, levelTo, goals, achievements, matchStats = perGame, launcherAchievements = f.LauncherAchievements,
                 matches = f.Matches.Take(200), ledger = f.Ledger.OrderByDescending(e => e.At).Take(30),
                 totals = new { minutes = Math.Round(stats.TotalMinutes), stats.Sessions, stats.Games, longestStreakDays = stats.LongestStreakDays, stats.Wins, stats.Matches },
                 historySessions = sessions.Count,
@@ -248,6 +266,13 @@ public sealed class QuestService
         foreach (var (title, text) in reached) Reached?.Invoke(title, text);
         if (reached.Count > 0) _hub.Changed("quests");
         return result;
+    }
+
+    /// <summary>Switches the launcher achievements on or off. Already earned XP stays.</summary>
+    public void Configure(bool launcherAchievements)
+    {
+        _store.Update(f => f.LauncherAchievements = launcherAchievements);
+        _hub.Changed("quests");
     }
 
     /// <summary>Level from XP: level L needs 50·L·(L−1) XP in total (0, 100, 300, 600, 1000 …).</summary>

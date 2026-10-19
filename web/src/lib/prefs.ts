@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { setLanguage } from "./i18n";
-import { BG_SCENES, defaultPrefs, hexToRgb, contrast, mix, sanitizePrefs, type Prefs, type Theme } from "./prefs-core";
+import { BG_SCENES, defaultPrefs, hexToRgb, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
+import type { ProfileTheme } from "./types";
 
 export * from "./prefs-core";
 
@@ -15,10 +16,22 @@ let syncTimer: number | null = null;
 
 export function getPrefs() { return prefs; }
 
+// Theme of the active gaming profile (from the PC). It is laid over the own design and never stored in it, so the own
+// design comes back by itself when the profile ends, the PC is unreachable or the user switches it off.
+let profileTheme: ProfileTheme | null = null;
+const effectiveTheme = () => (prefs.profileThemes ? withProfileTheme(prefs.theme, profileTheme) : prefs.theme);
+export function setProfileTheme(pt: ProfileTheme | null | undefined) {
+  const next = pt ?? null;
+  if (JSON.stringify(next) === JSON.stringify(profileTheme)) return;
+  profileTheme = next;
+  applyTheme(effectiveTheme());
+}
+export function profileThemeActive() { return prefs.profileThemes && !!profileTheme; }
+
 export function setPrefs(update: (p: Prefs) => Prefs, opts: { sync?: boolean } = {}) {
   prefs = sanitizePrefs({ ...update(structuredClone(prefs)), updatedAt: Date.now() });
   writeJson(KEY, prefs);
-  applyTheme(prefs.theme);
+  applyTheme(effectiveTheme());
   setLanguage(prefs.lang);
   listeners.forEach((l) => l());
   if (opts.sync !== false) scheduleSync();
@@ -41,7 +54,7 @@ export async function loadRemotePrefs() {
     if (remote.updatedAt > prefs.updatedAt) {
       prefs = remote;
       writeJson(KEY, prefs);
-      applyTheme(prefs.theme);
+      applyTheme(effectiveTheme());
       setLanguage(prefs.lang);
       listeners.forEach((l) => l());
     } else if (remote.updatedAt < prefs.updatedAt) scheduleSync();

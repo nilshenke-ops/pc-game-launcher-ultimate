@@ -47,6 +47,19 @@ public sealed class LibraryItem
     public string? AutoSource { get; set; }
     /// <summary>When the automatic cover search last looked for this game (null = not yet).</summary>
     public DateTime? CoverLookupAt { get; set; }
+    /// <summary>Backlog status (<see cref="Backlog.Statuses"/>), null = not in the backlog. Only ever set by the user.</summary>
+    public string? Backlog { get; set; }
+    /// <summary>Priority in the backlog: 0 none, 1 low, 2 medium, 3 high.</summary>
+    public int Priority { get; set; }
+    public DateTime? BacklogChangedAt { get; set; }
+    /// <summary>Own goal for this game in hours of play time (e.g. "main story ≈ 25 h"), null = none.</summary>
+    public double? GoalHours { get; set; }
+}
+
+public static class Backlog
+{
+    /// <summary>Noch spielen, Als Nächstes, Gerade aktiv, Pausiert, Durchgespielt, Nicht mehr interessant.</summary>
+    public static readonly string[] Statuses = { "backlog", "next", "playing", "paused", "completed", "dropped" };
 }
 
 public sealed class LibraryFile
@@ -109,6 +122,19 @@ public sealed class Profile
     public string? DashboardLayoutId { get; set; }
     /// <summary>Reduce notifications to warnings and errors while active.</summary>
     public bool QuietNotifications { get; set; }
+    /// <summary>Own look while this profile is active (e.g. switched on by a game start); null = keep the normal design.</summary>
+    public ProfileTheme? Theme { get; set; }
+}
+
+/// <summary>Colours (and optionally a built-in background) shown on every device while the profile is active.</summary>
+public sealed class ProfileTheme
+{
+    public string Mode { get; set; } = "dark";
+    public string Primary { get; set; } = "#22d3ee";
+    public string Accent { get; set; } = "#a78bfa";
+    public string Background { get; set; } = "#070b14";
+    /// <summary>Id of a built-in background (web/public/backgrounds), null = keep the device's background.</summary>
+    public string? BgScene { get; set; }
 }
 
 public sealed class ProfilesFile

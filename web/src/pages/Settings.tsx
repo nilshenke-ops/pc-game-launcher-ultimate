@@ -9,7 +9,7 @@ import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import {
-  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme, type WidgetSize,
+  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, profileThemeActive, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme, type WidgetSize,
 } from "../lib/prefs";
 import type { Settings } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
@@ -127,6 +127,9 @@ function Design() {
     <>
       <Card title={t("Themes")} icon={<Palette size={18} />}>
         <div className="stack">
+          <Switch checked={prefs.profileThemes} onChange={(v) => setPrefs((p) => ({ ...p, profileThemes: v }))} label={t("Themes der Gaming-Profile anzeigen")}
+            hint={t("Hat das aktive Profil ein eigenes Theme (z. B. beim Start eines zugeordneten Spiels), zeigt dieses Gerät es an. Aus = immer dein eigenes Design.")} />
+          {profileThemeActive() && <Banner kind="info">{t("Gerade ist das Theme des aktiven Profils zu sehen. Änderungen hier gelten für dein eigenes Design und erscheinen, sobald das Profil endet.")}</Banner>}
           <div className="swatches">
             {Object.entries(PRESETS).map(([k, p]) => (
               <button key={k} className={`swatch ${th.preset === k ? "on" : ""}`} style={{ background: `linear-gradient(135deg, ${p.background} 40%, ${p.primary} 75%, ${p.accent})` }} onClick={() => setTheme({ preset: k, mode: p.mode, primary: p.primary, accent: p.accent, background: p.background })} aria-pressed={th.preset === k}><span>{p.name}</span></button>

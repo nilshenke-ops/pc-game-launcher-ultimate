@@ -105,7 +105,7 @@ public static class RpcApi
                 platform = s.Platform.Name,
                 startedAt = s.StartedAt,
                 features = s.Features(),
-                activeProfile = active == null ? null : new { active.Id, active.Name, active.Color, active.Icon, reason = prof.ActiveReason, since = prof.ActiveSince, active.DashboardLayoutId, active.QuickActionIds },
+                activeProfile = active == null ? null : new { active.Id, active.Name, active.Color, active.Icon, reason = prof.ActiveReason, since = prof.ActiveSince, active.DashboardLayoutId, active.QuickActionIds, active.Theme },
                 autoSwitch = prof.AutoSwitch,
                 running = s.RunningList(),
                 playing = s.Soundboard.Playing(),
@@ -178,6 +178,7 @@ public static class RpcApi
         rpc.Register("quests.saveGoal", ctx => s.Quests.SaveGoal(ctx.Bind<QuestGoal>()));
         rpc.Register("quests.removeGoal", ctx => { s.Quests.RemoveGoal(ctx.Str("id", 64)); return true; });
         rpc.Register("quests.addMatch", ctx => s.Quests.AddMatch(ctx.Bind<MatchRecord>()));
+        rpc.Register("quests.configure", ctx => { s.Quests.Configure(ctx.Bool("launcherAchievements")); return s.Quests.Get(); });
         rpc.Register("quests.removeMatch", ctx => { s.Quests.RemoveMatch(ctx.Str("id", 64)); return true; });
 
         // ------------------------------------------------------------ Deal Radar

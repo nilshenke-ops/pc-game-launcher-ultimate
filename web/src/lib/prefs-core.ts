@@ -113,6 +113,8 @@ export interface Prefs {
   usage: Record<string, number>;
   /** Navigation: own order and hidden sections, shortcuts in the phone bar (paths like "/games"). */
   nav: NavPrefs;
+  /** Show the theme of the active gaming profile (e.g. switched on by a game start). Off = always the own design on this device. */
+  profileThemes: boolean;
 }
 
 export interface NavPrefs { order: string[]; hidden: string[]; bottom: string[] }
@@ -121,7 +123,7 @@ export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [], bottom: ["/", "/ga
 
 export function defaultPrefs(): Prefs {
   const lang = (navigator.language || "de").toLowerCase().startsWith("de") ? "de" : "en";
-  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV) };
+  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV), profileThemes: true };
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -173,6 +175,7 @@ export function sanitizePrefs(input: unknown): Prefs {
       mobile: has(p.activeLayout?.mobile) ? p.activeLayout!.mobile : layouts[0].id,
     },
     nav: sanitizeNav(p.nav),
+    profileThemes: p.profileThemes !== false,
     usage: p.usage && typeof p.usage === "object" ? Object.fromEntries(Object.entries(p.usage).filter(([, v]) => typeof v === "number").slice(0, 300)) : {},
   };
 }
@@ -208,3 +211,10 @@ export function mix(a: string, b: string, t: number) {
   return "#" + x.map((c, i) => Math.round(c + (y[i] - c) * t).toString(16).padStart(2, "0")).join("");
 }
 
+
+/** The device's own theme with the active profile's colours on top (validated – the values come from the PC). */
+export function withProfileTheme(own: Theme, pt: { mode?: string; primary?: string; accent?: string; background?: string; bgScene?: string | null } | null | undefined): Theme {
+  if (!pt || !HEX.test(pt.primary ?? "") || !HEX.test(pt.accent ?? "") || !HEX.test(pt.background ?? "")) return own;
+  const scene = pt.bgScene && BG_SCENES.some((s) => s.id === pt.bgScene) ? pt.bgScene : null;
+  return { ...own, preset: "profile", mode: pt.mode === "light" ? "light" : "dark", primary: pt.primary!, accent: pt.accent!, background: pt.background!, ...(scene ? { bgScene: scene, bgImage: null } : {}) };
+}

@@ -770,3 +770,21 @@ html.desktop-widget-mode .app-bg { display: none; }
 /* Notifications */
 .ntf-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--primary); margin-right: 8px; vertical-align: middle; }
 .list-item.ntf.closed { opacity: 0.6; }
+
+/* Backlog */
+.backlog-item { flex-wrap: wrap; }
+.backlog-controls { gap: 6px; flex-wrap: wrap; }
+.backlog-controls select.input { width: auto; min-height: 40px; }
+.goal-input { width: 80px; min-height: 40px; }
+button.link { background: none; border: 0; padding: 0; color: var(--primary); cursor: pointer; font: inherit; text-decoration: underline; }
+@media (max-width: 640px) { .backlog-controls { width: 100%; } .backlog-controls select.input { flex: 1; } }
+
+.theme-swatch { display: inline-flex; gap: 4px; padding: 5px; border-radius: 8px; border: 2px solid var(--border); }
+.theme-swatch i { width: 16px; height: 16px; border-radius: 50%; display: block; }
+.theme-swatch.sm { padding: 2px; border-width: 1px; margin-right: 4px; vertical-align: middle; }
+.theme-swatch.sm i { width: 8px; height: 8px; }
+
+/* Statistics card */
+.stats-card-editor { display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 1.4fr); gap: 16px; align-items: start; }
+.stats-card-canvas { width: 100%; height: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+@media (max-width: 760px) { .stats-card-editor { grid-template-columns: 1fr; } }

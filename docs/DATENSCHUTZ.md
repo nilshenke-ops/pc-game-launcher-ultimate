@@ -8,8 +8,8 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 
 | Daten | Datei | Löschen |
 |---|---|---|
-| Bibliothek (Spiele, Programme, Startziele, Notizen, Bewertungen) | `library.json` | in der App einzeln, oder Datei löschen |
-| Profile, Quick Actions, Automatisierungen (inkl. letzte 10 Ausführungen), Hotkeys | `profiles.json`, `quickactions.json`, `automations.json`, `hotkeys.json` | in der App |
+| Bibliothek (Spiele, Programme, Startziele, Notizen, Bewertungen, Backlog-Status, Priorität, Ziel in Stunden) | `library.json` | in der App einzeln, oder Datei löschen |
+| Profile (inkl. eigenem Theme je Profil), Quick Actions, Automatisierungen (inkl. letzte 10 Ausführungen), Hotkeys | `profiles.json`, `quickactions.json`, `automations.json`, `hotkeys.json` | in der App |
 | Sounds (Audiodateien und Namen) | `sounds\`, `sounds.json` | Soundboard → Löschen |
 | Spielverlauf (Start/Ende, Dauer, optional CPU/RAM/GPU-Mittelwerte) | `history.json` | Gaming-Verlauf → „Verlauf löschen“; abschaltbar unter Einstellungen → Datenschutz |
 | Eigene Widgets, Overlay-Anordnung, eigene Ping-Ziele, Design je Gerät | `widgets.json`, `settings.json`, `devices.json` | in der App |

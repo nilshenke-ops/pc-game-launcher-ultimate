@@ -64,3 +64,21 @@ Diese Werte liegen im Messrauschen einer 60-Sekunden-Messung. Aussage: Der Kern 
    - (d) Mini-Overlay an
 3. Mikrofon-Durchleitung: Latenz mit einem Klatsch-Test messen (Aufnahme von Original und Kabel-Ausgang).
 4. Langzeit: 8 h laufen lassen, Arbeitsspeicher alle 30 min notieren (Speicherleck?).
+
+## Ergebnisse 2.5.1 → 2.6.0 (19.10.2026)
+
+Gleiche Skripte wie oben (`scripts/perf/web-start.mjs`, `scripts/perf/companion-idle.sh`), Headless-Begleiter als Release-Build, Linux-Cloud-Umgebung. Je 3 Läufe, Median.
+
+| | 2.5.1 (vorher) | 2.6.0 (nachher) |
+|---|---|---|
+| Haupt-Chunk | 364 KB (115 KB gzip) | 366 KB (116 KB gzip); Backlog 18 KB und Statistik-Karte (im Verlauf, 13 KB) werden nur beim Öffnen geladen |
+| Übertragen beim Kaltstart | 534 KB | 536 KB |
+| Nutzbar, Desktop | 423 ms | 442 ms |
+| Nutzbar, Handy (gedrosselt) | 1869 ms | 1552 ms |
+| JS-Heap nach Start | 10 MB | 10 MB |
+| Begleiter Leerlauf, kein Gerät | 0,13 % CPU · 109 MB · 16 Threads | nicht erneut gemessen (keine neue Hintergrundarbeit: Backlog, Themes, Erfolge und Karte rechnen nur auf Anfrage) |
+| Begleiter, Dashboard offen | 0,38 % CPU · 112 MB · 19 Threads | nicht erneut gemessen |
+
+Die Unterschiede bei den Startzeiten liegen im Messrauschen dieser Umgebung (Einzelläufe Handy 2.5.1: 1838–2212 ms, 2.6.0: 1535–1627 ms). Aussage: 2.6.0 macht den Start nicht messbar langsamer. Auffällig gegenüber 2.1.0 (Handy 1331 ms): Die App ist seitdem gewachsen – wird in Phase 7 untersucht.
+
+**Hauptfunktion (2.5.1, echter Ablauf mit Handy-Browser über die Netzwerkadresse):** Tippen auf „Spielen“ bis das Programm am PC läuft 31–175 ms; nach dem Einschalten des PCs wieder verbunden nach 0,8–1,4 s (vorher bis 5,9 s gemessen).

@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { client } from "./rpc";
+import { setProfileTheme } from "./prefs";
 import type { AppState, Notification, PlayingState } from "./types";
 
 // Shared overview state (one request for all widgets), refreshed on relevant events with a short debounce.
@@ -13,6 +14,7 @@ let snapshot: { state: AppState | null; error: string | null; updatedAt: number 
 
 function publish() {
   snapshot = { state, error, updatedAt };
+  setProfileTheme(state?.activeProfile?.theme);
   listeners.forEach((l) => l());
 }
 

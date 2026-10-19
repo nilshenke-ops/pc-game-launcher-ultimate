@@ -5,9 +5,9 @@ import { t } from "../lib/i18n";
 import { useRpc, toast, useCan } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { ICONS, IconByName } from "../lib/nav";
-import { usePrefs } from "../lib/prefs";
+import { BG_SCENES, usePrefs } from "../lib/prefs";
 import type { Hotkey, Profile, ProfilesFile, QuickAction } from "../lib/types";
-import { Banner, Button, Card, confirmDialog, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { useStepRefs } from "../components/StepEditor";
 
 const blank: Profile = { id: "", name: "", icon: "gamepad-2", color: "#22d3ee", gameIds: [], launchProgramIds: [], quickActionIds: [], hotkeyIds: [], quietNotifications: false };
@@ -51,6 +51,7 @@ export default function Profiles() {
                       <span className="badge">{t("{n} Programme", { n: p.launchProgramIds.length })}</span>
                       {p.soundboardVolume != null && <span className="badge">🔊 {p.soundboardVolume}%</span>}
                       {p.quietNotifications && <span className="badge">{t("Ruhig")}</span>}
+                      {p.theme && <span className="badge"><span className="theme-swatch sm" aria-hidden style={{ background: p.theme.background }}><i style={{ background: p.theme.primary }} /></span>{t("Theme")}</span>}
                     </div>
                     <div className="card-foot">
                       <Button variant={active ? undefined : "primary"} size="sm" disabled={active} onClick={() => activate(p)}>{active ? t("Aktiv") : t("Aktivieren")}</Button>
@@ -137,6 +138,26 @@ function ProfileEditor({ profile, onClose }: { profile: Profile; onClose: () => 
       <Field label={t("Quick Actions des Profils")}><Multi options={quick.data?.actions ?? []} value={p.quickActionIds} onChange={(quickActionIds) => set({ quickActionIds })} /></Field>
       <Field label={t("Hotkeys nur in diesem Profil aktiv")}><Multi options={(hk.data?.hotkeys ?? []).map((h) => ({ id: h.hotkey.id, name: h.hotkey.keys }))} value={p.hotkeyIds} onChange={(hotkeyIds) => set({ hotkeyIds })} /></Field>
       <Switch checked={p.quietNotifications} onChange={(quietNotifications) => set({ quietNotifications })} label={t("Benachrichtigungen reduzieren")} hint={t("Nur Warnungen und Fehler anzeigen, solange das Profil aktiv ist.")} />
+      <Switch checked={!!p.theme} onChange={(v) => set({ theme: v ? { mode: prefs.theme.mode, primary: p.color, accent: prefs.theme.accent, background: prefs.theme.background, bgScene: null } : null })}
+        label={t("Eigenes Theme für dieses Profil")} hint={t("Solange das Profil aktiv ist (z. B. automatisch beim Start eines zugeordneten Spiels), zeigen PC, Handy und iPad diese Farben. Danach kommt das eigene Design zurück. Auf jedem Gerät abschaltbar unter Einstellungen → Design.")} />
+      {p.theme && (
+        <div className="stack-sm" style={{ paddingLeft: 4 }}>
+          <div className="row">
+            <Segmented value={p.theme.mode} onChange={(mode) => set({ theme: { ...p.theme!, mode } })} label={t("Modus")} options={[{ value: "dark", label: t("Dunkel") }, { value: "light", label: t("Hell") }]} />
+            <label className="row nowrap small">{t("Hauptfarbe")} <input type="color" value={p.theme.primary} onChange={(e) => set({ theme: { ...p.theme!, primary: e.target.value } })} /></label>
+            <label className="row nowrap small">{t("Akzent")} <input type="color" value={p.theme.accent} onChange={(e) => set({ theme: { ...p.theme!, accent: e.target.value } })} /></label>
+            <label className="row nowrap small">{t("Hintergrund")} <input type="color" value={p.theme.background} onChange={(e) => set({ theme: { ...p.theme!, background: e.target.value } })} /></label>
+          </div>
+          <div className="row">
+            <select className="input" style={{ width: "auto" }} value={p.theme.bgScene ?? ""} onChange={(e) => set({ theme: { ...p.theme!, bgScene: e.target.value || null } })} aria-label={t("Hintergrundbild")}>
+              <option value="">{t("Hintergrundbild: nicht ändern")}</option>
+              {BG_SCENES.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+            <Button size="sm" onClick={() => set({ theme: { mode: prefs.theme.mode, primary: prefs.theme.primary, accent: prefs.theme.accent, background: prefs.theme.background, bgScene: prefs.theme.bgScene ?? null } })}>{t("Aktuelles Design übernehmen")}</Button>
+            <span className="theme-swatch" aria-hidden style={{ background: p.theme.background, borderColor: p.theme.accent }}><i style={{ background: p.theme.primary }} /><i style={{ background: p.theme.accent }} /></span>
+          </div>
+        </div>
+      )}
       <Banner kind="info">{t("Profile ändern nur Einstellungen dieser App – keine Windows-Systemeinstellungen.")}</Banner>
     </Modal>
   );

@@ -109,6 +109,12 @@ public sealed class CompanionServices : IAsyncDisposable
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
         Quests = new QuestService(paths, () => History.Export().Sessions, id => Library.Get(id)?.Name, Rpc);
+        string[] defaultProfiles = { "prof_general", "prof_competitive", "prof_streaming", "prof_quiet" };
+        Quests.Launcher = () => new LauncherCounts(
+            Profiles.Get().Profiles.Count(p => !defaultProfiles.Contains(p.Id)), Devices.List().Count,
+            Automations.List().Count(r => !(r.Trigger == TriggerType.AudioDeviceMissing && r.Name == "Warnung bei fehlendem Audiogerät")),
+            QuickActions.List().Count, Library.List().Count(i => i.Backlog == "completed"), Soundboard.Get().Sounds.Count,
+            Widgets.List().Count, Profiles.Get().Profiles.Count(p => p.Theme != null));
         Deals = new DealService(paths, Rpc);
         // Games from the library are never closed by the game mode (process names and the started EXE).
         GameModePrograms = new GameModePrograms(paths, platform.Processes, platform.ProcessControl, Rpc, () => Library.List().Where(i => i.Kind == ItemKind.Game)

@@ -21,6 +21,11 @@ Stichworte: spiele bibliothek starten steam epic ea xbox game pass hinzufügen c
 Spiele von Steam, Epic, EA, Xbox/Microsoft Store und eigene EXE-Dateien. Hinzufügen: „Hinzufügen“ → erkannte Spiele übernehmen. Eine EXE kann nur **direkt am PC** freigegeben werden (Sicherheit: ein Handy darf keine beliebigen Programme freigeben). Pro Spiel: Favorit, Kategorien, Bewertung, Notiz, Startparameter, Prozessnamen zur Erkennung, Cover. Filter-Chips: Alle, Favoriten, Läuft, Steam, Epic, EA, Game Pass.
 Starten: Spiel antippen → „Starten“. Spiele mit Administratorrechten zeigen die Windows-Abfrage am PC.
 
+
+## Backlog
+Seite: /backlog
+Stichworte: backlog noch spielen als nächstes gerade aktiv pausiert durchgespielt nicht mehr interessant priorität zufall zufallsauswahl spielplanung liste ziel
+Persönliche Spielplanung für Spiele aus der Bibliothek: Status (Noch spielen, Als Nächstes, Gerade aktiv, Pausiert, Durchgespielt, Nicht mehr interessant), Priorität (keine/niedrig/mittel/hoch), eigenes Ziel in Stunden mit Fortschritt aus dem Gaming-Verlauf. Filter nach Status, Plattform, Kategorie und Spielzeit; Sortierung nach Priorität, Name, zuletzt gespielt, Spielzeit. „Zufallsauswahl“ zieht ein Spiel aus gewählten Status (höhere Priorität optional öfter). Den Status setzt nur der Nutzer – nichts wird automatisch als durchgespielt markiert; läuft ein Spiel, wird „auf Gerade aktiv setzen“ nur angeboten. Gespeichert auf dem PC (alle Geräte sehen dasselbe, im Backup enthalten). Export als JSON und CSV, Import (JSON) mit Vorschau – Spiele, die es in der Bibliothek nicht gibt, werden übersprungen. Spiele, die man noch nicht besitzt: Wunschliste im Deal Radar.
 ## Steam verknüpfen
 Seite: /games
 Stichworte: steam api schlüssel key steam id bibliothek importieren spielzeit
@@ -48,8 +53,8 @@ Eigene Widgets frei gestalten: Texte, Uhr, Werte (CPU, RAM …), Knöpfe für Ak
 
 ## Gaming-Profile
 Seite: /profiles
-Stichworte: profil competitive streaming wechsel automatisch audio layout
-Ein Profil bündelt Audio-Ausgabe, Soundboard-Lautstärke und -Sammlung, Programme, Quick Actions, Hotkeys und Dashboard-Layout. „Automatischer Wechsel“: Startet ein Spiel, das einem Profil zugeordnet ist, wird das Profil aktiv; endet es, kehrt die App zum vorherigen zurück.
+Stichworte: profil competitive streaming wechsel automatisch audio layout theme farben je spiel design
+Ein Profil bündelt Audio-Ausgabe, Soundboard-Lautstärke und -Sammlung, Programme, Quick Actions, Hotkeys und Dashboard-Layout. „Automatischer Wechsel“: Startet ein Spiel, das einem Profil zugeordnet ist, wird das Profil aktiv; endet es, kehrt die App zum vorherigen zurück. Eigenes Theme je Profil (Profil bearbeiten → „Eigenes Theme für dieses Profil“: Modus, Haupt-, Akzent-, Hintergrundfarbe, optional Hintergrundbild): Solange das Profil aktiv ist, zeigen PC, Handy und iPad diese Farben – so bekommt jedes Spiel sein Theme, wenn es einem Profil zugeordnet ist. Danach kommt das eigene Design zurück. Auf jedem Gerät abschaltbar: Einstellungen → Design → „Themes der Gaming-Profile anzeigen“.
 
 
 ## Spielmodus: Programme beim Spielen schließen
@@ -97,13 +102,13 @@ Ping, Jitter und Paketverlust zu Router, Internet (Cloudflare 1.1.1.1, Google 8.
 
 ## Gaming-Verlauf
 Seite: /history
-Stichworte: verlauf spielzeit statistik sitzungen gespielt startfehler
-Erkannte Spielsitzungen mit Dauer, optional CPU/RAM/GPU-Mittelwerte, Starts und Startfehler. Abschaltbar; „Verlauf löschen“ löscht alles. Bleibt auf dem PC.
+Stichworte: verlauf spielzeit statistik sitzungen gespielt startfehler statistik-karte bild teilen zusammenfassung jahresrückblick
+Erkannte Spielsitzungen mit Dauer, optional CPU/RAM/GPU-Mittelwerte, Starts und Startfehler. Abschaltbar; „Verlauf löschen“ löscht alles. Bleibt auf dem PC. „Statistik-Karte“: gestaltete Zusammenfassung für 7 Tage, Monat, Jahr oder alles (Spielzeit, Sitzungen, meistgespielte Spiele, längste Sitzung, Auslastung falls gemessen, Vergleich mit dem vorherigen Zeitraum, Level/Erfolge), Hoch- oder Querformat, Inhalte wählbar; speichern als Bild (PNG) oder Daten (CSV/JSON). Wird nur auf dem Gerät erstellt, nie veröffentlicht; fehlende Werte werden weggelassen.
 
 ## GameQuest
 Seite: /quests
 Stichworte: quest ziele xp level erfolge achievements match sieg niederlage statistik
-Eigene Ziele (Spielzeit, Sitzungen, Siege, Matches; täglich, wöchentlich, einmalig; ein Spiel oder alle) mit XP und Level, 8 Erfolge, Match-Tagebuch mit Siegquote. Spielzeit und Sitzungen kommen automatisch aus der Spielerkennung, Siege und Matches nur aus eigenen Einträgen – die App liest keine Statistiken aus Spielen. XP: täglich 20, wöchentlich 60, einmalig 100 pro erreichtem Ziel. Level L braucht insgesamt 50·L·(L−1) XP.
+Eigene Ziele (Spielzeit, Sitzungen, Siege, Matches; täglich, wöchentlich, einmalig; ein Spiel oder alle) mit XP und Level, 8 Spiel-Erfolge plus 9 Launcher-Erfolge (eigenes Profil, Gerät gekoppelt, 3 Automatisierungen, 3 Quick Actions, 10 Sounds, eigenes Widget, Profil-Theme, 1 und 5 Spiele im Backlog durchgespielt; abschaltbar unter „Erfolge“, gezählt nur beim Öffnen der Seite), Match-Tagebuch mit Siegquote. Spielzeit und Sitzungen kommen automatisch aus der Spielerkennung, Siege und Matches nur aus eigenen Einträgen – die App liest keine Statistiken aus Spielen. XP: täglich 20, wöchentlich 60, einmalig 100 pro erreichtem Ziel. Level L braucht insgesamt 50·L·(L−1) XP.
 
 ## Deal Radar
 Seite: /deals

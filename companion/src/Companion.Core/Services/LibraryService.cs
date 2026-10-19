@@ -306,6 +306,11 @@ public sealed class LibraryService
         public List<string>? ProcessNames { get; set; }
         public string? Notes { get; set; }
         public int? Rating { get; set; }
+        /// <summary>Backlog status; "" removes the game from the backlog.</summary>
+        public string? Backlog { get; set; }
+        public int? Priority { get; set; }
+        /// <summary>Own goal in hours; 0 removes it.</summary>
+        public double? GoalHours { get; set; }
     }
 
     /// <summary>Changes display data only. Launch target and arguments need <see cref="UpdateTarget"/> (PC only).</summary>
@@ -317,6 +322,10 @@ public sealed class LibraryService
             throw new RpcException("invalid-params", "Bild ist zu groß (max. ca. 500 KB).");
         if (u.IconData is { Length: > 0 } ic && !ic.StartsWith("data:image/"))
             throw new RpcException("invalid-params", "Ungültiges Icon.");
+        if (u.Backlog is { Length: > 0 } bl && !Models.Backlog.Statuses.Contains(bl))
+            throw new RpcException("invalid-params", "Unbekannter Backlog-Status.");
+        if (u.GoalHours is { } gh && (double.IsNaN(gh) || gh < 0 || gh > 10_000))
+            throw new RpcException("invalid-params", "Ziel muss zwischen 0 und 10 000 Stunden liegen.");
         var r = _store.Update(f =>
         {
             var i = f.Items.FirstOrDefault(x => x.Id == u.Id) ?? throw new RpcException("not-found", "Eintrag nicht gefunden.");
@@ -330,6 +339,9 @@ public sealed class LibraryService
             if (u.ProcessNames != null) i.ProcessNames = u.ProcessNames.Select(p => Path.GetFileNameWithoutExtension(p.Trim())).Where(p => p.Length is > 0 and < 100).Distinct().Take(10).ToList();
             if (u.Notes != null) i.Notes = u.Notes.Length > 1000 ? u.Notes[..1000] : u.Notes;
             if (u.Rating != null) i.Rating = Math.Clamp(u.Rating.Value, 0, 5);
+            if (u.Backlog != null && (u.Backlog == "" ? null : u.Backlog) != i.Backlog) { i.Backlog = u.Backlog == "" ? null : u.Backlog; i.BacklogChangedAt = DateTime.UtcNow; }
+            if (u.Priority != null) i.Priority = Math.Clamp(u.Priority.Value, 0, 3);
+            if (u.GoalHours != null) i.GoalHours = u.GoalHours.Value <= 0 ? null : Math.Round(u.GoalHours.Value, 1);
             return Clone(i);
         });
         _hub.Changed("library");

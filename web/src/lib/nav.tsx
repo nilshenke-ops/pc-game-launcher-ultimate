@@ -1,8 +1,4 @@
-import {
-  Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, HardDrive, Headphones, Heart, HelpCircle, History, Home,
-  Keyboard, LayoutGrid, Link2, MonitorSmartphone, Mic, Monitor, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, Wifi, ShieldCheck, Smartphone, Sparkles, Star,
-  Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Zap, type LucideIcon,
-} from "lucide-react";
+import { Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
 export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
@@ -18,6 +14,7 @@ export function navItems(): NavItem[] {
   return [
     { path: "/", label: t("Home"), icon: Home, group: g.dash, keywords: "dashboard übersicht" },
     { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
+    { path: "/backlog", label: t("Backlog"), icon: ListTodo, group: g.dash, keywords: "noch spielen als nächstes durchgespielt pausiert priorität zufall spielplanung liste" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
     { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
     { path: "/assistant", label: t("KI-Assistent"), short: t("Assistent"), icon: Sparkles, group: g.dash, keywords: "ki ai claude chat frage hilfe sprache befehl assistent fragen" },

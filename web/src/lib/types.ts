@@ -23,6 +23,11 @@ export interface LibraryItem {
   addedAt: string;
   gamePassId?: string;
   autoAdded?: boolean;
+  /** Backlog status (see lib/backlog.ts), absent = not in the backlog. */
+  backlog?: string | null;
+  priority?: number;
+  backlogChangedAt?: string | null;
+  goalHours?: number | null;
 }
 
 export interface DetectedItem {
@@ -66,6 +71,8 @@ export interface Profile {
   quickActionIds: string[];
   hotkeyIds: string[];
   dashboardLayoutId?: string | null;
+  /** Own look while this profile is active (all devices); absent = normal design. */
+  theme?: ProfileTheme | null;
   quietNotifications: boolean;
 }
 
@@ -199,7 +206,7 @@ export interface AppState {
   platform: string;
   startedAt: string;
   features: Features;
-  activeProfile?: { id: string; name: string; color: string; icon: string; reason?: string; since?: string; dashboardLayoutId?: string; quickActionIds?: string[] };
+  activeProfile?: { id: string; name: string; color: string; icon: string; reason?: string; since?: string; dashboardLayoutId?: string; quickActionIds?: string[]; theme?: ProfileTheme | null };
   autoSwitch: boolean;
   running: { itemId: string; name: string; since: string }[];
   playing: PlayingState;
@@ -238,3 +245,5 @@ export interface PairedDevice {
   online: boolean;
   transport?: string;
 }
+
+export interface ProfileTheme { mode: "dark" | "light"; primary: string; accent: string; background: string; bgScene?: string | null }
