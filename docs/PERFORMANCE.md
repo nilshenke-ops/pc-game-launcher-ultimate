@@ -92,3 +92,14 @@ Die Unterschiede bei den Startzeiten liegen im Messrauschen dieser Umgebung (Ein
 | Startzeiten | – | nicht erneut gemessen |
 
 Das Deck rechnet die Tastengröße nur bei Größenänderung (ResizeObserver) neu; es gibt keine Abfrage im Hintergrund – Live-Zustände (läuft, spielt, aktives Profil) kommen aus den vorhandenen Ereignissen.
+
+## 2.8.0 (19.10.2026)
+
+| | 2.7.0 | 2.8.0 |
+|---|---|---|
+| Haupt-Chunk | 372 KB (118 KB gzip) | 373 KB (119 KB gzip) |
+| Assistent ohne PC | – | 48 KB (19 KB gzip) inkl. Wissenstexte, nur ohne PC-Verbindung im Assistenten geladen |
+| Deck | 42 KB | 22 KB Seite + gemeinsamer Symbol-Chunk (auch von Baukasten/Overlay genutzt) |
+| Startzeiten | – | nicht erneut gemessen |
+
+Timer und Stoppuhr laufen nur, solange sie sichtbar sind und gestartet wurden (ein Intervall pro laufendem Timer); Medien-Widget sendet nur beim Tippen.

@@ -3,8 +3,8 @@
 // phone, in the PC app, in the overlay and as a Windows desktop widget. Font sizes are designed for a 360 px wide box.
 import { t } from "./i18n";
 
-export type ElementType = "text" | "clock" | "metric" | "button" | "image" | "playtime" | "nowPlaying" | "shape";
-export type ButtonAction = "quick" | "launch" | "sound" | "profile" | "overlay" | "record" | "replay" | "stopSounds";
+export type ElementType = "text" | "clock" | "metric" | "button" | "image" | "playtime" | "nowPlaying" | "shape" | "icon" | "timer";
+export type ButtonAction = "quick" | "launch" | "sound" | "profile" | "overlay" | "record" | "replay" | "stopSounds" | "media" | "open";
 
 export interface WidgetElement {
   id: string; type: ElementType; x: number; y: number; w: number; h: number;
@@ -26,7 +26,7 @@ export const newWidgetId = () => `cw_${rid()}${rid()}`;
 export const newElementId = () => `e${rid()}`;
 
 export function elementLabel(type: ElementType): string {
-  return ({ text: t("Text"), clock: t("Uhr"), metric: t("Messwert"), button: t("Knopf"), image: t("Bild"), playtime: t("Spielzeit"), nowPlaying: t("Läuft gerade"), shape: t("Fläche") } as Record<ElementType, string>)[type];
+  return ({ text: t("Text"), clock: t("Uhr"), metric: t("Messwert"), button: t("Knopf"), image: t("Bild"), playtime: t("Spielzeit"), nowPlaying: t("Läuft gerade"), shape: t("Fläche"), icon: t("Symbol"), timer: t("Stoppuhr/Countdown") } as Record<ElementType, string>)[type];
 }
 
 export function newElement(type: ElementType): WidgetElement {
@@ -40,6 +40,8 @@ export function newElement(type: ElementType): WidgetElement {
     case "playtime": return { ...base, kind: "today", text: t("Heute gespielt"), size: 22, bold: true, w: 70, h: 26 };
     case "nowPlaying": return { ...base, size: 16, w: 84, h: 20 };
     case "shape": return { ...base, fill: "#ffffff", w: 84, h: 2, x: 8, y: 50 };
+    case "icon": return { ...base, icon: "gamepad-2", size: 40, align: "center", w: 22, h: 40 };
+    case "timer": return { ...base, kind: "stopwatch", size: 34, bold: true, align: "center", w: 84, h: 40 };
   }
 }
 

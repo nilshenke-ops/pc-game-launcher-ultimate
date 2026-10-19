@@ -3,7 +3,7 @@ import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useEvent, useLiveSubscription, useRpc } from "../lib/hooks";
 import { useAppState } from "../lib/state";
-import { IconByName } from "../lib/nav";
+import { DeckIcon } from "./deck-icons";
 import { DESIGN_WIDTH, type CustomWidget, type WidgetElement } from "../lib/custom-widgets";
 import type { MetricsSample } from "../lib/types";
 import { runQuickAction } from "./run-quick";
@@ -60,6 +60,8 @@ async function runButton(e: WidgetElement) {
       case "record": { const r = await client.call<{ message?: string }>("capture.recordToggle"); if (r?.message) toast(t(r.message), "success"); break; }
       case "replay": { const r = await client.call<{ message?: string }>("capture.replaySave"); if (r?.message) toast(t(r.message), "success"); break; }
       case "stopSounds": await client.call("sounds.stopAll"); break;
+      case "media": await client.call("media.key", { key: e.ref }); break;
+      case "open": if (e.ref) location.hash = "#" + e.ref; break;
     }
   } catch (err) { toast((err as Error).message, "error"); }
 }
@@ -107,7 +109,7 @@ function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e:
       return (
         <button type="button" className="cw-button" style={{ ...style, background: e.fill ?? "rgba(255,255,255,.12)", gap: "0.4em", borderRadius: Math.min(12, w.radius), cursor: interactive ? "pointer" : "default" }}
           onClick={interactive ? () => runButton(e) : undefined} tabIndex={interactive ? 0 : -1} aria-label={e.text ?? e.action ?? ""}>
-          {e.icon && <IconByName name={e.icon} size={18} />}{e.text}
+          {e.icon && <DeckIcon name={e.icon} size={18} />}{e.text}
         </button>
       );
     case "image": return e.image ? <img src={e.image} alt="" style={{ ...style, objectFit: "cover", borderRadius: Math.min(12, w.radius) }} draggable={false} /> : <div style={{ ...style, border: "1px dashed currentColor", opacity: 0.4, justifyContent: "center" }}>{t("Bild")}</div>;
@@ -117,6 +119,8 @@ function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e:
     }
     case "nowPlaying": return <div style={style}><span className="ellipsis">{playing ? `▶ ${playing}` : t("Kein Spiel aktiv")}</span></div>;
     case "shape": return <div style={{ ...style, background: e.fill ?? "#ffffff", borderRadius: 4 }} />;
+    case "icon": return <div style={{ ...style, justifyContent: "center" }}><span style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}><DeckIcon name={e.icon ?? "zap"} size={64} /></span></div>;
+    case "timer": return <TimerView e={e} style={style} interactive={interactive} />;
   }
 }
 
@@ -151,6 +155,44 @@ export function CustomWidgetView({ widget: w, interactive = true, height, overla
       {w.image && <img src={w.image} alt="" className="cw-bgimg" draggable={false} />}
       {w.elements.map((e) => <ElementView key={e.id} e={e} w={w} metrics={metrics} now={now} minutes={minutes} playing={playing} interactive={interactive} />)}
       {overlayElements}
+    </div>
+  );
+}
+
+/** Stopwatch or countdown on this device (e.g. respawn or break timer). Nothing is sent to the PC. */
+function TimerView({ e, style, interactive }: { e: WidgetElement; style: CSSProperties; interactive: boolean }) {
+  const total = e.kind === "countdown" ? Math.max(1, Number(e.ref) || 60) : 0;
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [acc, setAcc] = useState(0); // ms counted before the last pause
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (startedAt == null) return;
+    const id = window.setInterval(() => tick((x) => x + 1), 250);
+    return () => clearInterval(id);
+  }, [startedAt]);
+  const elapsed = acc + (startedAt != null ? Date.now() - startedAt : 0);
+  const left = total ? Math.max(0, total * 1000 - elapsed) : 0;
+  const done = total > 0 && left === 0;
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (done && !doneRef.current) { doneRef.current = true; navigator.vibrate?.([200, 100, 200]); setAcc(total * 1000); setStartedAt(null); }
+    if (!done) doneRef.current = false;
+  }, [done, total]);
+  const ms = total ? left : elapsed;
+  const sec = Math.ceil(ms / 1000 - (total ? 0 : 0.999));
+  const text = `${sec >= 3600 ? `${Math.floor(sec / 3600)}:` : ""}${String(Math.floor((sec % 3600) / 60)).padStart(sec >= 3600 ? 2 : 1, "0")}:${String(sec % 60).padStart(2, "0")}`;
+  const running = startedAt != null;
+  const toggle = () => { if (running) { setAcc(elapsed); setStartedAt(null); } else { if (done) setAcc(0); setStartedAt(Date.now()); } };
+  const reset = () => { setStartedAt(null); setAcc(0); };
+  return (
+    <div style={{ ...style, flexDirection: "column", gap: "4%" }}>
+      <span style={{ fontVariantNumeric: "tabular-nums", color: done ? "#f87171" : undefined }}>{text}</span>
+      {interactive && (
+        <span style={{ display: "flex", gap: 6, fontSize: 12, fontWeight: 600 }}>
+          <button type="button" className="cw-button" style={{ padding: "2px 10px", borderRadius: 8, background: "rgba(255,255,255,.14)" }} onClick={toggle}>{running ? t("Pause") : done ? t("Neu") : t("Start")}</button>
+          <button type="button" className="cw-button" style={{ padding: "2px 10px", borderRadius: 8, background: "rgba(255,255,255,.08)" }} onClick={reset}>{t("Zurücksetzen")}</button>
+        </span>
+      )}
     </div>
   );
 }

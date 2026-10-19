@@ -1,4 +1,6 @@
-// Symbols for deck keys. Only loaded with the deck page (not part of the main bundle).
+// Symbols for deck keys and custom widgets. Only loaded with the pages that show them (not part of the main bundle).
+import type { DeckKey } from "../lib/deck";
+import type { LibraryItem } from "../lib/types";
 import {
   ArrowLeft, AudioLines, Bell, Bomb, Camera, Cat, Circle, Clapperboard, Coffee, Command, Cpu, Crosshair, Crown, Download, Eye, EyeOff, Flame, Folder, Gamepad2, Gauge, Ghost,
   Gift, Globe, HardDrive, Headphones, Heart, Home, Image, Joystick, Keyboard, Laugh, Layers, LayoutGrid, Lightbulb, Lock, Megaphone, MessageCircle, Mic, MicOff, Monitor, Moon,
@@ -22,4 +24,22 @@ const ALIASES: Record<string, string> = { volume: "volume-2", audio: "audio-line
 export function DeckIcon({ name, size = 28 }: { name: string; size?: number }) {
   const I = DECK_ICONS[name] ?? DECK_ICONS[ALIASES[name] ?? ""] ?? Zap;
   return <I size={size} strokeWidth={2} />;
+}
+
+/** Face of a deck key: symbol, emoji, picture of the game or own picture, plus the label. */
+export function KeyFace({ k, item }: { k: DeckKey; item?: LibraryItem }) {
+  const icon = k.icon ?? "";
+  const cover = icon === "cover" ? item?.iconData || item?.coverUrl : undefined;
+  return (
+    <>
+      <span className="deck-icon" aria-hidden>
+        {icon.startsWith("icon:") ? <DeckIcon name={icon.slice(5)} size={30} />
+          : icon.startsWith("emoji:") ? <span className="deck-emoji">{icon.slice(6)}</span>
+          : icon.startsWith("data:image/") ? <img src={icon} alt="" />
+          : cover ? <img src={cover} alt="" className={item?.iconData ? "" : "cover"} />
+          : <DeckIcon name="zap" size={30} />}
+      </span>
+      {k.label && <span className="deck-label">{k.label}</span>}
+    </>
+  );
 }

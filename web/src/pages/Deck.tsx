@@ -7,10 +7,10 @@ import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
 import { navItems } from "../lib/nav";
 import { BG_SCENES } from "../lib/prefs";
-import { ACTION_TYPES, commandFor, gridFor, keyImage, MEDIA_KEYS, moveKey, newId, resize, slots, starterDeck, textOn, type Deck, type DeckAction, type DeckKey, type DeckPage } from "../lib/deck";
+import { ACTION_TYPES, gridFor, keyImage, MEDIA_KEYS, moveKey, newId, resize, slots, starterDeck, textOn, type Deck, type DeckAction, type DeckKey, type DeckPage } from "../lib/deck";
 import type { LibraryItem, Profile, QuickAction, SoundsFile } from "../lib/types";
-import { DECK_ICONS, DeckIcon } from "../components/deck-icons";
-import { runQuickAction } from "../components/run-quick";
+import { DECK_ICONS, DeckIcon, KeyFace } from "../components/deck-icons";
+import { runDeckAction } from "../lib/deck-run";
 import { Banner, Button, confirmDialog, Empty, Field, Loadable, Modal, Segmented } from "../components/ui";
 
 const DECK_KEY = "pgl.deck.selected";
@@ -126,19 +126,7 @@ export default function DeckPage() {
     if (busy.has(k.id)) return; // no double press while the PC is still answering
     navigator.vibrate?.(12);
     setBusy((b) => new Set(b).add(k.id));
-    try {
-      if (a.type === "quick") {
-        const q = quick.data?.actions.find((x) => x.id === a.ref);
-        if (!q) throw new Error(t("Diese Quick Action gibt es nicht mehr."));
-        await runQuickAction(q);
-      } else {
-        const c = commandFor(a);
-        if (c) {
-          const r = await client.call<{ ok?: boolean; message?: string }>(c.method, c.params);
-          if (a.type === "launch") toast(r && r.ok === false ? r.message ?? t("Start fehlgeschlagen") : t("{name} wird gestartet", { name: itemById.get(a.ref ?? "")?.name ?? k.label ?? "" }), r && r.ok === false ? "error" : "success");
-        }
-      }
-    } catch (e) { toast((e as Error).message, "error"); }
+    try { await runDeckAction(a, itemById.get(a.ref ?? "")?.name ?? k.label ?? ""); }
     finally { setBusy((b) => { const n = new Set(b); n.delete(k.id); return n; }); }
   };
 
@@ -241,23 +229,6 @@ export default function DeckPage() {
 }
 
 function LayoutGridIcon() { return <DeckIcon name="layout-grid" size={28} />; }
-
-function KeyFace({ k, item }: { k: DeckKey; item?: LibraryItem }) {
-  const icon = k.icon ?? "";
-  const cover = icon === "cover" ? item?.iconData || item?.coverUrl : undefined;
-  return (
-    <>
-      <span className="deck-icon" aria-hidden>
-        {icon.startsWith("icon:") ? <DeckIcon name={icon.slice(5)} size={30} />
-          : icon.startsWith("emoji:") ? <span className="deck-emoji">{icon.slice(6)}</span>
-          : icon.startsWith("data:image/") ? <img src={icon} alt="" />
-          : cover ? <img src={cover} alt="" className={item?.iconData ? "" : "cover"} />
-          : <DeckIcon name="zap" size={30} />}
-      </span>
-      {k.label && <span className="deck-label">{k.label}</span>}
-    </>
-  );
-}
 
 const APP_PAGES = () => navItems().map((n) => ({ path: n.path, label: n.label }));
 

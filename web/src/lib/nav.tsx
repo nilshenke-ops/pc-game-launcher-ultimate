@@ -56,6 +56,21 @@ export const ICONS: Record<string, LucideIcon> = {
   swords: Swords, volume: Volume2, command: Command, gauge: Gauge, shield: ShieldCheck, palette: Palette, download: Download, drive: HardDrive, audio: AudioLines,
 };
 
+/** A fixed, vivid colour per area, so symbols are recognisable at a glance (not grey). */
+const NAV_COLORS: Record<string, string> = {
+  "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/quick": "#facc15", "/assistant": "#f472b6",
+  "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
+  "/monitor": "#4ade80", "/network": "#38bdf8", "/history": "#fbbf24", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
+  "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",
+  "/diagnostics": "#2dd4bf", "/updates": "#4ade80", "/help": "#93c5fd",
+};
+export function navColor(path: string) {
+  if (NAV_COLORS[path]) return NAV_COLORS[path];
+  let h = 0;
+  for (const c of path) h = (h * 31 + c.charCodeAt(0)) % 360;
+  return `hsl(${h} 80% 65%)`;
+}
+
 export function IconByName({ name, size = 20 }: { name?: string; size?: number }) {
   const I = ICONS[name ?? ""] ?? Zap;
   return <I size={size} />;

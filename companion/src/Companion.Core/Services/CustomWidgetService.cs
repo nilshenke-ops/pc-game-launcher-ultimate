@@ -67,9 +67,9 @@ public sealed class CustomWidgetService
 {
     static readonly Regex Color = new("^#[0-9a-fA-F]{6}$");
     static readonly Regex LocalId = new("^[a-z0-9_-]{1,40}$");
-    static readonly string[] Types = { "text", "clock", "metric", "button", "image", "playtime", "nowPlaying", "shape" };
+    static readonly string[] Types = { "text", "clock", "metric", "button", "image", "playtime", "nowPlaying", "shape", "icon", "timer" };
     static readonly string[] Metrics = { "cpu", "ram", "gpu", "gputemp" };
-    static readonly string[] Actions = { "quick", "launch", "sound", "profile", "overlay", "record", "replay", "stopSounds" };
+    static readonly string[] Actions = { "quick", "launch", "sound", "profile", "overlay", "record", "replay", "stopSounds", "media", "open" };
     const int MaxWidgets = 30, MaxElements = 40, MaxImage = 200_000;
 
     readonly JsonStore<CustomWidgetsFile> _store;
@@ -169,11 +169,20 @@ public sealed class CustomWidgetService
                     break;
                 case "clock": e.Kind = e.Kind is "date" or "both" ? e.Kind : "time"; break;
                 case "playtime": e.Kind = e.Kind == "week" ? "week" : "today"; break;
+                case "icon": e.Icon ??= "zap"; break;
+                case "timer":
+                    // Stopwatch or countdown (Ref = seconds, 1 s – 24 h). Runs on the device; nothing is sent to the PC.
+                    e.Kind = e.Kind == "countdown" ? "countdown" : "stopwatch";
+                    e.Ref = e.Kind == "countdown" ? (int.TryParse(e.Ref, out var sec) && sec is >= 1 and <= 86400 ? sec.ToString() : throw Bad("Countdown: 1 Sekunde bis 24 Stunden.")) : null;
+                    break;
                 case "button":
                     if (!Actions.Contains(e.Action ?? "")) throw Bad("Unbekannte Aktion für den Knopf.");
                     // Only ids, never commands: what a button may do is decided by the PC (with the device's permissions).
                     e.Ref = e.Action is "quick" or "launch" or "sound" or "profile" ? (e.Ref is { Length: > 0 and <= 64 } r && Regex.IsMatch(r, "^[A-Za-z0-9_:-]+$") ? r : throw Bad("Der Knopf braucht ein Ziel."))
-                        : e.Action == "overlay" ? (e.Ref == "mini" ? "mini" : "full") : null;
+                        : e.Action == "overlay" ? (e.Ref == "mini" ? "mini" : "full")
+                        : e.Action == "media" ? (ActionRunner.MediaKeys.ContainsKey(e.Ref ?? "") ? e.Ref : throw Bad("Unbekannte Medientaste."))
+                        : e.Action == "open" ? (e.Ref is { } path && Regex.IsMatch(path, @"^/[a-z-]{0,30}$") ? path : throw Bad("Ungültige Seite."))
+                        : null;
                     break;
             }
         }

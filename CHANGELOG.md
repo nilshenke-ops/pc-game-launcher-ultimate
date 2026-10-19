@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.8.0 – 2026-10-19
+### Neu
+- KI-Assistent ohne PC: Hilfe-Modus direkt im Browser (0 €, ohne Internet) – beantwortet Fragen zur App aus derselben Wissensbasis wie der PC-Assistent, öffnet Seiten („Öffne das Deck“), kennt die zuletzt vom PC geladenen Spiele und den Backlog; Starten, Live-Werte und Sounds brauchen den PC – das sagt er ehrlich
+- Spiele: Cover antippen startet das Spiel sofort am PC (Drehsymbol, dann „… wird gestartet“); Programme als App-Symbole wie auf dem Handy – antippen startet, drei Punkte öffnen die Einstellungen, grüner Punkt = läuft
+- Home: neue Widgets Medien & Lautstärke, Stoppuhr & Countdown, Mini-Deck; Favoriten/Zuletzt gestartet als antippbare App-Kacheln
+- Widget-Baukasten: neue Bausteine Symbol und Stoppuhr/Countdown, Knöpfe auch für Medientasten und „Seite öffnen“
+- Overlay: zusätzlich Mini-Deck, Medien, Timer, Uhr, Notizen und „Als Nächstes spielen“ hinzufügbar
+### Verbessert
+- Farbige Symbole in Navigation, „Mehr“-Menü und unterer Leiste statt grau
+- Deck und eigene Widgets teilen sich jetzt einen Ausführungsweg für Tasten (gleiches Verhalten überall)
+
 ## 2.7.0 – 2026-10-19
 ### Neu
 - Deck (wie ein Stream Deck auf dem Handy): Raster großer, frei gestaltbarer Tasten – Spiel/Programm starten, Quick Action, Sound, alle Sounds stoppen, Profil wechseln, Medientasten (Play/Pause, Lauter, Leiser, Ton aus), Overlay, Aufnahme, Replay, Ordner und Seiten der App

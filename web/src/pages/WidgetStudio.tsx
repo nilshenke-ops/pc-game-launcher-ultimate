@@ -12,11 +12,13 @@ import {
 } from "../lib/custom-widgets";
 import { addWidget, layoutOrDefault, overlayPluginWidgets, removeWidget, type OverlayLayout } from "../lib/overlay-layout";
 import type { PluginList } from "../lib/plugins";
-import { ICONS } from "../lib/nav";
+import { navItems } from "../lib/nav";
+import { MEDIA_KEYS } from "../lib/deck";
+import { DECK_ICONS, DeckIcon } from "../components/deck-icons";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Modal, PageHead, Segmented, Switch } from "../components/ui";
 
-const TYPES: ElementType[] = ["text", "clock", "metric", "button", "image", "playtime", "nowPlaying", "shape"];
+const TYPES: ElementType[] = ["text", "clock", "metric", "button", "icon", "timer", "image", "playtime", "nowPlaying", "shape"];
 const ACTIONS: { value: ButtonAction; label: () => string; needsRef?: "quick" | "launch" | "sound" | "profile" }[] = [
   { value: "record", label: () => t("Aufnahme starten/stoppen") },
   { value: "replay", label: () => t("Replay speichern") },
@@ -26,6 +28,8 @@ const ACTIONS: { value: ButtonAction; label: () => string; needsRef?: "quick" | 
   { value: "launch", label: () => t("Spiel/Programm starten"), needsRef: "launch" },
   { value: "sound", label: () => t("Sound abspielen"), needsRef: "sound" },
   { value: "profile", label: () => t("Gaming-Profil aktivieren"), needsRef: "profile" },
+  { value: "media", label: () => t("Medien & Lautstärke") },
+  { value: "open", label: () => t("Seite der App öffnen") },
 ];
 /** The PC accepts pictures up to ~150 KB (as text ≤ 200 000 characters). */
 const MAX_IMAGE_CHARS = 195_000;
@@ -140,11 +144,19 @@ function ElementProps({ e, set }: { e: WidgetElement; set: (p: Partial<WidgetEle
       {e.type === "button" && (
         <>
           <Field label={t("Aktion")}>
-            <select className="input" value={e.action ?? "record"} onChange={(x) => set({ action: x.target.value as ButtonAction, ref: x.target.value === "overlay" ? "full" : null })}>
+            <select className="input" value={e.action ?? "record"} onChange={(x) => set({ action: x.target.value as ButtonAction, ref: x.target.value === "overlay" ? "full" : x.target.value === "media" ? "playpause" : x.target.value === "open" ? "/deck" : null })}>
               {ACTIONS.map((a) => <option key={a.value} value={a.value}>{a.label()}</option>)}
             </select>
           </Field>
           {action?.needsRef && <RefPicker kind={action.needsRef} value={e.ref} onChange={(v) => set({ ref: v })} />}
+          {e.action === "media" && (
+            <Field label={t("Taste")}><select className="input" value={e.ref ?? "playpause"} onChange={(x) => set({ ref: x.target.value })}>
+              {MEDIA_KEYS.map(([id, label]) => <option key={id} value={id}>{t(label)}</option>)}</select></Field>
+          )}
+          {e.action === "open" && (
+            <Field label={t("Seite")}><select className="input" value={e.ref ?? "/"} onChange={(x) => set({ ref: x.target.value })}>
+              {navItems().map((n) => <option key={n.path} value={n.path}>{n.label}</option>)}</select></Field>
+          )}
           {e.action === "overlay" && (
             <Segmented label={t("Overlay")} value={(e.ref === "mini" ? "mini" : "full") as "full" | "mini"} onChange={(v) => set({ ref: v })}
               options={[{ value: "full", label: t("Groß") }, { value: "mini", label: t("Mini") }]} />
@@ -152,11 +164,31 @@ function ElementProps({ e, set }: { e: WidgetElement; set: (p: Partial<WidgetEle
           <Field label={t("Symbol")}>
             <div className="ws-icons" role="radiogroup" aria-label={t("Symbol")}>
               <button type="button" role="radio" aria-checked={!e.icon} className={!e.icon ? "on" : ""} onClick={() => set({ icon: null })}>–</button>
-              {Object.entries(ICONS).map(([k, I]) => (
-                <button key={k} type="button" role="radio" aria-checked={e.icon === k} aria-label={k} className={e.icon === k ? "on" : ""} onClick={() => set({ icon: k })}><I size={16} /></button>
+              {Object.keys(DECK_ICONS).map((k) => (
+                <button key={k} type="button" role="radio" aria-checked={e.icon === k} aria-label={k} className={e.icon === k ? "on" : ""} onClick={() => set({ icon: k })}><DeckIcon name={k} size={16} /></button>
               ))}
             </div>
           </Field>
+        </>
+      )}
+      {e.type === "icon" && (
+        <Field label={t("Symbol")}>
+          <div className="ws-icons" role="radiogroup" aria-label={t("Symbol")}>
+            {Object.keys(DECK_ICONS).map((k) => (
+              <button key={k} type="button" role="radio" aria-checked={e.icon === k} aria-label={k} className={e.icon === k ? "on" : ""} onClick={() => set({ icon: k })}><DeckIcon name={k} size={16} /></button>
+            ))}
+          </div>
+        </Field>
+      )}
+      {e.type === "timer" && (
+        <>
+          <Segmented label={t("Art")} value={(e.kind === "countdown" ? "countdown" : "stopwatch") as "stopwatch" | "countdown"} onChange={(v) => set({ kind: v, ref: v === "countdown" ? "300" : null })}
+            options={[{ value: "stopwatch", label: t("Stoppuhr") }, { value: "countdown", label: t("Countdown") }]} />
+          {e.kind === "countdown" && (
+            <Field label={t("Dauer in Sekunden")} hint={t("1 bis 86 400 (24 Stunden). Am Ende vibriert das Handy, falls möglich.")}>
+              <input className="input" type="number" min={1} max={86400} value={e.ref ?? "300"} onChange={(x) => set({ ref: String(Math.min(86400, Math.max(1, Math.round(Number(x.target.value) || 1)))) })} />
+            </Field>
+          )}
         </>
       )}
       {e.type === "image" && <ImagePicker label={t("Bild")} value={e.image} onChange={(v) => set({ image: v })} />}

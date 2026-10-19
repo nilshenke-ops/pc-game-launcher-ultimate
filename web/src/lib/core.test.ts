@@ -65,7 +65,7 @@ describe("prefs", () => {
     expect(p.theme.bgImage).toBeNull();
     expect(p.layouts[0].widgets.find((w) => w.id === "status")!.size).toBe("m");
     expect(p.layouts[0].widgets.some((w) => (w.id as string) === "evil")).toBe(false);
-    expect(p.layouts[0].widgets.length).toBe(17); // all built-in widgets, each once
+    expect(p.layouts[0].widgets.length).toBe(20); // all built-in widgets, each once
     expect(["de", "en"]).toContain(p.lang);
   });
   it("keeps own widgets from the widget editor (custom:cw_…) and drops malformed ones", () => {

@@ -5,7 +5,8 @@ import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, confirmDialog, Field, Modal, PageHead, Segmented, Switch } from "../components/ui";
-import { CHAT_KEY, emptyChat, formatCost, readChat, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
+import { CHAT_KEY, emptyChat, formatCost, offlineExamples, readChat, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
+import type { LibraryItem } from "../lib/types";
 
 interface Status {
   mode: "local" | "ollama" | "claude"; model: string; free: boolean;
@@ -153,7 +154,7 @@ function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest
         )}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
       </div>
@@ -185,6 +186,13 @@ export default function Assistant() {
     setChat((c) => ({ ...c, turns: [...c.turns, { role: "user", text: question }] }));
     setBusy(true);
     try {
+      if (!online) {
+        // Without a PC: the help built into the app answers right here in the browser (no internet, 0 €).
+        const [{ answerOffline }, lib] = await Promise.all([import("../lib/assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
+        const r = answerOffline(question, { library: lib.items ?? [], paired: !!client.credentials });
+        setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: r }] }));
+        return;
+      }
       const r = await client.call<{ conversationId: string; reply: AssistantReply }>("assistant.ask", { conversationId: chat.conversationId, text: question });
       setChat((c) => ({ conversationId: r.conversationId, turns: [...c.turns, { role: "bot", reply: r.reply }] }));
     } catch (e) {
@@ -195,7 +203,7 @@ export default function Assistant() {
   // Opened from the search (Ctrl+K → "Assistent fragen …").
   useEffect(() => {
     const q = params.get("q");
-    if (q && online) { setParams({}, { replace: true }); void ask(q); }
+    if (q) { setParams({}, { replace: true }); void ask(q); }
   }, [online, params]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const reset = () => {
@@ -227,7 +235,7 @@ export default function Assistant() {
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />
-      {!online && <Banner kind="warn">{t("Der Assistent läuft auf dem PC – ohne Verbindung kann er nicht antworten.")}</Banner>}
+      {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät, ohne Internet. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
 
       <Card className="as-chat">
         <div className="as-log" aria-live="polite">
@@ -235,7 +243,7 @@ export default function Assistant() {
             <div className="as-empty">
               <Sparkles size={28} aria-hidden />
               <p>{t("Ich kenne jede Seite der App, deine Bibliothek, Sounds, Profile und die Live-Werte deines PCs. Aktionen schlage ich als Knopf vor – ausgeführt wird erst, wenn du tippst.")}</p>
-              <div className="chips">{(s?.examples ?? []).map((e) => <button key={e} type="button" className="chip" disabled={!online} onClick={() => ask(e)}>{e}</button>)}</div>
+              <div className="chips">{(online ? s?.examples ?? [] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
           {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={ask} />)}
@@ -243,9 +251,9 @@ export default function Assistant() {
           <div ref={end} />
         </div>
         <form className="as-input" onSubmit={(e) => { e.preventDefault(); void ask(text); }}>
-          <input className="input" value={text} maxLength={2000} disabled={!online} placeholder={t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />
-          {SpeechCtor && <Button variant="ghost" icon={listening ? <MicOff size={18} /> : <Mic size={18} />} aria-label={listening ? t("Zuhören beenden") : t("Spracheingabe")} disabled={!online} onClick={toggleMic} />}
-          <Button type="submit" variant="primary" icon={<Send size={16} />} busy={busy} disabled={!online || !text.trim()} aria-label={t("Senden")} />
+          <input className="input" value={text} maxLength={2000} placeholder={t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />
+          {SpeechCtor && <Button variant="ghost" icon={listening ? <MicOff size={18} /> : <Mic size={18} />} aria-label={listening ? t("Zuhören beenden") : t("Spracheingabe")} onClick={toggleMic} />}
+          <Button type="submit" variant="primary" icon={<Send size={16} />} busy={busy} disabled={!text.trim()} aria-label={t("Senden")} />
         </form>
       </Card>
       {settings && s && <SettingsDialog st={s} onClose={() => setSettings(false)} />}

@@ -90,6 +90,42 @@ public class CustomWidgetTests
     }
 
     [Fact]
+    public async Task Symbols_timers_media_keys_and_pages_are_checked()
+    {
+        using var dir = new TempDir();
+        await using var s = Fixtures.Services(dir);
+        var admin = await Fixtures.Admin(s);
+        var saved = await admin.Ok("widgets.save", new
+        {
+            name = "Neu 2.8",
+            elements = new[]
+            {
+                Element("e1", "icon", new { icon = "gamepad-2" }),
+                Element("e2", "timer", new { kind = "nonsense", @ref = "5" }),
+                Element("e3", "timer", new { kind = "countdown", @ref = "300" }),
+                Element("e4", "button", new { action = "media", @ref = "volup" }),
+                Element("e5", "button", new { action = "open", @ref = "/deck" }),
+                Element("e6", "icon"),
+            },
+        });
+        var els = saved.GetProperty("elements");
+        Assert.Equal("gamepad-2", els[0].GetProperty("icon").GetString());
+        Assert.Equal("stopwatch", els[1].GetProperty("kind").GetString());
+        Assert.False(els[1].TryGetProperty("ref", out var r1) && r1.ValueKind != JsonValueKind.Null); // a stopwatch keeps no value
+        Assert.Equal("300", els[2].GetProperty("ref").GetString());
+        Assert.Equal("volup", els[3].GetProperty("ref").GetString());
+        Assert.Equal("/deck", els[4].GetProperty("ref").GetString());
+        Assert.Equal("zap", els[5].GetProperty("icon").GetString());
+
+        async Task Bad(object e) => Assert.Equal("invalid-params", await admin.Error("widgets.save", new { name = "x", elements = new[] { e } }));
+        await Bad(Element("e1", "timer", new { kind = "countdown", @ref = "0" }));
+        await Bad(Element("e1", "timer", new { kind = "countdown", @ref = "999999" }));
+        await Bad(Element("e1", "button", new { action = "media", @ref = "shutdown" }));
+        await Bad(Element("e1", "button", new { action = "open", @ref = "https://example.com" }));
+        await Bad(Element("e1", "button", new { action = "open", @ref = "/../settings" }));
+    }
+
+    [Fact]
     public async Task At_most_30_widgets()
     {
         using var dir = new TempDir();

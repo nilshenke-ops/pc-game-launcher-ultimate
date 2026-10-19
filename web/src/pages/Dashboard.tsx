@@ -1,32 +1,29 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, Play, RotateCcw,
-  LayoutGrid, ListTodo, Rocket, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
+  Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, RotateCcw,
+  Grid3x3, LayoutGrid, ListTodo, Rocket, Timer, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
   Puzzle, Shapes,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useEvent, useLiveSubscription, useMediaQuery, useRpc, toast } from "../lib/hooks";
+import { useConn, useEvent, useLiveSubscription, useMediaQuery, useRpc } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
 import { OFFLINE_WIDGETS, type BuiltinWidgetId } from "../lib/prefs-core";
-import { ClockWidget, NextWidget, NotesWidget, ShortcutsWidget, StartWidget } from "../components/home-widgets";
+import { ClockWidget, MediaWidget, MiniDeckWidget, NextWidget, NotesWidget, ShortcutsWidget, StartWidget, TimerWidget } from "../components/home-widgets";
 import { parsePluginWidgetId, pluginWidgetId, type PluginList } from "../lib/plugins";
 import { PluginFrame } from "../components/PluginFrame";
-import { bytes, clock, gradientFor, relTime, since } from "../lib/format";
+import { bytes, clock, relTime, since } from "../lib/format";
 import { IconByName } from "../lib/nav";
 import type { LibraryItem, MetricsSample, Notification, QuickAction } from "../lib/types";
-import { Banner, Button, Card, Empty, Meter, PageHead, Thumb } from "../components/ui";
+import { Banner, Button, Card, Empty, Meter, PageHead } from "../components/ui";
 import { DownloadCard } from "../components/DownloadCard";
+import { TileRow } from "../components/launch-tiles";
 import { runQuickAction } from "../components/run-quick";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
 import { CUSTOM_WIDGET } from "../lib/prefs-core";
-
-function launch(item: LibraryItem) {
-  client.call("library.launch", { id: item.id }).then(() => toast(t("{name} wird gestartet", { name: item.name }), "success")).catch((e) => toast(e.message, "error"));
-}
 
 function StatusWidget() {
   const { state, updatedAt } = useAppState();
@@ -145,17 +142,14 @@ function ItemsWidget({ mode }: { mode: "favorites" | "recent" }) {
   const list = mode === "favorites"
     ? items.filter((i) => i.favorite).slice(0, 12)
     : [...new Map((hist.data?.launches ?? []).map((l) => [l.itemId, l])).values()].map((l) => ({ item: items.find((i) => i.id === l.itemId), at: l.at })).filter((x) => x.item).slice(0, 6).map((x) => x.item!);
-  if (!lib.loading && !list.length)
-    return <Empty icon={mode === "favorites" ? <Star size={26} /> : <Clock size={26} />} title={mode === "favorites" ? t("Noch keine Favoriten") : t("Noch nichts gestartet")} text={mode === "favorites" ? t("Markiere Spiele oder Programme mit dem Stern.") : undefined} action={<Link to="/games" className="btn sm">{t("Zur Bibliothek")}</Link>} />;
+  // No favourites yet: show the games anyway (most recently added first), so the home screen is useful right away.
+  const shown = list.length || mode === "recent" ? list : [...items].sort((x, y) => Number(y.kind === "game") - Number(x.kind === "game") || Date.parse(y.addedAt) - Date.parse(x.addedAt)).slice(0, 10);
+  if (!lib.loading && !shown.length)
+    return <Empty icon={mode === "favorites" ? <Star size={26} /> : <Clock size={26} />} title={mode === "favorites" ? t("Noch keine Spiele") : t("Noch nichts gestartet")} text={mode === "favorites" ? t("Sobald der PC verbunden ist, erscheinen hier deine Spiele zum Antippen.") : undefined} action={<Link to="/games" className="btn sm">{t("Zur Bibliothek")}</Link>} />;
   return (
-    <div className="list">
-      {list.map((i) => (
-        <div key={i.id} className="list-item">
-          <Thumb name={i.name} icon={i.iconData} cover={i.coverUrl} gradient={gradientFor(i.name)} />
-          <div className="grow"><div className="title ellipsis">{i.name}</div><div className="sub">{i.kind === "game" ? t("Spiel") : t("Programm")}{lib.data?.running.includes(i.id) ? " · " + t("läuft") : ""}</div></div>
-          <Button size="sm" variant="primary" icon={<Play size={14} />} onClick={() => launch(i)} aria-label={t("{name} starten", { name: i.name })} />
-        </div>
-      ))}
+    <div className="stack-sm">
+      <TileRow items={shown} running={lib.data?.running ?? []} />
+      {mode === "favorites" && !list.length && <span className="tiny muted">{t("Tipp: Mit dem Stern auf der Spiele-Seite legst du fest, was hier steht.")}</span>}
     </div>
   );
 }
@@ -243,7 +237,7 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   session: { icon: <Gamepad2 size={18} />, title: () => t("Aktuelle Spielesitzung"), render: () => <SessionWidget /> },
   profile: { icon: <Swords size={18} />, title: () => t("Gaming-Profil"), render: () => <ProfileWidget />, link: "/profiles" },
   quick: { icon: <Zap size={18} />, title: () => t("Quick Actions"), render: () => <QuickWidget />, link: "/quick" },
-  favorites: { icon: <Star size={18} />, title: () => t("Favoriten"), render: () => <ItemsWidget mode="favorites" />, link: "/games" },
+  favorites: { icon: <Star size={18} />, title: () => t("Meine Spiele & Apps"), render: () => <ItemsWidget mode="favorites" />, link: "/games" },
   recent: { icon: <Clock size={18} />, title: () => t("Zuletzt gestartet"), render: () => <ItemsWidget mode="recent" />, link: "/history" },
   system: { icon: <Activity size={18} />, title: () => t("PC-Auslastung"), render: () => <SystemWidget />, link: "/monitor" },
   audio: { icon: <Headphones size={18} />, title: () => t("Audio"), render: () => <AudioWidget />, link: "/audio" },
@@ -256,6 +250,9 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   notes: { icon: <StickyNote size={18} />, title: () => t("Notizen"), render: () => <NotesWidget /> },
   next: { icon: <ListTodo size={18} />, title: () => t("Als Nächstes spielen"), render: () => <NextWidget />, link: "/backlog" },
   start: { icon: <Rocket size={18} />, title: () => t("Erste Schritte"), render: () => <StartWidget /> },
+  media: { icon: <Music size={18} />, title: () => t("Medien & Lautstärke"), render: () => <MediaWidget /> },
+  timer: { icon: <Timer size={18} />, title: () => t("Stoppuhr & Countdown"), render: () => <TimerWidget /> },
+  deck: { icon: <Grid3x3 size={18} />, title: () => t("Mini-Deck"), render: () => <MiniDeckWidget />, link: "/deck" },
 };
 
 export default function Dashboard() {

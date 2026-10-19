@@ -6,14 +6,15 @@ export interface OverlayWidgetPlace { id: string; visible: boolean; x: number; y
 export interface OverlayLayout { opacity: number; widgets: OverlayWidgetPlace[] }
 
 /** Built-in overlay widgets: the website's own functions. Plugin widgets ("plugin:…") come on top. */
-export const OVERLAY_BUILTINS = ["system", "capture", "quick", "soundboard", "favorites", "recent", "audio", "playing", "profile", "session", "notifications"] as const;
+export const OVERLAY_BUILTINS = ["system", "capture", "quick", "soundboard", "deck", "media", "timer", "clock", "notes", "next", "favorites", "recent", "audio", "playing", "profile", "session", "notifications"] as const;
 export type OverlayBuiltin = (typeof OVERLAY_BUILTINS)[number];
 
 export function overlayBuiltinTitle(id: OverlayBuiltin): string {
   return ({
     system: t("PC-Auslastung"), capture: t("Aufnahme"), quick: t("Quick Actions"), soundboard: t("Soundboard"), favorites: t("Favoriten"),
     recent: t("Zuletzt gestartet"), audio: t("Audio"), playing: t("Laufende Sounds"), profile: t("Gaming-Profil"), session: t("Aktuelle Spielesitzung"),
-    notifications: t("Benachrichtigungen"),
+    notifications: t("Benachrichtigungen"), deck: t("Mini-Deck"), media: t("Medien & Lautstärke"), timer: t("Stoppuhr & Countdown"),
+    clock: t("Uhr & Datum"), notes: t("Notizen"), next: t("Als Nächstes spielen"),
   } as Record<OverlayBuiltin, string>)[id];
 }
 

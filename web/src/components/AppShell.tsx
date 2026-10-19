@@ -4,7 +4,7 @@ import { Bell, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartpho
 import { client, exitDemo } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
-import { arrangeNav, DEFAULT_BOTTOM, navItems, type NavItem } from "../lib/nav";
+import { arrangeNav, DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "../lib/nav";
 import { setPrefs, usePrefs } from "../lib/prefs";
 import { useConn, useEvent, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
@@ -141,7 +141,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <nav className="nav-group" key={g} aria-label={g}>
             <span>{g}</span>
             {items.filter((i) => i.group === g).map((i) => (
-              <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+              <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} style={{ ["--ic" as string]: navColor(i.path) }}>
                 <i.icon size={18} />{i.label}
                 {i.path === "/notifications" && notifCount > 0 && <span className="count">{notifCount}</span>}
               </NavLink>
@@ -235,7 +235,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <h3>{g}</h3>
               <div className="sheet-grid">
                 {items.filter((i) => i.group === g).map((i) => (
-                  <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")}><i.icon size={22} />{i.label}</NavLink>
+                  <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={{ ["--ic" as string]: navColor(i.path) }}><span className="nav-tile"><i.icon size={22} /></span>{i.label}</NavLink>
                 ))}
               </div>
             </section>
@@ -294,7 +294,7 @@ function BottomBar({ items, preview, more, onMore, onEdit }: { items: NavItem[];
     <nav className="bottom-nav" aria-label={t("Schnellnavigation")} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
       onPointerDown={start} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel} onContextMenu={(e) => { e.preventDefault(); cancel(); onEdit(); }}>
       {shown.map((i) => (
-        <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")}>
+        <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={{ ["--ic" as string]: navColor(i.path) }}>
           <span className="bn-icon"><i.icon size={22} /></span><span className="bn-label">{i.short ?? i.label}</span>
         </NavLink>
       ))}

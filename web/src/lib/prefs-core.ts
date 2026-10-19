@@ -59,9 +59,9 @@ export const DEFAULT_THEME: Theme = {
 
 // ------------------------------------------------------------------ dashboard layouts
 
-export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start";
+export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck";
 /** Widgets that are useful without a connected PC (shown on the home screen while offline). */
-export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download"]);
+export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck"]);
 /** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
 export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`;
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
@@ -88,6 +88,9 @@ export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSiz
   { id: "notes", label: "Notizen", sizes: ["s", "m", "l"] },
   { id: "next", label: "Als Nächstes spielen", sizes: ["s", "m", "l"] },
   { id: "start", label: "Erste Schritte", sizes: ["m", "l"] },
+  { id: "media", label: "Medien & Lautstärke", sizes: ["s", "m"] },
+  { id: "timer", label: "Stoppuhr & Countdown", sizes: ["s", "m"] },
+  { id: "deck", label: "Mini-Deck", sizes: ["m", "l"] },
 ];
 
 export const DEFAULT_LAYOUT: Layout = {

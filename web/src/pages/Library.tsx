@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { FolderOpen, Gamepad2, LayoutGrid, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
+import { FolderOpen, Gamepad2, LayoutGrid, Loader2, MoreVertical, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast, useCan } from "../lib/hooks";
-import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials } from "../lib/format";
 import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Thumb } from "../components/ui";
+import { AppTile, useLaunch } from "../components/launch-tiles";
 import { GamePassView } from "./GamePass";
 import { SteamView } from "./Steam";
 import { LauncherView } from "./Launchers";
@@ -45,11 +45,8 @@ export default function Library({ kind }: { kind: ItemKind }) {
     return [...list.filter((i) => i.favorite), ...list.filter((i) => !i.favorite)];
   }, [items, search, cat, sort, lastLaunch, q.data]);
 
-  const launch = async (i: LibraryItem) => {
-    bumpUsage("item:" + i.id);
-    try { await client.call("library.launch", { id: i.id }); toast(t("{name} wird gestartet", { name: i.name }), "success"); }
-    catch (e) { toast((e as Error).message, "error"); }
-  };
+  // Tap on the tile = start (like an app icon); while the PC answers, the tile shows a spinner.
+  const { launch, launching } = useLaunch();
   const fav = (i: LibraryItem) => client.call("library.update", { id: i.id, favorite: !i.favorite }).catch((e) => toast(e.message, "error"));
   const sources = [...new Set(items.map((i) => i.source))];
 
@@ -93,7 +90,9 @@ export default function Library({ kind }: { kind: ItemKind }) {
               const installed = q.data?.installed[i.id];
               const cover = i.coverUrl && (q.data?.coversFromCdn || !i.coverUrl.includes("steamstatic")) ? i.coverUrl : undefined;
               return (
-                <article key={i.id} className="game-card">
+                <article key={i.id} className={`game-card tappable ${launching.has(i.id) ? "busy" : ""}`} role="button" tabIndex={0} aria-label={t("{name} starten", { name: i.name })}
+                  onClick={() => launch(i)} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); void launch(i); } }}>
+                  {launching.has(i.id) && <span className="tile-busy"><Loader2 size={28} className="spin" /></span>}
                   <div className="cover" style={{ background: gradientFor(i.name) }}>{cover && <img src={cover} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}</div>
                   {!cover && <div className="initials">{initials(i.name)}</div>}
                   <div className="shade" />
@@ -101,14 +100,14 @@ export default function Library({ kind }: { kind: ItemKind }) {
                     {running && <span className="badge ok">● {t("Läuft")}</span>}
                     {installed === false && <span className="badge error">{t("Nicht gefunden")}</span>}
                     {i.gamePassId && <span className="badge gp">Game Pass</span>}
-                    <button className={`btn icon sm fav ${i.favorite ? "on" : ""}`} onClick={() => fav(i)} aria-label={i.favorite ? t("Favorit entfernen") : t("Als Favorit markieren")} aria-pressed={i.favorite}><Star size={15} fill={i.favorite ? "currentColor" : "none"} /></button>
+                    <button className={`btn icon sm fav ${i.favorite ? "on" : ""}`} onClick={(e) => { e.stopPropagation(); void fav(i); }} aria-label={i.favorite ? t("Favorit entfernen") : t("Als Favorit markieren")} aria-pressed={i.favorite}><Star size={15} fill={i.favorite ? "currentColor" : "none"} /></button>
                   </div>
                   <div className="bottom">
                     <b>{i.name}</b>
                     {(i.rating ?? 0) > 0 && <span className="tiny" aria-label={t("{n} von 5 Sternen", { n: i.rating! })} style={{ color: "#fde047" }}>{"★".repeat(i.rating!)}<span style={{ opacity: 0.35 }}>{"★".repeat(5 - i.rating!)}</span></span>}
                     <div className="row nowrap">
-                      <Button variant="primary" size="sm" className="play grow" icon={<Play size={14} />} onClick={() => launch(i)}>{t("Spielen")}</Button>
-                      {canManage && <Button size="sm" icon={<MoreVertical size={15} />} onClick={() => setEditing(i)} aria-label={t("Bearbeiten")} style={{ background: "rgba(0,0,0,.45)", color: "#fff" }} />}
+                      <Button variant="primary" size="sm" className="play grow" icon={<Play size={14} />} onClick={(e) => { e.stopPropagation(); void launch(i); }}>{t("Spielen")}</Button>
+                      {canManage && <Button size="sm" icon={<MoreVertical size={15} />} onClick={(e) => { e.stopPropagation(); setEditing(i); }} aria-label={t("Bearbeiten")} style={{ background: "rgba(0,0,0,.45)", color: "#fff" }} />}
                     </div>
                   </div>
                 </article>
@@ -116,17 +115,9 @@ export default function Library({ kind }: { kind: ItemKind }) {
             })}
           </div>
         ) : (
-          <div className="prog-grid">
+          <div className="app-grid">
             {shown.map((i) => (
-              <div key={i.id} className="card prog-card">
-                <Thumb name={i.name} icon={i.iconData} cover={i.coverUrl} gradient={gradientFor(i.name)} />
-                <div className="grow">
-                  <div className="row nowrap"><b className="ellipsis">{i.name}</b>{i.favorite && <Star size={13} fill="currentColor" color="#fde047" />}</div>
-                  <div className="small muted ellipsis">{SOURCE_LABEL[i.source]}{q.data?.running.includes(i.id) ? " · " + t("läuft") : ""}{q.data?.installed[i.id] === false ? " · " + t("Datei fehlt") : ""}</div>
-                </div>
-                {canManage && <Button size="sm" variant="ghost" icon={<Pencil size={15} />} onClick={() => setEditing(i)} aria-label={t("Bearbeiten")} />}
-                <Button size="sm" variant="primary" icon={<Play size={14} />} onClick={() => launch(i)} aria-label={t("{name} starten", { name: i.name })} />
-              </div>
+              <AppTile key={i.id} item={i} running={q.data?.running.includes(i.id)} busy={launching.has(i.id)} onLaunch={() => launch(i)} onEdit={canManage ? () => setEditing(i) : undefined} />
             ))}
           </div>
         )}

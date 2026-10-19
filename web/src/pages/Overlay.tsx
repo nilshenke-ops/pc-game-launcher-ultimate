@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  Activity, AudioLines, Bell, Check, Clock, Gamepad2, Headphones, LayoutGrid, Music, Puzzle, RotateCcw, Shapes, Star, Swords, Video, X, Zap,
+  Activity, AudioLines, Bell, Check, Clock, Gamepad2, Grid3x3, Headphones, LayoutGrid, ListTodo, Music, Music2, Puzzle, RotateCcw, Shapes, Star, StickyNote, Swords, Timer, Video, X, Zap,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -20,7 +20,8 @@ import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
 const ICONS: Record<OverlayBuiltin, ReactNode> = {
   system: <Activity size={18} />, capture: <Video size={18} />, quick: <Zap size={18} />, soundboard: <Music size={18} />, favorites: <Star size={18} />,
   recent: <Clock size={18} />, audio: <Headphones size={18} />, playing: <AudioLines size={18} />, profile: <Swords size={18} />,
-  session: <Gamepad2 size={18} />, notifications: <Bell size={18} />,
+  session: <Gamepad2 size={18} />, notifications: <Bell size={18} />, deck: <Grid3x3 size={18} />, media: <Music2 size={18} />, timer: <Timer size={18} />,
+  clock: <Clock size={18} />, notes: <StickyNote size={18} />, next: <ListTodo size={18} />,
 };
 
 interface Entry { id: string; title: string; icon: ReactNode; render: () => ReactNode }

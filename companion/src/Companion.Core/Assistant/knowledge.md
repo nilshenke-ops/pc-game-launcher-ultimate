@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.3.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.8.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -24,7 +24,7 @@ Raster großer Tasten wie ein Stream Deck auf dem Handy oder Tablet. „Deck aus
 Seite: /games
 Stichworte: spiele bibliothek starten steam epic ea xbox game pass hinzufügen cover favorit kategorie
 Spiele von Steam, Epic, EA, Xbox/Microsoft Store und eigene EXE-Dateien. Hinzufügen: „Hinzufügen“ → erkannte Spiele übernehmen. Eine EXE kann nur **direkt am PC** freigegeben werden (Sicherheit: ein Handy darf keine beliebigen Programme freigeben). Pro Spiel: Favorit, Kategorien, Bewertung, Notiz, Startparameter, Prozessnamen zur Erkennung, Cover. Filter-Chips: Alle, Favoriten, Läuft, Steam, Epic, EA, Game Pass.
-Starten: Spiel antippen → „Starten“. Spiele mit Administratorrechten zeigen die Windows-Abfrage am PC.
+Starten: Cover antippen – das Spiel startet sofort am PC (kurzes Drehsymbol, dann „… wird gestartet“). Stift bzw. Stern auf dem Cover = bearbeiten bzw. Favorit. Spiele mit Administratorrechten zeigen die Windows-Abfrage am PC.
 
 
 ## Backlog
@@ -44,7 +44,7 @@ Chip „Game Pass“ zeigt den öffentlichen Katalog (Markt einstellbar). Muss i
 ## Programme
 Seite: /programs
 Stichworte: programme apps discord browser obs starten freigeben
-Wie Spiele, aber für Programme (Discord, Browser, OBS …). Freigabe einer EXE nur am PC.
+Wie Spiele, aber für Programme (Discord, Browser, OBS …), angezeigt als App-Symbole wie auf dem Handy: Symbol antippen startet das Programm am PC, die drei Punkte öffnen die Einstellungen. Ein grüner Punkt heißt: läuft gerade. Freigabe einer EXE nur am PC.
 
 ## Quick Actions
 Seite: /quick
@@ -54,7 +54,7 @@ Eigene Ein-Tipp-Aktionen aus mehreren Schritten, z. B. „Discord öffnen + Prof
 ## Widget-Baukasten
 Seite: /widgets
 Stichworte: eigene widgets baukasten editor desktop widget uhr knopf gestalten
-Eigene Widgets frei gestalten: Texte, Uhr, Werte (CPU, RAM …), Knöpfe für Aktionen, Bilder, Formen. Verwendbar auf dem Dashboard, im Overlay und als Fenster auf dem Windows-Desktop. Auf dem Windows-Start- oder Sperrbildschirm geht das nicht – Windows erlaubt dort keine fremden Widgets.
+Eigene Widgets frei gestalten: Texte, Uhr, Werte (CPU, RAM …), Knöpfe für Aktionen (auch Medientasten und „Seite öffnen“), Symbole, Stoppuhr oder Countdown, Bilder, Formen. Gestalten geht auch ohne PC – gespeichert wird, sobald der PC wieder verbunden ist. Verwendbar auf dem Dashboard, im Overlay und als Fenster auf dem Windows-Desktop. Auf dem Windows-Start- oder Sperrbildschirm geht das nicht – Windows erlaubt dort keine fremden Widgets.
 
 ## Gaming-Profile
 Seite: /profiles
@@ -123,7 +123,7 @@ Wunschliste mit Zielpreis. Preise kommen aus dem Steam-Shop, nur wenn „Preise 
 ## Overlay & Aufnahme
 Seite: /overlay-settings
 Stichworte: overlay game bar aufnahme replay clip obs nvidia shadowplay xbox steam discord hud
-Overlay im Stil der Xbox Game Bar mit frei verschiebbaren Widgets. Aufnahme und Replay über OBS (WebSocket, Passwort bleibt geschützt auf dem PC) oder per Tastenkürzel an NVIDIA, Xbox Game Bar, Steam oder Discord. Anbieter pro Funktion wählbar.
+Overlay im Stil der Xbox Game Bar mit frei verschiebbaren Widgets. Aufnahme und Replay über OBS (WebSocket, Passwort bleibt geschützt auf dem PC) oder per Tastenkürzel an NVIDIA, Xbox Game Bar, Steam oder Discord. Anbieter pro Funktion wählbar. Widgets im Overlay: Spiel, PC-Werte, Sounds, Quick Actions, Mini-Deck (die ersten Tasten deines Decks), Medien (Play/Pause, Lauter, Leiser), Timer, Uhr, Notizen, „Als Nächstes“ und eigene Widgets aus dem Baukasten.
 
 ## PC verbinden
 Seite: /connect
@@ -158,7 +158,7 @@ Bereiche: Allgemein (Sprache, PC-Name), Design & Layout (Dunkel/Hell, Themes, Fa
 ## Navigation anpassen
 Seite: /settings?s=design
 Stichworte: navigation menü reihenfolge ausblenden leiste handy unten
-Einstellungen → Design & Layout → Navigation: Bereiche sortieren, ausblenden (Home, Einstellungen und PC verbinden bleiben immer), Handy-Leiste unten wählen. Ausgeblendete Bereiche findet die Suche weiterhin.
+Einstellungen → Design & Layout → Navigation: Bereiche sortieren, ausblenden (Home, Einstellungen und PC verbinden bleiben immer), Handy-Leiste unten wählen. Ausgeblendete Bereiche findet die Suche weiterhin. Jeder Bereich hat ein eigenes farbiges Symbol.
 
 ## Backup und Wiederherstellung
 Seite: /settings?s=backup
@@ -187,7 +187,8 @@ Strg+K (oder die Lupe) durchsucht Bereiche, Spiele, Programme, Sounds, Profile u
 ## KI-Assistent
 Seite: /assistant
 Stichworte: assistent ki claude ollama lokal kostenlos gratis frage chat befehl sprache kosten schlüssel modell
-Drei Modi (Assistent → Einrichten):
+Ohne PC (Hilfe-Modus, 0 €, läuft komplett im Browser): beantwortet Fragen zur App aus dieser Wissensbasis, öffnet Seiten („Öffne das Deck“), kennt die zuletzt vom PC geladenen Spiele und den Backlog („Was soll ich als Nächstes spielen?“). Starten, Live-Werte und Sounds brauchen den PC – das sagt er ehrlich, statt zu raten.
+Mit PC drei Modi (Assistent → Einrichten):
 - **Lokal** (Standard, 0 €, ohne Internet): versteht Befehle wie „Starte Rocket League“, „Spiel Sound Airhorn“, „Profil Streaming“, „Wie heiß ist meine GPU?“, „Wie lange habe ich diese Woche gespielt?“, „Welche Spiele habe ich?“ und beantwortet Fragen zur App aus dieser Wissensbasis.
 - **Lokale KI** (0 €, ohne Konto, nichts verlässt den PC): zusätzlich ein freies Sprachmodell über Ollama (ollama.com) für freie Fragen. Installation: Ollama installieren, dann z. B. „ollama pull qwen2.5:7b“. Empfohlen mindestens 7B (braucht etwa 8 GB Grafikspeicher); kleinere Modelle machen viele Fehler. Befehle, PC-Werte und App-Fragen beantwortet weiter der genaue lokale Teil. Während eines Spiels antwortet standardmäßig nur der lokale Teil (schont die Grafikkarte).
 - **Claude** (kostenpflichtig, optional): beste Antworten. Braucht einen eigenen Anthropic-API-Schlüssel, der nur am PC eingetragen und verschlüsselt gespeichert wird. Kostet pro Anfrage; Monatslimit einstellbar. Dabei gehen deine Frage und die dafür nötigen Daten (z. B. Spielnamen, PC-Werte) an Anthropic.
