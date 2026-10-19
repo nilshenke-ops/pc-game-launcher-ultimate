@@ -132,6 +132,28 @@ test("Design wird gespeichert und übersteht das Neuladen", async () => {
   expect(await primary()).toBe("#34d399");
 });
 
+test("Cartoon-Hintergrund am Handy: eigene Hochformat-Zeichnung, ohne PC wählbar", async ({ browser }) => {
+  const code = process.env.PGL_ACCESS_CODE;
+  test.skip(!code, "Zugangscode nicht gesetzt");
+  const ctx = await browser.newContext({ ...devices["Pixel 7"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  await p.goto(`${HOSTED_SITE}/`);
+  await p.getByLabel("Zugangscode").fill(code!);
+  await expect(p.getByText("Offline – kein PC verbunden").first()).toBeVisible();
+  await p.goto(`${HOSTED_SITE}/#/settings?s=design`);
+  await p.getByRole("radio", { name: "Cartoon Nacht" }).click();
+  const bg = () => p.locator(".app-bg .img").evaluate((e) => getComputedStyle(e).backgroundImage);
+  await expect.poll(bg).toContain("cartoon-night-phone.svg");
+  // The drawing really loads.
+  expect((await p.request.get(`${HOSTED_SITE}/backgrounds/cartoon-night-phone.svg`)).ok()).toBe(true);
+  await p.reload();
+  await expect.poll(bg).toContain("cartoon-night-phone.svg"); // kept on this device
+  // Wide screen (tablet landscape / PC): the wide drawing.
+  await p.setViewportSize({ width: 1200, height: 700 });
+  await expect.poll(bg).toContain("cartoon-night.svg");
+  await ctx.close();
+});
+
 test("Plugin: Datei prüfen, installieren, mit Berechtigung aktivieren, Widget läuft abgeschottet", async () => {
   const work = state().workDir;
   const importFile = async (name: string, title: RegExp) => {

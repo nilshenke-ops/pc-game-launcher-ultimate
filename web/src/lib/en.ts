@@ -1418,4 +1418,7 @@ export const en: Record<string, string> = {
   "Plugin": "Plugin",
   "Widgets im großen Overlay (wie in der Xbox Game Bar): ankreuzen zum Hinzufügen. Verschieben und Größe ändern im Overlay selbst – am Titel ziehen bzw. an der Ecke unten rechts.": "Widgets in the large overlay (like the Xbox Game Bar): tick to add. Move and resize them in the overlay itself – drag the title or the bottom right corner.",
   "Anordnung nicht gespeichert: {e}": "Arrangement not saved: {e}",
+  "Cartoon Nacht": "Cartoon Night",
+  "Cartoon Unterwasser": "Cartoon Underwater",
+  "Cartoon Weltall": "Cartoon Space",
 };

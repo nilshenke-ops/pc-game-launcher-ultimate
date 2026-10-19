@@ -81,6 +81,8 @@ export function applyTheme(t: Theme) {
     "--font-scale": String(t.fontScale),
     // Relative to the page, so it works on the website and on the PC alike (also offline: the files are precached).
     "--bg-image": t.bgImage ? `url("${t.bgImage.replace(/"/g, "%22")}")` : t.bgScene ? `url("${new URL(`backgrounds/${t.bgScene}.svg`, location.href.split("#")[0]).href}")` : "none",
+    "--bg-image-phone": !t.bgImage && t.bgScene && BG_SCENES.find((s) => s.id === t.bgScene)?.phone
+      ? `url("${new URL(`backgrounds/${t.bgScene}-phone.svg`, location.href.split("#")[0]).href}")` : "none",
     "--bg-dim": String(t.bgDim),
     // Built-in scenes are landscapes: keep the ground visible on tall phone screens.
     "--bg-pos": !t.bgImage && t.bgScene ? "center bottom" : "center",
@@ -89,7 +91,7 @@ export function applyTheme(t: Theme) {
   root.dataset.mode = t.mode;
   // Landscapes with a sky colour are anchored at the bottom on phones; patterns (comic, arcade, space) stay full-screen.
   const scene = !t.bgImage && t.bgScene ? BG_SCENES.find((s) => s.id === t.bgScene) : undefined;
-  root.dataset.bgfit = scene?.sky ? "bottom" : "cover";
+  root.dataset.bgfit = scene?.phone ? "phone" : scene?.sky ? "bottom" : "cover";
   root.style.setProperty("--bg-sky", scene?.sky ?? "transparent");
   root.dataset.motion = t.reduceMotion ? "reduce" : "full";
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", t.background);

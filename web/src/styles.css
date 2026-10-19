@@ -65,6 +65,8 @@ body {
 /* Built-in landscape scenes on tall (phone) screens: show the scene at the bottom without heavy zoom, sky colour above. */
 @media (max-aspect-ratio: 1/1) {
   :root[data-bgfit="bottom"] .app-bg .img { background-size: 230% auto; background-repeat: no-repeat; background-color: var(--bg-sky); }
+  /* Scenes with an own tall drawing (e.g. the cartoon ones): that one fills the phone screen. */
+  :root[data-bgfit="phone"] .app-bg .img { background-image: var(--bg-image-phone); background-size: cover; background-position: center bottom; }
 }
 .app-bg .img::after { content: ""; position: absolute; inset: 0; background: var(--bg); opacity: var(--bg-dim); }
 .app-bg .grid {

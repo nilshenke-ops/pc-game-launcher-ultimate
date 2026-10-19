@@ -19,9 +19,15 @@ export interface Theme {
   bgDim: number; // 0 .. 0.9
 }
 
-/** Built-in backgrounds (drawn SVGs in public/backgrounds) with matching colours that are applied on selection. */
-export const BG_SCENES: { id: string; name: string; mode: "dark" | "light"; primary: string; accent: string; background: string; dim: number; sky?: string }[] = [
-  { id: "cartoon", name: "Cartoon", mode: "light", primary: "#0284c7", accent: "#f59e0b", background: "#e0f2fe", dim: 0.35, sky: "#4fc3f7" },
+/**
+ * Built-in backgrounds (drawn SVGs in public/backgrounds) with matching colours that are applied on selection.
+ * phone: there is a tall version "<id>-phone.svg" that is used on phones in portrait (scripts/make-cartoon-backgrounds.mjs).
+ */
+export const BG_SCENES: { id: string; name: string; mode: "dark" | "light"; primary: string; accent: string; background: string; dim: number; sky?: string; phone?: boolean }[] = [
+  { id: "cartoon", name: "Cartoon", mode: "light", primary: "#0284c7", accent: "#f59e0b", background: "#e0f2fe", dim: 0.35, sky: "#4fc3f7", phone: true },
+  { id: "cartoon-night", name: "Cartoon Nacht", mode: "dark", primary: "#a78bfa", accent: "#fde047", background: "#1e1b4b", dim: 0.3, sky: "#1e1b4b", phone: true },
+  { id: "cartoon-sea", name: "Cartoon Unterwasser", mode: "light", primary: "#0369a1", accent: "#f97316", background: "#e0f2fe", dim: 0.45, sky: "#38bdf8", phone: true },
+  { id: "cartoon-space", name: "Cartoon Weltall", mode: "dark", primary: "#fb923c", accent: "#38bdf8", background: "#0b1033", dim: 0.3, sky: "#0b1033", phone: true },
   { id: "candy", name: "Candy", mode: "light", primary: "#db2777", accent: "#7c3aed", background: "#fdf2f8", dim: 0.35, sky: "#fbcfe8" },
   { id: "comic", name: "Comic", mode: "light", primary: "#dc2626", accent: "#2563eb", background: "#fff7d6", dim: 0.3 },
   { id: "pixel", name: "Pixel Retro", mode: "light", primary: "#2563eb", accent: "#d97706", background: "#eef6ff", dim: 0.3, sky: "#5c94fc" },
