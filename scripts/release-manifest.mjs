@@ -52,10 +52,30 @@ const file = (p) => { const b = readFileSync(p); return { size: statSync(p).size
 const e = file(exe), z = file(zip);
 const payload = Buffer.from(`pgl-update-v1\n${version}\n${e.sha256}\n${e.size}`);
 
+/**
+ * Reads the private key also when it was pasted into the GitHub secret in a slightly broken form: literal "\\n",
+ * Windows line ends, quotes, everything on one line or only the base64 part without the BEGIN/END lines.
+ * On failure only the shape is reported (length, lines, header present) – never any key material.
+ */
+function loadSigningKey(raw) {
+  let text = raw.trim().replace(/^["']|["']$/g, "").replace(/\\n/g, "\n").replace(/\r/g, "").trim();
+  const m = /-----BEGIN ([A-Z ]+)-----([\s\S]*?)-----END \1-----/.exec(text);
+  const label = m ? m[1] : "PRIVATE KEY";
+  const body = (m ? m[2] : text).replace(/\s+/g, "");
+  if (/^[A-Za-z0-9+/=]+$/.test(body) && body.length > 40) text = `-----BEGIN ${label}-----\n${body.match(/.{1,64}/g).join("\n")}\n-----END ${label}-----\n`;
+  try { return createPrivateKey(text); }
+  catch (e) {
+    const lines = raw.split(/\r?\n/).length;
+    fail(`Signaturschlüssel (Secret PGL_UPDATE_SIGNING_KEY) ist nicht lesbar: ${e.code ?? e.message}. Form: ${raw.length} Zeichen, ${lines} Zeile(n), ` +
+      `BEGIN-Zeile ${/-----BEGIN [A-Z ]+-----/.test(raw) ? "vorhanden" : "fehlt"}, END-Zeile ${/-----END [A-Z ]+-----/.test(raw) ? "vorhanden" : "fehlt"}. ` +
+      "Erwartet: der komplette Inhalt von secrets/update-signing-key.pem (5 Zeilen, von -----BEGIN PRIVATE KEY----- bis -----END PRIVATE KEY-----).");
+  }
+}
+
 let signature = null;
 const pem = process.env.PGL_UPDATE_SIGNING_KEY || (arg("key") ? readFileSync(arg("key"), "utf8") : "");
 if (pem.trim()) {
-  const key = createPrivateKey(pem);
+  const key = loadSigningKey(pem);
   signature = sign("sha256", payload, { key, dsaEncoding: "ieee-p1363" }).toString("base64");
   // Must match the public key the companion trusts – otherwise every installed companion would reject the update.
   const src = readFileSync(join(root, "companion/src/Companion.Core/Services/SystemServices.cs"), "utf8");
