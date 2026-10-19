@@ -153,3 +153,30 @@ public class CaptureTests
         Assert.All(results, x => Assert.Contains("nur im Windows-Begleiter", x));
     }
 }
+
+public class OverlayLayoutTests
+{
+    [Fact]
+    public async Task Layout_is_saved_checked_and_reset()
+    {
+        using var dir = new TempDir();
+        await using var s = Fixtures.Services(dir);
+        var admin = await Fixtures.Admin(s);
+        var (phone, _, _) = await Fixtures.PairedDevice(s, admin, new[] { "view", "manage" });
+        Assert.False((await phone.Ok("overlay.layout")).TryGetProperty("layout", out _)); // no own arrangement yet
+        var saved = await phone.Ok("overlay.saveLayout", new { layout = new { opacity = 0.1, widgets = new object[]
+        {
+            new { id = "system", visible = true, x = 0.05, y = 1.7, w = 5000, h = 0 },
+            new { id = "plugin:de.pgl.game-overlay:overlay", visible = false, x = 0.5, y = 0.2, w = 380, h = 300 },
+        } } });
+        var l = saved.GetProperty("layout");
+        Assert.Equal(0.4, l.GetProperty("opacity").GetDouble());              // not invisible
+        Assert.Equal(0.98, l.GetProperty("widgets")[0].GetProperty("y").GetDouble()); // stays on screen
+        Assert.Equal(1600, l.GetProperty("widgets")[0].GetProperty("w").GetInt32());
+        Assert.False(l.GetProperty("widgets")[1].GetProperty("visible").GetBoolean());
+        Assert.Equal("invalid-params", await phone.Error("overlay.saveLayout", new { layout = new { widgets = new[] { new { id = "<script>" } } } }));
+        Assert.Equal("invalid-params", await phone.Error("overlay.saveLayout", new { layout = new { widgets = new[] { new { id = "quick" }, new { id = "quick" } } } }));
+        await phone.Ok("overlay.saveLayout", new { layout = (object?)null });
+        Assert.Null(s.Settings.Get().OverlayLayout);
+    }
+}

@@ -219,7 +219,7 @@ function DevicesWidget() {
   );
 }
 
-const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string }> = {
+export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () => string; render: () => React.ReactNode; link?: string }> = {
   status: { icon: <Activity size={18} />, title: () => t("Verbindung & PC"), render: () => <StatusWidget /> },
   session: { icon: <Gamepad2 size={18} />, title: () => t("Aktuelle Spielesitzung"), render: () => <SessionWidget /> },
   profile: { icon: <Swords size={18} />, title: () => t("Gaming-Profil"), render: () => <ProfileWidget />, link: "/profiles" },

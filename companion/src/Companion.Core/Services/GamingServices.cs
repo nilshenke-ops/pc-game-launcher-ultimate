@@ -97,6 +97,30 @@ public sealed class SettingsService
         return r;
     }
 
+    static readonly System.Text.RegularExpressions.Regex OverlayWidgetId = new("^([a-z]{2,20}|plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32})$");
+
+    /// <summary>Arrangement of the large overlay (checked: known id format, at most 24 widgets, positions on screen, sensible sizes).</summary>
+    public Settings SetOverlayLayout(OverlayLayout? layout)
+    {
+        if (layout != null)
+        {
+            if (layout.Widgets.Count > 24) throw new RpcException("invalid-params", "Höchstens 24 Widgets im Overlay.");
+            if (layout.Widgets.Any(w => !OverlayWidgetId.IsMatch(w.Id ?? ""))) throw new RpcException("invalid-params", "Unbekanntes Widget im Overlay.");
+            if (layout.Widgets.Select(w => w.Id).Distinct().Count() != layout.Widgets.Count) throw new RpcException("invalid-params", "Ein Widget ist doppelt im Overlay.");
+            layout.Opacity = double.IsFinite(layout.Opacity) ? Math.Clamp(layout.Opacity, 0.4, 1) : 0.85;
+            foreach (var w in layout.Widgets)
+            {
+                w.X = double.IsFinite(w.X) ? Math.Clamp(w.X, 0, 0.98) : 0;
+                w.Y = double.IsFinite(w.Y) ? Math.Clamp(w.Y, 0, 0.98) : 0;
+                w.W = Math.Clamp(w.W, 200, 1600);
+                w.H = w.H == 0 ? 0 : Math.Clamp(w.H, 100, 1200);
+            }
+        }
+        var r = _store.Update(s => { s.OverlayLayout = layout; return Json.Deserialize<Settings>(Json.Serialize(s))!; });
+        _hub.Changed("overlay");
+        return r;
+    }
+
     /// <summary>Recording program, overlay program and shortcuts (already validated by CaptureService). Key value null = back to the default.</summary>
     public Settings SetCapture(string? provider, string? overlayProvider, Dictionary<string, string?> keys, Dictionary<string, string?> actionProviders)
     {

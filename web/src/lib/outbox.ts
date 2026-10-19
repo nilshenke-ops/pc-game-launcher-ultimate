@@ -51,6 +51,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   // The OBS password waits on this device until the PC takes it (then it is only kept protected on the PC).
   "obs.configure": () => t("OBS-Verbindung speichern"),
   "capture.configure": () => t("Aufnahme-Programm und Tasten speichern"),
+  "overlay.saveLayout": () => t("Overlay-Widgets speichern"),
   "history.setNote": () => t("Notiz zur Spielsitzung"),
   "plugins.installCatalog": (p) => t("Plugin installieren {n}", { n: name(p, "label") }),
   "plugins.importFile": (p) => t("Plugin-Datei installieren {n}", { n: name(p, "label") }),
@@ -140,6 +141,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
     },
   },
   "capture.status": offlineCaptureStatus(),
+  "overlay.layout": {},
   "obs.status": { url: "ws://127.0.0.1:4455", passwordSet: false, replayWhilePlaying: false, connected: false, offline: true },
   // Whether this PC can show the overlay is only known once it is connected.
   "overlay.status": { supported: false, visible: null, unknown: true },
@@ -215,6 +217,7 @@ function applyLocally(method: string, p: Params): unknown {
     case "sounds.setActiveCollection": patch<{ data: Params }>("sounds.list", (d) => ({ ...d, data: { ...d.data, activeCollectionId: p.id ?? null } })); return true;
     case "audio.save": patch<{ settings: Params }>("audio.state", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
     case "settings.save": patch<{ settings: Params }>("settings.get", (d) => ({ ...d, settings: { ...d.settings, ...p } })); return p;
+    case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
     case "capture.configure": {
       patch<Params>("capture.status", (d) => {
         const keys = { ...(d.keys as Record<string, string>) };

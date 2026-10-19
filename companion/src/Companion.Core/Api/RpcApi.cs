@@ -315,6 +315,13 @@ public static class RpcApi
             return await s.Capture.ToggleOverlay(mode) is { } err ? throw new RpcException("unsupported", err) : (object)new { visible = s.Platform.Overlay.Visible };
         });
         rpc.Register("overlay.hide", _ => { s.Platform.Overlay.Hide(); return true; });
+        rpc.Register("overlay.layout", _ => new { layout = s.Settings.Get().OverlayLayout });
+        rpc.Register("overlay.saveLayout", ctx =>
+        {
+            var layout = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("layout", out var l) && l.ValueKind == JsonValueKind.Object
+                ? l.Deserialize<OverlayLayout>(Json.Options) : null; // null = back to the default arrangement
+            return new { layout = s.Settings.SetOverlayLayout(layout).OverlayLayout };
+        });
         rpc.Register("obs.status", async _ => await s.Obs.Status());
         rpc.Register("obs.configure", async ctx =>
         {

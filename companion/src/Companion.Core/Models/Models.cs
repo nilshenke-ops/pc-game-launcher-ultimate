@@ -351,6 +351,28 @@ public sealed class Settings
     public Dictionary<string, string> CaptureKeys { get; set; } = new();
     /// <summary>Own program per function ("record", "replay", "buffer"), e.g. replays as Discord clips while OBS records. Missing = CaptureProvider.</summary>
     public Dictionary<string, string> CaptureActionProviders { get; set; } = new();
+    /// <summary>Widgets of the large overlay with their place on the screen. Null = default arrangement (chosen by the web app).</summary>
+    public OverlayLayout? OverlayLayout { get; set; }
+}
+
+public sealed class OverlayLayout
+{
+    /// <summary>Opacity of the widget windows (0.4 – 1).</summary>
+    public double Opacity { get; set; } = 0.85;
+    public List<OverlayWidgetPlace> Widgets { get; set; } = new();
+}
+
+public sealed class OverlayWidgetPlace
+{
+    /// <summary>Built-in widget (e.g. "system", "quick") or "plugin:&lt;plugin id&gt;:&lt;widget id&gt;".</summary>
+    public string Id { get; set; } = "";
+    public bool Visible { get; set; } = true;
+    /// <summary>Position as share of the screen (0 – 1), so it fits every resolution.</summary>
+    public double X { get; set; }
+    public double Y { get; set; }
+    /// <summary>Size in pixels; H = 0 means "as high as the content".</summary>
+    public int W { get; set; } = 340;
+    public int H { get; set; }
 }
 
 // ---------------------------------------------------------------- Notifications

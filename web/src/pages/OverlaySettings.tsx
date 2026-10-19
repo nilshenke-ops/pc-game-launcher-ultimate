@@ -8,6 +8,8 @@ import type { Hotkey, HotkeyStatus, ObsStatus, OverlayCorner, OverlayStatus, Set
 import type { PluginList } from "../lib/plugins";
 import { Banner, Button, Card, Field, PageHead, Switch } from "../components/ui";
 import { ComboInput } from "../components/ComboInput";
+import { addWidget, layoutOrDefault, OVERLAY_BUILTINS, overlayBuiltinTitle, overlayPluginWidgets, removeWidget, type OverlayLayout } from "../lib/overlay-layout";
+import { pluginWidgetId } from "../lib/plugins";
 import { describeCombo } from "./hotkey-combo";
 import { actionLabel, CAPTURE_PROVIDERS, effectiveKey, FUNCTIONS, providerFor, type CaptureAction, type CaptureFunction, type CaptureStatus } from "../lib/capture";
 
@@ -62,9 +64,8 @@ export default function OverlaySettings() {
         </Card>
 
         <Card title={t("Overlay-Inhalt")} icon={<Puzzle size={18} />}>
-          {overlayPlugin?.enabled ? <Banner kind="ok">{t("Plugin „Game-Overlay“ ist aktiv – seine Widgets erscheinen im großen Overlay.")}</Banner>
-            : overlayPlugin ? <Banner kind="warn" actions={<Link className="btn sm" to="/plugins">{t("Plugin Center")}</Link>}>{t("Plugin „Game-Overlay“ ist installiert, aber noch nicht aktiviert (Plugin Center → Details → Aktivieren).")}</Banner>
-            : <Banner kind="info" actions={<Link className="btn sm primary" to="/plugins?tab=store">{t("Zum Store")}</Link>}>{t("Was im großen Overlay steht, kommt aus Plugins. Installiere das offizielle Plugin „Game-Overlay“ (Leistungswerte, Aufnahme, Replay). Weitere Plugins mit Overlay-Widgets erscheinen dort ebenfalls.")}</Banner>}
+          <OverlayWidgetPicker plugins={plugins.data} canManage={canManage} online={online} />
+          {!overlayPlugin && <p className="tiny muted" style={{ marginTop: 8 }}>{t("Mehr Widgets gibt es als Plugins im Store – jedes aktive Plugin-Widget lässt sich hier hinzufügen.")} <Link to="/plugins?tab=store">{t("Zum Store")}</Link></p>}
           <p className="tiny muted" style={{ marginTop: 8 }}>{t("Das Mini-Overlay zeigt CPU, RAM, GPU und „● REC“ während einer Aufnahme. Es lässt Mausklicks zum Spiel durch und braucht keinen Browser im Hintergrund.")}</p>
           <Field label={t("Ecke für das Mini-Overlay")}>
             <select className="input" value={set.data?.settings.overlayCorner ?? "top-right"} disabled={!canManage}
@@ -289,5 +290,35 @@ function CaptureCard({ cap, online, canManage, canLaunch, run }: { cap: CaptureS
         {online && cap.canSendKeys === false && needed.size > 0 && <p className="tiny muted">{t("Tastenkürzel an andere Programme senden geht nur im Windows-Begleiter.")}</p>}
       </div>
     </Card>
+  );
+}
+
+/** Which widgets the large overlay shows (positions are changed in the overlay itself by dragging). Works without the PC too. */
+function OverlayWidgetPicker({ plugins, canManage, online }: { plugins?: PluginList; canManage: boolean; online: boolean }) {
+  const q = useRpc<{ layout?: OverlayLayout }>("overlay.layout", {}, ["overlay"]);
+  const layout = layoutOrDefault(q.data?.layout, overlayPluginWidgets(plugins));
+  const all = [
+    ...OVERLAY_BUILTINS.map((id) => ({ id: id as string, title: overlayBuiltinTitle(id) })),
+    ...(plugins?.plugins ?? []).filter((p) => p.enabled && p.manifest?.platforms.includes("web"))
+      .flatMap((p) => p.manifest!.contributes.widgets.map((w) => ({ id: pluginWidgetId(p.id, w.id), title: `${w.title} (${t("Plugin")})` }))),
+  ];
+  const save = (l: OverlayLayout | null) => client.call("overlay.saveLayout", { layout: l })
+    .then(() => toast(online ? t("Gespeichert") : t("Gespeichert – wird beim Verbinden auf den PC übertragen"), "success"), (e: Error) => toast(e.message, "error"));
+  return (
+    <div className="stack-sm" style={{ marginBottom: 12 }}>
+      <p className="small muted">{t("Widgets im großen Overlay (wie in der Xbox Game Bar): ankreuzen zum Hinzufügen. Verschieben und Größe ändern im Overlay selbst – am Titel ziehen bzw. an der Ecke unten rechts.")}</p>
+      <div className="chips" role="group" aria-label={t("Overlay-Widgets")}>
+        {all.map((w) => {
+          const on = layout.widgets.some((x) => x.id === w.id);
+          return <button key={w.id} type="button" className={`chip ${on ? "on" : ""}`} aria-pressed={on} disabled={!canManage}
+            onClick={() => save(on ? removeWidget(layout, w.id) : addWidget(layout, w.id))}>{on ? "✓ " : "+ "}{w.title}</button>;
+        })}
+      </div>
+      <Field label={t("Deckkraft der Widgets: {p} %", { p: Math.round(layout.opacity * 100) })}>
+        <input type="range" min={40} max={100} step={5} value={Math.round(layout.opacity * 100)} disabled={!canManage} aria-label={t("Deckkraft")}
+          onChange={(e) => save({ ...layout, opacity: Number(e.target.value) / 100 })} />
+      </Field>
+      <div><Button size="sm" variant="ghost" disabled={!canManage || !q.data?.layout} onClick={() => save(null)}>{t("Anordnung zurücksetzen")}</Button></div>
+    </div>
   );
 }

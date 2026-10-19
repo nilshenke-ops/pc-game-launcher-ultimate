@@ -347,6 +347,42 @@ test("Overlay & Aufnahme: OBS verbinden, aufnehmen, Replay speichern, Tastenkür
   await pc.goto(`${COMPANION}/#/`);
 });
 
+test("Overlay wie die Game Bar: Widgets hinzufügen, entfernen, verschieben – bleibt gespeichert", async () => {
+  await pc.goto(`${COMPANION}/#/overlay`);
+  const panel = (title: string) => pc.locator(".gb-panel", { has: pc.locator(".gb-panel-title", { hasText: title }) });
+  await expect(panel("PC-Auslastung")).toBeVisible();
+  await expect(panel("Quick Actions")).toBeVisible();
+  await expect(panel("Game-Overlay")).toBeVisible(); // plugin widget made for the overlay is there by default
+  // Widget menu: remove one, add one of the website's functions.
+  await pc.getByRole("button", { name: "Widgets" }).click();
+  await pc.getByRole("checkbox", { name: "Quick Actions" }).uncheck();
+  await pc.getByRole("checkbox", { name: "Benachrichtigungen" }).check();
+  await pc.getByRole("button", { name: "Widgets" }).click();
+  await expect(panel("Quick Actions")).toHaveCount(0);
+  await expect(panel("Benachrichtigungen")).toBeVisible();
+  // Drag at the title anywhere on the screen, resize at the corner.
+  const head = await panel("PC-Auslastung").locator(".gb-panel-head").boundingBox();
+  await pc.mouse.move(head!.x + 60, head!.y + 15); await pc.mouse.down(); await pc.mouse.move(760, 420, { steps: 10 }); await pc.mouse.up();
+  const grip = await panel("Benachrichtigungen").locator(".gb-resize").boundingBox();
+  await pc.mouse.move(grip!.x + 8, grip!.y + 8); await pc.mouse.down(); await pc.mouse.move(grip!.x + 108, grip!.y + 58, { steps: 6 }); await pc.mouse.up();
+  const width = (await panel("Benachrichtigungen").boundingBox())!.width;
+  // Hide with ✕, show again via the bar.
+  await panel("Aufnahme").getByRole("button", { name: "Aufnahme ausblenden" }).click();
+  await expect(panel("Aufnahme")).toHaveCount(0);
+  await pc.getByRole("toolbar").getByRole("button", { name: "Aufnahme", exact: true }).click();
+  await expect(panel("Aufnahme")).toBeVisible();
+  await pc.waitForTimeout(1200); // saved shortly after the last change
+  await pc.reload();
+  await expect(panel("Benachrichtigungen")).toBeVisible();
+  await expect(panel("Quick Actions")).toHaveCount(0);
+  const moved = (await panel("PC-Auslastung").boundingBox())!;
+  expect(moved.x).toBeGreaterThan(600);
+  expect(moved.y).toBeGreaterThan(350);
+  expect(Math.abs((await panel("Benachrichtigungen").boundingBox())!.width - width)).toBeLessThan(3);
+  await expect(pc.locator(".gb-error")).toHaveCount(0);
+  await pc.goto(`${COMPANION}/#/`);
+});
+
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
   await pc.goto(`${COMPANION}/#/monitor`);
   // Network: live pings run; every target shows a value or honestly "keine Antwort" (ICMP may be blocked).
@@ -453,6 +489,9 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.reload();
   await expect(tablet.getByRole("button", { name: "Xbox Game Bar" })).toHaveAttribute("aria-pressed", "true");
   await expect(tablet.getByRole("textbox", { name: "Replay speichern (die letzten Sekunden)", exact: true })).toHaveValue("Ctrl+Alt+7");
+  // Overlay widgets chosen on the tablet, too.
+  await tablet.getByRole("button", { name: "+ Laufende Sounds" }).click();
+  await expect(tablet.getByText("7 Änderungen warten auf den PC")).toBeVisible();
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -490,6 +529,9 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await pc.goto(`${COMPANION}/#/hotkeys`);
   await expect(pc.getByText("Maus-Seitentaste hinten (4)")).toBeVisible();
   await expect(pc.locator(".list-item", { hasText: "Ctrl + Alt + 7" })).toContainText("Replay speichern");
+  await pc.goto(`${COMPANION}/#/overlay`);
+  await expect(pc.locator(".gb-panel-title", { hasText: "Laufende Sounds" })).toBeVisible(); // chosen on the tablet
+  await pc.goto(`${COMPANION}/#/hotkeys`);
   await pc.goto(`${COMPANION}/#/overlay-settings`);
   await expect(pc.getByRole("button", { name: "Xbox Game Bar" })).toHaveAttribute("aria-pressed", "true"); // chosen on the tablet
   await pc.getByRole("button", { name: "OBS Studio" }).click();

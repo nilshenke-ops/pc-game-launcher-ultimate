@@ -140,7 +140,7 @@ sealed class FullOverlayForm : Form
         var b = new Bitmap(r.Width, r.Height);
         using var g = Graphics.FromImage(b);
         g.CopyFromScreen(r.Location, Point.Empty, r.Size);
-        using var dim = new SolidBrush(Color.FromArgb(140, 0, 0, 0));
+        using var dim = new SolidBrush(Color.FromArgb(70, 0, 0, 0)); // only slightly darker: the game stays visible behind the widgets
         g.FillRectangle(dim, 0, 0, r.Width, r.Height);
         return b;
     }

@@ -128,6 +128,8 @@
     "overlay.status": "view",
     "overlay.toggle": "launch",
     "overlay.hide": "launch",
+    "overlay.layout": "view",
+    "overlay.saveLayout": "manage",
     "obs.status": "view",
     "obs.configure": "manage",
     "capture.status": "view",
