@@ -1,6 +1,6 @@
 {
-  "name": "PC Game Launcher Ultimate",
-  "short_name": "Game Launcher",
+  "name": "Nexus Gaming Hub",
+  "short_name": "Nexus",
   "description": "Gaming-Zentrale für deinen Windows-PC",
   "start_url": "./",
   "scope": "./",

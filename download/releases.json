@@ -1,5 +1,39 @@
 [
   {
+    "version": "2.0.0",
+    "date": "2026-10-19",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.0.0/PCGameLauncherCompanion.exe",
+    "size": 84417712,
+    "sha256": "be616416d28d0dc5bad0d467aedcc0ef168e75f42179e199521fc44641c5b680",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.0.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.0.0/PCGameLauncherCompanion-2.0.0-win-x64.zip",
+      "size": 78746792,
+      "sha256": "cc7b022fd2e9f2b616bb14b329921797c88f9226dd3331eefd8d521158e83480"
+    },
+    "notes": "Neuer Name: Nexus Gaming Hub (Dateien, Datenordner, Update-Adressen und Kopplungen bleiben gleich) · Navigation in Kategorien: Dashboard, Steuerung, Audio, System, Verbindung, Erweiterungen, Verwaltung; „Mehr“ auf dem Handy nach Kategorien geordnet · Navigation anpassen (Einstellungen → Design): Reihenfolge, Bereiche ausblenden, die vier Plätze der Handy-Leiste wählen",
+    "changes": {
+      "neu": [
+        "Neuer Name: Nexus Gaming Hub (Dateien, Datenordner, Update-Adressen und Kopplungen bleiben gleich)",
+        "Navigation in Kategorien: Dashboard, Steuerung, Audio, System, Verbindung, Erweiterungen, Verwaltung; „Mehr“ auf dem Handy nach Kategorien geordnet",
+        "Navigation anpassen (Einstellungen → Design): Reihenfolge, Bereiche ausblenden, die vier Plätze der Handy-Leiste wählen",
+        "Netzwerkdiagnose (Ping Doctor): Ping, Jitter, Paketverlust, Antwortzeit zum PC, Ping-Verlauf mit Werten beim Zeigen, Verbindungsqualität mit offengelegten Regeln, bis zu 3 eigene Ziele (z. B. Spiel-Server per Hostname/IP)",
+        "Automatisierungen und Quick Actions: Bausteine „Warten“, „Nur weiter, wenn … läuft / nicht läuft“ und „Medientaste drücken“; Verlauf der letzten 10 Ausführungen je Regel; eine laufende Regel startet nicht doppelt; lange Abläufe laufen auf dem PC weiter",
+        "Hotkeys & Makros: Medientasten (Play/Pause, Titel vor/zurück, Ton aus, lauter/leiser) als Hotkey, Knopf „Jetzt testen“",
+        "Soundboard: Sounds wiederholen bis gestoppt, Hinweis auf fehlende Audiodateien, Formatliste"
+      ],
+      "verbessert": [
+        "Wartende Änderungen: eigene Kennung je Änderung – der PC wendet sie nur einmal an, auch wenn sie nach einer verlorenen Antwort erneut gesendet wird; neue Versuche mit wachsender Wartezeit, Anzahl der Versuche sichtbar"
+      ],
+      "behoben": [
+        "Einstellungen → Design stürzte ab, wenn ein eigenes Widget oder Plugin-Widget auf dem Dashboard lag (Fehler seit 1.9.0)"
+      ]
+    },
+    "signature": "PnoTg0FM8VP2low+pHH3f+C7dpSiiI0cyAjNiOGdD3Gfnkvv2JpRcDqajflpFNgkW6J2AERuAdRZDA1rDCv9eg=="
+  },
+  {
     "version": "1.9.0",
     "date": "2026-10-19",
     "channel": "stable",
