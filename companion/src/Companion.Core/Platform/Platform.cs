@@ -40,6 +40,8 @@ public interface IPlatform
     IWindowManager WindowManager => NullWindowManager.Instance;
     /// <summary>XInput game controllers (Windows companion only).</summary>
     IControllers Controllers => NullControllers.Instance;
+    /// <summary>System-wide key and mouse-button remapping (Windows companion only).</summary>
+    IInputHook InputHook => NullInputHook.Instance;
 }
 
 /// <summary>Pictures for the capture library and a delete that can be undone.</summary>

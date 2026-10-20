@@ -32,6 +32,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Mods: eingestellte Mod-Ordner je Spiel | `mods.json` | Datei löschen |
 | Sicherungen der Mod-Ordner (je Spiel die letzten 5) | `mod-backups\` | Ordner löschen |
 | Fenster-Layouts (Programmname, Monitor, Position) | `window-layouts.json` | Fenster-Layouts → Löschen |
+| Tastenbelegung (Profile, Programmnamen, welche Taste was wird) – **keine** Tastendrücke, nichts wird mitgeschrieben | `input-remap.json` | Tastatur & Maus belegen → Löschen |
 | OpenRGB-Verbindung (Adresse, Port) | `rgb.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |

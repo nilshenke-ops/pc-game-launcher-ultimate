@@ -29,6 +29,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public WebPushService Push { get; }
     public ModService Mods { get; }
     public WindowLayoutService Layouts { get; }
+    public InputRemapService Input { get; }
     public RgbService Rgb { get; }
     public QuickActionService QuickActions { get; }
     public AutomationEngine Automations { get; }
@@ -114,6 +115,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Mods = new ModService(paths, Library, Transfer, id => Sessions.Running().Any(r => r.itemId == id), Rpc);
         Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);
         Rgb = new RgbService(paths);
+        Input = new InputRemapService(paths, platform.InputHook, Rpc);
         Notifications.Created += Push.OnNotification;
         Updates.CreateRestorePoint = name =>
         {
@@ -479,6 +481,7 @@ public sealed class CompanionServices : IAsyncDisposable
         await Obs.DisposeAsync();
         Sessions.Dispose();
         Calendar.Dispose();
+        Input.Dispose();
         Monitor.Dispose();
         LanAddress.Dispose();
         GamePass.Dispose();

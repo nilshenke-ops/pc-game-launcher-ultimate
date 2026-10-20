@@ -2,7 +2,7 @@
 import { locale } from "./i18n";
 
 /** Id made on this device, so a change saved offline is sent exactly once (the PC ignores a repeated id). */
-export function clientId(prefix: "goal" | "match" | "wish"): string {
+export function clientId(prefix: "goal" | "match" | "wish" | "rmp"): string {
   const a = new Uint8Array(8);
   crypto.getRandomValues(a);
   return `${prefix}_${Array.from(a, (b) => b.toString(36).padStart(2, "0")).join("").slice(0, 14)}`;

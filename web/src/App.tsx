@@ -39,6 +39,7 @@ const CapturesPage = lazy(() => import("./pages/Captures"));
 const ModsPage = lazy(() => import("./pages/Mods"));
 const LayoutsPage = lazy(() => import("./pages/Layouts"));
 const PeripheralsPage = lazy(() => import("./pages/Peripherals"));
+const InputPage = lazy(() => import("./pages/Input"));
 const Deck = lazy(() => import("./pages/Deck"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Deals = lazy(() => import("./pages/Deals"));
@@ -125,6 +126,7 @@ function Gate() {
           <Route path="/mods" element={<ModsPage />} />
           <Route path="/layouts" element={<LayoutsPage />} />
           <Route path="/peripherals" element={<PeripheralsPage />} />
+          <Route path="/input" element={<InputPage />} />
           <Route path="/deck" element={<Deck />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/deals" element={<Deals />} />

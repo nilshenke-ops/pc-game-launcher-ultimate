@@ -178,3 +178,11 @@ Keine Laufzeitänderung: die Installation läuft nur auf Knopfdruck (Datei kopie
 | Deal-Radar-Prüfung (höchstens alle 6 h, nie im Spiel) | 1 Steam-Anfrage pro Spiel | + 1 Wunschlisten-Anfrage (+ Namen in Paketen à 50) + 2 Microsoft-Anfragen pro Spiel, nur wenn eingeschaltet; weiter mit kurzer Pause zwischen den Spielen |
 | Karte antippen | Knopf auf der Karte | ganze Karte; Ladeanzeige sofort (lokal), kein zusätzlicher Aufruf |
 | Web | – | Haupt-Chunk unverändert (~384 KB, 122 KB gzip); Deal Radar im eigenen Chunk |
+
+## 2.20.0 (20.10.2026)
+
+| | 2.19.0 | 2.20.0 |
+|---|---|---|
+| Ohne eingeschaltetes Profil | – | kein Hook, kein Thread |
+| Mit Profil | – | ein Thread mit Tastatur-Hook; Maus-Hook nur bei Maus-Belegung. Pro Ereignis ein Wörterbuch-Zugriff; das Vordergrund-Programm wird nur bei Fensterwechsel neu gelesen. Mausbewegungen werden ohne Prüfung sofort weitergereicht (wichtig bei 1000-Hz-Mäusen) |
+| Web | – | Seite „Tastatur & Maus belegen“ im eigenen Chunk (~17 KB, 6 KB gzip), erst beim Öffnen geladen |

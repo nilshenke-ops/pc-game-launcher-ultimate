@@ -657,6 +657,29 @@ test("Deal Radar: ohne Einschalten keine Anfrage, Eintrag von Hand, Zielpreis wi
   await expect(pc.getByRole("dialog")).toHaveCount(0);
 });
 
+test("Tastenbelegung: Profil für ein Spiel, Taste auf der Tastatur antippen, Kombination, gespeichert auf dem PC", async () => {
+  await pc.goto(`${COMPANION}/#/input`);
+  await expect(pc.getByRole("heading", { name: "Tastatur & Maus belegen" })).toBeVisible();
+  await pc.getByRole("button", { name: "Neues Profil" }).click();
+  const dlg = pc.getByRole("dialog", { name: "Neues Profil" });
+  await dlg.getByRole("textbox", { name: "Name", exact: true }).fill("Shooter");
+  await dlg.getByRole("textbox", { name: "Programmname" }).fill("cs2.exe");
+  await dlg.getByRole("button", { name: "Hinzufügen", exact: true }).click();
+  await expect(dlg.getByText("cs2", { exact: true })).toBeVisible();
+  await dlg.getByRole("button", { name: "Caps Lock", exact: true }).click();
+  await dlg.getByRole("combobox", { name: "Neue Taste" }).selectOption("LCtrl");
+  await dlg.getByRole("button", { name: "Seitentaste hinten (4)" }).click();
+  await dlg.getByRole("combobox", { name: "Neue Taste" }).selectOption("M");
+  await dlg.getByRole("button", { name: "Strg", exact: true }).click();
+  await expect(dlg.getByText("Ergebnis: Strg + M")).toBeVisible();
+  await dlg.getByRole("button", { name: "Speichern" }).click();
+  await expect(pc.getByText("Nur in: cs2 · 2 Belegungen")).toBeVisible();
+  await expect(pc.getByText(/Caps Lock → Strg links · Seitentaste hinten \(4\) → Strg \+ M/)).toBeVisible();
+  await pc.getByRole("button", { name: "Löschen" }).click();
+  await pc.getByRole("dialog", { name: "Profil löschen?" }).getByRole("button", { name: "Löschen" }).click();
+  await expect(pc.getByText("Noch keine Belegung")).toBeVisible();
+});
+
 test("KI-Assistent: lokal, ohne Internet – beantwortet App-Fragen, schlägt Aktionen als Knopf vor, Suche leitet weiter", async () => {
   await pc.goto(`${COMPANION}/#/assistant`);
   await expect(pc.getByRole("heading", { name: "KI-Assistent" })).toBeVisible();

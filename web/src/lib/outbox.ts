@@ -68,6 +68,9 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "activity.set": () => t("Status ändern"),
   "layouts.save": (p) => t("Fenster-Layout speichern {n}", { n: name(p, "name") }),
   "layouts.remove": () => t("Fenster-Layout löschen"),
+  "input.save": (p) => t("Tastenbelegung speichern {n}", { n: name(p, "name") }),
+  "input.remove": () => t("Tastenbelegung löschen"),
+  "input.setEnabled": (p) => (p.enabled ? t("Tastenbelegung einschalten") : t("Tastenbelegung ausschalten")),
   "captures.update": (p) => p.favorite === true ? t("Aufnahme als Favorit markieren") : p.favorite === false ? t("Favorit entfernen") : t("Schlagwörter ändern"),
   "quests.saveGoal": (p) => t("Ziel speichern {n}", { n: name(p, "title") }),
   "quests.removeGoal": () => t("Ziel löschen"),
@@ -267,6 +270,9 @@ function applyLocally(method: string, p: Params): unknown {
     case "calendar.remove": patch<{ events: WithId[] }>("calendar.list", (d) => ({ ...d, events: d.events.filter((x) => x.id !== p.id) })); return true;
     case "layouts.save": patch<{ layouts: WithId[] }>("layouts.list", (d) => ({ ...d, layouts: upsert(d.layouts, p as unknown as WithId) })); return p;
     case "layouts.remove": patch<{ layouts: WithId[] }>("layouts.list", (d) => ({ ...d, layouts: d.layouts.filter((x) => x.id !== p.id) })); return true;
+    case "input.save": patch<{ profiles: WithId[] }>("input.list", (d) => ({ ...d, profiles: upsert(d.profiles, p as unknown as WithId) })); return p;
+    case "input.remove": patch<{ profiles: WithId[] }>("input.list", (d) => ({ ...d, profiles: d.profiles.filter((x) => x.id !== p.id) })); return true;
+    case "input.setEnabled": patch<{ profiles: (WithId & Params)[] }>("input.list", (d) => ({ ...d, profiles: d.profiles.map((x) => (x.id === p.id ? { ...x, enabled: p.enabled } : x)) })); return true;
     case "captures.update": patch<{ items: (WithId & Params)[] }>("captures.list", (d) => ({ ...d, items: d.items.map((i) => (i.id === p.id ? { ...i, ...(p.favorite != null ? { favorite: p.favorite } : {}), ...(p.tags ? { tags: p.tags } : {}) } : i)) })); return p;
     case "activity.set": patch<Params>("activity.get", (d) => ({ ...d, ...p, shared: true, updatedAt: new Date().toISOString() })); return p;
     // Goal, match and wish ids are made on the device (goal_/match_/wish_…), so a repeated send changes nothing on the PC.

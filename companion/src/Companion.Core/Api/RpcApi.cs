@@ -268,6 +268,13 @@ public static class RpcApi
         rpc.Register("layouts.save", ctx => s.Layouts.Save(ctx.Bind<WindowLayout>()));
         rpc.Register("layouts.remove", ctx => { s.Layouts.Remove(ctx.Str("id", 48)); return true; });
         rpc.Register("layouts.apply", ctx => new { results = s.Layouts.Apply(ctx.Str("id", 48)) });
+        rpc.Register("input.list", _ => s.Input.List());
+        rpc.Register("input.devices", _ => s.Input.Devices());
+        rpc.Register("input.save", ctx => s.Input.Save(ctx.Bind<RemapProfile>()));
+        rpc.Register("input.remove", ctx => { s.Input.Remove(ctx.Str("id", 48)); return true; });
+        rpc.Register("input.setEnabled", ctx => { s.Input.SetEnabled(ctx.Str("id", 48), ctx.Bool("enabled")); return true; });
+        rpc.Register("input.pause", ctx => { s.Input.SetPaused(ctx.Bool("paused")); return true; });
+        rpc.Register("input.capture", async _ => await s.Input.CaptureAsync(CancellationToken.None));
         rpc.Register("controllers.list", _ => new { supported = s.Platform.Controllers.Supported, controllers = s.Platform.Controllers.List() });
         rpc.Register("controllers.state", ctx => (object?)s.Platform.Controllers.State(ctx.Params.GetProperty("index").GetInt32()) ?? new { connected = false });
         rpc.Register("controllers.rumble", ctx =>

@@ -60,6 +60,11 @@ Seite: /peripherals
 Stichworte: controller gamepad xbox test tasten stick drift vibration akku rgb beleuchtung openrgb farbe profil led
 Controller: Xbox- und XInput-kompatible Controller mit Akku-Stand, Live-Test (Tasten, Sticks, Trigger – zeigt Stick-Drift) und Vibrationstest. PlayStation/Switch nur über Steam Input oder DS4Windows. RGB: über das kostenlose OpenRGB (dort „SDK Server“ → „Start Server“). Eine Farbe für alle Geräte oder einzeln, OpenRGB-Profile laden – auch als Bausteine „RGB-Farbe setzen“ und „RGB-Profil laden“ in Quick Actions. Verbindung nur zu diesem PC oder einem Gerät im Heimnetz.
 
+## Tastatur & Maus belegen
+Seite: /input
+Stichworte: tastenbelegung tasten umbelegen umlegen remap tastatur maus royal kludge rk attack shark seitentaste maustaste caps lock windows-taste sperren profil spiel push-to-talk notaus
+Tasten und Maustasten am PC umlegen (Windows-Begleiter): „Neues Profil“ → Name, „Gilt für“ (Überall oder bestimmte Spiele/Programme), dann eine Taste auf der Tastatur-Ansicht antippen (oder „Am PC drücken“ und die Taste an der echten Tastatur/Maus drücken) und festlegen, was sie wird: eine andere Taste, eine Tastenkombination (mit Strg/Shift/Alt/Win), eine Maustaste oder „Aus (sperren)“. Maus: rechte, mittlere und die beiden Seitentasten; die linke Maustaste ist nicht umlegbar. Spiel-Profile gelten nur, solange das Spiel im Vordergrund ist, und ergänzen das Profil „Überall“. Notaus: Strg+Alt+F12 am PC schaltet alles aus und wieder an. Gilt für alle Tastaturen und Mäuse gleichzeitig (auch Royal Kludge und Attack Shark – die werden am Namen erkannt); was die Hersteller-Software im Gerät speichert, bleibt. Keine Makros. Controller umlegen: über Steam Input. Profile lassen sich ohne PC vorbereiten (werden übertragen).
+
 ## Push-Benachrichtigungen
 Seite: /notifications
 Stichworte: push benachrichtigung handy geschlossen app zu erinnerung hintergrund iphone home bildschirm
