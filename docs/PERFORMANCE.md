@@ -194,3 +194,7 @@ Keine Laufzeitänderung: die Installation läuft nur auf Knopfdruck (Datei kopie
 | Prozess-Suche nach einem Start | alle 5 s | 3 min lang jede Sekunde, dann wieder alle 5 s (endet früher, sobald das Spiel erkannt ist) |
 | Zeit bis „läuft“ | bis zu 5 s nach dem echten Start | bis zu 1 s |
 | Sonst | – | unverändert; die Auswertung rechnet nur beim Öffnen der Seite |
+
+## 2.22.0 (20.10.2026)
+
+Keine neue Arbeit am PC: der Trophäenraum liest vorhandene Daten; die Karte zeichnet der Browser. Eigener Chunk, erst beim Öffnen geladen.

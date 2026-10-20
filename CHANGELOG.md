@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.22.0 – 2026-10-20
+### Neu
+- Trophäenraum: die GameQuest-Erfolge als Trophäen in Gold-, Silber- und Bronze-Regalen – freigeschaltete mit Datum, gesperrte mit Fortschritt
+- Gamer-Pass: Profilkarte mit Level, XP, Stunden, Spielen, Serie, Trophäen und meistgespieltem Spiel; Name und Symbol frei wählbar, als Bild speichern oder teilen – auch ohne PC
+
 ## 2.21.0 – 2026-10-20
 ### Neu
 - Startzeit-Analyse: je Spiel, wie lange es vom Tippen auf „Spielen“ dauert, bis das Spiel läuft – zuletzt, üblich, schnellster und langsamster Start, Verlauf und Hinweis, wenn Starts langsamer werden

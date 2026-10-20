@@ -60,6 +60,11 @@ Seite: /peripherals
 Stichworte: controller gamepad xbox test tasten stick drift vibration akku rgb beleuchtung openrgb farbe profil led
 Controller: Xbox- und XInput-kompatible Controller mit Akku-Stand, Live-Test (Tasten, Sticks, Trigger – zeigt Stick-Drift) und Vibrationstest. PlayStation/Switch nur über Steam Input oder DS4Windows. RGB: über das kostenlose OpenRGB (dort „SDK Server“ → „Start Server“). Eine Farbe für alle Geräte oder einzeln, OpenRGB-Profile laden – auch als Bausteine „RGB-Farbe setzen“ und „RGB-Profil laden“ in Quick Actions. Verbindung nur zu diesem PC oder einem Gerät im Heimnetz.
 
+## Trophäenraum & Gamer-Pass
+Seite: /trophies
+Stichworte: trophäen trophäenraum erfolge gamer-pass profilkarte karte level xp teilen bild gold silber bronze
+Die Erfolge aus GameQuest als Trophäen in drei Regalen: Gold (100 XP und mehr), Silber (50 XP), Bronze (25 XP); freigeschaltete mit Datum, gesperrte mit Fortschritt. Der Gamer-Pass ist eine Karte mit Level, XP-Balken, Stunden, Spielen, längster Serie, Trophäen und meistgespieltem Spiel – Name und Symbol frei wählbar (bleiben auf dem Gerät), „Als Bild speichern“ oder „Teilen“. Alles aus eigenen Daten; ohne PC wird der zuletzt geladene Stand gezeigt.
+
 ## Startzeit-Analyse
 Seite: /start-times
 Stichworte: startzeit ladezeit dauer start langsam schnell analyse messen spiel startet warum lädt lange

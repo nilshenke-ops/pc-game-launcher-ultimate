@@ -43,6 +43,7 @@ export function navItems(): NavItem[] {
     { path: "/pair", label: t("Gerät koppeln"), short: t("Koppeln"), icon: Link2, group: g.conn, keywords: "qr code kopplung" },
     { path: "/plugins", label: t("Plugin Center"), short: t("Plugins"), icon: Puzzle, group: g.ext, keywords: "plugins erweiterungen store widgets themes addons module" },
     { path: "/quests", label: t("GameQuest"), short: t("Quests"), icon: Trophy, group: g.ext, keywords: "ziele xp level erfolge achievements matches siege statistik quest" },
+    { path: "/trophies", label: t("Trophäenraum & Gamer-Pass"), short: t("Trophäen"), icon: Trophy, group: g.ext, keywords: "trophäen trophäenraum erfolge gamer-pass profil karte level xp teilen gold silber bronze" },
     { path: "/deals", label: t("Deal Radar"), short: t("Deals"), icon: Tag, group: g.ext, keywords: "wunschliste preis angebot sale rabatt steam zielpreis deal" },
     { path: "/notifications", label: t("Benachrichtigungen"), short: t("Hinweise"), icon: Bell, group: g.admin },
     { path: "/settings", label: t("Einstellungen"), short: t("Einstell."), icon: Settings, group: g.admin, keywords: "design sprache backup update navigation" },
@@ -69,7 +70,7 @@ export const ICONS: Record<string, LucideIcon> = {
 const NAV_COLORS: Record<string, string> = {
   "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
-  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
+  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",
   "/diagnostics": "#2dd4bf", "/updates": "#4ade80", "/help": "#93c5fd",
 };
