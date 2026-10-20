@@ -36,6 +36,10 @@ public interface IPlatform
     IMediaTools Media => NullMediaTools.Instance;
     /// <summary>Own folder, Start menu, "Apps &amp; Features" and uninstall (Windows companion only).</summary>
     IInstaller Installer => NullInstaller.Instance;
+    /// <summary>Program windows and monitors for window layouts (Windows companion only).</summary>
+    IWindowManager WindowManager => NullWindowManager.Instance;
+    /// <summary>XInput game controllers (Windows companion only).</summary>
+    IControllers Controllers => NullControllers.Instance;
 }
 
 /// <summary>Pictures for the capture library and a delete that can be undone.</summary>

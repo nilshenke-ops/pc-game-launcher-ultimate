@@ -24,6 +24,9 @@ export function stepLabels(): Record<StepType, string> {
     ifRunning: t("Nur weiter, wenn … läuft"),
     ifNotRunning: t("Nur weiter, wenn … nicht läuft"),
     mediaKey: t("Medientaste drücken"),
+    applyLayout: t("Fenster-Layout anwenden"),
+    rgbColor: t("RGB-Farbe setzen (OpenRGB)"),
+    rgbProfile: t("RGB-Profil laden (OpenRGB)"),
   };
 }
 
@@ -41,7 +44,11 @@ export function useStepRefs() {
   const snd = useRpc<{ data: SoundsFile }>("sounds.list", {}, ["sounds"]);
   const audio = useRpc<{ devices: AudioDevice[] }>("audio.state", {}, ["audio"]);
   const pending = usePendingSounds();
+  const layouts = useRpc<{ layouts: { id: string; name: string }[] }>("layouts.list", {}, ["layouts"]);
+  const rgb = useRpc<{ profiles: string[] }>("rgb.status", {}, []);
   return {
+    layouts: layouts.data?.layouts ?? [],
+    rgbProfiles: rgb.data?.profiles ?? [],
     items: lib.data?.items ?? [],
     profiles: prof.data?.profiles ?? [],
     // Sounds that still wait on this device can already be chosen; the PC's id is filled in after the upload.
@@ -64,6 +71,8 @@ export function describeStep(s: ActionStep, refs: ReturnType<typeof useStepRefs>
       case "wait": return t("{n} s", { n: s.ref ?? "?" });
       case "ifRunning": case "ifNotRunning": return refs.items.find((i) => i.id === s.ref)?.name;
       case "mediaKey": return mediaKeyLabels()[s.ref ?? ""];
+      case "applyLayout": return refs.layouts.find((l) => l.id === s.ref)?.name;
+      case "rgbColor": case "rgbProfile": return s.ref ?? undefined;
       default: return null;
     }
   })();
@@ -87,6 +96,15 @@ function RefSelect({ step, refs, onChange }: { step: ActionStep; refs: ReturnTyp
         {t("Sekunden (zusammen höchstens 5 Minuten)")}
       </label>
     );
+    case "applyLayout": return sel(refs.layouts);
+    case "rgbColor": return (
+      <label className="row nowrap small" style={{ gap: 8 }}>
+        <input type="color" value={/^#[0-9a-f]{6}$/i.test(step.ref ?? "") ? step.ref! : "#8b5cf6"} onChange={(e) => onChange(e.target.value)} aria-label={t("Farbe")} style={{ width: 48, height: 36, border: 0, background: "none" }} />
+        <span className="mono">{step.ref ?? t("Farbe wählen")}</span>
+      </label>
+    );
+    case "rgbProfile": return refs.rgbProfiles.length ? sel(refs.rgbProfiles.map((p) => ({ id: p, name: p })))
+      : <input className="input" value={step.ref ?? ""} maxLength={60} placeholder={t("Name des OpenRGB-Profils")} onChange={(e) => onChange(e.target.value || null)} />;
     case "activateProfile": return sel(refs.profiles);
     case "playSound": return sel(refs.sounds);
     case "setCollection": return sel(refs.collections, t("Alle Sounds"));
@@ -129,5 +147,5 @@ export function StepEditor({ steps, onChange, max = 20 }: { steps: ActionStep[];
 }
 
 export function stepsValid(steps: ActionStep[]) {
-  return steps.length > 0 && steps.every((s) => !["launchItem", "activateProfile", "playSound", "wait", "ifRunning", "ifNotRunning", "mediaKey"].includes(s.type) || !!s.ref);
+  return steps.length > 0 && steps.every((s) => !["launchItem", "activateProfile", "playSound", "wait", "ifRunning", "ifNotRunning", "mediaKey", "applyLayout", "rgbColor", "rgbProfile"].includes(s.type) || !!s.ref);
 }

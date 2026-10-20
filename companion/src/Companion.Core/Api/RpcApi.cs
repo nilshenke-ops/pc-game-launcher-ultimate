@@ -246,6 +246,38 @@ public static class RpcApi
             foreach (var sub in subs) if (await s.Push.SendAsync(sub, payload) is { } e) errors.Add(e);
             return new { sent = subs.Count - errors.Count, errors };
         });
+        // ------------------------------------------------------------ mods (folder based, backup before every change)
+        rpc.Register("mods.overview", _ => s.Mods.Overview());
+        rpc.Register("mods.list", ctx => s.Mods.List(ctx.Str("itemId", 64)));
+        rpc.Register("mods.suggest", ctx => new { folders = s.Mods.Suggest(ctx.Str("itemId", 64)) });
+        rpc.Register("mods.configure", ctx => { s.Mods.Configure(ctx.Str("itemId", 64), ctx.Str("modsPath", 200)); return true; });
+        rpc.Register("mods.toggle", ctx => { s.Mods.Toggle(ctx.Str("itemId", 64), ctx.Str("name", 200), ctx.Params.GetProperty("enabled").GetBoolean()); return true; });
+        rpc.Register("mods.preview", ctx => s.Mods.Preview(ctx.Str("itemId", 64), ctx.Str("zip", 260)));
+        rpc.Register("mods.install", ctx => s.Mods.Install(ctx.Str("itemId", 64), ctx.Str("zip", 260), ctx.Params.TryGetProperty("overwrite", out var ow) && ow.ValueKind == JsonValueKind.True));
+        rpc.Register("mods.remove", ctx => s.Mods.Remove(ctx.Str("itemId", 64), ctx.Str("name", 200)));
+        rpc.Register("mods.restore", ctx => s.Mods.Restore(ctx.Str("itemId", 64), ctx.Str("backup", 40)));
+        // ------------------------------------------------------------ window layouts, controllers, RGB (OpenRGB)
+        rpc.Register("layouts.list", _ => s.Layouts.List());
+        rpc.Register("layouts.current", _ => s.Layouts.Current());
+        rpc.Register("layouts.capture", ctx => s.Layouts.Capture(ctx.Str("id", 48), ctx.Str("name", 40),
+            ctx.Params.TryGetProperty("processes", out var pr) && pr.ValueKind == JsonValueKind.Array ? pr.EnumerateArray().Select(x => x.GetString() ?? "").Take(30).ToList() : null));
+        rpc.Register("layouts.save", ctx => s.Layouts.Save(ctx.Bind<WindowLayout>()));
+        rpc.Register("layouts.remove", ctx => { s.Layouts.Remove(ctx.Str("id", 48)); return true; });
+        rpc.Register("layouts.apply", ctx => new { results = s.Layouts.Apply(ctx.Str("id", 48)) });
+        rpc.Register("controllers.list", _ => new { supported = s.Platform.Controllers.Supported, controllers = s.Platform.Controllers.List() });
+        rpc.Register("controllers.state", ctx => (object?)s.Platform.Controllers.State(ctx.Params.GetProperty("index").GetInt32()) ?? new { connected = false });
+        rpc.Register("controllers.rumble", ctx =>
+        {
+            var e = s.Platform.Controllers.Rumble(ctx.Params.GetProperty("index").GetInt32(), 400, 0.6);
+            if (e != null) throw new RpcException("failed", e);
+            return true;
+        });
+        rpc.Register("rgb.settings", _ => s.Rgb.Settings());
+        rpc.Register("rgb.configure", ctx => { s.Rgb.Configure(ctx.Str("host", 64), ctx.Params.TryGetProperty("port", out var p) ? p.GetInt32() : 6742); return true; });
+        rpc.Register("rgb.status", async _ => await s.Rgb.StatusAsync());
+        rpc.Register("rgb.setColor", async ctx => new { devices = await s.Rgb.SetColorAsync(ctx.Str("color", 7),
+            ctx.Params.TryGetProperty("deviceId", out var d) && d.ValueKind == JsonValueKind.Number ? d.GetUInt32() : null) });
+        rpc.Register("rgb.loadProfile", async ctx => await s.Rgb.LoadProfileAsync(ctx.Str("name", 60)));
         rpc.Register("runs.list", _ => new { runs = s.Runs.List() });
         rpc.Register("runs.cancel", ctx => { s.Runs.Cancel(ctx.Str("id", 40)); return true; });
         rpc.Register("quick.reorder", ctx => { s.QuickActions.Reorder(ctx.Params.GetProperty("ids").EnumerateArray().Select(x => x.GetString() ?? "").Take(500).ToList()); return true; });

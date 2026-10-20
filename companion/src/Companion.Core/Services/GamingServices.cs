@@ -708,6 +708,12 @@ public sealed class ActionRunner
     public Func<string, string?>? ItemName { get; set; }
     /// <summary>Presses a media key (play/pause, next …) like the key on the keyboard; returns an error text or null.</summary>
     public Func<string, Task<string?>>? SendKey { get; set; }
+    /// <summary>Puts open windows back into a saved layout; returns a short result text.</summary>
+    public Func<string, string>? ApplyLayout { get; set; }
+    /// <summary>One color (#RRGGBB) on all OpenRGB devices; returns a short result text.</summary>
+    public Func<string, Task<string>>? RgbColor { get; set; }
+    /// <summary>Loads an OpenRGB profile; returns a short result text.</summary>
+    public Func<string, Task<string>>? RgbProfile { get; set; }
     public static readonly Dictionary<string, string> MediaKeys = new()
     {
         ["playpause"] = "MediaPlayPause", ["next"] = "MediaNextTrack", ["prev"] = "MediaPreviousTrack", ["stop"] = "MediaStop",
@@ -732,6 +738,9 @@ public sealed class ActionRunner
             }
             if (st.Type is StepType.IfRunning or StepType.IfNotRunning && string.IsNullOrEmpty(st.Ref)) throw Bad("Die Bedingung braucht ein Spiel oder Programm.");
             if (st.Type == StepType.MediaKey && !MediaKeys.ContainsKey(st.Ref ?? "")) throw Bad("Unbekannte Medientaste.");
+            if (st.Type == StepType.ApplyLayout && !System.Text.RegularExpressions.Regex.IsMatch(st.Ref ?? "", "^lay_[A-Za-z0-9_-]{1,40}$")) throw Bad("Das Fenster-Layout fehlt.");
+            if (st.Type == StepType.RgbColor && !System.Text.RegularExpressions.Regex.IsMatch(st.Ref ?? "", "^#[0-9a-fA-F]{6}$")) throw Bad("RGB-Farbe als #RRGGBB.");
+            if (st.Type == StepType.RgbProfile && (string.IsNullOrWhiteSpace(st.Ref) || st.Ref.Length > 60)) throw Bad("Das RGB-Profil fehlt.");
         }
         if (total > MaxWaitSeconds) throw Bad($"Zusammen höchstens {MaxWaitSeconds} Sekunden warten.");
     }
@@ -817,6 +826,15 @@ public sealed class ActionRunner
                         break;
                     case StepType.ObsReplayBufferToggle:
                         results.Add(await ObsReplayBufferToggle!());
+                        break;
+                    case StepType.ApplyLayout:
+                        results.Add(ApplyLayout == null ? "Fehler: Fenster-Layouts gibt es hier nicht." : ApplyLayout(s.Ref ?? ""));
+                        break;
+                    case StepType.RgbColor:
+                        results.Add(RgbColor == null ? "Fehler: RGB nicht verfügbar." : await RgbColor(s.Ref ?? ""));
+                        break;
+                    case StepType.RgbProfile:
+                        results.Add(RgbProfile == null ? "Fehler: RGB nicht verfügbar." : await RgbProfile(s.Ref ?? ""));
                         break;
                 }
             }

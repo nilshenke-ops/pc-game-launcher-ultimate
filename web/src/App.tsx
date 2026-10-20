@@ -36,6 +36,9 @@ const CalendarPage = lazy(() => import("./pages/Calendar"));
 const StoragePage = lazy(() => import("./pages/Storage"));
 const FilesPage = lazy(() => import("./pages/Files"));
 const CapturesPage = lazy(() => import("./pages/Captures"));
+const ModsPage = lazy(() => import("./pages/Mods"));
+const LayoutsPage = lazy(() => import("./pages/Layouts"));
+const PeripheralsPage = lazy(() => import("./pages/Peripherals"));
 const Deck = lazy(() => import("./pages/Deck"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Deals = lazy(() => import("./pages/Deals"));
@@ -119,6 +122,9 @@ function Gate() {
           <Route path="/storage" element={<StoragePage />} />
           <Route path="/files" element={<FilesPage />} />
           <Route path="/captures" element={<CapturesPage />} />
+          <Route path="/mods" element={<ModsPage />} />
+          <Route path="/layouts" element={<LayoutsPage />} />
+          <Route path="/peripherals" element={<PeripheralsPage />} />
           <Route path="/deck" element={<Deck />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/deals" element={<Deals />} />

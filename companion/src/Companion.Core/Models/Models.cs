@@ -82,7 +82,7 @@ public sealed record LaunchResult(bool Ok, string Message, string? Code = null);
 
 // ---------------------------------------------------------------- Quick actions, profiles, automations
 
-public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify, ToggleOverlay, ObsRecordToggle, ObsReplaySave, ObsReplayBufferToggle, Wait, IfRunning, IfNotRunning, MediaKey }
+public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify, ToggleOverlay, ObsRecordToggle, ObsReplaySave, ObsReplayBufferToggle, Wait, IfRunning, IfNotRunning, MediaKey, ApplyLayout, RgbColor, RgbProfile }
 
 public sealed class ActionStep
 {

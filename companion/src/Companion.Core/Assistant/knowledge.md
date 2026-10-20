@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.17.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.18.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -44,6 +44,21 @@ Bei Steam-Spielen (Spiel bearbeiten → „Läuft das auf meinem PC?“) und auf
 Seite: /settings
 Stichworte: installieren installation setup startmenü desktop symbol deinstallieren entfernen apps features programme autostart smartscreen
 Am PC: Einstellungen → Installation & Autostart → „Installieren“. Das Programm kommt nach %LOCALAPPDATA%\Programs\Nexus Gaming Hub, bekommt einen Startmenü-Eintrag (optional Desktop-Symbol), startet auf Wunsch mit Windows und erscheint in „Apps & Features“ – ohne Administrator. Danach startet es aus dem neuen Ordner neu; die heruntergeladene Datei kann gelöscht werden. Deinstallieren: dort oder in Windows unter „Apps & Features“ → Nexus Gaming Hub → Deinstallieren; Einstellungen und Daten bleiben, außer man wählt „auch Daten löschen“. Updates funktionieren wie vorher. Ohne Code-Signatur zeigt Windows beim ersten Start evtl. „Der Computer wurde durch Windows geschützt“ → „Weitere Informationen“ → „Trotzdem ausführen“.
+
+## Mods
+Seite: /mods
+Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück
+Mods pro Spiel (für Spiele mit bekanntem Installationsordner): einmal den Mod-Ordner einstellen (Vorschläge wie „Mods“, „BepInEx/plugins“, „Content/Paks/~mods“). Dann Mods mit dem Schalter an/aus (ausgeschaltete liegen im Ordner „<Mods>.nexus-aus“ daneben), entfernen oder eine ZIP aus dem Austausch-Ordner (Bereich „Dateien“) installieren – vorher zeigt die App, was überschrieben würde. Vor jedem Installieren, Entfernen und Zurückholen sichert der PC den ganzen Mod-Ordner als ZIP (die letzten 5); „Zurückholen“ setzt ihn auf diesen Stand. Während das Spiel läuft, ist nichts änderbar. Nichts wird ausgeführt; eine ZIP, die außerhalb des Mod-Ordners schreiben will, wird ganz abgelehnt. Ohne PC siehst du den letzten Stand.
+
+## Fenster-Layouts
+Seite: /layouts
+Stichworte: fenster layout monitor zweiter bildschirm anordnen position discord obs spotify maximiert
+Am PC Fenster anordnen und „Aus offenen Fenstern“ tippen: die Position der gewählten Programme wird gespeichert (je Monitor). „Anwenden“ bringt alle offenen Fenster dorthin zurück – auch als Baustein „Fenster-Layout anwenden“ in Quick Actions und Automatisierungen (z. B. beim Spielstart). Programme werden nicht gestartet; fehlt ein Monitor, kommt das Fenster auf den Hauptmonitor. Umbenennen und Löschen geht auch ohne PC. Programme mit Administratorrechten lassen sich von Windows aus nicht verschieben.
+
+## Controller & RGB
+Seite: /peripherals
+Stichworte: controller gamepad xbox test tasten stick drift vibration akku rgb beleuchtung openrgb farbe profil led
+Controller: Xbox- und XInput-kompatible Controller mit Akku-Stand, Live-Test (Tasten, Sticks, Trigger – zeigt Stick-Drift) und Vibrationstest. PlayStation/Switch nur über Steam Input oder DS4Windows. RGB: über das kostenlose OpenRGB (dort „SDK Server“ → „Start Server“). Eine Farbe für alle Geräte oder einzeln, OpenRGB-Profile laden – auch als Bausteine „RGB-Farbe setzen“ und „RGB-Profil laden“ in Quick Actions. Verbindung nur zu diesem PC oder einem Gerät im Heimnetz.
 
 ## Push-Benachrichtigungen
 Seite: /notifications

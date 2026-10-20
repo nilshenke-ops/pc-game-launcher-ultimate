@@ -475,7 +475,7 @@ public sealed class BackupService
     public const int Version = 1;
     const long MaxBackupBytes = 300L * 1024 * 1024;
     static readonly Regex SoundEntry = new(@"^sounds/snd_[0-9a-f]{12}\.(mp3|wav|flac|m4a|wma)$", RegexOptions.Compiled);
-    static readonly string[] Parts = { "settings", "library", "quickactions", "profiles", "automations", "hotkeys", "sounds", "audio", "history", "uiprefs", "widgets", "quests", "deals", "gamemode", "decks", "calendar", "activity", "captures" };
+    static readonly string[] Parts = { "settings", "library", "quickactions", "profiles", "automations", "hotkeys", "sounds", "audio", "history", "uiprefs", "widgets", "quests", "deals", "gamemode", "decks", "calendar", "activity", "captures", "layouts" };
 
     readonly AppPaths _paths;
     readonly CompanionServices _svc;
@@ -516,6 +516,7 @@ public sealed class BackupService
         Put("calendar.json", _svc.Calendar.Export());
         Put("activity.json", _svc.Activity.Export());
         Put("captures.json", _svc.Captures.Export());
+        Put("window-layouts.json", _svc.Layouts.Export());
         Put("uiprefs.json", new Dictionary<string, string?> { ["local"] = _svc.Devices.GetUiPrefs("local") });
         if (includeSounds)
             foreach (var s in _svc.Soundboard.Export().Sounds)
@@ -680,6 +681,7 @@ public sealed class BackupService
             if (zip.GetEntry("calendar.json") != null) parts["calendar"] = Parse<CalendarFile>("calendar");
             if (zip.GetEntry("activity.json") != null) parts["activity"] = Parse<ActivityFile>("activity");
             if (zip.GetEntry("captures.json") != null) parts["captures"] = Parse<CaptureFile>("captures");
+            if (zip.GetEntry("window-layouts.json") != null) parts["layouts"] = Parse<WindowLayoutsFile>("window-layouts");
 
             var files = new Dictionary<string, byte[]>();
             foreach (var e in zip.Entries.Where(e => e.FullName.StartsWith("sounds/") && e.Length > 0))
@@ -755,6 +757,7 @@ public sealed class BackupService
                 case "calendar": _svc.Calendar.ImportChecked((CalendarFile)v.Parts[part]); break;
                 case "activity": _svc.Activity.ImportChecked((ActivityFile)v.Parts[part]); break;
                 case "captures": _svc.Captures.ImportChecked((CaptureFile)v.Parts[part]); break;
+                case "layouts": _svc.Layouts.ImportChecked((WindowLayoutsFile)v.Parts[part]); break;
             }
             restored.Add(part);
         }

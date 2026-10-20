@@ -162,3 +162,11 @@ Kosten des schnelleren Wiederverbindens: nur solange die App sichtbar ist und de
 ## 2.17.0 (20.10.2026)
 
 Keine Laufzeitänderung: die Installation läuft nur auf Knopfdruck (Datei kopieren, ein paar Registry-Werte, zwei Verknüpfungen). Haupt-Chunk unverändert (~381 KB, 121 KB gzip); die Installations-Karte liegt im Einstellungs-Chunk.
+
+## 2.18.0 (20.10.2026)
+
+| | 2.17.0 | 2.18.0 |
+|---|---|---|
+| PC im Leerlauf | – | nichts Neues im Hintergrund: Controller nur während des Live-Tests (10 Abfragen/s, stoppt bei verdeckter Seite), OpenRGB-Verbindung nur pro Befehl, Fenster werden nur beim Speichern/Anwenden gelesen |
+| Mod-Sicherung | – | ZIP mit schneller Kompression, nur vor Änderungen; Größe auf 2 GB begrenzt |
+| Web | – | Mods / Fenster-Layouts / Controller & RGB je eigener Chunk, erst beim Öffnen geladen |

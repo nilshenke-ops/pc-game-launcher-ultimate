@@ -993,3 +993,10 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 .run-bar span { display: block; height: 100%; background: var(--primary); transition: width 0.3s; }
 .run-bar.done span { background: #34d399; }
 .run-bar.failed span, .run-bar.cancelled span, .run-bar.stopped span { background: #fbbf24; }
+
+/* Controller test */
+.pad-test { display: grid; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 12px; }
+.pad-btn { min-width: 40px; text-align: center; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--border-strong); font-size: 0.75rem; font-weight: 700; color: var(--muted); }
+.pad-btn.on { background: var(--primary); color: #001018; border-color: var(--primary); }
+.pad-stick { position: relative; width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--border-strong); background: rgba(var(--surface-rgb), 0.6); }
+.pad-stick span { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--primary); }

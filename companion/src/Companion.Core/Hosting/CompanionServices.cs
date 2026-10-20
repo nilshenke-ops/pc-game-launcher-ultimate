@@ -27,6 +27,9 @@ public sealed class CompanionServices : IAsyncDisposable
     public RunTracker Runs { get; }
     public CompatService Compat { get; }
     public WebPushService Push { get; }
+    public ModService Mods { get; }
+    public WindowLayoutService Layouts { get; }
+    public RgbService Rgb { get; }
     public QuickActionService QuickActions { get; }
     public AutomationEngine Automations { get; }
     public HotkeyService Hotkeys { get; }
@@ -108,6 +111,9 @@ public sealed class CompanionServices : IAsyncDisposable
         Runs = new RunTracker(Runner, Rpc, StepLabel);
         Compat = new CompatService(paths, Metrics, Library);
         Push = new WebPushService(paths, platform.Secrets, id => Devices.Get(id) != null);
+        Mods = new ModService(paths, Library, Transfer, id => Sessions.Running().Any(r => r.itemId == id), Rpc);
+        Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);
+        Rgb = new RgbService(paths);
         Notifications.Created += Push.OnNotification;
         Updates.CreateRestorePoint = name =>
         {
@@ -174,6 +180,14 @@ public sealed class CompanionServices : IAsyncDisposable
                 : await Platform.KeySender.SendAsync(key);
         Runner.IsRunning = id => Sessions.Running().Any(r => r.itemId == id);
         Runner.ItemName = id => Library.Get(id)?.Name;
+        Runner.ApplyLayout = id =>
+        {
+            var r = Layouts.Apply(id);
+            var failed = r.Where(x => !x.Ok).ToList();
+            return r.Count == 0 ? "Layout ist leer" : failed.Count == r.Count ? "Fehler: " + string.Join(", ", failed.Select(x => $"{x.Process} {x.Result}")) : $"{r.Count - failed.Count} Fenster an ihren Platz" + (failed.Count > 0 ? $" ({string.Join(", ", failed.Select(x => $"{x.Process} {x.Result}"))})" : "");
+        };
+        Runner.RgbColor = async c => $"RGB-Farbe {c} auf {await Rgb.SetColorAsync(c, null)} Gerät(en)";
+        Runner.RgbProfile = async p => { await Rgb.LoadProfileAsync(p); return $"RGB-Profil „{p}“ geladen"; };
         Runner.ActivateProfile = (id, by) => Profiles.Activate(id, by);
         Runner.RevertProfile = by => Profiles.Revert(by);
         Runner.PlaySound = id => Soundboard.Play(id);
@@ -357,6 +371,9 @@ public sealed class CompanionServices : IAsyncDisposable
             StepType.IfRunning => $"Nur wenn {Item()} läuft",
             StepType.IfNotRunning => $"Nur wenn {Item()} nicht läuft",
             StepType.MediaKey => "Medientaste " + st.Ref,
+            StepType.ApplyLayout => $"Fenster-Layout „{Layouts.Export().Layouts.FirstOrDefault(l => l.Id == st.Ref)?.Name ?? "?"}“",
+            StepType.RgbColor => "RGB-Farbe " + st.Ref,
+            StepType.RgbProfile => $"RGB-Profil „{st.Ref}“",
             _ => st.Type.ToString(),
         };
     }

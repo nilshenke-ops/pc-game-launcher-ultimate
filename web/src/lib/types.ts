@@ -44,7 +44,7 @@ export interface DetectedItem {
 }
 
 export type StepType = "launchItem" | "activateProfile" | "revertProfile" | "playSound" | "stopAllSounds" | "setCollection" | "setAudioOutput" | "runDiagnostics" | "notify"
-  | "toggleOverlay" | "obsRecordToggle" | "obsReplaySave" | "obsReplayBufferToggle" | "wait" | "ifRunning" | "ifNotRunning" | "mediaKey";
+  | "toggleOverlay" | "obsRecordToggle" | "obsReplaySave" | "obsReplayBufferToggle" | "wait" | "ifRunning" | "ifNotRunning" | "mediaKey" | "applyLayout" | "rgbColor" | "rgbProfile";
 export interface ActionStep { type: StepType; ref?: string | null }
 
 export interface QuickAction {

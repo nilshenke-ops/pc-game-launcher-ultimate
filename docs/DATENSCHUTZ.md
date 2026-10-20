@@ -29,6 +29,10 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Vorschaubilder der Aufnahmen (höchstens 3000) | `thumbs\` | Ordner löschen |
 | Push: eigener Schlüssel des PCs (privat geschützt) und die Push-Adressen der Geräte | `webpush.json` | Benachrichtigungen → Push ausschalten oder Datei löschen |
 | Systemanforderungen aus dem Steam-Shop (höchstens 300 Spiele) | `compat.json` | Datei löschen |
+| Mods: eingestellte Mod-Ordner je Spiel | `mods.json` | Datei löschen |
+| Sicherungen der Mod-Ordner (je Spiel die letzten 5) | `mod-backups\` | Ordner löschen |
+| Fenster-Layouts (Programmname, Monitor, Position) | `window-layouts.json` | Fenster-Layouts → Löschen |
+| OpenRGB-Verbindung (Adresse, Port) | `rgb.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |
 | Backups und Wiederherstellungspunkte | `backups\` (automatisch die neuesten 5) | Einstellungen → Backup oder Ordner löschen |

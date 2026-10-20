@@ -42,6 +42,8 @@ sealed class WindowsPlatform : IPlatform
     public IProcessControl ProcessControl { get; } = new WindowsProcessControl();
     public IMediaTools Media { get; } = new WindowsMediaTools();
     public IInstaller Installer { get; } = new WindowsInstaller(() => Program.RequestExitFromAnyThread());
+    public IWindowManager WindowManager { get; } = new WindowsWindowManager();
+    public IControllers Controllers { get; } = new XInputControllers();
     public WindowsDesktopWidgets DesktopWidgetWindows { get; }
     public IDesktopWidgets DesktopWidgets => DesktopWidgetWindows;
 }

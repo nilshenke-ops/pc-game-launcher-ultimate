@@ -1,4 +1,4 @@
-import { Activity, Camera, FolderUp, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
+import { Activity, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
 export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
@@ -15,6 +15,7 @@ export function navItems(): NavItem[] {
     { path: "/", label: t("Home"), icon: Home, group: g.dash, keywords: "dashboard übersicht" },
     { path: "/deck", label: t("Deck"), icon: Grid3x3, group: g.dash, keywords: "stream deck tasten knöpfe raster tablet fernbedienung buttons elgato streamdeck" },
     { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
+    { path: "/mods", label: t("Mods"), icon: Package, group: g.dash, keywords: "mod mods modding bepinex nexus mods aktivieren deaktivieren zip installieren sicherung" },
     { path: "/calendar", label: t("Kalender"), icon: CalendarDays, group: g.dash, keywords: "termine raid turnier lan party release erinnerung datum woche monat ics" },
     { path: "/backlog", label: t("Backlog"), icon: ListTodo, group: g.dash, keywords: "noch spielen als nächstes durchgespielt pausiert priorität zufall spielplanung liste" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
@@ -23,11 +24,13 @@ export function navItems(): NavItem[] {
     { path: "/widgets", label: t("Widget-Baukasten"), short: t("Widgets"), icon: Shapes, group: g.dash, keywords: "widgets eigene editor desktop baukasten design uhr knopf setup designer" },
     { path: "/profiles", label: t("Gaming-Profile"), short: t("Profile"), icon: Swords, group: g.ctrl, keywords: "competitive streaming" },
     { path: "/automations", label: t("Automatisierungen"), short: t("Abläufe"), icon: Bot, group: g.ctrl, keywords: "regeln wenn dann automation hub ablauf" },
+    { path: "/layouts", label: t("Fenster-Layouts"), short: t("Layouts"), icon: LayoutTemplate, group: g.ctrl, keywords: "fenster monitor bildschirm anordnen layout zweiter monitor position discord obs" },
     { path: "/hotkeys", label: t("Hotkeys & Makros"), short: t("Hotkeys"), icon: Keyboard, group: g.ctrl, keywords: "tastenkürzel tasten macro studio makro medientasten" },
     { path: "/soundboard", label: t("Soundboard"), short: t("Sounds"), icon: Music, group: g.audio, keywords: "sounds myinstants soundlab discord" },
     { path: "/audio", label: t("Audio Center"), short: t("Audio"), icon: Headphones, group: g.audio, keywords: "mikrofon discord kabel ausgabe" },
     { path: "/monitor", label: t("PC Monitor"), short: t("Monitor"), icon: Activity, group: g.sys, keywords: "cpu ram gpu temperatur vram performance center" },
     { path: "/captures", label: t("Aufnahmen"), icon: Camera, group: g.sys, keywords: "screenshot screenshots clip clips video aufnahme replay bilder galerie obs nvidia game bar steam" },
+    { path: "/peripherals", label: t("Controller & RGB"), short: t("Controller"), icon: Gamepad, group: g.sys, keywords: "controller gamepad xbox xinput vibration akku stick drift rgb beleuchtung openrgb farbe led tastatur maus" },
     { path: "/storage", label: t("Speicher & Updates"), short: t("Speicher"), icon: HardDrive, group: g.sys, keywords: "speicherplatz festplatte ssd laufwerk größe update updates steam patch download frei" },
     { path: "/network", label: t("Netzwerkdiagnose"), short: t("Netzwerk"), icon: Wifi, group: g.sys, keywords: "ping jitter paketverlust latenz ping doctor lag server" },
     { path: "/history", label: t("Gaming-Verlauf"), short: t("Verlauf"), icon: History, group: g.sys, keywords: "statistik spielzeit" },
@@ -64,7 +67,7 @@ export const ICONS: Record<string, LucideIcon> = {
 const NAV_COLORS: Record<string, string> = {
   "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
-  "/monitor": "#4ade80", "/storage": "#94a3b8", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
+  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",
   "/diagnostics": "#2dd4bf", "/updates": "#4ade80", "/help": "#93c5fd",
 };
