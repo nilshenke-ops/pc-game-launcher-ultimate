@@ -1,28 +1,29 @@
 {
-  "version": "2.30.0",
+  "version": "2.31.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.30.0/PCGameLauncherCompanion.exe",
-  "size": 87635020,
-  "sha256": "a53df2de038cbb8e90a500433d44a6945b895939eece072ab48bf2176a078fdb",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.31.0/PCGameLauncherCompanion.exe",
+  "size": 87596737,
+  "sha256": "8344e8d86041bed372e1b1376d0e2dbb86f1db7c9801cde850d737e07657397f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.30.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.30.0/PCGameLauncherCompanion-2.30.0-win-x64.zip",
-    "size": 81899820,
-    "sha256": "e741a51e775e33bac22d750c20d8f16c08dfe399c6d4333fc35515d927bee83f"
+    "fileName": "PCGameLauncherCompanion-2.31.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.31.0/PCGameLauncherCompanion-2.31.0-win-x64.zip",
+    "size": 81861166,
+    "sha256": "7eccc09edc17dd1cefa970eeb182fff8c77cd164d5329268ca1559710afe36e1"
   },
-  "notes": "Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts · HUD-Layouts für das große Overlay: bis zu 10 Anordnungen unter einem Namen speichern (z. B. „Ranked“, „Streaming“), mit Vorschau, mit einem Tipp anwenden, überschreiben oder löschen · Der Ton wird nur im Browser ausgewertet – nichts wird aufgenommen oder gesendet; beim Beenden des Teilens stoppt der Visualizer von selbst",
+  "notes": "Icon-Werkstatt: eigene Icons (1:1) und Cover (2:3) gestalten – Vorlagen (Neon, Retro, Minimal, Gold, Ice, Fire), Symbol oder Emoji, eigenes Bild mit Zoom, Form (abgerundet, Kreis, Sechseck, Quadrat), Farben, Verlauf, Rand, Muster, Leuchten, Live-Vorschau · Erreichbar dort, wo das Bild gebraucht wird: Spiel/Programm bearbeiten, Deck-Taste, Gamer-Pass – mit „Übernehmen“ oder „Als Bild speichern“ · Selbst gestaltete Icons haben Vorrang vor dem Marken-Logo eines Programms",
   "changes": {
     "neu": [
-      "Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts",
-      "HUD-Layouts für das große Overlay: bis zu 10 Anordnungen unter einem Namen speichern (z. B. „Ranked“, „Streaming“), mit Vorschau, mit einem Tipp anwenden, überschreiben oder löschen"
+      "Icon-Werkstatt: eigene Icons (1:1) und Cover (2:3) gestalten – Vorlagen (Neon, Retro, Minimal, Gold, Ice, Fire), Symbol oder Emoji, eigenes Bild mit Zoom, Form (abgerundet, Kreis, Sechseck, Quadrat), Farben, Verlauf, Rand, Muster, Leuchten, Live-Vorschau",
+      "Erreichbar dort, wo das Bild gebraucht wird: Spiel/Programm bearbeiten, Deck-Taste, Gamer-Pass – mit „Übernehmen“ oder „Als Bild speichern“"
     ],
     "verbessert": [
-      "Der Ton wird nur im Browser ausgewertet – nichts wird aufgenommen oder gesendet; beim Beenden des Teilens stoppt der Visualizer von selbst",
-      "HUD-Layouts lassen sich auch ohne PC ändern und werden beim Verbinden übertragen"
+      "Selbst gestaltete Icons haben Vorrang vor dem Marken-Logo eines Programms",
+      "Sicherer Bild-Upload: Cover-Bilder werden im Browser neu gezeichnet (keine Metadaten, kein SVG, nur PNG/JPEG/WebP/GIF) und passend verkleinert",
+      "Private Lobby: ehrlich als „noch nicht verfügbar“ erklärt (braucht einen eigenen Server) – keine Attrappe"
     ],
     "behoben": []
   },
-  "signature": "W7db8GDmtLEV72snFt9ijKIU+zPgire/kc51vT6lHK1ger8tX+vcnUFZpKAfI0AOs2AGNRo+5dpgjfPL+VTsNQ=="
+  "signature": "wXkzvx+luD7xfBOKInaCweWr9C1bFSsq6JPG7mu1Qmcb0q5YOlyyoUM9ZtEhuosGM0stQbCjKzZFNK2DezruOw=="
 }
