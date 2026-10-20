@@ -1,5 +1,38 @@
 [
   {
+    "version": "2.32.0",
+    "date": "2026-10-20",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.32.0/PCGameLauncherCompanion.exe",
+    "size": 87647785,
+    "sha256": "c67eba1ea28d4eb02db667120ab90ddc6380c6b1aecb18ddd69ec1836ed73a75",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.32.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.32.0/PCGameLauncherCompanion-2.32.0-win-x64.zip",
+      "size": 81912012,
+      "sha256": "490162bf76d358309b3fce7bcf3ce4bcee7731f972eb42089adfaa5d8c4d9d92"
+    },
+    "notes": "PC vom Handy sperren, in den Energiesparmodus schicken, neu starten und herunterfahren: Widget „PC-Energie“ (Home), Karte „Energie“ im PC Monitor und Deck-Tasten („PC sperren / ausschalten“) · Neustart und Herunterfahren wahlweise sofort oder in 30 s, 1, 5 oder 10 min – mit Countdown auf jedem Gerät und „Abbrechen“; Hinweis, wenn gerade ein Spiel läuft · Neues Geräte-Recht „PC ausschalten“ (am PC unter Geräte einmal für das Handy ankreuzen); Sperren geht schon mit dem Recht „Starten“",
+    "changes": {
+      "neu": [
+        "PC vom Handy sperren, in den Energiesparmodus schicken, neu starten und herunterfahren: Widget „PC-Energie“ (Home), Karte „Energie“ im PC Monitor und Deck-Tasten („PC sperren / ausschalten“)",
+        "Neustart und Herunterfahren wahlweise sofort oder in 30 s, 1, 5 oder 10 min – mit Countdown auf jedem Gerät und „Abbrechen“; Hinweis, wenn gerade ein Spiel läuft",
+        "Neues Geräte-Recht „PC ausschalten“ (am PC unter Geräte einmal für das Handy ankreuzen); Sperren geht schon mit dem Recht „Starten“",
+        "Der PC zeigt eine Benachrichtigung, welches Gerät gesperrt, neu gestartet oder heruntergefahren hat"
+      ],
+      "verbessert": [
+        "Vorher ging das nur mit Admin-Recht – das hat ein gekoppeltes Handy normalerweise nicht",
+        "Wird nie für später vorgemerkt: ohne Verbindung zum PC passiert nichts"
+      ],
+      "behoben": [
+        "Dialoge erscheinen immer über der ganzen Seite – vorher konnte ein Dialog in einem Home-Widget (z. B. „Mein Status“) unter der unteren Leiste landen",
+        "Neuer Termin nach 20 Uhr: Vorschlag ist jetzt die nächste volle Stunde statt 20:00 (lag schon in der Vergangenheit)"
+      ]
+    },
+    "signature": "c8hnFbOS3tgqkl4hwec/6upSxuiUNIawH/oW2J27dNkIU5ItrTfsbcqCYTVVecfz6eSWY6KAO0zUWVu4J6FFoA=="
+  },
+  {
     "version": "2.31.0",
     "date": "2026-10-20",
     "channel": "stable",
