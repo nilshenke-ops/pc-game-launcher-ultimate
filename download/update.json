@@ -1,29 +1,27 @@
 {
-  "version": "2.23.0",
+  "version": "2.24.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.23.0/PCGameLauncherCompanion.exe",
-  "size": 87550771,
-  "sha256": "1f2536d51347d423fec1bb63084024f43da17135f0ecb417e8e9a9bfc4733b35",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.24.0/PCGameLauncherCompanion.exe",
+  "size": 87552931,
+  "sha256": "3b0729ee90143b72663aa5e1a51bccb855aa11623f234979c262ef7ced2e8d18",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.23.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.23.0/PCGameLauncherCompanion-2.23.0-win-x64.zip",
-    "size": 81815155,
-    "sha256": "3d7e15993b3c9efbc2fa30250b1be5ad7a7394149a888065238bbdfd8e6ceb16"
+    "fileName": "PCGameLauncherCompanion-2.24.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.24.0/PCGameLauncherCompanion-2.24.0-win-x64.zip",
+    "size": 81816758,
+    "sha256": "7e8e8c7b29a981372001c416a99e5bac7d68c80a1504128eff613ea44bc865ac"
   },
-  "notes": "Design-Profil (optional): Benutzername + Passwort nehmen dein Design (Farben, Hintergrund, Startseite, Leiste, Sprache) in einen neuen Browser mit – Ende-zu-Ende verschlüsselt, gespeichert auf deinem PC; Änderungen werden automatisch gesichert · Design-Code: das Design ganz ohne Konto und ohne PC in einen anderen Browser kopieren · Fenster-Layouts ohne PC anlegen: je Programm einen Platz (Hälfte, Viertel, maximiert, Mitte) und den Monitor wählen, mit kleiner Vorschau",
+  "notes": "Deal Radar ohne PC zeigt jetzt auch Steam-Preise: eine Steam-Preisliste der rund 3000 beliebtesten Spiele (Bestseller, meistgewünscht, neu, im Angebot) liegt neben der Website und wird alle 6 Stunden erneuert",
   "changes": {
     "neu": [
-      "Design-Profil (optional): Benutzername + Passwort nehmen dein Design (Farben, Hintergrund, Startseite, Leiste, Sprache) in einen neuen Browser mit – Ende-zu-Ende verschlüsselt, gespeichert auf deinem PC; Änderungen werden automatisch gesichert",
-      "Design-Code: das Design ganz ohne Konto und ohne PC in einen anderen Browser kopieren",
-      "Fenster-Layouts ohne PC anlegen: je Programm einen Platz (Hälfte, Viertel, maximiert, Mitte) und den Monitor wählen, mit kleiner Vorschau",
-      "Neun neue Widgets für Startseite und Game-Overlay: Zähler, Pausen-Erinnerung, Spielzeit heute, Ping, Aktive Ziele, Level & XP, Deals, Controller-Akku, Zufallsspiel"
+      "Deal Radar ohne PC zeigt jetzt auch Steam-Preise: eine Steam-Preisliste der rund 3000 beliebtesten Spiele (Bestseller, meistgewünscht, neu, im Angebot) liegt neben der Website und wird alle 6 Stunden erneuert"
     ],
-    "verbessert": [
-      "Deal Radar am Handy: ohne PC prüft das Handy die Xbox-Preise selbst beim Microsoft Store (auch gleich nach dem Hinzufügen); Steam-Preise bleiben vom letzten Abgleich am PC"
-    ],
-    "behoben": []
+    "verbessert": [],
+    "behoben": [
+      "„Minecraft“ wurde im Microsoft Store als „Minecraft Legends“ erkannt (falscher Preis und falsches Bild) – jetzt zählt nur das Spiel selbst oder eine Edition davon („Minecraft: Java & Bedrock Edition“), auf PC und Handy",
+      "Die Steam-Suche am PC nimmt kein ähnliches Spiel mehr (vorher wurde aus „Minecraft“ „Minecraft Dungeons“); gibt es ein Spiel bei Steam nicht, steht das dabei"
+    ]
   },
-  "signature": "VtScv0dheFFPec+4/cODxyogv4Zunl4ilxGVzldvqJIKhOgNAnO792IkFZWpXuw57ujqS23k7+IVzow+uAKyjw=="
+  "signature": "oa700ukpLaEJ0+zCewt4IkaTPTgHRCsdYc0eUFi7uakonzlZFcrATqGMmjRBrl7wmInSAGMIHiUIUmXoomEWWQ=="
 }
