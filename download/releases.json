@@ -1,5 +1,30 @@
 [
   {
+    "version": "2.22.0",
+    "date": "2026-10-20",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.22.0/PCGameLauncherCompanion.exe",
+    "size": 87532267,
+    "sha256": "b15c5bf627c8c4ce1afb98a4927fed6183bcfc00aa9a7462208f24d37e5f1c2e",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.22.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.22.0/PCGameLauncherCompanion-2.22.0-win-x64.zip",
+      "size": 81796818,
+      "sha256": "acb74e862c7214192e3f9c85a70764d60d41ab738cba064a66b260c5e1e27655"
+    },
+    "notes": "Trophäenraum: die GameQuest-Erfolge als Trophäen in Gold-, Silber- und Bronze-Regalen – freigeschaltete mit Datum, gesperrte mit Fortschritt · Gamer-Pass: Profilkarte mit Level, XP, Stunden, Spielen, Serie, Trophäen und meistgespieltem Spiel; Name und Symbol frei wählbar, als Bild speichern oder teilen – auch ohne PC",
+    "changes": {
+      "neu": [
+        "Trophäenraum: die GameQuest-Erfolge als Trophäen in Gold-, Silber- und Bronze-Regalen – freigeschaltete mit Datum, gesperrte mit Fortschritt",
+        "Gamer-Pass: Profilkarte mit Level, XP, Stunden, Spielen, Serie, Trophäen und meistgespieltem Spiel; Name und Symbol frei wählbar, als Bild speichern oder teilen – auch ohne PC"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "ixBQFdbHi4ac2FZ6G9x6yU9e4ltBiJC3jEk1hMjLiDiJVvHhqbh4F1sKCO4lBsVZOmLiYwqpt7kKX23dand9UA=="
+  },
+  {
     "version": "2.21.0",
     "date": "2026-10-20",
     "channel": "stable",
