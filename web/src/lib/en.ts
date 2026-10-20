@@ -2744,4 +2744,9 @@ export const en: Record<string, string> = {
   "{n} starten?": "Start {n}?",
   "· gespeichert {d}": "· saved {d}",
   "Änderungen am Design werden automatisch ins Profil gespeichert, sobald der PC verbunden ist.": "Design changes are saved to the profile automatically as soon as the PC is connected.",
+  "Nicht in der Steam-Preisliste der Website (sie enthält nur die rund 3000 beliebtesten Spiele) – Steam erlaubt keine Abfrage direkt vom Handy. Beim nächsten Verbinden prüft der PC den Preis.": "Not in the website's Steam price list (it only has the roughly 3000 most popular games) – Steam does not allow asking directly from the phone. The PC checks the price at the next connection.",
+  "Ohne PC: Xbox-Preise prüft das Handy selbst beim Microsoft Store{x}. Steam-Preise kommen aus der Steam-Preisliste der Website{s}.": "Without the PC: the phone checks Xbox prices itself at the Microsoft Store{x}. Steam prices come from the website's Steam price list{s}.",
+  "aus der Steam-Preisliste der Website, Stand {d}": "from the website's Steam price list, as of {d}",
+  "zuletzt {d}": "last {d}",
+  "Stand {d}": "as of {d}",
 };

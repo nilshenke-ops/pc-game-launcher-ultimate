@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { BadgePercent, ExternalLink, Pencil, Plus, RefreshCw, Search, ShieldCheck, Tag } from "lucide-react";
 import { BrandLogo } from "../components/brand-logo";
 import { brandById } from "../lib/brands";
@@ -9,13 +9,14 @@ import { dateTime, gradientFor, initials, relTime } from "../lib/format";
 import { clientId, lowestSeen, money, parsePrice, priceInput } from "../lib/quest-deal";
 import { CompatPanel } from "../components/compat-panel";
 import { fetchMsPrice, phonePrices, savePhonePrice, type MsResult } from "../lib/ms-store";
+import { loadSteamIndex, lookup, type SteamIndex } from "../lib/steam-index";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Sparkline, Switch } from "../components/ui";
 
 interface Wish {
   id: string; title: string; steamAppId?: string | null; targetCents?: number | null; notes?: string | null; addedAt?: string;
   currency?: string | null; finalCents?: number | null; initialCents?: number | null; discountPercent?: number | null;
   checkedAt?: string | null; error?: string | null; history?: { at: string; final: number; initial: number }[];
-  fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null; msFromPhone?: number | null;
+  fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null; msFromPhone?: number | null; steamFromList?: number | null;
 }
 interface DealData {
   enabled: boolean; country: string; lastRunAt?: string | null; source: string; msSource?: string; intervalHours: number; items: Wish[];
@@ -154,6 +155,8 @@ function DealTile({ w, onOpen }: { w: Wish; onOpen: () => void }) {
 
 /** Everything about one game: both prices, target, own price history, links, compatibility. */
 function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: DealData; canManage: boolean; onEdit: () => void; onClose: () => void }) {
+  const conn = useConn();
+  const online = conn.auth === "ok" && conn.phase === "online";
   const c = cheaper(w);
   const low = lowestSeen(w.history ?? []);
   return (
@@ -179,7 +182,8 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
             {w.finalCents != null ? <>
               <span className="deal-now">{money(w.finalCents, w.currency)}</span>
               {!!w.discountPercent && w.initialCents != null && <s className="muted small">{money(w.initialCents, w.currency)} · −{w.discountPercent} %</s>}
-            </> : <span className="small muted">{!w.steamAppId ? t("Noch keinem Steam-Spiel zugeordnet – der PC sucht es bei der nächsten Prüfung über den Namen.") : data.enabled ? t("Noch nicht geprüft – kommt mit der nächsten Prüfung.") : t("Preisabfrage ist aus.")}</span>}
+              {w.steamFromList && <span className="tiny muted">{t("aus der Steam-Preisliste der Website, Stand {d}", { d: relTime(w.steamFromList) })}</span>}
+            </> : <span className="small muted">{!w.steamAppId ? (w.error ?? (online ? t("Noch keinem Steam-Spiel zugeordnet – der PC sucht es bei der nächsten Prüfung über den Namen.") : t("Nicht in der Steam-Preisliste der Website (sie enthält nur die rund 3000 beliebtesten Spiele) – Steam erlaubt keine Abfrage direkt vom Handy. Beim nächsten Verbinden prüft der PC den Preis."))) : data.enabled ? t("Noch nicht geprüft – kommt mit der nächsten Prüfung.") : t("Preisabfrage ist aus.")}</span>}
             {w.steamAppId && <a className="btn sm" href={`https://store.steampowered.com/app/${w.steamAppId}`} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Im Steam-Shop öffnen")}</a>}
           </div>
         </div>
@@ -200,7 +204,7 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
           {w.checkedAt && t("Geprüft {d}", { d: dateTime(w.checkedAt) })}
           {w.notes && <div>{w.notes}</div>}
         </div>
-        {w.error && <Banner kind="warn">{w.error}</Banner>}
+        {w.error && w.steamAppId && <Banner kind="warn">{w.error}</Banner>}
         {w.steamAppId && <details className="compat-details"><summary className="small">{t("Läuft das auf meinem PC?")}</summary><CompatPanel appId={w.steamAppId} /></details>}
       </div>
     </Modal>
@@ -276,6 +280,16 @@ function SearchCard({ data, disabled }: { data: DealData; disabled: boolean }) {
   );
 }
 
+/** Overlays the Steam price list of the website if it is newer than the PC's last check (only without the PC). */
+function withSteamList(w: Wish, idx: SteamIndex | null): Wish {
+  if (!idx) return w;
+  const h = lookup(idx, w);
+  if (!h) return w;
+  const pcAt = w.checkedAt ? Date.parse(w.checkedAt) : 0;
+  if (h.at <= pcAt && w.finalCents != null) return w;
+  return { ...w, steamAppId: w.steamAppId ?? h.appId, finalCents: h.finalCents, initialCents: h.initialCents, discountPercent: h.discountPercent, currency: h.currency, steamFromList: h.at, error: w.steamAppId ? w.error : null };
+}
+
 /** Overlays a price the phone fetched itself if it is newer than the PC's last check. */
 function withPhone(w: Wish, r?: MsResult): Wish {
   if (!r) return w;
@@ -297,7 +311,11 @@ export default function Deals() {
   // Without the PC the phone asks the Microsoft Store itself; its newer prices are shown instead of the PC's older ones.
   const [phone, setPhone] = useState<Record<string, MsResult>>(phonePrices);
   const [checking, setChecking] = useState<{ done: number; of: number } | null>(null);
-  const d = raw && { ...raw, items: raw.items.map((w) => withPhone(w, phone[w.id])) };
+  // Without the PC: Steam prices from the price list next to the website (Steam does not answer browsers directly).
+  const [steamIdx, setSteamIdx] = useState<SteamIndex | null>(null);
+  const country = raw?.country;
+  useEffect(() => { if (!online && raw?.enabled && country) void loadSteamIndex(country).then(setSteamIdx); }, [online, raw?.enabled, country]);
+  const d = raw && { ...raw, items: raw.items.map((w) => withSteamList(withPhone(w, phone[w.id]), online ? null : steamIdx)) };
   const msAllowed = !!raw?.enabled && raw.compareMicrosoft !== false;
   const checkFromPhone = async (only?: { id: string; title: string }[]) => {
     if (!raw || checking) return;
@@ -328,7 +346,7 @@ export default function Deals() {
             <QuickAdd data={d} disabled={!canManage} onQueued={(id, title) => { if (msAllowed) void checkFromPhone([{ id, title }]); }} />
             {!online && msAllowed && d.items.length > 0 && (
               <div className="deal-phone">
-                <span className="small">{checking ? t("Prüfe Xbox-Preise … {n}/{m}", { n: checking.done, m: checking.of }) : lastPhone ? t("Ohne PC: Xbox-Preise prüft das Handy selbst (zuletzt {d}). Steam-Preise sind vom letzten Abgleich am PC.", { d: relTime(lastPhone) }) : t("Ohne PC: das Handy kann die Xbox-Preise selbst beim Microsoft Store prüfen. Steam-Preise kommen vom PC.")}</span>
+                <span className="small">{checking ? t("Prüfe Xbox-Preise … {n}/{m}", { n: checking.done, m: checking.of }) : t("Ohne PC: Xbox-Preise prüft das Handy selbst beim Microsoft Store{x}. Steam-Preise kommen aus der Steam-Preisliste der Website{s}.", { x: lastPhone ? " (" + t("zuletzt {d}", { d: relTime(lastPhone) }) + ")" : "", s: steamIdx ? " (" + t("Stand {d}", { d: relTime(steamIdx.updatedAt) }) + ")" : "" })}</span>
                 <Button size="sm" icon={<RefreshCw size={15} />} busy={!!checking} onClick={() => void checkFromPhone()}>{t("Xbox-Preise prüfen")}</Button>
               </div>
             )}

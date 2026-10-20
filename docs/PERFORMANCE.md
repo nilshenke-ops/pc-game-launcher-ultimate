@@ -206,3 +206,7 @@ Keine neue Arbeit am PC: der Trophäenraum liest vorhandene Daten; die Karte zei
 | PC | – | keine neue Hintergrundarbeit; Design-Profil nur beim Anmelden/Speichern (PBKDF2 einmal pro Anfrage, ~50 ms) |
 | Handy | – | Xbox-Prüfung nur auf Knopfdruck/nach dem Hinzufügen, nacheinander mit 350 ms Pause; Schlüssel-Ableitung beim Anmelden (~0,3–1 s auf dem Handy) |
 | Widgets | – | Ping und Controller fragen nur, solange sie sichtbar sind (Controller alle 60 s) |
+
+## 2.24.0 (20.10.2026)
+
+Handy ohne PC: eine Datei mit ~130 KB (komprimiert ~54 KB) beim Öffnen des Deal Radar, danach aus dem Gerätespeicher. Kein Mehraufwand am PC. Die Preisliste erzeugt GitHub (ca. 1–3 min alle 6 h).

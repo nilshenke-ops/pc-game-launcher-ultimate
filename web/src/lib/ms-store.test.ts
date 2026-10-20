@@ -22,3 +22,22 @@ describe("Microsoft Store prices on the device", () => {
     expect("error" in down && down.error).toBe("Microsoft Store nicht erreichbar.");
   });
 });
+
+import minecraft from "./ms-store.minecraft.json";
+import { sameGame } from "./ms-store";
+
+describe("same game, not a similar one", () => {
+  it("Minecraft is the Java & Bedrock edition – not Minecraft Legends or Dungeons (real catalog answer)", () => {
+    const b = pickBest("Minecraft", minecraft.Products as never)!;
+    expect(b.title).toBe("Minecraft: Java & Bedrock Edition for PC");
+    expect(b.finalCents).toBe(2999);
+  });
+  it("edition names are fine, other games are not", () => {
+    expect(sameGame("Forza Horizon 5", "Forza Horizon 5 Premium Edition")).toBe(true);
+    expect(sameGame("Call of Duty", "Call of Duty®")).toBe(true);
+    expect(sameGame("Minecraft", "Minecraft Legends")).toBe(false);
+    expect(sameGame("Minecraft", "Minecraft Dungeons für Windows + Launcher")).toBe(false);
+    expect(sameGame("Elden Ring", "ELDEN RING NIGHTREIGN")).toBe(false);
+    expect(sameGame("Forza Horizon 5", "Forza Horizon 5 – Premium Add-ons-Bundle")).toBe(false);
+  });
+});

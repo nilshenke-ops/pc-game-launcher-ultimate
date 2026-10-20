@@ -1,0 +1,42 @@
+# Steam price list for the website (gh-pages/prices/steam-de.json), every 6 hours. Steam does not allow browsers on
+# other sites to ask its price API, so the Deal Radar on the phone reads this list while no PC is connected.
+# Only popular games (top sellers, most wished, new, on sale) – nothing about anyone's wish list is sent anywhere.
+name: Steam-Preisliste aktualisieren
+on:
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  prices:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          sparse-checkout: scripts
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: prices
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Preise abrufen
+        run: node main/scripts/steam-price-index.mjs --out site/prices --country de --pages 30
+      - name: Veröffentlichen
+        working-directory: site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prices/steam-de.json
+          git diff --cached --quiet || { git commit -m "Steam-Preisliste aktualisieren"; git pull --rebase -q origin gh-pages; git push; }

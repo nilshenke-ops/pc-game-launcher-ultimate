@@ -196,7 +196,28 @@ public sealed class DealService : IDisposable
 
     static string Norm(string s) => Regex.Replace(Regex.Replace(s.ToLowerInvariant(), @"[®™©:'’\-–—.,!]", " "), @"\s+", " ").Trim();
 
-    /// <summary>The Steam game for a name: an exact name match first, otherwise the first game the store finds.</summary>
+    public const string NotOnSteam = "Bei Steam gibt es kein Spiel mit genau diesem Namen – vielleicht wird es dort nicht verkauft (z. B. Minecraft). Der Vergleich läuft dann nur über den Microsoft Store.";
+
+    /// <summary>Words that only name an edition or platform – "Forza Horizon 5 Premium Edition" is still Forza Horizon 5,
+    /// "Minecraft Legends" is another game than "Minecraft".</summary>
+    static readonly HashSet<string> EditionWords = new(StringComparer.Ordinal)
+    {
+        "edition", "standard", "deluxe", "premium", "ultimate", "gold", "complete", "definitive", "goty", "game", "of", "the", "year",
+        "for", "für", "fur", "pc", "windows", "10", "11", "launcher", "java", "bedrock", "digital", "and", "und", "remastered", "enhanced",
+    };
+
+    static List<string> Tokens(string s) => Regex.Split(s.ToLowerInvariant(), @"[^\p{L}\p{N}]+").Where(x => x.Length > 0).ToList();
+
+    /// <summary>True if <paramref name="title"/> is the searched game itself, possibly with an edition name after it.</summary>
+    public static bool SameGame(string query, string title)
+    {
+        var q = Tokens(query); var t = Tokens(title);
+        if (q.Count == 0 || t.Count < q.Count || !q.SequenceEqual(t.Take(q.Count))) return false;
+        return t.Skip(q.Count).All(EditionWords.Contains);
+    }
+
+    /// <summary>The Steam game for a name: an exact name match first, then the game with an edition name after it.
+    /// No guess: "Minecraft" never becomes "Minecraft Dungeons".</summary>
     async Task<(string appId, string name)?> FindSteamAsync(string title, string country)
     {
         using var doc = JsonDocument.Parse(await _http.GetStringAsync($"{StoreBase}/api/storesearch/?term={Uri.EscapeDataString(title)}&cc={country}&l=german"));
@@ -205,7 +226,8 @@ public sealed class DealService : IDisposable
             .Select(it => (appId: it.GetProperty("id").GetRawText().Trim('"'), name: it.GetProperty("name").GetString() ?? "")).Take(10).ToList();
         if (apps.Count == 0) return null;
         var q = Norm(title);
-        return apps.FirstOrDefault(a => Norm(a.name) == q) is { appId: not null } exact ? exact : apps[0];
+        if (apps.FirstOrDefault(a => Norm(a.name) == q) is { appId: not null } exact) return exact;
+        return apps.FirstOrDefault(a => SameGame(title, a.name)) is { appId: not null } same ? same : null;
     }
 
     /// <summary>"Just type the name": the PC finds the game itself. With the radar off (or no hit) the name is kept and
@@ -216,9 +238,11 @@ public sealed class DealService : IDisposable
         if (title.Length < 2) throw new RpcException("invalid-params", "Bitte den Namen des Spiels eingeben.");
         var f = _store.Snapshot();
         (string appId, string name)? hit = null;
-        if (f.Enabled) { try { hit = await FindSteamAsync(title, f.Country); } catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { /* kept by name, matched later */ } }
+        var searched = false;
+        if (f.Enabled) { try { hit = await FindSteamAsync(title, f.Country); searched = true; } catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { /* kept by name, matched later */ } }
         if (hit is { } h && f.Items.Any(x => x.SteamAppId == h.appId)) throw new RpcException("conflict", $"„{h.name}“ steht schon auf der Wunschliste.");
         var item = Save(new WishItem { Title = hit?.name ?? title, SteamAppId = hit?.appId, TargetCents = targetCents });
+        if (searched && hit == null) { _store.Update(x => { var i = x.Items.FirstOrDefault(y => y.Id == item.Id); if (i != null) i.Error = NotOnSteam; }); item.Error = NotOnSteam; }
         if (f.Enabled) _ = Task.Run(async () => { try { await CheckOneAsync(item.Id); } catch (Exception ex) { Log.Warn("deals", ex.Message); } });
         return item;
     }
@@ -298,14 +322,10 @@ public sealed class DealService : IDisposable
     /// <summary>Microsoft Store (what the Xbox app sells): the cheapest buyable edition whose name contains the title.</summary>
     static readonly string[] AddOnWords = { "add-on", "addon", "upgrade", "season pass", "dlc", "erweiterung", "expansion", "car pack", "vip" };
 
-    /// <summary>The Microsoft Store lists add-on bundles as "Game" too; they are sold only to owners of the game
-    /// ("SellableBy" relation) or carry add-on words the user did not type.</summary>
+    /// <summary>Add-on words the user did not type ("Premium Add-ons-Bundle", "Upgrade"). Note: the "SellableBy" relation
+    /// is no sign of an add-on – the real Minecraft has it too.</summary>
     static bool IsAddOn(JsonElement p, string title, string query)
     {
-        if (p.TryGetProperty("MarketProperties", out var mp) && mp.ValueKind == JsonValueKind.Array)
-            foreach (var m in mp.EnumerateArray())
-                if (m.TryGetProperty("RelatedProducts", out var rel) && rel.ValueKind == JsonValueKind.Array
-                    && rel.EnumerateArray().Any(r => r.TryGetProperty("RelationshipType", out var t) && t.GetString() == "SellableBy")) return true;
         var lower = title.ToLowerInvariant();
         return AddOnWords.Any(w => lower.Contains(w) && !query.Contains(Norm(w)));
     }
@@ -344,7 +364,7 @@ public sealed class DealService : IDisposable
                 {
                     if (p.TryGetProperty("ProductKind", out var kind) && kind.GetString() != "Game") continue;
                     var title = p.GetProperty("LocalizedProperties")[0].GetProperty("ProductTitle").GetString() ?? "";
-                    if (!Norm(title).Contains(q)) continue; // other game with a similar name
+                    if (!SameGame(item.Title, title)) continue; // other game with a similar name ("Minecraft Legends" for "Minecraft")
                     if (IsAddOn(p, title, q)) continue;     // add-on bundles and upgrades need the game – not a price for the game
                     foreach (var sku in p.GetProperty("DisplaySkuAvailabilities").EnumerateArray().Take(1))
                         foreach (var a in sku.GetProperty("Availabilities").EnumerateArray())
@@ -391,8 +411,11 @@ public sealed class DealService : IDisposable
             {
                 try
                 {
-                    if (await FindSteamAsync(item.Title, f0.Country) is { } hit && !_store.Snapshot().Items.Any(x => x.SteamAppId == hit.appId))
-                        _store.Update(f => { var i = f.Items.FirstOrDefault(x => x.Id == item.Id); if (i != null) { i.SteamAppId = hit.appId; i.Title = DeviceStore.Sanitize(hit.name, 80, i.Title); } });
+                    var hit = await FindSteamAsync(item.Title, f0.Country);
+                    if (hit is { } h && !_store.Snapshot().Items.Any(x => x.SteamAppId == h.appId))
+                        _store.Update(f => { var i = f.Items.FirstOrDefault(x => x.Id == item.Id); if (i != null) { i.SteamAppId = h.appId; i.Title = DeviceStore.Sanitize(h.name, 80, i.Title); i.Error = null; } });
+                    else if (hit == null)
+                        _store.Update(f => { var i = f.Items.FirstOrDefault(x => x.Id == item.Id); if (i != null) i.Error = NotOnSteam; });
                 }
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { break; }
                 await Task.Delay(force ? 100 : 800);

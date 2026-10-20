@@ -9,6 +9,17 @@ export type MsResult = MsPrice | { error: string; at: number };
 const BASE = "https://displaycatalog.mp.microsoft.com/v7.0";
 const ADDON_WORDS = ["add-on", "addon", "upgrade", "season pass", "dlc", "erweiterung", "expansion", "car pack", "vip"];
 
+const EDITION_WORDS = new Set(["edition", "standard", "deluxe", "premium", "ultimate", "gold", "complete", "definitive", "goty", "game", "of", "the", "year",
+  "for", "für", "fur", "pc", "windows", "10", "11", "launcher", "java", "bedrock", "digital", "and", "und", "remastered", "enhanced"]);
+const tokens = (s: string) => s.toLowerCase().split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+
+/** The searched game itself, possibly with an edition name after it – "Minecraft Legends" is not "Minecraft" (same rule as the PC). */
+export function sameGame(query: string, title: string) {
+  const q = tokens(query), t = tokens(title);
+  if (!q.length || t.length < q.length || q.some((w, i) => t[i] !== w)) return false;
+  return t.slice(q.length).every((w) => EDITION_WORDS.has(w));
+}
+
 export const norm = (s: string) => s.toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 
 interface Product {
@@ -34,8 +45,7 @@ export function pickBest(title: string, products: Product[]): Omit<MsPrice, "at"
     if (p.ProductKind && p.ProductKind !== "Game") continue;
     const name = p.LocalizedProperties[0]?.ProductTitle ?? "";
     const n = norm(name);
-    if (!n.includes(q)) continue;
-    if (p.MarketProperties?.some((m) => m.RelatedProducts?.some((r) => r.RelationshipType === "SellableBy"))) continue;
+    if (!sameGame(title, name)) continue;
     if (ADDON_WORDS.some((w) => n.includes(norm(w)) && !q.includes(norm(w)))) continue;
     for (const a of p.DisplaySkuAvailabilities[0]?.Availabilities ?? []) {
       if (!a.Actions?.includes("Purchase") || a.RemediationRequired) continue;
