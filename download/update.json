@@ -1,34 +1,28 @@
 {
-  "version": "2.19.0",
+  "version": "2.20.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.19.0/PCGameLauncherCompanion.exe",
-  "size": 87542935,
-  "sha256": "b96f6d11e1a07e7d90b181e1a28bf63725d5c680d2463cec3f09bd847d1fa79d",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.20.0/PCGameLauncherCompanion.exe",
+  "size": 87521832,
+  "sha256": "cc14d915549d253f8d504965d3dea490cab14888bf543893e4c63fbdc05ea542",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.19.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.19.0/PCGameLauncherCompanion-2.19.0-win-x64.zip",
-    "size": 81809200,
-    "sha256": "94c97b22ded87a296471aa8a9a4098ff8c92c9bd997a57cadc0cde8692de3fa3"
+    "fileName": "PCGameLauncherCompanion-2.20.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.20.0/PCGameLauncherCompanion-2.20.0-win-x64.zip",
+    "size": 81785836,
+    "sha256": "f69dc78022620122bcc4f7ad6af3fe66fb78608f055d990d384711f1f2ed28a3"
   },
-  "notes": "Deal Radar: Spiel hinzufügen nur mit dem Namen – der PC findet es selbst im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht · Deal Radar: Steam-Wunschliste wird automatisch übernommen und bei jeder Prüfung abgeglichen (öffentliche Wunschliste nötig) · Deal Radar: Preisvergleich mit dem Microsoft Store (Xbox) – günstigste kaufbare Edition, Hinweis „günstiger als Steam“ und Link zum Store",
+  "notes": "Tastatur & Maus belegen (Windows): Tasten und Maustasten am PC umlegen – auf eine andere Taste, eine Tastenkombination (Strg/Shift/Alt/Win + Taste), eine Maustaste oder sperren. Profile für überall oder nur für bestimmte Spiele, umgeschaltet nach dem Programm im Vordergrund · Anklickbare Tastatur (deutsches Layout) und Maustasten im Editor; „Am PC drücken“ übernimmt die Taste direkt von der echten Tastatur oder Maus · Erkannte Tastaturen und Mäuse mit Namen; Royal Kludge und Attack Shark werden erkannt – die Belegung funktioniert mit jedem Gerät",
   "changes": {
     "neu": [
-      "Deal Radar: Spiel hinzufügen nur mit dem Namen – der PC findet es selbst im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht",
-      "Deal Radar: Steam-Wunschliste wird automatisch übernommen und bei jeder Prüfung abgeglichen (öffentliche Wunschliste nötig)",
-      "Deal Radar: Preisvergleich mit dem Microsoft Store (Xbox) – günstigste kaufbare Edition, Hinweis „günstiger als Steam“ und Link zum Store",
-      "Deal Radar übersichtlich als Kacheln: Originalbild des Spiels, darunter Xbox- und Steam-Preis (der günstigere grün); Antippen zeigt Preisverlauf, Zielpreis, Links und Kompatibilität. Einstellungen und genaue Suche sind eingeklappt"
+      "Tastatur & Maus belegen (Windows): Tasten und Maustasten am PC umlegen – auf eine andere Taste, eine Tastenkombination (Strg/Shift/Alt/Win + Taste), eine Maustaste oder sperren. Profile für überall oder nur für bestimmte Spiele, umgeschaltet nach dem Programm im Vordergrund",
+      "Anklickbare Tastatur (deutsches Layout) und Maustasten im Editor; „Am PC drücken“ übernimmt die Taste direkt von der echten Tastatur oder Maus",
+      "Erkannte Tastaturen und Mäuse mit Namen; Royal Kludge und Attack Shark werden erkannt – die Belegung funktioniert mit jedem Gerät",
+      "Notaus: Strg+Alt+F12 am PC schaltet alle Belegungen sofort aus und wieder an; auch per Knopf in der App",
+      "Profile lassen sich ohne PC vorbereiten und werden beim Verbinden übertragen; im Backup enthalten"
     ],
-    "verbessert": [
-      "Spiele unter Steam, Game Pass, Epic und EA: die ganze Karte antippen startet das Spiel (installiert) bzw. öffnet die Installation – mit Ladeanzeige und Schutz gegen Doppeltippen; auch per Tastatur (Enter/Leertaste)",
-      "Installierte Steam-Spiele, die noch nicht in der Bibliothek sind, werden beim Antippen hinzugefügt und gestartet",
-      "Wunschliste fasst jetzt 300 Spiele"
-    ],
-    "behoben": [
-      "Microsoft-Store-Vergleich nimmt keine Add-on-Pakete und keine Game-Pass-Mitgliederpreise als Spielpreis",
-      "Änderungen ohne PC erscheinen sofort auf der offenen Seite, auch wenn die Verbindung erst währenddessen abreißt (vorher erst nach dem Neuladen)"
-    ]
+    "verbessert": [],
+    "behoben": []
   },
-  "signature": "Cw6Mg0tlwe1ixTy+EcpIma/nAt5tu/rsLN6oZFVimNN897VCGNq/qpFVfClKBQNhZe40JROOKAHG4WXNF7iRNg=="
+  "signature": "M8q3v6kshhFD7vdtVHRSZ9en5iGRnL1fIiQ+GF90oR47d3d9LRm7gII/nRDBJ39i0JKj/R+mgWKTnLh9rX+5Pw=="
 }

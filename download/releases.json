@@ -1,5 +1,33 @@
 [
   {
+    "version": "2.20.0",
+    "date": "2026-10-20",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.20.0/PCGameLauncherCompanion.exe",
+    "size": 87521832,
+    "sha256": "cc14d915549d253f8d504965d3dea490cab14888bf543893e4c63fbdc05ea542",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.20.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.20.0/PCGameLauncherCompanion-2.20.0-win-x64.zip",
+      "size": 81785836,
+      "sha256": "f69dc78022620122bcc4f7ad6af3fe66fb78608f055d990d384711f1f2ed28a3"
+    },
+    "notes": "Tastatur & Maus belegen (Windows): Tasten und Maustasten am PC umlegen – auf eine andere Taste, eine Tastenkombination (Strg/Shift/Alt/Win + Taste), eine Maustaste oder sperren. Profile für überall oder nur für bestimmte Spiele, umgeschaltet nach dem Programm im Vordergrund · Anklickbare Tastatur (deutsches Layout) und Maustasten im Editor; „Am PC drücken“ übernimmt die Taste direkt von der echten Tastatur oder Maus · Erkannte Tastaturen und Mäuse mit Namen; Royal Kludge und Attack Shark werden erkannt – die Belegung funktioniert mit jedem Gerät",
+    "changes": {
+      "neu": [
+        "Tastatur & Maus belegen (Windows): Tasten und Maustasten am PC umlegen – auf eine andere Taste, eine Tastenkombination (Strg/Shift/Alt/Win + Taste), eine Maustaste oder sperren. Profile für überall oder nur für bestimmte Spiele, umgeschaltet nach dem Programm im Vordergrund",
+        "Anklickbare Tastatur (deutsches Layout) und Maustasten im Editor; „Am PC drücken“ übernimmt die Taste direkt von der echten Tastatur oder Maus",
+        "Erkannte Tastaturen und Mäuse mit Namen; Royal Kludge und Attack Shark werden erkannt – die Belegung funktioniert mit jedem Gerät",
+        "Notaus: Strg+Alt+F12 am PC schaltet alle Belegungen sofort aus und wieder an; auch per Knopf in der App",
+        "Profile lassen sich ohne PC vorbereiten und werden beim Verbinden übertragen; im Backup enthalten"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "M8q3v6kshhFD7vdtVHRSZ9en5iGRnL1fIiQ+GF90oR47d3d9LRm7gII/nRDBJ39i0JKj/R+mgWKTnLh9rX+5Pw=="
+  },
+  {
     "version": "2.19.0",
     "date": "2026-10-20",
     "channel": "stable",
