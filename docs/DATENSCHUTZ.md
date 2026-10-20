@@ -27,6 +27,8 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Dateien vom/zum Handy | `Downloads\Nexus Gaming Hub\` (mit eigenem Datenordner: `transfer\`) | Dateien → Löschen oder im Explorer |
 | Aufnahmen: eigene Ordner, Favoriten, Schlagwörter | `captures.json` | Datei löschen |
 | Vorschaubilder der Aufnahmen (höchstens 3000) | `thumbs\` | Ordner löschen |
+| Push: eigener Schlüssel des PCs (privat geschützt) und die Push-Adressen der Geräte | `webpush.json` | Benachrichtigungen → Push ausschalten oder Datei löschen |
+| Systemanforderungen aus dem Steam-Shop (höchstens 300 Spiele) | `compat.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |
 | Backups und Wiederherstellungspunkte | `backups\` (automatisch die neuesten 5) | Einstellungen → Backup oder Ordner löschen |
@@ -54,6 +56,9 @@ Alles löschen: Browser-Daten der Seite löschen oder in der App „PC verbinden
   - Die Anmeldung ist Ende-zu-Ende geschützt, der Inhalt danach aber nicht: Der Betreiber eines Relays könnte ihn technisch mitlesen. Ein Relay deshalb nur selbst oder bei jemandem betreiben, dem du vertraust.
 
 ## 4. Optionale Online-Dienste (wer etwas erfährt)
+
+- **Kompatibilitäts-Check (nur auf Knopfdruck):** Der PC fragt den Steam-Shop nach den Anforderungen eines Spiels (`store.steampowered.com`, nur die App-ID). Steam erfährt, dass von deiner IP-Adresse diese Seite abgerufen wurde.
+- **Push-Benachrichtigungen (nur wenn auf einem Gerät eingeschaltet):** Der PC schickt Meldungen an den Push-Dienst des Browsers (Google, Mozilla, Apple oder Microsoft). Inhalt ist Ende-zu-Ende verschlüsselt; der Dienst sieht Zeitpunkt, Größe und das Ziel-Gerät. Andere Adressen werden nie angesprochen.
 
 | Funktion | Ziel | Was gesendet wird | Abschalten |
 |---|---|---|---|

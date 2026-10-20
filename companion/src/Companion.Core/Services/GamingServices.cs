@@ -253,6 +253,8 @@ public sealed class NotificationCenter
     public Func<bool> IsGaming { get; set; } = () => false;
     public Func<bool> ProfileQuiet { get; set; } = () => false;
     public Action<Notification>? OnDesktop { get; set; }
+    /// <summary>A new notification (not a merged repeat) – e.g. for push messages to phones.</summary>
+    public event Action<Notification>? Created;
 
     /// <param name="paths">Where the history is kept (notifications.json); null = only in memory.</param>
     public NotificationCenter(IHub hub, SettingsService settings, AppPaths? paths = null)
@@ -288,6 +290,7 @@ public sealed class NotificationCenter
         var quiet = ProfileQuiet() || (s.QuietWhileGaming && IsGaming());
         if (severity <= Severity.Success && (!s.NotifyInfo || quiet)) return null;
         Notification n;
+        var created = false;
         lock (_lock)
         {
             var existing = _items.FirstOrDefault(x => x.Key == key && !x.Dismissed && DateTime.UtcNow - x.At < TimeSpan.FromMinutes(10));
@@ -304,9 +307,11 @@ public sealed class NotificationCenter
                 n = new Notification { Id = Ids.New("ntf"), Key = key, Severity = severity, Title = title, Message = message, At = DateTime.UtcNow, Link = link, Category = CategoryOf(key) };
                 _items.Insert(0, n);
                 if (_items.Count > MaxItems) _items.RemoveRange(MaxItems, _items.Count - MaxItems);
+                created = true;
             }
         }
         Save();
+        if (created) try { Created?.Invoke(n); } catch (Exception ex) { Log.Warn("notify", ex.Message); }
         _hub.Broadcast("notification", n);
         // Windows pop-ups: warnings and errors – but while gaming (quiet mode) only errors, so a game is not interrupted.
         if (severity >= Severity.Error || (severity >= Severity.Warning && !quiet)) OnDesktop?.Invoke(n);
@@ -734,12 +739,20 @@ public sealed class ActionRunner
     public static bool TakesLong(IEnumerable<ActionStep> steps) => steps.Where(s => s.Type == StepType.Wait).Sum(s => int.TryParse(s.Ref, out var v) ? v : 0) > 5;
 
     /// <summary>Executes steps in order. Returns a human readable result per step. A condition that is not met ends the run.</summary>
-    public async Task<List<string>> RunAsync(IEnumerable<ActionStep> steps, string by)
+    public Task<List<string>> RunAsync(IEnumerable<ActionStep> steps, string by) => RunAsync(steps, by, null, default);
+
+    /// <summary>Like <see cref="RunAsync(IEnumerable{ActionStep}, string)"/>, reporting each step (index, result) and stopping
+    /// before the next step once <paramref name="ct"/> is cancelled. A wait is interrupted at once; steps already done stay done.</summary>
+    public async Task<List<string>> RunAsync(IEnumerable<ActionStep> steps, string by, Action<int, string>? onStep, CancellationToken ct)
     {
         var results = new List<string>();
         var waited = 0;
+        var index = -1;
         foreach (var s in steps.Take(20))
         {
+            index++;
+            if (ct.IsCancellationRequested) { results.Add(Cancelled); break; }
+            var before = results.Count;
             try
             {
                 switch (s.Type)
@@ -748,7 +761,8 @@ public sealed class ActionRunner
                         var sec = Math.Clamp(int.TryParse(s.Ref, out var v) ? v : 1, 1, MaxWaitSeconds - waited);
                         if (sec <= 0) { results.Add("Wartezeit übersprungen (zusammen höchstens 5 Minuten)"); break; }
                         waited += sec;
-                        await Task.Delay(TimeSpan.FromSeconds(sec));
+                        try { await Task.Delay(TimeSpan.FromSeconds(sec), ct); }
+                        catch (OperationCanceledException) { results.Add(Cancelled); onStep?.Invoke(index, Cancelled); return results; }
                         results.Add($"{sec} s gewartet");
                         break;
                     case StepType.MediaKey:
@@ -761,7 +775,7 @@ public sealed class ActionRunner
                         var running = IsRunning?.Invoke(s.Ref ?? "") ?? false;
                         var go = s.Type == StepType.IfRunning ? running : !running;
                         results.Add(go ? $"Bedingung erfüllt: {name} läuft{(running ? "" : " nicht")}" : $"Beendet: {name} läuft{(running ? "" : " nicht")}");
-                        if (!go) return results;
+                        if (!go) { onStep?.Invoke(index, results[^1]); return results; }
                         break;
                     case StepType.LaunchItem:
                         var r = LaunchItem!(s.Ref ?? "", by);
@@ -808,9 +822,12 @@ public sealed class ActionRunner
             }
             catch (RpcException ex) { results.Add("Fehler: " + ex.Message); }
             catch (Exception ex) { results.Add("Fehler: " + ex.Message); }
+            if (results.Count > before) onStep?.Invoke(index, results[^1]);
         }
         return results;
     }
+
+    public const string Cancelled = "Abgebrochen";
 }
 
 // ============================================================ Quick actions

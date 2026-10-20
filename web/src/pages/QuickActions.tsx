@@ -11,6 +11,7 @@ import { describeStep, StepEditor, stepsValid, useStepRefs } from "../components
 const blank: QuickAction = { id: "", name: "", icon: "zap", category: "", favorite: false, showOnDashboard: true, requireConfirm: false, steps: [{ type: "launchItem", ref: null }] };
 
 import { runQuickAction } from "../components/run-quick";
+import { RunsPanel } from "../components/run-progress";
 
 export default function QuickActions() {
   const q = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);
@@ -34,6 +35,7 @@ export default function QuickActions() {
     <>
       <PageHead eyebrow={t("Start")} title={t("Quick Actions")} text={t("Eigene Ein-Tipp-Aktionen: mehrere Schritte wie „Discord öffnen + Profil Streaming + Sound“ auf einmal.")}
         actions={canManage && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setEdit(structuredClone(blank))}>{t("Neue Aktion")}</Button>} />
+      <RunsPanel />
       {cats.length > 0 && (
         <div className="chips" style={{ marginBottom: 16 }}>
           {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ...cats.map((c) => [c, c])].map(([k, l]) => <button key={k} className={`chip ${cat === k ? "on" : ""}`} onClick={() => setCat(k)}>{l}</button>)}

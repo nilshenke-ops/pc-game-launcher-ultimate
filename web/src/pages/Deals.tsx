@@ -5,6 +5,7 @@ import { t } from "../lib/i18n";
 import { toast, useAction, useCan, useConn, useRpc } from "../lib/hooks";
 import { dateTime, relTime } from "../lib/format";
 import { clientId, lowestSeen, money, parsePrice, priceInput } from "../lib/quest-deal";
+import { CompatPanel } from "../components/compat-panel";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Sparkline, Switch } from "../components/ui";
 
 interface Wish {
@@ -166,6 +167,7 @@ export default function Deals() {
                             : d.enabled ? t("Noch nicht geprüft – kommt mit der nächsten Prüfung.") : t("Preisabfrage ist aus.")}
                         </div>
                         {w.error && <Banner kind="warn">{w.error}</Banner>}
+                        {w.steamAppId && <details className="compat-details"><summary className="small">{t("Läuft das auf meinem PC?")}</summary><CompatPanel appId={w.steamAppId} /></details>}
                       </div>
                     );
                   })}

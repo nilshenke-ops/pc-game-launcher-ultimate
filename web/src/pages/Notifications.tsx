@@ -6,11 +6,12 @@ import { t } from "../lib/i18n";
 import { useCan, useConn, useEvent, useRpc, toast } from "../lib/hooks";
 import { dateTime, relTime } from "../lib/format";
 import type { Notification, Settings } from "../lib/types";
-import { Button, Card, confirmDialog, Empty, Loadable, PageHead, Segmented } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Empty, Loadable, PageHead, Segmented } from "../components/ui";
+import { currentSubscription, disablePush, enablePush, pushSupport, type PushSupport } from "../lib/push";
 
-const CATEGORIES = ["update", "launch", "automation", "gamemode", "plugin", "quest", "deal", "recording", "assistant", "system"] as const;
+const CATEGORIES = ["calendar", "update", "launch", "automation", "gamemode", "plugin", "quest", "deal", "recording", "assistant", "system"] as const;
 const categoryLabel = (c: string) => ({
-  update: t("Updates"), launch: t("Starts"), automation: t("Automatisierungen"), gamemode: t("Spielmodus"), plugin: t("Plugins"), quest: t("GameQuest"),
+  calendar: t("Kalender"), update: t("Updates"), launch: t("Starts"), automation: t("Automatisierungen"), gamemode: t("Spielmodus"), plugin: t("Plugins"), quest: t("GameQuest"),
   deal: t("Deal Radar"), recording: t("Aufnahme"), assistant: t("Assistent"), system: t("System"),
 } as Record<string, string>)[c] ?? c;
 
@@ -82,6 +83,60 @@ export default function Notifications() {
           )}
         </Card>
       </Loadable>
+      <PushCard />
     </>
+  );
+}
+
+/** Push messages to this phone/tablet – they also arrive while the app is closed. */
+function PushCard() {
+  const conn = useConn();
+  const online = conn.phase === "online" && conn.auth === "ok";
+  const isDevice = !conn.me?.isLocal;
+  const [support] = useState<PushSupport>(() => pushSupport());
+  const [on, setOn] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [cats, setCats] = useState<string[]>(["calendar", "launch", "recording", "update"]);
+  const info = useRpc<{ subscriptions: { endpoint: string; categories: string[]; lastSentAt?: string | null; lastError?: string | null }[] }>("push.info", {}, []);
+  useEffect(() => { void currentSubscription().then((s) => setOn(!!s && !!info.data?.subscriptions.some((x) => x.endpoint === s.endpoint))); }, [info.data]);
+  useEffect(() => { const mine = info.data?.subscriptions[0]; if (mine?.categories.length) setCats(mine.categories); }, [info.data]);
+  if (!isDevice) return null;
+  const hint: Record<Exclude<PushSupport, "ok">, string> = {
+    insecure: t("Geht nur über die Website mit https (nicht über die WLAN-Adresse http://…)."),
+    "ios-home-screen": t("Auf iPhone und iPad erlaubt Apple Push nur für Apps auf dem Home-Bildschirm: Teilen → „Zum Home-Bildschirm“, dann von dort öffnen (ab iOS 16.4)."),
+    "no-sw": t("Dieser Browser unterstützt keine Hintergrund-Dienste (Service Worker)."),
+    unsupported: t("Dieser Browser unterstützt keine Push-Benachrichtigungen."),
+    denied: t("Benachrichtigungen sind für diese Seite im Browser blockiert – in den Website-Einstellungen erlauben."),
+  };
+  const toggle = (c: string) => setCats((x) => (x.includes(c) ? x.filter((y) => y !== c) : [...x, c]));
+  const enable = async () => {
+    setBusy(true);
+    try { await enablePush(cats); setOn(true); toast(t("Push ist auf diesem Gerät an"), "success"); info.reload(); }
+    catch (e) { toast((e as Error).message === "denied" ? t("Benachrichtigungen wurden nicht erlaubt.") : (e as Error).message, "error"); }
+    finally { setBusy(false); }
+  };
+  const test = () => client.call<{ sent: number; errors: string[] }>("push.test", {}).then((r) => toast(r.errors.length ? r.errors.join(" · ") : t("Test gesendet – kommt gleich als Benachrichtigung"), r.errors.length ? "warning" : "success"), (e: Error) => toast(e.message, "error"));
+  const mine = info.data?.subscriptions[0];
+  return (
+    <Card title={t("Push auf diesem Gerät")} style={{ marginTop: 16 }}>
+      <div className="stack-sm">
+        <p className="small muted" style={{ margin: 0 }}>{t("Wichtige Meldungen vom PC kommen auch bei geschlossener App – z. B. Termin-Erinnerungen oder ein fertiger Ablauf. Der PC verschlüsselt jede Nachricht; der Push-Dienst des Browsers (Google, Apple, Mozilla, Microsoft) leitet nur weiter.")}</p>
+        {support !== "ok" ? <Banner kind="warn">{hint[support]}</Banner> : <>
+          <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
+            {(["calendar", "launch", "recording", "update", "automation", "deal", "quest", "plugin", "system"] as const).map((c) => (
+              <button key={c} type="button" className={`chip ${cats.includes(c) ? "on" : ""}`} aria-pressed={cats.includes(c)} onClick={() => toggle(c)}>{categoryLabel(c)}</button>
+            ))}
+          </div>
+          <div className="row" style={{ gap: 8 }}>
+            <Button variant={on ? undefined : "primary"} busy={busy} disabled={!online} onClick={() => void enable()}>{on ? t("Auswahl speichern") : t("Push einschalten")}</Button>
+            {on && <Button disabled={!online} onClick={test}>{t("Test senden")}</Button>}
+            {on && <Button variant="ghost" disabled={!online} onClick={() => void disablePush().then(() => { setOn(false); info.reload(); })}>{t("Ausschalten")}</Button>}
+          </div>
+          {!online && <p className="tiny muted">{t("Einschalten braucht einmal die Verbindung zum PC – danach kommen Meldungen auch ohne offene App.")}</p>}
+          {mine?.lastError && <Banner kind="warn">{mine.lastError}</Banner>}
+          {mine?.lastSentAt && <p className="tiny muted">{t("Zuletzt gesendet: {d}", { d: dateTime(mine.lastSentAt) })}</p>}
+        </>}
+      </div>
+    </Card>
   );
 }

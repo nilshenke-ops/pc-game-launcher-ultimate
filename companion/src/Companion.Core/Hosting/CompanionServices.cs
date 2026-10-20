@@ -24,6 +24,9 @@ public sealed class CompanionServices : IAsyncDisposable
     public SessionTracker Sessions { get; }
     public ProfileService Profiles { get; }
     public ActionRunner Runner { get; } = new();
+    public RunTracker Runs { get; }
+    public CompatService Compat { get; }
+    public WebPushService Push { get; }
     public QuickActionService QuickActions { get; }
     public AutomationEngine Automations { get; }
     public HotkeyService Hotkeys { get; }
@@ -102,6 +105,10 @@ public sealed class CompanionServices : IAsyncDisposable
         Storage = new StorageService(paths, Library, platform, Rpc);
         Transfer = new TransferService(paths, platform, Rpc, Notifications);
         Captures = new CaptureLibraryService(paths, Library, platform, Rpc);
+        Runs = new RunTracker(Runner, Rpc, StepLabel);
+        Compat = new CompatService(paths, Metrics, Library);
+        Push = new WebPushService(paths, platform.Secrets, id => Devices.Get(id) != null);
+        Notifications.Created += Push.OnNotification;
         Updates.CreateRestorePoint = name =>
         {
             try { return Path.GetFileName(Backup.CreateZip(includeSounds: false, Path.Combine(paths.BackupsDir, $"{name}-{DateTime.Now:yyyyMMdd-HHmmss}.zip"))); }
@@ -325,6 +332,33 @@ public sealed class CompanionServices : IAsyncDisposable
     {
         if (item.ProfileId != null && p.Profiles.Any(x => x.Id == item.ProfileId)) return item.ProfileId;
         return p.Profiles.FirstOrDefault(x => x.GameIds.Contains(item.Id))?.Id;
+    }
+
+    /// <summary>What a step does, in words, for the progress view.</summary>
+    string StepLabel(ActionStep st)
+    {
+        string Item() => Library.Get(st.Ref ?? "")?.Name ?? "Spiel/Programm";
+        return st.Type switch
+        {
+            StepType.LaunchItem => $"{Item()} starten",
+            StepType.ActivateProfile => $"Profil „{Profiles.Get().Profiles.FirstOrDefault(p => p.Id == st.Ref)?.Name ?? "?"}“",
+            StepType.RevertProfile => "Vorheriges Profil",
+            StepType.PlaySound => $"Sound „{Soundboard.Get().Sounds.FirstOrDefault(x => x.Id == st.Ref)?.Name ?? "?"}“",
+            StepType.StopAllSounds => "Alle Sounds stoppen",
+            StepType.SetCollection => "Sound-Sammlung wählen",
+            StepType.SetAudioOutput => "Audioausgabe setzen",
+            StepType.RunDiagnostics => "Diagnose",
+            StepType.Notify => "Hinweis: " + DeviceStore.Sanitize(st.Ref, 60, ""),
+            StepType.ToggleOverlay => "Overlay umschalten",
+            StepType.ObsRecordToggle => "Aufnahme starten/stoppen",
+            StepType.ObsReplaySave => "Replay speichern",
+            StepType.ObsReplayBufferToggle => "Replay-Puffer umschalten",
+            StepType.Wait => $"{st.Ref} s warten",
+            StepType.IfRunning => $"Nur wenn {Item()} läuft",
+            StepType.IfNotRunning => $"Nur wenn {Item()} nicht läuft",
+            StepType.MediaKey => "Medientaste " + st.Ref,
+            _ => st.Type.ToString(),
+        };
     }
 
     public List<object> RunningList() =>

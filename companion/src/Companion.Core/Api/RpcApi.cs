@@ -221,22 +221,52 @@ public static class RpcApi
         rpc.Register("quick.list", ctx => new { actions = s.QuickActions.List() });
         rpc.Register("quick.save", ctx => s.QuickActions.Save(ctx.Bind<QuickAction>()));
         rpc.Register("quick.remove", ctx => { s.QuickActions.Remove(ctx.Str("id", 64)); return true; });
+        rpc.Register("compat.check", ctx => s.Compat.CheckAsync(ctx.Str("appId", 12), ctx.OptStr("itemId", 64),
+            ctx.Params.TryGetProperty("refresh", out var rf) && rf.ValueKind == JsonValueKind.True));
+        // ------------------------------------------------------------ push messages to this device (also while the app is closed)
+        string PushDevice(RpcContext ctx) => ctx.Session.Device?.Id ?? throw new RpcException("not-supported", "Am PC selbst kommen Benachrichtigungen von Windows – Push ist für gekoppelte Handys und Tablets.");
+        rpc.Register("push.info", ctx => new
+        {
+            publicKey = s.Push.PublicKey(), categories = WebPushService.Categories,
+            subscriptions = ctx.Session.Device == null ? new List<object>() : s.Push.ForDevice(ctx.Session.Device.Id).Select(x => (object)new { x.Endpoint, x.Categories, x.CreatedAt, x.LastSentAt, x.LastError }).ToList(),
+        });
+        rpc.Register("push.subscribe", ctx =>
+        {
+            s.Push.Subscribe(PushDevice(ctx), ctx.Str("endpoint", 1000), ctx.Str("p256dh", 120), ctx.Str("auth", 40),
+                ctx.Params.TryGetProperty("categories", out var c) && c.ValueKind == JsonValueKind.Array ? c.EnumerateArray().Select(x => x.GetString() ?? "").Take(20).ToList() : null);
+            return true;
+        });
+        rpc.Register("push.unsubscribe", ctx => { s.Push.Unsubscribe(PushDevice(ctx), ctx.OptStr("endpoint", 1000)); return true; });
+        rpc.Register("push.test", async ctx =>
+        {
+            var subs = s.Push.ForDevice(PushDevice(ctx));
+            if (subs.Count == 0) throw new RpcException("not-found", "Auf diesem Gerät sind Push-Benachrichtigungen nicht eingeschaltet.");
+            var payload = JsonSerializer.Serialize(new { title = "Test vom PC", body = "Push-Benachrichtigungen funktionieren.", link = "/notifications", tag = "push-test" });
+            var errors = new List<string>();
+            foreach (var sub in subs) if (await s.Push.SendAsync(sub, payload) is { } e) errors.Add(e);
+            return new { sent = subs.Count - errors.Count, errors };
+        });
+        rpc.Register("runs.list", _ => new { runs = s.Runs.List() });
+        rpc.Register("runs.cancel", ctx => { s.Runs.Cancel(ctx.Str("id", 40)); return true; });
         rpc.Register("quick.reorder", ctx => { s.QuickActions.Reorder(ctx.Params.GetProperty("ids").EnumerateArray().Select(x => x.GetString() ?? "").Take(500).ToList()); return true; });
         rpc.Register("quick.run", async ctx =>
         {
             var qa = s.QuickActions.Get(ctx.Str("id", 64)) ?? throw NotFound();
             var by = $"{ctx.Session.Who} (Quick Action {qa.Name})";
+            // Every run is followed step by step (runs.list) and can be cancelled (runs.cancel).
+            var (run, done) = s.Runs.Start(qa.Name, qa.Id, qa.Steps, by);
             // With waiting the run takes longer than a request may: it continues on the PC, the result comes as a notification.
             if (ActionRunner.TakesLong(qa.Steps))
             {
-                _ = Task.Run(async () =>
+                _ = done.ContinueWith(t =>
                 {
-                    var r = await s.Runner.RunAsync(qa.Steps, by);
-                    s.Notifications.Push("quick:" + qa.Id, r.Any(x => x.StartsWith("Fehler")) ? Severity.Warning : Severity.Success, $"Quick Action „{qa.Name}“ fertig", string.Join(" · ", r), "/quick");
-                });
-                return new { results = new[] { "Läuft auf dem PC – das Ergebnis kommt als Benachrichtigung." }, background = true };
+                    var r = t.Result;
+                    var title = run.State == "cancelled" ? $"„{qa.Name}“ abgebrochen" : $"Quick Action „{qa.Name}“ fertig";
+                    s.Notifications.Push("quick:" + qa.Id, run.State is "failed" or "cancelled" ? Severity.Warning : Severity.Success, title, string.Join(" · ", r), "/quick");
+                }, TaskScheduler.Default);
+                return new { results = new[] { "Läuft auf dem PC – Fortschritt unter Quick Actions, das Ergebnis kommt als Benachrichtigung." }, background = true, runId = run.Id };
             }
-            return (object?)new { results = await s.Runner.RunAsync(qa.Steps, by) };
+            return (object?)new { results = await done, runId = run.Id };
         });
 
         // ------------------------------------------------------------ profiles

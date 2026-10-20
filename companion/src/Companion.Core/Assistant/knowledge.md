@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.15.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.16.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -34,6 +34,16 @@ Alle Screenshots und Clips vom PC an einem Ort: Windows-Bildschirmfotos, Xbox Ga
 Seite: /storage
 Stichworte: speicher speicherplatz festplatte ssd laufwerk voll größe spiel groß update updates patch ausstehend steam reparieren
 Laufwerke mit freiem Platz, Größe jedes Spiels und Update-Stand. Steam meldet Größe und Update-Stand selbst (Aktuell, Update ausstehend mit Download-Größe, Wird aktualisiert, Pausiert, Dateien fehlen/beschädigt). Epic, EA und andere geben keinen lesbaren Update-Stand preis – dort steht ehrlich „Update-Stand unbekannt“. „Spielgrößen berechnen“ zählt die übrigen Ordner. Aktualisieren und Deinstallieren im jeweiligen Launcher. Ohne PC siehst du den letzten Stand.
+
+## Läuft das auf meinem PC? (Kompatibilität)
+Seite: /games
+Stichworte: kompatibel kompatibilität läuft systemanforderungen mindestanforderungen empfohlen anforderungen hardware reicht mein pc kaufen
+Bei Steam-Spielen (Spiel bearbeiten → „Läuft das auf meinem PC?“) und auf der Wunschliste im Deal Radar: Der PC fragt einmal den Steam-Shop nach den Systemanforderungen (Mindestens/Empfohlen) und vergleicht sie mit deinem PC. Automatisch bewertet werden nur Zahlen: Arbeitsspeicher, freier Speicherplatz und Grafikspeicher. Prozessor und Grafikkarte stehen daneben zum selbst Vergleichen – Namen lassen sich nicht zuverlässig einstufen. Das Ergebnis bleibt auf dem Gerät (auch ohne PC sichtbar) und am PC 7 Tage gespeichert.
+
+## Push-Benachrichtigungen
+Seite: /notifications
+Stichworte: push benachrichtigung handy geschlossen app zu erinnerung hintergrund iphone home bildschirm
+Unter Benachrichtigungen → „Push auf diesem Gerät“: wichtige Meldungen vom PC kommen auch bei geschlossener App – z. B. Termin-Erinnerungen, fertige Abläufe, Aufnahmen, Updates. Kategorien wählbar, „Test senden“ prüft es. Geht nur über die Website mit https; auf iPhone/iPad nur, wenn die App auf dem Home-Bildschirm liegt (Teilen → „Zum Home-Bildschirm“, ab iOS 16.4). Der PC verschlüsselt jede Nachricht selbst; der Push-Dienst von Google, Apple, Mozilla oder Microsoft leitet nur weiter. Einschalten braucht einmal die Verbindung zum PC. Ein am PC entferntes Gerät bekommt keine Meldungen mehr.
 
 ## Mein Status (Aktivität)
 Seite: /
@@ -74,7 +84,7 @@ Wie Spiele, aber für Programme (Discord, Browser, OBS …), angezeigt als App-S
 ## Quick Actions
 Seite: /quick
 Stichworte: quick action schnellaktion mehrere schritte ein tipp makro ablauf
-Eigene Ein-Tipp-Aktionen aus mehreren Schritten, z. B. „Discord öffnen + Profil Streaming + Sound“. Bausteine: Programm/Spiel starten, Profil aktivieren, Sound abspielen, Medientaste, Overlay, Aufnahme/Replay, Benachrichtigung, Warten (Sekunden), „nur wenn läuft / nur wenn nicht läuft“. Optional „Vor dem Ausführen nachfragen“, Favorit, auf dem Dashboard zeigen. Einer Quick Action kann ein Hotkey zugewiesen werden.
+Eigene Ein-Tipp-Aktionen aus mehreren Schritten, z. B. „Discord öffnen + Profil Streaming + Sound“. Bausteine: Programm/Spiel starten, Profil aktivieren, Sound abspielen, Medientaste, Overlay, Aufnahme/Replay, Benachrichtigung, Warten (Sekunden), „nur wenn läuft / nur wenn nicht läuft“. Optional „Vor dem Ausführen nachfragen“, Favorit, auf dem Dashboard zeigen. Einer Quick Action kann ein Hotkey zugewiesen werden. Abläufe (Szenen): Oben auf der Seite „Abläufe“ siehst du jeden Schritt einer laufenden Quick Action (erledigt, läuft, Fehler, übersprungen) auf allen Geräten; „Abbrechen“ stoppt vor dem nächsten Schritt und unterbricht auch eine Wartezeit sofort. Schon erledigte Schritte bleiben erledigt; hat der Ablauf das Profil gewechselt, bringt „Profil zurücksetzen“ das vorherige zurück. Dieselbe Quick Action läuft nicht zweimal gleichzeitig.
 
 ## Widget-Baukasten
 Seite: /widgets

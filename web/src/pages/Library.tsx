@@ -6,6 +6,7 @@ import { useConn, useRpc, toast, useCan } from "../lib/hooks";
 import { gradientFor, initials } from "../lib/format";
 import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Thumb } from "../components/ui";
+import { CompatPanel } from "../components/compat-panel";
 import { AppTile, useLaunch } from "../components/launch-tiles";
 import { GamePassView } from "./GamePass";
 import { SteamView } from "./Steam";
@@ -225,6 +226,11 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
         </div>
       </Field>
       <Field label={t("Notizen")}><textarea className="input" value={f.notes ?? ""} maxLength={1000} onChange={(e) => set({ notes: e.target.value })} /></Field>
+      {item.source === "steam" && item.kind === "game" && <>
+        <div className="divider" />
+        <h3>{t("Läuft das auf meinem PC?")}</h3>
+        <CompatPanel appId={item.target} itemId={item.id} />
+      </>}
     </Modal>
   );
 }

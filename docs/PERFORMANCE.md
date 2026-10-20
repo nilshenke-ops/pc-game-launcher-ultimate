@@ -150,3 +150,11 @@ Kosten des schnelleren Wiederverbindens: nur solange die App sichtbar ist und de
 | Dateien / Aufnahmen / Speicher | – | 11 KB / 12 KB / 0,5 KB, je eigener Chunk, erst beim Öffnen |
 | PC im Leerlauf | – | nichts Neues im Hintergrund: Aufnahmen werden nur beim Öffnen der Seite eingelesen (höchstens alle 2 min), Vorschaubilder nur für sichtbare Kacheln (24 je Anfrage, auf dem PC zwischengespeichert) |
 | Übertragung | – | Stücke zu 384 KB (base64 ≈ 512 KB je Nachricht), immer nur ein Stück im Speicher des Handys beim Senden |
+
+## 2.16.0 (20.10.2026)
+
+| | 2.15.0 | 2.16.0 |
+|---|---|---|
+| Haupt-Chunk | 380 KB (121 KB gzip) | 381 KB (121 KB gzip) – Push, Kompatibilität und Abläufe liegen in den Seiten-Chunks |
+| PC im Leerlauf | – | nichts Neues: Abläufe nur, wenn gestartet; Push nur bei neuen Meldungen (höchstens 2 gleichzeitig); Steam-Anfrage nur auf Knopfdruck |
+| Abbruch eines Ablaufs | – | sofort, auch während einer Wartezeit (Test: < 5 s inkl. Abfrage, meist unter 0,2 s) |

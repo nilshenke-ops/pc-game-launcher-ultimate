@@ -86,6 +86,13 @@
     "quick.remove": "manage",
     "quick.reorder": "manage",
     "quick.run": "launch",
+    "runs.list": "view",
+    "runs.cancel": "launch",
+    "compat.check": "manage",
+    "push.info": "view",
+    "push.subscribe": "view",
+    "push.unsubscribe": "view",
+    "push.test": "view",
 
     "profiles.list": "view",
     "profiles.save": "manage",
