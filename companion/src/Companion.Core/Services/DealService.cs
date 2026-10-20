@@ -34,6 +34,17 @@ public sealed class WishItem
     public List<PricePoint> History { get; set; } = new();
     /// <summary>Price at which the user was last told "target reached" – told again only after a new drop.</summary>
     public int? NotifiedAtCents { get; set; }
+    /// <summary>Came from the Steam wish list (removed again when it leaves that list, unless target or notes were set).</summary>
+    public bool FromSteamWishlist { get; set; }
+    /// <summary>Microsoft Store (Xbox app): cheapest edition that matches the title.</summary>
+    public string? MsProductId { get; set; }
+    public string? MsTitle { get; set; }
+    public int? MsFinalCents { get; set; }
+    public int? MsInitialCents { get; set; }
+    public string? MsCurrency { get; set; }
+    public string? MsError { get; set; }
+    /// <summary>Store picture (https://store-images.s-microsoft.com only) – for games that are not on Steam.</summary>
+    public string? MsImage { get; set; }
 }
 
 public sealed class DealsFile
@@ -42,6 +53,12 @@ public sealed class DealsFile
     /// <summary>Steam store country (price and currency), e.g. "de".</summary>
     public string Country { get; set; } = "de";
     public DateTime? LastRunAt { get; set; }
+    /// <summary>Also compare with the Microsoft Store (prices of the Xbox app).</summary>
+    public bool CompareMicrosoft { get; set; } = true;
+    /// <summary>Take over the Steam wish list of the linked/signed-in Steam account (it must be public).</summary>
+    public bool SyncSteamWishlist { get; set; } = true;
+    public DateTime? WishlistSyncedAt { get; set; }
+    public string? WishlistError { get; set; }
     public List<WishItem> Items { get; set; } = new();
 }
 
@@ -53,6 +70,8 @@ public sealed class DealsFile
 public sealed class DealService : IDisposable
 {
     public const string Source = "Steam-Shop (store.steampowered.com)";
+    public const string MsSource = "Microsoft Store / Xbox (displaycatalog.mp.microsoft.com)";
+    public const int MaxItems = 300;
     static readonly Regex AppId = new("^[0-9]{1,10}$");
     static readonly Regex ClientId = new("^wish_[A-Za-z0-9_-]{4,40}$");
     static readonly Regex Country = new("^[a-z]{2}$");
@@ -66,6 +85,10 @@ public sealed class DealService : IDisposable
     readonly SemaphoreSlim _running = new(1, 1);
     public Action<string, string>? TargetReached { get; set; }
     public string StoreBase { get; init; } = "https://store.steampowered.com";
+    public string ApiBase { get; init; } = "https://api.steampowered.com";
+    public string MsBase { get; init; } = "https://displaycatalog.mp.microsoft.com";
+    /// <summary>SteamID64 of the linked or signed-in Steam account (for the wish list), null if none.</summary>
+    public Func<string?>? SteamId { get; set; }
 
     public DealService(AppPaths paths, IHub hub, HttpMessageHandler? http = null, Func<DateTime>? now = null, bool timer = true)
     {
@@ -87,11 +110,18 @@ public sealed class DealService : IDisposable
     public object List()
     {
         var f = _store.Snapshot();
-        return new { enabled = f.Enabled, country = f.Country, lastRunAt = f.LastRunAt, source = Source, intervalHours = Interval.TotalHours, items = f.Items };
+        return new
+        {
+            enabled = f.Enabled, country = f.Country, lastRunAt = f.LastRunAt, source = Source, msSource = MsSource, intervalHours = Interval.TotalHours, items = f.Items,
+            compareMicrosoft = f.CompareMicrosoft, syncSteamWishlist = f.SyncSteamWishlist, wishlistSyncedAt = f.WishlistSyncedAt, wishlistError = f.WishlistError,
+            steamAccount = SteamId?.Invoke() != null,
+        };
     }
 
-    public object Configure(bool? enabled, string? country)
+    public object Configure(bool? enabled, string? country, bool? compareMicrosoft = null, bool? syncSteamWishlist = null)
     {
+        if (compareMicrosoft != null || syncSteamWishlist != null)
+            _store.Update(f => { if (compareMicrosoft != null) f.CompareMicrosoft = compareMicrosoft.Value; if (syncSteamWishlist != null) f.SyncSteamWishlist = syncSteamWishlist.Value; });
         if (country != null && !Country.IsMatch(country)) throw new RpcException("invalid-params", "Land als zwei Buchstaben, z. B. de.");
         _store.Update(f =>
         {
@@ -99,7 +129,7 @@ public sealed class DealService : IDisposable
             if (country != null && country != f.Country)
             {
                 f.Country = country;
-                foreach (var i in f.Items) { i.FinalCents = i.InitialCents = i.DiscountPercent = null; i.Currency = null; i.History.Clear(); i.NotifiedAtCents = null; } // other currency
+                foreach (var i in f.Items) { i.FinalCents = i.InitialCents = i.DiscountPercent = null; i.Currency = null; i.History.Clear(); i.NotifiedAtCents = null; i.MsFinalCents = i.MsInitialCents = null; i.MsCurrency = null; } // other currency
             }
         });
         _hub.Changed("deals");
@@ -120,14 +150,17 @@ public sealed class DealService : IDisposable
             var i = f.Items.FindIndex(x => x.Id == w.Id);
             if (i < 0)
             {
-                if (f.Items.Count >= 100) throw new RpcException("limit", "Höchstens 100 Einträge.");
+                if (f.Items.Count >= MaxItems) throw new RpcException("limit", $"Höchstens {MaxItems} Einträge.");
                 if (w.SteamAppId != null && f.Items.Any(x => x.SteamAppId == w.SteamAppId)) throw new RpcException("conflict", "Das Spiel steht schon auf der Wunschliste.");
                 w.AddedAt = _now(); w.History = new(); w.FinalCents = w.InitialCents = w.DiscountPercent = null; w.CheckedAt = null; w.Error = null; w.NotifiedAtCents = null;
+                // Store data only ever comes from the PC's own checks, never from the device.
+                w.MsProductId = w.MsTitle = w.MsCurrency = w.MsError = w.MsImage = null; w.MsFinalCents = w.MsInitialCents = null; w.FromSteamWishlist = false;
                 f.Items.Add(w);
                 return w;
             }
             // Editing keeps the measured prices (they come from the store, not from the device).
             var old = f.Items[i];
+            if (old.Title != w.Title) { old.MsProductId = null; old.MsTitle = null; old.MsImage = null; old.MsFinalCents = old.MsInitialCents = null; }
             old.Title = w.Title; old.Notes = w.Notes;
             if (old.TargetCents != w.TargetCents) old.NotifiedAtCents = null;
             old.TargetCents = w.TargetCents;
@@ -161,6 +194,187 @@ public sealed class DealService : IDisposable
         return new { items, source = Source };
     }
 
+    static string Norm(string s) => Regex.Replace(Regex.Replace(s.ToLowerInvariant(), @"[®™©:'’\-–—.,!]", " "), @"\s+", " ").Trim();
+
+    /// <summary>The Steam game for a name: an exact name match first, otherwise the first game the store finds.</summary>
+    async Task<(string appId, string name)?> FindSteamAsync(string title, string country)
+    {
+        using var doc = JsonDocument.Parse(await _http.GetStringAsync($"{StoreBase}/api/storesearch/?term={Uri.EscapeDataString(title)}&cc={country}&l=german"));
+        if (!doc.RootElement.TryGetProperty("items", out var arr)) return null;
+        var apps = arr.EnumerateArray().Where(it => !it.TryGetProperty("type", out var t) || t.GetString() == "app")
+            .Select(it => (appId: it.GetProperty("id").GetRawText().Trim('"'), name: it.GetProperty("name").GetString() ?? "")).Take(10).ToList();
+        if (apps.Count == 0) return null;
+        var q = Norm(title);
+        return apps.FirstOrDefault(a => Norm(a.name) == q) is { appId: not null } exact ? exact : apps[0];
+    }
+
+    /// <summary>"Just type the name": the PC finds the game itself. With the radar off (or no hit) the name is kept and
+    /// matched at the next check.</summary>
+    public async Task<WishItem> AddByNameAsync(string title, int? targetCents)
+    {
+        title = DeviceStore.Sanitize(title, 80, "");
+        if (title.Length < 2) throw new RpcException("invalid-params", "Bitte den Namen des Spiels eingeben.");
+        var f = _store.Snapshot();
+        (string appId, string name)? hit = null;
+        if (f.Enabled) { try { hit = await FindSteamAsync(title, f.Country); } catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { /* kept by name, matched later */ } }
+        if (hit is { } h && f.Items.Any(x => x.SteamAppId == h.appId)) throw new RpcException("conflict", $"„{h.name}“ steht schon auf der Wunschliste.");
+        var item = Save(new WishItem { Title = hit?.name ?? title, SteamAppId = hit?.appId, TargetCents = targetCents });
+        if (f.Enabled) _ = Task.Run(async () => { try { await CheckOneAsync(item.Id); } catch (Exception ex) { Log.Warn("deals", ex.Message); } });
+        return item;
+    }
+
+    async Task CheckOneAsync(string id)
+    {
+        var f = _store.Snapshot();
+        var item = f.Items.FirstOrDefault(i => i.Id == id);
+        if (item == null) return;
+        if (item.SteamAppId != null) { var (price, error) = await FetchAsync(item.SteamAppId, f.Country); Record(item.Id, price, error); }
+        if (f.CompareMicrosoft) await CheckMicrosoftAsync(item, f.Country);
+        _hub.Changed("deals");
+    }
+
+    /// <summary>Takes over the Steam wish list (public profiles only). Own entries are never removed; entries that came from
+    /// Steam go again when they leave the Steam list, unless a target price or note was set here.</summary>
+    public async Task<object> SyncWishlistAsync()
+    {
+        var f = _store.Snapshot();
+        var steamId = SteamId?.Invoke();
+        if (steamId == null) throw new RpcException("not-configured", "Kein Steam-Konto bekannt – unter Spiele → Steam die Bibliothek verbinden oder am PC bei Steam angemeldet sein.");
+        List<string> appIds;
+        try
+        {
+            using var doc = JsonDocument.Parse(await _http.GetStringAsync($"{ApiBase}/IWishlistService/GetWishlist/v1/?steamid={steamId}"));
+            appIds = doc.RootElement.GetProperty("response").TryGetProperty("items", out var items)
+                ? items.EnumerateArray().Select(i => i.GetProperty("appid").GetRawText()).Distinct().Take(MaxItems).ToList() : new();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException)
+        {
+            _store.Update(x => x.WishlistError = "Steam nicht erreichbar: " + ex.Message);
+            _hub.Changed("deals");
+            throw new RpcException("unavailable", "Steam nicht erreichbar.");
+        }
+        if (appIds.Count == 0)
+        {
+            _store.Update(x => { x.WishlistError = "Die Steam-Wunschliste ist leer oder nicht öffentlich (Steam → Profil → Privatsphäre → „Spieldetails“ auf Öffentlich)."; x.WishlistSyncedAt = _now(); });
+            _hub.Changed("deals");
+            return new { added = 0, removed = 0, total = 0 };
+        }
+        var known = f.Items.Where(i => i.SteamAppId != null).Select(i => i.SteamAppId!).ToHashSet();
+        var names = await SteamNamesAsync(appIds.Where(a => !known.Contains(a)).ToList(), f.Country);
+        int added = 0, removed = 0;
+        _store.Update(x =>
+        {
+            foreach (var a in appIds.Where(a => !known.Contains(a)))
+            {
+                if (x.Items.Count >= MaxItems) break;
+                x.Items.Add(new WishItem { Id = Ids.New("wish"), Title = DeviceStore.Sanitize(names.GetValueOrDefault(a, "Steam-App " + a), 80, "Spiel"), SteamAppId = a, AddedAt = _now(), FromSteamWishlist = true });
+                added++;
+            }
+            removed = x.Items.RemoveAll(i => i.FromSteamWishlist && i.SteamAppId != null && !appIds.Contains(i.SteamAppId) && i.TargetCents == null && string.IsNullOrEmpty(i.Notes));
+            x.WishlistError = null; x.WishlistSyncedAt = _now();
+        });
+        _hub.Changed("deals");
+        return new { added, removed, total = appIds.Count };
+    }
+
+    async Task<Dictionary<string, string>> SteamNamesAsync(List<string> appIds, string country)
+    {
+        var names = new Dictionary<string, string>();
+        foreach (var chunk in appIds.Chunk(50))
+        {
+            var input = JsonSerializer.Serialize(new { ids = chunk.Select(a => new { appid = int.Parse(a) }), context = new { language = "german", country_code = country.ToUpperInvariant() } });
+            try
+            {
+                using var doc = JsonDocument.Parse(await _http.GetStringAsync($"{ApiBase}/IStoreBrowseService/GetItems/v1/?input_json={Uri.EscapeDataString(input)}"));
+                if (doc.RootElement.GetProperty("response").TryGetProperty("store_items", out var arr))
+                    foreach (var it in arr.EnumerateArray())
+                        if (it.TryGetProperty("name", out var n) && it.TryGetProperty("appid", out var id)) names[id.GetRawText()] = n.GetString() ?? "";
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException) { Log.Warn("deals", "Steam-Namen: " + ex.Message); }
+        }
+        return names;
+    }
+
+    /// <summary>Microsoft Store (what the Xbox app sells): the cheapest buyable edition whose name contains the title.</summary>
+    static readonly string[] AddOnWords = { "add-on", "addon", "upgrade", "season pass", "dlc", "erweiterung", "expansion", "car pack", "vip" };
+
+    /// <summary>The Microsoft Store lists add-on bundles as "Game" too; they are sold only to owners of the game
+    /// ("SellableBy" relation) or carry add-on words the user did not type.</summary>
+    static bool IsAddOn(JsonElement p, string title, string query)
+    {
+        if (p.TryGetProperty("MarketProperties", out var mp) && mp.ValueKind == JsonValueKind.Array)
+            foreach (var m in mp.EnumerateArray())
+                if (m.TryGetProperty("RelatedProducts", out var rel) && rel.ValueKind == JsonValueKind.Array
+                    && rel.EnumerateArray().Any(r => r.TryGetProperty("RelationshipType", out var t) && t.GetString() == "SellableBy")) return true;
+        var lower = title.ToLowerInvariant();
+        return AddOnWords.Any(w => lower.Contains(w) && !query.Contains(Norm(w)));
+    }
+
+    /// <summary>Wide store picture (hero art, else box art), only from Microsoft's own image host.</summary>
+    static string? StoreImage(JsonElement p)
+    {
+        if (!p.GetProperty("LocalizedProperties")[0].TryGetProperty("Images", out var imgs) || imgs.ValueKind != JsonValueKind.Array) return null;
+        foreach (var purpose in new[] { "SuperHeroArt", "TitledHeroArt", "BoxArt", "Poster" })
+            foreach (var im in imgs.EnumerateArray())
+                if (im.TryGetProperty("ImagePurpose", out var pp) && pp.GetString() == purpose && im.TryGetProperty("Uri", out var u))
+                {
+                    var url = u.GetString() ?? "";
+                    if (url.StartsWith("//")) url = "https:" + url;
+                    if (Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == "https" && uri.Host == "store-images.s-microsoft.com") return uri.ToString();
+                }
+        return null;
+    }
+
+    async Task CheckMicrosoftAsync(WishItem item, string country)
+    {
+        var market = country.ToUpperInvariant();
+        var lang = country is "de" or "at" or "ch" ? "de-de" : "en-us";
+        string? error = null; (string id, string title, int final, int initial, string cur, string? image)? best = null;
+        try
+        {
+            using var sug = JsonDocument.Parse(await _http.GetStringAsync($"{MsBase}/v7.0/productFamilies/autosuggest?market={market}&languages={lang}&query={Uri.EscapeDataString(item.Title)}&productFamilyNames=Games"));
+            var ids = sug.RootElement.GetProperty("Results").EnumerateArray().SelectMany(r => r.GetProperty("Products").EnumerateArray())
+                .Where(p => p.TryGetProperty("Type", out var t) && t.GetString() == "Game").Select(p => p.GetProperty("ProductId").GetString()!).Distinct().Take(8).ToList();
+            if (ids.Count == 0) error = "Im Microsoft Store nicht gefunden.";
+            else
+            {
+                using var det = JsonDocument.Parse(await _http.GetStringAsync($"{MsBase}/v7.0/products?bigIds={string.Join(",", ids)}&market={market}&languages={lang}"));
+                var q = Norm(item.Title);
+                foreach (var p in det.RootElement.GetProperty("Products").EnumerateArray())
+                {
+                    if (p.TryGetProperty("ProductKind", out var kind) && kind.GetString() != "Game") continue;
+                    var title = p.GetProperty("LocalizedProperties")[0].GetProperty("ProductTitle").GetString() ?? "";
+                    if (!Norm(title).Contains(q)) continue; // other game with a similar name
+                    if (IsAddOn(p, title, q)) continue;     // add-on bundles and upgrades need the game – not a price for the game
+                    foreach (var sku in p.GetProperty("DisplaySkuAvailabilities").EnumerateArray().Take(1))
+                        foreach (var a in sku.GetProperty("Availabilities").EnumerateArray())
+                        {
+                            if (!a.TryGetProperty("Actions", out var actions) || !actions.EnumerateArray().Any(x => x.GetString() == "Purchase")) continue;
+                            // Prices that need a subscription first (Game Pass member discount, shown as "Upsell") are not the shop price.
+                            if (a.TryGetProperty("RemediationRequired", out var rem) && rem.ValueKind == JsonValueKind.True) continue;
+                            if (!a.TryGetProperty("OrderManagementData", out var om) || !om.TryGetProperty("Price", out var pr)) continue;
+                            var list = pr.GetProperty("ListPrice").GetDouble(); var msrp = pr.GetProperty("MSRP").GetDouble();
+                            if (list <= 0) continue; // free/trial/bundle entries
+                            var final = (int)Math.Round(list * 100); var initial = (int)Math.Round(Math.Max(msrp, list) * 100);
+                            if (best == null || final < best.Value.final) best = (p.GetProperty("ProductId").GetString()!, title, final, initial, pr.GetProperty("CurrencyCode").GetString() ?? "", StoreImage(p));
+                            break;
+                        }
+                }
+                if (best == null) error = "Im Microsoft Store kein kaufbares Angebot mit diesem Namen.";
+            }
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException or InvalidOperationException or IndexOutOfRangeException)
+        { error = "Microsoft Store nicht erreichbar oder Antwort unbrauchbar."; }
+        _store.Update(f =>
+        {
+            var i = f.Items.FirstOrDefault(x => x.Id == item.Id);
+            if (i == null) return;
+            i.MsError = error;
+            if (best is { } b) { i.MsProductId = b.id; i.MsTitle = b.title; i.MsFinalCents = b.final; i.MsInitialCents = b.initial; i.MsCurrency = b.cur; i.MsImage = b.image; }
+            else { i.MsFinalCents = i.MsInitialCents = null; }
+        });
+    }
+
     /// <summary>Checks all prices now (one request per game, a short pause between them).</summary>
     public async Task<object> CheckAllAsync(bool force = false)
     {
@@ -170,10 +384,28 @@ public sealed class DealService : IDisposable
         if (!await _running.WaitAsync(0)) return List();
         try
         {
-            foreach (var item in f0.Items.Where(i => i.SteamAppId != null).Take(100))
+            if (f0.SyncSteamWishlist && SteamId?.Invoke() != null)
+                try { await SyncWishlistAsync(); } catch (RpcException) { /* reason kept in WishlistError */ }
+            // Entries added by name only (e.g. on the phone without the PC) get their Steam game now.
+            foreach (var item in _store.Snapshot().Items.Where(i => i.SteamAppId == null).Take(20))
             {
-                var (price, error) = await FetchAsync(item.SteamAppId!, f0.Country);
-                Record(item.Id, price, error);
+                try
+                {
+                    if (await FindSteamAsync(item.Title, f0.Country) is { } hit && !_store.Snapshot().Items.Any(x => x.SteamAppId == hit.appId))
+                        _store.Update(f => { var i = f.Items.FirstOrDefault(x => x.Id == item.Id); if (i != null) { i.SteamAppId = hit.appId; i.Title = DeviceStore.Sanitize(hit.name, 80, i.Title); } });
+                }
+                catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { break; }
+                await Task.Delay(force ? 100 : 800);
+            }
+            var compareMs = _store.Snapshot().CompareMicrosoft;
+            foreach (var item in _store.Snapshot().Items.Take(MaxItems))
+            {
+                if (item.SteamAppId != null)
+                {
+                    var (price, error) = await FetchAsync(item.SteamAppId!, f0.Country);
+                    Record(item.Id, price, error);
+                }
+                if (compareMs) await CheckMicrosoftAsync(item, f0.Country);
                 await Task.Delay(force ? 200 : 1500);
             }
             _store.Update(f => f.LastRunAt = _now());
@@ -239,7 +471,7 @@ public sealed class DealService : IDisposable
     {
         var cur = _store.Snapshot();
         var items = f.Items.Where(i => (ClientId.IsMatch(i.Id) || Regex.IsMatch(i.Id, "^wish_[0-9a-f]{12}$")) && (i.SteamAppId == null || AppId.IsMatch(i.SteamAppId)) && i.TargetCents is null or (>= 0 and <= 100_000_00))
-            .GroupBy(i => i.SteamAppId ?? i.Id).Select(g => g.First()).Take(100).ToList();
+            .GroupBy(i => i.SteamAppId ?? i.Id).Select(g => g.First()).Take(MaxItems).ToList();
         foreach (var i in items)
         {
             i.Title = DeviceStore.Sanitize(i.Title, 80, "Spiel");
@@ -247,7 +479,7 @@ public sealed class DealService : IDisposable
             i.Error = null;
             if (i.History.Count > 120) i.History.RemoveRange(0, i.History.Count - 120);
         }
-        Import(new DealsFile { Enabled = cur.Enabled, Country = Country.IsMatch(f.Country) ? f.Country : cur.Country, LastRunAt = null, Items = items });
+        Import(new DealsFile { Enabled = cur.Enabled, Country = Country.IsMatch(f.Country) ? f.Country : cur.Country, LastRunAt = null, Items = items, CompareMicrosoft = cur.CompareMicrosoft, SyncSteamWishlist = cur.SyncSteamWishlist });
     }
     public void Dispose() { _timer?.Dispose(); _http.Dispose(); }
 }

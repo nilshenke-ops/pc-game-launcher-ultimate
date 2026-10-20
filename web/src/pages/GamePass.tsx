@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Gamepad2, Play, RefreshCw, Search } from "lucide-react";
+import { Download, Gamepad2, Play, RefreshCw, Search, Loader2 } from "lucide-react";
 import { client } from "../lib/rpc";
+import { useTileAction } from "../components/launch-tiles";
 import { t } from "../lib/i18n";
 import { useRpc, toast, useCan } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
@@ -54,16 +55,11 @@ export function GamePassView({ search }: { search: string }) {
     try { await client.call("gamepass.sync"); } catch (e) { toast((e as Error).message, "error"); }
     setBusy(null);
   };
-  const play = async (g: GamePassGame) => {
-    if (!g.itemId) return;
-    bumpUsage("item:" + g.itemId);
-    try { await client.call("library.launch", { id: g.itemId }); toast(t("{name} wird gestartet", { name: g.title }), "success"); }
-    catch (e) { toast((e as Error).message, "error"); }
-  };
-  const install = async (g: GamePassGame) => {
-    try { await client.call("gamepass.install", { id: g.id }); toast(t("Xbox-App am PC geöffnet: „{n}“ installieren", { n: g.title }), "success"); }
-    catch (e) { toast((e as Error).message, "error"); }
-  };
+  const tap = useTileAction();
+  const play = (g: GamePassGame) => tap.run(g.id, async () => { if (g.itemId) { bumpUsage("item:" + g.itemId); await client.call("library.launch", { id: g.itemId }); } }, t("{name} wird gestartet", { name: g.title }));
+  const install = (g: GamePassGame) => tap.run(g.id, () => client.call("gamepass.install", { id: g.id }), t("Xbox-App am PC geöffnet: „{n}“ installieren", { n: g.title }));
+  /** Tap on the tile: installed → start, otherwise open it for installing in the Xbox app. */
+  const primary = (g: GamePassGame) => void (g.installed && g.itemId ? play(g) : install(g));
 
   if (offline && snapshot === "none") return <OfflineState />;
   if (offline && !snapshot) return <div className="skeleton" style={{ height: 220 }} />;
@@ -102,7 +98,9 @@ export function GamePassView({ search }: { search: string }) {
             <>
               <div className="lib-grid">
                 {games.slice(0, limit).map((g) => (
-                  <article key={g.id} className={`game-card ${g.installed ? "" : "not-installed"}`}>
+                  <article key={g.id} className={`game-card tappable ${g.installed ? "" : "not-installed"} ${tap.busy.has(g.id) ? "busy" : ""}`}
+                    {...tap.tile(g.id, g.installed && g.itemId ? t("{name} starten", { name: g.title }) : t("{name} installieren", { name: g.title }), () => primary(g))}>
+                    {tap.busy.has(g.id) && <span className="tile-busy"><Loader2 size={28} className="spin" /></span>}
                     <div className="cover" style={{ background: gradientFor(g.title) }}>{g.cover && <img src={`${g.cover}?w=300`} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}</div>
                     {!g.cover && <div className="initials">{initials(g.title)}</div>}
                     <div className="shade" />
@@ -113,8 +111,8 @@ export function GamePassView({ search }: { search: string }) {
                     <div className="bottom">
                       <b>{g.title}</b>
                       {g.installed && g.itemId
-                        ? <Button variant="primary" size="sm" className="play" icon={<Play size={14} />} onClick={() => play(g)}>{t("Spielen")}</Button>
-                        : <Button size="sm" className="play" icon={<Download size={14} />} onClick={() => install(g)} style={{ background: "rgba(0,0,0,.55)", color: "#fff" }}>{t("Installieren")}</Button>}
+                        ? <Button variant="primary" size="sm" className="play" icon={<Play size={14} />} onClick={(e) => { e.stopPropagation(); void play(g); }}>{t("Spielen")}</Button>
+                        : <Button size="sm" className="play" icon={<Download size={14} />} onClick={(e) => { e.stopPropagation(); void install(g); }} style={{ background: "rgba(0,0,0,.55)", color: "#fff" }}>{t("Installieren")}</Button>}
                     </div>
                   </article>
                 ))}

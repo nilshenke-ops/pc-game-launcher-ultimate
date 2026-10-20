@@ -229,11 +229,11 @@ public class DealTests
         using var dir = new TempDir();
         var store = new FakeStore { Unknown = true };
         using var d = new DealService(new AppPaths(dir.Path), new NullHub(), store, timer: false) { StoreBase = "http://steam.test" };
-        d.Configure(true, null);
+        d.Configure(true, null, compareMicrosoft: false, syncSteamWishlist: false);
         d.Save(new WishItem { Title = "Hades II", SteamAppId = "1145350" });
-        d.Save(new WishItem { Title = "Ohne Steam" }); // plain wish list entry, never requested
+        d.Save(new WishItem { Title = "Ohne Steam" }); // since 2.19 matched by name; only a found game gets a price request
         await d.CheckAllAsync(force: true);
-        Assert.Single(store.Requests);
+        Assert.Single(store.Requests, u => u.Contains("appdetails"));
         var i = d.Export().Items.First();
         Assert.Null(i.FinalCents);
         Assert.Contains("kennt diese App-ID nicht", i.Error);

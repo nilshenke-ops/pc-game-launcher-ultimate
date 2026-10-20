@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
-import { Download, Link2, Play, RefreshCw, Search } from "lucide-react";
+import { Download, Link2, Play, RefreshCw, Search, Loader2 } from "lucide-react";
 import { client } from "../lib/rpc";
+import { useTileAction } from "../components/launch-tiles";
 import { t } from "../lib/i18n";
 import { useRpc, toast, useCan } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
@@ -34,6 +35,9 @@ export function LauncherView({ source, search }: { source: Source; search: strin
     setBusy(null);
   };
   const enableKey = source === "epic" ? "epicEnabled" : "eaEnabled";
+  const tap = useTileAction();
+  const play = (g: LauncherGame) => tap.run(g.id, async () => { bumpUsage("item:" + g.itemId); await client.call("library.launch", { id: g.itemId }); }, t("{name} wird gestartet", { name: g.name }));
+  const install = (g: LauncherGame) => tap.run(g.id, () => client.call("launchers.install", { source, id: g.id }), t("{l} am PC geöffnet: „{n}“ installieren", { l: name, n: g.name }));
 
   return (
     <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
@@ -66,7 +70,9 @@ export function LauncherView({ source, search }: { source: Source; search: strin
             <>
               <div className="lib-grid">
                 {games.slice(0, limit).map((g) => (
-                  <article key={g.id} className={`game-card ${g.installed ? "" : "not-installed"}`}>
+                  <article key={g.id} className={`game-card ${g.installed && g.itemId || g.installable ? "tappable" : ""} ${g.installed ? "" : "not-installed"} ${tap.busy.has(g.id) ? "busy" : ""}`}
+                    {...(g.installed && g.itemId || g.installable ? tap.tile(g.id, g.installed ? t("{name} starten", { name: g.name }) : t("{name} installieren", { name: g.name }), () => void (g.installed && g.itemId ? play(g) : install(g))) : {})}>
+                    {tap.busy.has(g.id) && <span className="tile-busy"><Loader2 size={28} className="spin" /></span>}
                     <div className="cover" style={{ background: gradientFor(g.name) }}>{g.cover && <img src={g.cover} alt="" loading="lazy" onError={(e) => (e.currentTarget.style.display = "none")} />}</div>
                     {!g.cover && <div className="initials">{initials(g.name)}</div>}
                     <div className="shade" />
@@ -74,8 +80,8 @@ export function LauncherView({ source, search }: { source: Source; search: strin
                     <div className="bottom">
                       <b>{g.name}</b>
                       {g.installed && g.itemId
-                        ? <Button variant="primary" size="sm" className="play" icon={<Play size={14} />} onClick={() => act("play", async () => { bumpUsage("item:" + g.itemId); await client.call("library.launch", { id: g.itemId }); }, t("{name} wird gestartet", { name: g.name }))}>{t("Spielen")}</Button>
-                        : g.installable && <Button size="sm" className="play" icon={<Download size={14} />} onClick={() => act("install", () => client.call("launchers.install", { source, id: g.id }), t("{l} am PC geöffnet: „{n}“ installieren", { l: name, n: g.name }))} style={{ background: "rgba(0,0,0,.55)", color: "#fff" }}>{t("Installieren")}</Button>}
+                        ? <Button variant="primary" size="sm" className="play" icon={<Play size={14} />} onClick={(e) => { e.stopPropagation(); void play(g); }}>{t("Spielen")}</Button>
+                        : g.installable && <Button size="sm" className="play" icon={<Download size={14} />} onClick={(e) => { e.stopPropagation(); void install(g); }} style={{ background: "rgba(0,0,0,.55)", color: "#fff" }}>{t("Installieren")}</Button>}
                     </div>
                   </article>
                 ))}

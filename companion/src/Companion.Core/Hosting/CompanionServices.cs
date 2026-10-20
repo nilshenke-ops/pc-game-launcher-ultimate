@@ -138,7 +138,7 @@ public sealed class CompanionServices : IAsyncDisposable
             Automations.List().Count(r => !(r.Trigger == TriggerType.AudioDeviceMissing && r.Name == "Warnung bei fehlendem Audiogerät")),
             QuickActions.List().Count, Library.List().Count(i => i.Backlog == "completed"), Soundboard.Get().Sounds.Count,
             Widgets.List().Count, Profiles.Get().Profiles.Count(p => p.Theme != null));
-        Deals = new DealService(paths, Rpc);
+        Deals = new DealService(paths, Rpc) { SteamId = () => Steam.KnownSteamId() };
         // Games from the library are never closed by the game mode (process names and the started EXE).
         GameModePrograms = new GameModePrograms(paths, platform.Processes, platform.ProcessControl, Rpc, () => Library.List().Where(i => i.Kind == ItemKind.Game)
             .SelectMany(i => i.ProcessNames.Concat(i.Source == LaunchSource.Exe ? new[] { Path.GetFileNameWithoutExtension(i.Target) } : Array.Empty<string>())));

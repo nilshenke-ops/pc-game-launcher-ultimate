@@ -108,10 +108,12 @@ export function useRpc<T>(method: string, params?: unknown, topics: string[] = [
   }, [topicKey, load]);
 
   // Never an endless skeleton: without a logged-in PC, pages show "Offline" (see Loadable) instead.
-  if (!ready && enabled && !state.data && (conn.phase !== "online" || (conn.auth !== "ok" && conn.auth !== "checking"))) {
+  if (!ready && enabled && (conn.phase !== "online" || (conn.auth !== "ok" && conn.auth !== "checking"))) {
     // Lists last loaded from the PC stay visible (marked "stale" with their date); everything else shows "Offline".
+    // The cached copy wins over the one in memory: it also holds changes made since the connection dropped.
     const cached = readCache<T>(method, paramKey) ?? (method in OFFLINE_DEFAULTS && paramKey === "{}" ? { at: 0, data: OFFLINE_DEFAULTS[method] as T } : null);
     if (cached) return { data: cached.data, error: null, loading: false, reload: () => client.reconnectNow(), updatedAt: cached.at || null, stale: true };
+    if (state.data) return { data: state.data, error: state.error, loading: false, reload: load, updatedAt: state.updatedAt };
     return { data: undefined, error: new RpcError("offline", t("Der PC ist gerade nicht erreichbar. Die Inhalte erscheinen automatisch, sobald der PC an ist und der Companion läuft.")), loading: false, reload: () => client.reconnectNow(), updatedAt: null };
   }
   return { data: state.data, error: state.error, loading: state.loading && !state.data, reload: load, updatedAt: state.updatedAt };

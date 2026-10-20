@@ -170,3 +170,11 @@ Keine Laufzeitänderung: die Installation läuft nur auf Knopfdruck (Datei kopie
 | PC im Leerlauf | – | nichts Neues im Hintergrund: Controller nur während des Live-Tests (10 Abfragen/s, stoppt bei verdeckter Seite), OpenRGB-Verbindung nur pro Befehl, Fenster werden nur beim Speichern/Anwenden gelesen |
 | Mod-Sicherung | – | ZIP mit schneller Kompression, nur vor Änderungen; Größe auf 2 GB begrenzt |
 | Web | – | Mods / Fenster-Layouts / Controller & RGB je eigener Chunk, erst beim Öffnen geladen |
+
+## 2.19.0 (20.10.2026)
+
+| | 2.18.0 | 2.19.0 |
+|---|---|---|
+| Deal-Radar-Prüfung (höchstens alle 6 h, nie im Spiel) | 1 Steam-Anfrage pro Spiel | + 1 Wunschlisten-Anfrage (+ Namen in Paketen à 50) + 2 Microsoft-Anfragen pro Spiel, nur wenn eingeschaltet; weiter mit kurzer Pause zwischen den Spielen |
+| Karte antippen | Knopf auf der Karte | ganze Karte; Ladeanzeige sofort (lokal), kein zusätzlicher Aufruf |
+| Web | – | Haupt-Chunk unverändert (~384 KB, 122 KB gzip); Deal Radar im eigenen Chunk |

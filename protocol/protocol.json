@@ -52,6 +52,8 @@
     "deals.configure": "manage",
     "deals.search": "manage",
     "deals.save": "manage",
+    "deals.addByName": "manage",
+    "deals.syncWishlist": "manage",
     "deals.remove": "manage",
     "deals.refresh": "manage",
     "deck.list": "view",

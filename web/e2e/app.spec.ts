@@ -629,9 +629,12 @@ test("GameQuest: Ziel anlegen, Match eintragen, Werte sind als automatisch/selbs
 test("Deal Radar: ohne Einschalten keine Anfrage, Eintrag von Hand, Zielpreis wird geprüft", async () => {
   await pc.goto(`${COMPANION}/#/deals`);
   await expect(pc.getByRole("heading", { name: "Deal Radar" })).toBeVisible();
+  await expect(pc.getByText("Die Preisabfrage ist aus – deshalb gibt es noch keine Preise.")).toBeVisible();
+  await pc.locator(".deal-settings summary", { hasText: "Einstellungen" }).click();
   await expect(pc.getByRole("switch", { name: /Preise im Steam-Shop abfragen/ })).not.toBeChecked();
-  await expect(pc.getByRole("button", { name: "Suchen" })).toBeDisabled();
   await expect(pc.getByRole("button", { name: "Jetzt prüfen" })).toBeDisabled();
+  await pc.getByText("Nicht gefunden? Genauer suchen").click();
+  await expect(pc.getByRole("button", { name: "Suchen", exact: true })).toBeDisabled();
   await pc.getByRole("button", { name: "Von Hand eintragen" }).click();
   const dlg = pc.getByRole("dialog", { name: "Spiel von Hand eintragen" });
   await dlg.getByRole("textbox", { name: "Spiel", exact: true }).fill("Hades II");
@@ -640,15 +643,18 @@ test("Deal Radar: ohne Einschalten keine Anfrage, Eintrag von Hand, Zielpreis wi
   await dlg.getByRole("textbox", { name: /Steam-App-ID/ }).fill("1145350");
   await dlg.getByRole("textbox", { name: "Zielpreis" }).fill("19,99");
   await dlg.getByRole("button", { name: "Speichern" }).click();
-  const item = pc.locator(".deal", { hasText: "Hades II" });
-  await expect(item).toBeVisible();
-  await expect(item.getByText(/Ziel 19,99/)).toBeVisible();
-  await expect(item.getByText("Preisabfrage ist aus.")).toBeVisible();
-  await expect(item.locator(".deal-now")).toHaveText("–"); // no price without a check – nothing invented
-  await item.getByRole("button", { name: "Hades II bearbeiten" }).click();
+  const tile = pc.getByRole("button", { name: "Hades II – Details und Preisverlauf" });
+  await expect(tile).toBeVisible();
+  await expect(tile.locator(".deal-row b")).toHaveText(["–", "–"]); // no price without a check – nothing invented
+  await tile.click();
+  const detail = pc.getByRole("dialog", { name: "Hades II" });
+  await expect(detail.getByText(/Zielpreis 19,99/)).toBeVisible();
+  await expect(detail.getByText("Preisabfrage ist aus.")).toBeVisible();
+  await detail.getByRole("button", { name: "Bearbeiten" }).click();
   await pc.getByRole("dialog", { name: "Eintrag bearbeiten" }).getByRole("button", { name: "Entfernen" }).click();
   await pc.getByRole("dialog", { name: "Von der Wunschliste entfernen?" }).getByRole("button", { name: "Entfernen" }).click();
-  await expect(item).toHaveCount(0);
+  await expect(tile).toHaveCount(0);
+  await expect(pc.getByRole("dialog")).toHaveCount(0);
 });
 
 test("KI-Assistent: lokal, ohne Internet – beantwortet App-Fragen, schlägt Aktionen als Knopf vor, Suche leitet weiter", async () => {

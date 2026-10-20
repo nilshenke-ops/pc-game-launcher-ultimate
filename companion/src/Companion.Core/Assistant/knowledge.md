@@ -89,12 +89,12 @@ Persönliche Spielplanung für Spiele aus der Bibliothek: Status (Noch spielen, 
 ## Steam verknüpfen
 Seite: /games
 Stichworte: steam api schlüssel key steam id bibliothek importieren spielzeit
-Unter Spiele → Chip „Steam“: eigenen Steam-Web-API-Schlüssel und Steam-ID eintragen. Dann zeigt die App alle gekauften Spiele mit Spielzeit. Der Schlüssel wird nur verschlüsselt (Windows-DPAPI) auf dem PC gespeichert und nie angezeigt oder ins Backup geschrieben.
+Unter Spiele → Chip „Steam“: eigenen Steam-Web-API-Schlüssel und Steam-ID eintragen. Dann zeigt die App alle gekauften Spiele mit Spielzeit. Eine Karte antippen: installiert = das Spiel startet sofort (noch nicht in der Bibliothek → wird dabei hinzugefügt), nicht installiert = Steam öffnet die Installation. Der Schlüssel wird nur verschlüsselt (Windows-DPAPI) auf dem PC gespeichert und nie angezeigt oder ins Backup geschrieben.
 
 ## Game Pass
 Seite: /games
 Stichworte: xbox game pass katalog abo
-Chip „Game Pass“ zeigt den öffentlichen Katalog (Markt einstellbar). Muss in den Einstellungen eingeschaltet sein. Ob du ein Abo hast, kann die App nicht prüfen.
+Chip „Game Pass“ zeigt den öffentlichen Katalog (Markt einstellbar). Muss in den Einstellungen eingeschaltet sein. Ob du ein Abo hast, kann die App nicht prüfen. Karte antippen: installiert = starten, sonst öffnet die Xbox-App die Installationsseite.
 
 ## Programme
 Seite: /programs
@@ -172,8 +172,8 @@ Eigene Ziele (Spielzeit, Sitzungen, Siege, Matches; täglich, wöchentlich, einm
 
 ## Deal Radar
 Seite: /deals
-Stichworte: deal preis angebot sale rabatt wunschliste zielpreis steam günstig
-Wunschliste mit Zielpreis. Preise kommen aus dem Steam-Shop, nur wenn „Preise im Steam-Shop abfragen“ eingeschaltet ist; dann höchstens alle 6 Stunden und nie während eines Spiels. Benachrichtigung, wenn der Zielpreis erreicht ist. Preisverlauf = nur selbst gesehene Preise. Andere Shops (Epic, GOG, Key-Seiten) werden nicht abgefragt.
+Stichworte: deal preis angebot sale rabatt wunschliste zielpreis steam günstig xbox microsoft store vergleich hinzufügen name
+Wunschliste als Kacheln: Originalbild des Spiels, darunter der Preis bei Xbox (Microsoft Store) und bei Steam, der günstigere grün. Kachel antippen = Details mit Preisverlauf, Zielpreis, Links zu den Shops und „Läuft das auf meinem PC?“; dort „Bearbeiten“ für Zielpreis und Notiz. Einstellungen (Preisabfrage, Xbox-Vergleich, Steam-Wunschliste, Shop-Land) sind unten eingeklappt. Zum Hinzufügen reicht der Name des Spiels („Spiel hinzufügen“) – der PC sucht es im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht. „Genauer suchen“ zeigt Treffer zur Auswahl. Mit „Steam-Wunschliste automatisch übernehmen“ holt der PC bei jeder Prüfung deine Steam-Wunschliste (sie muss öffentlich sein). „Auch im Microsoft Store (Xbox) vergleichen“ zeigt zusätzlich den Preis aus dem Katalog der Xbox-App und ob er günstiger als Steam ist. Preise werden nur abgefragt, wenn „Preise im Steam-Shop abfragen“ an ist; dann höchstens alle 6 Stunden und nie während eines Spiels. Benachrichtigung, wenn der Zielpreis erreicht ist. Preisverlauf = nur selbst gesehene Preise. Andere Shops (Epic, GOG, Key-Seiten) werden nicht abgefragt.
 
 ## Overlay & Aufnahme
 Seite: /overlay-settings

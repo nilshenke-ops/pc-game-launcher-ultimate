@@ -72,6 +72,9 @@ public sealed partial class SteamService : IDisposable
     }
 
     /// <summary>Steam account that is logged in on this PC (from Steam's own loginusers.vdf) – used to prefill the link.</summary>
+    /// <summary>The linked Steam account, otherwise the one signed in on this PC (for the public wish list).</summary>
+    public string? KnownSteamId() => _store.Snapshot().SteamId ?? LocalAccount()?.steamId;
+
     public (string steamId, string? name)? LocalAccount()
     {
         foreach (var root in _roots)

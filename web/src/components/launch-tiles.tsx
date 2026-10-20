@@ -96,3 +96,24 @@ export function TileRow({ items, running }: { items: LibraryItem[]; running: str
     </div>
   );
 }
+
+/** One tap on a whole tile does its main action (start or install). Shows a spinner on that tile and ignores a second
+ * tap for a moment, so a double tap never starts a game twice. */
+export function useTileAction() {
+  const [busy, setBusy] = useState<Set<string>>(new Set());
+  const run = async (key: string, fn: () => Promise<unknown>, ok?: string) => {
+    if (busy.has(key)) return;
+    navigator.vibrate?.(10);
+    setBusy((s) => new Set(s).add(key));
+    try { await fn(); if (ok) toast(ok, "success"); }
+    catch (e) { toast((e as Error).message, "error"); }
+    finally { window.setTimeout(() => setBusy((s) => { const n = new Set(s); n.delete(key); return n; }), 900); }
+  };
+  /** Props for the tile itself: tap/Enter = main action. */
+  const tile = (key: string, label: string, action: () => void) => ({
+    role: "button" as const, tabIndex: 0, "aria-label": label, "aria-busy": busy.has(key) || undefined,
+    onClick: action,
+    onKeyDown: (e: KeyboardEvent) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); action(); } },
+  });
+  return { run, busy, tile };
+}

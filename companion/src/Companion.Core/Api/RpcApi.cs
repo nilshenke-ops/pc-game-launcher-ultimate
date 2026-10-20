@@ -186,8 +186,12 @@ public static class RpcApi
         rpc.Register("deals.configure", ctx =>
         {
             bool? enabled = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("enabled", out var e) && e.ValueKind is JsonValueKind.True or JsonValueKind.False ? e.GetBoolean() : null;
-            return s.Deals.Configure(enabled, ctx.OptStr("country", 2));
+            bool? B(string n) => ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty(n, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
+            return s.Deals.Configure(enabled, ctx.OptStr("country", 2), B("compareMicrosoft"), B("syncSteamWishlist"));
         });
+        rpc.Register("deals.addByName", async ctx => await s.Deals.AddByNameAsync(ctx.Str("title", 80),
+            ctx.Params.TryGetProperty("targetCents", out var tc) && tc.ValueKind == JsonValueKind.Number ? tc.GetInt32() : null));
+        rpc.Register("deals.syncWishlist", async ctx => await s.Deals.SyncWishlistAsync());
         rpc.Register("deals.search", async ctx => await s.Deals.SearchAsync(ctx.Str("term", 80)));
         rpc.Register("deals.save", ctx => s.Deals.Save(ctx.Bind<WishItem>()));
         rpc.Register("deals.remove", ctx => { s.Deals.Remove(ctx.Str("id", 64)); return true; });

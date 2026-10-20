@@ -4,6 +4,20 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.19.0 – 2026-10-20
+### Neu
+- Deal Radar: Spiel hinzufügen nur mit dem Namen – der PC findet es selbst im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht
+- Deal Radar: Steam-Wunschliste wird automatisch übernommen und bei jeder Prüfung abgeglichen (öffentliche Wunschliste nötig)
+- Deal Radar: Preisvergleich mit dem Microsoft Store (Xbox) – günstigste kaufbare Edition, Hinweis „günstiger als Steam“ und Link zum Store
+- Deal Radar übersichtlich als Kacheln: Originalbild des Spiels, darunter Xbox- und Steam-Preis (der günstigere grün); Antippen zeigt Preisverlauf, Zielpreis, Links und Kompatibilität. Einstellungen und genaue Suche sind eingeklappt
+### Verbessert
+- Spiele unter Steam, Game Pass, Epic und EA: die ganze Karte antippen startet das Spiel (installiert) bzw. öffnet die Installation – mit Ladeanzeige und Schutz gegen Doppeltippen; auch per Tastatur (Enter/Leertaste)
+- Installierte Steam-Spiele, die noch nicht in der Bibliothek sind, werden beim Antippen hinzugefügt und gestartet
+- Wunschliste fasst jetzt 300 Spiele
+### Behoben
+- Microsoft-Store-Vergleich nimmt keine Add-on-Pakete und keine Game-Pass-Mitgliederpreise als Spielpreis
+- Änderungen ohne PC erscheinen sofort auf der offenen Seite, auch wenn die Verbindung erst währenddessen abreißt (vorher erst nach dem Neuladen)
+
 ## 2.18.0 – 2026-10-20
 ### Neu
 - Mods: pro Spiel Mod-Ordner einstellen, Mods an/aus schalten, aus einer ZIP installieren (mit Vorschau, was überschrieben wird) und entfernen – vor jeder Änderung sichert der PC den Mod-Ordner, „Zurückholen“ stellt jeden Stand wieder her. Während das Spiel läuft, ist nichts änderbar

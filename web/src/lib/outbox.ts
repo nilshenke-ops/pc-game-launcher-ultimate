@@ -75,7 +75,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "quests.removeMatch": () => t("Match löschen"),
   "deals.save": (p) => t("Wunschliste: {n} speichern", { n: name(p, "title") }),
   "deals.remove": () => t("Von der Wunschliste entfernen"),
-  "deals.configure": (p) => (p.enabled === true ? t("Preisabfrage einschalten") : p.enabled === false ? t("Preisabfrage ausschalten") : t("Shop-Land ändern")),
+  "deals.configure": (p) => (p.enabled === true ? t("Preisabfrage einschalten") : p.enabled === false ? t("Preisabfrage ausschalten") : p.country ? t("Shop-Land ändern") : t("Deal-Radar-Einstellungen ändern")),
   "history.setNote": () => t("Notiz zur Spielsitzung"),
   "plugins.installCatalog": (p) => t("Plugin installieren {n}", { n: name(p, "label") }),
   "plugins.importFile": (p) => t("Plugin-Datei installieren {n}", { n: name(p, "label") }),
@@ -283,7 +283,8 @@ function applyLocally(method: string, p: Params): unknown {
       return p;
     case "deals.remove": patch<{ items: WithId[] }>("deals.list", (d) => ({ ...d, items: d.items.filter((i) => i.id !== p.id) })); return true;
     case "deals.configure":
-      patch<Params>("deals.list", (d) => ({ ...d, ...(typeof p.enabled === "boolean" ? { enabled: p.enabled } : {}), ...(typeof p.country === "string" ? { country: p.country } : {}) }));
+      patch<Params>("deals.list", (d) => ({ ...d, ...(typeof p.enabled === "boolean" ? { enabled: p.enabled } : {}), ...(typeof p.country === "string" ? { country: p.country } : {}),
+        ...(typeof p.compareMicrosoft === "boolean" ? { compareMicrosoft: p.compareMicrosoft } : {}), ...(typeof p.syncSteamWishlist === "boolean" ? { syncSteamWishlist: p.syncSteamWishlist } : {}) }));
       return readCache("deals.list")?.data;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
     case "capture.configure": {
