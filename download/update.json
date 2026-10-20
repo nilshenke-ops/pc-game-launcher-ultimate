@@ -1,32 +1,28 @@
 {
-  "version": "2.29.0",
+  "version": "2.30.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.29.0/PCGameLauncherCompanion.exe",
-  "size": 87627914,
-  "sha256": "bfac0df9b62729bf4016a9b6b6ef9992b50f03cbac248e5f9db7a19c72e64aea",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.30.0/PCGameLauncherCompanion.exe",
+  "size": 87635020,
+  "sha256": "a53df2de038cbb8e90a500433d44a6945b895939eece072ab48bf2176a078fdb",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.29.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.29.0/PCGameLauncherCompanion-2.29.0-win-x64.zip",
-    "size": 81892382,
-    "sha256": "74aec897073055810188b029dba937e0b92475fd0d76d946c7f413152bb43327"
+    "fileName": "PCGameLauncherCompanion-2.30.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.30.0/PCGameLauncherCompanion-2.30.0-win-x64.zip",
+    "size": 81899820,
+    "sha256": "e741a51e775e33bac22d750c20d8f16c08dfe399c6d4333fc35515d927bee83f"
   },
-  "notes": "Gaming-Raum (Navigation → Gaming-Raum): gezeichneter 2.5D-Raum, dessen Objekte zu vorhandenen Bereichen führen – PC → Spiele, Poster mit deinem Lieblingsspiel → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck · Raum bearbeiten: bis zu 6 Varianten, 5 Stile, Lichtfarbe, Objekte ein-/ausblenden, Deko aus deinen Sammelstücken platzieren und verschieben (ziehen oder Pfeiltasten) · Optional als Startseite – das Dashboard bleibt über „Dashboard“ erreichbar",
+  "notes": "Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts · HUD-Layouts für das große Overlay: bis zu 10 Anordnungen unter einem Namen speichern (z. B. „Ranked“, „Streaming“), mit Vorschau, mit einem Tipp anwenden, überschreiben oder löschen · Der Ton wird nur im Browser ausgewertet – nichts wird aufgenommen oder gesendet; beim Beenden des Teilens stoppt der Visualizer von selbst",
   "changes": {
     "neu": [
-      "Gaming-Raum (Navigation → Gaming-Raum): gezeichneter 2.5D-Raum, dessen Objekte zu vorhandenen Bereichen führen – PC → Spiele, Poster mit deinem Lieblingsspiel → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck",
-      "Raum bearbeiten: bis zu 6 Varianten, 5 Stile, Lichtfarbe, Objekte ein-/ausblenden, Deko aus deinen Sammelstücken platzieren und verschieben (ziehen oder Pfeiltasten)",
-      "Optional als Startseite – das Dashboard bleibt über „Dashboard“ erreichbar",
-      "Trophäenraum → „Sammlung & Fortschritt“: Fortschrittsbaum (Level, Trophäen, Spielzeit – nur aus deinen echten Daten) mit Sammelstücken und Raum-Stilen als Belohnung",
-      "Belohnungskisten: eine pro erreichtem Level ab Level 2, kostenlos, Inhalt vorher sichtbar, jedes Teil gleich wahrscheinlich, nie doppelt",
-      "Regal für Launcher-Sammelstücke: hinstellen, verschieben, herausnehmen – klar getrennt von den Erfolgen aus deinen echten Spieldaten"
+      "Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts",
+      "HUD-Layouts für das große Overlay: bis zu 10 Anordnungen unter einem Namen speichern (z. B. „Ranked“, „Streaming“), mit Vorschau, mit einem Tipp anwenden, überschreiben oder löschen"
     ],
     "verbessert": [
-      "Raum und Sammlung funktionieren ohne PC und kommen mit dem Konto in andere Browser mit",
-      "Kein Echtgeld, keine Vorteile, kein Zeitdruck, keine Anmeldepflicht – alles nur Deko"
+      "Der Ton wird nur im Browser ausgewertet – nichts wird aufgenommen oder gesendet; beim Beenden des Teilens stoppt der Visualizer von selbst",
+      "HUD-Layouts lassen sich auch ohne PC ändern und werden beim Verbinden übertragen"
     ],
     "behoben": []
   },
-  "signature": "ZLwceROg9fWt+eVMS/jyVYMTnr6nZQGdPWZTodHowFht+CgaG48MVQcm3XyCH19UnEdAyeiUHUGXEH9bO8N4zQ=="
+  "signature": "W7db8GDmtLEV72snFt9ijKIU+zPgire/kc51vT6lHK1ger8tX+vcnUFZpKAfI0AOs2AGNRo+5dpgjfPL+VTsNQ=="
 }
