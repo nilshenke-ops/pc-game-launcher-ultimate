@@ -49,6 +49,9 @@ function Art({ item, coverAllowed }: { item: LibraryItem; coverAllowed: boolean 
   const art = tileArt(item, coverAllowed);
   if (art.brand) return <span className="tile-brand"><BrandLogo brand={art.brand} size="56%" /></span>;
   if (art.pic && !broken) return <img src={art.pic} alt="" loading="lazy" onError={() => setBroken(true)} />;
+  // Picture not loadable: the logo if there is one, otherwise the initials.
+  const b = broken ? brandFor(item) : undefined;
+  if (b) return <span className="tile-brand"><BrandLogo brand={b} size="56%" /></span>;
   return <span className="tile-initials">{initials(item.name)}</span>;
 }
 

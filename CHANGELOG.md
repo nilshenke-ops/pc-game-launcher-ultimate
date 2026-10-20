@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.13.0 – 2026-10-20
+### Neu
+- Original-Logos für Steam- und Epic-Spiele: Der PC liest das Symbol direkt aus der Spieldatei (z. B. RocketLeague.exe) – genau das Logo des Spiels, auch für schon vorhandene Spiele (einmalig im Hintergrund). Installer, Crash-Handler, Anti-Cheat- und Redist-Dateien werden dabei übersprungen
+### Behoben
+- Ließ sich ein Cover nicht laden (z. B. ohne Internet), zeigte eine Deck-Taste ein kaputtes Bild – jetzt erscheint das Logo bzw. ein Spiel-Symbol; ebenso auf den App-Kacheln
+
 ## 2.12.0 – 2026-10-20
 ### Neu
 - 50 Spiele-Logos dazu (jetzt 106 Logos): u. a. Minecraft, Apex Legends, Call of Duty, Rocket League, Genshin Impact, Among Us, Terraria, Stardew Valley, Hearthstone, Destiny 2, Warframe, Fall Guys, Forza, Skyrim, Hollow Knight & Silksong, Cuphead, Balatro, Subnautica, No Man's Sky, EA SPORTS FC, Honkai: Star Rail, Zenless Zone Zero, Half-Life, DOOM, Xbox, Game Pass, Nintendo, Steam Deck, osu!, The Finals

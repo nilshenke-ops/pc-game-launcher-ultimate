@@ -1,4 +1,5 @@
 // Symbols for deck keys and custom widgets. Only loaded with the pages that show them (not part of the main bundle).
+import { useState } from "react";
 import type { DeckKey } from "../lib/deck";
 import type { LibraryItem } from "../lib/types";
 import { brandById, brandFor } from "../lib/brands";
@@ -36,6 +37,13 @@ export function KeyFace({ k, item }: { k: DeckKey; item?: LibraryItem }) {
   const itemBrand = icon === "cover" && item ? brandFor(item) : undefined;
   const brand = icon.startsWith("brand:") ? brandById(icon.slice(6)) : itemBrand && (item!.kind === "program" || !(item!.iconData || item!.coverUrl)) ? itemBrand : undefined;
   const cover = icon === "cover" ? item?.iconData || item?.coverUrl : undefined;
+  // A picture that cannot be loaded (e.g. no internet for the cover) falls back to the logo or a game symbol – never a broken image.
+  const [broken, setBroken] = useState<string | null>(null);
+  const fallback = (src: string) => () => setBroken(src);
+  if (cover && broken === cover) {
+    const b = item ? brandFor(item) : undefined;
+    return <><span className="deck-icon" aria-hidden>{b ? <BrandLogo brand={b} size="70%" /> : <DeckIcon name={item?.kind === "program" ? "monitor" : "gamepad-2"} size={30} />}</span>{k.label && <span className="deck-label">{k.label}</span>}</>;
+  }
   return (
     <>
       <span className="deck-icon" aria-hidden>
@@ -43,7 +51,7 @@ export function KeyFace({ k, item }: { k: DeckKey; item?: LibraryItem }) {
           : icon.startsWith("icon:") ? <DeckIcon name={icon.slice(5)} size={30} />
           : icon.startsWith("emoji:") ? <span className="deck-emoji">{icon.slice(6)}</span>
           : icon.startsWith("data:image/") ? <img src={icon} alt="" />
-          : cover ? <img src={cover} alt="" className={item?.iconData ? "" : "cover"} />
+          : cover ? <img src={cover} alt="" className={item?.iconData ? "" : "cover"} onError={fallback(cover)} />
           : <DeckIcon name="zap" size={30} />}
       </span>
       {k.label && <span className="deck-label">{k.label}</span>}

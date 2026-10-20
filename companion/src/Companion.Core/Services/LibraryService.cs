@@ -134,6 +134,7 @@ public sealed class LibraryService
             ProcessNames = Path.GetExtension(path).Equals(".exe", StringComparison.OrdinalIgnoreCase) ? new() { Path.GetFileNameWithoutExtension(path) } : new(),
             IconData = SafeIcon(LaunchSource.Exe, path),
             IconChecked = true,
+            GameIconTried = true,
         };
         return Add(item);
     }
@@ -153,19 +154,51 @@ public sealed class LibraryService
         catch { return null; }
     }
 
+    /// <summary>Own icon of any item: for Steam and Epic games the icon of the game's EXE in its install folder – the exact
+    /// original logo (e.g. RocketLeague.exe).</summary>
+    string? SafeIcon(LibraryItem i)
+    {
+        if (i.Source is LaunchSource.Steam or LaunchSource.Epic)
+        {
+            try { return GameExe(i) is { } exe ? _platform.Launcher.ExtractIcon(exe) : null; } catch { return null; }
+        }
+        return SafeIcon(i.Source, i.Target);
+    }
+
+    // Helpers that ship with many games but are not the game.
+    static readonly System.Text.RegularExpressions.Regex NotTheGame = new(@"^(unins\d*|uninstall.*|setup.*|.*redist.*|dxsetup|dotnet.*|crash.*|.*crashhandler.*|unitycrashhandler.*|easyanticheat.*|beservice.*|battleye.*|start_protected_game|cefsharp.*|.*helper|ue4prereqsetup.*|ueprereqsetup.*|prereq.*|redist.*|.*updater|.*launcherhelper.*|dowser|cleanup|touchup)\.exe$",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    static readonly System.Text.RegularExpressions.Regex HelperFolder = new(@"(^|[\\/])(_?commonredist|redist|redistributables?|installers?|prereq\w*|directx|support|extras|easyanticheat|battleye|tools)[\\/]",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+    /// <summary>The game's EXE: the one named like its process (known for Epic), otherwise the largest EXE in the first
+    /// three folder levels, ignoring installers, crash handlers and anti-cheat helpers.</summary>
+    internal static string? GameExe(LibraryItem i)
+    {
+        if (i.InstallDir is not { Length: > 0 } dir || !Directory.Exists(dir)) return null;
+        var opts = new EnumerationOptions { RecurseSubdirectories = true, MaxRecursionDepth = 3, IgnoreInaccessible = true };
+        var exes = Directory.EnumerateFiles(dir, "*.exe", opts).Take(500)
+            .Where(p => !NotTheGame.IsMatch(Path.GetFileName(p)) && !HelperFolder.IsMatch(Path.GetRelativePath(dir, p))).ToList();
+        var names = i.ProcessNames.Select(n => n.ToLowerInvariant()).ToHashSet();
+        return exes.FirstOrDefault(p => names.Contains(Path.GetFileNameWithoutExtension(p).ToLowerInvariant()))
+            ?? exes.OrderByDescending(p => new FileInfo(p).Length).FirstOrDefault();
+    }
+
     /// <summary>Reads the icon of programs added before icons were read for start-menu and Store apps (once per item).
     /// Runs in the background; reading happens outside the store lock.</summary>
     public int FillMissingIcons()
     {
-        var todo = List().Where(i => !i.IconChecked && i.IconData == null && i.Source is LaunchSource.Exe or LaunchSource.AppsFolder).Take(50).ToList();
+        static bool Due(LibraryItem i) => i.IconData == null && (i.Source is LaunchSource.Exe or LaunchSource.AppsFolder ? !i.IconChecked : i.Source is LaunchSource.Steam or LaunchSource.Epic && !i.GameIconTried);
+        var todo = List().Where(Due).Take(50).ToList();
         if (todo.Count == 0) return 0;
-        var found = todo.ToDictionary(i => i.Id, i => SafeIcon(i.Source, i.Target));
+        var found = todo.ToDictionary(i => i.Id, SafeIcon);
         var n = 0;
         _store.Update(f =>
         {
-            foreach (var i in f.Items.Where(x => found.ContainsKey(x.Id) && !x.IconChecked))
+            foreach (var i in f.Items.Where(x => found.ContainsKey(x.Id) && Due(x)))
             {
-                i.IconChecked = true;
+                i.IconChecked = i.GameIconTried = true;
                 if (i.IconData == null && found[i.Id] is { } ic && ic.Length <= 200_000) { i.IconData = ic; n++; }
             }
             return n;
@@ -367,7 +400,7 @@ public sealed class LibraryService
             if (u.Categories != null) i.Categories = u.Categories.Select(x => Security.DeviceStore.Sanitize(x, 30, "")).Where(x => x != "").Distinct().Take(10).ToList();
             if (u.Favorite != null) i.Favorite = u.Favorite.Value;
             if (u.CoverUrl != null) i.CoverUrl = u.CoverUrl == "" ? null : u.CoverUrl;
-            if (u.IconData != null) { i.IconData = u.IconData == "" ? null : u.IconData; i.IconChecked = true; }
+            if (u.IconData != null) { i.IconData = u.IconData == "" ? null : u.IconData; i.IconChecked = i.GameIconTried = true; }
             if (u.ProfileId != null) i.ProfileId = u.ProfileId == "" ? null : u.ProfileId;
             if (u.ProcessNames != null) i.ProcessNames = u.ProcessNames.Select(p => Path.GetFileNameWithoutExtension(p.Trim())).Where(p => p.Length is > 0 and < 100).Distinct().Take(10).ToList();
             if (u.Notes != null) i.Notes = u.Notes.Length > 1000 ? u.Notes[..1000] : u.Notes;
