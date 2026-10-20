@@ -1,27 +1,30 @@
 {
-  "version": "2.17.0",
+  "version": "2.18.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.17.0/PCGameLauncherCompanion.exe",
-  "size": 87434867,
-  "sha256": "c531f667d8469f8e1cb90c092a2db6affc040eac3999d660554cc8b50d5f3520",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.18.0/PCGameLauncherCompanion.exe",
+  "size": 87483889,
+  "sha256": "2a6a7040a52da1672dd7e55197cd6f5d8f8a1e42b5046c2a3d99acbbc2295d16",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.17.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.17.0/PCGameLauncherCompanion-2.17.0-win-x64.zip",
-    "size": 81699002,
-    "sha256": "af2f2015c339b6c1f3c3068401fbb9d64407852761a8ff17e4a3db3a78cd0d28"
+    "fileName": "PCGameLauncherCompanion-2.18.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.18.0/PCGameLauncherCompanion-2.18.0-win-x64.zip",
+    "size": 81747634,
+    "sha256": "a8c7bc7d539391d9203a949c45b13ef734f83c26f26a6518cae651cb94593fa3"
   },
-  "notes": "Installieren am PC (Einstellungen → Installation & Autostart): eigener Programmordner, Startmenü-Eintrag, optional Desktop-Symbol, Autostart und Eintrag in „Apps & Features“ – ohne Administrator und ohne extra Setup-Programm · Deinstallieren aus der App oder über „Apps & Features“: entfernt Verknüpfungen, Autostart, Eintrag und Programmordner; Einstellungen und Daten bleiben auf Wunsch erhalten · Ein laufender Begleiter wird beim Deinstallieren über „Apps & Features“ von selbst beendet",
+  "notes": "Mods: pro Spiel Mod-Ordner einstellen, Mods an/aus schalten, aus einer ZIP installieren (mit Vorschau, was überschrieben wird) und entfernen – vor jeder Änderung sichert der PC den Mod-Ordner, „Zurückholen“ stellt jeden Stand wieder her. Während das Spiel läuft, ist nichts änderbar · Fenster-Layouts: Position und Monitor deiner Programmfenster speichern und mit einem Tipp wiederherstellen; fehlt ein Monitor, kommt das Fenster auf den Hauptmonitor · Controller: Xbox-/XInput-Controller mit Akku-Stand, Live-Test für Tasten, Sticks (zeigt Drift) und Trigger, Vibrationstest",
   "changes": {
     "neu": [
-      "Installieren am PC (Einstellungen → Installation & Autostart): eigener Programmordner, Startmenü-Eintrag, optional Desktop-Symbol, Autostart und Eintrag in „Apps & Features“ – ohne Administrator und ohne extra Setup-Programm",
-      "Deinstallieren aus der App oder über „Apps & Features“: entfernt Verknüpfungen, Autostart, Eintrag und Programmordner; Einstellungen und Daten bleiben auf Wunsch erhalten"
+      "Mods: pro Spiel Mod-Ordner einstellen, Mods an/aus schalten, aus einer ZIP installieren (mit Vorschau, was überschrieben wird) und entfernen – vor jeder Änderung sichert der PC den Mod-Ordner, „Zurückholen“ stellt jeden Stand wieder her. Während das Spiel läuft, ist nichts änderbar",
+      "Fenster-Layouts: Position und Monitor deiner Programmfenster speichern und mit einem Tipp wiederherstellen; fehlt ein Monitor, kommt das Fenster auf den Hauptmonitor",
+      "Controller: Xbox-/XInput-Controller mit Akku-Stand, Live-Test für Tasten, Sticks (zeigt Drift) und Trigger, Vibrationstest",
+      "RGB-Beleuchtung über OpenRGB: eine Farbe für alle Geräte oder einzeln, OpenRGB-Profile laden",
+      "Neue Bausteine für Quick Actions und Automatisierungen: „Fenster-Layout anwenden“, „RGB-Farbe setzen“, „RGB-Profil laden“"
     ],
     "verbessert": [
-      "Ein laufender Begleiter wird beim Deinstallieren über „Apps & Features“ von selbst beendet"
+      "Fenster-Layouts umbenennen und löschen geht auch ohne PC"
     ],
     "behoben": []
   },
-  "signature": "cfPvpTaWbqJWFWFuleTfxax4JZJVwogrRZszMajIiL+KmiJpy4hHKkNZ89JJOgaTQb0ndbWkPocljYUC08Ixzw=="
+  "signature": "WdUnMVm0CTeGTmGramj5+JxaeedLlwbriexn1uwpdM7dqEYZAMeZFwm91Yg5soM/GCsBy71kw6dz3mCo3IJuKw=="
 }
