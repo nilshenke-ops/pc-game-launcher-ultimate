@@ -24,3 +24,8 @@ export function brandFg(b: Brand) {
   const [r, g, bl] = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((x) => x / 255);
   return 0.2126 * r + 0.7152 * g + 0.0722 * bl > 0.6 ? "#0b1020" : "#ffffff";
 }
+
+const SI_GAMES = new Set(["valorant", "lol", "roblox", "fortnite", "cs", "dota", "pubg", "osu", "thefinals"]);
+const PLATFORMS = new Set(["xbox", "gamepass", "nintendo"]);
+/** For the logo picker: games first, then programs, launchers and platforms. */
+export const isGameBrand = (b: Brand) => (b.source === "arcticons" ? !PLATFORMS.has(b.id) : SI_GAMES.has(b.id));

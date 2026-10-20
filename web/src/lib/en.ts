@@ -2179,4 +2179,10 @@ export const en: Record<string, string> = {
   "„{n}“ wird im Menü ausgeblendet – über die Suche bleibt es erreichbar.": "“{n}” is hidden in the menu – still reachable via search.",
   "„{n}“ wird wieder im Menü gezeigt.": "“{n}” is shown in the menu again.",
   "Tippe auf ein Programm, um es zu bearbeiten. Tipp: Lange drücken geht auch ohne Bearbeiten-Modus.": "Tap a program to edit it. Tip: a long press works without edit mode too.",
+  "Kein Logo gefunden – für andere Spiele das Cover nehmen (Spiel als Aktion wählen).": "No logo found – for other games use the cover (choose the game as action).",
+  "Logo suchen": "Search logo",
+  "Logo suchen, z. B. Minecraft": "Search logo, e.g. Minecraft",
+  "Logos: simple-icons (CC0) und Arcticons (CC BY-SA 4.0). Marken gehören ihren Inhabern.": "Logos: simple-icons (CC0) and Arcticons (CC BY-SA 4.0). Trademarks belong to their owners.",
+  "Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war": "No games yet – they appear once the PC has been connected",
+  "Programme & Plattformen": "Programs & platforms",
 };

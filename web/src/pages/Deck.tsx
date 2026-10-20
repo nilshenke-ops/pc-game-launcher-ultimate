@@ -11,7 +11,7 @@ import { ACTION_TYPES, gridFor, keyImage, MEDIA_KEYS, moveKey, newId, resize, sl
 import type { LibraryItem, Profile, QuickAction, SoundsFile } from "../lib/types";
 import { DECK_ICONS, DeckIcon, KeyFace } from "../components/deck-icons";
 import { BrandLogo } from "../components/brand-logo";
-import { BRANDS, brandBg, brandFor } from "../lib/brands";
+import { BRANDS, brandBg, brandFor, isGameBrand, type Brand } from "../lib/brands";
 import { runDeckAction } from "../lib/deck-run";
 import { Banner, Button, confirmDialog, Empty, Field, Loadable, Modal, Segmented } from "../components/ui";
 
@@ -241,6 +241,19 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
   const [k, setK] = useState<DeckKey>(value);
   const [iconTab, setIconTab] = useState<"symbol" | "logo" | "emoji" | "cover" | "image">(k.icon?.startsWith("emoji:") ? "emoji" : k.icon?.startsWith("brand:") ? "logo" : k.icon === "cover" ? "cover" : k.icon?.startsWith("data:") ? "image" : "symbol");
   const [pendingDeck, setPendingDeck] = useState<Deck | null>(null);
+  const [logoSearch, setLogoSearch] = useState("");
+  // Choosing a game or program gives the key its logo (or the game's picture) – unless a look was chosen by hand.
+  const autoIcon = useRef<string | null>(null);
+  const pickLaunch = (ref: string) => {
+    const it = items.find((i) => i.id === ref);
+    const auto = k.icon == null || k.icon === "icon:zap" || k.icon === autoIcon.current;
+    if (!it || !auto) { setAction({ ...k.action, ref }); return; }
+    const b = brandFor(it);
+    const look = b && (it.kind === "program" || !(it.coverUrl || it.iconData)) ? { icon: `brand:${b.id}`, color: brandBg(b), textColor: null }
+      : it.coverUrl || it.iconData ? { icon: "cover", color: "#1e293b", textColor: null } : null;
+    if (look) autoIcon.current = look.icon;
+    setK((o) => ({ ...o, ...(look ?? {}), action: { ...o.action, ref } }));
+  };
   const set = (x: Partial<DeckKey>) => setK((o) => ({ ...o, ...x }));
   const setAction = (a: DeckAction) => set({ action: a });
   const targetName = (a: DeckAction) => a.type === "launch" ? items.find((i) => i.id === a.ref)?.name : a.type === "sound" ? sounds.find((s) => s.id === a.ref)?.name
@@ -280,8 +293,8 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
               {ACTION_TYPES.map((a) => <option key={a.type} value={a.type}>{a.label()}</option>)}
             </select>
           </Field>
-          {k.action.type === "launch" && <Field label={t("Spiel oder Programm")}><select className="input" value={k.action.ref ?? ""} onChange={(e) => setAction({ ...k.action, ref: e.target.value })}>
-            {items.length === 0 && <option value="">{t("Bibliothek ist leer")}</option>}
+          {k.action.type === "launch" && <Field label={t("Spiel oder Programm")}><select className="input" value={k.action.ref ?? ""} onChange={(e) => pickLaunch(e.target.value)}>
+            {items.length === 0 && <option value="">{t("Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war")}</option>}
             {[...items].sort((a, b) => a.name.localeCompare(b.name)).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select></Field>}
           {k.action.type === "quick" && <Field label={t("Quick Action")}><select className="input" value={k.action.ref ?? ""} onChange={(e) => setAction({ ...k.action, ref: e.target.value })}>
             {quick.length === 0 && <option value="">{t("Noch keine Quick Actions")}</option>}
@@ -322,11 +335,25 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
               {Object.keys(DECK_ICONS).map((n) => <button key={n} type="button" className={k.icon === `icon:${n}` ? "on" : ""} aria-label={n} onClick={() => set({ icon: `icon:${n}` })}><DeckIcon name={n} size={20} /></button>)}
             </div>
           )}
-          {iconTab === "logo" && (
-            <div className="deck-icon-pick logos">
-              {BRANDS.map((b) => <button key={b.id} type="button" className={k.icon === `brand:${b.id}` ? "on" : ""} aria-label={b.name} title={b.name} style={{ background: brandBg(b) }} onClick={() => set({ icon: `brand:${b.id}`, color: brandBg(b), textColor: null })}><BrandLogo brand={b} size={20} /></button>)}
-            </div>
-          )}
+          {iconTab === "logo" && (() => {
+            const q = logoSearch.trim().toLowerCase();
+            const shown = BRANDS.filter((b) => !q || b.name.toLowerCase().includes(q));
+            const pick = (b: Brand) => <button key={b.id} type="button" className={k.icon === `brand:${b.id}` ? "on" : ""} aria-label={b.name} title={b.name} style={{ background: brandBg(b) }} onClick={() => set({ icon: `brand:${b.id}`, color: brandBg(b), textColor: null })}><BrandLogo brand={b} size={22} /></button>;
+            const games = shown.filter(isGameBrand), apps = shown.filter((b) => !isGameBrand(b));
+            return (
+              <div className="stack-sm">
+                <input className="input" type="search" value={logoSearch} onChange={(e) => setLogoSearch(e.target.value)} placeholder={t("Logo suchen, z. B. Minecraft")} aria-label={t("Logo suchen")} />
+                <div className="deck-icon-pick logos">
+                  {games.length > 0 && <div className="pick-head">{t("Spiele")}</div>}
+                  {games.map(pick)}
+                  {apps.length > 0 && <div className="pick-head">{t("Programme & Plattformen")}</div>}
+                  {apps.map(pick)}
+                  {!shown.length && <div className="pick-head">{t("Kein Logo gefunden – für andere Spiele das Cover nehmen (Spiel als Aktion wählen).")}</div>}
+                </div>
+                <p className="tiny muted" style={{ margin: 0 }}>{t("Logos: simple-icons (CC0) und Arcticons (CC BY-SA 4.0). Marken gehören ihren Inhabern.")}</p>
+              </div>
+            );
+          })()}
           {iconTab === "emoji" && <Field label={t("Emoji")}><input className="input" value={k.icon?.startsWith("emoji:") ? k.icon.slice(6) : ""} maxLength={8} placeholder="🎮" onChange={(e) => set({ icon: e.target.value ? `emoji:${e.target.value}` : "icon:zap" })} /></Field>}
           {iconTab === "cover" && <Button onClick={() => set({ icon: "cover" })} variant={k.icon === "cover" ? "primary" : undefined}>{item?.kind === "program" ? t("Logo bzw. Bild des Programms verwenden") : t("Bild des Spiels verwenden")}</Button>}
           {iconTab === "image" && (

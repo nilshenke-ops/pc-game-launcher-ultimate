@@ -843,6 +843,7 @@ button.link { background: none; border: 0; padding: 0; color: var(--primary); cu
 .deck-preview .deck-key { width: 112px; cursor: default; }
 .deck-icon-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; max-height: 220px; overflow: auto; }
 .deck-icon-pick button { aspect-ratio: 1; border-radius: 10px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text); display: grid; place-items: center; cursor: pointer; }
+.deck-icon-pick .pick-head { grid-column: 1 / -1; font-size: .75rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
 .deck-icon-pick button.on { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .4); }
 @media (max-width: 700px) { .deck-editor { grid-template-columns: 1fr; } .deck-editor > .stack:last-child { order: -1; } }
 @media (prefers-reduced-motion: reduce) { .deck-key, .deck-key.moving { transition: none; animation: none; } }
@@ -902,6 +903,9 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
   background: radial-gradient(120% 75% at 22% 0%, rgba(255,255,255,.28), rgba(255,255,255,0) 58%), linear-gradient(180deg, rgba(255,255,255,0) 50%, rgba(0,0,0,.25) 100%); }
 .tile-brand { display: grid; place-items: center; width: 100%; height: 100%; }
 .tile-brand .brand-logo, .deck-icon .brand-logo { filter: drop-shadow(0 3px 4px rgba(0,0,0,.3)); }
+/* Line logos (games from Arcticons) need a bolder stroke on a coloured tile. */
+.brand-logo.line * { stroke-width: 2.6; }
+.deck-icon-pick .brand-logo.line * { stroke-width: 3; }
 .app-name { font-size: .78rem; font-weight: 600; text-align: center; line-height: 1.2; max-width: 100%; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .tile-busy { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(3,6,14,.55); color: #fff; z-index: 2; }
 .tile-dot { position: absolute; top: 6px; right: 6px; width: 10px; height: 10px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 2px rgba(0,0,0,.4), 0 0 8px #22c55e; }

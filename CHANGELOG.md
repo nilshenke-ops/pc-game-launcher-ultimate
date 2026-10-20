@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.12.0 – 2026-10-20
+### Neu
+- 50 Spiele-Logos dazu (jetzt 106 Logos): u. a. Minecraft, Apex Legends, Call of Duty, Rocket League, Genshin Impact, Among Us, Terraria, Stardew Valley, Hearthstone, Destiny 2, Warframe, Fall Guys, Forza, Skyrim, Hollow Knight & Silksong, Cuphead, Balatro, Subnautica, No Man's Sky, EA SPORTS FC, Honkai: Star Rail, Zenless Zone Zero, Half-Life, DOOM, Xbox, Game Pass, Nintendo, Steam Deck, osu!, The Finals
+- Logo-Auswahl im Deck mit Suche („mine“ → Minecraft) und getrennt nach Spielen sowie Programmen & Plattformen
+- Wählst du für eine Taste ein Spiel oder Programm, bekommt sie automatisch dessen Logo bzw. Cover (solange du kein eigenes Aussehen gewählt hast)
+### Verbessert
+- Ohne PC steht bei „Spiel oder Programm“ jetzt, dass die Spiele nach dem ersten Verbinden erscheinen (statt „Bibliothek ist leer“)
+- Lizenzangaben der Logos in der App und in docs/LIZENZEN.md
+
 ## 2.11.0 – 2026-10-20
 ### Neu
 - 19 neue Plugins im Katalog (jetzt 33): Wochenstatistik, „Was spiele ich?“ (Zufallsspiel mit Start), Weiterspielen, Tageslimit, Spiel-Serie, Spielzeit-Meilensteine, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, Bibliothek in Zahlen, Zufallssound, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Wettkampf-Modus (Aktionen), Clip-Knöpfe für OBS (Aktionen), Pastell-, E-Sport- und OLED-Themes
