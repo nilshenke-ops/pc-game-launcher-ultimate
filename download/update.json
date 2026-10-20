@@ -1,30 +1,34 @@
 {
-  "version": "2.18.0",
+  "version": "2.19.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.18.0/PCGameLauncherCompanion.exe",
-  "size": 87483889,
-  "sha256": "2a6a7040a52da1672dd7e55197cd6f5d8f8a1e42b5046c2a3d99acbbc2295d16",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.19.0/PCGameLauncherCompanion.exe",
+  "size": 87542935,
+  "sha256": "b96f6d11e1a07e7d90b181e1a28bf63725d5c680d2463cec3f09bd847d1fa79d",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.18.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.18.0/PCGameLauncherCompanion-2.18.0-win-x64.zip",
-    "size": 81747634,
-    "sha256": "a8c7bc7d539391d9203a949c45b13ef734f83c26f26a6518cae651cb94593fa3"
+    "fileName": "PCGameLauncherCompanion-2.19.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.19.0/PCGameLauncherCompanion-2.19.0-win-x64.zip",
+    "size": 81809200,
+    "sha256": "94c97b22ded87a296471aa8a9a4098ff8c92c9bd997a57cadc0cde8692de3fa3"
   },
-  "notes": "Mods: pro Spiel Mod-Ordner einstellen, Mods an/aus schalten, aus einer ZIP installieren (mit Vorschau, was überschrieben wird) und entfernen – vor jeder Änderung sichert der PC den Mod-Ordner, „Zurückholen“ stellt jeden Stand wieder her. Während das Spiel läuft, ist nichts änderbar · Fenster-Layouts: Position und Monitor deiner Programmfenster speichern und mit einem Tipp wiederherstellen; fehlt ein Monitor, kommt das Fenster auf den Hauptmonitor · Controller: Xbox-/XInput-Controller mit Akku-Stand, Live-Test für Tasten, Sticks (zeigt Drift) und Trigger, Vibrationstest",
+  "notes": "Deal Radar: Spiel hinzufügen nur mit dem Namen – der PC findet es selbst im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht · Deal Radar: Steam-Wunschliste wird automatisch übernommen und bei jeder Prüfung abgeglichen (öffentliche Wunschliste nötig) · Deal Radar: Preisvergleich mit dem Microsoft Store (Xbox) – günstigste kaufbare Edition, Hinweis „günstiger als Steam“ und Link zum Store",
   "changes": {
     "neu": [
-      "Mods: pro Spiel Mod-Ordner einstellen, Mods an/aus schalten, aus einer ZIP installieren (mit Vorschau, was überschrieben wird) und entfernen – vor jeder Änderung sichert der PC den Mod-Ordner, „Zurückholen“ stellt jeden Stand wieder her. Während das Spiel läuft, ist nichts änderbar",
-      "Fenster-Layouts: Position und Monitor deiner Programmfenster speichern und mit einem Tipp wiederherstellen; fehlt ein Monitor, kommt das Fenster auf den Hauptmonitor",
-      "Controller: Xbox-/XInput-Controller mit Akku-Stand, Live-Test für Tasten, Sticks (zeigt Drift) und Trigger, Vibrationstest",
-      "RGB-Beleuchtung über OpenRGB: eine Farbe für alle Geräte oder einzeln, OpenRGB-Profile laden",
-      "Neue Bausteine für Quick Actions und Automatisierungen: „Fenster-Layout anwenden“, „RGB-Farbe setzen“, „RGB-Profil laden“"
+      "Deal Radar: Spiel hinzufügen nur mit dem Namen – der PC findet es selbst im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht",
+      "Deal Radar: Steam-Wunschliste wird automatisch übernommen und bei jeder Prüfung abgeglichen (öffentliche Wunschliste nötig)",
+      "Deal Radar: Preisvergleich mit dem Microsoft Store (Xbox) – günstigste kaufbare Edition, Hinweis „günstiger als Steam“ und Link zum Store",
+      "Deal Radar übersichtlich als Kacheln: Originalbild des Spiels, darunter Xbox- und Steam-Preis (der günstigere grün); Antippen zeigt Preisverlauf, Zielpreis, Links und Kompatibilität. Einstellungen und genaue Suche sind eingeklappt"
     ],
     "verbessert": [
-      "Fenster-Layouts umbenennen und löschen geht auch ohne PC"
+      "Spiele unter Steam, Game Pass, Epic und EA: die ganze Karte antippen startet das Spiel (installiert) bzw. öffnet die Installation – mit Ladeanzeige und Schutz gegen Doppeltippen; auch per Tastatur (Enter/Leertaste)",
+      "Installierte Steam-Spiele, die noch nicht in der Bibliothek sind, werden beim Antippen hinzugefügt und gestartet",
+      "Wunschliste fasst jetzt 300 Spiele"
     ],
-    "behoben": []
+    "behoben": [
+      "Microsoft-Store-Vergleich nimmt keine Add-on-Pakete und keine Game-Pass-Mitgliederpreise als Spielpreis",
+      "Änderungen ohne PC erscheinen sofort auf der offenen Seite, auch wenn die Verbindung erst währenddessen abreißt (vorher erst nach dem Neuladen)"
+    ]
   },
-  "signature": "WdUnMVm0CTeGTmGramj5+JxaeedLlwbriexn1uwpdM7dqEYZAMeZFwm91Yg5soM/GCsBy71kw6dz3mCo3IJuKw=="
+  "signature": "Cw6Mg0tlwe1ixTy+EcpIma/nAt5tu/rsLN6oZFVimNN897VCGNq/qpFVfClKBQNhZe40JROOKAHG4WXNF7iRNg=="
 }
