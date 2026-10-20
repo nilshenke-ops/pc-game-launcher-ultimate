@@ -8,6 +8,11 @@ import { Banner, Button, Card, confirmDialog, Field, Segmented } from "./ui";
 
 /** Optional design profile (user name + password) and the design code – to take the own design to another browser. */
 export function DesignProfileCard() {
+  return <Card title={t("Konto")} icon={<KeyRound size={18} />}><AccountPanel /></Card>;
+}
+
+/** Sign in / register (user name + password, no e-mail) – also in the account sheet behind the person icon at the top. */
+export function AccountPanel({ onDone }: { onDone?: () => void }) {
   const conn = useConn();
   const online = conn.phase === "online" && conn.auth === "ok";
   const [s, setS] = useState(session);
@@ -23,31 +28,30 @@ export function DesignProfileCard() {
 
   const run = async (fn: () => Promise<void>, ok: string) => {
     setBusy(true);
-    try { await fn(); toast(ok, "success"); setPw(""); setPw2(""); refresh(); }
+    try { await fn(); toast(ok, "success"); setPw(""); setPw2(""); refresh(); window.dispatchEvent(new Event("pgl-account")); onDone?.(); }
     catch (e) { toast((e as Error).message, "error"); }
     finally { setBusy(false); }
   };
 
   return (
-    <Card title={t("Design-Profil")} icon={<KeyRound size={18} />}>
       <div className="stack">
-        <p className="small muted" style={{ margin: 0 }}>{t("Optional: Mit Benutzername und Passwort nimmst du dein Design (Farben, Hintergrund, Startseite, untere Leiste, Sprache) in einen neuen Browser mit. Das Design wird schon im Browser verschlüsselt und auf deinem PC gespeichert – der PC kann es nicht lesen, das Passwort verlässt dein Gerät nie.")}</p>
+        <p className="small muted" style={{ margin: 0 }}>{t("Optional – ohne E-Mail: Mit Benutzername und Passwort nimmst du deine Daten in einen anderen Browser mit: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung. Alles wird schon im Browser verschlüsselt und auf deinem PC gespeichert – der PC kann es nicht lesen, das Passwort verlässt dein Gerät nie. Spiele, Deck, Wunschliste und Kalender liegen ohnehin auf dem PC.")}</p>
         {!cryptoAvailable() ? <Banner kind="info">{t("Dieser Browser erlaubt die Verschlüsselung nur auf https-Seiten. Öffne die Website-Adresse (https) oder die PC-Ansicht am PC selbst.")}</Banner>
           : s ? (
             <div className="stack-sm">
               <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
                 <span><b>{s.user}</b> <span className="tiny muted">{s.savedAt ? t("· gespeichert {d}", { d: relTime(s.savedAt) }) : ""}</span></span>
                 <div className="row" style={{ gap: 6 }}>
-                  <Button size="sm" icon={<Save size={14} />} busy={busy} disabled={!online} onClick={() => void run(saveNow, t("Design im Profil gespeichert"))}>{t("Jetzt speichern")}</Button>
-                  <Button size="sm" variant="ghost" icon={<LogOut size={14} />} onClick={() => { signOut(); refresh(); }}>{t("Abmelden")}</Button>
+                  <Button size="sm" icon={<Save size={14} />} busy={busy} disabled={!online} onClick={() => void run(saveNow, t("Daten im Konto gespeichert"))}>{t("Jetzt speichern")}</Button>
+                  <Button size="sm" variant="ghost" icon={<LogOut size={14} />} onClick={() => { signOut(); refresh(); window.dispatchEvent(new Event("pgl-account")); }}>{t("Abmelden")}</Button>
                 </div>
               </div>
-              <p className="tiny muted" style={{ margin: 0 }}>{t("Änderungen am Design werden automatisch ins Profil gespeichert, sobald der PC verbunden ist.")}</p>
-              <Button size="sm" variant="danger" icon={<Trash2 size={14} />} disabled={!online} onClick={async () => { if (await confirmDialog(t("Design-Profil löschen?"), t("Das Profil „{u}“ wird vom PC gelöscht. Das Design auf diesem Gerät bleibt.", { u: s.user }), { danger: true, ok: t("Löschen") })) void run(deleteProfile, t("Profil gelöscht")); }}>{t("Profil löschen")}</Button>
+              <p className="tiny muted" style={{ margin: 0 }}>{t("Änderungen werden automatisch ins Konto gespeichert, sobald der PC verbunden ist.")}</p>
+              <Button size="sm" variant="danger" icon={<Trash2 size={14} />} disabled={!online} onClick={async () => { if (await confirmDialog(t("Konto löschen?"), t("Das Konto „{u}“ wird vom PC gelöscht. Die Daten auf diesem Gerät bleiben.", { u: s.user }), { danger: true, ok: t("Löschen") })) void run(deleteProfile, t("Konto gelöscht")); }}>{t("Konto löschen")}</Button>
             </div>
           ) : (
-            <form className="stack-sm" onSubmit={(e) => { e.preventDefault(); if (!valid) return; void run(() => (mode === "login" ? signIn(u, pw) : createProfile(u, pw)), mode === "login" ? t("Angemeldet – dein Design ist geladen") : t("Profil angelegt – dein Design ist gespeichert")); }}>
-              <Segmented value={mode} onChange={setMode} label={t("Profil")} options={[{ value: "login", label: t("Anmelden") }, { value: "create", label: t("Neues Profil") }]} />
+            <form className="stack-sm" onSubmit={(e) => { e.preventDefault(); if (!valid) return; void run(() => (mode === "login" ? signIn(u, pw) : createProfile(u, pw)), mode === "login" ? t("Angemeldet – deine Daten sind geladen") : t("Konto angelegt – deine Daten sind gespeichert")); }}>
+              <Segmented value={mode} onChange={setMode} label={t("Konto")} options={[{ value: "login", label: t("Anmelden") }, { value: "create", label: t("Registrieren") }]} />
               <Field label={t("Benutzername")} hint={t("3–24 Zeichen: a–z, Ziffern, Punkt, Minus, Unterstrich")} error={user && !USER_RX.test(u) ? t("Ungültiger Benutzername") : undefined}>
                 <input className="input" value={user} maxLength={24} autoComplete="username" autoCapitalize="none" spellCheck={false} onChange={(e) => setUser(e.target.value)} />
               </Field>
@@ -57,8 +61,8 @@ export function DesignProfileCard() {
               {mode === "create" && <Field label={t("Passwort wiederholen")} error={pw2 && pw !== pw2 ? t("Passwörter sind verschieden") : undefined}>
                 <input className="input" type="password" value={pw2} autoComplete="new-password" onChange={(e) => setPw2(e.target.value)} />
               </Field>}
-              <Button type="submit" variant="primary" icon={mode === "login" ? <LogIn size={15} /> : <UserPlus size={15} />} busy={busy} disabled={!valid || !online}>{mode === "login" ? t("Anmelden und Design laden") : t("Profil anlegen")}</Button>
-              {!online && <p className="tiny muted" style={{ margin: 0 }}>{t("Braucht die Verbindung zu deinem PC – dort liegt das Profil. Ohne PC: Design-Code unten.")}</p>}
+              <Button type="submit" variant="primary" icon={mode === "login" ? <LogIn size={15} /> : <UserPlus size={15} />} busy={busy} disabled={!valid || !online}>{mode === "login" ? t("Anmelden") : t("Konto anlegen")}</Button>
+              {!online && <p className="tiny muted" style={{ margin: 0 }}>{t("Braucht einmal die Verbindung zu deinem PC – dort liegt das Konto (es gibt keinen fremden Server). Ohne PC: Design-Code unten.")}</p>}
             </form>
           )}
         <details>
@@ -71,6 +75,5 @@ export function DesignProfileCard() {
           </div>
         </details>
       </div>
-    </Card>
   );
 }

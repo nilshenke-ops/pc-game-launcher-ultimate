@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartphone } from "lucide-react";
 import { client, exitDemo } from "../lib/rpc";
@@ -176,6 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </NavLink>
           )}
           <ConnPill />
+          {!preview && <AccountButton />}
           <NavLink to="/notifications" className="btn ghost icon" aria-label={t("Benachrichtigungen")} style={{ position: "relative" }}>
             <Bell size={19} />
             {notifCount > 0 && <span className="dot error" style={{ position: "absolute", top: 8, right: 9 }} />}

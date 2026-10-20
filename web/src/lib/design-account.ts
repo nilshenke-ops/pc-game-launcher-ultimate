@@ -32,17 +32,32 @@ export function designOf(p: Prefs): Prefs {
   return d;
 }
 
+/** Data of this browser that goes with the account besides the design (small, never device keys or PC access). */
+export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms"] as const;
+
+export interface AccountData { prefs: Prefs; local: Record<string, unknown> }
+
+function localData(): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const k of ACCOUNT_KEYS) { const v = readJson<unknown>(k); if (v != null) out[k] = v; }
+  return out;
+}
+
 export async function encryptDesign(enc: string, p: Prefs): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await aes(enc), new TextEncoder().encode(JSON.stringify(designOf(p)))));
+  const payload = { v: 2, prefs: designOf(p), local: localData() };
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await aes(enc), new TextEncoder().encode(JSON.stringify(payload))));
   const out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12);
   return b64(out);
 }
 
-export async function decryptDesign(enc: string, blob: string): Promise<Prefs> {
+export async function decryptDesign(enc: string, blob: string): Promise<AccountData> {
   const all = unb64(blob);
   const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: all.slice(0, 12) }, await aes(enc), all.slice(12));
-  return sanitizePrefs(JSON.parse(new TextDecoder().decode(plain)));
+  const data = JSON.parse(new TextDecoder().decode(plain));
+  // Profiles from 2.23 hold only the design.
+  if (data && data.v === 2) return { prefs: sanitizePrefs(data.prefs), local: typeof data.local === "object" && data.local ? data.local : {} };
+  return { prefs: sanitizePrefs(data), local: {} };
 }
 
 export const session = () => readJson<DesignSession>(KEY);
@@ -60,9 +75,10 @@ export async function signIn(userIn: string, password: string) {
   const user = userIn.trim().toLowerCase();
   const k = await deriveKeys(user, password);
   const r = await client.call<{ blob: string; updatedAt: string }>("design.load", { user, key: k.auth });
-  const design = await decryptDesign(k.enc, r.blob);
+  const { prefs: design, local } = await decryptDesign(k.enc, r.blob);
   // Keep the background picture of this browser if the stored design had to leave it out.
   replacePrefs({ ...design, theme: { ...design.theme, bgImage: design.theme.bgImage ?? getPrefs().theme.bgImage } });
+  for (const key of ACCOUNT_KEYS) if (key in local) writeJson(key, local[key]);
   store({ user, ...k, savedAt: Date.now() });
 }
 
@@ -85,11 +101,16 @@ export const signOut = () => store(null);
 let timer: number | undefined;
 /** While signed in, every design change is saved to the profile a few seconds later (when the PC is reachable). */
 export function startDesignAutoSave() {
-  return onPrefsChange(() => {
+  const later = () => {
     if (!session()) return;
     window.clearTimeout(timer);
     timer = window.setTimeout(() => { if (client.status.auth === "ok") saveNow().catch(() => { /* next change tries again */ }); }, 3000);
-  });
+  };
+  const off = onPrefsChange(later);
+  // Counters, Gamer-Pass … change without a design change: saved when the page is left or hidden.
+  const onHide = () => { if (document.visibilityState === "hidden" && session() && client.status.auth === "ok") saveNow().catch(() => {}); };
+  document.addEventListener("visibilitychange", onHide);
+  return () => { off(); document.removeEventListener("visibilitychange", onHide); };
 }
 
 // ------------------------------------------------------------------ design code (works without any PC)

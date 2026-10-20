@@ -34,7 +34,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Fenster-Layouts (Programmname, Monitor, Position) | `window-layouts.json` | Fenster-Layouts → Löschen |
 | Tastenbelegung (Profile, Programmnamen, welche Taste was wird) – **keine** Tastendrücke, nichts wird mitgeschrieben | `input-remap.json` | Tastatur & Maus belegen → Löschen |
 | Gamer-Pass: Name und Symbol | nur im Browser des Geräts (`localStorage`, `pgl.gamerpass`) | Feld leeren oder Browserdaten löschen |
-| Design-Profile: Benutzername, Hash des Anmelde-Schlüssels, **verschlüsseltes** Design (der PC kann es nicht lesen; das Passwort wird nie übertragen) | `design-accounts.json` | Einstellungen → Design → Profil löschen, oder Datei löschen |
+| Konten: Benutzername, Hash des Anmelde-Schlüssels, **verschlüsseltes** Design samt Gamer-Pass/Zähler/Pausen-Erinnerung (der PC kann es nicht lesen; das Passwort wird nie übertragen) | `design-accounts.json` | Einstellungen → Design → Profil löschen, oder Datei löschen |
 | Widgets Zähler/Pausen-Erinnerung, vom Handy geprüfte Xbox-Preise | nur im Browser des Geräts (`pgl.widget.*`, `pgl.deals.ms`) | Browserdaten löschen |
 | OpenRGB-Verbindung (Adresse, Port) | `rgb.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |

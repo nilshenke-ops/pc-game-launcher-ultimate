@@ -65,10 +65,10 @@ Seite: /trophies
 Stichworte: trophäen trophäenraum erfolge gamer-pass profilkarte karte level xp teilen bild gold silber bronze
 Die Erfolge aus GameQuest als Trophäen in drei Regalen: Gold (100 XP und mehr), Silber (50 XP), Bronze (25 XP); freigeschaltete mit Datum, gesperrte mit Fortschritt. Der Gamer-Pass ist eine Karte mit Level, XP-Balken, Stunden, Spielen, längster Serie, Trophäen und meistgespieltem Spiel – Name und Symbol frei wählbar (bleiben auf dem Gerät), „Als Bild speichern“ oder „Teilen“. Alles aus eigenen Daten; ohne PC wird der zuletzt geladene Stand gezeigt.
 
-## Design-Profil (Design in einen neuen Browser mitnehmen)
+## Konto (Daten in einen anderen Browser mitnehmen)
 Seite: /settings?s=design
-Stichworte: profil konto benutzername passwort anmelden design übertragen neuer browser anderes handy sync design-code
-Einstellungen → Design & Layout → „Design-Profil“: „Neues Profil“ mit Benutzername und Passwort anlegen (PC muss verbunden sein); im neuen Browser nach dem Verbinden mit dem PC „Anmelden und Design laden“. Danach wird jede Design-Änderung automatisch ins Profil gespeichert. Verschlüsselt im Browser – der PC speichert nur verschlüsselte Daten, das Passwort verlässt das Gerät nie; Passwort vergessen = Design nicht wiederherstellbar (am PC unter Einstellungen löschbar). Ohne Konto und ohne PC: „Design-Code kopieren“ und im anderen Browser einfügen.
+Stichworte: profil konto benutzername passwort anmelden registrieren design übertragen neuer browser anderes handy sync design-code ohne email
+Optional, ohne E-Mail. Personen-Symbol oben rechts neben der Glocke (oder Einstellungen → Design & Layout → „Konto“): „Registrieren“ mit Benutzername und Passwort, im anderen Browser „Anmelden“. Mit kommen Design, Startseite, Leiste, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung. Früher hieß das „Design-Profil“: „Neues Profil“ mit Benutzername und Passwort anlegen (PC muss verbunden sein); im neuen Browser nach dem Verbinden mit dem PC „Anmelden und Design laden“. Danach wird jede Design-Änderung automatisch ins Profil gespeichert. Verschlüsselt im Browser – der PC speichert nur verschlüsselte Daten, das Passwort verlässt das Gerät nie; Passwort vergessen = Design nicht wiederherstellbar (am PC unter Einstellungen löschbar). Ohne Konto und ohne PC: „Design-Code kopieren“ und im anderen Browser einfügen.
 
 ## Neue Widgets
 Seite: /
