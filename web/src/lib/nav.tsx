@@ -34,6 +34,7 @@ export function navItems(): NavItem[] {
     { path: "/peripherals", label: t("Controller & RGB"), short: t("Controller"), icon: Gamepad, group: g.sys, keywords: "controller gamepad xbox xinput vibration akku stick drift rgb beleuchtung openrgb farbe led tastatur maus" },
     { path: "/storage", label: t("Speicher & Updates"), short: t("Speicher"), icon: HardDrive, group: g.sys, keywords: "speicherplatz festplatte ssd laufwerk größe update updates steam patch download frei" },
     { path: "/network", label: t("Netzwerkdiagnose"), short: t("Netzwerk"), icon: Wifi, group: g.sys, keywords: "ping jitter paketverlust latenz ping doctor lag server" },
+    { path: "/start-times", label: t("Startzeit-Analyse"), short: t("Startzeit"), icon: Timer, group: g.sys, keywords: "startzeit ladezeit dauer start langsam schnell analyse messen spiel startet" },
     { path: "/history", label: t("Gaming-Verlauf"), short: t("Verlauf"), icon: History, group: g.sys, keywords: "statistik spielzeit" },
     { path: "/overlay-settings", label: t("Overlay & Aufnahme"), short: t("Overlay"), icon: Video, group: g.sys, keywords: "overlay game bar aufnahme video replay clip obs fps hud" },
     { path: "/files", label: t("Dateien"), icon: FolderUp, group: g.conn, keywords: "datei dateien übertragen senden teilen upload download bilder clips config austausch handy pc" },
@@ -68,7 +69,7 @@ export const ICONS: Record<string, LucideIcon> = {
 const NAV_COLORS: Record<string, string> = {
   "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
-  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
+  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",
   "/diagnostics": "#2dd4bf", "/updates": "#4ade80", "/help": "#93c5fd",
 };

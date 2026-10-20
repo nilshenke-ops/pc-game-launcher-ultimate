@@ -222,12 +222,13 @@ public sealed class CompanionServices : IAsyncDisposable
         Library.Launched += (item, result, by) =>
         {
             History.RecordLaunch(item, result, by);
+            if (result.Ok) Sessions.Boost();
             if (!result.Ok) Notifications.Push("launch-failed:" + item.Id, Severity.Error, $"Start fehlgeschlagen: {item.Name}", result.Message, "/library");
         };
 
         Sessions.Started += (item, at) =>
         {
-            History.SessionStarted(item, at);
+            History.SessionStarted(item, at, Sessions.LastScanAccuracy);
             Perf.GameStarted(item.Id);
             var p = Profiles.Get();
             var profileId = ProfileFor(item, p);

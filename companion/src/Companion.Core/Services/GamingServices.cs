@@ -372,12 +372,18 @@ public sealed class HistoryService
         _hub.Changed("history");
     }
 
-    public void SessionStarted(LibraryItem item, DateTime at)
+    public void SessionStarted(LibraryItem item, DateTime at, int accuracySeconds = 0)
     {
         if (!Enabled) return;
         _store.Update(f =>
         {
-            f.Sessions.Insert(0, new GameSession { ItemId = item.Id, Name = item.Name, StartedAt = at });
+            var launch = StartTimes.LaunchFor(f, item.Id, at);
+            f.Sessions.Insert(0, new GameSession
+            {
+                ItemId = item.Id, Name = item.Name, StartedAt = at,
+                StartSeconds = launch == null ? null : Math.Round((at - launch.At).TotalSeconds, 1),
+                StartAccuracy = launch == null || accuracySeconds <= 0 ? null : accuracySeconds,
+            });
             if (f.Sessions.Count > 1000) f.Sessions.RemoveRange(1000, f.Sessions.Count - 1000);
         });
         _hub.Changed("history");
@@ -425,6 +431,8 @@ public sealed class HistoryService
     {
         _store.Update(f => { foreach (var s in f.Sessions.Where(s => s.EndedAt == null)) s.EndedAt = s.StartedAt; });
     }
+
+    public object StartTimeReport(int defaultAccuracy) => StartTimes.Report(_store.Snapshot(), defaultAccuracy);
 
     public object Get()
     {
@@ -476,6 +484,27 @@ public sealed class SessionTracker : IDisposable
     }
 
     public int PeriodSeconds { get; private set; }
+    DateTime _boostUntil;
+    /// <summary>Scan interval right now – 1 s for a while after a start command, so "running" and the start time are exact.</summary>
+    public int CurrentAccuracy => DateTime.UtcNow < _boostUntil ? 1 : PeriodSeconds;
+
+    /// <summary>Scan interval of the scan that saw the last change (for the start-time measurement).</summary>
+    public int LastScanAccuracy { get; private set; }
+
+    /// <summary>After a start command: look every second for up to 3 minutes (or until a new game is seen).</summary>
+    public void Boost()
+    {
+        if (_timer == null) return;
+        _boostUntil = DateTime.UtcNow.AddMinutes(3);
+        _timer.Change(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    void EndBoost()
+    {
+        if (_boostUntil == default) return;
+        _boostUntil = default;
+        _timer?.Change(TimeSpan.FromSeconds(PeriodSeconds), TimeSpan.FromSeconds(PeriodSeconds));
+    }
 
     public void Start()
     {
@@ -486,6 +515,7 @@ public sealed class SessionTracker : IDisposable
             var p = Math.Clamp(s.ProcessScanSeconds, 2, 60);
             if (p == PeriodSeconds) return;
             PeriodSeconds = p;
+            if (DateTime.UtcNow < _boostUntil) return; // the end of the boost applies the new interval
             _timer?.Change(TimeSpan.FromSeconds(p), TimeSpan.FromSeconds(p)); // new scan interval applies without a restart
         };
     }
@@ -523,6 +553,8 @@ public sealed class SessionTracker : IDisposable
             }
             foreach (var id in _running.Keys.Where(id => items.All(i => i.Id != id)).ToList()) _running.Remove(id);
         }
+        LastScanAccuracy = CurrentAccuracy;
+        if (started.Count > 0 || (_boostUntil != default && now >= _boostUntil)) EndBoost();
         foreach (var i in started) Started?.Invoke(i, now);
         foreach (var i in stopped) Stopped?.Invoke(i, now);
     }

@@ -186,3 +186,11 @@ Keine Laufzeitänderung: die Installation läuft nur auf Knopfdruck (Datei kopie
 | Ohne eingeschaltetes Profil | – | kein Hook, kein Thread |
 | Mit Profil | – | ein Thread mit Tastatur-Hook; Maus-Hook nur bei Maus-Belegung. Pro Ereignis ein Wörterbuch-Zugriff; das Vordergrund-Programm wird nur bei Fensterwechsel neu gelesen. Mausbewegungen werden ohne Prüfung sofort weitergereicht (wichtig bei 1000-Hz-Mäusen) |
 | Web | – | Seite „Tastatur & Maus belegen“ im eigenen Chunk (~17 KB, 6 KB gzip), erst beim Öffnen geladen |
+
+## 2.21.0 (20.10.2026)
+
+| | 2.20.0 | 2.21.0 |
+|---|---|---|
+| Prozess-Suche nach einem Start | alle 5 s | 3 min lang jede Sekunde, dann wieder alle 5 s (endet früher, sobald das Spiel erkannt ist) |
+| Zeit bis „läuft“ | bis zu 5 s nach dem echten Start | bis zu 1 s |
+| Sonst | – | unverändert; die Auswertung rechnet nur beim Öffnen der Seite |

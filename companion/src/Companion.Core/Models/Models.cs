@@ -304,6 +304,10 @@ public sealed class GameSession
     public string? Note { get; set; }
     /// <summary>Load measured on the PC while this game ran (every 10 s). No FPS: Windows offers no source without overlays/drivers.</summary>
     public SessionPerf? Perf { get; set; }
+    /// <summary>Seconds from the start command to the game process being seen (null = not started from the app).</summary>
+    public double? StartSeconds { get; set; }
+    /// <summary>How often the PC looked for the process while waiting, in seconds – the measurement is that exact.</summary>
+    public int? StartAccuracy { get; set; }
 }
 
 public sealed class SessionPerf

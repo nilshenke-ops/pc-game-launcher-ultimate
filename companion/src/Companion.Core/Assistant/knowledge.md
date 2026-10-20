@@ -60,6 +60,11 @@ Seite: /peripherals
 Stichworte: controller gamepad xbox test tasten stick drift vibration akku rgb beleuchtung openrgb farbe profil led
 Controller: Xbox- und XInput-kompatible Controller mit Akku-Stand, Live-Test (Tasten, Sticks, Trigger – zeigt Stick-Drift) und Vibrationstest. PlayStation/Switch nur über Steam Input oder DS4Windows. RGB: über das kostenlose OpenRGB (dort „SDK Server“ → „Start Server“). Eine Farbe für alle Geräte oder einzeln, OpenRGB-Profile laden – auch als Bausteine „RGB-Farbe setzen“ und „RGB-Profil laden“ in Quick Actions. Verbindung nur zu diesem PC oder einem Gerät im Heimnetz.
 
+## Startzeit-Analyse
+Seite: /start-times
+Stichworte: startzeit ladezeit dauer start langsam schnell analyse messen spiel startet warum lädt lange
+Zeigt je Spiel, wie lange es vom Start in der App dauert, bis das Programm des Spiels am PC läuft: zuletzt, üblich (Median), am schnellsten, am langsamsten und den Verlauf der letzten 20 Starts. Hinweis, wenn die letzten Starts deutlich langsamer oder schneller wurden. Nach einem Start sucht der PC 3 Minuten lang jede Sekunde nach dem Spiel (auf etwa ±1 s genau; dadurch erscheint „läuft“ auch schneller). Gemessen wird bis der Prozess läuft, nicht bis zum Hauptmenü; nur Starts aus der App zählen.
+
 ## Tastatur & Maus belegen
 Seite: /input
 Stichworte: tastenbelegung tasten umbelegen umlegen remap tastatur maus royal kludge rk attack shark seitentaste maustaste caps lock windows-taste sperren profil spiel push-to-talk notaus

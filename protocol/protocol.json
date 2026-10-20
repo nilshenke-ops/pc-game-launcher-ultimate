@@ -96,6 +96,7 @@
     "layouts.current": "manage",
     "layouts.capture": "manage",
     "layouts.save": "manage",
+    "history.startTimes": "view",
     "input.list": "view",
     "input.devices": "view",
     "input.save": "manage",

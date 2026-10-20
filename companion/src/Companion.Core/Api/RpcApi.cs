@@ -354,6 +354,7 @@ public static class RpcApi
 
         // ------------------------------------------------------------ history
         rpc.Register("history.get", ctx => s.History.Get());
+        rpc.Register("history.startTimes", _ => s.History.StartTimeReport(s.Sessions.PeriodSeconds));
         rpc.Register("history.clear", ctx => { s.History.Clear(); return true; });
 
         // ------------------------------------------------------------ sounds
