@@ -41,6 +41,7 @@ sealed class WindowsPlatform : IPlatform
     public IGameMode GameMode { get; } = new WindowsGameMode();
     public IProcessControl ProcessControl { get; } = new WindowsProcessControl();
     public IMediaTools Media { get; } = new WindowsMediaTools();
+    public IInstaller Installer { get; } = new WindowsInstaller(() => Program.RequestExitFromAnyThread());
     public WindowsDesktopWidgets DesktopWidgetWindows { get; }
     public IDesktopWidgets DesktopWidgets => DesktopWidgetWindows;
 }

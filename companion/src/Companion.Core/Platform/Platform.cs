@@ -34,6 +34,8 @@ public interface IPlatform
     IProcessControl ProcessControl => NullProcessControl.Instance;
     /// <summary>Thumbnails of screenshots/clips and moving files to the recycle bin (Windows companion only).</summary>
     IMediaTools Media => NullMediaTools.Instance;
+    /// <summary>Own folder, Start menu, "Apps &amp; Features" and uninstall (Windows companion only).</summary>
+    IInstaller Installer => NullInstaller.Instance;
 }
 
 /// <summary>Pictures for the capture library and a delete that can be undone.</summary>

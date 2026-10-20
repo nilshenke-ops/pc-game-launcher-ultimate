@@ -16,6 +16,18 @@ static class Program
     {
         // One companion per PC (all Windows sessions): two would fight for the same port.
         using var mutex = new Mutex(true, @"Global\PCGameLauncherUltimate.Companion", out var first);
+        // "Deinstallieren" from Apps & Features (or from the app itself): a running companion is asked to end first.
+        if (args.Contains("--uninstall"))
+        {
+            if (!first)
+            {
+                try { using var ev = EventWaitHandle.OpenExisting(@"Local\PCGameLauncherUltimate.Exit"); ev.Set(); } catch { /* not running in this session */ }
+                try { first = mutex.WaitOne(TimeSpan.FromSeconds(30)); } catch (AbandonedMutexException) { first = true; }
+                if (!first) { MessageBox.Show("Bitte zuerst Nexus Gaming Hub beenden (Symbol neben der Uhr → Beenden) und dann erneut deinstallieren.", "Nexus Gaming Hub", MessageBoxButtons.OK, MessageBoxIcon.Information); return 1; }
+            }
+            Application.EnableVisualStyles();
+            return WindowsInstaller.RunUninstall(args.Contains("--quiet"), args.Contains("--remove-data"));
+        }
         // After an update/rollback the previous process is still shutting down: wait for it instead of exiting.
         if (!first && args.Contains("--updated"))
         {
@@ -52,6 +64,8 @@ static class Program
     }
 
     public static void RequestExit() => _context?.ExitApp();
+    /// <summary>Ends the app from a background thread or an RPC call (the UI thread does the work).</summary>
+    public static void RequestExitFromAnyThread() => _context?.Post(() => _context.ExitApp());
     public static UpdateGuard Guard { get; private set; } = null!;
 }
 
@@ -64,6 +78,10 @@ sealed class TrayAppContext : ApplicationContext
     readonly WindowsOverlay _overlay;
     readonly WindowsDesktopWidgets _desktopWidgets;
     readonly EventWaitHandle _showSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Show");
+    /// <summary>Set by an uninstall that was started from Apps &amp; Features while the app runs.</summary>
+    readonly EventWaitHandle _exitSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Exit");
+    UiInvoker? _ui;
+    public void Post(Action a) => _ui?.Post(a);
     bool _exiting;
     System.Threading.Timer? _stableTimer;
 
@@ -72,6 +90,7 @@ sealed class TrayAppContext : ApplicationContext
         _form = new MainForm();
         _ = _form.Handle; // creates the UI thread's synchronization context target
         var ui = new UiInvoker(_form);
+        _ui = ui;
         TrayIcon? trayRef = null;
         var platform = new WindowsPlatform(ui, () => trayRef);
         ((WindowsAutostart)platform.Autostart).RepairMovedPath();
@@ -88,6 +107,11 @@ sealed class TrayAppContext : ApplicationContext
         if (!(startMinimized && settings.StartMinimized)) _form.Show();
         _stableTimer = new System.Threading.Timer(_ => Program.Guard.MarkStable(UpdateService.CurrentVersion), null, UpdateGuard.StableAfter, Timeout.InfiniteTimeSpan);
 
+        new Thread(() =>
+        {
+            _exitSignal.WaitOne();
+            if (!_exiting) ui.Post(() => ExitApp());
+        }) { IsBackground = true, Name = "exit-signal" }.Start();
         new Thread(() =>
         {
             while (true)

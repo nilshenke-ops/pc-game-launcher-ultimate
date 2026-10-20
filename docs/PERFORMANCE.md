@@ -158,3 +158,7 @@ Kosten des schnelleren Wiederverbindens: nur solange die App sichtbar ist und de
 | Haupt-Chunk | 380 KB (121 KB gzip) | 381 KB (121 KB gzip) – Push, Kompatibilität und Abläufe liegen in den Seiten-Chunks |
 | PC im Leerlauf | – | nichts Neues: Abläufe nur, wenn gestartet; Push nur bei neuen Meldungen (höchstens 2 gleichzeitig); Steam-Anfrage nur auf Knopfdruck |
 | Abbruch eines Ablaufs | – | sofort, auch während einer Wartezeit (Test: < 5 s inkl. Abfrage, meist unter 0,2 s) |
+
+## 2.17.0 (20.10.2026)
+
+Keine Laufzeitänderung: die Installation läuft nur auf Knopfdruck (Datei kopieren, ein paar Registry-Werte, zwei Verknüpfungen). Haupt-Chunk unverändert (~381 KB, 121 KB gzip); die Installations-Karte liegt im Einstellungs-Chunk.

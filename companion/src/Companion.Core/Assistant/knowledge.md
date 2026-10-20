@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.16.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.17.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -39,6 +39,11 @@ Laufwerke mit freiem Platz, Größe jedes Spiels und Update-Stand. Steam meldet 
 Seite: /games
 Stichworte: kompatibel kompatibilität läuft systemanforderungen mindestanforderungen empfohlen anforderungen hardware reicht mein pc kaufen
 Bei Steam-Spielen (Spiel bearbeiten → „Läuft das auf meinem PC?“) und auf der Wunschliste im Deal Radar: Der PC fragt einmal den Steam-Shop nach den Systemanforderungen (Mindestens/Empfohlen) und vergleicht sie mit deinem PC. Automatisch bewertet werden nur Zahlen: Arbeitsspeicher, freier Speicherplatz und Grafikspeicher. Prozessor und Grafikkarte stehen daneben zum selbst Vergleichen – Namen lassen sich nicht zuverlässig einstufen. Das Ergebnis bleibt auf dem Gerät (auch ohne PC sichtbar) und am PC 7 Tage gespeichert.
+
+## Installieren und Deinstallieren (Windows)
+Seite: /settings
+Stichworte: installieren installation setup startmenü desktop symbol deinstallieren entfernen apps features programme autostart smartscreen
+Am PC: Einstellungen → Installation & Autostart → „Installieren“. Das Programm kommt nach %LOCALAPPDATA%\Programs\Nexus Gaming Hub, bekommt einen Startmenü-Eintrag (optional Desktop-Symbol), startet auf Wunsch mit Windows und erscheint in „Apps & Features“ – ohne Administrator. Danach startet es aus dem neuen Ordner neu; die heruntergeladene Datei kann gelöscht werden. Deinstallieren: dort oder in Windows unter „Apps & Features“ → Nexus Gaming Hub → Deinstallieren; Einstellungen und Daten bleiben, außer man wählt „auch Daten löschen“. Updates funktionieren wie vorher. Ohne Code-Signatur zeigt Windows beim ersten Start evtl. „Der Computer wurde durch Windows geschützt“ → „Weitere Informationen“ → „Trotzdem ausführen“.
 
 ## Push-Benachrichtigungen
 Seite: /notifications
@@ -188,7 +193,7 @@ Echte Ereignisse vom PC (Startfehler, Updates, erreichte Ziele, Zielpreise, Spie
 ## Einstellungen
 Seite: /settings
 Stichworte: einstellungen design farben theme sprache backup verbindung sicherheit autostart datenschutz navigation
-Bereiche: Allgemein (Sprache, PC-Name), Design & Layout (Dunkel/Hell, Themes, Farben, Hintergründe inkl. Cartoon-Szenen, Dashboard-Layouts, Navigation sortieren/ausblenden), Verbindung (WLAN, Port, Relay, öffentliche Adresse), Sicherheit (Zugangscode), Benachrichtigungen, Autostart & Hintergrund, Updates, Backup (erstellen, prüfen, wiederherstellen, Wiederherstellungspunkte), Datenschutz.
+Bereiche: Allgemein (Sprache, PC-Name), Design & Layout (Dunkel/Hell, Themes, Farben, Hintergründe inkl. Cartoon-Szenen, Dashboard-Layouts, Navigation sortieren/ausblenden), Verbindung (WLAN, Port, Relay, öffentliche Adresse), Sicherheit (Zugangscode), Benachrichtigungen, Installation & Autostart (Installieren mit Startmenü und „Apps & Features“, Deinstallieren), Updates, Backup (erstellen, prüfen, wiederherstellen, Wiederherstellungspunkte), Datenschutz.
 
 ## Navigation anpassen
 Seite: /settings?s=design

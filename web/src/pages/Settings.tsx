@@ -38,7 +38,7 @@ export default function SettingsPage() {
     ["connection", t("Verbindung"), <Globe size={17} />],
     ["security", t("Sicherheit"), <Lock size={17} />],
     ["notifications", t("Benachrichtigungen"), <Bell size={17} />],
-    ["autostart", t("Autostart & Hintergrund"), <Power size={17} />],
+    ["autostart", t("Installation & Autostart"), <Power size={17} />],
     ["updates", t("Updates"), <RefreshCw size={17} />],
     ["backup", t("Backup & Wiederherstellung"), <ArchiveRestore size={17} />],
     ["privacy", t("Datenschutz"), <UserX size={17} />],
@@ -394,6 +394,7 @@ function Autostart() {
   const toggle = (v: boolean) => client.call("autostart.set", { enabled: v }).then(() => toast(v ? t("Autostart aktiviert") : t("Autostart deaktiviert"), "success")).catch((e) => toast(e.message, "error"));
   return (
     <Loadable loading={s.loading || a.loading} error={s.error ?? a.error} onRetry={() => { s.reload(); a.reload(); }}>
+      {conn.me?.isLocal && <InstallCard />}
       <Card title={t("Autostart & Hintergrund")} icon={<Power size={18} />}>
         <div className="stack">
           {a.data && !a.data.supported && <Banner kind="info">{t("Autostart wird nur vom Windows-Companion unterstützt.")}</Banner>}
@@ -406,6 +407,51 @@ function Autostart() {
         </div>
       </Card>
     </Loadable>
+  );
+}
+
+interface InstallStatus { supported: boolean; installed: boolean; currentPath?: string | null; installPath?: string | null; startMenu: boolean; desktop: boolean; uninstallEntry: boolean; autostart: boolean; otherCopyInstalled: boolean; reason?: string | null }
+
+/** Install the single EXE for this Windows user (own folder, Start menu, Apps & Features) – only at the PC itself. */
+function InstallCard() {
+  const q = useRpc<InstallStatus>("install.status", {}, ["autostart"]);
+  const [o, setO] = useState({ startMenu: true, desktop: false, autostart: true });
+  const [busy, setBusy] = useState(false);
+  const st = q.data;
+  useEffect(() => { if (st?.installed) setO({ startMenu: st.startMenu, desktop: st.desktop, autostart: st.autostart }); }, [st]);
+  const install = async () => {
+    setBusy(true);
+    try {
+      const r = await client.call<InstallStatus>("install.run", o);
+      toast(r.installed ? t("Gespeichert") : t("Installiert – das Programm startet jetzt aus dem neuen Ordner neu"), "success");
+      q.reload();
+    } catch (e) { toast((e as Error).message, "error"); }
+    finally { setBusy(false); }
+  };
+  const uninstall = async () => {
+    if (!(await confirmDialog(t("Nexus Gaming Hub deinstallieren?"), t("Startmenü-Eintrag, Desktop-Symbol, Autostart und das Programm werden entfernt. Deine Einstellungen und Daten bleiben (für eine spätere Installation)."), { danger: true, ok: t("Deinstallieren") }))) return;
+    client.call("install.uninstall", { removeData: false }).catch((e: Error) => toast(e.message, "error"));
+  };
+  if (!st) return null;
+  return (
+    <Card title={t("Installation")} icon={<Download size={18} />} style={{ marginBottom: 16 }}>
+      <div className="stack">
+        {!st.supported ? <Banner kind="info">{st.reason ?? t("Installieren gibt es nur im Windows-Begleiter.")}</Banner> : <>
+          {st.installed
+            ? <Banner kind="ok">{t("Installiert für dein Benutzerkonto – in „Apps & Features“ als „Nexus Gaming Hub“.")}</Banner>
+            : <Banner kind="info">{st.otherCopyInstalled ? t("Es ist schon eine Version installiert, diese hier läuft aber von einem anderen Ort. „Installieren“ ersetzt die installierte durch diese.") : t("Läuft gerade direkt aus der heruntergeladenen Datei. Installieren legt das Programm in einen eigenen Ordner, ins Startmenü und in „Apps & Features“ (mit Deinstallieren) – ohne Administrator.")}</Banner>}
+          <Switch checked={o.startMenu} onChange={(v) => setO({ ...o, startMenu: v })} label={t("Eintrag im Startmenü")} />
+          <Switch checked={o.desktop} onChange={(v) => setO({ ...o, desktop: v })} label={t("Symbol auf dem Desktop")} />
+          <Switch checked={o.autostart} onChange={(v) => setO({ ...o, autostart: v })} label={t("Mit Windows starten")} />
+          <div className="row" style={{ gap: 8 }}>
+            <Button variant="primary" busy={busy} onClick={() => void install()}>{st.installed ? t("Speichern") : t("Installieren")}</Button>
+            {(st.installed || st.uninstallEntry) && <Button variant="danger" onClick={() => void uninstall()}>{t("Deinstallieren")}</Button>}
+          </div>
+          <p className="tiny muted mono ellipsis" title={st.installPath ?? ""}>{t("Ordner: {p}", { p: st.installPath ?? "–" })}</p>
+          <p className="tiny muted">{t("Daten (Bibliothek, Profile, Kopplungen …) liegen getrennt und bleiben bei Updates und beim Deinstallieren erhalten. Ohne Code-Signatur zeigt Windows beim ersten Start evtl. „Der Computer wurde durch Windows geschützt“ → „Weitere Informationen“ → „Trotzdem ausführen“.")}</p>
+        </>}
+      </div>
+    </Card>
   );
 }
 

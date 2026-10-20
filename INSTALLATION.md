@@ -8,7 +8,8 @@
 2. Optional Prüfsumme kontrollieren: `certutil -hashfile PCGameLauncherCompanion.exe SHA256` → muss mit `SHA256SUMS.txt` übereinstimmen.
 3. `PCGameLauncherCompanion.exe` starten. Die Datei ist nicht code-signiert; SmartScreen zeigt ggf. „Weitere Informationen → Trotzdem ausführen“.
 4. **Firewall-Abfrage:** „Private Netzwerke“ erlauben. Ohne diese Freigabe erreicht das Handy den PC nicht.
-5. Optional unter **Einstellungen → Autostart & Hintergrund** „Mit Windows starten“ aktivieren (nur für dein Benutzerkonto).
+5. **Installieren (empfohlen, ab 2.17):** in der App **Einstellungen → Installation & Autostart → „Installieren“**. Das Programm zieht nach `%LOCALAPPDATA%\Programs\Nexus Gaming Hub`, bekommt einen Startmenü-Eintrag (optional ein Desktop-Symbol), startet auf Wunsch mit Windows und steht in **Windows-Einstellungen → Apps → Installierte Apps** als „Nexus Gaming Hub“ – ohne Administratorrechte. Danach startet es aus dem neuen Ordner neu; die heruntergeladene Datei kannst du löschen.
+6. **Deinstallieren:** in der App (gleiche Stelle) oder in Windows unter „Installierte Apps“ → Nexus Gaming Hub → Deinstallieren. Einstellungen und Daten bleiben, außer du wählst „auch Daten löschen“.
 
 Alle Daten liegen in `%APPDATA%\PCGameLauncherUltimate` (getrennt von der EXE – Updates ersetzen nur die EXE).
 

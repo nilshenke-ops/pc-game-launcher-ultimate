@@ -570,6 +570,22 @@ public static class RpcApi
             return true;
         });
 
+        // ------------------------------------------------------------ installation (only at the PC itself)
+        rpc.Register("install.status", _ => s.Platform.Installer.Status());
+        rpc.Register("install.run", ctx =>
+        {
+            bool B(string n, bool d) => ctx.Params.TryGetProperty(n, out var v) ? v.ValueKind == JsonValueKind.True : d;
+            var error = s.Platform.Installer.Install(new InstallOptions(B("startMenu", true), B("desktop", false), B("autostart", true)), restart: true);
+            if (error != null) throw new RpcException("failed", error);
+            return s.Platform.Installer.Status();
+        });
+        rpc.Register("install.uninstall", ctx =>
+        {
+            var error = s.Platform.Installer.Uninstall(ctx.Params.TryGetProperty("removeData", out var v) && v.ValueKind == JsonValueKind.True);
+            if (error != null) throw new RpcException("failed", error);
+            return true;
+        });
+
         rpc.Register("system.openDataFolder", ctx => { s.Platform.Desktop.OpenFolder(s.Paths.DataDir); return true; });
 
         var missing = rpc.ProtocolPermissions.Keys.Except(rpc.RegisteredMethods).ToList();
@@ -678,7 +694,7 @@ public static class RpcApi
         Add("hotkeys", "Hotkeys", !s.Platform.Hotkeys.Supported ? "unsupported" : "ok", s.Platform.Hotkeys.Supported ? $"{hk.Count} konfiguriert" : "Nur im Windows-Companion");
         if (!s.Platform.Autostart.Supported) Add("autostart", "Autostart", "unsupported", "Nur im Windows-Begleiter.");
         else if (s.Platform.Autostart.IsEnabled()) Add("autostart", "Autostart", "ok", "Aktiv – der Begleiter startet mit Windows, das iPad kann sich nach dem Einschalten des PCs sofort verbinden.");
-        else Add("autostart", "Autostart", "warn", "Aus – nach einem PC-Neustart ist der Begleiter nicht erreichbar, bis er von Hand gestartet wird.", "Einstellungen → Autostart & Hintergrund → „Mit Windows starten“ einschalten.");
+        else Add("autostart", "Autostart", "warn", "Aus – nach einem PC-Neustart ist der Begleiter nicht erreichbar, bis er von Hand gestartet wird.", "Einstellungen → Installation & Autostart → „Mit Windows starten“ einschalten.");
         Add("sessions", "Spielerkennung", "ok", $"Prüft alle {s.Sessions.PeriodSeconds} s, {s.Sessions.Running().Count} Spiel(e) laufen");
         try
         {

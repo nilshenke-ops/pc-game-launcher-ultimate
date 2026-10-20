@@ -233,6 +233,9 @@
     "ui.getPrefs": "view",
     "ui.savePrefs": "view",
 
+    "install.status": "local",
+    "install.run": "local",
+    "install.uninstall": "local",
     "system.openDataFolder": "local"
   },
   "events": [
