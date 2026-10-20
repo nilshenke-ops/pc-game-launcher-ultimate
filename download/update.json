@@ -1,28 +1,29 @@
 {
-  "version": "2.15.0",
+  "version": "2.16.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.15.0/PCGameLauncherCompanion.exe",
-  "size": 87444559,
-  "sha256": "de0f286bb9fff1ed6ee113b13461782c631b7f833d340e2e432ab0e9102ff5c0",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.16.0/PCGameLauncherCompanion.exe",
+  "size": 87472669,
+  "sha256": "7c0f4973d9e7ddce77eecbf94e7953e8c45b735f155edcd47a79ca27c5d22bba",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.15.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.15.0/PCGameLauncherCompanion-2.15.0-win-x64.zip",
-    "size": 81710830,
-    "sha256": "75c7139af54b8de7a76f059243a4f530eff6399c1dfce3d5377746403ef2128c"
+    "fileName": "PCGameLauncherCompanion-2.16.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.16.0/PCGameLauncherCompanion-2.16.0-win-x64.zip",
+    "size": 81738331,
+    "sha256": "889e2957f9454b250d035573f8d3af227709544299799cbf0979da106f509357"
   },
-  "notes": "Dateien zwischen Handy und PC (neuer Bereich „Dateien“): senden bis 200 MB pro Datei, vom PC aufs Handy holen oder teilen, Dateien „offline behalten“. Ohne PC wartet eine Datei auf dem Gerät und wird beim Verbinden automatisch gesendet. Am PC landet alles in Downloads\\Nexus Gaming Hub; der PC öffnet empfangene Dateien nie selbst, Windows warnt vor dem Ausführen · Aufnahmen: Screenshots und Clips von Windows, Xbox Game Bar, Steam, NVIDIA und OBS an einem Ort – nach Spiel, Tag oder Ordner, mit Suche, Favoriten und Schlagwörtern, Vorschau und Abspielen am Handy, Löschen in den Papierkorb. Ohne PC bleiben Liste und gesehene Vorschaubilder auf dem Gerät; Favoriten und Schlagwörter werden vorgemerkt · Speicher & Updates: Laufwerke, Größe jedes Spiels und Update-Stand der Steam-Spiele (Update ausstehend mit Größe, wird aktualisiert, pausiert, Dateien beschädigt) – auch ohne PC mit dem letzten Stand. Launcher ohne lesbaren Update-Stand werden ehrlich als „unbekannt“ angezeigt",
+  "notes": "Abläufe mit Fortschritt: Jede Quick Action zeigt Schritt für Schritt, was erledigt ist, was gerade läuft und was fehlgeschlagen ist – auf allen Geräten. „Abbrechen“ stoppt vor dem nächsten Schritt (auch mitten in einer Wartezeit); nach einem Abbruch lässt sich ein gewechseltes Profil zurücksetzen · „Läuft das auf meinem PC?“ für Steam-Spiele und die Wunschliste: Systemanforderungen aus dem Steam-Shop neben den echten Werten deines PCs; bewertet werden nur Arbeitsspeicher, Speicherplatz und Grafikspeicher – Prozessor und Grafikkarte zum selbst Vergleichen · Push-Benachrichtigungen aufs Handy, auch bei geschlossener App (Termine, Abläufe, Aufnahmen, Updates …): vom PC selbst verschlüsselt, Kategorien wählbar, Test-Knopf. iPhone/iPad: App auf dem Home-Bildschirm",
   "changes": {
     "neu": [
-      "Dateien zwischen Handy und PC (neuer Bereich „Dateien“): senden bis 200 MB pro Datei, vom PC aufs Handy holen oder teilen, Dateien „offline behalten“. Ohne PC wartet eine Datei auf dem Gerät und wird beim Verbinden automatisch gesendet. Am PC landet alles in Downloads\\Nexus Gaming Hub; der PC öffnet empfangene Dateien nie selbst, Windows warnt vor dem Ausführen",
-      "Aufnahmen: Screenshots und Clips von Windows, Xbox Game Bar, Steam, NVIDIA und OBS an einem Ort – nach Spiel, Tag oder Ordner, mit Suche, Favoriten und Schlagwörtern, Vorschau und Abspielen am Handy, Löschen in den Papierkorb. Ohne PC bleiben Liste und gesehene Vorschaubilder auf dem Gerät; Favoriten und Schlagwörter werden vorgemerkt",
-      "Speicher & Updates: Laufwerke, Größe jedes Spiels und Update-Stand der Steam-Spiele (Update ausstehend mit Größe, wird aktualisiert, pausiert, Dateien beschädigt) – auch ohne PC mit dem letzten Stand. Launcher ohne lesbaren Update-Stand werden ehrlich als „unbekannt“ angezeigt"
+      "Abläufe mit Fortschritt: Jede Quick Action zeigt Schritt für Schritt, was erledigt ist, was gerade läuft und was fehlgeschlagen ist – auf allen Geräten. „Abbrechen“ stoppt vor dem nächsten Schritt (auch mitten in einer Wartezeit); nach einem Abbruch lässt sich ein gewechseltes Profil zurücksetzen",
+      "„Läuft das auf meinem PC?“ für Steam-Spiele und die Wunschliste: Systemanforderungen aus dem Steam-Shop neben den echten Werten deines PCs; bewertet werden nur Arbeitsspeicher, Speicherplatz und Grafikspeicher – Prozessor und Grafikkarte zum selbst Vergleichen",
+      "Push-Benachrichtigungen aufs Handy, auch bei geschlossener App (Termine, Abläufe, Aufnahmen, Updates …): vom PC selbst verschlüsselt, Kategorien wählbar, Test-Knopf. iPhone/iPad: App auf dem Home-Bildschirm"
     ],
     "verbessert": [
-      "Steam-Spiele zeigen ihre Größe sofort (aus Steams eigener Angabe), ohne den Ordner zählen zu müssen"
+      "Benachrichtigungen lassen sich auch nach „Kalender“ filtern",
+      "Dieselbe Quick Action startet nicht doppelt, solange sie noch läuft"
     ],
     "behoben": []
   },
-  "signature": "0wHEqTI0/TwbrvvqVNuUzRpl8dtfki1X/OvG9ofPxo7uq+hEAhlyaSUp4R6SfbVzmDQFS6wCqfXh5Mh02pQswQ=="
+  "signature": "1HsW4j8cQWvtvWebsRM2OkHqDtTzVM3CRyA4x75kJpKQ4yFfYRuqFQcwik4+bLp92eWVvorqQaqmcaSa2JvBzg=="
 }

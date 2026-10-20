@@ -64,3 +64,26 @@ self.addEventListener("fetch", (e) => {
     }
   })());
 });
+
+// Push messages from the PC (also while the app is closed). The PC encrypts them end to end; the browser decrypts
+// before this event. Only title, text and the page to open are shown – nothing is executed.
+self.addEventListener("push", (e) => {
+  let m = { title: "Nexus Gaming Hub", body: "", link: "/notifications", tag: undefined };
+  try { m = { ...m, ...e.data.json() }; } catch { /* plain or empty message */ }
+  const link = typeof m.link === "string" && m.link.startsWith("/") && !m.link.startsWith("//") ? m.link : "/notifications";
+  e.waitUntil(self.registration.showNotification(String(m.title).slice(0, 120), {
+    body: String(m.body ?? "").slice(0, 300), tag: m.tag ? String(m.tag).slice(0, 80) : undefined,
+    icon: "./icons/icon-192.png", badge: "./icons/favicon-64.png", data: { link },
+  }));
+});
+
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const target = new URL("./#" + (e.notification.data?.link ?? "/notifications"), self.registration.scope).href;
+  e.waitUntil((async () => {
+    const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const open = wins.find((w) => w.url.startsWith(self.registration.scope));
+    if (open) { await open.focus(); open.navigate?.(target); return; }
+    await self.clients.openWindow(target);
+  })());
+});
