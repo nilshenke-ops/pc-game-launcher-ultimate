@@ -168,7 +168,7 @@ public sealed class RemapEngine
                 else
                 {
                     result = t.Modifiers.Select(x => new InputAction(x, true)).Append(new InputAction(t.Key, true)).ToArray();
-                    _held[code] = new[] { new InputAction(t.Key, false) }.Concat(t.Modifiers.Reverse().Select(x => new InputAction(x, false))).ToArray();
+                    _held[code] = new[] { new InputAction(t.Key, false) }.Concat(Enumerable.Reverse(t.Modifiers).Select(x => new InputAction(x, false))).ToArray();
                 }
             }
         }
