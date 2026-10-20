@@ -1,4 +1,5 @@
-import { Component, lazy, Suspense, useEffect, type ReactNode } from "react";
+import { Component, lazy, Suspense, useEffect, useSyncExternalStore, type ReactNode } from "react";
+import { getRoom, subscribeRoom } from "./lib/room";
 import { startDesignAutoSave } from "./lib/design-account";
 import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { DEMO_BUILD } from "./lib/demo-flag";
@@ -45,6 +46,7 @@ const PeripheralsPage = lazy(() => import("./pages/Peripherals"));
 const InputPage = lazy(() => import("./pages/Input"));
 const StartTimesPage = lazy(() => import("./pages/StartTimes"));
 const TrophiesPage = lazy(() => import("./pages/Trophies"));
+const RoomPage = lazy(() => import("./pages/Room"));
 const Deck = lazy(() => import("./pages/Deck"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Deals = lazy(() => import("./pages/Deals"));
@@ -100,7 +102,9 @@ function Gate() {
       <PageErrorBoundary key={loc.pathname}>
       <Suspense fallback={<Loading />}>
         <Routes>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<StartPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/room" element={<RoomPage />} />
           <Route path="/games" element={<Library kind="game" />} />
           <Route path="/programs" element={<Library kind="program" />} />
           <Route path="/quick" element={<QuickActions />} />
@@ -144,6 +148,12 @@ function Gate() {
       </PageErrorBoundary>
     </AppShell>
   );
+}
+
+/** Home: the dashboard, or the gaming room if chosen as start page (the dashboard stays at /dashboard). */
+function StartPage() {
+  const room = useSyncExternalStore(subscribeRoom, getRoom);
+  return room.startPage ? <RoomPage asStart /> : <Dashboard />;
 }
 
 const Router = DEMO_BUILD ? MemoryRouter : HashRouter;

@@ -60,6 +60,21 @@ Seite: /trophies
 Stichworte: gamer-pass gamerpass karte profilkarte avatar bild titel rahmen hintergrund abzeichen badges lieblingsspiele farbe reihenfolge exportieren bild speichern
 Im Trophäenraum: Name, Titel, Symbol oder eigenes Bild, Rahmen (Neon, Gold, Holo, Pixel), Hintergrund, Farbe, bis zu 3 Lieblingsspiele, bis zu 4 Abzeichen aus freigeschalteten Erfolgen, Bereiche ein-/ausblenden und umsortieren. Vorschau sofort, „Rückgängig“, „Zurücksetzen“, „Als Bild speichern“. Bleibt auf dem Gerät (und im Konto); nichts wird veröffentlicht.
 
+## Dashboard (wenn der Gaming-Raum die Startseite ist)
+Seite: /dashboard
+Stichworte: dashboard übersicht widgets startseite zurück home
+Das Dashboard mit allen Widgets. Ist der Gaming-Raum als Startseite gewählt, erreichst du es über den Knopf „Dashboard“ im Raum. Zurück zum Dashboard als Startseite: Gaming-Raum → „Raum bearbeiten“ → „Als Startseite verwenden“ ausschalten.
+
+## Gaming-Raum
+Seite: /room
+Stichworte: gaming raum zimmer room startseite 2.5d deko dekoration poster regal lampe licht stil variante pc controller lautsprecher
+Ein gezeichneter Raum: PC → Spiele, Poster (Lieblingsspiel) → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck. „Raum bearbeiten“: Varianten (bis 6), Stil (weitere werden im Fortschrittsbaum freigeschaltet), Lichtfarbe, Objekte ein-/ausblenden, Deko aus deinen Sammelstücken platzieren und verschieben (ziehen oder Pfeiltasten). „Als Startseite verwenden“ zeigt den Raum statt des Dashboards; das Dashboard bleibt über den Knopf „Dashboard“ erreichbar. Funktioniert ohne PC.
+
+## Sammlung, Belohnungskisten, Fortschrittsbaum
+Seite: /trophies?tab=collection
+Stichworte: sammelstücke sammlung belohnung kiste lootbox fortschrittsbaum freischalten deko regal seltenheit
+Im Trophäenraum unter „Sammlung & Fortschritt“. Fortschrittsbaum mit den Zweigen Level, Trophäen und Spielzeit (nur aus deinen echten Daten) – jeder Knoten gibt ein Sammelstück oder einen Raum-Stil. Pro erreichtem Level ab Level 2 eine Belohnungskiste: vorher siehst du alles, was drin sein kann, jedes gleich wahrscheinlich, nie doppelt, kein Echtgeld, keine Vorteile, kein Zeitdruck. Sammelstücke kannst du ins Regal stellen, verschieben und herausnehmen oder im Gaming-Raum als Deko nutzen. Sie sind getrennt von den echten Erfolgen.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

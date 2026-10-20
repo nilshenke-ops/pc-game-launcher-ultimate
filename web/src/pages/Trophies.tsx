@@ -1,11 +1,13 @@
 import { Lock, Trophy } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { t } from "../lib/i18n";
 import { useRpc } from "../lib/hooks";
 import { dateTime } from "../lib/format";
 import { tier, tierColor, type PassInput, type Tier } from "../lib/gamerpass";
 import { PassEditor } from "../components/pass-editor";
-import { Banner, Card, Empty, Loadable, PageHead } from "../components/ui";
+import { CollectionTab } from "../components/collection";
+import { progressOf } from "../lib/room";
+import { Banner, Card, Empty, Loadable, PageHead, Segmented } from "../components/ui";
 
 const TIER_LABEL: Record<Tier, () => string> = { gold: () => t("Gold"), silver: () => t("Silber"), bronze: () => t("Bronze") };
 
@@ -13,6 +15,8 @@ const TIER_LABEL: Record<Tier, () => string> = { gold: () => t("Gold"), silver: 
 export default function TrophiesPage() {
   const q = useRpc<PassInput & { offline?: boolean }>("quests.get", {}, ["quests", "history"]);
   const h = useRpc<{ stats: { name: string; totalMinutes: number }[] }>("history.get", {}, ["history"]);
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") === "collection" ? "collection" : "trophies";
   const d = q.data;
   const top = h.data?.stats[0]?.name ?? null;
 
@@ -26,8 +30,12 @@ export default function TrophiesPage() {
         {d && (
           <div className="stack">
             {q.stale && <Banner kind="info">{t("Ohne PC: zuletzt geladener Stand.")}</Banner>}
+            <Segmented value={tab} onChange={(v) => setParams(v === "collection" ? { tab: v } : {}, { replace: true })} label={t("Bereich")}
+              options={[{ value: "trophies", label: t("Erfolge & Gamer-Pass") }, { value: "collection", label: t("Sammlung & Fortschritt") }]} />
+            {tab === "collection" ? <CollectionTab progress={progressOf(d)} /> : <>
             <PassEditor quests={d} topGame={top} />
 
+            <h2 className="section-title">{t("Erfolge aus deinen echten Spieldaten")}</h2>
             {d.achievements.length === 0 ? <Card><Empty icon={<Trophy size={26} />} title={t("Noch keine Erfolge")} text={t("Erfolge gibt es in GameQuest.")} /></Card> : shelves.map((s) => s.items.length > 0 && (
               <Card key={s.tier} title={t("{t} ({n}/{m})", { t: TIER_LABEL[s.tier](), n: s.items.filter((a) => a.unlocked).length, m: s.items.length })} icon={<Trophy size={18} style={{ color: tierColor(s.tier) }} />}>
                 <div className="trophy-shelf">
@@ -43,6 +51,7 @@ export default function TrophiesPage() {
                 </div>
               </Card>
             ))}
+            </>}
             <p className="tiny muted">{t("Neue Ziele und eigene Matches trägst du in")} <Link to="/quests">GameQuest</Link> {t("ein.")}</p>
           </div>
         )}

@@ -3,6 +3,7 @@
 // encrypt the design (AES-GCM). The PC only stores a hash of the first and the encrypted design.
 import { client, readJson, writeJson } from "./rpc";
 import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
+import { reloadRoom } from "./room";
 
 const ITERATIONS = 250_000;
 const KEY = "pgl.designAccount";
@@ -33,7 +34,7 @@ export function designOf(p: Prefs): Prefs {
 }
 
 /** Data of this browser that goes with the account besides the design (small, never device keys or PC access). */
-export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms"] as const;
+export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room"] as const;
 
 export interface AccountData { prefs: Prefs; local: Record<string, unknown> }
 
@@ -79,6 +80,7 @@ export async function signIn(userIn: string, password: string) {
   // Keep the background picture of this browser if the stored design had to leave it out.
   replacePrefs({ ...design, theme: { ...design.theme, bgImage: design.theme.bgImage ?? getPrefs().theme.bgImage } });
   for (const key of ACCOUNT_KEYS) if (key in local) writeJson(key, local[key]);
+  reloadRoom();
   store({ user, ...k, savedAt: Date.now() });
 }
 
