@@ -1,25 +1,34 @@
 {
-  "version": "2.10.0",
-  "date": "2026-10-19",
+  "version": "2.11.0",
+  "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.10.0/PCGameLauncherCompanion.exe",
-  "size": 87322501,
-  "sha256": "d8113038d03813cd20a661d329a82149f33f427789df85d87a1db7ebed948510",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.11.0/PCGameLauncherCompanion.exe",
+  "size": 87368685,
+  "sha256": "4522f137d34554b1285c16757a4176948cabd49b1f28c5d68c4461bba3be396f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.10.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.10.0/PCGameLauncherCompanion-2.10.0-win-x64.zip",
-    "size": 81586875,
-    "sha256": "f08e743690211a1bffeb0214e59630a2b5f92cc4950bcce9c12348780ef6fd82"
+    "fileName": "PCGameLauncherCompanion-2.11.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.11.0/PCGameLauncherCompanion-2.11.0-win-x64.zip",
+    "size": 81635064,
+    "sha256": "a04465dd89f692ccf00c28ba8b5629fe780fecbcf338d511a761c244f0f89802"
   },
-  "notes": "KI-Assistent richtet die App per Auftrag ein – auch ohne PC, 0 €, direkt auf dem Gerät: Design hell/dunkel, Farben, Hintergrund, Schriftgröße, Animationen, untere Leiste (hinzufügen, entfernen, farbig/schlicht; ist sie voll, fragt er, welchen Platz er ersetzen soll), Home-Widgets ein-/ausblenden, Bereiche im Menü ausblenden, Sprache, Profil-Designs · Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen",
+  "notes": "19 neue Plugins im Katalog (jetzt 33): Wochenstatistik, „Was spiele ich?“ (Zufallsspiel mit Start), Weiterspielen, Tageslimit, Spiel-Serie, Spielzeit-Meilensteine, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, Bibliothek in Zahlen, Zufallssound, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Wettkampf-Modus (Aktionen), Clip-Knöpfe für OBS (Aktionen), Pastell-, E-Sport- und OLED-Themes · Programme: Bearbeiten wie am Handy – lange auf ein Symbol drücken oder „Bearbeiten“ oben, dann ein Symbol antippen · Wiederverbinden nach dem Einschalten des PCs meist in ~0,3 s (vorher bis 3,8 s): Solange die App offen ist, prüft sie alle 0,5 s mit einer winzigen Anfrage, ob der PC wieder da ist – Browser bremsen wiederholte Verbindungsversuche sonst aus",
   "changes": {
     "neu": [
-      "KI-Assistent richtet die App per Auftrag ein – auch ohne PC, 0 €, direkt auf dem Gerät: Design hell/dunkel, Farben, Hintergrund, Schriftgröße, Animationen, untere Leiste (hinzufügen, entfernen, farbig/schlicht; ist sie voll, fragt er, welchen Platz er ersetzen soll), Home-Widgets ein-/ausblenden, Bereiche im Menü ausblenden, Sprache, Profil-Designs",
-      "Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen"
+      "19 neue Plugins im Katalog (jetzt 33): Wochenstatistik, „Was spiele ich?“ (Zufallsspiel mit Start), Weiterspielen, Tageslimit, Spiel-Serie, Spielzeit-Meilensteine, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, Bibliothek in Zahlen, Zufallssound, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Wettkampf-Modus (Aktionen), Clip-Knöpfe für OBS (Aktionen), Pastell-, E-Sport- und OLED-Themes",
+      "Programme: Bearbeiten wie am Handy – lange auf ein Symbol drücken oder „Bearbeiten“ oben, dann ein Symbol antippen"
     ],
-    "verbessert": [],
-    "behoben": []
+    "verbessert": [
+      "Wiederverbinden nach dem Einschalten des PCs meist in ~0,3 s (vorher bis 3,8 s): Solange die App offen ist, prüft sie alle 0,5 s mit einer winzigen Anfrage, ob der PC wieder da ist – Browser bremsen wiederholte Verbindungsversuche sonst aus",
+      "Nichts springt mehr beim Öffnen: Home, Soundboard und Assistent zeigen kurz Platzhalter in der richtigen Größe, bis der PC antwortet (vorher rutschten Kacheln nach unten, während man tippen wollte)",
+      "Meldungen erscheinen am Handy klein oben statt über Knöpfen, Chat und Leiste; Antippen schließt sie",
+      "Kopfzeile nicht mehr durchscheinend – darunter gescrollter Text überlagert den Titel nicht mehr"
+    ],
+    "behoben": [
+      "Hervorgehobene Knöpfe (z. B. „Deck aus meinen Sachen erstellen“, „Fertig“) wurden nach dem Antippen am Handy dunkel mit unlesbarer Schrift",
+      "Spiel-Cover hoben sich am Handy nach dem Antippen an und blieben verschoben (Maus-Effekte gelten jetzt nur noch mit Maus)",
+      "Drei-Punkte-Knöpfe lagen über den Programm-Symbolen"
+    ]
   },
-  "signature": "7dTDs65yD3/SfYiliGThlDXoyR5zx1f/klG5znN6lLsIrhquRZp4ajn11Hl0Obaxcl8b34axuc/YNF8XBmPVHg=="
+  "signature": "Ftm+DV7r3bd60A4R7hv0tYz3uUZouWp7Qt4uzwHXWhROAESThfQwdr6i0bDauYbLYqM3G0J4c0BeumNmK4gDxw=="
 }

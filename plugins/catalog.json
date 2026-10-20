@@ -1,7 +1,66 @@
 {
   "version": 1,
-  "generated": "2026-10-19",
+  "generated": "2026-10-20",
   "plugins": [
+    {
+      "id": "de.pgl.bibliothek-zahlen",
+      "name": "Bibliothek in Zahlen",
+      "version": "1.0.0",
+      "description": "Widget: wie viele Spiele und Programme du hast, woher sie kommen (Steam, Epic, Game Pass …), Favoriten und wie viele Spiele noch nie gespielt wurden.",
+      "author": "PC Game Launcher",
+      "category": "information",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "library.read",
+        "history.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.bibliothek-zahlen-1.0.0.pglplugin",
+      "sha256": "9238760707d5cd21b48229ae0042a845bdc757805c13ed848e62c666ba6afa69",
+      "size": 2167,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.clip-knopf",
+      "name": "Clip-Knöpfe (OBS)",
+      "version": "1.0.0",
+      "description": "Aktionen für Quick Actions, Deck und Hotkeys: „Clip speichern“ (Replay-Puffer von OBS sichern), „Aufnahme an/aus“ und „Replay-Puffer an/aus“ – jeweils mit kurzer Bestätigung. Braucht OBS Studio mit WebSocket (Overlay & Aufnahme).",
+      "author": "PC Game Launcher",
+      "category": "community",
+      "platforms": [
+        "windows",
+        "web"
+      ],
+      "permissions": [
+        "capture.control",
+        "notify"
+      ],
+      "minAppVersion": "1.4.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.clip-knopf-1.0.0.pglplugin",
+      "sha256": "ce52815806b3d4b29402a388ad7fcc3e1454dd77c4cc4f024352038dc50b74a0",
+      "size": 707,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
     {
       "id": "de.pgl.cpu-mini",
       "name": "CPU & RAM Mini",
@@ -61,6 +120,32 @@
         {
           "version": "1.0.0",
           "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.esport-themes",
+      "name": "E-Sport-Teamfarben",
+      "version": "1.0.0",
+      "description": "Fünf kräftige Farbschemata in typischen Teamfarben (Rot-Schwarz, Blau-Gold, Lila-Gelb, Grün-Weiß, Orange-Blau). Ohne Code, ohne Berechtigungen.",
+      "author": "PC Game Launcher",
+      "category": "design",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.esport-themes-1.0.0.pglplugin",
+      "sha256": "8217c9504dd4b76e363e58bae1572e8bbdccc93ece6449337a49a000bec3a9e0",
+      "size": 710,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
           "changes": [
             "Erste Version"
           ]
@@ -181,6 +266,35 @@
       ]
     },
     {
+      "id": "de.pgl.gpu-ampel",
+      "name": "GPU-Temperatur-Ampel",
+      "version": "1.0.0",
+      "description": "Live-Widget: Temperatur und Auslastung der Grafikkarte als Ampel (grün/gelb/rot), Schwellen einstellbar, auf Wunsch mit Hinweis bei „rot“. Temperatur gibt es nur bei NVIDIA – sonst steht das ehrlich da. Auch im Overlay nutzbar.",
+      "author": "PC Game Launcher",
+      "category": "performance",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "monitor.read",
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.gpu-ampel-1.0.0.pglplugin",
+      "sha256": "9add732d24ee063fe7cd300242e5c8991db78a543b26abd0608ab6eb191569be",
+      "size": 2418,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.leistungs-verlauf",
       "name": "Leistungs-Verlauf",
       "version": "1.0.0",
@@ -209,6 +323,34 @@
       ]
     },
     {
+      "id": "de.pgl.meilensteine",
+      "name": "Spielzeit-Meilensteine",
+      "version": "1.0.0",
+      "description": "Widget: Gesamtspielzeit deiner meistgespielten Spiele mit dem nächsten Meilenstein (1, 5, 10, 25, 50, 100, 250, 500, 1000 Stunden).",
+      "author": "PC Game Launcher",
+      "category": "information",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.meilensteine-1.0.0.pglplugin",
+      "sha256": "dfe41a5a97ee986ded1805ef4606bd9bdc5822913a63712cd22d6deadf6546a1",
+      "size": 2095,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.neon-themes",
       "name": "Neon-Themes",
       "version": "1.0.0",
@@ -228,6 +370,58 @@
         {
           "version": "1.0.0",
           "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.oled-themes",
+      "name": "OLED-Schwarz",
+      "version": "1.0.0",
+      "description": "Drei Farbschemata mit echtem Schwarz als Hintergrund – auf OLED-Handys und -Tablets besonders kontrastreich und sparsam. Ohne Code, ohne Berechtigungen.",
+      "author": "PC Game Launcher",
+      "category": "design",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.oled-themes-1.0.0.pglplugin",
+      "sha256": "3c5b4173558a8f8992806ae04a1034939cc86203e87229eea2f2fac39de7700f",
+      "size": 603,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.pastell-themes",
+      "name": "Pastell-Themes",
+      "version": "1.0.0",
+      "description": "Vier helle, weiche Farbschemata (Erdbeere, Minze, Lavendel, Pfirsich) – gut lesbar bei Tageslicht. Ohne Code, ohne Berechtigungen.",
+      "author": "PC Game Launcher",
+      "category": "design",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.pastell-themes-1.0.0.pglplugin",
+      "sha256": "046e30f78608d5a27244978e7809def9eb8d11f75836fd1b09670150ce6bd80e",
+      "size": 627,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
           "changes": [
             "Erste Version"
           ]
@@ -294,6 +488,34 @@
       ]
     },
     {
+      "id": "de.pgl.pomodoro",
+      "name": "Fokus-Timer (Pomodoro)",
+      "version": "1.0.0",
+      "description": "Widget: Fokus- und Pausenzeiten im Wechsel (Standard 25/5 Minuten) mit Hinweis beim Wechsel – zum Lernen, Arbeiten oder für Spielpausen. Läuft auf dem Gerät, ohne PC-Last.",
+      "author": "PC Game Launcher",
+      "category": "productivity",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.pomodoro-1.0.0.pglplugin",
+      "sha256": "b94d2b63d86bd50b1d887f4cc39bcbee07022566ed26f838cc76620fc7bd7067",
+      "size": 2254,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.profil-wechsler",
       "name": "Profil-Wechsler",
       "version": "1.0.0",
@@ -323,6 +545,35 @@
       ]
     },
     {
+      "id": "de.pgl.ram-waechter",
+      "name": "RAM-Wächter",
+      "version": "1.0.0",
+      "description": "Live-Widget: Arbeitsspeicher belegt/frei in GB mit Warnschwelle; auf Wunsch ein Hinweis, wenn der Speicher knapp wird (z. B. Browser im Hintergrund schließen).",
+      "author": "PC Game Launcher",
+      "category": "performance",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "monitor.read",
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.ram-waechter-1.0.0.pglplugin",
+      "sha256": "cc3fbdcbeb50122b7c43a68514ab5107476e1558cc855b2fbf9045c8a55285c5",
+      "size": 2295,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.retro-themes",
       "name": "Retro- & Natur-Themes",
       "version": "1.0.0",
@@ -342,6 +593,34 @@
         {
           "version": "1.0.0",
           "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.sitzungs-leistung",
+      "name": "Leistung pro Spiel",
+      "version": "1.0.0",
+      "description": "Widget: wie stark CPU und Grafikkarte in deinen letzten Spielsitzungen ausgelastet waren (Durchschnitt und Spitze, gemessen am PC alle 10 s). Zeigt, welches Spiel den PC am meisten fordert.",
+      "author": "PC Game Launcher",
+      "category": "performance",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.sitzungs-leistung-1.0.0.pglplugin",
+      "sha256": "42feb7022882988d893d67ef11f9ea3f26297784050f26dface9e65ed706b0e5",
+      "size": 2046,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
           "changes": [
             "Erste Version"
           ]
@@ -378,6 +657,62 @@
       ]
     },
     {
+      "id": "de.pgl.speicherplatz",
+      "name": "Speicherplatz",
+      "version": "1.0.0",
+      "description": "Live-Widget: freier Platz auf allen Laufwerken, rot ab einer einstellbaren Grenze – damit das nächste Spiele-Update nicht an vollem Speicher scheitert.",
+      "author": "PC Game Launcher",
+      "category": "performance",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "monitor.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.speicherplatz-1.0.0.pglplugin",
+      "sha256": "36c0bb6077671e60a2991fa583cd024ef23f019e6177c1170b06a9c4e10a3cd1",
+      "size": 2216,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.spiel-serie",
+      "name": "Spiel-Serie",
+      "version": "1.0.0",
+      "description": "Widget: an wie vielen Tagen in Folge du gespielt hast, deine längste Serie und die Spieltage in diesem Monat – aus dem Spielverlauf.",
+      "author": "PC Game Launcher",
+      "category": "information",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.spiel-serie-1.0.0.pglplugin",
+      "sha256": "7a09c48da30c0c27d48fc6b8ed3e29ad701c32c49c8233d68e6ca830bb6dd738",
+      "size": 2270,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.spielzeit-heute",
       "name": "Spielzeit heute",
       "version": "1.0.0",
@@ -406,6 +741,35 @@
       ]
     },
     {
+      "id": "de.pgl.tageslimit",
+      "name": "Tageslimit",
+      "version": "1.0.0",
+      "description": "Widget: Wie viel Spielzeit heute noch übrig ist (eigenes Limit), mit Fortschrittsring und einem Hinweis, wenn das Limit erreicht ist. Hilft beim bewussten Spielen – sperrt aber nichts.",
+      "author": "PC Game Launcher",
+      "category": "productivity",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read",
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.tageslimit-1.0.0.pglplugin",
+      "sha256": "fccd1c9243908e3f702a2bdf704e538b0138776f381bb0565283a33571147caa",
+      "size": 2479,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
       "id": "de.pgl.top-woche",
       "name": "Top-Spiele der Woche",
       "version": "1.0.0",
@@ -427,6 +791,180 @@
         {
           "version": "1.0.0",
           "date": "2026-10-18",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.weiterspielen",
+      "name": "Weiterspielen",
+      "version": "1.0.0",
+      "description": "Widget: die zuletzt gespielten Spiele mit „vor 2 Tagen“ und Start-Knopf – direkt dort weitermachen, wo du aufgehört hast.",
+      "author": "PC Game Launcher",
+      "category": "launcher",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read",
+        "library.read",
+        "library.launch"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.weiterspielen-1.0.0.pglplugin",
+      "sha256": "e54af282dd177347cec331580ed2488fd9219688878bb77930fbfd7a7427a266",
+      "size": 2402,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.weltzeit",
+      "name": "Weltzeit-Uhr",
+      "version": "1.0.0",
+      "description": "Widget: deine Uhrzeit plus bis zu drei weitere Zeitzonen (z. B. wo deine Mitspieler wohnen oder wann ein Turnier startet). Ohne Berechtigungen.",
+      "author": "PC Game Launcher",
+      "category": "productivity",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.weltzeit-1.0.0.pglplugin",
+      "sha256": "bcabbc5f50c7068e85e072550ec51c28fbf92bb105d0081369e9263d209b97a1",
+      "size": 2112,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.wettkampf-modus",
+      "name": "Wettkampf-Modus",
+      "version": "1.0.0",
+      "description": "Aktionen: „Wettkampf“ prüft zuerst den PC (Diagnose), wechselt ins Wettkampf-Profil, startet Voice-Chat und Spiel; „Nach dem Match“ stellt das vorherige Profil wieder her. Profil, Voice-Chat-Programm und Spiel wählst du in den Einstellungen.",
+      "author": "PC Game Launcher",
+      "category": "automation",
+      "platforms": [
+        "windows",
+        "web"
+      ],
+      "permissions": [
+        "diagnostics.run",
+        "profiles.activate",
+        "library.launch",
+        "notify"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.wettkampf-modus-1.0.0.pglplugin",
+      "sha256": "0dc27b2e5a1ff9c7c08460596e9c2f70bffb017ea4c1dd422f22252c44d4fb30",
+      "size": 814,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.wochen-statistik",
+      "name": "Wochenstatistik",
+      "version": "1.0.0",
+      "description": "Widget: Spielzeit pro Tag als Balken (7 oder 14 Tage), mit Summe und Tagesdurchschnitt – aus dem echten Spielverlauf des PCs.",
+      "author": "PC Game Launcher",
+      "category": "information",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "history.read"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.wochen-statistik-1.0.0.pglplugin",
+      "sha256": "2bc487635ea9a8e778675bbd7c11b1d6cc3cd12c3d3f3ba63c51bcb039bea04a",
+      "size": 2601,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.zufallssound",
+      "name": "Zufallssound",
+      "version": "1.0.0",
+      "description": "Widget: ein großer Knopf spielt einen zufälligen Sound aus deinem Soundboard (alle oder nur Favoriten) – am PC, also auch für Discord hörbar, wenn eingerichtet.",
+      "author": "PC Game Launcher",
+      "category": "audio",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "sounds.read",
+        "sounds.play"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.zufallssound-1.0.0.pglplugin",
+      "sha256": "566b43d8f3a795a417ce5bf35a2b9be9833fcfff08b389f47ca5f49ca6523ecb",
+      "size": 2066,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
+          "changes": [
+            "Erste Version"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "de.pgl.zufallsspiel",
+      "name": "Was spiele ich?",
+      "version": "1.0.0",
+      "description": "Widget: würfelt ein Spiel aus deiner Bibliothek (wahlweise nur Favoriten) und startet es mit einem Tipp am PC.",
+      "author": "PC Game Launcher",
+      "category": "launcher",
+      "platforms": [
+        "web"
+      ],
+      "permissions": [
+        "library.read",
+        "library.launch"
+      ],
+      "minAppVersion": "1.2.0",
+      "trust": "official",
+      "url": "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/de.pgl.zufallsspiel-1.0.0.pglplugin",
+      "sha256": "32bcd1e4ca23dbc7ed035d08511c3aa0f9357e8792aceedc1c069fbacb03663b",
+      "size": 2186,
+      "changelog": [
+        {
+          "version": "1.0.0",
+          "date": "2026-10-20",
           "changes": [
             "Erste Version"
           ]
