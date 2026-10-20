@@ -102,3 +102,6 @@ Im WLAN funktioniert alles, was zwischen Handy und PC passiert, ohne Internet:
 Ohne Internet fehlen nur:
 - Update- und Plugin-Katalog-Prüfung, Cover-Suche, Steam, Game Pass und die Preise im Deal Radar.
 - Die Internet-Ziele der Netzwerkdiagnose.
+
+## Energie-Aktionen (2.32)
+Sperren, Energiesparen, Neustart und Herunterfahren laufen nur über die verschlüsselte Verbindung zu deinem eigenen PC. Der PC protokolliert, welches gekoppelte Gerät die Aktion ausgelöst hat (Log und Benachrichtigung am PC). Nichts davon verlässt den PC.

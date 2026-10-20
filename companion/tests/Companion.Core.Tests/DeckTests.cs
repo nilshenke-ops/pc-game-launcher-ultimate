@@ -35,6 +35,8 @@ public class DeckTests
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "folder", "p9"))));
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "shell", "calc.exe"))));
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "media", "shutdown"))));
+        Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "power", "format"))));
+        await admin.Ok("deck.save", DeckJson(Key("p", 0, "power", "shutdown", "icon:power"))); // power keys only ask on the device and need the "power" right on the PC
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "none", null, "javascript:alert(1)"))));
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "none", null, "brand:../../x"))));
         Assert.Equal("invalid-params", await admin.Error("deck.save", DeckJson(Key("a", 0, "open", "https://evil.example"))));

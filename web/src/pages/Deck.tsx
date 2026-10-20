@@ -8,7 +8,7 @@ import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
 import { navItems } from "../lib/nav";
 import { BG_SCENES } from "../lib/prefs";
-import { ACTION_TYPES, gridFor, keyImage, MEDIA_KEYS, moveKey, newId, resize, slots, starterDeck, textOn, type Deck, type DeckAction, type DeckKey, type DeckPage } from "../lib/deck";
+import { ACTION_TYPES, gridFor, keyImage, MEDIA_KEYS, POWER_KEYS, moveKey, newId, resize, slots, starterDeck, textOn, type Deck, type DeckAction, type DeckKey, type DeckPage } from "../lib/deck";
 import type { LibraryItem, Profile, QuickAction, SoundsFile } from "../lib/types";
 import { DECK_ICONS, DeckIcon, KeyFace } from "../components/deck-icons";
 import { BrandLogo } from "../components/brand-logo";
@@ -263,12 +263,12 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
   const item = items.find((i) => i.id === k.action.ref);
   const pickType = (type: DeckAction["type"]) => {
     const first = type === "launch" ? items[0]?.id : type === "quick" ? quick[0]?.id : type === "sound" ? sounds[0]?.id : type === "profile" ? profiles[0]?.id
-      : type === "folder" ? pages[0]?.id : type === "media" ? "playpause" : type === "open" ? "/" : null;
+      : type === "folder" ? pages[0]?.id : type === "media" ? "playpause" : type === "power" ? "lock" : type === "open" ? "/" : null;
     setAction({ type, ref: first ?? null });
   };
   const submit = () => {
     if (["launch", "quick", "sound", "profile", "folder"].includes(k.action.type) && !k.action.ref) { toast(t("Bitte ein Ziel wählen."), "error"); return; }
-    const label = k.label?.trim() || targetName(k.action) || (k.action.type === "media" ? MEDIA_KEYS.find((m) => m[0] === k.action.ref)?.[1] : undefined) || "";
+    const label = k.label?.trim() || targetName(k.action) || (k.action.type === "media" ? MEDIA_KEYS.find((m) => m[0] === k.action.ref)?.[1] : k.action.type === "power" ? t(POWER_KEYS.find((m) => m[0] === k.action.ref)?.[1] ?? "") : undefined) || "";
     const key = { ...k, label: label.slice(0, 24) };
     if (pendingDeck) {
       // A new folder page was created here: save deck with the page and the key together.
@@ -308,6 +308,8 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
             {profiles.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></Field>}
           {k.action.type === "media" && <Field label={t("Taste")} hint={t("Wirkt wie die Medientaste der Tastatur (Windows-Begleiter).")}><select className="input" value={k.action.ref ?? ""} onChange={(e) => setAction({ ...k.action, ref: e.target.value })}>
             {MEDIA_KEYS.map(([id, label]) => <option key={id} value={id}>{t(label)}</option>)}</select></Field>}
+          {k.action.type === "power" && <Field label={t("Was soll passieren?")} hint={t("Sperren geht sofort. Energiesparen, Neustart und Herunterfahren fragen vorher; Neustart/Herunterfahren nach 60 s, bis dahin abbrechbar. Braucht am PC das Recht „PC ausschalten“ für dieses Gerät.")}><select className="input" value={k.action.ref ?? "lock"} onChange={(e) => setAction({ ...k.action, ref: e.target.value })}>
+            {POWER_KEYS.map(([id, label]) => <option key={id} value={id}>{t(label)}</option>)}</select></Field>}
           {k.action.type === "open" && <Field label={t("Seite")}><select className="input" value={k.action.ref ?? "/"} onChange={(e) => setAction({ ...k.action, ref: e.target.value })}>
             {APP_PAGES().map((p) => <option key={p.path} value={p.path}>{p.label}</option>)}</select></Field>}
           {k.action.type === "folder" && (

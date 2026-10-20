@@ -8,10 +8,11 @@ namespace Pgl.Core.Security;
 
 public static class Permissions
 {
-    public const string View = "view", Launch = "launch", Soundboard = "soundboard", Manage = "manage", Admin = "admin", Local = "local";
-    public static readonly string[] Grantable = { View, Launch, Soundboard, Manage, Admin };
+    /// <summary>Power = put the PC to sleep, restart or shut it down from a device (locking only needs Launch). Not given by default.</summary>
+    public const string View = "view", Launch = "launch", Soundboard = "soundboard", Manage = "manage", Power = "power", Admin = "admin", Local = "local";
+    public static readonly string[] Grantable = { View, Launch, Soundboard, Manage, Power, Admin };
     public static readonly string[] Default = { View, Launch, Soundboard, Manage };
-    public static readonly string[] LocalAdmin = { View, Launch, Soundboard, Manage, Admin, Local };
+    public static readonly string[] LocalAdmin = { View, Launch, Soundboard, Manage, Power, Admin, Local };
 }
 
 /// <summary>

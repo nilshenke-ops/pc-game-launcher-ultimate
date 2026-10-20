@@ -58,7 +58,7 @@ public sealed class DecksFile
 /// <summary>Stream-Deck-like key grids for phone and tablet. Stored on the PC so every device shows the same deck.</summary>
 public sealed class DeckService
 {
-    public static readonly HashSet<string> ActionTypes = new() { "launch", "quick", "sound", "stopSounds", "profile", "revertProfile", "media", "overlay", "record", "replay", "folder", "back", "open", "none" };
+    public static readonly HashSet<string> ActionTypes = new() { "launch", "quick", "sound", "stopSounds", "profile", "revertProfile", "media", "power", "overlay", "record", "replay", "folder", "back", "open", "none" };
     public static readonly HashSet<string> MediaKeys = new(ActionRunner.MediaKeys.Keys);
     public const int MaxDecks = 20, MaxPages = 30, MaxKeys = 64, MaxImageChars = 60_000;
     static readonly Regex Id = new(@"^[A-Za-z0-9_-]{1,64}$");
@@ -146,6 +146,9 @@ public sealed class DeckService
                         break;
                     case "open":
                         if (!AppPath.IsMatch(a.Ref ?? "")) throw Bad("Ungültige Seite.");
+                        break;
+                    case "power":
+                        if (a.Ref is not ("lock" or "sleep" or "restart" or "shutdown")) throw Bad("Unbekannte Energie-Aktion.");
                         break;
                     default:
                         a.Ref = null;

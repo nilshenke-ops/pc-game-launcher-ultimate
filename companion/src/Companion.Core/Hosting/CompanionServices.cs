@@ -19,6 +19,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public PairingService Pairing { get; }
     public SettingsService Settings { get; }
     public NotificationCenter Notifications { get; }
+    public PowerService Power { get; }
     public LibraryService Library { get; }
     public HistoryService History { get; }
     public SessionTracker Sessions { get; }
@@ -79,6 +80,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Pairing = new PairingService(Devices);
         Settings = new SettingsService(paths, Rpc);
         Notifications = new NotificationCenter(Rpc, Settings, paths);
+        Power = new PowerService(platform.Power, Rpc, Notifications);
         Library = new LibraryService(paths, platform, Rpc);
         History = new HistoryService(paths, Settings, Rpc);
         Sessions = new SessionTracker(Library, platform.Processes, Settings);

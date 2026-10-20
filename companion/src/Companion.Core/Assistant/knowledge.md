@@ -90,6 +90,11 @@ Seite: /help
 Stichworte: lobby party freunde einladen gemeinsam spielen gruppe chat mehrspieler private lobby
 Eine private Lobby mit Freunden gibt es noch nicht – dafür braucht es einen eigenen Server im Internet, der Räume und Einladungen zwischen verschiedenen Personen verwaltet. Nexus hat bewusst keinen fremden Server: alles läuft auf deinem PC und deinen Geräten. Zum gemeinsamen Spielen nutze vorerst Discord oder die Party-Funktion von Steam/Xbox.
 
+## PC sperren, Energiesparen, Neustart, Herunterfahren
+Seite: /monitor
+Stichworte: herunterfahren ausschalten neustart neu starten sperren energiesparen ruhezustand standby pc aus shutdown restart lock sleep handy fernbedienung abbrechen
+Vom Handy: Home → „Anpassen“ → Widget „PC-Energie“, oder PC Monitor → „Energie“, oder eine Deck-Taste („PC sperren / ausschalten“). „Sperren“ geht sofort für jedes Gerät, das Spiele starten darf. Energiesparen, Neustart und Herunterfahren fragen vorher; Neustart/Herunterfahren wahlweise sofort oder in 30 s bis 10 min – bis dahin auf jedem Gerät mit „Abbrechen“ zu stoppen. Dafür muss der PC das Recht einmal erlauben: am PC → Geräte → dein Handy → „PC ausschalten“ ankreuzen → Speichern. Geht nur, wenn der PC verbunden ist (wird nie für später gespeichert). Nur mit dem Windows-Begleiter.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

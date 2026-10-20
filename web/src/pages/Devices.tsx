@@ -9,7 +9,7 @@ import type { PairedDevice } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, OfflineState, PageHead } from "../components/ui";
 
 export function permLabels(): Record<string, string> {
-  return { view: t("Ansehen"), launch: t("Starten"), soundboard: t("Soundboard"), manage: t("Verwalten"), admin: t("Administration") };
+  return { view: t("Ansehen"), launch: t("Starten"), soundboard: t("Soundboard"), manage: t("Verwalten"), power: t("PC ausschalten"), admin: t("Administration") };
 }
 
 export default function Devices() {
@@ -86,7 +86,7 @@ function EditDevice({ device, onClose }: { device: PairedDevice; onClose: () => 
         <div className="stack-sm">
           {Object.entries(labels).map(([k, v]) => (
             <label key={k} className="checkbox"><input type="checkbox" disabled={!conn.me?.isLocal || k === "view"} checked={perms.includes(k)} onChange={(e) => setPerms(e.target.checked ? [...perms, k] : perms.filter((p) => p !== k))} />{v}
-              <span className="tiny muted">{k === "admin" ? t("– Geräte verwalten, Backups, Updates") : k === "manage" ? t("– Bibliothek, Profile, Regeln bearbeiten") : ""}</span></label>
+              <span className="tiny muted">{k === "admin" ? t("– Geräte verwalten, Backups, Updates") : k === "manage" ? t("– Bibliothek, Profile, Regeln bearbeiten") : k === "power" ? t("– Energiesparen, Neustart und Herunterfahren vom Gerät (Sperren geht schon mit „Starten“)") : ""}</span></label>
           ))}
         </div>
       </Field>

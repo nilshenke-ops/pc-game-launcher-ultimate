@@ -45,6 +45,8 @@ export default function CalendarPage() {
 
   const create = (on = day) => {
     const start = new Date(on); start.setHours(20, 0, 0, 0);
+    // 20:00 already over today: the next full hour instead of a time in the past.
+    if (start.getTime() < Date.now()) { const next = new Date(); next.setMinutes(0, 0, 0); next.setHours(next.getHours() + 1); if (next.toDateString() === start.toDateString() || start.toDateString() === new Date().toDateString()) start.setTime(next.getTime()); }
     setEditing({ id: newEventId(), title: "", start: start.toISOString(), durationMinutes: 120, allDay: false, repeat: "none", remindMinutes: 15, color: COLORS[0] });
   };
   const importFile = async (f: File) => {

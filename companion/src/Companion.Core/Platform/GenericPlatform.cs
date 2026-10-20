@@ -1,3 +1,4 @@
+using Pgl.Core.Infrastructure;
 using System.Diagnostics;
 using Pgl.Core.Models;
 using Pgl.Core.Services;
@@ -21,6 +22,21 @@ public sealed class GenericPlatform : IPlatform
     public IDesktopIntegration Desktop { get; } = new NullDesktop();
     public IEnumerable<IDetector> Detectors { get; } = new IDetector[] { new SteamDetector(SteamDetector.DefaultRoots()), new EpicDetector(EpicDetector.DefaultManifestDir()) };
     public IUpdateInstaller UpdateInstaller { get; } = new NullUpdateInstaller();
+    /// <summary>No power actions by default; the headless companion can use <see cref="DryRunPower"/> for trying out the app.</summary>
+    public IPowerControl Power { get; init; } = NullPower.Instance;
+}
+
+/// <summary>Only records what would happen (headless test runs with PGL_POWER_DRYRUN=1) – never switches anything off.</summary>
+public sealed class DryRunPower : IPowerControl
+{
+    public readonly List<(string action, int delay)> Calls = new();
+    public bool Supported => true;
+    public string? Run(string action, int delaySeconds)
+    {
+        lock (Calls) Calls.Add((action, delaySeconds));
+        Log.Info("power", $"Probelauf: {action} (in {delaySeconds} s) – es wird nichts ausgeschaltet.");
+        return null;
+    }
 }
 
 public sealed class GenericLauncher : ILauncher

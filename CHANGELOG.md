@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.32.0 – 2026-10-20
+### Neu
+- PC vom Handy sperren, in den Energiesparmodus schicken, neu starten und herunterfahren: Widget „PC-Energie“ (Home), Karte „Energie“ im PC Monitor und Deck-Tasten („PC sperren / ausschalten“)
+- Neustart und Herunterfahren wahlweise sofort oder in 30 s, 1, 5 oder 10 min – mit Countdown auf jedem Gerät und „Abbrechen“; Hinweis, wenn gerade ein Spiel läuft
+- Neues Geräte-Recht „PC ausschalten“ (am PC unter Geräte einmal für das Handy ankreuzen); Sperren geht schon mit dem Recht „Starten“
+- Der PC zeigt eine Benachrichtigung, welches Gerät gesperrt, neu gestartet oder heruntergefahren hat
+### Verbessert
+- Vorher ging das nur mit Admin-Recht – das hat ein gekoppeltes Handy normalerweise nicht
+- Wird nie für später vorgemerkt: ohne Verbindung zum PC passiert nichts
+### Behoben
+- Dialoge erscheinen immer über der ganzen Seite – vorher konnte ein Dialog in einem Home-Widget (z. B. „Mein Status“) unter der unteren Leiste landen
+- Neuer Termin nach 20 Uhr: Vorschlag ist jetzt die nächste volle Stunde statt 20:00 (lag schon in der Vergangenheit)
+
 ## 2.31.0 – 2026-10-20
 ### Neu
 - Icon-Werkstatt: eigene Icons (1:1) und Cover (2:3) gestalten – Vorlagen (Neon, Retro, Minimal, Gold, Ice, Fire), Symbol oder Emoji, eigenes Bild mit Zoom, Form (abgerundet, Kreis, Sechseck, Quadrat), Farben, Verlauf, Rand, Muster, Leuchten, Live-Vorschau

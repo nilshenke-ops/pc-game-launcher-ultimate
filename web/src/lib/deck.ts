@@ -4,7 +4,7 @@ import { t } from "./i18n";
 import { brandBg, brandFor } from "./brands";
 import type { LibraryItem, Profile, QuickAction, Sound } from "./types";
 
-export type DeckActionType = "launch" | "quick" | "sound" | "stopSounds" | "profile" | "revertProfile" | "media" | "overlay" | "record" | "replay" | "folder" | "back" | "open" | "none";
+export type DeckActionType = "launch" | "quick" | "sound" | "stopSounds" | "profile" | "revertProfile" | "media" | "power" | "overlay" | "record" | "replay" | "folder" | "back" | "open" | "none";
 export interface DeckAction { type: DeckActionType; ref?: string | null }
 export interface DeckKey { id: string; slot: number; label?: string | null; icon?: string | null; color?: string | null; textColor?: string | null; action: DeckAction }
 export interface DeckPage { id: string; name: string; keys: DeckKey[] }
@@ -15,6 +15,8 @@ export const MEDIA_KEYS: [string, string, string][] = [
   ["volup", "Lauter", "volume-2"], ["voldown", "Leiser", "volume-1"], ["mute", "Ton aus/an", "volume-x"], ["stop", "Stopp", "square"],
 ];
 
+export const POWER_KEYS: [string, string, string][] = [["lock", "PC sperren", "lock"], ["sleep", "Energiesparen", "moon"], ["restart", "Neu starten", "rotate-ccw"], ["shutdown", "Herunterfahren", "power"]];
+
 export const ACTION_TYPES: { type: DeckActionType; label: () => string }[] = [
   { type: "launch", label: () => t("Spiel oder Programm starten") },
   { type: "quick", label: () => t("Quick Action ausführen") },
@@ -23,6 +25,7 @@ export const ACTION_TYPES: { type: DeckActionType; label: () => string }[] = [
   { type: "profile", label: () => t("Gaming-Profil aktivieren") },
   { type: "revertProfile", label: () => t("Zum vorherigen Profil") },
   { type: "media", label: () => t("Medien & Lautstärke") },
+  { type: "power", label: () => t("PC sperren / ausschalten") },
   { type: "overlay", label: () => t("Overlay ein/aus") },
   { type: "record", label: () => t("Aufnahme starten/stoppen") },
   { type: "replay", label: () => t("Replay speichern") },

@@ -1,10 +1,11 @@
+import { PowerPanel } from "./power-panel";
 import { useState } from "react";
-import { FolderOpen, HardDrive, Lock, Moon, Power, RotateCcw, Wifi, XCircle } from "lucide-react";
+import { FolderOpen, HardDrive, Power, Wifi } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useLiveSubscription, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
-import { Banner, Button, Card, confirmDialog, Loadable, Meter, Sparkline } from "./ui";
+import { Banner, Button, Card, Loadable, Meter, Sparkline } from "./ui";
 
 export interface NetTarget { id: string; label: string; host: string; samples: number; avg?: number | null; min?: number | null; max?: number | null; jitter?: number | null; lossPercent?: number | null; points: { at: string; ms: number | null }[] }
 interface NetSample { at: string; targets: { id: string; label: string; host: string; ms: number | null }[] }
@@ -143,40 +144,7 @@ export function StorageCard({ full = false }: { full?: boolean }) {
 }
 
 /** Lock, sleep, restart, shut down – with confirmation and a cancel option for restart/shutdown. */
+/** Lock, sleep, restart, shut down – the same panel as the "PC-Energie" home widget. */
 export function PowerCard() {
-  const conn = useConn();
-  const q = useRpc<{ supported: boolean }>("power.status", {}, []);
-  const [delay, setDelay] = useState(60);
-  const [pending, setPending] = useState<string | null>(null);
-  const admin = !!conn.me?.isLocal || !!conn.me?.permissions?.includes("admin");
-  const run = async (action: string, label: string, confirmText: string) => {
-    if (action !== "cancel" && !(await confirmDialog(label + "?", confirmText, { danger: action === "shutdown" || action === "restart", ok: label }))) return;
-    try {
-      await client.call("power.run", { action, delay });
-      toast(action === "cancel" ? t("Abgebrochen") : t("{a} angefordert", { a: label }), "success");
-      setPending(action === "restart" || action === "shutdown" ? action : null);
-    } catch (e) { toast((e as Error).message, "error"); }
-  };
-  return (
-    <Card title={t("Energie")} icon={<Power size={18} />}>
-      <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
-        {q.data && !q.data.supported ? <Banner kind="info">{t("Energie-Aktionen sind nur im Windows-Begleiter verfügbar.")}</Banner> : (
-          <div className="stack">
-            {!admin && <p className="small muted">{t("Nur am PC oder mit Admin-Recht (Geräte → Berechtigungen).")}</p>}
-            <div className="row">
-              <Button icon={<Lock size={16} />} disabled={!admin} onClick={() => run("lock", t("PC sperren"), t("Der PC wird sofort gesperrt."))}>{t("Sperren")}</Button>
-              <Button icon={<Moon size={16} />} disabled={!admin} onClick={() => run("sleep", t("Energiesparen"), t("Der PC geht in den Energiesparmodus. Die Verbindung bricht ab, bis er wieder aufwacht."))}>{t("Energiesparen")}</Button>
-              <Button icon={<RotateCcw size={16} />} disabled={!admin} onClick={() => run("restart", t("Neu starten"), t("Der PC startet in {s} Sekunden neu. Ungespeicherte Arbeit geht verloren.", { s: delay }))}>{t("Neu starten")}</Button>
-              <Button variant="danger" icon={<Power size={16} />} disabled={!admin} onClick={() => run("shutdown", t("Herunterfahren"), t("Der PC fährt in {s} Sekunden herunter. Ungespeicherte Arbeit geht verloren.", { s: delay }))}>{t("Herunterfahren")}</Button>
-            </div>
-            <label className="row small" style={{ gap: 8 }}>{t("Verzögerung")}
-              <select className="input" style={{ maxWidth: 140 }} value={delay} onChange={(e) => setDelay(+e.target.value)}>
-                {[0, 30, 60, 120, 300].map((s) => <option key={s} value={s}>{s === 0 ? t("sofort") : t("{s} Sekunden", { s })}</option>)}
-              </select></label>
-            {pending && <Button icon={<XCircle size={16} />} onClick={() => run("cancel", t("Abbrechen"), "")}>{t("Geplantes Herunterfahren/Neustarten abbrechen")}</Button>}
-          </div>
-        )}
-      </Loadable>
-    </Card>
-  );
+  return <Card title={t("Energie")} icon={<Power size={18} />}><PowerPanel /></Card>;
 }

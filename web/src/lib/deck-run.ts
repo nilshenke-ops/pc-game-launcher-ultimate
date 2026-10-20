@@ -15,6 +15,8 @@ export async function runDeckAction(a: DeckAction, label: string) {
       await runQuickAction(q);
       return;
     }
+    // Asks first (restart/shutdown with 60 s to cancel); locking right away.
+    if (a.type === "power") { const { powerFromDeck } = await import("../components/power-panel"); await powerFromDeck(a.ref as "lock" | "sleep" | "restart" | "shutdown"); return; }
     const c = commandFor(a);
     if (!c) return;
     const r = await client.call<{ ok?: boolean; message?: string }>(c.method, c.params);

@@ -41,7 +41,8 @@ public sealed class RpcSession
     public bool Authenticated => IsLocalAdmin || Device != null;
     public string Who => IsLocalAdmin ? "PC" : Device?.Name ?? "unbekannt";
     public string PrefsKey => IsLocalAdmin ? "local" : Device?.Id ?? "anon";
-    public bool Has(string perm) => Permissions.Contains(perm);
+    /// <summary>Admin devices may also switch the PC off (they can grant themselves the right anyway).</summary>
+    public bool Has(string perm) => Permissions.Contains(perm) || (perm == Security.Permissions.Power && Permissions.Contains(Security.Permissions.Admin));
 }
 
 public sealed class RpcContext

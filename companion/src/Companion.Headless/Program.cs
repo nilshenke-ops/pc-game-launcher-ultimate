@@ -24,7 +24,9 @@ if (args.Length > 1 && args[0] == "--check-update")
 string? dataDir = null;
 for (int i = 0; i < args.Length - 1; i++) if (args[i] == "--data") dataDir = args[i + 1];
 
-var services = new CompanionServices(new GenericPlatform(), new AppPaths(dataDir));
+// PGL_POWER_DRYRUN=1: lock/restart/shut down only write to the log (to try the app on a test machine).
+var platform = Environment.GetEnvironmentVariable("PGL_POWER_DRYRUN") == "1" ? new GenericPlatform { Power = new DryRunPower() } : new GenericPlatform();
+var services = new CompanionServices(platform, new AppPaths(dataDir));
 await services.StartAsync();
 if (services.Web.StartError != null) { Console.Error.WriteLine(services.Web.StartError); return 1; }
 

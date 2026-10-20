@@ -558,14 +558,10 @@ public static class RpcApi
         rpc.Register("obs.replaySave", async _ => (object)new { message = await s.Capture.Run("replay") });
         rpc.Register("obs.replayToggle", async _ => (object)new { message = await s.Capture.Run("buffer") });
 
-        rpc.Register("power.status", _ => new { supported = s.Platform.Power.Supported });
-        rpc.Register("power.run", ctx =>
-        {
-            var action = ctx.Str("action", 20);
-            if (action is not ("lock" or "sleep" or "restart" or "shutdown" or "cancel")) throw new RpcException("invalid-params", "Unbekannte Aktion.");
-            Log.Info("power", $"{action} angefordert von {ctx.Session.Who}");
-            return s.Platform.Power.Run(action, ctx.Int("delay", 60, 0, 600)) is { } err ? throw new RpcException("power", err) : true;
-        });
+        rpc.Register("power.status", ctx => s.Power.Status(ctx.Session));
+        // Locking is harmless (sign in again) – every device that may start games may lock the PC.
+        rpc.Register("power.lock", ctx => { s.Power.Run("lock", 0, ctx.Session.Who); return true; });
+        rpc.Register("power.run", ctx => { s.Power.Run(ctx.Str("action", 20), ctx.Int("delay", 60, 0, 600), ctx.Session.Who); return s.Power.Status(ctx.Session); });
         rpc.Register("history.setNote", ctx => { s.History.SetNote(ctx.Str("itemId", 64), ctx.Params.GetProperty("startedAt").GetDateTime(), ctx.OptStr("note", 1000)); return true; });
         rpc.Register("backup.points", _ => s.Backup.Points());
         rpc.Register("backup.createPoint", _ => s.Backup.CreatePoint());

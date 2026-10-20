@@ -8,8 +8,7 @@ import {
   ArrowLeft, AudioLines, Bell, Bomb, Camera, Cat, Circle, Clapperboard, Coffee, Command, Cpu, Crosshair, Crown, Download, Eye, EyeOff, Flame, Folder, Gamepad2, Gauge, Ghost,
   Gift, Globe, HardDrive, Headphones, Heart, Home, Image, Joystick, Keyboard, Laugh, Layers, LayoutGrid, Lightbulb, Lock, Megaphone, MessageCircle, Mic, MicOff, Monitor, Moon,
   Mouse, Music, Music2, PartyPopper, Pause, Play, Power, Radio, Rocket, Settings, Shield, ShieldCheck, Skull, SkipBack, SkipForward, Smile, Sparkles, Square, Star, Sun,
-  Swords, Target, Timer, Trophy, Tv, Undo2, Video, Volume1, Volume2, VolumeX, Wand2, Wifi, Zap, type LucideIcon,
-} from "lucide-react";
+  Swords, Target, Timer, Trophy, Tv, Undo2, Video, Volume1, Volume2, VolumeX, Wand2, Wifi, Zap, RotateCcw, type LucideIcon } from "lucide-react";
 
 export const DECK_ICONS: Record<string, LucideIcon> = {
   "gamepad-2": Gamepad2, joystick: Joystick, swords: Swords, crosshair: Crosshair, target: Target, trophy: Trophy, crown: Crown, flame: Flame, rocket: Rocket, bomb: Bomb,
@@ -18,7 +17,7 @@ export const DECK_ICONS: Record<string, LucideIcon> = {
   play: Play, pause: Pause, square: Square, "skip-forward": SkipForward, "skip-back": SkipBack, circle: Circle, video: Video, camera: Camera, clapperboard: Clapperboard, image: Image,
   radio: Radio, tv: Tv, monitor: Monitor, cpu: Cpu, gauge: Gauge, "hard-drive": HardDrive, wifi: Wifi, globe: Globe, keyboard: Keyboard, mouse: Mouse,
   "message-circle": MessageCircle, megaphone: Megaphone, bell: Bell, eye: Eye, "eye-off": EyeOff, lock: Lock, power: Power, settings: Settings, layers: Layers, "layout-grid": LayoutGrid,
-  folder: Folder, home: Home, "arrow-left": ArrowLeft, "undo-2": Undo2, download: Download, timer: Timer, command: Command, lightbulb: Lightbulb, sun: Sun, moon: Moon,
+  folder: Folder, home: Home, "arrow-left": ArrowLeft, "undo-2": Undo2, download: Download, timer: Timer, command: Command, lightbulb: Lightbulb, sun: Sun, moon: Moon, "rotate-ccw": RotateCcw,
   coffee: Coffee, smile: Smile, laugh: Laugh, "party-popper": PartyPopper, cat: Cat,
 };
 // Names used by the profile icons elsewhere in the app map to the same symbols.

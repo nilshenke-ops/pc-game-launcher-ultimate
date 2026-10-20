@@ -119,7 +119,7 @@ export const DEFAULT_THEME: Theme = {
 // ------------------------------------------------------------------ dashboard layouts
 
 export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck" | "calendar" | "activity"
-  | "counter" | "break" | "today" | "ping" | "goals" | "level" | "deals" | "controller" | "random" | "visualizer";
+  | "counter" | "break" | "today" | "ping" | "goals" | "level" | "deals" | "controller" | "random" | "visualizer" | "power";
 /** Widgets that are useful without a connected PC (shown on the home screen while offline). */
 export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity", "counter", "break", "today", "goals", "level", "deals", "random", "visualizer"]);
 /** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
@@ -163,6 +163,7 @@ export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSiz
   { id: "controller", label: "Controller-Akku", sizes: ["s", "m"] },
   { id: "random", label: "Zufallsspiel", sizes: ["s", "m"] },
   { id: "visualizer", label: "Musik-Visualizer", sizes: ["m", "l"] },
+  { id: "power", label: "PC-Energie", sizes: ["s", "m"] },
 ];
 
 export const DEFAULT_LAYOUT: Layout = {

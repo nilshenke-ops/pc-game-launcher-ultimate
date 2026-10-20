@@ -5,9 +5,10 @@ import {
   Grid3x3, LayoutGrid, ListTodo, Rocket, Timer, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
   Puzzle, Shapes, CalendarDays, CircleUser,
   Coffee, Dices, Gamepad, Hash, Hourglass, Tag, Target, Trophy,
-  AudioWaveform,
+  AudioWaveform, Power,
 } from "lucide-react";
 import { Visualizer } from "../components/visualizer";
+import { PowerPanel } from "../components/power-panel";
 import { BreakWidget, ControllerWidget, CounterWidget, DealsWidget, GoalsWidget, LevelWidget, PingWidget, RandomGameWidget, TodayWidget } from "../components/game-widgets";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -272,6 +273,7 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   controller: { icon: <Gamepad size={18} />, title: () => t("Controller-Akku"), render: () => <ControllerWidget />, link: "/peripherals" },
   random: { icon: <Dices size={18} />, title: () => t("Zufallsspiel"), render: () => <RandomGameWidget /> },
   visualizer: { icon: <AudioWaveform size={18} />, title: () => t("Musik-Visualizer"), render: () => <Visualizer compact /> },
+  power: { icon: <Power size={18} />, title: () => t("PC-Energie"), render: () => <PowerPanel compact /> },
 };
 
 export default function Dashboard() {

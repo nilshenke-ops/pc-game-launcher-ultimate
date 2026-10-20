@@ -1276,3 +1276,7 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 .iw-preview { display: grid; place-items: center; padding: 12px; border-radius: var(--radius-sm); background: repeating-conic-gradient(#1f2430 0 25%, #151821 0 50%) 0 0 / 20px 20px; position: sticky; top: 0; }
 .iw-canvas { width: 100%; height: auto; display: block; }
 .iw-canvas.icon { max-width: 200px; } .iw-canvas.cover { max-width: 180px; }
+
+.power-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.power-grid .btn { justify-content: center; min-height: 48px; }
+@media (min-width: 900px) { .power-grid:not(.compact) { grid-template-columns: repeat(4, minmax(0, 1fr)); } }

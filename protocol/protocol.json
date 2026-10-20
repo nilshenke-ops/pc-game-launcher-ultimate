@@ -1,7 +1,7 @@
 {
   "$comment": "Single source of truth for the PGL wire protocol. Checked by tests in companion (C#), relay and web (TS).",
   "version": 1,
-  "permissions": ["view", "launch", "soundboard", "manage", "admin", "local"],
+  "permissions": ["view", "launch", "soundboard", "manage", "power", "admin", "local"],
   "defaultDevicePermissions": ["view", "launch", "soundboard", "manage"],
   "methods": {
     "hello": "none",
@@ -243,7 +243,8 @@
     "obs.replaySave": "launch",
     "obs.replayToggle": "launch",
     "power.status": "view",
-    "power.run": "admin",
+    "power.lock": "launch",
+    "power.run": "power",
     "history.setNote": "manage",
     "backup.points": "admin",
     "backup.createPoint": "admin",

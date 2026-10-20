@@ -1,5 +1,6 @@
 import { cloneElement, isValidElement, useEffect, useId, useRef, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, MonitorSmartphone, RefreshCw, WifiOff, X, XCircle } from "lucide-react";
+import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { dismissToast, useToasts } from "../lib/hooks";
 import { t } from "../lib/i18n";
@@ -158,7 +159,9 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
     document.body.style.overflow = "hidden";
     return () => { document.removeEventListener("keydown", onKey); document.body.style.overflow = ""; prev?.focus?.(); };
   }, []);
-  return (
+  // Always drawn straight into <body>: inside a card or the page area an animation or transform of a parent would
+  // otherwise make the dialog part of that box (seen in 2.32: "Speichern" ended up under the bottom bar).
+  return createPortal(
     <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div ref={ref} className={`modal ${wide ? "wide" : ""} ${className}`} role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined}>
         <div className="modal-head">
@@ -168,7 +171,8 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-foot">{footer}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
