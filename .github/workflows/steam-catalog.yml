@@ -1,0 +1,44 @@
+# Every game on Steam with price and picture for the website (gh-pages/prices/apps/<letter>.json), once a day.
+# The phone loads only the part for the first letter of a game it looks up – nothing about the wish list is sent.
+# Needs the repository secret STEAM_API_KEY (Steam's full app list is only available with a key; it is never printed).
+name: Steam-Katalog aktualisieren
+on:
+  schedule:
+    - cron: "23 3 * * *"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+          sparse-checkout: scripts
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+          fetch-depth: 1
+          filter: blob:none
+          sparse-checkout: prices
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Katalog abrufen
+        env:
+          STEAM_API_KEY: ${{ secrets.STEAM_API_KEY }}
+        run: node main/scripts/steam-price-index.mjs --all --out site/prices --country de
+      - name: Veröffentlichen
+        working-directory: site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add prices/apps
+          git diff --cached --quiet || { git commit -m "Steam-Katalog aktualisieren"; git pull --rebase -q origin gh-pages; git push; }

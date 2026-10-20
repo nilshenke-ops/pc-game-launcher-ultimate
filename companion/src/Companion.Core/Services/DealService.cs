@@ -45,6 +45,8 @@ public sealed class WishItem
     public string? MsError { get; set; }
     /// <summary>Store picture (https://store-images.s-microsoft.com only) – for games that are not on Steam.</summary>
     public string? MsImage { get; set; }
+    /// <summary>Real header picture from Steam (newer games only have it under a path with an id, not the old one).</summary>
+    public string? SteamImage { get; set; }
 }
 
 public sealed class DealsFile
@@ -154,7 +156,7 @@ public sealed class DealService : IDisposable
                 if (w.SteamAppId != null && f.Items.Any(x => x.SteamAppId == w.SteamAppId)) throw new RpcException("conflict", "Das Spiel steht schon auf der Wunschliste.");
                 w.AddedAt = _now(); w.History = new(); w.FinalCents = w.InitialCents = w.DiscountPercent = null; w.CheckedAt = null; w.Error = null; w.NotifiedAtCents = null;
                 // Store data only ever comes from the PC's own checks, never from the device.
-                w.MsProductId = w.MsTitle = w.MsCurrency = w.MsError = w.MsImage = null; w.MsFinalCents = w.MsInitialCents = null; w.FromSteamWishlist = false;
+                w.MsProductId = w.MsTitle = w.MsCurrency = w.MsError = w.MsImage = w.SteamImage = null; w.MsFinalCents = w.MsInitialCents = null; w.FromSteamWishlist = false;
                 f.Items.Add(w);
                 return w;
             }
@@ -164,7 +166,7 @@ public sealed class DealService : IDisposable
             old.Title = w.Title; old.Notes = w.Notes;
             if (old.TargetCents != w.TargetCents) old.NotifiedAtCents = null;
             old.TargetCents = w.TargetCents;
-            if (old.SteamAppId != w.SteamAppId) { old.SteamAppId = w.SteamAppId; old.History.Clear(); old.FinalCents = old.InitialCents = old.DiscountPercent = null; old.CheckedAt = null; }
+            if (old.SteamAppId != w.SteamAppId) { old.SteamAppId = w.SteamAppId; old.SteamImage = null; old.History.Clear(); old.FinalCents = old.InitialCents = old.DiscountPercent = null; old.CheckedAt = null; }
             return old;
         });
         _hub.Changed("deals");
@@ -252,7 +254,7 @@ public sealed class DealService : IDisposable
         var f = _store.Snapshot();
         var item = f.Items.FirstOrDefault(i => i.Id == id);
         if (item == null) return;
-        if (item.SteamAppId != null) { var (price, error) = await FetchAsync(item.SteamAppId, f.Country); Record(item.Id, price, error); }
+        if (item.SteamAppId != null) { var (price, error) = await FetchAsync(item.SteamAppId, f.Country); Record(item.Id, price, error); await FillSteamImagesAsync(f.Country); }
         if (f.CompareMicrosoft) await CheckMicrosoftAsync(item, f.Country);
         _hub.Changed("deals");
     }
@@ -297,6 +299,7 @@ public sealed class DealService : IDisposable
             removed = x.Items.RemoveAll(i => i.FromSteamWishlist && i.SteamAppId != null && !appIds.Contains(i.SteamAppId) && i.TargetCents == null && string.IsNullOrEmpty(i.Notes));
             x.WishlistError = null; x.WishlistSyncedAt = _now();
         });
+        await FillSteamImagesAsync(f.Country);
         _hub.Changed("deals");
         return new { added, removed, total = appIds.Count };
     }
@@ -420,6 +423,7 @@ public sealed class DealService : IDisposable
                 catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { break; }
                 await Task.Delay(force ? 100 : 800);
             }
+            await FillSteamImagesAsync(f0.Country);
             var compareMs = _store.Snapshot().CompareMicrosoft;
             foreach (var item in _store.Snapshot().Items.Take(MaxItems))
             {
@@ -436,6 +440,28 @@ public sealed class DealService : IDisposable
         finally { _running.Release(); }
         _hub.Changed("deals");
         return List();
+    }
+
+    /// <summary>Header pictures for entries that have none yet (100 per request, from Steam's own item data).</summary>
+    async Task FillSteamImagesAsync(string country)
+    {
+        var ids = _store.Snapshot().Items.Where(i => i.SteamAppId != null && i.SteamImage == null).Select(i => i.SteamAppId!).Distinct().Take(300).ToList();
+        foreach (var chunk in ids.Chunk(100))
+        {
+            var input = JsonSerializer.Serialize(new { ids = chunk.Select(a => new { appid = int.Parse(a) }), context = new { language = "german", country_code = country.ToUpperInvariant() }, data_request = new { include_assets = true } });
+            try
+            {
+                using var doc = JsonDocument.Parse(await _http.GetStringAsync($"{ApiBase}/IStoreBrowseService/GetItems/v1/?input_json={Uri.EscapeDataString(input)}"));
+                if (!doc.RootElement.GetProperty("response").TryGetProperty("store_items", out var arr)) continue;
+                var found = new Dictionary<string, string>();
+                foreach (var it in arr.EnumerateArray())
+                    if (it.TryGetProperty("appid", out var id) && it.TryGetProperty("assets", out var a) && a.TryGetProperty("header", out var h) && h.GetString() is { } header
+                        && Regex.IsMatch(header, @"^([0-9a-f]{40}/)?[A-Za-z0-9_.-]{1,60}\.(jpg|png)$"))
+                        found[id.GetRawText()] = $"https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/{id.GetRawText()}/{header}";
+                if (found.Count > 0) _store.Update(f => { foreach (var i in f.Items) if (i.SteamAppId != null && i.SteamImage == null && found.TryGetValue(i.SteamAppId, out var u)) i.SteamImage = u; });
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException or InvalidOperationException) { Log.Warn("deals", "Steam-Bilder: " + ex.Message); }
+        }
     }
 
     async Task<((int final, int initial, int discount, string currency)? price, string? error)> FetchAsync(string appId, string country)

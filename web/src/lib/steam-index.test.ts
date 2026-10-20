@@ -24,3 +24,21 @@ describe("Steam price list of the website", () => {
     expect((await loadSteamIndex("de", down))?.updatedAt).toBe(idx.updatedAt);
   });
 });
+
+import { loadCatalogPart, shard, steamPicture } from "./steam-index";
+
+describe("pictures and the full catalog", () => {
+  it("builds the real picture address – newer games need the path with an id", () => {
+    expect(steamPicture(3892270, "395e6d7972474333a698b26f8aa5597bf38109a1/header.jpg")).toBe("https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3892270/395e6d7972474333a698b26f8aa5597bf38109a1/header.jpg");
+    expect(steamPicture(413150, null)).toBe("https://cdn.cloudflare.steamstatic.com/steam/apps/413150/header.jpg");
+    const i: SteamIndex = { ...idx, items: [[3892270, "Gamble With Your Friends", 482, 779, 38, "395e6d7972474333a698b26f8aa5597bf38109a1/header.jpg"]] };
+    expect(lookup(i, { title: "Gamble with your friends" })?.image).toContain("/3892270/395e6d79");
+  });
+  it("loads only the part of the catalog for the first letter, once", async () => {
+    expect([shard("Gamble With Your Friends"), shard("Élden"), shard("7 Days to Die"), shard("ゲーム")]).toEqual(["g", "e", "7", "_"]);
+    const urls: string[] = [];
+    const f = (async (u: string) => { urls.push(u); return { ok: true, json: async () => idx }; }) as unknown as typeof fetch;
+    await loadCatalogPart("Make Way", f); await loadCatalogPart("Minecraft", f);
+    expect(urls).toEqual(["prices/apps/m.json"]);
+  });
+});

@@ -9,14 +9,14 @@ import { dateTime, gradientFor, initials, relTime } from "../lib/format";
 import { clientId, lowestSeen, money, parsePrice, priceInput } from "../lib/quest-deal";
 import { CompatPanel } from "../components/compat-panel";
 import { fetchMsPrice, phonePrices, savePhonePrice, type MsResult } from "../lib/ms-store";
-import { loadSteamIndex, lookup, type SteamIndex } from "../lib/steam-index";
+import { loadCatalogPart, loadSteamIndex, lookup, shard, type SteamIndex } from "../lib/steam-index";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Sparkline, Switch } from "../components/ui";
 
 interface Wish {
   id: string; title: string; steamAppId?: string | null; targetCents?: number | null; notes?: string | null; addedAt?: string;
   currency?: string | null; finalCents?: number | null; initialCents?: number | null; discountPercent?: number | null;
   checkedAt?: string | null; error?: string | null; history?: { at: string; final: number; initial: number }[];
-  fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null; msFromPhone?: number | null; steamFromList?: number | null;
+  fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null; msFromPhone?: number | null; steamFromList?: number | null; steamImage?: string | null;
 }
 interface DealData {
   enabled: boolean; country: string; lastRunAt?: string | null; source: string; msSource?: string; intervalHours: number; items: Wish[];
@@ -107,11 +107,13 @@ const steamArt = (appId: string) => `https://cdn.cloudflare.steamstatic.com/stea
 
 /** The game's original store picture (Steam header, else the Microsoft Store art), initials if there is none. */
 function DealArt({ w }: { w: Wish }) {
-  const src = w.steamAppId ? steamArt(w.steamAppId) : w.msImage ?? null;
-  const [failed, setFailed] = useState(false);
+  // Real picture from Steam (newer games only under their own path), then the old Steam path, then the Microsoft Store.
+  const sources = [w.steamImage, w.steamAppId ? steamArt(w.steamAppId) : null, w.msImage].filter((x, i, a): x is string => !!x && a.indexOf(x) === i);
+  const [n, setN] = useState(0);
+  const src = sources[n];
   return (
     <div className="deal-art" style={{ background: gradientFor(w.title) }}>
-      {src && !failed ? <img src={src} alt="" loading="lazy" onError={() => setFailed(true)} /> : <span className="initials">{initials(w.title)}</span>}
+      {src ? <img key={src} src={src} alt="" loading="lazy" onError={() => setN(n + 1)} /> : <span className="initials">{initials(w.title)}</span>}
     </div>
   );
 }
@@ -281,13 +283,13 @@ function SearchCard({ data, disabled }: { data: DealData; disabled: boolean }) {
 }
 
 /** Overlays the Steam price list of the website if it is newer than the PC's last check (only without the PC). */
-function withSteamList(w: Wish, idx: SteamIndex | null): Wish {
-  if (!idx) return w;
-  const h = lookup(idx, w);
+function withSteamList(w: Wish, idx: SteamIndex | null, catalog: Record<string, SteamIndex | null>, prices: boolean): Wish {
+  const h = (idx && lookup(idx, w)) || (catalog[shard(w.title)] ? lookup(catalog[shard(w.title)]!, w) : null);
   if (!h) return w;
+  const withPic = { ...w, steamAppId: w.steamAppId ?? h.appId, steamImage: w.steamImage ?? h.image, error: w.steamAppId ? w.error : null };
   const pcAt = w.checkedAt ? Date.parse(w.checkedAt) : 0;
-  if (h.at <= pcAt && w.finalCents != null) return w;
-  return { ...w, steamAppId: w.steamAppId ?? h.appId, finalCents: h.finalCents, initialCents: h.initialCents, discountPercent: h.discountPercent, currency: h.currency, steamFromList: h.at, error: w.steamAppId ? w.error : null };
+  if (!prices || h.finalCents == null || (h.at <= pcAt && w.finalCents != null)) return withPic;
+  return { ...withPic, finalCents: h.finalCents, initialCents: h.initialCents, discountPercent: h.discountPercent, currency: h.currency, steamFromList: h.at };
 }
 
 /** Overlays a price the phone fetched itself if it is newer than the PC's last check. */
@@ -315,7 +317,14 @@ export default function Deals() {
   const [steamIdx, setSteamIdx] = useState<SteamIndex | null>(null);
   const country = raw?.country;
   useEffect(() => { if (!online && raw?.enabled && country) void loadSteamIndex(country).then(setSteamIdx); }, [online, raw?.enabled, country]);
-  const d = raw && { ...raw, items: raw.items.map((w) => withSteamList(withPhone(w, phone[w.id]), online ? null : steamIdx)) };
+  // Games outside the popular list (and pictures for all): the daily catalog of every Steam game, one letter at a time.
+  const [catalog, setCatalog] = useState<Record<string, SteamIndex | null>>({});
+  const missing = (raw?.items ?? []).filter((w) => (!online && raw?.enabled && country === "de" && !(steamIdx && lookup(steamIdx, w))) || (!w.steamImage && !w.msImage && !w.steamAppId)).map((w) => shard(w.title));
+  const missingKey = [...new Set(missing)].sort().join("");
+  useEffect(() => {
+    for (const k of missingKey) if (!(k in catalog)) void loadCatalogPart(k).then((p) => setCatalog((c) => ({ ...c, [k]: p })));
+  }, [missingKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const d = raw && { ...raw, items: raw.items.map((w) => withSteamList(withPhone(w, phone[w.id]), online ? null : steamIdx, catalog, !online)) };
   const msAllowed = !!raw?.enabled && raw.compareMicrosoft !== false;
   const checkFromPhone = async (only?: { id: string; title: string }[]) => {
     if (!raw || checking) return;

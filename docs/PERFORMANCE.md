@@ -210,3 +210,7 @@ Keine neue Arbeit am PC: der Trophäenraum liest vorhandene Daten; die Karte zei
 ## 2.24.0 (20.10.2026)
 
 Handy ohne PC: eine Datei mit ~130 KB (komprimiert ~54 KB) beim Öffnen des Deal Radar, danach aus dem Gerätespeicher. Kein Mehraufwand am PC. Die Preisliste erzeugt GitHub (ca. 1–3 min alle 6 h).
+
+## 2.25.0 (20.10.2026)
+
+Handy ohne PC: je Anfangsbuchstabe eines Spiels, das nicht in der Beliebt-Liste steht, einmal ein Katalogteil (einige hundert KB); Bilder lädt der Browser wie bisher nur für sichtbare Kacheln. PC: einmal pro Prüfung eine Anfrage für bis zu 100 fehlende Bilder.
