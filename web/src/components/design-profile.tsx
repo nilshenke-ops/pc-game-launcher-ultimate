@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { Copy, KeyRound, LogIn, LogOut, Save, Trash2, UserPlus } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
@@ -62,7 +63,7 @@ export function AccountPanel({ onDone }: { onDone?: () => void }) {
                 <input className="input" type="password" value={pw2} autoComplete="new-password" onChange={(e) => setPw2(e.target.value)} />
               </Field>}
               <Button type="submit" variant="primary" icon={mode === "login" ? <LogIn size={15} /> : <UserPlus size={15} />} busy={busy} disabled={!valid || !online}>{mode === "login" ? t("Anmelden") : t("Konto anlegen")}</Button>
-              {!online && <p className="tiny muted" style={{ margin: 0 }}>{t("Braucht einmal die Verbindung zu deinem PC – dort liegt das Konto (es gibt keinen fremden Server). Ohne PC: Design-Code unten.")}</p>}
+              {!online && <Banner kind="info">{t("Dein Konto liegt verschlüsselt auf deinem PC – es gibt keinen fremden Server. Verbinde diesen Browser deshalb einmal mit deinem PC, dann kannst du dich registrieren oder anmelden. Ganz ohne PC: Design-Code unten.")} <Link to="/connect" onClick={() => onDone?.()}>{t("PC verbinden")}</Link></Banner>}
             </form>
           )}
         <details>

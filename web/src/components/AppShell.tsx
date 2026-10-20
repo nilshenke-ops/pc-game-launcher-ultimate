@@ -177,7 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </NavLink>
           )}
           <ConnPill />
-          {!preview && <AccountButton />}
+          <AccountButton />
           <NavLink to="/notifications" className="btn ghost icon" aria-label={t("Benachrichtigungen")} style={{ position: "relative" }}>
             <Bell size={19} />
             {notifCount > 0 && <span className="dot error" style={{ position: "absolute", top: 8, right: 9 }} />}
