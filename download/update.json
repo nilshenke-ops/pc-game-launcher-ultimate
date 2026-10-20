@@ -1,31 +1,32 @@
 {
-  "version": "2.28.0",
+  "version": "2.29.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.28.0/PCGameLauncherCompanion.exe",
-  "size": 87616675,
-  "sha256": "05c4b6240ea1985f9b77d5a9d278af6b99f8ebea1be59d25ce3c35741a616aa5",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.29.0/PCGameLauncherCompanion.exe",
+  "size": 87627914,
+  "sha256": "bfac0df9b62729bf4016a9b6b6ef9992b50f03cbac248e5f9db7a19c72e64aea",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.28.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.28.0/PCGameLauncherCompanion-2.28.0-win-x64.zip",
-    "size": 81881251,
-    "sha256": "1e312d242a704b5dbbb8e2aef776b89eec00145c4c2b0afeb99e96c6b086b66c"
+    "fileName": "PCGameLauncherCompanion-2.29.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.29.0/PCGameLauncherCompanion-2.29.0-win-x64.zip",
+    "size": 81892382,
+    "sha256": "74aec897073055810188b029dba937e0b92475fd0d76d946c7f413152bb43327"
   },
-  "notes": "Spiele-Bibliothek mit drei Ansichten: Raster, Liste und Holo – die Wahl bleibt gespeichert · Holo-Ansicht: drehendes Schaufenster mit dem gewählten Spiel groß in der Mitte, darunter Spielzeit und letzter Start (nur vom PC erfasste Werte), Favorit, Bearbeiten und Spielen; bedienbar mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel · Listenansicht: kompakte Zeilen mit Bild, Bewertung, Spielzeit und Spielen-Knopf",
+  "notes": "Gaming-Raum (Navigation → Gaming-Raum): gezeichneter 2.5D-Raum, dessen Objekte zu vorhandenen Bereichen führen – PC → Spiele, Poster mit deinem Lieblingsspiel → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck · Raum bearbeiten: bis zu 6 Varianten, 5 Stile, Lichtfarbe, Objekte ein-/ausblenden, Deko aus deinen Sammelstücken platzieren und verschieben (ziehen oder Pfeiltasten) · Optional als Startseite – das Dashboard bleibt über „Dashboard“ erreichbar",
   "changes": {
     "neu": [
-      "Spiele-Bibliothek mit drei Ansichten: Raster, Liste und Holo – die Wahl bleibt gespeichert",
-      "Holo-Ansicht: drehendes Schaufenster mit dem gewählten Spiel groß in der Mitte, darunter Spielzeit und letzter Start (nur vom PC erfasste Werte), Favorit, Bearbeiten und Spielen; bedienbar mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel",
-      "Listenansicht: kompakte Zeilen mit Bild, Bewertung, Spielzeit und Spielen-Knopf",
-      "Gamer-Pass-Editor im Trophäenraum: eigenes Bild (im Browser auf 256 px verkleinert), Titel, bis zu 3 Lieblingsspiele, bis zu 4 Abzeichen aus echten Erfolgen, Rahmen (Neon, Gold, Holo, Pixel), 8 Hintergründe, eigene Farbe, Bereiche ein-/ausblenden und umsortieren, Live-Vorschau, Rückgängig und Zurücksetzen"
+      "Gaming-Raum (Navigation → Gaming-Raum): gezeichneter 2.5D-Raum, dessen Objekte zu vorhandenen Bereichen führen – PC → Spiele, Poster mit deinem Lieblingsspiel → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck",
+      "Raum bearbeiten: bis zu 6 Varianten, 5 Stile, Lichtfarbe, Objekte ein-/ausblenden, Deko aus deinen Sammelstücken platzieren und verschieben (ziehen oder Pfeiltasten)",
+      "Optional als Startseite – das Dashboard bleibt über „Dashboard“ erreichbar",
+      "Trophäenraum → „Sammlung & Fortschritt“: Fortschrittsbaum (Level, Trophäen, Spielzeit – nur aus deinen echten Daten) mit Sammelstücken und Raum-Stilen als Belohnung",
+      "Belohnungskisten: eine pro erreichtem Level ab Level 2, kostenlos, Inhalt vorher sichtbar, jedes Teil gleich wahrscheinlich, nie doppelt",
+      "Regal für Launcher-Sammelstücke: hinstellen, verschieben, herausnehmen – klar getrennt von den Erfolgen aus deinen echten Spieldaten"
     ],
     "verbessert": [
-      "Große Bibliotheken: Raster und Liste bauen zuerst 120 Spiele auf und laden beim Scrollen nach (bei 3010 Spielen Wechsel der Ansicht 0,2 s statt 1,3–1,8 s)",
-      "Die Holo-Ansicht zeichnet nur die 9 Spiele um die Mitte – auch bei Tausenden Spielen",
-      "Der Gamer-Pass kommt mit dem Konto in andere Browser mit; nichts wird automatisch veröffentlicht"
+      "Raum und Sammlung funktionieren ohne PC und kommen mit dem Konto in andere Browser mit",
+      "Kein Echtgeld, keine Vorteile, kein Zeitdruck, keine Anmeldepflicht – alles nur Deko"
     ],
     "behoben": []
   },
-  "signature": "HmX4i8yzp/DSJOfmgoRpuAicNtXqmaW8HGMHz0UiWONEkM+KDxPVH7soBwcw0/w88TE1Z9VL1QPXnQMGOLfITw=="
+  "signature": "ZLwceROg9fWt+eVMS/jyVYMTnr6nZQGdPWZTodHowFht+CgaG48MVQcm3XyCH19UnEdAyeiUHUGXEH9bO8N4zQ=="
 }
