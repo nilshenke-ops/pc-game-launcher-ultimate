@@ -181,3 +181,19 @@ export function useNow(intervalMs = 1000) {
 }
 
 export function can(perm: string) { return client.can(perm); }
+
+/** Long lists: draws the first `step` entries and more as the end comes into view (the rest is not built at all).
+ * Starts again at the top only when `resetKey` changes (new search/filter), not when the data is refreshed. */
+export function useIncremental<T>(list: T[], resetKey: string, step = 120) {
+  const [n, setN] = useState(step);
+  const sentinel = useRef<HTMLDivElement | null>(null);
+  useEffect(() => { setN(step); }, [resetKey, step]);
+  useEffect(() => {
+    const el = sentinel.current;
+    if (!el || n >= list.length || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver((e) => { if (e.some((x) => x.isIntersecting)) setN((v) => v + step); }, { rootMargin: "800px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [n, list.length, step]);
+  return { visible: n >= list.length ? list : list.slice(0, n), more: n < list.length, sentinel };
+}

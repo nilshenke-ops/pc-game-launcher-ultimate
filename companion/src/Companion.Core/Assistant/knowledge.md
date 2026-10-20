@@ -50,6 +50,16 @@ Seite: /settings?s=design
 Stichworte: ladebildschirm loading screen startanimation animation spielstart kino cinematic vorlage neon portal cyberpunk hologramm galaxie glitch hintergrund bewegt animiert partikel sterne raster übergang übergänge atmosphäre theme fire ice space glass
 Einstellungen → Design & Layout. „Spielstart-Animation“: Ladebildschirm beim Spielstart an/aus, 8 Vorlagen, Dauer 1–8 s oder Schnellmodus (1,2 s), eigener Text, Bild des Spiels, „Vorschau“ (startet nichts). Der Startbefehl geht sofort an den PC; Antippen oder Esc überspringt. „Läuft auf dem PC“ steht erst da, wenn der PC das Spiel erkennt. „Bewegter Hintergrund“ (Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle) mit Tempo, Menge, Deckkraft; „Seitenübergänge“ mit Dauer. Atmosphären (Cyberpunk, Neon, Space, Ice, Fire, Fantasy, Retro Arcade, Minimal Dark, Glass, Mono) stehen bei den Themes und setzen Farben, Hintergrund und Ladebildschirm zusammen. Bei „Animationen reduzieren“ oder leichter Darstellung: Standbild. Funktioniert ohne PC.
 
+## Bibliothek: Raster, Liste, Holo
+Seite: /games
+Stichworte: ansicht holo hologramm karussell liste raster kacheln bibliothek spiele ansicht wechseln viele spiele
+Oben bei den Spielen: „Raster“, „Liste“ oder „Holo“. Holo zeigt das gewählte Spiel groß in der Mitte mit Spielzeit und letztem Start (nur was der PC erfasst hat); weiter mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel; Tipp auf die Mitte oder „Spielen“ startet. Die Ansicht bleibt gespeichert. Bei sehr vielen Spielen lädt Raster/Liste beim Scrollen nach.
+
+## Gamer-Pass bearbeiten
+Seite: /trophies
+Stichworte: gamer-pass gamerpass karte profilkarte avatar bild titel rahmen hintergrund abzeichen badges lieblingsspiele farbe reihenfolge exportieren bild speichern
+Im Trophäenraum: Name, Titel, Symbol oder eigenes Bild, Rahmen (Neon, Gold, Holo, Pixel), Hintergrund, Farbe, bis zu 3 Lieblingsspiele, bis zu 4 Abzeichen aus freigeschalteten Erfolgen, Bereiche ein-/ausblenden und umsortieren. Vorschau sofort, „Rückgängig“, „Zurücksetzen“, „Als Bild speichern“. Bleibt auf dem Gerät (und im Konto); nichts wird veröffentlicht.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

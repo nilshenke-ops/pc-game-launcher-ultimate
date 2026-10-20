@@ -227,3 +227,14 @@ Gemessen in dieser Testumgebung (Linux-Container, Chromium ohne GPU, 1440×1000)
 | Neon-Raster | 7,6 % |
 
 Die Unterschiede liegen im Bereich der Messschwankung (Partikel lag sogar unter „Aus“). Verborgene Seite: 0 Animations-Frames; reduzierte Bewegung/leichte Darstellung: 0 Frames (ein Standbild). Ladebildschirm: nur CSS-Animationen, solange er offen ist (höchstens 8 s). Auf dem HP Victus (RTX 5060 Laptop) noch nicht gemessen – dort mit dem Messplan oben nachholen.
+
+## 2.28.0 (20.10.2026)
+
+Bibliothek mit 3010 Testspielen, Testumgebung (Linux, Chromium ohne GPU, 1440×1000):
+
+| | vorher (2.27) | 2.28 |
+|---|---|---|
+| Wechsel zur Listenansicht | – (neu) | 205 ms |
+| Wechsel zum Raster | 1,3–1,8 s (alle 3010 Karten) | 186 ms (120 Karten, Rest beim Scrollen) |
+| Holo-Ansicht | – (neu) | 114 ms, 5–9 Karten im DOM, 20 Pfeiltasten 291 ms |
+| Suche im Raster | – | 139 ms |

@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.28.0 – 2026-10-20
+### Neu
+- Spiele-Bibliothek mit drei Ansichten: Raster, Liste und Holo – die Wahl bleibt gespeichert
+- Holo-Ansicht: drehendes Schaufenster mit dem gewählten Spiel groß in der Mitte, darunter Spielzeit und letzter Start (nur vom PC erfasste Werte), Favorit, Bearbeiten und Spielen; bedienbar mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel
+- Listenansicht: kompakte Zeilen mit Bild, Bewertung, Spielzeit und Spielen-Knopf
+- Gamer-Pass-Editor im Trophäenraum: eigenes Bild (im Browser auf 256 px verkleinert), Titel, bis zu 3 Lieblingsspiele, bis zu 4 Abzeichen aus echten Erfolgen, Rahmen (Neon, Gold, Holo, Pixel), 8 Hintergründe, eigene Farbe, Bereiche ein-/ausblenden und umsortieren, Live-Vorschau, Rückgängig und Zurücksetzen
+### Verbessert
+- Große Bibliotheken: Raster und Liste bauen zuerst 120 Spiele auf und laden beim Scrollen nach (bei 3010 Spielen Wechsel der Ansicht 0,2 s statt 1,3–1,8 s)
+- Die Holo-Ansicht zeichnet nur die 9 Spiele um die Mitte – auch bei Tausenden Spielen
+- Der Gamer-Pass kommt mit dem Konto in andere Browser mit; nichts wird automatisch veröffentlicht
+
 ## 2.27.0 – 2026-10-20
 ### Neu
 - Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau

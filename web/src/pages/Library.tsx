@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
-import { Check, FolderOpen, Gamepad2, LayoutGrid, Loader2, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
-import { client } from "../lib/rpc";
+import { useEffect, useMemo, useState } from "react";
+import { Box, Check, FolderOpen, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
+import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useRpc, toast, useCan } from "../lib/hooks";
-import { gradientFor, initials } from "../lib/format";
+import { useConn, useRpc, toast, useCan, useIncremental } from "../lib/hooks";
+import { gradientFor, initials, relTime } from "../lib/format";
+import { HoloLibrary, type HoloInfo } from "../components/holo-library";
 import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Thumb } from "../components/ui";
 import { CompatPanel } from "../components/compat-panel";
@@ -13,13 +14,17 @@ import { SteamView } from "./Steam";
 import { LauncherView } from "./Launchers";
 
 type Sort = "name" | "recent" | "added" | "rating";
+type View = "grid" | "list" | "holo";
+const VIEW_KEY = "pgl.libView";
 const SOURCE_LABEL: Record<string, string> = { steam: "Steam", epic: "Epic Games", appsFolder: "Store / Startmenü", exe: "Datei" };
 
 interface ListResult { items: LibraryItem[]; installed: Record<string, boolean | null>; running: string[]; coversFromCdn: boolean }
 
 export default function Library({ kind }: { kind: ItemKind }) {
   const q = useRpc<ListResult>("library.list", {}, ["library"]);
-  const hist = useRpc<{ launches: { itemId: string; at: string }[] }>("history.get", {}, ["history"]);
+  const hist = useRpc<{ launches: { itemId: string; at: string }[]; stats?: { itemId: string; totalMinutes: number; lastPlayed: string }[] }>("history.get", {}, ["history"]);
+  const [view, setView] = useState<View>(() => { const v = readJson<string>(VIEW_KEY); return v === "list" || v === "holo" ? v : "grid"; });
+  useEffect(() => { writeJson(VIEW_KEY, view); }, [view]);
   const [search, setSearch] = useState("");
   // Nothing remembered from the PC yet and no PC: start with the Game Pass catalog, which can be shown without a PC.
   const [cat, setCat] = useState<string>(() => kind === "game" && !q.data && q.error?.code === "offline" ? "__gamepass" : "__all");
@@ -37,6 +42,13 @@ export default function Library({ kind }: { kind: ItemKind }) {
     for (const l of hist.data?.launches ?? []) if (!m.has(l.itemId)) m.set(l.itemId, Date.parse(l.at));
     return m;
   }, [hist.data]);
+  // Play time and last start per game – only what the PC recorded.
+  const info = useMemo(() => {
+    const m = new Map<string, HoloInfo>();
+    for (const st of hist.data?.stats ?? []) m.set(st.itemId, { minutes: st.totalMinutes, lastPlayed: Date.parse(st.lastPlayed) || undefined });
+    for (const [id, at] of lastLaunch) { const x = m.get(id) ?? {}; if (!x.lastPlayed || at > x.lastPlayed) m.set(id, { ...x, lastPlayed: at }); }
+    return m;
+  }, [hist.data, lastLaunch]);
 
   const shown = useMemo(() => {
     const s = search.trim().toLowerCase();
@@ -52,6 +64,10 @@ export default function Library({ kind }: { kind: ItemKind }) {
   const [editMode, setEditMode] = useState(false);
   const fav = (i: LibraryItem) => client.call("library.update", { id: i.id, favorite: !i.favorite }).catch((e) => toast(e.message, "error"));
   const sources = [...new Set(items.map((i) => i.source))];
+  const running = useMemo(() => new Set(q.data?.running ?? []), [q.data]);
+  const inc = useIncremental(shown, `${kind}|${search}|${cat}|${sort}|${view}`);
+  const more = inc.more && <div ref={inc.sentinel} className="tiny muted" style={{ padding: 12, textAlign: "center" }}>{t("{n} von {m} – weitere beim Scrollen", { n: inc.visible.length, m: shown.length })}</div>;
+  const coverOf = (i: LibraryItem) => (i.coverUrl && (q.data?.coversFromCdn || !i.coverUrl.includes("steamstatic")) ? i.coverUrl : undefined);
 
   return (
     <>
@@ -69,6 +85,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
             <Search size={17} />
             <input className="input" type="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={isGame ? t("Spiele durchsuchen …") : t("Programme durchsuchen …")} aria-label={t("Suche")} />
           </div>
+          {isGame && <Segmented<View> value={view} onChange={setView} label={t("Ansicht")} options={[{ value: "grid", label: <><LayoutGrid size={15} /> {t("Raster")}</> }, { value: "list", label: <><List size={15} /> {t("Liste")}</> }, { value: "holo", label: <><Box size={15} /> {t("Holo")}</> }]} />}
           <Segmented<Sort> value={sort} onChange={setSort} label={t("Sortierung")} options={[{ value: "name", label: t("A–Z") }, { value: "recent", label: t("Zuletzt") }, { value: "added", label: t("Neu") }, { value: "rating", label: "★ " + t("Bewertung") }]} />
         </div>
         <div className="chips" role="toolbar" aria-label={t("Filter")}>
@@ -90,9 +107,37 @@ export default function Library({ kind }: { kind: ItemKind }) {
             action={canManage && <Button variant="primary" icon={<Radar size={17} />} onClick={() => setAdding(true)}>{t("Jetzt suchen")}</Button>} /></Card>
         ) : shown.length === 0 ? (
           <Card><Empty icon={<Search size={26} />} title={t("Keine Treffer")} text={t("Filter oder Suchbegriff anpassen.")} /></Card>
+        ) : isGame && view === "holo" ? (
+          <HoloLibrary items={shown} coverOf={coverOf} running={running} installed={q.data?.installed ?? {}} launching={launching} info={info}
+            onLaunch={(i) => void launch(i)} onEdit={canManage ? setEditing : undefined} onFav={(i) => void fav(i)} />
+        ) : isGame && view === "list" ? (
+          <><div className="lib-list">
+            {inc.visible.map((i) => {
+              const m = info.get(i.id), cover = coverOf(i);
+              return (
+                <article key={i.id} className={`lib-row tappable ${launching.has(i.id) ? "busy" : ""}`} role="button" tabIndex={0} aria-label={t("{name} starten", { name: i.name })}
+                  onClick={() => launch(i)} onKeyDown={(e) => { if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); void launch(i); } }}>
+                  <Thumb name={i.name} icon={i.iconData} cover={cover} gradient={gradientFor(i.name)} />
+                  <div className="grow" style={{ minWidth: 0 }}>
+                    <b className="ellipsis">{i.name}</b>
+                    <div className="row tiny muted" style={{ gap: 6, flexWrap: "wrap" }}>
+                      {running.has(i.id) && <span className="badge ok">● {t("Läuft")}</span>}
+                      {q.data?.installed[i.id] === false && <span className="badge error">{t("Nicht gefunden")}</span>}
+                      {(i.rating ?? 0) > 0 && <span style={{ color: "#fde047" }}>{"★".repeat(i.rating!)}</span>}
+                      <span>{m?.minutes ? t("{h} h gespielt", { h: (Math.round(m.minutes / 6) / 10).toLocaleString() }) : t("Noch keine Spielzeit erfasst")}</span>
+                      {m?.lastPlayed && <span>· {t("zuletzt {d}", { d: relTime(m.lastPlayed) })}</span>}
+                    </div>
+                  </div>
+                  <button className={`btn icon sm ghost ${i.favorite ? "on" : ""}`} onClick={(e) => { e.stopPropagation(); void fav(i); }} aria-label={i.favorite ? t("Favorit entfernen") : t("Als Favorit markieren")} aria-pressed={i.favorite}><Star size={15} fill={i.favorite ? "currentColor" : "none"} /></button>
+                  {canManage && <Button size="sm" variant="ghost" icon={<MoreVertical size={15} />} onClick={(e) => { e.stopPropagation(); setEditing(i); }} aria-label={t("Bearbeiten")} />}
+                  <Button variant="primary" size="sm" icon={launching.has(i.id) ? <Loader2 size={14} className="spin" /> : <Play size={14} />} onClick={(e) => { e.stopPropagation(); void launch(i); }}>{t("Spielen")}</Button>
+                </article>
+              );
+            })}
+          </div>{more}</>
         ) : isGame ? (
-          <div className="lib-grid">
-            {shown.map((i) => {
+          <><div className="lib-grid">
+            {inc.visible.map((i) => {
               const running = q.data?.running.includes(i.id);
               const installed = q.data?.installed[i.id];
               const cover = i.coverUrl && (q.data?.coversFromCdn || !i.coverUrl.includes("steamstatic")) ? i.coverUrl : undefined;
@@ -120,7 +165,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
                 </article>
               );
             })}
-          </div>
+          </div>{more}</>
         ) : (
           <div className="app-grid">
             {shown.map((i) => (
