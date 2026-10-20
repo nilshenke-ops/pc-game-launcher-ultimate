@@ -1,32 +1,31 @@
 {
-  "version": "2.27.0",
+  "version": "2.28.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.27.0/PCGameLauncherCompanion.exe",
-  "size": 87563447,
-  "sha256": "60bf0a87c51e37d248b3839e4f25ca8d45790aaadf8d0a3681694c50f77f7ae1",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.28.0/PCGameLauncherCompanion.exe",
+  "size": 87616675,
+  "sha256": "05c4b6240ea1985f9b77d5a9d278af6b99f8ebea1be59d25ce3c35741a616aa5",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.27.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.27.0/PCGameLauncherCompanion-2.27.0-win-x64.zip",
-    "size": 81827441,
-    "sha256": "e462d72a5352d8c613e1e7b344ac955173ae706bcd91467894f183400b99c22e"
+    "fileName": "PCGameLauncherCompanion-2.28.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.28.0/PCGameLauncherCompanion-2.28.0-win-x64.zip",
+    "size": 81881251,
+    "sha256": "1e312d242a704b5dbbb8e2aef776b89eec00145c4c2b0afeb99e96c6b086b66c"
   },
-  "notes": "Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau · Der Ladebildschirm zeigt nur, was wirklich bekannt ist: „wird gesendet“ → „Startbefehl angekommen“ → „Läuft auf dem PC“ erst, wenn der PC das Spiel erkennt; Fehler mit Grund · Bewegter Hintergrund: Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle – Tempo, Menge und Deckkraft einstellbar",
+  "notes": "Spiele-Bibliothek mit drei Ansichten: Raster, Liste und Holo – die Wahl bleibt gespeichert · Holo-Ansicht: drehendes Schaufenster mit dem gewählten Spiel groß in der Mitte, darunter Spielzeit und letzter Start (nur vom PC erfasste Werte), Favorit, Bearbeiten und Spielen; bedienbar mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel · Listenansicht: kompakte Zeilen mit Bild, Bewertung, Spielzeit und Spielen-Knopf",
   "changes": {
     "neu": [
-      "Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau",
-      "Der Ladebildschirm zeigt nur, was wirklich bekannt ist: „wird gesendet“ → „Startbefehl angekommen“ → „Läuft auf dem PC“ erst, wenn der PC das Spiel erkennt; Fehler mit Grund",
-      "Bewegter Hintergrund: Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle – Tempo, Menge und Deckkraft einstellbar",
-      "Seitenübergänge: Einblenden, Gleiten, Zoom, Unschärfe oder keiner, Dauer einstellbar",
-      "Atmosphären: Cyberpunk, Neon, Space, Ice, Fire, Fantasy, Retro Arcade, Minimal Dark, Glass, Mono – Farben plus passender Hintergrund und Ladebildschirm in einem Tipp"
+      "Spiele-Bibliothek mit drei Ansichten: Raster, Liste und Holo – die Wahl bleibt gespeichert",
+      "Holo-Ansicht: drehendes Schaufenster mit dem gewählten Spiel groß in der Mitte, darunter Spielzeit und letzter Start (nur vom PC erfasste Werte), Favorit, Bearbeiten und Spielen; bedienbar mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel",
+      "Listenansicht: kompakte Zeilen mit Bild, Bewertung, Spielzeit und Spielen-Knopf",
+      "Gamer-Pass-Editor im Trophäenraum: eigenes Bild (im Browser auf 256 px verkleinert), Titel, bis zu 3 Lieblingsspiele, bis zu 4 Abzeichen aus echten Erfolgen, Rahmen (Neon, Gold, Holo, Pixel), 8 Hintergründe, eigene Farbe, Bereiche ein-/ausblenden und umsortieren, Live-Vorschau, Rückgängig und Zurücksetzen"
     ],
     "verbessert": [
-      "Die Animation hält einen Start nie auf: der Befehl geht vorher an den PC, Antippen/Esc überspringt sofort, ein Fehler in der Animation zeigt einfach nichts",
-      "Bei „Animationen reduzieren“, leichter Darstellung oder der Systemeinstellung „Bewegung reduzieren“: Standbild statt Animation; der Hintergrund hält an, wenn die Seite nicht sichtbar ist",
-      "Alles läuft ohne PC und kommt mit Design-Code und Konto in andere Browser mit"
+      "Große Bibliotheken: Raster und Liste bauen zuerst 120 Spiele auf und laden beim Scrollen nach (bei 3010 Spielen Wechsel der Ansicht 0,2 s statt 1,3–1,8 s)",
+      "Die Holo-Ansicht zeichnet nur die 9 Spiele um die Mitte – auch bei Tausenden Spielen",
+      "Der Gamer-Pass kommt mit dem Konto in andere Browser mit; nichts wird automatisch veröffentlicht"
     ],
     "behoben": []
   },
-  "signature": "nU+iKXfAmV1bh+k7B4X3hX+e3X9WYX7G1jkM8zBzUJjK00SfoJ83ePvXYSgGS1okhgPelx7qawQJG8FZoOT/ow=="
+  "signature": "HmX4i8yzp/DSJOfmgoRpuAicNtXqmaW8HGMHz0UiWONEkM+KDxPVH7soBwcw0/w88TE1Z9VL1QPXnQMGOLfITw=="
 }
