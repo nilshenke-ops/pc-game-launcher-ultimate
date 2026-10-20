@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.26.1",
+    "date": "2026-10-20",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.26.1/PCGameLauncherCompanion.exe",
+    "size": 87555391,
+    "sha256": "b675c85b5c722a96b0ac1a562c005ed4289c9c72b0398810ec8961874d6dd6cd",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.26.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.26.1/PCGameLauncherCompanion-2.26.1-win-x64.zip",
+      "size": 81819306,
+      "sha256": "fbbbf3f2b0b1af18fc336825ab789c1bc217ad9d935a30a314d71cd0b753c47d"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Das Konto-Symbol neben der Glocke fehlte in Browsern, die noch nie mit einem PC verbunden waren – jetzt immer sichtbar; ohne PC erklärt das Fenster, dass das Konto einmal die Verbindung zum PC braucht (mit „PC verbinden“)"
+      ]
+    },
+    "signature": "odDqxsIsqYy+02OGiPTFOYKEt6Ww3K8BJTaFzN9l2knHb6fxz6iTIH4mXq3Gz7nEbVnseSO4z/rmCvPJxT8COA=="
+  },
+  {
     "version": "2.26.0",
     "date": "2026-10-20",
     "channel": "stable",
