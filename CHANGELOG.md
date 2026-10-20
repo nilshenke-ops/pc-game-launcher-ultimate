@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.31.0 – 2026-10-20
+### Neu
+- Icon-Werkstatt: eigene Icons (1:1) und Cover (2:3) gestalten – Vorlagen (Neon, Retro, Minimal, Gold, Ice, Fire), Symbol oder Emoji, eigenes Bild mit Zoom, Form (abgerundet, Kreis, Sechseck, Quadrat), Farben, Verlauf, Rand, Muster, Leuchten, Live-Vorschau
+- Erreichbar dort, wo das Bild gebraucht wird: Spiel/Programm bearbeiten, Deck-Taste, Gamer-Pass – mit „Übernehmen“ oder „Als Bild speichern“
+### Verbessert
+- Selbst gestaltete Icons haben Vorrang vor dem Marken-Logo eines Programms
+- Sicherer Bild-Upload: Cover-Bilder werden im Browser neu gezeichnet (keine Metadaten, kein SVG, nur PNG/JPEG/WebP/GIF) und passend verkleinert
+- Private Lobby: ehrlich als „noch nicht verfügbar“ erklärt (braucht einen eigenen Server) – keine Attrappe
+
 ## 2.30.0 – 2026-10-20
 ### Neu
 - Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts

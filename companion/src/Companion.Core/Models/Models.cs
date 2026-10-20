@@ -35,6 +35,8 @@ public sealed class LibraryItem
     public string? IconData { get; set; }
     /// <summary>The PC already tried to read the program's own icon (or the user removed it) – not tried again.</summary>
     public bool IconChecked { get; set; }
+    /// <summary>The icon was chosen by the user (e.g. icon workshop) – shown before the brand logo; false = icon of the program file.</summary>
+    public bool IconCustom { get; set; }
     /// <summary>For Steam and Epic games: the PC already looked for the game's own icon in its install folder (from 2.13).</summary>
     public bool GameIconTried { get; set; }
     public string? CoverUrl { get; set; }

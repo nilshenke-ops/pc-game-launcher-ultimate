@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Expand, Loader2, Move, Pencil, Plus, Settings2, Shrink, Sun, Trash2, Upload, Wand2 } from "lucide-react";
+import { IconWorkshop } from "../components/icon-workshop";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
@@ -278,6 +279,7 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
     onSave(key);
   };
   const upload = async (f: File) => { try { set({ icon: await keyImage(f) }); } catch (e) { toast((e as Error).message, "error"); } };
+  const [workshop, setWorkshop] = useState(false);
 
   return (
     <Modal title={isNew ? t("Neue Taste") : t("Taste bearbeiten")} onClose={onClose} wide footer={<>
@@ -359,7 +361,10 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
           {iconTab === "image" && (
             <label className="btn"><Upload size={15} />{t("Bild hochladen")}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={(e) => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void upload(f); }} /></label>
           )}
+          {iconTab === "image" && <Button icon={<Wand2 size={15} />} onClick={() => setWorkshop(true)}>{t("In der Icon-Werkstatt gestalten")}</Button>}
           {iconTab === "image" && <p className="tiny muted">{t("Wird auf 144×144 Pixel verkleinert und auf dem PC gespeichert.")}</p>}
+          {workshop && <IconWorkshop name={k.label || "Deck"} format="icon" applyLabel={t("Für die Taste übernehmen")} onClose={() => setWorkshop(false)}
+            onApply={async (url: string) => { const blob = await (await fetch(url)).blob(); await upload(new File([blob], "icon.png", { type: blob.type })); }} />}
         </div>
       </div>
     </Modal>

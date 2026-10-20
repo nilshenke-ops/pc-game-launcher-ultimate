@@ -38,4 +38,20 @@ public class BacklogTests
         await admin.Ok("library.update", new { id = g.Id, backlog = "completed" });
         Assert.Equal("completed", s.Library.Export().Items.Single().Backlog);
     }
+
+    [Fact]
+    public async Task Own_icon_is_marked_as_chosen_by_the_user_and_cleared_again()
+    {
+        using var dir = new TempDir();
+        await using var s = Fixtures.Services(dir);
+        var admin = await Fixtures.Admin(s);
+        var g = s.Library.AddSteam("1145360", "Hades");
+        Assert.False(g.IconCustom);
+        await admin.Ok("library.update", new { id = g.Id, iconData = "data:image/png;base64,AAAA" });
+        Assert.True(s.Library.Get(g.Id)!.IconCustom);
+        Assert.Equal("invalid-params", await admin.Error("library.update", new { id = g.Id, iconData = "javascript:alert(1)" }));
+        await admin.Ok("library.update", new { id = g.Id, iconData = "" });
+        Assert.False(s.Library.Get(g.Id)!.IconCustom);
+        Assert.Null(s.Library.Get(g.Id)!.IconData);
+    }
 }

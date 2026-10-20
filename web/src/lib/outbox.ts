@@ -218,7 +218,7 @@ function applyLocally(method: string, p: Params): unknown {
       return item;
     }
     case "library.update":
-      patch<{ items: WithId[] }>("library.list", (d) => ({ ...d, items: d.items.map((i) => (i.id === p.id ? { ...i, ...p } : i)) }));
+      patch<{ items: WithId[] }>("library.list", (d) => ({ ...d, items: d.items.map((i) => (i.id === p.id ? { ...i, ...p, ...(typeof p.iconData === "string" ? { iconCustom: !!p.iconData } : {}) } : i)) }));
       return p;
     case "quick.save":
       ensureId(p, "qa");

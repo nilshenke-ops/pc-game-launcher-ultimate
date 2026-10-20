@@ -80,6 +80,16 @@ Seite: /overlay-settings
 Stichworte: musik visualizer equalizer spektrum balken welle kreis ton audio hud layout overlay anordnung speichern ranked streaming wechseln
 Musik-Visualizer: als Widget auf dem Home-Bildschirm („Anpassen“) oder im Overlay hinzufügen. Er bewegt sich nur zu echtem Ton – Quelle wählen: „PC-Ton teilen“ (am PC in Chrome/Edge „Gesamter Bildschirm“ und „Systemaudio teilen“ ankreuzen), „Mikrofon“ oder „Audiodatei“. Nichts wird aufgenommen oder gesendet. HUD-Layouts: Overlay & Aufnahme → Overlay-Inhalt → „HUD-Layouts“: aktuelle Anordnung unter einem Namen speichern (bis 10) und später mit „Anwenden“ wechseln.
 
+## Icon-Werkstatt
+Seite: /games
+Stichworte: icon werkstatt eigenes icon logo cover gestalten erstellen bild symbol emoji rahmen form kreis sechseck deck taste gamer-pass bild
+Eigene Icons (1:1) und Cover (2:3) gestalten: bei einem Spiel oder Programm „Bearbeiten“ → Zauberstab-Knopf neben dem Cover; beim Deck unter „Bild“ → „In der Icon-Werkstatt gestalten“; im Gamer-Pass „Bild gestalten“. Vorlagen (Neon, Retro, Minimal, Gold, Ice, Fire), Symbol (bis 3 Zeichen oder Emoji) oder eigenes Bild mit Zoom, Form, Farben, Verlauf, Rand, Muster, Leuchten. „Übernehmen“ oder „Als Bild speichern“. Eigene Bilder werden im Browser neu gezeichnet (keine Metadaten, kein SVG). Ein eigenes Icon hat Vorrang vor dem Marken-Logo.
+
+## Private Lobby (noch nicht verfügbar)
+Seite: /help
+Stichworte: lobby party freunde einladen gemeinsam spielen gruppe chat mehrspieler private lobby
+Eine private Lobby mit Freunden gibt es noch nicht – dafür braucht es einen eigenen Server im Internet, der Räume und Einladungen zwischen verschiedenen Personen verwaltet. Nexus hat bewusst keinen fremden Server: alles läuft auf deinem PC und deinen Geräten. Zum gemeinsamen Spielen nutze vorerst Discord oder die Party-Funktion von Steam/Xbox.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Box, Check, FolderOpen, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
+import { Box, Check, FolderOpen, Wand2, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
 import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast, useCan, useIncremental } from "../lib/hooks";
 import { gradientFor, initials, relTime } from "../lib/format";
 import { HoloLibrary, type HoloInfo } from "../components/holo-library";
+import { IconWorkshop } from "../components/icon-workshop";
+import { exportIcon, loadSafeImage } from "../lib/icon-art";
 import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Thumb } from "../components/ui";
 import { CompatPanel } from "../components/compat-panel";
@@ -197,6 +199,7 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
         id: item.id, name: f.name, kind: f.kind, favorite: f.favorite, coverUrl: f.coverUrl ?? "", profileId: f.profileId ?? "", notes: f.notes ?? "", rating: f.rating ?? 0,
         categories: f.categoriesText.split(",").map((s) => s.trim()).filter(Boolean),
         processNames: f.processText.split(",").map((s) => s.trim()).filter(Boolean),
+        ...(f.iconData !== item.iconData ? { iconData: f.iconData ?? "" } : {}),
       });
       if (isLocal && (f.target !== item.target || f.args !== item.args || (f.workingDir ?? "") !== (item.workingDir ?? "")))
         await client.call("library.updateTarget", { id: item.id, target: f.target, args: f.args, workingDir: f.workingDir ?? "" });
@@ -220,13 +223,17 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
     } catch (e) { toast((e as Error).message, "error"); }
     setBusy(false);
   };
-  const uploadCover = (file?: File) => {
+  // The picture is drawn again (no SVG, no metadata) and made small enough for the PC.
+  const uploadCover = async (file?: File) => {
     if (!file) return;
-    if (file.size > 500_000) { toast(t("Bild ist zu groß (max. 500 KB)."), "error"); return; }
-    const r = new FileReader();
-    r.onload = () => set({ coverUrl: String(r.result) });
-    r.readAsDataURL(file);
+    try {
+      const cv = await loadSafeImage(file);
+      const out = document.createElement("canvas"); const k = Math.min(1, 900 / Math.max(cv.width, cv.height));
+      out.width = Math.round(cv.width * k); out.height = Math.round(cv.height * k); out.getContext("2d")!.drawImage(cv, 0, 0, out.width, out.height);
+      set({ coverUrl: exportIcon(out, 680_000) });
+    } catch (e) { toast(t((e as Error).message), "error"); }
   };
+  const [workshop, setWorkshop] = useState(false);
 
   return (
     <Modal title={t("„{n}“ bearbeiten", { n: item.name })} onClose={onClose} wide footer={<>
@@ -249,7 +256,8 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
         <Field label={t("Cover-Bild")} hint={t("https-Adresse oder eigenes Bild hochladen")}>
           <div className="row nowrap">
             <input className="input" value={f.coverUrl?.startsWith("data:") ? t("(eigenes Bild)") : f.coverUrl ?? ""} onChange={(e) => set({ coverUrl: e.target.value })} placeholder="https://…" />
-            <label className="btn icon" aria-label={t("Bild hochladen")}><FolderOpen size={16} /><input type="file" accept="image/*" hidden onChange={(e) => uploadCover(e.target.files?.[0])} /></label>
+            <label className="btn icon" aria-label={t("Bild hochladen")}><FolderOpen size={16} /><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={(e) => { void uploadCover(e.target.files?.[0]); e.target.value = ""; }} /></label>
+            <Button icon={<Wand2 size={16} />} aria-label={t("Icon-Werkstatt")} title={t("Icon-Werkstatt: eigenes Icon oder Cover gestalten")} onClick={() => setWorkshop(true)} />
             {f.kind === "game" && <Button icon={<Search size={16} />} busy={busy} onClick={findCover} aria-label={t("Cover automatisch suchen")} title={t("Cover automatisch suchen")} />}
           </div>
         </Field>
@@ -276,6 +284,9 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
         <h3>{t("Läuft das auf meinem PC?")}</h3>
         <CompatPanel appId={item.target} itemId={item.id} />
       </>}
+      {workshop && <IconWorkshop name={f.name} format={f.kind === "program" ? "icon" : undefined} applyLabel={t("Für „{n}“ übernehmen", { n: f.name })}
+        onApply={(url, format) => set(format === "icon" ? { iconData: url } : { coverUrl: url })} onClose={() => setWorkshop(false)} />}
+      {f.iconData !== item.iconData && <p className="tiny muted">{t("Neues Icon gewählt – wird mit „Speichern“ übernommen.")}</p>}
     </Modal>
   );
 }

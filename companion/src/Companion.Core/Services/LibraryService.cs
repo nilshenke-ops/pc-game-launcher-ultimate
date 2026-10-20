@@ -400,7 +400,7 @@ public sealed class LibraryService
             if (u.Categories != null) i.Categories = u.Categories.Select(x => Security.DeviceStore.Sanitize(x, 30, "")).Where(x => x != "").Distinct().Take(10).ToList();
             if (u.Favorite != null) i.Favorite = u.Favorite.Value;
             if (u.CoverUrl != null) i.CoverUrl = u.CoverUrl == "" ? null : u.CoverUrl;
-            if (u.IconData != null) { i.IconData = u.IconData == "" ? null : u.IconData; i.IconChecked = i.GameIconTried = true; }
+            if (u.IconData != null) { i.IconData = u.IconData == "" ? null : u.IconData; i.IconCustom = i.IconData != null; i.IconChecked = i.GameIconTried = true; }
             if (u.ProfileId != null) i.ProfileId = u.ProfileId == "" ? null : u.ProfileId;
             if (u.ProcessNames != null) i.ProcessNames = u.ProcessNames.Select(p => Path.GetFileNameWithoutExtension(p.Trim())).Where(p => p.Length is > 0 and < 100).Distinct().Take(10).ToList();
             if (u.Notes != null) i.Notes = u.Notes.Length > 1000 ? u.Notes[..1000] : u.Notes;

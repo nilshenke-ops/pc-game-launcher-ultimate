@@ -1,7 +1,8 @@
 // Gamer-Pass editor: picture, title, favourite games, badges, frame, background, colour, order – with live preview.
 // Stored only on this device (and in the own encrypted account, if signed in). Nothing is published automatically.
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowDown, ArrowUp, Image as ImageIcon, RotateCcw, Share2, Trash2, Trophy, Undo2, Upload } from "lucide-react";
+import { ArrowDown, ArrowUp, Image as ImageIcon, RotateCcw, Share2, Trash2, Trophy, Undo2, Upload, Wand2 } from "lucide-react";
+import { IconWorkshop } from "./icon-workshop";
 import { t } from "../lib/i18n";
 import { toast, useRpc } from "../lib/hooks";
 import { readJson, writeJson } from "../lib/rpc";
@@ -31,6 +32,7 @@ export function PassEditor({ quests, topGame }: { quests: PassInput; topGame: st
   const unlocked = quests.achievements.filter((a) => a.unlocked);
   const ref = useRef<HTMLCanvasElement>(null);
   const [avatarImg, setAvatarImg] = useState<HTMLImageElement | null>(null);
+  const [workshop, setWorkshop] = useState(false);
 
   const setStyle = (next: PassStyle) => {
     history.current = [...history.current.slice(-19), style];
@@ -100,6 +102,7 @@ export function PassEditor({ quests, topGame }: { quests: PassInput; topGame: st
               {EMOJIS.map((e) => <button key={e} type="button" className={`chip ${!style.avatar && style.emoji === e ? "on" : ""}`} aria-label={e} aria-pressed={!style.avatar && style.emoji === e} onClick={() => patch({ emoji: e, avatar: null })}>{e}</button>)}
               <label className="chip" style={{ cursor: "pointer" }}><Upload size={13} /> {t("Eigenes Bild")}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden onChange={(e) => { void upload(e.target.files?.[0]); e.target.value = ""; }} /></label>
               {style.avatar && <button type="button" className="chip on" onClick={() => patch({ avatar: null })}><Trash2 size={13} /> {t("Bild entfernen")}</button>}
+              <button type="button" className="chip" onClick={() => setWorkshop(true)}><Wand2 size={13} /> {t("Bild gestalten")}</button>
             </div>
           </div>
           <Field label={t("Rahmen")}><Segmented value={style.frame} onChange={(frame) => patch({ frame })} label={t("Rahmen")} options={PASS_FRAMES.map((f) => ({ value: f, label: t(FRAME_LABEL[f]) }))} /></Field>
@@ -153,6 +156,8 @@ export function PassEditor({ quests, topGame }: { quests: PassInput; topGame: st
           </div>
         </div>
       </div>
+      {workshop && <IconWorkshop name={style.name || "Gamer"} format="icon" maxBytes={78_000} applyLabel={t("Als Gamer-Pass-Bild übernehmen")}
+        onApply={(url) => patch({ avatar: url })} onClose={() => setWorkshop(false)} />}
     </Card>
   );
 }

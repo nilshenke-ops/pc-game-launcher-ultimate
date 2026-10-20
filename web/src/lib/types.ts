@@ -16,6 +16,8 @@ export interface LibraryItem {
   categories: string[];
   favorite: boolean;
   iconData?: string;
+  /** Icon chosen by the user (icon workshop) – shown before the brand logo. */
+  iconCustom?: boolean;
   coverUrl?: string;
   profileId?: string;
   notes?: string;

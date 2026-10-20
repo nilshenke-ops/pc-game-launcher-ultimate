@@ -38,6 +38,7 @@ const onKey = (fn: () => void) => (e: KeyboardEvent) => { if (e.key === "Enter" 
 export function tileArt(item: LibraryItem, coverAllowed = true) {
   const brand = brandFor(item);
   const cover = coverAllowed ? item.coverUrl : undefined;
+  if (item.iconCustom && item.iconData) return { pic: item.iconData };
   if (item.kind === "program" && brand) return { brand };
   if (item.iconData) return { pic: item.iconData };
   if (brand && !cover) return { brand };
