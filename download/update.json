@@ -1,24 +1,32 @@
 {
-  "version": "2.26.1",
+  "version": "2.27.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.26.1/PCGameLauncherCompanion.exe",
-  "size": 87555391,
-  "sha256": "b675c85b5c722a96b0ac1a562c005ed4289c9c72b0398810ec8961874d6dd6cd",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.27.0/PCGameLauncherCompanion.exe",
+  "size": 87563447,
+  "sha256": "60bf0a87c51e37d248b3839e4f25ca8d45790aaadf8d0a3681694c50f77f7ae1",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.26.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.26.1/PCGameLauncherCompanion-2.26.1-win-x64.zip",
-    "size": 81819306,
-    "sha256": "fbbbf3f2b0b1af18fc336825ab789c1bc217ad9d935a30a314d71cd0b753c47d"
+    "fileName": "PCGameLauncherCompanion-2.27.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.27.0/PCGameLauncherCompanion-2.27.0-win-x64.zip",
+    "size": 81827441,
+    "sha256": "e462d72a5352d8c613e1e7b344ac955173ae706bcd91467894f183400b99c22e"
   },
-  "notes": "",
+  "notes": "Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau · Der Ladebildschirm zeigt nur, was wirklich bekannt ist: „wird gesendet“ → „Startbefehl angekommen“ → „Läuft auf dem PC“ erst, wenn der PC das Spiel erkennt; Fehler mit Grund · Bewegter Hintergrund: Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle – Tempo, Menge und Deckkraft einstellbar",
   "changes": {
-    "neu": [],
-    "verbessert": [],
-    "behoben": [
-      "Das Konto-Symbol neben der Glocke fehlte in Browsern, die noch nie mit einem PC verbunden waren – jetzt immer sichtbar; ohne PC erklärt das Fenster, dass das Konto einmal die Verbindung zum PC braucht (mit „PC verbinden“)"
-    ]
+    "neu": [
+      "Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau",
+      "Der Ladebildschirm zeigt nur, was wirklich bekannt ist: „wird gesendet“ → „Startbefehl angekommen“ → „Läuft auf dem PC“ erst, wenn der PC das Spiel erkennt; Fehler mit Grund",
+      "Bewegter Hintergrund: Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle – Tempo, Menge und Deckkraft einstellbar",
+      "Seitenübergänge: Einblenden, Gleiten, Zoom, Unschärfe oder keiner, Dauer einstellbar",
+      "Atmosphären: Cyberpunk, Neon, Space, Ice, Fire, Fantasy, Retro Arcade, Minimal Dark, Glass, Mono – Farben plus passender Hintergrund und Ladebildschirm in einem Tipp"
+    ],
+    "verbessert": [
+      "Die Animation hält einen Start nie auf: der Befehl geht vorher an den PC, Antippen/Esc überspringt sofort, ein Fehler in der Animation zeigt einfach nichts",
+      "Bei „Animationen reduzieren“, leichter Darstellung oder der Systemeinstellung „Bewegung reduzieren“: Standbild statt Animation; der Hintergrund hält an, wenn die Seite nicht sichtbar ist",
+      "Alles läuft ohne PC und kommt mit Design-Code und Konto in andere Browser mit"
+    ],
+    "behoben": []
   },
-  "signature": "odDqxsIsqYy+02OGiPTFOYKEt6Ww3K8BJTaFzN9l2knHb6fxz6iTIH4mXq3Gz7nEbVnseSO4z/rmCvPJxT8COA=="
+  "signature": "nU+iKXfAmV1bh+k7B4X3hX+e3X9WYX7G1jkM8zBzUJjK00SfoJ83ePvXYSgGS1okhgPelx7qawQJG8FZoOT/ow=="
 }
