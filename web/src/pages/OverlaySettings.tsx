@@ -9,6 +9,7 @@ import type { Hotkey, HotkeyStatus, ObsStatus, OverlayCorner, OverlayStatus, Set
 import type { PluginList } from "../lib/plugins";
 import { Banner, Button, Card, Field, PageHead, Switch } from "../components/ui";
 import { ComboInput } from "../components/ComboInput";
+import { HudPresets } from "../components/hud-presets";
 import { addWidget, layoutOrDefault, OVERLAY_BUILTINS, overlayBuiltinTitle, overlayPluginWidgets, removeWidget, type OverlayLayout } from "../lib/overlay-layout";
 import { pluginWidgetId } from "../lib/plugins";
 import { describeCombo } from "./hotkey-combo";
@@ -322,6 +323,7 @@ function OverlayWidgetPicker({ plugins, canManage, online }: { plugins?: PluginL
           onChange={(e) => save({ ...layout, opacity: Number(e.target.value) / 100 })} />
       </Field>
       <div><Button size="sm" variant="ghost" disabled={!canManage || !q.data?.layout} onClick={() => save(null)}>{t("Anordnung zurücksetzen")}</Button></div>
+      <HudPresets current={layout} canManage={canManage} online={online} />
     </div>
   );
 }

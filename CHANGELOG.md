@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.30.0 – 2026-10-20
+### Neu
+- Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts
+- HUD-Layouts für das große Overlay: bis zu 10 Anordnungen unter einem Namen speichern (z. B. „Ranked“, „Streaming“), mit Vorschau, mit einem Tipp anwenden, überschreiben oder löschen
+### Verbessert
+- Der Ton wird nur im Browser ausgewertet – nichts wird aufgenommen oder gesendet; beim Beenden des Teilens stoppt der Visualizer von selbst
+- HUD-Layouts lassen sich auch ohne PC ändern und werden beim Verbinden übertragen
+
 ## 2.29.0 – 2026-10-20
 ### Neu
 - Gaming-Raum (Navigation → Gaming-Raum): gezeichneter 2.5D-Raum, dessen Objekte zu vorhandenen Bereichen führen – PC → Spiele, Poster mit deinem Lieblingsspiel → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck

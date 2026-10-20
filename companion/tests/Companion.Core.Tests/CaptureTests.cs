@@ -179,4 +179,32 @@ public class OverlayLayoutTests
         await phone.Ok("overlay.saveLayout", new { layout = (object?)null });
         Assert.Null(s.Settings.Get().OverlayLayout);
     }
+
+    [Fact]
+    public async Task Hud_layouts_are_saved_checked_applied_and_removed()
+    {
+        using var dir = new TempDir();
+        await using var s = Fixtures.Services(dir);
+        var admin = await Fixtures.Admin(s);
+        var (phone, _, _) = await Fixtures.PairedDevice(s, admin, new[] { "view", "manage" });
+        var (viewer, _, _) = await Fixtures.PairedDevice(s, admin, new[] { "view" });
+        var layout = new { opacity = 0.9, widgets = new object[] { new { id = "system", visible = true, x = 0.02, y = 0.1, w = 320, h = 0 } } };
+        var r = await phone.Ok("overlay.savePreset", new { id = "hud_ranked", name = "  Ranked  ", layout });
+        Assert.Equal("Ranked", r.GetProperty("presets")[0].GetProperty("name").GetString());
+        await phone.Ok("overlay.savePreset", new { id = "hud_ranked", name = "Ranked 2", layout }); // same id replaces
+        Assert.Single(s.Settings.Get().OverlayPresets);
+        Assert.Equal("invalid-params", await phone.Error("overlay.savePreset", new { id = "../x", name = "A", layout }));
+        Assert.Equal("invalid-params", await phone.Error("overlay.savePreset", new { id = "hud_x", name = "A", layout = new { widgets = new[] { new { id = "<b>" } } } }));
+        Assert.Equal("forbidden", await viewer.Error("overlay.savePreset", new { id = "hud_v", name = "A", layout }));
+        for (var i = 0; i < 9; i++) await phone.Ok("overlay.savePreset", new { id = $"hud_n{i}", name = $"N{i}", layout });
+        Assert.Equal("limit", await phone.Error("overlay.savePreset", new { id = "hud_eleven", name = "Elf", layout }));
+        // Apply = a copy on the live overlay; changing the overlay later leaves the saved one as it is.
+        var applied = await phone.Ok("overlay.applyPreset", new { id = "hud_ranked" });
+        Assert.Equal("system", applied.GetProperty("layout").GetProperty("widgets")[0].GetProperty("id").GetString());
+        await phone.Ok("overlay.saveLayout", new { layout = new { opacity = 0.5, widgets = Array.Empty<object>() } });
+        Assert.Single(s.Settings.Get().OverlayPresets.First(p => p.Id == "hud_ranked").Layout.Widgets);
+        Assert.Equal("not-found", await phone.Error("overlay.applyPreset", new { id = "hud_missing" }));
+        Assert.True((await phone.Ok("overlay.removePreset", new { id = "hud_ranked" })).GetBoolean());
+        Assert.Equal(9, (await viewer.Ok("overlay.presets")).GetProperty("presets").GetArrayLength());
+    }
 }

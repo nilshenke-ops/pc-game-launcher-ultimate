@@ -75,6 +75,11 @@ Seite: /trophies?tab=collection
 Stichworte: sammelstücke sammlung belohnung kiste lootbox fortschrittsbaum freischalten deko regal seltenheit
 Im Trophäenraum unter „Sammlung & Fortschritt“. Fortschrittsbaum mit den Zweigen Level, Trophäen und Spielzeit (nur aus deinen echten Daten) – jeder Knoten gibt ein Sammelstück oder einen Raum-Stil. Pro erreichtem Level ab Level 2 eine Belohnungskiste: vorher siehst du alles, was drin sein kann, jedes gleich wahrscheinlich, nie doppelt, kein Echtgeld, keine Vorteile, kein Zeitdruck. Sammelstücke kannst du ins Regal stellen, verschieben und herausnehmen oder im Gaming-Raum als Deko nutzen. Sie sind getrennt von den echten Erfolgen.
 
+## Musik-Visualizer und HUD-Layouts
+Seite: /overlay-settings
+Stichworte: musik visualizer equalizer spektrum balken welle kreis ton audio hud layout overlay anordnung speichern ranked streaming wechseln
+Musik-Visualizer: als Widget auf dem Home-Bildschirm („Anpassen“) oder im Overlay hinzufügen. Er bewegt sich nur zu echtem Ton – Quelle wählen: „PC-Ton teilen“ (am PC in Chrome/Edge „Gesamter Bildschirm“ und „Systemaudio teilen“ ankreuzen), „Mikrofon“ oder „Audiodatei“. Nichts wird aufgenommen oder gesendet. HUD-Layouts: Overlay & Aufnahme → Overlay-Inhalt → „HUD-Layouts“: aktuelle Anordnung unter einem Namen speichern (bis 10) und später mit „Anwenden“ wechseln.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

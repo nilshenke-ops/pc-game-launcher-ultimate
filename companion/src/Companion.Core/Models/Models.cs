@@ -406,6 +406,16 @@ public sealed class Settings
     public Dictionary<string, string> CaptureActionProviders { get; set; } = new();
     /// <summary>Widgets of the large overlay with their place on the screen. Null = default arrangement (chosen by the web app).</summary>
     public OverlayLayout? OverlayLayout { get; set; }
+    /// <summary>Saved HUD arrangements of the large overlay (at most 10) – one of them can be put on the overlay with one tap.</summary>
+    public List<OverlayPreset> OverlayPresets { get; set; } = new();
+}
+
+public sealed class OverlayPreset
+{
+    /// <summary>Made on the device ("hud_…"), so a change queued without the PC is applied only once.</summary>
+    public string Id { get; set; } = "";
+    public string Name { get; set; } = "";
+    public OverlayLayout Layout { get; set; } = new();
 }
 
 public sealed class OverlayLayout

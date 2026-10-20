@@ -58,6 +58,9 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "obs.configure": () => t("OBS-Verbindung speichern"),
   "capture.configure": () => t("Aufnahme-Programm und Tasten speichern"),
   "overlay.saveLayout": () => t("Overlay-Widgets speichern"),
+  "overlay.savePreset": (p) => t("HUD-Layout speichern {n}", { n: name(p) }),
+  "overlay.removePreset": () => t("HUD-Layout löschen"),
+  "overlay.applyPreset": () => t("HUD-Layout anwenden"),
   "network.setTargets": () => t("Eigene Ping-Ziele speichern"),
   "widgets.save": (p) => t("Eigenes Widget speichern {n}", { n: name(p) }),
   "widgets.remove": () => t("Eigenes Widget löschen"),
@@ -173,6 +176,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   },
   "capture.status": offlineCaptureStatus(),
   "overlay.layout": {},
+  "overlay.presets": { presets: [] },
   "widgets.list": { widgets: [] },
   "deck.list": { decks: [] },
   "calendar.list": { events: [] },
@@ -293,6 +297,13 @@ function applyLocally(method: string, p: Params): unknown {
         ...(typeof p.compareMicrosoft === "boolean" ? { compareMicrosoft: p.compareMicrosoft } : {}), ...(typeof p.syncSteamWishlist === "boolean" ? { syncSteamWishlist: p.syncSteamWishlist } : {}) }));
       return readCache("deals.list")?.data;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
+    case "overlay.savePreset": patch<{ presets: WithId[] }>("overlay.presets", (d) => ({ ...d, presets: upsert(d.presets, { id: p.id, name: p.name, layout: p.layout } as unknown as WithId) })); return readCache("overlay.presets")?.data;
+    case "overlay.removePreset": patch<{ presets: WithId[] }>("overlay.presets", (d) => ({ ...d, presets: d.presets.filter((x) => x.id !== p.id) })); return true;
+    case "overlay.applyPreset": {
+      const preset = readCache<{ presets: (WithId & { layout: unknown })[] }>("overlay.presets")?.data.presets.find((x) => x.id === p.id);
+      if (preset) patch<Params>("overlay.layout", () => ({ layout: structuredClone(preset.layout) }));
+      return { layout: preset?.layout };
+    }
     case "capture.configure": {
       patch<Params>("capture.status", (d) => {
         const keys = { ...(d.keys as Record<string, string>) };

@@ -24,3 +24,18 @@ describe("effects (start animation, moving background, transitions)", () => {
     }
   });
 });
+
+import { bands } from "./audio-bands";
+
+describe("music visualizer", () => {
+  it("bars come only from the analyser data: silence stays flat", () => {
+    expect(bands(new Uint8Array(256), 24).every((x) => x === 0)).toBe(true);
+    const loud = bands(new Uint8Array(256).fill(255), 24);
+    expect(loud).toHaveLength(24);
+    expect(loud.every((x) => x === 1)).toBe(true);
+    const bass = new Uint8Array(256); bass.fill(255, 0, 4);
+    const b = bands(bass, 24);
+    expect(b[0]).toBe(1);
+    expect(b[23]).toBe(0);
+  });
+});

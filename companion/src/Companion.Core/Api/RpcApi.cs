@@ -519,6 +519,16 @@ public static class RpcApi
                 ? l.Deserialize<OverlayLayout>(Json.Options) : null; // null = back to the default arrangement
             return new { layout = s.Settings.SetOverlayLayout(layout).OverlayLayout };
         });
+        rpc.Register("overlay.presets", _ => new { presets = s.Settings.Get().OverlayPresets });
+        rpc.Register("overlay.savePreset", ctx =>
+        {
+            var layout = ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("layout", out var l) && l.ValueKind == JsonValueKind.Object
+                ? l.Deserialize<OverlayLayout>(Json.Options) : null;
+            if (layout == null) throw new RpcException("invalid-params", "Layout fehlt.");
+            return new { presets = s.Settings.SaveOverlayPreset(ctx.Str("id", 48), ctx.Str("name", 40), layout) };
+        });
+        rpc.Register("overlay.removePreset", ctx => s.Settings.RemoveOverlayPreset(ctx.Str("id", 48)));
+        rpc.Register("overlay.applyPreset", ctx => new { layout = s.Settings.ApplyOverlayPreset(ctx.Str("id", 48)).OverlayLayout });
         rpc.Register("obs.status", async _ => await s.Obs.Status());
         rpc.Register("obs.configure", async ctx =>
         {

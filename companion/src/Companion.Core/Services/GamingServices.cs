@@ -124,7 +124,49 @@ public sealed class SettingsService
     /// <summary>Arrangement of the large overlay (checked: known id format, at most 24 widgets, positions on screen, sensible sizes).</summary>
     public Settings SetOverlayLayout(OverlayLayout? layout)
     {
-        if (layout != null)
+        if (layout != null) CheckLayout(layout);
+        var r = _store.Update(s => { s.OverlayLayout = layout; return Json.Deserialize<Settings>(Json.Serialize(s))!; });
+        _hub.Changed("overlay");
+        return r;
+    }
+
+    static readonly System.Text.RegularExpressions.Regex PresetId = new("^hud_[A-Za-z0-9_-]{1,40}$");
+
+    /// <summary>Saves a HUD arrangement under a name (new or replaced by id). The layout is checked like the live one.</summary>
+    public List<OverlayPreset> SaveOverlayPreset(string id, string name, OverlayLayout layout)
+    {
+        if (!PresetId.IsMatch(id)) throw new RpcException("invalid-params", "Ungültige Kennung.");
+        name = name.Trim();
+        if (name.Length is 0 or > 40) throw new RpcException("invalid-params", "Name: 1–40 Zeichen.");
+        CheckLayout(layout);
+        var r = _store.Update(s =>
+        {
+            var i = s.OverlayPresets.FindIndex(p => p.Id == id);
+            if (i < 0 && s.OverlayPresets.Count >= 10) throw new RpcException("limit", "Höchstens 10 HUD-Layouts.");
+            var p = new OverlayPreset { Id = id, Name = name, Layout = layout };
+            if (i < 0) s.OverlayPresets.Add(p); else s.OverlayPresets[i] = p;
+            return s.OverlayPresets.ToList();
+        });
+        _hub.Changed("overlay");
+        return r;
+    }
+
+    public bool RemoveOverlayPreset(string id)
+    {
+        var removed = _store.Update(s => s.OverlayPresets.RemoveAll(p => p.Id == id) > 0);
+        _hub.Changed("overlay");
+        return removed;
+    }
+
+    /// <summary>Puts a saved HUD arrangement on the overlay (a copy – changing the overlay later does not change the saved one).</summary>
+    public Settings ApplyOverlayPreset(string id)
+    {
+        var p = Get().OverlayPresets.FirstOrDefault(x => x.Id == id) ?? throw new RpcException("not-found", "HUD-Layout nicht gefunden.");
+        return SetOverlayLayout(Json.Deserialize<OverlayLayout>(Json.Serialize(p.Layout))!);
+    }
+
+    static void CheckLayout(OverlayLayout layout)
+    {
         {
             if (layout.Widgets.Count > 24) throw new RpcException("invalid-params", "Höchstens 24 Widgets im Overlay.");
             if (layout.Widgets.Any(w => !OverlayWidgetId.IsMatch(w.Id ?? ""))) throw new RpcException("invalid-params", "Unbekanntes Widget im Overlay.");
@@ -138,9 +180,6 @@ public sealed class SettingsService
                 w.H = w.H == 0 ? 0 : Math.Clamp(w.H, 100, 1200);
             }
         }
-        var r = _store.Update(s => { s.OverlayLayout = layout; return Json.Deserialize<Settings>(Json.Serialize(s))!; });
-        _hub.Changed("overlay");
-        return r;
     }
 
     /// <summary>Recording program, overlay program and shortcuts (already validated by CaptureService). Key value null = back to the default.</summary>
