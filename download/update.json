@@ -1,27 +1,27 @@
 {
-  "version": "2.25.0",
+  "version": "2.26.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.25.0/PCGameLauncherCompanion.exe",
-  "size": 87554382,
-  "sha256": "06f145b28b5c448650caf24f7d6a9a9457dacf444137dc512817db449d600599",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.26.0/PCGameLauncherCompanion.exe",
+  "size": 87554745,
+  "sha256": "bec5f4df3184b6e7be69085c65f285aae7183c7958167dafecf71e5a842856ea",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.25.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.25.0/PCGameLauncherCompanion-2.25.0-win-x64.zip",
-    "size": 81818374,
-    "sha256": "c22fbc4ffbec87ce261abf82e77e1f09a5dfcc427068e78a25758ef41a8ba113"
+    "fileName": "PCGameLauncherCompanion-2.26.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.26.0/PCGameLauncherCompanion-2.26.0-win-x64.zip",
+    "size": 81818784,
+    "sha256": "c845ab33d51832accc9ffb06a58ce2d70e724e9bb65a1cb3255b1d09db53a7cf"
   },
-  "notes": "Jedes Steam-Spiel im Deal Radar bekommt sein echtes Bild – auch neue Spiele (Steam legt deren Bilder unter einem eigenen Pfad ab, der alte Pfad liefert dort nichts) · Katalog aller Steam-Spiele neben der Website (einmal täglich, nach Anfangsbuchstaben aufgeteilt): Name, Bild und Preis auch für Spiele außerhalb der Beliebt-Liste – ohne PC · Bild-Reihenfolge: echtes Steam-Bild, dann altes Steam-Bild, dann Microsoft-Store-Bild, erst dann Buchstaben",
+  "notes": "Konto (optional, ohne E-Mail): Personen-Symbol oben rechts neben der Glocke – Registrieren und Anmelden mit Benutzername und Passwort; angemeldet zeigt das Symbol den Anfangsbuchstaben · Mit dem Konto kommen in einem anderen Browser mit: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung und vom Handy geprüfte Xbox-Preise – Ende-zu-Ende verschlüsselt, gespeichert auf dem eigenen PC · Gespeichert wird automatisch bei jeder Design-Änderung und beim Verlassen der Seite",
   "changes": {
     "neu": [
-      "Jedes Steam-Spiel im Deal Radar bekommt sein echtes Bild – auch neue Spiele (Steam legt deren Bilder unter einem eigenen Pfad ab, der alte Pfad liefert dort nichts)",
-      "Katalog aller Steam-Spiele neben der Website (einmal täglich, nach Anfangsbuchstaben aufgeteilt): Name, Bild und Preis auch für Spiele außerhalb der Beliebt-Liste – ohne PC"
+      "Konto (optional, ohne E-Mail): Personen-Symbol oben rechts neben der Glocke – Registrieren und Anmelden mit Benutzername und Passwort; angemeldet zeigt das Symbol den Anfangsbuchstaben",
+      "Mit dem Konto kommen in einem anderen Browser mit: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung und vom Handy geprüfte Xbox-Preise – Ende-zu-Ende verschlüsselt, gespeichert auf dem eigenen PC"
     ],
     "verbessert": [
-      "Bild-Reihenfolge: echtes Steam-Bild, dann altes Steam-Bild, dann Microsoft-Store-Bild, erst dann Buchstaben"
+      "Gespeichert wird automatisch bei jeder Design-Änderung und beim Verlassen der Seite"
     ],
     "behoben": []
   },
-  "signature": "y/woR1sWx17zY1e8dEyhi2YaD6DRi8g0H7yk4mSDLfUjTGM8DbUKMCHlYk6SBzJ6HeZIVu4opkDWiQI50hlMLg=="
+  "signature": "tzwpa6Eof3xgbgl3tFj6ROcwVyygtrtAoeO5YaZ7bkpdrhy6tzHMGKHOBfGJ2zdYGmXkfHUhA8S/g3ZclcqMIA=="
 }
