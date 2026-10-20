@@ -1,5 +1,31 @@
 [
   {
+    "version": "2.13.0",
+    "date": "2026-10-20",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.13.0/PCGameLauncherCompanion.exe",
+    "size": 87392080,
+    "sha256": "2891e20aa51cf57b09025ce28e415bd6bff43df5e450ec5a89238603786a28da",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.13.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.13.0/PCGameLauncherCompanion-2.13.0-win-x64.zip",
+      "size": 81657978,
+      "sha256": "ae7bf9e46cf7e9172cceef33c8e10b794aee392d3ec27de6b4c247d7fb963ad9"
+    },
+    "notes": "Original-Logos für Steam- und Epic-Spiele: Der PC liest das Symbol direkt aus der Spieldatei (z. B. RocketLeague.exe) – genau das Logo des Spiels, auch für schon vorhandene Spiele (einmalig im Hintergrund). Installer, Crash-Handler, Anti-Cheat- und Redist-Dateien werden dabei übersprungen",
+    "changes": {
+      "neu": [
+        "Original-Logos für Steam- und Epic-Spiele: Der PC liest das Symbol direkt aus der Spieldatei (z. B. RocketLeague.exe) – genau das Logo des Spiels, auch für schon vorhandene Spiele (einmalig im Hintergrund). Installer, Crash-Handler, Anti-Cheat- und Redist-Dateien werden dabei übersprungen"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "Ließ sich ein Cover nicht laden (z. B. ohne Internet), zeigte eine Deck-Taste ein kaputtes Bild – jetzt erscheint das Logo bzw. ein Spiel-Symbol; ebenso auf den App-Kacheln"
+      ]
+    },
+    "signature": "250oz/VhyW05oyiAtrvPJBfvCo9a4cpdMtglgOp5sYR6nj8AJE99NA0z8ZSQGVDVg0w/iGBQQIgKguCCpKhuMQ=="
+  },
+  {
     "version": "2.12.0",
     "date": "2026-10-20",
     "channel": "stable",
