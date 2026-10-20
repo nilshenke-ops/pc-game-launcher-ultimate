@@ -187,6 +187,8 @@ class Client {
   }
 
   get credentials(): Credentials | null { return readJson<Credentials>(CRED_KEY); }
+  /** This device can sign in by itself (paired, or the PC window with its session token). */
+  get canSignIn() { return !!this.credentials || !!readJson<string>(ADMIN_KEY, "session"); }
   get hasAdminToken() { return !!readJson<string>(ADMIN_KEY, "session"); }
 
   reconnectNow() {
@@ -210,7 +212,19 @@ class Client {
     this.reconnectNow();
   }
 
-  private connect() {
+  /** Plain HTTP check whether the PC answers. Browsers slow down repeated WebSocket attempts to a host that keeps
+   * failing (Chrome waits seconds), a normal request is not slowed down – so while the PC is off only this runs. */
+  private probeUrl(url: string): string | null {
+    try {
+      const u = new URL(url);
+      const http = u.protocol === "wss:" ? "https:" : "http:";
+      if (location.protocol === "https:" && http === "http:") return null; // blocked as mixed content – WebSocket only
+      return `${http}//${u.host}/healthz`;
+    } catch { return null; }
+  }
+  private tryId = 0;
+
+  private async connect() {
     if (HOSTED && !serverConfigured()) {
       // Nothing to connect to yet – the user scans the QR code or types the PC address.
       this.set({ phase: "offline", needsServer: true, url: "", lastError: undefined, retryAt: undefined });
@@ -219,6 +233,13 @@ class Client {
     if (this.status.needsServer) this.set({ needsServer: false });
     const url = serverUrl();
     this.set({ phase: "connecting", url, attempt: this.attempt, retryAt: undefined });
+    const probe = this.attempt >= 1 ? this.probeUrl(url) : null;
+    if (probe) {
+      const my = ++this.tryId;
+      const ok = await fetch(probe, { mode: "no-cors", cache: "no-store", signal: AbortSignal.timeout?.(1500) }).then(() => true, () => false);
+      if (my !== this.tryId || (this.ws && this.ws.readyState <= 1)) return; // a newer attempt took over
+      if (!ok) { this.onClosed(this.status.everConnected ? t("Verbindung unterbrochen") : t("Companion nicht erreichbar")); return; }
+    }
     let ws: WebSocket;
     try { ws = new WebSocket(url); }
     catch (e) { this.onClosed(t("Ungültige Serveradresse: {e}", { e: String(e) })); return; }
@@ -256,10 +277,12 @@ class Client {
     if (this.pingTimer) { clearInterval(this.pingTimer); this.pingTimer = null; }
     for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new RpcError("offline", t("Verbindung unterbrochen"))); }
     this.pending.clear();
-    // Exponential backoff with jitter: 1, 2, 4, 8, 15 s. While the app is on screen at most 3 s, so the phone is back
-    // within a few seconds after the PC is switched on (an attempt to a PC that is off costs next to nothing).
-    const cap = typeof document !== "undefined" && document.visibilityState === "visible" ? 3000 : 15000;
-    const delay = Math.min(cap, 1000 * 2 ** Math.min(this.attempt, 4)) * (0.8 + Math.random() * 0.4);
+    // While the app is on screen: 0.25 s, then every 0.5 s a tiny HTTP check (see probeUrl) – the phone is back within
+    // about half a second after the PC's companion is up. Only while the app is visible.
+    // In the background: exponential backoff 1, 2, 4, 8, 15 s, so a hidden tab does not keep the phone busy.
+    const visible = typeof document !== "undefined" && document.visibilityState === "visible";
+    const base = visible ? (this.attempt === 0 ? 250 : 500) : Math.min(15000, 1000 * 2 ** Math.min(this.attempt, 4));
+    const delay = base * (0.8 + Math.random() * 0.4);
     this.attempt++;
     const auth = this.status.auth === "revoked" ? "revoked" : this.status.auth === "ok" ? "checking" : this.status.auth;
     this.set({ phase: "offline", lastError: reason, retryAt: Date.now() + delay, attempt: this.attempt, auth, relayCompanion: undefined });

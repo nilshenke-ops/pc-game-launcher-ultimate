@@ -1,0 +1,47 @@
+{
+  "id": "de.pgl.wochen-statistik",
+  "name": "Wochenstatistik",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: Spielzeit pro Tag als Balken (7 oder 14 Tage), mit Summe und Tagesdurchschnitt – aus dem echten Spielverlauf des PCs.",
+  "category": "information",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "history.read"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "woche",
+        "title": "Spielzeit pro Tag",
+        "entry": "widget.html",
+        "height": 210
+      }
+    ],
+    "settings": [
+      {
+        "key": "tage",
+        "label": "Zeitraum (Tage)",
+        "type": "select",
+        "options": [
+          "7",
+          "14"
+        ],
+        "default": "7"
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

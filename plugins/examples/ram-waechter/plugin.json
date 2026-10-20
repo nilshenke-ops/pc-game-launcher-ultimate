@@ -1,0 +1,51 @@
+{
+  "id": "de.pgl.ram-waechter",
+  "name": "RAM-Wächter",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Live-Widget: Arbeitsspeicher belegt/frei in GB mit Warnschwelle; auf Wunsch ein Hinweis, wenn der Speicher knapp wird (z. B. Browser im Hintergrund schließen).",
+  "category": "performance",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "monitor.read",
+    "notify"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "ram",
+        "title": "Arbeitsspeicher",
+        "entry": "widget.html",
+        "height": 130,
+        "overlay": true
+      }
+    ],
+    "settings": [
+      {
+        "key": "schwelle",
+        "label": "Warnen ab % (50–99)",
+        "type": "number",
+        "default": 85
+      },
+      {
+        "key": "hinweis",
+        "label": "Hinweis (höchstens alle 15 min)",
+        "type": "boolean",
+        "default": true
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

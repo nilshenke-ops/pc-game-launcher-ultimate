@@ -1,0 +1,35 @@
+{
+  "id": "de.pgl.meilensteine",
+  "name": "Spielzeit-Meilensteine",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: Gesamtspielzeit deiner meistgespielten Spiele mit dem nächsten Meilenstein (1, 5, 10, 25, 50, 100, 250, 500, 1000 Stunden).",
+  "category": "information",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "history.read"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "meilensteine",
+        "title": "Meilensteine",
+        "entry": "widget.html",
+        "height": 230
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

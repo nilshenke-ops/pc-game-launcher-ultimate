@@ -1,0 +1,90 @@
+{
+  "id": "de.pgl.wettkampf-modus",
+  "name": "Wettkampf-Modus",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Aktionen: „Wettkampf“ prüft zuerst den PC (Diagnose), wechselt ins Wettkampf-Profil, startet Voice-Chat und Spiel; „Nach dem Match“ stellt das vorherige Profil wieder her. Profil, Voice-Chat-Programm und Spiel wählst du in den Einstellungen.",
+  "category": "automation",
+  "platforms": [
+    "windows",
+    "web"
+  ],
+  "permissions": [
+    "diagnostics.run",
+    "profiles.activate",
+    "library.launch",
+    "notify"
+  ],
+  "contributes": {
+    "settings": [
+      {
+        "key": "profil",
+        "label": "Wettkampf-Profil",
+        "type": "profile"
+      },
+      {
+        "key": "voice",
+        "label": "Voice-Chat (z. B. Discord)",
+        "type": "program"
+      },
+      {
+        "key": "spiel",
+        "label": "Spiel",
+        "type": "game"
+      }
+    ],
+    "actions": [
+      {
+        "id": "wettkampf",
+        "name": "Wettkampf",
+        "icon": "trophy",
+        "steps": [
+          {
+            "type": "runDiagnostics"
+          },
+          {
+            "type": "activateProfile",
+            "ref": "{config:profil}"
+          },
+          {
+            "type": "launchItem",
+            "ref": "{config:voice}"
+          },
+          {
+            "type": "launchItem",
+            "ref": "{config:spiel}"
+          },
+          {
+            "type": "notify",
+            "ref": "Wettkampf-Modus aktiv – viel Erfolg!"
+          }
+        ]
+      },
+      {
+        "id": "nachher",
+        "name": "Nach dem Match",
+        "icon": "undo-2",
+        "steps": [
+          {
+            "type": "revertProfile"
+          },
+          {
+            "type": "notify",
+            "ref": "Vorheriges Profil wiederhergestellt."
+          }
+        ]
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

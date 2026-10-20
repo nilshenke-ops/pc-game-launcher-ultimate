@@ -1,0 +1,57 @@
+{
+  "id": "de.pgl.gpu-ampel",
+  "name": "GPU-Temperatur-Ampel",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Live-Widget: Temperatur und Auslastung der Grafikkarte als Ampel (grün/gelb/rot), Schwellen einstellbar, auf Wunsch mit Hinweis bei „rot“. Temperatur gibt es nur bei NVIDIA – sonst steht das ehrlich da. Auch im Overlay nutzbar.",
+  "category": "performance",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "monitor.read",
+    "notify"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "ampel",
+        "title": "GPU-Ampel",
+        "entry": "widget.html",
+        "height": 150,
+        "overlay": true
+      }
+    ],
+    "settings": [
+      {
+        "key": "warnen",
+        "label": "Gelb ab °C",
+        "type": "number",
+        "default": 75
+      },
+      {
+        "key": "kritisch",
+        "label": "Rot ab °C",
+        "type": "number",
+        "default": 85
+      },
+      {
+        "key": "hinweis",
+        "label": "Hinweis bei Rot (höchstens alle 10 min)",
+        "type": "boolean",
+        "default": true
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

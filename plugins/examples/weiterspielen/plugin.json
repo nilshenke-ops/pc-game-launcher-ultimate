@@ -1,0 +1,45 @@
+{
+  "id": "de.pgl.weiterspielen",
+  "name": "Weiterspielen",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: die zuletzt gespielten Spiele mit „vor 2 Tagen“ und Start-Knopf – direkt dort weitermachen, wo du aufgehört hast.",
+  "category": "launcher",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "history.read",
+    "library.read",
+    "library.launch"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "zuletzt",
+        "title": "Weiterspielen",
+        "entry": "widget.html",
+        "height": 220
+      }
+    ],
+    "settings": [
+      {
+        "key": "anzahl",
+        "label": "Wie viele Spiele (1–8)",
+        "type": "number",
+        "default": 4
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

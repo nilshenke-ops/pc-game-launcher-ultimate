@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.10.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.11.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -44,7 +44,7 @@ Chip „Game Pass“ zeigt den öffentlichen Katalog (Markt einstellbar). Muss i
 ## Programme
 Seite: /programs
 Stichworte: programme apps discord browser obs starten freigeben
-Wie Spiele, aber für Programme (Discord, Browser, OBS …), angezeigt als App-Symbole wie auf dem Handy: Symbol antippen startet das Programm am PC, die drei Punkte öffnen die Einstellungen. Ein grüner Punkt heißt: läuft gerade. Bekannte Programme (Discord, OBS, Spotify, Steam, Browser …) zeigen ihr echtes Logo, auch ohne PC; andere bekommen das Programmsymbol vom PC (auch Startmenü- und Store-Apps wie der Minecraft Launcher, ab Version 2.9 auch für schon vorhandene Einträge). Freigabe einer EXE nur am PC.
+Wie Spiele, aber für Programme (Discord, Browser, OBS …), angezeigt als App-Symbole wie auf dem Handy: Symbol antippen startet das Programm am PC; lange drücken (oder „Bearbeiten“ oben und dann antippen) öffnet die Einstellungen. Ein grüner Punkt heißt: läuft gerade. Bekannte Programme (Discord, OBS, Spotify, Steam, Browser …) zeigen ihr echtes Logo, auch ohne PC; andere bekommen das Programmsymbol vom PC (auch Startmenü- und Store-Apps wie der Minecraft Launcher, ab Version 2.9 auch für schon vorhandene Einträge). Freigabe einer EXE nur am PC.
 
 ## Quick Actions
 Seite: /quick
@@ -142,8 +142,8 @@ Am PC „Neuen Code erzeugen“, QR-Code mit dem Handy scannen oder Code eingebe
 
 ## Plugin Center
 Seite: /plugins
-Stichworte: plugins erweiterungen installieren katalog widgets themes aktionen
-Plugins aus einem signierten Katalog oder als Datei: Widgets, Themes, Aktionen. Plugins führen nie Code auf dem PC aus; Widgets laufen abgeschottet. Rechte (z. B. Netzwerk) musst du beim Aktivieren erlauben.
+Stichworte: plugins erweiterungen installieren katalog widgets themes aktionen pomodoro tageslimit weltzeit zufall clip
+Plugins aus einem signierten Katalog oder als Datei: Widgets, Themes, Aktionen. Plugins führen nie Code auf dem PC aus; Widgets laufen abgeschottet. Rechte (z. B. Netzwerk) musst du beim Aktivieren erlauben. Im Katalog (33 Plugins): Spielzeit heute, Top-Spiele der Woche, Wochenstatistik, Weiterspielen, „Was spiele ich?“ (Zufallsspiel), Tageslimit, Spiel-Serie, Meilensteine, Bibliothek in Zahlen, Favoriten-Start, Sound-Pad, Zufallssound, Profil-Wechsler, CPU & RAM Mini, Leistungs-Verlauf, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, PC-Check, Pausen-Erinnerung, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Game-Overlay, Aktionen (Gaming-Abend, Discord-Schnellton, Wettkampf-Modus, Clip-Knöpfe für OBS) und Themes (Neon, Retro, Pastell, E-Sport, OLED-Schwarz).
 
 ## Benachrichtigungen
 Seite: /notifications

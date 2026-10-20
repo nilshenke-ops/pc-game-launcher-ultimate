@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
+import { NEW_WIDGET_PLUGINS } from "./plugins-list";
 import { COMPANION, COMPANION_PORT, HOSTED_PORT, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, RELAY, RELAY_PORT, STATE_FILE } from "./env";
 
 const ROOT = resolve(fileURLToPath(new URL(".", import.meta.url)), "../..");
@@ -47,6 +48,7 @@ export default async function setup() {
   pack(join(ROOT, "web/e2e/fixtures/sandbox-test"), work);
   pack(join(ROOT, "plugins/examples/cpu-mini"), work);
   for (const p of ["game-overlay", "favoriten-start", "top-woche", "sound-pad", "profil-wechsler", "pc-check", "leistungs-verlauf"]) pack(join(ROOT, "plugins/examples", p), work);
+  for (const p of NEW_WIDGET_PLUGINS) pack(join(ROOT, "plugins/examples", p), work);
 
   const relayCfg = join(work, "relay.json");
   writeFileSync(relayCfg, JSON.stringify({ port: RELAY_PORT, host: "127.0.0.1", webDir: join(ROOT, "web/dist"), downloadsDir: join(work, "downloads"), companions: [{ id: "e2e-pc", secretSha256: createHash("sha256").update(SECRET).digest("hex") }] }));

@@ -1,0 +1,41 @@
+{
+  "id": "de.pgl.weltzeit",
+  "name": "Weltzeit-Uhr",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: deine Uhrzeit plus bis zu drei weitere Zeitzonen (z. B. wo deine Mitspieler wohnen oder wann ein Turnier startet). Ohne Berechtigungen.",
+  "category": "productivity",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "uhr",
+        "title": "Weltzeit",
+        "entry": "widget.html",
+        "height": 170
+      }
+    ],
+    "settings": [
+      {
+        "key": "zonen",
+        "label": "Zeitzonen, mit Komma (z. B. Europe/London, America/New_York, Asia/Tokyo)",
+        "type": "text",
+        "default": "Europe/London, America/New_York, Asia/Tokyo"
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

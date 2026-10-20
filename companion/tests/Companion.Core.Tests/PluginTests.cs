@@ -63,7 +63,9 @@ public class PluginTests
         Assert.Contains("de.pgl.spielzeit-heute", ids);
         Assert.Contains("de.pgl.neon-themes", ids);
         Assert.Contains("de.pgl.gaming-abend", ids);
-        Assert.True(ids.Count >= 13);
+        Assert.Contains("de.pgl.wochen-statistik", ids);
+        Assert.Contains("de.pgl.clip-knopf", ids);
+        Assert.True(ids.Count >= 33);
         Assert.All(packages, p => Assert.Empty(p.Warnings));
     }
 

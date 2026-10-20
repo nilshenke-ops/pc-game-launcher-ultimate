@@ -1,0 +1,50 @@
+{
+  "id": "de.pgl.tageslimit",
+  "name": "Tageslimit",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: Wie viel Spielzeit heute noch übrig ist (eigenes Limit), mit Fortschrittsring und einem Hinweis, wenn das Limit erreicht ist. Hilft beim bewussten Spielen – sperrt aber nichts.",
+  "category": "productivity",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "history.read",
+    "notify"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "limit",
+        "title": "Tageslimit",
+        "entry": "widget.html",
+        "height": 190
+      }
+    ],
+    "settings": [
+      {
+        "key": "minuten",
+        "label": "Tageslimit in Minuten (10–1440)",
+        "type": "number",
+        "default": 120
+      },
+      {
+        "key": "hinweis",
+        "label": "Hinweis, wenn erreicht",
+        "type": "boolean",
+        "default": true
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

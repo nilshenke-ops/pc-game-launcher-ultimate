@@ -1,0 +1,77 @@
+{
+  "id": "de.pgl.esport-themes",
+  "name": "E-Sport-Teamfarben",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Fünf kräftige Farbschemata in typischen Teamfarben (Rot-Schwarz, Blau-Gold, Lila-Gelb, Grün-Weiß, Orange-Blau). Ohne Code, ohne Berechtigungen.",
+  "category": "design",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [],
+  "contributes": {
+    "themes": [
+      {
+        "id": "rot-schwarz",
+        "name": "Rot & Schwarz",
+        "theme": {
+          "mode": "dark",
+          "primary": "#ef4444",
+          "accent": "#f97316",
+          "background": "#0b0505"
+        }
+      },
+      {
+        "id": "blau-gold",
+        "name": "Blau & Gold",
+        "theme": {
+          "mode": "dark",
+          "primary": "#3b82f6",
+          "accent": "#facc15",
+          "background": "#050a18"
+        }
+      },
+      {
+        "id": "lila-gelb",
+        "name": "Lila & Gelb",
+        "theme": {
+          "mode": "dark",
+          "primary": "#a855f7",
+          "accent": "#facc15",
+          "background": "#0c0616"
+        }
+      },
+      {
+        "id": "gruen-weiss",
+        "name": "Grün & Weiß",
+        "theme": {
+          "mode": "dark",
+          "primary": "#22c55e",
+          "accent": "#e5e7eb",
+          "background": "#04100a"
+        }
+      },
+      {
+        "id": "orange-blau",
+        "name": "Orange & Blau",
+        "theme": {
+          "mode": "dark",
+          "primary": "#f97316",
+          "accent": "#38bdf8",
+          "background": "#0a0806"
+        }
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

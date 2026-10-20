@@ -1,0 +1,13 @@
+body { margin: 0; font: 14px/1.4 system-ui, sans-serif; color: var(--pgl-text); }
+.big { font-size: 1.9rem; font-weight: 800; color: var(--pgl-accent); line-height: 1.1; }
+.sub { color: var(--pgl-muted); font-size: .85rem; }
+.err { color: #f87171; font-size: .85rem; }
+ul { list-style: none; margin: 6px 0 0; padding: 0; }
+li { display: flex; justify-content: space-between; gap: 8px; padding: 4px 0; border-bottom: 1px solid var(--pgl-border); }
+li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+button { font: inherit; color: var(--pgl-text); background: color-mix(in srgb, var(--pgl-accent) 18%, transparent); border: 1px solid var(--pgl-border); border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+button.primary { background: var(--pgl-accent); color: #04121a; border-color: transparent; font-weight: 700; }
+button:disabled { opacity: .5; cursor: default; }
+.bar { height: 8px; border-radius: 4px; background: var(--pgl-border); overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--pgl-accent); transition: width .4s; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }

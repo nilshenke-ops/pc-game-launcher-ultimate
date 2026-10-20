@@ -3,6 +3,9 @@ import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { COMPANION, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, OBS_URL, RELAY, state } from "./env";
 import { ACCESS_HASH } from "../src/lib/access";
+import { NEW_WIDGET_PLUGINS } from "./plugins-list";
+
+const ROOT_DIR = new URL("../..", import.meta.url).pathname;
 
 // The tests build on each other (pairing → launching → revoking), so they run in order.
 test.describe.configure({ mode: "serial" });
@@ -294,6 +297,57 @@ test("Weitere Beispiel-Plugins laufen mit echten Daten vom PC", async () => {
   const perf = pc.locator('iframe[title="Leistungs-Verlauf: Leistungs-Verlauf"]');
   await perf.scrollIntoViewIfNeeded();
   await expect(frame("Leistungs-Verlauf", "Leistungs-Verlauf").locator("#legend")).toHaveText(/CPU \d+ %/, { timeout: 20000 });
+});
+
+test("Neue Plugins (2.11): jedes Widget installiert, aktiviert und zeigt echte Daten vom PC", async () => {
+  test.setTimeout(600000); // 14 installs through the real UI (check, install, allow, place on the dashboard)
+  const work = state().workDir;
+  const meta: Record<string, [string, string]> = {};
+  for (const folder of NEW_WIDGET_PLUGINS) {
+    const m = JSON.parse(readFileSync(join(ROOT_DIR, "plugins/examples", folder, "plugin.json"), "utf8"));
+    meta[folder] = [m.name, m.contributes.widgets[0].title];
+    await pc.goto(`${COMPANION}/#/plugins?tab=dev`);
+    await pc.locator('input[type="file"]').setInputFiles(join(work, `${m.id}-${m.version}.pglplugin`));
+    await expect(pc.getByText(`Prüfung bestanden: ${m.name} ${m.version}`)).toBeVisible();
+    await pc.getByRole("button", { name: "Installieren (deaktiviert)" }).click();
+    await expect(pc.getByText("Installiert (deaktiviert) – jetzt testen und aktivieren")).toBeVisible();
+    await pc.goto(`${COMPANION}/#/plugins`);
+    await pc.locator(".card", { hasText: m.name }).getByRole("button", { name: "Details" }).click();
+    await pc.getByRole("button", { name: "Aktivieren" }).click();
+    const allow = pc.getByRole("button", { name: "Erlauben und aktivieren" });
+    if (m.permissions.length) await allow.click(); else if (await allow.count()) await allow.click();
+    await expect(pc.getByText("Plugin aktiviert")).toBeVisible();
+    await pc.getByRole("button", { name: /aufs Dashboard/ }).first().click();
+    await pc.keyboard.press("Escape");
+  }
+  await pc.goto(`${COMPANION}/#/`);
+  const f = (folder: string) => { const [name, title] = meta[folder]; return pc.frameLocator(`iframe[title="${name}: ${title}"]`); };
+  const show = async (folder: string) => { const [name, title] = meta[folder]; await pc.locator(`iframe[title="${name}: ${title}"]`).scrollIntoViewIfNeeded({ timeout: 20000 }); };
+  const T = { timeout: 20000 };
+  await show("wochen-statistik"); await expect(f("wochen-statistik").locator("#total")).toHaveText(/^\d+ (min|h)/, T);
+  await expect(f("wochen-statistik").locator("#bars > div")).toHaveCount(7);
+  await show("zufallsspiel"); await f("zufallsspiel").getByRole("button", { name: "Würfeln" }).click();
+  await expect(f("zufallsspiel").locator("#start")).toBeEnabled(T); // the E2E library has games
+  rmSync(join(work, "game-started.txt"), { force: true });
+  await f("zufallsspiel").getByRole("button", { name: "Starten" }).click();
+  await expect(f("zufallsspiel").locator("#err")).toHaveText("");
+  await show("weiterspielen"); await expect(f("weiterspielen").locator("#list li, #info:not(:empty)").first()).toBeVisible(T);
+  await show("tageslimit"); await expect(f("tageslimit").locator("#sub")).toHaveText(/^heute .* von 2 h 0 min$/, T);
+  await show("spiel-serie"); await expect(f("spiel-serie").locator("#best")).toHaveText(/^\d+ Tage$/, T);
+  await show("meilensteine"); await expect(f("meilensteine").locator("#list > div, #info:not(:empty)").first()).toBeVisible(T);
+  await show("gpu-ampel"); await expect(f("gpu-ampel").locator("#name")).not.toHaveText("", T); // headless Linux: "Keine Grafikkarte erkannt" – honest
+  await show("ram-waechter"); await expect(f("ram-waechter").locator("#pct")).toHaveText(/^\d+ %$/, T);
+  await show("zufallssound"); await f("zufallssound").getByRole("button", { name: /Zufallssound/ }).click();
+  await expect(f("zufallssound").locator("#err")).toHaveText(/Noch keine Sounds im Soundboard\./, T); // headless PC has no sounds – said, not faked
+  await show("pomodoro"); await f("pomodoro").getByRole("button", { name: "Start" }).click();
+  await expect(f("pomodoro").locator("#time")).not.toHaveText("25:00", { timeout: 4000 });
+  await f("pomodoro").getByRole("button", { name: "Pause" }).click();
+  await show("weltzeit"); await expect(f("weltzeit").locator("#zones li")).toHaveCount(3, T);
+  await expect(f("weltzeit").locator("#zones li").first()).toContainText(/London\s*\S+ \d{2}:\d{2}/);
+  await show("bibliothek-zahlen"); await expect(f("bibliothek-zahlen").locator("#games")).toHaveText(/^\d+$/, T);
+  await show("speicherplatz"); await expect(f("speicherplatz").locator("#list")).toContainText(/frei|Keine Laufwerke/, T);
+  await show("sitzungs-leistung"); await expect(f("sitzungs-leistung").locator("#list li, #info:not(:empty)").first()).toBeVisible(T);
+  for (const folder of NEW_WIDGET_PLUGINS) await expect(f(folder).locator("body")).not.toContainText("Berechtigung fehlt");
 });
 
 const obsState = async () => (await (await fetch(`http://127.0.0.1:${OBS_PORT}/state`)).json()) as { recording: boolean; replayBuffer: boolean; savedReplays: number; requests: string[] };
@@ -898,11 +952,11 @@ test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch
   const proc = spawn(dotnet, [dll, "--data", s.dataDir], { env: { ...process.env, PGL_TEST_LAN_HOST: "127.0.0.1", PGL_WEB_DIR: new URL("../dist", import.meta.url).pathname }, stdio: "ignore", detached: true });
   proc.unref();
   try {
-    // The open app reconnects by itself, without reloading: at most 3 s between tries while it is on screen.
+    // The open app reconnects by itself, without reloading: at most 1 s between tries while it is on screen.
     await expect.poll(async () => { try { return (await fetch(`${COMPANION}/healthz`)).ok; } catch { return false; } }, { timeout: 30000 }).toBe(true);
     const up = Date.now();
     await expect(ipad.locator(".connect-item .dot.ok, .conn-pill .dot.ok").first()).toBeVisible({ timeout: 10000 });
-    expect(Date.now() - up).toBeLessThan(5000);
+    expect(Date.now() - up).toBeLessThan(2500);
     await ipad.goto(`${COMPANION}/#/games`).catch(() => {});
     await expect(ipad.getByText("E2E Testspiel")).toBeVisible({ timeout: 30000 });
   } finally {

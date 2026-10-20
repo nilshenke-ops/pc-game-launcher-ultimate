@@ -1,0 +1,44 @@
+{
+  "id": "de.pgl.zufallsspiel",
+  "name": "Was spiele ich?",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: würfelt ein Spiel aus deiner Bibliothek (wahlweise nur Favoriten) und startet es mit einem Tipp am PC.",
+  "category": "launcher",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "library.read",
+    "library.launch"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "wuerfel",
+        "title": "Was spiele ich?",
+        "entry": "widget.html",
+        "height": 170
+      }
+    ],
+    "settings": [
+      {
+        "key": "nurFavoriten",
+        "label": "Nur Favoriten würfeln",
+        "type": "boolean",
+        "default": false
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

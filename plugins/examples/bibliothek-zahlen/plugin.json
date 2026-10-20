@@ -1,0 +1,36 @@
+{
+  "id": "de.pgl.bibliothek-zahlen",
+  "name": "Bibliothek in Zahlen",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: wie viele Spiele und Programme du hast, woher sie kommen (Steam, Epic, Game Pass …), Favoriten und wie viele Spiele noch nie gespielt wurden.",
+  "category": "information",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "library.read",
+    "history.read"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "zahlen",
+        "title": "Bibliothek in Zahlen",
+        "entry": "widget.html",
+        "height": 200
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

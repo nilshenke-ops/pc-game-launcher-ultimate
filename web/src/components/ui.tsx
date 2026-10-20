@@ -204,7 +204,7 @@ export function Toasts() {
       {toasts.map((x) => {
         const Icon = x.kind === "success" ? CheckCircle2 : x.kind === "error" ? XCircle : x.kind === "warning" ? AlertTriangle : Info;
         return (
-          <div key={x.id} className={`toast ${x.kind}`} role={x.kind === "error" ? "alert" : "status"}>
+          <div key={x.id} className={`toast ${x.kind}`} role={x.kind === "error" ? "alert" : "status"} onClick={(e) => { if (!(e.target as HTMLElement).closest("button")) dismissToast(x.id); }}>
             <Icon size={18} />
             <div className="grow">{x.text}</div>
             <Button variant="ghost" size="sm" icon={<X size={14} />} onClick={() => dismissToast(x.id)} aria-label={t("Schließen")} />

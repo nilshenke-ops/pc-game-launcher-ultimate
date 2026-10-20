@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FolderOpen, Gamepad2, LayoutGrid, Loader2, MoreVertical, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
+import { Check, FolderOpen, Gamepad2, LayoutGrid, Loader2, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast, useCan } from "../lib/hooks";
@@ -47,6 +47,8 @@ export default function Library({ kind }: { kind: ItemKind }) {
 
   // Tap on the tile = start (like an app icon); while the PC answers, the tile shows a spinner.
   const { launch, launching } = useLaunch();
+  // Programs: "Bearbeiten" switches the icons to edit mode (tap opens the settings), like on a phone's home screen.
+  const [editMode, setEditMode] = useState(false);
   const fav = (i: LibraryItem) => client.call("library.update", { id: i.id, favorite: !i.favorite }).catch((e) => toast(e.message, "error"));
   const sources = [...new Set(items.map((i) => i.source))];
 
@@ -54,7 +56,11 @@ export default function Library({ kind }: { kind: ItemKind }) {
     <>
       <PageHead eyebrow={t("Bibliothek")} title={isGame ? t("Spiele") : t("Programme")}
         text={isGame ? t("Starte Spiele von Steam, Epic, Xbox/Microsoft Store und eigene EXE-Dateien – direkt vom Handy.") : t("Freigegebene Windows-Programme wie Discord, Browser oder OBS mit einem Tipp starten.")}
-        actions={canManage && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setAdding(true)}>{t("Hinzufügen")}</Button>} />
+        actions={canManage && <>
+          {!isGame && items.length > 0 && <Button icon={editMode ? <Check size={16} /> : <Pencil size={16} />} variant={editMode ? "primary" : undefined} aria-pressed={editMode} onClick={() => setEditMode(!editMode)}>{editMode ? t("Fertig") : t("Bearbeiten")}</Button>}
+          <Button variant="primary" icon={<Plus size={17} />} onClick={() => setAdding(true)}>{t("Hinzufügen")}</Button>
+        </>} />
+      {!isGame && editMode && <p className="small muted" style={{ marginTop: -8 }}>{t("Tippe auf ein Programm, um es zu bearbeiten. Tipp: Lange drücken geht auch ohne Bearbeiten-Modus.")}</p>}
 
       <div className="stack" style={{ marginBottom: 18 }}>
         <div className="row">
@@ -117,7 +123,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
         ) : (
           <div className="app-grid">
             {shown.map((i) => (
-              <AppTile key={i.id} item={i} running={q.data?.running.includes(i.id)} busy={launching.has(i.id)} onLaunch={() => launch(i)} onEdit={canManage ? () => setEditing(i) : undefined} />
+              <AppTile key={i.id} item={i} running={q.data?.running.includes(i.id)} busy={launching.has(i.id)} onLaunch={() => launch(i)} onEdit={canManage ? () => setEditing(i) : undefined} editing={editMode} />
             ))}
           </div>
         )}

@@ -1,0 +1,67 @@
+{
+  "id": "de.pgl.pastell-themes",
+  "name": "Pastell-Themes",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Vier helle, weiche Farbschemata (Erdbeere, Minze, Lavendel, Pfirsich) – gut lesbar bei Tageslicht. Ohne Code, ohne Berechtigungen.",
+  "category": "design",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [],
+  "contributes": {
+    "themes": [
+      {
+        "id": "erdbeere",
+        "name": "Erdbeere",
+        "theme": {
+          "mode": "light",
+          "primary": "#db2777",
+          "accent": "#7c3aed",
+          "background": "#fdf2f8"
+        }
+      },
+      {
+        "id": "minze",
+        "name": "Minze",
+        "theme": {
+          "mode": "light",
+          "primary": "#0d9488",
+          "accent": "#0284c7",
+          "background": "#ecfdf5"
+        }
+      },
+      {
+        "id": "lavendel",
+        "name": "Lavendel",
+        "theme": {
+          "mode": "light",
+          "primary": "#7c3aed",
+          "accent": "#db2777",
+          "background": "#f5f3ff"
+        }
+      },
+      {
+        "id": "pfirsich",
+        "name": "Pfirsich",
+        "theme": {
+          "mode": "light",
+          "primary": "#ea580c",
+          "accent": "#0d9488",
+          "background": "#fff7ed"
+        }
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "id": "de.pgl.zufallssound",
+  "name": "Zufallssound",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: ein großer Knopf spielt einen zufälligen Sound aus deinem Soundboard (alle oder nur Favoriten) – am PC, also auch für Discord hörbar, wenn eingerichtet.",
+  "category": "audio",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "sounds.read",
+    "sounds.play"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "zufall",
+        "title": "Zufallssound",
+        "entry": "widget.html",
+        "height": 140
+      }
+    ],
+    "settings": [
+      {
+        "key": "nurFavoriten",
+        "label": "Nur Favoriten",
+        "type": "boolean",
+        "default": false
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

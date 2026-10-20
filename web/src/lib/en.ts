@@ -2178,4 +2178,5 @@ export const en: Record<string, string> = {
   "„{n}“ wird auf Home ausgeblendet (wieder einblenden: Home → Anpassen).": "“{n}” is hidden on home (show again: Home → Customise).",
   "„{n}“ wird im Menü ausgeblendet – über die Suche bleibt es erreichbar.": "“{n}” is hidden in the menu – still reachable via search.",
   "„{n}“ wird wieder im Menü gezeigt.": "“{n}” is shown in the menu again.",
+  "Tippe auf ein Programm, um es zu bearbeiten. Tipp: Lange drücken geht auch ohne Bearbeiten-Modus.": "Tap a program to edit it. Tip: a long press works without edit mode too.",
 };

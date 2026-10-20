@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useConn, useEvent, useLiveSubscription, useMediaQuery, useRpc } from "../lib/hooks";
+import { useConn, useConnectingSoon, useEvent, useLiveSubscription, useMediaQuery, useRpc } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
 import { OFFLINE_WIDGETS, type BuiltinWidgetId } from "../lib/prefs-core";
@@ -28,6 +28,7 @@ import { CUSTOM_WIDGET } from "../lib/prefs-core";
 function StatusWidget() {
   const { state, updatedAt } = useAppState();
   const conn = useConn();
+  const soon = useConnectingSoon();
   const online = conn.phase === "online" && conn.auth === "ok"; // real connection state, not the last known data
   if (client.preview) {
     return (
@@ -45,7 +46,7 @@ function StatusWidget() {
     );
   }
   if (!state) {
-    if (conn.phase === "online" && (conn.auth === "ok" || conn.auth === "checking")) return <div className="skeleton" style={{ height: 120 }} />;
+    if (soon || (conn.phase === "online" && (conn.auth === "ok" || conn.auth === "checking"))) return <div className="skeleton" style={{ height: 120 }} />;
     return (
       <div className="stack">
         <div className="row nowrap">
@@ -144,6 +145,8 @@ function ItemsWidget({ mode }: { mode: "favorites" | "recent" }) {
     : [...new Map((hist.data?.launches ?? []).map((l) => [l.itemId, l])).values()].map((l) => ({ item: items.find((i) => i.id === l.itemId), at: l.at })).filter((x) => x.item).slice(0, 6).map((x) => x.item!);
   // No favourites yet: show the games anyway (most recently added first), so the home screen is useful right away.
   const shown = list.length || mode === "recent" ? list : [...items].sort((x, y) => Number(y.kind === "game") - Number(x.kind === "game") || Date.parse(y.addedAt) - Date.parse(x.addedAt)).slice(0, 10);
+  // Placeholder of the same height while the list loads – the widgets below do not jump.
+  if (!shown.length && (lib.loading || (!lib.data && !lib.error))) return <div className="skeleton" style={{ height: 96 }} />;
   if (!lib.loading && !shown.length)
     return <Empty icon={mode === "favorites" ? <Star size={26} /> : <Clock size={26} />} title={mode === "favorites" ? t("Noch keine Spiele") : t("Noch nichts gestartet")} text={mode === "favorites" ? t("Sobald der PC verbunden ist, erscheinen hier deine Spiele zum Antippen.") : undefined} action={<Link to="/games" className="btn sm">{t("Zur Bibliothek")}</Link>} />;
   return (
@@ -178,7 +181,7 @@ function SystemWidget() {
 
 function AudioWidget() {
   const { state } = useAppState();
-  if (!state) return null;
+  if (!state) return <div className="skeleton" style={{ height: 72 }} />;
   const a = state.audio;
   if (!a.supported) return <Banner kind="info">{t("Audio wird nur vom Windows-Companion unterstützt.")}</Banner>;
   return (
@@ -258,6 +261,7 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
 export default function Dashboard() {
   const prefs = usePrefs();
   const { state } = useAppState();
+  const connectingSoon = useConnectingSoon();
   const mobile = useMediaQuery("(max-width: 699px)");
   const [edit, setEdit] = useState(false);
   const profileLayout = state?.activeProfile?.dashboardLayoutId;
@@ -313,7 +317,8 @@ export default function Dashboard() {
   const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
 
   // Without the PC only widgets that show something real; the others come back as soon as the PC is connected.
-  const offline = !state;
+  // Right after opening, a paired phone connects within moments: keep the full layout (placeholders) so nothing jumps.
+  const offline = !state && !connectingSoon;
   const offlineShown = visible.filter((w) => OFFLINE_WIDGETS.has(w.id) || CUSTOM_WIDGET.test(w.id));
   const fallback = (["status", "shortcuts", "next", "start"] as WidgetId[]).map((id) => ({ id, visible: true, size: (id === "status" ? "m" : "m") as WidgetSize }));
   const shownWidgets = !offline || edit ? visible

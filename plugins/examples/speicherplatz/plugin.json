@@ -1,0 +1,43 @@
+{
+  "id": "de.pgl.speicherplatz",
+  "name": "Speicherplatz",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Live-Widget: freier Platz auf allen Laufwerken, rot ab einer einstellbaren Grenze – damit das nächste Spiele-Update nicht an vollem Speicher scheitert.",
+  "category": "performance",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "monitor.read"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "laufwerke",
+        "title": "Speicherplatz",
+        "entry": "widget.html",
+        "height": 170
+      }
+    ],
+    "settings": [
+      {
+        "key": "prozent",
+        "label": "Rot, wenn weniger als % frei",
+        "type": "number",
+        "default": 10
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

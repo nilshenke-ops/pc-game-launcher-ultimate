@@ -144,6 +144,14 @@ Sandbox-Regeln:
    | `discord-schnellton`, `gaming-abend` | nur Aktionen mit Einstellungen (Spiel, Programm, Profil, Sound) | je nach Schritt |
    | `neon-themes`, `retro-themes` | nur Themes | keine |
    | `game-overlay` | Overlay-Widget (`"overlay": true`), OBS-Steuerung, Aktionen für Tastenkürzel | monitor.read, capture.control, overlay.show |
+   | `wochen-statistik`, `spiel-serie`, `meilensteine`, `sitzungs-leistung` | Auswertungen des Spielverlaufs (Balken, Serien, Fortschritt) | history.read |
+   | `weiterspielen`, `zufallsspiel`, `bibliothek-zahlen` | Bibliothek + Verlauf, Start-Knöpfe | library.read, library.launch, history.read |
+   | `tageslimit`, `pomodoro` | Timer bzw. Ring mit `pgl.notify` | history.read, notify |
+   | `gpu-ampel`, `ram-waechter`, `speicherplatz` | Live-Werte mit Schwellen aus den Einstellungen, auch im Overlay | monitor.read, notify |
+   | `zufallssound` | Zufällig aus dem Soundboard | sounds.read, sounds.play |
+   | `weltzeit` | ganz ohne Berechtigung (nur `Intl`) | keine |
+   | `wettkampf-modus`, `clip-knopf` | nur Aktionen (Diagnose, Profil, Start; OBS-Clip) | je nach Schritt |
+   | `pastell-themes`, `esport-themes`, `oled-themes` | nur Themes | keine |
 2. **Packen:** `node plugins/sdk/pack.mjs plugins/examples/mein-plugin dist-plugins` erzeugt `de.meinname.mein-plugin-1.0.0.pglplugin`. Dabei werden die Grundregeln geprüft.
 3. **Importieren:** Plugin Center → Entwickler → „Datei wählen und prüfen“.
    - Erlaubt am PC selbst oder auf einem Gerät mit Admin-Recht.

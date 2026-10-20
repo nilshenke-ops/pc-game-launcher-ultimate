@@ -118,3 +118,17 @@ Timer und Stoppuhr laufen nur, solange sie sichtbar sind und gestartet wurden (e
 |---|---|---|
 | Haupt-Chunk | 374 KB (119 KB gzip) | 374 KB (119 KB gzip) – unverändert |
 | Einrichten per Auftrag | – | 10 KB (4 KB gzip), erst bei der ersten Frage an den Assistenten geladen |
+
+## 2.11.0 – Hauptmodul erneut gemessen (20.10.2026)
+
+Realistisch: Handy-Browser mit eigenem Speicher über die LAN-Adresse, Begleiter (Headless) auf diesem Rechner. Skript: `core-check` (Kopplung, Neuöffnen, PC aus/an, Start).
+
+| | 2.10.0 | 2.11.0 |
+|---|---|---|
+| Fingertipp → Programm läuft am PC | 6–17 ms | 6–18 ms (unverändert; Begleiter 3–8 ms je Befehl) |
+| Öffnen der App → Programm läuft | 0,35–0,43 s | 0,34–0,38 s |
+| PC 8 s aus → wieder verbunden | 0,8–1,8 s | 0,09–0,3 s |
+| PC 45 s aus → wieder verbunden | 0,3–3,8 s | 0,3–0,8 s |
+| Layout-Shift beim Öffnen (Home/Soundboard/Assistent) | 0,229 / 0,136 / 0,103 | 0 / 0 / 0 |
+
+Kosten des schnelleren Wiederverbindens: nur solange die App sichtbar ist und der PC fehlt, alle 0,5 s eine HTTP-Anfrage an `/healthz` (wenige hundert Byte); im Hintergrund bleibt es bei 1–15 s. Hinweis zur Messung: Das Testwerkzeug wartet vor dem Klick, bis Elemente ruhig stehen (dadurch zeigte es früher ~100 ms mehr) – maßgeblich ist die Zeit ab dem echten Fingertipp.

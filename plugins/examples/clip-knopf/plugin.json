@@ -1,0 +1,73 @@
+{
+  "id": "de.pgl.clip-knopf",
+  "name": "Clip-Knöpfe (OBS)",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.4.0",
+  "author": "PC Game Launcher",
+  "description": "Aktionen für Quick Actions, Deck und Hotkeys: „Clip speichern“ (Replay-Puffer von OBS sichern), „Aufnahme an/aus“ und „Replay-Puffer an/aus“ – jeweils mit kurzer Bestätigung. Braucht OBS Studio mit WebSocket (Overlay & Aufnahme).",
+  "category": "community",
+  "platforms": [
+    "windows",
+    "web"
+  ],
+  "permissions": [
+    "capture.control",
+    "notify"
+  ],
+  "contributes": {
+    "actions": [
+      {
+        "id": "clip",
+        "name": "Clip speichern",
+        "icon": "clapperboard",
+        "steps": [
+          {
+            "type": "obsReplaySave"
+          },
+          {
+            "type": "notify",
+            "ref": "Clip gespeichert."
+          }
+        ]
+      },
+      {
+        "id": "aufnahme",
+        "name": "Aufnahme an/aus",
+        "icon": "circle",
+        "steps": [
+          {
+            "type": "obsRecordToggle"
+          },
+          {
+            "type": "notify",
+            "ref": "Aufnahme umgeschaltet."
+          }
+        ]
+      },
+      {
+        "id": "puffer",
+        "name": "Replay-Puffer an/aus",
+        "icon": "video",
+        "steps": [
+          {
+            "type": "obsReplayBufferToggle"
+          },
+          {
+            "type": "notify",
+            "ref": "Replay-Puffer umgeschaltet."
+          }
+        ]
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

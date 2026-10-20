@@ -1,7 +1,7 @@
 // Games and apps as tiles: tap = start on the PC (like app icons on a phone). One launch path for the library page and
 // the home widgets.
-import { useState, type KeyboardEvent, type MouseEvent } from "react";
-import { Loader2, MoreVertical, Star } from "lucide-react";
+import { useRef, useState, type KeyboardEvent } from "react";
+import { Loader2, Pencil, Star } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast } from "../lib/hooks";
@@ -32,7 +32,6 @@ export function useLaunch() {
 const tileBg = (item: LibraryItem, coverAllowed: boolean) => { const b = tileArt(item, coverAllowed).brand; return b ? brandBg(b) : gradientFor(item.name); };
 
 const onKey = (fn: () => void) => (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
-const stop = (fn: () => void) => (e: MouseEvent) => { e.stopPropagation(); fn(); };
 
 /** What a tile shows: programs prefer the real brand logo (Discord, OBS …), games their cover; otherwise the PC's icon,
  * and only as a last resort colourful initials (never a grey box). */
@@ -53,18 +52,34 @@ function Art({ item, coverAllowed }: { item: LibraryItem; coverAllowed: boolean 
   return <span className="tile-initials">{initials(item.name)}</span>;
 }
 
-/** App-icon style: rounded picture with the name below. */
-export function AppTile({ item, running, busy, onLaunch, onEdit, coverAllowed = true }: { item: LibraryItem; running?: boolean; busy?: boolean; onLaunch: () => void; onEdit?: () => void; coverAllowed?: boolean }) {
+/** App-icon style: rounded picture with the name below. Tap = start. Like on a phone's home screen, a long press
+ * (or right click) opens the settings; in edit mode (`editing`) a tap does, and the tile shows a pencil. */
+export function AppTile({ item, running, busy, onLaunch, onEdit, editing, coverAllowed = true }: { item: LibraryItem; running?: boolean; busy?: boolean; onLaunch: () => void; onEdit?: () => void; editing?: boolean; coverAllowed?: boolean }) {
+  const press = useRef<{ timer: number; fired: boolean } | null>(null);
+  const cancel = () => { if (press.current) { clearTimeout(press.current.timer); } };
+  const down = () => {
+    if (!onEdit || editing) return;
+    cancel();
+    press.current = { fired: false, timer: window.setTimeout(() => { if (press.current) press.current.fired = true; navigator.vibrate?.(15); onEdit(); }, 550) };
+  };
+  const tap = () => {
+    if (press.current?.fired) { press.current = null; return; } // the long press already opened the settings
+    cancel();
+    if (editing && onEdit) onEdit(); else onLaunch();
+  };
   return (
-    <div className={`app-tile ${busy ? "busy" : ""}`} role="button" tabIndex={0} aria-label={t("{name} starten", { name: item.name })} aria-busy={busy} onClick={onLaunch} onKeyDown={onKey(onLaunch)}>
+    <div className={`app-tile ${busy ? "busy" : ""} ${editing ? "editing" : ""}`} role="button" tabIndex={0}
+      aria-label={editing ? t("{n} bearbeiten", { n: item.name }) : t("{name} starten", { name: item.name })} aria-busy={busy}
+      onClick={tap} onKeyDown={onKey(tap)} onPointerDown={down} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel}
+      onContextMenu={onEdit ? (e) => { e.preventDefault(); cancel(); onEdit(); } : undefined}>
       <span className="app-icon" style={{ background: tileBg(item, coverAllowed) }}>
         <Art item={item} coverAllowed={coverAllowed} />
         {busy && <span className="tile-busy"><Loader2 size={22} className="spin" /></span>}
         {running && <span className="tile-dot" aria-label={t("läuft")} />}
         {item.favorite && <Star className="tile-star" size={12} fill="currentColor" aria-hidden />}
+        {editing && <span className="tile-edit" aria-hidden><Pencil size={13} /></span>}
       </span>
       <span className="app-name">{item.name}</span>
-      {onEdit && <button type="button" className="tile-more" aria-label={t("{n} bearbeiten", { n: item.name })} onClick={stop(onEdit)}><MoreVertical size={14} /></button>}
     </div>
   );
 }

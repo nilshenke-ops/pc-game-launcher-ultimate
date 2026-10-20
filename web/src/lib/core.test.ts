@@ -76,6 +76,11 @@ describe("prefs", () => {
     expect(ids.filter((i) => i === "custom:cw_abc123")).toHaveLength(1);
     expect(ids.some((i) => i.includes("evil"))).toBe(false);
   });
+  it("keeps every plugin widget of the catalog on the home screen (2.10 silently dropped the 13th)", () => {
+    const widgets = Array.from({ length: 33 }, (_, i) => ({ id: `plugin:de.pgl.p${i}:w`, visible: true, size: "m" }));
+    const p = sanitizePrefs({ layouts: [{ id: "x", name: "X", widgets }] });
+    expect(p.layouts[0].widgets.filter((w) => (w.id as string).startsWith("plugin:"))).toHaveLength(33);
+  });
   it("widget templates are valid for the PC (ids, limits, percent boxes)", () => {
     for (const tpl of templates()) {
       const w = tpl.make();

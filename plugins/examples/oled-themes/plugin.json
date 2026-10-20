@@ -1,0 +1,57 @@
+{
+  "id": "de.pgl.oled-themes",
+  "name": "OLED-Schwarz",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Drei Farbschemata mit echtem Schwarz als Hintergrund – auf OLED-Handys und -Tablets besonders kontrastreich und sparsam. Ohne Code, ohne Berechtigungen.",
+  "category": "design",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [],
+  "contributes": {
+    "themes": [
+      {
+        "id": "oled-cyan",
+        "name": "OLED Cyan",
+        "theme": {
+          "mode": "dark",
+          "primary": "#22d3ee",
+          "accent": "#a78bfa",
+          "background": "#000000"
+        }
+      },
+      {
+        "id": "oled-rot",
+        "name": "OLED Rot",
+        "theme": {
+          "mode": "dark",
+          "primary": "#f43f5e",
+          "accent": "#fb923c",
+          "background": "#000000"
+        }
+      },
+      {
+        "id": "oled-weiss",
+        "name": "OLED Weiß",
+        "theme": {
+          "mode": "dark",
+          "primary": "#e5e7eb",
+          "accent": "#22d3ee",
+          "background": "#000000"
+        }
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

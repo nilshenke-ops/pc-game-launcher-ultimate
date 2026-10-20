@@ -14,6 +14,19 @@ export function useConn(): ConnStatus {
   return useSyncExternalStore(client.subscribe, client.getStatus);
 }
 
+/** Right after opening the app a paired device is usually connected within a few hundred ms. During this short
+ * moment pages show their normal layout with placeholders instead of the offline view – so nothing jumps when the
+ * PC answers. After at most 1.5 s (PC really off) the offline view is shown. */
+const CONNECT_GRACE_MS = 1500;
+export function useConnectingSoon(): boolean {
+  const conn = useConn();
+  const left = CONNECT_GRACE_MS - performance.now();
+  const [, tick] = useState(0);
+  const soon = left > 0 && client.canSignIn && conn.phase === "connecting" || (conn.phase === "online" && conn.auth === "checking");
+  useEffect(() => { if (soon && left > 0) { const id = window.setTimeout(() => tick((n) => n + 1), left + 10); return () => clearTimeout(id); } }, [soon, left]);
+  return soon && (left > 0 || conn.phase === "online");
+}
+
 const visibleNow = () => typeof document === "undefined" || document.visibilityState !== "hidden";
 const onVisibility = (cb: () => void) => { document.addEventListener("visibilitychange", cb); return () => document.removeEventListener("visibilitychange", cb); };
 /** False while the tab/app is in the background (iPad home screen, hidden PC window) – live subscriptions pause then. */
@@ -134,7 +147,7 @@ export function toast(text: string, kind: Toast["kind"] = "info") {
   const id = toastId++;
   toasts = [...toasts.filter((x) => x.text !== text), { id, text, kind }].slice(-4);
   toastListeners.forEach((l) => l());
-  window.setTimeout(() => dismissToast(id), kind === "error" ? 7000 : 3500);
+  window.setTimeout(() => dismissToast(id), kind === "error" ? 7000 : kind === "success" ? 2500 : 3500);
 }
 
 export function dismissToast(id: number) {

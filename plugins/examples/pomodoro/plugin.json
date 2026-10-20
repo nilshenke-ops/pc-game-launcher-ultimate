@@ -1,0 +1,49 @@
+{
+  "id": "de.pgl.pomodoro",
+  "name": "Fokus-Timer (Pomodoro)",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: Fokus- und Pausenzeiten im Wechsel (Standard 25/5 Minuten) mit Hinweis beim Wechsel – zum Lernen, Arbeiten oder für Spielpausen. Läuft auf dem Gerät, ohne PC-Last.",
+  "category": "productivity",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "notify"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "timer",
+        "title": "Fokus-Timer",
+        "entry": "widget.html",
+        "height": 160
+      }
+    ],
+    "settings": [
+      {
+        "key": "fokus",
+        "label": "Fokus in Minuten",
+        "type": "number",
+        "default": 25
+      },
+      {
+        "key": "pause",
+        "label": "Pause in Minuten",
+        "type": "number",
+        "default": 5
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

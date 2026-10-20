@@ -1,0 +1,35 @@
+{
+  "id": "de.pgl.spiel-serie",
+  "name": "Spiel-Serie",
+  "version": "1.0.0",
+  "apiVersion": 1,
+  "minAppVersion": "1.2.0",
+  "author": "PC Game Launcher",
+  "description": "Widget: an wie vielen Tagen in Folge du gespielt hast, deine längste Serie und die Spieltage in diesem Monat – aus dem Spielverlauf.",
+  "category": "information",
+  "platforms": [
+    "web"
+  ],
+  "permissions": [
+    "history.read"
+  ],
+  "contributes": {
+    "widgets": [
+      {
+        "id": "serie",
+        "title": "Spiel-Serie",
+        "entry": "widget.html",
+        "height": 170
+      }
+    ]
+  },
+  "changelog": [
+    {
+      "version": "1.0.0",
+      "date": "2026-10-20",
+      "changes": [
+        "Erste Version"
+      ]
+    }
+  ]
+}

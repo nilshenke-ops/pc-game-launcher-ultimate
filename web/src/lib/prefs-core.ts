@@ -175,7 +175,7 @@ export function sanitizePrefs(input: unknown): Prefs {
     ? p.layouts.filter((l) => l && typeof l.id === "string" && Array.isArray(l.widgets)).slice(0, 20).map((l) => {
         const seen = new Set<string>();
         let plugins = 0, custom = 0;
-        const known = (id: string) => ids.has(id as BuiltinWidgetId) || (PLUGIN_WIDGET.test(id) && ++plugins <= 12) || (CUSTOM_WIDGET.test(id) && ++custom <= 30);
+        const known = (id: string) => ids.has(id as BuiltinWidgetId) || (PLUGIN_WIDGET.test(id) && ++plugins <= 60) || (CUSTOM_WIDGET.test(id) && ++custom <= 30);
         const widgets: WidgetConf[] = l.widgets.filter((w) => typeof w?.id === "string" && known(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize }));
         // Layouts from before 2.7.0 get the new home widgets "Schnellstart" and "Als Nächstes spielen" right after the first widget.
         for (const id of ["next", "shortcuts"] as BuiltinWidgetId[]) if (!seen.has(id)) { seen.add(id); widgets.splice(Math.min(1, widgets.length), 0, { id, visible: true, size: "m" }); }
