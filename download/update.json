@@ -1,27 +1,27 @@
 {
-  "version": "2.24.0",
+  "version": "2.25.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.24.0/PCGameLauncherCompanion.exe",
-  "size": 87552931,
-  "sha256": "3b0729ee90143b72663aa5e1a51bccb855aa11623f234979c262ef7ced2e8d18",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.25.0/PCGameLauncherCompanion.exe",
+  "size": 87554382,
+  "sha256": "06f145b28b5c448650caf24f7d6a9a9457dacf444137dc512817db449d600599",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.24.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.24.0/PCGameLauncherCompanion-2.24.0-win-x64.zip",
-    "size": 81816758,
-    "sha256": "7e8e8c7b29a981372001c416a99e5bac7d68c80a1504128eff613ea44bc865ac"
+    "fileName": "PCGameLauncherCompanion-2.25.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.25.0/PCGameLauncherCompanion-2.25.0-win-x64.zip",
+    "size": 81818374,
+    "sha256": "c22fbc4ffbec87ce261abf82e77e1f09a5dfcc427068e78a25758ef41a8ba113"
   },
-  "notes": "Deal Radar ohne PC zeigt jetzt auch Steam-Preise: eine Steam-Preisliste der rund 3000 beliebtesten Spiele (Bestseller, meistgewünscht, neu, im Angebot) liegt neben der Website und wird alle 6 Stunden erneuert",
+  "notes": "Jedes Steam-Spiel im Deal Radar bekommt sein echtes Bild – auch neue Spiele (Steam legt deren Bilder unter einem eigenen Pfad ab, der alte Pfad liefert dort nichts) · Katalog aller Steam-Spiele neben der Website (einmal täglich, nach Anfangsbuchstaben aufgeteilt): Name, Bild und Preis auch für Spiele außerhalb der Beliebt-Liste – ohne PC · Bild-Reihenfolge: echtes Steam-Bild, dann altes Steam-Bild, dann Microsoft-Store-Bild, erst dann Buchstaben",
   "changes": {
     "neu": [
-      "Deal Radar ohne PC zeigt jetzt auch Steam-Preise: eine Steam-Preisliste der rund 3000 beliebtesten Spiele (Bestseller, meistgewünscht, neu, im Angebot) liegt neben der Website und wird alle 6 Stunden erneuert"
+      "Jedes Steam-Spiel im Deal Radar bekommt sein echtes Bild – auch neue Spiele (Steam legt deren Bilder unter einem eigenen Pfad ab, der alte Pfad liefert dort nichts)",
+      "Katalog aller Steam-Spiele neben der Website (einmal täglich, nach Anfangsbuchstaben aufgeteilt): Name, Bild und Preis auch für Spiele außerhalb der Beliebt-Liste – ohne PC"
     ],
-    "verbessert": [],
-    "behoben": [
-      "„Minecraft“ wurde im Microsoft Store als „Minecraft Legends“ erkannt (falscher Preis und falsches Bild) – jetzt zählt nur das Spiel selbst oder eine Edition davon („Minecraft: Java & Bedrock Edition“), auf PC und Handy",
-      "Die Steam-Suche am PC nimmt kein ähnliches Spiel mehr (vorher wurde aus „Minecraft“ „Minecraft Dungeons“); gibt es ein Spiel bei Steam nicht, steht das dabei"
-    ]
+    "verbessert": [
+      "Bild-Reihenfolge: echtes Steam-Bild, dann altes Steam-Bild, dann Microsoft-Store-Bild, erst dann Buchstaben"
+    ],
+    "behoben": []
   },
-  "signature": "oa700ukpLaEJ0+zCewt4IkaTPTgHRCsdYc0eUFi7uakonzlZFcrATqGMmjRBrl7wmInSAGMIHiUIUmXoomEWWQ=="
+  "signature": "y/woR1sWx17zY1e8dEyhi2YaD6DRi8g0H7yk4mSDLfUjTGM8DbUKMCHlYk6SBzJ6HeZIVu4opkDWiQI50hlMLg=="
 }
