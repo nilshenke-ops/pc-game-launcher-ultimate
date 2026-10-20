@@ -15,10 +15,14 @@ public sealed class AppPaths
     public string LogsDir => Path.Combine(DataDir, "logs");
     public string BackupsDir => Path.Combine(DataDir, "backups");
     public string File(string name) => Path.Combine(DataDir, name);
+    /// <summary>Files sent between devices and the PC. Windows: Downloads\Nexus Gaming Hub (easy to find); with an own data folder
+    /// (tests, portable use) or on other systems inside the data folder.</summary>
+    public string TransferDir { get; }
 
     public AppPaths(string? overrideDir = null)
     {
         var dir = overrideDir ?? Environment.GetEnvironmentVariable("PGL_DATA_DIR");
+        var ownDataDir = !string.IsNullOrWhiteSpace(dir);
         if (string.IsNullOrWhiteSpace(dir))
         {
             dir = OperatingSystem.IsWindows()
@@ -26,6 +30,10 @@ public sealed class AppPaths
                 : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "pc-game-launcher-ultimate");
         }
         DataDir = Path.GetFullPath(dir);
+        var downloads = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
+        TransferDir = !ownDataDir && OperatingSystem.IsWindows() && Directory.Exists(downloads)
+            ? Path.Combine(downloads, "Nexus Gaming Hub")
+            : Path.Combine(DataDir, "transfer");
         foreach (var d in new[] { DataDir, SoundsDir, UpdatesDir, LogsDir, BackupsDir }) Directory.CreateDirectory(d);
     }
 }

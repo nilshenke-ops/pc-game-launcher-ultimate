@@ -61,22 +61,51 @@ export function NetworkCard() {
   );
 }
 
-interface StorageInfo {
+export interface StorageItem {
+  id: string; name: string; kind: string; installDir: string; exists: boolean; launcher?: string;
+  size?: { bytes: number; files: number; at: string; partial: boolean; fromLauncher?: boolean } | null;
+  update?: { status: "current" | "update" | "updating" | "paused" | "damaged" | "unknown"; bytesToDownload?: number; bytesDownloaded?: number; lastUpdated?: string; buildId?: string } | null;
+}
+export interface StorageInfo {
   drives: { name: string; label: string; total: number; free: number; format: string }[];
-  items: { id: string; name: string; kind: string; installDir: string; exists: boolean; size?: { bytes: number; files: number; at: string; partial: boolean } | null }[];
+  items: StorageItem[];
   scanning?: string | null;
+  checkedAt?: string;
 }
 
-/** Drives and the size of every game with a known install folder (computed on request). */
-export function StorageCard() {
+/** Update state as the launcher reports it; launchers without a readable state say so instead of "up to date". */
+export function UpdateBadge({ u }: { u: StorageItem["update"] }) {
+  if (!u) return <span className="badge" title={t("Dieser Launcher gibt keinen Update-Stand preis")}>{t("Update-Stand unbekannt")}</span>;
+  const rest = u.bytesToDownload ? Math.max(0, u.bytesToDownload - (u.bytesDownloaded ?? 0)) : 0;
+  switch (u.status) {
+    case "update": return <span className="badge warn">{rest ? t("Update ausstehend ({n})", { n: bytes(rest) }) : t("Update ausstehend")}</span>;
+    case "updating": return <span className="badge info">{t("Wird aktualisiert")}</span>;
+    case "paused": return <span className="badge warn">{t("Update pausiert")}</span>;
+    case "damaged": return <span className="badge error">{t("Dateien fehlen/beschädigt")}</span>;
+    case "current": return <span className="badge ok" title={u.lastUpdated ? t("Zuletzt aktualisiert: {d}", { d: dateTime(u.lastUpdated) }) : undefined}>{t("Aktuell")}</span>;
+    default: return <span className="badge">{t("Update-Stand unbekannt")}</span>;
+  }
+}
+
+const needsAttention = (i: StorageItem) => !!i.update && ["update", "updating", "paused", "damaged"].includes(i.update.status);
+
+/** Drives, size and update state of every game with a known install folder. Also without the PC (last known state). */
+export function StorageCard({ full = false }: { full?: boolean }) {
   const q = useRpc<StorageInfo>("storage.get", {}, ["storage", "library"]);
+  const conn = useConn();
+  const online = conn.phase === "online";
+  const [filter, setFilter] = useState<"all" | "updates" | "size">("all");
   const scan = () => client.call("storage.scan", {}).then(() => toast(t("Größen werden berechnet – das kann bei großen Spielen dauern"), "info")).catch((e) => toast((e as Error).message, "error"));
   const d = q.data;
+  const pending = d?.items.filter(needsAttention) ?? [];
+  const shown = (d?.items ?? []).filter((i) => filter !== "updates" || needsAttention(i));
+  if (filter === "all") shown.sort((a, b) => Number(needsAttention(b)) - Number(needsAttention(a)));
   return (
-    <Card title={t("Speicherplatz")} icon={<HardDrive size={18} />} actions={<Button size="sm" busy={!!d?.scanning} onClick={scan}>{t("Spielgrößen berechnen")}</Button>}>
+    <Card title={full ? t("Laufwerke") : t("Speicherplatz")} icon={<HardDrive size={18} />} actions={<Button size="sm" busy={!!d?.scanning} disabled={!online} onClick={scan}>{t("Spielgrößen berechnen")}</Button>}>
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {d && (
           <div className="stack">
+            {!online && d.checkedAt && <Banner kind="info">{t("Ohne PC: Stand vom {d}", { d: dateTime(d.checkedAt) })}</Banner>}
             {d.drives.map((dr) => (
               <div key={dr.name} className="stack-sm">
                 <div className="row between small"><b>{dr.name}{dr.label ? ` · ${dr.label}` : ""}</b><span className="muted">{t("{f} frei von {t}", { f: bytes(dr.free), t: bytes(dr.total) })}</span></div>
@@ -84,18 +113,28 @@ export function StorageCard() {
               </div>
             ))}
             {d.scanning && <Banner kind="info">{t("Berechne: {n} …", { n: d.scanning })}</Banner>}
-            {d.items.length === 0 ? <p className="small muted">{t("Keine Spiele mit bekanntem Installationsordner (z. B. Steam-, Epic- oder EA-Spiele).")}</p> : (
+            {pending.length > 0 && <Banner kind="warn">{pending.length === 1 ? t("{n} braucht ein Update oder eine Reparatur – im Launcher des Spiels.", { n: pending[0].name }) : t("{n} Spiele brauchen ein Update oder eine Reparatur – im jeweiligen Launcher.", { n: pending.length })}</Banner>}
+            {full && d.items.length > 0 && (
+              <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
+                {([["all", t("Alle")], ["updates", t("Updates ({n})", { n: pending.length })], ["size", t("Nach Größe")]] as const).map(([k, l]) => (
+                  <button key={k} type="button" className={`chip ${filter === k ? "on" : ""}`} aria-pressed={filter === k} onClick={() => setFilter(k)}>{l}</button>
+                ))}
+              </div>
+            )}
+            {d.items.length === 0 ? <p className="small muted">{t("Keine Spiele mit bekanntem Installationsordner (z. B. Steam-, Epic- oder EA-Spiele).")}</p>
+              : shown.length === 0 ? <p className="small muted">{t("Keine ausstehenden Updates bei Spielen, die ihren Stand verraten (Steam).")}</p> : (
               <div className="list">
-                {d.items.slice(0, 30).map((i) => (
+                {shown.slice(0, full ? 500 : 30).map((i) => (
                   <div key={i.id} className="list-item">
-                    <div className="grow"><div className="title small ellipsis">{i.name}</div><div className="sub tiny mono ellipsis">{i.installDir}</div></div>
-                    <span className="small">{!i.exists ? <span className="badge warn">{t("Ordner fehlt")}</span> : i.size ? `${bytes(i.size.bytes)}${i.size.partial ? " *" : ""}` : "–"}</span>
-                    {i.exists && <Button size="sm" variant="ghost" icon={<FolderOpen size={14} />} aria-label={t("Ordner öffnen")} onClick={() => client.call("storage.openFolder", { id: i.id }).catch((e) => toast((e as Error).message, "error"))} />}
+                    <div className="grow" style={{ minWidth: 0 }}><div className="title small ellipsis">{i.name}</div><div className="sub tiny mono ellipsis">{i.installDir}</div>
+                      {i.kind === "game" && <div className="row" style={{ gap: 6, marginTop: 4 }}><UpdateBadge u={i.update} /></div>}</div>
+                    <span className="small" style={{ whiteSpace: "nowrap" }}>{!i.exists ? <span className="badge warn">{t("Ordner fehlt")}</span> : i.size ? `${bytes(i.size.bytes)}${i.size.partial ? " *" : ""}` : "–"}</span>
+                    {i.exists && online && <Button size="sm" variant="ghost" icon={<FolderOpen size={14} />} aria-label={t("Ordner öffnen")} onClick={() => client.call("storage.openFolder", { id: i.id }).catch((e) => toast((e as Error).message, "error"))} />}
                   </div>
                 ))}
               </div>
             )}
-            <p className="tiny muted">{t("Größen werden nur auf Anfrage berechnet und gespeichert. * = einige Ordner waren nicht lesbar. Löschen/Deinstallieren bitte im jeweiligen Launcher.")}{d.items.find((i) => i.size)?.size ? " " + t("Stand: {d}", { d: dateTime(d.items.find((i) => i.size)!.size!.at) }) : ""}</p>
+            <p className="tiny muted">{t("Steam meldet Größe und Update-Stand selbst; andere Größen werden nur auf Anfrage berechnet. * = einige Ordner waren nicht lesbar. Aktualisieren, Löschen und Deinstallieren im jeweiligen Launcher.")}</p>
           </div>
         )}
       </Loadable>

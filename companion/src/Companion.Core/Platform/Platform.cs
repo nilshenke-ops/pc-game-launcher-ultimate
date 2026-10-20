@@ -32,6 +32,26 @@ public interface IPlatform
     IDesktopWidgets DesktopWidgets => NullDesktopWidgets.Instance;
     /// <summary>Closes and reopens chosen programs for the game mode (Windows companion only).</summary>
     IProcessControl ProcessControl => NullProcessControl.Instance;
+    /// <summary>Thumbnails of screenshots/clips and moving files to the recycle bin (Windows companion only).</summary>
+    IMediaTools Media => NullMediaTools.Instance;
+}
+
+/// <summary>Pictures for the capture library and a delete that can be undone.</summary>
+public interface IMediaTools
+{
+    /// <summary>JPEG data URL of at most <paramref name="size"/> px (also for videos), or null if not available.</summary>
+    string? Thumbnail(string path, int size);
+    bool CanRecycle { get; }
+    /// <summary>Moves a file to the recycle bin; false if that is not possible (the file is then left alone).</summary>
+    bool MoveToRecycleBin(string path);
+}
+
+public sealed class NullMediaTools : IMediaTools
+{
+    public static readonly NullMediaTools Instance = new();
+    public string? Thumbnail(string path, int size) => null;
+    public bool CanRecycle => false;
+    public bool MoveToRecycleBin(string path) => false;
 }
 
 /// <summary>Gentle closing of a program (like clicking its X) and starting it again. Never forced.</summary>

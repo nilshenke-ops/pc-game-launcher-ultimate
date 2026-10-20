@@ -33,6 +33,9 @@ const Network = lazy(() => import("./pages/Network"));
 const Quests = lazy(() => import("./pages/Quests"));
 const Backlog = lazy(() => import("./pages/Backlog"));
 const CalendarPage = lazy(() => import("./pages/Calendar"));
+const StoragePage = lazy(() => import("./pages/Storage"));
+const FilesPage = lazy(() => import("./pages/Files"));
+const CapturesPage = lazy(() => import("./pages/Captures"));
 const Deck = lazy(() => import("./pages/Deck"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Deals = lazy(() => import("./pages/Deals"));
@@ -113,6 +116,9 @@ function Gate() {
           <Route path="/quests" element={<Quests />} />
           <Route path="/backlog" element={<Backlog />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/storage" element={<StoragePage />} />
+          <Route path="/files" element={<FilesPage />} />
+          <Route path="/captures" element={<CapturesPage />} />
           <Route path="/deck" element={<Deck />} />
           <Route path="/assistant" element={<Assistant />} />
           <Route path="/deals" element={<Deals />} />

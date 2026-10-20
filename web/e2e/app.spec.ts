@@ -847,6 +847,12 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.reload();
   await expect(tablet.locator(".activity-now")).toContainText("Nicht stören · Tablet-Status");
   await expect(tablet.locator(".cw, .card", { hasText: "Termine" }).getByText("Tablet-Raid")).toBeVisible(); // home widget, from the device's copy
+  // A file chosen without the PC waits on the tablet (2.15) and goes to the PC's exchange folder after pairing.
+  await tablet.goto(`${HOSTED_SITE}/#/files`);
+  await tablet.locator('input[type="file"]').setInputFiles({ name: "tablet-config.ini", mimeType: "text/plain", buffer: Buffer.from("[video]\nfps=240\n") });
+  await expect(tablet.getByText("wartet auf PC").first()).toBeVisible();
+  await tablet.reload();
+  await expect(tablet.locator(".list-item", { hasText: "tablet-config.ini" })).toBeVisible(); // survives closing the page
   // The assistant sets the app up without the PC: the request becomes a button, applied on tap, undoable.
   await tablet.goto(`${HOSTED_SITE}/#/assistant`);
   const say = tablet.getByRole("textbox", { name: "Nachricht an den Assistenten" });
@@ -925,6 +931,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await pc.goto(`${COMPANION}/#/calendar`);
   await expect(pc.getByText("Tablet-Raid").first()).toBeVisible();
   await expect.poll(() => { try { return readFileSync(join(state().dataDir, "activity.json"), "utf8"); } catch { return ""; } }).toContain("Tablet-Status");
+  await expect.poll(() => { try { return readFileSync(join(state().dataDir, "transfer", "tablet-config.ini"), "utf8"); } catch { return ""; } }, { timeout: 15000 }).toBe("[video]\nfps=240\n");
 
   // QR path: the link fills in code and PC address automatically.
   const phone2 = await (await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" })).newPage();

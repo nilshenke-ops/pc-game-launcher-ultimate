@@ -40,6 +40,7 @@ sealed class WindowsPlatform : IPlatform
     public IKeySender KeySender { get; } = new WindowsKeySender();
     public IGameMode GameMode { get; } = new WindowsGameMode();
     public IProcessControl ProcessControl { get; } = new WindowsProcessControl();
+    public IMediaTools Media { get; } = new WindowsMediaTools();
     public WindowsDesktopWidgets DesktopWidgetWindows { get; }
     public IDesktopWidgets DesktopWidgets => DesktopWidgetWindows;
 }
@@ -178,6 +179,35 @@ sealed class WindowsLauncher : ILauncher
     [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr h);
     const int SIIGBF_BIGGERSIZEOK = 0x1, SIIGBF_ICONONLY = 0x4;
 
+    /// <summary>Thumbnail as JPEG (keeps the aspect ratio), from the shell's thumbnail cache.</summary>
+    internal static string? ShellThumbnail(string path, int size)
+    {
+        if (SHCreateItemFromParsingName(path, IntPtr.Zero, typeof(IShellItemImageFactory).GUID, out var factory) != 0 || factory == null) return null;
+        try
+        {
+            if (factory.GetImage(new NativeSize { cx = size, cy = size }, SIIGBF_BIGGERSIZEOK, out var hbm) != 0 || hbm == IntPtr.Zero) return null;
+            try
+            {
+                using var raw = Image.FromHbitmap(hbm);
+                var scale = Math.Min(1.0, (double)size / Math.Max(raw.Width, raw.Height));
+                using var copy = new Bitmap(Math.Max(1, (int)(raw.Width * scale)), Math.Max(1, (int)(raw.Height * scale)), PixelFormat.Format24bppRgb);
+                using (var g = Graphics.FromImage(copy))
+                {
+                    g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                    g.DrawImage(raw, new Rectangle(0, 0, copy.Width, copy.Height));
+                }
+                using var ms = new MemoryStream();
+                var jpeg = ImageCodecInfo.GetImageEncoders().First(c => c.FormatID == ImageFormat.Jpeg.Guid);
+                using var ps = new EncoderParameters(1);
+                ps.Param[0] = new EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 72L);
+                copy.Save(ms, jpeg, ps);
+                return "data:image/jpeg;base64," + Convert.ToBase64String(ms.ToArray());
+            }
+            finally { DeleteObject(hbm); }
+        }
+        finally { Marshal.ReleaseComObject(factory); }
+    }
+
     static string? ShellIcon(string parsingName, int size)
     {
         if (SHCreateItemFromParsingName(parsingName, IntPtr.Zero, typeof(IShellItemImageFactory).GUID, out var factory) != 0 || factory == null) return null;
@@ -206,6 +236,33 @@ sealed class WindowsLauncher : ILauncher
             finally { DeleteObject(hbm); }
         }
         finally { Marshal.ReleaseComObject(factory); }
+    }
+}
+
+/// <summary>Explorer's own thumbnails (pictures and videos, whatever codecs Windows has) and the recycle bin.</summary>
+sealed class WindowsMediaTools : IMediaTools
+{
+    public string? Thumbnail(string path, int size)
+    {
+        if (!File.Exists(path)) return null;
+        string? result = null;
+        var t = new Thread(() => { try { result = WindowsLauncher.ShellThumbnail(path, size); } catch (Exception ex) { Log.Warn("thumbs", ex.Message); } });
+        t.SetApartmentState(ApartmentState.STA);
+        t.Start();
+        t.Join(TimeSpan.FromSeconds(10));
+        return result;
+    }
+
+    public bool CanRecycle => true;
+
+    public bool MoveToRecycleBin(string path)
+    {
+        try
+        {
+            Microsoft.VisualBasic.FileIO.FileSystem.DeleteFile(path, Microsoft.VisualBasic.FileIO.UIOption.OnlyErrorDialogs, Microsoft.VisualBasic.FileIO.RecycleOption.SendToRecycleBin);
+            return !File.Exists(path);
+        }
+        catch (Exception ex) { Log.Warn("captures", "Papierkorb: " + ex.Message); return false; }
     }
 }
 

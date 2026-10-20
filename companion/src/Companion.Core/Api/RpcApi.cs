@@ -406,6 +406,29 @@ public static class RpcApi
         rpc.Register("storage.get", _ => s.Storage.Get());
         rpc.Register("storage.scan", ctx => s.Storage.Scan(ctx.OptStr("id", 64)));
         rpc.Register("storage.openFolder", ctx => { s.Storage.OpenFolder(ctx.Str("id", 64)); return true; });
+
+        // ------------------------------------------------------------ files between devices and the PC (one folder only)
+        rpc.Register("files.list", _ => s.Transfer.List());
+        rpc.Register("files.uploadBegin", ctx => new { uploadId = s.Transfer.UploadBegin(ctx.Str("name", 260), ctx.Params.GetProperty("size").GetInt64(), ctx.Session.Who) });
+        rpc.Register("files.uploadChunk", ctx => new { received = s.Transfer.UploadChunk(ctx.Str("uploadId", 40), ctx.Str("data", 800_000)) });
+        rpc.Register("files.uploadEnd", ctx => s.Transfer.UploadEnd(ctx.Str("uploadId", 40)));
+        rpc.Register("files.read", ctx => s.Transfer.Read(ctx.Str("name", 260),
+            ctx.Params.TryGetProperty("offset", out var o) ? o.GetInt64() : 0, ctx.Params.TryGetProperty("length", out var l) ? l.GetInt32() : TransferService.MaxChunkBytes));
+        rpc.Register("files.remove", ctx => { s.Transfer.Remove(ctx.Str("name", 260)); return true; });
+        rpc.Register("files.openFolder", _ => { s.Transfer.OpenFolder(); return true; });
+
+        // ------------------------------------------------------------ screenshots and clips (only picture/video files of known folders)
+        rpc.Register("captures.list", _ => s.Captures.List());
+        rpc.Register("captures.scan", ctx => { _ = s.Captures.ScanAsync(); return true; });
+        rpc.Register("captures.thumbs", ctx => new { thumbs = s.Captures.Thumbs(ctx.Params.GetProperty("ids").EnumerateArray().Select(x => x.GetString() ?? "").Take(24).ToList()) });
+        rpc.Register("captures.read", ctx => s.Captures.Read(ctx.Str("id", 16),
+            ctx.Params.TryGetProperty("offset", out var o) ? o.GetInt64() : 0, ctx.Params.TryGetProperty("length", out var l) ? l.GetInt32() : TransferService.MaxChunkBytes));
+        rpc.Register("captures.update", ctx => s.Captures.Update(ctx.Str("id", 16),
+            ctx.Params.TryGetProperty("favorite", out var f) && f.ValueKind is JsonValueKind.True or JsonValueKind.False ? f.GetBoolean() : null,
+            ctx.Params.TryGetProperty("tags", out var tg) && tg.ValueKind == JsonValueKind.Array ? tg.EnumerateArray().Select(x => x.GetString() ?? "").Take(20).ToList() : null));
+        rpc.Register("captures.remove", ctx => { s.Captures.Remove(ctx.Str("id", 16)); return true; });
+        rpc.Register("captures.addFolder", ctx => { s.Captures.AddFolder(ctx.Str("path", 400), ctx.OptStr("label", 40)); return true; });
+        rpc.Register("captures.removeFolder", ctx => { s.Captures.RemoveFolder(ctx.Str("path", 400)); return true; });
         // ------------------------------------------------------------ overlay + OBS (recording, replays)
         rpc.Register("overlay.status", _ => new { supported = s.Platform.Overlay.Supported, visible = s.Platform.Overlay.Visible, reason = s.Platform.Overlay.Supported ? null : NullOverlay.Instance.Toggle("full") });
         rpc.Register("overlay.toggle", async ctx =>

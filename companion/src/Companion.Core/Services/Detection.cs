@@ -153,6 +153,42 @@ public sealed class SteamDetector(IEnumerable<string> roots) : IDetector
     }
 }
 
+/// <summary>Install and update state of a Steam game, read from its appmanifest (what the Steam client itself writes).</summary>
+public sealed record SteamAppState(string Status, long? SizeOnDisk, long? BytesToDownload, long? BytesDownloaded, DateTime? LastUpdated, string? BuildId)
+{
+    // StateFlags of the Steam client: 2 update required, 4 fully installed, 32 files missing, 128 files corrupt,
+    // 256 update running, 512 update paused, 1024 update started, 1048576 downloading, 2097152 staging, 4194304 committing.
+    const int UpdateRequired = 2, FilesMissing = 32, FilesCorrupt = 128, UpdatePaused = 512;
+    const int Busy = 256 | 1024 | 1048576 | 2097152 | 4194304;
+
+    /// <summary>appmanifest next to the "common" folder of the install dir; null if missing or unreadable.</summary>
+    public static SteamAppState? ForInstallDir(string? installDir, string appId)
+    {
+        if (string.IsNullOrEmpty(installDir) || !System.Text.RegularExpressions.Regex.IsMatch(appId, "^[0-9]{1,10}$")) return null;
+        var steamapps = Path.GetDirectoryName(Path.GetDirectoryName(installDir.TrimEnd('/', '\\')));
+        if (steamapps == null) return null;
+        var file = Path.Combine(steamapps, $"appmanifest_{appId}.acf");
+        try { return File.Exists(file) ? Parse(File.ReadAllText(file)) : null; }
+        catch (Exception ex) { Log.Warn("storage", $"{Path.GetFileName(file)} nicht lesbar: {ex.Message}"); return null; }
+    }
+
+    public static SteamAppState? Parse(string text)
+    {
+        var st = Vdf.Parse(text).Child("AppState");
+        if (st == null || !int.TryParse(st.Str("StateFlags"), out var flags)) return null;
+        static long? L(string? v) => long.TryParse(v, out var x) && x >= 0 ? x : null;
+        var toDl = L(st.Str("BytesToDownload"));
+        var done = L(st.Str("BytesDownloaded"));
+        var status = (flags & Busy) != 0 ? "updating"
+            : (flags & UpdatePaused) != 0 ? "paused"
+            : (flags & (FilesMissing | FilesCorrupt)) != 0 ? "damaged"
+            : (flags & UpdateRequired) != 0 || (toDl > 0 && done < toDl) ? "update"
+            : (flags & 4) != 0 ? "current" : "unknown";
+        DateTime? updated = L(st.Str("LastUpdated")) is { } u and > 0 ? DateTimeOffset.FromUnixTimeSeconds(u).UtcDateTime : null;
+        return new SteamAppState(status, L(st.Str("SizeOnDisk")), toDl, done, updated, st.Str("buildid"));
+    }
+}
+
 public sealed class EpicDetector(string? manifestDir) : IDetector
 {
     public string Name => "Epic Games";

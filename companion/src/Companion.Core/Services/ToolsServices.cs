@@ -207,7 +207,8 @@ public sealed class NetworkMonitor : IDisposable
 // ============================================================ Storage
 
 public sealed class StorageFile { public Dictionary<string, SizeEntry> Sizes { get; set; } = new(); }
-public sealed class SizeEntry { public long Bytes { get; set; } public int Files { get; set; } public DateTime At { get; set; } public bool Partial { get; set; } }
+public sealed class SizeEntry { public long Bytes { get; set; } public int Files { get; set; } public DateTime At { get; set; } public bool Partial { get; set; } /// <summary>Size as reported by the launcher (Steam), not counted.</summary>
+    public bool FromLauncher { get; set; } }
 
 /// <summary>Drives and the size of each game's install folder. Folder sizes are computed only on request, one at a time.</summary>
 public sealed class StorageService
@@ -236,12 +237,21 @@ public sealed class StorageService
                 drives.Add(new { name = d.Name, label = d.VolumeLabel, total = d.TotalSize, free = d.AvailableFreeSpace, format = d.DriveFormat });
             }
             catch { /* drive vanished */ }
-        var items = _library.List().Where(i => !string.IsNullOrEmpty(i.InstallDir)).Select(i => new
+        var items = _library.List().Where(i => !string.IsNullOrEmpty(i.InstallDir)).Select(i =>
         {
-            i.Id, i.Name, i.Kind, i.InstallDir, exists = Directory.Exists(i.InstallDir),
-            size = sizes.TryGetValue(i.Id, out var e) ? e : null,
+            // Steam writes size and update state into its manifest – shown without computing anything. Other launchers
+            // (Epic, EA, …) do not write an update state that can be read reliably: "unknown" instead of a guess.
+            var steam = i.Source == LaunchSource.Steam ? SteamAppState.ForInstallDir(i.InstallDir, i.Target) : null;
+            var size = sizes.TryGetValue(i.Id, out var e) ? e
+                : steam?.SizeOnDisk is > 0 ? new SizeEntry { Bytes = steam.SizeOnDisk.Value, At = DateTime.UtcNow, FromLauncher = true } : null;
+            return new
+            {
+                i.Id, i.Name, i.Kind, i.InstallDir, exists = Directory.Exists(i.InstallDir), size,
+                launcher = i.Source.ToString().ToLowerInvariant(),
+                update = steam == null ? null : new { steam.Status, steam.BytesToDownload, steam.BytesDownloaded, steam.LastUpdated, steam.BuildId },
+            };
         }).OrderByDescending(x => x.size?.Bytes ?? -1).ToList();
-        return new { drives, items, scanning = _scanning };
+        return new { drives, items, scanning = _scanning, checkedAt = DateTime.UtcNow };
     }
 
     /// <summary>Computes folder sizes in the background (all items without size, or one item). Progress via "changed: storage".</summary>

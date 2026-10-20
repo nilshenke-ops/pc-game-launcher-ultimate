@@ -39,6 +39,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public PerformanceRecorder Perf { get; }
     public NetworkMonitor NetMonitor { get; }
     public StorageService Storage { get; }
+    public TransferService Transfer { get; }
+    public CaptureLibraryService Captures { get; }
     public GamePassService GamePass { get; }
     public CoverService Covers { get; }
     public SteamService Steam { get; }
@@ -98,6 +100,8 @@ public sealed class CompanionServices : IAsyncDisposable
         Perf = new PerformanceRecorder(Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
         NetMonitor = new NetworkMonitor(Rpc, () => Settings.Get().PingTargets);
         Storage = new StorageService(paths, Library, platform, Rpc);
+        Transfer = new TransferService(paths, platform, Rpc, Notifications);
+        Captures = new CaptureLibraryService(paths, Library, platform, Rpc);
         Updates.CreateRestorePoint = name =>
         {
             try { return Path.GetFileName(Backup.CreateZip(includeSounds: false, Path.Combine(paths.BackupsDir, $"{name}-{DateTime.Now:yyyyMMdd-HHmmss}.zip"))); }
@@ -180,8 +184,12 @@ public sealed class CompanionServices : IAsyncDisposable
         Widgets.Changed += () => Platform.DesktopWidgets.Sync(Widgets.DesktopWidgets());
         Platform.DesktopWidgets.Moved += Widgets.SetDesktopPosition;
         Platform.DesktopWidgets.Sync(Widgets.DesktopWidgets());
-        Obs.RecordingChanged += (active, path) => Notifications.Push("obs-record", Severity.Success, active ? "Aufnahme läuft" : "Aufnahme gespeichert", active ? "OBS nimmt auf." : path, "/overlay-settings");
-        Obs.ReplaySaved += path => Notifications.Push("obs-replay", Severity.Success, "Replay gespeichert", path, "/overlay-settings");
+        Obs.RecordingChanged += (active, path) =>
+        {
+            Notifications.Push("obs-record", Severity.Success, active ? "Aufnahme läuft" : "Aufnahme gespeichert", active ? "OBS nimmt auf." : path, active ? "/overlay-settings" : "/captures");
+            if (!active) Captures.RememberObsFile(path);
+        };
+        Obs.ReplaySaved += path => { Notifications.Push("obs-replay", Severity.Success, "Replay gespeichert", path, "/captures"); Captures.RememberObsFile(path); };
         Plugins.RunSteps = (steps, by) => Runner.RunAsync(steps, by);
         GameModePrograms.Report = (key, title, text) => Notifications.Push("gamemode:" + key, Severity.Info, title, text, "/profiles");
         Quests.Reached = (title, text) => Notifications.Push("quest:" + title, Severity.Success, title, text, "/quests");

@@ -141,3 +141,12 @@ Kosten des schnelleren Wiederverbindens: nur solange die App sichtbar ist und de
 | Kalender-Seite | – | 12 KB (4,5 KB gzip), eigener Chunk, erst beim Öffnen geladen |
 | PC: Erinnerungsprüfung | – | alle 30 s ein paar Datumsrechnungen im Speicher; Datei nur, wenn eine Erinnerung fällig ist |
 | Gerät: Erinnerungsprüfung | – | alle 30 s aus der gespeicherten Kopie, keine Anfrage an den PC |
+
+## 2.15.0 (20.10.2026)
+
+| | 2.14.0 | 2.15.0 |
+|---|---|---|
+| Haupt-Chunk | 377 KB (120 KB gzip) | 380 KB (121 KB gzip) – Speicher-Karte mit Update-Stand |
+| Dateien / Aufnahmen / Speicher | – | 11 KB / 12 KB / 0,5 KB, je eigener Chunk, erst beim Öffnen |
+| PC im Leerlauf | – | nichts Neues im Hintergrund: Aufnahmen werden nur beim Öffnen der Seite eingelesen (höchstens alle 2 min), Vorschaubilder nur für sichtbare Kacheln (24 je Anfrage, auf dem PC zwischengespeichert) |
+| Übertragung | – | Stücke zu 384 KB (base64 ≈ 512 KB je Nachricht), immer nur ein Stück im Speicher des Handys beim Senden |

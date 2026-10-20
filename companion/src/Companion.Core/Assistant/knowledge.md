@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.14.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.15.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -19,6 +19,21 @@ Die Startseite zeigt Widgets: laufendes Spiel, Favoriten, Quick Actions, PC-Wert
 Seite: /calendar
 Stichworte: kalender termin termine raid turnier lan party release erinnerung datum wiederholen ics google apple outlook
 Gaming-Kalender: Raids, Turniere, LAN-Partys, Releases. „Neuer Termin“: Titel, ganztägig oder mit Uhrzeit und Dauer, Wiederholen (täglich, wöchentlich, monatlich, optional bis zu einem Datum), Erinnerung (zum Beginn bis 1 Tag vorher), Spiel (dann hat der Termin einen Start-Knopf), Farbe, Notiz. Monatsansicht, Tagesliste und „Demnächst“. Funktioniert ohne PC: Termine werden auf dem Gerät gespeichert und beim Verbinden übertragen; gespeichert auf dem PC, also auf allen Geräten gleich. Erinnerungen: der PC meldet sie als Benachrichtigung (auch in der App); auf dem Handy erscheinen sie, solange die App offen ist – auch ohne PC („Hinweise erlauben“ unter „Mehr“). Export/Import als .ics für Google-, Apple- oder Outlook-Kalender. Wöchentliche Termine bleiben über die Zeitumstellung zur selben Uhrzeit. Ändern braucht das Recht „Verwalten“.
+
+## Dateien
+Seite: /files
+Stichworte: datei dateien übertragen senden schicken teilen upload download handy pc austausch ordner bild clip config offline behalten
+Dateien zwischen Handy und PC über einen Austausch-Ordner am PC (Windows: Downloads\Nexus Gaming Hub). „An den PC senden“ (mehrere Dateien, höchstens 200 MB pro Datei); ohne PC heißt der Knopf „Zum Senden vormerken“ – die Datei wartet auf dem Gerät (höchstens 500 MB zusammen) und wird beim Verbinden automatisch gesendet. „Auf dem PC“ zeigt den Ordner: Pfeil = aufs Gerät holen (am Handy über „Teilen“), Stecknadel = auf dem Gerät behalten (öffnet dann auch ohne PC), Papierkorb = am PC löschen. „Ordner am PC öffnen“ öffnet ihn im Explorer. Der PC öffnet oder startet empfangene Dateien nie selbst; unter Windows sind sie als „aus dem Internet“ markiert. Braucht das Recht „Verwalten“.
+
+## Aufnahmen (Screenshots und Clips)
+Seite: /captures
+Stichworte: aufnahmen screenshot screenshots clip clips video replay galerie bilder obs nvidia game bar steam favorit schlagwort papierkorb
+Alle Screenshots und Clips vom PC an einem Ort: Windows-Bildschirmfotos, Xbox Game Bar (Videos\Captures), Steam-Screenshots, NVIDIA (Videos\<Spiel>, nur Dateien erkannter Spiele – private Videos bleiben verborgen) und OBS (der Ordner kommt automatisch dazu, sobald OBS etwas speichert). Eigene Ordner am PC unter „Ordner“ hinzufügen. Filter Screenshots/Clips/Favoriten, Gruppen nach Spiel, Tag oder Ordner, Suche nach Name, Spiel und Schlagwort. Antippen öffnet das Bild bzw. lädt den Clip (bis 300 MB), „Aufs Gerät“ speichert ihn am Handy, „Papierkorb“ verschiebt ihn am PC in den Papierkorb (wiederherstellbar). Ohne PC: Liste und bereits gesehene Vorschaubilder bleiben auf dem Gerät; Favoriten und Schlagwörter werden vorgemerkt. Vorschaubilder liefert Windows selbst.
+
+## Speicher & Updates
+Seite: /storage
+Stichworte: speicher speicherplatz festplatte ssd laufwerk voll größe spiel groß update updates patch ausstehend steam reparieren
+Laufwerke mit freiem Platz, Größe jedes Spiels und Update-Stand. Steam meldet Größe und Update-Stand selbst (Aktuell, Update ausstehend mit Download-Größe, Wird aktualisiert, Pausiert, Dateien fehlen/beschädigt). Epic, EA und andere geben keinen lesbaren Update-Stand preis – dort steht ehrlich „Update-Stand unbekannt“. „Spielgrößen berechnen“ zählt die übrigen Ordner. Aktualisieren und Deinstallieren im jeweiligen Launcher. Ohne PC siehst du den letzten Stand.
 
 ## Mein Status (Aktivität)
 Seite: /

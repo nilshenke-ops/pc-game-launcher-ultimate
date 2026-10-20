@@ -116,6 +116,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   }, []);
   useEffect(() => { setMore(false); window.scrollTo({ top: 0 }); }, [loc.pathname]);
   // Sounds added while the PC was off are uploaded after every login.
+  useEffect(() => { void import("../lib/transfer").then((m) => m.startTransferSync((r) => {
+    if (r.sent) toast(t("{n} wartende Dateien an den PC gesendet", { n: r.sent }), "success");
+    if (r.failed) toast(t("{n} Dateien konnten nicht gesendet werden – Details unter „Dateien“", { n: r.failed }), "warning");
+  })); }, []);
   useEffect(() => startPendingSync((r) => {
     if (r.sent) toast(t("{n} gespeicherte Sounds auf den PC übertragen", { n: r.sent }), "success");
     if (r.failed) toast(t("{n} Sounds konnten nicht übertragen werden – Details im Soundboard", { n: r.failed }), "warning");

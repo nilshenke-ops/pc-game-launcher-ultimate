@@ -66,6 +66,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "calendar.save": (p) => t("Termin speichern {n}", { n: name(p, "title") }),
   "calendar.remove": () => t("Termin löschen"),
   "activity.set": () => t("Status ändern"),
+  "captures.update": (p) => p.favorite === true ? t("Aufnahme als Favorit markieren") : p.favorite === false ? t("Favorit entfernen") : t("Schlagwörter ändern"),
   "quests.saveGoal": (p) => t("Ziel speichern {n}", { n: name(p, "title") }),
   "quests.removeGoal": () => t("Ziel löschen"),
   "quests.addMatch": (p) => t("Match eintragen {n}", { n: name(p, "game") }),
@@ -261,6 +262,7 @@ function applyLocally(method: string, p: Params): unknown {
     // Event ids are made on the device too ("cal_…").
     case "calendar.save": patch<{ events: WithId[] }>("calendar.list", (d) => ({ ...d, events: upsert(d.events, p as unknown as WithId) })); return p;
     case "calendar.remove": patch<{ events: WithId[] }>("calendar.list", (d) => ({ ...d, events: d.events.filter((x) => x.id !== p.id) })); return true;
+    case "captures.update": patch<{ items: (WithId & Params)[] }>("captures.list", (d) => ({ ...d, items: d.items.map((i) => (i.id === p.id ? { ...i, ...(p.favorite != null ? { favorite: p.favorite } : {}), ...(p.tags ? { tags: p.tags } : {}) } : i)) })); return p;
     case "activity.set": patch<Params>("activity.get", (d) => ({ ...d, ...p, shared: true, updatedAt: new Date().toISOString() })); return p;
     // Goal, match and wish ids are made on the device (goal_/match_/wish_…), so a repeated send changes nothing on the PC.
     case "quests.saveGoal":

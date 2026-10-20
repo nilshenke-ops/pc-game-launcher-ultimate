@@ -24,6 +24,9 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Update-Wächter: Version, ob sie stabil lief, Zahl fehlgeschlagener Starts | `update-guard.json` | Datei löschen |
 | Kalender-Termine und bereits gezeigte Erinnerungen | `calendar.json` | Kalender → Termin löschen oder Datei löschen |
 | Eigener Status (Text, Dauer, Freigabe). Wird nur an gekoppelte Geräte gegeben – an Geräte mit nur Leserechten erst nach Freigabe; nie ins Internet | `activity.json` | Datei löschen |
+| Dateien vom/zum Handy | `Downloads\Nexus Gaming Hub\` (mit eigenem Datenordner: `transfer\`) | Dateien → Löschen oder im Explorer |
+| Aufnahmen: eigene Ordner, Favoriten, Schlagwörter | `captures.json` | Datei löschen |
+| Vorschaubilder der Aufnahmen (höchstens 3000) | `thumbs\` | Ordner löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |
 | Backups und Wiederherstellungspunkte | `backups\` (automatisch die neuesten 5) | Einstellungen → Backup oder Ordner löschen |
@@ -38,6 +41,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 - **Zwischenspeicher für den Offline-Betrieb:** Listen (Bibliothek, Sounds, Profile …), wartende Änderungen, noch nicht übertragene Sounds und Plugin-Dateien.
   - Ein OBS-Passwort, das offline eingegeben wurde, wartet hier **unverschlüsselt**, bis der PC es übernimmt.
 - **Kalender-Erinnerungen:** welche Erinnerungen dieses Gerät schon gezeigt hat (`pgl.calendar.reminded`, höchstens 300 Einträge).
+- **Dateien und Vorschaubilder:** zum Senden vorgemerkte und „offline behaltene“ Dateien (IndexedDB `pgl-files`, zusammen höchstens 500 MB) und gesehene Vorschaubilder der Aufnahmen (`pgl-thumbs`, höchstens 600). Entfernen über den Bereich „Dateien“ bzw. die Website-Daten des Browsers.
 - **Service Worker:** die App-Dateien, damit die Seite auch bei ausgeschaltetem PC öffnet. Bei jedem Update wird aufgeräumt.
 
 Alles löschen: Browser-Daten der Seite löschen oder in der App „PC verbinden“ → „Abmelden“.
