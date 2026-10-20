@@ -1,29 +1,27 @@
 {
-  "version": "2.16.0",
+  "version": "2.17.0",
   "date": "2026-10-20",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.16.0/PCGameLauncherCompanion.exe",
-  "size": 87472669,
-  "sha256": "7c0f4973d9e7ddce77eecbf94e7953e8c45b735f155edcd47a79ca27c5d22bba",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.17.0/PCGameLauncherCompanion.exe",
+  "size": 87434867,
+  "sha256": "c531f667d8469f8e1cb90c092a2db6affc040eac3999d660554cc8b50d5f3520",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.16.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.16.0/PCGameLauncherCompanion-2.16.0-win-x64.zip",
-    "size": 81738331,
-    "sha256": "889e2957f9454b250d035573f8d3af227709544299799cbf0979da106f509357"
+    "fileName": "PCGameLauncherCompanion-2.17.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.17.0/PCGameLauncherCompanion-2.17.0-win-x64.zip",
+    "size": 81699002,
+    "sha256": "af2f2015c339b6c1f3c3068401fbb9d64407852761a8ff17e4a3db3a78cd0d28"
   },
-  "notes": "Abläufe mit Fortschritt: Jede Quick Action zeigt Schritt für Schritt, was erledigt ist, was gerade läuft und was fehlgeschlagen ist – auf allen Geräten. „Abbrechen“ stoppt vor dem nächsten Schritt (auch mitten in einer Wartezeit); nach einem Abbruch lässt sich ein gewechseltes Profil zurücksetzen · „Läuft das auf meinem PC?“ für Steam-Spiele und die Wunschliste: Systemanforderungen aus dem Steam-Shop neben den echten Werten deines PCs; bewertet werden nur Arbeitsspeicher, Speicherplatz und Grafikspeicher – Prozessor und Grafikkarte zum selbst Vergleichen · Push-Benachrichtigungen aufs Handy, auch bei geschlossener App (Termine, Abläufe, Aufnahmen, Updates …): vom PC selbst verschlüsselt, Kategorien wählbar, Test-Knopf. iPhone/iPad: App auf dem Home-Bildschirm",
+  "notes": "Installieren am PC (Einstellungen → Installation & Autostart): eigener Programmordner, Startmenü-Eintrag, optional Desktop-Symbol, Autostart und Eintrag in „Apps & Features“ – ohne Administrator und ohne extra Setup-Programm · Deinstallieren aus der App oder über „Apps & Features“: entfernt Verknüpfungen, Autostart, Eintrag und Programmordner; Einstellungen und Daten bleiben auf Wunsch erhalten · Ein laufender Begleiter wird beim Deinstallieren über „Apps & Features“ von selbst beendet",
   "changes": {
     "neu": [
-      "Abläufe mit Fortschritt: Jede Quick Action zeigt Schritt für Schritt, was erledigt ist, was gerade läuft und was fehlgeschlagen ist – auf allen Geräten. „Abbrechen“ stoppt vor dem nächsten Schritt (auch mitten in einer Wartezeit); nach einem Abbruch lässt sich ein gewechseltes Profil zurücksetzen",
-      "„Läuft das auf meinem PC?“ für Steam-Spiele und die Wunschliste: Systemanforderungen aus dem Steam-Shop neben den echten Werten deines PCs; bewertet werden nur Arbeitsspeicher, Speicherplatz und Grafikspeicher – Prozessor und Grafikkarte zum selbst Vergleichen",
-      "Push-Benachrichtigungen aufs Handy, auch bei geschlossener App (Termine, Abläufe, Aufnahmen, Updates …): vom PC selbst verschlüsselt, Kategorien wählbar, Test-Knopf. iPhone/iPad: App auf dem Home-Bildschirm"
+      "Installieren am PC (Einstellungen → Installation & Autostart): eigener Programmordner, Startmenü-Eintrag, optional Desktop-Symbol, Autostart und Eintrag in „Apps & Features“ – ohne Administrator und ohne extra Setup-Programm",
+      "Deinstallieren aus der App oder über „Apps & Features“: entfernt Verknüpfungen, Autostart, Eintrag und Programmordner; Einstellungen und Daten bleiben auf Wunsch erhalten"
     ],
     "verbessert": [
-      "Benachrichtigungen lassen sich auch nach „Kalender“ filtern",
-      "Dieselbe Quick Action startet nicht doppelt, solange sie noch läuft"
+      "Ein laufender Begleiter wird beim Deinstallieren über „Apps & Features“ von selbst beendet"
     ],
     "behoben": []
   },
-  "signature": "1HsW4j8cQWvtvWebsRM2OkHqDtTzVM3CRyA4x75kJpKQ4yFfYRuqFQcwik4+bLp92eWVvorqQaqmcaSa2JvBzg=="
+  "signature": "cfPvpTaWbqJWFWFuleTfxax4JZJVwogrRZszMajIiL+KmiJpy4hHKkNZ89JJOgaTQb0ndbWkPocljYUC08Ixzw=="
 }
