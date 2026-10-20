@@ -198,6 +198,15 @@ public static class RpcApi
         rpc.Register("deck.list", _ => new { decks = s.Decks.List() });
         rpc.Register("deck.save", ctx => s.Decks.Save(ctx.Bind<Deck>()));
         rpc.Register("deck.remove", ctx => { s.Decks.Remove(ctx.Str("id", 64)); return true; });
+
+        // ------------------------------------------------------------ gaming calendar
+        rpc.Register("calendar.list", _ => new { events = s.Calendar.List() });
+        rpc.Register("calendar.save", ctx => s.Calendar.Save(ctx.Bind<CalendarEvent>()));
+        rpc.Register("calendar.remove", ctx => { s.Calendar.Remove(ctx.Str("id", 64)); return true; });
+
+        // ------------------------------------------------------------ activity status (only for the paired devices)
+        rpc.Register("activity.get", ctx => s.Activity.View(ctx.Session.Has(Permissions.Manage), DateTime.UtcNow));
+        rpc.Register("activity.set", ctx => { s.Activity.Set(ctx.Bind<ActivityFile>()); return s.Activity.View(true, DateTime.UtcNow); });
         rpc.Register("media.key", async ctx =>
         {
             var key = ctx.Str("key", 20);

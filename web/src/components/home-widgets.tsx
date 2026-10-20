@@ -4,17 +4,19 @@ import { Link } from "react-router-dom";
 import { Check, Circle, Dices, Play } from "lucide-react";
 import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { toast, useConn, useNow, useRpc } from "../lib/hooks";
+import { toast, useCan, useConn, useNow, useRpc } from "../lib/hooks";
 import { navItems } from "../lib/nav";
 import { DEFAULT_THEME, setPrefs, usePrefs } from "../lib/prefs";
 import { pickRandom, statusLabel } from "../lib/backlog";
 import { gradientFor } from "../lib/format";
 import type { LibraryItem } from "../lib/types";
-import { Button, Thumb } from "./ui";
+import { Button, Field, Modal, Switch, Thumb } from "./ui";
 import { DeckIcon, KeyFace } from "./deck-icons";
 import { slots, textOn, type Deck, type DeckKey } from "../lib/deck";
 import { runDeckAction } from "../lib/deck-run";
 import { useAppState } from "../lib/state";
+import { upcoming, whenText, type CalendarEvent } from "../lib/calendar";
+import { DURATIONS, effective, STATUSES, statusInfo, type ActivityView, type Status } from "../lib/activity";
 
 export const DEFAULT_SHORTCUTS = ["/deck", "/backlog", "/assistant", "/soundboard", "/games", "/settings"];
 
@@ -201,5 +203,100 @@ export function MiniDeckWidget() {
           aria-busy={busy === k.id} aria-label={k.label ?? ""} onClick={() => press(k)}><KeyFace k={k} item={items.get(k.action.ref ?? "")} /></button>
       ) : <span key={`e${i}`} />)}
     </div>
+  );
+}
+
+/** Next dates from the gaming calendar – also without the PC (the device's copy). */
+export function CalendarWidget() {
+  const q = useRpc<{ events: CalendarEvent[] }>("calendar.list", {}, ["calendar"]);
+  const now = new Date(useNow(60000));
+  const next = upcoming(q.data?.events ?? [], now, 30, 3);
+  if (!next.length) return <p className="small muted" style={{ margin: 0 }}>{t("Keine Termine in den nächsten 30 Tagen.")} <Link to="/calendar">{t("Termin anlegen")}</Link></p>;
+  return (
+    <div className="stack-sm">
+      {next.map((o) => (
+        <Link key={o.event.id + o.start.toISOString()} to="/calendar" className="cal-row" style={{ color: "inherit", textDecoration: "none" }}>
+          <span className="cal-bar" style={{ background: o.event.color ?? "var(--primary)" }} />
+          <span className="grow" style={{ minWidth: 0 }}><b className="ellipsis" style={{ display: "block" }}>{o.event.title}</b><span className="small muted">{whenText(o, now)}</span></span>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+/** Your activity status (and the game running on the PC) – set on the phone also without the PC. */
+export function ActivityWidget() {
+  const q = useRpc<ActivityView>("activity.get", {}, ["activity"]);
+  const conn = useConn();
+  const canSet = useCan("manage");
+  const now = useNow(30000);
+  const [open, setOpen] = useState(false);
+  const a = q.data;
+  if (a && !a.shared) return <p className="small muted" style={{ margin: 0 }}>{t("Der Status ist für dieses Gerät nicht freigegeben.")}</p>;
+  const cur = effective(a, now);
+  const info = statusInfo(cur.status);
+  // Without the PC the game shown last may have ended long ago – only shown live.
+  const playing = conn.phase === "online" && conn.auth === "ok" ? a?.playing : null;
+  const quick = async (status: Status) => {
+    try { await client.call("activity.set", { status, text: null, until: null, showGame: a?.showGame ?? true, share: a?.share ?? false }); } catch (err) { toast((err as Error).message, "error"); }
+  };
+  return (
+    <div className="stack-sm">
+      <button type="button" className="activity-now" onClick={() => canSet && setOpen(true)} disabled={!canSet} aria-label={t("Status ändern")}>
+        <span className="status-dot" style={{ background: info.color }} />
+        <span className="grow" style={{ minWidth: 0, textAlign: "left" }}>
+          <b className="ellipsis" style={{ display: "block" }}>{cur.text ? `${info.label()} · ${cur.text}` : info.label()}</b>
+          <span className="small muted ellipsis" style={{ display: "block" }}>
+            {playing ? t("Spielt {n}", { n: playing.name }) : cur.until ? t("bis {n}", { n: cur.until.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" }) }) : t("Kein Spiel läuft")}
+          </span>
+        </span>
+      </button>
+      {canSet && <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+        {STATUSES.filter((s) => s.id !== "invisible").map((s) => (
+          <button key={s.id} type="button" className={`chip ${cur.status === s.id ? "on" : ""}`} aria-pressed={cur.status === s.id} onClick={() => void quick(s.id)}>
+            <span className="status-dot sm" style={{ background: s.color }} />{s.label()}
+          </button>
+        ))}
+      </div>}
+      {open && <ActivityDialog value={a} onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+function ActivityDialog({ value, onClose }: { value: ActivityView | undefined; onClose: () => void }) {
+  const cur = effective(value);
+  const [status, setStatus] = useState<Status>(cur.status);
+  const [text, setText] = useState(cur.text ?? "");
+  const [minutes, setMinutes] = useState<number | null>(null);
+  const [showGame, setShowGame] = useState(value?.showGame ?? true);
+  const [share, setShare] = useState(!!value?.share);
+  const save = async () => {
+    const until = minutes == null ? null : new Date(Date.now() + minutes * 60000).toISOString();
+    try {
+      await client.call("activity.set", { status, text: text.trim() || null, until, showGame, share });
+      if (client.status.phase === "online") toast(t("Status gespeichert"), "success"); // offline the queue already says so
+      onClose();
+    }
+    catch (err) { toast((err as Error).message, "error"); }
+  };
+  return (
+    <Modal title={t("Mein Status")} onClose={onClose} footer={<><Button onClick={onClose}>{t("Abbrechen")}</Button><Button variant="primary" onClick={save}>{t("Speichern")}</Button></>}>
+      <div className="stack">
+        <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+          {STATUSES.map((s) => (
+            <button key={s.id} type="button" className={`chip ${status === s.id ? "on" : ""}`} aria-pressed={status === s.id} onClick={() => setStatus(s.id)}>
+              <span className="status-dot sm" style={{ background: s.color }} />{s.label()}
+            </button>
+          ))}
+        </div>
+        <Field label={t("Text (optional)")}><input className="input" value={text} maxLength={60} placeholder={t("z. B. Im Raid bis 22 Uhr")} onChange={(e) => setText(e.target.value)} /></Field>
+        <Field label={t("Dauer")}><select className="input" value={minutes ?? ""} onChange={(e) => setMinutes(e.target.value === "" ? null : Number(e.target.value))}>
+          {DURATIONS.map(([v, l]) => <option key={String(v)} value={v ?? ""}>{l()}</option>)}
+        </select></Field>
+        <Switch checked={showGame} onChange={setShowGame} label={t("Laufendes Spiel anzeigen")} hint={t("Der PC erkennt das Spiel selbst.")} />
+        <Switch checked={share} onChange={setShare} label={t("Für Geräte mit Leserechten sichtbar")}
+          hint={t("Aus: nur deine Geräte, die Einstellungen ändern dürfen, sehen den Status. Nichts wird ins Internet oder an Discord gesendet.")} />
+      </div>
+    </Modal>
   );
 }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartphone } from "lucide-react";
+import { Bell, ChevronDown, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartphone } from "lucide-react";
 import { client, exitDemo } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
@@ -9,7 +9,7 @@ import { arrangeNav, DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "..
 /** Colour of an area's symbol – only when colourful symbols are switched on (Leiste anpassen / Navigation). */
 const icStyle = (path: string, on: boolean) => (on ? { ["--ic" as string]: navColor(path) } : undefined);
 import { setPrefs, usePrefs } from "../lib/prefs";
-import { useConn, useEvent, toast } from "../lib/hooks";
+import { useConn, useConnectingSoon, useEvent, toast } from "../lib/hooks";
 import { useAppState } from "../lib/state";
 import { Banner, Button, Modal, Segmented } from "./ui";
 import { CommandPalette } from "./CommandPalette";
@@ -123,6 +123,8 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // Changes made without the PC are sent after every login, in order.
   useEffect(() => startOutboxSync((r) => toast(syncMessage(r), r.failed ? "warning" : "success")), []);
+  // Calendar reminders on this device (also without the PC, while the app is open); loaded separately from the main bundle.
+  useEffect(() => { void import("../lib/calendar-reminders").then((m) => m.startCalendarReminders()); }, []);
   useEffect(() => client.on("queued", () => toast(t("Gespeichert – wird übertragen, sobald der PC verbunden ist"), "info")), []);
   const waiting = useOutbox();
   const [appUpdated, setAppUpdated] = useState(false);
@@ -184,14 +186,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Banner>
           </div>
         )}
-        {preview && loc.pathname !== "/connect" && loc.pathname !== "/" && (
-          <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
-            <Banner kind="warn" title={conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden")} actions={
-              <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}>
-              {t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.")}
-            </Banner>
-          </div>
-        )}
         {appUpdated && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
             <Banner kind="info" title={t("Neue Version der App geladen")} actions={<Button size="sm" variant="primary" onClick={() => location.reload()}>{t("Neu laden")}</Button>}>
@@ -199,31 +193,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Banner>
           </div>
         )}
-        {waiting.length > 0 && (
-          <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
-            <Banner kind={waiting.some((w) => w.error) ? "error" : waiting.some((w) => needsConfirm(w)) ? "warn" : "info"} title={t("{n} Änderungen warten auf den PC", { n: waiting.length })}
-              actions={<Button size="sm" onClick={() => setShowOutbox(true)}>{t("Anzeigen")}</Button>}>
-              {waiting.some((w) => w.error) ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.")
-                : waiting.some((w) => needsConfirm(w)) ? t("Einige Änderungen (Plugins oder ältere) werden erst nach deiner Bestätigung übertragen.")
-                : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")}
-            </Banner>
-          </div>
-        )}
+        <StatusStrip preview={preview} waiting={waiting} home={loc.pathname === "/"} hidePreview={loc.pathname === "/connect"} onShowOutbox={() => setShowOutbox(true)} />
         {showOutbox && <OutboxDialog onClose={() => setShowOutbox(false)} />}
-        {!preview && conn.phase !== "online" && !client.demo && loc.pathname !== "/" && (
-          <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
-            <Banner kind="warn" title={conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")}
-              actions={<Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}>
-              {conn.everConnected ? t("Automatischer neuer Versuch läuft. Angezeigte Daten können veraltet sein.")
-                : t("Die App verbindet sich automatisch, sobald der PC an ist. Design und Layout kannst du schon jetzt unter Einstellungen ändern.")}
-            </Banner>
-          </div>
-        )}
-        {conn.relayCompanion === "offline" && (
-          <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>
-            <Banner kind="error" title={t("PC nicht erreichbar")}>{t("Das Relay ist erreichbar, aber der Companion auf deinem PC ist nicht verbunden. Ist der PC an und läuft der Companion?")}</Banner>
-          </div>
-        )}
 
         <main id="main" className="content" key={loc.pathname}>{children}</main>
       </div>
@@ -287,6 +258,47 @@ function OutboxDialog({ onClose }: { onClose: () => void }) {
 const MAX_BAR = 4;
 
 /** Phone bar: up to four own entries + "Mehr". "Verbinden" only while no PC is paired (afterwards the dot at the top shows the state). Long press = edit. */
+/** One small line instead of several large banners (they took half of a phone screen): connection state and waiting
+ * changes, with the explanation one tap away. */
+function StatusStrip({ preview, waiting, home, hidePreview, onShowOutbox }: { preview: boolean; waiting: ReturnType<typeof useOutbox>; home: boolean; hidePreview: boolean; onShowOutbox: () => void }) {
+  const conn = useConn();
+  const [open, setOpen] = useState(false);
+  const soon = useConnectingSoon();
+  const offline = !client.demo && !preview && conn.phase !== "online" && !soon;
+  const relayDown = conn.relayCompanion === "offline";
+  const showConn = (preview && !hidePreview && !home) || (offline && !home) || relayDown;
+  if (!showConn && waiting.length === 0) return null;
+  const error = waiting.some((w) => w.error), confirm = waiting.some((w) => needsConfirm(w));
+  const kind = relayDown || error ? "error" : preview || offline || confirm ? "warn" : "info";
+  const title = preview ? (conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden"))
+    : relayDown ? t("PC nicht erreichbar") : offline ? (conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")) : null;
+  const detail = [
+    preview ? t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.") : null,
+    relayDown ? t("Das Relay ist erreichbar, aber der Companion auf deinem PC ist nicht verbunden. Ist der PC an und läuft der Companion?") : null,
+    offline && !relayDown ? (conn.everConnected ? t("Automatischer neuer Versuch läuft. Angezeigte Daten können veraltet sein.") : t("Die App verbindet sich automatisch, sobald der PC an ist. Design und Layout kannst du schon jetzt unter Einstellungen ändern.")) : null,
+    waiting.length ? (error ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.") : confirm ? t("Einige Änderungen (Plugins oder ältere) werden erst nach deiner Bestätigung übertragen.") : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")) : null,
+  ].filter(Boolean);
+  return (
+    <div className={`status-strip ${kind}`} role="status">
+      <button type="button" className="ss-main" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <span className={`dot ${kind === "info" ? "ok" : kind === "warn" ? "warn" : "error"}`} />
+        <span className="ss-text">
+          {title && <b>{title}</b>}
+          {title && waiting.length > 0 && <span className="ss-sep"> · </span>}
+          {waiting.length > 0 && <span>{t("{n} Änderungen warten auf den PC", { n: waiting.length })}</span>}
+        </span>
+        <ChevronDown size={16} className={open ? "ss-chev open" : "ss-chev"} aria-hidden />
+      </button>
+      <span className="ss-actions">
+        {preview && !hidePreview && <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}
+        {offline && !relayDown && <Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}
+        {waiting.length > 0 && <Button size="sm" onClick={onShowOutbox}>{t("Anzeigen")}</Button>}
+      </span>
+      {open && <div className="ss-detail small">{detail.map((d) => <p key={d}>{d}</p>)}</div>}
+    </div>
+  );
+}
+
 function BottomBar({ items, preview, more, onMore, onEdit }: { items: NavItem[]; preview: boolean; more: boolean; onMore: () => void; onEdit: () => void }) {
   const prefs = usePrefs();
   const press = useRef<number | null>(null);

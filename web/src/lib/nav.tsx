@@ -1,4 +1,4 @@
-import { Activity, AudioLines, Bell, Bot, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
 export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
@@ -15,6 +15,7 @@ export function navItems(): NavItem[] {
     { path: "/", label: t("Home"), icon: Home, group: g.dash, keywords: "dashboard übersicht" },
     { path: "/deck", label: t("Deck"), icon: Grid3x3, group: g.dash, keywords: "stream deck tasten knöpfe raster tablet fernbedienung buttons elgato streamdeck" },
     { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
+    { path: "/calendar", label: t("Kalender"), icon: CalendarDays, group: g.dash, keywords: "termine raid turnier lan party release erinnerung datum woche monat ics" },
     { path: "/backlog", label: t("Backlog"), icon: ListTodo, group: g.dash, keywords: "noch spielen als nächstes durchgespielt pausiert priorität zufall spielplanung liste" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
     { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
@@ -58,7 +59,7 @@ export const ICONS: Record<string, LucideIcon> = {
 
 /** A fixed, vivid colour per area, so symbols are recognisable at a glance (not grey). */
 const NAV_COLORS: Record<string, string> = {
-  "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/quick": "#facc15", "/assistant": "#f472b6",
+  "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
   "/monitor": "#4ade80", "/network": "#38bdf8", "/history": "#fbbf24", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",

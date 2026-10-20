@@ -59,9 +59,9 @@ export const DEFAULT_THEME: Theme = {
 
 // ------------------------------------------------------------------ dashboard layouts
 
-export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck";
+export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck" | "calendar" | "activity";
 /** Widgets that are useful without a connected PC (shown on the home screen while offline). */
-export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck"]);
+export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity"]);
 /** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
 export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`;
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
@@ -91,6 +91,8 @@ export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSiz
   { id: "media", label: "Medien & Lautstärke", sizes: ["s", "m"] },
   { id: "timer", label: "Stoppuhr & Countdown", sizes: ["s", "m"] },
   { id: "deck", label: "Mini-Deck", sizes: ["m", "l"] },
+  { id: "calendar", label: "Termine", sizes: ["s", "m", "l"] },
+  { id: "activity", label: "Mein Status", sizes: ["s", "m", "l"] },
 ];
 
 export const DEFAULT_LAYOUT: Layout = {
@@ -101,6 +103,8 @@ export const DEFAULT_LAYOUT: Layout = {
     { id: "shortcuts", visible: true, size: "m" },
     { id: "start", visible: true, size: "m" },
     { id: "next", visible: true, size: "m" },
+    { id: "activity", visible: true, size: "s" },
+    { id: "calendar", visible: true, size: "m" },
     { id: "profile", visible: true, size: "s" },
     { id: "session", visible: true, size: "s" },
     { id: "favorites", visible: true, size: "l" },
@@ -179,6 +183,8 @@ export function sanitizePrefs(input: unknown): Prefs {
         const widgets: WidgetConf[] = l.widgets.filter((w) => typeof w?.id === "string" && known(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize }));
         // Layouts from before 2.7.0 get the new home widgets "Schnellstart" and "Als Nächstes spielen" right after the first widget.
         for (const id of ["next", "shortcuts"] as BuiltinWidgetId[]) if (!seen.has(id)) { seen.add(id); widgets.splice(Math.min(1, widgets.length), 0, { id, visible: true, size: "m" }); }
+        // Layouts from before 2.14.0 show "Mein Status" and "Termine" once (hidden by the user, they stay hidden).
+        for (const [id, size] of [["calendar", "m"], ["activity", "s"]] as [BuiltinWidgetId, WidgetSize][]) if (!seen.has(id)) { seen.add(id); widgets.splice(Math.min(3, widgets.length), 0, { id, visible: true, size }); }
         for (const w of ALL_WIDGETS) if (!seen.has(w.id)) widgets.push({ id: w.id, visible: false, size: w.sizes[0] });
         return { id: l.id.slice(0, 40), name: String(l.name ?? "Layout").slice(0, 40), widgets };
       })

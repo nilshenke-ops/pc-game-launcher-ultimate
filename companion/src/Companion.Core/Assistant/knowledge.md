@@ -1,6 +1,6 @@
 # Wissen des Nexus-Assistenten
 
-Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.13.
+Format: Jeder Abschnitt beginnt mit „## Titel“. Eine Zeile „Seite: /pfad“ verknüpft ihn mit einer Seite der App, „Stichworte:“ hilft der Suche. Diese Datei ist die Quelle für den lokalen Assistenten und für Claude. Stand: Version 2.14.
 
 ## Was ist der Nexus Gaming Hub?
 Stichworte: überblick app was kann programm begleiter companion webseite
@@ -13,7 +13,17 @@ Alle Daten liegen auf dem PC. Keine Telemetrie, keine Werbung, kein Konto.
 ## Home / Dashboard
 Seite: /
 Stichworte: start übersicht widgets layout dashboard startseite home schnellstart notizen uhr erste schritte leiste untere leiste navigation anpassen
-Die Startseite zeigt Widgets: laufendes Spiel, Favoriten, Quick Actions, PC-Werte, Soundboard, eigene Widgets und Plugin-Widgets, außerdem Schnellstart (große Kacheln zu Deck, Backlog, Assistent …; im „Anpassen“-Modus wählbar), Uhr & Datum, Notizen (nur auf dem Gerät), „Als Nächstes spielen“ (aus dem Backlog) und „Erste Schritte“. Ohne PC-Verbindung zeigt Home nur, was ohne PC funktioniert, und darunter, wie viele Widgets mit dem PC dazukommen. „Anpassen“ oben rechts: Widgets verschieben, Größe ändern, aus- und einblenden – geht auch ohne PC. Weitere Layouts (Handy und Desktop getrennt): Einstellungen → Design & Layout. Ein Profil kann ein Layout mitbringen. Untere Leiste am Handy: bis zu 4 eigene Bereiche plus „Mehr“; ändern durch langes Drücken auf die Leiste oder „Mehr“ → „Leiste anpassen“. „Verbinden“ steht nur in der Leiste, solange kein PC gekoppelt ist – danach zeigt der Punkt oben den Verbindungsstatus.
+Die Startseite zeigt Widgets: laufendes Spiel, Favoriten, Quick Actions, PC-Werte, Soundboard, eigene Widgets und Plugin-Widgets, außerdem Schnellstart (große Kacheln zu Deck, Backlog, Assistent …; im „Anpassen“-Modus wählbar), Uhr & Datum, Notizen (nur auf dem Gerät), „Als Nächstes spielen“ (aus dem Backlog), „Mein Status“, „Termine“ (aus dem Kalender) und „Erste Schritte“. Ohne PC-Verbindung zeigt Home nur, was ohne PC funktioniert, und darunter, wie viele Widgets mit dem PC dazukommen. „Anpassen“ oben rechts: Widgets verschieben, Größe ändern, aus- und einblenden – geht auch ohne PC. Weitere Layouts (Handy und Desktop getrennt): Einstellungen → Design & Layout. Ein Profil kann ein Layout mitbringen. Untere Leiste am Handy: bis zu 4 eigene Bereiche plus „Mehr“; ändern durch langes Drücken auf die Leiste oder „Mehr“ → „Leiste anpassen“. „Verbinden“ steht nur in der Leiste, solange kein PC gekoppelt ist – danach zeigt der Punkt oben den Verbindungsstatus. Ohne PC zeigt eine schmale Leiste oben „Offline – kein PC verbunden“ und wie viele Änderungen auf den PC warten („Anzeigen“ öffnet die Liste); antippen klappt Details auf.
+
+## Kalender
+Seite: /calendar
+Stichworte: kalender termin termine raid turnier lan party release erinnerung datum wiederholen ics google apple outlook
+Gaming-Kalender: Raids, Turniere, LAN-Partys, Releases. „Neuer Termin“: Titel, ganztägig oder mit Uhrzeit und Dauer, Wiederholen (täglich, wöchentlich, monatlich, optional bis zu einem Datum), Erinnerung (zum Beginn bis 1 Tag vorher), Spiel (dann hat der Termin einen Start-Knopf), Farbe, Notiz. Monatsansicht, Tagesliste und „Demnächst“. Funktioniert ohne PC: Termine werden auf dem Gerät gespeichert und beim Verbinden übertragen; gespeichert auf dem PC, also auf allen Geräten gleich. Erinnerungen: der PC meldet sie als Benachrichtigung (auch in der App); auf dem Handy erscheinen sie, solange die App offen ist – auch ohne PC („Hinweise erlauben“ unter „Mehr“). Export/Import als .ics für Google-, Apple- oder Outlook-Kalender. Wöchentliche Termine bleiben über die Zeitumstellung zur selben Uhrzeit. Ändern braucht das Recht „Verwalten“.
+
+## Mein Status (Aktivität)
+Seite: /
+Stichworte: status aktivität verfügbar beschäftigt abwesend nicht stören unsichtbar spielt gerade online freigabe
+Widget „Mein Status“ auf Home: Verfügbar, Beschäftigt, Abwesend, Nicht stören oder Unsichtbar, dazu ein kurzer Text („Im Raid bis 22 Uhr“) und eine Dauer (danach wieder „Verfügbar“). Das laufende Spiel erkennt der PC selbst („Spielt Rocket League“, abschaltbar). Der Status bleibt bei deinen gekoppelten Geräten – nichts geht ins Internet oder an Discord. Standard: nur Geräte mit dem Recht „Verwalten“ sehen ihn; „Für Geräte mit Leserechten sichtbar“ zeigt ihn auch z. B. einem Familien-Tablet. „Unsichtbar“ verbirgt auch das Spiel. Ohne PC änderbar (die letzte Änderung wird übertragen).
 
 ## Deck
 Seite: /deck

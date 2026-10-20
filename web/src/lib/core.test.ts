@@ -57,6 +57,16 @@ describe("protocol", () => {
 });
 
 describe("prefs", () => {
+  it("shows the 2.14 widgets once in older layouts, but keeps them hidden after the user hid them", () => {
+    const old = sanitizePrefs({ layouts: [{ id: "a", name: "A", widgets: [{ id: "status", visible: true, size: "m" }, { id: "next", visible: true, size: "m" }, { id: "shortcuts", visible: true, size: "m" }] }] });
+    expect(old.layouts[0].widgets.slice(0, 5).map((w) => w.id)).toEqual(["status", "next", "shortcuts", "activity", "calendar"]);
+    expect(old.layouts[0].widgets.find((w) => w.id === "activity")!.visible).toBe(true);
+    expect(old.layouts[0].widgets.find((w) => w.id === "calendar")!.visible).toBe(true);
+    const hidden = sanitizePrefs(old);
+    hidden.layouts[0].widgets.find((w) => w.id === "calendar")!.visible = false;
+    expect(sanitizePrefs(hidden).layouts[0].widgets.find((w) => w.id === "calendar")!.visible).toBe(false);
+  });
+
   it("sanitizes invalid input to safe defaults", () => {
     const p = sanitizePrefs({ theme: { primary: "red; background:url(x)", radius: 999, fontScale: -1, bgImage: "javascript:alert(1)" }, layouts: [{ id: "x", name: "X", widgets: [{ id: "status", visible: true, size: "zz" }, { id: "evil", visible: true, size: "s" }] }], lang: "fr" });
     expect(p.theme.primary).toBe(defaultPrefs().theme.primary);
@@ -65,7 +75,7 @@ describe("prefs", () => {
     expect(p.theme.bgImage).toBeNull();
     expect(p.layouts[0].widgets.find((w) => w.id === "status")!.size).toBe("m");
     expect(p.layouts[0].widgets.some((w) => (w.id as string) === "evil")).toBe(false);
-    expect(p.layouts[0].widgets.length).toBe(20); // all built-in widgets, each once
+    expect(p.layouts[0].widgets.length).toBe(22); // all built-in widgets, each once
     expect(["de", "en"]).toContain(p.lang);
   });
   it("keeps own widgets from the widget editor (custom:cw_…) and drops malformed ones", () => {
@@ -123,7 +133,7 @@ describe("navigation", () => {
   it("old dashboard layouts get the new home widgets once, own choices stay", () => {
     const old = sanitizePrefs({ layouts: [{ id: "l", name: "L", widgets: [{ id: "status", visible: true, size: "m" }, { id: "system", visible: true, size: "l" }] }] });
     const ids = old.layouts[0].widgets.filter((w) => w.visible).map((w) => w.id);
-    expect(ids).toEqual(["status", "shortcuts", "next", "system"]);
+    expect(ids).toEqual(["status", "shortcuts", "next", "activity", "calendar", "system"]);
     const again = sanitizePrefs(old);
     expect(again.layouts[0].widgets.filter((w) => w.visible).map((w) => w.id)).toEqual(ids);
     const hiddenByUser = sanitizePrefs({ layouts: [{ ...old.layouts[0], widgets: old.layouts[0].widgets.map((w) => (w.id === "next" ? { ...w, visible: false } : w)) }] });

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, RotateCcw,
   Grid3x3, LayoutGrid, ListTodo, Rocket, Timer, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
-  Puzzle, Shapes,
+  Puzzle, Shapes, CalendarDays, CircleUser,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -11,7 +11,7 @@ import { useConn, useConnectingSoon, useEvent, useLiveSubscription, useMediaQuer
 import { useAppState, usePlaying } from "../lib/state";
 import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
 import { OFFLINE_WIDGETS, type BuiltinWidgetId } from "../lib/prefs-core";
-import { ClockWidget, MediaWidget, MiniDeckWidget, NextWidget, NotesWidget, ShortcutsWidget, StartWidget, TimerWidget } from "../components/home-widgets";
+import { ActivityWidget, CalendarWidget, ClockWidget, MediaWidget, MiniDeckWidget, NextWidget, NotesWidget, ShortcutsWidget, StartWidget, TimerWidget } from "../components/home-widgets";
 import { parsePluginWidgetId, pluginWidgetId, type PluginList } from "../lib/plugins";
 import { PluginFrame } from "../components/PluginFrame";
 import { bytes, clock, relTime, since } from "../lib/format";
@@ -256,6 +256,8 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   media: { icon: <Music size={18} />, title: () => t("Medien & Lautstärke"), render: () => <MediaWidget /> },
   timer: { icon: <Timer size={18} />, title: () => t("Stoppuhr & Countdown"), render: () => <TimerWidget /> },
   deck: { icon: <Grid3x3 size={18} />, title: () => t("Mini-Deck"), render: () => <MiniDeckWidget />, link: "/deck" },
+  calendar: { icon: <CalendarDays size={18} />, title: () => t("Termine"), render: () => <CalendarWidget />, link: "/calendar" },
+  activity: { icon: <CircleUser size={18} />, title: () => t("Mein Status"), render: () => <ActivityWidget /> },
 };
 
 export default function Dashboard() {

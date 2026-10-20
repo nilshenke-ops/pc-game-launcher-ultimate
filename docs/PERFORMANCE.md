@@ -132,3 +132,12 @@ Realistisch: Handy-Browser mit eigenem Speicher über die LAN-Adresse, Begleiter
 | Layout-Shift beim Öffnen (Home/Soundboard/Assistent) | 0,229 / 0,136 / 0,103 | 0 / 0 / 0 |
 
 Kosten des schnelleren Wiederverbindens: nur solange die App sichtbar ist und der PC fehlt, alle 0,5 s eine HTTP-Anfrage an `/healthz` (wenige hundert Byte); im Hintergrund bleibt es bei 1–15 s. Hinweis zur Messung: Das Testwerkzeug wartet vor dem Klick, bis Elemente ruhig stehen (dadurch zeigte es früher ~100 ms mehr) – maßgeblich ist die Zeit ab dem echten Fingertipp.
+
+## 2.14.0 (20.10.2026)
+
+| | 2.13.0 | 2.14.0 |
+|---|---|---|
+| Haupt-Chunk | 374 KB (119 KB gzip) | 377 KB (120 KB gzip) – Statusleiste, Status-Widget, Kalender-Widget |
+| Kalender-Seite | – | 12 KB (4,5 KB gzip), eigener Chunk, erst beim Öffnen geladen |
+| PC: Erinnerungsprüfung | – | alle 30 s ein paar Datumsrechnungen im Speicher; Datei nur, wenn eine Erinnerung fällig ist |
+| Gerät: Erinnerungsprüfung | – | alle 30 s aus der gespeicherten Kopie, keine Anfrage an den PC |

@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.14.0 – 2026-10-20
+### Neu
+- Gaming-Kalender: Raids, Turniere, LAN-Partys und Releases mit Wiederholung, Erinnerung und Spiel-Start-Knopf; Monatsansicht, „Demnächst“, Home-Widget „Termine“; Export/Import als .ics (Google, Apple, Outlook). Funktioniert auch ohne PC – Termine werden beim Verbinden übertragen
+- Erinnerungen an Termine: am PC als Benachrichtigung (auch in der App), auf dem Handy auch ohne PC, solange die App offen ist
+- „Mein Status“: Verfügbar, Beschäftigt, Abwesend, Nicht stören, Unsichtbar – mit Text, Dauer und dem laufenden Spiel vom PC. Bleibt bei deinen Geräten (nichts geht ins Internet); für Geräte mit Leserechten nur, wenn du es freigibst. Auch ohne PC änderbar
+### Verbessert
+- Statt großer Banner zeigt eine schmale Leiste oben „Offline“ und wartende Änderungen; Details zum Aufklappen
+- Neue Widgets „Mein Status“ und „Termine“ erscheinen einmalig auch in bestehenden Home-Layouts (ausgeblendet bleiben sie ausgeblendet)
+
 ## 2.13.0 – 2026-10-20
 ### Neu
 - Original-Logos für Steam- und Epic-Spiele: Der PC liest das Symbol direkt aus der Spieldatei (z. B. RocketLeague.exe) – genau das Logo des Spiels, auch für schon vorhandene Spiele (einmalig im Hintergrund). Installer, Crash-Handler, Anti-Cheat- und Redist-Dateien werden dabei übersprungen

@@ -833,6 +833,20 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.getByRole("button", { name: "Bearbeiten beenden" }).click();
   await tablet.reload();
   await expect(tablet.locator(".deck-key", { hasText: "Tablet-Taste" }).locator('svg[aria-label="Discord"]')).toBeVisible();
+  // Calendar event and own status without the PC (2.14): shown at once, kept after reload, sent after pairing.
+  await tablet.goto(`${HOSTED_SITE}/#/calendar`);
+  await tablet.getByRole("button", { name: "Neuer Termin" }).click();
+  await tablet.getByRole("dialog").getByLabel("Titel").fill("Tablet-Raid");
+  await tablet.getByRole("dialog").getByRole("button", { name: "Speichern" }).click();
+  await expect(tablet.getByText("Tablet-Raid").first()).toBeVisible();
+  await tablet.goto(`${HOSTED_SITE}/#/`);
+  await tablet.locator(".activity-now").click();
+  await tablet.getByRole("dialog").getByRole("button", { name: "Nicht stören" }).click();
+  await tablet.getByRole("dialog").getByLabel("Text (optional)").fill("Tablet-Status");
+  await tablet.getByRole("dialog").getByRole("button", { name: "Speichern" }).click();
+  await tablet.reload();
+  await expect(tablet.locator(".activity-now")).toContainText("Nicht stören · Tablet-Status");
+  await expect(tablet.locator(".cw, .card", { hasText: "Termine" }).getByText("Tablet-Raid")).toBeVisible(); // home widget, from the device's copy
   // The assistant sets the app up without the PC: the request becomes a button, applied on tap, undoable.
   await tablet.goto(`${HOSTED_SITE}/#/assistant`);
   const say = tablet.getByRole("textbox", { name: "Nachricht an den Assistenten" });
@@ -907,6 +921,10 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await pc.goto(`${COMPANION}/#/deck`);
   await pc.getByLabel("Deck wählen").selectOption({ label: "Neues Deck" }); // waits until the PC's decks are loaded (two now)
   await expect(pc.locator(".deck-key", { hasText: "Tablet-Taste" }).locator('svg[aria-label="Discord"]')).toBeVisible();
+  // Calendar event and status from the tablet are on the PC.
+  await pc.goto(`${COMPANION}/#/calendar`);
+  await expect(pc.getByText("Tablet-Raid").first()).toBeVisible();
+  await expect.poll(() => { try { return readFileSync(join(state().dataDir, "activity.json"), "utf8"); } catch { return ""; } }).toContain("Tablet-Status");
 
   // QR path: the link fills in code and PC address automatically.
   const phone2 = await (await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" })).newPage();

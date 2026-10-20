@@ -22,6 +22,8 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Spielmodus: Programmliste, Schalter und – während eines Spiels – die Pfade der geschlossenen Programme (zum Wiederöffnen) | `gamemode-programs.json` | Profile → Spielmodus |
 | Zuletzt gesehene WLAN-Adresse(n) des PCs (um eine Änderung zu melden) | `lan-address.json` | Datei löschen |
 | Update-Wächter: Version, ob sie stabil lief, Zahl fehlgeschlagener Starts | `update-guard.json` | Datei löschen |
+| Kalender-Termine und bereits gezeigte Erinnerungen | `calendar.json` | Kalender → Termin löschen oder Datei löschen |
+| Eigener Status (Text, Dauer, Freigabe). Wird nur an gekoppelte Geräte gegeben – an Geräte mit nur Leserechten erst nach Freigabe; nie ins Internet | `activity.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |
 | Backups und Wiederherstellungspunkte | `backups\` (automatisch die neuesten 5) | Einstellungen → Backup oder Ordner löschen |
@@ -35,6 +37,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 - **Zugangscode der Webseite:** nur als gesalzener Hash. Er ist eine Sichtsperre, kein Schutz des PCs.
 - **Zwischenspeicher für den Offline-Betrieb:** Listen (Bibliothek, Sounds, Profile …), wartende Änderungen, noch nicht übertragene Sounds und Plugin-Dateien.
   - Ein OBS-Passwort, das offline eingegeben wurde, wartet hier **unverschlüsselt**, bis der PC es übernimmt.
+- **Kalender-Erinnerungen:** welche Erinnerungen dieses Gerät schon gezeigt hat (`pgl.calendar.reminded`, höchstens 300 Einträge).
 - **Service Worker:** die App-Dateien, damit die Seite auch bei ausgeschaltetem PC öffnet. Bei jedem Update wird aufgeräumt.
 
 Alles löschen: Browser-Daten der Seite löschen oder in der App „PC verbinden“ → „Abmelden“.

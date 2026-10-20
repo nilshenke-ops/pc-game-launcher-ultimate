@@ -47,6 +47,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public CaptureService Capture { get; }
     public CustomWidgetService Widgets { get; }
     public DeckService Decks { get; }
+    public CalendarService Calendar { get; }
+    public ActivityService Activity { get; }
     public BackupService Backup { get; }
     public QuestService Quests { get; }
     public DealService Deals { get; }
@@ -108,6 +110,8 @@ public sealed class CompanionServices : IAsyncDisposable
         Obs = new ObsService(Settings.Get, platform.Secrets, Rpc);
         Widgets = new CustomWidgetService(paths, Rpc);
         Decks = new DeckService(paths, Rpc);
+        Calendar = new CalendarService(paths, Rpc, Notifications);
+        Activity = new ActivityService(paths, Rpc, () => Sessions.Running().Select(r => (r.itemId, Library.Get(r.itemId)?.Name ?? "?", r.since)).ToList());
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
         Quests = new QuestService(paths, () => History.Export().Sessions, id => Library.Get(id)?.Name, Rpc);
@@ -199,6 +203,7 @@ public sealed class CompanionServices : IAsyncDisposable
             if (p.AutoSwitch && profileId != null && p.ActiveProfileId != profileId)
                 Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
+            Activity.GameChanged();
             _ = Automations.Fire(TriggerType.GameStarted, item.Id);
             _ = GameModePrograms.GameStartedAsync();
             UpdateGameMode();
@@ -215,6 +220,7 @@ public sealed class CompanionServices : IAsyncDisposable
             if (p.AutoSwitch && profileId != null && p.ActiveProfileId == profileId && !stillNeeded)
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
+            Activity.GameChanged();
             _ = Automations.Fire(TriggerType.GameStopped, item.Id);
             if (Sessions.Running().Count == 0) _ = GameModePrograms.AllGamesStoppedAsync();
             GameActivity.RunWhenIdle("quests", () => { try { Quests.Get(); } catch (Exception ex) { Log.Warn("quests", ex.Message); } return Task.CompletedTask; });
@@ -359,6 +365,7 @@ public sealed class CompanionServices : IAsyncDisposable
         GamePass.Start();
         Updates.StartAutoCheck();
         Covers.Start();
+        Calendar.Start();
         Plugins.Start();
         _ = Task.Run(Backup.EnsureAutoPoint);
         Steam.Start();
@@ -412,6 +419,7 @@ public sealed class CompanionServices : IAsyncDisposable
     {
         await Obs.DisposeAsync();
         Sessions.Dispose();
+        Calendar.Dispose();
         Monitor.Dispose();
         LanAddress.Dispose();
         GamePass.Dispose();

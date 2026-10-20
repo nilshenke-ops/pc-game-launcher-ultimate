@@ -274,6 +274,7 @@ public sealed class NotificationCenter
         "obs" or "capture" => "recording",
         "assistant" => "assistant",
         "gamemode" => "gamemode",
+        "calendar" => "calendar",
         _ => "system",
     };
 

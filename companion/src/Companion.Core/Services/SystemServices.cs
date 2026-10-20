@@ -475,7 +475,7 @@ public sealed class BackupService
     public const int Version = 1;
     const long MaxBackupBytes = 300L * 1024 * 1024;
     static readonly Regex SoundEntry = new(@"^sounds/snd_[0-9a-f]{12}\.(mp3|wav|flac|m4a|wma)$", RegexOptions.Compiled);
-    static readonly string[] Parts = { "settings", "library", "quickactions", "profiles", "automations", "hotkeys", "sounds", "audio", "history", "uiprefs", "widgets", "quests", "deals", "gamemode", "decks" };
+    static readonly string[] Parts = { "settings", "library", "quickactions", "profiles", "automations", "hotkeys", "sounds", "audio", "history", "uiprefs", "widgets", "quests", "deals", "gamemode", "decks", "calendar", "activity" };
 
     readonly AppPaths _paths;
     readonly CompanionServices _svc;
@@ -513,6 +513,8 @@ public sealed class BackupService
         Put("deals.json", _svc.Deals.Export());
         Put("gamemode.json", _svc.GameModePrograms.Export());
         Put("decks.json", _svc.Decks.Export());
+        Put("calendar.json", _svc.Calendar.Export());
+        Put("activity.json", _svc.Activity.Export());
         Put("uiprefs.json", new Dictionary<string, string?> { ["local"] = _svc.Devices.GetUiPrefs("local") });
         if (includeSounds)
             foreach (var s in _svc.Soundboard.Export().Sounds)
@@ -674,6 +676,8 @@ public sealed class BackupService
             if (zip.GetEntry("deals.json") != null) parts["deals"] = Parse<DealsFile>("deals");
             if (zip.GetEntry("gamemode.json") != null) parts["gamemode"] = Parse<GameModeProgramsFile>("gamemode");
             if (zip.GetEntry("decks.json") != null) parts["decks"] = Parse<DecksFile>("decks");
+            if (zip.GetEntry("calendar.json") != null) parts["calendar"] = Parse<CalendarFile>("calendar");
+            if (zip.GetEntry("activity.json") != null) parts["activity"] = Parse<ActivityFile>("activity");
 
             var files = new Dictionary<string, byte[]>();
             foreach (var e in zip.Entries.Where(e => e.FullName.StartsWith("sounds/") && e.Length > 0))
@@ -746,6 +750,8 @@ public sealed class BackupService
                 case "deals": _svc.Deals.ImportChecked((DealsFile)v.Parts[part]); break;
                 case "gamemode": _svc.GameModePrograms.ImportChecked((GameModeProgramsFile)v.Parts[part]); break;
                 case "decks": _svc.Decks.ImportChecked((DecksFile)v.Parts[part]); break;
+                case "calendar": _svc.Calendar.ImportChecked((CalendarFile)v.Parts[part]); break;
+                case "activity": _svc.Activity.ImportChecked((ActivityFile)v.Parts[part]); break;
             }
             restored.Add(part);
         }
