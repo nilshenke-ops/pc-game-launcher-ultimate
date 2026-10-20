@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { DesignProfileCard } from "../components/design-profile";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArchiveRestore, Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
@@ -190,6 +191,7 @@ function Design() {
         </div>
       </Card>
       <Layouts />
+      <DesignProfileCard />
       <Card>
         <div className="row">
           <Button icon={<RotateCcw size={16} />} onClick={async () => { if (await confirmDialog(t("Design zurücksetzen?"), t("Farben, Schrift und Hintergrund werden auf den Standard gesetzt. Layouts bleiben erhalten."))) setTheme({ ...DEFAULT_THEME }); }}>{t("Standard-Design wiederherstellen")}</Button>

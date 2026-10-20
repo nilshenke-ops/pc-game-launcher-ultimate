@@ -614,6 +614,14 @@ public static class RpcApi
             return true;
         });
 
+        // ------------------------------------------------------------ design profiles (user name + password, end-to-end encrypted)
+        rpc.Register("design.create", ctx => s.DesignAccounts.Create(ctx.Str("user", 40), ctx.Str("key", 64), ctx.Str("blob", DesignAccountService.MaxBlob)));
+        rpc.Register("design.load", ctx => s.DesignAccounts.Load(ctx.Str("user", 40), ctx.Str("key", 64), ctx.Session.Channel.RemoteIp));
+        rpc.Register("design.save", ctx => s.DesignAccounts.Save(ctx.Str("user", 40), ctx.Str("key", 64), ctx.Str("blob", DesignAccountService.MaxBlob), ctx.Session.Channel.RemoteIp));
+        rpc.Register("design.delete", ctx => { s.DesignAccounts.Delete(ctx.Str("user", 40), ctx.Str("key", 64), ctx.Session.Channel.RemoteIp); return true; });
+        rpc.Register("design.list", _ => s.DesignAccounts.List());
+        rpc.Register("design.remove", ctx => { s.DesignAccounts.Remove(ctx.Str("user", 40)); return true; });
+
         // ------------------------------------------------------------ installation (only at the PC itself)
         rpc.Register("install.status", _ => s.Platform.Installer.Status());
         rpc.Register("install.run", ctx =>

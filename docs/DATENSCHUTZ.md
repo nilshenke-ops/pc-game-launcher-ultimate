@@ -34,6 +34,8 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Fenster-Layouts (Programmname, Monitor, Position) | `window-layouts.json` | Fenster-Layouts → Löschen |
 | Tastenbelegung (Profile, Programmnamen, welche Taste was wird) – **keine** Tastendrücke, nichts wird mitgeschrieben | `input-remap.json` | Tastatur & Maus belegen → Löschen |
 | Gamer-Pass: Name und Symbol | nur im Browser des Geräts (`localStorage`, `pgl.gamerpass`) | Feld leeren oder Browserdaten löschen |
+| Design-Profile: Benutzername, Hash des Anmelde-Schlüssels, **verschlüsseltes** Design (der PC kann es nicht lesen; das Passwort wird nie übertragen) | `design-accounts.json` | Einstellungen → Design → Profil löschen, oder Datei löschen |
+| Widgets Zähler/Pausen-Erinnerung, vom Handy geprüfte Xbox-Preise | nur im Browser des Geräts (`pgl.widget.*`, `pgl.deals.ms`) | Browserdaten löschen |
 | OpenRGB-Verbindung (Adresse, Port) | `rgb.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
 | Logs (Fehler/Ereignisse, ohne Nachrichteninhalte) | `logs\` (rotierend) | Ordner löschen |
@@ -76,6 +78,7 @@ Alles löschen: Browser-Daten der Seite löschen oder in der App „PC verbinden
 | Deal Radar (aus, bis du es einschaltest; höchstens alle 6 h, nie während eines Spiels; Suche nur auf Knopfdruck) | Steam-Shop `store.steampowered.com` | IP-Adresse des PCs, App-IDs der Wunschliste bzw. der Suchbegriff, Shop-Land | Deal Radar → „Preise im Steam-Shop abfragen“ aus |
 | Deal Radar – Steam-Wunschliste (nur wenn Preisabfrage und „Steam-Wunschliste automatisch übernehmen“ an sind; mit jeder Prüfung) | Steam-Web-API `api.steampowered.com` (ohne API-Schlüssel) | IP-Adresse des PCs, deine Steam-ID, App-IDs für die Namen | Deal Radar → „Steam-Wunschliste automatisch übernehmen“ aus |
 | Deal Radar – Microsoft Store (nur wenn Preisabfrage und „Auch im Microsoft Store (Xbox) vergleichen“ an sind; mit jeder Prüfung) | Microsoft-Katalog `displaycatalog.mp.microsoft.com` | IP-Adresse des PCs, Spielname der Wunschliste, Shop-Land | Deal Radar → „Auch im Microsoft Store (Xbox) vergleichen“ aus |
+| Deal Radar ohne PC (nur wenn Preisabfrage und Xbox-Vergleich an sind; auf Knopfdruck oder nach dem Hinzufügen) | Microsoft-Katalog `displaycatalog.mp.microsoft.com`, **direkt vom Handy** | IP-Adresse des Handys, Spielname, Shop-Land | Deal Radar → „Auch im Microsoft Store (Xbox) vergleichen“ aus |
 | KI-Assistent „Lokale KI“ (Ollama) | die eingetragene Ollama-Adresse – normalerweise dieser PC (`127.0.0.1:11434`), sonst ein Gerät im Heimnetz; Internet-Adressen werden abgelehnt | Frage, Verlauf und abgefragte Daten – bleiben auf dem PC bzw. im Heimnetz | Assistent → Einrichten → „Lokal“ |
 | KI-Assistent mit Claude (nur wenn du einen Schlüssel einträgst und „Claude“ wählst; lokaler Modus sendet nichts) | Anthropic (`api.anthropic.com`) | deine Frage, der Gesprächsverlauf, die Wissensbasis der App und die Daten, die Claude dafür über Werkzeuge abfragt (z. B. Spielnamen, PC-Werte, Spielzeit, Wunschliste, Gerätename). Nie: Schlüssel, Passwörter, Tokens | Assistent → Einrichten → „Lokal“ oder Schlüssel löschen |
 | Game Pass | `catalog.gamepass.com`, `displaycatalog.mp.microsoft.com` | Markt (z. B. DE) | Game Pass ausschalten |

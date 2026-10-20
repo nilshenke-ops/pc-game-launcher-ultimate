@@ -198,3 +198,11 @@ Keine Laufzeitänderung: die Installation läuft nur auf Knopfdruck (Datei kopie
 ## 2.22.0 (20.10.2026)
 
 Keine neue Arbeit am PC: der Trophäenraum liest vorhandene Daten; die Karte zeichnet der Browser. Eigener Chunk, erst beim Öffnen geladen.
+
+## 2.23.0 (20.10.2026)
+
+| | 2.22.0 | 2.23.0 |
+|---|---|---|
+| PC | – | keine neue Hintergrundarbeit; Design-Profil nur beim Anmelden/Speichern (PBKDF2 einmal pro Anfrage, ~50 ms) |
+| Handy | – | Xbox-Prüfung nur auf Knopfdruck/nach dem Hinzufügen, nacheinander mit 350 ms Pause; Schlüssel-Ableitung beim Anmelden (~0,3–1 s auf dem Handy) |
+| Widgets | – | Ping und Controller fragen nur, solange sie sichtbar sind (Controller alle 60 s) |

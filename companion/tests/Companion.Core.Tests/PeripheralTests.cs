@@ -163,6 +163,34 @@ public class PeripheralTests
 
     // ------------------------------------------------------------------ window layouts with a simulated window manager
 
+    [Fact]
+    public void A_layout_made_without_the_pc_uses_positions_like_left_half_on_the_chosen_monitor()
+    {
+        using var dir = new TempDir();
+        var wm = new FakeWindows();
+        var svc = new WindowLayoutService(new AppPaths(dir.Path), wm, new NullHub());
+        svc.Save(new WindowLayout
+        {
+            Id = "lay_phone", Name = "Streamen",
+            Windows =
+            {
+                new LayoutWindow { Process = "Discord", Preset = "left", MonitorIndex = 1 },
+                new LayoutWindow { Process = "obs64", Preset = "max" },
+                new LayoutWindow { Process = "Spotify", Preset = "right" },
+            },
+        });
+        var r = svc.Apply("lay_phone");
+        Assert.Equal(new[] { true, true, false }, r.Select(x => x.Ok)); // Spotify is not open: skipped, nothing started
+        Assert.Equal((1L, 1920, 0, 1280, 1400, "normal"), wm.Placed[0]);  // left half of monitor 2 (2560×1400)
+        Assert.Equal((2L, 0, 0, 1920, 1040, "maximized"), wm.Placed[1]); // main monitor, maximized
+        Assert.Equal("Unbekannte Position.", Assert.Throws<RpcException>(() => svc.Save(new WindowLayout { Id = "lay_x", Name = "x", Windows = { new LayoutWindow { Process = "a", Preset = "diagonal" } } })).Message);
+        // Monitor 3 does not exist: main monitor instead, said so.
+        svc.Save(new WindowLayout { Id = "lay_3", Name = "Drei", Windows = { new LayoutWindow { Process = "Discord", Preset = "right", MonitorIndex = 2 } } });
+        var r3 = svc.Apply("lay_3").Single();
+        Assert.Contains("Monitor 3", r3.Result);
+        Assert.Equal((1L, 960, 0, 960, 1040, "normal"), wm.Placed[2]);
+    }
+
     sealed class FakeWindows : IWindowManager
     {
         public List<MonitorInfo> Mons = new() { new("\\\\.\\DISPLAY1", "Monitor 1", 0, 0, 1920, 1040, true), new("\\\\.\\DISPLAY2", "Monitor 2", 1920, 0, 2560, 1400, false) };

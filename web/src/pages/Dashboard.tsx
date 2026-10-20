@@ -4,7 +4,9 @@ import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, RotateCcw,
   Grid3x3, LayoutGrid, ListTodo, Rocket, Timer, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
   Puzzle, Shapes, CalendarDays, CircleUser,
+  Coffee, Dices, Gamepad, Hash, Hourglass, Tag, Target, Trophy,
 } from "lucide-react";
+import { BreakWidget, ControllerWidget, CounterWidget, DealsWidget, GoalsWidget, LevelWidget, PingWidget, RandomGameWidget, TodayWidget } from "../components/game-widgets";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useConnectingSoon, useEvent, useLiveSubscription, useMediaQuery, useRpc } from "../lib/hooks";
@@ -258,6 +260,15 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   deck: { icon: <Grid3x3 size={18} />, title: () => t("Mini-Deck"), render: () => <MiniDeckWidget />, link: "/deck" },
   calendar: { icon: <CalendarDays size={18} />, title: () => t("Termine"), render: () => <CalendarWidget />, link: "/calendar" },
   activity: { icon: <CircleUser size={18} />, title: () => t("Mein Status"), render: () => <ActivityWidget /> },
+  counter: { icon: <Hash size={18} />, title: () => t("Zähler"), render: () => <CounterWidget /> },
+  break: { icon: <Coffee size={18} />, title: () => t("Pausen-Erinnerung"), render: () => <BreakWidget /> },
+  today: { icon: <Hourglass size={18} />, title: () => t("Spielzeit heute"), render: () => <TodayWidget />, link: "/history" },
+  ping: { icon: <Wifi size={18} />, title: () => t("Ping"), render: () => <PingWidget />, link: "/network" },
+  goals: { icon: <Target size={18} />, title: () => t("Aktive Ziele"), render: () => <GoalsWidget />, link: "/quests" },
+  level: { icon: <Trophy size={18} />, title: () => t("Level & XP"), render: () => <LevelWidget />, link: "/trophies" },
+  deals: { icon: <Tag size={18} />, title: () => t("Deals"), render: () => <DealsWidget />, link: "/deals" },
+  controller: { icon: <Gamepad size={18} />, title: () => t("Controller-Akku"), render: () => <ControllerWidget />, link: "/peripherals" },
+  random: { icon: <Dices size={18} />, title: () => t("Zufallsspiel"), render: () => <RandomGameWidget /> },
 };
 
 export default function Dashboard() {

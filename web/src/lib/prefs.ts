@@ -35,6 +35,7 @@ export function setPrefs(update: (p: Prefs) => Prefs, opts: { sync?: boolean } =
   setLanguage(prefs.lang);
   listeners.forEach((l) => l());
   if (opts.sync !== false) scheduleSync();
+  changeListeners.forEach((l) => l());
 }
 
 /** Saves preferences on the companion as well, so the design survives clearing the browser and follows the device. */
@@ -60,6 +61,13 @@ export async function loadRemotePrefs() {
     } else if (remote.updatedAt < prefs.updatedAt) scheduleSync();
   } catch { /* offline: local copy stays active */ }
 }
+
+/** Called after every own change of the design (not for loading). Returns the unsubscribe function. */
+const changeListeners = new Set<() => void>();
+export function onPrefsChange(fn: () => void) { changeListeners.add(fn); return () => { changeListeners.delete(fn); }; }
+
+/** Puts a whole design on this device (design profile, design code) and saves it like an own change. */
+export function replacePrefs(p: Prefs) { setPrefs(() => p); }
 
 export function usePrefs(): Prefs {
   return useSyncExternalStore((fn) => { listeners.add(fn); return () => listeners.delete(fn); }, () => prefs);

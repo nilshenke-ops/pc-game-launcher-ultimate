@@ -8,13 +8,14 @@ import { toast, useAction, useCan, useConn, useRpc } from "../lib/hooks";
 import { dateTime, gradientFor, initials, relTime } from "../lib/format";
 import { clientId, lowestSeen, money, parsePrice, priceInput } from "../lib/quest-deal";
 import { CompatPanel } from "../components/compat-panel";
+import { fetchMsPrice, phonePrices, savePhonePrice, type MsResult } from "../lib/ms-store";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Sparkline, Switch } from "../components/ui";
 
 interface Wish {
   id: string; title: string; steamAppId?: string | null; targetCents?: number | null; notes?: string | null; addedAt?: string;
   currency?: string | null; finalCents?: number | null; initialCents?: number | null; discountPercent?: number | null;
   checkedAt?: string | null; error?: string | null; history?: { at: string; final: number; initial: number }[];
-  fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null;
+  fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null; msFromPhone?: number | null;
 }
 interface DealData {
   enabled: boolean; country: string; lastRunAt?: string | null; source: string; msSource?: string; intervalHours: number; items: Wish[];
@@ -67,7 +68,7 @@ function WishEditor({ wish, onClose }: { wish: Wish; onClose: () => void }) {
 
 /** "Just type the name": with the PC the game is found right away (Steam and Microsoft Store); without the PC the name
  * is kept and the PC finds the game at the next check. */
-function QuickAdd({ data, disabled }: { data: DealData; disabled: boolean }) {
+function QuickAdd({ data, disabled, onQueued }: { data: DealData; disabled: boolean; onQueued?: (id: string, title: string) => void }) {
   const conn = useConn();
   const online = conn.auth === "ok" && conn.phase === "online";
   const [title, setTitle] = useState("");
@@ -82,7 +83,9 @@ function QuickAdd({ data, disabled }: { data: DealData; disabled: boolean }) {
         toast(w.steamAppId ? t("„{n}“ gefunden und hinzugefügt", { n: w.title }) : t("„{n}“ hinzugefügt – das Spiel wird bei der nächsten Prüfung gesucht", { n: w.title }), "success");
       } else {
         // The outbox confirms with its own "saved – sent when the PC is connected" note.
-        await client.call("deals.save", { id: clientId("wish"), title: name, steamAppId: null, targetCents: null });
+        const id = clientId("wish");
+        await client.call("deals.save", { id, title: name, steamAppId: null, targetCents: null });
+        onQueued?.(id, name);
       }
       setTitle("");
     } catch (e) { toast((e as Error).message, "error"); }
@@ -168,6 +171,7 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
               {w.msInitialCents != null && w.msInitialCents > w.msFinalCents && <s className="muted small">{money(w.msInitialCents, w.msCurrency)}</s>}
               {w.msTitle && w.msTitle !== w.title && <span className="tiny muted">{w.msTitle}</span>}
             </> : <span className="small muted">{w.msError ?? (data.compareMicrosoft === false ? t("Vergleich ist aus") : t("Noch nicht geprüft"))}</span>}
+            {w.msFromPhone && <span className="tiny muted">{t("vom Handy geprüft {d}", { d: relTime(w.msFromPhone) })}</span>}
             {w.msProductId && <a className="btn sm" href={`https://www.xbox.com/de-DE/games/store/p/${w.msProductId}`} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Im Microsoft Store öffnen")}</a>}
           </div>
           <div className={`deal-store-box ${c === "steam" ? "best" : ""}`}>
@@ -272,6 +276,15 @@ function SearchCard({ data, disabled }: { data: DealData; disabled: boolean }) {
   );
 }
 
+/** Overlays a price the phone fetched itself if it is newer than the PC's last check. */
+function withPhone(w: Wish, r?: MsResult): Wish {
+  if (!r) return w;
+  const pcAt = w.checkedAt ? Date.parse(w.checkedAt) : 0;
+  if (r.at <= pcAt && w.msFinalCents != null) return w;
+  if ("error" in r) return w.msFinalCents != null ? w : { ...w, msError: r.error, msFromPhone: r.at };
+  return { ...w, msProductId: r.productId, msTitle: r.title, msFinalCents: r.finalCents, msInitialCents: r.initialCents, msCurrency: r.currency, msImage: w.msImage ?? r.image ?? null, msError: null, msFromPhone: r.at };
+}
+
 /** Deal Radar: wish list as tiles (store picture, Xbox and Steam price); a tap shows the details and the price history. */
 export default function Deals() {
   const q = useRpc<DealData>("deals.list", {}, ["deals"]);
@@ -280,7 +293,26 @@ export default function Deals() {
   const online = conn.auth === "ok" && conn.phase === "online";
   const [edit, setEdit] = useState<Wish | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
-  const d = q.data;
+  const raw = q.data;
+  // Without the PC the phone asks the Microsoft Store itself; its newer prices are shown instead of the PC's older ones.
+  const [phone, setPhone] = useState<Record<string, MsResult>>(phonePrices);
+  const [checking, setChecking] = useState<{ done: number; of: number } | null>(null);
+  const d = raw && { ...raw, items: raw.items.map((w) => withPhone(w, phone[w.id])) };
+  const msAllowed = !!raw?.enabled && raw.compareMicrosoft !== false;
+  const checkFromPhone = async (only?: { id: string; title: string }[]) => {
+    if (!raw || checking) return;
+    const list = (only ?? raw.items.map((w) => ({ id: w.id, title: w.title }))).slice(0, 60);
+    setChecking({ done: 0, of: list.length });
+    for (let i = 0; i < list.length; i++) {
+      const r = await fetchMsPrice(list[i].title, raw.country);
+      savePhonePrice(list[i].id, r);
+      setPhone(phonePrices());
+      setChecking({ done: i + 1, of: list.length });
+      if (i < list.length - 1) await new Promise((res) => setTimeout(res, 350)); // gently, one after the other
+    }
+    setChecking(null);
+  };
+  const lastPhone = Math.max(0, ...Object.values(phone).map((v) => v.at));
   const configure = (p: { enabled?: boolean }) => client.call("deals.configure", p).then(() => saved(conn.auth === "ok"), (e: Error) => toast(e.message, "error"));
   // Reached targets first, then the biggest discount.
   const items = [...(d?.items ?? [])].sort((a, b) => Number(isHit(b)) - Number(isHit(a)) || (b.discountPercent ?? 0) - (a.discountPercent ?? 0) || a.title.localeCompare(b.title));
@@ -293,7 +325,13 @@ export default function Deals() {
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {d && (
           <div className="stack">
-            <QuickAdd data={d} disabled={!canManage} />
+            <QuickAdd data={d} disabled={!canManage} onQueued={(id, title) => { if (msAllowed) void checkFromPhone([{ id, title }]); }} />
+            {!online && msAllowed && d.items.length > 0 && (
+              <div className="deal-phone">
+                <span className="small">{checking ? t("Prüfe Xbox-Preise … {n}/{m}", { n: checking.done, m: checking.of }) : lastPhone ? t("Ohne PC: Xbox-Preise prüft das Handy selbst (zuletzt {d}). Steam-Preise sind vom letzten Abgleich am PC.", { d: relTime(lastPhone) }) : t("Ohne PC: das Handy kann die Xbox-Preise selbst beim Microsoft Store prüfen. Steam-Preise kommen vom PC.")}</span>
+                <Button size="sm" icon={<RefreshCw size={15} />} busy={!!checking} onClick={() => void checkFromPhone()}>{t("Xbox-Preise prüfen")}</Button>
+              </div>
+            )}
             {!d.enabled && <Banner kind="info">{t("Die Preisabfrage ist aus – deshalb gibt es noch keine Preise.")} {canManage && <Button size="sm" variant="primary" onClick={() => configure({ enabled: true })}>{t("Einschalten")}</Button>}</Banner>}
             {d.wishlistError && <Banner kind="warn">{d.wishlistError}</Banner>}
             {items.length === 0 ? (

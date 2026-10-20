@@ -19,6 +19,11 @@ public sealed class LayoutWindow
     public int Width { get; set; }
     public int Height { get; set; }
     public string State { get; set; } = "normal";
+    /// <summary>Position as a preset instead of exact pixels (made without the PC): max, left, right, top, bottom,
+    /// top-left, top-right, bottom-left, bottom-right, center. Computed from the monitor when the layout is applied.</summary>
+    public string? Preset { get; set; }
+    /// <summary>With a preset: which monitor (0 = main monitor, 1 = the next one …) if no monitor id is stored.</summary>
+    public int? MonitorIndex { get; set; }
 }
 
 public sealed class WindowLayout
@@ -43,6 +48,18 @@ public sealed class WindowLayoutService
     static readonly Regex Id = new("^lay_[A-Za-z0-9_-]{1,40}$");
     static readonly Regex Proc = new(@"^[A-Za-z0-9 ._()\-]{1,80}$");
     static readonly string[] States = { "normal", "maximized", "minimized" };
+    public static readonly string[] Presets = { "max", "left", "right", "top", "bottom", "top-left", "top-right", "bottom-left", "bottom-right", "center" };
+
+    /// <summary>Rectangle of a preset on a monitor (work area) – relative to the monitor's top left corner.</summary>
+    public static (int x, int y, int w, int h) PresetRect(string preset, int mw, int mh) => preset switch
+    {
+        "left" => (0, 0, mw / 2, mh), "right" => (mw - mw / 2, 0, mw / 2, mh),
+        "top" => (0, 0, mw, mh / 2), "bottom" => (0, mh - mh / 2, mw, mh / 2),
+        "top-left" => (0, 0, mw / 2, mh / 2), "top-right" => (mw - mw / 2, 0, mw / 2, mh / 2),
+        "bottom-left" => (0, mh - mh / 2, mw / 2, mh / 2), "bottom-right" => (mw - mw / 2, mh - mh / 2, mw / 2, mh / 2),
+        "center" => (mw / 6, mh / 6, mw * 2 / 3, mh * 2 / 3),
+        _ => (0, 0, mw, mh),
+    };
     readonly JsonStore<WindowLayoutsFile> _store;
     readonly IWindowManager _wm;
     readonly IHub _hub;
@@ -92,6 +109,13 @@ public sealed class WindowLayoutService
         {
             if (!Proc.IsMatch(w.Process ?? "")) throw new RpcException("invalid-params", "Ungültiger Programmname.");
             if (!States.Contains(w.State)) throw new RpcException("invalid-params", "Ungültiger Fensterzustand.");
+            if (w.Preset != null)
+            {
+                if (!Presets.Contains(w.Preset)) throw new RpcException("invalid-params", "Unbekannte Position.");
+                if (w.MonitorIndex is < 0 or > 8) throw new RpcException("invalid-params", "Ungültiger Monitor.");
+                if (w.Preset == "max") w.State = "maximized";
+                w.X = w.Y = 0; w.Width = Math.Max(w.Width, 100); w.Height = Math.Max(w.Height, 80);
+            }
             if (w.Width is < 100 or > 16000 || w.Height is < 80 or > 16000 || Math.Abs(w.X) > 16000 || Math.Abs(w.Y) > 16000) throw new RpcException("invalid-params", "Ungültige Fenstergröße.");
             w.TitleContains = string.IsNullOrWhiteSpace(w.TitleContains) ? null : DeviceStore.Sanitize(w.TitleContains, 60, "");
             w.MonitorId = (w.MonitorId ?? "").Length > 64 ? "" : w.MonitorId ?? "";
@@ -121,10 +145,19 @@ public sealed class WindowLayoutService
         {
             var w = windows.FirstOrDefault(x => x.Process.Equals(e.Process, StringComparison.OrdinalIgnoreCase) && (e.TitleContains == null || x.Title.Contains(e.TitleContains, StringComparison.OrdinalIgnoreCase)));
             if (w == null) { results.Add(new LayoutResult(e.Process, "nicht geöffnet – übersprungen", false)); continue; }
-            var m = monitors.FirstOrDefault(x => x.Id == e.MonitorId);
+            var ordered = monitors.OrderByDescending(x => x.Primary).ThenBy(x => x.X).ThenBy(x => x.Y).ToList();
+            var m = e.MonitorId.Length > 0 ? monitors.FirstOrDefault(x => x.Id == e.MonitorId)
+                : e.MonitorIndex is int mi ? ordered.ElementAtOrDefault(mi) : ordered.FirstOrDefault();
             var note = "";
-            if (m == null) { m = monitors.FirstOrDefault(x => x.Primary) ?? monitors.FirstOrDefault(); note = $" (Monitor „{e.MonitorName ?? e.MonitorId}“ fehlt – auf den Hauptmonitor)"; }
+            if (m == null) { m = monitors.FirstOrDefault(x => x.Primary) ?? monitors.FirstOrDefault(); note = $" (Monitor „{e.MonitorName ?? (e.MonitorIndex is int mi2 ? $"Monitor {mi2 + 1}" : e.MonitorId)}“ fehlt – auf den Hauptmonitor)"; }
             if (m == null) { results.Add(new LayoutResult(e.Process, "kein Monitor gefunden", false)); continue; }
+            if (e.Preset != null)
+            {
+                var (px, py, pw, ph) = PresetRect(e.Preset, m.Width, m.Height);
+                var perr = _wm.Place(w.Handle, m.X + px, m.Y + py, pw, ph, e.Preset == "max" ? "maximized" : "normal");
+                results.Add(new LayoutResult(e.Process, perr ?? ("an seinen Platz" + note), perr == null));
+                continue;
+            }
             // Keep the window on the monitor even if that one is smaller now.
             var width = Math.Min(e.Width, m.Width); var height = Math.Min(e.Height, m.Height);
             var x = m.X + Math.Clamp(e.X, 0, Math.Max(0, m.Width - width));

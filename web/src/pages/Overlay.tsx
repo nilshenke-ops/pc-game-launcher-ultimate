@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
-  Activity, AudioLines, Bell, Check, Clock, Gamepad2, Grid3x3, Headphones, LayoutGrid, ListTodo, Music, Music2, Puzzle, RotateCcw, Shapes, Star, StickyNote, Swords, Timer, Video, X, Zap,
+  Activity, AudioLines, Bell, Check, Coffee, Dices, Gamepad, Hash, Hourglass, Tag, Target, Trophy, Wifi, Clock, Gamepad2, Grid3x3, Headphones, LayoutGrid, ListTodo, Music, Music2, Puzzle, RotateCcw, Shapes, Star, StickyNote, Swords, Timer, Video, X, Zap,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -22,6 +22,8 @@ const ICONS: Record<OverlayBuiltin, ReactNode> = {
   recent: <Clock size={18} />, audio: <Headphones size={18} />, playing: <AudioLines size={18} />, profile: <Swords size={18} />,
   session: <Gamepad2 size={18} />, notifications: <Bell size={18} />, deck: <Grid3x3 size={18} />, media: <Music2 size={18} />, timer: <Timer size={18} />,
   clock: <Clock size={18} />, notes: <StickyNote size={18} />, next: <ListTodo size={18} />,
+  counter: <Hash size={18} />, break: <Coffee size={18} />, today: <Hourglass size={18} />, ping: <Wifi size={18} />, goals: <Target size={18} />,
+  level: <Trophy size={18} />, deals: <Tag size={18} />, controller: <Gamepad size={18} />, random: <Dices size={18} />,
 };
 
 interface Entry { id: string; title: string; icon: ReactNode; render: () => ReactNode }

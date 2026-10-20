@@ -6,7 +6,7 @@ import { hmacSha256, loginProof, sha256, toHex, utf8 } from "./sha256";
 import { en } from "./en";
 // @ts-expect-error plain JS helper shared with the CLI script
 import { collectKeys } from "../../scripts/i18n-keys.mjs";
-import { contrast, defaultPrefs, sanitizePrefs } from "./prefs-core";
+import { ALL_WIDGETS, contrast, defaultPrefs, sanitizePrefs } from "./prefs-core";
 import { templates } from "./custom-widgets";
 import { connectionQuality } from "./net-quality";
 import { arrangeNav, navItems } from "./nav";
@@ -75,7 +75,8 @@ describe("prefs", () => {
     expect(p.theme.bgImage).toBeNull();
     expect(p.layouts[0].widgets.find((w) => w.id === "status")!.size).toBe("m");
     expect(p.layouts[0].widgets.some((w) => (w.id as string) === "evil")).toBe(false);
-    expect(p.layouts[0].widgets.length).toBe(22); // all built-in widgets, each once
+    expect(p.layouts[0].widgets.length).toBe(ALL_WIDGETS.length); // all built-in widgets, each once
+    expect(new Set(p.layouts[0].widgets.map((w) => w.id)).size).toBe(ALL_WIDGETS.length);
     expect(["de", "en"]).toContain(p.lang);
   });
   it("keeps own widgets from the widget editor (custom:cw_…) and drops malformed ones", () => {

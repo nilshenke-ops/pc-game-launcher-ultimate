@@ -53,7 +53,7 @@ Mods pro Spiel (für Spiele mit bekanntem Installationsordner): einmal den Mod-O
 ## Fenster-Layouts
 Seite: /layouts
 Stichworte: fenster layout monitor zweiter bildschirm anordnen position discord obs spotify maximiert
-Am PC Fenster anordnen und „Aus offenen Fenstern“ tippen: die Position der gewählten Programme wird gespeichert (je Monitor). „Anwenden“ bringt alle offenen Fenster dorthin zurück – auch als Baustein „Fenster-Layout anwenden“ in Quick Actions und Automatisierungen (z. B. beim Spielstart). Programme werden nicht gestartet; fehlt ein Monitor, kommt das Fenster auf den Hauptmonitor. Umbenennen und Löschen geht auch ohne PC. Programme mit Administratorrechten lassen sich von Windows aus nicht verschieben.
+Am PC Fenster anordnen und „Aus offenen Fenstern“ tippen: die Position der gewählten Programme wird gespeichert (je Monitor). „Anwenden“ bringt alle offenen Fenster dorthin zurück – auch als Baustein „Fenster-Layout anwenden“ in Quick Actions und Automatisierungen (z. B. beim Spielstart). Programme werden nicht gestartet; fehlt ein Monitor, kommt das Fenster auf den Hauptmonitor. Ohne PC: „Neues Layout“ – je Programm einen Platz wählen (maximiert, linke/rechte/obere/untere Hälfte, Viertel, Mitte) und den Monitor (Hauptmonitor, Monitor 2 …); wird beim Verbinden übertragen und beim Anwenden für die Größe des Monitors berechnet. Bearbeiten und Löschen geht auch ohne PC. Programme mit Administratorrechten lassen sich von Windows aus nicht verschieben.
 
 ## Controller & RGB
 Seite: /peripherals
@@ -64,6 +64,16 @@ Controller: Xbox- und XInput-kompatible Controller mit Akku-Stand, Live-Test (Ta
 Seite: /trophies
 Stichworte: trophäen trophäenraum erfolge gamer-pass profilkarte karte level xp teilen bild gold silber bronze
 Die Erfolge aus GameQuest als Trophäen in drei Regalen: Gold (100 XP und mehr), Silber (50 XP), Bronze (25 XP); freigeschaltete mit Datum, gesperrte mit Fortschritt. Der Gamer-Pass ist eine Karte mit Level, XP-Balken, Stunden, Spielen, längster Serie, Trophäen und meistgespieltem Spiel – Name und Symbol frei wählbar (bleiben auf dem Gerät), „Als Bild speichern“ oder „Teilen“. Alles aus eigenen Daten; ohne PC wird der zuletzt geladene Stand gezeigt.
+
+## Design-Profil (Design in einen neuen Browser mitnehmen)
+Seite: /settings?s=design
+Stichworte: profil konto benutzername passwort anmelden design übertragen neuer browser anderes handy sync design-code
+Einstellungen → Design & Layout → „Design-Profil“: „Neues Profil“ mit Benutzername und Passwort anlegen (PC muss verbunden sein); im neuen Browser nach dem Verbinden mit dem PC „Anmelden und Design laden“. Danach wird jede Design-Änderung automatisch ins Profil gespeichert. Verschlüsselt im Browser – der PC speichert nur verschlüsselte Daten, das Passwort verlässt das Gerät nie; Passwort vergessen = Design nicht wiederherstellbar (am PC unter Einstellungen löschbar). Ohne Konto und ohne PC: „Design-Code kopieren“ und im anderen Browser einfügen.
+
+## Neue Widgets
+Seite: /
+Stichworte: widgets zähler tode pausen erinnerung spielzeit heute ping ziele level xp deals controller akku zufallsspiel overlay
+Für Startseite und Game-Overlay: Zähler (z. B. Tode/Versuche, nur auf dem Gerät), Pausen-Erinnerung (vibriert nach 30/45/60/90 min Spiel), Spielzeit heute/diese Woche, Ping (misst der PC), Aktive Ziele, Level & XP, Deals (Zielpreis erreicht zuerst), Controller-Akku, Zufallsspiel (würfeln, Start nach Bestätigung). Hinzufügen: Startseite → Bearbeiten, oder im Overlay über „Widgets“.
 
 ## Startzeit-Analyse
 Seite: /start-times
@@ -188,7 +198,7 @@ Eigene Ziele (Spielzeit, Sitzungen, Siege, Matches; täglich, wöchentlich, einm
 ## Deal Radar
 Seite: /deals
 Stichworte: deal preis angebot sale rabatt wunschliste zielpreis steam günstig xbox microsoft store vergleich hinzufügen name
-Wunschliste als Kacheln: Originalbild des Spiels, darunter der Preis bei Xbox (Microsoft Store) und bei Steam, der günstigere grün. Kachel antippen = Details mit Preisverlauf, Zielpreis, Links zu den Shops und „Läuft das auf meinem PC?“; dort „Bearbeiten“ für Zielpreis und Notiz. Einstellungen (Preisabfrage, Xbox-Vergleich, Steam-Wunschliste, Shop-Land) sind unten eingeklappt. Zum Hinzufügen reicht der Name des Spiels („Spiel hinzufügen“) – der PC sucht es im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht. „Genauer suchen“ zeigt Treffer zur Auswahl. Mit „Steam-Wunschliste automatisch übernehmen“ holt der PC bei jeder Prüfung deine Steam-Wunschliste (sie muss öffentlich sein). „Auch im Microsoft Store (Xbox) vergleichen“ zeigt zusätzlich den Preis aus dem Katalog der Xbox-App und ob er günstiger als Steam ist. Preise werden nur abgefragt, wenn „Preise im Steam-Shop abfragen“ an ist; dann höchstens alle 6 Stunden und nie während eines Spiels. Benachrichtigung, wenn der Zielpreis erreicht ist. Preisverlauf = nur selbst gesehene Preise. Andere Shops (Epic, GOG, Key-Seiten) werden nicht abgefragt.
+Ohne PC prüft das Handy die Xbox-Preise selbst beim Microsoft Store („Xbox-Preise prüfen“, auch gleich nach dem Hinzufügen); Steam-Preise kommen nur vom PC (Steam erlaubt keine Abfrage aus dem Browser). Wunschliste als Kacheln: Originalbild des Spiels, darunter der Preis bei Xbox (Microsoft Store) und bei Steam, der günstigere grün. Kachel antippen = Details mit Preisverlauf, Zielpreis, Links zu den Shops und „Läuft das auf meinem PC?“; dort „Bearbeiten“ für Zielpreis und Notiz. Einstellungen (Preisabfrage, Xbox-Vergleich, Steam-Wunschliste, Shop-Land) sind unten eingeklappt. Zum Hinzufügen reicht der Name des Spiels („Spiel hinzufügen“) – der PC sucht es im Steam-Shop; ohne PC wird der Name vorgemerkt und beim Verbinden gesucht. „Genauer suchen“ zeigt Treffer zur Auswahl. Mit „Steam-Wunschliste automatisch übernehmen“ holt der PC bei jeder Prüfung deine Steam-Wunschliste (sie muss öffentlich sein). „Auch im Microsoft Store (Xbox) vergleichen“ zeigt zusätzlich den Preis aus dem Katalog der Xbox-App und ob er günstiger als Steam ist. Preise werden nur abgefragt, wenn „Preise im Steam-Shop abfragen“ an ist; dann höchstens alle 6 Stunden und nie während eines Spiels. Benachrichtigung, wenn der Zielpreis erreicht ist. Preisverlauf = nur selbst gesehene Preise. Andere Shops (Epic, GOG, Key-Seiten) werden nicht abgefragt.
 
 ## Overlay & Aufnahme
 Seite: /overlay-settings

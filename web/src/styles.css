@@ -757,6 +757,15 @@ html.desktop-widget-mode .app-bg { display: none; }
 .trophy.on { opacity: 1; border-color: color-mix(in srgb, var(--tier) 60%, transparent); background: color-mix(in srgb, var(--tier) 10%, var(--surface-2)); }
 .trophy-cup { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: rgba(255,255,255,.05); color: var(--muted); }
 .trophy.on .trophy-cup { color: var(--tier); background: color-mix(in srgb, var(--tier) 18%, transparent); }
+.counter-row { display: grid; grid-template-columns: 1fr 40px 52px 40px; align-items: center; gap: 6px; }
+.counter-name { border: 0; background: none; color: inherit; font: inherit; text-align: left; padding: 4px 0; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.counter-btn { height: 40px; border-radius: 10px; border: 1px solid var(--border-strong); background: var(--surface-2); color: var(--text); display: grid; place-items: center; cursor: pointer; }
+.counter-btn.plus { background: rgba(var(--primary-rgb), 0.18); border-color: rgba(var(--primary-rgb), 0.6); }
+.counter-value { text-align: center; font-size: 1.35rem; font-variant-numeric: tabular-nums; }
+.layout-row { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); }
+.preset-preview { position: relative; width: 96px; aspect-ratio: 16 / 9; border-radius: 6px; border: 2px solid var(--border-strong); background: var(--surface-2); align-self: end; }
+.preset-preview span { position: absolute; background: rgba(var(--primary-rgb), .55); border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(var(--primary-rgb), .9); }
+.deal-phone { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(var(--primary-rgb), .45); background: rgba(var(--primary-rgb), .07); }
 /* Tastenbelegung */
 .kb-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; }
 .kb { width: max(620px, 100%); display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border); }

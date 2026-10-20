@@ -30,6 +30,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public ModService Mods { get; }
     public WindowLayoutService Layouts { get; }
     public InputRemapService Input { get; }
+    public DesignAccountService DesignAccounts { get; }
     public RgbService Rgb { get; }
     public QuickActionService QuickActions { get; }
     public AutomationEngine Automations { get; }
@@ -116,6 +117,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);
         Rgb = new RgbService(paths);
         Input = new InputRemapService(paths, platform.InputHook, Rpc);
+        DesignAccounts = new DesignAccountService(paths);
         Notifications.Created += Push.OnNotification;
         Updates.CreateRestorePoint = name =>
         {

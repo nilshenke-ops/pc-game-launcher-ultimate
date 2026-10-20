@@ -59,9 +59,10 @@ export const DEFAULT_THEME: Theme = {
 
 // ------------------------------------------------------------------ dashboard layouts
 
-export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck" | "calendar" | "activity";
+export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck" | "calendar" | "activity"
+  | "counter" | "break" | "today" | "ping" | "goals" | "level" | "deals" | "controller" | "random";
 /** Widgets that are useful without a connected PC (shown on the home screen while offline). */
-export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity"]);
+export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity", "counter", "break", "today", "goals", "level", "deals", "random"]);
 /** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
 export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`;
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
@@ -93,6 +94,15 @@ export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSiz
   { id: "deck", label: "Mini-Deck", sizes: ["m", "l"] },
   { id: "calendar", label: "Termine", sizes: ["s", "m", "l"] },
   { id: "activity", label: "Mein Status", sizes: ["s", "m", "l"] },
+  { id: "counter", label: "Zähler", sizes: ["s", "m"] },
+  { id: "break", label: "Pausen-Erinnerung", sizes: ["s", "m"] },
+  { id: "today", label: "Spielzeit heute", sizes: ["s", "m"] },
+  { id: "ping", label: "Ping", sizes: ["s", "m"] },
+  { id: "goals", label: "Aktive Ziele", sizes: ["s", "m", "l"] },
+  { id: "level", label: "Level & XP", sizes: ["s", "m"] },
+  { id: "deals", label: "Deals", sizes: ["s", "m", "l"] },
+  { id: "controller", label: "Controller-Akku", sizes: ["s", "m"] },
+  { id: "random", label: "Zufallsspiel", sizes: ["s", "m"] },
 ];
 
 export const DEFAULT_LAYOUT: Layout = {
