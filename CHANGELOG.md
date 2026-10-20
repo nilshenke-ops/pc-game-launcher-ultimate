@@ -4,6 +4,18 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.27.0 – 2026-10-20
+### Neu
+- Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau
+- Der Ladebildschirm zeigt nur, was wirklich bekannt ist: „wird gesendet“ → „Startbefehl angekommen“ → „Läuft auf dem PC“ erst, wenn der PC das Spiel erkennt; Fehler mit Grund
+- Bewegter Hintergrund: Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle – Tempo, Menge und Deckkraft einstellbar
+- Seitenübergänge: Einblenden, Gleiten, Zoom, Unschärfe oder keiner, Dauer einstellbar
+- Atmosphären: Cyberpunk, Neon, Space, Ice, Fire, Fantasy, Retro Arcade, Minimal Dark, Glass, Mono – Farben plus passender Hintergrund und Ladebildschirm in einem Tipp
+### Verbessert
+- Die Animation hält einen Start nie auf: der Befehl geht vorher an den PC, Antippen/Esc überspringt sofort, ein Fehler in der Animation zeigt einfach nichts
+- Bei „Animationen reduzieren“, leichter Darstellung oder der Systemeinstellung „Bewegung reduzieren“: Standbild statt Animation; der Hintergrund hält an, wenn die Seite nicht sichtbar ist
+- Alles läuft ohne PC und kommt mit Design-Code und Konto in andere Browser mit
+
 ## 2.26.1 – 2026-10-20
 ### Behoben
 - Das Konto-Symbol neben der Glocke fehlte in Browsern, die noch nie mit einem PC verbunden waren – jetzt immer sichtbar; ohne PC erklärt das Fenster, dass das Konto einmal die Verbindung zum PC braucht (mit „PC verbinden“)

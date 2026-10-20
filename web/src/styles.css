@@ -1059,3 +1059,94 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 .pad-btn.on { background: var(--primary); color: #001018; border-color: var(--primary); }
 .pad-stick { position: relative; width: 96px; height: 96px; border-radius: 50%; border: 2px solid var(--border-strong); background: rgba(var(--surface-rgb), 0.6); }
 .pad-stick span { position: absolute; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--primary); }
+
+/* ------------------------------------------------------------------ 2.27 effects: moving background, page transitions, start animation */
+.bg-anim { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.content.tx-fade { animation: fade var(--tx-ms, 220ms) ease-out backwards; }
+.content.tx-slide { animation: tx-slide var(--tx-ms, 220ms) cubic-bezier(.2,.7,.2,1) backwards; }
+.content.tx-zoom { animation: tx-zoom var(--tx-ms, 220ms) cubic-bezier(.2,.7,.2,1) backwards; }
+.content.tx-blur { animation: tx-blur var(--tx-ms, 220ms) ease-out backwards; }
+@keyframes tx-slide { from { opacity: 0; transform: translateX(18px); } }
+@keyframes tx-zoom { from { opacity: 0; transform: scale(0.97); } }
+@keyframes tx-blur { from { opacity: 0; filter: blur(6px); } }
+:root[data-lite="1"] .content.tx-blur { animation-name: fade; }
+
+.lc { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; overflow: hidden; cursor: pointer; color: #fff;
+  background: radial-gradient(120% 90% at 50% 40%, rgba(var(--primary-rgb), 0.22), transparent 70%), #020208; animation: fade 160ms ease-out both; }
+.lc-fx, .lc-fx i { position: absolute; inset: 0; pointer-events: none; }
+.lc-center { position: relative; display: grid; justify-items: center; gap: 10px; padding: 24px; max-width: min(560px, 92vw); text-align: center; }
+.lc-cover { width: clamp(96px, 26vw, 168px); aspect-ratio: 1; border-radius: 22px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255,255,255,.18), 0 0 60px rgba(var(--primary-rgb), .55); animation: lc-in 600ms cubic-bezier(.2,.8,.2,1) both; background: #0b0b18; }
+.lc-initials { display: grid; place-items: center; font-size: 44px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #04121a; }
+.lc-title { margin: 6px 0 0; font-size: clamp(22px, 5vw, 38px); letter-spacing: .02em; text-shadow: 0 0 24px rgba(var(--primary-rgb), .8); animation: lc-in 700ms 80ms cubic-bezier(.2,.8,.2,1) both; overflow-wrap: anywhere; }
+.lc-tag { margin: 0; opacity: .85; font-size: 15px; }
+.lc-status { margin: 0; font-size: 14px; opacity: .9; min-height: 1.4em; }
+.lc.running .lc-status { color: #4ade80; font-weight: 700; }
+.lc.failed .lc-status { color: #fca5a5; font-weight: 600; }
+.lc-bar { width: min(320px, 70vw); height: 4px; border-radius: 4px; background: rgba(255,255,255,.14); overflow: hidden; }
+.lc-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); animation: progress var(--lc-dur, 3s) linear both; }
+.lc-skip { position: absolute; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); color: #fff; border-color: rgba(255,255,255,.3); background: rgba(0,0,0,.35); }
+@keyframes lc-in { from { opacity: 0; transform: scale(.85); filter: blur(4px); } }
+@keyframes lc-spin { to { transform: rotate(360deg); } }
+@keyframes lc-pulse { 50% { opacity: .35; transform: scale(1.08); } }
+@keyframes lc-zoom { from { transform: scale(.4); opacity: 0; } 30% { opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+@keyframes lc-shift { to { transform: translateX(56.57px); } }
+@keyframes lc-grid { to { background-position: 0 36px, 0 0; } }
+@keyframes lc-scan { from { transform: translateY(-100%); } to { transform: translateY(100%); } }
+@keyframes lc-glitch { 0%, 100% { clip-path: inset(0 0 85% 0); transform: translate(-3px, 0); } 25% { clip-path: inset(40% 0 35% 0); transform: translate(3px, 0); } 50% { clip-path: inset(70% 0 5% 0); transform: translate(-2px, 0); } 75% { clip-path: inset(15% 0 60% 0); transform: translate(2px, 0); } }
+@keyframes lc-wave { to { background-position: 0 0, 600px 0, -600px 0; } }
+
+/* Neon-Portal: two rings turning against each other */
+.lc-neon-portal .lc-a { inset: 50% auto auto 50%; width: min(80vmin, 640px); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent, var(--primary), transparent 30%, var(--accent), transparent 60%, var(--primary), transparent);
+  -webkit-mask: radial-gradient(closest-side, transparent 78%, #000 80%, #000 86%, transparent 88%); mask: radial-gradient(closest-side, transparent 78%, #000 80%, #000 86%, transparent 88%);
+  animation: lc-spin 2.4s linear infinite; filter: drop-shadow(0 0 18px var(--primary)); }
+.lc-neon-portal .lc-b { inset: 50% auto auto 50%; width: min(60vmin, 480px); aspect-ratio: 1; translate: -50% -50%; border-radius: 50%; border: 2px solid rgba(var(--accent-rgb), .6); box-shadow: 0 0 40px rgba(var(--accent-rgb), .5) inset, 0 0 40px rgba(var(--accent-rgb), .4); animation: lc-pulse 1.6s ease-in-out infinite; }
+/* Cyberpunk: yellow / magenta stripes and scanlines */
+.lc-cyberpunk { background: #0c0612; }
+.lc-cyberpunk .lc-a { inset: 0 -120px; background: repeating-linear-gradient(-45deg, rgba(250,204,21,.16) 0 18px, transparent 18px 40px); animation: lc-shift 1.6s linear infinite; }
+.lc-cyberpunk .lc-b { background: repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, transparent 1px 3px); }
+.lc-cyberpunk .lc-c { height: 30%; background: linear-gradient(transparent, rgba(240,171,252,.18), transparent); animation: lc-scan 1.8s linear infinite; }
+.lc-cyberpunk .lc-title { color: #facc15; text-shadow: 3px 3px 0 #db2777; text-transform: uppercase; }
+/* Weltraumreise: star layers flying towards the viewer */
+.lc-space { background: radial-gradient(circle at 50% 50%, #12123a, #000 70%); }
+.lc-space .lc-a, .lc-space .lc-b, .lc-space .lc-c { background-image: radial-gradient(1.5px 1.5px at 10% 20%, #fff, transparent), radial-gradient(1px 1px at 70% 30%, #fff, transparent), radial-gradient(2px 2px at 40% 80%, #c4b5fd, transparent), radial-gradient(1px 1px at 85% 70%, #fff, transparent), radial-gradient(1.5px 1.5px at 25% 60%, #7dd3fc, transparent), radial-gradient(1px 1px at 55% 10%, #fff, transparent); background-size: 260px 260px; animation: lc-zoom 2.2s linear infinite; }
+.lc-space .lc-b { animation-delay: -.73s; background-size: 340px 340px; }
+.lc-space .lc-c { animation-delay: -1.46s; background-size: 200px 200px; }
+/* Minimal Dark */
+.lc-minimal { background: #0a0a0b; }
+.lc-minimal .lc-title { text-shadow: none; font-weight: 600; }
+.lc-minimal .lc-cover { box-shadow: 0 10px 40px rgba(0,0,0,.6); }
+/* Digital Glitch */
+.lc-glitch { background: #050507; }
+.lc-glitch .lc-a { background: repeating-linear-gradient(0deg, rgba(255,255,255,.05) 0 2px, transparent 2px 4px); }
+.lc-glitch .lc-b { height: 12%; background: rgba(var(--accent-rgb), .18); animation: lc-scan .9s steps(6) infinite; }
+.lc-glitch .lc-title { position: relative; }
+.lc-glitch .lc-title::before, .lc-glitch .lc-title::after { content: attr(data-text); position: absolute; inset: 0; }
+.lc-glitch .lc-title::before { color: #22d3ee; animation: lc-glitch 1.2s steps(2) infinite; }
+.lc-glitch .lc-title::after { color: #f472b6; animation: lc-glitch 1s steps(2) infinite reverse; }
+/* Energiewelle */
+.lc-energy { background: #0b0604; }
+.lc-energy .lc-a { top: 55%; height: 40%; background: radial-gradient(60% 40% at 50% 0, rgba(var(--primary-rgb), .55), transparent 70%), repeating-linear-gradient(90deg, transparent 0 60px, rgba(var(--accent-rgb), .25) 60px 62px), repeating-linear-gradient(90deg, transparent 0 90px, rgba(var(--primary-rgb), .2) 90px 93px); animation: lc-wave 2.5s linear infinite; }
+.lc-energy .lc-b { inset: 50% auto auto 50%; width: 120vmax; height: 3px; translate: -50% 0; background: linear-gradient(90deg, transparent, var(--primary), #fff, var(--accent), transparent); box-shadow: 0 0 30px var(--primary); animation: lc-pulse 1.2s ease-in-out infinite; }
+/* Lila Galaxie */
+.lc-galaxy { background: radial-gradient(circle, #2e1065, #05010d 70%); }
+.lc-galaxy .lc-a { inset: 50% auto auto 50%; width: 140vmax; aspect-ratio: 1; translate: -50% -50%; background: conic-gradient(from 0deg, transparent, rgba(192,132,252,.35), transparent 25%, rgba(244,114,182,.25), transparent 50%, rgba(129,140,248,.3), transparent 75%); border-radius: 50%; -webkit-mask: radial-gradient(closest-side, #000, transparent); mask: radial-gradient(closest-side, #000, transparent); animation: lc-spin 8s linear infinite; }
+.lc-galaxy .lc-b { background-image: radial-gradient(1px 1px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 80% 60%, #fff, transparent), radial-gradient(1.5px 1.5px at 50% 85%, #e9d5ff, transparent); background-size: 180px 180px; opacity: .7; }
+.lc-galaxy .lc-title { text-shadow: 0 0 24px #c084fc; }
+/* Blaues Hologramm */
+.lc-hologram { background: #020814; }
+.lc-hologram .lc-a { top: 45%; background: linear-gradient(rgba(56,189,248,.35) 1px, transparent 1px) 0 0 / 100% 36px, linear-gradient(90deg, rgba(56,189,248,.35) 1px, transparent 1px) 0 0 / 36px 100%; transform: perspective(420px) rotateX(62deg); transform-origin: top; animation: lc-grid 1.2s linear infinite; }
+.lc-hologram .lc-b { height: 20%; background: linear-gradient(transparent, rgba(56,189,248,.16), transparent); animation: lc-scan 2.2s linear infinite; }
+.lc-hologram .lc-title, .lc-hologram .lc-cover { color: #bae6fd; text-shadow: 0 0 18px #38bdf8; }
+.lc-hologram .lc-cover { opacity: .9; box-shadow: 0 0 0 1px rgba(125,211,252,.5), 0 0 40px rgba(56,189,248,.6); }
+/* Reduced motion / light rendering: a still loading screen, nothing moves */
+.lc.still, .lc.still * { animation: none !important; }
+.lc.still .lc-bar { display: none; }
+.lc-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+.lc-mini { position: relative; height: 84px; border-radius: var(--radius-sm); overflow: hidden; border: 2px solid var(--border); color: #fff; cursor: pointer; padding: 0; font: inherit;
+  background: radial-gradient(120% 90% at 50% 40%, rgba(var(--primary-rgb), 0.22), transparent 70%), #020208; }
+.lc-mini.on { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(var(--primary-rgb), .35); }
+.lc-mini, .lc-mini * { animation: none !important; }
+.lc-mini-name { position: absolute; left: 0; right: 0; bottom: 0; padding: 4px 6px; font-size: 12px; font-weight: 600; background: linear-gradient(transparent, rgba(0,0,0,.7)); text-align: left; }
+.lc-mini.lc-neon-portal .lc-a { width: 74px; } .lc-mini.lc-neon-portal .lc-b { width: 54px; }
+.lc-mini.lc-galaxy .lc-a { width: 260px; } .lc-mini.lc-energy .lc-b { width: 100%; }

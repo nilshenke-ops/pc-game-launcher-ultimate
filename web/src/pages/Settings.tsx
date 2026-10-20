@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { DesignProfileCard } from "../components/design-profile";
+import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArchiveRestore, Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
@@ -133,12 +134,15 @@ function Design() {
           {profileThemeActive() && <Banner kind="info">{t("Gerade ist das Theme des aktiven Profils zu sehen. Änderungen hier gelten für dein eigenes Design und erscheinen, sobald das Profil endet.")}</Banner>}
           <div className="swatches">
             {Object.entries(PRESETS).map(([k, p]) => (
-              <button key={k} className={`swatch ${th.preset === k ? "on" : ""}`} style={{ background: `linear-gradient(135deg, ${p.background} 40%, ${p.primary} 75%, ${p.accent})` }} onClick={() => setTheme({ preset: k, mode: p.mode, primary: p.primary, accent: p.accent, background: p.background })} aria-pressed={th.preset === k}><span>{p.name}</span></button>
+              <button key={k} className={`swatch ${th.preset === k ? "on" : ""}`} style={{ background: `linear-gradient(135deg, ${p.background} 40%, ${p.primary} 75%, ${p.accent})` }} onClick={() => setPrefs((x) => ({ ...x,
+                theme: { ...x.theme, preset: k, mode: p.mode, primary: p.primary, accent: p.accent, background: p.background, ...(p.atmo?.surfaceAlpha ? { surfaceAlpha: p.atmo.surfaceAlpha } : {}) },
+                fx: p.atmo ? { ...x.fx, bg: { ...x.fx.bg, kind: p.atmo.bg }, launch: { ...x.fx.launch, style: p.atmo.launch } } : x.fx }))} aria-pressed={th.preset === k}><span>{p.name}</span></button>
             ))}
             {prefs.palettes.map((p, i) => (
               <button key={"c" + i} className={`swatch ${th.preset === "custom:" + p.name ? "on" : ""}`} style={{ background: `linear-gradient(135deg, ${p.background} 40%, ${p.primary} 75%, ${p.accent})` }} onClick={() => setTheme({ preset: "custom:" + p.name, primary: p.primary, accent: p.accent, background: p.background })}><span>{p.name}</span></button>
             ))}
           </div>
+          <p className="tiny muted" style={{ margin: 0 }}>{t("Atmosphären wie Cyberpunk, Space, Ice, Fire oder Glass setzen zusätzlich einen passenden bewegten Hintergrund und Ladebildschirm – alles bleibt unten änderbar. Je Spiel: Theme im Gaming-Profil des Spiels.")}</p>
           <Segmented value={th.mode} onChange={(mode) => setTheme({ mode, background: mode === "light" ? "#eef2f7" : PRESETS.neon.background, preset: "custom" })} options={[{ value: "dark", label: t("Dunkel") }, { value: "light", label: t("Hell") }]} />
         </div>
       </Card>
@@ -190,6 +194,7 @@ function Design() {
           {(th.bgImage || th.bgScene) && <Field label={t("Abdunkeln: {v} %", { v: Math.round(th.bgDim * 100) })}><input type="range" min={0} max={0.9} step={0.05} value={th.bgDim} onChange={(e) => setTheme({ bgDim: +e.target.value })} /></Field>}
         </div>
       </Card>
+      <FxSettings />
       <Layouts />
       <DesignProfileCard />
       <Card>

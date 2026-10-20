@@ -43,13 +43,72 @@ export const BG_SCENES: { id: string; name: string; mode: "dark" | "light"; prim
   { id: "lava", name: "Vulkan", mode: "dark", primary: "#fb923c", accent: "#ef4444", background: "#120806", dim: 0.35, sky: "#1c0a06" },
 ];
 
-export const PRESETS: Record<string, Palette & { mode: "dark" | "light" }> = {
+// ------------------------------------------------------------------ effects (start animation, moving background, page transitions)
+
+/** Loading screens of the start animation (drawn with CSS only, see components/launch-cinema.tsx). */
+export const LAUNCH_STYLES = [
+  { id: "neon-portal", name: "Neon-Portal" }, { id: "cyberpunk", name: "Cyberpunk" }, { id: "space", name: "Weltraumreise" }, { id: "minimal", name: "Minimal Dark" },
+  { id: "glitch", name: "Digital Glitch" }, { id: "energy", name: "Energiewelle" }, { id: "galaxy", name: "Lila Galaxie" }, { id: "hologram", name: "Blaues Hologramm" },
+] as const;
+export type LaunchStyle = (typeof LAUNCH_STYLES)[number]["id"];
+/** Moving backgrounds (canvas, see components/animated-bg.tsx). */
+export const BG_ANIMS = [
+  { id: "none", name: "Aus" }, { id: "particles", name: "Partikel" }, { id: "stars", name: "Sternenflug" }, { id: "grid", name: "Neon-Raster" },
+  { id: "waves", name: "Wellen" }, { id: "embers", name: "Funken" }, { id: "snow", name: "Eiskristalle" },
+] as const;
+export type BgAnim = (typeof BG_ANIMS)[number]["id"];
+export const TRANSITIONS = [{ id: "none", name: "Keiner" }, { id: "fade", name: "Einblenden" }, { id: "slide", name: "Gleiten" }, { id: "zoom", name: "Zoom" }, { id: "blur", name: "Unschärfe" }] as const;
+export type TransitionKind = (typeof TRANSITIONS)[number]["id"];
+
+export interface Fx {
+  /** Start animation while the PC starts a game. Never holds the start back – it only shows what the PC reports. */
+  launch: { enabled: boolean; style: LaunchStyle; seconds: number; fast: boolean; cover: boolean; tagline: string };
+  /** speed 0.25..2, amount 0.2..1, opacity 0.1..1 */
+  bg: { kind: BgAnim; speed: number; amount: number; opacity: number };
+  transition: { kind: TransitionKind; ms: number };
+}
+export const DEFAULT_FX: Fx = {
+  launch: { enabled: true, style: "neon-portal", seconds: 3, fast: false, cover: true, tagline: "" },
+  bg: { kind: "none", speed: 1, amount: 0.6, opacity: 0.6 },
+  transition: { kind: "fade", ms: 220 },
+};
+
+export function sanitizeFx(input: unknown): Fx {
+  const f = (input && typeof input === "object" ? input : {}) as Partial<Fx>;
+  const num = (v: unknown, min: number, max: number, def: number) => (typeof v === "number" && isFinite(v) ? Math.min(max, Math.max(min, v)) : def);
+  const l = (f.launch ?? {}) as Partial<Fx["launch"]>, b = (f.bg ?? {}) as Partial<Fx["bg"]>, tr = (f.transition ?? {}) as Partial<Fx["transition"]>;
+  const d = DEFAULT_FX;
+  return {
+    launch: {
+      enabled: l.enabled !== false, style: LAUNCH_STYLES.some((x) => x.id === l.style) ? l.style! : d.launch.style,
+      seconds: num(l.seconds, 1, 8, d.launch.seconds), fast: !!l.fast, cover: l.cover !== false,
+      tagline: typeof l.tagline === "string" ? l.tagline.replace(/[\u0000-\u001f]/g, "").slice(0, 60) : "",
+    },
+    bg: { kind: BG_ANIMS.some((x) => x.id === b.kind) ? b.kind! : "none", speed: num(b.speed, 0.25, 2, 1), amount: num(b.amount, 0.2, 1, 0.6), opacity: num(b.opacity, 0.1, 1, 0.6) },
+    transition: { kind: TRANSITIONS.some((x) => x.id === tr.kind) ? tr.kind! : d.transition.kind, ms: num(tr.ms, 100, 700, d.transition.ms) },
+  };
+}
+
+/** Atmosphere: colours plus a matching moving background and start animation in one tap (everything stays changeable). */
+export interface Atmosphere { bg: BgAnim; launch: LaunchStyle; surfaceAlpha?: number }
+
+export const PRESETS: Record<string, Palette & { mode: "dark" | "light"; atmo?: Atmosphere }> = {
   neon: { name: "Neon Cyan", primary: "#22d3ee", accent: "#a78bfa", background: "#070b16", mode: "dark" },
   emerald: { name: "Emerald", primary: "#34d399", accent: "#22d3ee", background: "#06110f", mode: "dark" },
   synth: { name: "Synthwave", primary: "#f472b6", accent: "#818cf8", background: "#0d0716", mode: "dark" },
   ember: { name: "Ember", primary: "#fb923c", accent: "#f43f5e", background: "#120a07", mode: "dark" },
   ocean: { name: "Deep Ocean", primary: "#60a5fa", accent: "#2dd4bf", background: "#060d1a", mode: "dark" },
   daylight: { name: "Daylight", primary: "#0891b2", accent: "#7c3aed", background: "#eef2f7", mode: "light" },
+  cyberpunk: { name: "Cyberpunk", primary: "#facc15", accent: "#f0abfc", background: "#0c0612", mode: "dark", atmo: { bg: "grid", launch: "cyberpunk" } },
+  neonglow: { name: "Neon", primary: "#22d3ee", accent: "#f472b6", background: "#05030f", mode: "dark", atmo: { bg: "particles", launch: "neon-portal" } },
+  space: { name: "Space", primary: "#a78bfa", accent: "#38bdf8", background: "#03030c", mode: "dark", atmo: { bg: "stars", launch: "space" } },
+  ice: { name: "Ice", primary: "#7dd3fc", accent: "#e0f2fe", background: "#06121c", mode: "dark", atmo: { bg: "snow", launch: "hologram" } },
+  fire: { name: "Fire", primary: "#fb923c", accent: "#facc15", background: "#140604", mode: "dark", atmo: { bg: "embers", launch: "energy" } },
+  fantasy: { name: "Fantasy", primary: "#c084fc", accent: "#34d399", background: "#0d0a1a", mode: "dark", atmo: { bg: "particles", launch: "galaxy" } },
+  retro: { name: "Retro Arcade", primary: "#f472b6", accent: "#facc15", background: "#12061f", mode: "dark", atmo: { bg: "grid", launch: "glitch" } },
+  minimal: { name: "Minimal Dark", primary: "#e5e7eb", accent: "#9ca3af", background: "#0a0a0b", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
+  glass: { name: "Glass", primary: "#93c5fd", accent: "#c4b5fd", background: "#0b1220", mode: "dark", atmo: { bg: "waves", launch: "hologram", surfaceAlpha: 0.45 } },
+  mono: { name: "Mono", primary: "#f5f5f5", accent: "#a3a3a3", background: "#111111", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
 };
 
 export const DEFAULT_THEME: Theme = {
@@ -146,6 +205,8 @@ export interface Prefs {
   profileThemes: boolean;
   /** Areas in the "Schnellstart" home widget (paths); empty = default set. */
   homeShortcuts: string[];
+  /** Start animation, moving background, page transitions. */
+  fx: Fx;
 }
 
 /** colors: coloured symbols in the navigation and the bottom bar (false = plain, like before 2.8). */
@@ -157,7 +218,7 @@ const OLD_DEFAULT_BOTTOM = "/,/games,/soundboard,/quick";
 
 export function defaultPrefs(): Prefs {
   const lang = (navigator.language || "de").toLowerCase().startsWith("de") ? "de" : "en";
-  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV), profileThemes: true, homeShortcuts: [] };
+  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV), profileThemes: true, homeShortcuts: [], fx: structuredClone(DEFAULT_FX) };
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -215,6 +276,7 @@ export function sanitizePrefs(input: unknown): Prefs {
     nav: sanitizeNav(p.nav),
     profileThemes: p.profileThemes !== false,
     homeShortcuts: Array.isArray(p.homeShortcuts) ? [...new Set(p.homeShortcuts.filter((x): x is string => typeof x === "string" && NAV_PATH.test(x)))].slice(0, 8) : [],
+    fx: sanitizeFx(p.fx),
     usage: p.usage && typeof p.usage === "object" ? Object.fromEntries(Object.entries(p.usage).filter(([, v]) => typeof v === "number").slice(0, 300)) : {},
   };
 }

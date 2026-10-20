@@ -202,7 +202,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <StatusStrip preview={preview} waiting={waiting} home={loc.pathname === "/"} hidePreview={loc.pathname === "/connect"} onShowOutbox={() => setShowOutbox(true)} />
         {showOutbox && <OutboxDialog onClose={() => setShowOutbox(false)} />}
 
-        <main id="main" className="content" key={loc.pathname}>{children}</main>
+        <main id="main" className={`content tx-${prefs.fx.transition.kind}`} style={{ ["--tx-ms" as string]: `${prefs.fx.transition.ms}ms` }} key={loc.pathname}>{children}</main>
       </div>
 
       <BottomBar items={all} preview={preview} more={more} onMore={() => setMore(true)} onEdit={() => setBarEdit(true)} />

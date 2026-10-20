@@ -3,6 +3,8 @@ import { startDesignAutoSave } from "./lib/design-account";
 import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { DEMO_BUILD } from "./lib/demo-flag";
 import { AppShell } from "./components/AppShell";
+import { AnimatedBackground } from "./components/animated-bg";
+import { LaunchCinema } from "./components/launch-cinema";
 import { AccessGate } from "./components/AccessGate";
 import { ConfirmHost, Toasts } from "./components/ui";
 import { useConn } from "./lib/hooks";
@@ -149,9 +151,10 @@ const Router = DEMO_BUILD ? MemoryRouter : HashRouter;
 export default function App() {
   return (
     <Router>
-      <div className="app-bg" aria-hidden><div className="img" /><div className="grid" /></div>
+      <div className="app-bg" aria-hidden><div className="img" /><div className="grid" /><AnimatedBackground /></div>
       <AccessGate><Gate /></AccessGate>
       <Toasts />
+      <LaunchCinema />
       <ConfirmHost />
     </Router>
   );

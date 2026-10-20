@@ -45,6 +45,11 @@ Seite: /settings
 Stichworte: installieren installation setup startmenü desktop symbol deinstallieren entfernen apps features programme autostart smartscreen
 Am PC: Einstellungen → Installation & Autostart → „Installieren“. Das Programm kommt nach %LOCALAPPDATA%\Programs\Nexus Gaming Hub, bekommt einen Startmenü-Eintrag (optional Desktop-Symbol), startet auf Wunsch mit Windows und erscheint in „Apps & Features“ – ohne Administrator. Danach startet es aus dem neuen Ordner neu; die heruntergeladene Datei kann gelöscht werden. Deinstallieren: dort oder in Windows unter „Apps & Features“ → Nexus Gaming Hub → Deinstallieren; Einstellungen und Daten bleiben, außer man wählt „auch Daten löschen“. Updates funktionieren wie vorher. Ohne Code-Signatur zeigt Windows beim ersten Start evtl. „Der Computer wurde durch Windows geschützt“ → „Weitere Informationen“ → „Trotzdem ausführen“.
 
+## Spielstart-Animation, bewegter Hintergrund, Übergänge, Atmosphären
+Seite: /settings?s=design
+Stichworte: ladebildschirm loading screen startanimation animation spielstart kino cinematic vorlage neon portal cyberpunk hologramm galaxie glitch hintergrund bewegt animiert partikel sterne raster übergang übergänge atmosphäre theme fire ice space glass
+Einstellungen → Design & Layout. „Spielstart-Animation“: Ladebildschirm beim Spielstart an/aus, 8 Vorlagen, Dauer 1–8 s oder Schnellmodus (1,2 s), eigener Text, Bild des Spiels, „Vorschau“ (startet nichts). Der Startbefehl geht sofort an den PC; Antippen oder Esc überspringt. „Läuft auf dem PC“ steht erst da, wenn der PC das Spiel erkennt. „Bewegter Hintergrund“ (Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle) mit Tempo, Menge, Deckkraft; „Seitenübergänge“ mit Dauer. Atmosphären (Cyberpunk, Neon, Space, Ice, Fire, Fantasy, Retro Arcade, Minimal Dark, Glass, Mono) stehen bei den Themes und setzen Farben, Hintergrund und Ladebildschirm zusammen. Bei „Animationen reduzieren“ oder leichter Darstellung: Standbild. Funktioniert ohne PC.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

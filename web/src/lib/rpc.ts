@@ -183,7 +183,7 @@ class Client {
 
   private emit(event: string, data: unknown) {
     this.listeners.get(event)?.forEach((l) => { try { l(data); } catch (e) { console.error(e); } });
-    this.listeners.get("*")?.forEach((l) => l({ event, data }));
+    if (event !== "launch.local") this.listeners.get("*")?.forEach((l) => l({ event, data }));
   }
 
   get credentials(): Credentials | null { return readJson<Credentials>(CRED_KEY); }
@@ -348,6 +348,13 @@ class Client {
 
   /** opts.op: id of a queued change – the PC applies it only once, even if it is sent again after a lost answer. */
   call<T = unknown>(method: string, params?: unknown, opts?: { op?: string }): Promise<T> {
+    const result = this.send<T>(method, params, opts);
+    // Every start (tiles, deck, palette, plugins …) goes through here: the start animation only watches, it never waits in between.
+    if (method === "library.launch") this.emit("launch.local", { id: (params as { id?: string } | undefined)?.id, result });
+    return result;
+  }
+
+  private send<T>(method: string, params?: unknown, opts?: { op?: string }): Promise<T> {
     if (this.demo) return this.demoMod!.then((m) => m.demoCall(method, (params ?? {}) as Record<string, unknown>)) as Promise<T>;
     if (this.status.auth !== "ok" && !NO_LOGIN.has(method) && !this.status.me) {
       if (method === "ui.savePrefs" || method === "ui.getPrefs") return Promise.resolve((method === "ui.getPrefs" ? { prefs: null } : true) as T); // design stays on this device

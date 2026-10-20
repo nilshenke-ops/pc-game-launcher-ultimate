@@ -214,3 +214,16 @@ Handy ohne PC: eine Datei mit ~130 KB (komprimiert ~54 KB) beim Öffnen des Deal
 ## 2.25.0 (20.10.2026)
 
 Handy ohne PC: je Anfangsbuchstabe eines Spiels, das nicht in der Beliebt-Liste steht, einmal ein Katalogteil (einige hundert KB); Bilder lädt der Browser wie bisher nur für sichtbare Kacheln. PC: einmal pro Prüfung eine Anfrage für bis zu 100 fehlende Bilder.
+
+## 2.27.0 (20.10.2026)
+
+Gemessen in dieser Testumgebung (Linux-Container, Chromium ohne GPU, 1440×1000), Startseite mit verbundenem Begleiter, je 5 s, Chrome-DevTools „TaskDuration“ (Hauptthread-Arbeit):
+
+| Hintergrund | Hauptthread-Last |
+|---|---|
+| Aus | 5,9 % eines Kerns |
+| Sternenflug | 6,6 % |
+| Partikel | 5,5 % |
+| Neon-Raster | 7,6 % |
+
+Die Unterschiede liegen im Bereich der Messschwankung (Partikel lag sogar unter „Aus“). Verborgene Seite: 0 Animations-Frames; reduzierte Bewegung/leichte Darstellung: 0 Frames (ein Standbild). Ladebildschirm: nur CSS-Animationen, solange er offen ist (höchstens 8 s). Auf dem HP Victus (RTX 5060 Laptop) noch nicht gemessen – dort mit dem Messplan oben nachholen.
