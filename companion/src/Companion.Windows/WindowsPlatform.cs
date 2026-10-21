@@ -36,6 +36,8 @@ sealed class WindowsPlatform : IPlatform
     public IUpdateInstaller UpdateInstaller { get; } = new SelfReplaceInstaller();
     public IPowerControl Power { get; } = new WindowsPower();
     public IHardwareInfo Hardware { get; } = new WindowsHardwareInfo();
+    public IScreenCapture Screen { get; } = new WindowsScreenCapture();
+    public IRemoteInput RemoteInput { get; } = new WindowsRemoteInput();
     public WindowsOverlay OverlayWindows { get; }
     public IOverlay Overlay => OverlayWindows;
     public IKeySender KeySender { get; } = new WindowsKeySender();

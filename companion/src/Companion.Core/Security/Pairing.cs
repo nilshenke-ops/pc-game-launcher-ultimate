@@ -9,10 +9,11 @@ namespace Pgl.Core.Security;
 public static class Permissions
 {
     /// <summary>Power = put the PC to sleep, restart or shut it down from a device (locking only needs Launch). Not given by default.</summary>
-    public const string View = "view", Launch = "launch", Soundboard = "soundboard", Manage = "manage", Power = "power", Admin = "admin", Local = "local";
-    public static readonly string[] Grantable = { View, Launch, Soundboard, Manage, Power, Admin };
+    /// <summary>Screen = see the PC screen (remote desktop), Remote = also control it with touch/keys. Neither is given by default.</summary>
+    public const string View = "view", Launch = "launch", Soundboard = "soundboard", Manage = "manage", Power = "power", Admin = "admin", Local = "local", Screen = "screen", Remote = "remote";
+    public static readonly string[] Grantable = { View, Launch, Soundboard, Manage, Power, Screen, Remote, Admin };
     public static readonly string[] Default = { View, Launch, Soundboard, Manage };
-    public static readonly string[] LocalAdmin = { View, Launch, Soundboard, Manage, Power, Admin, Local };
+    public static readonly string[] LocalAdmin = { View, Launch, Soundboard, Manage, Power, Screen, Remote, Admin, Local };
 }
 
 /// <summary>

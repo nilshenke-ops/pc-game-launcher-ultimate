@@ -21,6 +21,7 @@ Seit 2.0.0 heißt die Oberfläche „Nexus Gaming Hub“. EXE-Name (`PCGameLaunc
 ## Links
 
 - **Webseite „PC verbinden“:** https://nilshenke-ops.github.io/pc-game-launcher-ultimate/
+- **Remote Desktop (PC-Bildschirm auf iPhone/iPad steuern):** Anleitung und Grenzen in [docs/REMOTE-DESKTOP.md](docs/REMOTE-DESKTOP.md)
 - **PC-Software (Windows), immer die neueste Version:** https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/latest
   – direkt: https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/latest/download/PCGameLauncherCompanion.exe
   (Version, Datum, Größe, Änderungen und SHA-256 stehen im Release und auf der Webseite unter „Updates & Versionen“; Updates sind signiert.)

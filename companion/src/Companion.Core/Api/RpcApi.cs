@@ -569,6 +569,14 @@ public static class RpcApi
         // ------------------------------------------------------------ savegame vault and configuration versions
         rpc.Register("vault.list", _ => s.Vault.Overview());
         rpc.Register("privacy.status", _ => s.Privacy.Status());
+        rpc.Register("remote.status", ctx => s.Remote.Status(ctx.Session));
+        rpc.Register("remote.configure", ctx => s.Remote.Configure(ctx.OptBool("enabled"), ctx.OptInt("maxMinutes"), ctx.OptInt("idleMinutes")));
+        rpc.Register("remote.start", ctx => s.Remote.Start(ctx.Session, ctx.OptInt("screen") ?? 0, ctx.OptStr("preset", 12) ?? "auto", ctx.OptInt("maxWidth"), ctx.OptInt("fps")));
+        rpc.Register("remote.tick", ctx => s.Remote.Tick(ctx.Session, ctx.Str("sessionId", 40), ctx.OptLong("ack") ?? 0, ctx.Params.TryGetProperty("events", out var ev) ? ev : default));
+        rpc.Register("remote.pause", ctx => s.Remote.Pause(ctx.Session, ctx.Str("sessionId", 40), ctx.Bool("paused")));
+        rpc.Register("remote.quality", ctx => s.Remote.SetQuality(ctx.Session, ctx.Str("sessionId", 40), ctx.OptStr("preset", 12) ?? "auto", ctx.OptInt("maxWidth"), ctx.OptInt("fps")));
+        rpc.Register("remote.stop", ctx => s.Remote.Stop(ctx.Session, ctx.Str("sessionId", 40)));
+        rpc.Register("remote.end", _ => s.Remote.End("Am PC beendet."));
         rpc.Register("privacy.on", ctx => s.Privacy.On(ctx.Session.Who, ctx.Session.Device?.Id));
         rpc.Register("privacy.off", ctx => s.Privacy.Off(ctx.Session.Who));
         rpc.Register("privacy.configure", ctx => s.Privacy.Configure(ctx.Bind<PrivacyConfig>()));

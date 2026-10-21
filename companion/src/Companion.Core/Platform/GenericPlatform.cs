@@ -25,6 +25,8 @@ public sealed class GenericPlatform : IPlatform
     /// <summary>No power actions by default; the headless companion can use <see cref="DryRunPower"/> for trying out the app.</summary>
     public IPowerControl Power { get; init; } = NullPower.Instance;
     public IHardwareInfo Hardware { get; init; } = NullHardwareInfo.Instance;
+    public IScreenCapture Screen { get; init; } = NullScreenCapture.Instance;
+    public IRemoteInput RemoteInput { get; init; } = NullRemoteInput.Instance;
 }
 
 /// <summary>Only records what would happen (headless test runs with PGL_POWER_DRYRUN=1) – never switches anything off.</summary>

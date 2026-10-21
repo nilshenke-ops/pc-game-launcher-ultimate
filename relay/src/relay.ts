@@ -271,7 +271,7 @@ export function createRelay(cfg: RelayConfig): Relay {
 
   function onClient(ws: WebSocket, pc: string, ip: string) {
     const ch = randomBytes(9).toString("base64url");
-    const msgLimiter = new RateLimiter(300, 10_000);
+    const msgLimiter = new RateLimiter(600, 10_000); // remote desktop: one acknowledgement per picture
     let attachedTo: CompanionConn | null = null;
     let alive = true;
 

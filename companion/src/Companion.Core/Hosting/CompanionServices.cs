@@ -24,6 +24,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public InventoryService Inventory { get; }
     public CrashReportService Crashes { get; }
     public PrivacyService Privacy { get; }
+    public RemoteService Remote { get; }
     public GameStateService GameState { get; }
     public LibraryService Library { get; }
     public HistoryService History { get; }
@@ -129,6 +130,13 @@ public sealed class CompanionServices : IAsyncDisposable
             PauseOthers = keep => Rpc.PauseDevices(d => d.Id != keep, "Der PC ist im Datenschutzmodus – dieses Gerät ist bis zum Ausschalten pausiert. Die Kopplung bleibt bestehen."),
         };
         Rpc.LoginBlocked = Privacy.Blocks;
+        Remote = new RemoteService(paths, platform.Screen, platform.RemoteInput, Rpc, Rpc.SendToAsync)
+        {
+            Notify = (key, title, text) => Notifications.Push(key, Severity.Warning, title, text, "/remote"),
+            Blocked = Privacy.BlocksRemote,
+        };
+        Privacy.EndRemote = Remote.End;
+        Rpc.Closed += Remote.Closed;
         Notifications.Suppressed = Privacy.Quiet;
         GameState = new GameStateService(paths, platform, Library, Vault, Mods, () => Profiles.Get(), () => Plugins.Versions(), id => Sessions.Running().Any(r => r.itemId == id), Rpc);
         Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);
@@ -524,6 +532,7 @@ public sealed class CompanionServices : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        Remote.Dispose();
         await Obs.DisposeAsync();
         Sessions.Dispose();
         Calendar.Dispose();

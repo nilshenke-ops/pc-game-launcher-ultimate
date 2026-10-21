@@ -238,3 +238,16 @@ Bibliothek mit 3010 Testspielen, Testumgebung (Linux, Chromium ohne GPU, 1440×1
 | Wechsel zum Raster | 1,3–1,8 s (alle 3010 Karten) | 186 ms (120 Karten, Rest beim Scrollen) |
 | Holo-Ansicht | – (neu) | 114 ms, 5–9 Karten im DOM, 20 Pfeiltasten 291 ms |
 | Suche im Raster | – | 139 ms |
+
+## 2.36.0 (21.10.2026) – Remote Desktop
+Gemessen mit dem Headless-Begleiter und der Entwickler-Testquelle (Linux, 960×540-Testbild als **BMP, ca. 1,5 MB pro Bild** – viel größer und teurer als die JPEGs von Windows), Chromium als iPad, CPU in % eines Kerns aus `/proc/<pid>/stat`:
+
+| Zustand | CPU | Speicher (Prozess) |
+|---|---|---|
+| Ohne Sitzung (10 s) | 3,8 % | 115 MB |
+| Sitzung, Bild ändert sich ständig (15 s, 9,5 Bilder/s, 14 MB/s, Antwortzeit 11–54 ms) | 77 % | 255–486 MB |
+| Sitzung, Bild unverändert (10 s) – **vorher 81 %**, nach der Drosselung auf 4 Aufnahmen/s | 21–23 % | 270–570 MB |
+| Nach dem Trennen | 0,8 % | Prozess bleibt reserviert; **belegter verwalteter Speicher nach der Sitzung 98 MB bzw. 109 MB** (zwei Sitzungen nacheinander → kein Leck) |
+
+Beim Messen gefunden und behoben: ohne Änderung im Bild wurde trotzdem mit voller Bildrate aufgenommen (81 % CPU) → jetzt 4 Aufnahmen/s, bis sich etwas ändert oder eine Eingabe kommt. Große Bilddaten bleiben nach der Sitzung nicht mehr im Speicher (einmaliges Aufräumen des Large Object Heap).
+**Nicht gemessen:** Windows-Bildschirmaufnahme (GDI + JPEG) und Bildrate/CPU/GPU auf dem echten PC; End-to-End-Verzögerung auf echtem iPhone/iPad.

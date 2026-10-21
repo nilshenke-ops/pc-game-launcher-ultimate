@@ -749,6 +749,37 @@ test("Zugriff über das Relay mit Ende-zu-Ende-Kopplung", async ({ browser }) =>
   await expect(pc.getByText("Online über Relay")).toBeVisible();
 });
 
+test("Remote Desktop: erst am PC erlauben und Recht geben, dann kommt das Tippen am richtigen Punkt an, am PC beenden", async () => {
+  await phone.goto(`${COMPANION}/#/remote`);
+  await expect(phone.getByText("Am PC ausgeschaltet")).toBeVisible();
+  await expect(phone.getByRole("button", { name: "Verbinden", exact: true })).toBeDisabled();
+  await pc.goto(`${COMPANION}/#/remote`);
+  await pc.getByRole("switch", { name: /Remote Desktop erlauben/ }).click();
+  await expect(phone.getByText("Diesem Gerät fehlt das Recht")).toBeVisible({ timeout: 10000 });
+  // The right is given only at the PC.
+  await pc.goto(`${COMPANION}/#/devices`);
+  await pc.locator(".list-item", { hasText: "iPhone · Safari" }).getByRole("button", { name: "Bearbeiten" }).click();
+  await pc.getByRole("dialog").getByRole("checkbox", { name: /^Fernsteuern/ }).check();
+  await pc.getByRole("dialog").getByRole("button", { name: "Speichern" }).click();
+  await expect(phone.getByText("ansehen und steuern")).toBeVisible({ timeout: 10000 });
+  await expect(phone.getByText("Testbild (Entwicklung)")).toBeVisible(); // never presented as a real screen
+  await phone.getByRole("button", { name: "Verbinden", exact: true }).click();
+  await phone.waitForFunction(() => { const c = document.querySelector<HTMLCanvasElement>(".rd-canvas"); return !!c && c.width > 0 && !document.querySelector(".rd-overlay"); }, null, { timeout: 10000 });
+  // Tap at 40 % / 30 % of the picture → the PC draws its click mark exactly there.
+  const box = (await phone.locator(".rd-canvas").boundingBox())!;
+  const [cw, ch] = await phone.evaluate(() => { const c = document.querySelector<HTMLCanvasElement>(".rd-canvas")!; return [c.width, c.height]; });
+  const sc = Math.min(box.width / cw, box.height / ch);
+  await phone.touchscreen.tap(box.x + (box.width - cw * sc) / 2 + 0.4 * cw * sc, box.y + (box.height - ch * sc) / 2 + 0.3 * ch * sc);
+  await expect.poll(() => phone.evaluate(() => { const c = document.querySelector<HTMLCanvasElement>(".rd-canvas")!; const d = c.getContext("2d")!.getImageData(Math.round(0.4 * c.width) + 8, Math.round(0.3 * c.height), 1, 1).data; return d[0] > 200 && d[2] < 60; }), { timeout: 8000 }).toBe(true);
+  // The PC sees the session and ends it.
+  await pc.goto(`${COMPANION}/#/remote`);
+  await expect(pc.getByText("Aktive Sitzung: iPhone · Safari")).toBeVisible();
+  await pc.getByRole("button", { name: "Sitzung beenden" }).click();
+  await expect(phone.getByText("Verbindung sicher beendet")).toBeVisible({ timeout: 10000 });
+  await expect(phone.getByText("Am PC beendet.")).toBeVisible();
+  await pc.getByRole("switch", { name: /Remote Desktop erlauben/ }).click();
+});
+
 test("Datenschutztaste: zeigt ehrlich, was wirkt, pausiert andere Geräte und verdeckt Inhalte", async () => {
   await pc.goto(`${COMPANION}/#/`);
   await phone.goto(`${COMPANION}/#/games`);

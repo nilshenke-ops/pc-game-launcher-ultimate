@@ -77,6 +77,7 @@ sealed class TrayAppContext : ApplicationContext
     readonly CompanionServices _services;
     readonly WindowsOverlay _overlay;
     readonly WindowsDesktopWidgets _desktopWidgets;
+    readonly RemoteIndicator _remoteBar;
     readonly EventWaitHandle _showSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Show");
     /// <summary>Set by an uninstall that was started from Apps &amp; Features while the app runs.</summary>
     readonly EventWaitHandle _exitSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Exit");
@@ -99,6 +100,8 @@ sealed class TrayAppContext : ApplicationContext
         _services = new CompanionServices(platform, new AppPaths());
         _overlay.Corner = () => _services.Settings.Get().OverlayCorner;
         _services.Obs.RecordingChanged += (active, _) => _overlay.Recording = active;
+        _remoteBar = new RemoteIndicator(ui, () => _services.Remote.End("Am PC beendet."));
+        _services.Remote.Changed += info => _remoteBar.Show(info == null ? null : $"{info.Device} {(info.Control ? "steuert" : "sieht")} diesen PC");
         _tray = new TrayIcon(this, _services);
         trayRef = _tray;
         _form.Attach(_services, this);
@@ -171,6 +174,7 @@ sealed class TrayAppContext : ApplicationContext
         _form.Hide();
         try { _overlay.Dispose(); } catch { }
         try { _desktopWidgets.Dispose(); } catch { }
+        try { _remoteBar.Dispose(); } catch { }
         try { await _services.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
         _form.Close();
         ExitThread();

@@ -15,6 +15,7 @@ public sealed class PrivacyConfig
     public List<string> QuietCategories { get; set; } = new();
     public bool PauseOtherDevices { get; set; }
     public bool HideSensitive { get; set; } = true;
+    public bool EndRemote { get; set; } = true;
 }
 
 /// <summary>What one step really did: "active" (protects now), "done" (done once), "failed", "unsupported", "info".</summary>
@@ -32,6 +33,7 @@ public sealed class PrivacyState
     public List<string> MutedMics { get; set; } = new();
     public bool PausedOthers { get; set; }
     public bool HideSensitive { get; set; }
+    public bool BlocksRemote { get; set; }
     public List<string>? QuietCategories { get; set; }
 }
 
@@ -59,6 +61,8 @@ public sealed class PrivacyService
     readonly object _lock = new();
     /// <summary>Pauses all device sessions except the given device; returns how many were paused.</summary>
     public Func<string?, int> PauseOthers { get; set; } = _ => 0;
+    /// <summary>Ends a running remote desktop session; returns whether one was running.</summary>
+    public Func<string, bool> EndRemote { get; set; } = _ => false;
 
     public PrivacyService(AppPaths paths, IAudioEngine engine, AudioService audio, Action stopSounds, IHub hub)
     {
@@ -95,6 +99,8 @@ public sealed class PrivacyService
         var s = State;
         return s.Active && s.QuietCategories != null && (s.QuietCategories.Count == 0 || s.QuietCategories.Contains(category));
     }
+
+    public string? BlocksRemote() => State is { Active: true, BlocksRemote: true } ? "Der PC ist im Datenschutzmodus – Remote Desktop startet erst wieder, wenn er aus ist." : null;
 
     /// <summary>Reason why a device may not sign in right now, or null.</summary>
     public string? Blocks(string deviceId)
@@ -155,6 +161,12 @@ public sealed class PrivacyService
                 _store.Update(f => f.State = st);
                 var n = PauseOthers(deviceId);
                 r.Add(new("devices", "Andere Geräte pausieren", "active", $"{n} {(n == 1 ? "Gerät" : "Geräte")} abgemeldet; bis zum Ausschalten keine neue Anmeldung (der PC selbst{(deviceId != null ? " und dieses Gerät" : "")} ausgenommen). Die Kopplungen bleiben bestehen."));
+            }
+            if (c.EndRemote)
+            {
+                st.BlocksRemote = true;
+                var had = EndRemote("Datenschutzmodus am PC eingeschaltet.");
+                r.Add(new("remote", "Fernsteuerung beenden", "active", (had ? "Die laufende Remote-Desktop-Sitzung wurde beendet" : "Es lief keine Remote-Desktop-Sitzung") + "; bis zum Ausschalten startet keine neue."));
             }
             if (c.HideSensitive)
             {

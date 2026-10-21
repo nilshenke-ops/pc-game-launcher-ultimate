@@ -24,6 +24,7 @@ export function navItems(): NavItem[] {
     { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
     { path: "/assistant", label: t("KI-Assistent"), short: t("Assistent"), icon: Sparkles, group: g.dash, keywords: "ki ai claude chat frage hilfe sprache befehl assistent fragen" },
     { path: "/widgets", label: t("Widget-Baukasten"), short: t("Widgets"), icon: Shapes, group: g.dash, keywords: "widgets eigene editor desktop baukasten design uhr knopf setup designer" },
+    { path: "/remote", label: t("Remote Desktop"), short: t("Remote"), icon: MonitorSmartphone, group: g.ctrl, keywords: "remote desktop fernsteuerung fernsteuern bildschirm übertragen live handy ipad touch maus tastatur pc steuern spiegeln screen" },
     { path: "/profiles", label: t("Gaming-Profile"), short: t("Profile"), icon: Swords, group: g.ctrl, keywords: "competitive streaming" },
     { path: "/automations", label: t("Automatisierungen"), short: t("Abläufe"), icon: Bot, group: g.ctrl, keywords: "regeln wenn dann automation hub ablauf" },
     { path: "/layouts", label: t("Fenster-Layouts"), short: t("Layouts"), icon: LayoutTemplate, group: g.ctrl, keywords: "fenster monitor bildschirm anordnen layout zweiter monitor position discord obs" },
@@ -75,7 +76,7 @@ export const ICONS: Record<string, LucideIcon> = {
 const NAV_COLORS: Record<string, string> = {
   "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
-  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/vault": "#fbbf24", "/inventory": "#60a5fa", "/crashes": "#f87171", "/gamestate": "#a78bfa", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
+  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/vault": "#fbbf24", "/inventory": "#60a5fa", "/crashes": "#f87171", "/gamestate": "#a78bfa", "/remote": "#818cf8", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",
   "/diagnostics": "#2dd4bf", "/updates": "#4ade80", "/help": "#93c5fd",
 };

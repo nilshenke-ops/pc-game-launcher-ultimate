@@ -42,7 +42,8 @@ public sealed class RpcSession
     public string Who => IsLocalAdmin ? "PC" : Device?.Name ?? "unbekannt";
     public string PrefsKey => IsLocalAdmin ? "local" : Device?.Id ?? "anon";
     /// <summary>Admin devices may also switch the PC off (they can grant themselves the right anyway).</summary>
-    public bool Has(string perm) => Permissions.Contains(perm) || (perm == Security.Permissions.Power && Permissions.Contains(Security.Permissions.Admin));
+    public bool Has(string perm) => Permissions.Contains(perm) || (perm == Security.Permissions.Power && Permissions.Contains(Security.Permissions.Admin))
+        || (perm == Security.Permissions.Screen && Permissions.Contains(Security.Permissions.Remote));
 }
 
 public sealed class RpcContext
@@ -83,6 +84,16 @@ public sealed class RpcContext
 
     public bool Bool(string name, bool fallback = false) =>
         Params.ValueKind == JsonValueKind.Object && Params.TryGetProperty(name, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : fallback;
+
+    public bool? OptBool(string name) =>
+        Params.ValueKind == JsonValueKind.Object && Params.TryGetProperty(name, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
+
+    /// <summary>A whole number if given (unchecked range – the caller validates).</summary>
+    public int? OptInt(string name) =>
+        Params.ValueKind == JsonValueKind.Object && Params.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var i) ? i : null;
+
+    public long? OptLong(string name) =>
+        Params.ValueKind == JsonValueKind.Object && Params.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt64(out var i) ? i : null;
 
     public int Int(string name, int fallback, int min, int max) =>
         Params.ValueKind == JsonValueKind.Object && Params.TryGetProperty(name, out var v) && v.ValueKind == JsonValueKind.Number && v.TryGetInt32(out var i)
@@ -219,7 +230,16 @@ public sealed class RpcServer : IHub
         return s;
     }
 
-    public void OnClosed(IClientChannel channel) => _sessions.TryRemove(channel.Id, out _);
+    /// <summary>A connection closed (e.g. ends its remote desktop session).</summary>
+    public event Action<RpcSession>? Closed;
+
+    public void OnClosed(IClientChannel channel)
+    {
+        if (_sessions.TryRemove(channel.Id, out var s)) try { Closed?.Invoke(s); } catch (Exception ex) { Log.Warn("rpc", ex.Message); }
+    }
+
+    /// <summary>Sends an event to one connection and waits until it is handed to the network (remote desktop pictures).</summary>
+    public Task SendToAsync(RpcSession session, string ev, object? data) => SafeSend(session, Json.Serialize(new { v = ProtocolVersion, ev, d = data }));
 
     /// <summary>Reason why a paired device may not sign in right now (privacy mode), or null.</summary>
     public Func<string, string?>? LoginBlocked { get; set; }
@@ -248,10 +268,12 @@ public sealed class RpcServer : IHub
         try
         {
             if (text.Length > MaxMessageBytes) throw new RpcException("too-large", "Nachricht zu groß.");
-            if (!session.Limiter.TryHit("msg")) throw new RpcException("rate-limited", "Zu viele Anfragen.");
             using var doc = JsonDocument.Parse(text, new JsonDocumentOptions { MaxDepth = 32 });
             var root = doc.RootElement;
             if (root.ValueKind != JsonValueKind.Object) throw new RpcException("bad-request", "Ungültige Nachricht.");
+            // Remote desktop acknowledgements (one per picture, with the touches since the last one) have their own budget.
+            var isTick = root.TryGetProperty("m", out var mm) && mm.ValueKind == JsonValueKind.String && mm.GetString() == "remote.tick";
+            if (!session.Limiter.TryHit(isTick ? "tick" : "msg")) throw new RpcException("rate-limited", "Zu viele Anfragen.");
             if (!root.TryGetProperty("v", out var v) || v.ValueKind != JsonValueKind.Number || v.GetInt32() != ProtocolVersion)
                 throw new RpcException("protocol", $"Nicht unterstützte Protokollversion (erwartet {ProtocolVersion}).");
             if (!root.TryGetProperty("id", out var idEl) || !idEl.TryGetInt64(out id) || id <= 0)

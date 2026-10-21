@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.36.0 – 2026-10-21
+### Neu
+- Remote Desktop (Steuerung → Remote Desktop): der echte Windows-Bildschirm live auf iPhone, iPad oder einem anderen Browser – über die bestehende angemeldete Verbindung (WLAN direkt, von unterwegs über den eigenen Tunnel oder das Relay)
+- Touch-Maus (tippen, Doppeltippen, halten = Rechtsklick, halten und ziehen, wischen = scrollen, zwei Finger = Rechtsklick) und Touchpad-Modus mit eigenem Zeiger
+- Bildschirmtastatur mit Umlauten, Strg/Alt/Umschalt/Windows zum Antippen, Sondertasten, F1–F12 und Kombinationen (Strg+C/V/X/Z/A, Alt+Tab, Win+D, Task-Manager); Maus und Tastatur am Computer-Browser
+- Zoom, Pause, Vollbild, Qualität (Automatisch, Wenig Daten, Ausgewogen, Hohe Qualität) mit gemessener Bildrate, Datenrate und Antwortzeit
+- Eigene Rechte „Bildschirm ansehen“ und „Fernsteuern“ (nie automatisch vergeben); Freigabe, Höchstdauer und Ende ohne Eingabe nur am PC einstellbar
+- Am PC: Leiste „… steuert diesen PC – Beenden“, Benachrichtigung und „Sitzung beenden“
+- Einstellungen für Remote Desktop werden auf dem Gerät gespeichert und gehen auch ohne PC
+- Anleitung: docs/REMOTE-DESKTOP.md
+### Verbessert
+- Datenschutztaste beendet auf Wunsch auch eine laufende Fernsteuerung und lässt bis zum Ausschalten keine neue zu
+- Bilder werden nur bei Bedarf geschickt: höchstens zwei unterwegs, unverändertes Bild nicht doppelt, bei Stillstand weniger Aufnahmen (spart Leistung beim Spielen)
+- Sitzungen enden nach Höchstdauer, ohne Eingabe, ohne Antwort, bei Verbindungsabbruch oder entzogenem Recht – gedrückte Tasten werden immer losgelassen
+
 ## 2.35.0 – 2026-10-21
 ### Neu
 - Datenschutz- und Notfalltaste (Schild oben in der Leiste oder Deck-Taste „Datenschutzmodus an/aus“) mit vorher gewählten Schritten: Soundboard stoppen, Mikrofon-Durchleitung aus, Windows-Mikrofon stummschalten, Benachrichtigungen leise (auch nur bestimmte Kategorien), andere Geräte pausieren, Inhalte verdecken

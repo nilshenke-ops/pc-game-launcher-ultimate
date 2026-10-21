@@ -24,6 +24,10 @@ public interface IPlatform
     IPowerControl Power => NullPower.Instance;
     /// <summary>Graphics drivers and where Windows keeps its crash reports (Windows companion only).</summary>
     IHardwareInfo Hardware => NullHardwareInfo.Instance;
+    /// <summary>Screen capture for the remote desktop (Windows companion only).</summary>
+    IScreenCapture Screen => NullScreenCapture.Instance;
+    /// <summary>Mouse and keyboard input for the remote desktop (Windows companion only).</summary>
+    IRemoteInput RemoteInput => NullRemoteInput.Instance;
     /// <summary>In-game overlay window (Windows companion only).</summary>
     IOverlay Overlay => NullOverlay.Instance;
     /// <summary>Presses keyboard shortcuts of other programs (NVIDIA, Xbox Game Bar …). Windows companion only.</summary>
@@ -400,4 +404,73 @@ public interface IUpdateInstaller
     /// <summary>True if the previous version is kept and can be restored.</summary>
     bool CanRollback => false;
     string? Rollback() => "Nur im Windows-Begleiter möglich.";
+}
+
+
+/// <summary>One monitor in desktop coordinates (pixels).</summary>
+public sealed record ScreenInfo(int Index, string Name, int X, int Y, int Width, int Height, bool Primary);
+
+/// <summary>An encoded picture of a monitor (JPEG on Windows), scaled to at most the requested width. When Windows does
+/// not allow a picture (locked, sign-in or UAC prompt) <see cref="Data"/> is empty and <see cref="Problem"/> says why.</summary>
+public sealed record ScreenFrame(byte[] Data, string Mime, int Width, int Height, ScreenInfo Screen, string? Problem = null);
+
+public interface IScreenCapture
+{
+    bool Supported { get; }
+    string? UnsupportedReason { get; }
+    /// <summary>True only for the developer test picture (headless companion with PGL_REMOTE_TESTSOURCE=1), never on a real PC.</summary>
+    bool IsTestSource => false;
+    IReadOnlyList<ScreenInfo> Screens();
+    ScreenFrame Capture(int screen, int maxWidth, int quality);
+}
+
+public enum RemoteButton { Left, Right, Middle }
+
+/// <summary>Normal Windows input (SendInput) – the same as a mouse and keyboard at the PC. No elevation, no driver.</summary>
+public interface IRemoteInput
+{
+    bool Supported { get; }
+    /// <summary>Moves the pointer to a point given as 0..1 of the monitor.</summary>
+    void MoveTo(ScreenInfo screen, double x, double y);
+    void Button(RemoteButton button, bool down);
+    /// <summary>Wheel steps (120 = one notch); positive dy scrolls up, positive dx scrolls right.</summary>
+    void Wheel(int dy, int dx);
+    /// <summary>Types text as Unicode characters (independent of the keyboard layout).</summary>
+    void Text(string text);
+    /// <summary>Presses (or releases) one key from <see cref="RemoteKeys.Names"/>.</summary>
+    void Key(string key, bool down);
+    /// <summary>Releases every button and key this session pressed (after a cancel or when the session ends).</summary>
+    void ReleaseAll();
+}
+
+/// <summary>Keys a remote device may press. Letters and digits are only for combinations (Ctrl+C); text goes through Text().</summary>
+public static class RemoteKeys
+{
+    public static readonly HashSet<string> Modifiers = new() { "Ctrl", "Alt", "Shift", "Win" };
+    public static readonly HashSet<string> Names = new(new[]
+    {
+        "Enter", "Escape", "Tab", "Backspace", "Delete", "Insert", "Home", "End", "PageUp", "PageDown", "Up", "Down", "Left", "Right", "Space",
+        "PrintScreen", "ContextMenu",
+    }.Concat(Modifiers).Concat(Enumerable.Range(1, 12).Select(i => "F" + i)).Concat(Enumerable.Range('A', 26).Select(c => ((char)c).ToString())).Concat(Enumerable.Range(0, 10).Select(i => i.ToString())));
+}
+
+public sealed class NullScreenCapture : IScreenCapture
+{
+    public static readonly NullScreenCapture Instance = new();
+    public bool Supported => false;
+    public string? UnsupportedReason => "Die Bildschirmübertragung gibt es nur im Windows-Begleiter.";
+    public IReadOnlyList<ScreenInfo> Screens() => Array.Empty<ScreenInfo>();
+    public ScreenFrame Capture(int screen, int maxWidth, int quality) => throw new NotSupportedException(UnsupportedReason);
+}
+
+public sealed class NullRemoteInput : IRemoteInput
+{
+    public static readonly NullRemoteInput Instance = new();
+    public bool Supported => false;
+    public void MoveTo(ScreenInfo screen, double x, double y) { }
+    public void Button(RemoteButton button, bool down) { }
+    public void Wheel(int dy, int dx) { }
+    public void Text(string text) { }
+    public void Key(string key, bool down) { }
+    public void ReleaseAll() { }
 }
