@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.39.0",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.39.0/PCGameLauncherCompanion.exe",
+    "size": 87823184,
+    "sha256": "47576c79fd435dfd0a584bd61d97c765e9a2c4ac20a89ac6b75b70b311cd6654",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.39.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.39.0/PCGameLauncherCompanion-2.39.0-win-x64.zip",
+      "size": 82084330,
+      "sha256": "c3173de89972dea3aa92a639920ae1b0f9a4f8b2ce15f3b68ed5cebf1528ea4b"
+    },
+    "notes": "„Was spiele ich?“ (Spielbegleiter): Zeit-Finder für 10–15, 30, 45, 60, 90, 120+ Minuten oder eigene Zeit – schlägt nur Spiele mit bekannter Sitzungsdauer vor (eigene Angabe oder Median der echten Sitzungen), jede Karte nennt die Gründe; Spiele ohne bekannte Dauer stehen getrennt; Filter und Zufallsauswahl · Challenge-Generator: allgemeine Vorschläge (als solche gekennzeichnet) und Vorschläge aus deinen Daten (Verlauf, Backlog, Zielpfade, Funde); eigene spielspezifische Challenges; speichern, bearbeiten, neu würfeln, abhaken · Gaming-Bingo: 3×3, 4×4, 5×5 mit freier Mitte, Vorlagen und eigene Aufgaben, erkennt Reihen, Spalten und Diagonalen; Export als Bild oder Datei, Teilen per Link (die Karte steckt nur im Link, nichts liegt online)",
+    "changes": {
+      "neu": [
+        "„Was spiele ich?“ (Spielbegleiter): Zeit-Finder für 10–15, 30, 45, 60, 90, 120+ Minuten oder eigene Zeit – schlägt nur Spiele mit bekannter Sitzungsdauer vor (eigene Angabe oder Median der echten Sitzungen), jede Karte nennt die Gründe; Spiele ohne bekannte Dauer stehen getrennt; Filter und Zufallsauswahl",
+        "Challenge-Generator: allgemeine Vorschläge (als solche gekennzeichnet) und Vorschläge aus deinen Daten (Verlauf, Backlog, Zielpfade, Funde); eigene spielspezifische Challenges; speichern, bearbeiten, neu würfeln, abhaken",
+        "Gaming-Bingo: 3×3, 4×4, 5×5 mit freier Mitte, Vorlagen und eigene Aufgaben, erkennt Reihen, Spalten und Diagonalen; Export als Bild oder Datei, Teilen per Link (die Karte steckt nur im Link, nichts liegt online)",
+        "Backlog: Bewertung, Tags, eigene Zeitschätzung und Sitzungsdauer, Archiv statt Löschen, Mehrfachauswahl (Status, Priorität, Archiv), doppelte Spiele zusammenführen"
+      ],
+      "verbessert": [
+        "Gaming-Verlauf liefert die typische Sitzungsdauer je Spiel (Median, erst ab 3 Sitzungen)",
+        "Backlog-Export/-Import und CSV enthalten die neuen Felder"
+      ],
+      "behoben": []
+    },
+    "signature": "yghunHzk4LoUnPvU3P5chZ035AMlnHET5258pIMD5/A7ISY8FCnkDMiV9WicC+IOvHZK138BH+Tit2aCDzhCbg=="
+  },
+  {
     "version": "2.38.0",
     "date": "2026-10-21",
     "channel": "stable",
@@ -1430,47 +1460,5 @@
       ]
     },
     "signature": "rLhW8W0bjCB7XSzToJFJ0tBPaTZICyqEITqGFz59ZOVO/ODXS/EzP3z25hhk7dup75WQksjhPw6MrOEGgaGsFg=="
-  },
-  {
-    "version": "1.2.0",
-    "date": "2026-10-18",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.2.0/PCGameLauncherCompanion.exe",
-    "size": 84337875,
-    "sha256": "fd2a4835f83ac95f4e1b60193d1cb1a1ebc4ff13e056bdd817201a113a807af4",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-1.2.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.2.0/PCGameLauncherCompanion-1.2.0-win-x64.zip",
-      "size": 78631431,
-      "sha256": "545b3685efe60d461f75d90c84f12004e4cb581299e716a8415f02128c26bde6"
-    },
-    "notes": "Plugin Center: Plugins aus dem signierten Store oder als Datei installieren, aktivieren, Rechte einzeln erteilen und entziehen, aktualisieren, zurücksetzen, exportieren · Plugin-SDK mit Anleitung und vier Beispiel-Plugins (Spielzeit heute, CPU & RAM Mini, Neon-Themes, Discord-Schnellton); Widgets laufen abgeschottet in einer Sandbox · Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: Version, Datum, Größe, Änderungen, direkter Download von GitHub Releases",
-    "changes": {
-      "neu": [
-        "Plugin Center: Plugins aus dem signierten Store oder als Datei installieren, aktivieren, Rechte einzeln erteilen und entziehen, aktualisieren, zurücksetzen, exportieren",
-        "Plugin-SDK mit Anleitung und vier Beispiel-Plugins (Spielzeit heute, CPU & RAM Mini, Neon-Themes, Discord-Schnellton); Widgets laufen abgeschottet in einer Sandbox",
-        "Update-Zentrale „Updates & Versionen“ auf Webseite, Handy und im Begleiter: Version, Datum, Größe, Änderungen, direkter Download von GitHub Releases",
-        "Signierte Updates (ECDSA) mit Prüfung von Signatur, Größe, Prüfsumme und Dateityp; vorherige Version wiederherstellen; Wiederherstellungspunkt vor jedem Update",
-        "Netzwerk-Monitor mit Ping, Jitter, Paketverlust und Verlauf",
-        "Speicherplatz-Manager mit Laufwerken und Spielgrößen",
-        "Energiezentrale: Sperren, Energiesparen, Neustart, Herunterfahren (mit Verzögerung und Abbrechen)",
-        "Leistungswerte (CPU/GPU/RAM) und Notizen je Spielsitzung",
-        "Bewertungen (1–5 Sterne) für Spiele und Programme",
-        "Wiederherstellungspunkte: wöchentlich automatisch, manuell, vor Updates; prüfen und wiederherstellen",
-        "Mehrere Windows-PCs auf einem Handy verwalten und wechseln",
-        "Konsistenzprüfung in der Diagnose: fehlende Programme, verwaiste Verweise, doppelte Hotkeys"
-      ],
-      "verbessert": [
-        "Eine Versionsquelle (Datei VERSION) für Begleiter und Webseite",
-        "Universelle Suche findet auch Plugins und ihre Aktionen",
-        "Veröffentlichung über GitHub Releases mit automatischer Prüfung der Downloads und der Update-Erkennung"
-      ],
-      "behoben": [
-        "Nach einem Update startete der Begleiter nicht neu, solange die alte Version noch lief",
-        "Webseite zeigte bei älteren Update-Angaben keine Download-Datei"
-      ]
-    },
-    "signature": "xoJ65I1Ypb6V5lSDp6xAYLTHATAjRU15RSJws4ZHNLoXEHjaEoe+Nvu/FothLDaOT+MpR7YH+sAX/N7EN/DyLA=="
   }
 ]

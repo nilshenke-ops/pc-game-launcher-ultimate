@@ -1,33 +1,30 @@
 {
-  "version": "2.38.0",
+  "version": "2.39.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.38.0/PCGameLauncherCompanion.exe",
-  "size": 87802541,
-  "sha256": "05ac745306091dd20e51161a58c33b6388bea6de84d4ca1e21dc98eb0e40f378",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.39.0/PCGameLauncherCompanion.exe",
+  "size": 87823184,
+  "sha256": "47576c79fd435dfd0a584bd61d97c765e9a2c4ac20a89ac6b75b70b311cd6654",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.38.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.38.0/PCGameLauncherCompanion-2.38.0-win-x64.zip",
-    "size": 82064046,
-    "sha256": "a667e570bddce4972913603adb82152ad97a0483ed0865f0243ef81a7abf02ef"
+    "fileName": "PCGameLauncherCompanion-2.39.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.39.0/PCGameLauncherCompanion-2.39.0-win-x64.zip",
+    "size": 82084330,
+    "sha256": "c3173de89972dea3aa92a639920ae1b0f9a4f8b2ce15f3b68ed5cebf1528ea4b"
   },
-  "notes": "Neuer Bereich „Spielbegleiter“ mit Spiele-Journal und Gaming-Wiki – funktioniert ohne PC: gespeichert im Browser, beim Verbinden mit dem PC abgeglichen (andere Geräte sehen dasselbe, alles im PC-Backup) · „Wo war ich noch mal?“: Verlauf je Spiel (was gemacht, wo, was als Nächstes, Bilder); beim Spielstart erscheint die letzte eigene Notiz, auch im Bearbeiten-Fenster des Spiels · Zielpfade: eigene Etappen mit Belohnungen und Meilensteinen, Fortschritt aus den Etappen, Vorlagen und eigene Vorlagen, Archiv – ohne tägliche Pflichten oder Fristen",
+  "notes": "„Was spiele ich?“ (Spielbegleiter): Zeit-Finder für 10–15, 30, 45, 60, 90, 120+ Minuten oder eigene Zeit – schlägt nur Spiele mit bekannter Sitzungsdauer vor (eigene Angabe oder Median der echten Sitzungen), jede Karte nennt die Gründe; Spiele ohne bekannte Dauer stehen getrennt; Filter und Zufallsauswahl · Challenge-Generator: allgemeine Vorschläge (als solche gekennzeichnet) und Vorschläge aus deinen Daten (Verlauf, Backlog, Zielpfade, Funde); eigene spielspezifische Challenges; speichern, bearbeiten, neu würfeln, abhaken · Gaming-Bingo: 3×3, 4×4, 5×5 mit freier Mitte, Vorlagen und eigene Aufgaben, erkennt Reihen, Spalten und Diagonalen; Export als Bild oder Datei, Teilen per Link (die Karte steckt nur im Link, nichts liegt online)",
   "changes": {
     "neu": [
-      "Neuer Bereich „Spielbegleiter“ mit Spiele-Journal und Gaming-Wiki – funktioniert ohne PC: gespeichert im Browser, beim Verbinden mit dem PC abgeglichen (andere Geräte sehen dasselbe, alles im PC-Backup)",
-      "„Wo war ich noch mal?“: Verlauf je Spiel (was gemacht, wo, was als Nächstes, Bilder); beim Spielstart erscheint die letzte eigene Notiz, auch im Bearbeiten-Fenster des Spiels",
-      "Zielpfade: eigene Etappen mit Belohnungen und Meilensteinen, Fortschritt aus den Etappen, Vorlagen und eigene Vorlagen, Archiv – ohne tägliche Pflichten oder Fristen",
-      "Quest- und Fundsammlung: Kategorien, Status offen/gefunden/erledigt, Tags, Bilder, Favoriten, Suche, Filter, Sortierung",
-      "Story ohne Spoiler: Kapitel, Figuren, offene Fragen und eigener Stand; die spoilerfreie Ansicht verdeckt alles danach und alles als Spoiler Markierte",
-      "Gaming-Wiki: [[Links]] zwischen Seiten (fehlende Seite mit einem Tipp anlegen), Rückverweise, automatisches Speichern, Versionen mit Wiederherstellen, doppelte Seiten zusammenführen, Markdown-Export",
-      "Alle Einträge lassen sich untereinander verknüpfen; Export und Import als Datei geht ohne PC"
+      "„Was spiele ich?“ (Spielbegleiter): Zeit-Finder für 10–15, 30, 45, 60, 90, 120+ Minuten oder eigene Zeit – schlägt nur Spiele mit bekannter Sitzungsdauer vor (eigene Angabe oder Median der echten Sitzungen), jede Karte nennt die Gründe; Spiele ohne bekannte Dauer stehen getrennt; Filter und Zufallsauswahl",
+      "Challenge-Generator: allgemeine Vorschläge (als solche gekennzeichnet) und Vorschläge aus deinen Daten (Verlauf, Backlog, Zielpfade, Funde); eigene spielspezifische Challenges; speichern, bearbeiten, neu würfeln, abhaken",
+      "Gaming-Bingo: 3×3, 4×4, 5×5 mit freier Mitte, Vorlagen und eigene Aufgaben, erkennt Reihen, Spalten und Diagonalen; Export als Bild oder Datei, Teilen per Link (die Karte steckt nur im Link, nichts liegt online)",
+      "Backlog: Bewertung, Tags, eigene Zeitschätzung und Sitzungsdauer, Archiv statt Löschen, Mehrfachauswahl (Status, Priorität, Archiv), doppelte Spiele zusammenführen"
     ],
     "verbessert": [
-      "Wurde ein Eintrag auf zwei Geräten geändert, gilt die neuere Änderung; die andere bleibt als Konflikt-Kopie auf dem PC und lässt sich wiederherstellen",
-      "Backup enthält die Sammlungen (Bilder zusammen mit den Audiodateien)"
+      "Gaming-Verlauf liefert die typische Sitzungsdauer je Spiel (Median, erst ab 3 Sitzungen)",
+      "Backlog-Export/-Import und CSV enthalten die neuen Felder"
     ],
     "behoben": []
   },
-  "signature": "YbKQWNvL4ROceHbSlVszRAZzfTuJ0yycveIvMqoD6ZhCE/Q3q82KuiqSXo27hw7WIp4Uz8kC8uafNrjBelmX6Q=="
+  "signature": "yghunHzk4LoUnPvU3P5chZ035AMlnHET5258pIMD5/A7ISY8FCnkDMiV9WicC+IOvHZK138BH+Tit2aCDzhCbg=="
 }
