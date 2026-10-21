@@ -28,6 +28,8 @@ public interface IPlatform
     IScreenCapture Screen => NullScreenCapture.Instance;
     /// <summary>Mouse and keyboard input for the remote desktop (Windows companion only).</summary>
     IRemoteInput RemoteInput => NullRemoteInput.Instance;
+    /// <summary>What the PC is playing (for the remote desktop sound) – Windows companion only.</summary>
+    IAudioLoopback AudioLoopback => NullAudioLoopback.Instance;
     /// <summary>In-game overlay window (Windows companion only).</summary>
     IOverlay Overlay => NullOverlay.Instance;
     /// <summary>Presses keyboard shortcuts of other programs (NVIDIA, Xbox Game Bar …). Windows companion only.</summary>
@@ -473,4 +475,25 @@ public sealed class NullRemoteInput : IRemoteInput
     public void Text(string text) { }
     public void Key(string key, bool down) { }
     public void ReleaseAll() { }
+}
+
+
+/// <summary>
+/// Sound the PC is playing right now (loopback of the default output), as 16-bit PCM in chunks of about 100 ms.
+/// Only listens – no default device is changed, the microphone is never recorded.
+/// </summary>
+public interface IAudioLoopback
+{
+    bool Supported { get; }
+    string? UnsupportedReason { get; }
+    /// <summary>Starts listening; <paramref name="onChunk"/> gets interleaved samples, sample rate and channel count. Dispose stops it.</summary>
+    IDisposable Start(Action<short[], int, int> onChunk);
+}
+
+public sealed class NullAudioLoopback : IAudioLoopback
+{
+    public static readonly NullAudioLoopback Instance = new();
+    public bool Supported => false;
+    public string? UnsupportedReason => "Ton gibt es nur im Windows-Begleiter.";
+    public IDisposable Start(Action<short[], int, int> onChunk) => throw new NotSupportedException(UnsupportedReason);
 }

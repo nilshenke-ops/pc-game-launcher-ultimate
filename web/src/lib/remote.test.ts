@@ -85,3 +85,14 @@ describe("connection type", () => {
     expect(isLan("wss://172.40.0.1/ws")).toBe(false);
   });
 });
+
+describe("remote sound", () => {
+  it("turns 16-bit stereo PCM into channels", async () => {
+    const { pcmToChannels } = await import("./remote-audio");
+    const pcm = new Int16Array([16384, -16384, 32767, -32768]);
+    const b64 = btoa(String.fromCharCode(...new Uint8Array(pcm.buffer)));
+    const [l, r] = pcmToChannels(b64, 2);
+    expect([...l]).toEqual([0.5, 32767 / 32768]);
+    expect([...r]).toEqual([-0.5, -1]);
+  });
+});

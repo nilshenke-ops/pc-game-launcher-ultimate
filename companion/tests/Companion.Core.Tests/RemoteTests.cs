@@ -13,7 +13,7 @@ public class RemoteTests
     static (CompanionServices s, TestScreenSource screen) Setup(TempDir dir)
     {
         var screen = new TestScreenSource();
-        return (new CompanionServices(new GenericPlatform { Screen = screen, RemoteInput = screen }, new AppPaths(dir.Path), new Pgl.Core.Hosting.WebAssets(dir.Path)), screen);
+        return (new CompanionServices(new GenericPlatform { Screen = screen, RemoteInput = screen, AudioLoopback = screen }, new AppPaths(dir.Path), new Pgl.Core.Hosting.WebAssets(dir.Path)), screen);
     }
 
     static async Task<List<JsonElement>> Frames(TestClient c, int atLeast, int ms = 3000)
@@ -217,5 +217,55 @@ public class RemoteTests
         await Until(() => remote.Active == null);
         Assert.Contains("Sitzungsdauer (1 min) abgelaufen", Reason());
         Assert.Contains(screen.Log, l => l.StartsWith("release"));
+    }
+
+    [Fact]
+    public async Task Sound_only_when_asked_for_only_during_the_session_and_not_while_paused()
+    {
+        using var dir = new TempDir();
+        var (s, _) = Setup(dir);
+        await using var _ = s;
+        var admin = await Fixtures.Admin(s);
+        await admin.Ok("remote.configure", new { enabled = true });
+        var (phone, _, _) = await Fixtures.PairedDevice(s, admin, new[] { "view", "screen" });
+        Assert.True((await phone.Ok("remote.status")).GetProperty("audio").GetBoolean());
+        var id = (await phone.Ok("remote.start")).GetProperty("sessionId").GetString()!;
+        await Task.Delay(300);
+        Assert.Empty(phone.Channel.Events("remote.audio")); // off by default
+
+        await phone.Ok("remote.audio", new { sessionId = id, on = true });
+        await Until(() => phone.Channel.Events("remote.audio").Count() >= 3);
+        var a = phone.Channel.Events("remote.audio").First().GetProperty("d");
+        Assert.Equal(24000, a.GetProperty("rate").GetInt32());
+        Assert.Equal(2, a.GetProperty("channels").GetInt32());
+        Assert.Equal(2400 * 2 * 2, Convert.FromBase64String(a.GetProperty("data").GetString()!).Length); // 100 ms stereo 16-bit
+
+        await phone.Ok("remote.pause", new { sessionId = id, paused = true });
+        await Task.Delay(150);
+        var n = phone.Channel.Events("remote.audio").Count();
+        await Task.Delay(400);
+        Assert.Equal(n, phone.Channel.Events("remote.audio").Count()); // nothing while paused
+        await phone.Ok("remote.pause", new { sessionId = id, paused = false });
+        await Until(() => phone.Channel.Events("remote.audio").Count() > n);
+
+        await phone.Ok("remote.stop", new { sessionId = id });
+        await Task.Delay(150);
+        n = phone.Channel.Events("remote.audio").Count();
+        await Task.Delay(400);
+        Assert.Equal(n, phone.Channel.Events("remote.audio").Count()); // stops with the session
+    }
+
+    [Fact]
+    public async Task Without_windows_sound_is_refused_honestly()
+    {
+        using var dir = new TempDir();
+        var screen = new TestScreenSource();
+        await using var s = new CompanionServices(new GenericPlatform { Screen = screen, RemoteInput = screen }, new AppPaths(dir.Path), new Pgl.Core.Hosting.WebAssets(dir.Path));
+        var admin = await Fixtures.Admin(s);
+        await admin.Ok("remote.configure", new { enabled = true });
+        var st = await admin.Ok("remote.status");
+        Assert.False(st.GetProperty("audio").GetBoolean());
+        var id = (await admin.Ok("remote.start")).GetProperty("sessionId").GetString()!;
+        Assert.Equal("unsupported", await admin.Error("remote.audio", new { sessionId = id, on = true }));
     }
 }

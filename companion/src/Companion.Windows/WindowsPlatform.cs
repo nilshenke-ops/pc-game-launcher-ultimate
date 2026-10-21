@@ -38,6 +38,7 @@ sealed class WindowsPlatform : IPlatform
     public IHardwareInfo Hardware { get; } = new WindowsHardwareInfo();
     public IScreenCapture Screen { get; } = new WindowsScreenCapture();
     public IRemoteInput RemoteInput { get; } = new WindowsRemoteInput();
+    public IAudioLoopback AudioLoopback { get; } = new WindowsAudioLoopback();
     public WindowsOverlay OverlayWindows { get; }
     public IOverlay Overlay => OverlayWindows;
     public IKeySender KeySender { get; } = new WindowsKeySender();

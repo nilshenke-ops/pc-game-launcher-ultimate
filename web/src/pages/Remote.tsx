@@ -3,18 +3,19 @@
 // and only while a session runs. Nothing here is simulated: without the PC the page shows exactly that.
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Activity, ChevronDown, ChevronUp, Hand, Keyboard, Maximize, MonitorOff, MonitorSmartphone, MousePointer2, MousePointerClick, Pause, Play, Settings2, Unplug, X, ZoomIn } from "lucide-react";
+import { Activity, ChevronDown, ChevronUp, Hand, Keyboard, Maximize, MonitorOff, MonitorSmartphone, MousePointer2, MousePointerClick, Pause, Play, Settings2, Unplug, Volume2, VolumeX, X, ZoomIn } from "lucide-react";
 import { client, savedPcs, RpcError } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useConn, useRpc } from "../lib/hooks";
 import { dateTime, relTime } from "../lib/format";
+import { RemoteAudio } from "../lib/remote-audio";
 import { GestureRecognizer, keysFor, loadRemotePrefs, REMOTE_DEFAULTS, sanitizeRemotePrefs, saveRemotePrefs, toScreen, withModifiers, type Gesture, type RemotePrefs } from "../lib/remote";
 import { Banner, Button, Card, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
 
 interface ScreenInfo { index: number; name: string; width: number; height: number; primary: boolean }
 export interface RemoteStatus {
   enabled: boolean; maxMinutes: number; idleMinutes: number; supported: boolean; reason?: string | null; inputSupported: boolean; testSource: boolean;
-  screens: ScreenInfo[]; canView: boolean; canControl: boolean; audio: boolean;
+  screens: ScreenInfo[]; canView: boolean; canControl: boolean; audio: boolean; audioReason?: string | null;
   session?: { id: string; device: string; control: boolean; since: string; screen: number; mine: boolean; paused: boolean } | null;
 }
 interface Frame { sessionId: string; seq: number; mime: string; data: string; w: number; h: number; sw: number; sh: number; quality: number; bytes: number; captureMs: number; rtt: number }
@@ -97,7 +98,7 @@ function ConnectionCard({ state, st, loading, pcName, transport, last, onConnect
                   <div><b>{t("Verbindung")}:</b> {transport ?? "–"}</div>
                   <div><b>{t("Rechte dieses Geräts")}:</b> {st.canControl ? t("ansehen und steuern") : st.canView ? t("nur ansehen") : t("keine")}</div>
                   <div><b>{t("Zuletzt verbunden")}:</b> {last ? `${dateTime(last)} (${relTime(last)})` : t("noch nie")}</div>
-                  <div><b>{t("Ton")}:</b> {t("wird noch nicht übertragen")}</div>
+                  <div><b>{t("Ton")}:</b> {st.audio ? t("verfügbar – in der Leiste mit „Ton“ einschalten") : st.audioReason ?? t("nicht verfügbar")}</div>
                 </div>
                 <div className="row">
                   <Button variant="primary" icon={<MonitorSmartphone size={16} />} disabled={!ready} onClick={onConnect}>{t("Verbinden")}</Button>
@@ -175,7 +176,7 @@ function HelpCard() {
           <li>{t("Spiele im exklusiven Vollbild können schwarz erscheinen – im Spiel „Randloses Fenster“ wählen. Spiele mit Anti-Cheat sind evtl. nicht steuerbar; das wird nicht umgangen.")}</li>
           <li>{t("Das Bild kommt als Einzelbilder (JPEG) über die bestehende Verbindung – im WLAN meist flüssig, über das Internet langsamer. Die tatsächliche Bildrate und Antwortzeit stehen in der Leiste unter „Qualität“.")}</li>
           <li>{t("Von unterwegs braucht es den eingerichteten Tunnel (Tailscale/Cloudflare) oder ein eigenes Relay – siehe Hilfe → Installation. Die feste Webseite (github.io) kann nicht direkt auf die WLAN-Adresse des PCs zugreifen.")}</li>
-          <li>{t("Ton wird noch nicht übertragen.")}</li>
+          <li>{t("Ton: in der Leiste „Ton“ antippen (iPhone/iPad erlauben Ton erst nach einem Tippen). Übertragen wird, was der PC gerade abspielt – Standardgeräte und Mikrofon bleiben unverändert. Etwa 0,3 s Verzögerung (im Test gemessen); bei sehr langsamer Verbindung wird Ton ausgelassen statt zu stauen. Geschützte Inhalte (manche Streaming-Apps) können stumm bleiben.")}</li>
         </ul>
       ) : <p className="small muted" style={{ margin: 0 }}>{t("Gesten, Tastatur, Spiele, Verbindung von unterwegs.")}</p>}
     </Card>
@@ -211,6 +212,9 @@ function RemoteViewer({ prefs, setPrefs, status, onEnd }: { prefs: RemotePrefs; 
   const [rightNext, setRightNext] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [showStats, setShowStats] = useState(false);
+  const audio = useRef<RemoteAudio | null>(null);
+  const [soundOn, setSoundOn] = useState(false);
+  const [audioBuf, setAudioBuf] = useState(0);
   const [stats, setStats] = useState({ fps: 0, kbps: 0, rtt: 0, w: 0, h: 0, quality: 0, captureMs: 0 });
   const [cursor, setCursor] = useState({ x: 0.5, y: 0.5 });
   const cursorRef = useRef({ x: 0.5, y: 0.5 });
@@ -226,7 +230,7 @@ function RemoteViewer({ prefs, setPrefs, status, onEnd }: { prefs: RemotePrefs; 
   const modsRef = useRef<string[]>([]);
   modsRef.current = mods;
 
-  const end = useCallback((reason: string) => { wantRunning.current = false; sidRef.current = null; setSid(null); onEnd(reason); }, [onEnd]);
+  const end = useCallback((reason: string) => { wantRunning.current = false; sidRef.current = null; setSid(null); audio.current?.close(); audio.current = null; onEnd(reason); }, [onEnd]);
 
   // ---------------------------------------------------------------- session start / reconnect
   const start = useCallback(async () => {
@@ -281,7 +285,8 @@ function RemoteViewer({ prefs, setPrefs, status, onEnd }: { prefs: RemotePrefs; 
     });
     const offState = client.on("remote.state", (d) => { const x = d as { sessionId: string; problem?: string | null }; if (x.sessionId === sidRef.current) setProblem(x.problem ?? null); });
     const offEnd = client.on("remote.ended", (d) => { const x = d as { sessionId: string; reason: string }; if (x.sessionId === sidRef.current) end(x.reason); });
-    return () => { offFrame(); offState(); offEnd(); };
+    const offAudio = client.on("remote.audio", (d) => { const a = d as { sessionId: string; rate: number; channels: number; data: string }; if (a.sessionId === sidRef.current) audio.current?.push(a.data, a.rate, a.channels); });
+    return () => { offFrame(); offState(); offEnd(); offAudio(); audio.current?.close(); audio.current = null; };
   }, [end]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------------------------------------------------------- acknowledgements + input (one message in flight)
@@ -475,6 +480,19 @@ function RemoteViewer({ prefs, setPrefs, status, onEnd }: { prefs: RemotePrefs; 
   // Tapping a key on the bar must not take the focus from the text field (the on-screen keyboard would close).
   const keepFocus = (e: React.PointerEvent) => { e.preventDefault(); kbd.current?.focus(); };
 
+  // Must run inside the tap: browsers only start sound after a user gesture.
+  const toggleSound = () => {
+    const id = sidRef.current;
+    if (!id) return;
+    if (soundOn) { setSoundOn(false); audio.current?.close(); audio.current = null; void client.call("remote.audio", { sessionId: id, on: false }).catch(() => {}); return; }
+    try { audio.current = new RemoteAudio(prefs.volume); } catch { toast(t("Dieser Browser kann keinen Ton abspielen."), "error"); return; }
+    client.call("remote.audio", { sessionId: id, on: true }).then(() => setSoundOn(true), (e: Error) => { audio.current?.close(); audio.current = null; toast(e.message, "error"); });
+  };
+  useEffect(() => { audio.current?.setVolume(prefs.volume); }, [prefs.volume]);
+  useEffect(() => { if (!soundOn) return; const id = window.setInterval(() => setAudioBuf(audio.current?.bufferMs ?? 0), 1000); return () => clearInterval(id); }, [soundOn]);
+  // A new session (after reconnecting) starts without sound – the button shows that.
+  useEffect(() => { setSoundOn(false); audio.current?.close(); audio.current = null; }, [sid]);
+
   const setQuality = (preset: RemotePrefs["preset"]) => {
     setPrefs({ preset });
     const id = sidRef.current;
@@ -512,6 +530,8 @@ function RemoteViewer({ prefs, setPrefs, status, onEnd }: { prefs: RemotePrefs; 
           <Button size="sm" disabled={!control} onClick={() => send({ t: "release" })} title={t("Lässt alle gedrückten Maustasten und Tasten los")}>{t("Loslassen")}</Button>
           <Button size="sm" icon={<ZoomIn size={16} />} onClick={() => setZoom(zoom >= 3 ? 1 : zoom + 1)}>{zoom}×</Button>
           <Button size="sm" icon={paused ? <Play size={16} /> : <Pause size={16} />} onClick={togglePause} disabled={!sid}>{paused ? t("Fortsetzen") : t("Pause")}</Button>
+          <Button size="sm" variant={soundOn ? "primary" : undefined} icon={soundOn ? <Volume2 size={16} /> : <VolumeX size={16} />} disabled={!sid || !status.audio} aria-pressed={soundOn}
+            title={status.audio ? undefined : status.audioReason ?? undefined} onClick={toggleSound}>{t("Ton")}</Button>
           <Button size="sm" icon={<Activity size={16} />} variant={showStats ? "primary" : undefined} onClick={() => setShowStats(!showStats)}>{t("Qualität")}{quality && `: ${quality}`}</Button>
           <Button size="sm" icon={<Maximize size={16} />} onClick={fullscreen}>{t("Vollbild")}</Button>
           <Button size="sm" variant="danger" icon={<Unplug size={16} />} onClick={disconnect}>{t("Trennen")}</Button>
@@ -527,6 +547,8 @@ function RemoteViewer({ prefs, setPrefs, status, onEnd }: { prefs: RemotePrefs; 
           <span>{t("Antwortzeit")}: <b>{stats.rtt || "–"}</b> ms</span>
           <span>{t("Bild")}: <b>{stats.w}×{stats.h}</b> · {t("Qualität")} {stats.quality}</span>
           <span>{t("Aufnahme am PC")}: <b>{stats.captureMs}</b> ms</span>
+          {soundOn && <span>{t("Ton-Puffer")}: <b>{audioBuf}</b> ms</span>}
+          <label className="row small" style={{ gap: 6 }}>{t("Lautstärke")}<input type="range" min={0} max={1} step={0.05} value={prefs.volume} onChange={(e) => setPrefs({ volume: Number(e.target.value) })} aria-label={t("Lautstärke")} /></label>
           <Segmented value={prefs.preset} onChange={setQuality} options={PRESETS.map((p) => ({ value: p.value, label: t(p.label) }))} />
         </div>
       )}

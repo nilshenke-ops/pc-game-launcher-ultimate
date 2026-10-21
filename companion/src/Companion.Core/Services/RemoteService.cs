@@ -59,10 +59,13 @@ public sealed class RemoteService : IDisposable
     /// <summary>Reason why no session may start right now (privacy mode), or null.</summary>
     public Func<string?> Blocked { get; set; } = () => null;
 
-    public RemoteService(AppPaths paths, IScreenCapture screen, IRemoteInput input, IHub hub, Func<RpcSession, string, object?, Task> send, Func<DateTime>? now = null)
+    readonly IAudioLoopback _audio;
+
+    public RemoteService(AppPaths paths, IScreenCapture screen, IRemoteInput input, IHub hub, Func<RpcSession, string, object?, Task> send, Func<DateTime>? now = null, IAudioLoopback? audio = null)
     {
         _store = new JsonStore<RemoteSettings>(paths.File("remote.json"));
         _screen = screen; _input = input; _hub = hub; _send = send; _now = now ?? (() => DateTime.UtcNow);
+        _audio = audio ?? NullAudioLoopback.Instance;
     }
 
     public RemoteSettings Settings => _store.Snapshot();
@@ -96,7 +99,7 @@ public sealed class RemoteService : IDisposable
             screens = _screen.Supported ? _screen.Screens() : Array.Empty<ScreenInfo>(),
             canView = who.Has(Security.Permissions.Screen), canControl = who.Has(Security.Permissions.Remote),
             session = a == null ? null : new { a.Info.Id, a.Info.Device, a.Info.Control, a.Info.Since, a.Info.Screen, mine = a.Rpc == who, a.Paused },
-            audio = false,
+            audio = _audio.Supported, audioReason = _audio.UnsupportedReason,
         };
     }
 
@@ -120,6 +123,8 @@ public sealed class RemoteService : IDisposable
         public int Frames; public long Bytes; public double CaptureMs;
         /// <summary>Pictures in a row that did not change – then the PC captures less often (saves CPU while gaming).</summary>
         public int Unchanged;
+        public IDisposable? Audio;
+        public long AudioSeq;
     }
 
     static readonly (int width, int quality)[] AutoLevels = { (1920, 75), (1600, 65), (1280, 58), (1024, 50), (800, 42) };
@@ -183,6 +188,35 @@ public sealed class RemoteService : IDisposable
         return new { paused };
     }
 
+    /// <summary>Sound on/off for this session. Only listens to what the PC plays; nothing is changed on the PC.</summary>
+    public object SetAudio(RpcSession who, string id, bool on)
+    {
+        var s = Mine(who, id);
+        if (!on) { StopAudio(s); return new { audio = false }; }
+        if (!_audio.Supported) throw new RpcException("unsupported", _audio.UnsupportedReason ?? "Ton nicht verfügbar.");
+        if (s.Audio != null) return new { audio = true };
+        try
+        {
+            s.Audio = _audio.Start((pcm, rate, ch) =>
+            {
+                // Paused or a very slow line: sound chunks are dropped instead of piling up behind the pictures.
+                if (s.Paused || s.Cts.IsCancellationRequested || s.Rtt > 800) return;
+                var bytes = new byte[pcm.Length * 2];
+                Buffer.BlockCopy(pcm, 0, bytes, 0, bytes.Length);
+                _ = _send(s.Rpc, "remote.audio", new { sessionId = s.Info.Id, seq = ++s.AudioSeq, rate, channels = ch, data = Convert.ToBase64String(bytes) });
+            });
+        }
+        catch (Exception ex) { throw new RpcException("audio", "Ton konnte nicht gestartet werden: " + ex.Message); }
+        Log.Info("remote", $"Ton an ({s.Info.Device}).");
+        return new { audio = true };
+    }
+
+    static void StopAudio(Session s)
+    {
+        var a = s.Audio; s.Audio = null;
+        try { a?.Dispose(); } catch (Exception ex) { Log.Warn("remote", ex.Message); }
+    }
+
     public object SetQuality(RpcSession who, string id, string preset, int? maxWidth, int? fps)
     {
         var s = Mine(who, id);
@@ -219,6 +253,7 @@ public sealed class RemoteService : IDisposable
         if (_active is not { } s) return;
         _active = null;
         s.Cts.Cancel();
+        StopAudio(s);
         try { if (s.Info.Control) _input.ReleaseAll(); } catch (Exception ex) { Log.Warn("remote", ex.Message); }
         Log.Info("remote", $"Sitzung beendet ({s.Info.Device}): {reason} – {s.Frames} Bilder, {s.Bytes / 1024} KB.");
         _ = _send(s.Rpc, "remote.ended", new { sessionId = s.Info.Id, reason });

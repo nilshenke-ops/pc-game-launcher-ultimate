@@ -27,6 +27,7 @@ public sealed class GenericPlatform : IPlatform
     public IHardwareInfo Hardware { get; init; } = NullHardwareInfo.Instance;
     public IScreenCapture Screen { get; init; } = NullScreenCapture.Instance;
     public IRemoteInput RemoteInput { get; init; } = NullRemoteInput.Instance;
+    public IAudioLoopback AudioLoopback { get; init; } = NullAudioLoopback.Instance;
 }
 
 /// <summary>Only records what would happen (headless test runs with PGL_POWER_DRYRUN=1) – never switches anything off.</summary>

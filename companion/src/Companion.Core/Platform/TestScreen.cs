@@ -6,7 +6,7 @@ namespace Pgl.Core.Platform;
 /// last left/right click went (red/blue), so a test can check that a tap on the phone lands on the right PC pixel.
 /// The web app shows it with the label "Testbild – kein echter Bildschirm".
 /// </summary>
-public sealed class TestScreenSource : IScreenCapture, IRemoteInput
+public sealed class TestScreenSource : IScreenCapture, IRemoteInput, IAudioLoopback
 {
     public const int W = 960, H = 540;
     static readonly ScreenInfo Main = new(0, "Testbild (kein echter Bildschirm)", 0, 0, W, H, true);
@@ -81,5 +81,22 @@ public sealed class TestScreenSource : IScreenCapture, IRemoteInput
     public void Wheel(int dy, int dx) => Add($"wheel {dy} {dx}");
     public void Text(string text) => Add("text " + text);
     public void Key(string key, bool down) { lock (_lock) { if (down) _down.Add(key); else _down.Remove(key); } Add($"key {key} {(down ? "down" : "up")}"); }
+    // Test sound: a quiet 440 Hz tone, 24 kHz stereo, in 100 ms chunks (the test picture's "PC sound").
+    public IDisposable Start(Action<short[], int, int> onChunk)
+    {
+        var phase = 0.0;
+        var timer = new Timer(_ =>
+        {
+            var buf = new short[2400 * 2];
+            for (var i = 0; i < 2400; i++)
+            {
+                var v = (short)(Math.Sin(phase) * 3000); phase += 2 * Math.PI * 440 / 24000;
+                buf[2 * i] = v; buf[2 * i + 1] = v;
+            }
+            onChunk(buf, 24000, 2);
+        }, null, 0, 100);
+        return timer;
+    }
+
     public void ReleaseAll() { string[] held; lock (_lock) { held = _down.ToArray(); _down.Clear(); } Add("release " + string.Join(",", held)); }
 }

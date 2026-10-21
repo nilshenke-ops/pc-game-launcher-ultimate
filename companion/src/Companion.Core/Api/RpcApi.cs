@@ -569,12 +569,22 @@ public static class RpcApi
         // ------------------------------------------------------------ savegame vault and configuration versions
         rpc.Register("vault.list", _ => s.Vault.Overview());
         rpc.Register("privacy.status", _ => s.Privacy.Status());
+        rpc.Register("moves.list", _ => new { jobs = s.Moves.List() });
+        rpc.Register("moves.options", async ctx => { var id = ctx.Str("itemId", 64); return (object?)await Task.Run(() => s.Moves.Options(id)); });
+        rpc.Register("moves.plan", ctx => s.Moves.Plan(ctx.Str("itemId", 64), ctx.Str("targetLibrary", 400), ctx.Session.Who));
+        rpc.Register("moves.start", async ctx => { var id = ctx.Str("id", 40); return (object?)await Task.Run(() => s.Moves.Start(id)); });
+        rpc.Register("moves.pause", ctx => s.Moves.Pause(ctx.Str("id", 40)));
+        rpc.Register("moves.switch", async ctx => { var id = ctx.Str("id", 40); return (object?)await Task.Run(() => s.Moves.Switch(id)); });
+        rpc.Register("moves.finish", async ctx => { var id = ctx.Str("id", 40); var ok = ctx.Bool("confirmed"); return (object?)await Task.Run(() => s.Moves.Finish(id, ok)); });
+        rpc.Register("moves.undo", async ctx => { var id = ctx.Str("id", 40); return (object?)await Task.Run(() => s.Moves.Undo(id)); });
+        rpc.Register("moves.remove", ctx => s.Moves.Remove(ctx.Str("id", 40)));
         rpc.Register("remote.status", ctx => s.Remote.Status(ctx.Session));
         rpc.Register("remote.configure", ctx => s.Remote.Configure(ctx.OptBool("enabled"), ctx.OptInt("maxMinutes"), ctx.OptInt("idleMinutes")));
         rpc.Register("remote.start", ctx => s.Remote.Start(ctx.Session, ctx.OptInt("screen") ?? 0, ctx.OptStr("preset", 12) ?? "auto", ctx.OptInt("maxWidth"), ctx.OptInt("fps")));
         rpc.Register("remote.tick", ctx => s.Remote.Tick(ctx.Session, ctx.Str("sessionId", 40), ctx.OptLong("ack") ?? 0, ctx.Params.TryGetProperty("events", out var ev) ? ev : default));
         rpc.Register("remote.pause", ctx => s.Remote.Pause(ctx.Session, ctx.Str("sessionId", 40), ctx.Bool("paused")));
         rpc.Register("remote.quality", ctx => s.Remote.SetQuality(ctx.Session, ctx.Str("sessionId", 40), ctx.OptStr("preset", 12) ?? "auto", ctx.OptInt("maxWidth"), ctx.OptInt("fps")));
+        rpc.Register("remote.audio", ctx => s.Remote.SetAudio(ctx.Session, ctx.Str("sessionId", 40), ctx.Bool("on")));
         rpc.Register("remote.stop", ctx => s.Remote.Stop(ctx.Session, ctx.Str("sessionId", 40)));
         rpc.Register("remote.end", _ => s.Remote.End("Am PC beendet."));
         rpc.Register("privacy.on", ctx => s.Privacy.On(ctx.Session.Who, ctx.Session.Device?.Id));

@@ -17,9 +17,11 @@ export interface RemotePrefs {
   fullscreen: boolean;
   autoReconnect: boolean;
   screen: number;
+  /** Sound volume 0..1 (sound itself is switched on per session with a tap). */
+  volume: number;
 }
 
-export const REMOTE_DEFAULTS: RemotePrefs = { preset: "auto", fps: 20, maxWidth: 1600, mode: "touch", speed: 1.4, toolbar: "always", fullscreen: false, autoReconnect: true, screen: 0 };
+export const REMOTE_DEFAULTS: RemotePrefs = { preset: "auto", fps: 20, maxWidth: 1600, mode: "touch", speed: 1.4, toolbar: "always", fullscreen: false, autoReconnect: true, screen: 0, volume: 0.8 };
 const KEY = "pgl.remote";
 const clamp = (v: unknown, min: number, max: number, d: number) => (typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v * 100) / 100)) : d);
 
@@ -35,6 +37,7 @@ export function sanitizeRemotePrefs(v: unknown): RemotePrefs {
     fullscreen: p.fullscreen === true,
     autoReconnect: p.autoReconnect !== false,
     screen: Math.round(clamp(p.screen, 0, 15, 0)),
+    volume: clamp(p.volume, 0, 1, REMOTE_DEFAULTS.volume),
   };
 }
 

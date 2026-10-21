@@ -1,6 +1,6 @@
 # Remote Desktop – PC-Bildschirm live auf iPhone und iPad
 
-Stand: Version 2.36.0. Diese Anleitung beschreibt, was tatsächlich eingebaut ist, wie du es einrichtest und wo die Grenzen liegen.
+Stand: Version 2.37.0. Diese Anleitung beschreibt, was tatsächlich eingebaut ist, wie du es einrichtest und wo die Grenzen liegen.
 
 ## 1. Was die Funktion kann
 
@@ -33,7 +33,7 @@ Stand: Version 2.36.0. Diese Anleitung beschreibt, was tatsächlich eingebaut is
 2. Am PC erscheint oben eine Leiste **„iPad steuert diesen PC – Beenden“** und eine Benachrichtigung. Die Leiste ist im übertragenen Bild ausgeblendet, am PC aber immer sichtbar.
 3. Gesten **Touch-Maus**: tippen = Klick · zweimal tippen = Doppelklick · gedrückt halten = Rechtsklick · halten und ziehen = Ziehen (Fenster verschieben) · wischen = scrollen · mit zwei Fingern tippen = Rechtsklick.
 4. Gesten **Touchpad**: Finger bewegen = Zeiger bewegen · tippen = Klick am Zeiger · zwei Finger = scrollen · tippen und gleich wieder halten = Ziehen.
-5. Leiste: **Tastatur** (mit Strg/Alt/⇧/Win zum Antippen, dann Taste = Kombination; dazu Esc, Tab, Enter, ⌫, Entf, Pfeile, Pos1/Ende, Bild↑/↓, F1–F12, Strg+C/V/X/Z/A, Alt+Tab, Win+D, Win+E, Task-Manager) · **Rechtsklick** (nächstes Tippen ist ein Rechtsklick) · **Loslassen** (falls eine Taste/Maustaste hängt) · **Zoom** · **Pause** · **Qualität** · **Vollbild** · **Trennen**.
+5. Leiste: **Ton** (iPhone/iPad spielen Ton erst nach einem Tippen ab – deshalb pro Sitzung einmal antippen; Lautstärke unter „Qualität“) · **Tastatur** (mit Strg/Alt/⇧/Win zum Antippen, dann Taste = Kombination; dazu Esc, Tab, Enter, ⌫, Entf, Pfeile, Pos1/Ende, Bild↑/↓, F1–F12, Strg+C/V/X/Z/A, Alt+Tab, Win+D, Win+E, Task-Manager) · **Rechtsklick** (nächstes Tippen ist ein Rechtsklick) · **Loslassen** (falls eine Taste/Maustaste hängt) · **Zoom** · **Pause** · **Qualität** · **Vollbild** · **Trennen**.
 6. Wechselst du die App oder sperrst du das iPad, pausiert die Übertragung automatisch. Bei einem kurzen Abbruch verbindet sich die Seite von selbst neu (abschaltbar).
 7. **Tipp iPhone:** Webseiten dürfen dort kein echtes Vollbild. In Safari *Teilen → Zum Home-Bildschirm* – dann läuft die App ohne Adressleiste. Querformat gibt mehr Platz.
 
@@ -56,7 +56,7 @@ Die Einstellungen (Qualität, Bildrate, Breite, Steuerung, Leiste, Vollbild, aut
 
 ## 7. Grenzen (ehrlich)
 
-- **Ton** wird noch nicht übertragen.
+- **Ton:** etwa 0,3 s Verzögerung; bei sehr langsamer Verbindung (Antwortzeit über 0,8 s) wird Ton ausgelassen statt zu stauen; geschützte Inhalte können stumm bleiben; braucht zusätzlich ca. 130 KB/s.
 - Programme, die **als Administrator** laufen, nehmen von Windows aus keine Fern-Eingaben an (Windows-Schutz „UIPI“).
 - Spiele im **exklusiven Vollbild** und geschützte Videos können **schwarz** erscheinen → im Spiel „Randloses Fenster“ wählen. Spiele mit **Anti-Cheat** sind evtl. nicht steuerbar; das wird bewusst nicht umgangen.
 - Kein Mehrfinger-Zoom (Zoom über die Leiste), keine Bildschirmauswahl während der Sitzung (vorher in den Einstellungen wählen).
@@ -69,7 +69,9 @@ Die Einstellungen (Qualität, Bildrate, Breite, Steuerung, Leiste, Vollbild, aut
 - Browser (Chromium als iPad, iPhone quer, PC): Verbinden, Tippen/Klicken landet pixelgenau, Rechtsklick, Text mit Umlauten, Strg+C, Strg (Leiste) + z = Strg+Z, Pause, Trennen; E2E mit echt gekoppeltem Handy (Recht am PC geben, Tippen, am PC beenden).
 - Leistung (Testquelle, Linux): siehe docs/PERFORMANCE.md.
 
-**Nicht getestet** (braucht deinen Windows-PC): die echte Windows-Bildschirmaufnahme (GDI + JPEG), SendInput am echten Desktop, die Leiste am PC, Mehrmonitor, Sperrbildschirm-Erkennung, Bildrate/CPU auf dem HP Victus, Safari auf echtem iPhone/iPad.
+Ton (2.37): C# (nur auf Wunsch, nicht während Pause, endet mit der Sitzung, ohne Windows ehrlich „nicht verfügbar“), Browser (einschalten, Wiedergabe mit gemessenem Puffer 350 ms, ausschalten).
+
+**Nicht getestet** (braucht deinen Windows-PC): die echte Tonaufnahme (WASAPI-Loopback), die echte Windows-Bildschirmaufnahme (GDI + JPEG), SendInput am echten Desktop, die Leiste am PC, Mehrmonitor, Sperrbildschirm-Erkennung, Bildrate/CPU auf dem HP Victus, Safari auf echtem iPhone/iPad.
 
 ## 9. Fehlerbehebung
 

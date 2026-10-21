@@ -414,6 +414,13 @@ public sealed class LibraryService
         return r;
     }
 
+    /// <summary>The game moved to another folder (drive move assistant).</summary>
+    public void SetInstallDir(string id, string dir)
+    {
+        _store.Update(f => { if (f.Items.FirstOrDefault(x => x.Id == id) is { } i) i.InstallDir = dir; });
+        _hub.Changed("library");
+    }
+
     public LibraryItem UpdateTarget(string id, string? target, string? args, string? workingDir)
     {
         var r = _store.Update(f =>

@@ -262,3 +262,43 @@ sealed class RemoteIndicator : IDisposable
 
     public void Dispose() => _ui.Post(() => { _form?.Close(); _form?.Dispose(); });
 }
+
+/// <summary>
+/// Remote desktop sound: WASAPI loopback of the default output – exactly what the PC plays, nothing is changed and the
+/// microphone is not touched. Converted to 16-bit, halved sample rate (48 kHz → 24 kHz) and sent in ~100 ms chunks.
+/// Protected content (some streaming apps) may stay silent; that is Windows' decision.
+/// </summary>
+sealed class WindowsAudioLoopback : IAudioLoopback
+{
+    public bool Supported => true;
+    public string? UnsupportedReason => null;
+
+    public IDisposable Start(Action<short[], int, int> onChunk)
+    {
+        var cap = new NAudio.Wave.WasapiLoopbackCapture();
+        var fmt = cap.WaveFormat;
+        int ch = Math.Clamp(fmt.Channels, 1, 2), srcCh = fmt.Channels, rate = fmt.SampleRate / 2;
+        var pending = new List<short>(rate * ch / 5);
+        var isFloat = fmt.Encoding == NAudio.Wave.WaveFormatEncoding.IeeeFloat || (fmt.Encoding == NAudio.Wave.WaveFormatEncoding.Extensible && fmt.BitsPerSample == 32);
+        var bytesPerSample = fmt.BitsPerSample / 8;
+        cap.DataAvailable += (_, e) =>
+        {
+            var frames = e.BytesRecorded / (bytesPerSample * srcCh);
+            for (var f = 0; f + 1 < frames; f += 2) // two source frames → one (simple averaging halves the rate)
+                for (var c = 0; c < ch; c++)
+                {
+                    float a = Sample(e.Buffer, (f * srcCh + c) * bytesPerSample), b = Sample(e.Buffer, ((f + 1) * srcCh + c) * bytesPerSample);
+                    pending.Add((short)Math.Clamp((a + b) * 0.5f * 32767f, -32768f, 32767f));
+                }
+            if (pending.Count >= rate * ch / 10) { onChunk(pending.ToArray(), rate, ch); pending.Clear(); }
+        };
+        float Sample(byte[] buf, int o) => isFloat ? BitConverter.ToSingle(buf, o) : bytesPerSample == 2 ? BitConverter.ToInt16(buf, o) / 32768f : BitConverter.ToInt32(buf, o) / 2147483648f;
+        cap.StartRecording();
+        return new Stopper(cap);
+    }
+
+    sealed class Stopper(NAudio.Wave.WasapiLoopbackCapture cap) : IDisposable
+    {
+        public void Dispose() { try { cap.StopRecording(); } catch { } cap.Dispose(); }
+    }
+}

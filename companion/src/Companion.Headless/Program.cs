@@ -32,6 +32,7 @@ var platform = new GenericPlatform
     Power = Environment.GetEnvironmentVariable("PGL_POWER_DRYRUN") == "1" ? new DryRunPower() : NullPower.Instance,
     Screen = testScreen ?? (IScreenCapture)NullScreenCapture.Instance,
     RemoteInput = testScreen ?? (IRemoteInput)NullRemoteInput.Instance,
+    AudioLoopback = testScreen ?? (IAudioLoopback)NullAudioLoopback.Instance,
 };
 var services = new CompanionServices(platform, new AppPaths(dataDir));
 await services.StartAsync();

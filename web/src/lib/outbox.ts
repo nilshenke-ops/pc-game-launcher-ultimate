@@ -60,6 +60,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "overlay.saveLayout": () => t("Overlay-Widgets speichern"),
   "vault.configure": () => t("Regel des Savegame-Tresors ändern"),
   "privacy.configure": () => t("Schritte der Datenschutztaste ändern"),
+  "moves.plan": () => t("Umzug eines Spiels vorbereiten"),
   "overlay.savePreset": (p) => t("HUD-Layout speichern {n}", { n: name(p) }),
   "overlay.removePreset": () => t("HUD-Layout löschen"),
   "overlay.applyPreset": () => t("HUD-Layout anwenden"),
@@ -180,6 +181,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "overlay.layout": {},
   "overlay.presets": { presets: [] },
   "vault.list": { locations: [] },
+  "moves.list": { jobs: [] },
   "privacy.status": { active: false, config: { stopSounds: true, stopMicPassthrough: true, muteMic: false, quietNotifications: true, quietCategories: [], pauseOtherDevices: false, hideSensitive: true }, can: { sounds: false, passthrough: false, micMute: false } },
   "widgets.list": { widgets: [] },
   "deck.list": { decks: [] },
@@ -301,6 +303,13 @@ function applyLocally(method: string, p: Params): unknown {
         ...(typeof p.compareMicrosoft === "boolean" ? { compareMicrosoft: p.compareMicrosoft } : {}), ...(typeof p.syncSteamWishlist === "boolean" ? { syncSteamWishlist: p.syncSteamWishlist } : {}) }));
       return readCache("deals.list")?.data;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
+    case "moves.plan": {
+      // Shown as "waits for the PC"; the PC checks everything again when it creates the plan.
+      const item = readCache<{ items: (WithId & { name?: string; installDir?: string })[] }>("library.list")?.data.items.find((i) => i.id === p.itemId);
+      const job = { id: "pending-" + String(p.itemId), itemId: p.itemId, game: item?.name ?? "?", source: item?.installDir ?? "", targetLibrary: p.targetLibrary, target: String(p.targetLibrary), phase: "planned", totalBytes: 0, totalFiles: 0, doneBytes: 0, doneFiles: 0, by: "", createdAt: new Date().toISOString(), log: [], pending: true };
+      patch<{ jobs: WithId[] }>("moves.list", (d) => ({ ...d, jobs: [job as unknown as WithId, ...d.jobs.filter((j) => j.id !== job.id)] }));
+      return job;
+    }
     case "privacy.configure":
       patch<Params>("privacy.status", (d) => ({ ...d, config: p }));
       return p;
