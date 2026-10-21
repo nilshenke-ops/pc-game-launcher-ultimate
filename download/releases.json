@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.43.1",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion.exe",
+    "size": 87912749,
+    "sha256": "112226972f5c7ad236d8be3f0abce4770b8b529b2c48279260be9ab75b450808",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.43.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion-2.43.1-win-x64.zip",
+      "size": 82174180,
+      "sha256": "5e39dc2edbf423839769e2339c49da0b062bd51def72e2ef9fae924eff6bcf2b"
+    },
+    "notes": "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen",
+    "changes": {
+      "neu": [
+        "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "fBk5hP0uE1zXEetjerrqL1e8utW4gwfVhfJF33RDSb4AJja5unvg6dUj14YO8GxwT/oZaGAdmVVml9p0x1fBew=="
+  },
+  {
     "version": "2.43.0",
     "date": "2026-10-21",
     "channel": "stable",
@@ -1441,34 +1465,5 @@
       ]
     },
     "signature": "PnoTg0FM8VP2low+pHH3f+C7dpSiiI0cyAjNiOGdD3Gfnkvv2JpRcDqajflpFNgkW6J2AERuAdRZDA1rDCv9eg=="
-  },
-  {
-    "version": "1.9.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.9.0/PCGameLauncherCompanion.exe",
-    "size": 84400970,
-    "sha256": "09b922789a9cba75fbe9731db0ec64514e44d8d2f7af627ea1fa9304fe2273b5",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-1.9.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.9.0/PCGameLauncherCompanion-1.9.0-win-x64.zip",
-      "size": 78730339,
-      "sha256": "9c96092833a9f73b29358f98586fd5700263159d7b7b0e9dc585858c52338f6f"
-    },
-    "notes": "Widget-Baukasten: eigene Widgets frei gestalten – Text, Uhr/Datum, Live-Werte (CPU, RAM, GPU, GPU-Temperatur als Zahl, Balken oder Ring), Knöpfe, Bilder, Spielzeit, „Läuft gerade“ und Flächen · Elemente frei verschieben und in der Größe ändern (ziehen, Ecke, Pfeiltasten), Farben, Verlauf, Hintergrundbild, Deckkraft, Ecken-Rundung, Schriftgröße und Ausrichtung einstellbar; Vorlagen als Startpunkt, Duplizieren · Knöpfe im Widget: Aufnahme, Replay speichern, Overlay, alle Sounds stoppen, Quick Action, Spiel/Programm starten, Sound abspielen, Gaming-Profil aktivieren (nur Ziele dieses PCs, mit den Rechten des Geräts)",
-    "changes": {
-      "neu": [
-        "Widget-Baukasten: eigene Widgets frei gestalten – Text, Uhr/Datum, Live-Werte (CPU, RAM, GPU, GPU-Temperatur als Zahl, Balken oder Ring), Knöpfe, Bilder, Spielzeit, „Läuft gerade“ und Flächen",
-        "Elemente frei verschieben und in der Größe ändern (ziehen, Ecke, Pfeiltasten), Farben, Verlauf, Hintergrundbild, Deckkraft, Ecken-Rundung, Schriftgröße und Ausrichtung einstellbar; Vorlagen als Startpunkt, Duplizieren",
-        "Knöpfe im Widget: Aufnahme, Replay speichern, Overlay, alle Sounds stoppen, Quick Action, Spiel/Programm starten, Sound abspielen, Gaming-Profil aktivieren (nur Ziele dieses PCs, mit den Rechten des Geräts)",
-        "Eigene Widgets auf dem Dashboard (Website und PC-App) und frei verschiebbar im Overlay",
-        "Desktop-Widgets für Windows: eigene kleine Fenster ganz unten auf dem Desktop, per Ziehen verschiebbar; pausieren automatisch, solange ein Spiel läuft",
-        "Widgets ohne PC auf dem Handy/Tablet bauen und platzieren – sie werden beim nächsten Verbinden übertragen; im Backup enthalten"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "aP4MeCVa39NoegZh/huGES2YTltdrUsCO3BXWltjLWAMP+tJxeL1lNM9THyosDx1BFwQoixs5HsESmV9dcr7sQ=="
   }
 ]

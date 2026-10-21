@@ -1,29 +1,24 @@
 {
-  "version": "2.43.0",
+  "version": "2.43.1",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.0/PCGameLauncherCompanion.exe",
-  "size": 87912191,
-  "sha256": "f49846311b666b953d892e606d81b96d17a62925f60f1692f1fa83e4d8f58414",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion.exe",
+  "size": 87912749,
+  "sha256": "112226972f5c7ad236d8be3f0abce4770b8b529b2c48279260be9ab75b450808",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.43.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.0/PCGameLauncherCompanion-2.43.0-win-x64.zip",
-    "size": 82173138,
-    "sha256": "bcb5d15d037205fea58e1c08f950a008573149953f1d50ada204a2ef24a96847"
+    "fileName": "PCGameLauncherCompanion-2.43.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion-2.43.1-win-x64.zip",
+    "size": 82174180,
+    "sha256": "5e39dc2edbf423839769e2339c49da0b062bd51def72e2ef9fae924eff6bcf2b"
   },
-  "notes": "Installierte Spiele kommen automatisch in die Bibliothek – ohne Einrichtung: Steam, Epic Games, EA app und neu die Xbox-App. Abgleich wenige Sekunden nach dem Start des Begleiters und danach alle 10 Minuten; selbst entfernte Spiele kommen nicht wieder, deinstallierte verschwinden · Xbox-Spiele werden erkannt: Ordner „XboxGames“ auf allen Laufwerken (auch eigene Ordner aus der Xbox-App), Name aus der Spiel-Konfiguration, Start direkt über Windows; neuer Bereich „Xbox“ in der Bibliothek · „Jetzt abgleichen“ bei leerer Bibliothek: gleicht Steam, Epic, EA und Xbox sofort ab",
+  "notes": "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen",
   "changes": {
     "neu": [
-      "Installierte Spiele kommen automatisch in die Bibliothek – ohne Einrichtung: Steam, Epic Games, EA app und neu die Xbox-App. Abgleich wenige Sekunden nach dem Start des Begleiters und danach alle 10 Minuten; selbst entfernte Spiele kommen nicht wieder, deinstallierte verschwinden",
-      "Xbox-Spiele werden erkannt: Ordner „XboxGames“ auf allen Laufwerken (auch eigene Ordner aus der Xbox-App), Name aus der Spiel-Konfiguration, Start direkt über Windows; neuer Bereich „Xbox“ in der Bibliothek",
-      "„Jetzt abgleichen“ bei leerer Bibliothek: gleicht Steam, Epic, EA und Xbox sofort ab"
+      "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen"
     ],
-    "verbessert": [
-      "Die Verknüpfungen mit Steam, Epic, EA und Xbox sind einmalig automatisch eingeschaltet (einzeln abschaltbar, bleiben dann aus)",
-      "Game-Pass-Abgleich entfernt keine Spiele mehr, die über die Xbox-Verknüpfung gekommen sind"
-    ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "lDyU6BAHx5qUs2/sq+APjJ0wzwbs5K6l2Ua9P4s1Kngt43n6w+B5McUcxtV79HzTvLvaUcVxjGa0GOmJCVo89w=="
+  "signature": "fBk5hP0uE1zXEetjerrqL1e8utW4gwfVhfJF33RDSb4AJja5unvg6dUj14YO8GxwT/oZaGAdmVVml9p0x1fBew=="
 }
