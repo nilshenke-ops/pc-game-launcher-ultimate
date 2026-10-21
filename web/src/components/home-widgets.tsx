@@ -111,9 +111,15 @@ export function NextWidget() {
 /** First steps until everything is set up; disappears by itself afterwards. */
 export function StartWidget() {
   const prefs = usePrefs();
+  const conn = useConn();
+  const local = !!conn.me?.isLocal;
   const deck = useRpc<{ decks: unknown[] }>("deck.list", {}, ["deck"]);
+  // At the PC the window is always connected to its own companion – there the step is about pairing a phone.
+  const devices = useRpc<{ devices: unknown[] }>("devices.list", {}, ["devices"], local);
   const steps = [
-    { done: !!client.credentials || client.status.auth === "ok", label: t("PC verbinden (QR-Code aus dem Nexus Gaming Hub scannen)"), to: "/connect" },
+    local
+      ? { done: (devices.data?.devices.length ?? 0) > 0, label: t("Handy koppeln (Geräte → Gerät koppeln, QR-Code scannen)"), to: "/pair" }
+      : { done: !!client.credentials || client.status.auth === "ok", label: t("PC verbinden (QR-Code aus dem Nexus Gaming Hub scannen)"), to: "/connect" },
     { done: (deck.data?.decks.length ?? 0) > 0, label: t("Deck mit großen Tasten anlegen"), to: "/deck" },
     { done: prefs.theme.preset !== DEFAULT_THEME.preset || prefs.theme.primary !== DEFAULT_THEME.primary || !!prefs.theme.bgScene, label: t("Design wählen"), to: "/settings?s=design" },
     { done: prefs.homeShortcuts.length > 0 || prefs.nav.bottom.join() !== "/,/deck,/games,/soundboard", label: t("Untere Leiste anpassen (lange auf die Leiste drücken)"), to: "/settings?s=design" },

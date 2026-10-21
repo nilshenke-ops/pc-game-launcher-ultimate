@@ -21,7 +21,7 @@ import { parsePluginWidgetId, pluginWidgetId, type PluginList } from "../lib/plu
 import { PluginFrame } from "../components/PluginFrame";
 import { bytes, clock, relTime, since } from "../lib/format";
 import { IconByName } from "../lib/nav";
-import type { LibraryItem, MetricsSample, Notification, QuickAction } from "../lib/types";
+import type { LibraryItem, MetricsSample, Notification, PairedDevice, QuickAction } from "../lib/types";
 import { Banner, Button, Card, Empty, Meter, PageHead } from "../components/ui";
 import { DownloadCard } from "../components/DownloadCard";
 import { TileRow } from "../components/launch-tiles";
@@ -67,6 +67,7 @@ function StatusWidget() {
     );
   }
   const relay = state.relay.state;
+  const local = state.me.isLocal;
   return (
     <div className="stack">
       <div className="row nowrap">
@@ -75,14 +76,31 @@ function StatusWidget() {
           <h2 style={{ fontSize: "1.4rem" }}>{state.pcName}</h2>
           <div className="small muted">{state.platform} · Companion v{state.version}</div>
         </div>
-        {online ? <span className="badge ok"><span className="dot ok" />{t("Online")}</span> : <span className="badge"><span className="dot error" />{t("Nicht verbunden")}</span>}
+        {/* On the PC itself this window talks to its own companion – that says nothing about phones. */}
+        {online ? <span className="badge ok"><span className="dot ok" />{local ? t("Begleiter läuft") : t("Online")}</span> : <span className="badge"><span className="dot error" />{t("Nicht verbunden")}</span>}
       </div>
       <div className="row">
-        <span className="badge info"><Wifi size={12} />{state.me.transport === "relay" ? t("Über Relay") : t("Lokal verbunden")}</span>
+        {local ? <span className="badge">{t("Dieses Fenster läuft am PC")}</span>
+          : <span className="badge info"><Wifi size={12} />{state.me.transport === "relay" ? t("Über Relay") : t("Lokal verbunden")}</span>}
         <span className={`badge ${relay === "connected" ? "ok" : relay === "disabled" ? "" : "warn"}`}>{t("Relay")}: {relay === "connected" ? t("verbunden") : relay === "disabled" ? t("aus") : relay}</span>
-        <span className="badge">{state.me.isLocal ? t("Am PC") : state.me.name}</span>
+        {!local && <span className="badge">{state.me.name}</span>}
       </div>
+      {local && online && <PairedDevicesLine />}
       <div className="tiny muted">{t("Aktualisiert {t}", { t: updatedAt ? clock(updatedAt) : "–" })}</div>
+    </div>
+  );
+}
+
+/** On the PC: which phones/tablets are paired and which of them are connected right now (real list, admin only). */
+function PairedDevicesLine() {
+  const q = useRpc<{ devices: PairedDevice[] }>("devices.list", {}, ["devices"]);
+  if (!q.data) return null;
+  const all = q.data.devices, on = all.filter((d) => d.online);
+  if (!all.length) return <div className="small">{t("Noch kein Handy oder Tablet gekoppelt.")} <Link to="/pair">{t("Gerät koppeln")}</Link></div>;
+  return (
+    <div className="small">
+      {on.length ? t("Gerade verbunden: {n}", { n: on.map((d) => d.name).join(", ") }) : t("Kein gekoppeltes Gerät ist gerade verbunden.")}
+      <span className="muted"> · {t("{n} gekoppelt", { n: all.length })} · </span><Link to="/devices">{t("Geräte")}</Link>
     </div>
   );
 }

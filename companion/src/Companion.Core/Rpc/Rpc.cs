@@ -218,6 +218,7 @@ public sealed class RpcServer : IHub
         s.Device = device;
         s.Permissions = new HashSet<string>(device.Permissions);
         Devices.Touch(device.Id, s.Channel.RemoteIp);
+        Changed("devices"); // the PC's device list shows who is connected right now
         return Task.FromResult<object?>(new { isLocal = false, device = new { device.Id, device.Name, device.Permissions }, permissions = s.Permissions });
     }
 
@@ -235,7 +236,10 @@ public sealed class RpcServer : IHub
 
     public void OnClosed(IClientChannel channel)
     {
-        if (_sessions.TryRemove(channel.Id, out var s)) try { Closed?.Invoke(s); } catch (Exception ex) { Log.Warn("rpc", ex.Message); }
+        if (!_sessions.TryRemove(channel.Id, out var s)) return;
+        try { Closed?.Invoke(s); } catch (Exception ex) { Log.Warn("rpc", ex.Message); }
+        // A paired device went away: "connected right now" on the PC must not stay true until a reload.
+        if (s.Device != null && !_sessions.Values.Any(x => x.Device?.Id == s.Device.Id)) Changed("devices");
     }
 
     /// <summary>Sends an event to one connection and waits until it is handed to the network (remote desktop pictures).</summary>

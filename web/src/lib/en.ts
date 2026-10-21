@@ -4513,4 +4513,11 @@ export const en: Record<string, string> = {
   "Zeile {n}: Zeit wie 1:23, 1:02:03 oder 95 eingeben.": "Row {n}: enter a time like 1:23, 1:02:03 or 95.",
   "unter 1 MB": "under 1 MB",
   "über 100 MB": "over 100 MB",
+  "Begleiter läuft": "Companion running",
+  "Dieses Fenster läuft am PC": "This window runs on the PC",
+  "Gerade verbunden: {n}": "Connected right now: {n}",
+  "Handy koppeln (Geräte → Gerät koppeln, QR-Code scannen)": "Pair a phone (Devices → Pair device, scan the QR code)",
+  "Kein gekoppeltes Gerät ist gerade verbunden.": "No paired device is connected right now.",
+  "Noch kein Handy oder Tablet gekoppelt.": "No phone or tablet paired yet.",
+  "{n} gekoppelt": "{n} paired",
 };

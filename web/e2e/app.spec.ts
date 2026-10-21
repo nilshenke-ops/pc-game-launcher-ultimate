@@ -66,7 +66,12 @@ test("PC-Ansicht zeigt den echten Zustand", async ({ browser }) => {
   pc = await adminPage(browser);
   await expect(pc.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
   await expect(pc.getByText("E2E-Gaming-PC").first()).toBeVisible();
-  await expect(pc.getByText("Lokal verbunden")).toBeVisible();
+  // On the PC the window is connected to its own companion – that must not look like a connected phone.
+  await expect(pc.getByText("Dieses Fenster läuft am PC")).toBeVisible();
+  await expect(pc.getByText("Lokal verbunden")).toHaveCount(0);
+  await expect(pc.getByText("Noch kein Handy oder Tablet gekoppelt.")).toBeVisible();
+  await expect(pc.getByText("Handy koppeln (Geräte → Gerät koppeln, QR-Code scannen)")).toBeVisible();
+  await expect(pc.locator(".home-step.done", { hasText: "Handy koppeln" })).toHaveCount(0);
   await expect(pc.getByText("Relay: verbunden")).toBeVisible();
 });
 
@@ -93,6 +98,10 @@ test("Kopplung im WLAN: Code, Bestätigung am PC, Sitzung bleibt nach Neuladen",
   await pc.goto(`${COMPANION}/#/devices`);
   await expect(pc.getByText("iPhone · Safari").first()).toBeVisible();
   await expect(pc.getByText("Online im WLAN")).toBeVisible();
+  // The PC home now names the connected phone (from the real device list).
+  await pc.goto(`${COMPANION}/#/`);
+  await expect(pc.getByText(/Gerade verbunden: .*iPhone/)).toBeVisible();
+  await expect(pc.locator(".home-step.done", { hasText: "Handy koppeln" })).toBeVisible();
 });
 
 test("Programm am PC freigeben und vom Handy starten", async () => {
