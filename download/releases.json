@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.42.2",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.2/PCGameLauncherCompanion.exe",
+    "size": 87905480,
+    "sha256": "0148123f350b87ec2b39118e7a88f16b397775825250d1396d3170c63974d060",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.42.2-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.2/PCGameLauncherCompanion-2.42.2-win-x64.zip",
+      "size": 82166955,
+      "sha256": "d70c88ee6f492f10ac8f4fa078e8da29624bf01314b82707271af3338bdd3499"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Handy koppeln über die Website: Mit einer PC-Adresse im Heimnetz (http://192.168.…) blieb es bei einer roten Meldung – die Website (https) darf diese Adresse nicht öffnen, das blockiert der Browser. Jetzt gibt es dort den Knopf „Beim PC öffnen und koppeln“: er öffnet die Seite des PCs mit dem schon eingetragenen Code, danach „Koppeln“ und am PC „Erlauben“"
+      ]
+    },
+    "signature": "Yn8zfyh/5Z910G4L3MhtLMZh/bqxo3GM1Uzl55ewQN9o/eUGQZjq5xc+WLZe5gCOITEDCg8bMJITdmV5l1z48g=="
+  },
+  {
     "version": "2.42.1",
     "date": "2026-10-21",
     "channel": "stable",
@@ -1450,33 +1474,5 @@
       "behoben": []
     },
     "signature": "kyU89O0lywk+4XUJRsCU95vPSr5P0Z/B4lGH+wG+gnloqsP8CVBM0I80Hg4VSbuhjB7mYWgI6UBmjrwekoN/yw=="
-  },
-  {
-    "version": "1.7.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.0/PCGameLauncherCompanion.exe",
-    "size": 84355645,
-    "sha256": "bde862bffad9fde26269b7bd0a583fdf5bd085b003e6ac030a26b0248da69368",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-1.7.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.0/PCGameLauncherCompanion-1.7.0-win-x64.zip",
-      "size": 78683121,
-      "sha256": "9248c29e3f509687e9dbebac0664163b290026b7d755ee3de9ce63ee6b2f2aae"
-    },
-    "notes": "Overlay im Stil der Xbox Game Bar: Leiste oben mit Uhr und Widget-Symbolen, Widgets als halbdurchsichtige Fenster frei auf dem ganzen Bildschirm verschiebbar und in der Größe änderbar · Widgets hinzufügen und entfernen: PC-Auslastung, Aufnahme, Quick Actions, Soundboard, Favoriten, Zuletzt gestartet, Audio, Laufende Sounds, Gaming-Profil, Spielesitzung, Benachrichtigungen und alle Plugin-Widgets · Deckkraft einstellbar, Anordnung wird auf dem PC gespeichert; Auswahl auch ohne PC auf dem Handy",
-    "changes": {
-      "neu": [
-        "Overlay im Stil der Xbox Game Bar: Leiste oben mit Uhr und Widget-Symbolen, Widgets als halbdurchsichtige Fenster frei auf dem ganzen Bildschirm verschiebbar und in der Größe änderbar",
-        "Widgets hinzufügen und entfernen: PC-Auslastung, Aufnahme, Quick Actions, Soundboard, Favoriten, Zuletzt gestartet, Audio, Laufende Sounds, Gaming-Profil, Spielesitzung, Benachrichtigungen und alle Plugin-Widgets",
-        "Deckkraft einstellbar, Anordnung wird auf dem PC gespeichert; Auswahl auch ohne PC auf dem Handy"
-      ],
-      "verbessert": [
-        "Hinter dem Overlay bleibt das Spiel besser sichtbar (weniger abgedunkelt)"
-      ],
-      "behoben": []
-    },
-    "signature": "eFTbQPxDh8NKVK0sT+U7/QQh6wnmTNOStPjSJQJK0G/Iq6Ijx0mrwSQGfQcVDo234FhlqV9cIketg40RN02ejA=="
   }
 ]

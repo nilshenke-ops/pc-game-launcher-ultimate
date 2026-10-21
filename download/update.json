@@ -1,26 +1,24 @@
 {
-  "version": "2.42.1",
+  "version": "2.42.2",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.1/PCGameLauncherCompanion.exe",
-  "size": 87950128,
-  "sha256": "03a4b139cf9919beecfeac25bde7eaed2fec023650edde84ac7ef94068ba71c4",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.2/PCGameLauncherCompanion.exe",
+  "size": 87905480,
+  "sha256": "0148123f350b87ec2b39118e7a88f16b397775825250d1396d3170c63974d060",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.42.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.1/PCGameLauncherCompanion-2.42.1-win-x64.zip",
-    "size": 82212153,
-    "sha256": "473966da1337c8b9e071a46cb80531b420f65c69fefa090b696304c425c841c3"
+    "fileName": "PCGameLauncherCompanion-2.42.2-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.2/PCGameLauncherCompanion-2.42.2-win-x64.zip",
+    "size": 82166955,
+    "sha256": "d70c88ee6f492f10ac8f4fa078e8da29624bf01314b82707271af3338bdd3499"
   },
   "notes": "",
   "changes": {
     "neu": [],
     "verbessert": [],
     "behoben": [
-      "Startseite am PC: zeigte „Online“ und „Lokal verbunden“, als wäre ein Handy verbunden – gemeint war nur das Fenster am PC selbst. Jetzt steht dort „Begleiter läuft“ und „Dieses Fenster läuft am PC“, dazu welche gekoppelten Geräte gerade wirklich verbunden sind (oder dass noch keins gekoppelt ist)",
-      "„Erste Schritte“ am PC hakte „PC verbinden“ ab, obwohl kein Handy gekoppelt war – am PC heißt der Schritt jetzt „Handy koppeln“ und ist erst erledigt, wenn ein Gerät gekoppelt ist",
-      "Geräteliste am PC: verbindet oder trennt sich ein Handy, aktualisiert sich die Anzeige sofort (vorher erst nach Neuladen)"
+      "Handy koppeln über die Website: Mit einer PC-Adresse im Heimnetz (http://192.168.…) blieb es bei einer roten Meldung – die Website (https) darf diese Adresse nicht öffnen, das blockiert der Browser. Jetzt gibt es dort den Knopf „Beim PC öffnen und koppeln“: er öffnet die Seite des PCs mit dem schon eingetragenen Code, danach „Koppeln“ und am PC „Erlauben“"
     ]
   },
-  "signature": "76YfJlbwweVC37n+tXdUp8FbWRK2q/Il8QKuZyWP/jTk8qUoQ7wsvcnyavkRwUMpgC5ve3fGZo0UoSxAOzrMXQ=="
+  "signature": "Yn8zfyh/5Z910G4L3MhtLMZh/bqxo3GM1Uzl55ewQN9o/eUGQZjq5xc+WLZe5gCOITEDCg8bMJITdmV5l1z48g=="
 }
