@@ -437,6 +437,73 @@ public sealed partial class PluginService : IDisposable
         _hub.Changed("plugins");
     }
 
+    // ------------------------------------------------------------ test lab: one report per plugin
+
+    public sealed record LabCheck(string Label, string Status, string Detail, string? Fix = null);
+
+    static readonly HashSet<string> KnownManifestKeys = new(StringComparer.Ordinal) { "id", "name", "version", "apiVersion", "minAppVersion", "author", "description", "category", "icon", "homepage", "license", "platforms", "permissions", "dependencies", "contributes", "changelog", "$schema" };
+    static readonly HashSet<string> KnownContributes = new(StringComparer.Ordinal) { "widgets", "actions", "themes", "settings" };
+
+    /// <summary>Checks an installed plugin again, without running it: package unchanged, manifest valid for this launcher,
+    /// permissions, dependencies, conflicts with other plugins, recent errors, update and way back.</summary>
+    public object Check(string id)
+    {
+        var p = Find(id);
+        var checks = new List<LabCheck>();
+        var path = PackagePath(p.Id, p.Version);
+        byte[]? bytes = File.Exists(path) ? File.ReadAllBytes(path) : null;
+        if (bytes == null) checks.Add(new("Paket", "error", "Das Plugin-Paket fehlt auf dem PC.", "Plugin neu installieren."));
+        else if (Ids.Sha256Hex(bytes) != p.Sha256) checks.Add(new("Paket", "error", "Das gespeicherte Paket wurde nach der Installation verändert (Prüfsumme stimmt nicht).", "Plugin deinstallieren und aus einer vertrauenswürdigen Quelle neu installieren."));
+        else checks.Add(new("Paket", "ok", $"Unverändert seit der Installation (SHA-256 {p.Sha256[..12]}…). Herkunft: {TrustText(p.Trust)}."));
+        PluginManifest? m = null;
+        if (bytes != null)
+        {
+            try
+            {
+                var pkg = Validate(bytes);
+                m = pkg.Manifest;
+                checks.Add(new("Manifest & Version", pkg.Warnings.Count > 0 ? "warn" : "ok",
+                    $"API-Version {m.ApiVersion} (Launcher: {ApiVersion}), braucht Launcher {m.MinAppVersion} oder neuer (installiert: {AppVersion})." + (pkg.Warnings.Count > 0 ? " Hinweise: " + string.Join(" ", pkg.Warnings) : "")));
+                using var doc = JsonDocument.Parse(pkg.Files["plugin.json"]);
+                var unknown = doc.RootElement.EnumerateObject().Select(x => x.Name).Where(n => !KnownManifestKeys.Contains(n)).ToList();
+                if (doc.RootElement.TryGetProperty("contributes", out var c) && c.ValueKind == JsonValueKind.Object)
+                    unknown.AddRange(c.EnumerateObject().Select(x => x.Name).Where(n => !KnownContributes.Contains(n)).Select(n => "contributes." + n));
+                checks.Add(unknown.Count == 0 ? new("Schnittstellen", "ok", "Nur bekannte Einträge – nichts wird stillschweigend ignoriert.")
+                    : new("Schnittstellen", "warn", "Unbekannte Einträge werden ignoriert: " + string.Join(", ", unknown), "Beim Plugin-Autor nachfragen, ob eine neuere Launcher-Version gebraucht wird."));
+            }
+            catch (RpcException ex) { checks.Add(new("Manifest & Version", "error", ex.Message, "Eine passende Plugin-Version installieren oder den Launcher aktualisieren.")); }
+        }
+        if (m != null)
+        {
+            var notGranted = m.Permissions.Except(p.Granted).ToList();
+            checks.Add(new("Berechtigungen", m.Permissions.Count == 0 ? "ok" : p.Enabled && notGranted.Count == 0 ? "ok" : "warn",
+                m.Permissions.Count == 0 ? "Braucht keine Berechtigungen." : string.Join(" · ", m.Permissions.Select(x => (PluginPermissions.All.TryGetValue(x, out var d) ? d : x) + (p.Granted.Contains(x) ? " ✓" : " (nicht erlaubt)")))
+                + " – Plugins laufen abgeschirmt im Browser (eigener Rahmen, keine Programme, keine Dateien, kein Netzwerk) und dürfen nur das Erlaubte über den Launcher anfragen."));
+            var deps = MissingDependencies(m);
+            checks.Add(m.Dependencies.Count == 0 ? new("Abhängigkeiten", "ok", "Keine.")
+                : deps.Count == 0 ? new("Abhängigkeiten", "ok", string.Join(", ", m.Dependencies.Select(d => $"{d.Key} {d.Value}")) + " – vorhanden und aktiv.")
+                : new("Abhängigkeiten", "error", "Fehlt oder falsche Version: " + string.Join(", ", deps), "Die genannten Plugins installieren und aktivieren."));
+            // Same names for actions/themes in two active plugins are confusing (which one runs?).
+            var others = _store.Snapshot().Plugins.Where(x => x.Id != id && x.Enabled).Select(x => (x.Id, man: ManifestOf(x.Id, x.Version))).Where(x => x.man != null).ToList();
+            var clash = new List<string>();
+            foreach (var (oid, om) in others)
+            {
+                clash.AddRange(m.Contributes.Actions.Select(a => a.Name).Intersect(om!.Contributes.Actions.Select(a => a.Name), StringComparer.OrdinalIgnoreCase).Select(n => $"Aktion „{n}“ auch in {oid}"));
+                clash.AddRange(m.Contributes.Themes.Select(a => a.Name).Intersect(om.Contributes.Themes.Select(a => a.Name), StringComparer.OrdinalIgnoreCase).Select(n => $"Theme „{n}“ auch in {oid}"));
+            }
+            checks.Add(clash.Count == 0 ? new("Konflikte", "ok", "Keine gleichnamigen Aktionen oder Themes in anderen aktiven Plugins.") : new("Konflikte", "warn", string.Join("; ", clash), "Eines der Plugins deaktivieren oder umbenennen lassen."));
+        }
+        var errors = p.Log.Where(l => l.Level == "error" && l.At > DateTime.UtcNow.AddDays(-7)).ToList();
+        checks.Add(errors.Count == 0 ? new("Fehler (7 Tage)", "ok", "Keine Fehler protokolliert." + (p.DisabledReason != null && !p.Enabled ? $" Status: {p.DisabledReason}" : ""))
+            : new("Fehler (7 Tage)", "warn", $"{errors.Count} Fehler, zuletzt: " + string.Join(" | ", errors.TakeLast(3).Select(e => $"{e.At:dd.MM. HH:mm} {e.Message}")), "Bei wiederholten Fehlern deaktivieren oder zur vorherigen Version zurück."));
+        var update = UpdateFor(p);
+        checks.Add(update != null ? new("Update", "warn", $"Version {update.Version} ist verfügbar.", "Im Plugin Center aktualisieren.") : (_catalog == null ? new("Update", "info", "Katalog noch nicht geladen – keine Aussage möglich.") : new("Update", "ok", "Aktuell.")));
+        var back = p.PreviousVersion != null && File.Exists(PackagePath(id, p.PreviousVersion));
+        checks.Add(new("Vorherige Version", back ? "ok" : "info", back ? $"{p.PreviousVersion} ist gespeichert – „Zurücksetzen“ möglich." : "Keine vorherige Version gespeichert."));
+        var worst = checks.Any(c => c.Status == "error") ? "error" : checks.Any(c => c.Status == "warn") ? "warn" : "ok";
+        return new { id, name = m?.Name ?? id, version = p.Version, enabled = p.Enabled, status = worst, at = DateTime.UtcNow, checks };
+    }
+
     public object Rollback(string id)
     {
         var p = Find(id);

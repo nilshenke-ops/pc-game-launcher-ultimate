@@ -1,4 +1,4 @@
-import { Activity, Archive, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sofa, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
+import { Activity, Archive, Bug, Cpu, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sofa, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
 export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
@@ -36,6 +36,8 @@ export function navItems(): NavItem[] {
     { path: "/storage", label: t("Speicher & Updates"), short: t("Speicher"), icon: HardDrive, group: g.sys, keywords: "speicherplatz festplatte ssd laufwerk größe update updates steam patch download frei" },
     { path: "/network", label: t("Netzwerkdiagnose"), short: t("Netzwerk"), icon: Wifi, group: g.sys, keywords: "ping jitter paketverlust latenz ping doctor lag server" },
     { path: "/start-times", label: t("Startzeit-Analyse"), short: t("Startzeit"), icon: Timer, group: g.sys, keywords: "startzeit ladezeit dauer start langsam schnell analyse messen spiel startet" },
+    { path: "/inventory", label: t("Hardware-Inventar"), short: t("Hardware"), icon: Cpu, group: g.sys, keywords: "hardware inventar geräte treiber grafikkarte gpu cpu prozessor ram arbeitsspeicher monitor laufwerk headset mikrofon controller maus tastatur netzwerk adapter" },
+    { path: "/crashes", label: t("Fehlerberichte"), short: t("Fehler"), icon: Bug, group: g.sys, keywords: "absturz abstürze crash crashes fehler fehlerbericht bericht absturzbericht spiel stürzt ab hängt wer ausnahmecode modul" },
     { path: "/history", label: t("Gaming-Verlauf"), short: t("Verlauf"), icon: History, group: g.sys, keywords: "statistik spielzeit" },
     { path: "/overlay-settings", label: t("Overlay & Aufnahme"), short: t("Overlay"), icon: Video, group: g.sys, keywords: "overlay game bar aufnahme video replay clip obs fps hud" },
     { path: "/files", label: t("Dateien"), icon: FolderUp, group: g.conn, keywords: "datei dateien übertragen senden teilen upload download bilder clips config austausch handy pc" },
@@ -72,7 +74,7 @@ export const ICONS: Record<string, LucideIcon> = {
 const NAV_COLORS: Record<string, string> = {
   "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
-  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/vault": "#fbbf24", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
+  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/vault": "#fbbf24", "/inventory": "#60a5fa", "/crashes": "#f87171", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",
   "/diagnostics": "#2dd4bf", "/updates": "#4ade80", "/help": "#93c5fd",
 };

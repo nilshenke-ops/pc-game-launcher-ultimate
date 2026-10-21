@@ -558,6 +558,14 @@ public static class RpcApi
         rpc.Register("obs.replaySave", async _ => (object)new { message = await s.Capture.Run("replay") });
         rpc.Register("obs.replayToggle", async _ => (object)new { message = await s.Capture.Run("buffer") });
 
+        // ------------------------------------------------------------ inventory, error reports, plugin test lab
+        rpc.Register("inventory.get", async _ => await Task.Run(() => s.Inventory.Get()));
+        rpc.Register("crash.list", _ => new { reports = s.Crashes.List() });
+        rpc.Register("crash.create", async ctx => { var id = ctx.Str("itemId", 64); return (object?)await Task.Run(() => s.Crashes.Create(id)); });
+        rpc.Register("crash.remove", ctx => s.Crashes.Remove(ctx.Str("id", 40)));
+        rpc.Register("crash.export", ctx => new { text = s.Crashes.Export(ctx.Str("id", 40), ctx.Bool("redact")) });
+        rpc.Register("plugins.check", ctx => s.Plugins.Check(ctx.Str("id", 64)));
+
         // ------------------------------------------------------------ savegame vault and configuration versions
         rpc.Register("vault.list", _ => s.Vault.Overview());
         rpc.Register("vault.suggest", ctx => new { suggestions = s.Vault.Suggest(ctx.Str("itemId", 64)) });

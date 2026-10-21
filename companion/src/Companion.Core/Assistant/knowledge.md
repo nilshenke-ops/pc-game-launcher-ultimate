@@ -95,6 +95,16 @@ Seite: /monitor
 Stichworte: herunterfahren ausschalten neustart neu starten sperren energiesparen ruhezustand standby pc aus shutdown restart lock sleep handy fernbedienung abbrechen
 Vom Handy: Home → „Anpassen“ → Widget „PC-Energie“, oder PC Monitor → „Energie“, oder eine Deck-Taste („PC sperren / ausschalten“). „Sperren“ geht sofort für jedes Gerät, das Spiele starten darf. Energiesparen, Neustart und Herunterfahren fragen vorher; Neustart/Herunterfahren wahlweise sofort oder in 30 s bis 10 min – bis dahin auf jedem Gerät mit „Abbrechen“ zu stoppen. Dafür muss der PC das Recht einmal erlauben: am PC → Geräte → dein Handy → „PC ausschalten“ ankreuzen → Speichern. Geht nur, wenn der PC verbunden ist (wird nie für später gespeichert). Nur mit dem Windows-Begleiter.
 
+## Hardware-Inventar
+Seite: /inventory
+Stichworte: hardware inventar geräte treiber treiberversion grafikkarte gpu cpu prozessor ram arbeitsspeicher monitor bildschirm laufwerk festplatte headset mikrofon controller maus tastatur netzwerk adapter usb
+System → Hardware-Inventar. Zeigt, was der PC selbst auslesen kann: Prozessor, Arbeitsspeicher, Grafikkarte mit Treiberversion und -datum, Audio-Ausgänge und Mikrofone (Headsets am Namen erkannt), Controller mit Akku, Tastaturen und Mäuse (Hersteller, VID/PID), Monitore, Laufwerke mit freiem Platz und Netzwerkadapter. Was nicht lesbar ist, steht mit Grund da (z. B. sonstige USB-Geräte werden noch nicht erfasst). „Neu einlesen“ fragt den PC erneut; ohne PC wird der letzte Stand mit Datum gezeigt. Testton/Mikrofon-Test im Audio Center, Controller-Test unter Controller & RGB. Es wird kein Treiber installiert und nichts geändert.
+
+## Fehlerberichte pro Spiel
+Seite: /crashes
+Stichworte: absturz abstürze crash crashes fehler fehlerbericht absturzbericht spiel stürzt ab hängt reagiert nicht ausnahmecode modul treiber exportieren vergleichen
+System → Fehlerberichte. Nach einem Spiel prüft der PC, ob Windows einen Absturzbericht (Windows-Fehlerberichterstattung) für das Programm des Spiels geschrieben hat, oder ob das Spiel weniger als 2 Minuten lief – dann legt er einen Bericht an und schickt eine Benachrichtigung. Inhalt: Windows-Bericht (Fehlerbaustein, Ausnahmecode, Version), Spielversion, letzter Start, Gaming-Profil, System (Prozessor, Grafiktreiber), Änderungen kurz davor (Mods, Tresor, Profilwechsel). „Mögliche Ursachen“ sind immer Vermutungen mit Begründung. „Bericht erstellen“ macht einen Bericht zur letzten Sitzung eines Spiels; zwei Berichte ankreuzen → „Vergleichen“; „Als Text exportieren“ wahlweise ohne Benutzername, PC-Name und E-Mail. Nichts wird hochgeladen.
+
 ## Savegame-Tresor und Konfigurations-Versionen
 Seite: /vault
 Stichworte: savegame spielstand spielstände sichern sicherung backup wiederherstellen zurückholen tresor konfiguration config ini cfg json vergleichen version verlauf steam cloud prüfen integrität
@@ -278,7 +288,7 @@ Am PC „Neuen Code erzeugen“, QR-Code mit dem Handy scannen oder Code eingebe
 ## Plugin Center
 Seite: /plugins
 Stichworte: plugins erweiterungen installieren katalog widgets themes aktionen pomodoro tageslimit weltzeit zufall clip
-Plugins aus einem signierten Katalog oder als Datei: Widgets, Themes, Aktionen. Plugins führen nie Code auf dem PC aus; Widgets laufen abgeschottet. Rechte (z. B. Netzwerk) musst du beim Aktivieren erlauben. Im Katalog (33 Plugins): Spielzeit heute, Top-Spiele der Woche, Wochenstatistik, Weiterspielen, „Was spiele ich?“ (Zufallsspiel), Tageslimit, Spiel-Serie, Meilensteine, Bibliothek in Zahlen, Favoriten-Start, Sound-Pad, Zufallssound, Profil-Wechsler, CPU & RAM Mini, Leistungs-Verlauf, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, PC-Check, Pausen-Erinnerung, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Game-Overlay, Aktionen (Gaming-Abend, Discord-Schnellton, Wettkampf-Modus, Clip-Knöpfe für OBS) und Themes (Neon, Retro, Pastell, E-Sport, OLED-Schwarz).
+Plugins aus einem signierten Katalog oder als Datei: Widgets, Themes, Aktionen. Plugins führen nie Code auf dem PC aus; Widgets laufen abgeschottet. Rechte (z. B. Netzwerk) musst du beim Aktivieren erlauben. Prüflabor: „Alle prüfen“ oder Details → „Prüfen“ zeigt Paket-Unversehrtheit, Manifest und Version, unbekannte Einträge, Berechtigungen, Abhängigkeiten, Konflikte mit anderen Plugins, Fehler der letzten 7 Tage, Update und vorherige Version – ohne Plugin-Code auszuführen. Im Katalog (33 Plugins): Spielzeit heute, Top-Spiele der Woche, Wochenstatistik, Weiterspielen, „Was spiele ich?“ (Zufallsspiel), Tageslimit, Spiel-Serie, Meilensteine, Bibliothek in Zahlen, Favoriten-Start, Sound-Pad, Zufallssound, Profil-Wechsler, CPU & RAM Mini, Leistungs-Verlauf, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, PC-Check, Pausen-Erinnerung, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Game-Overlay, Aktionen (Gaming-Abend, Discord-Schnellton, Wettkampf-Modus, Clip-Knöpfe für OBS) und Themes (Neon, Retro, Pastell, E-Sport, OLED-Schwarz).
 
 ## Benachrichtigungen
 Seite: /notifications

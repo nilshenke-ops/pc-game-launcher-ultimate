@@ -21,6 +21,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public NotificationCenter Notifications { get; }
     public PowerService Power { get; }
     public SaveVaultService Vault { get; }
+    public InventoryService Inventory { get; }
+    public CrashReportService Crashes { get; }
     public LibraryService Library { get; }
     public HistoryService History { get; }
     public SessionTracker Sessions { get; }
@@ -118,6 +120,8 @@ public sealed class CompanionServices : IAsyncDisposable
         Push = new WebPushService(paths, platform.Secrets, id => Devices.Get(id) != null);
         Mods = new ModService(paths, Library, Transfer, id => Sessions.Running().Any(r => r.itemId == id), Rpc);
         Vault = new SaveVaultService(paths, Library, id => Sessions.Running().Any(r => r.itemId == id), Rpc);
+        Inventory = new InventoryService(platform, Audio);
+        Crashes = new CrashReportService(paths, platform, Library, () => History.Export(), () => Profiles.Get(), RecentChanges, Rpc);
         Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);
         Rgb = new RgbService(paths);
         Input = new InputRemapService(paths, platform.InputHook, Rpc);
@@ -251,6 +255,13 @@ public sealed class CompanionServices : IAsyncDisposable
         {
             History.SessionEnded(item.Id, at);
             GameActivity.RunWhenIdle("vault:" + item.Id, () => { Vault.AfterPlay(item.Id); return Task.CompletedTask; });
+            // Windows writes its crash report a moment after the crash – look a little later.
+            var started = History.Export().Sessions.Where(x => x.ItemId == item.Id).OrderByDescending(x => x.StartedAt).FirstOrDefault()?.StartedAt;
+            if (started != null) _ = Task.Delay(TimeSpan.FromSeconds(20)).ContinueWith(_ =>
+            {
+                try { if (Crashes.AfterSession(item.Id, started.Value, at) is { } r) Notifications.Push("crash:" + item.Id, Severity.Warning, r.Trigger == "crash" ? $"{item.Name} ist abgestürzt" : $"{item.Name} wurde nach kurzer Zeit beendet", "Ein Fehlerbericht liegt bereit.", "/crashes"); }
+                catch (Exception ex) { Log.Warn("crash", ex.Message); }
+            });
             if (Perf.GameStopped(item.Id) is { } perf) History.AttachPerf(item.Id, perf);
             var p = Profiles.Get();
             var profileId = ProfileFor(item, p);
@@ -392,6 +403,24 @@ public sealed class CompanionServices : IAsyncDisposable
         Sessions.Running().Select(r => (object)new { itemId = r.itemId, name = Library.Get(r.itemId)?.Name ?? "?", since = r.since }).ToList();
 
     public object RunningInfo() => new { running = RunningList() };
+
+    /// <summary>What changed for a game in the last 24 hours (for error reports): mods, restored savegames, profile switch.</summary>
+    IEnumerable<string> RecentChanges(string itemId)
+    {
+        var since = DateTime.UtcNow.AddDays(-1);
+        var list = new List<(DateTime at, string text)>();
+        try { foreach (var b in Mods.Backups(itemId).Where(b => b.At > since)) list.Add((b.At, "Mods: " + b.Reason)); } catch { /* no mods folder */ }
+        try
+        {
+            foreach (var l in Vault.Locations().Where(l => l.ItemId == itemId))
+                foreach (var b in Vault.Backups(l.Id).Where(b => b.At > since && b.Reason.StartsWith("Vor dem Wiederherstellen")))
+                    list.Add((b.At, $"Savegame-Tresor: „{l.Name}“ zurückgeholt"));
+        }
+        catch { /* not readable */ }
+        var p = Profiles.Get();
+        if (p.ActiveSince > since && p.ActiveReason != null) list.Add((p.ActiveSince.Value, "Gaming-Profil: " + p.ActiveReason));
+        return list.OrderByDescending(x => x.at).Select(x => $"{x.at:u} {x.text}");
+    }
 
     string? _relayFingerprint;
 

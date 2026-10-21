@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { BadgeCheck, Code2, Download, FileUp, LayoutGrid, Play, Plug, Puzzle, RefreshCw, RotateCcw, Search, ShieldAlert, ShieldCheck, Star, Trash2, Upload } from "lucide-react";
+import { BadgeCheck, ClipboardCheck, Code2, Download, FileUp, LayoutGrid, Play, Plug, Puzzle, RefreshCw, RotateCcw, Search, ShieldAlert, ShieldCheck, Star, Trash2, Upload } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
@@ -11,10 +11,11 @@ import { CATEGORY_LABELS, platformText, pluginWidgetId, type CatalogInfo, type I
 import { useStepRefs } from "../components/StepEditor";
 import { importFileOffline, installFromStoreOffline, loadOfflineCatalog } from "../lib/plugins-offline";
 import { PluginFrame } from "../components/PluginFrame";
-import { Banner, Button, Card, confirmDialog, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
+import { Banner, Button, Card, CheckList, confirmDialog, Field, Loadable, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { IconByName } from "../lib/nav";
 
 type Tab = "installed" | "store" | "dev";
+export interface LabResult { id: string; name: string; version: string; enabled: boolean; status: string; at: string; checks: { label: string; status: string; detail: string; fix?: string | null }[] }
 
 export function TrustBadge({ trust }: { trust: PluginTrust }) {
   return trust === "official" ? <span className="badge ok"><BadgeCheck size={12} /> {t("Offiziell")}</span>
@@ -53,6 +54,16 @@ function Installed({ list }: { list: PluginList }) {
   const [open, setOpen] = useState<string | null>(null);
   const items = list.plugins.filter((p) => (!onlyFav || p.favorite) && (`${p.manifest?.name} ${p.manifest?.description} ${p.id}`.toLowerCase().includes(query.toLowerCase())));
   const current = list.plugins.find((p) => p.id === open);
+  const conn = useConn();
+  const online = conn.phase === "online" && conn.auth === "ok";
+  const [lab, setLab] = useState<LabResult[] | null>(null);
+  const [checking, setChecking] = useState(false);
+  const checkAll = async () => {
+    setChecking(true);
+    const out: LabResult[] = [];
+    for (const p of list.plugins) { try { out.push(await client.call<LabResult>("plugins.check", { id: p.id })); } catch (e) { toast((e as Error).message, "error"); break; } }
+    setLab(out); setChecking(false);
+  };
   if (list.plugins.length === 0)
     return <Card><div className="stack"><p>{t("Noch keine Plugins installiert.")}</p><div className="row"><Link className="btn primary" to="/plugins?tab=store">{t("Zum Store")}</Link><Link className="btn" to="/plugins?tab=dev">{t("Plugin-Datei importieren")}</Link></div></div></Card>;
   return (
@@ -60,7 +71,17 @@ function Installed({ list }: { list: PluginList }) {
       <div className="row">
         <div className="input-icon grow"><Search size={16} /><input className="input" placeholder={t("Plugins durchsuchen")} value={query} onChange={(e) => setQuery(e.target.value)} aria-label={t("Plugins durchsuchen")} /></div>
         <Button variant={onlyFav ? "primary" : undefined} icon={<Star size={16} />} onClick={() => setOnlyFav(!onlyFav)}>{t("Favoriten")}</Button>
+        <Button icon={<ClipboardCheck size={16} />} busy={checking} disabled={!online} title={online ? undefined : t("Prüfen geht nur mit verbundenem PC")} onClick={() => void checkAll()}>{t("Alle prüfen")}</Button>
       </div>
+      {lab && (
+        <Card title={t("Prüflabor")} icon={<ClipboardCheck size={18} />} actions={<Button size="sm" variant="ghost" onClick={() => setLab(null)}>{t("Schließen")}</Button>}>
+          <CheckList checks={lab.map((r) => {
+            const bad = r.checks.filter((c) => c.status === r.status && r.status !== "ok");
+            return { label: `${r.name} v${r.version}`, status: r.status, detail: bad.length ? bad.map((c) => `${t(c.label)}: ${c.detail}`).join(" · ") : t("Alle Prüfungen bestanden."), fix: bad.find((c) => c.fix)?.fix ?? null };
+          })} />
+          <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Einzelheiten je Plugin unter „Details“ → „Prüfen“. Die Prüfung ändert nichts und führt keinen Plugin-Code aus.")}</p>
+        </Card>
+      )}
       <div className="grid-2">
         {items.map((p) => <PluginCard key={p.id} p={p} onOpen={() => setOpen(p.id)} />)}
       </div>
@@ -124,6 +145,10 @@ async function enable(p: InstalledPlugin, labels: Record<string, string>) {
 function PluginDetail({ p, list, onClose }: { p: InstalledPlugin; list: PluginList; onClose: () => void }) {
   const m = p.manifest;
   const prefs = usePrefs();
+  const conn = useConn();
+  const [lab, setLab] = useState<LabResult | null>(null);
+  const [checking, setChecking] = useState(false);
+  const check = async () => { setChecking(true); try { setLab(await client.call<LabResult>("plugins.check", { id: p.id })); } catch (e) { toast((e as Error).message, "error"); } setChecking(false); };
   const exportPkg = async () => {
     try {
       const parts: string[] = []; let offset = 0; let name = "plugin.pglplugin";
@@ -168,9 +193,16 @@ function PluginDetail({ p, list, onClose }: { p: InstalledPlugin; list: PluginLi
             : <Button variant="primary" disabled={p.broken} onClick={() => enable(p, list.permissions)}>{t("Aktivieren")}</Button>}
           <Button icon={<Star size={16} />} variant={p.favorite ? "primary" : undefined} onClick={() => act("plugins.setFlags", { id: p.id, favorite: !p.favorite }, p.favorite ? t("Aus Favoriten entfernt") : t("Zu Favoriten hinzugefügt"))}>{t("Favorit")}</Button>
           <Button icon={<Download size={16} />} onClick={exportPkg}>{t("Exportieren")}</Button>
+          <Button icon={<ClipboardCheck size={16} />} busy={checking} disabled={!(conn.phase === "online" && conn.auth === "ok")} onClick={() => void check()}>{t("Prüfen")}</Button>
           {p.previousVersion && <Button icon={<RotateCcw size={16} />} onClick={async () => { if (await confirmDialog(t("Vorherige Version wiederherstellen?"), t("Zurück zu Version {v}.", { v: p.previousVersion! }))) act("plugins.rollback", { id: p.id }, t("Zurückgesetzt")); }}>{t("Version {v} wiederherstellen", { v: p.previousVersion })}</Button>}
         </div>
 
+        {lab && (
+          <Card title={t("Prüflabor: {s}", { s: lab.status === "ok" ? t("alles in Ordnung") : lab.status === "error" ? t("Fehler gefunden") : t("Hinweise") })} icon={<ClipboardCheck size={18} />} className="flat"
+            actions={<Button size="sm" variant="ghost" onClick={() => setLab(null)}>{t("Schließen")}</Button>}>
+            <CheckList checks={lab.checks.map((c) => ({ ...c, label: t(c.label) }))} />
+          </Card>
+        )}
         {p.update && (
           <Banner kind="info" title={t("Update auf {v} verfügbar", { v: p.update.version })} actions={<Button size="sm" variant="primary" onClick={async () => {
             const extra = p.update!.newPermissions.length ? " " + t("Neue Berechtigungen: {l} – danach erneut aktivieren.", { l: p.update!.newPermissions.join(", ") }) : "";

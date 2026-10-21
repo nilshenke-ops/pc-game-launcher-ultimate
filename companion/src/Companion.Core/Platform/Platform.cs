@@ -22,6 +22,8 @@ public interface IPlatform
     IUpdateInstaller UpdateInstaller { get; }
     /// <summary>Lock, sleep, restart, shut down (Windows companion only).</summary>
     IPowerControl Power => NullPower.Instance;
+    /// <summary>Graphics drivers and where Windows keeps its crash reports (Windows companion only).</summary>
+    IHardwareInfo Hardware => NullHardwareInfo.Instance;
     /// <summary>In-game overlay window (Windows companion only).</summary>
     IOverlay Overlay => NullOverlay.Instance;
     /// <summary>Presses keyboard shortcuts of other programs (NVIDIA, Xbox Game Bar …). Windows companion only.</summary>
@@ -159,6 +161,24 @@ public interface IPowerControl
     bool Supported { get; }
     /// <summary>Runs "lock", "sleep", "restart", "shutdown" or "cancel". Restart/shutdown wait <paramref name="delaySeconds"/> and can be cancelled.</summary>
     string? Run(string action, int delaySeconds);
+}
+
+public sealed record GpuDriver(string Name, string? Version, string? Date);
+
+public interface IHardwareInfo
+{
+    bool Supported { get; }
+    List<GpuDriver> Gpus();
+    /// <summary>Folders with Windows Error Reporting files (Report.wer) – read only.</summary>
+    IEnumerable<string> CrashReportFolders();
+}
+
+public sealed class NullHardwareInfo : IHardwareInfo
+{
+    public static readonly NullHardwareInfo Instance = new();
+    public bool Supported => false;
+    public List<GpuDriver> Gpus() => new();
+    public IEnumerable<string> CrashReportFolders() => Array.Empty<string>();
 }
 
 public sealed class NullPower : IPowerControl

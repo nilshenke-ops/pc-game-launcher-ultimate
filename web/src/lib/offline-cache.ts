@@ -6,7 +6,7 @@ const PREFIX = "pgl.cache.";
 // Plugins: list and files of installed plugins, so their widgets and themes also work while the PC is off.
 // Settings lists: kept so they can be changed without the PC (lib/outbox.ts queues the change and updates this copy).
 export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.list", "launchers.list", "plugins.list", "plugins.files",
-  "quick.list", "profiles.list", "automations.list", "hotkeys.list", "sounds.list", "audio.state", "settings.get", "history.get", "obs.status", "capture.status", "overlay.layout", "overlay.presets", "vault.list", "widgets.list", "network.targets", "quests.get", "deals.list", "deck.list", "calendar.list", "activity.get", "storage.get", "files.list", "captures.list", "layouts.list", "mods.overview", "mods.list", "rgb.status", "rgb.settings", "controllers.list", "input.list", "input.devices", "history.startTimes"]);
+  "quick.list", "profiles.list", "automations.list", "hotkeys.list", "sounds.list", "audio.state", "settings.get", "history.get", "obs.status", "capture.status", "overlay.layout", "overlay.presets", "vault.list", "inventory.get", "widgets.list", "network.targets", "quests.get", "deals.list", "deck.list", "calendar.list", "activity.get", "storage.get", "files.list", "captures.list", "layouts.list", "mods.overview", "mods.list", "rgb.status", "rgb.settings", "controllers.list", "input.list", "input.devices", "history.startTimes"]);
 const key = (method: string, params?: string) => PREFIX + method + (params && params !== "{}" ? params : "");
 
 export function saveCache(method: string, data: unknown, params?: string) {

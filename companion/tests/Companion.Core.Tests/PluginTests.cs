@@ -251,4 +251,28 @@ public class PluginTests
         p.ImportEnd(id, check: false, by: "test");
         Assert.Equal("unverified", Installed(p, "de.pgl.demo").GetProperty("trust").GetString());
     }
+
+    [Fact]
+    public void Test_lab_reports_package_changes_unknown_entries_and_missing_dependencies()
+    {
+        using var dir = new TempDir();
+        var p = Service(dir);
+        p.Install(Pkg(Manifest(extra: ",\"telemetry\":true")), "unverified", "Datei");
+        var r = J(p.Check("de.test.plugin"));
+        string Status(JsonElement x, string label) => x.GetProperty("checks").EnumerateArray().First(c => c.GetProperty("label").GetString() == label).GetProperty("status").GetString()!;
+        Assert.Equal("ok", Status(r, "Paket"));
+        Assert.Equal("warn", Status(r, "Schnittstellen")); // "telemetry" is not part of the plugin format
+        Assert.Equal("warn", Status(r, "Berechtigungen"));  // installed, not yet allowed
+        Assert.Equal("warn", r.GetProperty("status").GetString());
+
+        p.Install(Pkg(Manifest(id: "de.test.child", extra: ",\"dependencies\":{\"de.test.missing\":\">=1.0.0\"}")), "unverified", "Datei");
+        Assert.Equal("error", Status(J(p.Check("de.test.child")), "Abhängigkeiten"));
+
+        // Someone changes the stored package afterwards → found.
+        var file = Directory.GetFiles(Path.Combine(dir.Path, "plugins"), "de.test.plugin@*.pglplugin").Single();
+        File.WriteAllBytes(file, Pkg(Manifest(permissions: "[\"library.launch\"]")));
+        var t = J(p.Check("de.test.plugin"));
+        Assert.Equal("error", Status(t, "Paket"));
+        Assert.Equal("error", t.GetProperty("status").GetString());
+    }
 }

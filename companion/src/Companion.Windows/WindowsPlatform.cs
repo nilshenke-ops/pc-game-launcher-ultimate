@@ -35,6 +35,7 @@ sealed class WindowsPlatform : IPlatform
     public IEnumerable<IDetector> Detectors { get; } = new IDetector[] { new SteamDetector(SteamDetector.DefaultRoots()), new EpicDetector(EpicDetector.DefaultManifestDir()) };
     public IUpdateInstaller UpdateInstaller { get; } = new SelfReplaceInstaller();
     public IPowerControl Power { get; } = new WindowsPower();
+    public IHardwareInfo Hardware { get; } = new WindowsHardwareInfo();
     public WindowsOverlay OverlayWindows { get; }
     public IOverlay Overlay => OverlayWindows;
     public IKeySender KeySender { get; } = new WindowsKeySender();
@@ -461,6 +462,41 @@ sealed class WindowsDesktop(UiInvoker ui, Func<TrayIcon?> tray) : IDesktopIntegr
 /// moving the verified download into place and starting it. The old file is removed on the next start.
 /// </summary>
 /// <summary>Power actions with the means Windows itself offers (no administrator rights needed for the current user).</summary>
+/// <summary>Graphics drivers from the display class key; crash reports from Windows Error Reporting (only read).</summary>
+sealed class WindowsHardwareInfo : IHardwareInfo
+{
+    public bool Supported => true;
+
+    public List<GpuDriver> Gpus()
+    {
+        var list = new List<GpuDriver>();
+        try
+        {
+            using var cls = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}");
+            if (cls == null) return list;
+            foreach (var sub in cls.GetSubKeyNames().Where(n => n.Length == 4 && n.All(char.IsDigit)))
+            {
+                try
+                {
+                    using var k = cls.OpenSubKey(sub);
+                    if (k?.GetValue("DriverDesc") is string d && !d.Contains("Basic Display") && !d.Contains("Remote"))
+                        list.Add(new GpuDriver(d, k.GetValue("DriverVersion") as string, k.GetValue("DriverDate") as string));
+                }
+                catch { }
+            }
+        }
+        catch { }
+        return list.DistinctBy(g => g.Name).ToList();
+    }
+
+    public IEnumerable<string> CrashReportFolders()
+    {
+        foreach (var root in new[] { Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) })
+            foreach (var sub in new[] { "ReportArchive", "ReportQueue" })
+                yield return Path.Combine(root, "Microsoft", "Windows", "WER", sub);
+    }
+}
+
 sealed class WindowsPower : IPowerControl
 {
     [DllImport("user32.dll", SetLastError = true)] static extern bool LockWorkStation();

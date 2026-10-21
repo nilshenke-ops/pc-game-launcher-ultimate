@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.34.0 – 2026-10-21
+### Neu
+- Hardware-Inventar (System → Hardware-Inventar): Prozessor, Arbeitsspeicher, Grafikkarte mit Treiberversion und -datum, Audio-Ausgänge und Mikrofone, Controller mit Akku, Tastaturen und Mäuse, Monitore, Laufwerke und Netzwerkadapter – was nicht lesbar ist, steht mit Grund da
+- Fehlerberichte pro Spiel (System → Fehlerberichte): nach einem Absturz (Windows-Absturzbericht des Spiels gefunden) oder einem sehr kurzen Spiel legt der PC automatisch einen Bericht an und benachrichtigt dich
+- Ein Bericht enthält Fehlerbaustein, Ausnahmecode, Spielversion, letzten Start, Gaming-Profil, System und Änderungen kurz davor; mögliche Ursachen sind als Vermutung mit Begründung markiert
+- Berichte durchsuchen, zwei Berichte vergleichen, auf Anforderung erstellen und als Text exportieren – wahlweise ohne Benutzername, PC-Name und E-Mail
+- Plugin-Prüflabor: „Alle prüfen“ bzw. Details → „Prüfen“ zeigt Paket-Unversehrtheit, Manifest und Version, unbekannte Einträge, Berechtigungen, Abhängigkeiten, Konflikte, Fehler der letzten 7 Tage, Update und vorherige Version
+### Verbessert
+- Das Inventar ist ohne PC mit dem letzten Stand und Datum sichtbar
+- Die Prüfung führt keinen Plugin-Code aus und ändert nichts
+
 ## 2.33.0 – 2026-10-21
 ### Neu
 - Savegame-Tresor (Spiele → Savegame-Tresor): Spielstände sichern, prüfen und zurückholen – mit Verlauf, Größe und Grund jeder Sicherung
