@@ -225,7 +225,8 @@ public sealed class LibraryService
                 var game = pfn != null && byPfn.TryGetValue(pfn, out var g) ? g : null;
                 var inPass = game != null || (i.GamePassId != null && catalogIds.Contains(i.GamePassId));
                 var installed = pfn != null && installedByPfn.ContainsKey(pfn);
-                if (i.AutoAdded && (!inPass || !installed)) { f.Items.Remove(i); removed++; continue; }
+                // Only what this sync added itself (games of the Xbox link have their own AutoSource and stay).
+                if (i.AutoAdded && i.AutoSource == null && (!inPass || !installed)) { f.Items.Remove(i); removed++; continue; }
                 if (inPass)
                 {
                     i.GamePassId ??= game?.Id;
@@ -292,7 +293,7 @@ public sealed class LibraryService
         _store.Update(f =>
         {
             removed = f.Items.RemoveAll(i => i.AutoAdded && i.AutoSource == autoSource && !targets.Contains(i.Target));
-            foreach (var src in installed.Select(d => d.Source).Append(autoSource == LauncherService.Epic ? LaunchSource.Epic : LaunchSource.Exe).Distinct())
+            foreach (var src in installed.Select(d => d.Source).Append(autoSource switch { LauncherService.Epic => LaunchSource.Epic, LauncherService.Xbox => LaunchSource.AppsFolder, _ => LaunchSource.Exe }).Distinct())
                 ForgetHidden(f, src, installed.Where(d => d.Source == src).Select(d => d.Target));
             foreach (var d in installed)
             {

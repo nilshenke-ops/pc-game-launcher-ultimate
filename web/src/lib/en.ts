@@ -4528,4 +4528,8 @@ export const en: Record<string, string> = {
   "Noch keine Spiele in der Bibliothek": "No games in the library yet",
   "Unter „Spiele“ → „Hinzufügen“": "Under “Games” → “Add”",
   "findest du Steam- und Epic-Spiele; andere Spiele und Programme gibst du dort als Datei frei.": "you find Steam and Epic games; other games and programs you share there as a file.",
+  "Abgleich fertig": "Sync done",
+  "Abgleich fertig – Fehler bei: {l}": "Sync done – failed for: {l}",
+  "Deine installierten Spiele aus der Xbox-App (Ordner „XboxGames“, auf allen Laufwerken) erscheinen dann automatisch in der Bibliothek und starten über Windows. Kein Login nötig.": "Your installed games from the Xbox app (“XboxGames” folders on all drives) then appear in the library automatically and start through Windows. No login needed.",
+  "Installierte Spiele von Steam, Epic, EA und der Xbox-App kommen automatisch hierher – kurz nach dem Start des Begleiters und danach alle 10 Minuten. Fehlt ein Spiel, lass den PC suchen oder gib eine EXE-Datei frei.": "Installed games from Steam, Epic, EA and the Xbox app come here automatically – shortly after the companion starts and every 10 minutes after that. If a game is missing, let the PC search or share an EXE file.",
 };

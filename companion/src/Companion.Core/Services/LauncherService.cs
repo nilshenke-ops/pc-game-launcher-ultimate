@@ -18,7 +18,7 @@ namespace Pgl.Core.Services;
 /// </summary>
 public sealed partial class LauncherService : IDisposable
 {
-    public const string Epic = "epic", Ea = "ea";
+    public const string Epic = "epic", Ea = "ea", Xbox = "xbox";
     readonly LibraryService _library;
     readonly IPlatform _platform;
     readonly SettingsService _settings;
@@ -27,13 +27,15 @@ public sealed partial class LauncherService : IDisposable
     readonly string? _epicCatalogFile;
     readonly Func<IReadOnlyList<DetectedItem>> _ea;
     readonly Func<bool> _eaFound;
+    readonly Func<IReadOnlyList<DetectedItem>?> _xbox;
     /// <summary>Cover lookup by title for owned Epic games without picture in the launcher cache.</summary>
     public Func<string, Task<string?>>? CoverByName { get; set; }
     readonly System.Collections.Concurrent.ConcurrentDictionary<string, string?> _covers = new();
     Timer? _timer;
 
     public LauncherService(LibraryService library, IPlatform platform, SettingsService settings, IHub hub,
-        string? epicManifestDir = null, string? epicCatalogFile = null, Func<IReadOnlyList<DetectedItem>>? eaInstalled = null, Func<bool>? eaFound = null)
+        string? epicManifestDir = null, string? epicCatalogFile = null, Func<IReadOnlyList<DetectedItem>>? eaInstalled = null, Func<bool>? eaFound = null,
+        Func<IReadOnlyList<DetectedItem>?>? xboxInstalled = null)
     {
         _library = library;
         _platform = platform;
@@ -43,6 +45,24 @@ public sealed partial class LauncherService : IDisposable
         _epicCatalogFile = epicCatalogFile ?? DefaultEpicCatalog();
         _ea = eaInstalled ?? (() => EaDetector.Detect());
         _eaFound = eaFound ?? EaDetector.Present;
+        _xbox = xboxInstalled ?? DefaultXbox;
+    }
+
+    /// <summary>Xbox games on this PC; null = no XboxGames folder found (then nothing is removed).</summary>
+    IReadOnlyList<DetectedItem>? DefaultXbox()
+    {
+        // Development/tests: folders given directly (start ids are then computed from the configs).
+        if (Environment.GetEnvironmentVariable("PGL_XBOX_ROOTS") is { Length: > 0 } dev)
+            return XboxDetector.Detect(dev.Split(';', StringSplitOptions.RemoveEmptyEntries).Where(Directory.Exists).ToList(), null);
+        if (!OperatingSystem.IsWindows()) return null;
+        var drives = DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.IsReady).Select(d => d.RootDirectory.FullName);
+        var roots = XboxDetector.GameRoots(drives, Directory.Exists, f => { try { return File.Exists(f) && new FileInfo(f).Length < 64 * 1024 ? File.ReadAllBytes(f) : null; } catch { return null; } });
+        if (roots.Count == 0) return null;
+        IReadOnlyCollection<string>? aumids = null;
+        if (_platform.Desktop.CanListApps)
+            try { aumids = _platform.Desktop.StartMenuApps().Where(a => a.Source == LaunchSource.AppsFolder).Select(a => a.Target).ToList(); }
+            catch (Exception ex) { Log.Warn("launchers", "Xbox: Startmenü nicht lesbar: " + ex.Message); return null; }
+        return XboxDetector.Detect(roots, aumids);
     }
 
     static string? DefaultEpicCatalog() => Environment.GetEnvironmentVariable("PGL_EPIC_CATCACHE") is { Length: > 0 } dev ? dev : OperatingSystem.IsWindows()
@@ -53,27 +73,31 @@ public sealed partial class LauncherService : IDisposable
     {
         _timer = new Timer(_ => GameActivity.RunWhenIdle("launchers", () =>
         {
-            try { foreach (var s in new[] { Epic, Ea }) if (Enabled(s)) Sync(s); }
-            catch (Exception ex) { Log.Warn("launchers", ex.Message); }
+            foreach (var s in new[] { Epic, Ea, Xbox })
+                try { if (Enabled(s)) Sync(s); }
+                catch (Exception ex) { Log.Warn("launchers", $"{s}: {ex.Message}"); }
             return Task.CompletedTask;
-        }), null, TimeSpan.FromSeconds(25), TimeSpan.FromMinutes(10));
+        }), null, TimeSpan.FromSeconds(6), TimeSpan.FromMinutes(10));
     }
 
     public void Dispose() => _timer?.Dispose();
 
-    bool Enabled(string source) => source == Epic ? _settings.Get().EpicEnabled : _settings.Get().EaEnabled;
+    bool Enabled(string source) => source switch { Epic => _settings.Get().EpicEnabled, Ea => _settings.Get().EaEnabled, _ => _settings.Get().XboxEnabled };
 
-    static string Check(string source) => source is Epic or Ea ? source : throw new RpcException("invalid-params", "Unbekannter Launcher.");
+    static string Check(string source) => source is Epic or Ea or Xbox ? source : throw new RpcException("invalid-params", "Unbekannter Launcher.");
 
     IReadOnlyList<DetectedItem> Installed(string source)
     {
-        try { return source == Epic ? _epic.Detect().ToList() : _ea(); }
+        try { return source switch { Epic => _epic.Detect().ToList(), Ea => _ea(), _ => _xbox() ?? Array.Empty<DetectedItem>() }; }
         catch (Exception ex) { Log.Warn("launchers", $"{source}: {ex.Message}"); return Array.Empty<DetectedItem>(); }
     }
 
-    bool Found(string source) => source == Epic
-        ? (_epic.ManifestDir is { } d && Directory.Exists(d)) || (_epicCatalogFile != null && File.Exists(_epicCatalogFile))
-        : _eaFound();
+    bool Found(string source) => source switch
+    {
+        Epic => (_epic.ManifestDir is { } d && Directory.Exists(d)) || (_epicCatalogFile != null && File.Exists(_epicCatalogFile)),
+        Ea => _eaFound(),
+        _ => _xbox() != null,
+    };
 
     /// <summary>Adds/removes installed games in the library. Without a launcher installation nothing is removed.</summary>
     public object Sync(string source)
@@ -127,6 +151,7 @@ public sealed partial class LauncherService : IDisposable
             if (owned.Count == 0) note = "Nicht installierte Epic-Spiele erscheinen, sobald der Epic Games Launcher auf dem PC einmal deine Bibliothek geladen hat.";
         }
         if (source == Ea) note = "EA bietet keine Schnittstelle für die ganze Bibliothek – angezeigt werden die auf dem PC installierten EA-Spiele.";
+        if (source == Xbox) note = "Gefunden werden Spiele der Xbox-App in den Ordnern „XboxGames“ (auch auf anderen Laufwerken). Ältere Store-Spiele ohne diesen Ordner fügst du unter „Hinzufügen“ → „Auf dem PC gefunden“ hinzu.";
         return new
         {
             source, enabled, found = enabled && Found(source), note,

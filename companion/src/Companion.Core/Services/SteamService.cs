@@ -55,7 +55,7 @@ public sealed partial class SteamService : IDisposable
     public void Start()
     {
         _timer?.Dispose();
-        _timer = new Timer(_ => { if (_settings.Get().SteamEnabled) GameActivity.RunWhenIdle("steam", () => SyncAsync(force: false)); }, null, TimeSpan.FromSeconds(15), InstallScanInterval);
+        _timer = new Timer(_ => { if (_settings.Get().SteamEnabled) GameActivity.RunWhenIdle("steam", () => SyncAsync(force: false)); }, null, TimeSpan.FromSeconds(4), InstallScanInterval);
     }
 
     public void Dispose() { _timer?.Dispose(); _http.Dispose(); }

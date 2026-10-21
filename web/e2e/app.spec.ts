@@ -1056,7 +1056,7 @@ test("Sammlungen ohne PC: Journal und Wiki speichern im Browser, gleichen nach d
   await dlg.getByRole("button", { name: "Speichern" }).click();
   await tab.reload();
   await expect(tab.getByText("Lohen jagen").first()).toBeVisible();
-  await expect(tab.getByText("1 Änderung nur hier – geht zum PC, sobald er an ist")).toBeVisible();
+  await expect(tab.getByText("1 Änderung nur hier – geht zum PC, sobald er an ist")).toBeVisible({ timeout: 15000 }); // sync state is read after the reload
 
   await tab.goto(`${COMPANION}/#/wiki`);
   await tab.getByRole("button", { name: "Neue Seite" }).first().click();

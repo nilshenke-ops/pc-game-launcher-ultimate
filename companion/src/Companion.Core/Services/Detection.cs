@@ -290,3 +290,112 @@ public static class EaDetector
         return list;
     }
 }
+
+/// <summary>
+/// Installed Xbox app / PC Game Pass games (GDK): every game folder holds a <c>MicrosoftGame.config</c> with the package
+/// name, the publisher and the executable id. The Windows start id ("AUMID") is package family name + "!" + id; the family
+/// name is the package name plus a hash of the publisher. A folder only counts when Windows lists that package as an app
+/// (so leftovers of uninstalled games are skipped).
+/// </summary>
+public static class XboxDetector
+{
+    public sealed record Config(string IdentityName, string? Publisher, string DisplayName, string? ExeName, string AppId, string InstallDir);
+
+    /// <summary>The XboxGames folders on all drives: the default "X:\XboxGames" plus folders listed in "X:\.GamingRoot".</summary>
+    public static List<string> GameRoots(IEnumerable<string> driveRoots, Func<string, bool> dirExists, Func<string, byte[]?> readFile)
+    {
+        var roots = new List<string>();
+        foreach (var drive in driveRoots)
+        {
+            var cands = new List<string> { Path.Combine(drive, "XboxGames") };
+            if (readFile(Path.Combine(drive, ".GamingRoot")) is { } data) cands.AddRange(ParseGamingRoot(data).Select(r => Path.Combine(drive, r.TrimStart('\\', '/').Replace('\\', Path.DirectorySeparatorChar))));
+            foreach (var c in cands) if (dirExists(c) && !roots.Contains(c, StringComparer.OrdinalIgnoreCase)) roots.Add(c);
+        }
+        return roots;
+    }
+
+    /// <summary>".GamingRoot": "RGBX", a version/count word, then UTF-16 folder names (relative to the drive), 0-terminated.</summary>
+    public static List<string> ParseGamingRoot(byte[] data)
+    {
+        if (data.Length < 10 || data[0] != 'R' || data[1] != 'G' || data[2] != 'B' || data[3] != 'X') return new();
+        var text = Encoding.Unicode.GetString(data, 8, (data.Length - 8) / 2 * 2);
+        return text.Split('\0').Select(s => s.Trim()).Where(s => s.Length is > 0 and < 200 && !s.Contains("..") && s.All(c => !char.IsControl(c))).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    public static Config? ParseConfig(string xml, string installDir)
+    {
+        System.Xml.Linq.XDocument doc;
+        try { doc = System.Xml.Linq.XDocument.Parse(xml); } catch (System.Xml.XmlException) { return null; }
+        var root = doc.Root;
+        if (root == null || root.Name.LocalName != "Game") return null;
+        System.Xml.Linq.XElement? El(string n) => root.Elements().FirstOrDefault(e => e.Name.LocalName == n);
+        var identity = El("Identity");
+        var name = identity?.Attribute("Name")?.Value;
+        if (string.IsNullOrWhiteSpace(name) || !System.Text.RegularExpressions.Regex.IsMatch(name, @"^[A-Za-z0-9.\-]{3,50}$")) return null;
+        var exe = El("ExecutableList")?.Elements().FirstOrDefault(e => e.Name.LocalName == "Executable");
+        var appId = exe?.Attribute("Id")?.Value is { Length: > 0 } id && System.Text.RegularExpressions.Regex.IsMatch(id, @"^[A-Za-z][A-Za-z0-9.]{0,63}$") ? id : "Game";
+        var display = El("ShellVisuals")?.Attribute("DefaultDisplayName")?.Value;
+        if (string.IsNullOrWhiteSpace(display) || display.StartsWith("ms-resource:", StringComparison.OrdinalIgnoreCase))
+            display = Path.GetFileName(installDir.TrimEnd('\\', '/')) is { Length: > 0 } folder && !folder.Equals("Content", StringComparison.OrdinalIgnoreCase)
+                ? folder : Path.GetFileName(Path.GetDirectoryName(installDir.TrimEnd('\\', '/')) ?? name);
+        var exeName = exe?.Attribute("Name")?.Value;
+        return new Config(name, identity!.Attribute("Publisher")?.Value, display!.Trim(), exeName, appId, installDir);
+    }
+
+    /// <summary>Publisher id of a package family name (Windows' own rule: SHA-256 of the UTF-16 publisher, first 8 bytes, base32).</summary>
+    public static string PublisherId(string publisher)
+    {
+        const string alphabet = "0123456789abcdefghjkmnpqrstvwxyz";
+        var hash = System.Security.Cryptography.SHA256.HashData(Encoding.Unicode.GetBytes(publisher));
+        ulong v = 0;
+        for (var i = 0; i < 8; i++) v = (v << 8) | hash[i];
+        var sb = new StringBuilder();
+        // 64 bits + one 0 bit = 13 groups of 5 bits.
+        for (var i = 0; i < 13; i++)
+        {
+            var shift = 59 - i * 5;
+            var bits = shift >= 0 ? (int)((v >> shift) & 31) : (int)((v << -shift) & 31);
+            sb.Append(alphabet[bits]);
+        }
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Games in the given roots. <paramref name="installedAumids"/> = start ids Windows lists (null when the list is not
+    /// available; then the computed id is used).
+    /// </summary>
+    public static IReadOnlyList<DetectedItem> Detect(IEnumerable<string> roots, IReadOnlyCollection<string>? installedAumids)
+    {
+        var result = new List<DetectedItem>();
+        foreach (var root in roots)
+        {
+            IEnumerable<string> dirs;
+            try { dirs = Directory.EnumerateDirectories(root).ToList(); } catch { continue; }
+            foreach (var dir in dirs)
+            {
+                var file = new[] { Path.Combine(dir, "Content", "MicrosoftGame.config"), Path.Combine(dir, "MicrosoftGame.config") }.FirstOrDefault(File.Exists);
+                if (file == null) continue;
+                Config? c;
+                try { c = ParseConfig(File.ReadAllText(file), Path.GetDirectoryName(file)!); }
+                catch (Exception ex) { Log.Warn("detect", $"Xbox: {dir}: {ex.Message}"); continue; }
+                if (c == null) continue;
+                var aumid = Aumid(c, installedAumids);
+                if (aumid == null || LaunchValidator.ValidateTarget(LaunchSource.AppsFolder, aumid) != null) continue;
+                if (result.Any(r => string.Equals(r.Target, aumid, StringComparison.OrdinalIgnoreCase))) continue;
+                var procs = c.ExeName is { Length: > 0 } e ? new List<string> { Path.GetFileNameWithoutExtension(e.Replace('\\', '/')) } : new List<string>();
+                result.Add(new DetectedItem("xbox:" + c.IdentityName, ItemKind.Game, c.DisplayName, LaunchSource.AppsFolder, aumid, c.InstallDir, procs, null, "Xbox", false));
+            }
+        }
+        return result;
+    }
+
+    static string? Aumid(Config c, IReadOnlyCollection<string>? installed)
+    {
+        if (installed != null)
+        {
+            var ofPackage = installed.Where(a => a.StartsWith(c.IdentityName + "_", StringComparison.OrdinalIgnoreCase)).ToList();
+            return ofPackage.FirstOrDefault(a => a.EndsWith("!" + c.AppId, StringComparison.OrdinalIgnoreCase)) ?? ofPackage.FirstOrDefault();
+        }
+        return c.Publisher is { Length: > 0 } p ? $"{c.IdentityName}_{PublisherId(p)}!{c.AppId}" : null;
+    }
+}

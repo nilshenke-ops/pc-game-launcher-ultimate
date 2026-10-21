@@ -396,6 +396,10 @@ public sealed class Settings
     public bool EpicEnabled { get; set; }
     /// <summary>EA link: installed EA app games kept in the library.</summary>
     public bool EaEnabled { get; set; }
+    /// <summary>Xbox link: installed Xbox app / PC Game Pass games (XboxGames folders) kept in the library.</summary>
+    public bool XboxEnabled { get; set; }
+    /// <summary>Set once all launcher links were switched on automatically (installed games appear without any setup; each can be switched off later).</summary>
+    public bool AutoLinkDone { get; set; }
     /// <summary>OBS Studio WebSocket server (obs-websocket 5) used for recording and replays.</summary>
     public string? ObsUrl { get; set; } = "ws://127.0.0.1:4455";
     /// <summary>Password of the OBS WebSocket server (protected like the relay secret, never sent to devices).</summary>

@@ -8,10 +8,10 @@ import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials } from "../lib/format";
 import { Banner, Button, Card, Empty, Loadable, Segmented } from "../components/ui";
 
-type Source = "epic" | "ea";
+export type Source = "epic" | "ea" | "xbox";
 interface LauncherGame { id: string; name: string; cover?: string; installed: boolean; itemId?: string; installable: boolean }
 interface LauncherList { source: Source; enabled: boolean; found: boolean; note?: string; games: LauncherGame[] }
-const NAMES: Record<Source, string> = { epic: "Epic Games", ea: "EA app" };
+const NAMES: Record<Source, string> = { epic: "Epic Games", ea: "EA app", xbox: "Xbox" };
 const PAGE = 60;
 
 /** "Epic" and "EA" categories in the games library: only what the launchers store on the PC (no login, no official APIs). */
@@ -34,7 +34,7 @@ export function LauncherView({ source, search }: { source: Source; search: strin
     try { await fn(); if (ok) toast(ok, "success"); } catch (e) { toast((e as Error).message, "error"); }
     setBusy(null);
   };
-  const enableKey = source === "epic" ? "epicEnabled" : "eaEnabled";
+  const enableKey = source === "epic" ? "epicEnabled" : source === "ea" ? "eaEnabled" : "xboxEnabled";
   const tap = useTileAction();
   const play = (g: LauncherGame) => tap.run(g.id, async () => { bumpUsage("item:" + g.itemId); await client.call("library.launch", { id: g.itemId }); }, t("{name} wird gestartet", { name: g.name }));
   const install = (g: LauncherGame) => tap.run(g.id, () => client.call("launchers.install", { source, id: g.id }), t("{l} am PC geöffnet: „{n}“ installieren", { l: name, n: g.name }));
@@ -44,7 +44,9 @@ export function LauncherView({ source, search }: { source: Source; search: strin
       {d && !d.enabled ? (
         <Card>
           <Empty icon={<Link2 size={28} />} title={t("{n} verknüpfen", { n: name })}
-            text={source === "epic"
+            text={source === "xbox"
+              ? t("Deine installierten Spiele aus der Xbox-App (Ordner „XboxGames“, auf allen Laufwerken) erscheinen dann automatisch in der Bibliothek und starten über Windows. Kein Login nötig.")
+              : source === "epic"
               ? t("Deine installierten Epic-Spiele erscheinen dann automatisch in der Bibliothek, deinstallierte verschwinden wieder. Zusätzlich zeigt der PC die Spiele aus dem Bibliotheks-Speicher des Epic Games Launchers – auch nicht installierte. Kein Login nötig.")
               : t("Deine installierten EA-Spiele erscheinen dann automatisch in der Bibliothek, deinstallierte verschwinden wieder. Kein Login nötig. Die ganze EA-Bibliothek lässt sich ohne EA-Login nicht abrufen.")}
             action={canManage ? <Button variant="primary" busy={busy === "enable"} onClick={() => act("enable", () => client.call("settings.save", { [enableKey]: true }), t("{n} verknüpft", { n: name }))}>{t("Verknüpfen")}</Button>

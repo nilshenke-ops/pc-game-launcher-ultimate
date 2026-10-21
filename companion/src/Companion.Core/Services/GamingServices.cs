@@ -22,6 +22,23 @@ public sealed class SettingsService
 
     public Settings Get() => _store.Snapshot();
 
+    /// <summary>
+    /// Once per installation: Steam, Epic, EA and Xbox links on, so installed games appear in the library without any setup.
+    /// Each link can be switched off afterwards and then stays off. Returns true when it switched them on now.
+    /// </summary>
+    public bool EnableLauncherLinksOnce()
+    {
+        var done = _store.Update(s =>
+        {
+            if (s.AutoLinkDone) return false;
+            s.SteamEnabled = s.EpicEnabled = s.EaEnabled = s.XboxEnabled = true;
+            s.AutoLinkDone = true;
+            return true;
+        });
+        if (done) _hub.Changed("settings");
+        return done;
+    }
+
     public sealed class GeneralUpdate
     {
         public string? PcName { get; set; }
@@ -41,6 +58,7 @@ public sealed class SettingsService
         public bool? SteamEnabled { get; set; }
         public bool? EpicEnabled { get; set; }
         public bool? EaEnabled { get; set; }
+        public bool? XboxEnabled { get; set; }
         public string? OverlayCorner { get; set; }
         public Pgl.Core.Platform.MetricSwitches? Metrics { get; set; }
     }
@@ -70,6 +88,7 @@ public sealed class SettingsService
             if (u.SteamEnabled != null) s.SteamEnabled = u.SteamEnabled.Value;
             if (u.EpicEnabled != null) s.EpicEnabled = u.EpicEnabled.Value;
             if (u.EaEnabled != null) s.EaEnabled = u.EaEnabled.Value;
+            if (u.XboxEnabled != null) s.XboxEnabled = u.XboxEnabled.Value;
             if (u.OverlayCorner != null) s.OverlayCorner = u.OverlayCorner;
             if (u.Metrics != null) s.Metrics = u.Metrics.Copy();
             return Json.Deserialize<Settings>(Json.Serialize(s))!;

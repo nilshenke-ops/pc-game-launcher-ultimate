@@ -489,6 +489,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Calendar.Start();
         Plugins.Start();
         _ = Task.Run(Backup.EnsureAutoPoint);
+        if (Settings.EnableLauncherLinksOnce()) Log.Info("launchers", "Steam, Epic, EA und Xbox verknüpft – installierte Spiele kommen automatisch in die Bibliothek.");
         Steam.Start();
         Launchers.Start();
         ApplyRelaySettings(Settings.Get());

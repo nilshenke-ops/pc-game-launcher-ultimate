@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Box, Check, FolderOpen, Wand2, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, Search, Star, Trash2 } from "lucide-react";
+import { Box, Check, FolderOpen, Wand2, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, RefreshCw, Search, Star, Trash2 } from "lucide-react";
 import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast, useCan, useIncremental } from "../lib/hooks";
@@ -16,7 +16,7 @@ import { CompatPanel } from "../components/compat-panel";
 import { AppTile, useLaunch } from "../components/launch-tiles";
 import { GamePassView } from "./GamePass";
 import { SteamView } from "./Steam";
-import { LauncherView } from "./Launchers";
+import { LauncherView, type Source as LauncherSource } from "./Launchers";
 
 type Sort = "name" | "recent" | "added" | "rating";
 type View = "grid" | "list" | "holo";
@@ -36,6 +36,16 @@ export default function Library({ kind }: { kind: ItemKind }) {
   const [sort, setSort] = useState<Sort>("name");
   const [editing, setEditing] = useState<LibraryItem | null>(null);
   const [adding, setAdding] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  /** Steam, Epic, EA and Xbox now (instead of waiting for the next automatic round); a launcher switched off is skipped. */
+  const syncAll = async () => {
+    setSyncing(true);
+    const calls: [string, Promise<unknown>][] = [["Steam", client.call("steam.sync")], ...(["epic", "ea", "xbox"] as const).map((source) => [source, client.call("launchers.sync", { source })] as [string, Promise<unknown>])];
+    const results = await Promise.allSettled(calls.map(([, p]) => p));
+    const failed = results.map((r, i) => (r.status === "rejected" && (r.reason as { code?: string })?.code !== "disabled" ? calls[i][0] : null)).filter(Boolean);
+    setSyncing(false);
+    toast(failed.length ? t("Abgleich fertig – Fehler bei: {l}", { l: failed.join(", ") }) : t("Abgleich fertig"), failed.length ? "error" : "success");
+  };
   const canManage = useCan("manage");
   const isGame = kind === "game";
 
@@ -94,13 +104,13 @@ export default function Library({ kind }: { kind: ItemKind }) {
           <Segmented<Sort> value={sort} onChange={setSort} label={t("Sortierung")} options={[{ value: "name", label: t("A–Z") }, { value: "recent", label: t("Zuletzt") }, { value: "added", label: t("Neu") }, { value: "rating", label: "★ " + t("Bewertung") }]} />
         </div>
         <div className="chips" role="toolbar" aria-label={t("Filter")}>
-          {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ["__running", t("Läuft")], ...(isGame ? [["__steam", "Steam"], ["__epic", "Epic"], ["__ea", "EA"], ["__gamepass", "Game Pass"]] : []), ...sources.filter((s) => !(isGame && (s === "steam" || s === "epic"))).map((s) => ["src:" + s, SOURCE_LABEL[s] ?? s]), ...categories.map((c) => [c, c])].map(([k, label]) => (
+          {[["__all", t("Alle")], ["__fav", "★ " + t("Favoriten")], ["__running", t("Läuft")], ...(isGame ? [["__steam", "Steam"], ["__epic", "Epic"], ["__ea", "EA"], ["__xbox", "Xbox"], ["__gamepass", "Game Pass"]] : []), ...sources.filter((s) => !(isGame && (s === "steam" || s === "epic"))).map((s) => ["src:" + s, SOURCE_LABEL[s] ?? s]), ...categories.map((c) => [c, c])].map(([k, label]) => (
             <button key={k} className={`chip ${cat === k ? "on" : ""}`} onClick={() => setCat(k)}>{label}</button>
           ))}
         </div>
       </div>
 
-      {cat === "__gamepass" ? <GamePassView search={search} /> : cat === "__steam" ? <SteamView search={search} /> : cat === "__epic" || cat === "__ea" ? <LauncherView key={cat} source={cat === "__epic" ? "epic" : "ea"} search={search} /> : (<>
+      {cat === "__gamepass" ? <GamePassView search={search} /> : cat === "__steam" ? <SteamView search={search} /> : cat === "__epic" || cat === "__ea" || cat === "__xbox" ? <LauncherView key={cat} source={cat.slice(2) as LauncherSource} search={search} /> : (<>
       {q.stale && !q.updatedAt && <div style={{ marginBottom: 14 }}><Banner kind="info" title={t("Noch kein PC verbunden")}>{isGame
         ? t("Deine installierten Spiele erkennt der PC beim ersten Verbinden. Steam-Spiele kannst du schon jetzt unter „Steam“ zur Bibliothek hinzufügen; Bewertung, Favorit und Kategorien lassen sich bearbeiten – übertragen wird später.")
         : t("Programme gibt der PC selbst frei (aus Sicherheitsgründen nur direkt am PC). Sie erscheinen hier nach dem Verbinden.")}</Banner></div>}
@@ -108,8 +118,13 @@ export default function Library({ kind }: { kind: ItemKind }) {
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {items.length === 0 ? (
           <Card><Empty icon={isGame ? <Gamepad2 size={28} /> : <LayoutGrid size={28} />} title={isGame ? t("Noch keine Spiele") : t("Noch keine Programme")}
-            text={t("Lass den PC nach installierten Spielen und Apps suchen oder gib eine EXE-Datei frei.")}
-            action={canManage && <Button variant="primary" icon={<Radar size={17} />} onClick={() => setAdding(true)}>{t("Jetzt suchen")}</Button>} /></Card>
+            text={isGame
+              ? t("Installierte Spiele von Steam, Epic, EA und der Xbox-App kommen automatisch hierher – kurz nach dem Start des Begleiters und danach alle 10 Minuten. Fehlt ein Spiel, lass den PC suchen oder gib eine EXE-Datei frei.")
+              : t("Lass den PC nach installierten Spielen und Apps suchen oder gib eine EXE-Datei frei.")}
+            action={canManage && <span className="row" style={{ gap: 8, justifyContent: "center" }}>
+              {isGame && <Button busy={syncing} icon={<RefreshCw size={17} />} onClick={() => void syncAll()}>{t("Jetzt abgleichen")}</Button>}
+              <Button variant="primary" icon={<Radar size={17} />} onClick={() => setAdding(true)}>{t("Jetzt suchen")}</Button>
+            </span>} /></Card>
         ) : shown.length === 0 ? (
           <Card><Empty icon={<Search size={26} />} title={t("Keine Treffer")} text={t("Filter oder Suchbegriff anpassen.")} /></Card>
         ) : isGame && view === "holo" ? (

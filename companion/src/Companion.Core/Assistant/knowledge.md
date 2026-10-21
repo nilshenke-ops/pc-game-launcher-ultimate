@@ -50,6 +50,11 @@ Seite: /settings?s=design
 Stichworte: ladebildschirm loading screen startanimation animation spielstart kino cinematic vorlage neon portal cyberpunk hologramm galaxie glitch hintergrund bewegt animiert partikel sterne raster übergang übergänge atmosphäre theme fire ice space glass
 Einstellungen → Design & Layout. „Spielstart-Animation“: Ladebildschirm beim Spielstart an/aus, 8 Vorlagen, Dauer 1–8 s oder Schnellmodus (1,2 s), eigener Text, Bild des Spiels, „Vorschau“ (startet nichts). Der Startbefehl geht sofort an den PC; Antippen oder Esc überspringt. „Läuft auf dem PC“ steht erst da, wenn der PC das Spiel erkennt. „Bewegter Hintergrund“ (Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle) mit Tempo, Menge, Deckkraft; „Seitenübergänge“ mit Dauer. Atmosphären (Cyberpunk, Neon, Space, Ice, Fire, Fantasy, Retro Arcade, Minimal Dark, Glass, Mono) stehen bei den Themes und setzen Farben, Hintergrund und Ladebildschirm zusammen. Bei „Animationen reduzieren“ oder leichter Darstellung: Standbild. Funktioniert ohne PC.
 
+## Spiele automatisch in der Bibliothek (Steam, Epic, EA, Xbox)
+Seite: /games
+Stichworte: bibliothek leer keine spiele automatisch hinzufügen installiert erkannt einlesen abgleichen steam epic ea xbox game pass microsoft store xboxgames verknüpfen
+Installierte Spiele kommen von selbst in die Bibliothek: Steam, Epic Games, EA app und die Xbox-App (Ordner „XboxGames“ auf allen Laufwerken, auch eigene Ordner aus der Xbox-App). Der PC gleicht kurz nach dem Start und danach alle 10 Minuten ab; deinstallierte Spiele, die so hinzugekommen sind, verschwinden wieder. Ein selbst entferntes Spiel kommt nicht wieder. „Jetzt abgleichen“ (bei leerer Bibliothek) gleicht sofort ab. Die Verknüpfungen sind einmal automatisch eingeschaltet und lassen sich unter Spiele → Steam / Epic / EA / Xbox einzeln ausschalten. Gestartet wird über den jeweiligen Launcher bzw. Windows. Nicht erkannt: ältere Microsoft-Store-Spiele ohne „XboxGames“-Ordner, Spiele anderer Launcher (z. B. Ubisoft, GOG) – die fügst du unter „Hinzufügen“ hinzu („Auf dem PC gefunden“ oder „Datei freigeben“).
+
 ## Bibliothek: Raster, Liste, Holo
 Seite: /games
 Stichworte: ansicht holo hologramm karussell liste raster kacheln bibliothek spiele ansicht wechseln viele spiele
