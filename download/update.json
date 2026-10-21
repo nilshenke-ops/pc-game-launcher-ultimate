@@ -1,31 +1,33 @@
 {
-  "version": "2.37.0",
+  "version": "2.38.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.37.0/PCGameLauncherCompanion.exe",
-  "size": 87760446,
-  "sha256": "6ed9f53760e0d0da496f3d792877acd4f17b86302b7413795f9bf59b9332638b",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.38.0/PCGameLauncherCompanion.exe",
+  "size": 87802541,
+  "sha256": "05ac745306091dd20e51161a58c33b6388bea6de84d4ca1e21dc98eb0e40f378",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.37.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.37.0/PCGameLauncherCompanion-2.37.0-win-x64.zip",
-    "size": 82021922,
-    "sha256": "fe706a78871559437fabb1767c81c3908facede1005fb930d8ff5f94a550f76a"
+    "fileName": "PCGameLauncherCompanion-2.38.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.38.0/PCGameLauncherCompanion-2.38.0-win-x64.zip",
+    "size": 82064046,
+    "sha256": "a667e570bddce4972913603adb82152ad97a0483ed0865f0243ef81a7abf02ef"
   },
-  "notes": "Remote Desktop mit Ton: Knopf „Ton“ überträgt, was der PC gerade abspielt, mit Lautstärkeregler – Standardgeräte und Mikrofon bleiben unverändert · Spiele verschieben (System → Spiele verschieben): zeigt zuerst den offiziellen Weg des Launchers (Steam, Xbox-App, Epic) · Umzugsassistent für Steam-Spiele: Ziel-Bibliothek auf einem anderen Laufwerk, Prüfungen (vollständig installiert, Spiel läuft nicht, Platz + 1 GB Reserve, keine Verknüpfungen), Kopie mit SHA-256-Prüfung jeder Datei und Fortschritt",
+  "notes": "Neuer Bereich „Spielbegleiter“ mit Spiele-Journal und Gaming-Wiki – funktioniert ohne PC: gespeichert im Browser, beim Verbinden mit dem PC abgeglichen (andere Geräte sehen dasselbe, alles im PC-Backup) · „Wo war ich noch mal?“: Verlauf je Spiel (was gemacht, wo, was als Nächstes, Bilder); beim Spielstart erscheint die letzte eigene Notiz, auch im Bearbeiten-Fenster des Spiels · Zielpfade: eigene Etappen mit Belohnungen und Meilensteinen, Fortschritt aus den Etappen, Vorlagen und eigene Vorlagen, Archiv – ohne tägliche Pflichten oder Fristen",
   "changes": {
     "neu": [
-      "Remote Desktop mit Ton: Knopf „Ton“ überträgt, was der PC gerade abspielt, mit Lautstärkeregler – Standardgeräte und Mikrofon bleiben unverändert",
-      "Spiele verschieben (System → Spiele verschieben): zeigt zuerst den offiziellen Weg des Launchers (Steam, Xbox-App, Epic)",
-      "Umzugsassistent für Steam-Spiele: Ziel-Bibliothek auf einem anderen Laufwerk, Prüfungen (vollständig installiert, Spiel läuft nicht, Platz + 1 GB Reserve, keine Verknüpfungen), Kopie mit SHA-256-Prüfung jeder Datei und Fortschritt",
-      "Umstellen erst bei geschlossenem Steam; das Original wird erst gelöscht, wenn du bestätigst, dass das Spiel am neuen Ort startet – bis dahin „Rückgängig“",
-      "Umzüge lassen sich ohne PC vorbereiten; kopiert wird erst mit dem PC nach neuer Prüfung"
+      "Neuer Bereich „Spielbegleiter“ mit Spiele-Journal und Gaming-Wiki – funktioniert ohne PC: gespeichert im Browser, beim Verbinden mit dem PC abgeglichen (andere Geräte sehen dasselbe, alles im PC-Backup)",
+      "„Wo war ich noch mal?“: Verlauf je Spiel (was gemacht, wo, was als Nächstes, Bilder); beim Spielstart erscheint die letzte eigene Notiz, auch im Bearbeiten-Fenster des Spiels",
+      "Zielpfade: eigene Etappen mit Belohnungen und Meilensteinen, Fortschritt aus den Etappen, Vorlagen und eigene Vorlagen, Archiv – ohne tägliche Pflichten oder Fristen",
+      "Quest- und Fundsammlung: Kategorien, Status offen/gefunden/erledigt, Tags, Bilder, Favoriten, Suche, Filter, Sortierung",
+      "Story ohne Spoiler: Kapitel, Figuren, offene Fragen und eigener Stand; die spoilerfreie Ansicht verdeckt alles danach und alles als Spoiler Markierte",
+      "Gaming-Wiki: [[Links]] zwischen Seiten (fehlende Seite mit einem Tipp anlegen), Rückverweise, automatisches Speichern, Versionen mit Wiederherstellen, doppelte Seiten zusammenführen, Markdown-Export",
+      "Alle Einträge lassen sich untereinander verknüpfen; Export und Import als Datei geht ohne PC"
     ],
     "verbessert": [
-      "Angehaltene oder unterbrochene Kopien (auch nach Neustart des Begleiters) laufen mit „Fortsetzen“ weiter; schon kopierte Dateien werden dabei erneut geprüft",
-      "Ändert sich das Spiel nach dem Kopieren (z. B. Update), wird nicht umgestellt, sondern zuerst abgeglichen"
+      "Wurde ein Eintrag auf zwei Geräten geändert, gilt die neuere Änderung; die andere bleibt als Konflikt-Kopie auf dem PC und lässt sich wiederherstellen",
+      "Backup enthält die Sammlungen (Bilder zusammen mit den Audiodateien)"
     ],
     "behoben": []
   },
-  "signature": "CZN9vrJPk+ZeTZVJqFZMDPc4j10neD/jyQk0gAzjaVLueSRU470X/gpQaWH+jahLsu2saw54BqD82OO0rJ2sBA=="
+  "signature": "YbKQWNvL4ROceHbSlVszRAZzfTuJ0yycveIvMqoD6ZhCE/Q3q82KuiqSXo27hw7WIp4Uz8kC8uafNrjBelmX6Q=="
 }
