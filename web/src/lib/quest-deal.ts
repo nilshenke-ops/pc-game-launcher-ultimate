@@ -46,3 +46,18 @@ export function progressPercent(value: number | null | undefined, target: number
 export function levelPercent(xp: number, from: number, to: number): number {
   return to > from ? Math.max(0, Math.min(100, ((xp - from) / (to - from)) * 100)) : 0;
 }
+
+/**
+ * Key shops (Germany, prices in euro): search pages for a game. Only links – Instant Gaming and Eneba have no public
+ * price interface and refuse automated price queries, so no price is shown or guessed here.
+ * Eneba: only keys for Europe and "Global" regions (keys for other regions often do not work in Germany).
+ */
+export function keyShopLinks(title: string): { shop: "instant-gaming" | "eneba"; name: string; url: string }[] {
+  const q = title.replace(/[™®©]/g, "").replace(/\s+/g, " ").trim().slice(0, 100);
+  if (!q) return [];
+  const e = encodeURIComponent(q);
+  return [
+    { shop: "instant-gaming", name: "Instant Gaming", url: `https://www.instant-gaming.com/de/suche/?q=${e}` },
+    { shop: "eneba", name: "Eneba", url: `https://www.eneba.com/de/store/all?text=${e}&regions[]=europe&regions[]=global` },
+  ];
+}

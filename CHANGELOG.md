@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.43.1 – 2026-10-21
+### Neu
+- Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen
+
 ## 2.43.0 – 2026-10-21
 ### Neu
 - Installierte Spiele kommen automatisch in die Bibliothek – ohne Einrichtung: Steam, Epic Games, EA app und neu die Xbox-App. Abgleich wenige Sekunden nach dem Start des Begleiters und danach alle 10 Minuten; selbst entfernte Spiele kommen nicht wieder, deinstallierte verschwinden

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clientId, levelPercent, lowestSeen, money, parsePrice, progressPercent } from "./quest-deal";
+import { clientId, keyShopLinks, levelPercent, lowestSeen, money, parsePrice, progressPercent } from "./quest-deal";
 
 describe("quest/deal helpers", () => {
   it("makes ids the PC accepts", () => {
@@ -32,5 +32,15 @@ describe("quest/deal helpers", () => {
     expect(levelPercent(150, 100, 300)).toBe(25);
     expect(lowestSeen([])).toBeNull();
     expect(lowestSeen([{ final: 2999 }, { final: 1499 }, { final: 1999 }])).toBe(1499);
+  });
+});
+
+describe("key shop links", () => {
+  it("search Instant Gaming and Eneba (Germany, Europe/Global keys) by the cleaned title", () => {
+    const [ig, en] = keyShopLinks("Hades™ II  ");
+    expect(ig.url).toBe("https://www.instant-gaming.com/de/suche/?q=Hades%20II");
+    expect(en.url).toBe("https://www.eneba.com/de/store/all?text=Hades%20II&regions[]=europe&regions[]=global");
+    expect(keyShopLinks("A&B?#").map((l) => l.url)[0]).toBe("https://www.instant-gaming.com/de/suche/?q=A%26B%3F%23");
+    expect(keyShopLinks("   ")).toEqual([]);
   });
 });

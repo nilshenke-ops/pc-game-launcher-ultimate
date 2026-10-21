@@ -6,7 +6,7 @@ import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useAction, useCan, useConn, useRpc } from "../lib/hooks";
 import { dateTime, gradientFor, initials, relTime } from "../lib/format";
-import { clientId, lowestSeen, money, parsePrice, priceInput } from "../lib/quest-deal";
+import { clientId, keyShopLinks, lowestSeen, money, parsePrice, priceInput } from "../lib/quest-deal";
 import { CompatPanel } from "../components/compat-panel";
 import { fetchMsPrice, phonePrices, savePhonePrice, type MsResult } from "../lib/ms-store";
 import { loadCatalogPart, loadSteamIndex, lookup, shard, type SteamIndex } from "../lib/steam-index";
@@ -187,6 +187,13 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
               {w.steamFromList && <span className="tiny muted">{t("aus der Steam-Preisliste der Website, Stand {d}", { d: relTime(w.steamFromList) })}</span>}
             </> : <span className="small muted">{!w.steamAppId ? (w.error ?? (online ? t("Noch keinem Steam-Spiel zugeordnet – der PC sucht es bei der nächsten Prüfung über den Namen.") : t("Nicht in der Steam-Preisliste der Website (sie enthält nur die rund 3000 beliebtesten Spiele) – Steam erlaubt keine Abfrage direkt vom Handy. Beim nächsten Verbinden prüft der PC den Preis."))) : data.enabled ? t("Noch nicht geprüft – kommt mit der nächsten Prüfung.") : t("Preisabfrage ist aus.")}</span>}
             {w.steamAppId && <a className="btn sm" href={`https://store.steampowered.com/app/${w.steamAppId}`} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Im Steam-Shop öffnen")}</a>}
+          </div>
+        </div>
+        <div className="deal-store-box">
+          <span className="deal-store"><Tag size={15} />{t("Key-Shops (Deutschland)")}</span>
+          <span className="tiny muted">{t("Kein Preis hier: Instant Gaming und Eneba bieten keine öffentliche Preisabfrage und sperren automatische Abfragen. Die Links öffnen die Suche mit Euro-Preisen. Achte auf die Region des Keys (Europa oder Global) und die Plattform (Steam, Xbox …).")}</span>
+          <div className="row" style={{ gap: 6 }}>
+            {keyShopLinks(w.title).map((l) => <a key={l.shop} className="btn sm" href={l.url} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Bei {s} ansehen", { s: l.name })}</a>)}
           </div>
         </div>
         {c && <p className="small" style={{ margin: 0 }}>{c === "xbox" ? t("Im Microsoft Store gerade günstiger.") : t("Bei Steam gerade günstiger.")}</p>}

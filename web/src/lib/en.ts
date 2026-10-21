@@ -4532,4 +4532,7 @@ export const en: Record<string, string> = {
   "Abgleich fertig – Fehler bei: {l}": "Sync done – failed for: {l}",
   "Deine installierten Spiele aus der Xbox-App (Ordner „XboxGames“, auf allen Laufwerken) erscheinen dann automatisch in der Bibliothek und starten über Windows. Kein Login nötig.": "Your installed games from the Xbox app (“XboxGames” folders on all drives) then appear in the library automatically and start through Windows. No login needed.",
   "Installierte Spiele von Steam, Epic, EA und der Xbox-App kommen automatisch hierher – kurz nach dem Start des Begleiters und danach alle 10 Minuten. Fehlt ein Spiel, lass den PC suchen oder gib eine EXE-Datei frei.": "Installed games from Steam, Epic, EA and the Xbox app come here automatically – shortly after the companion starts and every 10 minutes after that. If a game is missing, let the PC search or share an EXE file.",
+  "Bei {s} ansehen": "View on {s}",
+  "Key-Shops (Deutschland)": "Key shops (Germany)",
+  "Kein Preis hier: Instant Gaming und Eneba bieten keine öffentliche Preisabfrage und sperren automatische Abfragen. Die Links öffnen die Suche mit Euro-Preisen. Achte auf die Region des Keys (Europa oder Global) und die Plattform (Steam, Xbox …).": "No price here: Instant Gaming and Eneba offer no public price lookup and block automated queries. The links open the search with euro prices. Check the key's region (Europe or Global) and the platform (Steam, Xbox …).",
 };
