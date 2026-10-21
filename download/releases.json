@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.42.3",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.3/PCGameLauncherCompanion.exe",
+    "size": 87906084,
+    "sha256": "28f00a1a2a70c2e10691e5dba150830873b55bd4a918ca72cc13aa1310d6607f",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.42.3-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.3/PCGameLauncherCompanion-2.42.3-win-x64.zip",
+      "size": 82167662,
+      "sha256": "494b305b0019abf9560699471281967b7b56f16735add15b3141272456b89ee4"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Deck und Kalender: Bei leerer Spiele-Bibliothek stand „Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war“, auch wenn der PC verbunden ist. Jetzt: „Noch keine Spiele in der Bibliothek“ mit Hinweis und Link zu „Spiele“ → „Hinzufügen“ (Steam/Epic werden gefunden, alles andere als Datei freigeben); der alte Text nur noch, wenn wirklich noch nie ein PC verbunden war"
+      ]
+    },
+    "signature": "Ra0Y5mZCkc//Ky3a4okExtpeEZQ6ZZIVlR91LJPLmBR7IFVaFaUbEl5EIs6/v5p3mwkzZvgFyLza0YykKsDpoA=="
+  },
+  {
     "version": "2.42.2",
     "date": "2026-10-21",
     "channel": "stable",
@@ -1449,30 +1473,5 @@
       "behoben": []
     },
     "signature": "7sXmYT8VFs12tMxqI/lVOvOnATnv27kEhL4qpIp2LH/tumCdtHYKeYa+NPYFtMIKgvdO1LUWX3oKdOFCrDeWUQ=="
-  },
-  {
-    "version": "1.7.1",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.1/PCGameLauncherCompanion.exe",
-    "size": 84370077,
-    "sha256": "14d2919818634c7a09a04c54cc2a6f1102ee3bf702f8db22ae12ab78bf1cf51f",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-1.7.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.7.1/PCGameLauncherCompanion-1.7.1-win-x64.zip",
-      "size": 78698339,
-      "sha256": "8d52cc3b1a90c9a6a2548fcff814577b751a6fa6f37ca018f2a5bb821b5c116e"
-    },
-    "notes": "Drei neue Cartoon-Hintergründe: Cartoon Nacht, Cartoon Unterwasser, Cartoon Weltall · Cartoon-Hintergründe haben eine eigene Hochformat-Zeichnung fürs Handy (statt eines beschnittenen Querformat-Bilds); Figuren liegen am Rand, damit Text gut lesbar bleibt",
-    "changes": {
-      "neu": [
-        "Drei neue Cartoon-Hintergründe: Cartoon Nacht, Cartoon Unterwasser, Cartoon Weltall",
-        "Cartoon-Hintergründe haben eine eigene Hochformat-Zeichnung fürs Handy (statt eines beschnittenen Querformat-Bilds); Figuren liegen am Rand, damit Text gut lesbar bleibt"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "kyU89O0lywk+4XUJRsCU95vPSr5P0Z/B4lGH+wG+gnloqsP8CVBM0I80Hg4VSbuhjB7mYWgI6UBmjrwekoN/yw=="
   }
 ]
