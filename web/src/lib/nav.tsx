@@ -1,4 +1,4 @@
-import { Activity, Archive, ArchiveRestore, BookMarked, Bug, Dices, NotebookPen, Cpu, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sofa, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
+import { Activity, Archive, ArchiveRestore, BookMarked, Bug, Dices, Globe2, NotebookPen, Wrench, Cpu, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sofa, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
 export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
@@ -22,6 +22,8 @@ export function navItems(): NavItem[] {
     { path: "/play", label: t("Was spiele ich?"), short: t("Spielen"), icon: Dices, group: g.play, keywords: "zeit finder wie viel zeit minuten was spielen vorschlag zufall challenge herausforderung bingo karte teilen" },
     { path: "/journal", label: t("Spiele-Journal"), short: t("Journal"), icon: NotebookPen, group: g.play, keywords: "wo war ich erinnerung notizen tagebuch fortschritt zielpfad ziele etappen meilensteine belohnung quest sammlung fund funde gegenstand geheimnis ort story kapitel figuren spoiler zusammenfassung" },
     { path: "/wiki", label: t("Gaming-Wiki"), short: t("Wiki"), icon: BookMarked, group: g.play, keywords: "wiki seiten nachschlagen links rückverweise rezepte strategie boss notizen wissen" },
+    { path: "/worlds", label: t("Welten & Bauen"), short: t("Welten"), icon: Globe2, group: g.play, keywords: "minecraft welt welten koordinaten seed nether oberwelt portal basis bauprojekt bauen material aufgaben karte marker kartenmarker" },
+    { path: "/builds", label: t("Builds & Technik"), short: t("Builds"), icon: Wrench, group: g.play, keywords: "build builds loadout ausrüstung klasse vergleichen mods modpack modliste version grafik grafikvergleich einstellungen screenshot schieber steuerung tastenbelegung controller lexikon" },
     { path: "/backlog", label: t("Backlog"), icon: ListTodo, group: g.dash, keywords: "noch spielen als nächstes durchgespielt pausiert priorität zufall spielplanung liste" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
     { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
@@ -78,7 +80,7 @@ export const ICONS: Record<string, LucideIcon> = {
 
 /** A fixed, vivid colour per area, so symbols are recognisable at a glance (not grey). */
 const NAV_COLORS: Record<string, string> = {
-  "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/journal": "#34d399", "/play": "#f97316", "/wiki": "#60a5fa", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
+  "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/journal": "#34d399", "/play": "#f97316", "/worlds": "#4ade80", "/builds": "#a78bfa", "/wiki": "#60a5fa", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
   "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/vault": "#fbbf24", "/inventory": "#60a5fa", "/crashes": "#f87171", "/gamestate": "#a78bfa", "/remote": "#818cf8", "/move": "#94a3b8", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",

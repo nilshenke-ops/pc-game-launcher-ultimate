@@ -1119,6 +1119,48 @@ test("Was spiele ich?: Bingo erkennt Reihen, Link teilen und als eigene Karte ü
   await ctx.close(); await other.close();
 });
 
+test("Welten & Bauen: Welt mit Koordinaten prüft Eingaben, rechnet Nether um, Bauprojekt zählt Aufgaben, Löschen entfernt Verknüpfung", async ({ browser }) => {
+  const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  const dlg = () => p.getByRole("dialog").last();
+  await p.goto(`${COMPANION}/#/worlds`);
+  await p.getByRole("button", { name: "Neu" }).click();
+  await dlg().getByLabel("Name der Welt *").fill("E2E-Welt");
+  await dlg().getByRole("button", { name: "Zeile hinzufügen" }).click();
+  const row = dlg().locator(".rows-edit").first();
+  await row.getByLabel("Name", { exact: true }).fill("Basis");
+  await row.getByLabel("X", { exact: true }).fill("803");
+  await row.getByLabel("Z", { exact: true }).fill("1.5");
+  await dlg().getByRole("button", { name: "Speichern" }).click();
+  await expect(row).toContainText("„Z“ muss eine ganze Zahl sein.");
+  await row.getByLabel("Z", { exact: true }).fill("-1601");
+  await dlg().getByRole("button", { name: "Speichern" }).click();
+  await dlg().getByLabel("X", { exact: true }).fill("803");
+  await dlg().getByLabel("Z", { exact: true }).fill("-1601");
+  await expect(dlg().getByText("X 100 · Y 64 · Z -201")).toBeVisible();
+  await dlg().getByRole("button", { name: "Schließen" }).click();
+
+  await p.getByRole("tab", { name: "Bauprojekte" }).click();
+  await p.getByRole("button", { name: "Neu" }).click();
+  await dlg().getByRole("button", { name: "Haus" }).click();
+  await dlg().getByLabel("Projekt *").fill("E2E-Haus");
+  await dlg().getByLabel("Welt").selectOption({ label: "E2E-Welt" });
+  await dlg().getByRole("button", { name: "Speichern" }).click();
+  await dlg().locator("label.checkbox", { hasText: "Fundament" }).locator("input").click();
+  await expect(dlg().getByText("1 von 5 Aufgaben")).toBeVisible();
+  await dlg().getByRole("button", { name: "Schließen" }).click();
+
+  await p.getByRole("tab", { name: "Minecraft-Welten" }).click();
+  await p.locator(".j-page-card", { hasText: "E2E-Welt" }).click();
+  await dlg().getByRole("button", { name: "Löschen" }).click();
+  await p.getByRole("dialog").last().getByRole("button", { name: "Löschen" }).last().click();
+  await p.getByRole("tab", { name: "Bauprojekte" }).click();
+  await expect(p.locator(".j-page-card", { hasText: "E2E-Haus" })).not.toContainText("E2E-Welt");
+  await p.reload();
+  await expect(p.locator(".j-page-card", { hasText: "E2E-Haus" })).toContainText("1 von 5 Aufgaben");
+  await ctx.close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

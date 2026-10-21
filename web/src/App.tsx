@@ -50,6 +50,8 @@ const MovePage = lazy(() => import("./pages/Move"));
 const JournalPage = lazy(() => import("./pages/Journal"));
 const WikiPage = lazy(() => import("./pages/Wiki"));
 const PlayPage = lazy(() => import("./pages/Play"));
+const WorldsPage = lazy(() => import("./pages/Worlds"));
+const BuildsPage = lazy(() => import("./pages/Builds"));
 const LayoutsPage = lazy(() => import("./pages/Layouts"));
 const PeripheralsPage = lazy(() => import("./pages/Peripherals"));
 const InputPage = lazy(() => import("./pages/Input"));
@@ -142,6 +144,8 @@ function Gate() {
           <Route path="/journal" element={<JournalPage />} />
           <Route path="/wiki" element={<WikiPage />} />
           <Route path="/play" element={<PlayPage />} />
+          <Route path="/worlds" element={<WorldsPage />} />
+          <Route path="/builds" element={<BuildsPage />} />
           <Route path="/storage" element={<StoragePage />} />
           <Route path="/files" element={<FilesPage />} />
           <Route path="/captures" element={<CapturesPage />} />

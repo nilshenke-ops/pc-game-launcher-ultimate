@@ -11,8 +11,17 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   find: (id) => `/journal?tab=finds&id=${id}`,
   story: (id) => `/journal?tab=story&id=${id}`,
   wiki: (id) => `/wiki?id=${id}`,
+  world: (id) => `/worlds?tab=world&id=${id}`,
+  project: (id) => `/worlds?tab=project&id=${id}`,
+  markers: (id) => `/worlds?tab=markers&id=${id}`,
+  build: (id) => `/builds?tab=build&id=${id}`,
+  modlist: (id) => `/builds?tab=modlist&id=${id}`,
+  gfx: (id) => `/builds?tab=gfx&id=${id}`,
+  controls: (id) => `/builds?tab=controls&id=${id}`,
+  challenge: () => `/play?tab=challenges`,
+  bingo: () => `/play?tab=bingo`,
 };
-export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki" };
+export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo" };
 
 export function entryTitle(e: Entry): string {
   const d = e.data as { title?: string; text?: string; did?: string; gameName?: string };
