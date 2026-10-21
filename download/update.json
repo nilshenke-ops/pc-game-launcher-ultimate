@@ -1,35 +1,31 @@
 {
-  "version": "2.36.0",
+  "version": "2.37.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.36.0/PCGameLauncherCompanion.exe",
-  "size": 87782714,
-  "sha256": "a115aafb9f01b01495edbfea2f42fd92902dc582848fb515c9315a0f923dddff",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.37.0/PCGameLauncherCompanion.exe",
+  "size": 87760446,
+  "sha256": "6ed9f53760e0d0da496f3d792877acd4f17b86302b7413795f9bf59b9332638b",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.36.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.36.0/PCGameLauncherCompanion-2.36.0-win-x64.zip",
-    "size": 82044778,
-    "sha256": "61900183a0034609eb3e76b39cdf897222c814624e3239f3d8d040f80b55e27b"
+    "fileName": "PCGameLauncherCompanion-2.37.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.37.0/PCGameLauncherCompanion-2.37.0-win-x64.zip",
+    "size": 82021922,
+    "sha256": "fe706a78871559437fabb1767c81c3908facede1005fb930d8ff5f94a550f76a"
   },
-  "notes": "Remote Desktop (Steuerung → Remote Desktop): der echte Windows-Bildschirm live auf iPhone, iPad oder einem anderen Browser – über die bestehende angemeldete Verbindung (WLAN direkt, von unterwegs über den eigenen Tunnel oder das Relay) · Touch-Maus (tippen, Doppeltippen, halten = Rechtsklick, halten und ziehen, wischen = scrollen, zwei Finger = Rechtsklick) und Touchpad-Modus mit eigenem Zeiger · Bildschirmtastatur mit Umlauten, Strg/Alt/Umschalt/Windows zum Antippen, Sondertasten, F1–F12 und Kombinationen (Strg+C/V/X/Z/A, Alt+Tab, Win+D, Task-Manager); Maus und Tastatur am Computer-Browser",
+  "notes": "Remote Desktop mit Ton: Knopf „Ton“ überträgt, was der PC gerade abspielt, mit Lautstärkeregler – Standardgeräte und Mikrofon bleiben unverändert · Spiele verschieben (System → Spiele verschieben): zeigt zuerst den offiziellen Weg des Launchers (Steam, Xbox-App, Epic) · Umzugsassistent für Steam-Spiele: Ziel-Bibliothek auf einem anderen Laufwerk, Prüfungen (vollständig installiert, Spiel läuft nicht, Platz + 1 GB Reserve, keine Verknüpfungen), Kopie mit SHA-256-Prüfung jeder Datei und Fortschritt",
   "changes": {
     "neu": [
-      "Remote Desktop (Steuerung → Remote Desktop): der echte Windows-Bildschirm live auf iPhone, iPad oder einem anderen Browser – über die bestehende angemeldete Verbindung (WLAN direkt, von unterwegs über den eigenen Tunnel oder das Relay)",
-      "Touch-Maus (tippen, Doppeltippen, halten = Rechtsklick, halten und ziehen, wischen = scrollen, zwei Finger = Rechtsklick) und Touchpad-Modus mit eigenem Zeiger",
-      "Bildschirmtastatur mit Umlauten, Strg/Alt/Umschalt/Windows zum Antippen, Sondertasten, F1–F12 und Kombinationen (Strg+C/V/X/Z/A, Alt+Tab, Win+D, Task-Manager); Maus und Tastatur am Computer-Browser",
-      "Zoom, Pause, Vollbild, Qualität (Automatisch, Wenig Daten, Ausgewogen, Hohe Qualität) mit gemessener Bildrate, Datenrate und Antwortzeit",
-      "Eigene Rechte „Bildschirm ansehen“ und „Fernsteuern“ (nie automatisch vergeben); Freigabe, Höchstdauer und Ende ohne Eingabe nur am PC einstellbar",
-      "Am PC: Leiste „… steuert diesen PC – Beenden“, Benachrichtigung und „Sitzung beenden“",
-      "Einstellungen für Remote Desktop werden auf dem Gerät gespeichert und gehen auch ohne PC",
-      "Anleitung: docs/REMOTE-DESKTOP.md"
+      "Remote Desktop mit Ton: Knopf „Ton“ überträgt, was der PC gerade abspielt, mit Lautstärkeregler – Standardgeräte und Mikrofon bleiben unverändert",
+      "Spiele verschieben (System → Spiele verschieben): zeigt zuerst den offiziellen Weg des Launchers (Steam, Xbox-App, Epic)",
+      "Umzugsassistent für Steam-Spiele: Ziel-Bibliothek auf einem anderen Laufwerk, Prüfungen (vollständig installiert, Spiel läuft nicht, Platz + 1 GB Reserve, keine Verknüpfungen), Kopie mit SHA-256-Prüfung jeder Datei und Fortschritt",
+      "Umstellen erst bei geschlossenem Steam; das Original wird erst gelöscht, wenn du bestätigst, dass das Spiel am neuen Ort startet – bis dahin „Rückgängig“",
+      "Umzüge lassen sich ohne PC vorbereiten; kopiert wird erst mit dem PC nach neuer Prüfung"
     ],
     "verbessert": [
-      "Datenschutztaste beendet auf Wunsch auch eine laufende Fernsteuerung und lässt bis zum Ausschalten keine neue zu",
-      "Bilder werden nur bei Bedarf geschickt: höchstens zwei unterwegs, unverändertes Bild nicht doppelt, bei Stillstand weniger Aufnahmen (spart Leistung beim Spielen)",
-      "Sitzungen enden nach Höchstdauer, ohne Eingabe, ohne Antwort, bei Verbindungsabbruch oder entzogenem Recht – gedrückte Tasten werden immer losgelassen"
+      "Angehaltene oder unterbrochene Kopien (auch nach Neustart des Begleiters) laufen mit „Fortsetzen“ weiter; schon kopierte Dateien werden dabei erneut geprüft",
+      "Ändert sich das Spiel nach dem Kopieren (z. B. Update), wird nicht umgestellt, sondern zuerst abgeglichen"
     ],
     "behoben": []
   },
-  "signature": "JaMPVFdbhuXadZ01E2jOl4C2neroIirOxunlk3yIHcPmZS/ESp8jWniPCiCB3WxhFScf09QZ3JjIrKb18IydRQ=="
+  "signature": "CZN9vrJPk+ZeTZVJqFZMDPc4j10neD/jyQk0gAzjaVLueSRU470X/gpQaWH+jahLsu2saw54BqD82OO0rJ2sBA=="
 }
