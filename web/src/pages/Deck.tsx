@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Check, Expand, Loader2, Move, Pencil, Plus, Settings2, Shrink, Sun, Trash2, Upload, Wand2 } from "lucide-react";
 import { IconWorkshop } from "../components/icon-workshop";
 import { client } from "../lib/rpc";
@@ -212,7 +212,7 @@ export default function DeckPage() {
         )}
       </Loadable>
       {editing && deck && page && (
-        <KeyEditor value={editing.key} isNew={editing.isNew} deck={deck} page={page} items={items} quick={quick.data?.actions ?? []} sounds={sounds.data?.data.sounds ?? []} profiles={profiles.data?.profiles ?? []}
+        <KeyEditor value={editing.key} isNew={editing.isNew} deck={deck} page={page} items={items} libLoaded={!!lib.data} quick={quick.data?.actions ?? []} sounds={sounds.data?.data.sounds ?? []} profiles={profiles.data?.profiles ?? []}
           onClose={() => setEditing(null)}
           onMove={() => { setMoving(editing.key.id); setEditing(null); }}
           onSave={(k) => { save({ ...deck, pages: deck.pages.map((p) => (p.id === page.id ? { ...p, keys: [...p.keys.filter((x) => x.id !== k.id), k] } : p)) }); setEditing(null); }}
@@ -235,8 +235,8 @@ function LayoutGridIcon() { return <DeckIcon name="layout-grid" size={28} />; }
 
 const APP_PAGES = () => navItems().map((n) => ({ path: n.path, label: n.label }));
 
-function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, onClose, onSave, onDelete, onMove, onNewFolder }: {
-  value: DeckKey; isNew: boolean; deck: Deck; page: DeckPage; items: LibraryItem[]; quick: QuickAction[]; sounds: { id: string; name: string }[]; profiles: Profile[];
+function KeyEditor({ value, isNew, deck, page, items, libLoaded, quick, sounds, profiles, onClose, onSave, onDelete, onMove, onNewFolder }: {
+  value: DeckKey; isNew: boolean; deck: Deck; page: DeckPage; items: LibraryItem[]; libLoaded: boolean; quick: QuickAction[]; sounds: { id: string; name: string }[]; profiles: Profile[];
   onClose: () => void; onSave: (k: DeckKey) => void; onDelete: () => void; onMove: () => void; onNewFolder: (name: string) => { deck: Deck; pageId: string };
 }) {
   const [k, setK] = useState<DeckKey>(value);
@@ -295,8 +295,8 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
               {ACTION_TYPES.map((a) => <option key={a.type} value={a.type}>{a.label()}</option>)}
             </select>
           </Field>
-          {k.action.type === "launch" && <Field label={t("Spiel oder Programm")}><select className="input" value={k.action.ref ?? ""} onChange={(e) => pickLaunch(e.target.value)}>
-            {items.length === 0 && <option value="">{t("Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war")}</option>}
+          {k.action.type === "launch" && <Field label={t("Spiel oder Programm")} hint={items.length === 0 && libLoaded ? <>{t("Die Bibliothek am PC ist noch leer.")} <Link to="/games">{t("Unter „Spiele“ → „Hinzufügen“")}</Link> {t("findest du Steam- und Epic-Spiele; andere Spiele und Programme gibst du dort als Datei frei.")}</> : undefined}><select className="input" value={k.action.ref ?? ""} onChange={(e) => pickLaunch(e.target.value)}>
+            {items.length === 0 && <option value="">{libLoaded ? t("Noch keine Spiele in der Bibliothek") : t("Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war")}</option>}
             {[...items].sort((a, b) => a.name.localeCompare(b.name)).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select></Field>}
           {k.action.type === "quick" && <Field label={t("Quick Action")}><select className="input" value={k.action.ref ?? ""} onChange={(e) => setAction({ ...k.action, ref: e.target.value })}>
             {quick.length === 0 && <option value="">{t("Noch keine Quick Actions")}</option>}

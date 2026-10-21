@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.42.3 – 2026-10-21
+### Behoben
+- Deck und Kalender: Bei leerer Spiele-Bibliothek stand „Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war“, auch wenn der PC verbunden ist. Jetzt: „Noch keine Spiele in der Bibliothek“ mit Hinweis und Link zu „Spiele“ → „Hinzufügen“ (Steam/Epic werden gefunden, alles andere als Datei freigeben); der alte Text nur noch, wenn wirklich noch nie ein PC verbunden war
+
 ## 2.42.2 – 2026-10-21
 ### Behoben
 - Handy koppeln über die Website: Mit einer PC-Adresse im Heimnetz (http://192.168.…) blieb es bei einer roten Meldung – die Website (https) darf diese Adresse nicht öffnen, das blockiert der Browser. Jetzt gibt es dort den Knopf „Beim PC öffnen und koppeln“: er öffnet die Seite des PCs mit dem schon eingetragenen Code, danach „Koppeln“ und am PC „Erlauben“

@@ -123,12 +123,12 @@ export default function CalendarPage() {
           </div>
         </div>
       </Loadable>
-      {editing && <EventDialog value={editing} items={items} isNew={!events.some((e) => e.id === editing.id)} onClose={() => setEditing(null)} />}
+      {editing && <EventDialog value={editing} items={items} libLoaded={!!lib.data} isNew={!events.some((e) => e.id === editing.id)} onClose={() => setEditing(null)} />}
     </>
   );
 }
 
-function EventDialog({ value, items, isNew, onClose }: { value: CalendarEvent; items: LibraryItem[]; isNew: boolean; onClose: () => void }) {
+function EventDialog({ value, items, libLoaded, isNew, onClose }: { value: CalendarEvent; items: LibraryItem[]; libLoaded: boolean; isNew: boolean; onClose: () => void }) {
   const [e, setE] = useState(value);
   const start = new Date(e.start);
   const set = (x: Partial<CalendarEvent>) => setE((o) => ({ ...o, ...x }));
@@ -177,7 +177,7 @@ function EventDialog({ value, items, isNew, onClose }: { value: CalendarEvent; i
           onChange={(x) => { const [y, m, d] = x.target.value.split("-").map(Number); set({ repeatUntil: y ? new Date(y, m - 1, d, 23, 59).toISOString() : null }); }} /></Field>}
         <Field label={t("Spiel (optional)")} hint={t("Im Termin erscheint ein Start-Knopf.")}>
           <select className="input" value={e.itemId ?? ""} onChange={(x) => set({ itemId: x.target.value || null })}>
-            <option value="">{items.length ? t("Kein Spiel") : t("Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war")}</option>
+            <option value="">{items.length ? t("Kein Spiel") : libLoaded ? t("Noch keine Spiele in der Bibliothek") : t("Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war")}</option>
             {[...items].sort((a, b) => a.name.localeCompare(b.name)).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}
           </select></Field>
         <Field label={t("Farbe")}><div className="row">{COLORS.map((c) => <button key={c} type="button" className={`color-dot ${e.color === c ? "on" : ""}`} style={{ background: c }} aria-label={c} aria-pressed={e.color === c} onClick={() => set({ color: c })} />)}</div></Field>
