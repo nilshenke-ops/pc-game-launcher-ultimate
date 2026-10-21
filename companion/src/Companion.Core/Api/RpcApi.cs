@@ -196,6 +196,18 @@ public static class RpcApi
         rpc.Register("deals.save", ctx => s.Deals.Save(ctx.Bind<WishItem>()));
         rpc.Register("deals.remove", ctx => { s.Deals.Remove(ctx.Str("id", 64)); return true; });
         rpc.Register("deals.refresh", async ctx => await s.Deals.CheckAllAsync(force: true));
+        // GG.deals key: checked with one real request before it is stored (encrypted like the Steam key); "" removes it.
+        rpc.Register("deals.ggKey", async ctx =>
+        {
+            var key = ctx.OptStr("key", 200)?.Trim() ?? "";
+            if (key.Length == 0) { s.Settings.SetGgDealsKey(null); s.Rpc.Changed("deals"); return s.Deals.List(); }
+            if (!DealService.GgKey.IsMatch(key)) throw new RpcException("invalid-params", "Das sieht nicht wie ein GG.deals-API-Schlüssel aus (Buchstaben, Ziffern, - und _).");
+            if (await s.Deals.TestGgKeyAsync(key, s.Deals.CountryCode) is { } err)
+                throw new RpcException("invalid-params", err);
+            s.Settings.SetGgDealsKey(s.Platform.Secrets.Protect(key));
+            s.Rpc.Changed("deals");
+            return s.Deals.List();
+        });
 
         // ------------------------------------------------------------ quick actions
         // ------------------------------------------------------------ deck (Stream-Deck-like keys; keys run the existing commands on the device)
@@ -422,6 +434,7 @@ public static class RpcApi
             var hasSecret = set.RelaySecretProtected != null;
             set.RelaySecretProtected = null;
             set.SteamApiKeyProtected = null; // secrets never leave the PC
+            set.GgDealsKeyProtected = null;
             set.ObsPasswordProtected = null;
             return new { settings = set, relaySecretSet = hasSecret, dataDir = ctx.Session.IsLocalAdmin ? s.Paths.DataDir : null, restartRequired = set.Port != s.Web.Port || set.LanAccess != s.Web.LanAccess, webStartError = s.Web.StartError };
         });
@@ -442,6 +455,7 @@ public static class RpcApi
             var r = s.Settings.SaveGeneral(ctx.Bind<SettingsService.GeneralUpdate>());
             r.RelaySecretProtected = null; // secrets never leave the PC
             r.SteamApiKeyProtected = null;
+            r.GgDealsKeyProtected = null;
             r.ObsPasswordProtected = null;
             return r;
         });
@@ -458,6 +472,7 @@ public static class RpcApi
             var r = s.Settings.SaveSecurity(u, s.Platform.Secrets);
             r.RelaySecretProtected = null;
             r.SteamApiKeyProtected = null;
+            r.GgDealsKeyProtected = null;
             r.ObsPasswordProtected = null;
             return r;
         });

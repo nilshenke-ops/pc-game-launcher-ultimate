@@ -37,7 +37,8 @@ describe("quest/deal helpers", () => {
 
 describe("key shop links", () => {
   it("search Instant Gaming and Eneba (Germany, Europe/Global keys) by the cleaned title", () => {
-    const [ig, en] = keyShopLinks("Hades™ II  ");
+    const [ig, en, kfs] = keyShopLinks("Hades™ II  ");
+    expect(kfs.url).toBe("https://www.keyforsteam.de/katalog/?search_name=Hades%20II");
     expect(ig.url).toBe("https://www.instant-gaming.com/de/suche/?q=Hades%20II");
     expect(en.url).toBe("https://www.eneba.com/de/store/all?text=Hades%20II&regions[]=europe&regions[]=global");
     expect(keyShopLinks("A&B?#").map((l) => l.url)[0]).toBe("https://www.instant-gaming.com/de/suche/?q=A%26B%3F%23");

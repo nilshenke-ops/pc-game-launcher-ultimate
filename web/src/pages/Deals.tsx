@@ -17,10 +17,12 @@ interface Wish {
   currency?: string | null; finalCents?: number | null; initialCents?: number | null; discountPercent?: number | null;
   checkedAt?: string | null; error?: string | null; history?: { at: string; final: number; initial: number }[];
   fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null; msFromPhone?: number | null; steamFromList?: number | null; steamImage?: string | null;
+  ggKeyshopCents?: number | null; ggRetailCents?: number | null; ggKeyshopLowCents?: number | null; ggRetailLowCents?: number | null; ggCurrency?: string | null; ggUrl?: string | null; ggError?: string | null; ggCheckedAt?: string | null;
 }
 interface DealData {
   enabled: boolean; country: string; lastRunAt?: string | null; source: string; msSource?: string; intervalHours: number; items: Wish[];
   compareMicrosoft?: boolean; syncSteamWishlist?: boolean; wishlistSyncedAt?: string | null; wishlistError?: string | null; steamAccount?: boolean;
+  ggKeySet?: boolean; ggSource?: string;
 }
 interface Hit { appId: string; name: string; finalCents?: number | null; initialCents?: number | null; currency?: string | null }
 
@@ -119,13 +121,23 @@ function DealArt({ w }: { w: Wish }) {
 }
 
 /** Which store is cheaper right now – only when both have a price in the same currency. */
+/** The key shop price (GG.deals) is below both store prices that are known. */
+function keyshopBest(w: Wish) {
+  const k = w.ggKeyshopCents;
+  if (k == null) return false;
+  const others = [w.finalCents, w.msFinalCents].filter((x): x is number => x != null);
+  return others.length > 0 && others.every((x) => k < x);
+}
+
 function cheaper(w: Wish): "steam" | "xbox" | null {
   if (w.finalCents == null || w.msFinalCents == null || w.currency !== w.msCurrency || w.finalCents === w.msFinalCents) return null;
   return w.finalCents < w.msFinalCents ? "steam" : "xbox";
 }
 
 const isHit = (w: Wish) => {
-  const best = Math.min(w.finalCents ?? Infinity, w.currency === w.msCurrency || w.finalCents == null ? w.msFinalCents ?? Infinity : Infinity);
+  const cur = w.currency ?? w.msCurrency ?? w.ggCurrency;
+  const best = Math.min(w.finalCents ?? Infinity, w.currency === w.msCurrency || w.finalCents == null ? w.msFinalCents ?? Infinity : Infinity,
+    w.ggCurrency === cur ? w.ggKeyshopCents ?? Infinity : Infinity);
   return w.targetCents != null && best <= w.targetCents;
 };
 
@@ -189,14 +201,20 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
             {w.steamAppId && <a className="btn sm" href={`https://store.steampowered.com/app/${w.steamAppId}`} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Im Steam-Shop öffnen")}</a>}
           </div>
         </div>
-        <div className="deal-store-box">
-          <span className="deal-store"><Tag size={15} />{t("Key-Shops (Deutschland)")}</span>
-          <span className="tiny muted">{t("Kein Preis hier: Instant Gaming und Eneba bieten keine öffentliche Preisabfrage und sperren automatische Abfragen. Die Links öffnen die Suche mit Euro-Preisen. Achte auf die Region des Keys (Europa oder Global) und die Plattform (Steam, Xbox …).")}</span>
+        <div className={`deal-store-box ${keyshopBest(w) ? "best" : ""}`}>
+          <span className="deal-store"><Tag size={15} />{t("Key-Shops ({c})", { c: data.country.toUpperCase() })}</span>
+          {w.ggKeyshopCents != null ? <>
+            <span className="deal-now">{t("ab {p}", { p: money(w.ggKeyshopCents, w.ggCurrency) })}</span>
+            <span className="tiny muted">{[w.ggKeyshopLowCents != null && t("Tiefstpreis {p}", { p: money(w.ggKeyshopLowCents, w.ggCurrency) }), w.ggRetailCents != null && t("offizielle Shops ab {p}", { p: money(w.ggRetailCents, w.ggCurrency) })].filter(Boolean).join(" · ")}</span>
+            <span className="tiny muted">{t("günstigster Key-Shop laut GG.deals (Instant Gaming, Eneba und viele mehr), geprüft {d} – nicht jeder Key ist ein Steam-Key, Region und Plattform im Shop prüfen", { d: w.ggCheckedAt ? relTime(w.ggCheckedAt) : "–" })}</span>
+          </> : <span className="small muted">{w.ggError ?? (!data.ggKeySet ? t("Preise mit kostenlosem GG.deals-Schlüssel (Einstellungen unten). Ohne Schlüssel: Links zum Nachschauen.") : !w.steamAppId ? t("Braucht die Steam-App-ID des Spiels.") : data.enabled ? t("Noch nicht geprüft – kommt mit der nächsten Prüfung.") : t("Preisabfrage ist aus."))}</span>}
           <div className="row" style={{ gap: 6 }}>
+            {w.ggUrl && <a className="btn sm" href={w.ggUrl} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Alle Angebote bei GG.deals")}</a>}
             {keyShopLinks(w.title).map((l) => <a key={l.shop} className="btn sm" href={l.url} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Bei {s} ansehen", { s: l.name })}</a>)}
           </div>
         </div>
-        {c && <p className="small" style={{ margin: 0 }}>{c === "xbox" ? t("Im Microsoft Store gerade günstiger.") : t("Bei Steam gerade günstiger.")}</p>}
+        {keyshopBest(w) ? <p className="small" style={{ margin: 0 }}>{t("In einem Key-Shop gerade am günstigsten (laut GG.deals).")}</p>
+          : c && <p className="small" style={{ margin: 0 }}>{c === "xbox" ? t("Im Microsoft Store gerade günstiger.") : t("Bei Steam gerade günstiger.")}</p>}
         <div className="row between">
           <span className="small">{w.targetCents != null ? t("Zielpreis {p}", { p: money(w.targetCents, w.currency ?? w.msCurrency) }) : t("kein Zielpreis")}</span>
           {isHit(w) && <span className="badge ok"><BadgePercent size={13} />{t("Zielpreis erreicht")}</span>}
@@ -248,9 +266,35 @@ function Settings({ d, canManage, online }: { d: DealData; canManage: boolean; o
           </div>
         </div>
         <span className="tiny muted">{[d.lastRunAt ? t("Zuletzt geprüft {d}", { d: relTime(d.lastRunAt) }) : t("Noch nie geprüft"), d.enabled && d.syncSteamWishlist !== false && (d.wishlistSyncedAt ? t("Wunschliste abgeglichen {d}", { d: relTime(d.wishlistSyncedAt) }) : t("Wunschliste noch nicht abgeglichen"))].filter(Boolean).join(" · ")}</span>
+        <GgKey d={d} canManage={canManage} online={online} />
         <p className="tiny muted" style={{ margin: 0 }}>{t("Quelle: {s}. Das ist der öffentliche Endpunkt des Steam-Webshops, keine offizielle Preis-API – er kann sich ändern. Verlauf = nur Preise, die dieser PC selbst gesehen hat.", { s: d.source })}</p>
       </div>
     </details>
+  );
+}
+
+/** GG.deals API key: typed only at the PC side (admin), checked once with a real request, stored encrypted on the PC. */
+function GgKey({ d, canManage, online }: { d: DealData; canManage: boolean; online: boolean }) {
+  const isAdmin = useCan("admin");
+  const [key, setKey] = useState("");
+  const [save, saving] = useAction(async () => { await client.call("deals.ggKey", { key }); setKey(""); }, { success: t("GG.deals-Schlüssel gespeichert – Preise kommen mit der nächsten Prüfung") });
+  const [remove, removing] = useAction(() => client.call("deals.ggKey", { key: "" }), { success: t("GG.deals-Schlüssel entfernt") });
+  return (
+    <div className="stack-sm">
+      <b className="small">{t("Key-Shop-Preise (GG.deals)")}</b>
+      <span className="tiny muted">{t("Mit einem kostenlosen API-Schlüssel von GG.deals zeigt der Deal Radar den günstigsten Key-Shop-Preis (Instant Gaming, Eneba und viele mehr) und den Tiefstpreis. Schlüssel: bei gg.deals anmelden und in deinem Konto einen API-Schlüssel erstellen (gg.deals/api). Er bleibt verschlüsselt auf dem PC; der PC fragt bei jeder Prüfung api.gg.deals mit den Steam-App-IDs deiner Wunschliste.")}</span>
+      {d.ggKeySet ? (
+        <div className="row" style={{ gap: 8, alignItems: "center" }}>
+          <span className="badge ok">{t("Schlüssel gespeichert")}</span>
+          {isAdmin && <Button size="sm" variant="ghost" busy={removing} disabled={!online} onClick={() => remove()}>{t("Entfernen")}</Button>}
+        </div>
+      ) : isAdmin && canManage ? (
+        <form className="row nowrap" style={{ gap: 8 }} onSubmit={(e) => { e.preventDefault(); if (key.trim()) void save(); }}>
+          <input className="input mono" type="password" autoComplete="off" value={key} maxLength={200} placeholder={t("GG.deals-API-Schlüssel")} aria-label={t("GG.deals-API-Schlüssel")} onChange={(e) => setKey(e.target.value)} />
+          <Button type="submit" busy={saving} disabled={!key.trim() || !online}>{t("Prüfen & speichern")}</Button>
+        </form>
+      ) : <span className="tiny muted">{t("Eintragen geht am PC (dort hat die App Admin-Rechte).")}</span>}
+    </div>
   );
 }
 

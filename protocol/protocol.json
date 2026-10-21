@@ -56,6 +56,7 @@
     "deals.syncWishlist": "manage",
     "deals.remove": "manage",
     "deals.refresh": "manage",
+    "deals.ggKey": "admin",
     "deck.list": "view",
     "deck.save": "manage",
     "deck.remove": "manage",

@@ -225,6 +225,13 @@ public sealed class SettingsService
         _hub.Changed("settings");
     }
 
+    /// <summary>Stores the protected GG.deals API key (null removes it).</summary>
+    public void SetGgDealsKey(string? protectedKey)
+    {
+        _store.Update(s => s.GgDealsKeyProtected = protectedKey);
+        _hub.Changed("settings");
+    }
+
     public sealed class SecurityUpdate
     {
         public bool? LanAccess { get; set; }
@@ -283,6 +290,7 @@ public sealed class SettingsService
         s.PublicUrl = keepSecurityFrom.PublicUrl;   // allowed web origins are never changed by a backup file
         s.WebAppUrl = keepSecurityFrom.WebAppUrl;
         s.SteamApiKeyProtected = keepSecurityFrom.SteamApiKeyProtected; // secrets never come from a backup file
+        s.GgDealsKeyProtected = keepSecurityFrom.GgDealsKeyProtected;
         s.ObsPasswordProtected = keepSecurityFrom.ObsPasswordProtected;
         s.ObsUrl = keepSecurityFrom.ObsUrl; // decides where the OBS password is sent
         // The relay address decides where the companion sends its relay secret – only changeable at the PC (settings.save).

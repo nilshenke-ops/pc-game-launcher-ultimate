@@ -48,16 +48,17 @@ export function levelPercent(xp: number, from: number, to: number): number {
 }
 
 /**
- * Key shops (Germany, prices in euro): search pages for a game. Only links – Instant Gaming and Eneba have no public
- * price interface and refuse automated price queries, so no price is shown or guessed here.
+ * Key shops (Germany, prices in euro): search pages for a game. Only links – Instant Gaming, Eneba and Keyforsteam have
+ * no public price interface (prices come from GG.deals' official API with the user's own key instead).
  * Eneba: only keys for Europe and "Global" regions (keys for other regions often do not work in Germany).
  */
-export function keyShopLinks(title: string): { shop: "instant-gaming" | "eneba"; name: string; url: string }[] {
+export function keyShopLinks(title: string): { shop: "instant-gaming" | "eneba" | "keyforsteam"; name: string; url: string }[] {
   const q = title.replace(/[™®©]/g, "").replace(/\s+/g, " ").trim().slice(0, 100);
   if (!q) return [];
   const e = encodeURIComponent(q);
   return [
     { shop: "instant-gaming", name: "Instant Gaming", url: `https://www.instant-gaming.com/de/suche/?q=${e}` },
     { shop: "eneba", name: "Eneba", url: `https://www.eneba.com/de/store/all?text=${e}&regions[]=europe&regions[]=global` },
+    { shop: "keyforsteam", name: "Keyforsteam", url: `https://www.keyforsteam.de/katalog/?search_name=${e}` },
   ];
 }

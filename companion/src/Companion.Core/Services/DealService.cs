@@ -47,6 +47,17 @@ public sealed class WishItem
     public string? MsImage { get; set; }
     /// <summary>Real header picture from Steam (newer games only have it under a path with an id, not the old one).</summary>
     public string? SteamImage { get; set; }
+    /// <summary>GG.deals (official API, own key): cheapest key shop and cheapest official store price, plus their lows.</summary>
+    public int? GgKeyshopCents { get; set; }
+    public int? GgRetailCents { get; set; }
+    public int? GgKeyshopLowCents { get; set; }
+    public int? GgRetailLowCents { get; set; }
+    public string? GgCurrency { get; set; }
+    public string? GgUrl { get; set; }
+    public string? GgError { get; set; }
+    public DateTime? GgCheckedAt { get; set; }
+    /// <summary>Key shop price at which "target reached" was last told.</summary>
+    public int? GgNotifiedAtCents { get; set; }
 }
 
 public sealed class DealsFile
@@ -73,6 +84,7 @@ public sealed class DealService : IDisposable
 {
     public const string Source = "Steam-Shop (store.steampowered.com)";
     public const string MsSource = "Microsoft Store / Xbox (displaycatalog.mp.microsoft.com)";
+    public const string GgSource = "GG.deals (api.gg.deals, mit deinem Schlüssel)";
     public const int MaxItems = 300;
     static readonly Regex AppId = new("^[0-9]{1,10}$");
     static readonly Regex ClientId = new("^wish_[A-Za-z0-9_-]{4,40}$");
@@ -89,6 +101,9 @@ public sealed class DealService : IDisposable
     public string StoreBase { get; init; } = "https://store.steampowered.com";
     public string ApiBase { get; init; } = "https://api.steampowered.com";
     public string MsBase { get; init; } = "https://displaycatalog.mp.microsoft.com";
+    public string GgBase { get; init; } = "https://api.gg.deals";
+    /// <summary>The GG.deals API key (decrypted only for the request), null when none is set.</summary>
+    public Func<string?>? GgDealsKey { get; set; }
     /// <summary>SteamID64 of the linked or signed-in Steam account (for the wish list), null if none.</summary>
     public Func<string?>? SteamId { get; set; }
 
@@ -117,6 +132,7 @@ public sealed class DealService : IDisposable
             enabled = f.Enabled, country = f.Country, lastRunAt = f.LastRunAt, source = Source, msSource = MsSource, intervalHours = Interval.TotalHours, items = f.Items,
             compareMicrosoft = f.CompareMicrosoft, syncSteamWishlist = f.SyncSteamWishlist, wishlistSyncedAt = f.WishlistSyncedAt, wishlistError = f.WishlistError,
             steamAccount = SteamId?.Invoke() != null,
+            ggKeySet = GgDealsKey?.Invoke() != null, ggSource = GgSource,
         };
     }
 
@@ -131,7 +147,7 @@ public sealed class DealService : IDisposable
             if (country != null && country != f.Country)
             {
                 f.Country = country;
-                foreach (var i in f.Items) { i.FinalCents = i.InitialCents = i.DiscountPercent = null; i.Currency = null; i.History.Clear(); i.NotifiedAtCents = null; i.MsFinalCents = i.MsInitialCents = null; i.MsCurrency = null; } // other currency
+                foreach (var i in f.Items) { i.FinalCents = i.InitialCents = i.DiscountPercent = null; i.Currency = null; i.History.Clear(); i.NotifiedAtCents = null; i.MsFinalCents = i.MsInitialCents = null; i.MsCurrency = null; ClearGg(i); } // other currency
             }
         });
         _hub.Changed("deals");
@@ -157,6 +173,7 @@ public sealed class DealService : IDisposable
                 w.AddedAt = _now(); w.History = new(); w.FinalCents = w.InitialCents = w.DiscountPercent = null; w.CheckedAt = null; w.Error = null; w.NotifiedAtCents = null;
                 // Store data only ever comes from the PC's own checks, never from the device.
                 w.MsProductId = w.MsTitle = w.MsCurrency = w.MsError = w.MsImage = w.SteamImage = null; w.MsFinalCents = w.MsInitialCents = null; w.FromSteamWishlist = false;
+                ClearGg(w);
                 f.Items.Add(w);
                 return w;
             }
@@ -166,7 +183,8 @@ public sealed class DealService : IDisposable
             old.Title = w.Title; old.Notes = w.Notes;
             if (old.TargetCents != w.TargetCents) old.NotifiedAtCents = null;
             old.TargetCents = w.TargetCents;
-            if (old.SteamAppId != w.SteamAppId) { old.SteamAppId = w.SteamAppId; old.SteamImage = null; old.History.Clear(); old.FinalCents = old.InitialCents = old.DiscountPercent = null; old.CheckedAt = null; }
+            if (old.TargetCents != w.TargetCents) old.GgNotifiedAtCents = null;
+            if (old.SteamAppId != w.SteamAppId) { ClearGg(old); old.SteamAppId = w.SteamAppId; old.SteamImage = null; old.History.Clear(); old.FinalCents = old.InitialCents = old.DiscountPercent = null; old.CheckedAt = null; }
             return old;
         });
         _hub.Changed("deals");
@@ -435,6 +453,7 @@ public sealed class DealService : IDisposable
                 if (compareMs) await CheckMicrosoftAsync(item, f0.Country);
                 await Task.Delay(force ? 200 : 1500);
             }
+            if (GgDealsKey?.Invoke() is { } gg) await CheckGgDealsAsync(gg, f0.Country, force);
             _store.Update(f => f.LastRunAt = _now());
         }
         finally { _running.Release(); }
@@ -507,6 +526,109 @@ public sealed class DealService : IDisposable
             if (i.TargetCents is { } t2 && p.final > t2) i.NotifiedAtCents = null; // above target again: next drop is reported
         });
         if (notify is { } n) TargetReached?.Invoke(n.title, n.text);
+    }
+
+    // ------------------------------------------------------------------ GG.deals (official API, the user's own free key)
+
+    public static readonly Regex GgKey = new("^[A-Za-z0-9_-]{16,128}$");
+    public string CountryCode => _store.Snapshot().Country;
+
+    static void ClearGg(WishItem w)
+    {
+        w.GgKeyshopCents = w.GgRetailCents = w.GgKeyshopLowCents = w.GgRetailLowCents = w.GgNotifiedAtCents = null;
+        w.GgCurrency = w.GgUrl = w.GgError = null; w.GgCheckedAt = null;
+    }
+
+    /// <summary>Checks a key with one real request (Portal 2) – an invalid key is refused before it is stored.</summary>
+    public async Task<string?> TestGgKeyAsync(string key, string country)
+    {
+        try
+        {
+            using var r = await _http.GetAsync(GgUrl(key, new[] { "620" }, country));
+            var body = await r.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(body);
+            if (r.IsSuccessStatusCode && doc.RootElement.TryGetProperty("success", out var ok) && ok.ValueKind == JsonValueKind.True) return null;
+            return "GG.deals lehnt den Schlüssel ab: " + GgMessage(doc.RootElement, (int)r.StatusCode);
+        }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { return "GG.deals nicht erreichbar: " + ex.Message; }
+    }
+
+    string GgUrl(string key, IEnumerable<string> ids, string country) =>
+        $"{GgBase}/v1/prices/by-steam-app-id/?key={Uri.EscapeDataString(key)}&ids={string.Join(',', ids)}&region={country}";
+
+    static string GgMessage(JsonElement root, int status) =>
+        root.TryGetProperty("data", out var d) && d.ValueKind == JsonValueKind.Object && d.TryGetProperty("message", out var m) && m.ValueKind == JsonValueKind.String
+            ? DeviceStore.Sanitize(m.GetString()!, 160, $"HTTP {status}") : $"HTTP {status}";
+
+    /// <summary>"18.50", 18.5 or null → cents.</summary>
+    internal static int? GgCents(JsonElement e, string name)
+    {
+        if (!e.TryGetProperty(name, out var v)) return null;
+        decimal? d = v.ValueKind switch
+        {
+            JsonValueKind.Number when v.TryGetDecimal(out var n) => n,
+            JsonValueKind.String when decimal.TryParse(v.GetString(), System.Globalization.NumberStyles.Number, System.Globalization.CultureInfo.InvariantCulture, out var n) => n,
+            _ => null,
+        };
+        return d is { } x && x >= 0 && x < 100_000 ? (int)Math.Round(x * 100, MidpointRounding.AwayFromZero) : null;
+    }
+
+    async Task CheckGgDealsAsync(string key, string country, bool force)
+    {
+        var ids = _store.Snapshot().Items.Where(i => i.SteamAppId != null).Select(i => i.SteamAppId!).Distinct().ToList();
+        foreach (var chunk in ids.Chunk(20))
+        {
+            Dictionary<string, JsonElement?> found;
+            string? error = null;
+            JsonDocument? doc = null;
+            try
+            {
+                using var r = await _http.GetAsync(GgUrl(key, chunk, country));
+                doc = JsonDocument.Parse(await r.Content.ReadAsStringAsync());
+                var root = doc.RootElement;
+                if (!r.IsSuccessStatusCode || !root.TryGetProperty("success", out var ok) || ok.ValueKind != JsonValueKind.True) error = "GG.deals: " + GgMessage(root, (int)r.StatusCode);
+            }
+            catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException) { error = "GG.deals nicht erreichbar: " + ex.Message; }
+            found = new();
+            if (error == null && doc!.RootElement.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object)
+                foreach (var p in data.EnumerateObject()) found[p.Name] = p.Value.ValueKind == JsonValueKind.Object ? p.Value.Clone() : null;
+            else error ??= "GG.deals: Antwort hat ein unbekanntes Format.";
+            doc?.Dispose();
+            var notes = new List<(string title, string text)>();
+            _store.Update(f =>
+            {
+                foreach (var i in f.Items.Where(i => i.SteamAppId != null && chunk.Contains(i.SteamAppId)))
+                {
+                    i.GgCheckedAt = _now();
+                    if (error != null) { i.GgError = error; continue; }
+                    if (!found.TryGetValue(i.SteamAppId!, out var g) || g is not { } game || !game.TryGetProperty("prices", out var prices) || prices.ValueKind != JsonValueKind.Object)
+                    {
+                        i.GgError = "GG.deals kennt dieses Spiel nicht (oder hat dafür in diesem Land keine Preise).";
+                        i.GgKeyshopCents = i.GgRetailCents = i.GgKeyshopLowCents = i.GgRetailLowCents = null;
+                        continue;
+                    }
+                    i.GgError = null;
+                    i.GgKeyshopCents = GgCents(prices, "currentKeyshops");
+                    i.GgRetailCents = GgCents(prices, "currentRetail");
+                    i.GgKeyshopLowCents = GgCents(prices, "historicalKeyshops");
+                    i.GgRetailLowCents = GgCents(prices, "historicalRetail");
+                    i.GgCurrency = prices.TryGetProperty("currency", out var c) && c.ValueKind == JsonValueKind.String && Regex.IsMatch(c.GetString()!, "^[A-Z]{3}$") ? c.GetString() : null;
+                    i.GgUrl = game.TryGetProperty("url", out var u) && u.ValueKind == JsonValueKind.String && u.GetString()!.StartsWith("https://gg.deals/", StringComparison.Ordinal) ? u.GetString() : null;
+                    if (i.TargetCents is { } target && i.GgKeyshopCents is { } k)
+                    {
+                        if (k <= target && (i.GgNotifiedAtCents == null || k < i.GgNotifiedAtCents))
+                        {
+                            i.GgNotifiedAtCents = k;
+                            notes.Add(($"Zielpreis erreicht (Key-Shop): {i.Title}", $"ab {Money(k)} {i.GgCurrency ?? ""} laut GG.deals – Ziel {Money(target)}".Replace("  ", " ")));
+                        }
+                        else if (k > target) i.GgNotifiedAtCents = null;
+                    }
+                }
+            });
+            foreach (var n in notes) TargetReached?.Invoke(n.title, n.text);
+            if (error != null && error.Contains("Schlüssel")) break;
+            await Task.Delay(force ? 200 : 1000);
+        }
     }
 
     static readonly System.Globalization.CultureInfo German = new("de-DE");

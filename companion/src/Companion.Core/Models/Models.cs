@@ -392,6 +392,8 @@ public sealed class Settings
     public bool SteamEnabled { get; set; }
     /// <summary>Optional Steam Web API key (protected like the relay secret) for the whole Steam library.</summary>
     public string? SteamApiKeyProtected { get; set; }
+    /// <summary>Optional GG.deals API key (protected like the Steam key, never sent to devices) – key shop and store prices in the Deal Radar.</summary>
+    public string? GgDealsKeyProtected { get; set; }
     /// <summary>Epic link: installed games kept in the library, owned games from the launcher's cache shown.</summary>
     public bool EpicEnabled { get; set; }
     /// <summary>EA link: installed EA app games kept in the library.</summary>
