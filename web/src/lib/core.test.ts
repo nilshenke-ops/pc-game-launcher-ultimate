@@ -184,7 +184,7 @@ describe("hotkey recording", () => {
   });
 });
 
-import { isLoopbackAddress, pcAddressToWs, wsToPcAddress } from "./address";
+import { directPairUrl, isLoopbackAddress, pcAddressToWs, wsToPcAddress } from "./address";
 import { sniffAudio } from "./pending-sounds";
 describe("PC-Adresse", () => {
   it("turns typed or scanned addresses into WebSocket URLs", () => {
@@ -239,5 +239,15 @@ describe("overlay layout", () => {
         }
       for (const r of rects) { expect(r.x).toBeGreaterThanOrEqual(0); expect(r.x + r.w).toBeLessThanOrEqual(view.w); }
     }
+  });
+});
+
+describe("direct pairing link (website https → PC http in the home network)", () => {
+  it("opens the PC's own page with the code, only for plain http addresses", () => {
+    expect(directPairUrl("http://192.168.178.116:8787", "kpdh-v2w8")).toBe("http://192.168.178.116:8787/#/pair?code=KPDH-V2W8");
+    expect(directPairUrl("192.168.178.116:8787", "")).toBe("http://192.168.178.116:8787/#/pair");
+    expect(directPairUrl("https://gaming-pc.tail1234.ts.net", "ABCD-EFGH")).toBeNull();
+    expect(directPairUrl("javascript:alert(1)", "ABCD-EFGH")).toBeNull();
+    expect(directPairUrl("http://192.168.1.5:8787", "AB\"<x>")).toBe("http://192.168.1.5:8787/#/pair?code=ABX");
   });
 });

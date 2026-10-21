@@ -4520,4 +4520,8 @@ export const en: Record<string, string> = {
   "Kein gekoppeltes Gerät ist gerade verbunden.": "No paired device is connected right now.",
   "Noch kein Handy oder Tablet gekoppelt.": "No phone or tablet paired yet.",
   "{n} gekoppelt": "{n} paired",
+  "Beim PC öffnen und koppeln": "Open on the PC and pair",
+  "Die Adresse beginnt mit http:// – mit ihr verbindet sich nur die Seite, die der PC selbst anbietet. Der Knopf öffnet sie mit dem Code; Handy und PC müssen im selben WLAN sein. Tipp: Diese Seite danach zum Startbildschirm hinzufügen. Von unterwegs geht es nur mit einer https-Adresse des PCs (z. B. Tailscale Funnel).": "The address starts with http:// – only the page the PC offers itself can connect with it. The button opens it with the code; phone and PC must be on the same Wi-Fi. Tip: add that page to your home screen afterwards. From outside your home it only works with an https address of the PC (e.g. Tailscale Funnel).",
+  "Diese Website (https) darf eine http-Adresse im Heimnetz nicht öffnen – das blockiert der Browser. Nimm „Beim PC öffnen und koppeln“ unten (oder scanne den QR-Code am PC mit der Kamera).": "This website (https) may not open an http address in the home network – the browser blocks it. Use “Open on the PC and pair” below (or scan the QR code on the PC with the camera).",
+  "Im Heimnetz direkt beim PC koppeln": "Pair directly with the PC in the home network",
 };

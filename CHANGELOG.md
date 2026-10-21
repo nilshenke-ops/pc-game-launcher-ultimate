@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.42.2 – 2026-10-21
+### Behoben
+- Handy koppeln über die Website: Mit einer PC-Adresse im Heimnetz (http://192.168.…) blieb es bei einer roten Meldung – die Website (https) darf diese Adresse nicht öffnen, das blockiert der Browser. Jetzt gibt es dort den Knopf „Beim PC öffnen und koppeln“: er öffnet die Seite des PCs mit dem schon eingetragenen Code, danach „Koppeln“ und am PC „Erlauben“
+
 ## 2.42.1 – 2026-10-21
 ### Behoben
 - Startseite am PC: zeigte „Online“ und „Lokal verbunden“, als wäre ein Handy verbunden – gemeint war nur das Fenster am PC selbst. Jetzt steht dort „Begleiter läuft“ und „Dieses Fenster läuft am PC“, dazu welche gekoppelten Geräte gerade wirklich verbunden sind (oder dass noch keins gekoppelt ist)

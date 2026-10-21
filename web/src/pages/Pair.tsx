@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { CheckCircle2, Clock, Eye, KeyRound, Link2, LogOut, MonitorSmartphone, Palette, QrCode, ShieldCheck, Smartphone, XCircle } from "lucide-react";
 import { client, enterDemo, HOSTED, readJson, RpcError, serverConfigured, serverUrl, setServerUrl, writeJson } from "../lib/rpc";
-import { pcAddressToWs, wsToPcAddress, isLoopbackAddress } from "../lib/address";
+import { directPairUrl, pcAddressToWs, wsToPcAddress, isLoopbackAddress } from "../lib/address";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useNow, useRpc, toast } from "../lib/hooks";
 import { Banner, Button, Card, Field, PageHead } from "../components/ui";
@@ -90,7 +90,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
       const ws = pcAddressToWs(address, location.protocol === "https:");
       if (!ws) { setError({ code: "address", message: t("Bitte eine gültige PC-Adresse eingeben, z. B. gaming-pc.tail1234.ts.net") }); return; }
       if (isLoopbackAddress(ws) && !isLoopbackAddress(location.hostname)) { setError({ code: "address", message: t("127.0.0.1 und localhost bedeuten immer „dieses Gerät“ – damit sucht das iPad sich selbst, nicht deinen PC. Nimm die Adresse aus dem Nexus Gaming Hub unter „Gerät koppeln“ (z. B. https://gaming-pc.tail1234.ts.net) oder scanne den QR-Code.") }); return; }
-      if (location.protocol === "https:" && ws.startsWith("ws:")) { setError({ code: "address", message: t("Diese Seite braucht eine https-Adresse des PCs (z. B. den Tailscale-Funnel-Link).") }); return; }
+      if (location.protocol === "https:" && ws.startsWith("ws:")) { setError({ code: "address", message: t("Diese Website (https) darf eine http-Adresse im Heimnetz nicht öffnen – das blockiert der Browser. Nimm „Beim PC öffnen und koppeln“ unten (oder scanne den QR-Code am PC mit der Kamera).") }); return; }
       if (ws !== serverUrl() || conn.phase !== "online") {
         setServerUrl(ws);
         setConnecting(true);
@@ -114,6 +114,8 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
   }, [connecting, conn.phase, conn.hello, conn.lastError, request]);
 
   const pc = conn.hello?.info.pcName;
+  // Website (https) + PC address in the home network (http): only the PC's own page can connect.
+  const direct = HOSTED && location.protocol === "https:" ? directPairUrl(address, code) : null;
   return (
     <div className={embedded ? "" : "center-screen"}>
       <div className={embedded ? "stack fade-in connect-panel" : "center-card stack fade-in"}>
@@ -138,6 +140,12 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
                 <Field label={t("PC-Adresse")} hint={t("Steht im Nexus Gaming Hub unter dem QR-Code. Beim Scannen wird sie automatisch ausgefüllt.")}>
                   <input className="input mono" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="gaming-pc.tail1234.ts.net" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} required />
                 </Field>
+              )}
+              {direct && (
+                <Banner kind="info" title={t("Im Heimnetz direkt beim PC koppeln")}>
+                  <a className="btn primary block" href={direct} style={{ margin: "8px 0" }}>{t("Beim PC öffnen und koppeln")}</a>
+                  {t("Die Adresse beginnt mit http:// – mit ihr verbindet sich nur die Seite, die der PC selbst anbietet. Der Knopf öffnet sie mit dem Code; Handy und PC müssen im selben WLAN sein. Tipp: Diese Seite danach zum Startbildschirm hinzufügen. Von unterwegs geht es nur mit einer https-Adresse des PCs (z. B. Tailscale Funnel).")}
+                </Banner>
               )}
               <Field label={t("Name dieses Geräts")} hint={t("So erscheint das Gerät später in der Geräteliste am PC.")}>
                 <input className="input" value={name} onChange={(e) => setName(e.target.value)} maxLength={40} />
