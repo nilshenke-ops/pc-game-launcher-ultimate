@@ -1,24 +1,26 @@
 {
-  "version": "2.43.1",
+  "version": "2.44.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion.exe",
-  "size": 87912749,
-  "sha256": "112226972f5c7ad236d8be3f0abce4770b8b529b2c48279260be9ab75b450808",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.44.0/PCGameLauncherCompanion.exe",
+  "size": 87920020,
+  "sha256": "52f2cc7c95bda43ec2fcec1029340749f8eb3b8d04cfc31a828fe07ad04f3649",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.43.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion-2.43.1-win-x64.zip",
-    "size": 82174180,
-    "sha256": "5e39dc2edbf423839769e2339c49da0b062bd51def72e2ef9fae924eff6bcf2b"
+    "fileName": "PCGameLauncherCompanion-2.44.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.44.0/PCGameLauncherCompanion-2.44.0-win-x64.zip",
+    "size": 82181157,
+    "sha256": "101d5324a2e6cefa4fb6b2c037ccdc75c4ca194f693da39b966fc225b636583a"
   },
-  "notes": "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen",
+  "notes": "Deal Radar: Key-Shop-Preise über die offizielle Schnittstelle von GG.deals – günstigster Key-Shop-Preis (Instant Gaming, Eneba und viele mehr), Tiefstpreis und günstigster offizieller Shop, für das eingestellte Land (Deutschland in Euro). Braucht einen kostenlosen API-Schlüssel von GG.deals, der am PC eingetragen, vorher geprüft und verschlüsselt gespeichert wird · Zielpreis-Alarm auch, wenn ein Key-Shop den Zielpreis erreicht; Hinweis „In einem Key-Shop gerade am günstigsten“ · Links „Alle Angebote bei GG.deals“ und „Bei Keyforsteam ansehen“ neben Instant Gaming und Eneba",
   "changes": {
     "neu": [
-      "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen"
+      "Deal Radar: Key-Shop-Preise über die offizielle Schnittstelle von GG.deals – günstigster Key-Shop-Preis (Instant Gaming, Eneba und viele mehr), Tiefstpreis und günstigster offizieller Shop, für das eingestellte Land (Deutschland in Euro). Braucht einen kostenlosen API-Schlüssel von GG.deals, der am PC eingetragen, vorher geprüft und verschlüsselt gespeichert wird",
+      "Zielpreis-Alarm auch, wenn ein Key-Shop den Zielpreis erreicht; Hinweis „In einem Key-Shop gerade am günstigsten“",
+      "Links „Alle Angebote bei GG.deals“ und „Bei Keyforsteam ansehen“ neben Instant Gaming und Eneba"
     ],
     "verbessert": [],
     "behoben": []
   },
-  "signature": "fBk5hP0uE1zXEetjerrqL1e8utW4gwfVhfJF33RDSb4AJja5unvg6dUj14YO8GxwT/oZaGAdmVVml9p0x1fBew=="
+  "signature": "lKGj8Jzgn4nxUB7C0wFwEyyg7FQ6x3UggoQ246B1mqR8Cd+akRPogM5/plwf2tmgvOQ08VbwzTpg3Xenc2/+Sg=="
 }

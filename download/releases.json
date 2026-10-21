@@ -1,5 +1,31 @@
 [
   {
+    "version": "2.44.0",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.44.0/PCGameLauncherCompanion.exe",
+    "size": 87920020,
+    "sha256": "52f2cc7c95bda43ec2fcec1029340749f8eb3b8d04cfc31a828fe07ad04f3649",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.44.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.44.0/PCGameLauncherCompanion-2.44.0-win-x64.zip",
+      "size": 82181157,
+      "sha256": "101d5324a2e6cefa4fb6b2c037ccdc75c4ca194f693da39b966fc225b636583a"
+    },
+    "notes": "Deal Radar: Key-Shop-Preise über die offizielle Schnittstelle von GG.deals – günstigster Key-Shop-Preis (Instant Gaming, Eneba und viele mehr), Tiefstpreis und günstigster offizieller Shop, für das eingestellte Land (Deutschland in Euro). Braucht einen kostenlosen API-Schlüssel von GG.deals, der am PC eingetragen, vorher geprüft und verschlüsselt gespeichert wird · Zielpreis-Alarm auch, wenn ein Key-Shop den Zielpreis erreicht; Hinweis „In einem Key-Shop gerade am günstigsten“ · Links „Alle Angebote bei GG.deals“ und „Bei Keyforsteam ansehen“ neben Instant Gaming und Eneba",
+    "changes": {
+      "neu": [
+        "Deal Radar: Key-Shop-Preise über die offizielle Schnittstelle von GG.deals – günstigster Key-Shop-Preis (Instant Gaming, Eneba und viele mehr), Tiefstpreis und günstigster offizieller Shop, für das eingestellte Land (Deutschland in Euro). Braucht einen kostenlosen API-Schlüssel von GG.deals, der am PC eingetragen, vorher geprüft und verschlüsselt gespeichert wird",
+        "Zielpreis-Alarm auch, wenn ein Key-Shop den Zielpreis erreicht; Hinweis „In einem Key-Shop gerade am günstigsten“",
+        "Links „Alle Angebote bei GG.deals“ und „Bei Keyforsteam ansehen“ neben Instant Gaming und Eneba"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "lKGj8Jzgn4nxUB7C0wFwEyyg7FQ6x3UggoQ246B1mqR8Cd+akRPogM5/plwf2tmgvOQ08VbwzTpg3Xenc2/+Sg=="
+  },
+  {
     "version": "2.43.1",
     "date": "2026-10-21",
     "channel": "stable",
@@ -1431,39 +1457,5 @@
       ]
     },
     "signature": "aHrpzRBSqpXX7+kUoMuRrPWFlppW/2pR7gYo/llwTiFfbfR6NMO5Q8s470UfoMc9SCXFbxu3EGQLf7SKGGusWA=="
-  },
-  {
-    "version": "2.0.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.0.0/PCGameLauncherCompanion.exe",
-    "size": 84417712,
-    "sha256": "be616416d28d0dc5bad0d467aedcc0ef168e75f42179e199521fc44641c5b680",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.0.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.0.0/PCGameLauncherCompanion-2.0.0-win-x64.zip",
-      "size": 78746792,
-      "sha256": "cc7b022fd2e9f2b616bb14b329921797c88f9226dd3331eefd8d521158e83480"
-    },
-    "notes": "Neuer Name: Nexus Gaming Hub (Dateien, Datenordner, Update-Adressen und Kopplungen bleiben gleich) · Navigation in Kategorien: Dashboard, Steuerung, Audio, System, Verbindung, Erweiterungen, Verwaltung; „Mehr“ auf dem Handy nach Kategorien geordnet · Navigation anpassen (Einstellungen → Design): Reihenfolge, Bereiche ausblenden, die vier Plätze der Handy-Leiste wählen",
-    "changes": {
-      "neu": [
-        "Neuer Name: Nexus Gaming Hub (Dateien, Datenordner, Update-Adressen und Kopplungen bleiben gleich)",
-        "Navigation in Kategorien: Dashboard, Steuerung, Audio, System, Verbindung, Erweiterungen, Verwaltung; „Mehr“ auf dem Handy nach Kategorien geordnet",
-        "Navigation anpassen (Einstellungen → Design): Reihenfolge, Bereiche ausblenden, die vier Plätze der Handy-Leiste wählen",
-        "Netzwerkdiagnose (Ping Doctor): Ping, Jitter, Paketverlust, Antwortzeit zum PC, Ping-Verlauf mit Werten beim Zeigen, Verbindungsqualität mit offengelegten Regeln, bis zu 3 eigene Ziele (z. B. Spiel-Server per Hostname/IP)",
-        "Automatisierungen und Quick Actions: Bausteine „Warten“, „Nur weiter, wenn … läuft / nicht läuft“ und „Medientaste drücken“; Verlauf der letzten 10 Ausführungen je Regel; eine laufende Regel startet nicht doppelt; lange Abläufe laufen auf dem PC weiter",
-        "Hotkeys & Makros: Medientasten (Play/Pause, Titel vor/zurück, Ton aus, lauter/leiser) als Hotkey, Knopf „Jetzt testen“",
-        "Soundboard: Sounds wiederholen bis gestoppt, Hinweis auf fehlende Audiodateien, Formatliste"
-      ],
-      "verbessert": [
-        "Wartende Änderungen: eigene Kennung je Änderung – der PC wendet sie nur einmal an, auch wenn sie nach einer verlorenen Antwort erneut gesendet wird; neue Versuche mit wachsender Wartezeit, Anzahl der Versuche sichtbar"
-      ],
-      "behoben": [
-        "Einstellungen → Design stürzte ab, wenn ein eigenes Widget oder Plugin-Widget auf dem Dashboard lag (Fehler seit 1.9.0)"
-      ]
-    },
-    "signature": "PnoTg0FM8VP2low+pHH3f+C7dpSiiI0cyAjNiOGdD3Gfnkvv2JpRcDqajflpFNgkW6J2AERuAdRZDA1rDCv9eg=="
   }
 ]
