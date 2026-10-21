@@ -1,5 +1,37 @@
 [
   {
+    "version": "2.33.0",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.33.0/PCGameLauncherCompanion.exe",
+    "size": 87679213,
+    "sha256": "e7cd4c60be0c1ce047412b0a825d465535ddd9b203cea3abf6d8fd6a3008f98a",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.33.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.33.0/PCGameLauncherCompanion-2.33.0-win-x64.zip",
+      "size": 81941944,
+      "sha256": "415cc1da5ac0b64597bf60ba5ec071e31c5c93904d91d16610097bc5e2bcccd2"
+    },
+    "notes": "Savegame-Tresor (Spiele → Savegame-Tresor): Spielstände sichern, prüfen und zurückholen – mit Verlauf, Größe und Grund jeder Sicherung · Sichere Vorschläge statt Raten: Steam-Cloud-Ordner des Spiels oder Ordner mit genau dem Namen des Spiels (Gespeicherte Spiele, Dokumente\\My Games, AppData); eigene Ordner nur direkt am PC · Automatisch nach dem Spielen oder täglich (nur wenn sich etwas geändert hat), Anzahl der Sicherungen einstellbar",
+    "changes": {
+      "neu": [
+        "Savegame-Tresor (Spiele → Savegame-Tresor): Spielstände sichern, prüfen und zurückholen – mit Verlauf, Größe und Grund jeder Sicherung",
+        "Sichere Vorschläge statt Raten: Steam-Cloud-Ordner des Spiels oder Ordner mit genau dem Namen des Spiels (Gespeicherte Spiele, Dokumente\\My Games, AppData); eigene Ordner nur direkt am PC",
+        "Automatisch nach dem Spielen oder täglich (nur wenn sich etwas geändert hat), Anzahl der Sicherungen einstellbar",
+        "Vor dem Zurückholen eine Vorschau: was ersetzt wird, was zurückkommt, was entfernt wird – mit Warnung, wenn der jetzige Stand neuer ist",
+        "Konfigurationsdateien (ini, cfg, json, xml, txt …) mit Versionen und Vergleich: neue, geänderte und entfernte Einstellungen nebeneinander"
+      ],
+      "verbessert": [
+        "Jede Sicherung hat eine SHA-256-Prüfliste; „Prüfen“ findet beschädigte Sicherungen, beschädigte werden nie zurückgeholt",
+        "Der jetzige Stand wird vor jedem Zurückholen automatisch gesichert; solange das Spiel läuft, passiert nichts",
+        "Regeln lassen sich ohne PC ändern und werden beim Verbinden übertragen; Orte und Regeln sind Teil des Konfigurations-Backups"
+      ],
+      "behoben": []
+    },
+    "signature": "Bg1tF7RTNXOKhoieL3MUwCAkgh9LJASzpiiPhERcZbyX2TDRu9J5mdGUJ0mk3wAztoGbANnF5ZYr1ha4+OOEpQ=="
+  },
+  {
     "version": "2.32.0",
     "date": "2026-10-20",
     "channel": "stable",
