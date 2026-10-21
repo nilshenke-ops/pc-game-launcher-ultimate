@@ -86,6 +86,7 @@
     "captures.thumbs": "manage",
     "captures.read": "manage",
     "captures.update": "manage",
+    "captures.hashes": "manage",
     "captures.remove": "manage",
     "captures.addFolder": "admin",
     "captures.removeFolder": "manage",

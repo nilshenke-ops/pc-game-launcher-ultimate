@@ -158,18 +158,20 @@ export function removeEntry(id: string) {
 export const MAX_IMAGE_BYTES = 700 * 1024;
 const urlCache = new Map<string, string>();
 
-/** Makes a picture small (longest side 1600 px, JPEG) and keeps it on this device. Returns its id. */
-export async function addImage(file: Blob): Promise<string> {
-  if (!/^image\/(jpeg|png|webp|gif|heic|heif|avif)$/.test(file.type)) throw new JournalError("Nur Bilder (JPEG, PNG, WebP …).");
+/** Makes a picture small (longest side 1600 px, JPEG) and keeps it on this device. Returns its id. A thumbnail for
+ * galleries: `{ side: 480, maxBytes: 60 * 1024 }`. */
+export async function addImage(file: Blob, opts: { side?: number; maxBytes?: number } = {}): Promise<string> {
+  if (!/^image\/(jpeg|png|webp|gif|heic|heif|avif|bmp)$/.test(file.type)) throw new JournalError("Nur Bilder (JPEG, PNG, WebP …).");
   const bmp = await createImageBitmap(file).catch(() => { throw new JournalError("Das Bild kann dieser Browser nicht öffnen."); });
-  let side = 1600, quality = 0.82, data = "";
+  const MAX = opts.maxBytes ?? MAX_IMAGE_BYTES;
+  let side = opts.side ?? 1600, quality = 0.82, data = "";
   for (let i = 0; i < 6; i++) {
     const s = Math.min(1, side / Math.max(bmp.width, bmp.height));
     const c = document.createElement("canvas");
     c.width = Math.max(1, Math.round(bmp.width * s)); c.height = Math.max(1, Math.round(bmp.height * s));
     c.getContext("2d")!.drawImage(bmp, 0, 0, c.width, c.height);
     data = c.toDataURL("image/jpeg", quality).split(",")[1];
-    if (data.length * 0.75 <= MAX_IMAGE_BYTES) break;
+    if (data.length * 0.75 <= MAX) break;
     side = Math.round(side * 0.8); quality = Math.max(0.5, quality - 0.08);
   }
   bmp.close();

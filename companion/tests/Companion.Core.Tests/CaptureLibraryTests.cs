@@ -129,6 +129,37 @@ public class CaptureLibraryTests
     }
 
     [Fact]
+    public void Categories_are_checked_and_hashes_find_only_identical_files()
+    {
+        using var dir = new TempDir();
+        var (lib, shots, _, steam) = Setup(dir, new GenericPlatform());
+        // Same size, different content – and an exact copy.
+        File.WriteAllBytes(Path.Combine(shots, "a.png"), new byte[] { 1, 2, 3, 4 });
+        File.WriteAllBytes(Path.Combine(shots, "b.png"), new byte[] { 1, 2, 3, 5 });
+        File.WriteAllBytes(Path.Combine(shots, "a-kopie.png"), new byte[] { 1, 2, 3, 4 });
+        lib.Scan();
+        string Id(string n) => CaptureLibraryService.IdOf(Path.Combine(shots, n));
+        var h = lib.Hashes(new[] { Id("a.png"), Id("b.png"), Id("a-kopie.png"), "0000000000000000" });
+        Assert.Equal(h[Id("a.png")], h[Id("a-kopie.png")]);
+        Assert.NotEqual(h[Id("a.png")], h[Id("b.png")]);
+        Assert.Null(h["0000000000000000"]);                       // unknown id: nothing revealed
+        Assert.Equal(64, h[Id("a.png")]!.Length);
+        // Changed file → new hash (cache is renewed).
+        File.WriteAllBytes(Path.Combine(shots, "a-kopie.png"), new byte[] { 9, 9, 9, 9, 9 });
+        lib.Scan();
+        Assert.NotEqual(h[Id("a.png")], lib.Hashes(new[] { Id("a-kopie.png") })[Id("a-kopie.png")]);
+        Assert.True(File.Exists(Path.Combine(shots, "a.png")));     // hashing never deletes
+
+        lib.Update(Id("a.png"), null, null, "Landschaft & Natur");
+        Assert.Throws<RpcException>(() => lib.Update(Id("a.png"), null, null, "<b>x</b>"));
+        Assert.Throws<RpcException>(() => lib.Update(Id("a.png"), null, null, new string('x', 31)));
+        string? Cat() => J(lib.List()).GetProperty("items").EnumerateArray().First(i => i.GetProperty("id").GetString() == Id("a.png")).TryGetProperty("category", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() : null;
+        Assert.Equal("Landschaft & Natur", Cat());
+        lib.Update(Id("a.png"), null, null, "");                   // "" clears
+        Assert.Null(Cat());
+    }
+
+    [Fact]
     public async Task Captures_need_manage_rights_and_folders_can_only_be_added_by_an_admin()
     {
         using var dir = new TempDir();

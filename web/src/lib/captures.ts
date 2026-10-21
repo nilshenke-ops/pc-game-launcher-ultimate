@@ -6,7 +6,7 @@ import { client } from "./rpc";
 
 export interface Capture {
   id: string; name: string; folder: string; kind: "image" | "video"; size: number; taken: string;
-  game?: string | null; itemId?: string | null; favorite: boolean; tags: string[];
+  game?: string | null; itemId?: string | null; favorite: boolean; tags: string[]; category?: string | null;
 }
 export interface CaptureList {
   items: Capture[];

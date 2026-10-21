@@ -26,6 +26,8 @@ export interface FieldDef {
   card?: boolean;
   /** Offered as filter (select, bool, tags). */
   filter?: boolean;
+  /** Set by the page itself (e.g. a chosen PC file) – not shown in the form, the details or the table. */
+  hidden?: boolean;
 }
 
 export interface Schema {
@@ -126,7 +128,7 @@ export function valueText(f: FieldDef, v: unknown): string {
   return String(v);
 }
 
-const csvCell = (v: string) => (/[;"\n\r]/.test(v) || /^[=+\-@]/.test(v) ? `"${(/^[=+\-@]/.test(v) ? "'" : "") + v.replace(/"/g, '""')}"` : v);
+export const csvCell = (v: string) => (/[;"\n\r]/.test(v) || /^[=+\-@]/.test(v) ? `"${(/^[=+\-@]/.test(v) ? "'" : "") + v.replace(/"/g, '""')}"` : v);
 
 /** CSV (semicolon, for German Excel) of the rows of one row field, e.g. all POIs of a world. Formulas are neutralised. */
 export function rowsCsv(f: FieldDef, rows: Data[]): string {

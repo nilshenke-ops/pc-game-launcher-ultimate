@@ -513,7 +513,9 @@ public static class RpcApi
             ctx.Params.TryGetProperty("offset", out var o) ? o.GetInt64() : 0, ctx.Params.TryGetProperty("length", out var l) ? l.GetInt32() : TransferService.MaxChunkBytes));
         rpc.Register("captures.update", ctx => s.Captures.Update(ctx.Str("id", 16),
             ctx.Params.TryGetProperty("favorite", out var f) && f.ValueKind is JsonValueKind.True or JsonValueKind.False ? f.GetBoolean() : null,
-            ctx.Params.TryGetProperty("tags", out var tg) && tg.ValueKind == JsonValueKind.Array ? tg.EnumerateArray().Select(x => x.GetString() ?? "").Take(20).ToList() : null));
+            ctx.Params.TryGetProperty("tags", out var tg) && tg.ValueKind == JsonValueKind.Array ? tg.EnumerateArray().Select(x => x.GetString() ?? "").Take(20).ToList() : null,
+            ctx.Params.TryGetProperty("category", out var cg) && cg.ValueKind is JsonValueKind.String or JsonValueKind.Null ? (cg.GetString() ?? "") : null));
+        rpc.Register("captures.hashes", ctx => new { hashes = s.Captures.Hashes(ctx.Params.GetProperty("ids").EnumerateArray().Select(x => x.GetString() ?? "").Take(40).ToList()) });
         rpc.Register("captures.remove", ctx => { s.Captures.Remove(ctx.Str("id", 16)); return true; });
         rpc.Register("captures.addFolder", ctx => { s.Captures.AddFolder(ctx.Str("path", 400), ctx.OptStr("label", 40)); return true; });
         rpc.Register("captures.removeFolder", ctx => { s.Captures.RemoveFolder(ctx.Str("path", 400)); return true; });

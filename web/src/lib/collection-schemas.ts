@@ -1,5 +1,6 @@
-// The collections of "Welten & Bauen" and "Builds & Technik" – field lists only (UI: components/collection-view.tsx).
-import type { Data, Schema } from "./collections";
+// The collections of "Welten & Bauen", "Builds & Technik", "Freunde & Gruppe" and "Medien" – field lists only (UI: components/collection-view.tsx).
+import type { Data, FieldError, Schema } from "./collections";
+import { parseTime } from "./media";
 
 const o = (...pairs: [string, string][]) => pairs.map(([value, label]) => ({ value, label }));
 
@@ -243,5 +244,101 @@ export const TEAM: Schema = {
     { name: "MMO-Gruppe", data: { roles: [{ name: "Tank" }, { name: "Heiler" }, { name: "Schaden" }, { name: "Schaden" }, { name: "Schaden" }] } },
     { name: "Survival / Aufbau", data: { roles: [{ name: "Bauplanung" }, { name: "Ressourcenmanagement" }, { name: "Erkundung" }, { name: "Verteidigung" }] } },
     { name: "Rennen / Fahrzeuge", data: { roles: [{ name: "Fahrer" }, { name: "Navigation" }, { name: "Taktik" }] } },
+  ],
+};
+
+// ------------------------------------------------------------------------------------------ Medien (2.42)
+
+const PHOTO_CATS = o(["landscape", "Landschaft"], ["action", "Action"], ["character", "Figur / Porträt"], ["build", "Gebautes"], ["funny", "Lustig"], ["friends", "Mit Freunden"], ["achievement", "Erfolg"], ["other", "Sonstiges"]);
+
+export const PHOTO: Schema = {
+  kind: "photo", label: "Foto",
+  fields: [
+    { key: "title", label: "Titel", type: "text", required: true, maxLen: 120 },
+    { key: "game", label: "Spiel", type: "game" },
+    { key: "takenAt", label: "Aufnahmedatum", type: "date", hint: "Beim Import aus den Bilddaten (EXIF) oder dem Dateidatum – hier änderbar." },
+    { key: "category", label: "Kategorie", type: "select", options: PHOTO_CATS, filter: true },
+    { key: "description", label: "Beschreibung", type: "textarea", maxLen: 4000 },
+    { key: "settings", label: "Aufnahmeeinstellungen", type: "rows", maxRows: 30, hint: "Freiwillig, z. B. Auflösung, Grafikstufe, Fotomodus, Sichtfeld.", columns: [
+      { key: "name", label: "Einstellung", type: "text", required: true, maxLen: 60 },
+      { key: "value", label: "Wert", type: "text", maxLen: 100 },
+    ] },
+    { key: "tags", label: "Tags", type: "tags", filter: true },
+    { key: "favorite", label: "Favorit", type: "bool", filter: true },
+  ],
+};
+
+export const ALBUM: Schema = {
+  kind: "album", label: "Sammlung",
+  fields: [
+    { key: "title", label: "Name der Sammlung", type: "text", required: true, maxLen: 80 },
+    { key: "description", label: "Beschreibung", type: "textarea", maxLen: 2000 },
+  ],
+};
+
+export const BOOK: Schema = {
+  kind: "book", label: "Erinnerung im Buch",
+  fields: [
+    { key: "title", label: "Titel", type: "text", required: true, maxLen: 120, card: true },
+    { key: "date", label: "Datum", type: "date", required: true, card: true },
+    { key: "game", label: "Spiel", type: "game", card: true },
+    { key: "category", label: "Kategorie", type: "select", options: o(["milestone", "Meilenstein"], ["win", "Sieg / Erfolg"], ["friends", "Mit Freunden"], ["funny", "Lustig"], ["story", "Story-Moment"], ["first", "Erstes Mal"], ["other", "Sonstiges"]), card: true, filter: true },
+    { key: "text", label: "Deine Geschichte", type: "textarea", maxLen: 20000 },
+    { key: "imageIds", label: "Bilder", type: "images" },
+    { key: "media", label: "Medienverweise", type: "rows", maxRows: 20, hint: "Links zu Videos, Clips oder Beiträgen – werden nur verlinkt, nicht geladen.", columns: [
+      { key: "label", label: "Bezeichnung", type: "text", maxLen: 80 },
+      { key: "url", label: "Adresse", type: "url", required: true },
+    ] },
+    { key: "tags", label: "Tags", type: "tags", filter: true },
+    { key: "favorite", label: "Favorit", type: "bool", filter: true },
+  ],
+};
+
+export const CLIPMARK: Schema = {
+  kind: "clipmark", label: "Aufnahme mit Momenten",
+  fields: [
+    { key: "title", label: "Aufnahme", type: "text", required: true, maxLen: 120, card: true },
+    { key: "game", label: "Spiel", type: "game", card: true },
+    { key: "recordedAt", label: "Aufgenommen am", type: "date", card: true },
+    { key: "url", label: "Videolink", type: "url", hint: "YouTube, Twitch-Video oder direkte Videodatei: dann springen Momente an die Stelle. Andere Seiten öffnen am Anfang." },
+    { key: "captureId", label: "Aufnahme vom PC", type: "text", maxLen: 16, hidden: true },
+    { key: "captureName", label: "Aufnahme vom PC", type: "text", maxLen: 260, hidden: true },
+    { key: "category", label: "Kategorie", type: "select", options: o(["highlight", "Highlight"], ["fail", "Fail"], ["funny", "Lustig"], ["tutorial", "Erklärung"], ["boss", "Bosskampf"], ["other", "Sonstiges"]), card: true, filter: true },
+    { key: "marks", label: "Momente", type: "rows", maxRows: 300, columns: [
+      { key: "time", label: "Zeit", type: "text", required: true, maxLen: 12, placeholder: "1:23 oder 1:02:03" },
+      { key: "text", label: "Was passiert", type: "text", required: true, maxLen: 200 },
+      { key: "tag", label: "Tag", type: "text", maxLen: 30 },
+      { key: "fav", label: "Favorit", type: "bool" },
+    ] },
+    { key: "notes", label: "Notizen", type: "textarea", maxLen: 4000 },
+    { key: "tags", label: "Tags", type: "tags", filter: true },
+    { key: "favorite", label: "Favorit", type: "bool", filter: true },
+  ],
+  check: (d) => {
+    const errs: FieldError[] = [];
+    const marks = (d.marks as Data[] | undefined) ?? [];
+    marks.forEach((m, i) => { if (typeof m.time === "string" && m.time.trim() && parseTime(m.time) == null) errs.push({ key: "marks", row: i, col: "time", message: "Zeile {n}: Zeit wie 1:23, 1:02:03 oder 95 eingeben.", vars: { n: i + 1 } }); });
+    if (!d.url && !d.captureId && marks.length) errs.push({ key: "url", message: "Bitte einen Videolink eintragen oder eine Aufnahme vom PC wählen." });
+    return errs;
+  },
+};
+
+export const TRACK: Schema = {
+  kind: "track", label: "Soundtrack",
+  fields: [
+    { key: "title", label: "Titel", type: "text", required: true, maxLen: 120, card: true },
+    { key: "game", label: "Spiel", type: "game", card: true },
+    { key: "artist", label: "Künstler", type: "text", maxLen: 120, card: true },
+    { key: "composer", label: "Komponist", type: "text", maxLen: 120 },
+    { key: "album", label: "Album", type: "text", maxLen: 120 },
+    { key: "cover", label: "Coverbild", type: "image", hint: "Ein eigenes Bild oder ein Cover, das du verwenden darfst." },
+    { key: "mood", label: "Stimmung", type: "select", options: o(["epic", "Episch"], ["calm", "Ruhig"], ["sad", "Traurig"], ["tense", "Spannend"], ["happy", "Fröhlich"], ["dark", "Düster"], ["energetic", "Energiegeladen"]), card: true, filter: true },
+    { key: "lists", label: "Sammlungen", type: "tags", hint: "Eigene Listen, z. B. „Zum Lernen“, „Bosskämpfe“." },
+    { key: "links", label: "Links zu Musikdiensten", type: "rows", maxRows: 10, hint: "Nur offizielle Seiten (Spotify, Apple Music, YouTube, Bandcamp, Steam …). Nexus spielt nichts selbst ab und lädt nichts herunter.", columns: [
+      { key: "url", label: "Adresse", type: "url", required: true },
+    ] },
+    { key: "notes", label: "Notizen", type: "textarea", maxLen: 2000 },
+    { key: "tags", label: "Tags", type: "tags", filter: true },
+    { key: "favorite", label: "Favorit", type: "bool", filter: true },
   ],
 };

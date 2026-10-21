@@ -1226,6 +1226,41 @@ test("Freunde: Abstimmung per Link (Antwort zählt, zurückgezogener Link nicht)
   await host.close(); await friendCtx.close();
 });
 
+test("Medien: Fotomuseum erkennt dasselbe Bild, Foto ins Erinnerungsbuch, Clip-Moment springt bei YouTube an die Stelle", async ({ browser }) => {
+  const ctx = await newCtx(browser, { viewport: { width: 1200, height: 900 }, locale: "de-DE" });
+  const p = await ctx.newPage();
+  const dlg = () => p.getByRole("dialog").last();
+  // 1×1 PNG
+  const png = { name: "boss.png", mimeType: "image/png", buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==", "base64") };
+  await p.goto(`${COMPANION}/#/media?tab=museum`);
+  await p.locator("[data-testid=museum-input]").setInputFiles(png);
+  await expect(p.locator(".m-tile")).toHaveCount(1);
+  await p.locator("[data-testid=museum-input]").setInputFiles(png);
+  await expect(dlg()).toContainText("schon im Fotomuseum");
+  await dlg().getByRole("button", { name: "Abbrechen" }).click();
+  await expect(p.locator(".m-tile")).toHaveCount(1);
+  await p.getByRole("button", { name: /^boss/ }).click();
+  await expect(dlg()).toContainText("1 × 1");
+  await dlg().getByRole("button", { name: "Ins Erinnerungsbuch" }).click();
+  await expect(dlg()).toContainText("Aus dem Fotomuseum");
+  await p.keyboard.press("Escape");
+  await expect(p.locator(".m-timeline")).toContainText("boss");
+
+  await p.goto(`${COMPANION}/#/media?tab=clips`);
+  await p.getByRole("button", { name: "Neu" }).click();
+  await dlg().locator("input").first().fill("Raid");
+  await dlg().getByPlaceholder("https://").first().fill("https://www.youtube.com/watch?v=abc");
+  await dlg().getByRole("button", { name: "Zeile hinzufügen" }).click();
+  await dlg().getByLabel("Zeit").fill("1:75");
+  await dlg().getByLabel("Was passiert").fill("Boss liegt");
+  await dlg().getByRole("button", { name: "Speichern" }).click();
+  await expect(dlg()).toContainText("Zeile 1: Zeit wie 1:23");
+  await dlg().getByLabel("Zeit").fill("1:02");
+  await dlg().getByRole("button", { name: "Speichern" }).click();
+  await expect(dlg().getByRole("link", { name: "Bei 1:02 öffnen" })).toHaveAttribute("href", "https://www.youtube.com/watch?v=abc&t=62s");
+  await ctx.close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

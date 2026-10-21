@@ -21,6 +21,7 @@ public sealed class CaptureMeta
 {
     public bool Favorite { get; set; }
     public List<string> Tags { get; set; } = new();
+    public string? Category { get; set; }
 }
 
 public sealed class CaptureFile
@@ -29,7 +30,7 @@ public sealed class CaptureFile
     public Dictionary<string, CaptureMeta> Meta { get; set; } = new();
 }
 
-public sealed record CaptureItem(string Id, string Name, string Folder, string Kind, long Size, DateTime Taken, string? Game, string? ItemId, bool Favorite, List<string> Tags)
+public sealed record CaptureItem(string Id, string Name, string Folder, string Kind, long Size, DateTime Taken, string? Game, string? ItemId, bool Favorite, List<string> Tags, string? Category = null)
 {
     internal string FullPath { get; init; } = "";
 }
@@ -47,6 +48,7 @@ public sealed class CaptureLibraryService
     static readonly HashSet<string> Videos = new(StringComparer.OrdinalIgnoreCase) { ".mp4", ".mkv", ".webm", ".mov", ".avi", ".flv" };
     static readonly Regex SteamShot = new(@"[\\/]760[\\/]remote[\\/](\d+)[\\/]screenshots", RegexOptions.IgnoreCase);
     static readonly Regex Tag = new(@"^[\p{L}\p{N} _\-]{1,24}$");
+    static readonly Regex Category = new(@"^[\p{L}\p{N} _\-&]{1,30}$");
 
     readonly JsonStore<CaptureFile> _store;
     readonly string _thumbDir;
@@ -102,7 +104,7 @@ public sealed class CaptureLibraryService
     {
         if (DateTime.UtcNow - _scannedAt > TimeSpan.FromMinutes(2)) _ = ScanAsync();
         var meta = _store.Snapshot().Meta;
-        var items = _index.Select(i => meta.TryGetValue(i.Id, out var m) ? i with { Favorite = m.Favorite, Tags = m.Tags } : i).ToList();
+        var items = _index.Select(i => meta.TryGetValue(i.Id, out var m) ? i with { Favorite = m.Favorite, Tags = m.Tags, Category = m.Category } : i).ToList();
         return new
         {
             items,
@@ -249,7 +251,7 @@ public sealed class CaptureLibraryService
 
     /// <summary>Favorite and tags. Kept by id; an id that is not (or no longer) in the index is still accepted, so a change
     /// made on the phone without the PC is not lost when the PC has not scanned yet.</summary>
-    public CaptureMeta Update(string id, bool? favorite, List<string>? tags)
+    public CaptureMeta Update(string id, bool? favorite, List<string>? tags, string? category = null)
     {
         if (!Regex.IsMatch(id, "^[0-9a-f]{16}$")) throw new RpcException("invalid-params", "Ungültige Kennung.");
         List<string>? clean = null;
@@ -258,15 +260,51 @@ public sealed class CaptureLibraryService
             clean = tags.Select(t => DeviceStore.Sanitize(t, 24, "")).Where(t => t.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).Take(10).ToList();
             if (clean.Any(t => !Tag.IsMatch(t))) throw new RpcException("invalid-params", "Schlagwörter: Buchstaben, Ziffern, Leerzeichen, - und _ (höchstens 24 Zeichen).");
         }
+        var cat = category == null ? "" : DeviceStore.Sanitize(category, 200, "");
+        if (cat.Length > 0 && (cat.Length > 30 || !Category.IsMatch(cat))) throw new RpcException("invalid-params", "Kategorie: Buchstaben, Ziffern, Leerzeichen, - und _ (höchstens 30 Zeichen).");
         var result = _store.Update(f =>
         {
             if (!f.Meta.TryGetValue(id, out var m)) { if (f.Meta.Count >= 20000) throw new RpcException("invalid-params", "Zu viele markierte Aufnahmen."); m = f.Meta[id] = new(); }
             if (favorite != null) m.Favorite = favorite.Value;
             if (clean != null) m.Tags = clean;
-            if (!m.Favorite && m.Tags.Count == 0) f.Meta.Remove(id);
+            if (category != null) m.Category = cat.Length == 0 ? null : cat;
+            if (!m.Favorite && m.Tags.Count == 0 && m.Category == null) f.Meta.Remove(id);
             return m;
         });
         _hub.Changed("captures");
+        return result;
+    }
+
+    public const long MaxHashBytes = 2L * 1024 * 1024 * 1024;
+    readonly Dictionary<string, (long size, long ticks, string hash)> _hashes = new();
+
+    /// <summary>
+    /// SHA-256 of whole files, to find true duplicates (same size alone is not enough). Max 40 per call and 2 GB in total;
+    /// a file over that, or one that is gone, gets null. Cached until the file changes. Nothing is deleted here.
+    /// </summary>
+    public Dictionary<string, string?> Hashes(IEnumerable<string> ids)
+    {
+        var result = new Dictionary<string, string?>();
+        long budget = MaxHashBytes;
+        foreach (var id in ids.Distinct().Take(40))
+        {
+            var item = _index.FirstOrDefault(i => i.Id == id);
+            if (item == null) { result[id] = null; continue; }
+            try
+            {
+                var fi = new FileInfo(item.FullPath);
+                if (!fi.Exists) { result[id] = null; continue; }
+                lock (_hashes)
+                    if (_hashes.TryGetValue(id, out var c) && c.size == fi.Length && c.ticks == fi.LastWriteTimeUtc.Ticks) { result[id] = c.hash; continue; }
+                if (fi.Length > budget) { result[id] = null; continue; }
+                budget -= fi.Length;
+                using var fs = new FileStream(fi.FullName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                var hash = Convert.ToHexString(SHA256.HashData(fs)).ToLowerInvariant();
+                lock (_hashes) _hashes[id] = (fi.Length, fi.LastWriteTimeUtc.Ticks, hash);
+                result[id] = hash;
+            }
+            catch (Exception ex) { Log.Warn("captures", ex.Message); result[id] = null; }
+        }
         return result;
     }
 

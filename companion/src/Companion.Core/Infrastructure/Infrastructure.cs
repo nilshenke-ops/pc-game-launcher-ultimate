@@ -130,9 +130,15 @@ public sealed class JsonStore<T> where T : class, new()
 
     void Save()
     {
-        var tmp = _path + ".tmp";
-        System.IO.File.WriteAllText(tmp, JsonSerializer.Serialize(_value, Json.Pretty));
-        System.IO.File.Move(tmp, _path, true);
+        // Own temp file per write: two writers of the same file (e.g. a finishing background task and a new instance)
+        // never move each other's temp file away; the rename stays atomic, the last write wins.
+        var tmp = $"{_path}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            System.IO.File.WriteAllText(tmp, JsonSerializer.Serialize(_value, Json.Pretty));
+            System.IO.File.Move(tmp, _path, true);
+        }
+        finally { if (System.IO.File.Exists(tmp)) System.IO.File.Delete(tmp); }
     }
 }
 

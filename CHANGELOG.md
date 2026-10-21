@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.42.0 – 2026-10-21
+### Neu
+- „Medien“ (Spielbegleiter) mit fünf Bereichen, alles auch ohne PC nutzbar
+- Fotomuseum: Screenshots importieren (Kopie mit höchstens 1600 px plus Vorschaubild), Aufnahmedatum aus den Bilddaten (EXIF) oder Dateidatum, Spiel, Kategorie, Tags, Favoriten, Aufnahmeeinstellungen, Raster/Galerie/Vollbild (Wischen, Pfeiltasten), eigene Sammlungen; dasselbe Bild zweimal wird erkannt und nachgefragt
+- Erinnerungsbuch: Momente mit Geschichte, Bildern, Fotos aus dem Museum, Medienlinks, Tags, Kategorie, Favorit und Archiv als Zeitleiste nach Jahr und Monat; übernimmt Notizen aus „Wo war ich?“
+- Screenshots sortieren: PC-Aufnahmen und Museum in einer Liste – nach Datum, Dateiname, Spiel, Größe; Filter nach Quelle, Art, Format, Größe, Spiel, Kategorie, Sammlung, Tag; Mehrfachauswahl (Favorit, Tag, Kategorie, Sammlung, ins Museum, ins Erinnerungsbuch, löschen nur nach Bestätigung); Export als CSV/JSON
+- Doppelte finden: nur bei identischem Inhalt (SHA-256, für PC-Dateien am PC berechnet); „Alle Kopien auswählen“ wählt nur aus, gelöscht wird erst nach Bestätigung (PC-Dateien in den Papierkorb)
+- Clip-Momente: Zeitstempel zu Videolinks oder PC-Aufnahmen; YouTube, Twitch-Videos und Videodateien öffnen an der Stelle, PC-Aufnahmen spielen hier ab und springen dorthin; keine Aufnahme, kein Schnitt
+- Soundtracks: Titel, Spiel, Künstler, Komponist, Album, Cover, Stimmung, Sammlungen und Links zu offiziellen Musikdiensten – ohne eingebauten Player, ohne Download
+### Verbessert
+- Aufnahmen am PC haben jetzt auch eine Kategorie (auch ohne PC vorgemerkt)
+- Sammlungen (Listen der Spielbegleiter): Sortierung nach Datum, Filter für eigene Listen, Felder, die die Seite selbst setzt
+### Behoben
+- Speichern am PC: zwei gleichzeitige Schreibvorgänge derselben Datei konnten sich die Zwischendatei wegnehmen (Fehler „moves.json.tmp nicht gefunden“) – jede Speicherung nutzt jetzt eine eigene Zwischendatei
+
 ## 2.41.0 – 2026-10-21
 ### Neu
 - „Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung

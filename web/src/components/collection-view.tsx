@@ -18,17 +18,20 @@ type Games = { id: string; name: string }[];
 const fieldLabel = (f: FieldDef) => t(f.label);
 export const errText = (e: FieldError) => t(e.message, { ...e.vars, f: e.vars?.f ? t(String(e.vars.f)) : "" });
 
-export function CollectionView({ schema, icon, intro, focus, detail, cardExtra }: {
+export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, editorExtra }: {
   schema: Schema; icon: ReactNode; intro?: ReactNode; focus?: string | null;
   detail?: (e: Entry<Data>, save: (d: Data) => void) => ReactNode;
   cardExtra?: (e: Entry<Data>) => ReactNode;
+  /** Feature-specific inputs in the form (e.g. choosing a PC file for a hidden field). */
+  editorExtra?: (d: Data, set: (k: string, v: unknown) => void) => ReactNode;
 }) {
   const list = useJournal<Data>(schema.kind);
   const games = useGames();
   const [q, setQ] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [archived, setArchived] = useState(false);
-  const [sort, setSort] = useState<"changed" | "title">("changed");
+  const [sort, setSort] = useState<"changed" | "title" | "date">("changed");
+  const dateField = schema.fields.find((f) => f.type === "date");
   const [table, setTable] = useState(false);
   const [edit, setEdit] = useState<{ id: string; data: Data; isNew: boolean } | null>(null);
   const [open, setOpen] = useState<string | null>(focus ?? null);
@@ -44,13 +47,15 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra }
       if (f.type === "bool") return !!e.data[f.key] === (v === "1");
       return String(e.data[f.key] ?? "") === v;
     }));
+    if (sort === "date" && dateField) return [...l].sort((a, b) => String(b.data[dateField.key] ?? "").localeCompare(String(a.data[dateField.key] ?? "")));
     return sort === "title" ? [...l].sort((a, b) => String(a.data.title ?? "").localeCompare(String(b.data.title ?? ""))) : l;
-  }, [list, q, filters, archived, sort, filterFields]);
+  }, [list, q, filters, archived, sort, filterFields, dateField]);
+  const listValues = (key: string) => [...new Set(list.flatMap((e) => ((e.data[key] as string[]) ?? [])))].sort();
 
   const cur = open ? list.find((e) => e.id === open) : undefined;
   const startNew = (data: Data) => { setCreating(false); setEdit({ id: newId(), data: { ...blank(schema), ...data }, isNew: true }); };
-  const cardFields = schema.fields.filter((f) => f.card && f.key !== "title");
-  const tableFields = schema.fields.filter((f) => !["rows", "images", "image", "textarea"].includes(f.type)).slice(0, 7);
+  const cardFields = schema.fields.filter((f) => f.card && f.key !== "title" && !f.hidden);
+  const tableFields = schema.fields.filter((f) => !["rows", "images", "image", "textarea"].includes(f.type) && !f.hidden).slice(0, 7);
 
   return (
     <>
@@ -67,7 +72,12 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra }
                 </select>
               ))}
               {filterFields.filter((f) => f.type === "ref").map((f) => <RefFilter key={f.key} f={f} value={filters[f.key] ?? ""} onChange={(v) => setFilters((x) => ({ ...x, [f.key]: v }))} />)}
-              <select className="input" style={{ maxWidth: 190 }} value={sort} aria-label={t("Sortierung")} onChange={(e) => setSort(e.target.value as "changed" | "title")}><option value="changed">{t("Zuletzt geändert")}</option><option value="title">{t("Name A–Z")}</option></select>
+              {filterFields.filter((f) => f.type === "tags" && f.key !== "tags" && listValues(f.key).length).map((f) => (
+                <select key={f.key} className="input" style={{ maxWidth: 200 }} value={filters[f.key] ?? ""} aria-label={fieldLabel(f)} onChange={(e) => setFilters((x) => ({ ...x, [f.key]: e.target.value }))}>
+                  <option value="">{fieldLabel(f)}: {t("alle")}</option>{listValues(f.key).map((v) => <option key={v} value={v}>{v}</option>)}
+                </select>
+              ))}
+              <select className="input" style={{ maxWidth: 190 }} value={sort} aria-label={t("Sortierung")} onChange={(e) => setSort(e.target.value as "changed" | "title" | "date")}><option value="changed">{t("Zuletzt geändert")}</option><option value="title">{t("Name A–Z")}</option>{dateField && <option value="date">{t("{f} (neueste zuerst)", { f: fieldLabel(dateField) })}</option>}</select>
               <Button size="sm" variant="ghost" icon={table ? <LayoutGrid size={14} /> : <List size={14} />} aria-pressed={table} onClick={() => setTable(!table)}>{table ? t("Karten") : t("Tabelle")}</Button>
             </div>
             <div className="chips">
@@ -128,7 +138,7 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra }
           </div>
         </Modal>
       )}
-      {edit && <EntryEditor schema={schema} id={edit.id} initial={edit.data} isNew={edit.isNew} games={games} onClose={(saved) => { setEdit(null); if (saved) setOpen(edit.id); }} />}
+      {edit && <EntryEditor schema={schema} id={edit.id} initial={edit.data} isNew={edit.isNew} games={games} extra={editorExtra} onClose={(saved) => { setEdit(null); if (saved) setOpen(edit.id); }} />}
     </>
   );
 }
@@ -171,7 +181,7 @@ function EntryDetail({ schema, e, games, extra }: { schema: Schema; e: Entry<Dat
     <div className="stack">
       {extra}
       <dl className="j-dl">
-        {schema.fields.filter((f) => !["rows", "images", "image", "tags", "title"].includes(f.type) && f.key !== "title").map((f) => {
+        {schema.fields.filter((f) => !["rows", "images", "image", "tags", "title"].includes(f.type) && f.key !== "title" && !f.hidden).map((f) => {
           const v = d[f.key];
           if (f.type === "bool" && !v) return null;
           const text = f.type === "game" ? gameLabel(v as object ?? {}, games) : f.type === "ref" ? (v ? String(getEntry<Data>(v as string)?.data.title ?? t("(gelöscht)")) : "") : f.type === "url" && v ? <a href={String(v)} target="_blank" rel="noopener noreferrer">{String(v)}</a> : t(valueText(f, v));
@@ -196,7 +206,7 @@ function EntryDetail({ schema, e, games, extra }: { schema: Schema; e: Entry<Dat
   );
 }
 
-export function EntryEditor({ schema, id, initial, isNew, games, onClose }: { schema: Schema; id: string; initial: Data; isNew: boolean; games: Games; onClose: (saved: boolean) => void }) {
+export function EntryEditor({ schema, id, initial, isNew, games, onClose, extra }: { schema: Schema; id: string; initial: Data; isNew: boolean; games: Games; onClose: (saved: boolean) => void; extra?: (d: Data, set: (k: string, v: unknown) => void) => ReactNode }) {
   const [d, setD] = useState<Data>(initial);
   const [tried, setTried] = useState(false);
   const errors = validate(schema, d);
@@ -213,7 +223,8 @@ export function EntryEditor({ schema, id, initial, isNew, games, onClose }: { sc
       <Button variant="primary" onClick={save}>{t("Speichern")}</Button>
     </>}>
       <div className="stack">
-        {schema.fields.map((f) => <FieldInput key={f.key} f={f} value={d[f.key]} onChange={(v) => set(f.key, v)} games={games} errors={tried ? errFor(f.key) : []} />)}
+        {schema.fields.filter((f) => !f.hidden).map((f) => <FieldInput key={f.key} f={f} value={d[f.key]} onChange={(v) => set(f.key, v)} games={games} errors={tried ? errFor(f.key) : []} />)}
+        {extra?.(d, set)}
         <LinkPicker value={(d.links as string[]) ?? []} onChange={(links) => set("links", links)} selfId={id} />
       </div>
     </Modal>
