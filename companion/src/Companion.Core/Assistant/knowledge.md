@@ -95,6 +95,11 @@ Seite: /monitor
 Stichworte: herunterfahren ausschalten neustart neu starten sperren energiesparen ruhezustand standby pc aus shutdown restart lock sleep handy fernbedienung abbrechen
 Vom Handy: Home → „Anpassen“ → Widget „PC-Energie“, oder PC Monitor → „Energie“, oder eine Deck-Taste („PC sperren / ausschalten“). „Sperren“ geht sofort für jedes Gerät, das Spiele starten darf. Energiesparen, Neustart und Herunterfahren fragen vorher; Neustart/Herunterfahren wahlweise sofort oder in 30 s bis 10 min – bis dahin auf jedem Gerät mit „Abbrechen“ zu stoppen. Dafür muss der PC das Recht einmal erlauben: am PC → Geräte → dein Handy → „PC ausschalten“ ankreuzen → Speichern. Geht nur, wenn der PC verbunden ist (wird nie für später gespeichert). Nur mit dem Windows-Begleiter.
 
+## Savegame-Tresor und Konfigurations-Versionen
+Seite: /vault
+Stichworte: savegame spielstand spielstände sichern sicherung backup wiederherstellen zurückholen tresor konfiguration config ini cfg json vergleichen version verlauf steam cloud prüfen integrität
+Spiele → Savegame-Tresor. „Ort hinzufügen“ → Spiel wählen: der PC schlägt nur sichere Orte vor (Steam-Cloud-Ordner des Spiels, Ordner mit genau dem Namen des Spiels in Gespeicherte Spiele, Dokumente\My Games oder AppData) – nichts wird automatisch eingetragen; eigene Ordner und Konfigurationsdateien nur direkt am PC. Regeln: automatisch nach dem Spielen oder täglich (nur wenn sich etwas geändert hat), wie viele Sicherungen behalten. „Jetzt sichern“, „Prüfen“ (SHA-256 aller Dateien), „Zurückholen …“ zeigt vorher, was ersetzt, zurückkommt oder entfernt wird; der jetzige Stand wird vorher gesichert, solange das Spiel läuft passiert nichts. Konfigurationsdateien: „Mit jetzt vergleichen“ zeigt geänderte, neue und entfernte Einstellungen. Ohne PC lassen sich nur die Regeln ändern.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

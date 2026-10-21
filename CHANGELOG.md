@@ -4,6 +4,18 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.33.0 – 2026-10-21
+### Neu
+- Savegame-Tresor (Spiele → Savegame-Tresor): Spielstände sichern, prüfen und zurückholen – mit Verlauf, Größe und Grund jeder Sicherung
+- Sichere Vorschläge statt Raten: Steam-Cloud-Ordner des Spiels oder Ordner mit genau dem Namen des Spiels (Gespeicherte Spiele, Dokumente\My Games, AppData); eigene Ordner nur direkt am PC
+- Automatisch nach dem Spielen oder täglich (nur wenn sich etwas geändert hat), Anzahl der Sicherungen einstellbar
+- Vor dem Zurückholen eine Vorschau: was ersetzt wird, was zurückkommt, was entfernt wird – mit Warnung, wenn der jetzige Stand neuer ist
+- Konfigurationsdateien (ini, cfg, json, xml, txt …) mit Versionen und Vergleich: neue, geänderte und entfernte Einstellungen nebeneinander
+### Verbessert
+- Jede Sicherung hat eine SHA-256-Prüfliste; „Prüfen“ findet beschädigte Sicherungen, beschädigte werden nie zurückgeholt
+- Der jetzige Stand wird vor jedem Zurückholen automatisch gesichert; solange das Spiel läuft, passiert nichts
+- Regeln lassen sich ohne PC ändern und werden beim Verbinden übertragen; Orte und Regeln sind Teil des Konfigurations-Backups
+
 ## 2.32.0 – 2026-10-20
 ### Neu
 - PC vom Handy sperren, in den Energiesparmodus schicken, neu starten und herunterfahren: Widget „PC-Energie“ (Home), Karte „Energie“ im PC Monitor und Deck-Tasten („PC sperren / ausschalten“)

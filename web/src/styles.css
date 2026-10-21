@@ -1280,3 +1280,11 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 .power-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .power-grid .btn { justify-content: center; min-height: 48px; }
 @media (min-width: 900px) { .power-grid:not(.compact) { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+.vault-backup { align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.vault-files { margin: 4px 0 0; padding-left: 18px; max-height: 160px; overflow: auto; }
+.vault-diff { width: 100%; border-collapse: collapse; font-size: 13px; }
+.vault-diff th, .vault-diff td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); vertical-align: top; overflow-wrap: anywhere; }
+.vault-diff tr.added td:last-child { color: #4ade80; } .vault-diff tr.removed td:nth-child(2) { color: #f87171; } .vault-diff tr.changed td:last-child { color: #fbbf24; }
+.vault-lines { margin: 0; max-height: 60vh; overflow: auto; font-size: 12px; background: rgba(0,0,0,.25); padding: 10px; border-radius: var(--radius-sm); white-space: pre-wrap; overflow-wrap: anywhere; }
+.vault-lines .add { color: #4ade80; background: rgba(74,222,128,.08); } .vault-lines .del { color: #f87171; background: rgba(248,113,113,.08); } .vault-lines .skip, .vault-lines .info { color: var(--muted); font-style: italic; }

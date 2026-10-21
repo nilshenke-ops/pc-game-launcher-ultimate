@@ -558,6 +558,21 @@ public static class RpcApi
         rpc.Register("obs.replaySave", async _ => (object)new { message = await s.Capture.Run("replay") });
         rpc.Register("obs.replayToggle", async _ => (object)new { message = await s.Capture.Run("buffer") });
 
+        // ------------------------------------------------------------ savegame vault and configuration versions
+        rpc.Register("vault.list", _ => s.Vault.Overview());
+        rpc.Register("vault.suggest", ctx => new { suggestions = s.Vault.Suggest(ctx.Str("itemId", 64)) });
+        rpc.Register("vault.add", ctx => s.Vault.Add(ctx.OptStr("itemId", 64), ctx.Str("kind", 10), ctx.Str("path", 400), ctx.OptStr("name", 60), ctx.Session.IsLocalAdmin));
+        rpc.Register("vault.configure", ctx => s.Vault.Configure(ctx.Str("id", 48), ctx.OptStr("name", 60), ctx.OptStr("auto", 12),
+            ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("keep", out var k) && k.ValueKind == JsonValueKind.Number ? k.GetInt32() : null));
+        rpc.Register("vault.remove", ctx => s.Vault.Remove(ctx.Str("id", 48), ctx.Bool("deleteBackups")));
+        rpc.Register("vault.backups", ctx => new { backups = s.Vault.Backups(ctx.Str("id", 48)) });
+        rpc.Register("vault.backup", async ctx => { var id = ctx.Str("id", 48); var note = ctx.OptStr("note", 60); return (object?)await Task.Run(() => s.Vault.Backup(id, note ?? $"Von Hand ({ctx.Session.Who})")); });
+        rpc.Register("vault.deleteBackup", ctx => s.Vault.DeleteBackup(ctx.Str("id", 48), ctx.Str("backup", 40)));
+        rpc.Register("vault.verify", async ctx => { var id = ctx.Str("id", 48); var b = ctx.Str("backup", 40); return (object?)await Task.Run(() => s.Vault.Verify(id, b)); });
+        rpc.Register("vault.preview", async ctx => { var id = ctx.Str("id", 48); var b = ctx.Str("backup", 40); return await Task.Run(() => s.Vault.Preview(id, b)); });
+        rpc.Register("vault.restore", async ctx => { var id = ctx.Str("id", 48); var b = ctx.Str("backup", 40); return await Task.Run(() => s.Vault.Restore(id, b)); });
+        rpc.Register("vault.diff", ctx => s.Vault.Diff(ctx.Str("id", 48), ctx.Str("a", 40), ctx.Str("b", 40)));
+
         rpc.Register("power.status", ctx => s.Power.Status(ctx.Session));
         // Locking is harmless (sign in again) – every device that may start games may lock the PC.
         rpc.Register("power.lock", ctx => { s.Power.Run("lock", 0, ctx.Session.Who); return true; });

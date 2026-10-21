@@ -20,6 +20,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public SettingsService Settings { get; }
     public NotificationCenter Notifications { get; }
     public PowerService Power { get; }
+    public SaveVaultService Vault { get; }
     public LibraryService Library { get; }
     public HistoryService History { get; }
     public SessionTracker Sessions { get; }
@@ -116,6 +117,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Compat = new CompatService(paths, Metrics, Library);
         Push = new WebPushService(paths, platform.Secrets, id => Devices.Get(id) != null);
         Mods = new ModService(paths, Library, Transfer, id => Sessions.Running().Any(r => r.itemId == id), Rpc);
+        Vault = new SaveVaultService(paths, Library, id => Sessions.Running().Any(r => r.itemId == id), Rpc);
         Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);
         Rgb = new RgbService(paths);
         Input = new InputRemapService(paths, platform.InputHook, Rpc);
@@ -248,6 +250,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Sessions.Stopped += (item, at) =>
         {
             History.SessionEnded(item.Id, at);
+            GameActivity.RunWhenIdle("vault:" + item.Id, () => { Vault.AfterPlay(item.Id); return Task.CompletedTask; });
             if (Perf.GameStopped(item.Id) is { } perf) History.AttachPerf(item.Id, perf);
             var p = Profiles.Get();
             var profileId = ProfileFor(item, p);

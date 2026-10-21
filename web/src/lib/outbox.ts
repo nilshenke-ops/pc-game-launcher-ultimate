@@ -58,6 +58,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "obs.configure": () => t("OBS-Verbindung speichern"),
   "capture.configure": () => t("Aufnahme-Programm und Tasten speichern"),
   "overlay.saveLayout": () => t("Overlay-Widgets speichern"),
+  "vault.configure": () => t("Regel des Savegame-Tresors ändern"),
   "overlay.savePreset": (p) => t("HUD-Layout speichern {n}", { n: name(p) }),
   "overlay.removePreset": () => t("HUD-Layout löschen"),
   "overlay.applyPreset": () => t("HUD-Layout anwenden"),
@@ -177,6 +178,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "capture.status": offlineCaptureStatus(),
   "overlay.layout": {},
   "overlay.presets": { presets: [] },
+  "vault.list": { locations: [] },
   "widgets.list": { widgets: [] },
   "deck.list": { decks: [] },
   "calendar.list": { events: [] },
@@ -297,6 +299,9 @@ function applyLocally(method: string, p: Params): unknown {
         ...(typeof p.compareMicrosoft === "boolean" ? { compareMicrosoft: p.compareMicrosoft } : {}), ...(typeof p.syncSteamWishlist === "boolean" ? { syncSteamWishlist: p.syncSteamWishlist } : {}) }));
       return readCache("deals.list")?.data;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
+    case "vault.configure":
+      patch<{ locations: (WithId & Params)[] }>("vault.list", (d) => ({ ...d, locations: d.locations.map((l) => (l.id === p.id ? { ...l, ...(p.auto ? { auto: p.auto } : {}), ...(typeof p.keep === "number" ? { keep: p.keep } : {}) } : l)) }));
+      return p;
     case "overlay.savePreset": patch<{ presets: WithId[] }>("overlay.presets", (d) => ({ ...d, presets: upsert(d.presets, { id: p.id, name: p.name, layout: p.layout } as unknown as WithId) })); return readCache("overlay.presets")?.data;
     case "overlay.removePreset": patch<{ presets: WithId[] }>("overlay.presets", (d) => ({ ...d, presets: d.presets.filter((x) => x.id !== p.id) })); return true;
     case "overlay.applyPreset": {
