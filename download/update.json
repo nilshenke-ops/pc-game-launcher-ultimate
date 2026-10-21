@@ -1,24 +1,29 @@
 {
-  "version": "2.42.3",
+  "version": "2.43.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.3/PCGameLauncherCompanion.exe",
-  "size": 87906084,
-  "sha256": "28f00a1a2a70c2e10691e5dba150830873b55bd4a918ca72cc13aa1310d6607f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.0/PCGameLauncherCompanion.exe",
+  "size": 87912191,
+  "sha256": "f49846311b666b953d892e606d81b96d17a62925f60f1692f1fa83e4d8f58414",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.42.3-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.3/PCGameLauncherCompanion-2.42.3-win-x64.zip",
-    "size": 82167662,
-    "sha256": "494b305b0019abf9560699471281967b7b56f16735add15b3141272456b89ee4"
+    "fileName": "PCGameLauncherCompanion-2.43.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.0/PCGameLauncherCompanion-2.43.0-win-x64.zip",
+    "size": 82173138,
+    "sha256": "bcb5d15d037205fea58e1c08f950a008573149953f1d50ada204a2ef24a96847"
   },
-  "notes": "",
+  "notes": "Installierte Spiele kommen automatisch in die Bibliothek – ohne Einrichtung: Steam, Epic Games, EA app und neu die Xbox-App. Abgleich wenige Sekunden nach dem Start des Begleiters und danach alle 10 Minuten; selbst entfernte Spiele kommen nicht wieder, deinstallierte verschwinden · Xbox-Spiele werden erkannt: Ordner „XboxGames“ auf allen Laufwerken (auch eigene Ordner aus der Xbox-App), Name aus der Spiel-Konfiguration, Start direkt über Windows; neuer Bereich „Xbox“ in der Bibliothek · „Jetzt abgleichen“ bei leerer Bibliothek: gleicht Steam, Epic, EA und Xbox sofort ab",
   "changes": {
-    "neu": [],
-    "verbessert": [],
-    "behoben": [
-      "Deck und Kalender: Bei leerer Spiele-Bibliothek stand „Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war“, auch wenn der PC verbunden ist. Jetzt: „Noch keine Spiele in der Bibliothek“ mit Hinweis und Link zu „Spiele“ → „Hinzufügen“ (Steam/Epic werden gefunden, alles andere als Datei freigeben); der alte Text nur noch, wenn wirklich noch nie ein PC verbunden war"
-    ]
+    "neu": [
+      "Installierte Spiele kommen automatisch in die Bibliothek – ohne Einrichtung: Steam, Epic Games, EA app und neu die Xbox-App. Abgleich wenige Sekunden nach dem Start des Begleiters und danach alle 10 Minuten; selbst entfernte Spiele kommen nicht wieder, deinstallierte verschwinden",
+      "Xbox-Spiele werden erkannt: Ordner „XboxGames“ auf allen Laufwerken (auch eigene Ordner aus der Xbox-App), Name aus der Spiel-Konfiguration, Start direkt über Windows; neuer Bereich „Xbox“ in der Bibliothek",
+      "„Jetzt abgleichen“ bei leerer Bibliothek: gleicht Steam, Epic, EA und Xbox sofort ab"
+    ],
+    "verbessert": [
+      "Die Verknüpfungen mit Steam, Epic, EA und Xbox sind einmalig automatisch eingeschaltet (einzeln abschaltbar, bleiben dann aus)",
+      "Game-Pass-Abgleich entfernt keine Spiele mehr, die über die Xbox-Verknüpfung gekommen sind"
+    ],
+    "behoben": []
   },
-  "signature": "Ra0Y5mZCkc//Ky3a4okExtpeEZQ6ZZIVlR91LJPLmBR7IFVaFaUbEl5EIs6/v5p3mwkzZvgFyLza0YykKsDpoA=="
+  "signature": "lDyU6BAHx5qUs2/sq+APjJ0wzwbs5K6l2Ua9P4s1Kngt43n6w+B5McUcxtV79HzTvLvaUcVxjGa0GOmJCVo89w=="
 }
