@@ -14,7 +14,7 @@ public sealed class GenericPlatform : IPlatform
     public string Name => OperatingSystem.IsWindows() ? "Windows (ohne Desktop-Funktionen)" : Environment.OSVersion.Platform.ToString();
     public ILauncher Launcher { get; } = new GenericLauncher();
     public IProcessSource Processes { get; } = new GenericProcessSource();
-    public IAudioEngine Audio { get; } = new NullAudioEngine("Audiowiedergabe ist nur im Windows-Companion verfügbar.");
+    public IAudioEngine Audio { get; init; } = new NullAudioEngine("Audiowiedergabe ist nur im Windows-Companion verfügbar.");
     public IHotkeyRegistrar Hotkeys { get; } = new NullHotkeys();
     public IMetricsSource Metrics { get; } = new GenericMetrics();
     public IAutostart Autostart { get; } = new NullAutostart();

@@ -28,7 +28,8 @@ export interface ConnStatus {
   offlineShell?: boolean;
   /** Hosted build without a saved PC address: show "PC verbinden" instead of connecting anywhere. */
   needsServer?: boolean;
-  auth: "none" | "checking" | "ok" | "failed" | "revoked";
+  /** "paused": the PC is in privacy mode and keeps other devices out for now – still paired, retried every 10 s. */
+  auth: "none" | "checking" | "ok" | "failed" | "revoked" | "paused";
   /** This page has been logged in to a real PC at least once (no example data after that). */
   everAuthed?: boolean;
   authError?: string;
@@ -328,7 +329,11 @@ class Client {
       return;
     }
     if (msg.ev) {
-      if (msg.ev === "auth.revoked") {
+      if (msg.ev === "auth.paused") {
+        this.set({ auth: "paused", me: undefined, authError: (msg.d as { reason?: string })?.reason });
+        this.retryPaused();
+      }
+            if (msg.ev === "auth.revoked") {
         writeJson(CRED_KEY, null);
         clearCaches();
         this.set({ auth: "revoked", me: undefined, everAuthed: false, authError: (msg.d as { reason?: string })?.reason });
@@ -404,12 +409,23 @@ class Client {
       this.emit("authenticated", me);
     } catch (e) {
       const err = e as RpcError;
+      if (err.code === "paused") { this.set({ auth: "paused", authError: err.message, me: undefined }); this.retryPaused(); return; }
       if (err.code === "auth-failed") {
         if (admin) writeJson(ADMIN_KEY, null, "session");
         else writeJson(CRED_KEY, null);
       }
       this.set({ auth: err.code === "auth-failed" ? "failed" : "none", authError: err.message, me: undefined });
     }
+  }
+
+  private pausedTimer: number | null = null;
+  /** Privacy mode on the PC: try to sign in again every 10 s while the connection is open (nothing is sent otherwise). */
+  private retryPaused() {
+    if (this.pausedTimer != null || typeof window === "undefined") return;
+    this.pausedTimer = window.setTimeout(() => {
+      this.pausedTimer = null;
+      if (this.status.auth === "paused" && this.status.phase === "online") void this.authenticate();
+    }, 10_000);
   }
 
   /** Connects to another remembered PC (its own address and device key). */

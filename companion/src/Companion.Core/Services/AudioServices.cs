@@ -113,11 +113,15 @@ public sealed class AudioService
         _hub.Changed("audio");
     }
 
+    /// <summary>While true (privacy mode) the mic passthrough stays off, even after settings or device changes.</summary>
+    public Func<bool> MicSuppressed { get; set; } = () => false;
+    public bool MicPassthroughActive => _engine.MicPassthroughActive;
+
     public string? ApplyMic()
     {
         var s = Settings();
-        var err = _engine.SetMicPassthrough(s.MicPassthrough, s.MicDeviceId, s.OutputDeviceId, s.MicVolume / 100f);
-        if (err == null && s.MicPassthrough && _engine.Supported)
+        var err = _engine.SetMicPassthrough(s.MicPassthrough && !MicSuppressed(), s.MicDeviceId, s.OutputDeviceId, s.MicVolume / 100f);
+        if (err == null && s.MicPassthrough && !MicSuppressed() && _engine.Supported)
             _levelTimer ??= new Timer(_ =>
             {
                 // Only sent to devices that have the Audio Center open (audio.subscribe) – nothing goes out otherwise.

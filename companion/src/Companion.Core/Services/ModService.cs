@@ -108,11 +108,23 @@ public sealed class ModService
     public object List(string itemId)
     {
         var (item, dir) = Dir(itemId);
+        var mods = ReadMods(dir);
+        return new { itemId, game = item.Name, modsPath = _store.Get(f => f.Games.First(g => g.ItemId == itemId).ModsPath), exists = Directory.Exists(dir), running = _isRunning(itemId), mods, backups = Backups(itemId) };
+    }
+
+    List<ModEntry> ReadMods(string dir)
+    {
         IEnumerable<ModEntry> Read(string d, bool enabled) => !Directory.Exists(d) ? Enumerable.Empty<ModEntry>()
             : new DirectoryInfo(d).EnumerateFileSystemInfos().Where(e => !e.Attributes.HasFlag(FileAttributes.ReparsePoint)).Take(500)
                 .Select(e => new ModEntry(e.Name, e is DirectoryInfo, SizeOf(e), e.LastWriteTimeUtc, enabled));
-        var mods = Read(dir, true).Concat(Read(Disabled(dir), false)).OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
-        return new { itemId, game = item.Name, modsPath = _store.Get(f => f.Games.First(g => g.ItemId == itemId).ModsPath), exists = Directory.Exists(dir), running = _isRunning(itemId), mods, backups = Backups(itemId) };
+        return Read(dir, true).Concat(Read(Disabled(dir), false)).OrderBy(m => m.Name, StringComparer.OrdinalIgnoreCase).ToList();
+    }
+
+    /// <summary>The mods of a game (name and on/off), or null when no mods folder is set up for it.</summary>
+    public List<ModEntry>? Entries(string itemId)
+    {
+        if (!_store.Get(f => f.Games.Any(g => g.ItemId == itemId))) return null;
+        try { return ReadMods(Dir(itemId).dir); } catch { return null; }
     }
 
     static string SafeEntry(string name)

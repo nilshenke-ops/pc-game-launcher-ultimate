@@ -118,6 +118,31 @@ public sealed class NAudioEngine : IAudioEngine
 
     static MMDeviceEnumerator Enumerator() => new();
 
+    public bool MicMuteSupported => true;
+
+    public IReadOnlyList<string> MuteDefaultMics()
+    {
+        var muted = new List<string>();
+        using var en = Enumerator();
+        foreach (var role in new[] { Role.Multimedia, Role.Communications })
+        {
+            if (!en.HasDefaultAudioEndpoint(DataFlow.Capture, role)) continue;
+            using var d = en.GetDefaultAudioEndpoint(DataFlow.Capture, role);
+            if (muted.Contains(d.ID) || d.AudioEndpointVolume.Mute) continue;
+            d.AudioEndpointVolume.Mute = true;
+            muted.Add(d.ID);
+        }
+        return muted;
+    }
+
+    public void UnmuteMics(IEnumerable<string> ids)
+    {
+        using var en = Enumerator();
+        foreach (var id in ids)
+            try { using var d = en.GetDevice(id); d.AudioEndpointVolume.Mute = false; }
+            catch (Exception ex) { Log.Warn("audio", $"Mikrofon {id} nicht wieder eingeschaltet: {ex.Message}"); }
+    }
+
     public IReadOnlyList<AudioDevice> Devices()
     {
         var list = new List<AudioDevice>();

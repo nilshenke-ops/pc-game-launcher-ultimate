@@ -1294,3 +1294,8 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 .inv-list li { line-height: 1.35; word-break: break-word; }
 .table tr.diff-row td { background: rgba(251, 191, 36, 0.1); font-weight: 600; }
 .table tbody th { text-transform: none; letter-spacing: 0; font-size: 0.8rem; }
+
+/* Privacy mode: covered content (tap shows it for a moment) */
+.privacy-on :is(.dash > *, .list-item.ntf, .as-bubble, .cap-tile, .cap-view, .sensitive):not(.revealed) { filter: blur(11px) saturate(0.4); cursor: pointer; user-select: none; }
+.privacy-on :is(.dash > *, .list-item.ntf, .as-bubble, .cap-tile, .cap-view, .sensitive):not(.revealed) * { pointer-events: none; }
+.privacy-btn.on { color: var(--success); background: rgba(52, 211, 153, 0.12); }

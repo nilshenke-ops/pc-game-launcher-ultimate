@@ -105,6 +105,16 @@ Seite: /crashes
 Stichworte: absturz abstürze crash crashes fehler fehlerbericht absturzbericht spiel stürzt ab hängt reagiert nicht ausnahmecode modul treiber exportieren vergleichen
 System → Fehlerberichte. Nach einem Spiel prüft der PC, ob Windows einen Absturzbericht (Windows-Fehlerberichterstattung) für das Programm des Spiels geschrieben hat, oder ob das Spiel weniger als 2 Minuten lief – dann legt er einen Bericht an und schickt eine Benachrichtigung. Inhalt: Windows-Bericht (Fehlerbaustein, Ausnahmecode, Version), Spielversion, letzter Start, Gaming-Profil, System (Prozessor, Grafiktreiber), Änderungen kurz davor (Mods, Tresor, Profilwechsel). „Mögliche Ursachen“ sind immer Vermutungen mit Begründung. „Bericht erstellen“ macht einen Bericht zur letzten Sitzung eines Spiels; zwei Berichte ankreuzen → „Vergleichen“; „Als Text exportieren“ wahlweise ohne Benutzername, PC-Name und E-Mail. Nichts wird hochgeladen.
 
+## Spielzustand (Momentaufnahmen)
+Seite: /gamestate
+Stichworte: momentaufnahme snapshot spielzustand wiederherstellen zurückholen rückgängig vorher einstellungen konfiguration startargumente mods version vergleichen
+Spiele → Spielzustand. „Momentaufnahme“ → Spiel wählen: der PC speichert Spielversion (Steam-Build), Startargumente, Arbeitsordner, verknüpftes Gaming-Profil, eine Kopie der Konfigurationsdateien, die im Savegame-Tresor für das Spiel eingetragen sind, Mods an/aus, Plugin-Versionen und Systemdaten. Automatisch vor Mod-Installationen, Mod-Wiederherstellungen und dem Zurückholen von Konfigurationsdateien (höchstens alle 10 Minuten). „Mit jetzt vergleichen“ oder zwei ankreuzen → „Vergleichen“. „Zurückholen …“ zeigt vorher, was sich ändert und was nicht enthalten ist (Spieldateien, Spielstände, gelöschte Mods, Windows); der jetzige Zustand wird vorher als eigene Momentaufnahme gespeichert, solange das Spiel läuft passiert nichts. Das Ergebnis jedes Schritts wird angezeigt und gespeichert. 20 je Spiel werden behalten.
+
+## Datenschutz- und Notfalltaste
+Seite: /
+Stichworte: datenschutz notfall notfalltaste privat privacy verstecken verdecken mikrofon stumm mute sounds stoppen geräte trennen pausieren benachrichtigungen leise streamer
+Schild oben in der Leiste (oder Deck-Taste „Datenschutzmodus an/aus“). „Schritte einstellen“: Soundboard stoppen, Mikrofon-Durchleitung ins virtuelle Kabel aus, Windows-Standard-Mikrofon stummschalten (nur Windows-Begleiter), Benachrichtigungen leise (keine Windows-Hinweise/Push, wahlweise nur bestimmte Kategorien), andere Geräte pausieren (abgemeldet bis zum Ausschalten, Kopplung bleibt), Inhalte verdecken (Benachrichtigungen, Dashboard-Widgets, Chats, Dateien, Aufnahmen; Antippen zeigt kurz). „Jetzt einschalten“ zeigt für jeden Schritt „Wirkt“, „Erledigt“, „Nicht möglich“ oder „Fehlgeschlagen“. „Ausschalten“ stellt nur zurück, was die Taste geändert hat. Discord, Spiele und andere Programme werden nicht stummgeschaltet. Ohne PC lassen sich nur die Inhalte auf dem eigenen Gerät verdecken; nichts wird für später vorgemerkt.
+
 ## Savegame-Tresor und Konfigurations-Versionen
 Seite: /vault
 Stichworte: savegame spielstand spielstände sichern sicherung backup wiederherstellen zurückholen tresor konfiguration config ini cfg json vergleichen version verlauf steam cloud prüfen integrität

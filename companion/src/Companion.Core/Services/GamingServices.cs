@@ -292,6 +292,8 @@ public sealed class NotificationCenter
     public Func<bool> IsGaming { get; set; } = () => false;
     public Func<bool> ProfileQuiet { get; set; } = () => false;
     public Action<Notification>? OnDesktop { get; set; }
+    /// <summary>Privacy mode: categories that get no Windows pop-up and no push message (still stored and listed).</summary>
+    public Func<string, bool> Suppressed { get; set; } = _ => false;
     /// <summary>A new notification (not a merged repeat) – e.g. for push messages to phones.</summary>
     public event Action<Notification>? Created;
 
@@ -350,10 +352,11 @@ public sealed class NotificationCenter
             }
         }
         Save();
-        if (created) try { Created?.Invoke(n); } catch (Exception ex) { Log.Warn("notify", ex.Message); }
+        var hidden = Suppressed(n.Category);
+        if (created && !hidden) try { Created?.Invoke(n); } catch (Exception ex) { Log.Warn("notify", ex.Message); }
         _hub.Broadcast("notification", n);
         // Windows pop-ups: warnings and errors – but while gaming (quiet mode) only errors, so a game is not interrupted.
-        if (severity >= Severity.Error || (severity >= Severity.Warning && !quiet)) OnDesktop?.Invoke(n);
+        if (!hidden && (severity >= Severity.Error || (severity >= Severity.Warning && !quiet))) OnDesktop?.Invoke(n);
         return n;
     }
 

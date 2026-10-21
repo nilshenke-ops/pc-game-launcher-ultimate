@@ -4,7 +4,7 @@ import { t } from "./i18n";
 import { brandBg, brandFor } from "./brands";
 import type { LibraryItem, Profile, QuickAction, Sound } from "./types";
 
-export type DeckActionType = "launch" | "quick" | "sound" | "stopSounds" | "profile" | "revertProfile" | "media" | "power" | "overlay" | "record" | "replay" | "folder" | "back" | "open" | "none";
+export type DeckActionType = "launch" | "quick" | "sound" | "stopSounds" | "profile" | "revertProfile" | "media" | "power" | "privacy" | "overlay" | "record" | "replay" | "folder" | "back" | "open" | "none";
 export interface DeckAction { type: DeckActionType; ref?: string | null }
 export interface DeckKey { id: string; slot: number; label?: string | null; icon?: string | null; color?: string | null; textColor?: string | null; action: DeckAction }
 export interface DeckPage { id: string; name: string; keys: DeckKey[] }
@@ -26,6 +26,7 @@ export const ACTION_TYPES: { type: DeckActionType; label: () => string }[] = [
   { type: "revertProfile", label: () => t("Zum vorherigen Profil") },
   { type: "media", label: () => t("Medien & Lautstärke") },
   { type: "power", label: () => t("PC sperren / ausschalten") },
+  { type: "privacy", label: () => t("Datenschutzmodus an/aus") },
   { type: "overlay", label: () => t("Overlay ein/aus") },
   { type: "record", label: () => t("Aufnahme starten/stoppen") },
   { type: "replay", label: () => t("Replay speichern") },

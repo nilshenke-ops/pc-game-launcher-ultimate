@@ -311,6 +311,9 @@ public sealed partial class PluginService : IDisposable
 
     // ------------------------------------------------------------ queries
 
+    /// <summary>Installed plugins with version and state (for game state snapshots).</summary>
+    public List<(string Id, string Version, bool Enabled)> Versions() => _store.Snapshot().Plugins.Select(p => (p.Id, p.Version, p.Enabled)).ToList();
+
     public object List()
     {
         var f = _store.Snapshot();

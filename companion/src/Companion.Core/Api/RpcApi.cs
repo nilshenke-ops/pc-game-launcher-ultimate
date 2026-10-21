@@ -257,9 +257,9 @@ public static class RpcApi
         rpc.Register("mods.configure", ctx => { s.Mods.Configure(ctx.Str("itemId", 64), ctx.Str("modsPath", 200)); return true; });
         rpc.Register("mods.toggle", ctx => { s.Mods.Toggle(ctx.Str("itemId", 64), ctx.Str("name", 200), ctx.Params.GetProperty("enabled").GetBoolean()); return true; });
         rpc.Register("mods.preview", ctx => s.Mods.Preview(ctx.Str("itemId", 64), ctx.Str("zip", 260)));
-        rpc.Register("mods.install", ctx => s.Mods.Install(ctx.Str("itemId", 64), ctx.Str("zip", 260), ctx.Params.TryGetProperty("overwrite", out var ow) && ow.ValueKind == JsonValueKind.True));
+        rpc.Register("mods.install", ctx => { s.GameState.Before(ctx.Str("itemId", 64), "Vor Mod-Installation"); return s.Mods.Install(ctx.Str("itemId", 64), ctx.Str("zip", 260), ctx.Params.TryGetProperty("overwrite", out var ow) && ow.ValueKind == JsonValueKind.True); });
         rpc.Register("mods.remove", ctx => s.Mods.Remove(ctx.Str("itemId", 64), ctx.Str("name", 200)));
-        rpc.Register("mods.restore", ctx => s.Mods.Restore(ctx.Str("itemId", 64), ctx.Str("backup", 40)));
+        rpc.Register("mods.restore", ctx => { s.GameState.Before(ctx.Str("itemId", 64), "Vor Mod-Wiederherstellung"); return s.Mods.Restore(ctx.Str("itemId", 64), ctx.Str("backup", 40)); });
         // ------------------------------------------------------------ window layouts, controllers, RGB (OpenRGB)
         rpc.Register("layouts.list", _ => s.Layouts.List());
         rpc.Register("layouts.current", _ => s.Layouts.Current());
@@ -568,6 +568,16 @@ public static class RpcApi
 
         // ------------------------------------------------------------ savegame vault and configuration versions
         rpc.Register("vault.list", _ => s.Vault.Overview());
+        rpc.Register("privacy.status", _ => s.Privacy.Status());
+        rpc.Register("privacy.on", ctx => s.Privacy.On(ctx.Session.Who, ctx.Session.Device?.Id));
+        rpc.Register("privacy.off", ctx => s.Privacy.Off(ctx.Session.Who));
+        rpc.Register("privacy.configure", ctx => s.Privacy.Configure(ctx.Bind<PrivacyConfig>()));
+        rpc.Register("gamestate.list", ctx => new { snapshots = s.GameState.List(ctx.OptStr("itemId", 64)) });
+        rpc.Register("gamestate.create", async ctx => { var id = ctx.Str("itemId", 64); var note = ctx.OptStr("note", 80); return (object?)await Task.Run(() => s.GameState.Create(id, note ?? "Von Hand", ctx.Session.Who)); });
+        rpc.Register("gamestate.diff", ctx => s.GameState.Diff(ctx.Str("a", 40), ctx.Str("b", 40)));
+        rpc.Register("gamestate.preview", ctx => s.GameState.Preview(ctx.Str("id", 40)));
+        rpc.Register("gamestate.restore", async ctx => { var id = ctx.Str("id", 40); return (object?)await Task.Run(() => s.GameState.Restore(id, ctx.Session.Who)); });
+        rpc.Register("gamestate.remove", ctx => s.GameState.Remove(ctx.Str("id", 40)));
         rpc.Register("vault.suggest", ctx => new { suggestions = s.Vault.Suggest(ctx.Str("itemId", 64)) });
         rpc.Register("vault.add", ctx => s.Vault.Add(ctx.OptStr("itemId", 64), ctx.Str("kind", 10), ctx.Str("path", 400), ctx.OptStr("name", 60), ctx.Session.IsLocalAdmin));
         rpc.Register("vault.configure", ctx => s.Vault.Configure(ctx.Str("id", 48), ctx.OptStr("name", 60), ctx.OptStr("auto", 12),
@@ -578,7 +588,9 @@ public static class RpcApi
         rpc.Register("vault.deleteBackup", ctx => s.Vault.DeleteBackup(ctx.Str("id", 48), ctx.Str("backup", 40)));
         rpc.Register("vault.verify", async ctx => { var id = ctx.Str("id", 48); var b = ctx.Str("backup", 40); return (object?)await Task.Run(() => s.Vault.Verify(id, b)); });
         rpc.Register("vault.preview", async ctx => { var id = ctx.Str("id", 48); var b = ctx.Str("backup", 40); return await Task.Run(() => s.Vault.Preview(id, b)); });
-        rpc.Register("vault.restore", async ctx => { var id = ctx.Str("id", 48); var b = ctx.Str("backup", 40); return await Task.Run(() => s.Vault.Restore(id, b)); });
+        rpc.Register("vault.restore", async ctx => { var id = ctx.Str("id", 48); var b = ctx.Str("backup", 40);
+            if (s.Vault.Locations().FirstOrDefault(l => l.Id == id) is { ItemId: { } gid, Kind: "config" }) s.GameState.Before(gid, "Vor Tresor-Wiederherstellung");
+            return await Task.Run(() => s.Vault.Restore(id, b)); });
         rpc.Register("vault.diff", ctx => s.Vault.Diff(ctx.Str("id", 48), ctx.Str("a", 40), ctx.Str("b", 40)));
 
         rpc.Register("power.status", ctx => s.Power.Status(ctx.Session));

@@ -266,6 +266,12 @@ public interface IAudioEngine
     Task<MicTestResult> MicTestAsync(string? deviceId, TimeSpan duration, Action<float> onLevel);
     /// <summary>Raised when an audio device is plugged in/removed, enabled/disabled or the Windows default changes.</summary>
     event Action? DevicesChanged;
+    /// <summary>Can the Windows default microphones be muted (endpoint mute, like the speaker icon in Windows)?</summary>
+    bool MicMuteSupported => false;
+    /// <summary>Mutes the default microphones (multimedia and communication) that were not muted yet; returns their ids.</summary>
+    IReadOnlyList<string> MuteDefaultMics() => throw new NotSupportedException("Nur im Windows-Begleiter.");
+    /// <summary>Unmutes exactly these microphones (the ones muted before) – others stay as they are.</summary>
+    void UnmuteMics(IEnumerable<string> ids) { }
 }
 
 public sealed record MicTestResult(string? Device, float Peak, float Average, string? Error);

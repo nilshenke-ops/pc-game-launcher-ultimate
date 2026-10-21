@@ -221,7 +221,7 @@ public sealed class CrashReportService
             LastLaunch = launch == null ? null : launch.Ok ? $"Gestartet {launch.At:u} (von {launch.By ?? "?"})" : $"Start fehlgeschlagen {launch.At:u}: {launch.Error}",
             Profile = prof.Profiles.FirstOrDefault(p => p.Id == prof.ActiveProfileId)?.Name,
             Changes = _recentChanges(item.Id).Take(10).ToList(),
-            System = SystemInfo(),
+            System = SystemInfo(_platform),
         };
         r.Hints = Hints(r, List().Count(x => x.ItemId == item.Id && x.At > DateTime.UtcNow.AddDays(-7) && x.Trigger != "manual"));
         _store.Update(f => { f.Reports.Insert(0, r); if (f.Reports.Count > 100) f.Reports.RemoveRange(100, f.Reports.Count - 100); });
@@ -229,18 +229,19 @@ public sealed class CrashReportService
         return r;
     }
 
-    Dictionary<string, string> SystemInfo()
+    /// <summary>Operating system, companion, processor, memory and graphics with driver – only what can be read.</summary>
+    public static Dictionary<string, string> SystemInfo(IPlatform platform)
     {
         var d = new Dictionary<string, string> { ["Betriebssystem"] = System.Runtime.InteropServices.RuntimeInformation.OSDescription, ["Begleiter"] = UpdateService.CurrentVersion };
         try
         {
-            var m = _platform.Metrics.Sample();
+            var m = platform.Metrics.Sample();
             if (m.CpuName != null) d["Prozessor"] = m.CpuName;
             if (m.MemTotalBytes is { } t) d["Arbeitsspeicher"] = $"{t / 1024.0 / 1024 / 1024:0.#} GB";
             if (m.MemTotalBytes is { } tt && m.MemUsedBytes is { } u) d["Speicher belegt (jetzt)"] = $"{u * 100 / tt} %";
         }
         catch { /* not available */ }
-        foreach (var (g, i) in _platform.Hardware.Gpus().Select((g, i) => (g, i)))
+        foreach (var (g, i) in platform.Hardware.Gpus().Select((g, i) => (g, i)))
             d[i == 0 ? "Grafikkarte" : $"Grafikkarte {i + 1}"] = g.Name + (g.Version != null ? $" (Treiber {g.Version}{(g.Date != null ? ", " + g.Date : "")})" : "");
         return d;
     }

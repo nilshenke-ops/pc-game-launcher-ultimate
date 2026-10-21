@@ -23,6 +23,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public SaveVaultService Vault { get; }
     public InventoryService Inventory { get; }
     public CrashReportService Crashes { get; }
+    public PrivacyService Privacy { get; }
+    public GameStateService GameState { get; }
     public LibraryService Library { get; }
     public HistoryService History { get; }
     public SessionTracker Sessions { get; }
@@ -122,6 +124,13 @@ public sealed class CompanionServices : IAsyncDisposable
         Vault = new SaveVaultService(paths, Library, id => Sessions.Running().Any(r => r.itemId == id), Rpc);
         Inventory = new InventoryService(platform, Audio);
         Crashes = new CrashReportService(paths, platform, Library, () => History.Export(), () => Profiles.Get(), RecentChanges, Rpc);
+        Privacy = new PrivacyService(paths, platform.Audio, Audio, () => Soundboard.StopAll(), Rpc)
+        {
+            PauseOthers = keep => Rpc.PauseDevices(d => d.Id != keep, "Der PC ist im Datenschutzmodus – dieses Gerät ist bis zum Ausschalten pausiert. Die Kopplung bleibt bestehen."),
+        };
+        Rpc.LoginBlocked = Privacy.Blocks;
+        Notifications.Suppressed = Privacy.Quiet;
+        GameState = new GameStateService(paths, platform, Library, Vault, Mods, () => Profiles.Get(), () => Plugins.Versions(), id => Sessions.Running().Any(r => r.itemId == id), Rpc);
         Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);
         Rgb = new RgbService(paths);
         Input = new InputRemapService(paths, platform.InputHook, Rpc);

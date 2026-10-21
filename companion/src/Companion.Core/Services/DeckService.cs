@@ -58,7 +58,7 @@ public sealed class DecksFile
 /// <summary>Stream-Deck-like key grids for phone and tablet. Stored on the PC so every device shows the same deck.</summary>
 public sealed class DeckService
 {
-    public static readonly HashSet<string> ActionTypes = new() { "launch", "quick", "sound", "stopSounds", "profile", "revertProfile", "media", "power", "overlay", "record", "replay", "folder", "back", "open", "none" };
+    public static readonly HashSet<string> ActionTypes = new() { "launch", "quick", "sound", "stopSounds", "profile", "revertProfile", "media", "power", "privacy", "overlay", "record", "replay", "folder", "back", "open", "none" };
     public static readonly HashSet<string> MediaKeys = new(ActionRunner.MediaKeys.Keys);
     public const int MaxDecks = 20, MaxPages = 30, MaxKeys = 64, MaxImageChars = 60_000;
     static readonly Regex Id = new(@"^[A-Za-z0-9_-]{1,64}$");

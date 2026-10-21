@@ -16,6 +16,7 @@ export async function runDeckAction(a: DeckAction, label: string) {
       return;
     }
     // Asks first (restart/shutdown with 60 s to cancel); locking right away.
+    if (a.type === "privacy") { const { privacyFromDeck } = await import("../components/privacy"); await privacyFromDeck(); return; }
     if (a.type === "power") { const { powerFromDeck } = await import("../components/power-panel"); await powerFromDeck(a.ref as "lock" | "sleep" | "restart" | "shutdown"); return; }
     const c = commandFor(a);
     if (!c) return;

@@ -203,6 +203,7 @@ public sealed class RpcServer : IHub
             Log.Warn("auth", $"Fehlgeschlagene Anmeldung von {s.Channel.RemoteIp}.");
             throw new RpcException("auth-failed", "Dieses Gerät ist nicht (mehr) gekoppelt. Bitte neu koppeln.");
         }
+        if (LoginBlocked?.Invoke(device.Id) is { } why) throw new RpcException("paused", why);
         s.Device = device;
         s.Permissions = new HashSet<string>(device.Permissions);
         Devices.Touch(device.Id, s.Channel.RemoteIp);
@@ -219,6 +220,23 @@ public sealed class RpcServer : IHub
     }
 
     public void OnClosed(IClientChannel channel) => _sessions.TryRemove(channel.Id, out _);
+
+    /// <summary>Reason why a paired device may not sign in right now (privacy mode), or null.</summary>
+    public Func<string, string?>? LoginBlocked { get; set; }
+
+    /// <summary>Signs paired devices out without removing them (they stay paired and may sign in again later).
+    /// The PC's own window is never paused. Returns how many devices were paused.</summary>
+    public int PauseDevices(Func<PairedDevice, bool> which, string reason)
+    {
+        var ids = new HashSet<string>();
+        foreach (var s in _sessions.Values.Where(s => !s.IsLocalAdmin && s.Device != null && which(s.Device)).ToList())
+        {
+            SendTo(s, "auth.paused", new { reason });
+            ids.Add(s.Device.Id);
+            s.Device = null; s.Permissions.Clear(); s.Subscriptions.Clear();
+        }
+        return ids.Count;
+    }
 
     public RpcSession? Session(string channelId) => _sessions.TryGetValue(channelId, out var s) ? s : null;
     public IEnumerable<RpcSession> Sessions => _sessions.Values;

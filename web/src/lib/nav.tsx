@@ -1,4 +1,4 @@
-import { Activity, Archive, Bug, Cpu, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sofa, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
+import { Activity, Archive, ArchiveRestore, Bug, Cpu, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sofa, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
 export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
@@ -17,6 +17,7 @@ export function navItems(): NavItem[] {
     { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
     { path: "/mods", label: t("Mods"), icon: Package, group: g.dash, keywords: "mod mods modding bepinex nexus mods aktivieren deaktivieren zip installieren sicherung" },
     { path: "/vault", label: t("Savegame-Tresor"), short: t("Tresor"), icon: Archive, group: g.dash, keywords: "savegame spielstand spielstände sichern sicherung backup wiederherstellen tresor konfiguration config ini vergleichen version steam cloud" },
+    { path: "/gamestate", label: t("Spielzustand"), icon: ArchiveRestore, group: g.dash, keywords: "momentaufnahme snapshot spielzustand zustand wiederherstellen zurück vorher einstellungen konfiguration startargumente mods version vergleichen rückgängig" },
     { path: "/calendar", label: t("Kalender"), icon: CalendarDays, group: g.dash, keywords: "termine raid turnier lan party release erinnerung datum woche monat ics" },
     { path: "/backlog", label: t("Backlog"), icon: ListTodo, group: g.dash, keywords: "noch spielen als nächstes durchgespielt pausiert priorität zufall spielplanung liste" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
@@ -74,7 +75,7 @@ export const ICONS: Record<string, LucideIcon> = {
 const NAV_COLORS: Record<string, string> = {
   "/": "#38bdf8", "/deck": "#a78bfa", "/games": "#34d399", "/programs": "#60a5fa", "/backlog": "#f59e0b", "/calendar": "#f472b6", "/quick": "#facc15", "/assistant": "#f472b6",
   "/widgets": "#c084fc", "/profiles": "#fb7185", "/automations": "#2dd4bf", "/hotkeys": "#94a3b8", "/soundboard": "#22d3ee", "/audio": "#818cf8",
-  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/vault": "#fbbf24", "/inventory": "#60a5fa", "/crashes": "#f87171", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
+  "/monitor": "#4ade80", "/storage": "#94a3b8", "/mods": "#a3e635", "/vault": "#fbbf24", "/inventory": "#60a5fa", "/crashes": "#f87171", "/gamestate": "#a78bfa", "/layouts": "#22d3ee", "/peripherals": "#e879f9", "/input": "#f472b6", "/captures": "#fb7185", "/files": "#2dd4bf", "/network": "#38bdf8", "/history": "#fbbf24", "/trophies": "#facc15", "/start-times": "#facc15", "/overlay-settings": "#f97316", "/connect": "#60a5fa", "/devices": "#a3e635",
   "/pair": "#5eead4", "/plugins": "#e879f9", "/quests": "#fcd34d", "/deals": "#f87171", "/notifications": "#fb923c", "/settings": "#cbd5e1",
   "/diagnostics": "#2dd4bf", "/updates": "#4ade80", "/help": "#93c5fd",
 };

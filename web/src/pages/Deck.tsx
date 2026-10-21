@@ -268,7 +268,7 @@ function KeyEditor({ value, isNew, deck, page, items, quick, sounds, profiles, o
   };
   const submit = () => {
     if (["launch", "quick", "sound", "profile", "folder"].includes(k.action.type) && !k.action.ref) { toast(t("Bitte ein Ziel wählen."), "error"); return; }
-    const label = k.label?.trim() || targetName(k.action) || (k.action.type === "media" ? MEDIA_KEYS.find((m) => m[0] === k.action.ref)?.[1] : k.action.type === "power" ? t(POWER_KEYS.find((m) => m[0] === k.action.ref)?.[1] ?? "") : undefined) || "";
+    const label = k.label?.trim() || targetName(k.action) || (k.action.type === "media" ? MEDIA_KEYS.find((m) => m[0] === k.action.ref)?.[1] : k.action.type === "power" ? t(POWER_KEYS.find((m) => m[0] === k.action.ref)?.[1] ?? "") : k.action.type === "privacy" ? t("Datenschutz") : undefined) || "";
     const key = { ...k, label: label.slice(0, 24) };
     if (pendingDeck) {
       // A new folder page was created here: save deck with the page and the key together.

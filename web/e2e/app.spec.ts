@@ -749,6 +749,33 @@ test("Zugriff über das Relay mit Ende-zu-Ende-Kopplung", async ({ browser }) =>
   await expect(pc.getByText("Online über Relay")).toBeVisible();
 });
 
+test("Datenschutztaste: zeigt ehrlich, was wirkt, pausiert andere Geräte und verdeckt Inhalte", async () => {
+  await pc.goto(`${COMPANION}/#/`);
+  await phone.goto(`${COMPANION}/#/games`);
+  await expect(phone.getByText("E2E Testspiel").first()).toBeVisible();
+  await pc.getByRole("button", { name: "Datenschutz- und Notfalltaste" }).click();
+  const dlg = pc.getByRole("dialog");
+  await dlg.getByRole("button", { name: "Schritte einstellen" }).click();
+  await dlg.getByRole("switch", { name: "Andere Geräte pausieren" }).click();
+  await expect(dlg.getByRole("switch", { name: "Andere Geräte pausieren" })).toBeChecked();
+  await dlg.getByRole("button", { name: "Fertig" }).click();
+  await dlg.getByRole("button", { name: "Jetzt einschalten" }).click();
+  await expect(dlg.getByText("Datenschutzmodus ist an")).toBeVisible();
+  // Without the Windows companion the sound/mic steps say "not possible" – never "done".
+  await expect(dlg.locator(".check-row", { hasText: "Soundboard stoppen" })).toContainText("Nicht möglich");
+  await expect(dlg.locator(".check-row", { hasText: "Andere Geräte pausieren" })).toContainText("Wirkt");
+  await expect(pc.locator("body")).toHaveClass(/privacy-on/);
+  await expect(phone.getByText("Vom PC pausiert (Datenschutzmodus)")).toBeVisible({ timeout: 10000 });
+  await dlg.getByRole("button", { name: "Ausschalten" }).click();
+  await expect(pc.locator("body")).not.toHaveClass(/privacy-on/);
+  await dlg.getByRole("button", { name: "Schließen" }).last().click();
+  await expect(dlg).toBeHidden();
+  // The phone stayed paired and signs in again by itself.
+  await expect(phone.getByText("Vom PC pausiert (Datenschutzmodus)")).toBeHidden({ timeout: 15000 });
+  await phone.reload();
+  await expect(phone.getByText("E2E Testspiel").first()).toBeVisible();
+});
+
 test("Widerrufenes Gerät verliert sofort den Zugriff", async () => {
   await pc.goto(`${COMPANION}/#/devices`);
   const row = pc.locator(".list-item", { hasText: "iPhone · Safari" });

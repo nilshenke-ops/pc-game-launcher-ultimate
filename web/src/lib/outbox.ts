@@ -59,6 +59,7 @@ export const QUEUEABLE: Record<string, (p: Params) => string> = {
   "capture.configure": () => t("Aufnahme-Programm und Tasten speichern"),
   "overlay.saveLayout": () => t("Overlay-Widgets speichern"),
   "vault.configure": () => t("Regel des Savegame-Tresors ändern"),
+  "privacy.configure": () => t("Schritte der Datenschutztaste ändern"),
   "overlay.savePreset": (p) => t("HUD-Layout speichern {n}", { n: name(p) }),
   "overlay.removePreset": () => t("HUD-Layout löschen"),
   "overlay.applyPreset": () => t("HUD-Layout anwenden"),
@@ -179,6 +180,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "overlay.layout": {},
   "overlay.presets": { presets: [] },
   "vault.list": { locations: [] },
+  "privacy.status": { active: false, config: { stopSounds: true, stopMicPassthrough: true, muteMic: false, quietNotifications: true, quietCategories: [], pauseOtherDevices: false, hideSensitive: true }, can: { sounds: false, passthrough: false, micMute: false } },
   "widgets.list": { widgets: [] },
   "deck.list": { decks: [] },
   "calendar.list": { events: [] },
@@ -299,6 +301,9 @@ function applyLocally(method: string, p: Params): unknown {
         ...(typeof p.compareMicrosoft === "boolean" ? { compareMicrosoft: p.compareMicrosoft } : {}), ...(typeof p.syncSteamWishlist === "boolean" ? { syncSteamWishlist: p.syncSteamWishlist } : {}) }));
       return readCache("deals.list")?.data;
     case "overlay.saveLayout": patch<Params>("overlay.layout", () => (p.layout ? { layout: p.layout } : {})); return p.layout ? { layout: p.layout } : {};
+    case "privacy.configure":
+      patch<Params>("privacy.status", (d) => ({ ...d, config: p }));
+      return p;
     case "vault.configure":
       patch<{ locations: (WithId & Params)[] }>("vault.list", (d) => ({ ...d, locations: d.locations.map((l) => (l.id === p.id ? { ...l, ...(p.auto ? { auto: p.auto } : {}), ...(typeof p.keep === "number" ? { keep: p.keep } : {}) } : l)) }));
       return p;

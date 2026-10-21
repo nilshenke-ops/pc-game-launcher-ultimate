@@ -1,3 +1,4 @@
+import { PrivacyButton } from "./privacy";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -176,6 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               ● {state.activeProfile.name}
             </NavLink>
           )}
+          <PrivacyButton />
           <ConnPill />
           <AccountButton />
           <NavLink to="/notifications" className="btn ghost icon" aria-label={t("Benachrichtigungen")} style={{ position: "relative" }}>
@@ -272,14 +274,16 @@ function StatusStrip({ preview, waiting, home, hidePreview, onShowOutbox }: { pr
   const soon = useConnectingSoon();
   const offline = !client.demo && !preview && conn.phase !== "online" && !soon;
   const relayDown = conn.relayCompanion === "offline";
-  const showConn = (preview && !hidePreview && !home) || (offline && !home) || relayDown;
+  const paused = !client.demo && conn.phase === "online" && conn.auth === "paused";
+  const showConn = (preview && !hidePreview && !home) || (offline && !home) || relayDown || paused;
   if (!showConn && waiting.length === 0) return null;
   const error = waiting.some((w) => w.error), confirm = waiting.some((w) => needsConfirm(w));
-  const kind = relayDown || error ? "error" : preview || offline || confirm ? "warn" : "info";
+  const kind = relayDown || error ? "error" : preview || offline || confirm || paused ? "warn" : "info";
   const title = preview ? (conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden"))
-    : relayDown ? t("PC nicht erreichbar") : offline ? (conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")) : null;
+    : paused ? t("Vom PC pausiert (Datenschutzmodus)") : relayDown ? t("PC nicht erreichbar") : offline ? (conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")) : null;
   const detail = [
     preview ? t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.") : null,
+    paused ? `${conn.authError ?? ""} ${t("Sobald der Datenschutzmodus am PC aus ist, verbindet sich dieses Gerät von selbst wieder. Angezeigt wird bis dahin der letzte Stand.")}`.trim() : null,
     relayDown ? t("Das Relay ist erreichbar, aber der Companion auf deinem PC ist nicht verbunden. Ist der PC an und läuft der Companion?") : null,
     offline && !relayDown ? (conn.everConnected ? t("Automatischer neuer Versuch läuft. Angezeigte Daten können veraltet sein.") : t("Die App verbindet sich automatisch, sobald der PC an ist. Design und Layout kannst du schon jetzt unter Einstellungen ändern.")) : null,
     waiting.length ? (error ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.") : confirm ? t("Einige Änderungen (Plugins oder ältere) werden erst nach deiner Bestätigung übertragen.") : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")) : null,

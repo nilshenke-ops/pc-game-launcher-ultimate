@@ -79,7 +79,7 @@ export default function FilesPage() {
         <Card title={t("Wartet auf PC ({n})", { n: tr.outgoing.length })} icon={<Clock size={18} />}>
           <div className="list">
             {tr.outgoing.map((f) => (
-              <div key={f.id} className="list-item">
+              <div key={f.id} className="list-item sensitive">
                 <div className="grow" style={{ minWidth: 0 }}>
                   <div className="title small ellipsis">{f.name}</div>
                   <div className="sub tiny">{bytes(f.size)} · {f.error ? <span className="badge error">{f.error}</span> : tr.progress[f.id] != null ? t("wird gesendet … {n} %", { n: Math.round(tr.progress[f.id] * 100) }) : <span className="badge warn">{t("wartet auf PC")}</span>}</div>
