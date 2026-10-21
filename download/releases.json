@@ -1,5 +1,38 @@
 [
   {
+    "version": "2.35.0",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.35.0/PCGameLauncherCompanion.exe",
+    "size": 87740295,
+    "sha256": "0633f64140861fdb129a2d56eba8f86074ee525f62b6d41351a3149c70e8dffe",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.35.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.35.0/PCGameLauncherCompanion-2.35.0-win-x64.zip",
+      "size": 82002596,
+      "sha256": "e0222da9ceffb6cab4d5c4cf4284c2aeaafeef55f27ad297de591c8d99583d2d"
+    },
+    "notes": "Datenschutz- und Notfalltaste (Schild oben in der Leiste oder Deck-Taste „Datenschutzmodus an/aus“) mit vorher gewählten Schritten: Soundboard stoppen, Mikrofon-Durchleitung aus, Windows-Mikrofon stummschalten, Benachrichtigungen leise (auch nur bestimmte Kategorien), andere Geräte pausieren, Inhalte verdecken · Für jeden Schritt steht da, was wirklich passiert ist: „Wirkt“, „Erledigt“, „Nicht möglich“ oder „Fehlgeschlagen“; Discord, Spiele und andere Programme werden ausdrücklich nicht als stummgeschaltet ausgegeben · Pausierte Geräte bleiben gekoppelt, zeigen „Vom PC pausiert“ und verbinden sich nach dem Ausschalten von selbst wieder",
+    "changes": {
+      "neu": [
+        "Datenschutz- und Notfalltaste (Schild oben in der Leiste oder Deck-Taste „Datenschutzmodus an/aus“) mit vorher gewählten Schritten: Soundboard stoppen, Mikrofon-Durchleitung aus, Windows-Mikrofon stummschalten, Benachrichtigungen leise (auch nur bestimmte Kategorien), andere Geräte pausieren, Inhalte verdecken",
+        "Für jeden Schritt steht da, was wirklich passiert ist: „Wirkt“, „Erledigt“, „Nicht möglich“ oder „Fehlgeschlagen“; Discord, Spiele und andere Programme werden ausdrücklich nicht als stummgeschaltet ausgegeben",
+        "Pausierte Geräte bleiben gekoppelt, zeigen „Vom PC pausiert“ und verbinden sich nach dem Ausschalten von selbst wieder",
+        "Inhalte verdecken: Benachrichtigungen, Dashboard-Widgets, Chats, Dateien und Aufnahmen werden unscharf; Antippen zeigt einen Bereich kurz, ohne etwas auszulösen; auf dem eigenen Gerät auch ohne PC",
+        "Spielzustand (Spiele → Spielzustand): Momentaufnahmen mit Spielversion, Startargumenten, Arbeitsordner, verknüpftem Gaming-Profil, Kopie der Konfigurationsdateien aus dem Savegame-Tresor, Mods an/aus, Plugin-Versionen und System",
+        "Vergleichen (mit jetzt oder zwei Momentaufnahmen, Einstellungen einzeln) und Zurückholen mit Vorschau; der jetzige Zustand wird vorher automatisch gespeichert",
+        "Automatische Momentaufnahme vor Mod-Installationen, Mod-Wiederherstellungen und dem Zurückholen von Konfigurationsdateien"
+      ],
+      "verbessert": [
+        "Vor dem Zurückholen steht, was nicht enthalten ist (Spieldateien, Spielstände, gelöschte Mods, Windows); jedes Ergebnis wird mit Fehlern und fehlenden Dateien gespeichert",
+        "Ausschalten stellt nur zurück, was die Taste selbst geändert hat (z. B. nur ein Mikrofon, das sie stummgeschaltet hat)"
+      ],
+      "behoben": []
+    },
+    "signature": "yBmJQTniTIPMqt2O1UUtydWjeignM210RbE2MsGXm4kigWI9EQ2fr/9WTVMWiKpwokTO+ciDABj8e4SZ59t9RA=="
+  },
+  {
     "version": "2.34.0",
     "date": "2026-10-21",
     "channel": "stable",

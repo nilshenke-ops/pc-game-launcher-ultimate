@@ -1,31 +1,33 @@
 {
-  "version": "2.34.0",
+  "version": "2.35.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.34.0/PCGameLauncherCompanion.exe",
-  "size": 87712031,
-  "sha256": "61f13328ab5a7a47e2af725b41d65bfdfd7d9487545b0e5fadafb46940a6990b",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.35.0/PCGameLauncherCompanion.exe",
+  "size": 87740295,
+  "sha256": "0633f64140861fdb129a2d56eba8f86074ee525f62b6d41351a3149c70e8dffe",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.34.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.34.0/PCGameLauncherCompanion-2.34.0-win-x64.zip",
-    "size": 81974743,
-    "sha256": "be12c6ab5a0d39f7dd5259aed9e5d7ee2797dc704ff715bc4b53755bb8fe97e9"
+    "fileName": "PCGameLauncherCompanion-2.35.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.35.0/PCGameLauncherCompanion-2.35.0-win-x64.zip",
+    "size": 82002596,
+    "sha256": "e0222da9ceffb6cab4d5c4cf4284c2aeaafeef55f27ad297de591c8d99583d2d"
   },
-  "notes": "Hardware-Inventar (System → Hardware-Inventar): Prozessor, Arbeitsspeicher, Grafikkarte mit Treiberversion und -datum, Audio-Ausgänge und Mikrofone, Controller mit Akku, Tastaturen und Mäuse, Monitore, Laufwerke und Netzwerkadapter – was nicht lesbar ist, steht mit Grund da · Fehlerberichte pro Spiel (System → Fehlerberichte): nach einem Absturz (Windows-Absturzbericht des Spiels gefunden) oder einem sehr kurzen Spiel legt der PC automatisch einen Bericht an und benachrichtigt dich · Ein Bericht enthält Fehlerbaustein, Ausnahmecode, Spielversion, letzten Start, Gaming-Profil, System und Änderungen kurz davor; mögliche Ursachen sind als Vermutung mit Begründung markiert",
+  "notes": "Datenschutz- und Notfalltaste (Schild oben in der Leiste oder Deck-Taste „Datenschutzmodus an/aus“) mit vorher gewählten Schritten: Soundboard stoppen, Mikrofon-Durchleitung aus, Windows-Mikrofon stummschalten, Benachrichtigungen leise (auch nur bestimmte Kategorien), andere Geräte pausieren, Inhalte verdecken · Für jeden Schritt steht da, was wirklich passiert ist: „Wirkt“, „Erledigt“, „Nicht möglich“ oder „Fehlgeschlagen“; Discord, Spiele und andere Programme werden ausdrücklich nicht als stummgeschaltet ausgegeben · Pausierte Geräte bleiben gekoppelt, zeigen „Vom PC pausiert“ und verbinden sich nach dem Ausschalten von selbst wieder",
   "changes": {
     "neu": [
-      "Hardware-Inventar (System → Hardware-Inventar): Prozessor, Arbeitsspeicher, Grafikkarte mit Treiberversion und -datum, Audio-Ausgänge und Mikrofone, Controller mit Akku, Tastaturen und Mäuse, Monitore, Laufwerke und Netzwerkadapter – was nicht lesbar ist, steht mit Grund da",
-      "Fehlerberichte pro Spiel (System → Fehlerberichte): nach einem Absturz (Windows-Absturzbericht des Spiels gefunden) oder einem sehr kurzen Spiel legt der PC automatisch einen Bericht an und benachrichtigt dich",
-      "Ein Bericht enthält Fehlerbaustein, Ausnahmecode, Spielversion, letzten Start, Gaming-Profil, System und Änderungen kurz davor; mögliche Ursachen sind als Vermutung mit Begründung markiert",
-      "Berichte durchsuchen, zwei Berichte vergleichen, auf Anforderung erstellen und als Text exportieren – wahlweise ohne Benutzername, PC-Name und E-Mail",
-      "Plugin-Prüflabor: „Alle prüfen“ bzw. Details → „Prüfen“ zeigt Paket-Unversehrtheit, Manifest und Version, unbekannte Einträge, Berechtigungen, Abhängigkeiten, Konflikte, Fehler der letzten 7 Tage, Update und vorherige Version"
+      "Datenschutz- und Notfalltaste (Schild oben in der Leiste oder Deck-Taste „Datenschutzmodus an/aus“) mit vorher gewählten Schritten: Soundboard stoppen, Mikrofon-Durchleitung aus, Windows-Mikrofon stummschalten, Benachrichtigungen leise (auch nur bestimmte Kategorien), andere Geräte pausieren, Inhalte verdecken",
+      "Für jeden Schritt steht da, was wirklich passiert ist: „Wirkt“, „Erledigt“, „Nicht möglich“ oder „Fehlgeschlagen“; Discord, Spiele und andere Programme werden ausdrücklich nicht als stummgeschaltet ausgegeben",
+      "Pausierte Geräte bleiben gekoppelt, zeigen „Vom PC pausiert“ und verbinden sich nach dem Ausschalten von selbst wieder",
+      "Inhalte verdecken: Benachrichtigungen, Dashboard-Widgets, Chats, Dateien und Aufnahmen werden unscharf; Antippen zeigt einen Bereich kurz, ohne etwas auszulösen; auf dem eigenen Gerät auch ohne PC",
+      "Spielzustand (Spiele → Spielzustand): Momentaufnahmen mit Spielversion, Startargumenten, Arbeitsordner, verknüpftem Gaming-Profil, Kopie der Konfigurationsdateien aus dem Savegame-Tresor, Mods an/aus, Plugin-Versionen und System",
+      "Vergleichen (mit jetzt oder zwei Momentaufnahmen, Einstellungen einzeln) und Zurückholen mit Vorschau; der jetzige Zustand wird vorher automatisch gespeichert",
+      "Automatische Momentaufnahme vor Mod-Installationen, Mod-Wiederherstellungen und dem Zurückholen von Konfigurationsdateien"
     ],
     "verbessert": [
-      "Das Inventar ist ohne PC mit dem letzten Stand und Datum sichtbar",
-      "Die Prüfung führt keinen Plugin-Code aus und ändert nichts"
+      "Vor dem Zurückholen steht, was nicht enthalten ist (Spieldateien, Spielstände, gelöschte Mods, Windows); jedes Ergebnis wird mit Fehlern und fehlenden Dateien gespeichert",
+      "Ausschalten stellt nur zurück, was die Taste selbst geändert hat (z. B. nur ein Mikrofon, das sie stummgeschaltet hat)"
     ],
     "behoben": []
   },
-  "signature": "MxiKh70zB3jt0UEEUbRa3cnyWxJEh45dUSwsRo5BAriqBtJD1k0K88tuPJVv4Vuas0NO9d8bIZHAqLbqYZAbRQ=="
+  "signature": "yBmJQTniTIPMqt2O1UUtydWjeignM210RbE2MsGXm4kigWI9EQ2fr/9WTVMWiKpwokTO+ciDABj8e4SZ59t9RA=="
 }
