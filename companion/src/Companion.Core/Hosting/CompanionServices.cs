@@ -66,6 +66,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public CustomWidgetService Widgets { get; }
     public DeckService Decks { get; }
     public CalendarService Calendar { get; }
+    public JournalService Journal { get; }
     public ActivityService Activity { get; }
     public BackupService Backup { get; }
     public QuestService Quests { get; }
@@ -160,6 +161,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Widgets = new CustomWidgetService(paths, Rpc);
         Decks = new DeckService(paths, Rpc);
         Calendar = new CalendarService(paths, Rpc, Notifications);
+        Journal = new JournalService(paths, Rpc);
         Activity = new ActivityService(paths, Rpc, () => Sessions.Running().Select(r => (r.itemId, Library.Get(r.itemId)?.Name ?? "?", r.since)).ToList());
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };

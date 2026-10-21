@@ -1315,3 +1315,41 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 .rd-overlay { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 8px; text-align: center; padding: 20px; background: rgba(5, 5, 7, 0.72); }
 .rd-badge { position: absolute; top: 8px; left: 8px; font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: rgba(251, 191, 36, 0.18); color: #fcd34d; pointer-events: none; }
 .rd-pointer { position: absolute; pointer-events: none; color: #fff; filter: drop-shadow(0 0 2px #000); transform: translate(-2px, -2px); }
+
+/* ------------------------------------------------------------------ collections: journal & wiki */
+.j-item { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: var(--radius-sm); border: 1px solid var(--border); background: rgba(var(--surface-rgb), 0.7); text-align: left; color: inherit; font: inherit; min-width: 0; }
+.j-item.focus, .card.focus { border-color: rgba(var(--primary-rgb), 0.7); box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.25); }
+.j-page-card { cursor: pointer; }
+.j-page-card:hover, .j-hit:hover { border-color: rgba(var(--primary-rgb), 0.5); }
+.j-page-card:focus-visible, .j-hit:focus-visible, .j-wiki-link:focus-visible, .j-spoiler:focus-visible, .j-status:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.j-timeline { display: flex; flex-direction: column; gap: 10px; border-left: 2px solid rgba(var(--primary-rgb), 0.35); padding-left: 14px; }
+.j-clamp { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; white-space: pre-wrap; }
+.j-thumbs { display: flex; flex-wrap: wrap; gap: 8px; }
+.j-thumb { position: relative; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); background: rgba(0,0,0,0.25); flex: 0 0 auto; }
+.j-thumbs.small .j-thumb { width: 64px; height: 64px; }
+.j-thumb.add { display: grid; place-items: center; color: var(--muted); cursor: pointer; border-style: dashed; font: inherit; }
+.j-thumb .j-img { width: 100%; height: 100%; object-fit: cover; cursor: zoom-in; display: grid; place-items: center; color: var(--muted); }
+.j-thumb-x { position: absolute; top: 3px; right: 3px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(0,0,0,0.65); color: #fff; display: grid; place-items: center; cursor: pointer; }
+.cap-view .j-img { max-width: 100%; max-height: 62vh; display: block; }
+.j-link-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--border-strong); color: var(--text); text-decoration: none; font-size: 0.82rem; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.j-hit { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; width: 100%; min-height: 44px; padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: rgba(var(--surface-rgb), 0.6); color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.j-sync { border: 0; cursor: pointer; font-family: inherit; min-height: 30px; white-space: normal; text-align: left; }
+.j-conflict { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--border); border-radius: 10px; }
+.j-stages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.j-stages li { padding: 6px 8px; border-radius: 8px; border: 1px solid transparent; }
+.j-stages li.done { color: var(--muted); }
+.j-stages li.done .checkbox span { text-decoration: line-through; text-decoration-color: rgba(var(--primary-rgb), 0.6); }
+.j-stages li.next { border-color: rgba(var(--primary-rgb), 0.45); background: rgba(var(--primary-rgb), 0.07); }
+.j-stage-edit { display: flex; flex-direction: column; gap: 6px; padding: 10px; border: 1px solid var(--border); border-radius: 10px; }
+.j-status { border: 0; cursor: pointer; font-family: inherit; min-height: 28px; }
+.j-spoiler { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 12px; border-radius: 8px; border: 1px dashed var(--border-strong); background: rgba(0,0,0,0.25); color: var(--muted); font: inherit; font-size: 0.82rem; cursor: pointer; }
+.j-wiki-body { white-space: pre-wrap; line-height: 1.6; overflow-wrap: anywhere; }
+.j-wiki-link { border: 0; background: none; padding: 0; font: inherit; color: var(--primary); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.j-wiki-link.missing { color: var(--warning); text-decoration-style: dashed; }
+.j-wiki-edit { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.88rem; line-height: 1.5; min-height: 260px; }
+.j-version { white-space: pre-wrap; max-height: 40vh; overflow: auto; padding: 10px; border-radius: 10px; background: rgba(0,0,0,0.3); font-size: 0.82rem; margin: 0; }
+.j-search-input { border: 0; background: none; color: inherit; font: inherit; outline: none; width: 100%; min-width: 0; }
+.memory-hint { position: fixed; z-index: 60; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); width: min(360px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(var(--primary-rgb), 0.5); background: rgba(var(--surface-rgb), 0.97); box-shadow: 0 18px 40px rgba(0,0,0,0.45); }
+@media (max-width: 900px) { .memory-hint { bottom: calc(84px + env(safe-area-inset-bottom)); } }
+.j-tabs { padding-bottom: 2px; }
+.j-tabs .chip { min-height: 40px; }

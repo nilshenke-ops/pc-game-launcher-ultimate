@@ -18,6 +18,8 @@ import { CommandPalette } from "./CommandPalette";
 import { UpdatePrompt } from "./UpdateCenter";
 import { CONFIRM_METHODS, needsConfirm, outbox, useOutbox } from "../lib/outbox";
 import { startOutboxSync, syncMessage, syncOutbox } from "../lib/outbox-sync";
+import { startJournalSync } from "../lib/journal";
+import { MemoryHint } from "./memory-hint";
 import { startPendingSync } from "../lib/pending-sounds";
 
 function ConnPill() {
@@ -129,6 +131,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // Changes made without the PC are sent after every login, in order.
   useEffect(() => startOutboxSync((r) => toast(syncMessage(r), r.failed ? "warning" : "success")), []);
+  useEffect(() => startJournalSync(), []);
   // Calendar reminders on this device (also without the PC, while the app is open); loaded separately from the main bundle.
   useEffect(() => { void import("../lib/calendar-reminders").then((m) => m.startCalendarReminders()); }, []);
   useEffect(() => client.on("queued", () => toast(t("Gespeichert – wird übertragen, sobald der PC verbunden ist"), "info")), []);
@@ -207,6 +210,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main id="main" className={`content tx-${prefs.fx.transition.kind}`} style={{ ["--tx-ms" as string]: `${prefs.fx.transition.ms}ms` }} key={loc.pathname}>{children}</main>
       </div>
 
+      <MemoryHint />
       <BottomBar items={all} preview={preview} more={more} onMore={() => setMore(true)} onEdit={() => setBarEdit(true)} />
 
       {barEdit && <BarEditor items={all} onClose={() => setBarEdit(false)} />}

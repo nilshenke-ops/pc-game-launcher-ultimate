@@ -474,8 +474,9 @@ public sealed class BackupService
     public const string Format = "pgl-backup";
     public const int Version = 1;
     const long MaxBackupBytes = 300L * 1024 * 1024;
+    static readonly Regex JournalImageEntry = new(@"^journal-images/img_[A-Za-z0-9_-]{6,40}\.(jpg|png|webp)$", RegexOptions.Compiled);
     static readonly Regex SoundEntry = new(@"^sounds/snd_[0-9a-f]{12}\.(mp3|wav|flac|m4a|wma)$", RegexOptions.Compiled);
-    static readonly string[] Parts = { "settings", "library", "quickactions", "profiles", "automations", "hotkeys", "sounds", "audio", "history", "uiprefs", "widgets", "quests", "deals", "gamemode", "decks", "calendar", "activity", "captures", "layouts", "input", "vault" };
+    static readonly string[] Parts = { "settings", "library", "quickactions", "profiles", "automations", "hotkeys", "sounds", "audio", "history", "uiprefs", "widgets", "quests", "deals", "gamemode", "decks", "calendar", "activity", "captures", "layouts", "input", "vault", "journal" };
 
     readonly AppPaths _paths;
     readonly CompanionServices _svc;
@@ -519,6 +520,7 @@ public sealed class BackupService
         Put("window-layouts.json", _svc.Layouts.Export());
         Put("savevault.json", _svc.Vault.Export()); // places and rules only – the backups themselves stay in the data folder
         Put("input-remap.json", _svc.Input.Export());
+        Put("journal.json", _svc.Journal.Export());
         Put("uiprefs.json", new Dictionary<string, string?> { ["local"] = _svc.Devices.GetUiPrefs("local") });
         if (includeSounds)
             foreach (var s in _svc.Soundboard.Export().Sounds)
@@ -526,6 +528,10 @@ public sealed class BackupService
                 var file = Path.Combine(_paths.SoundsDir, s.FileName);
                 if (File.Exists(file) && SoundEntry.IsMatch("sounds/" + s.FileName)) zip.CreateEntryFromFile(file, "sounds/" + s.FileName, CompressionLevel.NoCompression);
             }
+        // Pictures of the collections go with the media files (they can be many MB).
+        if (includeSounds && Directory.Exists(_svc.Journal.ImageDir))
+            foreach (var file in Directory.EnumerateFiles(_svc.Journal.ImageDir))
+                if (JournalImageEntry.IsMatch("journal-images/" + Path.GetFileName(file))) zip.CreateEntryFromFile(file, "journal-images/" + Path.GetFileName(file), CompressionLevel.NoCompression);
         return path;
     }
 
@@ -686,6 +692,7 @@ public sealed class BackupService
             if (zip.GetEntry("window-layouts.json") != null) parts["layouts"] = Parse<WindowLayoutsFile>("window-layouts");
             if (zip.GetEntry("input-remap.json") != null) parts["input"] = Parse<RemapFile>("input-remap");
             if (zip.GetEntry("savevault.json") != null) parts["vault"] = Parse<VaultFile>("savevault");
+            if (zip.GetEntry("journal.json") != null) parts["journal"] = Parse<JournalFile>("journal");
 
             var files = new Dictionary<string, byte[]>();
             foreach (var e in zip.Entries.Where(e => e.FullName.StartsWith("sounds/") && e.Length > 0))
@@ -697,6 +704,14 @@ public sealed class BackupService
                 var bytes = ms.ToArray();
                 if (AudioFileValidator.Problem(AudioFileValidator.Detect(bytes)) != null) throw new RpcException("invalid-backup", $"{e.FullName} ist keine gültige Audiodatei.");
                 files[e.Name] = bytes;
+            }
+            foreach (var e in zip.Entries.Where(e => e.FullName.StartsWith("journal-images/") && e.Length > 0))
+            {
+                if (!JournalImageEntry.IsMatch(e.FullName)) throw new RpcException("invalid-backup", $"Unerwartete Datei im Backup: {e.FullName}");
+                if (e.Length > JournalService.MaxImageBytes) throw new RpcException("invalid-backup", $"{e.FullName} ist zu groß.");
+                using var ms = new MemoryStream();
+                using (var s = e.Open()) s.CopyTo(ms);
+                files[e.FullName] = ms.ToArray();
             }
             return new Validated(parts, files, manifest);
         }
@@ -713,7 +728,7 @@ public sealed class BackupService
             programs = lib.Items.Count(i => i.Kind == ItemKind.Program),
             profiles = ((ProfilesFile)v.Parts["profiles"]).Profiles.Count,
             sounds = ((SoundsFile)v.Parts["sounds"]).Sounds.Count,
-            soundFiles = v.SoundFiles.Count,
+            soundFiles = v.SoundFiles.Keys.Count(k => !k.StartsWith("journal-images/")),
             automations = ((AutomationsFile)v.Parts["automations"]).Rules.Count,
             hotkeys = ((HotkeysFile)v.Parts["hotkeys"]).Hotkeys.Count,
         };
@@ -748,7 +763,7 @@ public sealed class BackupService
                     break;
                 case "sounds":
                     var sf = (SoundsFile)v.Parts[part];
-                    foreach (var (name, bytes) in v.SoundFiles) File.WriteAllBytes(Path.Combine(_paths.SoundsDir, name), bytes);
+                    foreach (var (name, bytes) in v.SoundFiles.Where(f => !f.Key.StartsWith("journal-images/"))) File.WriteAllBytes(Path.Combine(_paths.SoundsDir, name), bytes);
                     sf.Sounds = sf.Sounds.Where(s => File.Exists(Path.Combine(_paths.SoundsDir, s.FileName))).ToList();
                     _svc.Soundboard.Import(sf);
                     break;
@@ -764,6 +779,12 @@ public sealed class BackupService
                 case "layouts": _svc.Layouts.ImportChecked((WindowLayoutsFile)v.Parts[part]); break;
                 case "input": _svc.Input.ImportChecked((RemapFile)v.Parts[part]); break;
                 case "vault": _svc.Vault.ImportChecked((VaultFile)v.Parts[part]); break;
+                case "journal":
+                    Directory.CreateDirectory(_svc.Journal.ImageDir);
+                    foreach (var (name, bytes) in v.SoundFiles.Where(f => f.Key.StartsWith("journal-images/")))
+                        File.WriteAllBytes(Path.Combine(_svc.Journal.ImageDir, Path.GetFileName(name)), bytes);
+                    _svc.Journal.ImportChecked((JournalFile)v.Parts[part]);
+                    break;
             }
             restored.Add(part);
         }

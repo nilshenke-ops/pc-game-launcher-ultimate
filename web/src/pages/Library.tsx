@@ -3,7 +3,10 @@ import { Box, Check, FolderOpen, Wand2, Gamepad2, LayoutGrid, List, Loader2, Mor
 import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast, useCan, useIncremental } from "../lib/hooks";
-import { gradientFor, initials, relTime } from "../lib/format";
+import { dateTime, gradientFor, initials, relTime } from "../lib/format";
+import { Link } from "react-router-dom";
+import { useJournal } from "../lib/journal";
+import { memorySummary, type Memory } from "../lib/journal-logic";
 import { HoloLibrary, type HoloInfo } from "../components/holo-library";
 import { IconWorkshop } from "../components/icon-workshop";
 import { exportIcon, loadSafeImage } from "../lib/icon-art";
@@ -241,6 +244,7 @@ function EditItem({ item, onClose }: { item: LibraryItem; onClose: () => void })
       <Button onClick={onClose}>{t("Abbrechen")}</Button>
       <Button variant="primary" busy={busy} onClick={save}>{t("Speichern")}</Button>
     </>}>
+      {item.kind === "game" && <MemoryNote item={item} />}
       <div className="grid-2">
         <Field label={t("Name")}><input className="input" value={f.name} maxLength={80} onChange={(e) => set({ name: e.target.value })} /></Field>
         <Field label={t("Typ")}>
@@ -365,5 +369,25 @@ function AddItems({ kind, onClose }: { kind: ItemKind; onClose: () => void }) {
         </div>
       )}
     </Modal>
+  );
+}
+
+/** "Wo war ich noch mal?" for this game – from the game journal (works without the PC). */
+function MemoryNote({ item }: { item: LibraryItem }) {
+  const list = useJournal<Memory>("memory");
+  const s = memorySummary(list, { gameId: item.id, gameName: item.name });
+  return (
+    <div className="j-item" style={{ marginBottom: 12 }}>
+      <b className="small">{t("Wo war ich noch mal?")}</b>
+      {s ? <>
+        <span className="tiny muted">{t("Deine Notiz vom {d}", { d: dateTime(s.lastAt) })}</span>
+        <span className="small">{s.lastDid}{s.where && ` · ${s.where}`}</span>
+        {s.next && <span className="small">{t("Als Nächstes")}: {s.next}</span>}
+      </> : <span className="small muted">{t("Noch nichts notiert.")}</span>}
+      <div className="row" style={{ gap: 6 }}>
+        {s && <Link className="btn sm" to={`/journal?tab=memory&id=${s.latestId}`}>{t("Verlauf")}</Link>}
+        <Link className="btn sm ghost" to={`/journal?tab=memory&new=${item.id}`}>{t("Neuer Eintrag")}</Link>
+      </div>
+    </div>
   );
 }

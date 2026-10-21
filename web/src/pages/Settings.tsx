@@ -489,7 +489,7 @@ function Updates() {
 
 // ------------------------------------------------------------------ backup
 
-const PARTS: [string, string][] = [["settings", "Einstellungen"], ["library", "Spiele & Programme"], ["quickactions", "Quick Actions"], ["profiles", "Gaming-Profile"], ["automations", "Automatisierungen"], ["hotkeys", "Hotkeys"], ["sounds", "Soundboard"], ["audio", "Audio-Einstellungen"], ["history", "Verlauf"], ["uiprefs", "Design & Layouts (PC)"], ["widgets", "Eigene Widgets"], ["quests", "GameQuest"], ["deals", "Deal Radar"], ["gamemode", "Spielmodus-Programme"], ["vault", "Savegame-Tresor (Orte und Regeln)"]];
+const PARTS: [string, string][] = [["settings", "Einstellungen"], ["library", "Spiele & Programme"], ["quickactions", "Quick Actions"], ["profiles", "Gaming-Profile"], ["automations", "Automatisierungen"], ["hotkeys", "Hotkeys"], ["sounds", "Soundboard"], ["audio", "Audio-Einstellungen"], ["history", "Verlauf"], ["uiprefs", "Design & Layouts (PC)"], ["widgets", "Eigene Widgets"], ["quests", "GameQuest"], ["deals", "Deal Radar"], ["gamemode", "Spielmodus-Programme"], ["vault", "Savegame-Tresor (Orte und Regeln)"], ["journal", "Sammlungen (Erinnerungen, Ziele, Wiki …)"]];
 
 function toB64(buf: Uint8Array) { let s = ""; for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000)); return btoa(s); }
 
@@ -564,7 +564,7 @@ function Backup() {
       <Card title={t("Backup erstellen")} icon={<Download size={18} />}>
         <div className="stack">
           <p className="small muted">{t("Sichert Bibliothek, Favoriten, Kategorien, Profile, Soundboard, Hotkeys, Automatisierungen, Einstellungen sowie Design und Layouts des PC-Fensters als ZIP. Gekoppelte Geräte, Schlüssel und Relay-Zugang werden nie exportiert bzw. übernommen. Die Bibliothek lässt sich nur direkt am PC wiederherstellen.")}</p>
-          <Switch checked={withSounds} onChange={setWithSounds} label={t("Audiodateien mitsichern")} />
+          <Switch checked={withSounds} onChange={setWithSounds} label={t("Audiodateien und Bilder der Sammlungen mitsichern")} />
           {busy === "export" && <div className="progress-bar"><i style={{ width: `${progress * 100}%` }} /></div>}
           <div className="row">
             <Button variant="primary" icon={<Download size={16} />} busy={busy === "export"} onClick={exportBackup}>{t("Backup herunterladen")}</Button>

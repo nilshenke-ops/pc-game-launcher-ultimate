@@ -1034,6 +1034,48 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(phone2.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
 });
 
+test("Sammlungen ohne PC: Journal und Wiki speichern im Browser, gleichen nach dem Koppeln mit dem PC ab", async ({ browser }) => {
+  const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
+  const tab = await ctx.newPage();
+  await tab.goto(`${COMPANION}/#/journal`);
+  await tab.getByRole("button", { name: "Neuer Eintrag" }).first().click();
+  const dlg = tab.getByRole("dialog");
+  await dlg.getByLabel("Was hast du gemacht?").fill("Netherfestung gefunden");
+  await expect(dlg.getByRole("button", { name: "Speichern" })).toBeDisabled(); // a game is required
+  await dlg.getByPlaceholder("Name des Spiels").fill("Minecraft");
+  await dlg.getByLabel("Was kommt als Nächstes?").fill("Lohen jagen");
+  await dlg.getByRole("button", { name: "Speichern" }).click();
+  await tab.reload();
+  await expect(tab.getByText("Lohen jagen").first()).toBeVisible();
+  await expect(tab.getByText("1 Änderung nur hier – geht zum PC, sobald er an ist")).toBeVisible();
+
+  await tab.goto(`${COMPANION}/#/wiki`);
+  await tab.getByRole("button", { name: "Neue Seite" }).first().click();
+  await tab.getByLabel("Titel").fill("Creeper");
+  await tab.getByLabel("Text").fill("Gegen [[Rüstung]] hilft wenig.");
+  await expect(tab.locator(".j-save-state")).toHaveText(/^\s*Gespeichert/, { timeout: 5000 });
+  await tab.getByRole("button", { name: "Fertig" }).click();
+  await tab.getByRole("button", { name: "Rüstung" }).click(); // missing page → created
+  await expect(tab.getByLabel("Titel")).toHaveValue("Rüstung");
+  await tab.getByRole("button", { name: "Fertig" }).click();
+  await expect(tab.locator(".j-link-chip", { hasText: "Creeper" })).toBeVisible(); // backlink
+
+  await pair(tab, COMPANION);
+  await tab.goto(`${COMPANION}/#/wiki`);
+  await expect(tab.getByText("Mit dem PC abgeglichen")).toBeVisible({ timeout: 15000 });
+  await pc.goto(`${COMPANION}/#/wiki`);
+  await expect(pc.getByRole("button", { name: /Creeper/ })).toBeVisible({ timeout: 10000 });
+  // A change on the PC reaches the device without reloading.
+  await pc.goto(`${COMPANION}/#/journal?tab=memory`);
+  await pc.getByRole("button", { name: "Verlauf ansehen" }).click();
+  await pc.getByRole("button", { name: "Bearbeiten" }).first().click();
+  await pc.getByRole("dialog").getByLabel("Was kommt als Nächstes?").fill("Wither besiegen");
+  await pc.getByRole("dialog").getByRole("button", { name: "Speichern" }).click();
+  await tab.goto(`${COMPANION}/#/journal?tab=memory`);
+  await expect(tab.getByText("Wither besiegen").first()).toBeVisible({ timeout: 10000 });
+  await ctx.close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

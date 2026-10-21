@@ -208,6 +208,17 @@ public static class RpcApi
         rpc.Register("calendar.save", ctx => s.Calendar.Save(ctx.Bind<CalendarEvent>()));
         rpc.Register("calendar.remove", ctx => { s.Calendar.Remove(ctx.Str("id", 64)); return true; });
 
+        // ------------------------------------------------------------ collections (journal): made in the browser, copy on the PC
+        rpc.Register("journal.pull", ctx => s.Journal.Pull(ctx.OptLong("since") ?? 0));
+        rpc.Register("journal.push", ctx => s.Journal.Push(ctx.Bind<JournalPush>().Changes, ctx.Session.Who));
+        rpc.Register("journal.conflicts", _ => new { conflicts = s.Journal.Conflicts() });
+        rpc.Register("journal.dismissConflict", ctx => { s.Journal.DismissConflict(ctx.Str("id", 64)); return true; });
+        rpc.Register("journal.stats", _ => s.Journal.Stats());
+        rpc.Register("journal.hasImages", ctx => new { ids = s.Journal.HasImages(ctx.Bind<JournalIds>().Ids.Take(500)) });
+        rpc.Register("journal.putImage", ctx => s.Journal.PutImage(ctx.Str("id", 64), ctx.Str("mime", 20), ctx.Str("data", 1_000_000)));
+        rpc.Register("journal.image", ctx => s.Journal.GetImage(ctx.Str("id", 64)));
+        rpc.Register("journal.cleanImages", _ => new { removed = s.Journal.CleanImages() });
+
         // ------------------------------------------------------------ activity status (only for the paired devices)
         rpc.Register("activity.get", ctx => s.Activity.View(ctx.Session.Has(Permissions.Manage), DateTime.UtcNow));
         rpc.Register("activity.set", ctx => { s.Activity.Set(ctx.Bind<ActivityFile>()); return s.Activity.View(true, DateTime.UtcNow); });

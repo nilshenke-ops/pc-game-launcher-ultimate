@@ -120,7 +120,7 @@ describe("navigation", () => {
     expect(paths).not.toContain("/help");
     expect(paths).toContain("/settings"); // cannot be hidden
     expect(paths.indexOf("/audio")).toBeLessThan(paths.indexOf("/soundboard"));
-    expect(new Set(nav.map((i) => i.group)).size).toBe(7); // Dashboard, Steuerung, Audio, System, Verbindung, Erweiterungen, Verwaltung
+    expect(new Set(nav.map((i) => i.group)).size).toBe(8); // Dashboard, Spielbegleiter, Steuerung, Audio, System, Verbindung, Erweiterungen, Verwaltung
   });
   it("sanitizes navigation prefs", () => {
     const p = sanitizePrefs({ nav: { order: ["/games", "javascript:x", 5], hidden: ["/x/../y"], bottom: [] } });

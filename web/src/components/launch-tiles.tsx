@@ -10,6 +10,7 @@ import { gradientFor, initials } from "../lib/format";
 import type { LibraryItem } from "../lib/types";
 import { brandBg, brandFor } from "../lib/brands";
 import { BrandLogo } from "./brand-logo";
+import { showMemoryHint } from "./memory-hint";
 
 /** Starts an item; while the PC answers the tile shows a spinner and further taps are ignored. */
 export function useLaunch() {
@@ -22,7 +23,7 @@ export function useLaunch() {
     try {
       const r = await client.call<{ ok?: boolean; message?: string }>("library.launch", { id: i.id });
       if (r && r.ok === false) toast(r.message ?? t("Start fehlgeschlagen"), "error");
-      else toast(t("{name} wird gestartet", { name: i.name }), "success");
+      else { toast(t("{name} wird gestartet", { name: i.name }), "success"); if (i.kind === "game") showMemoryHint({ gameId: i.id, gameName: i.name }, i.name); }
     } catch (e) { toast((e as Error).message, "error"); }
     finally { window.setTimeout(() => setLaunching((s) => { const n = new Set(s); n.delete(i.id); return n; }), 900); }
   };
