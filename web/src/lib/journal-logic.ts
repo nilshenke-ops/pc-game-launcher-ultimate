@@ -19,9 +19,16 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   gfx: (id) => `/builds?tab=gfx&id=${id}`,
   controls: (id) => `/builds?tab=controls&id=${id}`,
   challenge: () => `/play?tab=challenges`,
+  player: (id) => `/friends?tab=players&id=${id}`,
+  poll: () => `/friends?tab=polls`,
+  night: (id) => `/friends?tab=nights&id=${id}`,
+  team: (id) => `/friends?tab=teams&id=${id}`,
+  tournament: (id) => `/friends?tab=tournaments&id=${id}`,
+  server: (id) => `/friends?tab=servers&id=${id}`,
+  facts: (id) => `/friends?tab=facts&id=${id}`,
   bingo: () => `/play?tab=bingo`,
 };
-export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo" };
+export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten" };
 
 export function entryTitle(e: Entry): string {
   const d = e.data as { title?: string; text?: string; did?: string; gameName?: string };

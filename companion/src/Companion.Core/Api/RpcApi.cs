@@ -219,6 +219,9 @@ public static class RpcApi
         rpc.Register("journal.image", ctx => s.Journal.GetImage(ctx.Str("id", 64)));
         rpc.Register("journal.cleanImages", _ => new { removed = s.Journal.CleanImages() });
 
+        // ------------------------------------------------------------ game server status (only on request, documented protocols)
+        rpc.Register("servers.query", async ctx => await s.Servers.QueryAsync(ctx.Str("protocol", 20), ctx.Str("host", 255), ctx.OptInt("port"), ctx.Session.Who));
+
         // ------------------------------------------------------------ activity status (only for the paired devices)
         rpc.Register("activity.get", ctx => s.Activity.View(ctx.Session.Has(Permissions.Manage), DateTime.UtcNow));
         rpc.Register("activity.set", ctx => { s.Activity.Set(ctx.Bind<ActivityFile>()); return s.Activity.View(true, DateTime.UtcNow); });

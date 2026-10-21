@@ -227,7 +227,7 @@ function FieldInput({ f, value, onChange, games, errors }: { f: FieldDef; value:
   switch (f.type) {
     case "text": case "url": return <Field label={label} hint={hint} error={err}><input className="input" value={String(value ?? "")} maxLength={f.type === "url" ? 500 : f.maxLen ?? 200} placeholder={f.placeholder ? t(f.placeholder) : f.type === "url" ? "https://" : undefined} inputMode={f.type === "url" ? "url" : undefined} onChange={(e) => onChange(e.target.value || null)} /></Field>;
     case "textarea": return <Field label={label} hint={hint} error={err}><textarea className="input" rows={4} value={String(value ?? "")} maxLength={f.maxLen ?? 20000} onChange={(e) => onChange(e.target.value)} /></Field>;
-    case "number": return <Field label={label} hint={hint} error={err}><NumberInput value={value as number | null} onChange={onChange} /></Field>;
+    case "number": return <Field label={label} hint={hint} error={err}><NumberInput label={fieldLabel(f)} value={value as number | null} onChange={onChange} /></Field>;
     case "select": return <Field label={label} hint={hint} error={err}><select className="input" value={String(value ?? "")} onChange={(e) => onChange(e.target.value || null)}>{!f.required && <option value="">–</option>}{f.options!.map((o) => <option key={o.value} value={o.value}>{t(o.label)}</option>)}</select></Field>;
     case "bool": return <label className="checkbox"><input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} />{fieldLabel(f)}</label>;
     case "date": return <Field label={label} hint={hint} error={err}><input type="date" className="input" value={String(value ?? "").slice(0, 10)} onChange={(e) => onChange(e.target.value || null)} /></Field>;

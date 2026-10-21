@@ -71,6 +71,7 @@
     "journal.putImage": "manage",
     "journal.image": "view",
     "journal.cleanImages": "manage",
+    "servers.query": "manage",
     "activity.get": "view",
     "activity.set": "manage",
     "files.list": "manage",

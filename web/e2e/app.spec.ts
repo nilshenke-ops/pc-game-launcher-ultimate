@@ -1161,6 +1161,71 @@ test("Welten & Bauen: Welt mit Koordinaten prüft Eingaben, rechnet Nether um, B
   await ctx.close();
 });
 
+test("Freunde: Abstimmung per Link (Antwort zählt, zurückgezogener Link nicht), Turnier mit Freilosen, Gruppen-Finder ohne erfundenes Crossplay", async ({ browser }) => {
+  const host = await newCtx(browser, { viewport: { width: 1200, height: 900 }, locale: "de-DE", permissions: ["clipboard-read", "clipboard-write"] });
+  const friendCtx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE", timezoneId: "America/New_York", permissions: ["clipboard-read", "clipboard-write"] });
+  for (const c of [host, friendCtx]) await c.addInitScript(() => { Object.defineProperty(navigator, "share", { value: undefined, configurable: true }); });
+  const p = await host.newPage(), f = await friendCtx.newPage();
+  const dlg = () => p.getByRole("dialog").last();
+  const clip = (pg: Page) => pg.evaluate(() => navigator.clipboard.readText());
+  await p.goto(`${COMPANION}/#/friends`);
+  for (const [name, games] of [["Ich", [["Minecraft", "PC"], ["Fortnite", "PC"]]], ["Mia", [["Minecraft", "PC"], ["Fortnite", "PlayStation"]]]] as const) {
+    await p.getByRole("button", { name: "Neu" }).click();
+    await dlg().getByLabel("Spielername *").fill(name);
+    for (const [g, pl] of games) { await dlg().getByRole("button", { name: "Zeile hinzufügen" }).click(); const r = dlg().locator(".rows-edit").last(); await r.getByLabel("Spiel", { exact: true }).fill(g); await r.getByLabel("Plattform", { exact: true }).fill(pl); }
+    await dlg().getByRole("button", { name: "Speichern" }).click();
+    await dlg().getByRole("button", { name: "Schließen" }).click();
+  }
+  await p.getByRole("tab", { name: "Was spielen wir?" }).click();
+  await p.getByRole("button", { name: "Ich", exact: true }).click();
+  await p.getByRole("button", { name: "Mia", exact: true }).click();
+  await expect(p.locator(".j-conflict", { hasText: "Minecraft" })).toContainText("Alle auf PC");
+  await expect(p.locator(".j-conflict", { hasText: "Fortnite" })).toContainText("Crossplay unbekannt");
+
+  await p.getByRole("tab", { name: "Abstimmungen" }).click();
+  await p.getByRole("button", { name: "Neue Abstimmung" }).click();
+  await dlg().getByLabel("Option 1").fill("Minecraft");
+  await dlg().getByLabel("Option 2").fill("Fortnite");
+  await dlg().getByRole("button", { name: "Speichern" }).click();
+  await dlg().getByRole("button", { name: "Einladungs-Link" }).click();
+  await expect.poll(() => clip(p)).toContain("&l=");
+  await f.goto(await clip(p));
+  await f.getByLabel("Dein Name").fill("Mia");
+  await f.getByLabel("Fortnite").check();
+  await f.getByRole("button", { name: "Antwort-Link senden" }).click();
+  await expect.poll(() => clip(f)).toContain("&l=");
+  const reply = await clip(f);
+  await p.keyboard.press("Escape");
+  await p.goto(reply);
+  await expect(p.getByText("Stimme von Mia gezählt")).toBeVisible();
+  await p.getByRole("button", { name: "OK", exact: true }).click();
+  await p.locator(".j-hit", { hasText: "Was spielen wir?" }).click();
+  await dlg().getByRole("button", { name: "Link zurückziehen" }).click();
+  await p.getByRole("dialog").last().getByRole("button", { name: "Zurückziehen" }).click();
+  await p.keyboard.press("Escape");
+  await p.goto(reply);
+  await expect(p.getByText("Der Link gehört zu einer zurückgezogenen oder fremden Einladung.")).toBeVisible();
+  await p.getByRole("button", { name: "OK", exact: true }).click();
+
+  await p.getByRole("tab", { name: "Turniere" }).click();
+  await p.getByRole("button", { name: "Neues Turnier" }).click();
+  await dlg().getByLabel("Teilnehmer (einer pro Zeile)").fill("A\nB\nA");
+  await expect(dlg().getByText("Jeder Name darf nur einmal vorkommen.")).toBeVisible();
+  await dlg().getByLabel("Teilnehmer (einer pro Zeile)").fill("A\nB\nC\nD\nE");
+  await dlg().getByRole("button", { name: "Anlegen" }).click();
+  await expect(p.locator(".bracket-match.bye")).toHaveCount(3);
+  for (let i = 0; i < 4; i++) {
+    await p.locator(".bracket-match.ready").first().click();
+    await dlg().locator("input").nth(0).fill("1");
+    await dlg().locator("input").nth(1).fill("1");
+    await expect(dlg().getByRole("button", { name: "Speichern" })).toBeDisabled(); // no draw in knockout
+    await dlg().locator("input").nth(0).fill("2");
+    await dlg().getByRole("button", { name: "Speichern" }).click();
+  }
+  await expect(p.locator(".banner", { hasText: "Sieger" })).toBeVisible();
+  await host.close(); await friendCtx.close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

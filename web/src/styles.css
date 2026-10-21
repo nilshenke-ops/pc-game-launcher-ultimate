@@ -1389,3 +1389,19 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 tr.cmp-diff td { background: rgba(251, 191, 36, 0.1); }
 tr.cmp-only td { color: var(--muted); }
 .kbd { font-family: ui-monospace, monospace; font-size: 0.78rem; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--border-strong); background: rgba(255,255,255,0.05); white-space: nowrap; }
+.bracket { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 6px; align-items: stretch; }
+.bracket-round { display: flex; flex-direction: column; justify-content: space-around; gap: 10px; min-width: 170px; flex: 0 0 auto; }
+.bracket-match { display: grid; gap: 2px; padding: 6px 8px; border-radius: 10px; border: 1px solid var(--border-strong); background: rgba(var(--surface-rgb), 0.85); color: var(--text); font: inherit; text-align: left; cursor: pointer; min-height: 56px; }
+.bracket-match:disabled { cursor: default; opacity: 0.75; }
+.bracket-match.ready { border-color: rgba(var(--primary-rgb), 0.7); box-shadow: 0 0 0 1px rgba(var(--primary-rgb), 0.25); }
+.bracket-match.bye { opacity: 0.55; border-style: dashed; }
+.bracket-match:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.bracket-side { display: flex; justify-content: space-between; gap: 8px; font-size: 0.84rem; min-width: 0; }
+.bracket-side.win { color: var(--success); font-weight: 700; }
+@media print {
+  body * { visibility: hidden; }
+  .tournament-print, .tournament-print * { visibility: visible; }
+  .tournament-print { position: absolute; inset: 0; }
+  .tournament-print .no-print { display: none !important; }
+  .bracket { overflow: visible; flex-wrap: wrap; }
+}

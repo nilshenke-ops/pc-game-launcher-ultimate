@@ -67,6 +67,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public DeckService Decks { get; }
     public CalendarService Calendar { get; }
     public JournalService Journal { get; }
+    public ServerQueryService Servers { get; } = new();
     public ActivityService Activity { get; }
     public BackupService Backup { get; }
     public QuestService Quests { get; }

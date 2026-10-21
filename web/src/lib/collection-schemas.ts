@@ -146,3 +146,102 @@ export const CONTROLS: Schema = {
   // "Official" only with a source – otherwise it is an own entry.
   check: (d) => ((d.entries as Data[] | undefined) ?? []).flatMap((r, i) => r.origin === "official" && !r.source ? [{ key: "entries", row: i, col: "source", message: "Zeile {n}: „Offiziell“ geht nur mit Quelle – sonst „Eigene Angabe“ wählen.", vars: { n: i + 1 } }] : []),
 };
+
+// ------------------------------------------------------------------------------------------ friends (2.41)
+
+const PLATFORMS = "PC, PlayStation, Xbox, Switch, Mobil …";
+
+export const PLAYER: Schema = {
+  kind: "player", label: "Spieler-Karte",
+  fields: [
+    { key: "title", label: "Spielername", type: "text", required: true, maxLen: 60, card: true },
+    { key: "me", label: "Das bin ich", type: "bool", filter: true },
+    { key: "avatar", label: "Avatar", type: "image" },
+    { key: "platforms", label: "Plattformen", type: "tags", hint: PLATFORMS, filter: true },
+    { key: "games", label: "Spiele (besitzt / spielt)", type: "rows", maxRows: 300, hint: "Von Hand gepflegt – Nexus kennt die Bibliotheken deiner Freunde nicht.", columns: [
+      { key: "name", label: "Spiel", type: "text", required: true, maxLen: 100 },
+      { key: "platform", label: "Plattform", type: "text", maxLen: 30 },
+      { key: "favorite", label: "Lieblingsspiel", type: "bool" },
+    ] },
+    { key: "genres", label: "Genres", type: "tags" },
+    { key: "modes", label: "Bevorzugte Spielmodi", type: "text", maxLen: 160, card: true },
+    { key: "style", label: "Spielstil", type: "text", maxLen: 160 },
+    { key: "roles", label: "Bevorzugte Teamrollen", type: "tags" },
+    { key: "availability", label: "Verfügbarkeit (freiwillig)", type: "text", maxLen: 200, placeholder: "z. B. Mo–Do ab 19 Uhr" },
+    { key: "timezone", label: "Zeitzone", type: "text", maxLen: 60, placeholder: "z. B. Europe/Berlin", hint: "Für Termine in der Ortszeit dieser Person." },
+    { key: "description", label: "Beschreibung", type: "textarea", maxLen: 2000 },
+    { key: "shareAllowed", label: "Darf geteilt werden (Zustimmung der Person)", type: "bool", hint: "Ohne Häkchen erscheint die Karte in keinem geteilten Link." },
+    { key: "tags", label: "Tags", type: "tags", filter: true },
+  ],
+  check: (d) => {
+    const tz = d.timezone as string | undefined;
+    if (!tz) return [];
+    try { new Intl.DateTimeFormat("de-DE", { timeZone: tz }); return []; } catch { return [{ key: "timezone", message: "Unbekannte Zeitzone – Schreibweise wie „Europe/Berlin“." }]; }
+  },
+};
+
+export const SERVER: Schema = {
+  kind: "server", label: "Server",
+  fields: [
+    { key: "title", label: "Servername", type: "text", required: true, maxLen: 100, card: true },
+    { key: "game", label: "Spiel", type: "game", card: true },
+    { key: "protocol", label: "Statusabfrage", type: "select", required: true, options: o(["other", "Keine (Status unbekannt)"], ["minecraft", "Minecraft Java (Server List Ping)"], ["source", "Steam/Source (A2S)"]), filter: true, hint: "Nur diese offiziellen Abfragen gibt es – für andere Spiele bleibt der Status „Unbekannt“." },
+    { key: "host", label: "Adresse", type: "text", required: true, maxLen: 255, placeholder: "play.example.net oder 192.168.0.10" },
+    { key: "port", label: "Port", type: "number", int: true, min: 1, max: 65535, placeholder: "leer = Standard" },
+    { key: "category", label: "Kategorie", type: "text", maxLen: 40, card: true },
+    { key: "region", label: "Region", type: "text", maxLen: 40, card: true },
+    { key: "description", label: "Beschreibung", type: "textarea", maxLen: 2000 },
+    { key: "notes", label: "Eigene Notizen", type: "textarea", maxLen: 2000 },
+    { key: "favorite", label: "Favorit", type: "bool", filter: true },
+    { key: "tags", label: "Tags", type: "tags", filter: true },
+  ],
+};
+
+export const FACTS: Schema = {
+  kind: "facts", label: "Spiel-Fakten",
+  fields: [
+    { key: "title", label: "Spiel", type: "text", required: true, maxLen: 100, card: true },
+    { key: "game", label: "In der Bibliothek", type: "game" },
+    { key: "crossplay", label: "Crossplay", type: "select", required: true, options: o(["unknown", "Unbekannt"], ["yes", "Ja"], ["partial", "Teilweise"], ["no", "Nein"]), card: true, filter: true },
+    { key: "crossplaySource", label: "Quelle für Crossplay", type: "url", hint: "Pflicht bei „Ja“ oder „Teilweise“ – ohne Beleg gilt Crossplay als unbekannt." },
+    { key: "maxPlayers", label: "Spieler gleichzeitig (online)", type: "number", int: true, min: 1, max: 1000 },
+    { key: "coop", label: "Koop", type: "select", options: o(["unknown", "Unbekannt"], ["yes", "Ja"], ["no", "Nein"]) },
+    { key: "platforms", label: "Plattformen", type: "tags", hint: PLATFORMS },
+    { key: "notes", label: "Notizen", type: "textarea", maxLen: 4000 },
+  ],
+  check: (d) => (d.crossplay === "yes" || d.crossplay === "partial") && !d.crossplaySource ? [{ key: "crossplaySource", message: "Crossplay „Ja/Teilweise“ nur mit Quelle – sonst „Unbekannt“ wählen." }] : [],
+};
+
+export const TEAM: Schema = {
+  kind: "team", label: "Team",
+  fields: [
+    { key: "title", label: "Teamname", type: "text", required: true, maxLen: 80, card: true },
+    { key: "game", label: "Spiel", type: "game", card: true },
+    { key: "template", label: "Als Vorlage nutzen", type: "bool", filter: true },
+    { key: "roles", label: "Rollen", type: "rows", maxRows: 50, hint: "Frei definierbar – nicht auf ein Spiel beschränkt.", columns: [
+      { key: "name", label: "Rolle", type: "text", required: true, maxLen: 40 },
+      { key: "description", label: "Beschreibung", type: "text", maxLen: 200 },
+      { key: "tasks", label: "Strategie / Aufgaben", type: "text", maxLen: 300 },
+    ] },
+    { key: "members", label: "Spieler", type: "rows", maxRows: 100, columns: [
+      { key: "name", label: "Name", type: "text", required: true, maxLen: 60 },
+      { key: "placeholder", label: "Platzhalter", type: "bool" },
+      { key: "role", label: "Hauptrolle", type: "text", maxLen: 40 },
+      { key: "alt", label: "Kann auch", type: "text", maxLen: 100 },
+    ] },
+    { key: "lineups", label: "Aufstellungen", type: "rows", maxRows: 300, hint: "Gleicher Name = gleiche Aufstellung (z. B. „Standard“, „Ohne Tank“).", columns: [
+      { key: "lineup", label: "Aufstellung", type: "text", required: true, maxLen: 40 },
+      { key: "role", label: "Rolle", type: "text", required: true, maxLen: 40 },
+      { key: "member", label: "Spieler", type: "text", maxLen: 60 },
+      { key: "task", label: "Aufgabe", type: "text", maxLen: 200 },
+    ] },
+    { key: "results", label: "Ergebnisse und Notizen", type: "textarea", maxLen: 8000 },
+    { key: "tags", label: "Tags", type: "tags", filter: true },
+  ],
+  templates: [
+    { name: "Shooter 5er-Team", data: { roles: [{ name: "Entry" }, { name: "Support" }, { name: "Aufklärung" }, { name: "Anker" }, { name: "Teamleitung" }] } },
+    { name: "MMO-Gruppe", data: { roles: [{ name: "Tank" }, { name: "Heiler" }, { name: "Schaden" }, { name: "Schaden" }, { name: "Schaden" }] } },
+    { name: "Survival / Aufbau", data: { roles: [{ name: "Bauplanung" }, { name: "Ressourcenmanagement" }, { name: "Erkundung" }, { name: "Verteidigung" }] } },
+    { name: "Rennen / Fahrzeuge", data: { roles: [{ name: "Fahrer" }, { name: "Navigation" }, { name: "Taktik" }] } },
+  ],
+};
