@@ -68,7 +68,7 @@ function cryptoRandom() {
 
 // ------------------------------------------------------------------ export / import
 
-export interface BacklogEntry { name: string; source: string; target: string; status: string; priority: number; goalHours?: number; notes?: string; categories?: string[] }
+export interface BacklogEntry { name: string; source: string; target: string; status: string; priority: number; goalHours?: number; notes?: string; categories?: string[]; rating?: number; estimateHours?: number; sessionMinutes?: number; archived?: boolean }
 export interface BacklogExport { format: "nexus-backlog"; version: 1; exportedAt: string; entries: BacklogEntry[] }
 
 export function toExport(items: LibraryItem[], now = new Date()): BacklogExport {
@@ -77,6 +77,7 @@ export function toExport(items: LibraryItem[], now = new Date()): BacklogExport 
     entries: items.filter((i) => i.backlog).map((i) => ({
       name: i.name, source: i.source, target: i.target, status: i.backlog!, priority: i.priority ?? 0,
       ...(i.goalHours ? { goalHours: i.goalHours } : {}), ...(i.notes ? { notes: i.notes } : {}), ...(i.categories.length ? { categories: i.categories } : {}),
+      ...(i.rating ? { rating: i.rating } : {}), ...(i.estimateHours ? { estimateHours: i.estimateHours } : {}), ...(i.sessionMinutes ? { sessionMinutes: i.sessionMinutes } : {}), ...(i.backlogArchived ? { archived: true } : {}),
     })),
   };
 }
@@ -85,11 +86,11 @@ const csvCell = (v: unknown) => { const s = String(v ?? ""); return /[;"\n\r]/.t
 
 /** CSV for spreadsheets (semicolon – German Excel). Cells starting with = + - @ are neutralised (no formula injection). */
 export function toCsv(items: LibraryItem[], stats: Map<string, PlayStats>) {
-  const rows = [["Name", "Status", "Priorität", "Spielzeit (h)", "Ziel (h)", "Zuletzt gespielt", "Plattform", "Kategorien", "Notizen"]];
+  const rows = [["Name", "Status", "Priorität", "Spielzeit (h)", "Ziel (h)", "Schätzung (h)", "Sitzung (Min.)", "Bewertung", "Archiv", "Zuletzt gespielt", "Plattform", "Kategorien", "Notizen"]];
   for (const i of items.filter((x) => x.backlog)) {
     const st = stats.get(i.id);
     rows.push([i.name, statusLabel(i.backlog!), priorityLabel(i.priority ?? 0), st ? (st.totalMinutes / 60).toFixed(1).replace(".", ",") : "0",
-      i.goalHours ? String(i.goalHours).replace(".", ",") : "", st?.lastPlayed ? st.lastPlayed.slice(0, 10) : "", i.source, i.categories.join(", "), i.notes ?? ""]);
+      i.goalHours ? String(i.goalHours).replace(".", ",") : "", i.estimateHours ? String(i.estimateHours).replace(".", ",") : "", i.sessionMinutes ? String(i.sessionMinutes) : "", i.rating ? String(i.rating) : "", i.backlogArchived ? "ja" : "", st?.lastPlayed ? st.lastPlayed.slice(0, 10) : "", i.source, i.categories.join(", "), i.notes ?? ""]);
   }
   return "﻿" + rows.map((r) => r.map(csvCell).join(";")).join("\r\n");
 }
@@ -105,7 +106,11 @@ export function planImport(raw: unknown, items: LibraryItem[]): ImportPlan {
   const seen = new Set<string>();
   for (const e of f.entries as BacklogEntry[]) {
     if (!e || typeof e.name !== "string" || !STATUSES.includes(e.status as BacklogStatus) || !Number.isInteger(e.priority ?? 0) || (e.priority ?? 0) < 0 || (e.priority ?? 0) > 3 ||
-      (e.goalHours != null && !(typeof e.goalHours === "number" && e.goalHours >= 0 && e.goalHours <= 10000))) { plan.invalid++; continue; }
+      (e.goalHours != null && !(typeof e.goalHours === "number" && e.goalHours >= 0 && e.goalHours <= 10000)) ||
+      (e.estimateHours != null && !(typeof e.estimateHours === "number" && e.estimateHours >= 0 && e.estimateHours <= 10000)) ||
+      (e.sessionMinutes != null && !(Number.isInteger(e.sessionMinutes) && e.sessionMinutes >= 0 && e.sessionMinutes <= 1440)) ||
+      (e.rating != null && !(Number.isInteger(e.rating) && e.rating >= 0 && e.rating <= 5)) ||
+      (e.categories != null && !(Array.isArray(e.categories) && e.categories.every((c) => typeof c === "string")))) { plan.invalid++; continue; }
     const item = items.find((i) => i.source === e.source && i.target === e.target) ?? items.find((i) => i.name.trim().toLowerCase() === e.name.trim().toLowerCase());
     if (!item || seen.has(item.id)) { if (!item) plan.unmatched.push(e); continue; }
     seen.add(item.id);
@@ -113,6 +118,10 @@ export function planImport(raw: unknown, items: LibraryItem[]): ImportPlan {
     if (item.backlog !== e.status) changes.push(`${t("Status")}: ${item.backlog ? statusLabel(item.backlog) : "–"} → ${statusLabel(e.status)}`);
     if ((item.priority ?? 0) !== (e.priority ?? 0)) changes.push(`${t("Priorität")}: ${priorityLabel(item.priority ?? 0)} → ${priorityLabel(e.priority ?? 0)}`);
     if ((item.goalHours ?? 0) !== (e.goalHours ?? 0)) changes.push(`${t("Ziel")}: ${item.goalHours ?? "–"} → ${e.goalHours ?? "–"} h`);
+    if (e.rating != null && (item.rating ?? 0) !== e.rating) changes.push(`${t("Bewertung")}: ${item.rating ?? 0} → ${e.rating}`);
+    if (e.estimateHours != null && (item.estimateHours ?? 0) !== e.estimateHours) changes.push(`${t("Schätzung")}: ${item.estimateHours ?? "–"} → ${e.estimateHours} h`);
+    if (e.sessionMinutes != null && (item.sessionMinutes ?? 0) !== e.sessionMinutes) changes.push(`${t("Sitzung")}: ${item.sessionMinutes ?? "–"} → ${e.sessionMinutes} Min.`);
+    if (e.archived != null && !!item.backlogArchived !== e.archived) changes.push(e.archived ? t("wird archiviert") : t("aus dem Archiv"));
     plan.matched.push({ item, entry: e, changes });
   }
   return plan;

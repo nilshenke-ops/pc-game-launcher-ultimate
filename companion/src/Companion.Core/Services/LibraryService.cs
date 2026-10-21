@@ -377,6 +377,13 @@ public sealed class LibraryService
         public int? Priority { get; set; }
         /// <summary>Own goal in hours; 0 removes it.</summary>
         public double? GoalHours { get; set; }
+        /// <summary>Own time estimate in hours; 0 removes it.</summary>
+        public double? EstimateHours { get; set; }
+        /// <summary>Typical session in minutes; 0 removes it.</summary>
+        public int? SessionMinutes { get; set; }
+        public bool? BacklogArchived { get; set; }
+        /// <summary>Id of the entry this one is a duplicate of; "" clears it.</summary>
+        public string? DuplicateOf { get; set; }
     }
 
     /// <summary>Changes display data only. Launch target and arguments need <see cref="UpdateTarget"/> (PC only).</summary>
@@ -392,6 +399,10 @@ public sealed class LibraryService
             throw new RpcException("invalid-params", "Unbekannter Backlog-Status.");
         if (u.GoalHours is { } gh && (double.IsNaN(gh) || gh < 0 || gh > 10_000))
             throw new RpcException("invalid-params", "Ziel muss zwischen 0 und 10 000 Stunden liegen.");
+        if (u.EstimateHours is { } eh && (double.IsNaN(eh) || eh < 0 || eh > 10_000))
+            throw new RpcException("invalid-params", "Schätzung muss zwischen 0 und 10 000 Stunden liegen.");
+        if (u.SessionMinutes is < 0 or > 24 * 60)
+            throw new RpcException("invalid-params", "Sitzungsdauer: 0 bis 1440 Minuten.");
         var r = _store.Update(f =>
         {
             var i = f.Items.FirstOrDefault(x => x.Id == u.Id) ?? throw new RpcException("not-found", "Eintrag nicht gefunden.");
@@ -408,6 +419,15 @@ public sealed class LibraryService
             if (u.Backlog != null && (u.Backlog == "" ? null : u.Backlog) != i.Backlog) { i.Backlog = u.Backlog == "" ? null : u.Backlog; i.BacklogChangedAt = DateTime.UtcNow; }
             if (u.Priority != null) i.Priority = Math.Clamp(u.Priority.Value, 0, 3);
             if (u.GoalHours != null) i.GoalHours = u.GoalHours.Value <= 0 ? null : Math.Round(u.GoalHours.Value, 1);
+            if (u.EstimateHours != null) i.EstimateHours = u.EstimateHours.Value <= 0 ? null : Math.Round(u.EstimateHours.Value, 1, MidpointRounding.AwayFromZero);
+            if (u.SessionMinutes != null) i.SessionMinutes = u.SessionMinutes.Value <= 0 ? null : u.SessionMinutes.Value;
+            if (u.BacklogArchived != null && u.BacklogArchived.Value != i.BacklogArchived) { i.BacklogArchived = u.BacklogArchived.Value; i.BacklogChangedAt = DateTime.UtcNow; }
+            if (u.DuplicateOf != null)
+            {
+                if (u.DuplicateOf == "") i.DuplicateOf = null;
+                else if (u.DuplicateOf == i.Id || !f.Items.Any(x => x.Id == u.DuplicateOf)) throw new RpcException("invalid-params", "Unbekannter Eintrag für das Zusammenführen.");
+                else i.DuplicateOf = u.DuplicateOf;
+            }
             return Clone(i);
         });
         _hub.Changed("library");

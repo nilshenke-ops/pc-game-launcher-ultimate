@@ -29,6 +29,14 @@ export interface LibraryItem {
   backlog?: string | null;
   priority?: number;
   backlogChangedAt?: string | null;
+  /** Own estimate of the total play time in hours (an estimate). */
+  estimateHours?: number | null;
+  /** Own estimate how long one session takes at least (minutes). */
+  sessionMinutes?: number | null;
+  /** Archived in the backlog (kept, hidden from the normal list). */
+  backlogArchived?: boolean;
+  /** Merged into this other library entry (duplicate). */
+  duplicateOf?: string | null;
   goalHours?: number | null;
 }
 

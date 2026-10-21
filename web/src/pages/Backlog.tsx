@@ -1,13 +1,14 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Dices, Download, ListTodo, Play, Plus, Search, Upload, X } from "lucide-react";
+import { Archive, ArchiveRestore, CheckSquare, Dices, Download, GitMerge, ListTodo, Pencil, Play, Plus, Search, Star, Upload, X } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useRpc, toast, useCan } from "../lib/hooks";
 import { duration, gradientFor, relTime } from "../lib/format";
 import type { LibraryItem } from "../lib/types";
 import { matches, pickRandom, planImport, priorityLabel, sortItems, STATUSES, statusLabel, toCsv, toExport, type BacklogSort, type ImportPlan, type PlayFilter, type PlayStats } from "../lib/backlog";
-import { Banner, Button, Card, Empty, Field, Loadable, Meter, Modal, PageHead, Thumb } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Meter, Modal, PageHead, Thumb } from "../components/ui";
+import { duplicateGames, mergeBacklog } from "../lib/play";
 
 interface HistoryStats { stats: { itemId: string; totalMinutes: number; lastPlayed: string }[] }
 
@@ -33,19 +34,34 @@ export default function Backlog() {
   const [random, setRandom] = useState(false);
   const [plan, setPlan] = useState<ImportPlan | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [archive, setArchive] = useState(false);
+  const [selecting, setSelecting] = useState(false);
+  const [sel, setSel] = useState<Set<string>>(new Set());
+  const [details, setDetails] = useState<LibraryItem | null>(null);
+  const [merge, setMerge] = useState<LibraryItem[] | null>(null);
 
   const games = useMemo(() => (lib.data?.items ?? []).filter((i) => i.kind === "game"), [lib.data]);
   const stats = useMemo(() => new Map<string, PlayStats>((hist.data?.stats ?? []).map((s) => [s.itemId, { totalMinutes: s.totalMinutes, lastPlayed: s.lastPlayed }])), [hist.data]);
-  const inBacklog = games.filter((g) => g.backlog);
+  const allBacklog = games.filter((g) => g.backlog && !g.duplicateOf);
+  const archived = allBacklog.filter((g) => g.backlogArchived);
+  const inBacklog = archive ? archived : allBacklog.filter((g) => !g.backlogArchived);
+  const dups = useMemo(() => duplicateGames(games).filter((grp) => grp.some((g) => g.backlog)), [games]);
   const shown = useMemo(() => sortItems(inBacklog.filter((i) => matches(i, { statuses, source: source || undefined, category: category || undefined, play, search }, stats)), sort, stats),
     [inBacklog, statuses, source, category, play, search, sort, stats]);
   const counts = useMemo(() => Object.fromEntries(STATUSES.map((s) => [s, inBacklog.filter((i) => i.backlog === s).length])), [inBacklog]);
   const sources = [...new Set(inBacklog.map((i) => i.source))];
   const categories = [...new Set(inBacklog.flatMap((i) => i.categories))].sort();
 
-  const update = (i: LibraryItem, patch: Partial<Pick<LibraryItem, "backlog" | "priority" | "goalHours">>) =>
+  const update = (i: LibraryItem, patch: Partial<Pick<LibraryItem, "backlog" | "priority" | "goalHours" | "backlogArchived">>) =>
     client.call("library.update", { id: i.id, ...patch, ...(patch.backlog === null ? { backlog: "" } : {}), ...(patch.goalHours === null ? { goalHours: 0 } : {}) }).catch((e: Error) => toast(e.message, "error"));
   const launch = (i: LibraryItem) => client.call("library.launch", { id: i.id }).then(() => toast(t("{name} wird gestartet", { name: i.name }), "success"), (e: Error) => toast(e.message, "error"));
+  const bulk = async (patch: Record<string, unknown>, label: string) => {
+    let ok = 0;
+    for (const id of sel) { try { await client.call("library.update", { id, ...patch }); ok++; } catch (e) { toast((e as Error).message, "error"); } }
+    toast(t("{n} Spiele: {l}", { n: ok, l: label }), "success");
+    setSel(new Set());
+  };
+  const toggleSel = (id: string) => setSel((x) => { const n = new Set(x); if (n.has(id)) n.delete(id); else n.add(id); return n; });
   const toggleStatus = (s: string) => setStatuses((x) => (x.includes(s) ? x.filter((y) => y !== s) : [...x, s]));
 
   const importFile = async (f: File) => {
@@ -58,7 +74,7 @@ export default function Backlog() {
     if (!plan) return;
     let ok = 0;
     for (const m of plan.matched.filter((x) => x.changes.length > 0)) {
-      try { await client.call("library.update", { id: m.item.id, backlog: m.entry.status, priority: m.entry.priority ?? 0, goalHours: m.entry.goalHours ?? 0 }); ok++; }
+      try { await client.call("library.update", { id: m.item.id, backlog: m.entry.status, priority: m.entry.priority ?? 0, goalHours: m.entry.goalHours ?? 0, ...(m.entry.rating != null ? { rating: m.entry.rating } : {}), ...(m.entry.estimateHours != null ? { estimateHours: m.entry.estimateHours } : {}), ...(m.entry.sessionMinutes != null ? { sessionMinutes: m.entry.sessionMinutes } : {}), ...(m.entry.archived != null ? { backlogArchived: m.entry.archived } : {}), ...(m.entry.categories ? { categories: m.entry.categories } : {}) }); ok++; }
       catch (e) { toast(`${m.item.name}: ${(e as Error).message}`, "error"); }
     }
     toast(t("{n} Spiele übernommen", { n: ok }), "success");
@@ -70,6 +86,7 @@ export default function Backlog() {
       <PageHead eyebrow={t("Gaming")} title={t("Backlog")} text={t("Was du noch spielen willst, gerade spielst oder durchgespielt hast. Den Status setzt nur du – nichts wird automatisch als durchgespielt markiert. Spielzeit kommt aus dem Gaming-Verlauf.")}
         actions={<>
           <Button icon={<Dices size={16} />} onClick={() => setRandom(true)} disabled={inBacklog.length === 0}>{t("Zufallsauswahl")}</Button>
+          {canManage && inBacklog.length > 0 && <Button icon={<CheckSquare size={16} />} aria-pressed={selecting} variant={selecting ? "primary" : undefined} onClick={() => { setSelecting(!selecting); setSel(new Set()); }}>{selecting ? t("Auswahl beenden") : t("Auswählen")}</Button>}
           {canManage && <Button variant="primary" icon={<Plus size={16} />} onClick={() => setAdding(true)}>{t("Spiele hinzufügen")}</Button>}
         </>} />
       <Loadable loading={lib.loading} error={lib.error} onRetry={lib.reload}>
@@ -80,7 +97,26 @@ export default function Backlog() {
                 {statusLabel(s)} <span className="muted">{counts[s]}</span>
               </button>
             ))}
+            <button type="button" aria-pressed={archive} className={`chip ${archive ? "on" : ""}`} onClick={() => { setArchive(!archive); setSel(new Set()); }}><Archive size={13} /> {t("Archiv")} <span className="muted">{archived.length}</span></button>
           </div>
+          {dups.length > 0 && canManage && (
+            <Banner kind="info" title={t("Vielleicht doppelt in der Bibliothek")}>
+              {dups.slice(0, 5).map((grp) => <div key={grp[0].id} className="row" style={{ gap: 8 }}>{grp.map((g) => `${g.name} (${g.source})`).join(" · ")} <Button size="sm" icon={<GitMerge size={14} />} onClick={() => setMerge(grp)}>{t("Zusammenführen")}</Button></div>)}
+            </Banner>
+          )}
+          {selecting && (
+            <div className="bulk-bar row" role="toolbar" aria-label={t("Auswahl bearbeiten")}>
+              <span className="small"><b>{sel.size}</b> {t("ausgewählt")}</span>
+              <Button size="sm" variant="ghost" onClick={() => setSel(new Set(shown.map((i) => i.id)))}>{t("Alle")}</Button>
+              <select className="input" style={{ width: "auto" }} value="" disabled={!sel.size} aria-label={t("Status für Auswahl")} onChange={(e) => { if (e.target.value) void bulk({ backlog: e.target.value }, statusLabel(e.target.value)); }}>
+                <option value="">{t("Status setzen …")}</option>{STATUSES.map((st) => <option key={st} value={st}>{statusLabel(st)}</option>)}
+              </select>
+              <select className="input" style={{ width: "auto" }} value="" disabled={!sel.size} aria-label={t("Priorität für Auswahl")} onChange={(e) => { if (e.target.value) void bulk({ priority: Number(e.target.value) }, priorityLabel(Number(e.target.value))); }}>
+                <option value="">{t("Priorität setzen …")}</option>{[3, 2, 1, 0].map((p) => <option key={p} value={p}>{priorityLabel(p)}</option>)}
+              </select>
+              <Button size="sm" icon={archive ? <ArchiveRestore size={14} /> : <Archive size={14} />} disabled={!sel.size} onClick={() => void bulk({ backlogArchived: !archive }, archive ? t("zurückgeholt") : t("archiviert"))}>{archive ? t("Zurückholen") : t("Archivieren")}</Button>
+            </div>
+          )}
           <div className="row">
             <div className="input-icon grow" style={{ minWidth: 200 }}><Search size={17} /><input className="input" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t("Suchen (Name, Notiz)")} aria-label={t("Backlog durchsuchen")} /></div>
             <select className="input" style={{ width: "auto" }} value={source} onChange={(e) => setSource(e.target.value)} aria-label={t("Plattform")}>
@@ -113,7 +149,8 @@ export default function Backlog() {
                 const hours = (st?.totalMinutes ?? 0) / 60;
                 const running = lib.data?.running.includes(i.id);
                 return (
-                  <div key={i.id} className="list-item backlog-item">
+                  <div key={i.id} className={`list-item backlog-item ${sel.has(i.id) ? "selected" : ""}`}>
+                    {selecting && <input type="checkbox" className="bulk-check" checked={sel.has(i.id)} onChange={() => toggleSel(i.id)} aria-label={t("{n} auswählen", { n: i.name })} />}
                     <Thumb name={i.name} icon={i.iconData} cover={i.coverUrl} gradient={gradientFor(i.name)} />
                     <div className="grow" style={{ minWidth: 0 }}>
                       <div className="title ellipsis">{i.name}{running && <span className="badge ok" style={{ marginLeft: 6 }}>{t("läuft")}</span>}</div>
@@ -124,17 +161,26 @@ export default function Backlog() {
                         )}
                       </div>
                       {i.goalHours ? <div className="row nowrap small" style={{ gap: 8, marginTop: 4 }}><Meter value={Math.min(100, (hours / i.goalHours) * 100)} /><span className="muted nowrap">{hours.toFixed(1)} / {i.goalHours} h</span></div> : null}
+                      {(i.rating || i.estimateHours || i.sessionMinutes || i.categories.length > 0) ? (
+                        <div className="row tiny muted" style={{ gap: 6, marginTop: 2 }}>
+                          {i.rating ? <span aria-label={t("{n} von 5 Sternen", { n: i.rating })}>{"★".repeat(i.rating)}{"☆".repeat(5 - i.rating)}</span> : null}
+                          {i.estimateHours ? <span className="badge">{t("≈ {h} h (Schätzung)", { h: i.estimateHours })}</span> : null}
+                          {i.sessionMinutes ? <span className="badge">{t("Sitzung ≈ {m} Min.", { m: i.sessionMinutes })}</span> : null}
+                          {i.categories.map((c) => <span key={c} className="badge">#{c}</span>)}
+                        </div>) : null}
                       {i.notes && <div className="tiny muted ellipsis">{i.notes}</div>}
                     </div>
                     <div className="row nowrap backlog-controls">
-                      <select className="input" value={i.backlog ?? ""} disabled={!canManage} onChange={(e) => update(i, { backlog: e.target.value || null })} aria-label={t("Status von {n}", { n: i.name })}>
+                      <select className="input" value={i.backlog ?? ""} disabled={!canManage} onChange={(e) => e.target.value === "__archive" ? update(i, { backlogArchived: !i.backlogArchived }) : update(i, { backlog: e.target.value || null })} aria-label={t("Status von {n}", { n: i.name })}>
                         {STATUSES.map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
-                        <option value="">{t("Aus dem Backlog entfernen")}</option>
+                        <option value="__archive">{i.backlogArchived ? t("Aus dem Archiv zurückholen") : t("Archivieren")}</option>
+                        {i.backlogArchived && <option value="">{t("Ganz aus dem Backlog entfernen")}</option>}
                       </select>
                       <select className="input" value={i.priority ?? 0} disabled={!canManage} onChange={(e) => update(i, { priority: Number(e.target.value) })} aria-label={t("Priorität von {n}", { n: i.name })}>
                         {[3, 2, 1, 0].map((p) => <option key={p} value={p}>{priorityLabel(p)}</option>)}
                       </select>
                       <GoalInput item={i} disabled={!canManage} onSave={(h) => update(i, { goalHours: h })} />
+                      {canManage && <Button size="sm" variant="ghost" icon={<Pencil size={14} />} onClick={() => setDetails(i)} aria-label={t("Details von {n}", { n: i.name })} />}
                       <Button size="sm" variant="primary" icon={<Play size={14} />} onClick={() => launch(i)} aria-label={t("{name} starten", { name: i.name })} />
                     </div>
                   </div>
@@ -157,6 +203,8 @@ export default function Backlog() {
           </Card>
         </div>
       </Loadable>
+      {details && <DetailsDialog item={details} onClose={() => setDetails(null)} />}
+      {merge && <MergeDialog group={merge} onClose={() => setMerge(null)} />}
       {adding && <AddDialog games={games.filter((g) => !g.backlog)} onClose={() => setAdding(false)} />}
       {random && <RandomDialog games={inBacklog} onLaunch={launch} onClose={() => setRandom(false)} />}
       {plan && (
@@ -243,6 +291,77 @@ function RandomDialog({ games, onLaunch, onClose }: { games: LibraryItem[]; onLa
             <Button variant="ghost" icon={<X size={15} />} aria-label={t("Verwerfen")} onClick={() => setPick(null)} />
           </div>
         )}
+      </div>
+    </Modal>
+  );
+}
+
+function DetailsDialog({ item, onClose }: { item: LibraryItem; onClose: () => void }) {
+  const [rating, setRating] = useState(item.rating ?? 0);
+  const [tags, setTags] = useState(item.categories.join(", "));
+  const [est, setEst] = useState(item.estimateHours ? String(item.estimateHours) : "");
+  const [session, setSession] = useState(item.sessionMinutes ? String(item.sessionMinutes) : "");
+  const [notes, setNotes] = useState(item.notes ?? "");
+  const [busy, setBusy] = useState(false);
+  const num = (v: string) => (v.trim() === "" ? 0 : Number(v.replace(",", ".")));
+  const estN = num(est), sessN = num(session);
+  const err = !Number.isFinite(estN) || estN < 0 || estN > 10000 ? t("Schätzung: 0 bis 10 000 Stunden.") : !Number.isInteger(sessN) || sessN < 0 || sessN > 1440 ? t("Sitzung: ganze Minuten von 0 bis 1440.") : null;
+  const save = async () => {
+    setBusy(true);
+    try {
+      await client.call("library.update", { id: item.id, rating, categories: tags.split(",").map((x) => x.trim()).filter(Boolean), estimateHours: estN, sessionMinutes: sessN, notes });
+      onClose();
+    } catch (e) { toast((e as Error).message, "error"); }
+    setBusy(false);
+  };
+  return (
+    <Modal title={item.name} onClose={onClose} footer={<><Button onClick={onClose}>{t("Abbrechen")}</Button><Button variant="primary" busy={busy} disabled={!!err} onClick={() => void save()}>{t("Speichern")}</Button></>}>
+      <div className="stack">
+        <Field label={t("Bewertung")}>
+          <div className="row" style={{ gap: 2 }} role="radiogroup" aria-label={t("Bewertung")}>
+            {[1, 2, 3, 4, 5].map((n) => <Button key={n} size="sm" variant="ghost" role="radio" aria-checked={rating === n} aria-label={t("{n} von 5 Sternen", { n })} icon={<Star size={18} fill={n <= rating ? "currentColor" : "none"} />} onClick={() => setRating(rating === n ? 0 : n)} />)}
+          </div>
+        </Field>
+        <Field label={t("Tags")} hint={t("Mit Komma trennen (höchstens 10)")}><input className="input" value={tags} maxLength={330} onChange={(e) => setTags(e.target.value)} placeholder={t("z. B. Koop, Entspannt, Story")} /></Field>
+        <div className="grid-2" style={{ gap: 10 }}>
+          <Field label={t("Zeitschätzung gesamt (Stunden)")} hint={t("Deine Schätzung – wird als Schätzung angezeigt")}><input className="input" inputMode="decimal" value={est} onChange={(e) => setEst(e.target.value)} placeholder="25" /></Field>
+          <Field label={t("Eine Sitzung dauert etwa (Minuten)")} hint={t("Für den Zeit-Finder; leer = aus dem Verlauf")}><input className="input" inputMode="numeric" value={session} onChange={(e) => setSession(e.target.value)} placeholder="30" /></Field>
+        </div>
+        {err && <span className="tiny" style={{ color: "var(--danger)" }}>{err}</span>}
+        <Field label={t("Notizen")}><textarea className="input" rows={3} maxLength={1000} value={notes} onChange={(e) => setNotes(e.target.value)} /></Field>
+      </div>
+    </Modal>
+  );
+}
+
+function MergeDialog({ group, onClose }: { group: LibraryItem[]; onClose: () => void }) {
+  const [keep, setKeep] = useState(group.find((g) => g.backlog)?.id ?? group[0].id);
+  const [busy, setBusy] = useState(false);
+  const run = async () => {
+    if (!await confirmDialog(t("Zusammenführen?"), t("Status, Priorität, Bewertung, Tags, Notizen und Schätzungen kommen zum gewählten Eintrag. Die anderen Einträge bleiben in der Bibliothek (zum Starten), verschwinden aber aus dem Backlog."), { ok: t("Zusammenführen") })) return;
+    setBusy(true);
+    try {
+      let k = group.find((g) => g.id === keep)!;
+      for (const o of group.filter((g) => g.id !== keep)) {
+        const m = mergeBacklog(k, o);
+        await client.call("library.update", { id: k.id, ...m });
+        await client.call("library.update", { id: o.id, duplicateOf: k.id, backlog: "" });
+        k = { ...k, ...m, backlog: m.backlog || null };
+      }
+      toast(t("Zusammengeführt"), "success");
+      onClose();
+    } catch (e) { toast((e as Error).message, "error"); }
+    setBusy(false);
+  };
+  return (
+    <Modal title={t("Doppelte zusammenführen")} onClose={onClose} footer={<><Button onClick={onClose}>{t("Abbrechen")}</Button><Button variant="primary" busy={busy} icon={<GitMerge size={15} />} onClick={() => void run()}>{t("Zusammenführen")}</Button></>}>
+      <div className="stack-sm">
+        <p className="small" style={{ margin: 0 }}>{t("Welcher Eintrag soll im Backlog bleiben?")}</p>
+        {group.map((g) => (
+          <label key={g.id} className="checkbox"><input type="radio" name="keep" checked={keep === g.id} onChange={() => setKeep(g.id)} />
+            <span>{g.name} <span className="tiny muted">· {g.source}{g.backlog ? " · " + statusLabel(g.backlog) : ""}</span></span></label>
+        ))}
+        <span className="tiny muted">{t("Spielzeit im Verlauf bleibt je Eintrag getrennt.")}</span>
       </div>
     </Modal>
   );

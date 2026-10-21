@@ -1076,6 +1076,49 @@ test("Sammlungen ohne PC: Journal und Wiki speichern im Browser, gleichen nach d
   await ctx.close();
 });
 
+test("Was spiele ich?: Bingo erkennt Reihen, Link teilen und als eigene Karte übernehmen; Challenges speichern", async ({ browser }) => {
+  const ctx = await newCtx(browser, { viewport: { width: 1200, height: 900 }, locale: "de-DE", permissions: ["clipboard-read", "clipboard-write"] });
+  const page = await ctx.newPage();
+  await page.goto(`${COMPANION}/#/play?tab=bingo`);
+  await page.getByRole("button", { name: "Neue Karte" }).click();
+  const dlg = page.getByRole("dialog");
+  await dlg.getByRole("radio", { name: "3×3" }).click();
+  await dlg.getByLabel("Vorlage").selectOption("");
+  await dlg.getByLabel("Eigene Aufgaben (eine pro Zeile)").fill("a\nb\nc");
+  await expect(dlg.getByRole("button", { name: "Karte mischen" })).toBeDisabled(); // 8 tasks needed
+  await dlg.getByLabel("Vorlage").selectOption("general");
+  await dlg.getByRole("button", { name: "Karte mischen" }).click();
+  await expect(page.locator(".bingo-cell")).toHaveCount(9);
+  await expect(page.locator(".bingo-cell.free")).toHaveCount(1);
+  for (const i of [0, 3, 6]) await page.locator(".bingo-cell").nth(i).click();
+  await expect(page.getByText("Fertig: Spalte 1")).toBeVisible();
+  await expect(page.locator(".bingo-cell.line")).toHaveCount(3);
+  await page.getByRole("button", { name: "Link teilen" }).click();
+  await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("share=");
+  const link = await page.evaluate(() => navigator.clipboard.readText());
+
+  const other = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
+  const friend = await other.newPage();
+  await friend.goto(link);
+  await expect(friend.getByText("Geteilte Karte")).toBeVisible();
+  await expect(friend.locator(".bingo-cell")).toHaveCount(9);
+  await friend.getByRole("button", { name: "Als eigene Karte speichern" }).click();
+  await friend.reload();
+  await friend.getByRole("tab", { name: "Bingo" }).click();
+  await expect(friend.locator(".j-hit", { hasText: "Mein Bingo" })).toContainText("0 von 8 erledigt"); // ticks are not shared
+  await friend.goto(`${COMPANION}/#/play?tab=bingo&share=kaputt`);
+  await expect(friend.getByText("Link ist ungültig oder beschädigt")).toBeVisible();
+
+  await page.getByRole("tab", { name: "Challenges" }).click();
+  await page.getByRole("button", { name: "Vorschläge erzeugen" }).click();
+  await expect(page.locator(".j-conflict")).toHaveCount(3);
+  await page.locator(".j-conflict").first().getByRole("button", { name: "Speichern" }).click();
+  await expect(page.getByText("1 offen · 0 geschafft")).toBeVisible();
+  await page.locator(".card", { hasText: "Meine Challenges" }).locator("input[type=checkbox]").first().click();
+  await expect(page.getByText("0 offen · 1 geschafft")).toBeVisible();
+  await ctx.close(); await other.close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

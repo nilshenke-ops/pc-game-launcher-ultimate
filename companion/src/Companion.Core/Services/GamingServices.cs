@@ -476,6 +476,14 @@ public sealed class HistoryService
 
     public object StartTimeReport(int defaultAccuracy) => StartTimes.Report(_store.Snapshot(), defaultAccuracy);
 
+    static double? Median(List<double> v)
+    {
+        if (v.Count < 3) return null;
+        v.Sort();
+        var m = v.Count % 2 == 1 ? v[v.Count / 2] : (v[v.Count / 2 - 1] + v[v.Count / 2]) / 2;
+        return Math.Round(m);
+    }
+
     public object Get()
     {
         var f = _store.Snapshot();
@@ -486,6 +494,8 @@ public sealed class HistoryService
             sessions = g.Count(),
             totalMinutes = Math.Round(g.Sum(s => s.Minutes), 1),
             lastPlayed = g.Max(s => s.StartedAt),
+            // Typical session: median of the real sessions (at least 3 of 5 minutes or more) – null when there is too little data.
+            typicalMinutes = Median(g.Where(s => s.EndedAt != null && s.Minutes >= 5).Select(s => s.Minutes).ToList()),
         }).OrderByDescending(x => x.totalMinutes).ToList();
         var launchStats = f.Launches.GroupBy(l => l.ItemId).Select(g => new { itemId = g.Key, name = g.First().Name, launches = g.Count(), failures = g.Count(l => !l.Ok) })
             .OrderByDescending(x => x.launches).ToList();

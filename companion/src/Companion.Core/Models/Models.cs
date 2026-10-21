@@ -60,6 +60,14 @@ public sealed class LibraryItem
     public DateTime? BacklogChangedAt { get; set; }
     /// <summary>Own goal for this game in hours of play time (e.g. "main story ≈ 25 h"), null = none.</summary>
     public double? GoalHours { get; set; }
+    /// <summary>Own estimate how long the game takes in hours (an estimate – shown as such), null = unknown.</summary>
+    public double? EstimateHours { get; set; }
+    /// <summary>Own estimate how long one session takes at least (minutes), null = unknown. Used by the time finder.</summary>
+    public int? SessionMinutes { get; set; }
+    /// <summary>Archived in the backlog: kept with its status, but out of the normal list (instead of deleting).</summary>
+    public bool BacklogArchived { get; set; }
+    /// <summary>Merged into another entry of the library (duplicate); the backlog data went there.</summary>
+    public string? DuplicateOf { get; set; }
 }
 
 public static class Backlog

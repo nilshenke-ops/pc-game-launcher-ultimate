@@ -1,0 +1,362 @@
+// "Was spiele ich?": game finder by the time you have, challenge generator and gaming bingo. Works without the PC
+// (last known library and history; own entries are kept in this browser and compared with the PC – lib/journal.ts).
+
+import { useMemo, useState, type ReactNode } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Check, Clock, Copy, Dices, Download, Grid3x3, Image as ImageIcon, Link2, Pencil, Play, Plus, RefreshCw, Save, Shuffle, Swords, Trash2, Trophy, Undo2 } from "lucide-react";
+import { t } from "../lib/i18n";
+import { dateTime, gradientFor } from "../lib/format";
+import { toast, useRpc } from "../lib/hooks";
+import type { LibraryItem } from "../lib/types";
+import { statusLabel, STATUSES } from "../lib/backlog";
+import { downloadText, exportJournal, newId, removeEntry, useJournal, type Entry } from "../lib/journal";
+import { memorySummary, pathProgress, type Find, type GoalPath, type Memory } from "../lib/journal-logic";
+import {
+  BINGO_TEMPLATES, BingoError, bingoLines, cellsNeeded, decodeShare, encodeShare, findGames, generateChallenges, makeBoard, OPEN_END, randomSuggestion, sanitizeSharedBingo,
+  TIME_PRESETS, type Bingo, type Challenge, type GameStats, type Suggestion,
+} from "../lib/play";
+import { useLaunch } from "../components/launch-tiles";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Modal, PageHead, Switch, Thumb } from "../components/ui";
+import { GamePicker, gameLabel, SyncBadge, trySave, useGames } from "../components/journal-ui";
+
+type Tab = "time" | "challenges" | "bingo";
+const TABS: Tab[] = ["time", "challenges", "bingo"];
+
+interface HistoryData { stats: { itemId: string; totalMinutes: number; lastPlayed: string; sessions: number; typicalMinutes?: number | null }[] }
+
+function useLibraryAndStats() {
+  const lib = useRpc<{ items: LibraryItem[]; installed: Record<string, boolean> }>("library.list", {}, ["library"]);
+  const hist = useRpc<HistoryData>("history.get", {}, ["history"]);
+  const stats = useMemo(() => new Map<string, GameStats>((hist.data?.stats ?? []).map((s) => [s.itemId, s])), [hist.data]);
+  const items = lib.data?.items ?? [];
+  // Never loaded from a PC (only the empty offline default): say so instead of "nothing fits".
+  return { items, installed: lib.data?.installed ?? {}, stats, stale: !!lib.stale && !!lib.updatedAt, hasLib: items.some((i) => i.kind === "game") };
+}
+
+export default function PlayPage() {
+  const [params, setParams] = useSearchParams();
+  const share = params.get("share");
+  const tab = (TABS.includes(params.get("tab") as Tab) ? params.get("tab") : share ? "bingo" : "time") as Tab;
+  const setTab = (v: Tab) => setParams({ tab: v }, { replace: true });
+  return (
+    <>
+      <PageHead eyebrow={t("Spielbegleiter")} title={t("Was spiele ich?")} text={t("Spiele passend zu deiner Zeit, Challenges für Abwechslung und Gaming-Bingo – auch ohne PC nutzbar.")} actions={<SyncBadge />} />
+      <div className="stack">
+        <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
+          {([["time", <Clock size={15} />, t("Zeit-Finder")], ["challenges", <Swords size={15} />, t("Challenges")], ["bingo", <Grid3x3 size={15} />, t("Bingo")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
+            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setTab(v)}>{icon}{label}</button>
+          ))}
+        </div>
+        {tab === "time" && <TimeFinder />}
+        {tab === "challenges" && <Challenges />}
+        {tab === "bingo" && <BingoTab share={share} onShareDone={() => setParams({ tab: "bingo" }, { replace: true })} />}
+      </div>
+    </>
+  );
+}
+
+// ============================================================================================ F1 – time finder
+
+function TimeFinder() {
+  const { items, installed, stats, stale, hasLib } = useLibraryAndStats();
+  const memories = useJournal<Memory>("memory");
+  const [minutes, setMinutes] = useState(30);
+  const [custom, setCustom] = useState("");
+  const [statuses, setStatuses] = useState<string[]>([]);
+  const [installedOnly, setInstalledOnly] = useState(true);
+  const [category, setCategory] = useState("");
+  const [notPlayed, setNotPlayed] = useState(0);
+  const [pick, setPick] = useState<Suggestion | null>(null);
+  const { launch, launching } = useLaunch();
+  const categories = useMemo(() => [...new Set(items.filter((i) => i.kind === "game").flatMap((i) => i.categories))].sort(), [items]);
+  const res = useMemo(() => findGames(items, stats, { minutes, statuses, installedOnly, installed, category: category || undefined, notPlayedDays: notPlayed || undefined },
+    (i) => !!memorySummary(memories, { gameId: i.id, gameName: i.name })), [items, stats, minutes, statuses, installedOnly, installed, category, notPlayed, memories]);
+  const setCustomMinutes = (v: string) => { setCustom(v); const n = Number(v); if (Number.isInteger(n) && n >= 5 && n <= 600) setMinutes(n); };
+  return (
+    <>
+      <Card title={t("Wie viel Zeit hast du?")} icon={<Clock size={18} />}>
+        <div className="stack-sm">
+          <div className="chips" role="radiogroup" aria-label={t("Verfügbare Zeit")}>
+            {TIME_PRESETS.map((m) => <button key={m} type="button" role="radio" aria-checked={minutes === m && !custom} className={`chip ${minutes === m && !custom ? "on" : ""}`} onClick={() => { setCustom(""); setMinutes(m); setPick(null); }}>{m === 15 ? t("10–15 Min.") : m === OPEN_END ? t("120+ Min.") : t("{m} Min.", { m })}</button>)}
+            <label className={`chip ${custom ? "on" : ""}`}>{t("Eigene")}: <input className="j-search-input" style={{ width: 52 }} inputMode="numeric" value={custom} placeholder="75" aria-label={t("Eigene Zeit in Minuten")} onChange={(e) => setCustomMinutes(e.target.value.replace(/\D/g, ""))} /> {t("Min.")}</label>
+          </div>
+          {custom && !(Number(custom) >= 5 && Number(custom) <= 600) && <span className="tiny" style={{ color: "var(--warning)" }}>{t("Bitte 5 bis 600 Minuten eingeben.")}</span>}
+          <div className="row" style={{ gap: 8 }}>
+            <select className="input" style={{ maxWidth: 220 }} value={statuses[0] ?? ""} onChange={(e) => setStatuses(e.target.value ? [e.target.value] : [])} aria-label={t("Backlog-Status")}>
+              <option value="">{t("Alle Spiele (außer durchgespielt)")}</option>
+              {STATUSES.filter((s) => s !== "completed" && s !== "dropped").map((s) => <option key={s} value={s}>{statusLabel(s)}</option>)}
+            </select>
+            {categories.length > 0 && <select className="input" style={{ maxWidth: 200 }} value={category} onChange={(e) => setCategory(e.target.value)} aria-label={t("Kategorie")}><option value="">{t("Alle Kategorien")}</option>{categories.map((c) => <option key={c} value={c}>{c}</option>)}</select>}
+            <select className="input" style={{ maxWidth: 220 }} value={notPlayed} onChange={(e) => setNotPlayed(Number(e.target.value))} aria-label={t("Zuletzt gespielt")}>
+              <option value={0}>{t("Egal, wann zuletzt gespielt")}</option><option value={7}>{t("Mindestens 7 Tage nicht gespielt")}</option><option value={30}>{t("Mindestens 30 Tage nicht gespielt")}</option>
+            </select>
+          </div>
+          <Switch checked={installedOnly} onChange={setInstalledOnly} label={t("Nur installierte Spiele")} hint={t("Laut letzter Prüfung des PCs")} />
+          <div className="row" style={{ gap: 8 }}>
+            <Button variant="primary" icon={<Dices size={16} />} disabled={!res.fits.length} onClick={() => setPick(randomSuggestion(res.fits))}>{t("Zufällig eins davon")}</Button>
+            <span className="tiny muted">{t("{n} passen", { n: res.fits.length })}{res.unknown.length > 0 && " · " + t("{n} ohne bekannte Dauer", { n: res.unknown.length })}</span>
+          </div>
+          {stale && <span className="tiny muted">{t("Spieleliste und Verlauf: zuletzt bekannter Stand vom PC.")}</span>}
+        </div>
+      </Card>
+      {!hasLib ? <Card><Empty icon={<Clock size={28} />} title={t("Noch keine Spieleliste")} text={t("Die Spiele kommen vom PC. Verbinde ihn einmal – danach geht der Zeit-Finder auch ohne PC.")} /></Card> : <>
+        {pick && <SuggestionCard s={pick} highlight launching={launching.has(pick.item.id)} onLaunch={() => void launch(pick.item)} />}
+        {res.fits.length === 0 ? <Card><Empty icon={<Clock size={26} />} title={t("Kein Spiel mit bekannter Dauer passt")} text={t("Trage im Backlog bei einem Spiel „Eine Sitzung dauert etwa …“ ein – oder spiele es ein paar Mal, dann zählt der Verlauf mit.")} /></Card>
+          : <div className="grid-3">{res.fits.slice(0, 30).map((s) => <SuggestionCard key={s.item.id} s={s} launching={launching.has(s.item.id)} onLaunch={() => void launch(s.item)} />)}</div>}
+        {res.unknown.length > 0 && (
+          <Card title={t("Dauer unbekannt")} meta={String(res.unknown.length)}>
+            <p className="small muted" style={{ marginTop: 0 }}>{t("Für diese Spiele gibt es weder eine eigene Angabe noch genug Sitzungen im Verlauf. Ob sie in {m} Minuten passen, ist unbekannt.", { m: minutes })}</p>
+            <div className="row" style={{ gap: 6 }}>{res.unknown.slice(0, 40).map((s) => <span key={s.item.id} className="badge">{s.item.name}</span>)}</div>
+          </Card>
+        )}
+      </>}
+    </>
+  );
+}
+
+function SuggestionCard({ s, highlight, launching, onLaunch }: { s: Suggestion; highlight?: boolean; launching: boolean; onLaunch: () => void }) {
+  return (
+    <article className={`j-item ${highlight ? "focus" : ""}`}>
+      <div className="row nowrap">
+        <Thumb name={s.item.name} icon={s.item.iconData} cover={s.item.coverUrl} gradient={gradientFor(s.item.name)} />
+        <div className="grow"><b>{s.item.name}</b>{s.session && <div className="tiny muted">{s.session.source === "own" ? t("≈ {m} Min. (deine Schätzung)", { m: s.session.minutes }) : t("≈ {m} Min. (Median aus dem Verlauf)", { m: s.session.minutes })}</div>}</div>
+        <Button size="sm" variant="primary" icon={<Play size={14} />} busy={launching} onClick={onLaunch}>{t("Spielen")}</Button>
+      </div>
+      <ul className="j-reasons">{s.reasons.map((r) => <li key={r.key}>{t(r.text, r.vars)}</li>)}</ul>
+    </article>
+  );
+}
+
+// ============================================================================================ F5 – challenges
+
+const SOURCE_LABEL: Record<string, string> = { generic: "Allgemeiner Vorschlag", data: "Aus deinen Daten", own: "Eigene Challenge" };
+
+function Challenges() {
+  const { items, stats } = useLibraryAndStats();
+  const saved = useJournal<Challenge>("challenge");
+  const paths = useJournal<GoalPath>("path");
+  const finds = useJournal<Find>("find");
+  const games = useGames();
+  const [maxMinutes, setMaxMinutes] = useState(0);
+  const [withData, setWithData] = useState(true);
+  const [shown, setShown] = useState<Challenge[]>([]);
+  const [edit, setEdit] = useState<Entry<Challenge> | "new" | null>(null);
+  const [showDone, setShowDone] = useState(false);
+  const ctx = useMemo(() => ({
+    games: items, stats,
+    nextStages: paths.filter((p) => !p.data.archived && !p.data.template).flatMap((p) => { const n = pathProgress(p.data).next; return n ? [{ pathId: p.id, title: p.data.title, stage: n.title }] : []; }),
+    openFinds: finds.filter((f) => f.data.status === "open").slice(0, 20).map((f) => ({ id: f.id, title: f.data.title })),
+  }), [items, stats, paths, finds]);
+  const roll = () => setShown(generateChallenges(ctx, 3, { withData, maxMinutes: maxMinutes || undefined, exclude: [...shown.map((c) => c.text), ...saved.map((s) => s.data.text)] }, Math.random, (x, v) => t(x, v)));
+  const save = (c: Challenge) => { if (trySave("challenge", newId(), { ...c, status: "open" })) { toast(t("Challenge gespeichert"), "success"); setShown((l) => l.filter((x) => x !== c)); } };
+  const open = saved.filter((s) => s.data.status === "open"), done = saved.filter((s) => s.data.status === "done");
+  return (
+    <>
+      <Card title={t("Challenge-Generator")} icon={<Swords size={18} />} actions={<Button size="sm" icon={<Plus size={15} />} onClick={() => setEdit("new")}>{t("Eigene Challenge")}</Button>}>
+        <div className="stack-sm">
+          <Banner kind="info">{t("Allgemeine Vorschläge passen nicht zu jedem Spiel („falls das Spiel es erlaubt“). Vorschläge „aus deinen Daten“ stammen aus Backlog, Verlauf, Zielpfaden und Funden. Geprüfte spielspezifische Challenges gibt es nur, wenn du sie selbst anlegst – Nexus erfindet keine.")}</Banner>
+          <div className="row" style={{ gap: 8 }}>
+            <select className="input" style={{ maxWidth: 200 }} value={maxMinutes} onChange={(e) => setMaxMinutes(Number(e.target.value))} aria-label={t("Zeit")}>
+              <option value={0}>{t("Beliebige Dauer")}</option><option value={15}>{t("Bis 15 Min.")}</option><option value={30}>{t("Bis 30 Min.")}</option>
+            </select>
+            <Switch checked={withData} onChange={setWithData} label={t("Auch aus meinen Daten")} />
+          </div>
+          <div><Button variant="primary" icon={shown.length ? <RefreshCw size={15} /> : <Dices size={15} />} onClick={roll}>{shown.length ? t("Neu würfeln") : t("Vorschläge erzeugen")}</Button></div>
+          {shown.map((c) => (
+            <div key={c.text} className="j-conflict">
+              <div className="grow"><div className="small">{c.text}</div><span className={`badge ${c.source === "data" ? "info" : ""}`}>{t(SOURCE_LABEL[c.source])}</span>{c.minutes ? <span className="tiny muted"> · {t("ca. {m} Min.", { m: c.minutes })}</span> : null}</div>
+              <Button size="sm" icon={<Save size={14} />} onClick={() => save(c)}>{t("Speichern")}</Button>
+            </div>
+          ))}
+        </div>
+      </Card>
+      <Card title={t("Meine Challenges")} icon={<Trophy size={18} />} meta={t("{o} offen · {d} geschafft", { o: open.length, d: done.length })}>
+        {saved.length === 0 ? <Empty icon={<Swords size={26} />} title={t("Noch keine gespeichert")} text={t("Erzeuge Vorschläge und speichere die, die dir gefallen – oder lege eigene an.")} /> : (
+          <div className="stack-sm">
+            {(showDone ? [...open, ...done] : open).map((e) => (
+              <div key={e.id} className="j-conflict">
+                <label className="checkbox grow"><input type="checkbox" checked={e.data.status === "done"} onChange={() => trySave("challenge", e.id, { ...e.data, status: e.data.status === "done" ? "open" : "done", doneAt: e.data.status === "done" ? null : new Date().toISOString() })} />
+                  <span><span className={e.data.status === "done" ? "muted" : ""}>{e.data.text}</span><br /><span className="badge">{t(SOURCE_LABEL[e.data.source])}</span>{gameLabel(e.data, games) && <span className="tiny muted"> · {gameLabel(e.data, games)}</span>}{e.data.doneAt && <span className="tiny muted"> · {t("geschafft {d}", { d: dateTime(e.data.doneAt) })}</span>}</span></label>
+                <Button size="sm" variant="ghost" icon={<Pencil size={14} />} aria-label={t("Bearbeiten")} onClick={() => setEdit(e)} />
+              </div>
+            ))}
+            {done.length > 0 && <div><Button size="sm" variant="ghost" onClick={() => setShowDone(!showDone)}>{showDone ? t("Geschaffte ausblenden") : t("Geschaffte zeigen ({n})", { n: done.length })}</Button></div>}
+          </div>
+        )}
+      </Card>
+      {edit && <ChallengeEditor entry={edit === "new" ? null : edit} games={games} onClose={() => setEdit(null)} />}
+    </>
+  );
+}
+
+function ChallengeEditor({ entry, games, onClose }: { entry: Entry<Challenge> | null; games: { id: string; name: string }[]; onClose: () => void }) {
+  const [id] = useState(entry?.id ?? newId());
+  const [f, setF] = useState<Challenge>(entry?.data ?? { text: "", source: "own", status: "open", gameId: null, gameName: null, note: "" });
+  const set = (p: Partial<Challenge>) => setF((x) => ({ ...x, ...p }));
+  return (
+    <Modal title={entry ? t("Challenge bearbeiten") : t("Eigene Challenge")} onClose={onClose} footer={<>
+      {entry && <Button variant="danger" icon={<Trash2 size={15} />} onClick={async () => { if (await confirmDialog(t("Challenge löschen?"), t("Sie wird auf allen Geräten gelöscht."), { danger: true })) { removeEntry(id); onClose(); } }}>{t("Löschen")}</Button>}
+      <Button onClick={onClose}>{t("Abbrechen")}</Button>
+      <Button variant="primary" disabled={!f.text.trim()} onClick={() => { if (trySave("challenge", id, { ...f, text: f.text.trim() })) onClose(); }}>{t("Speichern")}</Button>
+    </>}>
+      <div className="stack">
+        <Field label={t("Challenge")}><textarea className="input" rows={2} maxLength={300} value={f.text} onChange={(e) => set({ text: e.target.value })} placeholder={t("z. B. Den Wächter ohne Schild besiegen")} /></Field>
+        <GamePicker value={f} onChange={(g) => set(g)} games={games} />
+        {entry && entry.data.source !== "own" && <span className="tiny muted">{t("Herkunft")}: {t(SOURCE_LABEL[entry.data.source])}</span>}
+        <Field label={t("Notiz")}><input className="input" maxLength={300} value={f.note ?? ""} onChange={(e) => set({ note: e.target.value })} /></Field>
+      </div>
+    </Modal>
+  );
+}
+
+// ============================================================================================ F6 – bingo
+
+function BingoTab({ share, onShareDone }: { share: string | null; onShareDone: () => void }) {
+  const cards = useJournal<Bingo>("bingo");
+  const [open, setOpen] = useState<string | null>(null);
+  const [create, setCreate] = useState(false);
+  const shared = useMemo(() => (share ? sanitizeSharedBingo(decodeShare(share)) : null), [share]);
+  const cur = cards.find((c) => c.id === open);
+  if (share) return <SharedBingo card={shared} onSaved={(id) => { onShareDone(); setOpen(id); }} onClose={onShareDone} />;
+  if (cur) return <BingoView e={cur} onBack={() => setOpen(null)} />;
+  return (
+    <>
+      <Card title={t("Gaming-Bingo")} icon={<Grid3x3 size={18} />} actions={<Button size="sm" variant="primary" icon={<Plus size={15} />} onClick={() => setCreate(true)}>{t("Neue Karte")}</Button>}>
+        {cards.length === 0 ? <Empty icon={<Grid3x3 size={28} />} title={t("Noch keine Bingo-Karte")} text={t("3×3, 4×4 oder 5×5 – aus Vorlagen oder eigenen Aufgaben. Reihen, Spalten und Diagonalen werden erkannt.")} /> : (
+          <div className="stack-sm">
+            {cards.map((c) => { const l = bingoLines(c.data.cells, c.data.size).length; return (
+              <button key={c.id} type="button" className="j-hit" onClick={() => setOpen(c.id)}><Grid3x3 size={15} /> <b>{c.data.title}</b>
+                <span className="tiny muted">{c.data.size}×{c.data.size} · {t("{n} von {m} erledigt", { n: c.data.cells.filter((x) => x.done && !x.free).length, m: c.data.cells.filter((x) => !x.free).length })}{l > 0 && " · " + t("{n} × Bingo", { n: l })}</span></button>
+            ); })}
+          </div>
+        )}
+      </Card>
+      {create && <BingoCreate onClose={() => setCreate(false)} onCreated={(id) => { setCreate(false); setOpen(id); }} />}
+    </>
+  );
+}
+
+function BingoCreate({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
+  const games = useGames();
+  const [title, setTitle] = useState(t("Mein Bingo"));
+  const [size, setSize] = useState<3 | 4 | 5>(4);
+  const [free, setFree] = useState(true);
+  const [tpl, setTpl] = useState("general");
+  const [own, setOwn] = useState("");
+  const [game, setGame] = useState<{ gameId?: string | null; gameName?: string | null }>({});
+  const tasks = useMemo(() => [...(BINGO_TEMPLATES.find((x) => x.id === tpl)?.tasks.map((x) => t(x)) ?? []), ...own.split("\n")].map((x) => x.trim().slice(0, 80)).filter(Boolean), [tpl, own]);
+  const need = cellsNeeded(size, free);
+  const make = () => {
+    try {
+      const cells = makeBoard(tasks, size, free);
+      const id = newId();
+      if (trySave("bingo", id, { title: title.trim() || t("Bingo"), size, cells, freeCenter: free, ...game } satisfies Bingo)) onCreated(id);
+    } catch (e) { toast(e instanceof BingoError ? t("Für {s}×{s} braucht es {n} verschiedene Aufgaben (vorhanden: {h}).", { s: e.size, n: e.need, h: e.have }) : (e as Error).message, "error"); }
+  };
+  return (
+    <Modal title={t("Neue Bingo-Karte")} onClose={onClose} footer={<><Button onClick={onClose}>{t("Abbrechen")}</Button><Button variant="primary" icon={<Shuffle size={15} />} disabled={tasks.length < need} onClick={make}>{t("Karte mischen")}</Button></>}>
+      <div className="stack">
+        <Field label={t("Titel")}><input className="input" maxLength={80} value={title} onChange={(e) => setTitle(e.target.value)} /></Field>
+        <div className="row" style={{ gap: 8 }}>
+          <div className="chips" role="radiogroup" aria-label={t("Größe")}>{([3, 4, 5] as const).map((n) => <button key={n} type="button" role="radio" aria-checked={size === n} className={`chip ${size === n ? "on" : ""}`} onClick={() => setSize(n)}>{n}×{n}</button>)}</div>
+          {size % 2 === 1 && <label className="checkbox"><input type="checkbox" checked={free} onChange={(e) => setFree(e.target.checked)} />{t("Mitte frei")}</label>}
+        </div>
+        <Field label={t("Vorlage")}><select className="input" value={tpl} onChange={(e) => setTpl(e.target.value)}><option value="">{t("Keine – nur eigene Aufgaben")}</option>{BINGO_TEMPLATES.map((x) => <option key={x.id} value={x.id}>{t(x.title)}</option>)}</select></Field>
+        <Field label={t("Eigene Aufgaben (eine pro Zeile)")} hint={t("{h} von mindestens {n} Aufgaben", { h: tasks.length, n: need })}><textarea className="input" rows={5} value={own} onChange={(e) => setOwn(e.target.value)} placeholder={t("z. B. Den Enderdrachen gesehen")} /></Field>
+        <GamePicker value={game} onChange={setGame} games={games} />
+      </div>
+    </Modal>
+  );
+}
+
+function BingoGrid({ b, onToggle }: { b: Bingo; onToggle?: (i: number) => void }) {
+  const lines = bingoLines(b.cells, b.size);
+  const inLine = new Set(lines.flatMap((l) => l.cells));
+  return (
+    <div className="bingo-grid" style={{ gridTemplateColumns: `repeat(${b.size}, 1fr)`, maxWidth: b.size * 130 }} role="grid" aria-label={b.title}>
+      {b.cells.map((c, i) => (
+        <button key={i} type="button" role="gridcell" aria-pressed={!!c.done} disabled={!onToggle || c.free} className={`bingo-cell ${c.done ? "done" : ""} ${c.free ? "free" : ""} ${inLine.has(i) ? "line" : ""}`} onClick={() => onToggle?.(i)}>
+          <span>{c.free ? t("Frei") : c.text}</span>{c.done && !c.free && <Check size={14} className="bingo-check" />}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function BingoView({ e, onBack }: { e: Entry<Bingo>; onBack: () => void }) {
+  const b = e.data;
+  const lines = bingoLines(b.cells, b.size);
+  const toggle = (i: number) => {
+    const before = lines.length;
+    const cells = b.cells.map((c, j) => (j === i ? { ...c, done: !c.done } : c));
+    if (trySave("bingo", e.id, { ...b, cells }) && bingoLines(cells, b.size).length > before) toast(t("Bingo!"), "success");
+  };
+  const shareLink = () => {
+    try {
+      const link = `${location.origin}${location.pathname}#/play?tab=bingo&share=${encodeShare({ title: b.title, size: b.size, cells: b.cells.map(({ text, free }) => ({ text, free })), freeCenter: b.freeCenter, gameName: b.gameName })}`;
+      void navigator.clipboard?.writeText(link).then(() => toast(t("Link kopiert – er enthält die Karte selbst, nichts liegt online"), "success"), () => toast(link, "info"));
+    } catch (err) { toast(t((err as Error).message), "error"); }
+  };
+  const reshuffle = async () => {
+    if (!await confirmDialog(t("Neu mischen?"), t("Die Aufgaben werden neu verteilt und alle Häkchen entfernt."))) return;
+    trySave("bingo", e.id, { ...b, cells: makeBoard(b.cells.filter((c) => !c.free).map((c) => c.text), b.size, !!b.freeCenter) });
+  };
+  return (
+    <Card title={b.title} icon={<Grid3x3 size={18} />} meta={lines.length ? t("{n} × Bingo", { n: lines.length }) : `${b.size}×${b.size}`} actions={<Button size="sm" onClick={onBack}>{t("Zurück")}</Button>}>
+      <div className="stack">
+        {b.gameName && <span className="tiny muted">{b.gameName}</span>}
+        <BingoGrid b={b} onToggle={toggle} />
+        {lines.length > 0 && <span className="small">{t("Fertig")}: {lines.map((l) => l.kind === "row" ? t("Reihe {n}", { n: l.index + 1 }) : l.kind === "col" ? t("Spalte {n}", { n: l.index + 1 }) : l.index === 0 ? t("Diagonale ↘") : t("Diagonale ↙")).join(", ")}</span>}
+        <div className="row" style={{ gap: 6 }}>
+          <Button size="sm" icon={<ImageIcon size={14} />} onClick={() => void bingoPng(b)}>{t("Als Bild")}</Button>
+          <Button size="sm" icon={<Download size={14} />} onClick={() => void exportJournal(["bingo"], false, [e.id]).then((f) => downloadText(`bingo-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(f)))}>{t("Als Datei")}</Button>
+          <Button size="sm" icon={<Link2 size={14} />} onClick={shareLink}>{t("Link teilen")}</Button>
+          <Button size="sm" variant="ghost" icon={<Shuffle size={14} />} onClick={() => void reshuffle()}>{t("Neu mischen")}</Button>
+          <Button size="sm" variant="ghost" icon={<Undo2 size={14} />} onClick={() => trySave("bingo", e.id, { ...b, cells: b.cells.map((c) => ({ ...c, done: !!c.free })) })}>{t("Häkchen zurücksetzen")}</Button>
+          <Button size="sm" variant="danger" icon={<Trash2 size={14} />} onClick={async () => { if (await confirmDialog(t("Karte löschen?"), t("Sie wird auf allen Geräten gelöscht."), { danger: true })) { removeEntry(e.id); onBack(); } }}>{t("Löschen")}</Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function SharedBingo({ card, onSaved, onClose }: { card: Bingo | null; onSaved: (id: string) => void; onClose: () => void }) {
+  if (!card) return <Card><Empty icon={<Grid3x3 size={28} />} title={t("Link ist ungültig oder beschädigt")} action={<Button onClick={onClose}>{t("Zu meinen Karten")}</Button>} /></Card>;
+  const save = () => { const id = newId(); if (trySave("bingo", id, { ...card, cells: card.cells.map((c) => ({ ...c, done: !!c.free })) })) { toast(t("Als eigene Karte gespeichert"), "success"); onSaved(id); } };
+  return (
+    <Card title={card.title} icon={<Grid3x3 size={18} />} meta={t("Geteilte Karte")}>
+      <div className="stack">
+        <span className="small muted">{t("Jemand hat dir diese Karte geschickt. Sie steckt nur im Link – gespeichert wird sie erst, wenn du sie übernimmst.")}</span>
+        <BingoGrid b={card} />
+        <div className="row" style={{ gap: 6 }}><Button variant="primary" icon={<Copy size={15} />} onClick={save}>{t("Als eigene Karte speichern")}</Button><Button onClick={onClose}>{t("Schließen")}</Button></div>
+      </div>
+    </Card>
+  );
+}
+
+/** The card as PNG, drawn here (no server). */
+async function bingoPng(b: Bingo) {
+  const cell = 220, pad = 24, head = 70, n = b.size;
+  const c = document.createElement("canvas");
+  c.width = pad * 2 + cell * n; c.height = pad * 2 + head + cell * n;
+  const g = c.getContext("2d")!;
+  g.fillStyle = "#0b1020"; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = "#e5e7eb"; g.font = "bold 34px system-ui, sans-serif"; g.fillText(b.title.slice(0, 40), pad, pad + 38);
+  const lines = new Set(bingoLines(b.cells, n).flatMap((l) => l.cells));
+  b.cells.forEach((cl, i) => {
+    const x = pad + (i % n) * cell, y = pad + head + Math.floor(i / n) * cell;
+    g.fillStyle = lines.has(i) ? "#065f46" : cl.done ? "#1e3a5f" : "#151b2e"; g.fillRect(x + 4, y + 4, cell - 8, cell - 8);
+    g.strokeStyle = "#334155"; g.lineWidth = 2; g.strokeRect(x + 4, y + 4, cell - 8, cell - 8);
+    g.fillStyle = "#f1f5f9"; g.font = "22px system-ui, sans-serif";
+    const words = (cl.free ? t("Frei") : cl.text).split(/\s+/); const rows: string[] = []; let row = "";
+    for (const w of words) { const tr = row ? row + " " + w : w; if (g.measureText(tr).width > cell - 32) { rows.push(row); row = w; } else row = tr; }
+    rows.push(row);
+    rows.slice(0, 6).forEach((r, k) => g.fillText(r, x + 16, y + 40 + k * 28));
+    if (cl.done && !cl.free) { g.fillStyle = "#34d399"; g.font = "bold 30px system-ui, sans-serif"; g.fillText("✓", x + cell - 44, y + cell - 22); }
+  });
+  const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/png"));
+  if (!blob) { toast(t("Bild konnte nicht erstellt werden."), "error"); return; }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `bingo-${b.title.replace(/[^\p{L}\p{N}_-]+/gu, "-").slice(0, 40)}.png`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
