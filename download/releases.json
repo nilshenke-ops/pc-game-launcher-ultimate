@@ -1,5 +1,38 @@
 [
   {
+    "version": "2.41.0",
+    "date": "2026-10-21",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion.exe",
+    "size": 87877132,
+    "sha256": "5971b927293148f45d9a41d283006691b14230f18d4d680c7113c020641ad1df",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.41.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion-2.41.0-win-x64.zip",
+      "size": 82138479,
+      "sha256": "f7e1738405274da5ba728177974aaa1346f9620cfb48a1b3a0cfeebe25e008d5"
+    },
+    "notes": "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung · „Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“ · Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
+    "changes": {
+      "neu": [
+        "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung",
+        "„Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“",
+        "Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
+        "Gaming-Abende: Datum mit Zeitzone (Freunde sehen ihre Ortszeit), Spiele und Alternativen, Zu-/Absagen per Link oder selbst, Notizen, Regeln, Absage, vergangene Abende; in den Gaming-Kalender (Erinnerung über den PC) und als .ics",
+        "Team-Rollenplaner: frei definierbare Rollen, Spieler und Platzhalter, mehrere Aufstellungen, Vorlagen",
+        "Mini-Turniere: K.-o., Doppel-K.-o. mit Verliererrunde und Entscheidungsfinale, Gruppen + Finalrunde, Jeder gegen jeden; Auslosen, Freilose, geprüfte Ergebnisse, Tabellen, Historie, CSV/Datei/Drucken – ohne Geld und Wetten",
+        "Server-Favoriten mit Status auf Knopfdruck über den PC (Minecraft Java Server List Ping, Steam/Source A2S); andere Spiele „Unbekannt“"
+      ],
+      "verbessert": [
+        "Turnier-Ergebnisse merken sich die Spieler: ändert sich ein früheres Ergebnis, werden spätere, nicht mehr passende Ergebnisse gemeldet statt still weiterverwendet",
+        "Zahlenfelder in Sammlungen sind für Screenreader beschriftet"
+      ],
+      "behoben": []
+    },
+    "signature": "D4XtkmEhTh1mqLqg6GdJM9lS5AT5nMcLaK/H485+iV9k+7JbHq2eErbIDwcfmfBCLVyez9aE018Cv0n2o29Rzg=="
+  },
+  {
     "version": "2.40.0",
     "date": "2026-10-21",
     "channel": "stable",
@@ -1438,29 +1471,5 @@
       "behoben": []
     },
     "signature": "UbAXmSXfvNaHDbSYABiYNpwX93MPNU92qFbaOO4F6UgsXBLul1E5cSQHexEh33e1Tde7FfzA0jdhcMavu/28Dg=="
-  },
-  {
-    "version": "1.4.1",
-    "date": "2026-10-18",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.4.1/PCGameLauncherCompanion.exe",
-    "size": 84335163,
-    "sha256": "f016052305fae0db9a11b5b87fc9a8d7f63148a00b792c27354e882e5fd86c1c",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-1.4.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v1.4.1/PCGameLauncherCompanion-1.4.1-win-x64.zip",
-      "size": 78664609,
-      "sha256": "bcaadf6d231367dfb3887d31ee465153c08ad8a8ee13c1267648918f33ca4e7b"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Plugin-Widgets wurden im dunklen Design auf weißem Hintergrund mit heller Schrift angezeigt (abhängig von der Farbeinstellung des Geräts)"
-      ]
-    },
-    "signature": "0qDNNFF1HWDUA5P9bqf5NhwsOLsXrrwcat9ylmgdbVO8cfcvzTlLlg7JZBp7A/nKukSwNa9KleMDoQYlhy0g2w=="
   }
 ]

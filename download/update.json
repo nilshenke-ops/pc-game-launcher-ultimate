@@ -1,32 +1,33 @@
 {
-  "version": "2.40.0",
+  "version": "2.41.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.40.0/PCGameLauncherCompanion.exe",
-  "size": 87886807,
-  "sha256": "d4ec5dec10eb772eda0550b2603fde7f1f1e6f37818027c06deb2cf0dffe0823",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion.exe",
+  "size": 87877132,
+  "sha256": "5971b927293148f45d9a41d283006691b14230f18d4d680c7113c020641ad1df",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.40.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.40.0/PCGameLauncherCompanion-2.40.0-win-x64.zip",
-    "size": 82148976,
-    "sha256": "e97c3e7f4fcbbe80977d93e6a3610ea8b50cb634a4da6b7d27973590d3d2b77e"
+    "fileName": "PCGameLauncherCompanion-2.41.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion-2.41.0-win-x64.zip",
+    "size": 82138479,
+    "sha256": "f7e1738405274da5ba728177974aaa1346f9620cfb48a1b3a0cfeebe25e008d5"
   },
-  "notes": "„Welten & Bauen“ (Spielbegleiter): Minecraft-Welten mit Edition, Version, Modus, Seed und Orten (Dimension, X/Y/Z, Gruppen); Nether ↔ Oberwelt umrechnen (Faktor 8), Abstand zwischen Orten, Orte als CSV – keine erfundene Karte · Bauprojekte mit Welt-Verknüpfung, Aufgaben und Material; Fortschritt nur aus abgehakten Aufgaben, fehlendes Material wird angezeigt; Vorlagen · Karten-Marker als Liste, Tabelle und Gruppen; auf einer Karte nur mit eigenem Kartenbild (Stelle antippen)",
+  "notes": "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung · „Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“ · Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
   "changes": {
     "neu": [
-      "„Welten & Bauen“ (Spielbegleiter): Minecraft-Welten mit Edition, Version, Modus, Seed und Orten (Dimension, X/Y/Z, Gruppen); Nether ↔ Oberwelt umrechnen (Faktor 8), Abstand zwischen Orten, Orte als CSV – keine erfundene Karte",
-      "Bauprojekte mit Welt-Verknüpfung, Aufgaben und Material; Fortschritt nur aus abgehakten Aufgaben, fehlendes Material wird angezeigt; Vorlagen",
-      "Karten-Marker als Liste, Tabelle und Gruppen; auf einer Karte nur mit eigenem Kartenbild (Stelle antippen)",
-      "„Builds & Technik“: Builds/Loadouts mit freien Eigenschaften, Vorlagen, Duplizieren und Vergleich zweier Builds",
-      "Mod-Sammlungen mit Versionshinweisen – Status nur selbst markiert, nichts wird installiert oder heruntergeladen",
-      "Grafikvergleich mit Schieber über zwei eigene Screenshots (keine FPS aus Bildern)",
-      "Steuerungs-Lexikon: „Offiziell“ nur mit Quelle, sonst „Eigene Angabe“"
+      "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung",
+      "„Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“",
+      "Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
+      "Gaming-Abende: Datum mit Zeitzone (Freunde sehen ihre Ortszeit), Spiele und Alternativen, Zu-/Absagen per Link oder selbst, Notizen, Regeln, Absage, vergangene Abende; in den Gaming-Kalender (Erinnerung über den PC) und als .ics",
+      "Team-Rollenplaner: frei definierbare Rollen, Spieler und Platzhalter, mehrere Aufstellungen, Vorlagen",
+      "Mini-Turniere: K.-o., Doppel-K.-o. mit Verliererrunde und Entscheidungsfinale, Gruppen + Finalrunde, Jeder gegen jeden; Auslosen, Freilose, geprüfte Ergebnisse, Tabellen, Historie, CSV/Datei/Drucken – ohne Geld und Wetten",
+      "Server-Favoriten mit Status auf Knopfdruck über den PC (Minecraft Java Server List Ping, Steam/Source A2S); andere Spiele „Unbekannt“"
     ],
     "verbessert": [
-      "Gemeinsamer Sammlungs-Baukasten: Prüfung jeder Eingabe (auch Tabellenzeilen), Suche, Filter, Tabelle/Karten, Archiv, Export/Import und CSV; beim Löschen werden Verknüpfungen anderer Einträge entfernt"
+      "Turnier-Ergebnisse merken sich die Spieler: ändert sich ein früheres Ergebnis, werden spätere, nicht mehr passende Ergebnisse gemeldet statt still weiterverwendet",
+      "Zahlenfelder in Sammlungen sind für Screenreader beschriftet"
     ],
     "behoben": []
   },
-  "signature": "QlwOhmHu7sRM5xT4qTmtM2xRlTKyAObVgkrWBxwNzFoBXqiQe83LHRnVX9sX9w9Cx4ECP/DqGLIoT8dR4hRD4A=="
+  "signature": "D4XtkmEhTh1mqLqg6GdJM9lS5AT5nMcLaK/H485+iV9k+7JbHq2eErbIDwcfmfBCLVyez9aE018Cv0n2o29Rzg=="
 }
