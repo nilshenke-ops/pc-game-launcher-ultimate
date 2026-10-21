@@ -1,33 +1,35 @@
 {
-  "version": "2.41.0",
+  "version": "2.42.0",
   "date": "2026-10-21",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion.exe",
-  "size": 87877132,
-  "sha256": "5971b927293148f45d9a41d283006691b14230f18d4d680c7113c020641ad1df",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.0/PCGameLauncherCompanion.exe",
+  "size": 87904907,
+  "sha256": "e15690e715716d51f0ad1f8b39fb48fc09e9b99a8369e9f0bf91becc5abea05c",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.41.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion-2.41.0-win-x64.zip",
-    "size": 82138479,
-    "sha256": "f7e1738405274da5ba728177974aaa1346f9620cfb48a1b3a0cfeebe25e008d5"
+    "fileName": "PCGameLauncherCompanion-2.42.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.0/PCGameLauncherCompanion-2.42.0-win-x64.zip",
+    "size": 82166621,
+    "sha256": "693dcf4f8dbbbcf395b03065a318604ef58252f34c798ed95f3d38223f43389c"
   },
-  "notes": "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung · „Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“ · Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
+  "notes": "„Medien“ (Spielbegleiter) mit fünf Bereichen, alles auch ohne PC nutzbar · Fotomuseum: Screenshots importieren (Kopie mit höchstens 1600 px plus Vorschaubild), Aufnahmedatum aus den Bilddaten (EXIF) oder Dateidatum, Spiel, Kategorie, Tags, Favoriten, Aufnahmeeinstellungen, Raster/Galerie/Vollbild (Wischen, Pfeiltasten), eigene Sammlungen; dasselbe Bild zweimal wird erkannt und nachgefragt · Erinnerungsbuch: Momente mit Geschichte, Bildern, Fotos aus dem Museum, Medienlinks, Tags, Kategorie, Favorit und Archiv als Zeitleiste nach Jahr und Monat; übernimmt Notizen aus „Wo war ich?“",
   "changes": {
     "neu": [
-      "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung",
-      "„Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“",
-      "Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
-      "Gaming-Abende: Datum mit Zeitzone (Freunde sehen ihre Ortszeit), Spiele und Alternativen, Zu-/Absagen per Link oder selbst, Notizen, Regeln, Absage, vergangene Abende; in den Gaming-Kalender (Erinnerung über den PC) und als .ics",
-      "Team-Rollenplaner: frei definierbare Rollen, Spieler und Platzhalter, mehrere Aufstellungen, Vorlagen",
-      "Mini-Turniere: K.-o., Doppel-K.-o. mit Verliererrunde und Entscheidungsfinale, Gruppen + Finalrunde, Jeder gegen jeden; Auslosen, Freilose, geprüfte Ergebnisse, Tabellen, Historie, CSV/Datei/Drucken – ohne Geld und Wetten",
-      "Server-Favoriten mit Status auf Knopfdruck über den PC (Minecraft Java Server List Ping, Steam/Source A2S); andere Spiele „Unbekannt“"
+      "„Medien“ (Spielbegleiter) mit fünf Bereichen, alles auch ohne PC nutzbar",
+      "Fotomuseum: Screenshots importieren (Kopie mit höchstens 1600 px plus Vorschaubild), Aufnahmedatum aus den Bilddaten (EXIF) oder Dateidatum, Spiel, Kategorie, Tags, Favoriten, Aufnahmeeinstellungen, Raster/Galerie/Vollbild (Wischen, Pfeiltasten), eigene Sammlungen; dasselbe Bild zweimal wird erkannt und nachgefragt",
+      "Erinnerungsbuch: Momente mit Geschichte, Bildern, Fotos aus dem Museum, Medienlinks, Tags, Kategorie, Favorit und Archiv als Zeitleiste nach Jahr und Monat; übernimmt Notizen aus „Wo war ich?“",
+      "Screenshots sortieren: PC-Aufnahmen und Museum in einer Liste – nach Datum, Dateiname, Spiel, Größe; Filter nach Quelle, Art, Format, Größe, Spiel, Kategorie, Sammlung, Tag; Mehrfachauswahl (Favorit, Tag, Kategorie, Sammlung, ins Museum, ins Erinnerungsbuch, löschen nur nach Bestätigung); Export als CSV/JSON",
+      "Doppelte finden: nur bei identischem Inhalt (SHA-256, für PC-Dateien am PC berechnet); „Alle Kopien auswählen“ wählt nur aus, gelöscht wird erst nach Bestätigung (PC-Dateien in den Papierkorb)",
+      "Clip-Momente: Zeitstempel zu Videolinks oder PC-Aufnahmen; YouTube, Twitch-Videos und Videodateien öffnen an der Stelle, PC-Aufnahmen spielen hier ab und springen dorthin; keine Aufnahme, kein Schnitt",
+      "Soundtracks: Titel, Spiel, Künstler, Komponist, Album, Cover, Stimmung, Sammlungen und Links zu offiziellen Musikdiensten – ohne eingebauten Player, ohne Download"
     ],
     "verbessert": [
-      "Turnier-Ergebnisse merken sich die Spieler: ändert sich ein früheres Ergebnis, werden spätere, nicht mehr passende Ergebnisse gemeldet statt still weiterverwendet",
-      "Zahlenfelder in Sammlungen sind für Screenreader beschriftet"
+      "Aufnahmen am PC haben jetzt auch eine Kategorie (auch ohne PC vorgemerkt)",
+      "Sammlungen (Listen der Spielbegleiter): Sortierung nach Datum, Filter für eigene Listen, Felder, die die Seite selbst setzt"
     ],
-    "behoben": []
+    "behoben": [
+      "Speichern am PC: zwei gleichzeitige Schreibvorgänge derselben Datei konnten sich die Zwischendatei wegnehmen (Fehler „moves.json.tmp nicht gefunden“) – jede Speicherung nutzt jetzt eine eigene Zwischendatei"
+    ]
   },
-  "signature": "D4XtkmEhTh1mqLqg6GdJM9lS5AT5nMcLaK/H485+iV9k+7JbHq2eErbIDwcfmfBCLVyez9aE018Cv0n2o29Rzg=="
+  "signature": "q+E7wZor3y55hwr71zJrztNAcvrpcJz8Nx6ZcxCqgz38XMtluKdzDusRsM0eLDB4YQyd2Xmi2RLMAQtNeOj8Rw=="
 }
