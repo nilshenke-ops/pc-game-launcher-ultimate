@@ -39,7 +39,13 @@ jobs:
           echo "V=$V" >> "$GITHUB_ENV"
       - name: Webseite bauen
         working-directory: main/web
-        run: npm ci && npm run build:hosted
+        run: |
+          npm ci
+          if ! npm run build:hosted > /tmp/web-build.log 2>&1; then
+            tail -n 60 /tmp/web-build.log
+            exit 1
+          fi
+          tail -n 8 /tmp/web-build.log
       - name: Vorhandenes Update signieren
         working-directory: main
         env:
@@ -47,7 +53,12 @@ jobs:
           PGL_UPDATE_SIGNING_KEY: ${{ secrets.PGL_UPDATE_SIGNING_KEY }}
         run: |
           node scripts/release-manifest.mjs --check-key
-          node scripts/sign-release.mjs "$V" --out ../out --history ../site/download/releases.json
+          if ! node scripts/sign-release.mjs "$V" --out ../out --history ../site/download/releases.json > /tmp/sign-release.log 2>&1; then
+            cat /tmp/sign-release.log
+            echo "Signing script failed; key material is not printed by this diagnostic."
+            exit 1
+          fi
+          cat /tmp/sign-release.log
           test "$(jq -r .version ../out/update.json)" = "$V"
           test "$(jq -r .signature ../out/update.json)" != "null"
       - name: Release-Manifest und Release-Notizen aktualisieren
