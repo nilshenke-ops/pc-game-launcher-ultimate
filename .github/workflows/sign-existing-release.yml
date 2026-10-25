@@ -1,0 +1,89 @@
+name: Bestehendes Release signieren
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  sign-and-publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SITE: https://nilshenke-ops.github.io/pc-game-launcher-ultimate
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: main
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: site
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Version und vorhandenes Release prüfen
+        working-directory: main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          V="$(tr -d '[:space:]' < VERSION)"
+          [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::VERSION '$V' ist nicht MAJOR.MINOR.PATCH"; exit 1; }
+          grep -q "^## $V " CHANGELOG.md || { echo "::error::CHANGELOG.md hat keinen Eintrag für $V"; exit 1; }
+          gh release view "v$V" --json isDraft,tagName | jq -e --arg tag "v$V" '.tagName == $tag and .isDraft == false' >/dev/null
+          echo "V=$V" >> "$GITHUB_ENV"
+      - name: Webseite bauen
+        working-directory: main/web
+        run: npm ci && npm run build:hosted
+      - name: Vorhandenes Update signieren
+        working-directory: main
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PGL_UPDATE_SIGNING_KEY: ${{ secrets.PGL_UPDATE_SIGNING_KEY }}
+        run: |
+          node scripts/release-manifest.mjs --check-key
+          node scripts/sign-release.mjs "$V" --out ../out --history ../site/download/releases.json
+          test "$(jq -r .version ../out/update.json)" = "$V"
+          test "$(jq -r .signature ../out/update.json)" != "null"
+      - name: Release-Manifest und Release-Notizen aktualisieren
+        working-directory: main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "v$V" ../out/update.json --clobber
+          gh release view "v$V" --json body -q .body > ../out/release-notes.md
+          if grep -q '^Signiert: nein$' ../out/release-notes.md; then
+            sed -i 's/^Signiert: nein$/Signiert: ja (ECDSA P-256, Schlüssel des Projekts)/' ../out/release-notes.md
+          elif ! grep -q '^Signiert: ja ' ../out/release-notes.md; then
+            printf '\\n\\nSigniert: ja (ECDSA P-256, Schlüssel des Projekts)\\n' >> ../out/release-notes.md
+          fi
+          gh release edit "v$V" --notes-file ../out/release-notes.md
+      - name: Website und Update-Zentrale veröffentlichen
+        working-directory: site
+        run: |
+          git rm -rq --ignore-unmatch assets icons index.html manifest.webmanifest offline-files.json sw.js download/*.exe download/*.zip
+          cp -r ../main/web/dist-hosted/. .
+          mkdir -p download
+          cp ../out/update.json ../out/releases.json ../out/info download/
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "Version $V signiert und veröffentlicht"
+            git push
+          fi
+      - name: Live-Update mit dem echten Begleiter prüfen
+        working-directory: main
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "$SITE/download/update.json?t=$(date +%s)" -o /tmp/live-update.json && \
+               jq -e --arg v "$V" '.version == $v and .signature != null' /tmp/live-update.json >/dev/null; then break; fi
+            sleep 20
+          done
+          jq -e --arg v "$V" '.version == $v and .signature != null' /tmp/live-update.json >/dev/null
+          dotnet run --project companion/src/Companion.Headless -- --check-update "$SITE/download/update.json" --assume-version 0.0.1 --download
