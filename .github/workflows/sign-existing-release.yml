@@ -52,7 +52,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           PGL_UPDATE_SIGNING_KEY: ${{ secrets.PGL_UPDATE_SIGNING_KEY }}
         run: |
-          node scripts/release-manifest.mjs --check-key
+          if ! node scripts/release-manifest.mjs --check-key > /tmp/key-check.log 2>&1; then
+            cat /tmp/key-check.log
+            echo "Key preflight failed before any release changes."
+            exit 1
+          fi
+          cat /tmp/key-check.log
           if ! node scripts/sign-release.mjs "$V" --out ../out --history ../site/download/releases.json > /tmp/sign-release.log 2>&1; then
             cat /tmp/sign-release.log
             echo "Signing script failed; key material is not printed by this diagnostic."
