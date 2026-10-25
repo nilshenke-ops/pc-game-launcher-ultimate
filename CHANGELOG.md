@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.45.0 – 2026-10-25
+### Neu
+- Bingo: Aufgaben von der KI zu genau dem Spiel, das man gerade spielt – im Spielbegleiter unter „Was spiele ich?“ → Bingo → „Neue Karte“: Spiel aus der Bibliothek wählen oder eintippen, Größe 3×3, 4×4 oder 5×5 antippen, „Aufgaben vorschlagen“; die Aufgaben landen in „Eigene Aufgaben“ und lassen sich vor dem Mischen noch ändern
+- Dieselbe KI wie der KI-Assistent: die lokale KI (Ollama, kostenlos) oder Claude mit eigenem Schlüssel (Kosten laufen über das Monatslimit und werden dort mitgezählt)
+### Verbessert
+- KI-Aufgaben werden am PC geprüft: Aufzählungszeichen, Nummerierungen, Überschriften, doppelte und zu lange Zeilen fliegen raus; reichen die brauchbaren Aufgaben nicht für die Karte, kommt eine Meldung statt einer halb leeren Karte – der eingebaute lokale Assistent ohne Modell sagt das ehrlich, statt Aufgaben zu erfinden
+
 ## 2.44.0 – 2026-10-21
 ### Neu
 - Deal Radar: Key-Shop-Preise über die offizielle Schnittstelle von GG.deals – günstigster Key-Shop-Preis (Instant Gaming, Eneba und viele mehr), Tiefstpreis und günstigster offizieller Shop, für das eingestellte Land (Deutschland in Euro). Braucht einen kostenlosen API-Schlüssel von GG.deals, der am PC eingetragen, vorher geprüft und verschlüsselt gespeichert wird

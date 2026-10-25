@@ -139,4 +139,39 @@ public sealed class OllamaAssistant
         try { using var d = JsonDocument.Parse(raw); return d.RootElement.TryGetProperty("error", out var e) ? e.GetString() : null; }
         catch (JsonException) { return null; }
     }
+
+    public sealed record TextResult(string Text, long PromptTokens, long OutputTokens);
+
+    /// <summary>One answer without tools – for generated content that is checked afterwards (bingo tasks).</summary>
+    public async Task<TextResult> CompleteAsync(string url, string model, string system, string prompt, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(model)) throw new RpcException("assistant-ollama", "Kein Modell gewählt – unter Assistent → Einrichten ein installiertes Modell auswählen.");
+        var body = new JsonObject
+        {
+            ["model"] = model, ["stream"] = false, ["keep_alive"] = "2m",
+            ["messages"] = new JsonArray
+            {
+                new JsonObject { ["role"] = "system", ["content"] = system },
+                new JsonObject { ["role"] = "user", ["content"] = prompt },
+            },
+            ["options"] = new JsonObject { ["temperature"] = 0.7, ["num_ctx"] = 4096 },
+        };
+        HttpResponseMessage resp;
+        try { resp = await _http.PostAsync(url.TrimEnd('/') + "/api/chat", JsonContent.Create(body), ct); }
+        catch (HttpRequestException) { throw NotRunning(); }
+        catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw new RpcException("assistant-ollama", "Das Modell hat zu lange gebraucht. Ein kleineres Modell wählen (z. B. qwen2.5:3b) oder später erneut versuchen."); }
+        var raw = await resp.Content.ReadAsStringAsync(ct);
+        if (!resp.IsSuccessStatusCode)
+        {
+            var err = TryError(raw) ?? $"HTTP {(int)resp.StatusCode}";
+            if (err.Contains("not found", StringComparison.OrdinalIgnoreCase)) throw new RpcException("assistant-ollama", $"Das Modell „{model}“ ist nicht installiert. Am PC laden mit: ollama pull {model}");
+            throw new RpcException("assistant-ollama", "Ollama-Fehler: " + err);
+        }
+        using var doc = JsonDocument.Parse(raw);
+        var root = doc.RootElement;
+        var text = root.TryGetProperty("message", out var m) && m.TryGetProperty("content", out var c) && c.ValueKind == JsonValueKind.String ? c.GetString() ?? "" : "";
+        long promptTokens = root.TryGetProperty("prompt_eval_count", out var pe) && pe.TryGetInt64(out var pv) ? pv : 0;
+        long outputTokens = root.TryGetProperty("eval_count", out var ec) && ec.TryGetInt64(out var ev) ? ev : 0;
+        return new TextResult(text, promptTokens, outputTokens);
+    }
 }

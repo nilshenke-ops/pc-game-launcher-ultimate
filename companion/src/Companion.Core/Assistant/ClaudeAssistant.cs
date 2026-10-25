@@ -159,4 +159,32 @@ public sealed class ClaudeAssistant
         return new Result(reply, inTok, outTok, cRead, cWrite, servedBy);
     }
 
+    public sealed record TextResult(string Text, long Input, long Output, long CacheRead, long CacheWrite, string Model);
+
+    /// <summary>
+    /// One answer without tools – for generated content that is checked afterwards (bingo tasks). No conversation is kept.
+    /// </summary>
+    public async Task<TextResult> CompleteAsync(string apiKey, string model, string system, string prompt, CancellationToken ct = default)
+    {
+        var client = _client(apiKey);
+        var p = new MessageCreateParams
+        {
+            Model = model,
+            MaxTokens = 2000,
+            System = new List<BetaTextBlockParam> { new() { Text = system } },
+            OutputConfig = new BetaOutputConfig { Effort = Effort.Low },
+            Messages = new List<BetaMessageParam> { new() { Role = Role.User, Content = new List<BetaContentBlockParam> { new BetaTextBlockParam { Text = prompt } } } },
+        };
+        BetaMessage r;
+        try { r = await client.Beta.Messages.Create(p, ct); }
+        catch (AnthropicUnauthorizedException) { throw new RpcException("assistant-key", "Claude lehnt den API-Schlüssel ab. Bitte am PC unter Assistent → Claude neu eintragen."); }
+        catch (AnthropicNotFoundException) { throw new RpcException("assistant-model", $"Das Modell {model} ist für diesen Schlüssel nicht verfügbar."); }
+        catch (AnthropicRateLimitException) { throw new RpcException("assistant-busy", "Claude ist gerade ausgelastet oder das Kontingent ist erreicht – bitte gleich noch einmal versuchen."); }
+        catch (Anthropic5xxException) { throw new RpcException("assistant-unavailable", "Claude ist gerade nicht erreichbar (Serverfehler). Der lokale Assistent funktioniert weiter."); }
+        catch (AnthropicIOException) { throw new RpcException("assistant-offline", "Keine Verbindung zu Claude (Internet?). Der lokale Assistent funktioniert weiter."); }
+        catch (AnthropicApiException e) { throw new RpcException("assistant-error", "Claude-Fehler: " + e.Message); }
+        var text = string.Join("\n", r.Content.Select(b => b.TryPickText(out var t) ? t.Text : null).Where(x => x != null));
+        return new TextResult(text, r.Usage.InputTokens, r.Usage.OutputTokens, r.Usage.CacheReadInputTokens ?? 0, r.Usage.CacheCreationInputTokens ?? 0, r.Model);
+    }
+
 }

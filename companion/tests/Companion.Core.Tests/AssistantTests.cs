@@ -336,6 +336,95 @@ public class AssistantTests
         Assert.Equal(0, J(a.Status()).GetProperty("usage").GetProperty("requests").GetInt32());
     }
 
+    // ---------------------------------------------------------------- bingo tasks from the AI
+
+    [Fact]
+    public async Task Ai_bingo_tasks_are_cleaned_counted_and_marked_with_the_model()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        var a = WithFake(s, dir, fake);
+        fake.Responses.Enqueue(FakeClaude.Text(string.Join("\n", new[]
+        {
+            "Aufgaben für Rocket League:",
+            "1. Ein Tor mit einem Trick",
+            "- Ein Tor mit einem Trick", // duplicate
+            "* Ein Eigentor verursacht",
+            "",
+            "• Ein Turnier gewonnen",
+            "Eine Vorlage von der Wand verwandelt",
+            "Einen Save aus der Luft geholt",
+            "Ein Spiel ohne Boost gewonnen",
+            "Dem Team mit einem Pass geholfen",
+            "Ein Tor in der letzten Sekunde",
+            "Dies ist eine viel zu lange Aufgabe, die nicht in eine Bingo-Zelle passt und deshalb aussortiert wird",
+            "Einen Doppeltipp gemacht",
+        })));
+
+        var r = J(await a.BingoTasksAsync("Rocket League", 3));
+        var tasks = r.GetProperty("tasks").EnumerateArray().Select(x => x.GetString()!).ToList();
+        Assert.Equal(9, tasks.Count); // 3×3
+        Assert.Equal("Ein Tor mit einem Trick", tasks[0]);
+        Assert.DoesNotContain("Aufgaben für Rocket League:", tasks);
+        Assert.Equal(1, tasks.Count(x => x == "Ein Tor mit einem Trick"));
+        Assert.DoesNotContain(tasks, x => x.Length > BingoIdeas.MaxTaskChars);
+        Assert.DoesNotContain(tasks, x => x.StartsWith("1.") || x.StartsWith("- ") || x.StartsWith("• "));
+        Assert.Equal("claude", r.GetProperty("mode").GetString());
+        Assert.Equal("Claude Opus 5.5", r.GetProperty("model").GetString());
+        Assert.True(r.GetProperty("costUsd").GetDouble() > 0);
+        Assert.Equal(1, J(a.Status()).GetProperty("usage").GetProperty("requests").GetInt32());
+
+        // Asked for the chosen size, without tools – the card itself is made on the device.
+        var req = fake.Requests.Single();
+        Assert.Contains("3×3", req.GetProperty("messages")[0].GetProperty("content")[0].GetProperty("text").GetString());
+        Assert.Contains("Rocket League", req.GetProperty("messages")[0].GetProperty("content")[0].GetProperty("text").GetString());
+        Assert.False(req.TryGetProperty("tools", out _));
+    }
+
+    [Fact]
+    public async Task Rpc_bingo_tasks_run_through_the_protocol()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        fake.Responses.Enqueue(OllamaMsg(string.Join("\n", Enumerable.Range(1, 9).Select(i => $"Aufgabe {i} im Spiel"))));
+        var admin = await Fixtures.Admin(s);
+        await admin.Ok("assistant.configure", new { mode = "ollama", ollamaUrl = fake.Url, ollamaModel = "qwen2.5:7b" });
+
+        var r = await admin.Ok("assistant.bingo", new { game = "Hades", size = 3 });
+        Assert.Equal(9, r.GetProperty("tasks").GetArrayLength());
+        Assert.Equal("ollama", r.GetProperty("mode").GetString());
+        Assert.Equal(0, r.GetProperty("costUsd").GetDouble());
+        Assert.Contains("Hades", fake.Requests.Single().GetProperty("messages")[1].GetProperty("content").GetString());
+    }
+
+    [Fact]
+    public async Task Too_few_ai_tasks_are_refused_instead_of_filling_the_card()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        var a = WithFake(s, dir, fake);
+        fake.Responses.Enqueue(FakeClaude.Text("Ein Tor schießen\nEin Turnier gewinnen"));
+        var ex = await Assert.ThrowsAsync<RpcException>(() => a.BingoTasksAsync("Rocket League", 4));
+        Assert.Equal("assistant-bingo", ex.Code);
+        Assert.Contains("16", ex.Message); // 4×4 needs 16 tasks
+    }
+
+    [Fact]
+    public async Task Bingo_tasks_need_a_game_and_a_size_and_a_model()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        var local = new AssistantService(new AppPaths(Path.Combine(dir.Path, "b")), new GenericPlatform().Secrets, new NullHub(), new AssistantData(s));
+        Assert.Equal("invalid-params", (await Assert.ThrowsAsync<RpcException>(() => local.BingoTasksAsync("x", 3))).Code);
+        Assert.Equal("invalid-params", (await Assert.ThrowsAsync<RpcException>(() => local.BingoTasksAsync("Hades", 6))).Code);
+        // Built-in assistant only: no AI to write tasks – the app says so instead of inventing some.
+        var ex = await Assert.ThrowsAsync<RpcException>(() => local.BingoTasksAsync("Hades", 3));
+        Assert.Equal("assistant-local", ex.Code);
+    }
+
     // ---------------------------------------------------------------- free local model (Ollama) against a fake server
 
     static string OllamaMsg(string content, object[]? toolCalls = null) => JsonSerializer.Serialize(new
@@ -350,6 +439,26 @@ public class AssistantTests
         var a = new AssistantService(new AppPaths(Path.Combine(dir.Path, "o")), new GenericPlatform().Secrets, new NullHub(), data, ollama: new OllamaAssistant(data));
         a.Configure(new AssistantService.Config { Mode = "ollama", OllamaUrl = fake.Url, OllamaModel = "qwen2.5:7b" }, atPc: true);
         return a;
+    }
+
+    [Fact]
+    public async Task Free_local_model_writes_bingo_tasks_for_nothing()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        fake.Responses.Enqueue(OllamaMsg(string.Join("\n", Enumerable.Range(1, 16).Select(i => $"Aufgabe Nummer {i}"))));
+        var a = WithOllama(s, dir, fake);
+
+        var r = J(await a.BingoTasksAsync("Hades", 4));
+        Assert.Equal(16, r.GetProperty("tasks").GetArrayLength());
+        Assert.Equal("ollama", r.GetProperty("mode").GetString());
+        Assert.Equal("qwen2.5:7b", r.GetProperty("model").GetString());
+        Assert.Equal(0, r.GetProperty("costUsd").GetDouble());
+        var req = fake.Requests.Single();
+        Assert.False(req.TryGetProperty("tools", out _), req.GetRawText()[..200]);
+        Assert.Equal(2, req.GetProperty("messages").GetArrayLength());
+        Assert.Contains("Hades", req.GetProperty("messages")[1].GetProperty("content").GetString());
     }
 
     [Fact]

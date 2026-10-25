@@ -215,15 +215,7 @@ public sealed class AssistantService
             var context = $"[Kontext – nicht vom Nutzer: Zeit {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]";
             var result = await Claude.AskAsync(key, f.Model, conv.Claude, text, context, ct);
             var cost = ClaudeAssistant.Cost(result.ServedBy, result.Input, result.Output, result.CacheRead, result.CacheWrite);
-            _store.Update(file =>
-            {
-                var m = file.Usage.FirstOrDefault(u => u.Month == MonthKey);
-                if (m == null) { m = new AssistantUsageMonth { Month = MonthKey }; file.Usage.Add(m); }
-                m.Requests++; m.InputTokens += result.Input; m.OutputTokens += result.Output; m.CacheReadTokens += result.CacheRead; m.CacheWriteTokens += result.CacheWrite;
-                m.CostUsd = Math.Round(m.CostUsd + cost, 4);
-                if (file.Usage.Count > 24) file.Usage.RemoveAt(0);
-            });
-            _hub.Changed("assistant");
+            RecordUsage(result.Input, result.Output, result.CacheRead, result.CacheWrite, cost);
             result.Reply.CostUsd = Math.Round(cost, 4);
             return Done(conversationId, result.Reply, note);
         }
@@ -234,6 +226,56 @@ public sealed class AssistantService
     {
         if (note != null) reply.Text = note + "\n\n" + reply.Text;
         return new { conversationId, reply };
+    }
+
+    void RecordUsage(long input, long output, long cacheRead, long cacheWrite, double cost)
+    {
+        _store.Update(file =>
+        {
+            var m = file.Usage.FirstOrDefault(u => u.Month == MonthKey);
+            if (m == null) { m = new AssistantUsageMonth { Month = MonthKey }; file.Usage.Add(m); }
+            m.Requests++; m.InputTokens += input; m.OutputTokens += output; m.CacheReadTokens += cacheRead; m.CacheWriteTokens += cacheWrite;
+            m.CostUsd = Math.Round(m.CostUsd + cost, 4);
+            if (file.Usage.Count > 24) file.Usage.RemoveAt(0);
+        });
+        _hub.Changed("assistant");
+    }
+
+    /// <summary>
+    /// Bingo tasks for one game, written by the configured AI. The model only supplies the wording: count, length and
+    /// duplicates are checked here (BingoIdeas), and the card itself is kept in the app on the device.
+    /// </summary>
+    public async Task<object> BingoTasksAsync(string game, int size, CancellationToken ct = default)
+    {
+        game = game.Trim();
+        if ((game.Length is < 2 or > 100) || game.Any(char.IsControl)) throw new RpcException("invalid-params", "Spiel mit 2–100 Zeichen angeben.");
+        if (size is not (3 or 4 or 5)) throw new RpcException("invalid-params", "Größe muss 3, 4 oder 5 sein.");
+        var need = size * size;
+        var f = _store.Snapshot();
+        if (f.Mode == "claude")
+        {
+            if (f.KeyProtected == null) throw new RpcException("assistant-key", "Für Claude fehlt der API-Schlüssel – bitte am PC unter Assistent → Claude eintragen.");
+            var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+            if (f.MonthlyLimitUsd <= 0 || (month?.CostUsd ?? 0) >= f.MonthlyLimitUsd)
+                throw new RpcException("assistant-limit", $"Das Monatslimit für Claude ({f.MonthlyLimitUsd:0.00} $) ist erreicht. Für 0 € die Lokale KI (Ollama) verwenden oder die Aufgaben selbst eintragen.");
+            var key = _secrets.Unprotect(f.KeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte Schlüssel lässt sich nicht entschlüsseln (anderer Windows-Benutzer?). Bitte am PC neu eintragen.");
+            var r = await Claude.CompleteAsync(key, f.Model, BingoIdeas.System, BingoIdeas.Prompt(game, size), ct);
+            var cost = ClaudeAssistant.Cost(r.Model, r.Input, r.Output, r.CacheRead, r.CacheWrite);
+            RecordUsage(r.Input, r.Output, r.CacheRead, r.CacheWrite, cost);
+            return new { tasks = EnoughTasks(BingoIdeas.Parse(r.Text, need), need), mode = "claude", model = ClaudeAssistant.PriceOf(r.Model).Label, costUsd = Math.Round(cost, 4) };
+        }
+        if (f.Mode == "ollama")
+        {
+            var r = await Ollama.CompleteAsync(f.OllamaUrl, f.OllamaModel ?? "", BingoIdeas.System, BingoIdeas.Prompt(game, size), ct);
+            return new { tasks = EnoughTasks(BingoIdeas.Parse(r.Text, need), need), mode = "ollama", model = f.OllamaModel, costUsd = 0.0 };
+        }
+        throw new RpcException("assistant-local", "KI-Aufgaben braucht die Lokale KI (Ollama, 0 €) oder Claude – beides unter KI-Assistent → Einrichten wählbar. Bis dahin gehen auch Vorlage und eigene Aufgaben.");
+    }
+
+    static List<string> EnoughTasks(List<string> tasks, int need)
+    {
+        if (tasks.Count < need) throw new RpcException("assistant-bingo", $"Die KI hat nur {tasks.Count} von {need} Aufgaben geliefert – bitte noch einmal versuchen.");
+        return tasks;
     }
 
     public async Task<object> OllamaModelsAsync(CancellationToken ct = default)

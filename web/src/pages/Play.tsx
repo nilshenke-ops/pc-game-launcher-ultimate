@@ -3,8 +3,9 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Check, Clock, Copy, Dices, Download, Grid3x3, Image as ImageIcon, Link2, Pencil, Play, Plus, RefreshCw, Save, Shuffle, Swords, Trash2, Trophy, Undo2 } from "lucide-react";
+import { Check, Clock, Copy, Dices, Download, Grid3x3, Image as ImageIcon, Link2, Pencil, Play, Plus, RefreshCw, Save, Shuffle, Sparkles, Swords, Trash2, Trophy, Undo2 } from "lucide-react";
 import { t } from "../lib/i18n";
+import { client } from "../lib/rpc";
 import { dateTime, gradientFor } from "../lib/format";
 import { toast, useRpc } from "../lib/hooks";
 import type { LibraryItem } from "../lib/types";
@@ -222,7 +223,7 @@ function BingoTab({ share, onShareDone }: { share: string | null; onShareDone: (
   return (
     <>
       <Card title={t("Gaming-Bingo")} icon={<Grid3x3 size={18} />} actions={<Button size="sm" variant="primary" icon={<Plus size={15} />} onClick={() => setCreate(true)}>{t("Neue Karte")}</Button>}>
-        {cards.length === 0 ? <Empty icon={<Grid3x3 size={28} />} title={t("Noch keine Bingo-Karte")} text={t("3×3, 4×4 oder 5×5 – aus Vorlagen oder eigenen Aufgaben. Reihen, Spalten und Diagonalen werden erkannt.")} /> : (
+        {cards.length === 0 ? <Empty icon={<Grid3x3 size={28} />} title={t("Noch keine Bingo-Karte")} text={t("3×3, 4×4 oder 5×5 – aus Vorlagen, eigenen Aufgaben oder von der KI zum gewählten Spiel. Reihen, Spalten und Diagonalen werden erkannt.")} /> : (
           <div className="stack-sm">
             {cards.map((c) => { const l = bingoLines(c.data.cells, c.data.size).length; return (
               <button key={c.id} type="button" className="j-hit" onClick={() => setOpen(c.id)}><Grid3x3 size={15} /> <b>{c.data.title}</b>
@@ -244,8 +245,23 @@ function BingoCreate({ onClose, onCreated }: { onClose: () => void; onCreated: (
   const [tpl, setTpl] = useState("general");
   const [own, setOwn] = useState("");
   const [game, setGame] = useState<{ gameId?: string | null; gameName?: string | null }>({});
+  const [aiBusy, setAiBusy] = useState(false);
+  const [aiNote, setAiNote] = useState<string | null>(null);
+  const gameName = (game.gameName ?? "").trim();
   const tasks = useMemo(() => [...(BINGO_TEMPLATES.find((x) => x.id === tpl)?.tasks.map((x) => t(x)) ?? []), ...own.split("\n")].map((x) => x.trim().slice(0, 80)).filter(Boolean), [tpl, own]);
   const need = cellsNeeded(size, free);
+  // Tasks from the configured AI (Claude or the local model): counted and checked on the PC, written into the own tasks.
+  const askAi = async () => {
+    if (!gameName) return;
+    setAiBusy(true); setAiNote(null);
+    try {
+      const r = await client.call<{ tasks: string[]; mode: string; model?: string | null }>("assistant.bingo", { game: gameName, size });
+      setTpl(""); setOwn(r.tasks.join("\n"));
+      setAiNote(t("Aufgaben von {m} – du kannst sie noch ändern.", { m: r.model ?? (r.mode === "claude" ? "Claude" : t("der lokalen KI")) }));
+      toast(t("Aufgaben erstellt"), "success");
+    } catch (e) { toast((e as Error).message, "error"); }
+    finally { setAiBusy(false); }
+  };
   const make = () => {
     try {
       const cells = makeBoard(tasks, size, free);
@@ -264,6 +280,15 @@ function BingoCreate({ onClose, onCreated }: { onClose: () => void; onCreated: (
         <Field label={t("Vorlage")}><select className="input" value={tpl} onChange={(e) => setTpl(e.target.value)}><option value="">{t("Keine – nur eigene Aufgaben")}</option>{BINGO_TEMPLATES.map((x) => <option key={x.id} value={x.id}>{t(x.title)}</option>)}</select></Field>
         <Field label={t("Eigene Aufgaben (eine pro Zeile)")} hint={t("{h} von mindestens {n} Aufgaben", { h: tasks.length, n: need })}><textarea className="input" rows={5} value={own} onChange={(e) => setOwn(e.target.value)} placeholder={t("z. B. Den Enderdrachen gesehen")} /></Field>
         <GamePicker value={game} onChange={setGame} games={games} />
+        <Field label={t("Aufgaben von der KI")} hint={t("Für das gewählte Spiel, so viele wie die Größe braucht. Dafür braucht es die Lokale KI (Ollama, 0 €) oder Claude – einrichten unter KI-Assistent.")}>
+          <div className="stack-sm">
+            <div className="row" style={{ gap: 8 }}>
+              <Button icon={<Sparkles size={15} />} busy={aiBusy} disabled={!gameName} onClick={() => void askAi()}>{t("Aufgaben vorschlagen")}</Button>
+              {!gameName && <span className="tiny muted">{t("Wähle zuerst ein Spiel")}</span>}
+            </div>
+            {aiNote && <span className="tiny muted">{aiNote}</span>}
+          </div>
+        </Field>
       </div>
     </Modal>
   );
