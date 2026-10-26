@@ -1,25 +1,33 @@
 {
-  "version": "2.46.0",
+  "version": "2.47.0",
   "date": "2026-10-26",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion.exe",
-  "size": 87931185,
-  "sha256": "8ab5283bd34fb928d59cdfe882f6e490930d3128ed787fa0e7dcd5004460c03e",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.47.0/PCGameLauncherCompanion.exe",
+  "size": 87943063,
+  "sha256": "2eb945cad868d3c1043c8fd3da39a559ec0942248551df069dc7fbafaa48deee",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.46.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion-2.46.0-win-x64.zip",
-    "size": 82192268,
-    "sha256": "5889cb18146b0b0cd1f5ae2e47c4d3bf8630d7c277e10b11dcbe978f83de1eb7"
+    "fileName": "PCGameLauncherCompanion-2.47.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.47.0/PCGameLauncherCompanion-2.47.0-win-x64.zip",
+    "size": 82204171,
+    "sha256": "7dfa910a6a26c76f354bd362ddd77d16b34e0e8eac3c8462db22360e6f601c71"
   },
-  "notes": "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“ · Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC",
+  "notes": "iPhone/iPad bleiben gekoppelt: Geräte & Verbindungen → „Dauerhaft auf diesem Gerät“ mit „Als App auf den Home-Bildschirm“ (die App vom Home-Bildschirm hat einen eigenen Speicher und bekommt per einmaligem Link einen eigenen Zugang – ohne neuen Code) und „Andere Adresse nutzen“ (Zugang auf eine feste Adresse des PCs übertragen) · Feste PC-Adresse: Der Begleiter findet einen Namen, der bei neuer IP gleich bleibt – Router-Name (z. B. gaming-pc.fritz.box, nur wenn er wirklich auf diesen PC zeigt) oder Tailscale-Name; der QR-Code nutzt ihn zuerst. Mit „tailscale serve“ erkennt er die https-Adresse selbst, dann klappt auch die Website von unterwegs · Die Website merkt sich die PC-App im WLAN und bietet „Zur PC-App (WLAN)“ statt nur „Offline – kein PC verbunden“",
   "changes": {
     "neu": [
-      "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“",
-      "Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC"
+      "iPhone/iPad bleiben gekoppelt: Geräte & Verbindungen → „Dauerhaft auf diesem Gerät“ mit „Als App auf den Home-Bildschirm“ (die App vom Home-Bildschirm hat einen eigenen Speicher und bekommt per einmaligem Link einen eigenen Zugang – ohne neuen Code) und „Andere Adresse nutzen“ (Zugang auf eine feste Adresse des PCs übertragen)",
+      "Feste PC-Adresse: Der Begleiter findet einen Namen, der bei neuer IP gleich bleibt – Router-Name (z. B. gaming-pc.fritz.box, nur wenn er wirklich auf diesen PC zeigt) oder Tailscale-Name; der QR-Code nutzt ihn zuerst. Mit „tailscale serve“ erkennt er die https-Adresse selbst, dann klappt auch die Website von unterwegs",
+      "Die Website merkt sich die PC-App im WLAN und bietet „Zur PC-App (WLAN)“ statt nur „Offline – kein PC verbunden“",
+      "Diagnose: „Adresse dieser Seite“, „Home-Bildschirm-App“, „Dauerhafter Speicher“ und am PC „Feste Adresse“"
     ],
-    "verbessert": [],
-    "behoben": []
+    "verbessert": [
+      "Nach dem Koppeln bittet die App den Browser, ihre Daten nicht von selbst zu löschen",
+      "Antwortet der PC auf einen Befehl nicht rechtzeitig, steht dabei, dass unklar ist, ob er ausgeführt wurde – Befehle werden nie automatisch wiederholt",
+      "Neuer Zugang per Link erscheint am PC als Benachrichtigung"
+    ],
+    "behoben": [
+      "Beim Wiederverbinden konnte eine ältere Verbindungsprüfung eine zweite Verbindung öffnen; außerdem verbindet die App jetzt auch, wenn Safari die Seite aus dem Zurück-Speicher wiederherstellt"
+    ]
   },
-  "signature": "drg1u76GZ8h24stRk9uxrNPQffLOik8Cp0dFR4kTzmK/oYLLk4A4dtBRpM6pjvXja3uffm7wTfVF+PAojX9rBA=="
+  "signature": "Lb7y3XWObDdy5Vgkv8jPvIDr/NCWGkfGj2QXdXf2UbbPDvoOrinlX7uUuP6wxxZrn5+L9nB8tkwR1K/PY3ilmA=="
 }
