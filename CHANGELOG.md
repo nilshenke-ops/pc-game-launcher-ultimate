@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.48.0 – 2026-10-26
+### Neu
+- Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen:
+- Eigene Sammelkarten: Bild, Name, Beschreibung, Spiel, bis zu 6 eigene Werte, Farben, Hintergrundmuster und Seltenheits-Optik (nur Aussehen – nichts zu kaufen, keine Zufallsziehung); Sammlungen, Favoriten, Filter, duplizieren, als Bild speichern und über das Teilen-Menü des Geräts teilen
+- Poster- und Cover-Designer sowie Banner- und Profilbild-Werkstatt: Formate wie Steam-Cover 600 × 900 und „Library Hero“ (laut Steamworks), YouTube-Kanalbanner mit sichtbarem Bereich und Twitch-Banner (Angaben aus Ratgebern, so gekennzeichnet), Profilbild mit Kreis, eigene Formate; Vorlagen, Text, Formen und eigene Bilder; ziehen und vergrößern mit Finger oder Maus, Rückgängig/Wiederholen, Ebenen-Reihenfolge, Export als PNG oder JPG
+- Virtuelle Ausstellung: Räume mit fünf Stilen, Karten, Poster und Museumsfotos aufhängen, verschieben, vergrößern, rahmen und beschriften, Vollbild-Rundgang, Raum als Bild speichern
+- Abzeichen: zwölf eingebaute und eigene Abzeichen, gezählt aus deinen echten Einträgen, mit Bedingung und Fortschritt; wird ein Eintrag gelöscht, ist das Abzeichen wieder offen
+
 ## 2.47.0 – 2026-10-26
 ### Neu
 - iPhone/iPad bleiben gekoppelt: Geräte & Verbindungen → „Dauerhaft auf diesem Gerät“ mit „Als App auf den Home-Bildschirm“ (die App vom Home-Bildschirm hat einen eigenen Speicher und bekommt per einmaligem Link einen eigenen Zugang – ohne neuen Code) und „Andere Adresse nutzen“ (Zugang auf eine feste Adresse des PCs übertragen)

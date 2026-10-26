@@ -32,8 +32,11 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   book: (id) => `/media?tab=book&id=${id}`,
   clipmark: (id) => `/media?tab=clips&id=${id}`,
   track: (id) => `/media?tab=music&id=${id}`,
+  card: (id) => `/studio?tab=cards&id=${id}`,
+  design: (id) => `/studio?tab=designs&id=${id}`,
+  expo: (id) => `/studio?tab=expo&id=${id}`,
 };
-export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack" };
+export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack", card: "Sammelkarte", design: "Poster / Banner", expo: "Ausstellung" };
 
 export function entryTitle(e: Entry): string {
   const d = e.data as { title?: string; text?: string; did?: string; gameName?: string };

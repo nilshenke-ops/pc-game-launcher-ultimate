@@ -200,6 +200,11 @@ Seite: /
 Stichworte: widgets würfel münze foto speicherplatz meistgespielt aufnahmen abstimmung bauprojekte soundtrack challenges plugin fest eingebaut
 Fest eingebaut (kein Plugin), über „Anpassen“ einblendbar: „Wo war ich?“ (letzte Notiz zu einem Spiel), „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“ (aus dem Foto-Museum), „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“ (W6, W20, Münze – echter Zufall im Browser), „Letzte Aufnahmen“ (Screenshots vom PC), „Speicherplatz“ (freier Platz der PC-Laufwerke) und „Meistgespielt (7 Tage)“. Die ersten acht gehen auch ohne PC.
 
+## Kreativ-Studio
+Seite: /studio
+Stichworte: kreativ studio sammelkarte karten poster cover banner profilbild header kanalbanner youtube twitch steam ausstellung museum raum abzeichen badges gestalten editor
+Fünf Bereiche, alles im Browser gespeichert (auch ohne PC, mit dem PC abgeglichen): „Sammelkarten“ – eigene Karten mit Bild, Name, Beschreibung, Spiel, bis zu 6 eigenen Werten, Farben, Hintergrund und Seltenheit (nur Optik, nichts zu kaufen, kein Zufall); duplizieren, als Bild speichern, teilen (System-Teilen, falls das Gerät es kann). „Poster & Cover“ und „Banner & Profilbild“ – Format wählen (z. B. Steam-Cover 600 × 900, YouTube-Banner 2560 × 1440 mit sichtbarem Bereich, Twitch 1200 × 480, Profilbild mit Kreis) oder eigenes Format, Vorlage nehmen, Text, Formen und eigene Bilder hinzufügen, ziehen und an der Ecke vergrößern, Rückgängig/Wiederholen (auch Strg+Z/Strg+Y), als PNG/JPG speichern. Nexus lädt nichts auf YouTube/Twitch hoch. „Ausstellung“ – Räume mit Stil (Galerie, Museum, Neon, Holz, Raumstation), Karten/Poster/Fotos aufhängen, verschieben, Größe, Rahmen, Beschriftung, Vollbild-Rundgang, Raum als Bild. „Abzeichen“ – werden aus deinen gespeicherten Einträgen gezählt (z. B. erste Sammelkarte, erstes Bauprojekt, zehn Notizen, erstes Bingo); eigene Abzeichen mit Zähler und Ziel.
+
 ## Startzeit-Analyse
 Seite: /start-times
 Stichworte: startzeit ladezeit dauer start langsam schnell analyse messen spiel startet warum lädt lange
