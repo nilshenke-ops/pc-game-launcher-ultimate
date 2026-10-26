@@ -1,26 +1,25 @@
 {
-  "version": "2.44.0",
-  "date": "2026-10-21",
+  "version": "2.46.0",
+  "date": "2026-10-26",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.44.0/PCGameLauncherCompanion.exe",
-  "size": 87920020,
-  "sha256": "52f2cc7c95bda43ec2fcec1029340749f8eb3b8d04cfc31a828fe07ad04f3649",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion.exe",
+  "size": 87931185,
+  "sha256": "8ab5283bd34fb928d59cdfe882f6e490930d3128ed787fa0e7dcd5004460c03e",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.44.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.44.0/PCGameLauncherCompanion-2.44.0-win-x64.zip",
-    "size": 82181157,
-    "sha256": "101d5324a2e6cefa4fb6b2c037ccdc75c4ca194f693da39b966fc225b636583a"
+    "fileName": "PCGameLauncherCompanion-2.46.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion-2.46.0-win-x64.zip",
+    "size": 82192268,
+    "sha256": "5889cb18146b0b0cd1f5ae2e47c4d3bf8630d7c277e10b11dcbe978f83de1eb7"
   },
-  "notes": "Deal Radar: Key-Shop-Preise über die offizielle Schnittstelle von GG.deals – günstigster Key-Shop-Preis (Instant Gaming, Eneba und viele mehr), Tiefstpreis und günstigster offizieller Shop, für das eingestellte Land (Deutschland in Euro). Braucht einen kostenlosen API-Schlüssel von GG.deals, der am PC eingetragen, vorher geprüft und verschlüsselt gespeichert wird · Zielpreis-Alarm auch, wenn ein Key-Shop den Zielpreis erreicht; Hinweis „In einem Key-Shop gerade am günstigsten“ · Links „Alle Angebote bei GG.deals“ und „Bei Keyforsteam ansehen“ neben Instant Gaming und Eneba",
+  "notes": "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“ · Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC",
   "changes": {
     "neu": [
-      "Deal Radar: Key-Shop-Preise über die offizielle Schnittstelle von GG.deals – günstigster Key-Shop-Preis (Instant Gaming, Eneba und viele mehr), Tiefstpreis und günstigster offizieller Shop, für das eingestellte Land (Deutschland in Euro). Braucht einen kostenlosen API-Schlüssel von GG.deals, der am PC eingetragen, vorher geprüft und verschlüsselt gespeichert wird",
-      "Zielpreis-Alarm auch, wenn ein Key-Shop den Zielpreis erreicht; Hinweis „In einem Key-Shop gerade am günstigsten“",
-      "Links „Alle Angebote bei GG.deals“ und „Bei Keyforsteam ansehen“ neben Instant Gaming und Eneba"
+      "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“",
+      "Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC"
     ],
     "verbessert": [],
     "behoben": []
   },
-  "signature": "lKGj8Jzgn4nxUB7C0wFwEyyg7FQ6x3UggoQ246B1mqR8Cd+akRPogM5/plwf2tmgvOQ08VbwzTpg3Xenc2/+Sg=="
+  "signature": "drg1u76GZ8h24stRk9uxrNPQffLOik8Cp0dFR4kTzmK/oYLLk4A4dtBRpM6pjvXja3uffm7wTfVF+PAojX9rBA=="
 }

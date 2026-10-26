@@ -1,5 +1,30 @@
 [
   {
+    "version": "2.46.0",
+    "date": "2026-10-26",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion.exe",
+    "size": 87931185,
+    "sha256": "8ab5283bd34fb928d59cdfe882f6e490930d3128ed787fa0e7dcd5004460c03e",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.46.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion-2.46.0-win-x64.zip",
+      "size": 82192268,
+      "sha256": "5889cb18146b0b0cd1f5ae2e47c4d3bf8630d7c277e10b11dcbe978f83de1eb7"
+    },
+    "notes": "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“ · Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC",
+    "changes": {
+      "neu": [
+        "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“",
+        "Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "drg1u76GZ8h24stRk9uxrNPQffLOik8Cp0dFR4kTzmK/oYLLk4A4dtBRpM6pjvXja3uffm7wTfVF+PAojX9rBA=="
+  },
+  {
     "version": "2.44.0",
     "date": "2026-10-21",
     "channel": "stable",
@@ -1428,34 +1453,5 @@
       "behoben": []
     },
     "signature": "nG/74+8l1PJF1var1ccyOprfi8foxlwrGJtt6+c8mfIXO+BDoDH5vwsdQDPvjRa3JCg7cz09jXpPdN9RtHnNSg=="
-  },
-  {
-    "version": "2.1.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.1.0/PCGameLauncherCompanion.exe",
-    "size": 84422420,
-    "sha256": "60d9d17480dfdc2cf6497bdc0d372cc06974c9ad760670a33d195e2367b68d55",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.1.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.1.0/PCGameLauncherCompanion-2.1.0-win-x64.zip",
-      "size": 78751644,
-      "sha256": "f40fc6a7165f07f578bd14d0030ca648c106480eb30988c2da7a588e814068a5"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Dialoge: Der Fokus sprang beim Tippen in ein späteres Feld zurück ins erste Feld; Tab bleibt jetzt im Dialog (Fokus-Fang), Esc schließt nur den obersten Dialog",
-        "Live-Werte: Schloss sich eine von mehreren Ansichten (z. B. ein eigenes Widget), bekamen die anderen keine Werte mehr",
-        "Mikrofon-Durchleitung erholt sich nach dem Abziehen des Mikrofons (startet wieder, sobald das Gerät zurück ist)",
-        "Autostart-Eintrag zeigt nach dem Verschieben der EXE auf den neuen Ort",
-        "Nur ein Begleiter pro PC (auch über mehrere Windows-Benutzer), mit Hinweis statt Port-Konflikt",
-        "Diagramme auf einer Seite teilen sich keine Farbverläufe mehr"
-      ]
-    },
-    "signature": "aHrpzRBSqpXX7+kUoMuRrPWFlppW/2pR7gYo/llwTiFfbfR6NMO5Q8s470UfoMc9SCXFbxu3EGQLf7SKGGusWA=="
   }
 ]
