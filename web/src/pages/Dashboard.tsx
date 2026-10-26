@@ -5,7 +5,7 @@ import {
   Grid3x3, LayoutGrid, ListTodo, Rocket, Timer, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
   Puzzle, Shapes, CalendarDays, CircleUser,
   Coffee, Dices, Gamepad, Hash, Hourglass, Tag, Target, Trophy,
-  AudioWaveform, Power,
+  AudioWaveform, Power, History, PartyPopper, Vote, Images, Hammer, Music2, Flag, Camera, HardDrive, BarChart3,
 } from "lucide-react";
 import { Visualizer } from "../components/visualizer";
 import { PowerPanel } from "../components/power-panel";
@@ -27,6 +27,7 @@ import { DownloadCard } from "../components/DownloadCard";
 import { TileRow } from "../components/launch-tiles";
 import { runQuickAction } from "../components/run-quick";
 import { CustomWidgetView } from "../components/CustomWidgetView";
+import { CapturesWidget, ChallengesWidget, DiceWidget, MemoryWidget, NightWidget, PhotoWidget, PollWidget, ProjectsWidget, StorageWidget, TopPlayedWidget, TrackWidget } from "../components/more-widgets";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
 import { CUSTOM_WIDGET } from "../lib/prefs-core";
 
@@ -292,6 +293,17 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   random: { icon: <Dices size={18} />, title: () => t("Zufallsspiel"), render: () => <RandomGameWidget /> },
   visualizer: { icon: <AudioWaveform size={18} />, title: () => t("Musik-Visualizer"), render: () => <Visualizer compact /> },
   power: { icon: <Power size={18} />, title: () => t("PC-Energie"), render: () => <PowerPanel compact /> },
+  memory: { icon: <History size={18} />, title: () => t("Wo war ich?"), render: () => <MemoryWidget />, link: "/journal" },
+  night: { icon: <PartyPopper size={18} />, title: () => t("Nächster Gaming-Abend"), render: () => <NightWidget />, link: "/friends?tab=nights" },
+  poll: { icon: <Vote size={18} />, title: () => t("Offene Abstimmung"), render: () => <PollWidget />, link: "/friends?tab=polls" },
+  photo: { icon: <Images size={18} />, title: () => t("Foto des Tages"), render: () => <PhotoWidget />, link: "/media?tab=museum" },
+  projects: { icon: <Hammer size={18} />, title: () => t("Bauprojekte"), render: () => <ProjectsWidget />, link: "/worlds?tab=project" },
+  track: { icon: <Music2 size={18} />, title: () => t("Soundtrack-Tipp"), render: () => <TrackWidget />, link: "/media?tab=music" },
+  challenges: { icon: <Flag size={18} />, title: () => t("Offene Challenges"), render: () => <ChallengesWidget />, link: "/play?tab=challenges" },
+  dice: { icon: <Dices size={18} />, title: () => t("Würfel & Münze"), render: () => <DiceWidget /> },
+  captures: { icon: <Camera size={18} />, title: () => t("Letzte Aufnahmen"), render: () => <CapturesWidget />, link: "/captures" },
+  storage: { icon: <HardDrive size={18} />, title: () => t("Speicherplatz"), render: () => <StorageWidget />, link: "/storage" },
+  topplayed: { icon: <BarChart3 size={18} />, title: () => t("Meistgespielt (7 Tage)"), render: () => <TopPlayedWidget />, link: "/history" },
 };
 
 export default function Dashboard() {

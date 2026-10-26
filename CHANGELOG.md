@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.46.0 – 2026-10-26
+### Neu
+- Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“
+- Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC
+
 ## 2.45.0 – 2026-10-25
 ### Neu
 - Bingo: Aufgaben von der KI zu genau dem Spiel, das man gerade spielt – im Spielbegleiter unter „Was spiele ich?“ → Bingo → „Neue Karte“: Spiel aus der Bibliothek wählen oder eintippen, Größe 3×3, 4×4 oder 5×5 antippen, „Aufgaben vorschlagen“; die Aufgaben landen in „Eigene Aufgaben“ und lassen sich vor dem Mischen noch ändern

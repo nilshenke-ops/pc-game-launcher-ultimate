@@ -119,9 +119,10 @@ export const DEFAULT_THEME: Theme = {
 // ------------------------------------------------------------------ dashboard layouts
 
 export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck" | "calendar" | "activity"
-  | "counter" | "break" | "today" | "ping" | "goals" | "level" | "deals" | "controller" | "random" | "visualizer" | "power";
+  | "counter" | "break" | "today" | "ping" | "goals" | "level" | "deals" | "controller" | "random" | "visualizer" | "power"
+  | "memory" | "night" | "poll" | "photo" | "projects" | "track" | "challenges" | "dice" | "captures" | "storage" | "topplayed";
 /** Widgets that are useful without a connected PC (shown on the home screen while offline). */
-export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity", "counter", "break", "today", "goals", "level", "deals", "random", "visualizer"]);
+export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity", "counter", "break", "today", "goals", "level", "deals", "random", "visualizer", "memory", "night", "poll", "photo", "projects", "track", "challenges", "dice", "captures", "storage", "topplayed"]);
 /** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
 export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`;
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
@@ -164,6 +165,17 @@ export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSiz
   { id: "random", label: "Zufallsspiel", sizes: ["s", "m"] },
   { id: "visualizer", label: "Musik-Visualizer", sizes: ["m", "l"] },
   { id: "power", label: "PC-Energie", sizes: ["s", "m"] },
+  { id: "memory", label: "Wo war ich?", sizes: ["s", "m"] },
+  { id: "night", label: "Nächster Gaming-Abend", sizes: ["s", "m"] },
+  { id: "poll", label: "Offene Abstimmung", sizes: ["s", "m"] },
+  { id: "photo", label: "Foto des Tages", sizes: ["s", "m", "l"] },
+  { id: "projects", label: "Bauprojekte", sizes: ["s", "m"] },
+  { id: "track", label: "Soundtrack-Tipp", sizes: ["s", "m"] },
+  { id: "challenges", label: "Offene Challenges", sizes: ["s", "m"] },
+  { id: "dice", label: "Würfel & Münze", sizes: ["s", "m"] },
+  { id: "captures", label: "Letzte Aufnahmen", sizes: ["m", "l"] },
+  { id: "storage", label: "Speicherplatz", sizes: ["s", "m"] },
+  { id: "topplayed", label: "Meistgespielt (7 Tage)", sizes: ["s", "m"] },
 ];
 
 export const DEFAULT_LAYOUT: Layout = {

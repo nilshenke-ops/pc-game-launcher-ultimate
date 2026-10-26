@@ -195,6 +195,11 @@ Seite: /
 Stichworte: widgets zähler tode pausen erinnerung spielzeit heute ping ziele level xp deals controller akku zufallsspiel overlay
 Für Startseite und Game-Overlay: Zähler (z. B. Tode/Versuche, nur auf dem Gerät), Pausen-Erinnerung (vibriert nach 30/45/60/90 min Spiel), Spielzeit heute/diese Woche, Ping (misst der PC), Aktive Ziele, Level & XP, Deals (Zielpreis erreicht zuerst), Controller-Akku, Zufallsspiel (würfeln, Start nach Bestätigung). Hinzufügen: Startseite → Bearbeiten, oder im Overlay über „Widgets“.
 
+## Weitere eingebaute Widgets
+Seite: /
+Stichworte: widgets würfel münze foto speicherplatz meistgespielt aufnahmen abstimmung bauprojekte soundtrack challenges plugin fest eingebaut
+Fest eingebaut (kein Plugin), über „Anpassen“ einblendbar: „Wo war ich?“ (letzte Notiz zu einem Spiel), „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“ (aus dem Foto-Museum), „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“ (W6, W20, Münze – echter Zufall im Browser), „Letzte Aufnahmen“ (Screenshots vom PC), „Speicherplatz“ (freier Platz der PC-Laufwerke) und „Meistgespielt (7 Tage)“. Die ersten acht gehen auch ohne PC.
+
 ## Startzeit-Analyse
 Seite: /start-times
 Stichworte: startzeit ladezeit dauer start langsam schnell analyse messen spiel startet warum lädt lange

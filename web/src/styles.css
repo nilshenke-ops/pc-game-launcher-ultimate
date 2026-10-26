@@ -1454,3 +1454,12 @@ tr.cmp-only td { color: var(--muted); }
   .m-month-label { padding-top: 0; }
   .m-light-nav { width: 40px; height: 52px; }
 }
+
+/* ------------------------------------------------------------------ more home widgets (2.45) */
+.w-photo { width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: rgba(0, 0, 0, 0.25); }
+.w-photo .j-img { width: 100%; height: 100%; object-fit: cover; display: grid; place-items: center; color: var(--muted); }
+.w-dice { display: flex; align-items: baseline; gap: 8px; min-height: 40px; }
+.w-dice b { font-size: 2rem; line-height: 1; }
+.w-caps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.w-cap { aspect-ratio: 16 / 10; border-radius: 8px; overflow: hidden; background: rgba(0, 0, 0, 0.25); display: grid; place-items: center; color: var(--muted); }
+.w-cap img { width: 100%; height: 100%; object-fit: cover; display: block; }
