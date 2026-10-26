@@ -1,34 +1,28 @@
 {
-  "version": "2.49.0",
+  "version": "2.50.0",
   "date": "2026-10-26",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.49.0/PCGameLauncherCompanion.exe",
-  "size": 87980229,
-  "sha256": "01cda57711da4501a8b9c7e4f13862a54269f7f46b8213883c30799b789780f3",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.50.0/PCGameLauncherCompanion.exe",
+  "size": 87992517,
+  "sha256": "023609e8776b384fc4e29d60e5f087fe7254d8b8d88c1e8107f7b3634e8e2dcc",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.49.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.49.0/PCGameLauncherCompanion-2.49.0-win-x64.zip",
-    "size": 82241527,
-    "sha256": "d3b937e87e99a3a6b6cef7543bb95bbe90a49c83e5c5f09a134508ec0347a3fa"
+    "fileName": "PCGameLauncherCompanion-2.50.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.50.0/PCGameLauncherCompanion-2.50.0-win-x64.zip",
+    "size": 82252568,
+    "sha256": "2e13c20f42aac83d1fc60404e1b88218c0fc4f2792a78ba9abb9c1fac924ff61"
   },
-  "notes": "Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert · Geräte & Verbindungen: der PC selbst als eigene Zeile (online, Version), Gerätetyp, „x von 20 Geräten“, „Online über VPN (Tailscale)“, „Offline · zuletzt verbunden …“, Knopf „Neu verbinden“ · Sitzungen werden alle 12 Stunden automatisch mit dem Geräteschlüssel erneuert – ohne neue Kopplung; widerrufene Geräte bekommen keine neue Sitzung",
+  "notes": "Fester Name im WLAN ohne Router-Einstellung: Der PC meldet sich selbst per Bonjour/mDNS als „nexus-<PC-Name>.local“ an. Der QR-Code nutzt diesen Namen – bekommt der PC eine neue IP, finden iPhone und iPad ihn trotzdem · Einstellungen → Verbindung → „Unterwegs mit Tailscale“: zeigt, ob Tailscale installiert und angemeldet ist, und schaltet die sichere https-Adresse mit einem Klick am PC ein oder aus (kein Befehl tippen); meldet ehrlich, wenn Tailscale ablehnt, und warum · Einstellungen → Hilfe (funktioniert ohne PC): koppeln, fester Name im WLAN, Tailscale Schritt für Schritt (inkl. einmaliger Freigabe in der Tailscale-Verwaltung), Hilfe bei Problemen",
   "changes": {
     "neu": [
-      "Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert",
-      "Geräte & Verbindungen: der PC selbst als eigene Zeile (online, Version), Gerätetyp, „x von 20 Geräten“, „Online über VPN (Tailscale)“, „Offline · zuletzt verbunden …“, Knopf „Neu verbinden“",
-      "Sitzungen werden alle 12 Stunden automatisch mit dem Geräteschlüssel erneuert – ohne neue Kopplung; widerrufene Geräte bekommen keine neue Sitzung",
-      "Jeder Befehl hat eine eigene ID: kommt er doppelt an, wird er nur einmal ausgeführt"
+      "Fester Name im WLAN ohne Router-Einstellung: Der PC meldet sich selbst per Bonjour/mDNS als „nexus-<PC-Name>.local“ an. Der QR-Code nutzt diesen Namen – bekommt der PC eine neue IP, finden iPhone und iPad ihn trotzdem",
+      "Einstellungen → Verbindung → „Unterwegs mit Tailscale“: zeigt, ob Tailscale installiert und angemeldet ist, und schaltet die sichere https-Adresse mit einem Klick am PC ein oder aus (kein Befehl tippen); meldet ehrlich, wenn Tailscale ablehnt, und warum",
+      "Einstellungen → Hilfe (funktioniert ohne PC): koppeln, fester Name im WLAN, Tailscale Schritt für Schritt (inkl. einmaliger Freigabe in der Tailscale-Verwaltung), Hilfe bei Problemen"
     ],
     "verbessert": [
-      "Statusanzeige oben zeigt den echten Zustand: Verbunden, Wiederverbinden …, Nicht angemeldet, Nicht autorisiert, PC offline (vorher „Lokal“, sobald irgendeine Verbindung offen war)",
-      "Klare Fehlermeldungen: Programm nicht installiert, Aktion nicht erlaubt, Gerät nicht autorisiert, Aktion fehlgeschlagen",
-      "Wiederverbinden bei langem Ausfall sparsamer (nach 10 s alle 2 s, nach 2 min alle 5 s); Begleiter → Relay mit Zufallsabweichung",
-      "Höchstens 20 gekoppelte Geräte, mit verständlicher Meldung"
+      "„Zugriff von unterwegs“ heißt jetzt „Eigener Server (für Fortgeschrittene)“ – für den Alltag reicht Tailscale"
     ],
-    "behoben": [
-      "Beim Beenden des Begleiters blieben offene Verbindungen bis zu 30 s bestehen – Handys hielten den PC noch für erreichbar. Jetzt werden sie sofort geschlossen"
-    ]
+    "behoben": []
   },
-  "signature": "E6swP91XzL4/O5B/M2x2uhBtbbyL1Mo9KW/zZels3hCOjKnu1L7ky8sKiPwiTSmD9MgXCIJJbNs59w1JDDpLtw=="
+  "signature": "aPUBQu6QWIPb7nRd9u9zHEAhRuLHnPLG7z5yZbsKl+OOzdHqGM8eof7MsN9eIDACrCEcyh29PJNTcSueKgwhgQ=="
 }
