@@ -1,5 +1,33 @@
 [
   {
+    "version": "2.48.0",
+    "date": "2026-10-26",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.48.0/PCGameLauncherCompanion.exe",
+    "size": 87970985,
+    "sha256": "7a8585b0e4299c7b66a631dffbd6a2321a1cfcdb0803d654cc574b0a79350cd7",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.48.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.48.0/PCGameLauncherCompanion-2.48.0-win-x64.zip",
+      "size": 82232408,
+      "sha256": "bbd8900d4a7d4cfbfde5a23bad235321c2e08e1adb4bbcc6cc70169d178ad213"
+    },
+    "notes": "Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen: · Eigene Sammelkarten: Bild, Name, Beschreibung, Spiel, bis zu 6 eigene Werte, Farben, Hintergrundmuster und Seltenheits-Optik (nur Aussehen – nichts zu kaufen, keine Zufallsziehung); Sammlungen, Favoriten, Filter, duplizieren, als Bild speichern und über das Teilen-Menü des Geräts teilen · Poster- und Cover-Designer sowie Banner- und Profilbild-Werkstatt: Formate wie Steam-Cover 600 × 900 und „Library Hero“ (laut Steamworks), YouTube-Kanalbanner mit sichtbarem Bereich und Twitch-Banner (Angaben aus Ratgebern, so gekennzeichnet), Profilbild mit Kreis, eigene Formate; Vorlagen, Text, Formen und eigene Bilder; ziehen und vergrößern mit Finger oder Maus, Rückgängig/Wiederholen, Ebenen-Reihenfolge, Export als PNG oder JPG",
+    "changes": {
+      "neu": [
+        "Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen:",
+        "Eigene Sammelkarten: Bild, Name, Beschreibung, Spiel, bis zu 6 eigene Werte, Farben, Hintergrundmuster und Seltenheits-Optik (nur Aussehen – nichts zu kaufen, keine Zufallsziehung); Sammlungen, Favoriten, Filter, duplizieren, als Bild speichern und über das Teilen-Menü des Geräts teilen",
+        "Poster- und Cover-Designer sowie Banner- und Profilbild-Werkstatt: Formate wie Steam-Cover 600 × 900 und „Library Hero“ (laut Steamworks), YouTube-Kanalbanner mit sichtbarem Bereich und Twitch-Banner (Angaben aus Ratgebern, so gekennzeichnet), Profilbild mit Kreis, eigene Formate; Vorlagen, Text, Formen und eigene Bilder; ziehen und vergrößern mit Finger oder Maus, Rückgängig/Wiederholen, Ebenen-Reihenfolge, Export als PNG oder JPG",
+        "Virtuelle Ausstellung: Räume mit fünf Stilen, Karten, Poster und Museumsfotos aufhängen, verschieben, vergrößern, rahmen und beschriften, Vollbild-Rundgang, Raum als Bild speichern",
+        "Abzeichen: zwölf eingebaute und eigene Abzeichen, gezählt aus deinen echten Einträgen, mit Bedingung und Fortschritt; wird ein Eintrag gelöscht, ist das Abzeichen wieder offen"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "TSanr1wp3bSOeSF7kjBNvIrgzfA7eu/VIhEJl3ZRtC/vfexuxZiKMzr02AiO+vctTecFevpvUj/qnidpz7Pd/w=="
+  },
+  {
     "version": "2.47.0",
     "date": "2026-10-26",
     "channel": "stable",
@@ -1434,29 +1462,5 @@
       ]
     },
     "signature": "omCAEi5N/ucYWiXJFQQksAa/Qt17Xqm4oJHt8Ffg0FNxiu3iAmJlbMSz9KdSCYqeM+/X6lvyE9IuSR1QhKDFjQ=="
-  },
-  {
-    "version": "2.3.1",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.3.1/PCGameLauncherCompanion.exe",
-    "size": 87223873,
-    "sha256": "70b8438c93154ce40a6b099033a073e0c4a2c529de6544c5dc390ad5134dc4d7",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.3.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.3.1/PCGameLauncherCompanion-2.3.1-win-x64.zip",
-      "size": 81489676,
-      "sha256": "d217320fd2025522237f6fdbfc785e0f6ba7e9db2094b84c64e9a07f68e4af72"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "KI-Assistent mit Claude Haiku 5.5: Die Anfrage enthielt ein leeres Ersatzmodell-Feld, das die API ablehnen kann – jetzt wird es nur bei Opus/Sonnet gesendet (mit Test)"
-      ]
-    },
-    "signature": "ORXzLXfl9s0O3v2o+ljVeyOroHcJHWycomCcVAFJTSwFfyY8wIKj6VLjbLkpPwNuU4TUmx7sguDkgufFNfDUsw=="
   }
 ]
