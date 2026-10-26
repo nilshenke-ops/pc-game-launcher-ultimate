@@ -1,28 +1,34 @@
 {
-  "version": "2.48.0",
+  "version": "2.49.0",
   "date": "2026-10-26",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.48.0/PCGameLauncherCompanion.exe",
-  "size": 87970985,
-  "sha256": "7a8585b0e4299c7b66a631dffbd6a2321a1cfcdb0803d654cc574b0a79350cd7",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.49.0/PCGameLauncherCompanion.exe",
+  "size": 87980229,
+  "sha256": "01cda57711da4501a8b9c7e4f13862a54269f7f46b8213883c30799b789780f3",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.48.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.48.0/PCGameLauncherCompanion-2.48.0-win-x64.zip",
-    "size": 82232408,
-    "sha256": "bbd8900d4a7d4cfbfde5a23bad235321c2e08e1adb4bbcc6cc70169d178ad213"
+    "fileName": "PCGameLauncherCompanion-2.49.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.49.0/PCGameLauncherCompanion-2.49.0-win-x64.zip",
+    "size": 82241527,
+    "sha256": "d3b937e87e99a3a6b6cef7543bb95bbe90a49c83e5c5f09a134508ec0347a3fa"
   },
-  "notes": "Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen: · Eigene Sammelkarten: Bild, Name, Beschreibung, Spiel, bis zu 6 eigene Werte, Farben, Hintergrundmuster und Seltenheits-Optik (nur Aussehen – nichts zu kaufen, keine Zufallsziehung); Sammlungen, Favoriten, Filter, duplizieren, als Bild speichern und über das Teilen-Menü des Geräts teilen · Poster- und Cover-Designer sowie Banner- und Profilbild-Werkstatt: Formate wie Steam-Cover 600 × 900 und „Library Hero“ (laut Steamworks), YouTube-Kanalbanner mit sichtbarem Bereich und Twitch-Banner (Angaben aus Ratgebern, so gekennzeichnet), Profilbild mit Kreis, eigene Formate; Vorlagen, Text, Formen und eigene Bilder; ziehen und vergrößern mit Finger oder Maus, Rückgängig/Wiederholen, Ebenen-Reihenfolge, Export als PNG oder JPG",
+  "notes": "Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert · Geräte & Verbindungen: der PC selbst als eigene Zeile (online, Version), Gerätetyp, „x von 20 Geräten“, „Online über VPN (Tailscale)“, „Offline · zuletzt verbunden …“, Knopf „Neu verbinden“ · Sitzungen werden alle 12 Stunden automatisch mit dem Geräteschlüssel erneuert – ohne neue Kopplung; widerrufene Geräte bekommen keine neue Sitzung",
   "changes": {
     "neu": [
-      "Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen:",
-      "Eigene Sammelkarten: Bild, Name, Beschreibung, Spiel, bis zu 6 eigene Werte, Farben, Hintergrundmuster und Seltenheits-Optik (nur Aussehen – nichts zu kaufen, keine Zufallsziehung); Sammlungen, Favoriten, Filter, duplizieren, als Bild speichern und über das Teilen-Menü des Geräts teilen",
-      "Poster- und Cover-Designer sowie Banner- und Profilbild-Werkstatt: Formate wie Steam-Cover 600 × 900 und „Library Hero“ (laut Steamworks), YouTube-Kanalbanner mit sichtbarem Bereich und Twitch-Banner (Angaben aus Ratgebern, so gekennzeichnet), Profilbild mit Kreis, eigene Formate; Vorlagen, Text, Formen und eigene Bilder; ziehen und vergrößern mit Finger oder Maus, Rückgängig/Wiederholen, Ebenen-Reihenfolge, Export als PNG oder JPG",
-      "Virtuelle Ausstellung: Räume mit fünf Stilen, Karten, Poster und Museumsfotos aufhängen, verschieben, vergrößern, rahmen und beschriften, Vollbild-Rundgang, Raum als Bild speichern",
-      "Abzeichen: zwölf eingebaute und eigene Abzeichen, gezählt aus deinen echten Einträgen, mit Bedingung und Fortschritt; wird ein Eintrag gelöscht, ist das Abzeichen wieder offen"
+      "Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert",
+      "Geräte & Verbindungen: der PC selbst als eigene Zeile (online, Version), Gerätetyp, „x von 20 Geräten“, „Online über VPN (Tailscale)“, „Offline · zuletzt verbunden …“, Knopf „Neu verbinden“",
+      "Sitzungen werden alle 12 Stunden automatisch mit dem Geräteschlüssel erneuert – ohne neue Kopplung; widerrufene Geräte bekommen keine neue Sitzung",
+      "Jeder Befehl hat eine eigene ID: kommt er doppelt an, wird er nur einmal ausgeführt"
     ],
-    "verbessert": [],
-    "behoben": []
+    "verbessert": [
+      "Statusanzeige oben zeigt den echten Zustand: Verbunden, Wiederverbinden …, Nicht angemeldet, Nicht autorisiert, PC offline (vorher „Lokal“, sobald irgendeine Verbindung offen war)",
+      "Klare Fehlermeldungen: Programm nicht installiert, Aktion nicht erlaubt, Gerät nicht autorisiert, Aktion fehlgeschlagen",
+      "Wiederverbinden bei langem Ausfall sparsamer (nach 10 s alle 2 s, nach 2 min alle 5 s); Begleiter → Relay mit Zufallsabweichung",
+      "Höchstens 20 gekoppelte Geräte, mit verständlicher Meldung"
+    ],
+    "behoben": [
+      "Beim Beenden des Begleiters blieben offene Verbindungen bis zu 30 s bestehen – Handys hielten den PC noch für erreichbar. Jetzt werden sie sofort geschlossen"
+    ]
   },
-  "signature": "TSanr1wp3bSOeSF7kjBNvIrgzfA7eu/VIhEJl3ZRtC/vfexuxZiKMzr02AiO+vctTecFevpvUj/qnidpz7Pd/w=="
+  "signature": "E6swP91XzL4/O5B/M2x2uhBtbbyL1Mo9KW/zZels3hCOjKnu1L7ky8sKiPwiTSmD9MgXCIJJbNs59w1JDDpLtw=="
 }
