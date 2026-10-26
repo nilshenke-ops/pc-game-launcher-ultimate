@@ -148,6 +148,23 @@ export function captureHandoff() {
 /** Asks the browser not to clear this site's storage on its own (the pairing lives there). Harmless if refused. */
 function askPersistentStorage() { try { void navigator.storage?.persist?.().catch(() => {}); } catch { /* not supported */ } }
 
+function opId() {
+  try { return crypto.randomUUID().replace(/-/g, "").slice(0, 24); } catch { return Math.random().toString(36).slice(2) + Date.now().toString(36); }
+}
+
+/** Clear words for the defined error answers of the PC (the PC's own message is kept as detail). */
+export function friendlyError(e: RpcError): RpcError {
+  if (!(e instanceof RpcError)) return e;
+  switch (e.code) {
+    case "invalid-target": return new RpcError(e.code, t("Programm nicht installiert oder nicht gefunden: {m}", { m: e.message }));
+    case "not-found": return new RpcError(e.code, e.message || t("Eintrag nicht gefunden."));
+    case "unauthenticated": case "auth-failed": return new RpcError(e.code, t("Gerät nicht autorisiert – bitte neu koppeln."));
+    case "forbidden": return new RpcError(e.code, t("Aktion nicht erlaubt: {m}", { m: e.message }));
+    case "start-failed": case "launch-failed": return new RpcError(e.code, t("Aktion fehlgeschlagen: {m}", { m: e.message }));
+    default: return e;
+  }
+}
+
 /** Platform name for the device list (no fingerprinting, only what the browser says anyway). */
 export function platformName() {
   const ua = navigator.userAgent;
@@ -261,6 +278,8 @@ class Client {
     } catch { return null; }
   }
   private tryId = 0;
+  /** When the PC last answered the heartbeat (every 15 s on screen). Not part of the status: no re-render per ping. */
+  lastPong = 0;
 
   private async connect() {
     if (HOSTED && !serverConfigured()) {
@@ -320,8 +339,9 @@ class Client {
     // While the app is on screen: 0.25 s, then every 0.5 s a tiny HTTP check (see probeUrl) – the phone is back within
     // about half a second after the PC's companion is up. Only while the app is visible.
     // In the background: exponential backoff 1, 2, 4, 8, 15 s, so a hidden tab does not keep the phone busy.
+    // Long outage on screen: after ~10 s every 2 s, after ~2 min every 5 s – the phone does not keep working for nothing.
     const visible = typeof document !== "undefined" && document.visibilityState === "visible";
-    const base = visible ? (this.attempt === 0 ? 250 : 500) : Math.min(15000, 1000 * 2 ** Math.min(this.attempt, 4));
+    const base = visible ? (this.attempt === 0 ? 250 : this.attempt < 20 ? 500 : this.attempt < 80 ? 2000 : 5000) : Math.min(15000, 1000 * 2 ** Math.min(this.attempt, 4));
     const delay = base * (0.8 + Math.random() * 0.4);
     this.attempt++;
     const auth = this.status.auth === "revoked" ? "revoked" : this.status.auth === "ok" ? "checking" : this.status.auth;
@@ -339,6 +359,7 @@ class Client {
       const started = performance.now();
       try {
         await this.call("ping");
+        this.lastPong = Date.now();
         // Only a noticeable change is published – every published status re-renders all views that show the connection.
         const ms = Math.round(performance.now() - started);
         if (this.status.latencyMs == null || Math.abs(ms - this.status.latencyMs) >= Math.max(5, this.status.latencyMs * 0.2)) this.set({ latencyMs: ms });
@@ -392,7 +413,14 @@ class Client {
 
   /** opts.op: id of a queued change – the PC applies it only once, even if it is sent again after a lost answer. */
   call<T = unknown>(method: string, params?: unknown, opts?: { op?: string }): Promise<T> {
-    const result = this.send<T>(method, params, opts);
+    // Every command gets its own id: should it reach the PC twice (lost answer), the PC carries it out only once.
+    const op = opts?.op ?? (!QUIET.test(method) && !NO_LOGIN.has(method) && !this.demo ? opId() : undefined);
+    const o = op ? { op } : undefined;
+    const result = this.send<T>(method, params, o).catch(async (e: RpcError) => {
+      // The PC ended an old session before running anything: sign in again (new nonce) and send it once more.
+      if (e.code === "session-expired") { await this.renewSession(); return this.send<T>(method, params, o); }
+      throw friendlyError(e);
+    });
     // Every start (tiles, deck, palette, plugins …) goes through here: the start animation only watches, it never waits in between.
     if (method === "library.launch") this.emit("launch.local", { id: (params as { id?: string } | undefined)?.id, result });
     return result;
@@ -426,6 +454,19 @@ class Client {
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, timer });
       ws.send(JSON.stringify({ v: PROTOCOL_VERSION, id, m: method, p: params ?? {}, ...(opts?.op ? { op: opts.op } : {}) }));
     });
+  }
+
+  private renewing: Promise<void> | null = null;
+  /** New session on the same connection: fresh hello (nonce) and login with the device key. Only one at a time. */
+  renewSession(): Promise<void> {
+    this.renewing ??= (async () => {
+      try {
+        const hello = await this.send<Hello>("hello");
+        this.set({ hello, auth: "checking" });
+        await this.authenticate();
+      } finally { this.renewing = null; }
+    })();
+    return this.renewing;
   }
 
   async authenticate() {

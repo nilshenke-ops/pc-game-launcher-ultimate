@@ -159,7 +159,7 @@ public sealed class WebHost : IAsyncDisposable
             await next();
         });
 
-        app.MapGet("/healthz", () => Results.Json(new { ok = true, app = "Nexus Gaming Hub", version = UpdateService.CurrentVersion, role = "companion", instance = InstanceId }));
+        app.MapGet("/healthz", () => _svc.Rpc.ShuttingDown ? Results.StatusCode(503) : Results.Json(new { ok = true, app = "Nexus Gaming Hub", version = UpdateService.CurrentVersion, role = "companion", instance = InstanceId }));
         app.MapGet("/download/info", DownloadInfo);
         app.MapGet("/download/{file}", Download);
         app.Map("/ws", HandleWebSocket);
@@ -196,6 +196,7 @@ public sealed class WebHost : IAsyncDisposable
     async Task HandleWebSocket(HttpContext ctx)
     {
         if (!ctx.WebSockets.IsWebSocketRequest) { ctx.Response.StatusCode = 400; return; }
+        if (_svc.Rpc.ShuttingDown) { ctx.Response.StatusCode = 503; return; } // ending: no new connections
         var (ip, loopback) = RequestOrigin.Client(ctx.Connection.RemoteIpAddress, ctx.Request.Headers);
 
         if (!OriginAllowed(ctx.Request)) { ctx.Response.StatusCode = 403; Log.Warn("web", $"WebSocket von fremder Herkunft abgelehnt: {ctx.Request.Headers.Origin}"); return; }

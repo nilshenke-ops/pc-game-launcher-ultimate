@@ -4,6 +4,7 @@ import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartphone } from "lucide-react";
 import { client, exitDemo, HOSTED, lanPc } from "../lib/rpc";
+import { connView, isHomeNetworkHost } from "../lib/conn-state";
 import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
 import { arrangeNav, DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "../lib/nav";
@@ -25,12 +26,12 @@ import { startPendingSync } from "../lib/pending-sounds";
 function ConnPill() {
   const conn = useConn();
   const nav = useNavigate();
-  const relayOff = conn.relayCompanion === "offline";
-  const kind = conn.phase !== "online" || relayOff ? "error" : conn.auth === "ok" ? "ok" : "warn";
-  const label = conn.phase === "connecting" ? t("Verbinde …") : conn.phase === "offline" ? t("Offline") : relayOff ? t("PC offline") :
-    `${conn.hello?.transport === "relay" ? t("Über Relay") : t("Lokal")}${conn.latencyMs != null ? ` · ${conn.latencyMs} ms` : ""}`;
+  const view = connView(conn, { demo: client.demo, hasCredentials: !!client.credentials });
+  const kind = view.tone;
+  // Signed in: how (local/relay) and the measured ping; otherwise the real state in short words.
+  const label = view.key === "connected" ? `${conn.hello?.transport === "relay" ? t("Über Relay") : t("Lokal")}${conn.latencyMs != null ? ` · ${conn.latencyMs} ms` : ""}` : t(view.short);
   return (
-    <button className="conn-pill" onClick={() => nav("/diagnostics")} title={conn.lastError ?? label} aria-label={t("Verbindungsstatus: {s}", { s: label })}>
+    <button className="conn-pill" onClick={() => nav("/diagnostics")} title={[t(view.label), conn.lastError].filter(Boolean).join(" – ")} aria-label={t("Verbindungsstatus: {s}", { s: t(view.label) })}>
       <span className={`dot ${kind} ${conn.phase === "connecting" ? "pulse" : ""}`} />
       <span className="label">{label}</span>
     </button>
@@ -291,6 +292,7 @@ function StatusStrip({ preview, waiting, home, hidePreview, onShowOutbox }: { pr
     preview ? t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.") : null,
     paused ? `${conn.authError ?? ""} ${t("Sobald der Datenschutzmodus am PC aus ist, verbindet sich dieses Gerät von selbst wieder. Angezeigt wird bis dahin der letzte Stand.")}`.trim() : null,
     relayDown ? t("Das Relay ist erreichbar, aber der Companion auf deinem PC ist nicht verbunden. Ist der PC an und läuft der Companion?") : null,
+    offline && !relayDown && !HOSTED && isHomeNetworkHost(conn.url) && navigator.onLine ? t("Ist am Handy ein VPN aktiv? Viele VPNs leiten auch Verbindungen ins Heimnetz um – dann im VPN „Zugriff auf lokales Netzwerk“ erlauben oder es kurz ausschalten. Diagnose zeigt Details.") : null,
     offline && !relayDown ? (conn.everConnected ? t("Automatischer neuer Versuch läuft. Angezeigte Daten können veraltet sein.") : t("Die App verbindet sich automatisch, sobald der PC an ist. Design und Layout kannst du schon jetzt unter Einstellungen ändern.")) : null,
     waiting.length ? (error ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.") : confirm ? t("Einige Änderungen (Plugins oder ältere) werden erst nach deiner Bestätigung übertragen.") : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")) : null,
   ].filter(Boolean);

@@ -66,3 +66,36 @@ die Fehlermeldung stammt aus einer Sitzung, in der diese Adresse gespeichert war
 3. **Website merkt sich die PC-Seite im WLAN** und bietet „Zur PC-App (WLAN)“ an, statt nur „offline“.
 4. **Wiederverbinden:** kein zweiter Socket mehr (U5), `pageshow`, klare Zustände.
 5. **Diagnose** im Browser um Herkunft, Home-Bildschirm-App, dauerhaften Speicher und feste Adresse erweitert.
+
+## Ergänzungen 2.49.0 (vollständiger Auftrag)
+
+### U6 – Statusanzeige behauptete „Lokal“ ohne Anmeldung (Code-Fehler, behoben)
+Die Anzeige oben zeigte „Lokal · x ms“, sobald irgendeine WebSocket-Verbindung offen war – auch für ein nicht
+gekoppeltes oder widerrufenes Gerät. Jetzt eine zentrale Zustandslogik (`web/src/lib/conn-state.ts`): Verbunden,
+Verbindung wird aufgebaut, Verbindung unterbrochen – automatische Wiederverbindung (Versuch n), PC nicht erreichbar,
+Anmeldung erforderlich, Gerät nicht autorisiert, Vom PC pausiert. „Verbunden“ nur bei offener UND angemeldeter Verbindung.
+
+### U7 – Beim Beenden des Begleiters blieben offene Verbindungen bis zu 30 s bestehen (gefunden durch Test 12, behoben)
+Der Webserver nahm keine neuen Verbindungen mehr an, bestehende WebSockets liefen aber bis zum Ende des
+Shutdown-Timeouts weiter – Handys hielten den PC noch für erreichbar. Jetzt schließt der Begleiter beim Beenden zuerst
+alle Verbindungen (`RpcServer.CloseAllAsync`) und lehnt neue mit 503 ab.
+
+### Sitzung ≠ Geräte-Identität
+Die Kopplung (Geräteschlüssel) läuft nicht ab – nur Widerruf beendet sie. Eine Sitzung (eine angemeldete Verbindung)
+läuft nach 12 Stunden ab: Der PC führt dann nichts mehr aus, antwortet `session-expired` und erzeugt eine neue Nonce;
+die App meldet sich mit dem Geräteschlüssel selbst neu an und wiederholt die Anfrage einmal (sicher, weil sie nicht
+ausgeführt wurde). Ein widerrufenes Gerät bekommt keine neue Sitzung.
+
+### Befehle
+Jeder Befehl (alles außer Lese-Anfragen) trägt eine eigene ID (`op`); kommt er doppelt an, führt der PC ihn einmal aus.
+Anfragen haben zusätzlich eine laufende Nummer pro Verbindung (Wiederholung wird mit `replay` abgelehnt). Befehle werden
+nie automatisch wiederholt und nie für später gespeichert. Definierte Antworten: offline/needs-pc (PC offline),
+invalid-target (Programm nicht installiert), not-found, forbidden (Aktion nicht erlaubt), session-expired,
+unauthenticated/auth-failed (Gerät nicht autorisiert), start-failed (Aktion fehlgeschlagen), ok.
+
+### Architektur (entschieden)
+1. Gleiches WLAN: direkt zum Begleiter (`http/ws`, Port 8787), bevorzugt unter einem festen Namen (Router-Name).
+2. VPN: Tailscale – der Begleiter erkennt den Namen; mit `tailscale serve` auch https für die Website. Andere VPNs nur,
+   wenn sie Zugriff aufs Heimnetz erlauben (Split-Tunneling); sonst zeigt die Diagnose genau das an.
+3. Andere Netze ohne Tailscale: eigenes Relay (`relay/`), zu dem der Begleiter ausgehend verbindet – keine
+   Portweiterleitung, Anmeldung Ende-zu-Ende zwischen Gerät und PC; das Relay braucht TLS davor (wss).

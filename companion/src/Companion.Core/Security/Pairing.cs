@@ -33,7 +33,10 @@ public sealed class DeviceStore
         _secrets = secrets;
     }
 
+    /// <summary>At most this many paired devices (phones, tablets, browsers) per PC.</summary>
+    public const int MaxDevices = 20;
     public IReadOnlyList<PairedDevice> List() => _store.Snapshot().Devices;
+    public bool Full => List().Count >= MaxDevices;
     public PairedDevice? Get(string id) => _store.Get(f => f.Devices.FirstOrDefault(d => d.Id == id));
 
     /// <summary>Creates a device and returns the plain token, which is handed to the device exactly once.</summary>
@@ -114,7 +117,7 @@ public sealed class DeviceStore
     }
 }
 
-public enum PairingError { None, RateLimited, NoActiveCode, Invalid, Expired, Locked }
+public enum PairingError { None, RateLimited, NoActiveCode, Invalid, Expired, Locked, DeviceLimit }
 
 public sealed class PendingPairing
 {
@@ -208,6 +211,7 @@ public sealed class PairingService
     {
         if (!_perIp.TryHit(ip)) return (PairingError.RateLimited, null, null, _perIp.RetryAfter(ip));
         if (!_global.TryHit("all")) return (PairingError.RateLimited, null, null, _global.RetryAfter("all"));
+        if (_devices.Full) return (PairingError.DeviceLimit, null, null, default);
         lock (_lock)
         {
             if (_code == null) return (_locked ? PairingError.Locked : PairingError.NoActiveCode, null, null, default);
@@ -276,6 +280,7 @@ public sealed class PairingService
     public (PairingError error, PairedDevice? device, string? token, TimeSpan retryAfter) RedeemHandoff(string code, string deviceName, string platform, string ip)
     {
         if (!_perIp.TryHit(ip)) return (PairingError.RateLimited, null, null, _perIp.RetryAfter(ip));
+        if (_devices.Full) return (PairingError.DeviceLimit, null, null, default);
         PairedDevice? source;
         lock (_lock)
         {

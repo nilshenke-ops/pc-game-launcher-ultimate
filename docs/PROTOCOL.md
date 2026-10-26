@@ -29,3 +29,10 @@ Companion verbindet sich zu `wss://<relay>/companion` und sendet `{"t":"auth","i
 
 ## Versionierung
 `v` ist in jeder Nachricht enthalten. Eine inkompatible Änderung erhöht die Version; der Companion lehnt fremde Versionen mit `protocol` ab, die Web-App zeigt dann einen Hinweis.
+
+
+## Sitzungen, Befehls-IDs und Fehlercodes (ab 2.49)
+- Geräte-Sitzungen laufen nach 12 h ab (`PGL_SESSION_LIFETIME_SECONDS` für Tests). Antwort `session-expired`, danach neue Nonce per `hello`, erneut `auth.login`.
+- Jede schreibende Anfrage kann `op` (≤ 64 Zeichen) tragen; gleiche `op` + Methode + Gerät → einmal ausgeführt, die gespeicherte Antwort wird zurückgegeben. Die Web-App setzt sie für jede nicht lesende Anfrage.
+- `device-limit`: höchstens 20 gekoppelte Geräte. `devices.list` liefert `max` und `pc` (Name, Version, online).
+- Ereignis `server.closing {reason}`: der Begleiter wird beendet, alle Verbindungen werden geschlossen.

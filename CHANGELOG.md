@@ -4,6 +4,20 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.49.0 – 2026-10-26
+### Neu
+- Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert
+- Geräte & Verbindungen: der PC selbst als eigene Zeile (online, Version), Gerätetyp, „x von 20 Geräten“, „Online über VPN (Tailscale)“, „Offline · zuletzt verbunden …“, Knopf „Neu verbinden“
+- Sitzungen werden alle 12 Stunden automatisch mit dem Geräteschlüssel erneuert – ohne neue Kopplung; widerrufene Geräte bekommen keine neue Sitzung
+- Jeder Befehl hat eine eigene ID: kommt er doppelt an, wird er nur einmal ausgeführt
+### Verbessert
+- Statusanzeige oben zeigt den echten Zustand: Verbunden, Wiederverbinden …, Nicht angemeldet, Nicht autorisiert, PC offline (vorher „Lokal“, sobald irgendeine Verbindung offen war)
+- Klare Fehlermeldungen: Programm nicht installiert, Aktion nicht erlaubt, Gerät nicht autorisiert, Aktion fehlgeschlagen
+- Wiederverbinden bei langem Ausfall sparsamer (nach 10 s alle 2 s, nach 2 min alle 5 s); Begleiter → Relay mit Zufallsabweichung
+- Höchstens 20 gekoppelte Geräte, mit verständlicher Meldung
+### Behoben
+- Beim Beenden des Begleiters blieben offene Verbindungen bis zu 30 s bestehen – Handys hielten den PC noch für erreichbar. Jetzt werden sie sofort geschlossen
+
 ## 2.48.0 – 2026-10-26
 ### Neu
 - Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen:

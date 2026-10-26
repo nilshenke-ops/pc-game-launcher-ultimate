@@ -551,6 +551,7 @@ public sealed class CompanionServices : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        try { await Rpc.CloseAllAsync("Der PC-Begleiter wird beendet."); } catch (Exception ex) { Log.Warn("companion", ex.Message); }
         Remote.Dispose();
         Moves.Dispose();
         await Obs.DisposeAsync();

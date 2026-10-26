@@ -38,6 +38,7 @@ public static class RpcApi
         {
             var perms = ctx.Params.TryGetProperty("permissions", out var pe) && pe.ValueKind == JsonValueKind.Array
                 ? pe.EnumerateArray().Select(x => x.GetString() ?? "").ToList() : null;
+            if (ctx.Bool("approve") && s.Devices.Full) throw DeviceLimit();
             var p = s.Pairing.Decide(ctx.Str("requestId", 64), ctx.Bool("approve"), perms)
                 ?? throw new RpcException("not-found", "Anfrage ist abgelaufen oder wurde bereits entschieden.");
             return new { approved = p.Approved, deviceId = p.DeviceId };
@@ -49,6 +50,7 @@ public static class RpcApi
             throw error switch
             {
                 PairingError.RateLimited => new RpcException("rate-limited", $"Zu viele Versuche. Bitte in {Math.Max(1, (int)Math.Ceiling(retry.TotalMinutes))} Minute(n) erneut versuchen."),
+                PairingError.DeviceLimit => DeviceLimit(),
                 PairingError.NoActiveCode => new RpcException("no-code", "Am PC ist kein Kopplungscode aktiv. Bitte im Companion „Neuen Code erzeugen“ klicken."),
                 PairingError.Expired => new RpcException("code-expired", "Der Code ist abgelaufen. Bitte am PC einen neuen Code erzeugen."),
                 PairingError.Locked => new RpcException("code-locked", "Zu viele falsche Eingaben – der Code wurde gesperrt. Bitte am PC einen neuen Code erzeugen."),
@@ -74,6 +76,7 @@ public static class RpcApi
             if (error == PairingError.None) return new { deviceId = device!.Id, token, name = device.Name };
             throw error == PairingError.RateLimited
                 ? new RpcException("rate-limited", $"Zu viele Versuche. Bitte in {Math.Max(1, (int)Math.Ceiling(retry.TotalMinutes))} Minute(n) erneut versuchen.")
+                : error == PairingError.DeviceLimit ? DeviceLimit()
                 : new RpcException("handoff-invalid", "Der Übertragungs-Link ist abgelaufen oder wurde schon benutzt. Auf dem gekoppelten Gerät unter „Geräte & Verbindungen“ einen neuen erzeugen.");
         });
 
@@ -88,6 +91,9 @@ public static class RpcApi
             }),
             localSessions = rpc.Sessions.Count(x => x.IsLocalAdmin),
             protection = s.Platform.Secrets.Description,
+            max = DeviceStore.MaxDevices,
+            // The PC itself: it is answering this very request, so "online" is a fact, not a guess.
+            pc = new { name = s.Settings.Get().PcName ?? Environment.MachineName, version = UpdateService.CurrentVersion, platform = System.Runtime.InteropServices.RuntimeInformation.OSDescription, online = true, startedAt = System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime() },
         });
         rpc.Register("devices.me", ctx => new { isLocal = ctx.Session.IsLocalAdmin, device = ctx.Session.Device == null ? null : new { ctx.Session.Device.Id, ctx.Session.Device.Name }, permissions = ctx.Session.Permissions, transport = ctx.Session.Channel.Transport });
         rpc.Register("devices.rename", ctx => s.Devices.Rename(ctx.Str("id", 64), ctx.Str("name", 60)) ? Changed(s, "devices") : throw NotFound());
@@ -753,6 +759,7 @@ public static class RpcApi
 
     static object Changed(CompanionServices s, string topic) { s.Rpc.Changed(topic); return true; }
     static RpcException NotFound() => new("not-found", "Eintrag nicht gefunden.");
+    static RpcException DeviceLimit() => new("device-limit", $"Es sind schon {DeviceStore.MaxDevices} Geräte gekoppelt (Höchstzahl). Am PC unter Geräte & Verbindungen ein altes Gerät entfernen.");
 
     static ItemKind? ParseKind(string? k) => k switch { "game" => ItemKind.Game, "program" => ItemKind.Program, null => null, _ => throw new RpcException("invalid-params", "Typ muss game oder program sein.") };
 

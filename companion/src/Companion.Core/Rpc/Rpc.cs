@@ -30,7 +30,9 @@ public sealed class RpcException(string code, string message) : Exception(messag
 public sealed class RpcSession
 {
     public required IClientChannel Channel { get; init; }
-    public byte[] Nonce { get; } = RandomNumberGenerator.GetBytes(32);
+    public byte[] Nonce { get; set; } = RandomNumberGenerator.GetBytes(32);
+    /// <summary>When the device signed in on this connection (sessions of devices end after <see cref="RpcServer.SessionLifetime"/>).</summary>
+    public DateTime? AuthenticatedAt { get; set; }
     public long LastSeq { get; set; }
     public PairedDevice? Device { get; set; }
     public bool IsLocalAdmin { get; set; }
@@ -132,6 +134,14 @@ public sealed class RpcServer : IHub
         while (_doneOrder.Count > 2000 && _doneOrder.TryDequeue(out var old)) _done.TryRemove(old, out _);
     }
     readonly ConcurrentDictionary<string, RpcSession> _sessions = new();
+    /// <summary>
+    /// A device session (one connection) is renewed after this time: the device proves its key again with a fresh nonce.
+    /// The pairing itself does not expire – only revoking ends it. Tests shorten it with PGL_SESSION_LIFETIME_SECONDS.
+    /// </summary>
+    public TimeSpan SessionLifetime { get; set; } = DefaultSessionLifetime;
+    static readonly TimeSpan DefaultSessionLifetime =
+        int.TryParse(Environment.GetEnvironmentVariable("PGL_SESSION_LIFETIME_SECONDS"), out var sec) && sec > 0 ? TimeSpan.FromSeconds(sec) : TimeSpan.FromHours(12);
+    static readonly HashSet<string> SessionFree = new() { "hello", "ping", "auth.login", "auth.logout" };
     readonly RateLimiter _loginLimiter = new(20, TimeSpan.FromMinutes(5));
     public IReadOnlyDictionary<string, string> ProtocolPermissions { get; }
 
@@ -158,7 +168,7 @@ public sealed class RpcServer : IHub
         Register("auth.login", Login);
         Register("auth.logout", ctx =>
         {
-            ctx.Session.Device = null; ctx.Session.IsLocalAdmin = false; ctx.Session.Permissions.Clear();
+            ctx.Session.Device = null; ctx.Session.IsLocalAdmin = false; ctx.Session.Permissions.Clear(); ctx.Session.AuthenticatedAt = null;
             return Task.FromResult<object?>(true);
         });
     }
@@ -216,6 +226,7 @@ public sealed class RpcServer : IHub
         }
         if (LoginBlocked?.Invoke(device.Id) is { } why) throw new RpcException("paused", why);
         s.Device = device;
+        s.AuthenticatedAt = DateTime.UtcNow;
         s.Permissions = new HashSet<string>(device.Permissions);
         Devices.Touch(device.Id, s.Channel.RemoteIp);
         Changed("devices"); // the PC's device list shows who is connected right now
@@ -265,6 +276,18 @@ public sealed class RpcServer : IHub
     public RpcSession? Session(string channelId) => _sessions.TryGetValue(channelId, out var s) ? s : null;
     public IEnumerable<RpcSession> Sessions => _sessions.Values;
 
+    /// <summary>The companion is ending: close every connection at once, so phones see "PC nicht erreichbar" right away
+    /// (instead of a socket that keeps answering until the web server's shutdown timeout).</summary>
+    public bool ShuttingDown { get; private set; }
+
+    public async Task CloseAllAsync(string reason)
+    {
+        ShuttingDown = true;
+        var all = _sessions.Values.ToList();
+        foreach (var s in all) SendTo(s, "server.closing", new { reason });
+        await Task.WhenAll(all.Select(s => s.Channel.CloseAsync(reason).WaitAsync(TimeSpan.FromSeconds(2)).ContinueWith(_ => { })));
+    }
+
     public async Task OnMessageAsync(IClientChannel channel, string text)
     {
         if (!_sessions.TryGetValue(channel.Id, out var session)) return;
@@ -286,6 +309,14 @@ public sealed class RpcServer : IHub
             session.LastSeq = id;
             var method = root.TryGetProperty("m", out var m) && m.ValueKind == JsonValueKind.String ? m.GetString()! : "";
             if (!_methods.TryGetValue(method, out var entry)) throw new RpcException("unknown-method", $"Unbekannte Aktion: {method}");
+            // An old device session is ended before anything runs; the app signs in again by itself (new nonce) and
+            // repeats the request – safe, because it was not carried out.
+            if (session.Device != null && session.AuthenticatedAt is { } at && DateTime.UtcNow - at > SessionLifetime && !SessionFree.Contains(method))
+            {
+                session.Device = null; session.Permissions.Clear(); session.AuthenticatedAt = null;
+                session.Nonce = RandomNumberGenerator.GetBytes(32);
+                throw new RpcException("session-expired", "Sitzung abgelaufen – wird automatisch erneuert.");
+            }
             Authorize(session, entry.perm);
             var p = root.TryGetProperty("p", out var pe) ? pe.Clone() : default;
             // Queued changes carry their own id ("op"). If the answer got lost (timeout) and the device sends the change

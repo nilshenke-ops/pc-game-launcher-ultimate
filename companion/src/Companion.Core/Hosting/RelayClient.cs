@@ -119,7 +119,8 @@ public sealed class RelayClient : IAsyncDisposable
                 _channels.Clear();
                 _ws = null;
             }
-            try { await Task.Delay(delay, ct); } catch { break; }
+            // Exponential backoff 2 → 60 s with ±20 % jitter, so many PCs do not hit a restarted relay at the same moment.
+            try { await Task.Delay(delay * (0.8 + Random.Shared.NextDouble() * 0.4), ct); } catch { break; }
             delay = TimeSpan.FromSeconds(Math.Min(60, delay.TotalSeconds * 2));
         }
         SetState("disabled");

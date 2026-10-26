@@ -9,6 +9,7 @@ import { useConn, useRpc } from "../lib/hooks";
 import { clock } from "../lib/format";
 import type { CheckResult } from "../lib/types";
 import { Button, Card, CheckList, PageHead } from "../components/ui";
+import { ConnectionCheck } from "../components/conn-check";
 
 interface Report { at: string; checks: CheckResult[] }
 
@@ -103,6 +104,7 @@ export default function Diagnostics() {
       <PageHead eyebrow={t("System")} title={t("Diagnose")} text={t("Prüft Companion, Netzwerk, Relay, Audio und diesen Browser. Es werden nur echte Messwerte angezeigt.")}
         actions={<Button variant="primary" icon={<Play size={16} />} busy={busy} onClick={run}>{t("Diagnose ausführen")}</Button>} />
       {err && <p className="small" style={{ color: "var(--danger)" }}>{err}</p>}
+      <div style={{ marginBottom: 16 }}><ConnectionCheck /></div>
       <div className="grid-2">
         <Card title={t("Dieses Gerät (z. B. iPad)")} icon={<Laptop size={18} />}><CheckList checks={browserChecks(conn, persisted)} /></Card>
         <Card title={t("Companion")} icon={<Monitor size={18} />} meta={sys && clock(sys.at)}>{sys ? <CheckList checks={sys.checks} /> : <p className="small muted">{t("Noch nicht ausgeführt.")}</p>}</Card>
