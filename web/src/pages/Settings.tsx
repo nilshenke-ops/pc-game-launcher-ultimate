@@ -4,7 +4,7 @@ import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArchiveRestore, Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
-  Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Upload, UserX,
+  LifeBuoy, Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Upload, UserX,
 } from "lucide-react";
 import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -17,8 +17,10 @@ import type { Settings } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
 import { PcUpdates } from "../components/UpdateCenter";
 import { NavEditor } from "../components/NavEditor";
+import { HelpCenter } from "../components/help-center";
+import { TailscaleCard } from "../components/tailscale-card";
 
-type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy";
+type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
 
 interface SettingsResp { settings: Settings; relaySecretSet: boolean; dataDir?: string; restartRequired: boolean; webStartError?: string }
 
@@ -44,6 +46,7 @@ export default function SettingsPage() {
     ["updates", t("Updates"), <RefreshCw size={17} />],
     ["backup", t("Backup & Wiederherstellung"), <ArchiveRestore size={17} />],
     ["privacy", t("Datenschutz"), <UserX size={17} />],
+    ["help", t("Hilfe"), <LifeBuoy size={17} />],
   ];
   return (
     <>
@@ -62,6 +65,7 @@ export default function SettingsPage() {
           {section === "updates" && <Updates />}
           {section === "backup" && <Backup />}
           {section === "privacy" && <Privacy />}
+          {section === "help" && <HelpCenter />}
         </div>
       </div>
     </>
@@ -310,7 +314,8 @@ function Connection() {
           <Banner kind="info">{t("Im Heimnetz ist die Verbindung unverschlüsselt (http). Anmeldungen sind trotzdem per Challenge-Response geschützt; für Zugriffe von außen bitte nur https/wss nutzen.")}</Banner>
         </div>
       </Card>
-      <Card title={t("Zugriff von unterwegs")} icon={<Server size={18} />} meta={<span className={`badge ${st.data?.relay.state === "connected" ? "ok" : st.data?.relay.state === "disabled" ? "" : "warn"}`}>{t("Relay")}: {st.data?.relay.state ?? "–"}</span>}>
+      <TailscaleCard />
+      <Card title={t("Eigener Server (für Fortgeschrittene)")} icon={<Server size={18} />} meta={<span className={`badge ${st.data?.relay.state === "connected" ? "ok" : st.data?.relay.state === "disabled" ? "" : "warn"}`}>{t("Relay")}: {st.data?.relay.state ?? "–"}</span>}>
         <div className="stack">
           {!isLocal && <Banner kind="info">{t("Verbindungseinstellungen können nur direkt am PC geändert werden.")}</Banner>}
           <Field label={t("Öffentliche Adresse der Web-App (optional)")} hint={t("z. B. dein Cloudflare-Tunnel https://games.deinedomain.de – wird im QR-Code verwendet. Eine temporäre trycloudflare.com-Adresse ändert sich bei jedem Start.")}>
@@ -359,7 +364,7 @@ function Security() {
             <li>{t("Jedes Gerät hat einen eigenen 256-Bit-Schlüssel; gespeichert wird nur ein Hash.")}</li>
             <li>{t("Anmeldung per Challenge-Response – mitgeschnittene Anmeldungen sind wertlos (Replay-Schutz).")}</li>
             <li>{t("Gestartet werden nur Einträge aus deiner Freigabeliste; neue EXE-Dateien nur direkt am PC.")}</li>
-            <li>{t("Keine Kommandozeilen, keine beliebigen Befehle, keine Administratorrechte.")}</li>
+            <li>{t("Keine beliebigen Befehle, keine Administratorrechte – nur feste Aufrufe wie der Tailscale-Schalter, und den nur direkt am PC.")}</li>
           </ul>
         </Banner>
         {dev.data && <p className="muted">{t("Schlüsselspeicher")}: {dev.data.protection}</p>}

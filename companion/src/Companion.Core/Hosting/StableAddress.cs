@@ -97,21 +97,49 @@ public sealed class StableAddress
         catch (JsonException) { return null; }
     }
 
-    /// <summary>Runs the Tailscale command line once to read the status (no other arguments, nothing is changed).</summary>
     static async Task<string?> ReadTailscaleStatus()
     {
-        var exe = OperatingSystem.IsWindows()
-            ? new[] { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Tailscale", "tailscale.exe") }.FirstOrDefault(File.Exists)
-            : new[] { "/usr/bin/tailscale", "/usr/local/bin/tailscale" }.FirstOrDefault(File.Exists);
+        var r = await TailscaleCli.RunAsync(TailscaleCli.Command.Status);
+        return r is { exitCode: 0 } ? r.Value.output : null;
+    }
+}
+
+/// <summary>
+/// The Tailscale command line with exactly three fixed commands – nothing else can be passed in:
+/// status (read), "serve on" (https in the own tailnet → this companion) and "serve off". No shell, no user text.
+/// </summary>
+public static class TailscaleCli
+{
+    public enum Command { Status, ServeOn, ServeOff }
+
+    /// <summary>Tests replace the program call.</summary>
+    public static Func<string[], Task<(int exitCode, string output)?>>? Runner { get; set; }
+
+    public static string? Exe() => OperatingSystem.IsWindows()
+        ? new[] { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Tailscale", "tailscale.exe") }.FirstOrDefault(File.Exists)
+        : new[] { "/usr/bin/tailscale", "/usr/local/bin/tailscale" }.FirstOrDefault(File.Exists);
+
+    public static string[] Args(Command c, int port) => c switch
+    {
+        Command.Status => new[] { "status", "--json" },
+        Command.ServeOn => new[] { "serve", "--bg", port.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+        _ => new[] { "serve", "--https=443", "off" },
+    };
+
+    public static async Task<(int exitCode, string output)?> RunAsync(Command c, int port = 8787)
+    {
+        var args = Args(c, port);
+        if (Runner != null) return await Runner(args);
+        var exe = Exe();
         if (exe == null) return null;
         var psi = new ProcessStartInfo(exe) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
-        psi.ArgumentList.Add("status");
-        psi.ArgumentList.Add("--json");
+        foreach (var a in args) psi.ArgumentList.Add(a);
         using var p = Process.Start(psi);
         if (p == null) return null;
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(4));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(c == Command.Status ? 4 : 25));
         var output = p.StandardOutput.ReadToEndAsync(cts.Token);
-        try { await p.WaitForExitAsync(cts.Token); } catch (OperationCanceledException) { try { p.Kill(); } catch { } return null; }
-        return p.ExitCode == 0 ? await output : null;
+        var error = p.StandardError.ReadToEndAsync(cts.Token);
+        try { await p.WaitForExitAsync(cts.Token); } catch (OperationCanceledException) { try { p.Kill(); } catch { } return (-1, "Tailscale hat nicht rechtzeitig geantwortet."); }
+        return (p.ExitCode, c == Command.Status ? await output : ((await output) + "\n" + (await error)).Trim());
     }
 }

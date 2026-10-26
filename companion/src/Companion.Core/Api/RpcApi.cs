@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Pgl.Core.Hosting;
 using Pgl.Core.Infrastructure;
 using Pgl.Core.Models;
 using Pgl.Core.Platform;
@@ -78,6 +79,24 @@ public static class RpcApi
                 ? new RpcException("rate-limited", $"Zu viele Versuche. Bitte in {Math.Max(1, (int)Math.Ceiling(retry.TotalMinutes))} Minute(n) erneut versuchen.")
                 : error == PairingError.DeviceLimit ? DeviceLimit()
                 : new RpcException("handoff-invalid", "Der Übertragungs-Link ist abgelaufen oder wurde schon benutzt. Auf dem gekoppelten Gerät unter „Geräte & Verbindungen“ einen neuen erzeugen.");
+        });
+
+        // Tailscale (only at the PC): status and one click for https in the own tailnet – fixed commands, see TailscaleCli.
+        rpc.Register("tailscale.get", async ctx =>
+        {
+            if (s.Stable.CheckedAt is not { } at || DateTime.UtcNow - at > TimeSpan.FromSeconds(30)) await s.Stable.RefreshAsync();
+            return TailscaleInfo(s);
+        });
+        rpc.Register("tailscale.serve", async ctx =>
+        {
+            var on = ctx.Bool("on");
+            var r = await TailscaleCli.RunAsync(on ? TailscaleCli.Command.ServeOn : TailscaleCli.Command.ServeOff, s.Web.Port)
+                ?? throw new RpcException("not-installed", "Tailscale ist auf diesem PC nicht installiert.");
+            Log.Info("web", $"Tailscale Serve {(on ? "ein" : "aus")}: Ergebnis {r.exitCode}");
+            // The https address needs a moment (certificate) – check a few times whether it really reaches this companion.
+            for (int i = 0; i < 5; i++) { await s.Stable.RefreshAsync(); if (!on || r.exitCode != 0 || s.Stable.TailscaleHttps) break; await Task.Delay(2000); }
+            var output = r.output.Length > 1500 ? r.output[..1500] : r.output;
+            return new { ok = r.exitCode == 0 && (!on || s.Stable.TailscaleHttps), exitCode = r.exitCode, output, info = TailscaleInfo(s) };
         });
 
         // ------------------------------------------------------------ devices
@@ -766,7 +785,7 @@ public static class RpcApi
     /// <summary>
     /// Every address under which devices reach this PC, best first. The browser keeps a pairing per address, so a fixed
     /// name (own https address, router name, Tailscale name) comes before the Wi-Fi IP, which can change.
-    /// kind: public | tailscale-https | router | tailscale | lan.
+    /// kind: public | tailscale-https | router | mdns | tailscale | lan.
     /// </summary>
     public static List<(string url, string kind)> Addresses(CompanionServices s)
     {
@@ -776,10 +795,20 @@ public static class RpcApi
         if (set.PublicUrl is { } pub) list.Add((pub.TrimEnd('/'), "public"));
         if (s.Stable.TailscaleName is { } ts && s.Stable.TailscaleHttps) list.Add(($"https://{ts}", "tailscale-https"));
         if (set.LanAccess && s.Stable.RouterName is { } router) list.Add(($"http://{router}:{port}", "router"));
+        if (set.LanAccess && s.Mdns.Running) list.Add(($"http://{s.Mdns.Name}:{port}", "mdns"));
         if (set.LanAccess && s.Stable.TailscaleName is { } ts2) list.Add(($"http://{ts2}:{port}", "tailscale"));
         list.AddRange(s.Web.LanUrls().Select(u => (u, "lan")));
         return list.DistinctBy(a => a.url).ToList();
     }
+
+    static object TailscaleInfo(CompanionServices s) => new
+    {
+        installed = TailscaleCli.Runner != null || TailscaleCli.Exe() != null,
+        running = s.Stable.TailscaleName != null,
+        name = s.Stable.TailscaleName,
+        https = s.Stable.TailscaleHttps,
+        url = s.Stable.TailscaleHttps ? $"https://{s.Stable.TailscaleName}" : null,
+    };
 
     static object DeviceAddresses(CompanionServices s) => Addresses(s).Select(a => new { a.url, a.kind });
 
@@ -834,7 +863,10 @@ public static class RpcApi
         if (s.Web.LanAccess)
         {
             var st = s.Stable;
-            if (st.RouterName != null || st.TailscaleName != null)
+            if (s.Mdns.Running)
+                Add("address", "Feste Adresse", "ok", $"http://{s.Mdns.Name}:{s.Web.Port} (Name im WLAN, automatisch){(st.RouterName != null ? $"  http://{st.RouterName}:{s.Web.Port} (Router)" : "")}{(st.TailscaleName != null ? $"  {(st.TailscaleHttps ? "https://" + st.TailscaleName : $"http://{st.TailscaleName}:{s.Web.Port}")} (Tailscale)" : "")}",
+                    "Der QR-Code nutzt diesen Namen – iPhone und iPad finden den PC auch, wenn der Router ihm eine neue IP gibt. Nichts einzurichten.");
+            else if (st.RouterName != null || st.TailscaleName != null)
                 Add("address", "Feste Adresse", "ok", string.Join("  ", new[] { st.RouterName != null ? $"http://{st.RouterName}:{s.Web.Port} (Router)" : null, st.TailscaleName != null ? $"{(st.TailscaleHttps ? "https://" + st.TailscaleName : $"http://{st.TailscaleName}:{s.Web.Port}")} (Tailscale)" : null }.Where(x => x != null)),
                     "Der QR-Code nutzt diesen Namen – die Kopplung bleibt, auch wenn der Router dem PC eine andere IP gibt.");
             else

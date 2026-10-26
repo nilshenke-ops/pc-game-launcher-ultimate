@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.50.0 – 2026-10-26
+### Neu
+- Fester Name im WLAN ohne Router-Einstellung: Der PC meldet sich selbst per Bonjour/mDNS als „nexus-<PC-Name>.local“ an. Der QR-Code nutzt diesen Namen – bekommt der PC eine neue IP, finden iPhone und iPad ihn trotzdem
+- Einstellungen → Verbindung → „Unterwegs mit Tailscale“: zeigt, ob Tailscale installiert und angemeldet ist, und schaltet die sichere https-Adresse mit einem Klick am PC ein oder aus (kein Befehl tippen); meldet ehrlich, wenn Tailscale ablehnt, und warum
+- Einstellungen → Hilfe (funktioniert ohne PC): koppeln, fester Name im WLAN, Tailscale Schritt für Schritt (inkl. einmaliger Freigabe in der Tailscale-Verwaltung), Hilfe bei Problemen
+### Verbessert
+- „Zugriff von unterwegs“ heißt jetzt „Eigener Server (für Fortgeschrittene)“ – für den Alltag reicht Tailscale
+
 ## 2.49.0 – 2026-10-26
 ### Neu
 - Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert

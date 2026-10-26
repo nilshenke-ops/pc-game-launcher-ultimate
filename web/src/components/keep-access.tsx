@@ -8,7 +8,7 @@ import { t } from "../lib/i18n";
 import { toast } from "../lib/hooks";
 import { Banner, Button, Modal } from "./ui";
 
-interface Address { url: string; kind: "public" | "tailscale-https" | "router" | "tailscale" | "lan" }
+interface Address { url: string; kind: "public" | "tailscale-https" | "router" | "mdns" | "tailscale" | "lan" }
 
 export function isStandaloneApp() {
   try { return matchMedia("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true; } catch { return false; }
@@ -18,7 +18,7 @@ export function isStandaloneApp() {
 export function hostIsIp(host: string) { return /^\d{1,3}(\.\d{1,3}){3}$/.test(host.split(":")[0]) || host.startsWith("["); }
 
 export function kindLabel(kind: Address["kind"]) {
-  return { public: t("Eigene https-Adresse"), "tailscale-https": t("Tailscale (https, auch unterwegs)"), router: t("Router-Name (fest im WLAN)"), tailscale: t("Tailscale (auch unterwegs)"), lan: t("WLAN-IP (kann sich ändern)") }[kind];
+  return { public: t("Eigene https-Adresse"), "tailscale-https": t("Tailscale (https, auch unterwegs)"), router: t("Router-Name (fest im WLAN)"), mdns: t("Fester Name im WLAN (automatisch)"), tailscale: t("Tailscale (auch unterwegs)"), lan: t("WLAN-IP (kann sich ändern)") }[kind];
 }
 
 /** Link that opens the app under `base` and adds that address as a further access of this device. */

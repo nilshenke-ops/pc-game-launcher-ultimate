@@ -48,6 +48,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public MonitorService Monitor { get; }
     public LanAddressWatch LanAddress { get; }
     public StableAddress Stable { get; }
+    public MdnsResponder Mdns { get; private set; }
     Timer? _stableTimer;
     /// <summary>PC values with the user's switches applied (switched-off values are not measured).</summary>
     public IMetricsSource Metrics { get; }
@@ -113,11 +114,19 @@ public sealed class CompanionServices : IAsyncDisposable
             Notifications.Push("update-rolled-back", Severity.Warning, $"Update {rb.from} automatisch zurückgesetzt",
                 $"Version {rb.from} ist zweimal kurz nach dem Start abgestürzt. Der Begleiter läuft wieder mit Version {UpdateService.CurrentVersion}. Fehlerdetails: Diagnose → Protokoll.", "/updates");
         LanAddress = new LanAddressWatch(paths, () => Settings.Get().LanAccess ? NetworkDiagnostics.LocalIPv4() : Array.Empty<string>(), () => Devices.List().Count > 0);
-        LanAddress.Changed = (old, now) => Notifications.Push("lan-address-changed", Severity.Warning, "WLAN-Adresse des PCs hat sich geändert",
+        LanAddress.Changed = (old, now) => LanChanged(old, now);
+        void LanChanged(IReadOnlyList<string> old, IReadOnlyList<string> now)
+        {
+            // New Wi-Fi address: the fixed name follows by itself (new announcement on the new network).
+            Mdns.Dispose(); Mdns = NewMdns(); if (Settings.Get().LanAccess) Mdns.Start();
+            if (Mdns.Running) return; // devices find the PC under its fixed name – no warning needed
+            Notifications.Push("lan-address-changed", Severity.Warning, "WLAN-Adresse des PCs hat sich geändert",
             $"Neu: {string.Join(", ", now.Select(a => $"{a}:{Settings.Get().Port}"))} (vorher {string.Join(", ", old)}). Handys, die die alte Adresse gespeichert haben, finden den PC nicht mehr. " +
-            "Einmal den QR-Code unter „Gerät koppeln“ neu scannen. Damit das nicht wieder passiert: im Router dem PC immer dieselbe IP-Adresse geben (z. B. FRITZ!Box: Heimnetz → Netzwerk → Gerät bearbeiten → „Diesem Netzwerkgerät immer die gleiche IPv4-Adresse zuweisen“).", "/pair");
+            "Einmal den QR-Code unter „Gerät koppeln“ neu scannen. Der feste Name im WLAN war nicht verfügbar (Diagnose → „Feste Adresse“ zeigt den Grund).", "/pair");
+        }
+        Mdns = NewMdns();
         Stable = new StableAddress(() => Settings.Get().LanAccess ? NetworkDiagnostics.LocalIPv4() : Array.Empty<string>(), isThisCompanion: IsThisCompanion);
-        RequestOrigin.OwnHost = Stable.IsOwnHost;
+        RequestOrigin.OwnHost = h => Stable.IsOwnHost(h) || (Mdns.Running && h.Equals(Mdns.Name, StringComparison.OrdinalIgnoreCase));
         Stable.Changed += () => Rpc.Changed("pairing");
         Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Updates & Versionen: Änderungen ansehen, herunterladen und installieren. Es wird nie automatisch installiert.", "/updates");
         Plugins = new PluginService(paths, Rpc, Settings.Get);
@@ -494,6 +503,7 @@ public sealed class CompanionServices : IAsyncDisposable
         });
         Sessions.Start();
         LanAddress.Start();
+        if (Settings.Get().LanAccess) Mdns.Start();
         _stableTimer = new Timer(_ => _ = Stable.RefreshAsync(), null, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(5));
         GamePass.Start();
         Updates.StartAutoCheck();
@@ -561,6 +571,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Monitor.Dispose();
         LanAddress.Dispose();
         _stableTimer?.Dispose();
+        Mdns.Dispose();
         GamePass.Dispose();
         Updates.Dispose();
         Covers.Dispose();
@@ -585,4 +596,9 @@ public sealed class CompanionServices : IAsyncDisposable
         using var doc = System.Text.Json.JsonDocument.Parse(json);
         return doc.RootElement.TryGetProperty("instance", out var i) && i.GetString() == WebHost.InstanceId;
     }
+
+    /// <summary>Fixed ".local" name for the home network (tests: PGL_TEST_LAN_HOST as address, PGL_MDNS_PORT as port).</summary>
+    MdnsResponder NewMdns() => new(
+        () => Environment.GetEnvironmentVariable("PGL_TEST_LAN_HOST") is { Length: > 0 } h ? new[] { h.Split(':')[0] } : Settings.Get().LanAccess ? NetworkDiagnostics.LocalIPv4() : Array.Empty<string>(),
+        port: int.TryParse(Environment.GetEnvironmentVariable("PGL_MDNS_PORT"), out var mp) ? mp : MdnsResponder.MdnsPort);
 }

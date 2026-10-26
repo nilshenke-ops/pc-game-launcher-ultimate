@@ -19,6 +19,8 @@
     "devices.list": "admin",
     "devices.me": "any",
     "devices.handoff": "any",
+    "tailscale.get": "local",
+    "tailscale.serve": "local",
     "devices.rename": "admin",
     "devices.revoke": "admin",
     "devices.setPermissions": "local",
