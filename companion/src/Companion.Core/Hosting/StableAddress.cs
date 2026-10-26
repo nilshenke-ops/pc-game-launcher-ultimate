@@ -1,0 +1,117 @@
+using System.Diagnostics;
+using System.Net;
+using System.Text.Json;
+using Pgl.Core.Infrastructure;
+
+namespace Pgl.Core.Hosting;
+
+/// <summary>
+/// A name for this PC that stays the same when the router hands out another IP. Browsers keep the pairing per address
+/// (scheme + host + port), so pairing under http://192.168.178.116:8787 is lost when the IP changes – under
+/// http://gaming-pc.fritz.box:8787 it is not. Found, never guessed:
+/// - Router name: "&lt;PC-Name&gt;.fritz.box" (and other common router suffixes) only if it resolves to one of this PC's
+///   own Wi-Fi addresses.
+/// - Tailscale: the MagicDNS name from "tailscale status --json" (read only, nothing is changed) while Tailscale runs;
+///   plus whether https://&lt;name&gt; really answers with this companion (Tailscale Serve set up by the user).
+/// </summary>
+public sealed class StableAddress
+{
+    public static readonly string[] RouterSuffixes = { "fritz.box", "speedport.ip", "home", "lan" };
+
+    readonly Func<IReadOnlyList<string>> _lanIps;
+    readonly Func<string, Task<IPAddress[]>> _resolve;
+    readonly Func<Task<string?>> _tailscaleStatus;
+    readonly Func<string, Task<bool>> _isThisCompanion;
+    readonly string _machine;
+
+    public string? RouterName { get; private set; }
+    public string? TailscaleName { get; private set; }
+    public bool TailscaleHttps { get; private set; }
+    public DateTime? CheckedAt { get; private set; }
+    public event Action? Changed;
+
+    public StableAddress(Func<IReadOnlyList<string>> lanIps, string? machineName = null, Func<string, Task<IPAddress[]>>? resolve = null,
+        Func<Task<string?>>? tailscaleStatus = null, Func<string, Task<bool>>? isThisCompanion = null)
+    {
+        _lanIps = lanIps;
+        _machine = (machineName ?? Environment.MachineName).Trim().ToLowerInvariant();
+        _resolve = resolve ?? (h => Dns.GetHostAddressesAsync(h));
+        _tailscaleStatus = tailscaleStatus ?? ReadTailscaleStatus;
+        _isThisCompanion = isThisCompanion ?? (_ => Task.FromResult(false));
+    }
+
+    /// <summary>Host names that this PC answers to as its own (DNS-rebinding guard in <see cref="RequestOrigin"/>).</summary>
+    public bool IsOwnHost(string host) =>
+        (RouterName != null && host.Equals(RouterName, StringComparison.OrdinalIgnoreCase)) ||
+        (TailscaleName != null && host.Equals(TailscaleName, StringComparison.OrdinalIgnoreCase));
+
+    public async Task RefreshAsync()
+    {
+        var before = (RouterName, TailscaleName, TailscaleHttps);
+        RouterName = await FindRouterName();
+        TailscaleName = ParseTailscaleName(await SafeTailscale());
+        TailscaleHttps = TailscaleName != null && await SafeProbe($"https://{TailscaleName}");
+        CheckedAt = DateTime.UtcNow;
+        if (before != (RouterName, TailscaleName, TailscaleHttps))
+        {
+            Log.Info("web", $"Feste Adresse: Router {RouterName ?? "–"}, Tailscale {TailscaleName ?? "–"}{(TailscaleHttps ? " (https)" : "")}");
+            Changed?.Invoke();
+        }
+    }
+
+    async Task<string?> FindRouterName()
+    {
+        if (_machine.Length == 0 || _machine.Length > 63 || !_machine.All(c => char.IsAsciiLetterOrDigit(c) || c == '-')) return null;
+        var own = _lanIps().ToHashSet();
+        if (own.Count == 0) return null;
+        foreach (var suffix in RouterSuffixes)
+        {
+            var host = $"{_machine}.{suffix}";
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                var addrs = await _resolve(host).WaitAsync(cts.Token);
+                if (addrs.Any(a => own.Contains(a.ToString()))) return host;
+            }
+            catch { /* name unknown in this network */ }
+        }
+        return null;
+    }
+
+    async Task<string?> SafeTailscale() { try { return await _tailscaleStatus(); } catch { return null; } }
+    async Task<bool> SafeProbe(string url) { try { return await _isThisCompanion(url); } catch { return false; } }
+
+    /// <summary>MagicDNS name of this PC while Tailscale runs ("Self.DNSName" without the trailing dot).</summary>
+    public static string? ParseTailscaleName(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return null;
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var root = doc.RootElement;
+            if (root.TryGetProperty("BackendState", out var st) && st.GetString() != "Running") return null;
+            if (!root.TryGetProperty("Self", out var self) || !self.TryGetProperty("DNSName", out var dn)) return null;
+            var name = (dn.GetString() ?? "").TrimEnd('.').ToLowerInvariant();
+            return name.Length is > 3 and < 254 && name.Contains('.') && name.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '.') ? name : null;
+        }
+        catch (JsonException) { return null; }
+    }
+
+    /// <summary>Runs the Tailscale command line once to read the status (no other arguments, nothing is changed).</summary>
+    static async Task<string?> ReadTailscaleStatus()
+    {
+        var exe = OperatingSystem.IsWindows()
+            ? new[] { Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Tailscale", "tailscale.exe") }.FirstOrDefault(File.Exists)
+            : new[] { "/usr/bin/tailscale", "/usr/local/bin/tailscale" }.FirstOrDefault(File.Exists);
+        if (exe == null) return null;
+        var psi = new ProcessStartInfo(exe) { RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false, CreateNoWindow = true };
+        psi.ArgumentList.Add("status");
+        psi.ArgumentList.Add("--json");
+        using var p = Process.Start(psi);
+        if (p == null) return null;
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(4));
+        var output = p.StandardOutput.ReadToEndAsync(cts.Token);
+        try { await p.WaitForExitAsync(cts.Token); } catch (OperationCanceledException) { try { p.Kill(); } catch { } return null; }
+        return p.ExitCode == 0 ? await output : null;
+    }
+}

@@ -61,6 +61,22 @@ public static class RpcApi
             return new { state, token, deviceId };
         });
 
+        // Transfer an existing pairing to a further access of the same person (home-screen app, fixed address, website).
+        rpc.Register("devices.handoff", ctx =>
+        {
+            var dev = ctx.Session.Device ?? throw new RpcException("not-device", "Am PC selbst ist keine Übertragung nötig – dort ist die App immer angemeldet.");
+            var (code, expires) = s.Pairing.CreateHandoff(dev.Id);
+            return new { code, expiresAt = expires, addresses = DeviceAddresses(s) };
+        });
+        rpc.Register("pairing.handoff", ctx =>
+        {
+            var (error, device, token, retry) = s.Pairing.RedeemHandoff(ctx.Str("code", 64), ctx.Str("deviceName", 60, false), ctx.Str("platform", 60, false), ctx.Session.Channel.RemoteIp);
+            if (error == PairingError.None) return new { deviceId = device!.Id, token, name = device.Name };
+            throw error == PairingError.RateLimited
+                ? new RpcException("rate-limited", $"Zu viele Versuche. Bitte in {Math.Max(1, (int)Math.Ceiling(retry.TotalMinutes))} Minute(n) erneut versuchen.")
+                : new RpcException("handoff-invalid", "Der Übertragungs-Link ist abgelaufen oder wurde schon benutzt. Auf dem gekoppelten Gerät unter „Geräte & Verbindungen“ einen neuen erzeugen.");
+        });
+
         // ------------------------------------------------------------ devices
         rpc.Register("devices.list", ctx => new
         {
@@ -740,11 +756,30 @@ public static class RpcApi
 
     static ItemKind? ParseKind(string? k) => k switch { "game" => ItemKind.Game, "program" => ItemKind.Program, null => null, _ => throw new RpcException("invalid-params", "Typ muss game oder program sein.") };
 
-    /// <summary>What a person types as "PC-Adresse" on the hosted web app: the public (tunnel) address, otherwise the first LAN address.</summary>
-    static string? PcAddress(CompanionServices s)
+    /// <summary>
+    /// Every address under which devices reach this PC, best first. The browser keeps a pairing per address, so a fixed
+    /// name (own https address, router name, Tailscale name) comes before the Wi-Fi IP, which can change.
+    /// kind: public | tailscale-https | router | tailscale | lan.
+    /// </summary>
+    public static List<(string url, string kind)> Addresses(CompanionServices s)
     {
         var set = s.Settings.Get();
-        var url = set.PublicUrl ?? s.Web.LanUrls().FirstOrDefault();
+        var port = s.Web.Port;
+        var list = new List<(string url, string kind)>();
+        if (set.PublicUrl is { } pub) list.Add((pub.TrimEnd('/'), "public"));
+        if (s.Stable.TailscaleName is { } ts && s.Stable.TailscaleHttps) list.Add(($"https://{ts}", "tailscale-https"));
+        if (set.LanAccess && s.Stable.RouterName is { } router) list.Add(($"http://{router}:{port}", "router"));
+        if (set.LanAccess && s.Stable.TailscaleName is { } ts2) list.Add(($"http://{ts2}:{port}", "tailscale"));
+        list.AddRange(s.Web.LanUrls().Select(u => (u, "lan")));
+        return list.DistinctBy(a => a.url).ToList();
+    }
+
+    static object DeviceAddresses(CompanionServices s) => Addresses(s).Select(a => new { a.url, a.kind });
+
+    /// <summary>What a person types as "PC-Adresse" on the hosted web app: the best address (see <see cref="Addresses"/>).</summary>
+    static string? PcAddress(CompanionServices s)
+    {
+        var url = Addresses(s).FirstOrDefault().url;
         if (url == null || !Uri.TryCreate(url, UriKind.Absolute, out var u)) return null;
         // https is implied by the hosted page; keep the scheme only for plain http (home network/testing).
         return u.Scheme == "https" ? u.Authority : $"{u.Scheme}://{u.Authority}";
@@ -754,16 +789,14 @@ public static class RpcApi
     {
         var set = s.Settings.Get();
         var urls = new List<string>();
+        var addresses = Addresses(s);
         // First choice: the hosted web app (online even while the PC is off) with code and PC address filled in.
-        // Only with an https PC address (e.g. Tailscale Funnel): an https page cannot connect to plain http.
+        // Only with an https PC address (own address or Tailscale Serve): an https page cannot connect to plain http.
         var webIsHttps = set.WebAppUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
-        var pcIsHttps = set.PublicUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
+        var pcIsHttps = addresses.FirstOrDefault().url?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
         if (set.WebAppUrl is { } web && PcAddress(s) is { } pc && (!webIsHttps || pcIsHttps))
             urls.Add($"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}");
-        var bases = new List<string>();
-        if (set.PublicUrl is { } pub) bases.Add(pub);
-        bases.AddRange(s.Web.LanUrls());
-        urls.AddRange(bases.Distinct().Select(b => $"{b}/#/pair?code={code}"));
+        urls.AddRange(addresses.Select(a => $"{a.url}/#/pair?code={code}"));
         return urls;
     }
 
@@ -790,16 +823,28 @@ public static class RpcApi
         else
             Add("address", "Adresse für iPad/Handy (WLAN)", "ok", string.Join("  ", lan), "Am iPad im selben WLAN genau diese Adresse öffnen oder den QR-Code unter „Gerät koppeln“ scannen. Fragt Windows nach der Firewall: „Private Netzwerke“ erlauben.");
 
+        // Fixed name: the pairing is kept per address, a changing Wi-Fi IP means pairing again.
+        if (s.Web.LanAccess)
+        {
+            var st = s.Stable;
+            if (st.RouterName != null || st.TailscaleName != null)
+                Add("address", "Feste Adresse", "ok", string.Join("  ", new[] { st.RouterName != null ? $"http://{st.RouterName}:{s.Web.Port} (Router)" : null, st.TailscaleName != null ? $"{(st.TailscaleHttps ? "https://" + st.TailscaleName : $"http://{st.TailscaleName}:{s.Web.Port}")} (Tailscale)" : null }.Where(x => x != null)),
+                    "Der QR-Code nutzt diesen Namen – die Kopplung bleibt, auch wenn der Router dem PC eine andere IP gibt.");
+            else
+                Add("address", "Feste Adresse", st.CheckedAt == null ? "info" : "warn", st.CheckedAt == null ? "Wird gerade geprüft …" : "Kein fester Name gefunden – Geräte nutzen die WLAN-IP. Ändert der Router sie, muss neu gekoppelt werden.",
+                    "Im Router dem PC immer dieselbe IP geben (FRITZ!Box: Heimnetz → Netzwerk → Gerät → „Immer die gleiche IPv4-Adresse“), oder Tailscale auf PC und iPad installieren.");
+        }
+
         // Hosted web app (https) needs an https address of the PC – browsers block https → ws:// (mixed content).
         var webHttps = set.WebAppUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
-        var pubHttps = set.PublicUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
+        var pubHttps = set.PublicUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true || s.Stable.TailscaleHttps;
         if (set.WebAppUrl == null)
             Add("address", "Webseite → PC", "info", "Keine gehostete Webseite eingetragen. Das iPad nutzt die WLAN-Adresse.");
         else if (webHttps && !pubHttps)
             Add("address", "Webseite → PC", "warn", $"{set.WebAppUrl} ist eine https-Seite und darf den PC nur über eine https-Adresse erreichen. Eine öffentliche https-Adresse ist nicht eingetragen.",
-                "Im WLAN: QR-Code unter „Gerät koppeln“ scannen (öffnet die App direkt vom PC über http). Für die Webseite und unterwegs: Tailscale Funnel einrichten („tailscale funnel --bg " + s.Web.Port + "“) und die https://…ts.net-Adresse unter Einstellungen → Verbindung → „Öffentliche Adresse“ eintragen.");
+                "Im WLAN: QR-Code unter „Gerät koppeln“ scannen (öffnet die App direkt vom PC über http). Für die Webseite und unterwegs: Tailscale auf PC und iPad, am PC einmal „tailscale serve --bg " + s.Web.Port + "“ (nur in deinem Tailscale-Netz) – der Begleiter erkennt die https-Adresse dann selbst. Ohne Tailscale am iPad: „tailscale funnel --bg " + s.Web.Port + "“ (öffentlich) und die https://…ts.net-Adresse unter Einstellungen → Verbindung → „Öffentliche Adresse“ eintragen.");
         else
-            Add("address", "Webseite → PC", "ok", $"{set.WebAppUrl} verbindet sich mit {set.PublicUrl ?? lan.FirstOrDefault()}");
+            Add("address", "Webseite → PC", "ok", $"{set.WebAppUrl} verbindet sich mit {set.PublicUrl ?? (s.Stable.TailscaleHttps ? "https://" + s.Stable.TailscaleName : lan.FirstOrDefault())}");
 
         // Relay (optional).
         var relayProblem = set.RelayEnabled && set.RelayUrl != null ? AddressRules.RelayProblem(set.RelayUrl, set.Port) : null;

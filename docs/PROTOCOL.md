@@ -19,7 +19,7 @@ Fehlercodes u. a.: `unauthenticated`, `forbidden`, `replay`, `rate-limited`, `in
 2. Anmeldung
    - Gerät: `auth.login {deviceId, proof}` mit `proof = hex(HMAC-SHA256(key = SHA-256(utf8(token)), msg = bytes(nonce)))`
    - PC-Fenster: `auth.login {adminToken}` (nur direkte Loopback-Verbindung)
-3. Kopplung (ohne Anmeldung): `pairing.request {code, deviceName, platform}` → `{state:"awaiting-confirmation", requestId, claimSecret}`. Nach Bestätigung am PC Ereignis `pairing.result {approved, token, deviceId}`; nach Verbindungsabbruch `pairing.claim {requestId, claimSecret}`.
+3. Kopplung (ohne Anmeldung): `pairing.request {code, deviceName, platform}` → `{state:"awaiting-confirmation", requestId, claimSecret}`. Nach Bestätigung am PC Ereignis `pairing.result {approved, token, deviceId}`; nach Verbindungsabbruch `pairing.claim {requestId, claimSecret}`. Zugang übertragen: ein angemeldetes Gerät ruft `devices.handoff` → `{code, expiresAt, addresses:[{url, kind}]}` (10 Minuten, einmal, höchstens 3 offen); das neue Gerät (z. B. Home-Bildschirm-App) ohne Anmeldung `pairing.handoff {code, deviceName, platform}` → `{deviceId, token, name}` – gleiche Rechte wie das erzeugende Gerät, eigener Eintrag, einzeln widerrufbar.
 
 ## Ereignisse
 `changed {topic}` (library, profiles, sounds, audio, settings, devices, quick, automations, hotkeys, history, notifications, updates, pairing, autostart), `session`, `profile.active`, `sounds.playing`, `notification`, `monitor.sample` (nur für Abonnenten), `audio.level`, `pairing.pending` (nur PC), `pairing.result`, `auth.revoked`, `update.progress`, `relay.status`.

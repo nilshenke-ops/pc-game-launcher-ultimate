@@ -159,7 +159,7 @@ public sealed class WebHost : IAsyncDisposable
             await next();
         });
 
-        app.MapGet("/healthz", () => Results.Json(new { ok = true, app = "Nexus Gaming Hub", version = UpdateService.CurrentVersion, role = "companion" }));
+        app.MapGet("/healthz", () => Results.Json(new { ok = true, app = "Nexus Gaming Hub", version = UpdateService.CurrentVersion, role = "companion", instance = InstanceId }));
         app.MapGet("/download/info", DownloadInfo);
         app.MapGet("/download/{file}", Download);
         app.Map("/ws", HandleWebSocket);
@@ -189,6 +189,8 @@ public sealed class WebHost : IAsyncDisposable
 
     /// <summary>Address for this PC only (companion window, browser on the PC).</summary>
     public string LocalUrl => $"http://127.0.0.1:{Port}";
+    /// <summary>Random per start: lets the companion recognise itself behind a tunnel (says nothing about the PC).</summary>
+    public static readonly string InstanceId = Ids.Token(12);
 
 
     async Task HandleWebSocket(HttpContext ctx)
@@ -323,9 +325,13 @@ public static class RequestOrigin
     }
 
     /// <summary>Addresses under which this PC's own page may talk to it: IP addresses, localhost, the PC name, the public address.</summary>
+    /// <summary>Further own names found at runtime (router name, Tailscale name) – see <see cref="StableAddress"/>.</summary>
+    public static Func<string, bool>? OwnHost;
+
     public static bool HostAllowed(string host, string? publicUrl)
     {
         host = host.Trim('[', ']');
+        if (OwnHost?.Invoke(host) == true) return true;
         if (IPAddress.TryParse(host, out _)) return true; // an IP address cannot be re-pointed by someone else's DNS
         if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) return true;
         var pc = Environment.MachineName;

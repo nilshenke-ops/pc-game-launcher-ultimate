@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Globe, Laptop, Monitor, Play, ScrollText, Stethoscope, Volume2 } from "lucide-react";
-import { client, type RpcError } from "../lib/rpc";
+import { client, HOSTED, lanPc, type RpcError } from "../lib/rpc";
+import { hostIsIp, isStandaloneApp } from "../components/keep-access";
 import { isLoopbackAddress } from "../lib/address";
 import { t } from "../lib/i18n";
 import { useConn, useRpc } from "../lib/hooks";
@@ -12,7 +13,7 @@ import { Button, Card, CheckList, PageHead } from "../components/ui";
 interface Report { at: string; checks: CheckResult[] }
 
 /** Checks that run inside the browser itself (e.g. on the iPad) – they work even when the PC is not reachable. */
-function browserChecks(conn: ReturnType<typeof useConn>): CheckResult[] {
+function browserChecks(conn: ReturnType<typeof useConn>, persisted: boolean | null): CheckResult[] {
   let storage = true;
   try { localStorage.setItem("pgl.test", "1"); localStorage.removeItem("pgl.test"); } catch { storage = false; }
   const checks: CheckResult[] = [];
@@ -54,6 +55,19 @@ function browserChecks(conn: ReturnType<typeof useConn>): CheckResult[] {
     add(t("Berechtigungen"), missing.length ? "warn" : "ok", conn.me.permissions.join(", "), missing.length ? t("Am PC unter Geräte → dieses Gerät → Berechtigungen freigeben: {m}", { m: missing.join(", ") }) : undefined);
   }
 
+  // Address of this page: the browser keeps the pairing per address.
+  const web = HOSTED && pageHttps;
+  if (web) add(t("Adresse dieser Seite"), "info", t("{h} (Website) – erreicht den PC nur über eine https-Adresse (Tailscale/Relay), nicht über die WLAN-Adresse.", { h: location.host }), lanPc() ? t("Im WLAN: „Zur PC-App (WLAN)“ oben benutzen ({u}).", { u: lanPc()! }) : undefined);
+  else if (isLoopbackAddress(location.hostname)) add(t("Adresse dieser Seite"), "ok", t("{h} – direkt am PC", { h: location.host }));
+  else if (hostIsIp(location.host)) add(t("Adresse dieser Seite"), "warn", t("{h} ist eine IP-Adresse. Gibt der Router dem PC eine andere, ist die Kopplung unter dieser Adresse weg.", { h: location.host }),
+    t("Geräte & Verbindungen → „Andere Adresse nutzen“ (Router-Name oder Tailscale), oder im Router dem PC immer dieselbe IP geben."));
+  else add(t("Adresse dieser Seite"), "ok", t("{h} – fester Name, bleibt auch bei neuer IP gleich", { h: location.host }));
+  const standalone = isStandaloneApp();
+  add(t("Home-Bildschirm-App"), "info", standalone ? t("Läuft als App vom Home-Bildschirm – sie hat einen eigenen Speicher und eine eigene Kopplung.") : t("Läuft im Browser. Eine App vom Home-Bildschirm hat auf iPhone/iPad einen eigenen Speicher."),
+    standalone ? undefined : t("Geräte & Verbindungen → „Als App auf den Home-Bildschirm“ – damit ist die App sofort gekoppelt."));
+  if (persisted != null) add(t("Dauerhafter Speicher"), persisted ? "ok" : "info", persisted ? t("Der Browser löscht die Kopplung nicht von selbst.") : t("Nicht zugesichert – der Browser darf Daten bei Platzmangel oder langer Nichtnutzung löschen (Safari: nach 7 Tagen ohne Besuch, nicht für Home-Bildschirm-Apps)."),
+    persisted ? undefined : t("Als App zum Home-Bildschirm hinzufügen; in Chrome/Edge die Seite installieren."));
+
   add(t("Sicherer Kontext (https)"), window.isSecureContext ? "ok" : "info", window.isSecureContext ? t("Ja – Offline-Cache (PWA) verfügbar") : t("Nein (http im WLAN) – App funktioniert, aber ohne Offline-Cache"));
   add(t("Lokaler Speicher"), storage ? "ok" : "error", storage ? t("Verfügbar") : t("Blockiert (privater Modus?) – Kopplung wird nach dem Schließen vergessen."), storage ? undefined : t("Privaten Modus beenden bzw. Website-Daten für diese Seite erlauben."));
   return checks;
@@ -66,6 +80,8 @@ export default function Diagnostics() {
   const [net, setNet] = useState<Report | null>(null);
   const [audio, setAudio] = useState<Report | null>(null);
   const [busy, setBusy] = useState(false);
+  const [persisted, setPersisted] = useState<boolean | null>(null);
+  useEffect(() => { navigator.storage?.persisted?.().then(setPersisted, () => {}); }, []);
   const [err, setErr] = useState<string | null>(null);
   const isAdmin = conn.me?.permissions.includes("admin");
   const logs = useRpc<{ entries: { time: string; level: string; area: string; message: string }[] }>("diagnostics.logs", {}, [], !!isAdmin);
@@ -88,7 +104,7 @@ export default function Diagnostics() {
         actions={<Button variant="primary" icon={<Play size={16} />} busy={busy} onClick={run}>{t("Diagnose ausführen")}</Button>} />
       {err && <p className="small" style={{ color: "var(--danger)" }}>{err}</p>}
       <div className="grid-2">
-        <Card title={t("Dieses Gerät (z. B. iPad)")} icon={<Laptop size={18} />}><CheckList checks={browserChecks(conn)} /></Card>
+        <Card title={t("Dieses Gerät (z. B. iPad)")} icon={<Laptop size={18} />}><CheckList checks={browserChecks(conn, persisted)} /></Card>
         <Card title={t("Companion")} icon={<Monitor size={18} />} meta={sys && clock(sys.at)}>{sys ? <CheckList checks={sys.checks} /> : <p className="small muted">{t("Noch nicht ausgeführt.")}</p>}</Card>
         <Card title={t("Netzwerk")} icon={<Globe size={18} />} meta={net && clock(net.at)}>{net ? <CheckList checks={net.checks} /> : <p className="small muted">{t("Internet, DNS, Router, Ping und Relay – vom PC aus geprüft.")}</p>}</Card>
         <Card title={t("Audio")} icon={<Volume2 size={18} />} meta={audio && clock(audio.at)}>{audio ? <CheckList checks={audio.checks} /> : <p className="small muted">{t("Noch nicht ausgeführt.")}</p>}</Card>

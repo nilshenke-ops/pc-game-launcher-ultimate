@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, ChevronDown, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartphone } from "lucide-react";
-import { client, exitDemo } from "../lib/rpc";
+import { client, exitDemo, HOSTED, lanPc } from "../lib/rpc";
 import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
 import { arrangeNav, DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "../lib/nav";
@@ -285,7 +285,9 @@ function StatusStrip({ preview, waiting, home, hidePreview, onShowOutbox }: { pr
   const kind = relayDown || error ? "error" : preview || offline || confirm || paused ? "warn" : "info";
   const title = preview ? (conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden"))
     : paused ? t("Vom PC pausiert (Datenschutzmodus)") : relayDown ? t("PC nicht erreichbar") : offline ? (conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")) : null;
+  const lanHome = HOSTED && location.protocol === "https:" ? lanPc() : null;
   const detail = [
+    lanHome && preview ? t("Diese Website (https) darf den PC im WLAN nicht direkt erreichen. Im WLAN läuft die App direkt vom PC unter {u} – dort ist dieses Gerät gekoppelt. Tipp: Diese PC-Seite zum Home-Bildschirm hinzufügen (Geräte & Verbindungen → „Als App auf den Home-Bildschirm“).", { u: lanHome.replace(/^http:\/\//, "") }) : null,
     preview ? t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.") : null,
     paused ? `${conn.authError ?? ""} ${t("Sobald der Datenschutzmodus am PC aus ist, verbindet sich dieses Gerät von selbst wieder. Angezeigt wird bis dahin der letzte Stand.")}`.trim() : null,
     relayDown ? t("Das Relay ist erreichbar, aber der Companion auf deinem PC ist nicht verbunden. Ist der PC an und läuft der Companion?") : null,
@@ -304,7 +306,8 @@ function StatusStrip({ preview, waiting, home, hidePreview, onShowOutbox }: { pr
         <ChevronDown size={16} className={open ? "ss-chev open" : "ss-chev"} aria-hidden />
       </button>
       <span className="ss-actions">
-        {preview && !hidePreview && <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}
+        {preview && !hidePreview && lanHome && <a href={`${lanHome}/#/`} className="btn primary sm"><MonitorSmartphone size={15} />{t("Zur PC-App (WLAN)")}</a>}
+        {preview && !hidePreview && !lanHome && <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}
         {offline && !relayDown && <Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}
         {waiting.length > 0 && <Button size="sm" onClick={onShowOutbox}>{t("Anzeigen")}</Button>}
       </span>

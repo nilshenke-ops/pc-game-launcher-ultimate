@@ -162,6 +162,13 @@ public sealed class PairingService
     public event Action<PendingPairing>? PendingAdded;
     public event Action<PendingPairing>? Decided;
     public event Action? CodeLocked;
+    /// <summary>A new device was added with a transfer code: (new device, device that created the code).</summary>
+    public event Action<PairedDevice, PairedDevice>? HandedOff;
+
+    /// <summary>Transfer codes ("Zugang übertragen"): SHA-256 of the code → creating device and expiry.</summary>
+    readonly Dictionary<string, (string deviceId, DateTime expires)> _handoffs = new();
+    public static readonly TimeSpan HandoffLifetime = TimeSpan.FromMinutes(10);
+    public const int MaxHandoffsPerDevice = 3;
 
     public PairingService(DeviceStore devices, Func<DateTime>? now = null)
     {
@@ -244,6 +251,51 @@ public sealed class PairingService
             PendingAdded?.Invoke(p);
             return (PairingError.None, p, claim, default);
         }
+    }
+
+    /// <summary>
+    /// A paired device creates a one-time code that adds a further access for the same person, e.g. the iPad's
+    /// home-screen app (own storage, separate from Safari) or the same device under a fixed address. Valid 10 minutes,
+    /// single use, at most 3 open per device; the new access gets the same rights as the creating one, never more,
+    /// shows up in the device list and is revoked like any other.
+    /// </summary>
+    public (string code, DateTime expiresAt) CreateHandoff(string deviceId)
+    {
+        lock (_lock)
+        {
+            CleanupHandoffs();
+            var mine = _handoffs.Where(kv => kv.Value.deviceId == deviceId).OrderBy(kv => kv.Value.expires).Select(kv => kv.Key).ToList();
+            foreach (var old in mine.Take(Math.Max(0, mine.Count - (MaxHandoffsPerDevice - 1)))) _handoffs.Remove(old);
+            var code = Ids.Token(24);
+            var expires = _now() + HandoffLifetime;
+            _handoffs[Ids.Sha256Hex(code)] = (deviceId, expires);
+            return (code, expires);
+        }
+    }
+
+    public (PairingError error, PairedDevice? device, string? token, TimeSpan retryAfter) RedeemHandoff(string code, string deviceName, string platform, string ip)
+    {
+        if (!_perIp.TryHit(ip)) return (PairingError.RateLimited, null, null, _perIp.RetryAfter(ip));
+        PairedDevice? source;
+        lock (_lock)
+        {
+            CleanupHandoffs();
+            var key = Ids.Sha256Hex(code ?? "");
+            if (!_handoffs.Remove(key, out var h)) return (PairingError.Invalid, null, null, default);
+            source = _devices.Get(h.deviceId);
+            if (source == null) return (PairingError.Invalid, null, null, default); // creating device was removed meanwhile
+        }
+        var name = string.IsNullOrWhiteSpace(deviceName) ? source.Name + " (2)" : deviceName;
+        var (device, token) = _devices.Create(name, platform, source.Permissions, ip);
+        Log.Info("pairing", $"Zugang übertragen: „{device.Name}“ ({device.Id}) über „{source.Name}“ ({source.Id}).");
+        HandedOff?.Invoke(device, source);
+        return (PairingError.None, device, token, default);
+    }
+
+    void CleanupHandoffs()
+    {
+        var now = _now();
+        foreach (var k in _handoffs.Where(kv => kv.Value.expires <= now).Select(kv => kv.Key).ToList()) _handoffs.Remove(k);
     }
 
     public IReadOnlyList<PendingPairing> Pending()

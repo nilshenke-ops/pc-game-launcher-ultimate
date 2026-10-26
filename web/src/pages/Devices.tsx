@@ -6,6 +6,7 @@ import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { relTime, dateTime } from "../lib/format";
 import type { PairedDevice } from "../lib/types";
+import { KeepAccess } from "../components/keep-access";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, OfflineState, PageHead } from "../components/ui";
 
 export function permLabels(): Record<string, string> {
@@ -37,6 +38,7 @@ export default function Devices() {
             </div>
             {!conn.me?.isLocal && <Button variant="danger" icon={<LogOut size={16} />} onClick={async () => { if (await confirmDialog(t("Abmelden?"), t("Dieses Gerät muss danach neu gekoppelt werden."), { danger: true })) client.logout(); }}>{t("Abmelden")}</Button>}
           </div>
+          {!conn.me?.isLocal && !client.demo && <div style={{ marginTop: 12 }}><KeepAccess /></div>}
         </Card>
         {!isAdmin ? <Banner kind="info">{t("Die Geräteliste ist nur mit Administrationsrecht sichtbar (am PC immer).")}</Banner> : (
           <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>

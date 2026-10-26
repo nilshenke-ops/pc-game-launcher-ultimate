@@ -47,6 +47,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public SoundboardService Soundboard { get; }
     public MonitorService Monitor { get; }
     public LanAddressWatch LanAddress { get; }
+    public StableAddress Stable { get; }
+    Timer? _stableTimer;
     /// <summary>PC values with the user's switches applied (switched-off values are not measured).</summary>
     public IMetricsSource Metrics { get; }
     public NetworkDiagnostics Network { get; }
@@ -114,6 +116,9 @@ public sealed class CompanionServices : IAsyncDisposable
         LanAddress.Changed = (old, now) => Notifications.Push("lan-address-changed", Severity.Warning, "WLAN-Adresse des PCs hat sich geändert",
             $"Neu: {string.Join(", ", now.Select(a => $"{a}:{Settings.Get().Port}"))} (vorher {string.Join(", ", old)}). Handys, die die alte Adresse gespeichert haben, finden den PC nicht mehr. " +
             "Einmal den QR-Code unter „Gerät koppeln“ neu scannen. Damit das nicht wieder passiert: im Router dem PC immer dieselbe IP-Adresse geben (z. B. FRITZ!Box: Heimnetz → Netzwerk → Gerät bearbeiten → „Diesem Netzwerkgerät immer die gleiche IPv4-Adresse zuweisen“).", "/pair");
+        Stable = new StableAddress(() => Settings.Get().LanAccess ? NetworkDiagnostics.LocalIPv4() : Array.Empty<string>(), isThisCompanion: IsThisCompanion);
+        RequestOrigin.OwnHost = Stable.IsOwnHost;
+        Stable.Changed += () => Rpc.Changed("pairing");
         Updates.Available += m => Notifications.Push("update-available", Severity.Info, $"Update {m.Version} verfügbar", "Updates & Versionen: Änderungen ansehen, herunterladen und installieren. Es wird nie automatisch installiert.", "/updates");
         Plugins = new PluginService(paths, Rpc, Settings.Get);
         Perf = new PerformanceRecorder(Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
@@ -344,6 +349,11 @@ public sealed class CompanionServices : IAsyncDisposable
             if (p.Approved == true) Rpc.SendTo(session, "pairing.result", new { approved = true, token = Pairing.TakeToken(p), deviceId = p.DeviceId });
             else Rpc.SendTo(session, "pairing.result", new { approved = false });
         };
+        Pairing.HandedOff += (device, source) =>
+        {
+            Notifications.Push("pairing-handoff", Severity.Info, $"Neuer Zugang: {device.Name}", $"Über „{source.Name}“ übertragen (z. B. Home-Bildschirm-App oder feste Adresse). Nicht gewollt? Unter Geräte & Verbindungen entfernen.", "/devices");
+            Rpc.Changed("devices");
+        };
         Pairing.CodeLocked += () => Notifications.Push("pairing-locked", Severity.Warning, "Kopplungscode gesperrt", "Zu viele falsche Eingaben. Ein neuer Code muss am PC erzeugt werden.", "/pair");
 
         Relay.StateChanged += state =>
@@ -484,6 +494,7 @@ public sealed class CompanionServices : IAsyncDisposable
         });
         Sessions.Start();
         LanAddress.Start();
+        _stableTimer = new Timer(_ => _ = Stable.RefreshAsync(), null, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(5));
         GamePass.Start();
         Updates.StartAutoCheck();
         Covers.Start();
@@ -548,6 +559,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Input.Dispose();
         Monitor.Dispose();
         LanAddress.Dispose();
+        _stableTimer?.Dispose();
         GamePass.Dispose();
         Updates.Dispose();
         Covers.Dispose();
@@ -562,5 +574,14 @@ public sealed class CompanionServices : IAsyncDisposable
         await Relay.DisposeAsync();
         await Web.DisposeAsync();
         Log.Info("companion", "Companion beendet.");
+    }
+
+    static readonly HttpClient ProbeHttp = new() { Timeout = TimeSpan.FromSeconds(4) };
+    /// <summary>True when https://… answers /healthz with this very companion (same instance id), e.g. through Tailscale Serve.</summary>
+    static async Task<bool> IsThisCompanion(string baseUrl)
+    {
+        var json = await ProbeHttp.GetStringAsync(baseUrl.TrimEnd('/') + "/healthz");
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        return doc.RootElement.TryGetProperty("instance", out var i) && i.GetString() == WebHost.InstanceId;
     }
 }

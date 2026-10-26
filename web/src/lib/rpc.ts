@@ -56,7 +56,8 @@ const REQUEST_TIMEOUT_MS = 20000;
 /** Requests that pages make by themselves (loading data); they fail quietly instead of opening the "PC verbinden" hint. */
 const QUIET = /\.(list|get|status|state|logs|subscribe|unsubscribe|diagnose|run|me|pending|getPrefs)$/;
 // Requests that work without login (connection setup and pairing) always go to the PC.
-const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim"]);
+const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim", "pairing.handoff"]);
+const HANDOFF_KEY = "pgl.handoff";
 
 function store(kind: "local" | "session") {
   try { return kind === "local" ? window.localStorage : window.sessionStorage; } catch { return null; }
@@ -81,6 +82,14 @@ export function defaultServerUrl(): string {
 export function serverUrl(): string {
   return readJson<string>(SERVER_KEY) || defaultServerUrl();
 }
+
+// The website (https) cannot talk to the PC's plain http address in the Wi-Fi. When the PC page was opened from here
+// once, its address is remembered so the website can send the user there instead of only saying "offline".
+const LAN_PC_KEY = "pgl.lanPc";
+export function rememberLanPc(httpBase: string) {
+  try { const u = new URL(httpBase); if (u.protocol === "http:") writeJson(LAN_PC_KEY, u.origin); } catch { /* not an address */ }
+}
+export function lanPc(): string | null { return readJson<string>(LAN_PC_KEY); }
 
 export function serverConfigured() { return !!readJson<string>(SERVER_KEY); }
 
@@ -120,6 +129,32 @@ export function captureAdminToken() {
     writeJson(ADMIN_KEY, m[1], "session");
     history.replaceState(null, "", location.pathname + location.search + "#/");
   }
+}
+
+/**
+ * "Zugang übertragen": a link with ?handoff=… (from a paired device) adds this browser/home-screen app as a further
+ * access. The code is taken out of the address at once and kept only for this tab until it is used.
+ */
+export function captureHandoff() {
+  const q = new URLSearchParams(location.search);
+  const code = q.get("handoff");
+  if (!code || !/^[A-Za-z0-9_-]{20,64}$/.test(code)) return;
+  writeJson(HANDOFF_KEY, code, "session");
+  q.delete("handoff");
+  const rest = q.toString();
+  history.replaceState(null, "", location.pathname + (rest ? `?${rest}` : "") + location.hash);
+}
+
+/** Asks the browser not to clear this site's storage on its own (the pairing lives there). Harmless if refused. */
+function askPersistentStorage() { try { void navigator.storage?.persist?.().catch(() => {}); } catch { /* not supported */ } }
+
+/** Platform name for the device list (no fingerprinting, only what the browser says anyway). */
+export function platformName() {
+  const ua = navigator.userAgent;
+  if (/iPad|Macintosh.*Mobile/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return "iPad";
+  if (/iPhone/.test(ua)) return "iPhone";
+  if (/Android/.test(ua)) return "Android";
+  return navigator.platform || "web";
 }
 
 class Client {
@@ -165,6 +200,8 @@ class Client {
       if (this.status.phase === "offline") this.reconnectNow();
       else if (this.status.phase === "online") this.pingNow?.();
     });
+    // Safari restores pages from its back/forward cache with closed sockets and without "visibilitychange".
+    window.addEventListener("pageshow", (e) => { if ((e as PageTransitionEvent).persisted) { if (this.status.phase === "online") this.pingNow?.(); else this.reconnectNow(); } });
     this.connect();
   }
 
@@ -233,14 +270,16 @@ class Client {
     }
     if (this.status.needsServer) this.set({ needsServer: false });
     const url = serverUrl();
+    // Every attempt has its own number: an older attempt that is still waiting for its check never opens a second socket.
+    const my = ++this.tryId;
     this.set({ phase: "connecting", url, attempt: this.attempt, retryAt: undefined });
     const probe = this.attempt >= 1 ? this.probeUrl(url) : null;
     if (probe) {
-      const my = ++this.tryId;
       const ok = await fetch(probe, { mode: "no-cors", cache: "no-store", signal: AbortSignal.timeout?.(1500) }).then(() => true, () => false);
-      if (my !== this.tryId || (this.ws && this.ws.readyState <= 1)) return; // a newer attempt took over
+      if (my !== this.tryId || this.retryTimer != null || (this.ws && this.ws.readyState <= 1)) return; // a newer attempt took over
       if (!ok) { this.onClosed(this.status.everConnected ? t("Verbindung unterbrochen") : t("Companion nicht erreichbar")); return; }
     }
+    if (this.ws && this.ws.readyState <= 1) return; // one connection at a time
     let ws: WebSocket;
     try { ws = new WebSocket(url); }
     catch (e) { this.onClosed(t("Ungültige Serveradresse: {e}", { e: String(e) })); return; }
@@ -381,7 +420,8 @@ class Client {
       const id = this.nextId++;
       const timer = window.setTimeout(() => {
         this.pending.delete(id);
-        reject(new RpcError("timeout", t("Der PC hat nicht rechtzeitig geantwortet.")));
+        // Commands (start, keys, power …) are never sent twice by themselves – say that the outcome is unknown.
+        reject(new RpcError("timeout", QUIET.test(method) || method === "ping" ? t("Der PC hat nicht rechtzeitig geantwortet.") : t("Der PC hat nicht rechtzeitig geantwortet. Ob der Befehl ausgeführt wurde, ist unklar – er wird nicht automatisch wiederholt.")));
       }, method === "ping" ? 8000 : method === "assistant.ask" || method === "assistant.bingo" ? 180000 : method === "network.diagnose" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, timer });
       ws.send(JSON.stringify({ v: PROTOCOL_VERSION, id, m: method, p: params ?? {}, ...(opts?.op ? { op: opts.op } : {}) }));
@@ -392,6 +432,20 @@ class Client {
     const hello = this.status.hello;
     if (!hello) return;
     const admin = readJson<string>(ADMIN_KEY, "session");
+    const handoff = readJson<string>(HANDOFF_KEY, "session");
+    if (handoff) writeJson(HANDOFF_KEY, null, "session"); // single use – never tried twice
+    // Only where this address has no access yet (e.g. the new home-screen app) – a paired tab just drops the code.
+    if (handoff && !admin && !this.credentials) {
+      try {
+        const standalone = typeof matchMedia !== "undefined" && matchMedia("(display-mode: standalone)").matches;
+        const r = await this.call<{ deviceId: string; token: string }>("pairing.handoff", { code: handoff, deviceName: `${platformName()} (${standalone ? t("App") : new URL(location.href).host})`.slice(0, 40), platform: platformName() });
+        writeJson(CRED_KEY, { deviceId: r.deviceId, token: r.token, pcName: hello.info?.pcName });
+        askPersistentStorage();
+      } catch (e) {
+        this.set({ authError: (e as Error).message });
+        this.emit("handoff-failed", (e as Error).message);
+      }
+    }
     const cred = this.credentials;
     if (!admin && !cred) {
       // Keep "revoked" so the pairing screen can explain why the device was signed out.
@@ -457,6 +511,7 @@ class Client {
 
   async savePairing(token: string, deviceId: string) {
     writeJson(CRED_KEY, { deviceId, token, pcName: this.status.hello?.info.pcName });
+    askPersistentStorage();
     await this.authenticate();
   }
 

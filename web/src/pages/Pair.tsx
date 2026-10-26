@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import QRCode from "qrcode";
 import { CheckCircle2, Clock, Eye, KeyRound, Link2, LogOut, MonitorSmartphone, Palette, QrCode, ShieldCheck, Smartphone, XCircle } from "lucide-react";
-import { client, enterDemo, HOSTED, readJson, RpcError, serverConfigured, serverUrl, setServerUrl, writeJson } from "../lib/rpc";
+import { client, enterDemo, HOSTED, readJson, rememberLanPc, RpcError, serverConfigured, serverUrl, setServerUrl, writeJson } from "../lib/rpc";
 import { directPairUrl, pcAddressToWs, wsToPcAddress, isLoopbackAddress } from "../lib/address";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useNow, useRpc, toast } from "../lib/hooks";
@@ -143,7 +143,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
               )}
               {direct && (
                 <Banner kind="info" title={t("Im Heimnetz direkt beim PC koppeln")}>
-                  <a className="btn primary block" href={direct} style={{ margin: "8px 0" }}>{t("Beim PC öffnen und koppeln")}</a>
+                  <a className="btn primary block" href={direct} onClick={() => rememberLanPc(direct)} style={{ margin: "8px 0" }}>{t("Beim PC öffnen und koppeln")}</a>
                   {t("Die Adresse beginnt mit http:// – mit ihr verbindet sich nur die Seite, die der PC selbst anbietet. Der Knopf öffnet sie mit dem Code; Handy und PC müssen im selben WLAN sein. Tipp: Diese Seite danach zum Startbildschirm hinzufügen. Von unterwegs geht es nur mit einer https-Adresse des PCs (z. B. Tailscale Funnel).")}
                 </Banner>
               )}

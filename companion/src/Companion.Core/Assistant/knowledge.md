@@ -350,6 +350,12 @@ Alle gekoppelten Geräte mit Rechten (ansehen, starten, Soundboard, verwalten, a
 Seite: /pair
 Stichworte: koppeln code qr neues gerät iphone ipad android
 Am PC „Neuen Code erzeugen“, QR-Code mit dem Handy scannen oder Code eingeben, am PC „Erlauben“. Codes gelten 5 Minuten und nur einmal. Nach Fehlversuchen wird das ratende Gerät gesperrt.
+Der QR-Code nutzt zuerst einen festen Namen des PCs (Router-Name wie gaming-pc.fritz.box oder Tailscale-Name), dann die WLAN-IP – mit festem Namen bleibt die Kopplung, auch wenn der Router dem PC eine neue IP gibt.
+
+## iPhone/iPad dauerhaft verbunden
+Seite: /devices
+Stichworte: verbindung weg wieder koppeln home-bildschirm app symbol safari andere adresse übertragen zugang website github offline kein pc verbunden ip geändert tailscale fritzbox
+Der Browser merkt sich die Kopplung je Adresse getrennt, und auf iPhone/iPad hat die App vom Home-Bildschirm einen eigenen Speicher. Deshalb: Geräte & Verbindungen → „Dauerhaft auf diesem Gerät“. „Als App auf den Home-Bildschirm“ legt einen einmaligen Link (10 Minuten) in die Adresszeile – dann Teilen → „Zum Home-Bildschirm“; die App meldet sich selbst an und steht als eigenes Gerät in der Liste. „Andere Adresse nutzen“ überträgt den Zugang auf eine feste Adresse des PCs. Die Website (https://…github.io) kann den PC im WLAN nicht direkt erreichen (der Browser verbietet https → http); sie bietet dann „Zur PC-App (WLAN)“. Von unterwegs: Tailscale auf PC und iPad, am PC einmal „tailscale serve --bg 8787“ – der Begleiter erkennt die https-Adresse selbst. Diagnose zeigt „Adresse dieser Seite“, „Home-Bildschirm-App“, „Dauerhafter Speicher“ und am PC „Feste Adresse“.
 
 ## Plugin Center
 Seite: /plugins

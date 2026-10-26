@@ -10,7 +10,7 @@ import {
 import { Visualizer } from "../components/visualizer";
 import { PowerPanel } from "../components/power-panel";
 import { BreakWidget, ControllerWidget, CounterWidget, DealsWidget, GoalsWidget, LevelWidget, PingWidget, RandomGameWidget, TodayWidget } from "../components/game-widgets";
-import { client } from "../lib/rpc";
+import { client, HOSTED, lanPc } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useConnectingSoon, useEvent, useLiveSubscription, useMediaQuery, useRpc } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
@@ -37,6 +37,7 @@ function StatusWidget() {
   const soon = useConnectingSoon();
   const online = conn.phase === "online" && conn.auth === "ok"; // real connection state, not the last known data
   if (client.preview) {
+    const lanHome = HOSTED && location.protocol === "https:" ? lanPc() : null;
     return (
       <div className="stack">
         <div className="row nowrap">
@@ -47,7 +48,11 @@ function StatusWidget() {
           </div>
           <span className="badge"><span className="dot error" />{t("Offline")}</span>
         </div>
-        <div className="row"><Link to="/connect" className="btn primary sm">{t("PC verbinden")}</Link><Link to="/settings?s=design" className="btn sm">{t("Design & Layout anpassen")}</Link></div>
+        {lanHome && <div className="small muted">{t("Im WLAN läuft die App direkt vom PC unter {u} – diese Website (https) darf den PC dort nicht erreichen.", { u: lanHome.replace(/^http:\/\//, "") })}</div>}
+        <div className="row">
+          {lanHome && <a href={`${lanHome}/#/`} className="btn primary sm">{t("Zur PC-App (WLAN)")}</a>}
+          <Link to="/connect" className={`btn sm ${lanHome ? "" : "primary"}`}>{t("PC verbinden")}</Link><Link to="/settings?s=design" className="btn sm">{t("Design & Layout anpassen")}</Link>
+        </div>
       </div>
     );
   }

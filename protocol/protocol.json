@@ -10,6 +10,7 @@
     "auth.logout": "any",
     "pairing.request": "none",
     "pairing.claim": "none",
+    "pairing.handoff": "none",
     "pairing.create": "local",
     "pairing.cancel": "local",
     "pairing.pending": "local",
@@ -17,6 +18,7 @@
 
     "devices.list": "admin",
     "devices.me": "any",
+    "devices.handoff": "any",
     "devices.rename": "admin",
     "devices.revoke": "admin",
     "devices.setPermissions": "local",

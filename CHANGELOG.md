@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.47.0 – 2026-10-26
+### Neu
+- iPhone/iPad bleiben gekoppelt: Geräte & Verbindungen → „Dauerhaft auf diesem Gerät“ mit „Als App auf den Home-Bildschirm“ (die App vom Home-Bildschirm hat einen eigenen Speicher und bekommt per einmaligem Link einen eigenen Zugang – ohne neuen Code) und „Andere Adresse nutzen“ (Zugang auf eine feste Adresse des PCs übertragen)
+- Feste PC-Adresse: Der Begleiter findet einen Namen, der bei neuer IP gleich bleibt – Router-Name (z. B. gaming-pc.fritz.box, nur wenn er wirklich auf diesen PC zeigt) oder Tailscale-Name; der QR-Code nutzt ihn zuerst. Mit „tailscale serve“ erkennt er die https-Adresse selbst, dann klappt auch die Website von unterwegs
+- Die Website merkt sich die PC-App im WLAN und bietet „Zur PC-App (WLAN)“ statt nur „Offline – kein PC verbunden“
+- Diagnose: „Adresse dieser Seite“, „Home-Bildschirm-App“, „Dauerhafter Speicher“ und am PC „Feste Adresse“
+### Verbessert
+- Nach dem Koppeln bittet die App den Browser, ihre Daten nicht von selbst zu löschen
+- Antwortet der PC auf einen Befehl nicht rechtzeitig, steht dabei, dass unklar ist, ob er ausgeführt wurde – Befehle werden nie automatisch wiederholt
+- Neuer Zugang per Link erscheint am PC als Benachrichtigung
+### Behoben
+- Beim Wiederverbinden konnte eine ältere Verbindungsprüfung eine zweite Verbindung öffnen; außerdem verbindet die App jetzt auch, wenn Safari die Seite aus dem Zurück-Speicher wiederherstellt
+
 ## 2.46.0 – 2026-10-26
 ### Neu
 - Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“
