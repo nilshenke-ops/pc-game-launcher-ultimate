@@ -209,7 +209,20 @@ public static class RpcApi
 
         // ------------------------------------------------------------ assistant
         rpc.Register("assistant.status", _ => s.Assistant.Status());
-        rpc.Register("assistant.ask", async ctx => await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000)));
+        // JARVIS session: only while the website has JARVIS switched on (this connection, 15 min idle). Without it every action stays a button.
+        rpc.Register("jarvis.session", ctx =>
+        {
+            var on = ctx.Params.TryGetProperty("active", out var a) && a.ValueKind == JsonValueKind.True;
+            ctx.Session.JarvisUntil = on ? DateTime.UtcNow + Assistant.Jarvis.Idle : null;
+            return new { active = on, idleMinutes = (int)Assistant.Jarvis.Idle.TotalMinutes };
+        });
+        rpc.Register("assistant.ask", async ctx =>
+        {
+            var wants = ctx.Params.TryGetProperty("jarvis", out var j) && j.ValueKind == JsonValueKind.True;
+            var jarvis = wants && ctx.Session.JarvisUntil is { } until && until > DateTime.UtcNow;
+            if (jarvis) ctx.Session.JarvisUntil = DateTime.UtcNow + Assistant.Jarvis.Idle;
+            return await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), jarvis: jarvis, jarvisRequested: wants);
+        });
         rpc.Register("assistant.bingo", async ctx => await s.Assistant.BingoTasksAsync(ctx.Str("game", 100), ctx.Int("size", 4, 3, 5)));
         rpc.Register("assistant.bingoPlan", async ctx => await s.Assistant.PlanBingoAsync(ctx.Bind<Assistant.BingoRequest>()));
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });

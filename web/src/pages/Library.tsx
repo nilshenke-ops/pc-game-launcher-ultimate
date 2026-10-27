@@ -21,6 +21,7 @@ import { LauncherView, type Source as LauncherSource } from "./Launchers";
 type Sort = "name" | "recent" | "added" | "rating";
 type View = "grid" | "list" | "holo";
 const VIEW_KEY = "pgl.libView";
+const LIB_SORT_KEY = "pgl.libSort";
 const SOURCE_LABEL: Record<string, string> = { steam: "Steam", epic: "Epic Games", appsFolder: "Store / Startmenü", exe: "Datei" };
 
 interface ListResult { items: LibraryItem[]; installed: Record<string, boolean | null>; running: string[]; coversFromCdn: boolean }
@@ -33,7 +34,9 @@ export default function Library({ kind }: { kind: ItemKind }) {
   const [search, setSearch] = useState("");
   // Nothing remembered from the PC yet and no PC: start with the Game Pass catalog, which can be shown without a PC.
   const [cat, setCat] = useState<string>(() => kind === "game" && !q.data && q.error?.code === "offline" ? "__gamepass" : "__all");
-  const [sort, setSort] = useState<Sort>("name");
+  // Remembered on this device (also set by JARVIS: „Zuletzt gespielte nach oben“).
+  const [sort, setSort] = useState<Sort>(() => { const v = readJson<string>(LIB_SORT_KEY); return v === "recent" || v === "added" || v === "rating" ? v : "name"; });
+  useEffect(() => { writeJson(LIB_SORT_KEY, sort); }, [sort]);
   const [editing, setEditing] = useState<LibraryItem | null>(null);
   const [adding, setAdding] = useState(false);
   const [syncing, setSyncing] = useState(false);

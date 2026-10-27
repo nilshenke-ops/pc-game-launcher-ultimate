@@ -57,6 +57,7 @@
     "deals.list": "view",
     "news.steam": "view",
     "deals.keyforsteam": "view",
+    "jarvis.session": "view",
     "deals.configure": "manage",
     "deals.search": "manage",
     "deals.save": "manage",

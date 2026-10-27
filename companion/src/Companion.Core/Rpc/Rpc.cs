@@ -40,6 +40,8 @@ public sealed class RpcSession
     public HashSet<string> Subscriptions { get; } = new();
     public DateTime ConnectedAt { get; } = DateTime.UtcNow;
     public RateLimiter Limiter { get; } = new(300, TimeSpan.FromSeconds(10));
+    /// <summary>JARVIS is switched on in the website on this connection until then (ends with the connection, on "off" or after 15 min idle).</summary>
+    public DateTime? JarvisUntil { get; set; }
     public bool Authenticated => IsLocalAdmin || Device != null;
     public string Who => IsLocalAdmin ? "PC" : Device?.Name ?? "unbekannt";
     public string PrefsKey => IsLocalAdmin ? "local" : Device?.Id ?? "anon";

@@ -433,6 +433,11 @@ Kurzanleitung: Begleiter starten, Firewall „Private Netzwerke“ erlauben, Ger
 Stichworte: suche finden strg k
 Strg+K (oder die Lupe) durchsucht Bereiche, Spiele, Programme, Sounds, Profile, Quick Actions und deine Startseiten – und auch ohne PC deine Sammlungen (Wiki-Seiten samt Text, Bingos, Notizen, Builds …). Von dort lässt sich auch der Assistent fragen.
 
+## JARVIS Gaming
+Seite: /jarvis
+Stichworte: jarvis gaming assistent auftrag befehl ausführen direkt sitzung sprache mehrere schritte
+JARVIS ist der Gaming-Assistent der App (Menü „JARVIS“). Ist „JARVIS führt Aufträge direkt aus“ an, erledigt er, was du ausdrücklich nennst: Spiele und Programme starten (und prüfen, ob sie laufen), Profile aktivieren, Sounds abspielen oder stoppen, Quick Actions, Ziele und Wunschliste – und Änderungen an der Website: neue Startseite für ein Spiel, Startseite übersichtlich ordnen, Widgets zeigen, Favoriten nach oben, Spieleübersicht sortieren, Kategorie für Lieblingsspiele, Profil für das nächste Spiel, Startseite zum Profil, Leiste, Design, Sprache. Mehrere Schritte gehen in einem Satz („Öffne Discord und starte dann Minecraft“); schlägt ein Schritt fehl, hört er auf und sagt es. „Warum ruckelt mein Spiel?“ misst jetzt Last, Speicher und Temperaturen. „Welche Spiele sind zu zweit spielbar?“ nutzt deine Kategorien und deinen Faktencheck. Nur was du selbst nennst, läuft direkt – alles andere bleibt ein Knopf; Löschen und Energie (Herunterfahren usw.) nie ohne Rückfrage. Die Sitzung gilt nur, solange die Website offen ist und JARVIS an ist (spätestens nach 15 Minuten ohne Auftrag aus); laufende Spiele bleiben beim Schließen offen. JARVIS ist nur für Gaming da, ändert nie den Programmcode und führt keine Shell-Befehle aus.
+
 ## KI-Assistent
 Seite: /assistant
 Stichworte: assistent ki claude ollama lokal kostenlos gratis frage chat befehl sprache kosten schlüssel modell einrichten auftrag design leiste

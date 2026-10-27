@@ -5,7 +5,8 @@ import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, confirmDialog, Field, Modal, PageHead, Segmented, Switch } from "../components/ui";
-import { CHAT_KEY, emptyChat, formatCost, offlineExamples, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
+import { CHAT_KEY, emptyChat, formatCost, jarvisChips, offlineExamples, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
+import { openJarvis, setJarvisEnabled, useJarvis } from "../lib/jarvis-session";
 import { getPrefs, setPrefs } from "../lib/prefs";
 import { navItems } from "../lib/nav";
 import type { SetupOp } from "../lib/assistant-setup";
@@ -181,7 +182,7 @@ function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
   // Settings before a set-up change, to undo it with one tap.
-  const [before, setBefore] = useState<ReturnType<typeof getPrefs> | null>(null);
+  const [before, setBefore] = useState<ReturnType<typeof getPrefs> | null>((turn.undo as ReturnType<typeof getPrefs> | undefined) ?? null);
   if (turn.role === "user") return <div className="as-turn me"><div className="as-bubble">{turn.text}</div><User size={18} aria-hidden /></div>;
   const r = turn.reply!;
   const run = async (a: AssistantAction, i: number) => {
@@ -211,7 +212,7 @@ function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest
       <div className="as-bubble">
         <div className="as-text">{r.text}</div>
         {turn.bingoId && <Suspense fallback={null}><ChatBingo id={turn.bingoId} /></Suspense>}
-        {r.actions.length > 0 && (
+        {(r.actions.length > 0 || before) && (
           <div className="row as-actions">
             {r.actions.map((a, i) => (
               <Button key={i} size="sm" variant={a.kind === "navigate" ? "ghost" : "primary"} disabled={done[i]} onClick={() => run(a, i)}>{done[i] ? "✓ " : ""}{a.label}</Button>
@@ -243,6 +244,10 @@ export default function Assistant() {
   const rec = useRef<Recognition | null>(null);
   const end = useRef<HTMLDivElement>(null);
   const [params, setParams] = useSearchParams();
+  const jv = useJarvis();
+  const navTo = useNavigate();
+  // Opening this page starts the JARVIS session (if switched on) – it lasts while this tab is open.
+  useEffect(() => { openJarvis(); }, [online]);
 
   useEffect(() => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(chat)); } catch { /* private mode */ } end.current?.scrollIntoView({ block: "end" }); }, [chat]);
 
@@ -253,6 +258,15 @@ export default function Assistant() {
     setChat((c) => ({ ...c, turns: [...c.turns, { role: "user", text: question }] }));
     setBusy(true);
     try {
+      if (jv.enabled) {
+        // JARVIS: understands the request, runs named gaming actions and website changes directly, reports the real result.
+        const { jarvisAsk } = await import("../lib/jarvis-chat");
+        const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
+        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null });
+        setChat((c) => ({ conversationId: r.conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply: r.reply, bingoId: r.bingoId, undo: r.undo }] }));
+        if (r.navigate) navTo(r.navigate);
+        return;
+      }
       // Setting up this device ("Mach das Design hell", "Pack das Deck in die Leiste") is answered here – with or without the PC.
       const { setupReply } = await import("../lib/assistant-setup");
       const setup = setupReply(question, getPrefs(), navItems());
@@ -308,13 +322,18 @@ export default function Assistant() {
   const s = st.data;
   return (
     <div className="as-page">
-      <PageHead eyebrow={t("Dashboard")} title={t("KI-Assistent")}
-        text={s?.claudeReady ? t("Frag alles zu deinem PC, deinen Spielen und der App. Antworten kommen von Claude – Befehle erledigt der lokale Assistent kostenlos.") : s?.mode === "ollama" ? t("Frag alles zu deinem PC, deinen Spielen und der App. Alles läuft auf deinem PC – 0 €, ohne Konto.") : t("Frag alles zu deinem PC, deinen Spielen und der App. Der lokale Assistent läuft auf deinem PC – ohne Internet und kostenlos.")}
+      <PageHead eyebrow={t("Gaming-Assistent")} title="JARVIS"
+        text={jv.enabled ? t("Sag oder schreib mir, was ich tun soll – ich starte Spiele, stelle Profile ein, ordne deine Website und untersuche Ruckler. Nur Gaming, nur auf deinen Auftrag.") : s?.claudeReady ? t("Frag alles zu deinem PC, deinen Spielen und der App. Antworten kommen von Claude – Befehle erledigt der lokale Assistent kostenlos.") : s?.mode === "ollama" ? t("Frag alles zu deinem PC, deinen Spielen und der App. Alles läuft auf deinem PC – 0 €, ohne Konto.") : t("Frag alles zu deinem PC, deinen Spielen und der App. Der lokale Assistent läuft auf deinem PC – ohne Internet und kostenlos.")}
         actions={<>
+          <span className={`badge ${jv.active ? "ok" : ""}`} title={t("Nur solange diese Seite offen ist und JARVIS an ist. Ohne Auftrag tut JARVIS nichts.")}>{jv.active ? t("JARVIS aktiv") : jv.enabled ? (online ? t("JARVIS verbindet …") : t("JARVIS ohne PC")) : t("JARVIS aus")}</span>
           {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "ollama" ? t("Lokale KI · 0 €") : t("Lokal · 0 €")}</span>}
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />
+      <Card className="jv-toggle">
+        <Switch checked={jv.enabled} onChange={setJarvisEnabled} label={t("JARVIS führt Aufträge direkt aus")}
+          hint={jv.enabled ? t("Was du ausdrücklich nennst, wird sofort erledigt und geprüft (Spiel starten, Profil, Sound, Website ordnen). Löschen, Energie und Unklares nur nach Rückfrage. Endet, wenn du ausschaltest oder die Website schließt – laufende Spiele bleiben offen.") : t("Aus: Ich schlage Aktionen nur als Knopf vor, ausgeführt wird erst nach deinem Tippen.")} />
+      </Card>
       {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich richte die App für dich ein (Design, Leiste, Home, Sprache), beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät, ohne Internet. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
 
       <Card className="as-chat">
@@ -322,8 +341,8 @@ export default function Assistant() {
           {chat.turns.length === 0 && (
             <div className="as-empty">
               <Sparkles size={28} aria-hidden />
-              <p>{t("Ich kenne jede Seite der App, deine Bibliothek, Sounds, Profile und die Live-Werte deines PCs. Aktionen schlage ich als Knopf vor – ausgeführt wird erst, wenn du tippst.")}</p>
-              <div className="chips">{(online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
+              <p>{jv.enabled ? t("Ich bin JARVIS, dein Gaming-Assistent. Ich kenne jede Seite der App, deine Bibliothek, Sounds, Profile und die Live-Werte deines PCs – und erledige, was du mir sagst. Auch mehrere Schritte: „Öffne Discord und starte dann Minecraft“.") : t("Ich kenne jede Seite der App, deine Bibliothek, Sounds, Profile und die Live-Werte deines PCs. Aktionen schlage ich als Knopf vor – ausgeführt wird erst, wenn du tippst.")}</p>
+              <div className="chips">{(jv.enabled ? jarvisChips() : online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
           {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={ask} />)}
@@ -331,7 +350,7 @@ export default function Assistant() {
           <div ref={end} />
         </div>
         <form className="as-input" onSubmit={(e) => { e.preventDefault(); void ask(text); }}>
-          <input className="input" value={text} maxLength={2000} placeholder={t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />
+          <input className="input" value={text} maxLength={2000} placeholder={jv.enabled ? t("Dein Auftrag an JARVIS, z. B. „Starte Minecraft und aktiviere mein Minecraft-Profil“") : t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />
           {SpeechCtor && <Button variant="ghost" icon={listening ? <MicOff size={18} /> : <Mic size={18} />} aria-label={listening ? t("Zuhören beenden") : t("Spracheingabe")} onClick={toggleMic} />}
           <Button type="submit" variant="primary" icon={<Send size={16} />} busy={busy} disabled={!text.trim()} aria-label={t("Senden")} />
         </form>

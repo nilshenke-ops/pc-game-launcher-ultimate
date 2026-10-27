@@ -61,3 +61,15 @@ export function useAppState() {
 }
 
 export type { Notification };
+
+/** Waits (event-driven, no polling) until the overview matches – e.g. a started game shows up as running. */
+export function waitForState(test: (s: AppState) => boolean, ms: number): Promise<boolean> {
+  if (snapshot.state && test(snapshot.state)) return Promise.resolve(true);
+  return new Promise((resolve) => {
+    const check = () => { if (snapshot.state && test(snapshot.state)) { done(true); } };
+    const timer = window.setTimeout(() => done(false), ms);
+    function done(v: boolean) { window.clearTimeout(timer); listeners.delete(check); resolve(v); }
+    listeners.add(check);
+    refreshState(300);
+  });
+}

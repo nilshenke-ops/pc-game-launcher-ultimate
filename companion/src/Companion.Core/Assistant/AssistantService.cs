@@ -188,10 +188,19 @@ public sealed class AssistantService
     }
 
     /// <param name="owner">Device (or "local") – a conversation belongs to the device that started it.</param>
-    public async Task<object> AskAsync(string owner, string who, string? conversationId, string text, CancellationToken ct = default)
+    /// <param name="jarvis">JARVIS session is active: actions the user named may be run directly (see <see cref="Jarvis"/>).</param>
+    /// <param name="jarvisRequested">The website asked for JARVIS (even if the session ran out) – gaming-only rules apply.</param>
+    public async Task<object> AskAsync(string owner, string who, string? conversationId, string text, CancellationToken ct = default, bool jarvis = false, bool jarvisRequested = false)
     {
         text = text.Trim();
         if (text.Length is 0 or > 2000) throw new RpcException("invalid-params", "Frage mit 1–2000 Zeichen.");
+        _ask.Value = (text, jarvis);
+        if (jarvis || jarvisRequested)
+        {
+            // Answered without any AI call – fast, free, and the same on every mode.
+            if (Jarvis.OffTopic(text)) return Done(conversationId ?? Ids.New("conv"), new AssistantReply { Text = Jarvis.OffTopicReply, Sources = { "JARVIS" }, Suggestions = { "Was kannst du?", "Wie geht es meinem PC?", "Starte mein zuletzt gespieltes Spiel" } }, null);
+            if (Jarvis.CodeRequest(text)) return Done(conversationId ?? Ids.New("conv"), new AssistantReply { Text = Jarvis.CodeReply, Sources = { "JARVIS" } }, null);
+        }
         Cleanup();
         var note = (string?)null;
         if (conversationId == null || !_convs.TryGetValue(conversationId, out var conv) || conv.Owner != owner)
@@ -265,10 +274,15 @@ public sealed class AssistantService
         finally { conv.Lock.Release(); }
     }
 
-    static object Done(string conversationId, AssistantReply reply, string? note)
+    readonly AsyncLocal<(string text, bool jarvis)> _ask = new();
+
+    object Done(string conversationId, AssistantReply reply, string? note)
     {
         if (note != null) reply.Text = note + "\n\n" + reply.Text;
-        return new { conversationId, reply };
+        var (text, jarvis) = _ask.Value;
+        if (jarvis) Jarvis.MarkAuto(reply, text);
+        else foreach (var a in reply.Actions) a.Auto = false;
+        return new { conversationId, reply, jarvis };
     }
 
     void RecordUsage(long input, long output, long cacheRead, long cacheWrite, double cost)

@@ -4,6 +4,22 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.55.0 – 2026-10-27
+### Neu
+- JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste
+- Ergebnis wird geprüft: ein gestartetes Spiel muss vom PC als laufend erkannt werden, ein Profil als aktiv – sonst sagt JARVIS ehrlich, was fehlt
+- Mehrere Schritte in einem Satz („Öffne Discord und starte anschließend mein Spiel“); schlägt ein Schritt fehl, hört JARVIS auf und sagt es
+- Website auf Zuruf ändern: neue Startseite für ein Spiel, Startseite übersichtlich ordnen, Favoriten nach oben, Spieleübersicht sortieren (bleibt gespeichert), Kategorie für Lieblingsspiele, Profil für das nächste Spiel, Startseite zum Profil – mit „Rückgängig“
+- „Warum ruckelt mein Spiel?“: misst jetzt Prozessor, Arbeitsspeicher, Grafikkarte, Grafikspeicher, Temperaturen und Laufwerke und nennt nur echte Engstellen (bei Lag auch das Netzwerk)
+- „Welche Spiele sind zu zweit spielbar?“ aus deinen Kategorien und deinem Faktencheck – Unbekanntes wird gezählt, nicht geraten
+- „Starte mein Spiel“ nimmt das zuletzt gespielte Spiel und sagt, welches
+- Nur Gaming: andere Themen lehnt JARVIS freundlich ab; Code-Änderungen macht er nie zur Laufzeit
+- JARVIS-Sitzung: gilt nur, solange die Website offen und JARVIS eingeschaltet ist (spätestens nach 15 Minuten ohne Auftrag aus); ausgeschaltet gibt es wie bisher nur Knöpfe
+### Sicherheit
+- Direkt ausgeführt wird nur, was du in deiner Nachricht selbst nennst, aus einer festen Liste von Gaming-Aktionen; was eine KI selbst vorschlägt oder in Spielnamen, Notizen oder Patchnotes liest, bleibt ein Knopf. Energie (Herunterfahren usw.), Löschen und Quick Actions mit Rückfrage laufen nie ohne Bestätigung; keine Shell-Befehle
+### Verbessert
+- Spieleübersicht merkt sich die Sortierung
+
 ## 2.54.0 – 2026-10-27
 ### Neu
 - Deal Radar: Preisvergleich von Keyforsteam direkt im Spiel – „Preise laden“ zeigt alle Angebote mit Shop (offiziell oder Key-Shop), Shop-Bewertung, Edition, Region, Plattform, Preis inklusive Zahlungsgebühr und Gutschein

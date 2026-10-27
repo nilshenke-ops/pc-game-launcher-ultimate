@@ -691,7 +691,11 @@ test("Tastenbelegung: Profil für ein Spiel, Taste auf der Tastatur antippen, Ko
 
 test("KI-Assistent: lokal, ohne Internet – beantwortet App-Fragen, schlägt Aktionen als Knopf vor, Suche leitet weiter", async () => {
   await pc.goto(`${COMPANION}/#/assistant`);
-  await expect(pc.getByRole("heading", { name: "KI-Assistent" })).toBeVisible();
+  await expect(pc.getByRole("heading", { name: "JARVIS" })).toBeVisible();
+  await expect(pc.getByText("JARVIS aktiv")).toBeVisible();
+  // With JARVIS switched off everything is a button (the behaviour before JARVIS).
+  await pc.getByText("JARVIS führt Aufträge direkt aus").click();
+  await expect(pc.getByText("JARVIS aus")).toBeVisible();
   const input = pc.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   await input.fill("Wie richte ich Discord mit dem Soundboard ein?");
   await input.press("Enter");
@@ -729,11 +733,21 @@ test("KI-Assistent: lokal, ohne Internet – beantwortet App-Fragen, schlägt Ak
   await expect(dlg.getByLabel("Anthropic-API-Schlüssel")).toBeVisible();
   // Without a key the mode stays free.
   await dlg.getByRole("button", { name: "Fertig" }).click();
-  await expect(pc.locator(".page-head .badge")).toHaveText("Lokal · 0 €");
+  await expect(pc.locator(".page-head .badge").last()).toHaveText("Lokal · 0 €");
   await pc.getByRole("button", { name: "Einrichten", exact: true }).click();
   await dlg.getByRole("button", { name: "Fertig" }).click();
   await pc.getByRole("button", { name: "Neues Gespräch" }).click();
   await expect(pc.locator(".as-turn")).toHaveCount(0);
+  // JARVIS on: a named command runs right away with the real result; other topics are declined.
+  await pc.getByText("JARVIS führt Aufträge direkt aus").click();
+  await expect(pc.getByText("JARVIS aktiv")).toBeVisible();
+  await input.fill("Stopp alle Sounds");
+  await input.press("Enter");
+  await expect(pc.locator(".as-turn.bot").last()).toContainText("✓ Alle Sounds gestoppt.");
+  await input.fill("Schreib eine E-Mail an meinen Chef");
+  await input.press("Enter");
+  await expect(pc.locator(".as-turn.bot").last()).toContainText("nur um deine Spiele");
+  await pc.getByRole("button", { name: "Neues Gespräch" }).click();
 });
 
 test("Monitor: Netzwerk, Speicherplatz und Energie zeigen echte Zustände", async () => {
@@ -949,7 +963,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByText("wartet auf PC").first()).toBeVisible();
   await tablet.reload();
   await expect(tablet.locator(".list-item", { hasText: "tablet-config.ini" })).toBeVisible(); // survives closing the page
-  // The assistant sets the app up without the PC: the request becomes a button, applied on tap, undoable.
+  // The assistant sets the app up without the PC: a choice becomes buttons, applied on tap, undoable.
   await tablet.goto(`${HOSTED_SITE}/#/assistant`);
   const say = tablet.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   await say.fill("Pack den Backlog in die Leiste");
@@ -958,10 +972,11 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.locator(".bottom-nav").getByRole("link", { name: "Backlog" })).toBeVisible();
   await tablet.locator(".as-turn.bot").last().getByRole("button", { name: "Rückgängig" }).click();
   await expect(tablet.locator(".bottom-nav").getByRole("link", { name: "Sounds" })).toBeVisible();
+  // A clear change is done by JARVIS right away (with "Rückgängig").
   await say.fill("Leiste schlicht wie früher");
   await say.press("Enter");
-  await tablet.locator(".as-turn.bot").last().getByRole("button", { name: "Symbole schlicht" }).click();
   await expect.poll(() => tablet.evaluate(() => document.documentElement.hasAttribute("data-nav-plain"))).toBe(true);
+  await expect(tablet.locator(".as-turn.bot").last().getByRole("button", { name: "Rückgängig" })).toBeVisible();
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 

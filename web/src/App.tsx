@@ -173,6 +173,7 @@ function Gate() {
           <Route path="/trophies" element={<TrophiesPage />} />
           <Route path="/deck" element={<Deck />} />
           <Route path="/assistant" element={<Assistant />} />
+          <Route path="/jarvis" element={<Navigate to="/assistant" replace />} />
           <Route path="/deals" element={<Deals />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

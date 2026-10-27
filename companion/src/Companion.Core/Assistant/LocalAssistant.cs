@@ -15,11 +15,13 @@ public sealed class LocalAssistant
 
     public static readonly string[] Examples =
     {
-        "Was kannst du?", "Wie geht es meinem PC?", "Wie lange habe ich diese Woche gespielt?", "Starte Rocket League", "Spiel Sound Airhorn",
+        "Was kannst du?", "Wie geht es meinem PC?", "Warum ruckelt mein Spiel?", "Wie lange habe ich diese Woche gespielt?", "Starte Rocket League", "Spiel Sound Airhorn",
         "Profil Streaming aktivieren", "Was läuft gerade?", "Wie richte ich Discord mit dem Soundboard ein?", "Welches Level habe ich?", "Gibt es Deals auf meiner Wunschliste?",
     };
 
     static bool Has(string text, string pattern) => Regex.IsMatch(text, pattern);
+    /// <summary>Gaming programs people "open" – meant as the program, never as a help page about it.</summary>
+    const string AppNames = @" (discord|steam|epic( games)?( launcher)?|obs( studio)?|spotify|teamspeak|battle ?net|ea( app)?|ubisoft( connect)?|gog( galaxy)?|xbox( app)?|nvidia( app)?|geforce( experience)?|medal|overwolf|razer synapse|logitech g ?hub|msi afterburner|riot client|rockstar launcher) ";
     /// <summary>Removes the given words (pattern like " (a|b) ") and returns what is left – the name the user meant.
     /// Lookarounds keep the spaces, so neighbouring filler words ("spiel sound airhorn") are all removed.</summary>
     static string Rest(string text, string pattern) =>
@@ -50,6 +52,10 @@ public sealed class LocalAssistant
         var question = Has(t, @"^ (wie|was|wo|warum|wieso|weshalb|kann|koennen|gibt|welche|welcher|welches|how|what|why|where|can|does|is) ");
 
         if (Has(t, @" (hilfe|help|was kannst du|what can you do|befehle|commands) ") && t.Trim().Length < 30) return Help();
+
+        // ---- "Warum ruckelt mein Spiel?" – measured now, judged with fixed thresholds
+        if (Has(t, @" (ruckel|ruckelt|ruckeln|ruckler|stottert|stottern|laggt|laggy|lags|lag|fps (drop|einbruch|einbrueche)|framedrops?|stutter|stutters) ") && !Has(t, @" (wie (richte|stelle)|einrichten) "))
+            return await Stutter(Has(t, @" (lag|laggt|laggy|lags|ping|online|verbindung|server) "));
 
         // ---- live data questions (also asked as questions)
         if (Has(t, @" (cpu|prozessor|ram|arbeitsspeicher|gpu|grafikkarte|vram|temperatur|temp|heiss|auslastung|festplatte|speicherplatz|laufwerk) ") || Has(t, @"wie geht es (meinem|dem) pc|pc status|how is my pc"))
@@ -101,12 +107,18 @@ public sealed class LocalAssistant
                 var name = Rest(t, @" (oeffne|offne|zeige|zeig|mir|geh|gehe|zu|zur|zum|navigiere|die|den|das|seite|bereich|open|show|go|to|the|page|bitte|mal) ");
                 var page = AssistantData.Best(name, _d.Knowledge.Sections.Where(s => s.Page != null), s => s.Title, 0.7);
                 var item = AssistantData.Best(name, _d.Library(), i => i.Name);
+                // "Öffne Discord" means the program, not the help page about it – if it is not in the library, say so.
+                if (item == null && Regex.IsMatch(" " + name + " ", AppNames))
+                    return new AssistantReply { Text = $"„{Original(_raw, name)}“ ist nicht in deiner Bibliothek. Unter Programme → „Hinzufügen“ trägst du es ein, dann kann ich es starten.", Actions = { _d.Navigate("/programs", "Programme") }, Sources = { "Bibliothek" }, Failed = true };
                 if (page is { } p && (item == null || p.score >= item.Value.score))
                     return new AssistantReply { Text = $"{p.item.Title}: {FirstSentence(p.item.Text)}", Actions = { _d.Navigate(p.item.Page!) }, Sources = { p.item.Title } };
                 if (item is { } it) return new AssistantReply { Text = $"„{it.item.Name}“ starten?", Actions = { _d.LaunchAction(it.item) }, Sources = { "Bibliothek" } };
             }
             if (Has(t, @" (starte|start|starten|launch|zocken|spielen|spiel|spiele|play|run) "))
             {
+                var lastPlayed = Has(t, @" (mein|meine|meinen) (zuletzt gespieltes |letztes |aktuelles )?(spiel|game) | (zuletzt gespielte?s?|letzte?s?) (spiel|game) ") ? _d.LastPlayed() : null;
+                if (lastPlayed != null)
+                    return new AssistantReply { Text = $"„{lastPlayed.Name}“ ist dein zuletzt gespieltes Spiel – starten?", Actions = { _d.LaunchAction(lastPlayed, "mein spiel") }, Sources = { "Gaming-Verlauf", "Bibliothek" } };
                 var name = Rest(t, @" (starte|start|starten|launch|lass uns|ich will|ich moechte|zocken|spielen|spiel|spiele|play|run|bitte|mal|jetzt|das|den|die|ein|eine|game|programm) ");
                 var item = name.Length > 0 ? AssistantData.Best(name, _d.Library(), i => i.Name) : null;
                 var sound = name.Length > 0 ? AssistantData.Best(name, _d.Sounds(), x => x.Name) : null;
@@ -115,7 +127,7 @@ public sealed class LocalAssistant
                     return new AssistantReply { Text = $"„{it.item.Name}“ starten?" + (_d.Running().Contains(it.item.Name) ? " Es läuft bereits." : ""), Actions = { _d.LaunchAction(it.item) }, Sources = { "Bibliothek" } };
                 // Only a short name is a command ("Starte Hollow Knight"); a long sentence is a question for the help/model.
                 if (name.Length > 0 && name.Split(' ').Length <= 5 && !_raw.Contains('?'))
-                    return new AssistantReply { Text = $"„{Original(_raw, name)}“ habe ich in deiner Bibliothek nicht gefunden. Unter Spiele → „Hinzufügen“ kannst du installierte Spiele übernehmen.", Actions = { _d.Navigate("/games") } };
+                    return new AssistantReply { Text = $"„{Original(_raw, name)}“ habe ich in deiner Bibliothek nicht gefunden. Unter Spiele → „Hinzufügen“ kannst du installierte Spiele übernehmen.", Actions = { _d.Navigate("/games") }, Failed = true };
             }
         }
 
@@ -132,11 +144,13 @@ public sealed class LocalAssistant
 
     AssistantReply Help() => new()
     {
-        Text = "Ich bin der lokale Assistent – ich laufe auf deinem PC, ohne Internet und ohne Kosten. Ich kann:\n" +
-               "• Spiele und Programme starten, Sounds abspielen, Profile und Quick Actions auslösen (immer erst nach deinem Tippen)\n" +
-               "• PC-Werte, laufende Spiele, Spielzeit, Level, Deals, Benachrichtigungen und Updates nennen\n" +
-               "• Fragen zur App beantworten: Einrichtung, Discord, Verbindung, Fehlerbehebung, Datenschutz\n" +
-               "Für freie Gespräche lässt sich Claude als KI zuschalten (eigener API-Schlüssel, am PC einzutragen).",
+        Text = "Ich bin JARVIS Gaming – ich laufe auf deinem PC, ohne Internet und ohne Kosten, und kümmere mich nur ums Gaming. Ich kann:\n" +
+               "• Spiele und Programme starten, Sounds abspielen, Profile und Quick Actions auslösen – mit eingeschaltetem JARVIS direkt, sonst per Knopf\n" +
+               "• mehrere Schritte nacheinander: „Öffne Discord und starte dann Minecraft“\n" +
+               "• untersuchen, warum ein Spiel ruckelt (Messung jetzt), PC-Werte, laufende Spiele, Spielzeit, Level, Deals und Updates nennen\n" +
+               "• die Website ordnen: Startseiten, Widgets, Leiste, Kategorien, Sortierung, Profile, Design\n" +
+               "• Bingos und Challenges erstellen und Fragen zur App beantworten\n" +
+               "Was ich nicht mache: Aufgaben außerhalb von Gaming, Shell-Befehle, Programmcode ändern oder etwas ohne deinen Auftrag tun.",
         Suggestions = Examples.Skip(1).Take(6).ToList(),
         Sources = { "Assistent" },
     };
@@ -165,6 +179,37 @@ public sealed class LocalAssistant
         var (_, text) = _d.PcStatus();
         var running = _d.Running();
         return new AssistantReply { Text = "Gerade gemessen: " + text + "." + (running.Count > 0 ? " Läuft: " + string.Join(", ", running) + "." : ""), Actions = { _d.Navigate("/monitor") }, Sources = { "PC-Messung (jetzt)" } };
+    }
+
+    async Task<AssistantReply> Stutter(bool network)
+    {
+        var (m, _) = _d.PcStatus();
+        var running = _d.Running();
+        var found = GamingDoctor.Check(m, running.Count > 0);
+        var text = (running.Count > 0 ? $"Gerade gemessen, während {string.Join(", ", running)} läuft:" : "Gerade gemessen:") + "\n" + string.Join("\n", found.Select(f => "• " + f.Text));
+        var reply = new AssistantReply { Text = text, Sources = { "PC-Messung (jetzt)" } };
+        if (network)
+        {
+            var n = await _d.NetworkCheck();
+            reply.Text += "\n• Netzwerk: " + NetworkSummary(n);
+            reply.Sources.Add("Netzwerkprüfung (jetzt)");
+        }
+        reply.Actions.Add(_d.Navigate("/monitor", "PC-Werte"));
+        if (!network) reply.Suggestions.Add("Prüfe mein Netzwerk");
+        return reply;
+    }
+
+    static string NetworkSummary(JsonElement n)
+    {
+        try
+        {
+            var parts = new List<string>();
+            if (n.TryGetProperty("checks", out var checks) && checks.ValueKind == JsonValueKind.Array)
+                foreach (var c in checks.EnumerateArray().Where(c => c.TryGetProperty("id", out var id) && id.GetString() is "gateway" or "dns" or "internet" or "ping"))
+                    parts.Add($"{(c.TryGetProperty("label", out var l) ? l.GetString() : "?")}: {(c.TryGetProperty("detail", out var d) ? d.GetString() : "?")}");
+            return parts.Count > 0 ? string.Join("; ", parts) : "geprüft – Details auf der Netzwerk-Seite.";
+        }
+        catch { return "geprüft – Details auf der Netzwerk-Seite."; }
     }
 
     AssistantReply PlayTime(string t)

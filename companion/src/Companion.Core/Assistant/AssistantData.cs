@@ -20,6 +20,12 @@ public sealed class AssistantAction
     public string? Path { get; set; }
     /// <summary>Asks once more before running (starts programs or runs several steps).</summary>
     public bool Confirm { get; set; }
+    /// <summary>Name of what the action is about (game, sound, profile …) – JARVIS runs it only if the user named it.</summary>
+    public string? Target { get; set; }
+    /// <summary>JARVIS may run this now (session active, gaming action, named by the user). Set by <see cref="Jarvis.MarkAuto"/>.</summary>
+    public bool Auto { get; set; }
+    /// <summary>Must be confirmed even in JARVIS mode (e.g. a Quick Action that asks before it runs).</summary>
+    [System.Text.Json.Serialization.JsonIgnore] public bool RequireConfirm { get; set; }
 }
 
 public sealed class AssistantReply
@@ -33,6 +39,8 @@ public sealed class AssistantReply
     public string? Model { get; set; }
     public double? CostUsd { get; set; }
     public List<string> Suggestions { get; set; } = new();
+    /// <summary>The request could not be done (e.g. the game is not in the library) – JARVIS stops a multi-step request here.</summary>
+    public bool Failed { get; set; }
     /// <summary>Recognised command or data answer (not a guess from the help texts) – used to decide whether Claude is needed.</summary>
     [System.Text.Json.Serialization.JsonIgnore] public bool Confident { get; set; } = true;
 }
@@ -236,10 +244,14 @@ public sealed class AssistantData
 
     // ---------------------------------------------------------------- actions (suggestions)
 
-    public AssistantAction LaunchAction(LibraryItem i) => new() { Kind = "launch", Label = $"{i.Name} starten", Method = "library.launch", Params = { ["id"] = i.Id }, Confirm = true };
-    public static AssistantAction SoundAction(Sound x) => new() { Kind = "sound", Label = $"„{x.Name}“ abspielen", Method = "sounds.play", Params = { ["id"] = x.Id } };
+    /// <param name="target">What the user called it, if not the name (e.g. "mein spiel" for the last played game).</param>
+    public AssistantAction LaunchAction(LibraryItem i, string? target = null) => new() { Kind = "launch", Label = $"{i.Name} starten", Method = "library.launch", Params = { ["id"] = i.Id }, Confirm = true, Target = target ?? i.Name };
+
+    /// <summary>The game of the most recent recorded session that is still in the library.</summary>
+    public LibraryItem? LastPlayed() => _s.History.LastPlayedIds().Select(id => _s.Library.Get(id)).FirstOrDefault(i => i is { Kind: Models.ItemKind.Game });
+    public static AssistantAction SoundAction(Sound x) => new() { Kind = "sound", Label = $"„{x.Name}“ abspielen", Method = "sounds.play", Params = { ["id"] = x.Id }, Target = x.Name };
     public static AssistantAction StopSoundsAction() => new() { Kind = "stopSounds", Label = "Alle Sounds stoppen", Method = "sounds.stopAll" };
-    public static AssistantAction ProfileAction(Profile p) => new() { Kind = "profile", Label = $"Profil „{p.Name}“ aktivieren", Method = "profiles.activate", Params = { ["id"] = p.Id } };
-    public static AssistantAction QuickAction(QuickAction q) => new() { Kind = "quick", Label = $"„{q.Name}“ ausführen", Method = "quick.run", Params = { ["id"] = q.Id }, Confirm = true };
-    public AssistantAction Navigate(string path, string? title = null) => new() { Kind = "navigate", Label = $"{title ?? Knowledge.PageTitle(path) ?? path} öffnen", Path = path };
+    public static AssistantAction ProfileAction(Profile p) => new() { Kind = "profile", Label = $"Profil „{p.Name}“ aktivieren", Method = "profiles.activate", Params = { ["id"] = p.Id }, Target = p.Name };
+    public static AssistantAction QuickAction(QuickAction q) => new() { Kind = "quick", Label = $"„{q.Name}“ ausführen", Method = "quick.run", Params = { ["id"] = q.Id }, Confirm = true, Target = q.Name, RequireConfirm = q.RequireConfirm };
+    public AssistantAction Navigate(string path, string? title = null) { var name = title ?? Knowledge.PageTitle(path) ?? path; return new() { Kind = "navigate", Label = $"{name} öffnen", Path = path, Target = name }; }
 }

@@ -515,6 +515,9 @@ public sealed class HistoryService
     /// All recorded sessions in a period (newest first, at most the 1000 the PC keeps) – for the year review, the play
     /// style and the performance archive. Only what was measured: no session = nothing to show.
     /// </summary>
+    /// <summary>Item ids of the latest sessions, newest first (each once).</summary>
+    public List<string> LastPlayedIds() => _store.Snapshot().Sessions.OrderByDescending(s => s.StartedAt).Select(s => s.ItemId).Distinct().Take(20).ToList();
+
     public object Sessions(DateTime? from, DateTime? to)
     {
         var f = _store.Snapshot();

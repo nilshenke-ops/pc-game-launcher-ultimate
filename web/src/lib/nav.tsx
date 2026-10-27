@@ -32,7 +32,7 @@ export function navItems(): NavItem[] {
     { path: "/backlog", label: t("Backlog"), icon: ListTodo, group: g.dash, keywords: "noch spielen als nächstes durchgespielt pausiert priorität zufall spielplanung liste" },
     { path: "/programs", label: t("Programme"), icon: LayoutGrid, group: g.dash, keywords: "apps discord browser" },
     { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
-    { path: "/assistant", label: t("KI-Assistent"), short: t("Assistent"), icon: Sparkles, group: g.dash, keywords: "ki ai claude chat frage hilfe sprache befehl assistent fragen" },
+    { path: "/assistant", label: t("JARVIS"), short: t("JARVIS"), icon: Sparkles, group: g.dash, keywords: "jarvis ki ai claude chat frage hilfe sprache befehl assistent fragen auftrag" },
     { path: "/widgets", label: t("Widget-Baukasten"), short: t("Widgets"), icon: Shapes, group: g.dash, keywords: "widgets eigene editor desktop baukasten design uhr knopf setup designer" },
     { path: "/remote", label: t("Remote Desktop"), short: t("Remote"), icon: MonitorSmartphone, group: g.ctrl, keywords: "remote desktop fernsteuerung fernsteuern bildschirm übertragen live handy ipad touch maus tastatur pc steuern spiegeln screen" },
     { path: "/profiles", label: t("Gaming-Profile"), short: t("Profile"), icon: Swords, group: g.ctrl, keywords: "competitive streaming" },
