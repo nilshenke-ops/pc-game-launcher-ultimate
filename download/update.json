@@ -1,28 +1,31 @@
 {
-  "version": "2.57.0",
+  "version": "2.58.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.57.0/PCGameLauncherCompanion.exe",
-  "size": 88178475,
-  "sha256": "2521ca6a49b1d55d780931d07722a1c151b45425c9d1a2018478b45ce96e33d1",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.58.0/PCGameLauncherCompanion.exe",
+  "size": 88182584,
+  "sha256": "2c53e6f7adf7d21876da16505542b203c51a45635cf90131cde9bb0a9a02aa72",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.57.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.57.0/PCGameLauncherCompanion-2.57.0-win-x64.zip",
-    "size": 82441020,
-    "sha256": "5044ee19411e96c0f06046a40500ecbd1f8d2df971c0f7418f9e1aba4d627c36"
+    "fileName": "PCGameLauncherCompanion-2.58.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.58.0/PCGameLauncherCompanion-2.58.0-win-x64.zip",
+    "size": 82445167,
+    "sha256": "7d5dcababfe2905b604a82a88d41a7c1cb3e50a60d5c4a397730641029d41bab"
   },
-  "notes": "„Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale · Handy-Website: Adresse und Code direkt auf der Offline-Seite eingeben („Handy manuell verbinden“)",
+  "notes": "JARVIS/Assistent: Bingo für jedes Spiel direkt im Chat – der PC sieht im Internet nach, was das für ein Spiel ist (Steam: Erfolge, Genre, Mehrspieler, Beschreibung; nicht auf Steam: Wikipedia) und macht passende Aufgaben daraus · „Ja, immer erlauben“: Danach fragt JARVIS beim Bingo nicht mehr, ob er im Internet nachsehen darf (im Bingo-Maker ist das Häkchen dann vorausgewählt) · Wenige Steam-Erfolge: Die Karte wird mit Aufgaben zur erkannten Spielart aufgefüllt (z. B. Rennspiel für Make Way)",
   "changes": {
     "neu": [
-      "„Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale",
-      "Handy-Website: Adresse und Code direkt auf der Offline-Seite eingeben („Handy manuell verbinden“)"
+      "JARVIS/Assistent: Bingo für jedes Spiel direkt im Chat – der PC sieht im Internet nach, was das für ein Spiel ist (Steam: Erfolge, Genre, Mehrspieler, Beschreibung; nicht auf Steam: Wikipedia) und macht passende Aufgaben daraus",
+      "„Ja, immer erlauben“: Danach fragt JARVIS beim Bingo nicht mehr, ob er im Internet nachsehen darf (im Bingo-Maker ist das Häkchen dann vorausgewählt)"
     ],
-    "verbessert": [],
+    "verbessert": [
+      "Wenige Steam-Erfolge: Die Karte wird mit Aufgaben zur erkannten Spielart aufgefüllt (z. B. Rennspiel für Make Way)",
+      "Die Karte trägt den gefundenen Namen („Makeway“ → „Make Way“), und der Chat sagt, was über das Spiel gefunden wurde"
+    ],
     "behoben": [
-      "github.io-Seite: Eine Heimnetz-Adresse (z. B. 192.168.178.116) führte zu „nicht erreichbar“ – der Browser verbietet einer https-Seite den Zugriff auf http im Heimnetz. Jetzt öffnet „PC verbinden“ direkt die Seite deines PCs mit dem Code; ohne „http://“ und ohne Port eingetippt wird automatisch http und Port 8787 genommen",
-      "Feste Adresse: Der Begleiter fragt den Router (z. B. FRITZ!Box) auch nach dem Namen zur eigenen IP – so wird ….fritz.box gefunden, auch wenn der PC dort anders heißt als in Windows"
+      "Bingo für ein Spiel ohne eigene Aufgaben (z. B. Make Way) schickte zur Bingo-Seite, wo das Erstellen dann auch scheiterte – jetzt entsteht die Karte immer im Chat; klappt KI oder Internet nicht, wird mit allgemeinen Aufgaben erstellt und der Grund steht dabei",
+      "Steam ausgelastet: Es wird trotzdem bei Wikipedia nachgesehen; Fehlermeldungen nennen die richtige Seite"
     ]
   },
-  "signature": "45aqzRcpMap7C3/L5cBG1DE6jnPvO7XZydE3WiJ/QqwlAFmMPFbp67bGFuCN1m+YWLm0WkBSz4UbOUeYjt1jpA=="
+  "signature": "U2CKzOGYZvRkgqkW6xSIUFsluAAJsTCcqzHwGKR+INjmczhyUXuBdyZeSn3GsMeSrOt8GRYPX6UodE7iVdfLLw=="
 }
