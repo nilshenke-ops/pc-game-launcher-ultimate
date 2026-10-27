@@ -12,6 +12,7 @@ import type { AssistantAction, AssistantReply } from "./assistant";
 import { codeRequest, offTopic, siteIntent, splitSteps } from "./jarvis";
 import { runAuto, runSite, type StepResult } from "./jarvis-run";
 import { ensureJarvis } from "./jarvis-session";
+import { forget, lastLog, logDone, logPageId, memoryIntent, memoryPageId, recall, remember, type MemoryIntent } from "./jarvis-memory";
 import type { LibraryItem } from "./types";
 
 export interface JarvisStep { text: string; ok: boolean | null }
@@ -21,12 +22,14 @@ const OFF_TOPIC = () => t("Ich bin JARVIS Gaming – ich kümmere mich nur um de
 const CODE = () => t("Neue Funktionen oder Seiten sind Änderungen am Programmcode – die mache ich nicht nebenbei im Chat, und meinen eigenen Code ändere ich nie. Dafür gibt es den Entwicklungsweg mit Versionskontrolle, Tests und einem Update über die Update-Zentrale. Innerhalb der App (Startseiten, Widgets, Leiste, Kategorien, Profile, Design) ändere ich dagegen direkt, was du sagst.");
 const opens = (s: string) => /\b(oeffne|öffne|offne|zeig|zeige|geh|gehe|wechsel)\b/i.test(s);
 
-export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null }
+export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean }
 
 export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<JarvisTurn> {
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
   if (offTopic(question)) return { reply: reply(OFF_TOPIC()), steps: [] };
   if (codeRequest(question)) return { reply: reply(CODE()), steps: [] };
+  const mem = memoryIntent(question);
+  if (mem) return { reply: memoryReply(mem, reply), steps: [] };
 
   const parts = splitSteps(question);
   const steps: JarvisStep[] = [];
@@ -71,10 +74,11 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       sources.add("JARVIS");
     } else if (isBingoRequest(part, !!ctx.previousBingo)) {
       const { bingoFromChat } = await import("./bingo-chat");
-      const b = await bingoFromChat(part, ctx.previousBingo, { online: ctx.online, provider: ctx.online ? ctx.bingoProvider : null });
+      const b = await bingoFromChat(part, ctx.previousBingo, { online: ctx.online, provider: ctx.online ? ctx.bingoProvider : null, web: ctx.bingoWeb });
       bingoId = b.bingoId ?? bingoId;
       r = { text: b.reply.text, ok: b.bingoId ? true : null };
       buttons.push(...b.reply.actions);
+      b.reply.sources.forEach((x) => sources.add(x));
     } else if (ctx.online) {
       const res = await client.call<{ conversationId: string; reply: AssistantReply & { actions: (AssistantAction & { auto?: boolean })[] }; jarvis?: boolean }>("assistant.ask", { conversationId, text: part, jarvis: session });
       conversationId = res.conversationId;
@@ -110,5 +114,37 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     if (r.ok === false && !last) { texts.push(t("Die weiteren Schritte habe ich deshalb nicht ausgeführt.")); break; }
   }
   const out = reply(texts.join("\n\n"), buttons.slice(0, 8), [...sources]);
+  // The log page ("JARVIS-Protokoll") – only what really happened.
+  try { logDone(question, steps.map((s, i) => ({ text: texts[i] ?? s.text, ok: s.ok }))); } catch { /* storage full – the result is still shown */ }
   return { reply: out, steps, undo, navigate, conversationId, bingoId };
+}
+
+function memoryReply(m: MemoryIntent, reply: (text: string, actions?: AssistantAction[], sources?: string[]) => AssistantReply): AssistantReply {
+  const open = (id: string | null, label: string): AssistantAction[] => (id ? [{ kind: "navigate", label, path: `/wiki?id=${id}` }] : []);
+  switch (m.kind) {
+    case "remember": {
+      const r = remember(m.fact);
+      return reply(t("✓ Gemerkt: „{f}“. Das steht jetzt in deinem Wiki auf der Seite „JARVIS-Gedächtnis“ ({n} Einträge) – lesbar und änderbar wie jede Seite.", { f: m.fact, n: r.count }), open(r.id ?? null, t("Gedächtnis öffnen")), [t("JARVIS-Gedächtnis")]);
+    }
+    case "recall": {
+      const found = recall(m.about);
+      if (!found.length) return reply(m.about ? t("Zu „{a}“ habe ich mir nichts gemerkt. Sag z. B. „Merk dir, dass ich {a} am liebsten im Koop spiele“.", { a: m.about }) : t("Ich habe mir noch nichts gemerkt. Sag z. B. „Merk dir, dass ich Shooter mit Controller spiele“."), [], [t("JARVIS-Gedächtnis")]);
+      return reply((m.about ? t("Das habe ich mir zu „{a}“ gemerkt:", { a: m.about }) : t("Das habe ich mir gemerkt:")) + "\n" + found.slice(0, 12).map((l) => "• " + l).join("\n"), open(memoryPageId(), t("Gedächtnis öffnen")), [t("JARVIS-Gedächtnis")]);
+    }
+    case "forget": {
+      const n = recall(m.about).length;
+      if (!n) return reply(t("Zu „{a}“ habe ich nichts gespeichert.", { a: m.about }));
+      // Deleting is asked first.
+      return reply(t("Soll ich {n} Eintrag/Einträge zu „{a}“ aus meinem Gedächtnis löschen?", { n, a: m.about }), [{ kind: "jarvisForget", label: t("Ja, vergessen"), params: { about: m.about } }], [t("JARVIS-Gedächtnis")]);
+    }
+    case "log": {
+      const l = lastLog();
+      return reply(l.length ? t("Zuletzt erledigt:") + "\n" + l.map((x) => "• " + x).join("\n") : t("Ich habe noch nichts für dich erledigt."), open(logPageId(), t("Protokoll öffnen")), [t("JARVIS-Protokoll")]);
+    }
+  }
+}
+
+export function forgetNow(about: string): string {
+  const n = forget(about);
+  return n ? t("✓ {n} Eintrag/Einträge zu „{a}“ vergessen.", { n, a: about }) : t("Da war nichts mehr zu „{a}“.", { a: about });
 }

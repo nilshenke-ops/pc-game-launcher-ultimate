@@ -191,3 +191,56 @@ describe("chat requests", () => {
     expect((resolveOptions(r("Bingo für ein beliebiges Spiel aus meiner Bibliothek"), null, () => "Hades") as BingoOptions).game).toBe("Hades");
   });
 });
+
+describe("bingo for any game, real tasks and no repeats", async () => {
+  const b = await import("./bingo");
+  it("understands every size and difficulty for any game", () => {
+    const cases: [string, string, number, string][] = [
+      ["Mach ein Bingo für Hollow Knight auf sehr schwer 5x5", "Hollow Knight", 5, "veryhard"],
+      ["Erstelle ein gemischtes 4×4 Bingo für Fortnite", "Fortnite", 4, "mixed"],
+      ["3x3 Bingo für Celeste leicht", "Celeste", 3, "easy"],
+      ["Bingo für Hades II auf schwer", "Hades Ii", 4, "hard"],
+      ["Ein mittleres 4x4-Bingo für Satisfactory", "Satisfactory", 4, "medium"],
+    ];
+    for (const [q, game, size, d] of cases) {
+      const r = b.parseRequest(q, { library: ["Hades II"] });
+      expect(r.action, q).toBe("create");
+      expect([r.options.game?.toLowerCase(), r.options.size ?? 4, r.options.difficulty ?? "medium"], q).toEqual([game.toLowerCase(), size, d]);
+    }
+  });
+  it("turns Steam achievements into tasks with the difficulty from the unlock rate", () => {
+    const t = b.webTasks([
+      { name: "Erster Schritt", description: "Schließe das Tutorial ab.", hidden: false, percent: 81.2 },
+      { name: "Königsmörder", description: "Besiege den König.", hidden: false, percent: 22.5 },
+      { name: "Sammler", description: "Finde alle Muscheln.", hidden: false, percent: 5 },
+      { name: "Perfektion", description: "", hidden: false, percent: 1.4 },
+      { name: "Geheim", description: "", hidden: true, percent: 9 },
+    ]);
+    expect(t.map((x) => [x.level, x.text])).toEqual([[1, "Erster Schritt: Schließe das Tutorial ab."], [2, "Königsmörder: Besiege den König."], [3, "Sammler: Finde alle Muscheln."], [4, "Perfektion"], [3, "Versteckter Erfolg „Geheim“"]]);
+    expect(t[0].why).toBe("81,2 % aller Steam-Spieler haben diesen Erfolg");
+    expect(t[4].spoiler).toBe(true);
+    expect(b.levelFromPercent(null)).toBe(2);
+  });
+  it("a second easy card of the same game uses other tasks while there are enough", () => {
+    const o = { ...b.DEFAULT_OPTIONS, game: "Minecraft", size: 3 as const, difficulty: "easy" as const };
+    const pool = b.poolFor("Minecraft").tasks;
+    const first = b.pickTasks(pool, [], o).tasks.map((x) => x.text);
+    const second = b.pickTasks(pool, [], { ...o, avoid: first }).tasks.map((x) => x.text);
+    expect(second.filter((x) => first.includes(x))).toEqual([]);
+    expect(second.length).toBe(9);
+    // Asked for more than there is: repeats are allowed then – and said.
+    const tiny = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((i) => ({ text: "Aufgabe " + i, level: 1 as const, category: "fun" as const, source: "catalog" as const }));
+    const again = b.pickTasks(tiny, [], { ...o, avoid: tiny.slice(0, 5).map((x) => x.text) });
+    expect(again.tasks.length).toBe(9);
+    expect(again.notes.some((n) => n.startsWith("4 Aufgaben gab es schon in deinem letzten"))).toBe(true);
+    const both = b.pickTasks(tiny, [], { ...o, avoid: tiny.slice(0, 3).map((x) => x.text), avoidOld: tiny.slice(3, 6).map((x) => x.text) }).tasks.map((x) => x.text);
+    expect(both.filter((x) => tiny.slice(0, 3).some((y) => y.text === x)).length).toBe(2); // older repeats first, the last card only for the rest
+  });
+});
+describe("bingo without a game", async () => {
+  const b = await import("./bingo");
+  it("asks for the game instead of taking a time as the name", () => {
+    expect(b.parseRequest("Erstelle ein Gaming-Bingo für heute Abend").action).toBe("ask");
+    expect(b.parseRequest("Bingo für das Wochenende").action).toBe("ask");
+  });
+});

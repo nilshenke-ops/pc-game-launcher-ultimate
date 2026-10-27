@@ -23,7 +23,7 @@ export const MODE_LABEL: Record<BingoMode, string> = { classic: "Klassisch", spe
 /** The category a mode prefers (classic/random/custom/speed prefer none). */
 const MODE_CAT: Partial<Record<BingoMode, Category>> = { survival: "survival", challenge: "challenge", fun: "fun", exploration: "explore", boss: "combat", achievement: "progress", coop: "team" };
 
-export type TaskSource = "catalog" | "genre" | "ai" | "own";
+export type TaskSource = "catalog" | "genre" | "ai" | "own" | "web";
 export interface Task { text: string; level: Level; category: Category; team?: boolean; boss?: boolean; spoiler?: boolean; source: TaskSource; why?: string }
 
 export interface Cell extends BingoCell { level?: Level; category?: Category; source?: TaskSource; why?: string; doneBy?: string[]; doneAt?: string }
@@ -71,6 +71,12 @@ export interface BingoOptions {
   rules?: string;
   progress?: string;
   exclude?: string[];
+  /** Texts of the last cards of this game – used only when there are not enough other tasks (a new card differs). */
+  avoid?: string[];
+  /** Tasks of older cards – avoided too, but before the last card's tasks are repeated, these come first. */
+  avoidOld?: string[];
+  /** Tasks from the game's Steam achievements (only after the user agreed to look on the internet). */
+  web?: boolean;
   genre?: string | null;
 }
 
@@ -188,8 +194,10 @@ export function pickTasks(pool: Task[], own: Task[], o: BingoOptions, rnd: () =>
   const prefer = new Set<Category>([...o.categories, ...(MODE_CAT[o.mode] ? [MODE_CAT[o.mode]!] : [])]);
   const diff = o.mode === "challenge" ? harder(o.difficulty) : o.mode === "speed" ? easier(o.difficulty) : o.difficulty;
   const plan = levelPlan(diff, n - chosen.length);
-  // Boss bingo: boss tasks count as preferred everywhere.
-  const rank = (t: Task) => (prefer.has(t.category) || (o.mode === "boss" && t.boss) ? 0 : 1);
+  // Boss bingo: boss tasks count as preferred everywhere. Tasks of the last cards come last (only if nothing else is left).
+  const avoid = new Set((o.avoid ?? []).map(key));
+  const avoidOld = new Set((o.avoidOld ?? []).map(key));
+  const rank = (t: Task) => (avoid.has(key(t.text)) ? 4 : avoidOld.has(key(t.text)) ? 2 : 0) + (prefer.has(t.category) || (o.mode === "boss" && t.boss) ? 0 : 1);
   const byLevel = (l: number) => shuffle(rest.filter((t) => t.level === l), rnd).sort((a, b) => rank(a) - rank(b));
   const left: Task[][] = [byLevel(1), byLevel(2), byLevel(3), byLevel(4)];
   const short: number[] = [0, 0, 0, 0];
@@ -208,7 +216,31 @@ export function pickTasks(pool: Task[], own: Task[], o: BingoOptions, rnd: () =>
   });
   if (chosen.length < n) throw new NotEnoughTasks(n, chosen.length);
   if (prefer.size && !chosen.some((t) => prefer.has(t.category))) notes.push("Für die gewählte Art gab es keine passenden Aufgaben – andere wurden genommen.");
+  const again = chosen.slice(0, n).filter((t) => avoid.has(key(t.text))).length;
+  if (again) notes.push(`${again} Aufgaben gab es schon in deinem letzten Bingo zu diesem Spiel – mehr verschiedene gibt es dafür nicht.`);
   return { tasks: chosen.slice(0, n), notes };
+}
+
+// ------------------------------------------------------------------------------------------ Steam achievements
+
+export interface WebAchievement { name: string; description: string; hidden: boolean; percent: number | null }
+
+/** Difficulty from the worldwide unlock rate: many players have it → easy, very few → very hard. */
+export function levelFromPercent(p: number | null): Level {
+  if (p == null) return 2;
+  return p >= 35 ? 1 : p >= 12 ? 2 : p >= 3 ? 3 : 4;
+}
+
+/** A game's achievements as tasks: name and description as Steam writes them, hidden ones only with spoilers. */
+export function webTasks(list: WebAchievement[]): Task[] {
+  return list.filter((a) => a.name.trim()).map((a) => {
+    const text = (a.description ? `${a.name}: ${a.description}` : a.hidden ? `Versteckter Erfolg „${a.name}“` : a.name).replace(/\s+/g, " ").trim();
+    const level = levelFromPercent(a.percent);
+    return {
+      text: text.length > 90 ? text.slice(0, 89) + "…" : text, level, category: (level >= 3 ? "challenge" : "progress") as Category, source: "web" as const, spoiler: a.hidden || undefined,
+      why: a.percent == null ? "Steam-Erfolg – wie viele ihn haben, ist nicht bekannt" : `${a.percent.toLocaleString("de-DE", { maximumFractionDigits: 1 })} % aller Steam-Spieler haben diesen Erfolg`,
+    };
+  });
 }
 
 /** Tasks on a board (shuffled), with the optional free centre (odd sizes only). */
@@ -380,8 +412,10 @@ export function parseRequest(text: string, ctx: { library?: string[]; previous?:
   if (hit) o.game = hit.name;
   else {
     const m = /\b(?:für|zu|in) ([\p{L}\d][\p{L}\d' :&.-]{1,40}?)(?=\s+(?:auf|mit|für|ohne|in|im|bei|und|als|,)\b|\s*$)/u.exec(s.trim()) ?? /\b([\p{L}\d][\p{L}\d' &.]{1,30})-bingo/u.exec(s);
-    const cand = m?.[1]?.trim().replace(/^(ein|eine|einen|das|die|der|mein|meine)\s+/, "");
-    if (cand && !/^(\d|zwei|drei|vier|spieler|leicht|mittel|schwer|anfänger|beliebiges|ein beliebiges spiel|meine spielebibliothek)/.test(cand) && !/spieler|personen|freund/.test(cand)) o.game = cand.replace(/\b\p{L}/gu, (c) => c.toUpperCase());
+    let cand = m?.[1]?.trim().replace(/^(ein|eine|einen|das|die|der|mein|meine)\s+/, "");
+    // "für Celeste leicht" / "für Fortnite 5x5": size and difficulty words at the end are not part of the name.
+    for (let i = 0; cand && i < 3; i++) cand = cand.replace(/\s+(?:auf\s+)?(?:sehr schwer|leicht|einfach|mittel|mittleres|normal|schwer|schwierig|gemischt|mix|extrem|bingo|[345]\s*(?:x|×|\*)\s*[345])$/u, "").trim();
+    if (cand && !/^(\d|zwei|drei|vier|spieler|leicht|mittel|schwer|anfänger|beliebiges|ein beliebiges spiel|meine spielebibliothek|heute|morgen|gleich|jetzt|später|nachher|abend|den abend|wochenende|das wochenende|am wochenende|zwischendurch)/.test(cand) && !/spieler|personen|freund/.test(cand)) o.game = cand.replace(/\b\p{L}/gu, (c) => c.toUpperCase());
   }
   const randomGame = /beliebig|zufällig(es)? spiel|aus meiner (spiele)?bibliothek/.test(s);
   if (/zufällig/.test(s) && !randomGame) o.mode ??= "random";

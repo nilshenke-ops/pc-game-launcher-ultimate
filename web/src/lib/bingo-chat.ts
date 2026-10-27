@@ -6,12 +6,19 @@ import { client } from "./rpc";
 import { getEntry } from "./journal";
 import type { LibraryItem } from "./types";
 import type { AssistantReply } from "./assistant";
-import { DIFFICULTY_LABEL, MODE_LABEL, parseRequest, resolveOptions, type Card } from "./bingo";
+import { DIFFICULTY_LABEL, MODE_LABEL, parseRequest, poolFor, resolveOptions, type Card } from "./bingo";
 import { createCard } from "./bingo-make";
 
 export const BINGO_EXAMPLES = () => [t("Erstelle ein 4×4-Bingo für Minecraft auf mittel"), t("Mach mir ein 3×3-Bingo für Elden Ring auf leicht"), t("Erstelle ein 5×5-Bingo für PEAK auf gemischt")];
 
-export async function bingoFromChat(question: string, previousId: string | null, ai: { online: boolean; provider: string | null }): Promise<{ reply: AssistantReply; bingoId?: string }> {
+/** The user asked for the internet in the sentence itself ("… mit Steam-Erfolgen", "… aus dem Internet"). */
+export const saysInternet = (q: string) => /internet|steam.?erfolg|achievements? von steam|online (suchen|nachsehen)|aus dem netz/i.test(q);
+
+/**
+ * `ai.web`: true = the user agreed to look on the internet (Steam achievements), false = declined, undefined = not
+ * asked yet – then a game without own catalog tasks (and without an AI on the PC) gets the question first.
+ */
+export async function bingoFromChat(question: string, previousId: string | null, ai: { online: boolean; provider: string | null; web?: boolean }): Promise<{ reply: AssistantReply; bingoId?: string }> {
   const previous = previousId ? getEntry<Card>(previousId)?.data ?? null : null;
   const lib = await client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }));
   const games = (lib.items ?? []).filter((i) => i.kind === "game").map((i) => i.name);
@@ -20,6 +27,23 @@ export async function bingoFromChat(question: string, previousId: string | null,
   if (r.action === "ask") return { reply: reply(t(r.question ?? "Für welches Spiel soll das Bingo sein?"), { suggestions: BINGO_EXAMPLES() }) };
   const o = resolveOptions(r, previous, () => (games.length ? games[Math.floor(Math.random() * games.length)] : null));
   if ("error" in o) return { reply: reply(t(o.error), { suggestions: BINGO_EXAMPLES() }) };
+  const inCatalog = poolFor(o.game, o.genre).from === "catalog";
+  if (o.taskSource !== "own" && !inCatalog) {
+    if (ai.web === true || saysInternet(question)) {
+      if (!ai.online) return { reply: reply(t("Für Steam-Erfolge brauche ich die Verbindung zu deinem PC – gerade ist er nicht erreichbar.")) };
+      o.web = true;
+    } else if (ai.web === undefined && ai.online) {
+      // Ask before going on the internet.
+      return {
+        reply: reply(t("Für „{g}“ habe ich keine eigenen Aufgaben. Soll ich im Internet nachsehen? Dein PC lädt dafür die Steam-Erfolge des Spiels (store.steampowered.com, steamcommunity.com) – daraus werden echte Aufgaben, und die Schwierigkeit kommt davon, wie viele Spieler sie geschafft haben.", { g: o.game }), {
+          actions: [
+            { kind: "bingoChoice", label: t("Ja, im Internet nachsehen"), params: { question, web: true } },
+            { kind: "bingoChoice", label: ai.provider ? t("Nein, die KI schreibt sie") : t("Nein, allgemeine Aufgaben"), params: { question, web: false } },
+          ],
+        }),
+      };
+    }
+  }
   try {
     const made = await createCard(o, { useAi: true, aiAvailable: ai.online && !!ai.provider });
     const c = made.card;
@@ -37,6 +61,9 @@ export async function bingoFromChat(question: string, previousId: string | null,
   } catch (e) {
     // The AI failed: say why and offer the catalog – nothing is swapped in silently.
     const msg = (e as Error).message;
+    if (o.web) return { reply: reply(t("Bei Steam hat das nicht geklappt: {e}", { e: msg }), { actions: [{ kind: "bingoChoice", label: t("Mit allgemeinen Aufgaben erstellen"), params: { question, web: false } }] }) };
+    // The AI failed: the internet (real achievements) or the general tasks – the user chooses, nothing is swapped in silently.
+    if (!inCatalog && ai.online) return { reply: reply(t("Die KI konnte das Bingo nicht schreiben: {e}", { e: msg }), { actions: [{ kind: "bingoChoice", label: t("Im Internet nachsehen (Steam-Erfolge)"), params: { question, web: true } }, { kind: "navigate", label: t("Mit Katalog-Aufgaben erstellen"), path: "/play?tab=bingo&area=make" }] }) };
     return { reply: reply(t("Das Bingo konnte nicht erstellt werden: {e}", { e: msg }), { suggestions: BINGO_EXAMPLES(), actions: [{ kind: "navigate", label: t("Mit Katalog-Aufgaben erstellen"), path: "/play?tab=bingo&area=make" }] }) };
   }
 }

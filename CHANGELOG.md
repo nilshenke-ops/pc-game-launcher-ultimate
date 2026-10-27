@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.56.0 – 2026-10-27
+### Neu
+- Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“
+- Bingo-Seite: Häkchen „Echte Aufgaben aus dem Internet laden (Steam-Erfolge)“ für Spiele ohne Katalog
+- Kein Bingo gleicht dem letzten: Aufgaben der letzten Karte eines Spiels kommen nur noch, wenn es keine anderen mehr gibt (dann steht es auf der Karte), ältere Karten werden vorher wiederholt
+- JARVIS spricht: Antworten werden mit der Stimme des Geräts vorgelesen (abschaltbar, „Stopp“ unterbricht); Spracheingabe wie bisher über das Mikrofon
+- JARVIS-Gedächtnis: „Merk dir, dass …“, „Was weißt du über …?“, „Vergiss …“ (nur nach Rückfrage) – gespeichert als Markdown-Seite „JARVIS-Gedächtnis“ im eigenen Gaming-Wiki
+- JARVIS-Protokoll: was JARVIS erledigt hat, als Wiki-Seite; „Was hast du heute gemacht?“
+- JARVIS-HUD: Kugel zeigt Zuhören, Arbeiten, Sprechen; PC-Verbindung, laufendes Spiel, Profil, Erinnerungen und Fähigkeiten auf einen Blick
+### Behoben
+- Bingo: „3x3 Bingo für Celeste leicht“ nahm „Celeste leicht“ als Spielnamen; „Bingo für heute Abend“ nahm „Heute Abend“ als Spiel – jetzt wird nach dem Spiel gefragt
+- Bingo: Kann die eingestellte KI nicht antworten, bietet JARVIS jetzt Internet oder Katalog an, statt nur einen Fehler zu zeigen
+
 ## 2.55.0 – 2026-10-27
 ### Neu
 - JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste

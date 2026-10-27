@@ -224,6 +224,8 @@ public static class RpcApi
             return await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), jarvis: jarvis, jarvisRequested: wants);
         });
         rpc.Register("assistant.bingo", async ctx => await s.Assistant.BingoTasksAsync(ctx.Str("game", 100), ctx.Int("size", 4, 3, 5)));
+        // Achievements of a Steam game as bingo tasks – only after the user agreed to look on the internet.
+        rpc.Register("bingo.webTasks", async ctx => await s.SteamAchievements.TasksAsync(ctx.Str("game", 100)));
         rpc.Register("assistant.bingoPlan", async ctx => await s.Assistant.PlanBingoAsync(ctx.Bind<Assistant.BingoRequest>()));
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
         rpc.Register("assistant.ollamaModels", async ctx => await s.Assistant.OllamaModelsAsync());

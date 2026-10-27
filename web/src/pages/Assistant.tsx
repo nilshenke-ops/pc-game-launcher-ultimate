@@ -7,6 +7,8 @@ import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, confirmDialog, Field, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { CHAT_KEY, emptyChat, formatCost, jarvisChips, offlineExamples, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
 import { openJarvis, setJarvisEnabled, useJarvis } from "../lib/jarvis-session";
+import { speak, stopSpeaking } from "../lib/jarvis-voice";
+import { JarvisHud } from "../components/jarvis-hud";
 import { getPrefs, setPrefs } from "../lib/prefs";
 import { navItems } from "../lib/nav";
 import type { SetupOp } from "../lib/assistant-setup";
@@ -178,7 +180,7 @@ function ChatBingo({ id }: { id: string }) {
   return <div className="as-bingo"><b className="small">{e.data.title}</b><BingoBoardLazy e={e} /></div>;
 }
 
-function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void }) {
+function Turn({ turn, onSuggest, onBingo }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
   // Settings before a set-up change, to undo it with one tap.
@@ -187,6 +189,14 @@ function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest
   const r = turn.reply!;
   const run = async (a: AssistantAction, i: number) => {
     if (a.kind === "navigate" && a.path) { nav(a.path); return; }
+    // Answer to "Soll ich im Internet nachsehen?" for a bingo.
+    if (a.kind === "bingoChoice" && a.params) { setDone({ [i]: true }); onBingo(String(a.params.question ?? ""), a.params.web === true, a.label); return; }
+    if (a.kind === "jarvisForget" && a.params) {
+      const { forgetNow } = await import("../lib/jarvis-chat");
+      setDone({ [i]: true });
+      toast(forgetNow(String(a.params.about ?? "")), "success");
+      return;
+    }
     if (a.kind === "setup" && a.params) {
       const o = a.params as unknown as SetupOp;
       const { applySetup } = await import("../lib/assistant-setup");
@@ -251,19 +261,20 @@ export default function Assistant() {
 
   useEffect(() => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(chat)); } catch { /* private mode */ } end.current?.scrollIntoView({ block: "end" }); }, [chat]);
 
-  const ask = async (q: string) => {
+  const ask = async (q: string, extra: { bingoWeb?: boolean; shown?: string } = {}) => {
     const question = q.trim();
     if (!question || busy) return;
     setText("");
-    setChat((c) => ({ ...c, turns: [...c.turns, { role: "user", text: question }] }));
+    setChat((c) => ({ ...c, turns: [...c.turns, { role: "user", text: extra.shown ?? question }] }));
     setBusy(true);
     try {
       if (jv.enabled) {
         // JARVIS: understands the request, runs named gaming actions and website changes directly, reports the real result.
         const { jarvisAsk } = await import("../lib/jarvis-chat");
         const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null });
+        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb });
         setChat((c) => ({ conversationId: r.conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply: r.reply, bingoId: r.bingoId, undo: r.undo }] }));
+        speak(r.reply.text);
         if (r.navigate) navTo(r.navigate);
         return;
       }
@@ -276,7 +287,7 @@ export default function Assistant() {
       const { isBingoRequest } = await import("../lib/bingo");
       if (isBingoRequest(question, !!previousBingo)) {
         const { bingoFromChat } = await import("../lib/bingo-chat");
-        const b = await bingoFromChat(question, previousBingo, { online, provider: online ? st.data?.bingoProvider ?? null : null });
+        const b = await bingoFromChat(question, previousBingo, { online, provider: online ? st.data?.bingoProvider ?? null : null, web: extra.bingoWeb });
         setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: b.reply, bingoId: b.bingoId }] }));
         return;
       }
@@ -307,6 +318,7 @@ export default function Assistant() {
 
   const toggleMic = () => {
     if (!SpeechCtor) return;
+    stopSpeaking();
     if (listening) { rec.current?.stop(); return; }
     const r = new SpeechCtor();
     r.lang = document.documentElement.lang === "en" ? "en-US" : "de-DE";
@@ -330,6 +342,7 @@ export default function Assistant() {
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />
+      {jv.enabled && <JarvisHud busy={busy} listening={listening} active={jv.active} online={online} onPick={(x) => setText(x)} />}
       <Card className="jv-toggle">
         <Switch checked={jv.enabled} onChange={setJarvisEnabled} label={t("JARVIS führt Aufträge direkt aus")}
           hint={jv.enabled ? t("Was du ausdrücklich nennst, wird sofort erledigt und geprüft (Spiel starten, Profil, Sound, Website ordnen). Löschen, Energie und Unklares nur nach Rückfrage. Endet, wenn du ausschaltest oder die Website schließt – laufende Spiele bleiben offen.") : t("Aus: Ich schlage Aktionen nur als Knopf vor, ausgeführt wird erst nach deinem Tippen.")} />
@@ -345,7 +358,7 @@ export default function Assistant() {
               <div className="chips">{(jv.enabled ? jarvisChips() : online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
-          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={ask} />)}
+          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} />)}
           {busy && <div className="as-turn bot"><Bot size={18} aria-hidden /><div className="as-bubble as-typing" aria-label={t("Antwort wird erstellt")}><i /><i /><i /></div></div>}
           <div ref={end} />
         </div>

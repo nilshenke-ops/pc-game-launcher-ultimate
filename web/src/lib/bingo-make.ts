@@ -5,8 +5,8 @@ import { client } from "./rpc";
 import { getEntry, listKind, newId, saveEntry } from "./journal";
 import { norm } from "./journal-logic";
 import {
-  cardTitle, levelPlan, pickTasks, poolFor, sanitizeAiTasks, toCells, NotEnoughTasks,
-  type BingoOptions, type Card, type Category, type Level, type Task,
+  cardTitle, levelPlan, pickTasks, poolFor, sanitizeAiTasks, toCells, webTasks, NotEnoughTasks,
+  type BingoOptions, type Card, type Category, type Level, type Task, type WebAchievement,
 } from "./bingo";
 
 export interface OwnTask { title: string; game?: { gameId?: string | null; gameName?: string | null }; allGames?: boolean; level?: string; category?: string; description?: string; favorite?: boolean; archived?: boolean }
@@ -20,6 +20,14 @@ export function ownTasksFor(game: string): Task[] {
   }));
 }
 
+/** Task texts of the last card of this game and of the two before it. */
+export function recentTasks(game: string): { last: string[]; older: string[] } {
+  const g = norm(game);
+  const cards = listKind<Card>("bingo").filter((e) => norm(e.data.gameName ?? "") === g).sort((a, b) => (b.data.createdAt ?? "").localeCompare(a.data.createdAt ?? "") || b.updatedAt - a.updatedAt).slice(0, 3);
+  const texts = (c?: (typeof cards)[number]) => (c ? c.data.cells.filter((x) => !x.free).map((x) => x.text) : []);
+  return { last: texts(cards[0]), older: [...texts(cards[1]), ...texts(cards[2])] };
+}
+
 let running: Promise<unknown> | null = null;
 export const isCreating = () => running !== null;
 
@@ -30,19 +38,29 @@ export interface Made { id: string; card: Card }
  * the card says so ("Katalog" / "Allgemeine Aufgaben"). AI errors are reported as such – the catalog is offered,
  * never swapped in silently.
  */
-export async function createCard(o: BingoOptions, opts: { useAi: boolean; aiAvailable: boolean; title?: string; players?: string[] }): Promise<Made> {
+export async function createCard(input: BingoOptions, opts: { useAi: boolean; aiAvailable: boolean; title?: string; players?: string[] }): Promise<Made> {
   if (running) throw new Error("Es wird schon ein Bingo erstellt – einen Moment.");
   const p = (async () => {
+    let o = input;
     const own = o.taskSource === "auto" ? [] : ownTasksFor(o.game);
     const n = o.size * o.size - (o.freeCenter && o.size % 2 === 1 ? 1 : 0);
     let pool: Task[];
     let provider: string;
     const notes: string[] = [];
     const base = poolFor(o.game, o.genre);
-    if (o.taskSource !== "own" && opts.useAi && opts.aiAvailable) {
+    // A new card should not repeat the last ones: their tasks are used only when nothing else is left.
+    const recent = recentTasks(o.game);
+    o = { ...o, avoid: [...(o.avoid ?? []), ...recent.last], avoidOld: recent.older };
+    if (o.taskSource !== "own" && o.web) {
+      const r = await client.call<{ name: string; appId: number; achievements: WebAchievement[] }>("bingo.webTasks", { game: o.game });
+      pool = webTasks(r.achievements);
+      provider = `Steam-Erfolge (${r.name})`;
+      if (r.name.toLowerCase() !== o.game.toLowerCase()) notes.push(`Bei Steam gefunden als „${r.name}“.`);
+      if (!o.spoilers && r.achievements.some((a) => a.hidden)) notes.push("Versteckte Erfolge sind nicht dabei (Spoiler) – mit „mit Spoiler“ kommen sie dazu.");
+    } else if (o.taskSource !== "own" && opts.useAi && opts.aiAvailable) {
       const levels = levelPlan(o.difficulty === "mixed" ? "mixed" : o.difficulty, n - (o.taskSource === "mixed" ? Math.floor(n / 2) : 0));
       const r = await client.call<{ known: boolean; tasks: unknown[]; provider: string; model?: string | null; costUsd?: number }>("assistant.bingoPlan", {
-        game: o.game, size: o.size, levels, mode: o.mode, players: o.players, categories: o.categories, exclude: o.exclude?.slice(-60), rules: o.rules, progress: o.progress, spoilers: !!o.spoilers,
+        game: o.game, size: o.size, levels, mode: o.mode, players: o.players, categories: o.categories, exclude: [...(o.exclude ?? []), ...(o.avoid ?? []), ...(o.avoidOld ?? [])].slice(-60), rules: o.rules, progress: o.progress, spoilers: !!o.spoilers,
       });
       pool = sanitizeAiTasks(r, o.game);
       provider = r.model ? `${r.provider} (${r.model})` : r.provider;

@@ -54,3 +54,22 @@ describe("jarvis website requests", () => {
     expect(r.unknown).toBe(1); // Celeste: nothing known; Hades: known "no"
   });
 });
+
+describe("jarvis memory and voice", async () => {
+  const { memoryIntent } = await import("./jarvis-memory");
+  const { speakable } = await import("./jarvis-voice");
+  it("understands remember, recall, forget and the log", () => {
+    expect(memoryIntent("Merk dir, dass ich Minecraft mit Shadern spiele")).toEqual({ kind: "remember", fact: "Ich spiele Minecraft mit Shadern" });
+    expect(memoryIntent("Merk dir, dass mein Lieblingsspiel Celeste ist")).toEqual({ kind: "remember", fact: "Mein Lieblingsspiel ist Celeste" });
+    expect(memoryIntent("Merke dir: Hollow Knight nur mit Controller")).toEqual({ kind: "remember", fact: "Hollow Knight nur mit Controller" });
+    expect(memoryIntent("Was weißt du über Minecraft?")).toEqual({ kind: "recall", about: "Minecraft" });
+    expect(memoryIntent("Was hast du dir gemerkt?")).toEqual({ kind: "recall", about: null });
+    expect(memoryIntent("Vergiss Minecraft")).toEqual({ kind: "forget", about: "Minecraft" });
+    expect(memoryIntent("Was hast du heute gemacht?")).toEqual({ kind: "log" });
+    expect(memoryIntent("Starte Minecraft")).toBeNull();
+  });
+  it("reads answers without symbols and not too long", () => {
+    expect(speakable("1. ✓ Minecraft gestartet – läuft.\n\n2. ✓ Profil aktiv.")).toBe("1: Minecraft gestartet – läuft. 2: Profil aktiv.");
+    expect(speakable("Satz eins ist hier. ".repeat(40)).length).toBeLessThanOrEqual(420);
+  });
+});
