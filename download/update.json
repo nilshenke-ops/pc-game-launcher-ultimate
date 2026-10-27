@@ -1,34 +1,33 @@
 {
-  "version": "2.55.0",
+  "version": "2.56.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.55.0/PCGameLauncherCompanion.exe",
-  "size": 88163033,
-  "sha256": "355c262d475ae800e4dcafd608f8f5a3c8c211d36e5377f81abf0bdeedc2e62b",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.56.0/PCGameLauncherCompanion.exe",
+  "size": 88130093,
+  "sha256": "8c74283c4b7e2210c2424908985688ec0dc0565cb81d0b674951116c255a46d3",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.55.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.55.0/PCGameLauncherCompanion-2.55.0-win-x64.zip",
-    "size": 82426410,
-    "sha256": "bd589d617c25e229f865f5d7c7c560d2ffea868446f34be4beced024aa51c669"
+    "fileName": "PCGameLauncherCompanion-2.56.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.56.0/PCGameLauncherCompanion-2.56.0-win-x64.zip",
+    "size": 82390708,
+    "sha256": "1af9a0277fb572da2a1e652d1ca71be2bba0b6e2c86625845386e2e020b71570"
   },
-  "notes": "JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste · Ergebnis wird geprüft: ein gestartetes Spiel muss vom PC als laufend erkannt werden, ein Profil als aktiv – sonst sagt JARVIS ehrlich, was fehlt · Mehrere Schritte in einem Satz („Öffne Discord und starte anschließend mein Spiel“); schlägt ein Schritt fehl, hört JARVIS auf und sagt es",
+  "notes": "Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“ · Bingo-Seite: Häkchen „Echte Aufgaben aus dem Internet laden (Steam-Erfolge)“ für Spiele ohne Katalog · Kein Bingo gleicht dem letzten: Aufgaben der letzten Karte eines Spiels kommen nur noch, wenn es keine anderen mehr gibt (dann steht es auf der Karte), ältere Karten werden vorher wiederholt",
   "changes": {
     "neu": [
-      "JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste",
-      "Ergebnis wird geprüft: ein gestartetes Spiel muss vom PC als laufend erkannt werden, ein Profil als aktiv – sonst sagt JARVIS ehrlich, was fehlt",
-      "Mehrere Schritte in einem Satz („Öffne Discord und starte anschließend mein Spiel“); schlägt ein Schritt fehl, hört JARVIS auf und sagt es",
-      "Website auf Zuruf ändern: neue Startseite für ein Spiel, Startseite übersichtlich ordnen, Favoriten nach oben, Spieleübersicht sortieren (bleibt gespeichert), Kategorie für Lieblingsspiele, Profil für das nächste Spiel, Startseite zum Profil – mit „Rückgängig“",
-      "„Warum ruckelt mein Spiel?“: misst jetzt Prozessor, Arbeitsspeicher, Grafikkarte, Grafikspeicher, Temperaturen und Laufwerke und nennt nur echte Engstellen (bei Lag auch das Netzwerk)",
-      "„Welche Spiele sind zu zweit spielbar?“ aus deinen Kategorien und deinem Faktencheck – Unbekanntes wird gezählt, nicht geraten",
-      "„Starte mein Spiel“ nimmt das zuletzt gespielte Spiel und sagt, welches",
-      "Nur Gaming: andere Themen lehnt JARVIS freundlich ab; Code-Änderungen macht er nie zur Laufzeit",
-      "JARVIS-Sitzung: gilt nur, solange die Website offen und JARVIS eingeschaltet ist (spätestens nach 15 Minuten ohne Auftrag aus); ausgeschaltet gibt es wie bisher nur Knöpfe"
+      "Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“",
+      "Bingo-Seite: Häkchen „Echte Aufgaben aus dem Internet laden (Steam-Erfolge)“ für Spiele ohne Katalog",
+      "Kein Bingo gleicht dem letzten: Aufgaben der letzten Karte eines Spiels kommen nur noch, wenn es keine anderen mehr gibt (dann steht es auf der Karte), ältere Karten werden vorher wiederholt",
+      "JARVIS spricht: Antworten werden mit der Stimme des Geräts vorgelesen (abschaltbar, „Stopp“ unterbricht); Spracheingabe wie bisher über das Mikrofon",
+      "JARVIS-Gedächtnis: „Merk dir, dass …“, „Was weißt du über …?“, „Vergiss …“ (nur nach Rückfrage) – gespeichert als Markdown-Seite „JARVIS-Gedächtnis“ im eigenen Gaming-Wiki",
+      "JARVIS-Protokoll: was JARVIS erledigt hat, als Wiki-Seite; „Was hast du heute gemacht?“",
+      "JARVIS-HUD: Kugel zeigt Zuhören, Arbeiten, Sprechen; PC-Verbindung, laufendes Spiel, Profil, Erinnerungen und Fähigkeiten auf einen Blick"
     ],
-    "verbessert": [
-      "Spieleübersicht merkt sich die Sortierung"
-    ],
-    "behoben": []
+    "verbessert": [],
+    "behoben": [
+      "Bingo: „3x3 Bingo für Celeste leicht“ nahm „Celeste leicht“ als Spielnamen; „Bingo für heute Abend“ nahm „Heute Abend“ als Spiel – jetzt wird nach dem Spiel gefragt",
+      "Bingo: Kann die eingestellte KI nicht antworten, bietet JARVIS jetzt Internet oder Katalog an, statt nur einen Fehler zu zeigen"
+    ]
   },
-  "signature": "vXnrJifiLXPI7jHJyWEUvjgPjwTlGFVeR5gAzunRVH/WbIWdw3aK2lG/qNSz8kECd2aUtV1nJk7FWXWOqfRD0A=="
+  "signature": "420g+Nurx1vTY/1e0KAQDtrr940QYg6speUJdk5Q2WUPC7k/mRfcYcw5zpUAVRxE7RC1ooL1yHxcw6NexA1zdA=="
 }

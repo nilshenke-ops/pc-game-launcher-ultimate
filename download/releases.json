@@ -1,5 +1,38 @@
 [
   {
+    "version": "2.56.0",
+    "date": "2026-10-27",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.56.0/PCGameLauncherCompanion.exe",
+    "size": 88130093,
+    "sha256": "8c74283c4b7e2210c2424908985688ec0dc0565cb81d0b674951116c255a46d3",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.56.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.56.0/PCGameLauncherCompanion-2.56.0-win-x64.zip",
+      "size": 82390708,
+      "sha256": "1af9a0277fb572da2a1e652d1ca71be2bba0b6e2c86625845386e2e020b71570"
+    },
+    "notes": "Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“ · Bingo-Seite: Häkchen „Echte Aufgaben aus dem Internet laden (Steam-Erfolge)“ für Spiele ohne Katalog · Kein Bingo gleicht dem letzten: Aufgaben der letzten Karte eines Spiels kommen nur noch, wenn es keine anderen mehr gibt (dann steht es auf der Karte), ältere Karten werden vorher wiederholt",
+    "changes": {
+      "neu": [
+        "Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“",
+        "Bingo-Seite: Häkchen „Echte Aufgaben aus dem Internet laden (Steam-Erfolge)“ für Spiele ohne Katalog",
+        "Kein Bingo gleicht dem letzten: Aufgaben der letzten Karte eines Spiels kommen nur noch, wenn es keine anderen mehr gibt (dann steht es auf der Karte), ältere Karten werden vorher wiederholt",
+        "JARVIS spricht: Antworten werden mit der Stimme des Geräts vorgelesen (abschaltbar, „Stopp“ unterbricht); Spracheingabe wie bisher über das Mikrofon",
+        "JARVIS-Gedächtnis: „Merk dir, dass …“, „Was weißt du über …?“, „Vergiss …“ (nur nach Rückfrage) – gespeichert als Markdown-Seite „JARVIS-Gedächtnis“ im eigenen Gaming-Wiki",
+        "JARVIS-Protokoll: was JARVIS erledigt hat, als Wiki-Seite; „Was hast du heute gemacht?“",
+        "JARVIS-HUD: Kugel zeigt Zuhören, Arbeiten, Sprechen; PC-Verbindung, laufendes Spiel, Profil, Erinnerungen und Fähigkeiten auf einen Blick"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "Bingo: „3x3 Bingo für Celeste leicht“ nahm „Celeste leicht“ als Spielnamen; „Bingo für heute Abend“ nahm „Heute Abend“ als Spiel – jetzt wird nach dem Spiel gefragt",
+        "Bingo: Kann die eingestellte KI nicht antworten, bietet JARVIS jetzt Internet oder Katalog an, statt nur einen Fehler zu zeigen"
+      ]
+    },
+    "signature": "420g+Nurx1vTY/1e0KAQDtrr940QYg6speUJdk5Q2WUPC7k/mRfcYcw5zpUAVRxE7RC1ooL1yHxcw6NexA1zdA=="
+  },
+  {
     "version": "2.55.0",
     "date": "2026-10-27",
     "channel": "stable",
@@ -1461,30 +1494,5 @@
       ]
     },
     "signature": "Ftm+DV7r3bd60A4R7hv0tYz3uUZouWp7Qt4uzwHXWhROAESThfQwdr6i0bDauYbLYqM3G0J4c0BeumNmK4gDxw=="
-  },
-  {
-    "version": "2.10.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.10.0/PCGameLauncherCompanion.exe",
-    "size": 87322501,
-    "sha256": "d8113038d03813cd20a661d329a82149f33f427789df85d87a1db7ebed948510",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.10.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.10.0/PCGameLauncherCompanion-2.10.0-win-x64.zip",
-      "size": 81586875,
-      "sha256": "f08e743690211a1bffeb0214e59630a2b5f92cc4950bcce9c12348780ef6fd82"
-    },
-    "notes": "KI-Assistent richtet die App per Auftrag ein – auch ohne PC, 0 €, direkt auf dem Gerät: Design hell/dunkel, Farben, Hintergrund, Schriftgröße, Animationen, untere Leiste (hinzufügen, entfernen, farbig/schlicht; ist sie voll, fragt er, welchen Platz er ersetzen soll), Home-Widgets ein-/ausblenden, Bereiche im Menü ausblenden, Sprache, Profil-Designs · Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen",
-    "changes": {
-      "neu": [
-        "KI-Assistent richtet die App per Auftrag ein – auch ohne PC, 0 €, direkt auf dem Gerät: Design hell/dunkel, Farben, Hintergrund, Schriftgröße, Animationen, untere Leiste (hinzufügen, entfernen, farbig/schlicht; ist sie voll, fragt er, welchen Platz er ersetzen soll), Home-Widgets ein-/ausblenden, Bereiche im Menü ausblenden, Sprache, Profil-Designs",
-        "Jede Änderung erscheint als Knopf, wird erst beim Tippen übernommen und lässt sich mit „Rückgängig“ zurücknehmen"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "7dTDs65yD3/SfYiliGThlDXoyR5zx1f/klG5znN6lLsIrhquRZp4ajn11Hl0Obaxcl8b34axuc/YNF8XBmPVHg=="
   }
 ]
