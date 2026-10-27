@@ -1,31 +1,30 @@
 {
-  "version": "2.59.0",
+  "version": "2.60.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion.exe",
-  "size": 88143500,
-  "sha256": "cf9aae4470a25e3a58a22d376b06be1086038129983d3d7ee94677ed49fb78db",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.60.0/PCGameLauncherCompanion.exe",
+  "size": 88157230,
+  "sha256": "0b4df189aa234c6a7af3af35a92afef9dc662841e061f42b7c1aec89880f2f43",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.59.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion-2.59.0-win-x64.zip",
-    "size": 82404321,
-    "sha256": "3ba90d48000c44c1af66c554fa34961266ffc4b15bbb02cae17b6edabd7ab1a1"
+    "fileName": "PCGameLauncherCompanion-2.60.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.60.0/PCGameLauncherCompanion-2.60.0-win-x64.zip",
+    "size": 82416616,
+    "sha256": "f3f2141180c407726c68649e0068802ce4dffba48174ace2714dec35bcf42d4c"
   },
-  "notes": "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia · Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen · Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung",
+  "notes": "„Gerät koppeln“ prüft vorher, ob Handys den PC überhaupt erreichen dürfen (Windows-Firewall, Netzwerk als „öffentlich“ eingestuft) – mit dem Knopf „Für Handys im Heimnetz freigeben“ erledigt der PC das selbst (Windows fragt einmal nach Erlaubnis) · Nach dem Koppeln über die IP-Adresse prüft das Handy selbst, ob es den PC auch unter seinem festen Namen (z. B. …fritz.box) erreicht, und bietet „Jetzt umziehen“ an – danach bleibt die Verbindung, auch wenn der Router dem PC eine neue IP gibt · Hilfe unter dem QR-Code, falls sich die Seite am Handy nicht öffnet (Gast-WLAN, mobile Daten, VPN)",
   "changes": {
     "neu": [
-      "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia",
-      "Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen",
-      "Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung"
+      "„Gerät koppeln“ prüft vorher, ob Handys den PC überhaupt erreichen dürfen (Windows-Firewall, Netzwerk als „öffentlich“ eingestuft) – mit dem Knopf „Für Handys im Heimnetz freigeben“ erledigt der PC das selbst (Windows fragt einmal nach Erlaubnis)",
+      "Nach dem Koppeln über die IP-Adresse prüft das Handy selbst, ob es den PC auch unter seinem festen Namen (z. B. …fritz.box) erreicht, und bietet „Jetzt umziehen“ an – danach bleibt die Verbindung, auch wenn der Router dem PC eine neue IP gibt",
+      "Hilfe unter dem QR-Code, falls sich die Seite am Handy nicht öffnet (Gast-WLAN, mobile Daten, VPN)"
     ],
     "verbessert": [
-      "Mehr Abwechslung bei gleicher Schwierigkeit: deutlich größere Aufgaben-Sets je Spielart, Aufgaben mit wechselnden Zahlen („Besiege 3 / 5 / 10 Gegner“), echte Erfolge, KI- und eingebaute Aufgaben werden gemischt; die letzte Karte wird nicht wiederholt",
-      "Die Karte sagt, woraus sie besteht (z. B. „6 echte Steam-Erfolge, 3 Aufgaben von der KI“)"
+      "QR-Code: zuerst die Heimnetz-IP – die öffnet jedes Handy im selben Netz ohne extra App (auch Android, das „.local“-Namen oft nicht kennt); der feste Name wird danach automatisch angeboten",
+      "Adresswahl: der Netzwerkadapter mit Router zuerst (PC am Kabel, Handy im WLAN); Tailscale-, VPN-, virtuelle und 169.254-Adressen landen nie mehr im QR-Code",
+      "Diagnose zeigt die Firewall-Freigabe für Handys im Heimnetz"
     ],
-    "behoben": [
-      "„Minecraft“ wurde bei Steam als „Minecraft Dungeons“ gefunden (falsche Erfolge) – jetzt zählt nur dasselbe Spiel (Reihenname davor und Editionen wie „Special Edition“ sind erlaubt)"
-    ]
+    "behoben": []
   },
-  "signature": "5PMrIJYC0fNy5qnpjlJGZlIhsLeXi/5XP3R5X64nUzwsxH1z15Gyri/qaVZO7KNVMdTAptdl7VJQ2Gmz/ecsaA=="
+  "signature": "qpH1zDw2zWXw73WS1Cro2tyMrG1gIUKMYxfUkeV4s8U8ixspduL+WTbR6+rldIZrLfitOqoIEv1i9ULCutM4CQ=="
 }
