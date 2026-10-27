@@ -1,5 +1,41 @@
 [
   {
+    "version": "2.53.0",
+    "date": "2026-10-27",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion.exe",
+    "size": 88088602,
+    "sha256": "c6d6ec9ed80fe894de704890a124d90c1b8006b602ce9a1a7f60c3ecfe1eee71",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.53.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion-2.53.0-win-x64.zip",
+      "size": 82349246,
+      "sha256": "cd0528b8973cd69ff1a7f27b5714e26df5d8ba45eb5fbc3032f8cc3291100fce"
+    },
+    "notes": "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt · Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF · Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
+    "changes": {
+      "neu": [
+        "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt",
+        "Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF",
+        "Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
+        "Leistungsarchiv: gemessene CPU/GPU/RAM-Last aus Sitzungen übernehmen oder Messungen selbst eintragen (FPS, 1 % Low, Frametime, Temperaturen), zwei Messungen vergleichen, Verlauf je Wert, Verknüpfung mit dem Grafikvergleich",
+        "Mehrere eigene Startseiten: anlegen, umbenennen, löschen und per Tipp wechseln (Handy und großer Bildschirm getrennt)",
+        "Startseite als Link oder Datei teilen – nur die Widget-Anordnung, mit Vorschau vor dem Hinzufügen als neue Seite",
+        "Datenzentrum (Einstellungen → Backup): Bereiche wählen, als JSON-Datei, Tabelle (CSV) oder PDF sichern; Import mit Vorschau und eigener Wahl bei Unterschieden (neuere behalten, meine, aus der Datei, beide behalten)",
+        "Suche (Strg+K) findet auch ohne PC deine Sammlungen samt Text (Wiki, Bingos, Notizen …) und deine Startseiten",
+        "Wiki: „Links ohne Ziel“ in der Übersicht mit „Anlegen“"
+      ],
+      "verbessert": [
+        "Wiki: Umbenennen einer Seite behält den alten Titel als „Auch bekannt als“, Links darauf funktionieren weiter"
+      ],
+      "behoben": [
+        "Einstellungen auf dem Handy: lange Inhalte (z. B. der Datenordner) machten die Seite breiter als den Bildschirm"
+      ]
+    },
+    "signature": "FjRL3BNLrnwUdZ7+rY4YeGnL0RKRMOdcm4IMomdv9Uqy9VEJYD230l/m87xrdWkCqFFDD+yeN0wa+VcYQFGkiQ=="
+  },
+  {
     "version": "2.52.0",
     "date": "2026-10-27",
     "channel": "stable",
@@ -1450,36 +1486,5 @@
       "behoben": []
     },
     "signature": "EasnVjpfWnjWl3o8fWyE5dIkPoR4vyw5VRuA+jMVrrEQHImOWZVKvTB5WChQv79cshhuBspQjfkMPi/NIuKBYA=="
-  },
-  {
-    "version": "2.7.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.7.0/PCGameLauncherCompanion.exe",
-    "size": 87255349,
-    "sha256": "d76a6f28882c6e65ceb36e740af55ec65fbe4b524fc0f81e4bcbc4bb8f753505",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.7.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.7.0/PCGameLauncherCompanion-2.7.0-win-x64.zip",
-      "size": 81520052,
-      "sha256": "56e35bfad3f94c1d01a1331070a5f3ab52eb385722cc11ee813714f46457dd53"
-    },
-    "notes": "Deck (wie ein Stream Deck auf dem Handy): Raster großer, frei gestaltbarer Tasten – Spiel/Programm starten, Quick Action, Sound, alle Sounds stoppen, Profil wechseln, Medientasten (Play/Pause, Lauter, Leiser, Ton aus), Overlay, Aufnahme, Replay, Ordner und Seiten der App · Deck: Symbol, Emoji, Bild des Spiels oder eigenes Bild je Taste, Farben, Beschriftung; mehrere Decks und Seiten, Raster 2–8 × 2–10, Hoch- und Querformat (Spalten/Zeilen getauscht), Vollbild, Bildschirm anlassen, eigener Hintergrund, automatisch passendes Deck beim aktiven Gaming-Profil · Deck: „Aus meinen Sachen erstellen“ legt ein erstes Deck aus Favoriten, Programmen, Quick Actions, Sounds und Profilen an; laufende Spiele, spielende Sounds und das aktive Profil leuchten auf der Taste",
-    "changes": {
-      "neu": [
-        "Deck (wie ein Stream Deck auf dem Handy): Raster großer, frei gestaltbarer Tasten – Spiel/Programm starten, Quick Action, Sound, alle Sounds stoppen, Profil wechseln, Medientasten (Play/Pause, Lauter, Leiser, Ton aus), Overlay, Aufnahme, Replay, Ordner und Seiten der App",
-        "Deck: Symbol, Emoji, Bild des Spiels oder eigenes Bild je Taste, Farben, Beschriftung; mehrere Decks und Seiten, Raster 2–8 × 2–10, Hoch- und Querformat (Spalten/Zeilen getauscht), Vollbild, Bildschirm anlassen, eigener Hintergrund, automatisch passendes Deck beim aktiven Gaming-Profil",
-        "Deck: „Aus meinen Sachen erstellen“ legt ein erstes Deck aus Favoriten, Programmen, Quick Actions, Sounds und Profilen an; laufende Spiele, spielende Sounds und das aktive Profil leuchten auf der Taste",
-        "Deck wird auf dem PC gespeichert (alle Geräte gleich, im Backup); Tasten nutzen die vorhandenen Befehle mit den Rechten des Geräts; ohne PC gestaltbar",
-        "Home: neue Widgets Schnellstart, Uhr & Datum, Notizen, „Als Nächstes spielen“ (Backlog) und „Erste Schritte“; ohne PC zeigt Home nur, was ohne PC funktioniert, statt leerer Felder; „Anpassen“ geht jetzt auch ohne PC",
-        "Untere Leiste am Handy: neues schwebendes Design, bis zu 4 eigene Bereiche plus „Mehr“, bearbeiten durch langes Drücken oder „Mehr“ → „Leiste anpassen“; „Verbinden“ nur noch, solange kein PC gekoppelt ist"
-      ],
-      "verbessert": [
-        "Home zeigt den Offline-Hinweis nur noch einmal (vorher dreifach)"
-      ],
-      "behoben": []
-    },
-    "signature": "c5b6VLyzWOTn1z41kozehdCixHKigzFqxhQbOv7+H6GovhV/Qq/MXkAQp3KrdFBkUFCKBUzYoSQvujpcDKwtyw=="
   }
 ]

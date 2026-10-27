@@ -1,36 +1,36 @@
 {
-  "version": "2.52.0",
+  "version": "2.53.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.52.0/PCGameLauncherCompanion.exe",
-  "size": 88067051,
-  "sha256": "369920c00090e4179ad091e5a1cc3e605cc9ce1fd8c6755e98e7d6bb11ebe3da",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion.exe",
+  "size": 88088602,
+  "sha256": "c6d6ec9ed80fe894de704890a124d90c1b8006b602ce9a1a7f60c3ecfe1eee71",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.52.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.52.0/PCGameLauncherCompanion-2.52.0-win-x64.zip",
-    "size": 82327843,
-    "sha256": "63603684269e1ec3b9aff2f0034f68b1e1f58d6bf17ecac53fdca9d272838186"
+    "fileName": "PCGameLauncherCompanion-2.53.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion-2.53.0-win-x64.zip",
+    "size": 82349246,
+    "sha256": "cd0528b8973cd69ff1a7f27b5714e26df5d8ba45eb5fbc3032f8cc3291100fce"
   },
-  "notes": "Ultimate Gaming Bingo (Was spiele ich? → Bingo): per Satz („Erstelle ein 4×4-Bingo für Minecraft auf mittel“) oder Einstellungen – 3×3, 4×4, 5×5; Leicht, Mittel, Schwer, Sehr schwer, Gemischt; Spielmodi (Speed, Survival, Challenge, Fun, Exploration, Boss, Achievement, Co-op, Random, Custom – nur die, die zum Spiel passen); bevorzugte Aufgabenarten; Anfänger/Erfahrene; Spoiler an/aus; freie Mitte optional (standardmäßig aus); Zeitlimit; eigene Regeln; Spielfortschritt · Eingebauter Aufgabenkatalog, von Hand geschrieben für Minecraft, Elden Ring, PEAK, Terraria, Stardew Valley, Rocket League, Counter-Strike 2, Valorant, Fortnite, Lethal Company, Phasmophobia, Subnautica, Sea of Thieves, Baldur's Gate 3, Forza Horizon und EA SPORTS FC – plus allgemeine Sätze für Survival, Horror, Open World, Rennspiele, Shooter, Koop, Strategie und Sport; funktioniert ohne PC und ohne KI · Mit KI am PC (DeepSeek, Claude oder Ollama): spielspezifische Aufgaben als geprüftes JSON mit Schwierigkeit, Kategorie und Begründung; unbekannte Spiele werden ehrlich als „allgemein“ markiert",
+  "notes": "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt · Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF · Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
   "changes": {
     "neu": [
-      "Ultimate Gaming Bingo (Was spiele ich? → Bingo): per Satz („Erstelle ein 4×4-Bingo für Minecraft auf mittel“) oder Einstellungen – 3×3, 4×4, 5×5; Leicht, Mittel, Schwer, Sehr schwer, Gemischt; Spielmodi (Speed, Survival, Challenge, Fun, Exploration, Boss, Achievement, Co-op, Random, Custom – nur die, die zum Spiel passen); bevorzugte Aufgabenarten; Anfänger/Erfahrene; Spoiler an/aus; freie Mitte optional (standardmäßig aus); Zeitlimit; eigene Regeln; Spielfortschritt",
-      "Eingebauter Aufgabenkatalog, von Hand geschrieben für Minecraft, Elden Ring, PEAK, Terraria, Stardew Valley, Rocket League, Counter-Strike 2, Valorant, Fortnite, Lethal Company, Phasmophobia, Subnautica, Sea of Thieves, Baldur's Gate 3, Forza Horizon und EA SPORTS FC – plus allgemeine Sätze für Survival, Horror, Open World, Rennspiele, Shooter, Koop, Strategie und Sport; funktioniert ohne PC und ohne KI",
-      "Mit KI am PC (DeepSeek, Claude oder Ollama): spielspezifische Aufgaben als geprüftes JSON mit Schwierigkeit, Kategorie und Begründung; unbekannte Spiele werden ehrlich als „allgemein“ markiert",
-      "DeepSeek als Bingo-KI (Modell „deepseek-flash“ = DeepSeek-V4.1-Flash laut DeepSeek): Schlüssel nur am PC, verschlüsselt, nie im Backup; Monatsgrenze für Anfragen; JSON-Modus",
-      "Spielfeld: abhaken und zurücknehmen, Fortschritt in Prozent, erledigte/offene Aufgaben, Reihen, Spalten und Diagonalen, Bingo-Animation (abschaltbar, respektiert „weniger Bewegung“), Aufgabe ersetzen (mit Begründung der Schwierigkeit), neu mischen, zurücksetzen mit Bestätigung, neues Bingo ohne Wiederholung, Speed-Countdown",
-      "Mehrspieler: gemeinsame Karte (wer was erledigt hat) oder Wettbewerb (jeder hakt für sich ab, Rangliste); Abgleich in Echtzeit über deinen PC für alle gekoppelten Geräte",
-      "Meine Bingos: Status, Fortschritt, Bewertung, Notiz, Favoriten, Suche, Filter nach Spiel/Schwierigkeit/Status, Sortierung, kopieren, als Vorlage, löschen, Link teilen, als Bild, als Datei",
-      "Eigene Aufgaben je Spiel oder für alle Spiele (Schwierigkeit, Kategorie, Beschreibung, Favorit); beim Erstellen wählbar: KI/Katalog, gemischt oder nur eigene",
-      "KI-Assistent: Bingos direkt im Chat erstellen und spielen, „Mach das vorherige Bingo schwieriger“, „ohne Wiederholung“, Rückfrage wenn das Spiel fehlt – auch ohne PC",
-      "Bingo als Home-Widget und im PC-Overlay: abhaken, ohne die App zu öffnen"
+      "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt",
+      "Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF",
+      "Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
+      "Leistungsarchiv: gemessene CPU/GPU/RAM-Last aus Sitzungen übernehmen oder Messungen selbst eintragen (FPS, 1 % Low, Frametime, Temperaturen), zwei Messungen vergleichen, Verlauf je Wert, Verknüpfung mit dem Grafikvergleich",
+      "Mehrere eigene Startseiten: anlegen, umbenennen, löschen und per Tipp wechseln (Handy und großer Bildschirm getrennt)",
+      "Startseite als Link oder Datei teilen – nur die Widget-Anordnung, mit Vorschau vor dem Hinzufügen als neue Seite",
+      "Datenzentrum (Einstellungen → Backup): Bereiche wählen, als JSON-Datei, Tabelle (CSV) oder PDF sichern; Import mit Vorschau und eigener Wahl bei Unterschieden (neuere behalten, meine, aus der Datei, beide behalten)",
+      "Suche (Strg+K) findet auch ohne PC deine Sammlungen samt Text (Wiki, Bingos, Notizen …) und deine Startseiten",
+      "Wiki: „Links ohne Ziel“ in der Übersicht mit „Anlegen“"
     ],
-    "verbessert": [],
+    "verbessert": [
+      "Wiki: Umbenennen einer Seite behält den alten Titel als „Auch bekannt als“, Links darauf funktionieren weiter"
+    ],
     "behoben": [
-      "Sammlungen/Journal: Eine Änderung direkt vor dem Schließen oder Neuladen der Seite konnte verloren gehen (Speichern wurde vom Browser abgebrochen). Jetzt wird erst nach abgeschlossenem Speichern bestätigt und eine Sicherheitskopie beim nächsten Start nachgetragen",
-      "Sammlungen/Journal: Während eines laufenden Abgleichs mit dem PC konnte eine gleichzeitig gemachte neuere Änderung im Browser von der älteren überschrieben werden"
+      "Einstellungen auf dem Handy: lange Inhalte (z. B. der Datenordner) machten die Seite breiter als den Bildschirm"
     ]
   },
-  "signature": "Sm781Vpp+a65xbxqRvRHCqDDjtV3/iXxOpxfLa1Um1ufdo+caA1uX3t368mkjOBsEGldqA7Tv2tsunoNRnMV0Q=="
+  "signature": "FjRL3BNLrnwUdZ7+rY4YeGnL0RKRMOdcm4IMomdv9Uqy9VEJYD230l/m87xrdWkCqFFDD+yeN0wa+VcYQFGkiQ=="
 }
