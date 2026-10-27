@@ -1,28 +1,26 @@
 {
-  "version": "2.61.0",
+  "version": "2.62.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.61.0/PCGameLauncherCompanion.exe",
-  "size": 88159509,
-  "sha256": "276f3396d39e3cec607f769221c197beaf33745cab16038338fcfa48ac002462",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.62.0/PCGameLauncherCompanion.exe",
+  "size": 88160637,
+  "sha256": "a84ef3efbdc600c3d4190c797df09edf2729d31616bb0db8b05107b7d0f1a3b5",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.61.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.61.0/PCGameLauncherCompanion-2.61.0-win-x64.zip",
-    "size": 82418726,
-    "sha256": "085b445ce95f78fb860120f3a5fa52ef1bd203a3a31df85891e98ef63c5a017c"
+    "fileName": "PCGameLauncherCompanion-2.62.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.62.0/PCGameLauncherCompanion-2.62.0-win-x64.zip",
+    "size": 82420050,
+    "sha256": "e6947dce628b83869d52a012f8f84db8a37de80345a8e2f95b231bf84d1e84ca"
   },
-  "notes": "Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar · Dasselbe am Handy unter „Mehr“ → „Bearbeiten“ · Kategorien in der Seitenleiste lassen sich einklappen (mit Anzahl), „Aufräumen (Vorschlag)“ und „Alle anzeigen“ mit einem Klick",
+  "notes": "Reiter auf den Seiten ordnen (Journal, Was spiele ich?, Welten, Builds, Freunde, Medien, Spiele-Infos, Kreativ-Studio, Auswertungen): Stift neben den Reitern, „−“ legt einen Reiter unter „Weitere“, „+“ holt ihn zurück – gelöscht wird nichts, „Weitere“ klappt die Reiter auf, Links auf einen Reiter funktionieren weiter · Alle Seiten mit Reitern nutzen jetzt denselben Baustein – gleiches Aussehen und gleiche Bedienung; die Auswahl wird mit dem Design gespeichert und mit dem PC abgeglichen",
   "changes": {
     "neu": [
-      "Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar",
-      "Dasselbe am Handy unter „Mehr“ → „Bearbeiten“",
-      "Kategorien in der Seitenleiste lassen sich einklappen (mit Anzahl), „Aufräumen (Vorschlag)“ und „Alle anzeigen“ mit einem Klick"
+      "Reiter auf den Seiten ordnen (Journal, Was spiele ich?, Welten, Builds, Freunde, Medien, Spiele-Infos, Kreativ-Studio, Auswertungen): Stift neben den Reitern, „−“ legt einen Reiter unter „Weitere“, „+“ holt ihn zurück – gelöscht wird nichts, „Weitere“ klappt die Reiter auf, Links auf einen Reiter funktionieren weiter"
     ],
     "verbessert": [
-      "Übersichtlicher Start: selten genutzte Bereiche liegen anfangs im Ordner „Weitere Funktionen“ (einmalig auch für bestehende Leisten, die nie angepasst wurden – eigene Einstellungen bleiben unverändert)"
+      "Alle Seiten mit Reitern nutzen jetzt denselben Baustein – gleiches Aussehen und gleiche Bedienung; die Auswahl wird mit dem Design gespeichert und mit dem PC abgeglichen"
     ],
     "behoben": []
   },
-  "signature": "/hUyIOf9J4dKhkykq4bTl3il0/6xT6Lj03ND8LirUILeWxYXy0eQVzWolyB9++qoefKBFFfRpcCwM0NtEsAD3A=="
+  "signature": "SGygbhSpwLBMo7Q/P+KkmJ12qeh/1/DDBm/mc6BArfy225QZx14NXXypTh/rD0N6wTGwjeegJetiVuERDglSCg=="
 }
