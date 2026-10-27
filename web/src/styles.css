@@ -1612,3 +1612,14 @@ select.input.studio-tpl { width: auto; min-height: 34px; }
 .chips.wrap { flex-wrap: wrap; overflow: visible; }
 .home-pages, .home-pages .chips { min-width: 0; max-width: 100%; }
 .settings code { overflow-wrap: anywhere; }
+.kfs { gap: 8px; }
+.kfs-sum { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.kfs-sum > span { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 10px; background: rgba(127, 127, 127, 0.08); border: 1px solid var(--border); min-width: 0; }
+.kfs-sum b { font-size: 1.2rem; }
+.kfs-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.kfs-list li { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--border); min-width: 0; }
+.kfs-list .grow { min-width: 0; overflow-wrap: anywhere; }
+.kfs-price { display: flex; flex-direction: column; align-items: flex-end; text-align: right; flex: 0 0 auto; }
+.kfs-note summary { list-style: none; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.kfs-note summary::-webkit-details-marker { display: none; }
+.kfs-note[open] summary { display: none; }

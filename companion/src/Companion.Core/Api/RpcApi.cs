@@ -241,6 +241,8 @@ public static class RpcApi
         // Official patch notes / announcements of a Steam game – only on request (F13 Update-Erklärer).
         rpc.Register("news.steam", async ctx => await s.News.SteamAsync(ctx.Str("appId", 10),
             ctx.Params.TryGetProperty("count", out var nc) && nc.ValueKind == JsonValueKind.Number && nc.TryGetInt32(out var n) ? n : 8));
+        // Price comparison from keyforsteam.de – only on request, at most one page every 5 s, cached 6 h.
+        rpc.Register("deals.keyforsteam", async ctx => await s.Keyforsteam.PricesAsync(ctx.OptStr("name", 200), ctx.OptStr("url", 400)));
         rpc.Register("deals.refresh", async ctx => await s.Deals.CheckAllAsync(force: true));
         // GG.deals key: checked with one real request before it is stored (encrypted like the Steam key); "" removes it.
         rpc.Register("deals.ggKey", async ctx =>

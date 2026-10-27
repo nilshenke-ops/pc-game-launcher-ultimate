@@ -8,6 +8,7 @@ import { toast, useAction, useCan, useConn, useRpc } from "../lib/hooks";
 import { dateTime, gradientFor, initials, relTime } from "../lib/format";
 import { clientId, keyShopLinks, lowestSeen, money, parsePrice, priceInput } from "../lib/quest-deal";
 import { CompatPanel } from "../components/compat-panel";
+import { KeyforsteamPanel } from "../components/keyforsteam-panel";
 import { fetchMsPrice, phonePrices, savePhonePrice, type MsResult } from "../lib/ms-store";
 import { loadCatalogPart, loadSteamIndex, lookup, shard, type SteamIndex } from "../lib/steam-index";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
@@ -256,6 +257,7 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
             {keyShopLinks(w.title).map((l) => <a key={l.shop} className="btn sm" href={l.url} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Bei {s} ansehen", { s: l.name })}</a>)}
           </div>
         </div>
+        <KeyforsteamPanel title={w.title} />
         {keyshopBest(w) ? <p className="small" style={{ margin: 0 }}>{t("In einem Key-Shop gerade am günstigsten (laut GG.deals).")}</p>
           : c && <p className="small" style={{ margin: 0 }}>{c === "xbox" ? t("Im Microsoft Store gerade günstiger.") : t("Bei Steam gerade günstiger.")}</p>}
         <div className="row between">
