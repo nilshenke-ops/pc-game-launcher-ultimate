@@ -2,6 +2,7 @@
 // you – nothing installed or downloaded), graphics comparison with a slider over two own screenshots, controls lexicon.
 
 import { useState, type ReactNode } from "react";
+import { PageTabs } from "../components/page-tabs";
 import { Link, useSearchParams } from "react-router-dom";
 import { Columns2, Gamepad2, Package, Swords } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -23,11 +24,7 @@ export default function BuildsPage() {
     <>
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Builds & Technik")} text={t("Builds und Loadouts, Mod-Sammlungen, Grafikvergleiche und Steuerung – auf diesem Gerät gespeichert, auch ohne PC.")} actions={<SyncBadge />} />
       <div className="stack">
-        <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
-          {([["build", <Swords size={15} />, t("Builds")], ["modlist", <Package size={15} />, t("Mod-Sammlungen")], ["gfx", <Columns2 size={15} />, t("Grafikvergleich")], ["controls", <Gamepad2 size={15} />, t("Steuerung")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setParams({ tab: v }, { replace: true })}>{icon}{label}</button>
-          ))}
-        </div>
+        <PageTabs page="builds" tabs={[["build", <Swords size={15} />, t("Builds")], ["modlist", <Package size={15} />, t("Mod-Sammlungen")], ["gfx", <Columns2 size={15} />, t("Grafikvergleich")], ["controls", <Gamepad2 size={15} />, t("Steuerung")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setParams({ tab: v }, { replace: true })} />
         {tab === "build" && <CollectionView key="b" schema={BUILD} icon={<Swords size={18} />} focus={focus} detail={(e) => <BuildCompare e={e} />} />}
         {tab === "modlist" && <CollectionView key="m" schema={MODLIST} icon={<Package size={18} />} focus={focus}
           intro={<>{t("Hier notierst du Mods und Versionen. Nexus markiert nichts selbst als installiert und lädt nichts herunter. Mods in einem Ordner am PC an- und ausschalten: ")}<Link to="/mods">{t("Mods")}</Link></>}

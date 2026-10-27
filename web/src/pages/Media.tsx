@@ -2,6 +2,7 @@
 // Everything is kept in the collections store (this device + PC); only PC captures need the PC.
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { PageTabs } from "../components/page-tabs";
 import { useSearchParams } from "react-router-dom";
 import { BookHeart, ExternalLink, Film, Images, Music2, Play, SortAsc } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -30,11 +31,7 @@ export default function MediaPage() {
     <>
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Medien")} text={t("Fotomuseum, Erinnerungsbuch, Screenshots sortieren, Clip-Momente und Soundtracks – auf diesem Gerät gespeichert, auch ohne PC.")} actions={<SyncBadge />} />
       <div className="stack">
-        <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
-          {([["museum", <Images size={15} />, t("Fotomuseum")], ["book", <BookHeart size={15} />, t("Erinnerungsbuch")], ["sort", <SortAsc size={15} />, t("Sortieren")], ["clips", <Film size={15} />, t("Clip-Momente")], ["music", <Music2 size={15} />, t("Soundtracks")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setParams({ tab: v }, { replace: true })}>{icon}{label}</button>
-          ))}
-        </div>
+        <PageTabs page="media" tabs={[["museum", <Images size={15} />, t("Fotomuseum")], ["book", <BookHeart size={15} />, t("Erinnerungsbuch")], ["sort", <SortAsc size={15} />, t("Sortieren")], ["clips", <Film size={15} />, t("Clip-Momente")], ["music", <Music2 size={15} />, t("Soundtracks")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setParams({ tab: v }, { replace: true })} />
         {tab === "museum" && <Museum key={`m${focus ?? ""}${params.get("album") ?? ""}`} focus={focus} albumFocus={params.get("album")} />}
         {tab === "book" && <MemoryBook key={`b${focus ?? ""}`} focus={focus} />}
         {tab === "sort" && <SortView />}

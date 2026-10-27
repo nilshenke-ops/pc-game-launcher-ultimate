@@ -5619,4 +5619,9 @@ export const en: Record<string, string> = {
   "{n} wieder in die Leiste": "Put {n} back in the bar",
   "Seitenleiste ordnen": "Arrange sidebar",
   "Ordnen beenden": "Finish arranging",
+  "Reiter ordnen": "Arrange tabs",
+  "Reiter ordnen beenden": "Finish arranging tabs",
+  "Weitere": "More",
+  "{n} in „Weitere“ verschieben": "Move {n} to “More”",
+  "{n} wieder anzeigen": "Show {n} again",
 };

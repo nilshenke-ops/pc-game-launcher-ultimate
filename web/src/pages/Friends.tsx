@@ -3,6 +3,7 @@
 // the server status and the reminders in the PC calendar.
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { PageTabs } from "../components/page-tabs";
 import { Navigate, useSearchParams } from "react-router-dom";
 import { CalendarPlus, ClipboardPaste, Download, IdCard, Lock, PartyPopper, Plus, RefreshCw, RotateCcw, Server, Share2, Shield, Trash2, Trophy, Users, Vote } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -43,11 +44,7 @@ export default function FriendsPage() {
     <>
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Freunde & Gruppe")} text={t("Spieler-Karten, gemeinsame Spiele, Abstimmungen, Gaming-Abende, Teams, Turniere und Server – privat, auf diesem Gerät gespeichert. Geteilt wird nur per Link, den du selbst verschickst.")} actions={<SyncBadge />} />
       <div className="stack">
-        <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
-          {([["players", <IdCard size={15} />, t("Spieler-Karten")], ["finder", <Users size={15} />, t("Was spielen wir?")], ["polls", <Vote size={15} />, t("Abstimmungen")], ["nights", <PartyPopper size={15} />, t("Gaming-Abende")], ["teams", <Shield size={15} />, t("Teams")], ["tournaments", <Trophy size={15} />, t("Turniere")], ["servers", <Server size={15} />, t("Server")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setTab(v)}>{icon}{label}</button>
-          ))}
-        </div>
+        <PageTabs page="friends" tabs={[["players", <IdCard size={15} />, t("Spieler-Karten")], ["finder", <Users size={15} />, t("Was spielen wir?")], ["polls", <Vote size={15} />, t("Abstimmungen")], ["nights", <PartyPopper size={15} />, t("Gaming-Abende")], ["teams", <Shield size={15} />, t("Teams")], ["tournaments", <Trophy size={15} />, t("Turniere")], ["servers", <Server size={15} />, t("Server")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setTab(v)} />
         {link && <LinkHandler part={link} onDone={() => setParams({ tab }, { replace: true })} />}
         {tab === "players" && <CollectionView key="pl" schema={PLAYER} icon={<IdCard size={18} />} focus={focus}
           intro={t("Alle Angaben sind freiwillig und bleiben bei dir. Spiele und Plattformen deiner Freunde trägst du selbst ein – Nexus kennt ihre Bibliotheken nicht.")}

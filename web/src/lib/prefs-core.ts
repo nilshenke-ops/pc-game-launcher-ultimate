@@ -222,6 +222,8 @@ export interface Prefs {
   homeShortcuts: string[];
   /** Start animation, moving background, page transitions. */
   fx: Fx;
+  /** Tabs moved into "Weitere" per page (page id → tab ids), e.g. { friends: ["servers"] }. */
+  tabs: Record<string, string[]>;
 }
 
 /** colors: coloured symbols in the navigation and the bottom bar (false = plain, like before 2.8). */
@@ -249,7 +251,7 @@ const OLD_DEFAULT_BOTTOM = "/,/games,/soundboard,/quick";
 
 export function defaultPrefs(): Prefs {
   const lang = (navigator.language || "de").toLowerCase().startsWith("de") ? "de" : "en";
-  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV), profileThemes: true, homeShortcuts: [], fx: structuredClone(DEFAULT_FX) };
+  return { version: 1, updatedAt: 0, lang, theme: { ...DEFAULT_THEME }, palettes: [], layouts: [structuredClone(DEFAULT_LAYOUT)], activeLayout: { desktop: "default", mobile: "default" }, usage: {}, nav: structuredClone(DEFAULT_NAV), profileThemes: true, homeShortcuts: [], fx: structuredClone(DEFAULT_FX), tabs: {} };
 }
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
@@ -308,11 +310,18 @@ export function sanitizePrefs(input: unknown): Prefs {
     profileThemes: p.profileThemes !== false,
     homeShortcuts: Array.isArray(p.homeShortcuts) ? [...new Set(p.homeShortcuts.filter((x): x is string => typeof x === "string" && NAV_PATH.test(x)))].slice(0, 8) : [],
     fx: sanitizeFx(p.fx),
+    tabs: sanitizeTabs(p.tabs),
     usage: p.usage && typeof p.usage === "object" ? Object.fromEntries(Object.entries(p.usage).filter(([, v]) => typeof v === "number").slice(0, 300)) : {},
   };
 }
 
 const NAV_PATH = /^\/[a-z-]{0,30}$/;
+
+function sanitizeTabs(v: unknown): Record<string, string[]> {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return {};
+  return Object.fromEntries(Object.entries(v as Record<string, unknown>).filter(([k, x]) => /^[a-z]{2,20}$/.test(k) && Array.isArray(x)).slice(0, 40)
+    .map(([k, x]) => [k, [...new Set((x as unknown[]).filter((id): id is string => typeof id === "string" && /^[a-z-]{1,20}$/.test(id)))].slice(0, 20)]));
+}
 function sanitizeNav(n: unknown): NavPrefs {
   const v = (n && typeof n === "object" ? n : {}) as Partial<NavPrefs>;
   const paths = (x: unknown, max: number) => (Array.isArray(x) ? [...new Set(x.filter((p): p is string => typeof p === "string" && NAV_PATH.test(p)))].slice(0, max) : []);

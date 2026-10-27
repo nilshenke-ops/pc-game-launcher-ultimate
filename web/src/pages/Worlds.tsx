@@ -2,6 +2,7 @@
 // progress from the tasks), map markers (list, table, groups – on a map only with an own map picture).
 
 import { useRef, useState, type ReactNode } from "react";
+import { PageTabs } from "../components/page-tabs";
 import { useSearchParams } from "react-router-dom";
 import { Globe2, Hammer, MapPin } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -23,11 +24,7 @@ export default function WorldsPage() {
     <>
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Welten & Bauen")} text={t("Minecraft-Welten mit Koordinaten, Bauprojekte mit Aufgaben und Material, Karten-Marker – auf diesem Gerät gespeichert, auch ohne PC.")} actions={<SyncBadge />} />
       <div className="stack">
-        <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
-          {([["world", <Globe2 size={15} />, t("Minecraft-Welten")], ["project", <Hammer size={15} />, t("Bauprojekte")], ["markers", <MapPin size={15} />, t("Karten-Marker")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setParams({ tab: v }, { replace: true })}>{icon}{label}</button>
-          ))}
-        </div>
+        <PageTabs page="worlds" tabs={[["world", <Globe2 size={15} />, t("Minecraft-Welten")], ["project", <Hammer size={15} />, t("Bauprojekte")], ["markers", <MapPin size={15} />, t("Karten-Marker")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setParams({ tab: v }, { replace: true })} />
         {tab === "world" && <CollectionView key="w" schema={WORLD} icon={<Globe2 size={18} />} focus={focus}
           intro={t("Nexus liest keine Spielstände und zeichnet keine Karte: Koordinaten und Orte trägst du selbst ein (im Spiel F3 bzw. „Koordinaten anzeigen“).")}
           cardExtra={(e) => <span className="tiny muted">{t("{n} Orte", { n: ((e.data.pois as Data[]) ?? []).length })}</span>}

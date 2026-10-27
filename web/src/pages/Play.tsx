@@ -2,6 +2,7 @@
 // (last known library and history; own entries are kept in this browser and compared with the PC – lib/journal.ts).
 
 import { useMemo, useState, type ReactNode } from "react";
+import { PageTabs } from "../components/page-tabs";
 import { useSearchParams } from "react-router-dom";
 import { Clock, Dices, Grid3x3, Pencil, Play, Plus, RefreshCw, Save, Swords, Trash2, Trophy } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -43,11 +44,7 @@ export default function PlayPage() {
     <>
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Was spiele ich?")} text={t("Spiele passend zu deiner Zeit, Challenges für Abwechslung und Gaming-Bingo – auch ohne PC nutzbar.")} actions={<SyncBadge />} />
       <div className="stack">
-        <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
-          {([["time", <Clock size={15} />, t("Zeit-Finder")], ["challenges", <Swords size={15} />, t("Challenges")], ["bingo", <Grid3x3 size={15} />, t("Bingo")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setTab(v)}>{icon}{label}</button>
-          ))}
-        </div>
+        <PageTabs page="play" tabs={[["time", <Clock size={15} />, t("Zeit-Finder")], ["challenges", <Swords size={15} />, t("Challenges")], ["bingo", <Grid3x3 size={15} />, t("Bingo")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setTab(v)} />
         {tab === "time" && <TimeFinder />}
         {tab === "challenges" && <Challenges />}
         {tab === "bingo" && <BingoTab share={share} />}

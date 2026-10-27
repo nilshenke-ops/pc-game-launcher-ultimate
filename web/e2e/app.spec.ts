@@ -207,6 +207,26 @@ test("Leiste bearbeiten: Bereich entfernen → „Weitere Funktionen“, dort er
   await expect(sys).toHaveAttribute("aria-expanded", "true");
 });
 
+test("Reiter einer Seite ordnen: in „Weitere“ verschieben, dort öffnen, zurückholen", async () => {
+  await pc.goto(`${COMPANION}/#/friends`);
+  const tabs = pc.locator(".page-tabs").first();
+  await expect(tabs.getByRole("tab", { name: "Server" })).toBeVisible();
+  await pc.getByRole("button", { name: "Reiter ordnen", exact: true }).click();
+  await pc.getByRole("button", { name: "Server in „Weitere“ verschieben" }).click();
+  await pc.getByRole("button", { name: "Reiter ordnen beenden" }).click();
+  await expect(tabs.getByRole("tab", { name: "Server" })).toHaveCount(0);
+  await tabs.locator(".chip.more").click();
+  await pc.locator(".page-tabs-more .chip", { hasText: "Server" }).click();
+  await expect(pc).toHaveURL(/tab=servers/);
+  await pc.reload();
+  await pc.goto(`${COMPANION}/#/friends?tab=players`);
+  await expect(pc.locator(".page-tabs").first().getByRole("tab", { name: "Server" })).toHaveCount(0);
+  await pc.getByRole("button", { name: "Reiter ordnen", exact: true }).click();
+  await pc.getByRole("button", { name: "Server wieder anzeigen" }).click();
+  await pc.getByRole("button", { name: "Reiter ordnen beenden" }).click();
+  await expect(pc.locator(".page-tabs").first().getByRole("tab", { name: "Server" })).toBeVisible();
+});
+
 test("Globale Suche findet das Spiel", async () => {
   await pc.goto(`${COMPANION}/#/`);
   await pc.keyboard.press("Control+k");

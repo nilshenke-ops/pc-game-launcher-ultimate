@@ -1,6 +1,7 @@
 // Auswertungen: year review (F5), play style (F28) and performance archive (F18) – from the PC's own records.
 
 import type { ReactNode } from "react";
+import { PageTabs } from "../components/page-tabs";
 import { useSearchParams } from "react-router-dom";
 import { Gauge, Sparkles, Trophy } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -19,11 +20,7 @@ export default function InsightsPage() {
     <>
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Auswertungen")} text={t("Jahresrückblick, dein Spielstil und ein Archiv deiner Leistungsmessungen – nur aus dem, was wirklich aufgezeichnet oder von dir eingetragen wurde.")} actions={<SyncBadge />} />
       <div className="stack">
-        <div className="chips j-tabs no-print" role="tablist" aria-label={t("Bereich")}>
-          {([["year", <Trophy size={15} />, t("Jahresrückblick")], ["style", <Sparkles size={15} />, t("Spielstil")], ["perf", <Gauge size={15} />, t("Leistungsarchiv")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setParams({ tab: v }, { replace: true })}>{icon}{label}</button>
-          ))}
-        </div>
+        <PageTabs page="insights" className="no-print" tabs={[["year", <Trophy size={15} />, t("Jahresrückblick")], ["style", <Sparkles size={15} />, t("Spielstil")], ["perf", <Gauge size={15} />, t("Leistungsarchiv")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setParams({ tab: v }, { replace: true })} />
         {tab === "year" && <YearView />}
         {tab === "style" && <StyleView />}
         {tab === "perf" && <PerfView focus={focus} />}

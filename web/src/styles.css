@@ -1690,3 +1690,19 @@ select.input.studio-tpl { width: auto; min-height: 34px; }
 .sheet-btn.remove { background: #ef4444; }
 .sheet-btn.add { background: #22c55e; }
 .sheet-folder { margin-top: 18px !important; padding: 12px; border-radius: 16px; border: 1px dashed var(--border); background: rgba(255,255,255,0.02); }
+
+/* ------------------------------------------------------------------ page tabs: "Weitere" and edit mode (2.62) */
+.page-tabs-wrap { display: flex; flex-direction: column; gap: 8px; }
+.page-tabs .chip.more small { background: rgba(255,255,255,0.1); border-radius: 99px; padding: 0 6px; font-size: 0.72rem; }
+.page-tabs .chip .chev { transition: transform .2s; }
+.page-tabs .chip .chev.shut { transform: rotate(-90deg); }
+.page-tabs .chip.tab-edit { opacity: .55; padding-inline: 10px; }
+.page-tabs .chip.tab-edit:hover { opacity: 1; }
+.page-tabs-more { padding: 8px; border-radius: 14px; border: 1px dashed var(--border); background: rgba(255,255,255,0.02); }
+.page-tabs.editing .chip { position: relative; padding-right: 30px; cursor: default; }
+.page-tabs.editing .chip.off { opacity: .55; border-style: dashed; }
+.page-tabs.editing .chip.on { padding-right: 14px; cursor: pointer; }
+.tab-btn { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); display: grid; place-items: center; width: 20px; height: 20px; border-radius: 99px; border: 0; color: #fff; cursor: pointer; }
+.tab-btn.remove { background: #ef4444; }
+.tab-btn.add { background: #22c55e; }
+.tab-btn:disabled { opacity: .35; cursor: not-allowed; }

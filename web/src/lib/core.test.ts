@@ -132,6 +132,9 @@ describe("navigation", () => {
     expect(sanitizePrefs({ nav: { hidden: [], tidied: true } }).nav.hidden).toEqual([]);
     expect(sanitizePrefs({ nav: { hidden: ["/deals"] } }).nav.hidden).toEqual(["/deals"]);
     expect(sanitizePrefs({ nav: { collapsed: ["sys", "BAD!", 3] } }).nav.collapsed).toEqual(["sys"]);
+    // Tabs moved into "Weitere" per page: only plain ids survive.
+    expect(sanitizePrefs({ tabs: { friends: ["servers", "teams", "servers", "<x>"], "BAD key": ["a"], media: "x" } }).tabs).toEqual({ friends: ["servers", "teams"] });
+    expect(sanitizePrefs({}).tabs).toEqual({});
     expect(p.nav.bottom).toEqual(["/", "/deck", "/games", "/soundboard"]);
     // The untouched bar from before 2.7.0 gets the deck; an own choice stays as it is.
     expect(sanitizePrefs({ nav: { bottom: ["/", "/games", "/soundboard", "/quick"] } }).nav.bottom).toEqual(["/", "/deck", "/games", "/soundboard"]);

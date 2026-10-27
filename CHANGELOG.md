@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.62.0 – 2026-10-27
+### Neu
+- Reiter auf den Seiten ordnen (Journal, Was spiele ich?, Welten, Builds, Freunde, Medien, Spiele-Infos, Kreativ-Studio, Auswertungen): Stift neben den Reitern, „−“ legt einen Reiter unter „Weitere“, „+“ holt ihn zurück – gelöscht wird nichts, „Weitere“ klappt die Reiter auf, Links auf einen Reiter funktionieren weiter
+### Verbessert
+- Alle Seiten mit Reitern nutzen jetzt denselben Baustein – gleiches Aussehen und gleiche Bedienung; die Auswahl wird mit dem Design gespeichert und mit dem PC abgeglichen
+
 ## 2.61.0 – 2026-10-27
 ### Neu
 - Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar

@@ -2,6 +2,7 @@
 // Everything is kept in this browser and works while the PC is off (lib/journal.ts); with the PC it is compared.
 
 import { useMemo, useState, type ReactNode } from "react";
+import { PageTabs } from "../components/page-tabs";
 import { useSearchParams } from "react-router-dom";
 import { Archive, ArchiveRestore, ArrowDown, ArrowUp, BookOpen, Copy, Eye, EyeOff, Flag, Gift, History as HistoryIcon, MapPin, Pencil, Plus, Route, Search, Star, Trash2, Trophy } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -29,11 +30,7 @@ export default function JournalPage() {
         text={t("Wo du warst, was du vorhast, was du gefunden hast und wie die Story weitergeht – gespeichert auf diesem Gerät, auch ohne PC.")}
         actions={<SyncBadge />} />
       <div className="stack">
-        <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
-          {([["memory", <HistoryIcon size={15} />, t("Wo war ich?")], ["goals", <Route size={15} />, t("Zielpfade")], ["finds", <MapPin size={15} />, t("Sammlung")], ["story", <BookOpen size={15} />, t("Story")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
-            <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setTab(v)}>{icon}{label}</button>
-          ))}
-        </div>
+        <PageTabs page="journal" tabs={[["memory", <HistoryIcon size={15} />, t("Wo war ich?")], ["goals", <Route size={15} />, t("Zielpfade")], ["finds", <MapPin size={15} />, t("Sammlung")], ["story", <BookOpen size={15} />, t("Story")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setTab(v)} />
         {tab === "memory" && <MemoryTab games={games} focus={params.get("id")} newFor={params.get("new")} />}
         {tab === "goals" && <GoalsTab games={games} focus={params.get("id")} />}
         {tab === "finds" && <FindsTab games={games} focus={params.get("id")} />}
