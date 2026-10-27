@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, RotateCcw,
@@ -29,6 +29,8 @@ import { runQuickAction } from "../components/run-quick";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { CapturesWidget, ChallengesWidget, DiceWidget, MemoryWidget, NightWidget, PhotoWidget, PollWidget, ProjectsWidget, StorageWidget, TopPlayedWidget, TrackWidget } from "../components/more-widgets";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
+// Loaded only when the widget is shown (the task catalog is not needed on every start).
+const BingoWidget = lazy(() => import("../components/bingo-board").then((m) => ({ default: m.BingoWidget })));
 import { CUSTOM_WIDGET } from "../lib/prefs-core";
 
 function StatusWidget() {
@@ -308,6 +310,7 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   dice: { icon: <Dices size={18} />, title: () => t("Würfel & Münze"), render: () => <DiceWidget /> },
   captures: { icon: <Camera size={18} />, title: () => t("Letzte Aufnahmen"), render: () => <CapturesWidget />, link: "/captures" },
   storage: { icon: <HardDrive size={18} />, title: () => t("Speicherplatz"), render: () => <StorageWidget />, link: "/storage" },
+  bingo: { icon: <Grid3x3 size={18} />, title: () => t("Bingo"), render: () => <Suspense fallback={<span className="small muted">…</span>}><BingoWidget /></Suspense>, link: "/play?tab=bingo" },
   topplayed: { icon: <BarChart3 size={18} />, title: () => t("Meistgespielt (7 Tage)"), render: () => <TopPlayedWidget />, link: "/history" },
 };
 

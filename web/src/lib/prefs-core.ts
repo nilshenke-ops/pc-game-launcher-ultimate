@@ -120,9 +120,9 @@ export const DEFAULT_THEME: Theme = {
 
 export type BuiltinWidgetId = "status" | "session" | "profile" | "quick" | "favorites" | "recent" | "system" | "audio" | "playing" | "notifications" | "download" | "devices" | "shortcuts" | "clock" | "notes" | "next" | "start" | "media" | "timer" | "deck" | "calendar" | "activity"
   | "counter" | "break" | "today" | "ping" | "goals" | "level" | "deals" | "controller" | "random" | "visualizer" | "power"
-  | "memory" | "night" | "poll" | "photo" | "projects" | "track" | "challenges" | "dice" | "captures" | "storage" | "topplayed";
+  | "memory" | "night" | "poll" | "photo" | "projects" | "track" | "challenges" | "dice" | "captures" | "storage" | "topplayed" | "bingo";
 /** Widgets that are useful without a connected PC (shown on the home screen while offline). */
-export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity", "counter", "break", "today", "goals", "level", "deals", "random", "visualizer", "memory", "night", "poll", "photo", "projects", "track", "challenges", "dice", "captures", "storage", "topplayed"]);
+export const OFFLINE_WIDGETS = new Set<string>(["status", "shortcuts", "clock", "notes", "next", "start", "download", "timer", "deck", "calendar", "activity", "counter", "break", "today", "goals", "level", "deals", "random", "visualizer", "memory", "night", "poll", "photo", "projects", "track", "challenges", "dice", "captures", "storage", "topplayed", "bingo"]);
 /** Built-in widget, a plugin widget "plugin:<plugin-id>:<widget-id>" or an own widget from the editor "custom:cw_…". */
 export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`;
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
@@ -176,6 +176,7 @@ export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSiz
   { id: "captures", label: "Letzte Aufnahmen", sizes: ["m", "l"] },
   { id: "storage", label: "Speicherplatz", sizes: ["s", "m"] },
   { id: "topplayed", label: "Meistgespielt (7 Tage)", sizes: ["s", "m"] },
+  { id: "bingo", label: "Bingo", sizes: ["m", "l"] },
 ];
 
 export const DEFAULT_LAYOUT: Layout = {

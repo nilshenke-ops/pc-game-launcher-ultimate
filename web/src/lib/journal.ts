@@ -66,10 +66,36 @@ function req<T>(r: IDBRequest<T>): Promise<T> {
 
 async function store(name: string, mode: IDBTransactionMode = "readonly") { return (await db()).transaction(name, mode).objectStore(name); }
 
+// Write-ahead copy of the user's own changes, written synchronously: IndexedDB writes are aborted when the page is
+// closed or reloaded right after a tap (measured: a tick reloaded within ~0.1 s was lost). On the next start the copy
+// is merged back. Cleared again as soon as IndexedDB has the entry.
+const WAL_KEY = "pgl.journal.wal";
+const WAL_MAX = 1_500_000;
+let wal: Record<string, Entry> = (() => { try { return JSON.parse(localStorage.getItem(WAL_KEY) ?? "{}") as Record<string, Entry>; } catch { return {}; } })();
+function walWrite() {
+  try { if (Object.keys(wal).length) localStorage.setItem(WAL_KEY, JSON.stringify(wal)); else localStorage.removeItem(WAL_KEY); } catch { /* full or blocked – IndexedDB still gets it */ }
+}
+function walAdd(e: Entry) {
+  const size = JSON.stringify(e).length;
+  if (size > WAL_MAX / 4) return;
+  wal[e.id] = e;
+  if (JSON.stringify(wal).length > WAL_MAX) { delete wal[e.id]; return; }
+  walWrite();
+}
+function walDone(list: Entry[]) {
+  let any = false;
+  for (const e of list) if (wal[e.id] && wal[e.id].updatedAt <= e.updatedAt) { delete wal[e.id]; any = true; }
+  if (any) walWrite();
+}
+
 async function persist(list: Entry[]) {
   try {
-    const st = await store(ENTRIES, "readwrite");
-    await Promise.all(list.map((e) => req(st.put(e))));
+    const tx = (await db()).transaction(ENTRIES, "readwrite");
+    const st = tx.objectStore(ENTRIES);
+    for (const e of list) st.put(e);
+    // Only a completed transaction is kept when the page closes – a successful put alone is not.
+    await new Promise<void>((res, rej) => { tx.oncomplete = () => res(); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error); });
+    walDone(list);
   } catch {
     if (sync.persistent) setSync({ persistent: false });
   }
@@ -81,6 +107,10 @@ export const ready: Promise<void> = (async () => {
   try {
     const all = await req((await store(ENTRIES)).getAll()) as Entry[];
     for (const e of all) entries.set(e.id, e);
+    // Changes that did not reach IndexedDB before the page closed.
+    const late = Object.values(wal).filter((e) => e && typeof e.id === "string" && ID_RX.test(e.id) && (entries.get(e.id)?.updatedAt ?? 0) < e.updatedAt);
+    for (const e of late) entries.set(e.id, e);
+    if (late.length) void persist(late); else if (Object.keys(wal).length) { wal = {}; walWrite(); }
     const st = await store(META);
     const keys = await req(st.getAllKeys()) as string[];
     const vals = await req(st.getAll()) as Meta[];
@@ -136,6 +166,7 @@ export function saveEntry<T extends object>(kind: string, id: string, data: T): 
   if (prev && prev.kind !== kind) throw new JournalError("Kennung gehört zu einer anderen Art.");
   const e: Entry<T> = { id, kind, updatedAt: Math.max(Date.now(), (prev?.updatedAt ?? 0) + 1), base: prev?.base, data };
   entries.set(id, e as Entry);
+  walAdd(e as Entry);
   void persist([e as Entry]);
   changed();
   scheduleSync();
@@ -148,6 +179,7 @@ export function removeEntry(id: string) {
   if (!prev || prev.deleted) return;
   const e: Entry = { id, kind: prev.kind, updatedAt: Math.max(Date.now(), prev.updatedAt + 1), base: prev.base, deleted: true, data: {} };
   entries.set(id, e);
+  walAdd(e);
   void persist([e]);
   changed();
   scheduleSync();
@@ -294,7 +326,12 @@ async function pushAll() {
       const i = refused.findIndex((x) => x.id === res.id);
       if (i >= 0) refused.splice(i, 1);
       if (res.status === "refused") refused.push({ id: res.id, reason: res.reason ?? "" });
-      else if (res.status === "ok") { e.base = e.updatedAt; void persist([e]); }
+      else if (res.status === "ok") {
+        // A newer local change may have been made while this one was on its way – never write the older one back.
+        const cur = entries.get(res.id);
+        if (cur === e) { e.base = e.updatedAt; void persist([e]); }
+        else if (cur && cur.updatedAt > e.updatedAt) { cur.base = e.updatedAt; void persist([cur]); }
+      }
     }
     batch = []; size = 0;
     await saveMeta(pc);

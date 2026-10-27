@@ -4,12 +4,12 @@ import { t } from "./i18n";
 
 export interface AssistantAction { kind: string; label: string; method?: string | null; params?: Record<string, unknown>; path?: string | null; confirm?: boolean }
 export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "ollama" | "claude" | "offline" | "device"; model?: string | null; costUsd?: number | null }
-export interface ChatState { conversationId: string | null; turns: { role: "user" | "bot"; text?: string; reply?: AssistantReply }[] }
+export interface ChatState { conversationId: string | null; turns: { role: "user" | "bot"; text?: string; reply?: AssistantReply; bingoId?: string }[] }
 
 export const CHAT_KEY = "pgl.assistant.chat";
 
 /** Example questions for the help mode without a PC (kept here so the page does not load the help texts just for these). */
-export const offlineExamples = () => [t("Mach das Design hell"), t("Pack den Backlog in die Leiste"), t("Zeig die Uhr auf Home"), t("Wie richte ich Discord mit dem Soundboard ein?"), t("Öffne das Deck"), t("Was soll ich als Nächstes spielen?"), t("Wie verbinde ich mein Handy?")];
+export const offlineExamples = () => [t("Mach das Design hell"), t("Pack den Backlog in die Leiste"), t("Zeig die Uhr auf Home"), t("Wie richte ich Discord mit dem Soundboard ein?"), t("Öffne das Deck"), t("Was soll ich als Nächstes spielen?"), t("Wie verbinde ich mein Handy?"), t("Erstelle ein 4×4-Bingo für Minecraft auf mittel")];
 /** Set-up requests that work everywhere (answered on this device, also with the PC connected). */
 export const setupChips = () => [t("Mach das Design hell"), t("Pack den Backlog in die Leiste")];
 export const emptyChat = (): ChatState => ({ conversationId: null, turns: [] });

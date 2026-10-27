@@ -1,0 +1,301 @@
+// Built-in bingo tasks: written by hand for games whose mechanics are well documented, plus genre sets for any other
+// game. Each line: "<level><category><flags>|<task>".
+//   level    1 leicht · 2 mittel · 3 schwer · 4 sehr schwer
+//   category e Erkunden · k Kampf · c Sammeln · b Bauen · t Team · f Spaß · h Herausforderung · p Fortschritt · s Überleben
+//   flags    T braucht Mitspieler · B Bosskampf · ! Spoiler (nur wenn erlaubt)
+// Only things that exist in the base game are named; tasks that depend on a daily map (PEAK) stay general.
+
+export interface CatalogGame {
+  id: string;
+  name: string;
+  /** Lower-case names the game is recognised by (library names and chat). */
+  aliases: string[];
+  /** What the game supports – settings and modes that make no sense are hidden. */
+  caps: { build?: boolean; boss?: boolean; team?: boolean; solo?: boolean; survival?: boolean };
+  tasks: string[];
+  /** Short note shown with the card (e.g. version the tasks were written for). */
+  note?: string;
+}
+
+export const CATALOG: CatalogGame[] = [
+  {
+    id: "minecraft", name: "Minecraft", aliases: ["minecraft", "minecraft java", "minecraft bedrock", "minecraft: java edition", "minecraft for windows"],
+    caps: { build: true, boss: true, team: true, solo: true, survival: true }, note: "Überlebensmodus",
+    tasks: [
+      "1b|Baue eine Werkbank", "1c|Stelle eine Steinspitzhacke her", "1s|Überlebe die erste Nacht", "1e|Finde ein Dorf", "1s|Schlafe in einem Bett",
+      "1c|Fange einen Fisch mit der Angel", "1k|Besiege einen Zombie", "1c|Sammle 10 verschiedene Blöcke", "1b|Baue ein Haus aus mindestens drei verschiedenen Materialien",
+      "1c|Schmelze Eisenerz im Ofen", "1c|Pflanze Weizen an und ernte ihn", "1e|Erhelle eine Höhle mit Fackeln", "1c|Melke eine Kuh mit einem Eimer", "1c|Backe ein Brot",
+      "1c|Schere ein Schaf", "1c|Stelle einen Schild her", "1f|Gib einem Tier einen Namen mit einem Namensschild", "1e|Steige auf einen Berg und schau dir den Sonnenaufgang an",
+      "2c|Finde Diamanten", "2c|Stelle eine komplette Eisenrüstung her", "2k|Besiege einen Creeper, ohne Explosionsschaden zu nehmen", "2e|Handle mit einem Dorfbewohner",
+      "2e|Betritt den Nether", "2b|Baue ein Netherportal", "2e|Finde eine verlassene Mine", "2c|Züchte zwei Kühe", "2c|Zähme ein Pferd und reite es",
+      "2c|Stelle einen Zaubertisch her", "2e|Finde einen Wüstentempel", "2e|Erkunde ein Schiffswrack", "2c|Zähme einen Wolf", "2s|Überlebe eine Nacht ohne Unterschlupf",
+      "2f|Baue einen Schneegolem", "2c|Stelle einen Kuchen her", "2c|Fülle eine Karte vollständig aus",
+      "3e|Finde eine Netherfestung", "3k|Besiege eine Lohe und sammle eine Lohenrute", "3c|Braue einen Trank", "3e|Finde ein Ozeanmonument", "3e|Erkunde eine Bastionsruine",
+      "3e|Finde mit Enderaugen eine Festung", "3b|Baue eine automatische Farm", "3c|Verzaubere einen Gegenstand mit Stufe 30", "3k|Besiege einen Plünderer-Hauptmann",
+      "3c|Sammle 5 verschiedene Musikplatten", "3h|Baue ein Haus komplett unter Wasser",
+      "4kB|Besiege den Enderdrachen", "4kB|Besiege den Wither", "4e|Finde eine Elytra in einer Endstadt", "4c|Stelle eine komplette Netheritrüstung her",
+      "4kB|Besiege einen Großen Wächter", "4k|Wehre einen Überfall auf ein Dorf ab", "4c|Erhalte ein Totem der Unsterblichkeit", "4e|Finde eine antike Stadt",
+      "4e|Finde ein Waldanwesen", "4h|Erreiche den Nether ohne ein einziges Mal zu sterben",
+      "1tT|Baut gemeinsam ein Haus", "2tT|Gib einem Mitspieler einen Diamanten", "2tT|Baut gemeinsam eine Farm", "3tT|Erkundet gemeinsam eine Netherfestung", "4tTB|Besiegt gemeinsam den Enderdrachen",
+    ],
+  },
+  {
+    id: "eldenring", name: "Elden Ring", aliases: ["elden ring", "eldenring", "elden ring nightreign"],
+    caps: { boss: true, team: true, solo: true }, note: "Hauptspiel ohne Erweiterung",
+    tasks: [
+      "1e|Rufe Sturmwind und reite durch Limgrave", "1e|Aktiviere 5 Orte der Gnade", "1p|Verstärke deine Fläschchen mit einem Goldsamen", "1k|Setze eine Geisterasche im Kampf ein",
+      "1e|Finde ein Kartenfragment", "1c|Stelle mit dem Handwerksset einen Gegenstand her", "1p|Steige 5 Stufen auf", "1c|Finde eine neue Waffe", "1c|Sammle 10 Kräuter oder Pilze",
+      "1e|Besuche die Tafelrunde", "1k|Besiege einen Gegner mit einem Rückenstich", "1f|Hinterlasse eine Nachricht für andere Spieler",
+      "2kB|Besiege den Baumwächter", "2c|Verbessere eine Waffe auf +3", "2e|Erkunde eine Höhle bis zu ihrem Boss", "2e|Erreiche Liurnia der Seen", "2c|Finde eine Heilige Träne",
+      "2e|Erkunde einen Katakomben-Dungeon", "2c|Lerne eine neue Kriegsasche", "2k|Besiege einen Gegner nur mit einer Waffenfertigkeit", "2c|Kaufe dir eine Laterne beim Händler",
+      "2k|Pariere einen Angriff und kontere mit einem kritischen Treffer", "2e|Erkunde ein Gebiet, das du bisher ausgelassen hast", "2h|Durchquere Limgrave, ohne vom Pferd zu steigen",
+      "3kB|Besiege Margit, das Grausame Omen", "3kB|Besiege Godrick den Verpflanzten", "3kB|Besiege einen Drachen in der offenen Welt", "3c|Verbessere eine Waffe auf +10",
+      "3h|Besiege einen Boss ohne Geisterasche", "3h|Schließe einen Dungeon ab, ohne zu sterben", "3e|Erreiche die Altus-Hochebene", "3k|Besiege einen Nachtreiter", "3c|Finde 3 Erinnerungssteine",
+      "3h|Besiege einen Feldboss nur mit Nahkampf", "3p|Erreiche Stufe 60",
+      "4h|Besiege einen Hauptboss ohne Heilfläschchen", "4c|Verbessere eine Waffe auf die höchste Stufe", "4h|Besiege 3 Bosse hintereinander ohne zu sterben", "4kB!|Besiege Malenia, Klinge von Miquella",
+      "4kB!|Besiege Sternengeißel Radahn", "4kB!|Besiege Mohg, Fürst des Blutes", "4h|Besiege einen Boss mit einer Waffe, die du noch nie benutzt hast", "4e|Finde alle Kartenfragmente einer Region",
+      "4h|Schließe eine Katakombe ohne Rüstung ab", "4p|Erreiche Stufe 120",
+      "2tT|Hilf einem anderen Spieler per Beschwörung bei einem Boss", "3tTB|Besiegt einen Boss gemeinsam im Koop", "1fT|Begrüßt euch mit einer Geste",
+    ],
+  },
+  {
+    id: "peak", name: "PEAK", aliases: ["peak"],
+    caps: { team: true, solo: true, survival: true }, note: "Biome und Gelände wechseln täglich – die Aufgaben bleiben deshalb allgemein",
+    tasks: [
+      "1e|Erreiche das Ende des ersten Abschnitts", "1s|Entzünde ein Lagerfeuer", "1c|Öffne ein Gepäckstück am Strand", "1s|Iss etwas, bevor dein Hunger zum Problem wird", "1f|Röste einen Marshmallow am Lagerfeuer",
+      "1e|Klettere eine Wand hinauf, ohne abzurutschen", "1c|Hebe einen Gegenstand auf, den du noch nicht kennst", "1f|Mach ein Foto vom Absturzort",
+      "2c|Platziere eine Seilrolle für deine Nachfolger", "2c|Setze einen Kletterhaken ein", "2s|Überstehe einen Abschnitt, ohne dich zu verletzen", "2e|Erreiche den zweiten Abschnitt",
+      "2s|Teile deinen Proviant so ein, dass er bis zum nächsten Lagerfeuer reicht", "2s|Trink einen Energy Drink im richtigen Moment", "2h|Überwinde ein Hindernis, ohne zurückzufallen",
+      "2e|Finde einen anderen Weg als den offensichtlichen", "2c|Trage einen Gegenstand bis zum nächsten Lagerfeuer",
+      "3e|Erreiche den dritten Abschnitt", "3h|Schaffe einen Abschnitt, ohne dass jemand stirbt", "3s|Komme mit einer Verletzung bis zum nächsten Lagerfeuer", "3h|Erreiche ein Lagerfeuer mit vollem Inventar",
+      "3e|Besuche einen Abschnitt, den du bisher noch nie erreicht hast", "3h|Klettere einen Abschnitt nur mit dem, was du dort findest",
+      "4e|Erreiche den Gipfel", "4p|Rufe am Gipfel mit der Leuchtfackel den Rettungshubschrauber", "4h|Schaffe einen Lauf auf einem höheren Ascent", "4h|Erreiche den Gipfel, ohne dass jemand zurückbleibt", "4p|Verdiene ein neues Abzeichen",
+      "1tT|Hilf einem Mitspieler eine Kante hinauf", "2tT|Teile Essen mit einem Mitspieler", "2tT|Rette einen Mitspieler aus einer schwierigen Situation", "3tT|Erreicht ein Lagerfeuer alle gemeinsam",
+      "3tT|Legt zusammen eine Seilroute über eine schwere Stelle", "4tT|Erreicht den Gipfel alle gemeinsam", "1fT|Redet nur über den Näherungs-Chat miteinander",
+    ],
+  },
+  {
+    id: "terraria", name: "Terraria", aliases: ["terraria"],
+    caps: { build: true, boss: true, team: true, solo: true, survival: true },
+    tasks: [
+      "1b|Baue ein Haus, in das ein NPC einzieht", "1c|Stelle eine Kupfer- oder Zinnspitzhacke her", "1s|Überlebe die erste Nacht", "1e|Erkunde eine Höhle 100 Fuß tief", "1c|Finde eine Holzkiste",
+      "1c|Stelle eine Werkbank und einen Ofen her", "1k|Besiege einen Schleim", "1e|Finde einen Wasserfall unter der Erde", "1c|Fange einen Fisch",
+      "2kB|Besiege das Auge von Cthulhu", "2c|Finde einen Lebenskristall", "2e|Finde einen Lebendigen Baum", "2e|Erkunde die Wüste", "2c|Stelle eine Goldrüstung her", "2b|Baue Häuser für 5 NPCs",
+      "2e|Finde eine schwebende Insel", "2c|Finde einen Wolkenballon oder einen Hermes-Stiefel", "2k|Wehre eine Goblinarmee ab",
+      "3kB|Besiege den Weltenfresser oder das Gehirn von Cthulhu", "3kB|Besiege die Bienenkönigin", "3kB|Besiege Skeletron", "3e|Erkunde die Höllenschicht", "3c|Stelle die Nachtklinge her",
+      "3e|Betritt den Kerker", "3c|Nutze 15 Lebenskristalle (400 Leben)",
+      "4kB|Besiege die Fleischwand", "4kB|Besiege einen mechanischen Boss", "4kB!|Besiege Plantera", "4h|Besiege einen Boss ohne Heiltrank", "4kB!|Besiege den Mondherrn", "4b|Baue eine Arena für einen Bosskampf",
+      "2tT|Teilt euch die Beute einer Kiste", "3tTB|Besiegt einen Boss gemeinsam", "1fT|Färbt eure Kleidung in derselben Farbe",
+    ],
+  },
+  {
+    id: "stardew", name: "Stardew Valley", aliases: ["stardew valley", "stardew"],
+    caps: { build: true, team: true, solo: true },
+    tasks: [
+      "1c|Pflanze 15 Pastinaken und ernte sie", "1c|Fange einen Fisch", "1e|Besuche jedes Haus in Pelikanstadt", "1f|Mach jemandem ein Geschenk, das er liebt", "1c|Sammle 5 verschiedene Waldfunde",
+      "1b|Stelle eine Vogelscheuche auf", "1p|Erfülle eine Aufgabe vom Schwarzen Brett", "1c|Gieße an einem Tag alle Pflanzen", "1e|Besuche den Strand",
+      "2c|Vollende ein Bündel im Gemeinschaftszentrum", "2e|Erreiche Ebene 40 in der Mine", "2b|Baue einen Hühnerstall", "2c|Verdiene an einem Tag 5.000 g", "2c|Fange einen Fisch im Regen",
+      "2f|Nimm am Eierfest teil", "2c|Spende 10 Gegenstände an das Museum", "2b|Verbessere ein Werkzeug beim Schmied", "2c|Stelle einen Bewässerungs-Sprinkler her",
+      "3e|Erreiche Ebene 120 in der Mine", "3c|Vollende einen ganzen Raum im Gemeinschaftszentrum", "3c|Fange 30 verschiedene Fischarten", "3b|Baue eine Scheune aus", "3f|Erreiche 8 Herzen bei einer Person",
+      "3c|Verdiene 100.000 g insgesamt", "3h|Schaffe einen Tag ohne Energie aufzubrauchen und ohne Pause im Bett",
+      "4c|Vollende das Gemeinschaftszentrum", "4e|Erreiche Ebene 100 in der Schädelhöhle", "4c|Spende alle Mineralien und Artefakte einer Sorte", "4f|Heirate jemanden", "4c|Fange die Legende",
+      "1tT|Erntet gemeinsam ein Feld", "2tT|Geht zusammen fischen", "3tT|Erreicht gemeinsam Ebene 80 in der Mine",
+    ],
+  },
+  {
+    id: "rocketleague", name: "Rocket League", aliases: ["rocket league", "rocketleague"],
+    caps: { team: true, solo: true },
+    tasks: [
+      "1k|Schieß ein Tor", "1k|Halte einen Schuss", "1f|Schreib im Chat „Was für ein Schuss!“ nach einem gegnerischen Tor", "1e|Spiele eine Runde auf einer Arena, die du selten spielst",
+      "1k|Gewinne einen Anstoß", "1p|Schließe eine Wochenherausforderung ab", "1k|Gib eine Vorlage",
+      "2k|Erziele einen Kopfball-Treffer", "2k|Schieß ein Tor aus der eigenen Hälfte", "2k|Rette einen Ball von der Torlinie", "2h|Gewinne ein Spiel, ohne ein Gegentor zu kassieren", "2k|Erziele einen Hattrick",
+      "2f|Spiele eine Runde in einem Extra-Modus (z. B. Hoops oder Snow Day)", "2k|Zerstöre ein gegnerisches Auto mit Boost", "2h|Gewinne ein Spiel in der Verlängerung",
+      "3k|Erziele ein Tor aus der Luft", "3k|Erziele ein Tor mit einem Wandschuss", "3h|Gewinne 3 Ranglistenspiele hintereinander", "3k|Erziele ein Tor mit einem Air-Dribbling",
+      "3h|Gewinne ein Spiel ohne Boost zu sammeln", "3p|Steige in der Rangliste eine Division auf",
+      "4k|Erziele ein Ceiling-Shot-Tor", "4h|Gewinne ein Spiel mit 5 Toren Unterschied", "4p|Steige in der Rangliste einen ganzen Rang auf", "4h|Gewinne 5 Ranglistenspiele hintereinander", "4k|Erziele ein Musty-Flick-Tor",
+      "2tT|Spielt einen Doppelpass, aus dem ein Tor wird", "3tT|Gewinnt ein Spiel, in dem jeder von euch trifft", "1fT|Benutzt nur Schnell-Chat",
+    ],
+  },
+  {
+    id: "cs2", name: "Counter-Strike 2", aliases: ["counter-strike 2", "counter strike 2", "cs2", "counter-strike", "csgo", "cs:go"],
+    caps: { team: true, solo: true },
+    tasks: [
+      "1k|Erziele 10 Kills in einem Spiel", "1k|Lege die Bombe", "1k|Gewinne eine Runde", "1f|Kauf eine Waffe, die du sonst nie benutzt", "1k|Erziele einen Kopfschuss", "1e|Spiele eine Karte, die du lange nicht gespielt hast",
+      "2k|Entschärfe die Bombe", "2k|Gewinne eine Pistolenrunde", "2k|Erziele einen Kill mit dem Messer oder Taser", "2k|Gewinne eine Eco-Runde", "2k|Erziele einen Kill durch eine Rauchgranate hindurch",
+      "2h|Gewinne ein Spiel im Wettkampf- oder Premier-Modus", "2k|Erziele 3 Kills in einer Runde",
+      "3k|Gewinne ein 1-gegen-2", "3k|Erziele 4 Kills in einer Runde", "3k|Erziele einen Kill mit der AWP auf große Entfernung", "3h|Beende ein Spiel als bester Spieler deines Teams", "3k|Erziele 5 Kopfschüsse in einem Spiel",
+      "4k|Erziele ein Ace (5 Kills in einer Runde)", "4k|Gewinne ein 1-gegen-3", "4h|Gewinne ein Spiel mit mindestens 13:5", "4h|Spiele ein Spiel mit mehr als 25 Kills", "4p|Verbessere dein Premier-Rating",
+      "2tT|Gewinnt eine Runde mit einer abgesprochenen Taktik", "3tT|Entschärft die Bombe, während ein Mitspieler Deckung gibt", "1fT|Kauft alle dieselbe Waffe in einer Runde",
+    ],
+  },
+  {
+    id: "valorant", name: "Valorant", aliases: ["valorant"],
+    caps: { team: true, solo: true },
+    tasks: [
+      "1k|Erziele 10 Kills in einem Spiel", "1k|Setze jede Fähigkeit deines Agenten mindestens einmal ein", "1k|Pflanze den Spike", "1f|Spiele einen Agenten, den du noch nie gespielt hast", "1k|Gewinne eine Runde",
+      "2k|Entschärfe den Spike", "2k|Setze dein Ultimate ein und gewinne die Runde", "2k|Gewinne eine Pistolenrunde", "2k|Erziele einen Kill mit dem Messer", "2k|Erziele 3 Kills in einer Runde",
+      "2f|Spiele eine Runde Spike Rush oder Deathmatch", "2h|Gewinne ein Spiel",
+      "3k|Gewinne ein Clutch (1 gegen 2)", "3k|Erziele 4 Kills in einer Runde", "3k|Erziele 5 Kopfschüsse in einem Spiel", "3h|Beende ein Spiel als bester Spieler deines Teams", "3k|Erziele einen Kill mit dem Operator",
+      "4k|Erziele ein Ace", "4k|Gewinne ein Clutch (1 gegen 3)", "4h|Gewinne ein Ranglistenspiel mit 13:6 oder besser", "4p|Steige in der Rangliste auf",
+      "2tT|Kombiniert zwei Fähigkeiten für einen Kill", "3tT|Gewinnt eine Runde ohne Verlust", "1fT|Wählt alle Agenten derselben Rolle",
+    ],
+  },
+  {
+    id: "fortnite", name: "Fortnite", aliases: ["fortnite"],
+    caps: { build: true, team: true, solo: true },
+    note: "Battle Royale – Karte und Gegenstände wechseln mit jeder Saison, die Aufgaben bleiben deshalb allgemein",
+    tasks: [
+      "1e|Lande an einem Ort, an dem du noch nie gelandet bist", "1c|Öffne 5 Truhen", "1k|Erziele eine Eliminierung", "1s|Überlebe bis zu den letzten 25 Spielern", "1f|Tanze mit einem Emote nach einer Eliminierung",
+      "1c|Sammle eine Waffe jeder Seltenheit", "1p|Erledige einen Saisonauftrag",
+      "2k|Erziele 3 Eliminierungen in einem Spiel", "2s|Erreiche die Top 10", "2c|Sammle 500 Materialien", "2e|Fahre ein Fahrzeug über die halbe Karte", "2b|Baue im Kampf eine Deckung, die dich rettet", "2s|Überlebe 30 Sekunden im Sturm",
+      "3k|Erziele 5 Eliminierungen in einem Spiel", "3s|Erreiche die Top 3", "3h|Gewinne einen Kampf mit nur grauen Waffen", "3k|Eliminiere einen Gegner aus über 100 Metern",
+      "4p|Gewinne ein Spiel (Victory Royale)", "4k|Erziele 10 Eliminierungen in einem Spiel", "4h|Gewinne ein Spiel ohne Heilgegenstände", "4h|Erreiche die Top 5 ohne eine einzige Truhe zu öffnen",
+      "2tT|Belebe einen Mitspieler wieder", "3tT|Gewinnt einen Kampf gegen ein volles Team", "4tT|Gewinnt zusammen ein Spiel", "1fT|Landet alle am selben Ort",
+    ],
+  },
+  {
+    id: "lethalcompany", name: "Lethal Company", aliases: ["lethal company"],
+    caps: { team: true, solo: true, survival: true },
+    tasks: [
+      "1c|Bringe einen Gegenstand zurück zum Schiff", "1e|Betritt die Anlage über den Haupteingang", "1c|Kaufe eine Taschenlampe im Terminal", "1s|Überlebe einen ganzen Tag", "1f|Sprich über ein Walkie-Talkie",
+      "2c|Erfülle die Quote", "2e|Finde einen Notausgang", "2c|Bringe 3 Gegenstände in einem Ausflug zurück", "2s|Entkomme einem Monster", "2c|Verkaufe Schrott bei der Firma",
+      "3s|Überlebe einen Tag auf einem gefährlichen Mond", "3c|Erfülle drei Quoten hintereinander", "3h|Schaffe einen Tag ohne Taschenlampe", "3c|Bringe einen schweren Gegenstand allein zum Schiff",
+      "4h|Erfülle eine Quote, ohne dass jemand stirbt", "4c|Erreiche die fünfte Quote", "4s|Überlebe einen Tag bei einem Wetterereignis",
+      "1tT|Lotse einen Mitspieler per Funk durch die Anlage", "2tT|Bergt gemeinsam die Leiche eines Mitspielers", "3tT|Kommt alle lebend zum Schiff zurück", "1fT|Benutze das Terminal, um eine Tür für einen Mitspieler zu öffnen",
+    ],
+  },
+  {
+    id: "phasmophobia", name: "Phasmophobia", aliases: ["phasmophobia"],
+    caps: { team: true, solo: true },
+    tasks: [
+      "1e|Finde den Geisterraum", "1c|Mache ein Foto von einem Beweis", "1c|Lege ein Geisterbuch aus", "1s|Überlebe einen Auftrag", "1c|Nutze das EMF-Gerät", "1e|Zünde eine Kerze an",
+      "2c|Finde 3 Beweise", "2p|Bestimme den Geist richtig", "2s|Überstehe eine Jagd, indem du dich versteckst", "2c|Erledige alle Nebenziele", "2e|Spiele auf einer Karte, die du noch nicht kennst",
+      "3p|Bestimme den Geist auf Schwierigkeit „Profi“", "3h|Bestimme den Geist ohne Fotokamera", "3s|Überlebe zwei Jagden in einem Auftrag", "3c|Mache ein Foto vom Geist",
+      "4p|Bestimme den Geist auf Schwierigkeit „Albtraum“", "4h|Bestimme den Geist ohne Licht im Haus", "4h|Bestimme den Geist mit nur einem Beweis",
+      "1tT|Ruft den Geist gemeinsam beim Namen", "2tT|Rettet einen Mitspieler mit einem Kruzifix", "3tT|Kommt alle lebend aus einem Auftrag", "1fT|Benutzt nur die Funkgeräte",
+    ],
+  },
+  {
+    id: "subnautica", name: "Subnautica", aliases: ["subnautica"],
+    caps: { build: true, solo: true, survival: true }, note: "Ohne „Below Zero“",
+    tasks: [
+      "1c|Stelle eine Sauerstoffflasche her", "1c|Repariere die Rettungskapsel", "1c|Fange und brate einen Fisch", "1e|Erkunde das Sicherheitsriff", "1c|Stelle ein Messer her", "1c|Stelle einen Scanner her",
+      "2c|Baue einen Seegleiter", "2b|Baue einen Lebensraum", "2e|Erkunde das Wrack der Aurora von außen", "2c|Scanne 10 verschiedene Lebewesen", "2e|Tauche tiefer als 200 Meter", "2c|Baue einen Moonpool",
+      "3c|Baue das Seemotte-U-Boot", "3e|Betritt die Aurora", "3e|Erkunde die Blutsee", "3b|Baue einen Lebensraum mit mindestens 5 Räumen", "3s|Überlebe einen Ausflug ins Grasland bei Nacht",
+      "4c|Baue die Zyklop", "4c|Baue den PRAWN-Anzug", "4e!|Erreiche die Lavazone", "4h|Erreiche 500 Meter Tiefe", "4e!|Finde die Primäre Eindämmungsanlage",
+    ],
+  },
+  {
+    id: "seaofthieves", name: "Sea of Thieves", aliases: ["sea of thieves"],
+    caps: { team: true, solo: true },
+    tasks: [
+      "1e|Segle zu einer Insel, die du noch nicht kennst", "1c|Grabe einen Schatz aus", "1c|Fange einen Fisch", "1f|Spiele ein Musikinstrument", "1c|Repariere ein Leck im Schiff", "1k|Besiege ein Skelett",
+      "2c|Verkaufe eine Schatzkiste bei einem Außenposten", "2k|Besiege einen Skelettkapitän", "2e|Folge einer Schatzkarte mit Rätsel", "2s|Überlebe einen Sturm auf See", "2c|Schließe eine Reise einer Handelsgesellschaft ab",
+      "3kB|Besiege einen Kraken", "3kB|Besiege einen Megalodon", "3k|Gewinne ein Schiffsgefecht", "3e|Schließe eine Festung ab",
+      "4kB|Besiege ein Skelettschiff", "4k|Gewinne ein Gefecht gegen eine Crew", "4p|Erreiche eine neue Stufe in einer Handelsgesellschaft",
+      "1tT|Steuert das Schiff zu zweit (einer am Steuer, einer an den Segeln)", "2tT|Rettet einen Mitspieler aus dem Wasser", "3tT|Liefert eine Schatzkiste gemeinsam ab", "1fT|Spielt gemeinsam ein Lied",
+    ],
+  },
+  {
+    id: "bg3", name: "Baldur's Gate 3", aliases: ["baldur's gate 3", "baldurs gate 3", "bg3", "baldur's gate iii"],
+    caps: { boss: true, team: true, solo: true },
+    tasks: [
+      "1f|Bestehe eine Würfelprobe im Gespräch", "1c|Öffne eine verschlossene Truhe", "1e|Kehre zum Lager zurück und ruhe dich aus", "1f|Sprich mit einem Tier", "1k|Gewinne einen Kampf", "1c|Finde ein seltenes Item",
+      "2p|Steige eine Stufe auf", "2c|Nimm einen neuen Begleiter auf", "2k|Gewinne einen Kampf mit einer Umgebungsfalle", "2f|Überrede jemanden, nicht zu kämpfen", "2e|Finde einen versteckten Durchgang",
+      "3k|Gewinne einen Kampf, ohne dass ein Gruppenmitglied fällt", "3h|Bestehe eine Würfelprobe mit Schwierigkeit 20 oder höher", "3p|Schließe Akt 1 ab",
+      "4h|Gewinne einen Bosskampf ohne Heiltränke", "4p|Schließe Akt 2 ab", "4h|Spiele einen Abschnitt im Modus „Taktiker“",
+      "2tT|Teilt euch im Koop die Gespräche auf", "3tT|Gewinnt einen Kampf mit einer abgestimmten Kombination", "1fT|Lasst jeden eine andere Klasse spielen",
+    ],
+  },
+  {
+    id: "forzahorizon", name: "Forza Horizon", aliases: ["forza horizon", "forza horizon 5", "forza horizon 4", "forza horizon 6"],
+    caps: { team: true, solo: true },
+    tasks: [
+      "1e|Fahre zu einem neuen Festival-Ort", "1f|Mache ein Foto im Foto-Modus", "1c|Kaufe ein neues Auto", "1k|Gewinne ein Straßenrennen", "1e|Zerstöre 10 Bonusschilder",
+      "2k|Gewinne ein Rennen mit einem Auto unter Klasse B", "2c|Tune ein Auto im Upgrade-Menü", "2e|Finde ein Scheunenfund-Auto", "2k|Erreiche 3 Sterne in einer Gefahrenzone", "2f|Gewinne ein Rennen mit Lenkradsicht",
+      "3k|Gewinne ein Rennen auf der Schwierigkeit „Profi“", "3h|Gewinne ein Rennen ohne Rückspulen", "3k|Erreiche 3 Sterne an einer Geschwindigkeitsfalle", "3c|Sammle 10 Autos einer Marke",
+      "4h|Gewinne ein Rennen auf der höchsten Schwierigkeit ohne Rückspulen", "4k|Gewinne ein Online-Rennen", "4c|Kaufe ein Auto der Klasse X",
+      "2tT|Fahrt einen Konvoi über die Karte", "3tT|Gewinnt ein Team-Rennen",
+    ],
+  },
+  {
+    id: "eafc", name: "EA SPORTS FC", aliases: ["ea sports fc", "ea fc", "fc 25", "fc 26", "ea sports fc 25", "ea sports fc 26", "fifa"],
+    caps: { team: true, solo: true },
+    tasks: [
+      "1k|Schieß ein Tor", "1k|Gewinne ein Spiel", "1f|Spiele mit einem Verein aus einer unteren Liga", "1k|Verwandle einen Elfmeter", "1k|Gib eine Torvorlage",
+      "2k|Erziele ein Kopfballtor", "2k|Erziele ein Tor von außerhalb des Strafraums", "2h|Gewinne ohne Gegentor", "2k|Erziele einen Doppelpack", "2k|Erziele ein Tor nach einer Ecke",
+      "3k|Erziele einen Hattrick", "3k|Erziele ein Freistoßtor", "3h|Gewinne auf der Schwierigkeit „Weltklasse“", "3h|Drehe ein Spiel nach Rückstand",
+      "4h|Gewinne auf der Schwierigkeit „Legende“", "4k|Gewinne ein Online-Spiel mit 3 Toren Unterschied", "4h|Gewinne 5 Online-Spiele hintereinander",
+      "2tT|Spielt gemeinsam und gewinnt", "3tT|Erzielt ein Tor, an dem alle beteiligt sind",
+    ],
+  },
+];
+
+/** Genre sets for games without own tasks – honest and general, nothing game-specific is claimed. */
+export const GENRES: Record<string, { name: string; caps: CatalogGame["caps"]; tasks: string[] }> = {
+  generic: { name: "Allgemein", caps: { team: true, solo: true, boss: true }, tasks: [
+    "1e|Betritt ein neues Gebiet", "1c|Finde einen neuen Gegenstand", "1f|Mach einen schönen Screenshot", "1p|Erledige eine Nebenaufgabe", "1k|Gewinne einen Kampf oder eine Runde", "1e|Sprich mit einer Figur, die du noch nicht kennst",
+    "1f|Probiere eine Einstellung oder Steuerung aus, die du noch nie benutzt hast", "1c|Verbessere einen Gegenstand oder ein Fahrzeug",
+    "2p|Schalte einen Erfolg frei", "2e|Finde ein Geheimnis oder einen versteckten Ort", "2h|Schaffe einen Abschnitt ohne zu sterben", "2c|Vervollständige eine kleine Sammlung", "2p|Steige eine Stufe auf", "2f|Spiele mit einer Ausrüstung, die du sonst nie nimmst",
+    "2e|Erkunde ein Gebiet, das du bisher ausgelassen hast", "2k|Gewinne einen Kampf, ohne Schaden zu nehmen",
+    "3kB|Besiege einen Boss", "3h|Schaffe eine Herausforderung auf höherer Schwierigkeit", "3p|Schließe ein Kapitel oder eine Hauptaufgabe ab", "3h|Spiele 30 Minuten ohne Pause-Menü", "3c|Finde einen sehr seltenen Gegenstand",
+    "4h|Besiege einen Boss beim ersten Versuch", "4p|Schalte einen seltenen Erfolg frei (unter 10 % der Spieler)", "4h|Schließe einen Abschnitt ohne Heilung ab", "4h|Stelle einen persönlichen Rekord auf",
+    "1tT|Spielt eine Runde gemeinsam", "2tT|Rette einen Mitspieler", "3tT|Erreicht gemeinsam ein Ziel ohne Ausfall", "1fT|Gebt euch gegenseitig einen Spitznamen im Spiel",
+  ] },
+  survival: { name: "Survival", caps: { build: true, team: true, solo: true, survival: true }, tasks: [
+    "1s|Überlebe die erste Nacht", "1c|Sammle Holz und Stein", "1b|Baue einen Unterschlupf", "1c|Finde etwas zu essen", "1c|Stelle ein Werkzeug her",
+    "2b|Baue eine Basis mit Lager", "2s|Überlebe drei Tage", "2c|Stelle eine bessere Rüstung her", "2e|Entdecke ein neues Biom oder Gebiet", "2c|Lege einen Vorrat an Nahrung an",
+    "3s|Überlebe eine Nacht ohne Unterschlupf", "3b|Baue eine automatische oder große Produktion", "3k|Besiege einen starken Gegner", "3e|Erkunde den gefährlichsten Ort, den du kennst",
+    "4s|Überlebe 10 Tage ohne zu sterben", "4kB|Besiege einen Boss", "4h|Überlebe einen Tag nur mit selbst gesammelter Ausrüstung",
+    "1tT|Baut gemeinsam ein Lagerfeuer oder Lager", "2tT|Teilt eure Vorräte", "3tT|Überlebt eine Nacht zusammen ohne Ausfall",
+  ] },
+  horror: { name: "Horror", caps: { team: true, solo: true }, tasks: [
+    "1s|Spiele mit Kopfhörern im Dunkeln", "1e|Erkunde einen dunklen Raum ganz", "1f|Erschrecke dich und lache darüber", "1c|Finde eine Notiz oder einen Hinweis",
+    "2s|Entkomme einer Verfolgung", "2e|Löse ein Rätsel", "2h|Spiele 20 Minuten ohne Licht im Zimmer", "2c|Finde einen versteckten Gegenstand",
+    "3s|Schaffe einen Abschnitt ohne entdeckt zu werden", "3h|Spiele ohne Taschenlampe weiter, so lange es geht", "3p|Schließe ein Kapitel ab",
+    "4h|Schließe das Spiel oder einen Lauf ab, ohne zu sterben", "4s|Überlebe die schwerste Verfolgung beim ersten Versuch",
+    "1tT|Schickt den Mutigsten vor", "2tT|Rettet einen Mitspieler", "3tT|Kommt alle lebend raus",
+  ] },
+  openworld: { name: "Open World", caps: { team: true, solo: true, boss: true }, tasks: [
+    "1e|Erreiche den höchsten Punkt in der Nähe", "1e|Entdecke einen neuen Ort auf der Karte", "1f|Mache ein Panorama-Foto", "1c|Kaufe oder finde ein neues Ausrüstungsteil", "1p|Erledige eine Nebenaufgabe",
+    "2e|Reise ohne Schnellreise quer über die Karte", "2e|Finde einen versteckten Ort", "2p|Schließe eine Nebenquest-Reihe ab", "2c|Sammle 10 Sammelobjekte",
+    "3kB|Besiege einen optionalen Boss", "3e|Decke eine ganze Region auf", "3h|Erledige eine Aufgabe nur zu Fuß",
+    "4e|Finde alle Geheimnisse einer Region", "4p|Schließe eine Hauptgeschichte ab", "4h|Besiege einen sehr starken optionalen Gegner",
+  ] },
+  racing: { name: "Rennspiel", caps: { team: true, solo: true }, tasks: [
+    "1k|Gewinne ein Rennen", "1f|Fahre ein Rennen in der Innenansicht", "1c|Kaufe ein neues Fahrzeug", "1e|Fahre auf einer neuen Strecke",
+    "2k|Gewinne ein Rennen von der letzten Startposition", "2h|Fahre eine fehlerfreie Runde", "2c|Tune ein Fahrzeug",
+    "3h|Gewinne ein Rennen ohne Rückspulen", "3k|Stelle eine persönliche Bestzeit auf", "3k|Gewinne auf höherer Schwierigkeit",
+    "4h|Gewinne auf der höchsten Schwierigkeit", "4k|Gewinne ein Online-Rennen",
+    "2tT|Fahrt ein Rennen gegeneinander", "3tT|Gewinnt eine Team-Wertung",
+  ] },
+  shooter: { name: "Shooter", caps: { team: true, solo: true }, tasks: [
+    "1k|Erziele 5 Treffer oder Kills", "1k|Gewinne eine Runde", "1f|Benutze eine Waffe, die du sonst nie nimmst", "1e|Spiele eine neue Karte",
+    "2k|Erziele 3 Kills hintereinander", "2k|Erziele einen Kopfschuss auf große Entfernung", "2h|Gewinne ein Spiel",
+    "3k|Gewinne ein Duell gegen zwei Gegner", "3h|Beende ein Spiel als Bester deines Teams", "3k|Erziele 5 Kills in einer Runde oder Phase",
+    "4k|Erziele die meisten Kills im ganzen Spiel", "4h|Gewinne ein Spiel ohne zu sterben",
+    "2tT|Gewinnt eine Runde mit abgesprochener Taktik", "3tT|Gewinnt ein Spiel gemeinsam",
+  ] },
+  coop: { name: "Koop", caps: { team: true, solo: false }, tasks: [
+    "1tT|Spielt eine Runde gemeinsam", "1fT|Lacht gemeinsam über einen Fehler", "1tT|Teilt einen Gegenstand", "1fT|Jemand verläuft sich",
+    "2tT|Rettet einen Mitspieler", "2tT|Löst ein Rätsel gemeinsam", "2fT|Macht ein Gruppenfoto", "2tT|Führt einen abgesprochenen Plan aus",
+    "3tT|Schafft einen Abschnitt ohne Ausfall", "3tT|Besiegt einen schweren Gegner gemeinsam", "3hT|Spielt eine Runde ohne Voice-Chat",
+    "4tT|Schließt eine schwere Mission gemeinsam ab", "4hT|Schafft einen Abschnitt auf der höchsten Schwierigkeit",
+  ] },
+  strategy: { name: "Strategie", caps: { build: true, team: true, solo: true }, tasks: [
+    "1b|Errichte ein neues Gebäude", "1c|Sammle eine Ressource auf 500", "1e|Erkunde die halbe Karte", "1p|Erforsche eine neue Technologie",
+    "2b|Gründe eine zweite Basis oder Stadt", "2k|Gewinne ein Gefecht", "2p|Erreiche ein neues Zeitalter oder eine neue Stufe", "2c|Baue eine Armee aus 3 Einheitentypen",
+    "3k|Gewinne ein Spiel gegen die KI", "3h|Gewinne ohne eine bestimmte Einheit", "3b|Baue eine Verteidigung, die einen Angriff abwehrt",
+    "4h|Gewinne auf der schwersten KI-Stufe", "4k|Gewinne ein Online-Spiel",
+    "2tT|Gewinnt gemeinsam gegen die KI", "3tT|Unterstützt euch mit Ressourcen",
+  ] },
+  sports: { name: "Sport", caps: { team: true, solo: true }, tasks: [
+    "1k|Erziele einen Punkt oder ein Tor", "1k|Gewinne ein Spiel", "1f|Spiele mit einem Team, das du nie nimmst",
+    "2h|Gewinne ohne Gegenpunkt", "2k|Erziele zwei Punkte oder Tore in einem Spiel", "2h|Drehe ein Spiel",
+    "3h|Gewinne auf hoher Schwierigkeit", "3k|Erziele einen Hattrick oder Rekord",
+    "4h|Gewinne auf der höchsten Schwierigkeit", "4k|Gewinne ein Online-Spiel",
+    "2tT|Gewinnt zusammen", "3tT|Jeder von euch punktet",
+  ] },
+};
+
+export const GENRE_IDS = Object.keys(GENRES);

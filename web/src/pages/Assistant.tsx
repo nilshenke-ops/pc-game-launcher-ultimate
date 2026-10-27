@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bot, Cpu, KeyRound, Mic, MicOff, Plus, RefreshCw, Send, Settings2, Sparkles, Undo2, User } from "lucide-react";
+import { Bot, Cpu, Grid3x3, KeyRound, Mic, MicOff, Plus, RefreshCw, Send, Settings2, Sparkles, Undo2, User } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
@@ -10,6 +10,8 @@ import { getPrefs, setPrefs } from "../lib/prefs";
 import { navItems } from "../lib/nav";
 import type { SetupOp } from "../lib/assistant-setup";
 import type { LibraryItem } from "../lib/types";
+import { useJournal } from "../lib/journal";
+import type { Card as BingoCard } from "../lib/bingo";
 
 interface Status {
   mode: "local" | "ollama" | "claude"; model: string; free: boolean;
@@ -17,6 +19,42 @@ interface Status {
   models: { id: string; label: string; input: number; output: number; cacheRead: number; note: string }[];
   usage: { month: string; requests: number; inputTokens: number; outputTokens: number; costUsd: number };
   examples: string[];
+  bingoAi?: "assistant" | "deepseek"; bingoProvider?: string | null;
+  deepSeek?: { keySet: boolean; model: string; monthlyRequests: number; used: number; inputTokens: number; outputTokens: number };
+}
+
+/** Which AI writes bingo tasks – the assistant's own (above) or DeepSeek with an own key (only entered at the PC). */
+function BingoAiCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
+  const ds = st.deepSeek;
+  const [key, setKey] = useState("");
+  const [model, setModel] = useState(ds?.model ?? "deepseek-flash");
+  const [cap, setCap] = useState(String(ds?.monthlyRequests ?? 200));
+  if (!ds) return null;
+  return (
+    <Card title={t("Bingo-KI")} icon={<Grid3x3 size={18} />} className="flat">
+      <div className="stack-sm">
+        <p className="small muted">{t("Schreibt die Aufgaben für „Ultimate Gaming Bingo“. Ohne KI kommen sie aus dem eingebauten Katalog (0 €). Gerade aktiv: {p}.", { p: st.bingoProvider ?? t("Katalog") })}</p>
+        <Segmented value={st.bingoAi ?? "assistant"} label={t("Bingo-KI")} onChange={(v) => void save({ bingoAi: v })}
+          options={[{ value: "assistant", label: t("Wie der Assistent") }, { value: "deepseek", label: "DeepSeek" }]} />
+        {atPc ? (
+          <form className="row" onSubmit={(e) => { e.preventDefault(); if (key.trim()) void save({ deepSeekKey: key.trim() }, t("Schlüssel gespeichert")).then(() => setKey("")); }}>
+            <Field label={ds.keySet ? t("DeepSeek-Schlüssel (gespeichert – neu eintragen zum Ersetzen)") : t("DeepSeek-API-Schlüssel")} hint={t("Bekommst du auf platform.deepseek.com → API Keys (kostenpflichtig, Abrechnung bei DeepSeek). Wird nur auf diesem PC verschlüsselt gespeichert, nie angezeigt und nie ins Backup geschrieben.")}>
+              <input className="input mono" type="password" autoComplete="off" value={key} placeholder="sk-…" onChange={(e) => setKey(e.target.value)} />
+            </Field>
+            <Button type="submit" icon={<KeyRound size={16} />} disabled={!key.trim()}>{t("Speichern")}</Button>
+            {ds.keySet && <Button variant="danger" onClick={() => void save({ deepSeekKey: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
+          </form>
+        ) : <p className="small muted">{ds.keySet ? t("Ein DeepSeek-Schlüssel ist auf dem PC gespeichert.") : t("Den DeepSeek-Schlüssel trägst du direkt am PC ein – er verlässt den PC nie.")}</p>}
+        <form className="row" onSubmit={(e) => { e.preventDefault(); void save({ deepSeekModel: model.trim(), deepSeekMonthlyRequests: Number(cap) || 0 }); }}>
+          <Field label={t("Modell")} hint={t("„deepseek-flash“ ist laut DeepSeek das Modell DeepSeek-V4.1-Flash. Es wird genau dieses Modell angefragt – nie heimlich ein anderes.")}><input className="input mono" value={model} maxLength={60} onChange={(e) => setModel(e.target.value)} /></Field>
+          <Field label={t("Höchstens Anfragen pro Monat")}><input className="input" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} /></Field>
+          <Button type="submit">{t("Übernehmen")}</Button>
+        </form>
+        <p className="small">{t("Diesen Monat: {n} von {m} DeepSeek-Anfragen ({i} Eingabe- und {o} Ausgabe-Tokens). Die Kosten rechnet DeepSeek direkt mit dir ab.", { n: ds.used, m: ds.monthlyRequests, i: ds.inputTokens, o: ds.outputTokens })}</p>
+        <p className="tiny muted">{t("Hinweis: Freebuff ist ein Programmier-Werkzeug – sein kostenloses DeepSeek-Kontingent kann diese Website nicht nutzen. Dafür braucht es einen eigenen DeepSeek-API-Schlüssel. Mit DeepSeek gehen Spielname, Einstellungen und ausgeschlossene Aufgaben an DeepSeek, sonst nichts.")}</p>
+      </div>
+    </Card>
+  );
 }
 
 const doneText = (kind: string) => ({
@@ -93,6 +131,7 @@ function SettingsDialog({ st, onClose }: { st: Status; onClose: () => void }) {
             options={[{ value: "local", label: t("Lokal (0 €)") }, { value: "ollama", label: t("Lokale KI (0 €)") }, { value: "claude", label: t("Claude (kostenpflichtig)") }]} />
         </Field>
         {view === "ollama" && <OllamaCard st={st} atPc={atPc} save={save} />}
+        <BingoAiCard st={st} atPc={atPc} save={save} />
         {view === "claude" && !st.keySet && <Banner kind="info">{t("Claude kostet pro Anfrage Geld (dein Anthropic-Konto). Für 0 € nimm „Lokal“ oder „Lokale KI“.")}</Banner>}
         {view === "claude" && <Card title={t("Claude")} icon={<Sparkles size={18} />} className="flat">
           <div className="stack-sm">
@@ -128,6 +167,16 @@ function SettingsDialog({ st, onClose }: { st: Status; onClose: () => void }) {
   );
 }
 
+const BingoBoardLazy = lazy(() => import("../components/bingo-board").then((m) => ({ default: m.BingoBoard })));
+
+/** A bingo made in the chat, playable right here (still the same card as on the bingo page). */
+function ChatBingo({ id }: { id: string }) {
+  const cards = useJournal<BingoCard>("bingo");
+  const e = cards.find((c) => c.id === id);
+  if (!e) return <span className="tiny muted">{t("Dieses Bingo wurde gelöscht.")}</span>;
+  return <div className="as-bingo"><b className="small">{e.data.title}</b><BingoBoardLazy e={e} /></div>;
+}
+
 function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
@@ -161,6 +210,7 @@ function Turn({ turn, onSuggest }: { turn: ChatState["turns"][number]; onSuggest
       <Bot size={18} aria-hidden />
       <div className="as-bubble">
         <div className="as-text">{r.text}</div>
+        {turn.bingoId && <Suspense fallback={null}><ChatBingo id={turn.bingoId} /></Suspense>}
         {r.actions.length > 0 && (
           <div className="row as-actions">
             {r.actions.map((a, i) => (
@@ -207,6 +257,15 @@ export default function Assistant() {
       const { setupReply } = await import("../lib/assistant-setup");
       const setup = setupReply(question, getPrefs(), navItems());
       if (setup) { setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: setup }] })); return; }
+      // Bingo ("Erstelle ein 4×4-Bingo für Minecraft auf mittel"): made here, tasks from the PC's AI or the catalog.
+      const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
+      const { isBingoRequest } = await import("../lib/bingo");
+      if (isBingoRequest(question, !!previousBingo)) {
+        const { bingoFromChat } = await import("../lib/bingo-chat");
+        const b = await bingoFromChat(question, previousBingo, { online, provider: online ? st.data?.bingoProvider ?? null : null });
+        setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: b.reply, bingoId: b.bingoId }] }));
+        return;
+      }
       if (!online) {
         // Without a PC: the help built into the app answers right here in the browser (no internet, 0 €).
         const [{ answerOffline }, lib] = await Promise.all([import("../lib/assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);

@@ -33,7 +33,8 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   editions: (id) => `/infos?tab=editions&id=${id}`,
   recfav: () => `/infos?tab=recs`,
   recpref: () => `/infos?tab=recs`,
-  bingo: () => `/play?tab=bingo`,
+  bingo: (id) => `/play?tab=bingo&id=${id}`,
+  bingotask: () => `/play?tab=bingo&area=own`,
   photo: (id) => `/media?tab=museum&id=${id}`,
   album: (id) => `/media?tab=museum&album=${id}`,
   book: (id) => `/media?tab=book&id=${id}`,
@@ -43,7 +44,7 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   design: (id) => `/studio?tab=designs&id=${id}`,
   expo: (id) => `/studio?tab=expo&id=${id}`,
 };
-export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", access: "Barrierefreiheit", release: "Release", gameevent: "Saison / Event", patch: "Patchnotes", editions: "Editionen & DLCs", recfav: "Gemerkte Empfehlung", recpref: "Vorlieben", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack", card: "Sammelkarte", design: "Poster / Banner", expo: "Ausstellung" };
+export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", bingotask: "Eigene Bingo-Aufgabe", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", access: "Barrierefreiheit", release: "Release", gameevent: "Saison / Event", patch: "Patchnotes", editions: "Editionen & DLCs", recfav: "Gemerkte Empfehlung", recpref: "Vorlieben", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack", card: "Sammelkarte", design: "Poster / Banner", expo: "Ausstellung" };
 
 export function entryTitle(e: Entry): string {
   const d = e.data as { title?: string; text?: string; did?: string; gameName?: string };

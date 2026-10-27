@@ -143,7 +143,7 @@ public sealed class OllamaAssistant
     public sealed record TextResult(string Text, long PromptTokens, long OutputTokens);
 
     /// <summary>One answer without tools – for generated content that is checked afterwards (bingo tasks).</summary>
-    public async Task<TextResult> CompleteAsync(string url, string model, string system, string prompt, CancellationToken ct = default)
+    public async Task<TextResult> CompleteAsync(string url, string model, string system, string prompt, CancellationToken ct = default, bool json = false)
     {
         if (string.IsNullOrWhiteSpace(model)) throw new RpcException("assistant-ollama", "Kein Modell gewählt – unter Assistent → Einrichten ein installiertes Modell auswählen.");
         var body = new JsonObject
@@ -156,6 +156,7 @@ public sealed class OllamaAssistant
             },
             ["options"] = new JsonObject { ["temperature"] = 0.7, ["num_ctx"] = 4096 },
         };
+        if (json) body["format"] = "json";
         HttpResponseMessage resp;
         try { resp = await _http.PostAsync(url.TrimEnd('/') + "/api/chat", JsonContent.Create(body), ct); }
         catch (HttpRequestException) { throw NotRunning(); }

@@ -6,7 +6,7 @@ export interface OverlayWidgetPlace { id: string; visible: boolean; x: number; y
 export interface OverlayLayout { opacity: number; widgets: OverlayWidgetPlace[] }
 
 /** Built-in overlay widgets: the website's own functions. Plugin widgets ("plugin:…") come on top. */
-export const OVERLAY_BUILTINS = ["system", "capture", "quick", "soundboard", "deck", "media", "timer", "clock", "notes", "next", "favorites", "recent", "audio", "playing", "profile", "session", "notifications", "counter", "break", "today", "ping", "goals", "level", "deals", "controller", "random", "visualizer"] as const;
+export const OVERLAY_BUILTINS = ["system", "capture", "quick", "soundboard", "deck", "media", "timer", "clock", "notes", "next", "favorites", "recent", "audio", "playing", "profile", "session", "notifications", "counter", "break", "today", "ping", "goals", "level", "deals", "controller", "random", "visualizer", "bingo"] as const;
 export type OverlayBuiltin = (typeof OVERLAY_BUILTINS)[number];
 
 export function overlayBuiltinTitle(id: OverlayBuiltin): string {
@@ -16,7 +16,7 @@ export function overlayBuiltinTitle(id: OverlayBuiltin): string {
     notifications: t("Benachrichtigungen"), deck: t("Mini-Deck"), media: t("Medien & Lautstärke"), timer: t("Stoppuhr & Countdown"),
     clock: t("Uhr & Datum"), notes: t("Notizen"), next: t("Als Nächstes spielen"),
     counter: t("Zähler"), break: t("Pausen-Erinnerung"), today: t("Spielzeit heute"), ping: t("Ping"), goals: t("Aktive Ziele"), level: t("Level & XP"),
-    deals: t("Deals"), controller: t("Controller-Akku"), random: t("Zufallsspiel"), visualizer: t("Musik-Visualizer"),
+    deals: t("Deals"), controller: t("Controller-Akku"), random: t("Zufallsspiel"), visualizer: t("Musik-Visualizer"), bingo: t("Bingo"),
   } as Record<OverlayBuiltin, string>)[id];
 }
 

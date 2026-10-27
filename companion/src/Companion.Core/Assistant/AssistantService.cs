@@ -15,6 +15,10 @@ public sealed class AssistantUsageMonth
     public long CacheReadTokens { get; set; }
     public long CacheWriteTokens { get; set; }
     public double CostUsd { get; set; }
+    /// <summary>DeepSeek (bingo tasks): counted, the price is billed by DeepSeek directly.</summary>
+    public int DeepSeekRequests { get; set; }
+    public long DeepSeekInputTokens { get; set; }
+    public long DeepSeekOutputTokens { get; set; }
 }
 
 public sealed class AssistantFile
@@ -32,6 +36,13 @@ public sealed class AssistantFile
     /// <summary>Anthropic API key, protected with DPAPI on Windows. Never returned, never in a backup.</summary>
     public string? KeyProtected { get; set; }
     public List<AssistantUsageMonth> Usage { get; set; } = new();
+    /// <summary>Which AI writes bingo tasks: "assistant" = the assistant's own mode (Claude/Ollama), "deepseek" = DeepSeek.</summary>
+    public string BingoAi { get; set; } = "assistant";
+    /// <summary>DeepSeek API key, protected like the Anthropic key. Never returned, never in a backup.</summary>
+    public string? DeepSeekKeyProtected { get; set; }
+    public string DeepSeekModel { get; set; } = DeepSeekClient.DefaultModel;
+    /// <summary>At most this many DeepSeek requests per month (protects against unexpected cost).</summary>
+    public int DeepSeekMonthlyRequests { get; set; } = 200;
 }
 
 /// <summary>Entry point for the assistant: chooses local or Claude, keeps conversations, counts cost against the monthly limit.</summary>
@@ -45,18 +56,21 @@ public sealed class AssistantService
     public LocalAssistant Local { get; }
     public ClaudeAssistant Claude { get; }
     public OllamaAssistant Ollama { get; }
+    public DeepSeekClient DeepSeek { get; }
+    readonly SemaphoreSlim _bingoBusy = new(1, 1);
 
     sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
         Local = new LocalAssistant(data);
         Claude = claude ?? new ClaudeAssistant(data);
         Ollama = ollama ?? new OllamaAssistant(data);
+        DeepSeek = deepSeek ?? new DeepSeekClient();
     }
 
     string MonthKey => _now().ToString("yyyy-MM");
@@ -75,6 +89,9 @@ public sealed class AssistantService
             usage = month, history = f.Usage.OrderByDescending(u => u.Month).Take(6),
             examples = LocalAssistant.Examples,
             knowledgeSections = Data.Knowledge.Sections.Count,
+            bingoAi = f.BingoAi,
+            deepSeek = new { keySet = f.DeepSeekKeyProtected != null, model = f.DeepSeekModel, monthlyRequests = f.DeepSeekMonthlyRequests, used = month.DeepSeekRequests, inputTokens = month.DeepSeekInputTokens, outputTokens = month.DeepSeekOutputTokens },
+            bingoProvider = BingoProviderName(f),
         };
     }
 
@@ -82,7 +99,14 @@ public sealed class AssistantService
     {
         public string? Mode { get; set; } public string? Model { get; set; } public bool? LocalFirst { get; set; } public double? MonthlyLimitUsd { get; set; } public string? ApiKey { get; set; }
         public string? OllamaUrl { get; set; } public string? OllamaModel { get; set; } public bool? OllamaWhileGaming { get; set; }
+        public string? BingoAi { get; set; } public string? DeepSeekKey { get; set; } public string? DeepSeekModel { get; set; } public int? DeepSeekMonthlyRequests { get; set; }
     }
+
+    /// <summary>Which AI would write bingo tasks right now (null = none – the app then uses its own catalog).</summary>
+    static string? BingoProviderName(AssistantFile f) =>
+        f.BingoAi == "deepseek" && f.DeepSeekKeyProtected != null ? $"DeepSeek ({f.DeepSeekModel})"
+        : f.Mode == "claude" && f.KeyProtected != null ? "Claude"
+        : f.Mode == "ollama" && !string.IsNullOrEmpty(f.OllamaModel) ? $"Ollama ({f.OllamaModel})" : null;
 
     /// <summary>Ollama address: http(s), this PC or a device in the home network only (no internet hosts).</summary>
     static string CheckOllamaUrl(string url)
@@ -99,7 +123,13 @@ public sealed class AssistantService
     /// <param name="atPc">The key may only be set or removed at the PC itself (it costs money and leaves the home network).</param>
     public object Configure(Config c, bool atPc)
     {
-        if (c.ApiKey != null && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
+        if ((c.ApiKey != null || c.DeepSeekKey != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
+        if (c.BingoAi is not (null or "assistant" or "deepseek")) throw new RpcException("invalid-params", "Bingo-KI muss „assistant“ oder „deepseek“ sein.");
+        if (c.DeepSeekModel != null && !Regex.IsMatch(c.DeepSeekModel, @"^[A-Za-z0-9._:-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger DeepSeek-Modellname.");
+        if (c.DeepSeekMonthlyRequests is < 0 or > 5000) throw new RpcException("invalid-params", "DeepSeek-Anfragen pro Monat: 0–5000.");
+        var dsKey = c.DeepSeekKey?.Trim();
+        if (!string.IsNullOrEmpty(dsKey) && (dsKey.Length is < 20 or > 200 || dsKey.Any(char.IsWhiteSpace) || !dsKey.StartsWith("sk-") || dsKey.StartsWith("sk-ant-")))
+            throw new RpcException("invalid-params", "Das sieht nicht wie ein DeepSeek-API-Schlüssel aus (beginnt mit „sk-“).");
         if (c.OllamaUrl != null && !atPc) throw new RpcException("forbidden", "Die Ollama-Adresse kannst du nur direkt am PC ändern.");
         if (c.Mode is not (null or "local" or "ollama" or "claude")) throw new RpcException("invalid-params", "Modus muss „local“, „ollama“ oder „claude“ sein.");
         var ollamaUrl = c.OllamaUrl == null ? null : CheckOllamaUrl(c.OllamaUrl);
@@ -122,6 +152,18 @@ public sealed class AssistantService
             if (c.OllamaWhileGaming != null) f.OllamaWhileGaming = c.OllamaWhileGaming.Value;
             if (c.LocalFirst != null) f.LocalFirst = c.LocalFirst.Value;
             if (c.MonthlyLimitUsd != null) f.MonthlyLimitUsd = Math.Round(c.MonthlyLimitUsd.Value, 2);
+            if (c.BingoAi != null)
+            {
+                if (c.BingoAi == "deepseek" && f.DeepSeekKeyProtected == null && string.IsNullOrEmpty(dsKey)) throw new RpcException("assistant-key", "Für DeepSeek zuerst am PC einen API-Schlüssel eintragen.");
+                f.BingoAi = c.BingoAi;
+            }
+            if (c.DeepSeekModel != null) f.DeepSeekModel = c.DeepSeekModel;
+            if (c.DeepSeekMonthlyRequests != null) f.DeepSeekMonthlyRequests = c.DeepSeekMonthlyRequests.Value;
+            if (dsKey != null)
+            {
+                f.DeepSeekKeyProtected = dsKey.Length == 0 ? null : _secrets.Protect(dsKey);
+                if (dsKey.Length == 0) f.BingoAi = "assistant";
+            }
             if (key != null)
             {
                 f.KeyProtected = key.Length == 0 ? null : _secrets.Protect(key);
@@ -129,6 +171,7 @@ public sealed class AssistantService
             }
         });
         if (key != null) Log.Info("assistant", key.Length == 0 ? "Claude-Schlüssel entfernt." : "Claude-Schlüssel gespeichert (geschützt)."); // never the key itself
+        if (dsKey != null) Log.Info("assistant", dsKey.Length == 0 ? "DeepSeek-Schlüssel entfernt." : "DeepSeek-Schlüssel gespeichert (geschützt).");
         _hub.Changed("assistant");
         return Status();
     }
@@ -270,6 +313,60 @@ public sealed class AssistantService
             return new { tasks = EnoughTasks(BingoIdeas.Parse(r.Text, need), need), mode = "ollama", model = f.OllamaModel, costUsd = 0.0 };
         }
         throw new RpcException("assistant-local", "KI-Aufgaben braucht die Lokale KI (Ollama, 0 €) oder Claude – beides unter KI-Assistent → Einrichten wählbar. Bis dahin gehen auch Vorlage und eigene Aufgaben.");
+    }
+
+    /// <summary>
+    /// Ultimate Bingo: tasks with level and category as JSON from the chosen AI. One request at a time (a second tap
+    /// while one runs is refused, not queued). Everything the model returns is checked in <see cref="BingoPlan.Parse"/>.
+    /// Without any AI configured this throws "assistant-local" – the app then uses its built-in catalog.
+    /// </summary>
+    public async Task<object> PlanBingoAsync(BingoRequest req, CancellationToken ct = default)
+    {
+        var r = BingoPlan.Check(req);
+        if (!await _bingoBusy.WaitAsync(0, ct)) throw new RpcException("assistant-busy", "Es wird schon ein Bingo erstellt – einen Moment.");
+        try
+        {
+            var f = _store.Snapshot();
+            var need = r.Levels!.Sum();
+            string text; string provider; string? model; double cost = 0;
+            if (f.BingoAi == "deepseek" && f.DeepSeekKeyProtected != null)
+            {
+                var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+                if ((month?.DeepSeekRequests ?? 0) >= f.DeepSeekMonthlyRequests)
+                    throw new RpcException("assistant-limit", $"Das Monatslimit von {f.DeepSeekMonthlyRequests} DeepSeek-Anfragen ist erreicht (änderbar am PC unter KI-Assistent). Der eingebaute Katalog funktioniert weiter.");
+                var key = _secrets.Unprotect(f.DeepSeekKeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte DeepSeek-Schlüssel lässt sich nicht entschlüsseln (anderer Windows-Benutzer?). Bitte am PC neu eintragen.");
+                var res = await DeepSeek.CompleteJsonAsync(key, f.DeepSeekModel, BingoPlan.System, BingoPlan.Prompt(r), ct);
+                _store.Update(file =>
+                {
+                    var m = file.Usage.FirstOrDefault(u => u.Month == MonthKey);
+                    if (m == null) { m = new AssistantUsageMonth { Month = MonthKey }; file.Usage.Add(m); }
+                    m.DeepSeekRequests++; m.DeepSeekInputTokens += res.PromptTokens; m.DeepSeekOutputTokens += res.OutputTokens;
+                });
+                _hub.Changed("assistant");
+                (text, provider, model) = (res.Text, "DeepSeek", res.Model);
+            }
+            else if (f.Mode == "claude" && f.KeyProtected != null)
+            {
+                var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+                if (f.MonthlyLimitUsd <= 0 || (month?.CostUsd ?? 0) >= f.MonthlyLimitUsd)
+                    throw new RpcException("assistant-limit", $"Das Monatslimit für Claude ({f.MonthlyLimitUsd:0.00} $) ist erreicht. Der eingebaute Katalog funktioniert weiter.");
+                var key = _secrets.Unprotect(f.KeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte Schlüssel lässt sich nicht entschlüsseln (anderer Windows-Benutzer?). Bitte am PC neu eintragen.");
+                var res = await Claude.CompleteAsync(key, f.Model, BingoPlan.System, BingoPlan.Prompt(r), ct);
+                cost = ClaudeAssistant.Cost(res.Model, res.Input, res.Output, res.CacheRead, res.CacheWrite);
+                RecordUsage(res.Input, res.Output, res.CacheRead, res.CacheWrite, cost);
+                (text, provider, model) = (res.Text, "Claude", ClaudeAssistant.PriceOf(res.Model).Label);
+            }
+            else if (f.Mode == "ollama")
+            {
+                var res = await Ollama.CompleteAsync(f.OllamaUrl, f.OllamaModel ?? "", BingoPlan.System, BingoPlan.Prompt(r), ct, json: true);
+                (text, provider, model) = (res.Text, "Ollama", f.OllamaModel);
+            }
+            else throw new RpcException("assistant-local", "Keine KI eingerichtet – die Aufgaben kommen aus dem eingebauten Katalog. (KI wählbar unter KI-Assistent → Einrichten.)");
+            var (known, tasks) = BingoPlan.Parse(text, r);
+            if (tasks.Count < need) throw new RpcException("assistant-bingo", $"Die KI hat nur {tasks.Count} brauchbare von {need} Aufgaben geliefert – bitte noch einmal versuchen.");
+            return new { known, tasks = tasks.Select(t => new { text = t.Text, level = t.Level, category = t.Category, team = t.Team, why = t.Why }), provider, model, costUsd = Math.Round(cost, 4) };
+        }
+        finally { _bingoBusy.Release(); }
     }
 
     static List<string> EnoughTasks(List<string> tasks, int need)

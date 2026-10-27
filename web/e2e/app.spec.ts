@@ -1085,23 +1085,33 @@ test("Sammlungen ohne PC: Journal und Wiki speichern im Browser, gleichen nach d
   await ctx.close();
 });
 
-test("Was spiele ich?: Bingo erkennt Reihen, Link teilen und als eigene Karte übernehmen; Challenges speichern", async ({ browser }) => {
+test("Was spiele ich?: Ultimate Bingo – Satz verstehen, 3×3/4×4/5×5, Reihe erkennen, sofort neu laden, Link teilen, Chat; Challenges speichern", async ({ browser }) => {
   const ctx = await newCtx(browser, { viewport: { width: 1200, height: 900 }, locale: "de-DE", permissions: ["clipboard-read", "clipboard-write"] });
   const page = await ctx.newPage();
-  await page.goto(`${COMPANION}/#/play?tab=bingo`);
-  await page.getByRole("button", { name: "Neue Karte" }).click();
-  const dlg = page.getByRole("dialog");
-  await dlg.getByRole("radio", { name: "3×3" }).click();
-  await dlg.getByLabel("Vorlage").selectOption("");
-  await dlg.getByLabel("Eigene Aufgaben (eine pro Zeile)").fill("a\nb\nc");
-  await expect(dlg.getByRole("button", { name: "Karte mischen" })).toBeDisabled(); // 8 tasks needed
-  await dlg.getByLabel("Vorlage").selectOption("general");
-  await dlg.getByRole("button", { name: "Karte mischen" }).click();
-  await expect(page.locator(".bingo-cell")).toHaveCount(9);
-  await expect(page.locator(".bingo-cell.free")).toHaveCount(1);
-  for (const i of [0, 3, 6]) await page.locator(".bingo-cell").nth(i).click();
-  await expect(page.getByText("Fertig: Spalte 1")).toBeVisible();
-  await expect(page.locator(".bingo-cell.line")).toHaveCount(3);
+  await page.goto(`${COMPANION}/#/play?tab=bingo&area=make`);
+  const make = async (sentence: string) => {
+    await page.goto(`${COMPANION}/#/play?tab=bingo&area=make`);
+    await page.getByPlaceholder("Erstelle ein 4×4-Bingo für Minecraft auf mittel").fill(sentence);
+    await page.getByRole("button", { name: "Übernehmen" }).click();
+    await page.getByRole("button", { name: "Bingo erstellen", exact: true }).last().click();
+    await expect(page.locator(".bingo-layout")).toBeVisible();
+  };
+  const cells = page.locator(".bingo-layout .bingo-cell");
+  await make("Erstelle ein 4×4-Bingo für Elden Ring auf mittel");
+  await expect(cells).toHaveCount(16);
+  await make("Erstelle ein 5×5-Bingo für PEAK auf sehr schwer");
+  await expect(cells).toHaveCount(25);
+  await make("Erstelle ein 3×3-Bingo für Minecraft auf leicht");
+  await expect(cells).toHaveCount(9);
+  await expect(page.locator(".bingo-layout")).toContainText("Aufgaben: Katalog");
+  for (const i of [0, 3, 6]) await cells.nth(i).click();
+  await page.locator(".bingo-celebrate").click(); // the animation can be clicked away
+  await expect(page.locator(".bingo-progress").first()).toContainText("3 von 9");
+  await expect(page.locator(".bingo-layout .bingo-cell.line")).toHaveCount(3);
+  await expect(page.locator(".bingo-layout")).toContainText("Spalte 1");
+  await cells.nth(8).click();
+  await page.reload(); // right away – the tick must not get lost
+  await expect(page.locator(".bingo-progress").first()).toContainText("4 von 9");
   await page.getByRole("button", { name: "Link teilen" }).click();
   await expect.poll(() => page.evaluate(() => navigator.clipboard.readText())).toContain("share=");
   const link = await page.evaluate(() => navigator.clipboard.readText());
@@ -1112,13 +1122,19 @@ test("Was spiele ich?: Bingo erkennt Reihen, Link teilen und als eigene Karte ü
   await expect(friend.getByText("Geteilte Karte")).toBeVisible();
   await expect(friend.locator(".bingo-cell")).toHaveCount(9);
   await friend.getByRole("button", { name: "Als eigene Karte speichern" }).click();
-  await friend.reload();
-  await friend.getByRole("tab", { name: "Bingo" }).click();
-  await expect(friend.locator(".j-hit", { hasText: "Mein Bingo" })).toContainText("0 von 8 erledigt"); // ticks are not shared
+  await expect(friend.locator(".bingo-progress").first()).toContainText("0 von 9"); // ticks are not shared
   await friend.goto(`${COMPANION}/#/play?tab=bingo&share=kaputt`);
   await expect(friend.getByText("Link ist ungültig oder beschädigt")).toBeVisible();
 
-  await page.getByRole("tab", { name: "Challenges" }).click();
+  await page.goto(`${COMPANION}/#/assistant`);
+  const box = page.getByRole("textbox").last();
+  await box.fill("Erstelle ein 4×4-Bingo für Minecraft auf mittel");
+  await box.press("Enter");
+  await expect(page.locator(".as-bingo .bingo-cell")).toHaveCount(16);
+  await page.locator(".as-bingo .bingo-cell").first().click();
+  await expect(page.locator(".as-bingo .bingo-progress")).toContainText("1 von 16");
+
+  await page.goto(`${COMPANION}/#/play?tab=challenges`);
   await page.getByRole("button", { name: "Vorschläge erzeugen" }).click();
   await expect(page.locator(".j-conflict")).toHaveCount(3);
   await page.locator(".j-conflict").first().getByRole("button", { name: "Speichern" }).click();

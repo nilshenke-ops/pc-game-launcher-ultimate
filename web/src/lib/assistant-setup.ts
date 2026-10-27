@@ -80,7 +80,7 @@ const WIDGET_WORDS: [RegExp, string][] = [
   [/wo war ich|erinnerung|spielgedaechtnis/, "memory"], [/gaming.?abend|spieleabend/, "night"], [/abstimmung|umfrage/, "poll"],
   [/foto|bild des tages|screenshot des tages/, "photo"], [/bauprojekt|projekte/, "projects"], [/soundtrack|lieblingslied|musik.?tipp/, "track"],
   [/challenge/, "challenges"], [/wuerfel|muenze|zufall/, "dice"], [/aufnahmen|clips/, "captures"], [/speicher|festplatte|laufwerk/, "storage"],
-  [/meistgespielt|top spiele/, "topplayed"],
+  [/meistgespielt|top spiele/, "topplayed"], [/bingo/, "bingo"],
 ];
 
 /** Area of the app by name ("Deck", "Sounds", "Backlog" …). */
