@@ -190,7 +190,7 @@ function Turn({ turn, onSuggest, onBingo }: { turn: ChatState["turns"][number]; 
   const run = async (a: AssistantAction, i: number) => {
     if (a.kind === "navigate" && a.path) { nav(a.path); return; }
     // Answer to "Soll ich im Internet nachsehen?" for a bingo.
-    if (a.kind === "bingoChoice" && a.params) { setDone({ [i]: true }); onBingo(String(a.params.question ?? ""), a.params.web === true, a.label); return; }
+    if (a.kind === "bingoChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/bingo-chat").then((m) => m.setWebAlways(true)); onBingo(String(a.params.question ?? ""), a.params.web === true, a.label); return; }
     if (a.kind === "jarvisForget" && a.params) {
       const { forgetNow } = await import("../lib/jarvis-chat");
       setDone({ [i]: true });

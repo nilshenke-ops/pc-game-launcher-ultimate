@@ -225,6 +225,21 @@ export function pickTasks(pool: Task[], own: Task[], o: BingoOptions, rnd: () =>
 
 export interface WebAchievement { name: string; description: string; hidden: boolean; percent: number | null }
 
+/** Which genre task set fits a game, from what Steam/Wikipedia say about it (genres, features, description). */
+export function genreFromInfo(info: { genres?: string[]; categories?: string[]; description?: string | null }): string {
+  const g = (info.genres ?? []).join(" ").toLowerCase();
+  const all = `${g} ${(info.description ?? "").toLowerCase()}`;
+  if (/renn|racing|rennspiel|motorsport/.test(all)) return "racing";
+  if (/horror|grusel/.test(all)) return "horror";
+  if (/survival|überleben|ueberleben/.test(all)) return "survival";
+  if (/shooter|ego-perspektive|fps\b|third-person-shooter/.test(all)) return "shooter";
+  if (/sport|fußball|fussball|basketball|tennis|golf/.test(g) || /\b(fußball|fussball|basketball)\b/.test(all)) return "sports";
+  if (/strategie|strategy|aufbau|city-builder/.test(all)) return "strategy";
+  if (/open.?world|offene[nr]? welt|rollenspiel|abenteuer|adventure|rpg/.test(all)) return "openworld";
+  if ((info.categories ?? []).some((c) => /koop|co-op/i.test(c))) return "coop";
+  return "generic";
+}
+
 /** Difficulty from the worldwide unlock rate: many players have it → easy, very few → very hard. */
 export function levelFromPercent(p: number | null): Level {
   if (p == null) return 2;

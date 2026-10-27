@@ -18,6 +18,7 @@ import {
 } from "../lib/bingo";
 import { CATALOG, GENRE_IDS, GENRES } from "../lib/bingo-catalog";
 import { createCard, isCreating, ownTasksFor, setActiveCard } from "../lib/bingo-make";
+import { setWebAlways, webAlways } from "../lib/bingo-chat";
 import { BingoBoard, CAT_ICON, fxOn, setFx } from "./bingo-board";
 import { CollectionView } from "./collection-view";
 import { trySave, useGames } from "./journal-ui";
@@ -86,7 +87,7 @@ export function BingoMaker({ initial, onMade }: { initial?: Partial<BingoOptions
   const [recognized, setRecognized] = useState<string | null>(null);
   const [useAi, setUseAi] = useState(true);
   // Steam achievements only for games without own catalog tasks, only with the PC, only when ticked (= asked first).
-  const [web, setWeb] = useState(false);
+  const [web, setWeb] = useState(webAlways);
   const webOk = ai.online && o.taskSource !== "own" && o.game.trim().length > 1 && poolFor(o.game.trim()).from !== "catalog";
   const [noRepeat, setNoRepeat] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -114,7 +115,14 @@ export function BingoMaker({ initial, onMade }: { initial?: Partial<BingoOptions
       const opts: BingoOptions = { ...o, web: webOk && web, game: o.game.trim(), mode: modes.includes(o.mode) ? o.mode : "classic", categories: o.categories.filter((c) => cats.includes(c)),
         exclude: noRepeat && last ? [...last.data.cells.map((c) => c.text), ...(last.data.history ?? [])] : o.exclude };
       const players = o.players > 1 ? Array.from({ length: o.players }, (_, i) => names[i]?.trim() || `${t("Spieler")} ${i + 1}`) : undefined;
-      const r = await createCard(opts, { useAi, aiAvailable: !!ai.provider, players });
+      let r: Awaited<ReturnType<typeof createCard>>;
+      try { r = await createCard(opts, { useAi, aiAvailable: !!ai.provider, players }); }
+      catch (e) {
+        // KI or internet failed: the card is still made from the fitting general tasks, the toast says why.
+        if (opts.taskSource === "own" || (!opts.web && !(useAi && ai.provider))) throw e;
+        r = await createCard({ ...opts, web: false }, { useAi: false, aiAvailable: false, players });
+        toast(t("{w} hat nicht geklappt ({e}) – deshalb anders erstellt.", { w: opts.web ? t("Die Suche im Internet") : t("Die KI"), e: (e as Error).message }), "info");
+      }
       if (players && multi === "versus") trySave("bingo", r.id, { ...r.card, multi: "versus" });
       setActiveCard(r.id);
       toast(t("Bingo erstellt"), "success");
@@ -193,7 +201,7 @@ export function BingoMaker({ initial, onMade }: { initial?: Partial<BingoOptions
           </details>
           <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
             <span className="tiny muted">
-              {webOk && <label className="checkbox" style={{ display: "flex", marginBottom: 4 }}><input type="checkbox" checked={web} onChange={(e) => setWeb(e.target.checked)} />{t("Echte Aufgaben aus dem Internet laden (Steam-Erfolge von „{g}“) – dein PC fragt dafür Steam", { g: o.game.trim() })}</label>}
+              {webOk && <label className="checkbox" style={{ display: "flex", marginBottom: 4 }}><input type="checkbox" checked={web} onChange={(e) => { setWeb(e.target.checked); if (!e.target.checked && webAlways()) setWebAlways(false); }} />{t("Passende Aufgaben aus dem Internet laden (Steam-Erfolge und Spielart von „{g}“, sonst Wikipedia) – dein PC fragt dafür Steam bzw. Wikipedia", { g: o.game.trim() })}{webAlways() && <span className="tiny muted"> · {t("immer erlaubt – Häkchen weg nimmt das zurück")}</span>}</label>}
               {o.taskSource === "own" ? t("Aufgaben: nur deine eigenen.") : ai.provider ? <label className="checkbox"><input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />{t("KI am PC benutzen: {p}", { p: ai.provider })}</label>
                 : ai.online ? t("Keine KI am PC eingerichtet – Aufgaben aus dem eingebauten Katalog. (KI-Assistent → Einrichten)") : t("Ohne PC: Aufgaben aus dem eingebauten Katalog.")}
             </span>

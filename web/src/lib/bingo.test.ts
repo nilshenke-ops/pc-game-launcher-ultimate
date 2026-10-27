@@ -244,3 +244,15 @@ describe("bingo without a game", async () => {
     expect(b.parseRequest("Bingo für das Wochenende").action).toBe("ask");
   });
 });
+
+describe("genreFromInfo (what Steam/Wikipedia say about a game)", () => {
+  it("Make Way → racing, Koop only as last resort, unknown → generic", async () => {
+    const { genreFromInfo } = await import("./bingo");
+    expect(genreFromInfo({ genres: ["Action", "Gelegenheitsspiele", "Indie", "Rennspiele"], categories: ["Mehrspieler", "Geteilter Bildschirm"] })).toBe("racing");
+    expect(genreFromInfo({ genres: ["Action"], description: "Ein Ego-Shooter in einer zerstörten Stadt." })).toBe("shooter");
+    expect(genreFromInfo({ genres: ["Simulation"], categories: ["Online-Koop"] })).toBe("coop");
+    expect(genreFromInfo({ genres: ["Indie"], categories: [], description: "Ein Puzzle." })).toBe("generic");
+    expect(genreFromInfo({ genres: ["Sport"] })).toBe("sports");
+    expect(genreFromInfo({ description: "Ein Survival-Horror-Spiel" })).toBe("horror");
+  });
+});

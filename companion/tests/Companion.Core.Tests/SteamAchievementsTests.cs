@@ -21,6 +21,7 @@ public class SteamAchievementsTests
         return $"<html><script type=\"application/json\" id=\"valve-ssr-data\" nonce=\"x\">{outer}</script></html>";
     }
     const string Percent = """{"achievementpercentages":{"achievements":[{"name":"FIRST","percent":"81.2"},{"name":"BOSS","percent":22.5},{"name":"RARE","percent":"1.4"}]}}""";
+    const string Details = """{"4711":{"success":true,"data":{"short_description":"Ein &quot;Rennspiel&quot; mit <b>Strecken</b>.","genres":[{"id":"9","description":"Rennspiele"}],"categories":[{"id":1,"description":"Mehrspieler"},{"id":24,"description":"Geteilter Bildschirm"}]}}}""";
     const string Search = """{"total":2,"items":[{"type":"app","name":"Test Game Soundtrack","id":1},{"type":"app","name":"Test Game","id":4711}]}""";
 
     sealed class Steam : HttpMessageHandler
@@ -30,9 +31,18 @@ public class SteamAchievementsTests
         {
             var u = r.RequestUri!.ToString();
             Asked.Add(u);
-            var body = u.Contains("storesearch") ? Search : u.Contains("GetGlobalAchievementPercentages") ? Percent : u.Contains("/achievements/4711") ? Page() : "";
+            if (u.Contains("storesearch") && u.Contains("busy")) return Task.FromResult(new HttpResponseMessage((HttpStatusCode)429));
+            var body = u.Contains("storesearch") ? (u.Contains("Make") ? Search : u.Contains("nurwiki") ? """{"total":0,"items":[]}""" : Search)
+                : u.Contains("appdetails") ? Details : u.Contains("GetGlobalAchievementPercentages") ? Percent : u.Contains("/achievements/4711") ? Page()
+                : u.Contains("search/title") ? """{"pages":[{"key":"Nurwiki_(Band)","description":"deutsche Band"},{"key":"Nurwiki","description":"Computerspiel von 2019"}]}"""
+                : u.Contains("page/summary/Nurwiki") ? """{"extract":"Nurwiki ist ein Survival-Horror-Computerspiel."}""" : "";
             return Task.FromResult(new HttpResponseMessage(body.Length > 0 ? HttpStatusCode.OK : HttpStatusCode.NotFound) { Content = new StringContent(body) });
         }
+    }
+
+    sealed class Down : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable));
     }
 
     [Fact]
@@ -57,11 +67,23 @@ public class SteamAchievementsTests
         var r = JsonSerializer.SerializeToElement(await s.TasksAsync("Test Game"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         Assert.Equal(4711, r.GetProperty("appId").GetInt32());
         Assert.Equal(4, r.GetProperty("achievements").GetArrayLength());
-        Assert.Equal(3, steam.Asked.Count);
+        Assert.Equal(4, steam.Asked.Count);
         Assert.Contains(steam.Asked, u => u.Contains("/achievements/4711?l=german"));
+        Assert.Equal("Rennspiele", r.GetProperty("genres")[0].GetString());
+        Assert.Equal(2, r.GetProperty("categories").GetArrayLength());
+        Assert.Equal("Ein \"Rennspiel\" mit Strecken .", r.GetProperty("description").GetString());
         await s.TasksAsync("test game"); // from the cache
-        Assert.Equal(3, steam.Asked.Count);
-        using var none = new SteamAchievementsService(new Steam()) { StoreBase = "https://none.test", Delay = _ => Task.CompletedTask };
+        Assert.Equal(4, steam.Asked.Count);
+        // Not on Steam: Wikipedia – only a page that is about a game.
+        using var w = new SteamAchievementsService(steam) { StoreBase = "https://store.test", WikiBase = "https://wiki.test", Delay = _ => Task.CompletedTask };
+        var wiki = JsonSerializer.SerializeToElement(await w.TasksAsync("nurwiki"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        Assert.Equal("Nurwiki", wiki.GetProperty("name").GetString());
+        Assert.Contains("Survival-Horror", wiki.GetProperty("description").GetString());
+        Assert.Equal(0, wiki.GetProperty("achievements").GetArrayLength());
+        // Steam busy (429): Wikipedia is still asked.
+        Assert.Equal("Nurwiki", JsonSerializer.SerializeToElement(await w.TasksAsync("busy"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }).GetProperty("name").GetString());
+        Assert.Null(SteamAchievementsService.PickWikiTitle("""{"pages":[{"key":"Band","description":"Musikgruppe"}]}"""));
+        using var none = new SteamAchievementsService(new Down()) { Delay = _ => Task.CompletedTask };
         Assert.Equal("unavailable", (await Assert.ThrowsAsync<RpcException>(() => none.TasksAsync("Gibt es nicht"))).Code);
         await Assert.ThrowsAsync<RpcException>(() => none.TasksAsync("x"));
     }

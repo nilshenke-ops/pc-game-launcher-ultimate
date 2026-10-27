@@ -4,8 +4,9 @@
 import { client } from "./rpc";
 import { getEntry, listKind, newId, saveEntry } from "./journal";
 import { norm } from "./journal-logic";
+import { GENRES } from "./bingo-catalog";
 import {
-  cardTitle, levelPlan, pickTasks, poolFor, sanitizeAiTasks, toCells, webTasks, NotEnoughTasks,
+  cardTitle, genreFromInfo, levelPlan, pickTasks, poolFor, sanitizeAiTasks, toCells, webTasks, NotEnoughTasks,
   type BingoOptions, type Card, type Category, type Level, type Task, type WebAchievement,
 } from "./bingo";
 
@@ -38,6 +39,9 @@ export interface Made { id: string; card: Card }
  * the card says so ("Katalog" / "Allgemeine Aufgaben"). AI errors are reported as such – the catalog is offered,
  * never swapped in silently.
  */
+/** First sentence, at most `max` characters, cut at a word. */
+const shortText = (s: string, max: number) => { const first = s.split(/(?<=[a-zäöüß)"“][.!?])\s+(?=[A-ZÄÖÜ])/)[0]; return first.length <= max ? first : first.slice(0, first.lastIndexOf(" ", max)) + " …"; };
+
 export async function createCard(input: BingoOptions, opts: { useAi: boolean; aiAvailable: boolean; title?: string; players?: string[] }): Promise<Made> {
   if (running) throw new Error("Es wird schon ein Bingo erstellt – einen Moment.");
   const p = (async () => {
@@ -52,10 +56,20 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
     const recent = recentTasks(o.game);
     o = { ...o, avoid: [...(o.avoid ?? []), ...recent.last], avoidOld: recent.older };
     if (o.taskSource !== "own" && o.web) {
-      const r = await client.call<{ name: string; appId: number; achievements: WebAchievement[] }>("bingo.webTasks", { game: o.game });
-      pool = webTasks(r.achievements);
-      provider = `Steam-Erfolge (${r.name})`;
-      if (r.name.toLowerCase() !== o.game.toLowerCase()) notes.push(`Bei Steam gefunden als „${r.name}“.`);
+      const r = await client.call<{ name: string; appId: number | null; source: string; achievements: WebAchievement[]; genres?: string[]; categories?: string[]; description?: string | null }>("bingo.webTasks", { game: o.game });
+      // What kind of game it is decides the extra tasks: real achievements first, the fitting genre set fills up.
+      const genre = genreFromInfo(r);
+      const asked = o.game;
+      o = { ...o, genre, game: r.name || o.game };
+      const own = webTasks(r.achievements);
+      const extra = poolFor("", genre).tasks;
+      const n = o.size * o.size;
+      pool = own.length >= Math.ceil(n * 1.3) ? own : [...own, ...extra];
+      provider = r.appId ? `Steam (${r.name})` : `Wikipedia (${r.name})`;
+      if (r.name.toLowerCase() !== asked.toLowerCase()) notes.push(`Gefunden als „${r.name}“.`);
+      const kind = [...(r.genres ?? []), ...(r.categories ?? []).filter((c) => /mehrspieler|koop|geteilt|online/i.test(c))].slice(0, 5).join(", ");
+      if (kind || r.description) notes.push(`Laut ${r.appId ? "Steam" : "Wikipedia"}: ${kind ? kind + ". " : ""}${shortText(r.description ?? "", 180)}`);
+      notes.push(own.length ? `${Math.min(own.length, n)} Aufgaben aus den Steam-Erfolgen${pool.length > own.length ? `, dazu passende Aufgaben für ${GENRES[genre]?.name ?? "dieses Spiel"}` : ""}.` : `Keine Steam-Erfolge – Aufgaben passend zum Spiel (${GENRES[genre]?.name ?? "allgemein"}).`);
       if (!o.spoilers && r.achievements.some((a) => a.hidden)) notes.push("Versteckte Erfolge sind nicht dabei (Spoiler) – mit „mit Spoiler“ kommen sie dazu.");
     } else if (o.taskSource !== "own" && opts.useAi && opts.aiAvailable) {
       const levels = levelPlan(o.difficulty === "mixed" ? "mixed" : o.difficulty, n - (o.taskSource === "mixed" ? Math.floor(n / 2) : 0));

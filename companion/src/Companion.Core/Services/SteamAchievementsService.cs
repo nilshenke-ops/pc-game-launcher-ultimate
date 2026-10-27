@@ -22,6 +22,7 @@ public sealed class SteamAchievementsService : IDisposable
     public string StoreBase { get; init; } = "https://store.steampowered.com";
     public string CommunityBase { get; init; } = "https://steamcommunity.com";
     public string ApiBase { get; init; } = "https://api.steampowered.com";
+    public string WikiBase { get; init; } = "https://de.wikipedia.org";
     public Func<TimeSpan, Task> Delay { get; init; } = t => Task.Delay(t);
 
     public SteamAchievementsService(HttpMessageHandler? http = null)
@@ -33,6 +34,8 @@ public sealed class SteamAchievementsService : IDisposable
 
     public sealed record Achievement(string Name, string Description, bool Hidden, double? Percent);
 
+    static string Site(string url) => url.Contains("wikipedia", StringComparison.OrdinalIgnoreCase) || url.Contains("wiki.", StringComparison.OrdinalIgnoreCase) ? "Wikipedia" : "Steam";
+
     async Task<string> GetAsync(string url)
     {
         var wait = _last + MinGap - DateTime.UtcNow;
@@ -41,8 +44,8 @@ public sealed class SteamAchievementsService : IDisposable
         {
             using var resp = await _http.GetAsync(url, HttpCompletionOption.ResponseHeadersRead);
             _last = DateTime.UtcNow;
-            if (!resp.IsSuccessStatusCode) throw new RpcException("unavailable", $"Steam antwortet mit {(int)resp.StatusCode}.");
-            if (resp.Content.Headers.ContentLength > 5_000_000) throw new RpcException("unavailable", "Antwort von Steam ist ungewöhnlich groß – abgebrochen.");
+            if (!resp.IsSuccessStatusCode) throw new RpcException("unavailable", $"{Site(url)} antwortet mit {(int)resp.StatusCode}{((int)resp.StatusCode == 429 ? " (zu viele Anfragen – später noch einmal)" : "")}.");
+            if (resp.Content.Headers.ContentLength > 5_000_000) throw new RpcException("unavailable", $"Antwort von {Site(url)} ist ungewöhnlich groß – abgebrochen.");
             var s = await resp.Content.ReadAsStringAsync();
             return s.Length > 5_000_000 ? throw new RpcException("unavailable", "Antwort von Steam ist ungewöhnlich groß – abgebrochen.") : s;
         }
@@ -126,6 +129,66 @@ public sealed class SteamAchievementsService : IDisposable
         return map;
     }
 
+    /// <summary>What kind of game it is (from the Steam store page data): genres, features, short description.</summary>
+    public sealed record StoreInfo(string? Description, List<string> Genres, List<string> Categories);
+
+    public static StoreInfo ParseDetails(string json, int appId)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty(appId.ToString(), out var app) || !app.TryGetProperty("data", out var d)) return new(null, new(), new());
+            static List<string> Names(JsonElement d, string key) => d.TryGetProperty(key, out var a) && a.ValueKind == JsonValueKind.Array
+                ? a.EnumerateArray().Select(x => x.TryGetProperty("description", out var v) ? v.GetString() ?? "" : "").Where(x => x.Length is > 0 and < 60).Distinct().Take(40).ToList() : new();
+            var desc = d.TryGetProperty("short_description", out var sd) ? Clean(sd.GetString()) : null;
+            return new(desc, Names(d, "genres"), Names(d, "categories"));
+        }
+        catch (JsonException) { return new(null, new(), new()); }
+    }
+
+    static string? Clean(string? html)
+    {
+        if (string.IsNullOrWhiteSpace(html)) return null;
+        var t = System.Net.WebUtility.HtmlDecode(Regex.Replace(html, "<[^>]+>", " ")).Replace('\n', ' ');
+        t = Regex.Replace(t, @"\s+", " ").Trim();
+        return t.Length > 600 ? t[..600] : t;
+    }
+
+    /// <summary>Wikipedia (official REST API) for games that are not on Steam: the best title match that is about a game.</summary>
+    public static string? PickWikiTitle(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("pages", out var pages) || pages.ValueKind != JsonValueKind.Array) return null;
+            string? first = null;
+            foreach (var p in pages.EnumerateArray())
+            {
+                var key = p.TryGetProperty("key", out var k) ? k.GetString() : null;
+                var desc = (p.TryGetProperty("description", out var d) ? d.GetString() : "") ?? "";
+                if (key == null) continue;
+                first ??= key;
+                if (Regex.IsMatch(desc, "(spiel|game)", RegexOptions.IgnoreCase)) return key;
+            }
+            return null; // nothing that says it is a game – not taken
+        }
+        catch (JsonException) { return null; }
+    }
+
+    public static string? ParseWikiSummary(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            return doc.RootElement.TryGetProperty("extract", out var e) ? Clean(e.GetString()) : null;
+        }
+        catch (JsonException) { return null; }
+    }
+
+    /// <summary>
+    /// Everything the internet says about a game for a bingo: Steam (achievements with unlock rates, genres, features,
+    /// description) – or, for games not on Steam, the Wikipedia summary. Only the user's agreement triggers this.
+    /// </summary>
     public async Task<object> TasksAsync(string game)
     {
         game = game.Trim();
@@ -135,12 +198,35 @@ public sealed class SteamAchievementsService : IDisposable
         await _one.WaitAsync();
         try
         {
-            var search = await GetAsync($"{StoreBase}/api/storesearch/?term={Uri.EscapeDataString(game)}&l=german&cc=DE");
-            var app = PickApp(search, game) ?? throw new RpcException("not-found", $"„{game}“ habe ich bei Steam nicht gefunden – Erfolge gibt es nur für Steam-Spiele.");
-            var pct = ParsePercent(await GetAsync($"{ApiBase}/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid={app.id}"));
-            var list = ParsePage(await GetAsync($"{CommunityBase}/achievements/{app.id}?l=german"), pct);
-            if (list.Count == 0) throw new RpcException("not-found", $"„{app.name}“ hat bei Steam keine Erfolge – daraus lässt sich kein Bingo machen.");
-            var result = new { source = Source, appId = app.id, name = app.name, url = $"{CommunityBase}/achievements/{app.id}", achievements = list };
+            object result;
+            // Steam busy or down: Wikipedia is still asked (the error is only reported when that fails too).
+            RpcException? steamDown = null;
+            (int id, string name)? found = null;
+            try { found = PickApp(await GetAsync($"{StoreBase}/api/storesearch/?term={Uri.EscapeDataString(game)}&l=german&cc=DE"), game); }
+            catch (RpcException e) { steamDown = e; }
+            if (found is { } app)
+            {
+                StoreInfo info;
+                try { info = ParseDetails(await GetAsync($"{StoreBase}/api/appdetails?appids={app.id}&l=german&cc=DE"), app.id); }
+                catch (RpcException) { info = new(null, new(), new()); }
+                var list = new List<Achievement>();
+                try
+                {
+                    var pct = ParsePercent(await GetAsync($"{ApiBase}/ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2/?gameid={app.id}"));
+                    list = ParsePage(await GetAsync($"{CommunityBase}/achievements/{app.id}?l=german"), pct);
+                }
+                catch (RpcException) { /* no achievements – the genre and features still help */ }
+                result = new { source = Source, appId = app.id, name = app.name, url = $"{StoreBase}/app/{app.id}", achievements = list, genres = info.Genres, categories = info.Categories, description = info.Description };
+            }
+            else
+            {
+                string? title;
+                try { title = PickWikiTitle(await GetAsync($"{WikiBase}/w/rest.php/v1/search/title?q={Uri.EscapeDataString(game)}&limit=5")); }
+                catch (RpcException e) when (steamDown is not null) { throw new RpcException("unavailable", $"{steamDown.Message} {e.Message}"); }
+                if (title is null) throw steamDown ?? new RpcException("not-found", $"Zu „{game}“ habe ich weder bei Steam noch bei Wikipedia ein Spiel gefunden.");
+                var summary = ParseWikiSummary(await GetAsync($"{WikiBase}/api/rest_v1/page/summary/{Uri.EscapeDataString(title)}"));
+                result = new { source = "Wikipedia (de.wikipedia.org)", appId = (int?)null, name = title.Replace('_', ' '), url = $"{WikiBase}/wiki/{Uri.EscapeDataString(title)}", achievements = new List<Achievement>(), genres = new List<string>(), categories = new List<string>(), description = summary };
+            }
             lock (_cache) { if (_cache.Count > 100) _cache.Clear(); _cache[cacheKey] = (DateTime.UtcNow, result); }
             return result;
         }

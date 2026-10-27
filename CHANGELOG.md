@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.58.0 – 2026-10-27
+### Neu
+- JARVIS/Assistent: Bingo für jedes Spiel direkt im Chat – der PC sieht im Internet nach, was das für ein Spiel ist (Steam: Erfolge, Genre, Mehrspieler, Beschreibung; nicht auf Steam: Wikipedia) und macht passende Aufgaben daraus
+- „Ja, immer erlauben“: Danach fragt JARVIS beim Bingo nicht mehr, ob er im Internet nachsehen darf (im Bingo-Maker ist das Häkchen dann vorausgewählt)
+### Verbessert
+- Wenige Steam-Erfolge: Die Karte wird mit Aufgaben zur erkannten Spielart aufgefüllt (z. B. Rennspiel für Make Way)
+- Die Karte trägt den gefundenen Namen („Makeway“ → „Make Way“), und der Chat sagt, was über das Spiel gefunden wurde
+### Behoben
+- Bingo für ein Spiel ohne eigene Aufgaben (z. B. Make Way) schickte zur Bingo-Seite, wo das Erstellen dann auch scheiterte – jetzt entsteht die Karte immer im Chat; klappt KI oder Internet nicht, wird mit allgemeinen Aufgaben erstellt und der Grund steht dabei
+- Steam ausgelastet: Es wird trotzdem bei Wikipedia nachgesehen; Fehlermeldungen nennen die richtige Seite
+
 ## 2.57.0 – 2026-10-27
 ### Neu
 - „Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale
