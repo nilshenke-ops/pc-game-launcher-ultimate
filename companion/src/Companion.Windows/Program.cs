@@ -14,6 +14,8 @@ static class Program
     [STAThread]
     static int Main(string[] args)
     {
+        // Second start with administrator rights (after the Windows question): only the firewall/network fix, then end.
+        if (args.Contains("--allow-network")) { Application.EnableVisualStyles(); return WindowsNetworkAccess.RunFix(args); }
         // One companion per PC (all Windows sessions): two would fight for the same port.
         using var mutex = new Mutex(true, @"Global\PCGameLauncherUltimate.Companion", out var first);
         // "Deinstallieren" from Apps & Features (or from the app itself): a running companion is asked to end first.

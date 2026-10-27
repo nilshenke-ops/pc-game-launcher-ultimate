@@ -48,6 +48,8 @@ public interface IPlatform
     IWindowManager WindowManager => NullWindowManager.Instance;
     /// <summary>XInput game controllers (Windows companion only).</summary>
     IControllers Controllers => NullControllers.Instance;
+    /// <summary>Windows firewall and network category – can a phone in the home network reach the companion? (Windows only.)</summary>
+    INetworkAccess NetworkAccess => NullNetworkAccess.Instance;
     /// <summary>System-wide key and mouse-button remapping (Windows companion only).</summary>
     IInputHook InputHook => NullInputHook.Instance;
 }

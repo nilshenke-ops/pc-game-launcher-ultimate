@@ -257,6 +257,7 @@ export function PairPage() {
           </Banner>
         </div>
       )}
+      <NetworkAccessBanner />
       <div className="grid-2">
         <Card title={t("Kopplungscode")} icon={<KeyRound size={18} />} className={code && !expired ? "glow" : ""}>
           <div className="stack">
@@ -300,6 +301,16 @@ export function PairPage() {
               )}
               <code style={{ textAlign: "center" }}>{url.split("#")[0]}</code>
               <p className="tiny muted">{t("Der QR-Code enthält nur die Adresse und den einmaligen Code – keinen dauerhaften Zugang. Ohne deine Bestätigung passiert nichts.")}</p>
+              <details className="small">
+                <summary>{t("Seite öffnet sich am Handy nicht?")}</summary>
+                <ul className="steps small" style={{ marginTop: 8 }}>
+                  <li>{t("PC per Kabel, Handy per WLAN ist kein Problem – beide müssen nur am selben Router hängen.")}</li>
+                  <li>{t("Am Handy WLAN an und mit dem normalen WLAN verbunden – nicht mit dem Gast-WLAN (das trennt die Geräte) und nicht über mobile Daten.")}</li>
+                  <li>{t("VPN am Handy kurz ausschalten – viele VPNs sperren das Heimnetz.")}</li>
+                  <li>{t("Oben auf dieser Seite muss „Windows-Firewall: … dürfen diesen PC erreichen“ stehen – sonst „Für Handys im Heimnetz freigeben“ antippen.")}</li>
+                  <li>{t("Unter dem QR-Code eine andere Adresse wählen (z. B. die Nummer statt des Namens) und erneut scannen.")}</li>
+                </ul>
+              </details>
             </div>
           ) : (
             <div className="stack">
@@ -310,6 +321,42 @@ export function PairPage() {
         </Card>
       </div>
     </>
+  );
+}
+
+interface NetworkAccess { supported: boolean; state: string; detail: string; networks: { id: string; name: string; category: number }[]; canFix: boolean }
+
+/** Before scanning: does Windows let a phone in the home network reach this PC? (Firewall, network classified as public.) */
+function NetworkAccessBanner() {
+  const st = useRpc<NetworkAccess>("network.access", {}, [], true);
+  const [busy, setBusy] = useState(false);
+  const d = st.data;
+  if (!d?.supported || d.state === "allowed" || d.state === "firewall-off") {
+    return d?.supported ? <div className="small muted" style={{ marginBottom: 12 }}>✓ {t("Windows-Firewall: Handys im Heimnetz dürfen diesen PC erreichen (auch wenn der PC per Kabel und das Handy per WLAN verbunden ist).")}</div> : null;
+  }
+  const makePrivate = d.state === "public-network" || d.networks.some((n) => n.category === 0);
+  const fix = async () => {
+    setBusy(true);
+    try {
+      await client.call("network.allowLan", { makePrivate });
+      toast(t("Windows fragt jetzt nach Erlaubnis – bitte „Ja“ wählen."), "info");
+      // Check again while the person answers the Windows question.
+      for (let i = 0; i < 20; i++) {
+        await new Promise((r) => setTimeout(r, 3000));
+        const r = await client.call<NetworkAccess>("network.access").catch(() => null);
+        if (r && (r.state === "allowed" || r.state === "firewall-off")) { toast(t("Freigegeben – jetzt den QR-Code scannen."), "success"); break; }
+      }
+      st.reload();
+    } catch (e) { toast((e as Error).message, "error"); }
+    finally { setBusy(false); }
+  };
+  return (
+    <div style={{ marginBottom: 16 }}>
+      <Banner kind="warn" title={t("Handys können diesen PC noch nicht erreichen")} actions={d.canFix ? <Button variant="primary" busy={busy} onClick={fix}>{t("Für Handys im Heimnetz freigeben")}</Button> : undefined}>
+        {d.detail}{" "}
+        {makePrivate ? t("Die Freigabe stuft das verbundene Netzwerk als „privat“ ein und erlaubt nur diesen Begleiter auf seinem Port – Windows fragt einmal nach Erlaubnis. Nur zu Hause verwenden, nicht im Café-WLAN.") : t("Die Freigabe erlaubt nur diesen Begleiter auf seinem Port in privaten Netzwerken – Windows fragt einmal nach Erlaubnis.")}
+      </Banner>
+    </div>
   );
 }
 

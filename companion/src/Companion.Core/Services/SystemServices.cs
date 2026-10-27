@@ -132,17 +132,42 @@ public sealed class NetworkDiagnostics
 
     public static List<string> LocalIPv4()
     {
-        var list = new List<string>();
-        foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+        var found = new List<(string name, string ip, bool gateway, bool wired)>();
+        try
         {
-            if (ni.OperationalStatus != OperationalStatus.Up || ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) continue;
-            var name = (ni.Name + " " + ni.Description).ToLowerInvariant();
-            if (name.Contains("virtual") || name.Contains("vmware") || name.Contains("hyper-v") || name.Contains("vethernet") || name.Contains("docker") || name.Contains("wsl")) continue;
-            foreach (var a in ni.GetIPProperties().UnicastAddresses)
-                if (a.Address.AddressFamily == AddressFamily.InterNetwork && SoundboardService.IsPrivate(a.Address) && !IPAddress.IsLoopback(a.Address))
-                    list.Add(a.Address.ToString());
+            foreach (var ni in NetworkInterface.GetAllNetworkInterfaces())
+            {
+                if (ni.OperationalStatus != OperationalStatus.Up || ni.NetworkInterfaceType == NetworkInterfaceType.Loopback) continue;
+                var props = ni.GetIPProperties();
+                var gw = props.GatewayAddresses.Any(g => g.Address.AddressFamily == AddressFamily.InterNetwork && !g.Address.Equals(IPAddress.Any));
+                foreach (var a in props.UnicastAddresses)
+                    if (a.Address.AddressFamily == AddressFamily.InterNetwork)
+                        found.Add((ni.Name + " " + ni.Description, a.Address.ToString(), gw, ni.NetworkInterfaceType == NetworkInterfaceType.Ethernet));
+            }
         }
-        return list.Distinct().ToList();
+        catch (NetworkInformationException) { }
+        return RankLan(found);
+    }
+
+    static readonly string[] NotHomeNetwork = { "virtual", "vmware", "virtualbox", "hyper-v", "vethernet", "docker", "wsl", "tailscale", "wireguard", "zerotier", "hamachi",
+        "openvpn", "tap-windows", "tap adapter", "nordlynx", "proton", "mullvad", "vpn", "npcap", "loopback", "bluetooth", "pseudo", "teredo", "isatap" };
+
+    /// <summary>
+    /// The addresses a phone in the same home network can use, best first: adapters with a router (default gateway)
+    /// before others – so a PC on cable and a phone on Wi-Fi of the same router find each other. Never link-local
+    /// (169.254.x.x, no router), never Tailscale/VPN/virtual adapters (a phone without that VPN cannot reach them).
+    /// </summary>
+    public static List<string> RankLan(IEnumerable<(string name, string ip, bool gateway, bool wired)> found) =>
+        found.Where(f => IPAddress.TryParse(f.ip, out var a) && a.AddressFamily == AddressFamily.InterNetwork && !IPAddress.IsLoopback(a) && HomeRange(a)
+                         && !NotHomeNetwork.Any(w => f.name.ToLowerInvariant().Contains(w)))
+            .OrderByDescending(f => f.gateway).ThenByDescending(f => f.wired)
+            .Select(f => f.ip).Distinct().ToList();
+
+    /// <summary>Home network ranges only: 10/8, 172.16/12, 192.168/16 (not link-local, not Tailscale's 100.64/10).</summary>
+    static bool HomeRange(IPAddress a)
+    {
+        var b = a.GetAddressBytes();
+        return b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168);
     }
 
     public async Task<object> Run()

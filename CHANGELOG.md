@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.60.0 – 2026-10-27
+### Neu
+- „Gerät koppeln“ prüft vorher, ob Handys den PC überhaupt erreichen dürfen (Windows-Firewall, Netzwerk als „öffentlich“ eingestuft) – mit dem Knopf „Für Handys im Heimnetz freigeben“ erledigt der PC das selbst (Windows fragt einmal nach Erlaubnis)
+- Nach dem Koppeln über die IP-Adresse prüft das Handy selbst, ob es den PC auch unter seinem festen Namen (z. B. …fritz.box) erreicht, und bietet „Jetzt umziehen“ an – danach bleibt die Verbindung, auch wenn der Router dem PC eine neue IP gibt
+- Hilfe unter dem QR-Code, falls sich die Seite am Handy nicht öffnet (Gast-WLAN, mobile Daten, VPN)
+### Verbessert
+- QR-Code: zuerst die Heimnetz-IP – die öffnet jedes Handy im selben Netz ohne extra App (auch Android, das „.local“-Namen oft nicht kennt); der feste Name wird danach automatisch angeboten
+- Adresswahl: der Netzwerkadapter mit Router zuerst (PC am Kabel, Handy im WLAN); Tailscale-, VPN-, virtuelle und 169.254-Adressen landen nie mehr im QR-Code
+- Diagnose zeigt die Firewall-Freigabe für Handys im Heimnetz
+
 ## 2.59.0 – 2026-10-27
 ### Neu
 - Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia

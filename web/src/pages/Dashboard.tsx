@@ -1,4 +1,5 @@
 import { lazy, Suspense, useMemo, useState } from "react";
+import { StableAddressOffer } from "../components/keep-access";
 import { Link } from "react-router-dom";
 import {
   Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, RotateCcw,
@@ -390,6 +391,7 @@ export default function Dashboard() {
           <Button variant={edit ? "primary" : undefined} icon={edit ? <Check size={16} /> : <LayoutDashboard size={16} />} onClick={() => setEdit(!edit)}>{edit ? t("Fertig") : t("Anpassen")}</Button>
         </>} />
       <HomePages layout={layout} mobile={mobile} edit={edit} pluginWidgets={pluginWidgets.map((x) => x.id)} />
+      {state && !edit && <div style={{ marginBottom: 12 }}><StableAddressOffer /></div>}
       {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}
       <div className="dash" style={{ marginTop: edit ? 16 : 0 }}>
         {shownWidgets.map((w, i) => {

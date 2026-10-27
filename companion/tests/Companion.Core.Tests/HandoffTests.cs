@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using Pgl.Core.Hosting;
+using Pgl.Core.Platform;
 using Xunit;
 
 namespace Pgl.Core.Tests;
@@ -138,7 +139,7 @@ public class HandoffTests
     }
 
     [Fact]
-    public async Task The_QR_code_prefers_the_fixed_name_and_the_website_only_with_https()
+    public async Task The_QR_code_opens_on_every_phone_first_and_offers_the_fixed_name_and_the_website_only_with_https()
     {
         using var dir = new TempDir();
         Environment.SetEnvironmentVariable("PGL_TEST_LAN_HOST", "192.168.178.116");
@@ -154,8 +155,12 @@ public class HandoffTests
             await stable.RefreshAsync();
             typeof(Pgl.Core.Services.CompanionServices).GetProperty(nameof(Pgl.Core.Services.CompanionServices.Stable))!.GetBackingField().SetValue(s, stable);
             var urls = (await admin.Ok("pairing.create")).GetProperty("urls").EnumerateArray().Select(u => u.GetString()!).ToList();
-            Assert.StartsWith("http://gaming-pc.fritz.box:", urls[0]); // website (https) not first: PC has no https address
-            Assert.Contains(urls, u => u.StartsWith("http://192.168.178.116:"));
+            // The IP first (every phone opens it, also Android without local names), the fixed name right after;
+            // the website (https) not first: the PC has no https address.
+            Assert.StartsWith("http://192.168.178.116:", urls[0]);
+            Assert.StartsWith("http://gaming-pc.fritz.box:", urls[1]);
+            // The phone may check the fixed name from the IP page: it is in the page's connect-src (see WebHost).
+            Assert.Contains(Pgl.Core.Api.RpcApi.Addresses(s), a => a.kind == "router" && a.url.StartsWith("http://gaming-pc.fritz.box:"));
             // Checked with this companion's own names – the process-wide hook is shared by tests running in parallel.
             Assert.True(RequestOrigin.HostAllowed("gaming-pc.fritz.box", null, stable.IsOwnHost));
             Assert.False(RequestOrigin.HostAllowed("evil.example", null, stable.IsOwnHost));
@@ -168,4 +173,44 @@ static class ReflectionExtensions
 {
     public static System.Reflection.FieldInfo GetBackingField(this System.Reflection.PropertyInfo p) =>
         p.DeclaringType!.GetField($"<{p.Name}>k__BackingField", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+}
+
+public class HomeNetworkTests
+{
+    [Fact]
+    public void Phone_addresses_come_from_the_adapter_with_the_router_never_from_VPN_or_link_local()
+    {
+        var found = new List<(string, string, bool, bool)>
+        {
+            ("Tailscale Tailscale Tunnel", "100.101.102.103", false, false),
+            ("Ethernet 2 TAP-Windows Adapter V9", "10.8.0.6", false, true),
+            ("WLAN Intel Wi-Fi 6", "192.168.178.40", false, false),          // Wi-Fi on as well, but no router there
+            ("Ethernet Realtek PCIe GbE", "192.168.178.116", true, true),     // the cable to the router
+            ("Ethernet 3", "169.254.12.7", false, true),                      // no DHCP: link-local
+            ("vEthernet (WSL)", "172.28.0.1", false, true),
+        };
+        var r = Pgl.Core.Services.NetworkDiagnostics.RankLan(found);
+        Assert.Equal(new[] { "192.168.178.116", "192.168.178.40" }, r);
+    }
+
+    [Fact]
+    public void Firewall_rules_for_this_program_and_port_decide_block_wins()
+    {
+        const string exe = @"C:\Users\x\AppData\Local\NexusGamingHub\PCGameLauncherCompanion.exe";
+        var other = new FirewallRule("Andere App", true, true, true, 7, 6, "*", @"C:\Other\app.exe");
+        var allow = new FirewallRule("Nexus Gaming Hub – Handy im Heimnetz", true, true, true, FirewallVerdict.Private | FirewallVerdict.Domain, 6, "8787", exe);
+        var autoBlock = new FirewallRule("pcgamelaunchercompanion.exe", true, true, false, FirewallVerdict.Public, 6, "*", exe.ToLowerInvariant());
+        Assert.Equal("no-rule", FirewallVerdict.Evaluate(new[] { other }, FirewallVerdict.Private, true, exe, 8787).state);
+        Assert.Equal("allowed", FirewallVerdict.Evaluate(new[] { other, allow }, FirewallVerdict.Private, true, exe, 8787).state);
+        Assert.Equal("blocked", FirewallVerdict.Evaluate(new[] { allow, autoBlock }, FirewallVerdict.Public | FirewallVerdict.Private, true, exe, 8787).state);
+        Assert.Equal("allowed", FirewallVerdict.Evaluate(new[] { allow, autoBlock }, FirewallVerdict.Private, true, exe, 8787).state); // block only for public
+        Assert.Equal("no-rule", FirewallVerdict.Evaluate(new[] { allow with { LocalPorts = "9000-9100" } }, FirewallVerdict.Private, true, exe, 8787).state);
+        Assert.Equal("firewall-off", FirewallVerdict.Evaluate(Array.Empty<FirewallRule>(), FirewallVerdict.Private, false, exe, 8787).state);
+        // PC on cable in a network Windows calls "public": the rule for home networks does not help there.
+        var nets = new[] { new NetworkProfile("1", "Netzwerk 2", 0) };
+        var st = FirewallVerdict.Combine(FirewallVerdict.Evaluate(new[] { allow }, FirewallVerdict.Public | FirewallVerdict.Private, true, exe, 8787), nets, new[] { allow }, exe, 8787);
+        Assert.Equal("public-network", st.State);
+        Assert.True(st.CanFix);
+        Assert.Contains("Netzwerk 2", st.Detail);
+    }
 }

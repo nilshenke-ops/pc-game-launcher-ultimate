@@ -23,6 +23,14 @@ public static class RpcApi
             return new { code, expiresAt = expires, urls = PairingUrls(s, code), pcAddress = PcAddress(s), addresses = DeviceAddresses(s) };
         });
         rpc.Register("pairing.cancel", ctx => { s.Pairing.CancelCode(); return true; });
+        // Can a phone in the home network reach the companion at all? (Windows firewall, public network.)
+        rpc.Register("network.access", ctx => s.Platform.NetworkAccess.Check(s.Web.Port));
+        rpc.Register("network.allowLan", ctx =>
+        {
+            var error = s.Platform.NetworkAccess.RequestFix(s.Web.Port, ctx.Bool("makePrivate"));
+            if (error != null) throw new RpcException("unavailable", error);
+            return new { started = true };
+        });
         rpc.Register("pairing.pending", ctx =>
         {
             var active = s.Pairing.ActiveCode();
@@ -115,7 +123,7 @@ public static class RpcApi
             // The PC itself: it is answering this very request, so "online" is a fact, not a guess.
             pc = new { name = s.Settings.Get().PcName ?? Environment.MachineName, version = UpdateService.CurrentVersion, platform = System.Runtime.InteropServices.RuntimeInformation.OSDescription, online = true, startedAt = System.Diagnostics.Process.GetCurrentProcess().StartTime.ToUniversalTime() },
         });
-        rpc.Register("devices.me", ctx => new { isLocal = ctx.Session.IsLocalAdmin, device = ctx.Session.Device == null ? null : new { ctx.Session.Device.Id, ctx.Session.Device.Name }, permissions = ctx.Session.Permissions, transport = ctx.Session.Channel.Transport });
+        rpc.Register("devices.me", ctx => new { isLocal = ctx.Session.IsLocalAdmin, device = ctx.Session.Device == null ? null : new { ctx.Session.Device.Id, ctx.Session.Device.Name }, permissions = ctx.Session.Permissions, transport = ctx.Session.Channel.Transport, addresses = ctx.Session.Device == null ? null : DeviceAddresses(s) });
         rpc.Register("devices.rename", ctx => s.Devices.Rename(ctx.Str("id", 64), ctx.Str("name", 60)) ? Changed(s, "devices") : throw NotFound());
         rpc.Register("devices.revoke", ctx =>
         {
@@ -820,9 +828,10 @@ public static class RpcApi
         if (set.PublicUrl is { } pub) list.Add((pub.TrimEnd('/'), "public"));
         if (s.Stable.TailscaleName is { } ts && s.Stable.TailscaleHttps) list.Add(($"https://{ts}", "tailscale-https"));
         if (set.LanAccess && s.Stable.RouterName is { } router) list.Add(($"http://{router}:{port}", "router"));
+        // The plain address before ".local": Android browsers often cannot open .local names, every phone opens the IP.
+        list.AddRange(s.Web.LanUrls().Select(u => (u, "lan")));
         if (set.LanAccess && s.Mdns.Running) list.Add(($"http://{s.Mdns.Name}:{port}", "mdns"));
         if (set.LanAccess && s.Stable.TailscaleName is { } ts2) list.Add(($"http://{ts2}:{port}", "tailscale"));
-        list.AddRange(s.Web.LanUrls().Select(u => (u, "lan")));
         return list.DistinctBy(a => a.url).ToList();
     }
 
@@ -857,7 +866,10 @@ public static class RpcApi
         var pcIsHttps = addresses.FirstOrDefault().url?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
         if (set.WebAppUrl is { } web && PcAddress(s) is { } pc && (!webIsHttps || pcIsHttps))
             urls.Add($"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}");
-        urls.AddRange(addresses.Select(a => $"{a.url}/#/pair?code={code}"));
+        // The QR code: the plain home-network IP first – every phone opens it (also Android, also with "Privates DNS"),
+        // as long as both are in the same network. After pairing, the phone moves to the fixed name by itself if that works.
+        var order = addresses.OrderBy(a => a.kind switch { "public" or "tailscale-https" => 0, "lan" => 1, "router" => 2, "mdns" => 3, _ => 4 });
+        urls.AddRange(order.Select(a => $"{a.url}/#/pair?code={code}"));
         return urls;
     }
 
@@ -883,6 +895,10 @@ public static class RpcApi
             Add("address", "Adresse für iPad/Handy (WLAN)", "error", "Keine Adresse im Heimnetz gefunden (kein aktiver WLAN-/LAN-Adapter).", "PC mit dem Router verbinden (WLAN oder Kabel) und Diagnose erneut ausführen.");
         else
             Add("address", "Adresse für iPad/Handy (WLAN)", "ok", string.Join("  ", lan), "Am iPad im selben WLAN genau diese Adresse öffnen oder den QR-Code unter „Gerät koppeln“ scannen. Fragt Windows nach der Firewall: „Private Netzwerke“ erlauben.");
+        var access = s.Platform.NetworkAccess.Check(s.Web.Port);
+        if (access.Supported)
+            Add("address", "Windows-Firewall für Handys im Heimnetz", access.State is "allowed" or "firewall-off" ? "ok" : "error", access.Detail,
+                access.CanFix ? "Am PC unter „Gerät koppeln“ auf „Für Handys im Heimnetz freigeben“ tippen – Windows fragt einmal nach Erlaubnis." : null);
 
         // Fixed name: the pairing is kept per address, a changing Wi-Fi IP means pairing again.
         if (s.Web.LanAccess)

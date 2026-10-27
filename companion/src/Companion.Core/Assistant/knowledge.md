@@ -470,3 +470,8 @@ Stichworte: kann nicht grenzen geht nicht unmöglich
 - Kein automatisches Installieren von Updates oder Treibern (z. B. VB-Cable).
 - Keine Preise außer aus dem Steam-Shop.
 - Den PC herunterfahren o. Ä. schlägt der Assistent nicht vor – das geht nur über die Energie-Funktionen der App.
+
+## Handy koppeln, wenn die Seite nicht öffnet
+Seite: /pair
+Stichworte: qr code öffnet nicht handy verbindet nicht lan kabel wlan firewall öffentliches netzwerk privat gast wlan feste adresse fritz box umziehen
+PC am Kabel und Handy im WLAN geht, wenn beide am selben Router hängen. Unter „Gerät koppeln“ steht oben, ob die Windows-Firewall Handys durchlässt; sonst „Für Handys im Heimnetz freigeben“ antippen (Windows fragt einmal; die Regel gilt nur für den Begleiter und seinen Port, ein als „öffentlich“ eingestuftes Heimnetz wird dabei als privat eingestuft). Der QR-Code nutzt zuerst die IP-Adresse – die öffnet jedes Handy ohne extra App. Nach dem Koppeln bietet das Handy „Feste Adresse gefunden – Jetzt umziehen“ an, dann bleibt die Verbindung, auch wenn der Router eine neue IP vergibt. Nicht im Gast-WLAN, nicht über mobile Daten, VPN am Handy aus.

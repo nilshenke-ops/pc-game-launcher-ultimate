@@ -1,9 +1,9 @@
 // "Dauerhaft auf diesem Gerät": the browser keeps a pairing per address, and on iPhone/iPad the home-screen app has its
 // own storage. A one-time transfer link (10 minutes, single use) adds a further access without pairing again.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowRightLeft, Home, MapPin } from "lucide-react";
-import { client } from "../lib/rpc";
+import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast } from "../lib/hooks";
 import { Banner, Button, Modal } from "./ui";
@@ -57,6 +57,7 @@ export function KeepAccess() {
 
   return (
     <div className="stack-sm">
+      <StableAddressOffer />
       <b className="small">{t("Dauerhaft auf diesem Gerät")}</b>
       <div className="small muted"><MapPin size={13} style={{ verticalAlign: -2 }} /> {t("Gekoppelt unter {h}", { h: location.host })}{onIp ? " · " + t("IP-Adresse – ändert der Router sie, ist die Kopplung hier weg.") : ""}</div>
       <div className="row" style={{ flexWrap: "wrap", gap: 8 }}>
@@ -93,5 +94,59 @@ export function KeepAccess() {
         </Modal>
       )}
     </div>
+  );
+}
+
+const DISMISS_KEY = "pgl.stable-offer";
+
+/** Asks a fixed address (router name, .local) whether it reaches the same companion – from this phone, in its network. */
+export async function findStableAddress(addresses: Address[], timeoutMs = 2500): Promise<Address | null> {
+  const get = async (base: string) => {
+    const c = new AbortController();
+    const timer = setTimeout(() => c.abort(), timeoutMs);
+    try { const r = await fetch(`${base.replace(/\/+$/, "")}/healthz`, { signal: c.signal, cache: "no-store" }); return r.ok ? ((await r.json()) as { instance?: string }).instance ?? null : null; }
+    catch { return null; }
+    finally { clearTimeout(timer); }
+  };
+  const mine = await get(location.origin);
+  if (!mine) return null;
+  for (const a of addresses.filter((x) => (x.kind === "router" || x.kind === "mdns") && x.url.startsWith("http://") && new URL(x.url).origin !== location.origin)) {
+    if ((await get(a.url)) === mine) return a;
+  }
+  return null;
+}
+
+/**
+ * Opened via the QR code under the PC's IP: if this phone also reaches the PC under its fixed name, offer to move there
+ * in one tap – then the pairing stays when the router gives the PC another IP.
+ */
+export function StableAddressOffer() {
+  const [found, setFound] = useState<Address | null>(null);
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    if (!hostIsIp(location.host) || client.demo) return;
+    let dismissed = false;
+    try { dismissed = readJson<string>(DISMISS_KEY) === location.host; } catch { /* storage blocked */ }
+    if (dismissed) return;
+    let alive = true;
+    client.call<{ device: unknown; addresses?: Address[] | null }>("devices.me")
+      .then((me) => (me.device && me.addresses?.length ? findStableAddress(me.addresses) : null))
+      .then((a) => { if (alive) setFound(a); }, () => {});
+    return () => { alive = false; };
+  }, []);
+  if (!found) return null;
+  const move = async () => {
+    setBusy(true);
+    try {
+      const r = await client.call<{ code: string }>("devices.handoff");
+      location.href = handoffLink(found.url, r.code);
+    } catch (e) { toast((e as Error).message, "error"); setBusy(false); }
+  };
+  const later = () => { try { writeJson(DISMISS_KEY, location.host); } catch { /* ignore */ } setFound(null); };
+  return (
+    <Banner kind="info" title={t("Feste Adresse gefunden: {h}", { h: new URL(found.url).host })}
+      actions={<><Button variant="primary" size="sm" busy={busy} onClick={move}>{t("Jetzt umziehen")}</Button><Button size="sm" onClick={later}>{t("Später")}</Button></>}>
+      {t("Du bist über die IP-Adresse verbunden. Vergibt der Router dem PC eine neue, findet dieses Handy ihn nicht mehr. Unter dem festen Namen bleibt die Verbindung – ein Tipp, ohne neu zu koppeln. Danach diese Adresse als Lesezeichen bzw. auf den Home-Bildschirm legen.")}
+    </Banner>
   );
 }

@@ -155,11 +155,16 @@ public sealed class WebHost : IAsyncDisposable
                 h["Content-Security-Policy"] = PluginFrameCsp;
             }
             else
-                h["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https:; media-src 'self' blob: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+                h["Content-Security-Policy"] = $"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; connect-src 'self' ws: wss: https:{OwnHttpOrigins()}; media-src 'self' blob: data:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
             await next();
         });
 
-        app.MapGet("/healthz", () => _svc.Rpc.ShuttingDown ? Results.StatusCode(503) : Results.Json(new { ok = true, app = "Nexus Gaming Hub", version = UpdateService.CurrentVersion, role = "companion", instance = InstanceId }));
+        app.MapGet("/healthz", (HttpContext c) =>
+        {
+            // Readable from the companion's other addresses (the phone checks whether a fixed name reaches this PC); says nothing private.
+            c.Response.Headers["Access-Control-Allow-Origin"] = "*";
+            return _svc.Rpc.ShuttingDown ? Results.StatusCode(503) : Results.Json(new { ok = true, app = "Nexus Gaming Hub", version = UpdateService.CurrentVersion, role = "companion", instance = InstanceId });
+        });
         app.MapGet("/download/info", DownloadInfo);
         app.MapGet("/download/{file}", Download);
         app.Map("/ws", HandleWebSocket);
@@ -186,6 +191,27 @@ public sealed class WebHost : IAsyncDisposable
         // Automated tests run "PC" and "iPad" on one machine; they name the address that plays the Wi-Fi address.
         Environment.GetEnvironmentVariable("PGL_TEST_LAN_HOST") is { Length: > 0 } testHost ? new List<string> { $"http://{testHost}:{Port}" } :
         LanAccess ? NetworkDiagnostics.LocalIPv4().Select(ip => $"http://{ip}:{Port}").ToList() : new List<string>();
+
+    (DateTime at, DateTime? stable, string value) _ownOrigins = (DateTime.MinValue, null, "");
+    /// <summary>
+    /// This companion's own plain-http addresses (router name, IP, .local name) for connect-src: the app opened under the IP
+    /// may check whether the fixed name reaches the same PC. Only this PC's own names – nothing else gets allowed.
+    /// </summary>
+    string OwnHttpOrigins()
+    {
+        // Fresh as soon as the fixed name was (re)checked, otherwise at most 30 s old.
+        var checkedAt = _svc.Stable.CheckedAt;
+        if (DateTime.UtcNow - _ownOrigins.at < TimeSpan.FromSeconds(30) && _ownOrigins.stable == checkedAt) return _ownOrigins.value;
+        string v;
+        try
+        {
+            v = string.Concat(Pgl.Core.Api.RpcApi.Addresses(_svc).Select(a => a.url).Where(u => u.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+                .Select(u => Uri.TryCreate(u, UriKind.Absolute, out var x) ? " " + x.GetLeftPart(UriPartial.Authority) : "").Where(x => x.Length > 1 && !x.Contains('\'') && !x.Contains(';')).Distinct());
+        }
+        catch { v = ""; }
+        _ownOrigins = (DateTime.UtcNow, checkedAt, v);
+        return v;
+    }
 
     /// <summary>Address for this PC only (companion window, browser on the PC).</summary>
     public string LocalUrl => $"http://127.0.0.1:{Port}";

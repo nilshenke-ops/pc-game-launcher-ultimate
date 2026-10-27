@@ -33,7 +33,7 @@ const dotnet = () => process.env.DOTNET ?? (existsSync("/opt/dotnet/dotnet") ? "
 async function startCompanion() {
   try { (await import("node:fs")).rmSync(join(work, "admin.txt")); } catch { /* first start */ }
   companion = spawn(dotnet(), [join(ROOT, "companion/src/Companion.Headless/bin/Debug/net8.0/pgl-companion-headless.dll"), "--data", data], {
-    env: { ...process.env, PGL_WEB_DIR: join(ROOT, "web/dist"), PGL_ADMIN_TOKEN_FILE: join(work, "admin.txt"), PGL_TEST_LAN_HOST: "127.0.0.2", PGL_SESSION_LIFETIME_SECONDS: String(SESSION_SECONDS) },
+    env: { ...process.env, PGL_WEB_DIR: join(ROOT, "web/dist"), PGL_ADMIN_TOKEN_FILE: join(work, "admin.txt"), PGL_TEST_LAN_HOST: "127.0.0.2", PGL_TEST_ROUTER_NAME: "gaming-pc.fritz.box", PGL_SESSION_LIFETIME_SECONDS: String(SESSION_SECONDS) },
     stdio: "ignore", detached: true,
   });
   companion.unref();
@@ -310,4 +310,37 @@ test("Diagnose: Verbindungs-Check mit 10 Prüfungen am gekoppelten iPhone", asyn
   await expect(iphone.page.locator('[data-check="3"]')).toContainText("Nicht verwendet");
   await iphone.page.getByRole("button", { name: "Erneut prüfen" }).click();
   await expect(iphone.page.locator('[data-check="10"]')).toContainText("Recht „Starten“");
+});
+
+test("21 – PC am Kabel, Handy im WLAN: QR-Code mit der IP öffnet, danach zieht das Handy mit einem Tipp auf den festen Namen um", async () => {
+  // The test browser resolves the router name like a FRITZ!Box would for a phone in the same network.
+  const { chromium } = await import("@playwright/test");
+  const b = await chromium.launch({
+    args: ["--host-resolver-rules=MAP gaming-pc.fritz.box 127.0.0.1", "--no-proxy-server"],
+    // A phone in the home network talks to the PC directly – never through this machine's proxy.
+    env: Object.fromEntries(Object.entries(process.env).filter(([k]) => !/proxy/i.test(k))) as Record<string, string>,
+  });
+  const phone = await device(b, "Pixel 7");
+  // The companion looks for its fixed name a few seconds after starting.
+  await expect.poll(async () => (await fetch(`${PC}/`)).headers.get("content-security-policy") ?? "", { timeout: 15000 }).toContain("gaming-pc.fritz.box");
+  const code = await newCode();
+  // The QR code shows the IP first (opens on every phone), the fixed name is offered as well.
+  const chips = await pc.locator(".qr + .chips .chip").allTextContents();
+  expect(chips.indexOf(`127.0.0.2:${PORT}`)).toBeGreaterThanOrEqual(0);
+  expect(chips.indexOf(`127.0.0.2:${PORT}`)).toBeLessThan(chips.indexOf(`gaming-pc.fritz.box:${PORT}`));
+  await phone.page.goto(`${LAN}/#/pair?code=${code}`);
+  await phone.page.getByRole("button", { name: "Koppeln" }).click();
+  await confirmOnPc();
+  await expect(phone.page.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(phone.page.getByText(`Feste Adresse gefunden: gaming-pc.fritz.box:${PORT}`)).toBeVisible({ timeout: 20000 });
+  await phone.page.getByRole("button", { name: "Jetzt umziehen" }).click();
+  await phone.page.waitForURL(new RegExp(`^http://gaming-pc\\.fritz\\.box:${PORT}/`), { timeout: 15000 });
+  await expect(phone.page.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  // The new address has its own access (no new pairing): signed in and connected.
+  await expect.poll(() => phone.page.evaluate(() => localStorage.getItem("pgl.cred") !== null), { timeout: 20000 }).toBe(true);
+  await connected(phone.page, 45000);
+  // Under the fixed name there is nothing more to move to.
+  await phone.page.waitForTimeout(3000);
+  await expect(phone.page.getByText("Feste Adresse gefunden")).toHaveCount(0);
+  await b.close();
 });

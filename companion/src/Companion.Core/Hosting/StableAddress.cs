@@ -63,6 +63,8 @@ public sealed class StableAddress
 
     async Task<string?> FindRouterName()
     {
+        // Automated tests play "router name" with a name the test browser maps to this machine.
+        if (Environment.GetEnvironmentVariable("PGL_TEST_ROUTER_NAME") is { Length: > 0 } test) return test;
         if (_machine.Length == 0 || _machine.Length > 63 || !_machine.All(c => char.IsAsciiLetterOrDigit(c) || c == '-')) return null;
         var own = _lanIps().ToHashSet();
         if (own.Count == 0) return null;
