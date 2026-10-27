@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Bot, Puzzle, Sparkles, CornerDownLeft, Gamepad2, LayoutGrid, Music, Search, Settings, SquareTerminal, Swords, Zap } from "lucide-react";
+import { BookOpen, Bot, House, Puzzle, Sparkles, CornerDownLeft, Gamepad2, LayoutGrid, Music, Search, Settings, SquareTerminal, Swords, Zap } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { navItems } from "../lib/nav";
@@ -11,6 +11,8 @@ import type { AutomationRule, LibraryItem, ProfilesFile, QuickAction, SoundsFile
 import { Modal } from "./ui";
 import { runQuickAction } from "./run-quick";
 import { score } from "./search-score";
+import { allEntries } from "../lib/journal";
+import { entryTitle, KIND_LABEL, KIND_PATH, matchesQuery } from "../lib/journal-logic";
 
 interface Entry { key: string; group: string; label: string; sub?: string; icon: React.ReactNode; run: () => void; keywords?: string }
 
@@ -63,6 +65,8 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         list.push({ key: `plga:${pl.id}:${a.id}`, group: t("Plugins"), label: a.name, sub: pl.manifest.name, icon: <Puzzle size={18} />, run: call("plugins.runAction", { id: pl.id, actionId: a.id }, t("Aktion ausgeführt")) });
     }
     for (const r of data.rules) list.push({ key: "rule:" + r.id, group: t("Automatisierungen"), label: r.name, sub: t("Öffnen"), icon: <Bot size={18} />, run: go("/automations") });
+    // Own home pages (F19) – switch to one directly.
+    for (const l of getPrefs().layouts) list.push({ key: "page:" + l.id, group: t("Startseiten"), label: l.name, sub: t("Startseite öffnen"), icon: <House size={18} />, run: () => { setPrefs((p) => ({ ...p, activeLayout: { ...p.activeLayout, [matchMedia("(max-width: 699px)").matches ? "mobile" : "desktop"]: l.id } })); nav("/"); onClose(); } });
     list.push(
       { key: "cmd:stop", group: t("Befehle"), label: t("Alle Sounds stoppen"), icon: <SquareTerminal size={18} />, run: call("sounds.stopAll", {}, t("Alle Sounds gestoppt")) },
       { key: "cmd:diag", group: t("Befehle"), label: t("Diagnose ausführen"), icon: <SquareTerminal size={18} />, run: go("/diagnostics?run=1") },
@@ -73,6 +77,18 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     return list;
   }, [data, nav, onClose]);
 
+  // Collections on this device (wiki, bingo cards, notes …) – searched offline, also their text; only while typing.
+  const journal = useMemo<Entry[]>(() => {
+    const s = q.trim();
+    if (s.length < 2) return [];
+    return allEntries()
+      .filter((e) => KIND_PATH[e.kind] && matchesQuery(e, s))
+      .map((e) => ({ e, s: score(entryTitle(e), s) || 10 }))
+      .sort((a, b) => b.s - a.s || b.e.updatedAt - a.e.updatedAt)
+      .slice(0, 12)
+      .map(({ e }) => ({ key: "j:" + e.id, group: t("Sammlungen"), label: entryTitle(e), sub: t(KIND_LABEL[e.kind] ?? e.kind), icon: <BookOpen size={18} />, run: () => { nav(KIND_PATH[e.kind](e.id)); onClose(); } }));
+  }, [q, nav, onClose]);
+
   const results = useMemo(() => {
     const usage = getPrefs().usage;
     return entries
@@ -81,9 +97,10 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
       .sort((a, b) => b.s - a.s)
       .slice(0, q ? 40 : 14)
       .map((x) => x.e)
+      .concat(journal)
       // Anything typed can also go to the assistant (question or command in own words).
       .concat(q.trim().length >= 3 ? [{ key: "ask", group: t("KI-Assistent"), label: t("Assistent fragen: „{q}“", { q: q.trim() }), icon: <Sparkles size={18} />, run: () => { onClose(); nav(`/assistant?q=${encodeURIComponent(q.trim())}`); } }] : []);
-  }, [entries, q, nav, onClose]);
+  }, [entries, journal, q, nav, onClose]);
 
   useEffect(() => setSel(0), [q]);
 
@@ -99,7 +116,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     <Modal title={t("Suche")} onClose={onClose} className="palette">
       <div className="palette-input" style={{ margin: "-20px -20px 0" }}>
         <Search size={20} className="muted" />
-        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={t("Spiele, Sounds, Einstellungen, Befehle …")} aria-label={t("Suche")} role="combobox" aria-expanded aria-controls="palette-results" />
+        <input autoFocus value={q} onChange={(e) => setQ(e.target.value)} onKeyDown={onKey} placeholder={t("Spiele, Sammlungen, Wiki, Einstellungen, Befehle …")} aria-label={t("Suche")} role="combobox" aria-expanded aria-controls="palette-results" />
         <kbd>Esc</kbd>
       </div>
       <div className="palette-results" id="palette-results" role="listbox" style={{ margin: "0 -12px -12px" }}>

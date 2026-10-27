@@ -426,6 +426,9 @@ public static class RpcApi
 
         // ------------------------------------------------------------ history
         rpc.Register("history.get", ctx => s.History.Get());
+        rpc.Register("history.sessions", ctx => s.History.Sessions(
+            ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("from", out var hf) && hf.ValueKind == JsonValueKind.String && hf.TryGetDateTime(out var fd) ? fd.ToUniversalTime() : null,
+            ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("to", out var ht) && ht.ValueKind == JsonValueKind.String && ht.TryGetDateTime(out var td) ? td.ToUniversalTime() : null));
         rpc.Register("history.startTimes", _ => s.History.StartTimeReport(s.Sessions.PeriodSeconds));
         rpc.Register("history.clear", ctx => { s.History.Clear(); return true; });
 

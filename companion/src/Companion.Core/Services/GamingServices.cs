@@ -511,6 +511,24 @@ public sealed class HistoryService
         return Math.Round(m);
     }
 
+    /// <summary>
+    /// All recorded sessions in a period (newest first, at most the 1000 the PC keeps) – for the year review, the play
+    /// style and the performance archive. Only what was measured: no session = nothing to show.
+    /// </summary>
+    public object Sessions(DateTime? from, DateTime? to)
+    {
+        var f = _store.Snapshot();
+        var list = f.Sessions.Where(s => (from == null || s.StartedAt >= from) && (to == null || s.StartedAt < to)).ToList();
+        return new
+        {
+            enabled = Enabled,
+            kept = f.Sessions.Count,
+            oldest = f.Sessions.Count > 0 ? f.Sessions.Min(s => s.StartedAt) : (DateTime?)null,
+            full = f.Sessions.Count >= 1000,
+            sessions = list.Select(s => new { s.ItemId, s.Name, s.StartedAt, s.EndedAt, minutes = Math.Round(s.Minutes, 1), s.Perf }),
+        };
+    }
+
     public object Get()
     {
         var f = _store.Snapshot();

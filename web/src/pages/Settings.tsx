@@ -19,6 +19,7 @@ import { PcUpdates } from "../components/UpdateCenter";
 import { NavEditor } from "../components/NavEditor";
 import { HelpCenter } from "../components/help-center";
 import { TailscaleCard } from "../components/tailscale-card";
+import { DataCenter } from "../components/data-center";
 
 type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
 
@@ -566,6 +567,7 @@ function Backup() {
   const sum = upload?.summary as { manifest?: { createdAt?: string; pc?: string; app?: string }; games?: number; programs?: number; profiles?: number; sounds?: number; soundFiles?: number } | undefined;
   return (
     <>
+      <DataCenter />
       <Card title={t("Backup erstellen")} icon={<Download size={18} />}>
         <div className="stack">
           <p className="small muted">{t("Sichert Bibliothek, Favoriten, Kategorien, Profile, Soundboard, Hotkeys, Automatisierungen, Einstellungen sowie Design und Layouts des PC-Fensters als ZIP. Gekoppelte Geräte, Schlüssel und Relay-Zugang werden nie exportiert bzw. übernommen. Die Bibliothek lässt sich nur direkt am PC wiederherstellen.")}</p>

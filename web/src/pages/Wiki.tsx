@@ -8,7 +8,7 @@ import { t } from "../lib/i18n";
 import { dateTime } from "../lib/format";
 import { toast } from "../lib/hooks";
 import { allEntries, downloadText, getEntry, newId, removeEntry, useJournal, useJournalVersion, type Entry } from "../lib/journal";
-import { allTags, backlinks, duplicateGroups, KIND_PATH, matchesQuery, mergePages, norm, resolveLink, splitWiki, withVersion, wikiMarkdown, type WikiPage } from "../lib/journal-logic";
+import { allTags, backlinks, brokenLinks, withRenameAlias, duplicateGroups, KIND_PATH, matchesQuery, mergePages, norm, resolveLink, splitWiki, withVersion, wikiMarkdown, type WikiPage } from "../lib/journal-logic";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Modal, PageHead } from "../components/ui";
 import { EntryChip, ExportImport, GamePicker, gameLabel, LinkedList, LinkPicker, SearchBox, SyncBadge, TagInput, trySave, useGames } from "../components/journal-ui";
 
@@ -46,6 +46,7 @@ function Overview({ pages, games, onOpen, onCreate }: { pages: Entry<WikiPage>[]
   const [merge, setMerge] = useState<Entry<WikiPage>[] | null>(null);
   const tags = useMemo(() => allTags(pages), [pages]);
   const dups = useMemo(() => duplicateGroups(pages), [pages]);
+  const broken = useMemo(() => brokenLinks(pages, allEntries()), [pages]);
   const shown = useMemo(() => {
     const l = pages.filter((p) => (!tag || p.data.tags.some((x) => norm(x) === norm(tag))) && matchesQuery(p, q));
     return sort === "title" ? [...l].sort((a, b) => a.data.title.localeCompare(b.data.title)) : l;
@@ -69,6 +70,15 @@ function Overview({ pages, games, onOpen, onCreate }: { pages: Entry<WikiPage>[]
       {dups.length > 0 && (
         <Banner kind="warn" title={t("Doppelte Seiten")}>
           {dups.map((g) => <div key={g[0].id} className="row" style={{ gap: 8 }}>„{g[0].data.title}“ × {g.length} <Button size="sm" icon={<GitMerge size={14} />} onClick={() => setMerge(g)}>{t("Zusammenführen")}</Button></div>)}
+        </Banner>
+      )}
+      {broken.length > 0 && (
+        <Banner kind="info" title={t("Links ohne Ziel ({n})", { n: broken.length })}>
+          <span className="small">{t("Diese Links zeigen auf Seiten, die es noch nicht gibt – anlegen oder den Link ändern:")}</span>
+          {broken.slice(0, 20).map((b) => <div key={b.page.id + b.target} className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <span className="small">„{b.target}“ {t("in")} <button type="button" className="linklike" onClick={() => onOpen(b.page.id)}>{b.page.data.title}</button></span>
+            <Button size="sm" icon={<Plus size={14} />} onClick={() => onCreate(b.target)}>{t("Anlegen")}</Button>
+          </div>)}
         </Banner>
       )}
       {pages.length > 0 && (shown.length === 0 ? <Card><Empty icon={<Search size={26} />} title={t("Nichts gefunden")} action={q.trim() ? <Button icon={<Plus size={15} />} onClick={() => onCreate(q)}>{t("Seite „{n}“ anlegen", { n: q.trim() })}</Button> : undefined} /></Card> : (
@@ -170,12 +180,13 @@ function PageEditor({ page, pages, games, onDone, onDeleted }: { page: Entry<Wik
   const first = useRef(true);
   const timer = useRef<number | undefined>(undefined);
   const latest = useRef(f); latest.current = f;
+  const start = useRef({ title: page.data.title, aliases: page.data.aliases ?? [] });
   const tags = useMemo(() => allTags(pages), [pages]);
   const set = (p: Partial<WikiPage>) => { setF((x) => ({ ...x, ...p })); setState("pending"); };
   const flush = () => {
     window.clearTimeout(timer.current);
     const cur = getEntry<WikiPage>(page.id)?.data;
-    const next = { ...latest.current, title: latest.current.title.trim() || t("Ohne Titel") };
+    const next = withRenameAlias({ ...latest.current, title: latest.current.title.trim() || t("Ohne Titel") }, start.current.title, start.current.aliases);
     if (cur && JSON.stringify({ ...cur, history: undefined }) === JSON.stringify({ ...next, history: undefined })) { setState("saved"); return true; }
     const ok = trySave("wiki", page.id, withVersion(cur, { ...next, history: cur?.history ?? [] }, Date.now()));
     setState(ok ? "saved" : "error");

@@ -123,7 +123,7 @@ Spielbegleiter → Spiele-Journal. Funktioniert ohne PC: alles wird im Browser d
 ## Gaming-Wiki
 Seite: /wiki
 Stichworte: wiki seiten nachschlagen links verlinken rückverweise backlinks rezepte strategie boss notizen wissen versionen versionsgeschichte zusammenführen doppelt markdown
-Spielbegleiter → Gaming-Wiki. Eigene Seiten, gespeichert auf diesem Gerät (ohne PC nutzbar) und mit dem PC abgeglichen. „Neue Seite“ → Titel und Text; [[Seitenname]] verlinkt eine andere Seite, [[Seitenname|Text]] mit eigenem Linktext. Gibt es die Seite noch nicht, ist der Link gestrichelt – antippen legt sie an. Unter jeder Seite stehen die Rückverweise (Seiten und Einträge, die hierher verlinken). Beim Bearbeiten wird automatisch gespeichert; der Text davor bleibt als Version (höchstens eine je 5 Minuten, die letzten 20) – „Versionen“ zeigt und stellt sie wieder her. Doppelte Titel erscheinen in der Übersicht mit „Zusammenführen“ (Texte werden angehängt, der alte Titel bleibt als „Auch bekannt als“, Links funktionieren weiter). Export/Import aller Seiten als JSON, einzelne Seite „Als Markdown“.
+Spielbegleiter → Gaming-Wiki. Eigene Seiten, gespeichert auf diesem Gerät (ohne PC nutzbar) und mit dem PC abgeglichen. „Neue Seite“ → Titel und Text; [[Seitenname]] verlinkt eine andere Seite, [[Seitenname|Text]] mit eigenem Linktext. Gibt es die Seite noch nicht, ist der Link gestrichelt – antippen legt sie an. Unter jeder Seite stehen die Rückverweise (Seiten und Einträge, die hierher verlinken). Beim Bearbeiten wird automatisch gespeichert; der Text davor bleibt als Version (höchstens eine je 5 Minuten, die letzten 20) – „Versionen“ zeigt und stellt sie wieder her. Doppelte Titel erscheinen in der Übersicht mit „Zusammenführen“ (Texte werden angehängt, der alte Titel bleibt als „Auch bekannt als“, Links funktionieren weiter). Umbenennen hält Links heil: der alte Titel wird automatisch zu „Auch bekannt als“. Die Übersicht zeigt „Links ohne Ziel“ mit „Anlegen“. Export/Import aller Seiten als JSON, einzelne Seite „Als Markdown“.
 
 ## Welten & Bauen (Minecraft-Welten, Bauprojekte, Karten-Marker)
 Seite: /worlds
@@ -209,6 +209,20 @@ Fünf Bereiche, alles im Browser gespeichert (auch ohne PC, mit dem PC abgeglich
 Seite: /infos
 Stichworte: release releases erscheint erscheinungstermin dlc kalender saison event battle pass patchnotes patch update erklärer faktencheck fakten crossplay koop offline controller cloud ultrawide mods barrierefreiheit untertitel farbenblind kontrast edition editionen deluxe doppelt empfehlung empfehlungen ähnlich gefällt
 Sieben Bereiche, alles im Browser gespeichert (auch ohne PC, mit dem PC abgeglichen). „Releases“: Spiele, DLCs, Updates mit Termin „Bestätigt“ (nur mit Quelle), „Unbestätigt“ oder „Nur Zeitraum“; Monatsansicht, Erschienenes getrennt, „In den Kalender“ mit Erinnerung, „Auf die Wunschliste“. „Saisons & Events“: Beginn/Ende mit der Zeitzone der Ankündigung, gezeigt in Ortszeit und laut Ankündigung; ohne Ende steht „Begonnen (Ende unbekannt)“. „Update-Erklärer“: offizielle Steam-Patchnotes laden (braucht den PC, Steam erlaubt die Abfrage nicht direkt aus dem Browser) oder einfügen; Sortierung nach Gameplay/Neue Inhalte/Fehlerbehebungen/Technik nach Stichwörtern und Überschriften – jede Zeile wörtlich, Original bleibt; als gelesen markieren. „Faktencheck“ und „Barrierefreiheit“: je Spiel Ja/Teilweise/Nein/Unbekannt mit Quelle und Stand, Vergleich bis zu 4 Spielen, „Muss haben“-Filter (Unbekannt zählt nie). „Editionen & DLCs“: Inhalte nebeneinander, „Habe ich“ markieren, Doppelkauf-Warnung, Preise nur mit Quelle. „Empfehlungen“: regelbasiert aus eigenen Daten (Genre & Spielgefühl aus dem Faktencheck, Bibliotheks-Kategorien, Spielweise), mit Gründen, keine KI.
+
+## Auswertungen
+Seite: /insights
+Stichworte: jahresrückblick rückblick jahr statistik spielstil auswertung leistungsarchiv fps messung benchmark
+Drei Bereiche, nur aus echten Daten des PCs (Spielverlauf) oder deinen eigenen Einträgen – ohne PC wird nichts geschätzt. „Jahresrückblick“: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele (nur wenn davor schon aufgezeichnet wurde) und Vergleich mit dem Vorjahr; als Bild teilen (Spielnamen und Spielzeit abschaltbar) oder drucken/als PDF speichern. Der PC behält die letzten 1000 Sitzungen. „Spielstil“: Tageszeit und Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten, Backlog – Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter. „Leistungsarchiv“: CPU/GPU/RAM-Last aus Sitzungen übernehmen oder Messungen selbst eintragen (FPS, 1 % Low, Frametime, Temperaturen z. B. aus CapFrameX – der PC misst FPS nicht); zwei Messungen vergleichen.
+
+## Startseiten
+Stichworte: startseite seiten dashboard teilen layout home mehrere
+Home → „Anpassen“: mehrere eigene Startseiten (bis 20) anlegen, umbenennen, löschen und oben per Tipp wechseln – für Handy und großen Bildschirm getrennt merkbar. „Seite als Link teilen“ oder „Als Datei“ gibt nur die Anordnung der Widgets weiter (keine Einstellungen, Schlüssel oder eigenen Widgets); wer den Link öffnet, sieht zuerst eine Vorschau und fügt die Seite als neue Seite hinzu.
+
+## Datenzentrum
+Seite: /settings?s=backup
+Stichworte: export import datenzentrum csv pdf json sichern übertragen konflikt
+Einstellungen → Backup & Wiederherstellung → Datenzentrum: Sammlungen (nach Bereichen wählbar) und Design/Startseiten dieses Geräts als JSON-Datei, als Tabelle (CSV je Art) oder gedruckt/PDF sichern – ohne PC. Import zeigt vorher, was neu, gleich oder anders ist; bei Unterschieden wählst du: neuere behalten, meine behalten, aus der Datei übernehmen oder beide behalten (als Kopie). Design kann ersetzt oder die Startseiten als neue Seiten hinzugefügt werden.
 
 ## Ultimate Gaming Bingo
 Seite: /play?tab=bingo
@@ -415,7 +429,7 @@ Kurzanleitung: Begleiter starten, Firewall „Private Netzwerke“ erlauben, Ger
 
 ## Suche
 Stichworte: suche finden strg k
-Strg+K (oder die Lupe) durchsucht Bereiche, Spiele, Programme, Sounds, Profile und Quick Actions. Von dort lässt sich auch der Assistent fragen.
+Strg+K (oder die Lupe) durchsucht Bereiche, Spiele, Programme, Sounds, Profile, Quick Actions und deine Startseiten – und auch ohne PC deine Sammlungen (Wiki-Seiten samt Text, Bingos, Notizen, Builds …). Von dort lässt sich auch der Assistent fragen.
 
 ## KI-Assistent
 Seite: /assistant

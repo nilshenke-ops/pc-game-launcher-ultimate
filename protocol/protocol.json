@@ -171,6 +171,7 @@
     "hotkeys.remove": "manage",
 
     "history.get": "view",
+    "history.sessions": "view",
     "history.clear": "manage",
 
     "sounds.list": "view",

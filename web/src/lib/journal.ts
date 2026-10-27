@@ -380,26 +380,61 @@ export async function exportJournal(kinds?: string[], withImages = true, only?: 
   return { format: "nexus-journal", version: 1, exportedAt: new Date().toISOString(), entries: list.map(({ id, kind, updatedAt, data }) => ({ id, kind, updatedAt, data })), images };
 }
 
-/**
- * Reads an export file. Existing entries are only replaced by a newer version from the file; with `asCopies` every
- * entry gets a new id instead (for templates and shared collections, so nothing of yours is overwritten).
- */
-export async function importJournal(text: string, opts: { kinds?: string[]; asCopies?: boolean } = {}): Promise<{ added: number; updated: number; skipped: number; images: number }> {
+/** How an entry of a file relates to this device: new, identical, or different from what is here (a conflict). */
+export type ImportStatus = "new" | "same" | "conflict" | "invalid";
+export interface ImportItem { entry: Entry; status: ImportStatus; mine?: Entry }
+
+/** Parses and checks an export file without changing anything – for a preview before the import. */
+export function readJournalFile(text: string): JournalExport {
   let f: JournalExport;
   try { f = JSON.parse(text); } catch { throw new JournalError("Die Datei ist kein gültiges JSON."); }
   if (!f || f.format !== "nexus-journal" || !Array.isArray(f.entries)) throw new JournalError("Keine Sammlungs-Datei von Nexus.");
   if (f.version > 1) throw new JournalError("Die Datei stammt aus einer neueren Version.");
-  let added = 0, updated = 0, skipped = 0, images = 0;
+  return f;
+}
+
+const validEntry = (e: Entry | null | undefined): e is Entry => !!e && typeof e.kind === "string" && /^[a-z]{2,16}$/.test(e.kind) && typeof e.data === "object" && e.data !== null && typeof e.id === "string" && ID_RX.test(e.id);
+
+/** Each entry of the file compared with this device. */
+export function previewImport(f: JournalExport, kinds?: string[]): ImportItem[] {
+  return f.entries.slice(0, 20_000).map((e) => {
+    if (!validEntry(e) || (kinds && !kinds.includes(e.kind))) return { entry: e, status: "invalid" as const };
+    const cur = entries.get(e.id);
+    if (!cur || cur.deleted) return { entry: e, status: "new" as const };
+    if (cur.kind !== e.kind) return { entry: e, status: "invalid" as const, mine: cur };
+    return { entry: e, status: JSON.stringify(cur.data) === JSON.stringify(e.data) ? "same" as const : "conflict" as const, mine: cur };
+  });
+}
+
+/**
+ * What happens with an entry that exists here and differs in the file: "newer" keeps the newer one (old behaviour),
+ * "mine" keeps this device's, "theirs" takes the file's, "copy" keeps both (the file's one becomes a copy).
+ */
+export type ConflictChoice = "newer" | "mine" | "theirs" | "copy";
+
+/**
+ * Reads an export file. Existing entries are only replaced by a newer version from the file unless `conflict` says
+ * otherwise; with `asCopies` every entry gets a new id instead (for templates and shared collections, so nothing of
+ * yours is overwritten). `only` limits the import to these ids of the file.
+ */
+export async function importJournal(text: string, opts: { kinds?: string[]; asCopies?: boolean; conflict?: ConflictChoice; only?: string[] } = {}): Promise<{ added: number; updated: number; skipped: number; images: number; copies: number }> {
+  const f = readJournalFile(text);
+  const conflict = opts.conflict ?? "newer";
+  let added = 0, updated = 0, skipped = 0, images = 0, copies = 0;
   const idMap = new Map<string, string>();
-  if (opts.asCopies) for (const e of f.entries) if (e && typeof e.id === "string") idMap.set(e.id, newId());
+  const list = f.entries.slice(0, 20_000).filter((e) => !opts.only || (e && opts.only.includes(e.id)));
+  if (opts.asCopies) { for (const e of list) if (e && typeof e.id === "string") idMap.set(e.id, newId()); }
+  else if (conflict === "copy") for (const it of previewImport({ ...f, entries: list }, opts.kinds)) if (it.status === "conflict") idMap.set(it.entry.id, newId());
   const remap = (d: unknown) => (idMap.size ? JSON.parse(JSON.stringify(d).replace(/j_[A-Za-z0-9_-]{6,40}/g, (m) => idMap.get(m) ?? m)) : d);
-  for (const e of f.entries.slice(0, 20_000)) {
-    if (!e || typeof e.kind !== "string" || !/^[a-z]{2,16}$/.test(e.kind) || typeof e.data !== "object" || e.data === null || (opts.kinds && !opts.kinds.includes(e.kind))) { skipped++; continue; }
+  for (const e of list) {
+    if (!validEntry(e) || (opts.kinds && !opts.kinds.includes(e.kind))) { skipped++; continue; }
     const id = idMap.get(e.id) ?? e.id;
-    if (!ID_RX.test(id)) { skipped++; continue; }
     const cur = entries.get(id);
-    if (cur && !cur.deleted && (cur.kind !== e.kind || cur.updatedAt >= (Number(e.updatedAt) || 0))) { skipped++; continue; }
-    try { saveEntry(e.kind, id, remap(e.data) as object); cur && !cur.deleted ? updated++ : added++; } catch { skipped++; }
+    if (cur && !cur.deleted) {
+      if (cur.kind !== e.kind || JSON.stringify(cur.data) === JSON.stringify(remap(e.data))) { skipped++; continue; }
+      if (conflict === "mine" || (conflict === "newer" && cur.updatedAt >= (Number(e.updatedAt) || 0))) { skipped++; continue; }
+    }
+    try { saveEntry(e.kind, id, remap(e.data) as object); if (cur && !cur.deleted) updated++; else if (idMap.has(e.id) && !opts.asCopies) copies++; else added++; } catch { skipped++; }
   }
   for (const [id, img] of Object.entries(f.images ?? {}).slice(0, 3000)) {
     if (!/^img_[A-Za-z0-9_-]{6,40}$/.test(id) || !/^image\/(jpeg|png|webp)$/.test(img?.mime) || typeof img.data !== "string" || img.data.length * 0.75 > MAX_IMAGE_BYTES) continue;
@@ -407,7 +442,7 @@ export async function importJournal(text: string, opts: { kinds?: string[]; asCo
     await putImageRow({ id, mime: img.mime, data: img.data, at: Date.now() });
     images++;
   }
-  return { added, updated, skipped, images };
+  return { added, updated, skipped, images, copies };
 }
 
 /** Saves a text as a file on this device (download). */

@@ -56,6 +56,7 @@ const FriendsPage = lazy(() => import("./pages/Friends"));
 const MediaPage = lazy(() => import("./pages/Media"));
 const StudioPage = lazy(() => import("./pages/Studio"));
 const InfosPage = lazy(() => import("./pages/Infos"));
+const InsightsPage = lazy(() => import("./pages/Insights"));
 const LayoutsPage = lazy(() => import("./pages/Layouts"));
 const PeripheralsPage = lazy(() => import("./pages/Peripherals"));
 const InputPage = lazy(() => import("./pages/Input"));
@@ -154,6 +155,7 @@ function Gate() {
           <Route path="/media" element={<MediaPage />} />
           <Route path="/studio" element={<StudioPage />} />
           <Route path="/infos" element={<InfosPage />} />
+          <Route path="/insights" element={<InsightsPage />} />
           <Route path="/storage" element={<StoragePage />} />
           <Route path="/files" element={<FilesPage />} />
           <Route path="/captures" element={<CapturesPage />} />

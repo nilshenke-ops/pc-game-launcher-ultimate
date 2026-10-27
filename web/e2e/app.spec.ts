@@ -714,7 +714,7 @@ test("KI-Assistent: lokal, ohne Internet – beantwortet App-Fragen, schlägt Ak
   await expect(pc.getByText("Alle Sounds gestoppt")).toBeVisible();
   // From the search: anything typed can be asked.
   await pc.keyboard.press("Control+k");
-  await pc.getByPlaceholder("Spiele, Sounds, Einstellungen, Befehle …").fill("Wie geht es meinem PC");
+  await pc.getByPlaceholder("Spiele, Sammlungen, Wiki, Einstellungen, Befehle …").fill("Wie geht es meinem PC");
   await pc.getByText("Assistent fragen: „Wie geht es meinem PC“").click();
   await expect(pc.locator(".as-turn.bot").last()).toContainText("CPU");
   // Set-up on the PC: key field only here; local mode is the default.

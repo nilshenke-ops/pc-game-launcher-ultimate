@@ -150,4 +150,36 @@ describe("store, export and import (without the PC)", async () => {
     await expect(j.importJournal(JSON.stringify({ format: "other", entries: [] }))).rejects.toThrow(/Keine Sammlungs-Datei/);
     expect(await j.importJournal(JSON.stringify({ format: "nexus-journal", version: 1, entries: [{ id: "j_bad", kind: "Wiki!", updatedAt: 1, data: {} }, { id: "x", kind: "wiki", data: null }] }))).toMatchObject({ added: 0, skipped: 2 });
   });
+  it("previews a file and lets the user choose what happens with conflicts", async () => {
+    j._resetForTests();
+    const a = j.newId(), b = j.newId(), c = j.newId();
+    j.saveEntry("wiki", a, { title: "A", body: "alt", tags: [] });
+    j.saveEntry("wiki", b, { title: "B", body: "", tags: [] });
+    const file = await j.exportJournal(["wiki"], false);
+    file.entries[0] = { ...file.entries[0], updatedAt: 1, data: { title: "A", body: "aus Datei", tags: [] } }; // older but different
+    file.entries.push({ id: c, kind: "wiki", updatedAt: 5, data: { title: "C", body: "", tags: [] } });
+    const text = JSON.stringify(file);
+    expect(j.previewImport(j.readJournalFile(text)).map((i) => i.status)).toEqual(["conflict", "same", "new"]);
+    expect(await j.importJournal(text, { conflict: "mine", only: [a] })).toMatchObject({ updated: 0, skipped: 1 });
+    expect(j.getEntry<{ body: string }>(a)!.data.body).toBe("alt");
+    expect(await j.importJournal(text, { conflict: "newer", only: [a] })).toMatchObject({ updated: 0 }); // mine is newer
+    expect(await j.importJournal(text, { conflict: "copy" })).toMatchObject({ copies: 1, added: 1, skipped: 1 });
+    expect(j.getEntry<{ body: string }>(a)!.data.body).toBe("alt");
+    expect(j.listKind<{ body: string }>("wiki").filter((p) => p.data.body === "aus Datei")).toHaveLength(1);
+    expect(await j.importJournal(text, { conflict: "theirs", only: [a] })).toMatchObject({ updated: 1 });
+    expect(j.getEntry<{ body: string }>(a)!.data.body).toBe("aus Datei");
+  });
+});
+
+describe("wiki rename keeps links", async () => {
+  const { withRenameAlias, brokenLinks, resolveLink } = await import("./journal-logic");
+  it("keeps the starting title as alias, never the in-between ones or the new title", () => {
+    const n = withRenameAlias({ title: "Feuerdrache", body: "", tags: [], aliases: [] }, "Drache", []);
+    expect(n.aliases).toEqual(["Drache"]);
+    expect(withRenameAlias({ title: "Drache", aliases: [] }, "Drache", ["Alt"]).aliases).toEqual(["Alt"]);
+    expect(withRenameAlias({ title: "Alt", aliases: [] }, "Drache", ["Alt"]).aliases).toEqual(["Drache"]);
+    const pages = [E("j_w1aaaaaa", "wiki", { title: "Feuerdrache", body: "", tags: [], aliases: ["Drache"] }), E("j_w2aaaaaa", "wiki", { title: "Bosse", body: "[[Drache]] und [[Riese]]", tags: [] })];
+    expect(resolveLink("Drache", pages as never)?.id).toBe("j_w1aaaaaa");
+    expect(brokenLinks(pages as never).map((b) => b.target)).toEqual(["Riese"]);
+  });
 });

@@ -29,6 +29,7 @@ import { runQuickAction } from "../components/run-quick";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { CapturesWidget, ChallengesWidget, DiceWidget, MemoryWidget, NightWidget, PhotoWidget, PollWidget, ProjectsWidget, StorageWidget, TopPlayedWidget, TrackWidget } from "../components/more-widgets";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
+import { HomePages } from "../components/home-pages";
 // Loaded only when the widget is shown (the task catalog is not needed on every start).
 const BingoWidget = lazy(() => import("../components/bingo-board").then((m) => ({ default: m.BingoWidget })));
 import { CUSTOM_WIDGET } from "../lib/prefs-core";
@@ -388,6 +389,7 @@ export default function Dashboard() {
           {edit && <Button icon={<RotateCcw size={16} />} onClick={() => updateWidgets(() => structuredClone(DEFAULT_LAYOUT.widgets))}>{t("Standard")}</Button>}
           <Button variant={edit ? "primary" : undefined} icon={edit ? <Check size={16} /> : <LayoutDashboard size={16} />} onClick={() => setEdit(!edit)}>{edit ? t("Fertig") : t("Anpassen")}</Button>
         </>} />
+      <HomePages layout={layout} mobile={mobile} edit={edit} pluginWidgets={pluginWidgets.map((x) => x.id)} />
       {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}
       <div className="dash" style={{ marginTop: edit ? 16 : 0 }}>
         {shownWidgets.map((w, i) => {

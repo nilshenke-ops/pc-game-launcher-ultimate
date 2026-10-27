@@ -32,6 +32,7 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   patch: (id) => `/infos?tab=patches&id=${id}`,
   editions: (id) => `/infos?tab=editions&id=${id}`,
   recfav: () => `/infos?tab=recs`,
+  perfrun: (id) => `/insights?tab=perf&id=${id}`,
   recpref: () => `/infos?tab=recs`,
   bingo: (id) => `/play?tab=bingo&id=${id}`,
   bingotask: () => `/play?tab=bingo&area=own`,
@@ -44,7 +45,7 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   design: (id) => `/studio?tab=designs&id=${id}`,
   expo: (id) => `/studio?tab=expo&id=${id}`,
 };
-export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", bingotask: "Eigene Bingo-Aufgabe", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", access: "Barrierefreiheit", release: "Release", gameevent: "Saison / Event", patch: "Patchnotes", editions: "Editionen & DLCs", recfav: "Gemerkte Empfehlung", recpref: "Vorlieben", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack", card: "Sammelkarte", design: "Poster / Banner", expo: "Ausstellung" };
+export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", bingotask: "Eigene Bingo-Aufgabe", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", access: "Barrierefreiheit", release: "Release", gameevent: "Saison / Event", patch: "Patchnotes", editions: "Editionen & DLCs", recfav: "Gemerkte Empfehlung", perfrun: "Messung", recpref: "Vorlieben", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack", card: "Sammelkarte", design: "Poster / Banner", expo: "Ausstellung" };
 
 export function entryTitle(e: Entry): string {
   const d = e.data as { title?: string; text?: string; did?: string; gameName?: string };
@@ -188,6 +189,23 @@ export function resolveLink(target: string, pages: Entry<WikiPage>[], others: En
   const n = norm(target);
   return pages.find((p) => norm(p.data.title) === n) ?? pages.find((p) => (p.data.aliases ?? []).some((a) => norm(a) === n))
     ?? others.find((e) => norm(entryTitle(e)) === n) ?? null;
+}
+
+/**
+ * Renaming keeps links working: the title the page had when editing started becomes an alias (so [[Old name]] still
+ * leads here). Intermediate titles while typing are never stored; the new title itself is never also an alias.
+ */
+export function withRenameAlias<T extends { title: string; aliases?: string[] }>(next: T, startTitle: string, startAliases: string[] = []): T {
+  const n = norm(next.title);
+  const list = [...startAliases, ...(startTitle.trim() && norm(startTitle) !== n ? [startTitle.trim()] : [])];
+  const seen = new Set<string>();
+  const aliases = list.filter((a) => { const k = norm(a); if (!k || k === n || seen.has(k)) return false; seen.add(k); return true; }).slice(-20);
+  return { ...next, aliases };
+}
+
+/** Links in wiki pages that lead nowhere (no page, alias or other entry with that title). */
+export function brokenLinks(pages: Entry<WikiPage>[], others: Entry[] = []) {
+  return pages.flatMap((p) => [...new Set(wikiLinks(p.data.body).map((l) => l.target))].filter((t) => !resolveLink(t, pages, others)).map((target) => ({ page: p, target })));
 }
 
 /** Pages that link to this one (by its title or a former title) or name it in their links list. */
