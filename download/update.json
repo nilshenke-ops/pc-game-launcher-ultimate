@@ -1,33 +1,28 @@
 {
-  "version": "2.56.0",
+  "version": "2.57.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.56.0/PCGameLauncherCompanion.exe",
-  "size": 88130093,
-  "sha256": "8c74283c4b7e2210c2424908985688ec0dc0565cb81d0b674951116c255a46d3",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.57.0/PCGameLauncherCompanion.exe",
+  "size": 88178475,
+  "sha256": "2521ca6a49b1d55d780931d07722a1c151b45425c9d1a2018478b45ce96e33d1",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.56.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.56.0/PCGameLauncherCompanion-2.56.0-win-x64.zip",
-    "size": 82390708,
-    "sha256": "1af9a0277fb572da2a1e652d1ca71be2bba0b6e2c86625845386e2e020b71570"
+    "fileName": "PCGameLauncherCompanion-2.57.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.57.0/PCGameLauncherCompanion-2.57.0-win-x64.zip",
+    "size": 82441020,
+    "sha256": "5044ee19411e96c0f06046a40500ecbd1f8d2df971c0f7418f9e1aba4d627c36"
   },
-  "notes": "Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“ · Bingo-Seite: Häkchen „Echte Aufgaben aus dem Internet laden (Steam-Erfolge)“ für Spiele ohne Katalog · Kein Bingo gleicht dem letzten: Aufgaben der letzten Karte eines Spiels kommen nur noch, wenn es keine anderen mehr gibt (dann steht es auf der Karte), ältere Karten werden vorher wiederholt",
+  "notes": "„Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale · Handy-Website: Adresse und Code direkt auf der Offline-Seite eingeben („Handy manuell verbinden“)",
   "changes": {
     "neu": [
-      "Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“",
-      "Bingo-Seite: Häkchen „Echte Aufgaben aus dem Internet laden (Steam-Erfolge)“ für Spiele ohne Katalog",
-      "Kein Bingo gleicht dem letzten: Aufgaben der letzten Karte eines Spiels kommen nur noch, wenn es keine anderen mehr gibt (dann steht es auf der Karte), ältere Karten werden vorher wiederholt",
-      "JARVIS spricht: Antworten werden mit der Stimme des Geräts vorgelesen (abschaltbar, „Stopp“ unterbricht); Spracheingabe wie bisher über das Mikrofon",
-      "JARVIS-Gedächtnis: „Merk dir, dass …“, „Was weißt du über …?“, „Vergiss …“ (nur nach Rückfrage) – gespeichert als Markdown-Seite „JARVIS-Gedächtnis“ im eigenen Gaming-Wiki",
-      "JARVIS-Protokoll: was JARVIS erledigt hat, als Wiki-Seite; „Was hast du heute gemacht?“",
-      "JARVIS-HUD: Kugel zeigt Zuhören, Arbeiten, Sprechen; PC-Verbindung, laufendes Spiel, Profil, Erinnerungen und Fähigkeiten auf einen Blick"
+      "„Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale",
+      "Handy-Website: Adresse und Code direkt auf der Offline-Seite eingeben („Handy manuell verbinden“)"
     ],
     "verbessert": [],
     "behoben": [
-      "Bingo: „3x3 Bingo für Celeste leicht“ nahm „Celeste leicht“ als Spielnamen; „Bingo für heute Abend“ nahm „Heute Abend“ als Spiel – jetzt wird nach dem Spiel gefragt",
-      "Bingo: Kann die eingestellte KI nicht antworten, bietet JARVIS jetzt Internet oder Katalog an, statt nur einen Fehler zu zeigen"
+      "github.io-Seite: Eine Heimnetz-Adresse (z. B. 192.168.178.116) führte zu „nicht erreichbar“ – der Browser verbietet einer https-Seite den Zugriff auf http im Heimnetz. Jetzt öffnet „PC verbinden“ direkt die Seite deines PCs mit dem Code; ohne „http://“ und ohne Port eingetippt wird automatisch http und Port 8787 genommen",
+      "Feste Adresse: Der Begleiter fragt den Router (z. B. FRITZ!Box) auch nach dem Namen zur eigenen IP – so wird ….fritz.box gefunden, auch wenn der PC dort anders heißt als in Windows"
     ]
   },
-  "signature": "420g+Nurx1vTY/1e0KAQDtrr940QYg6speUJdk5Q2WUPC7k/mRfcYcw5zpUAVRxE7RC1ooL1yHxcw6NexA1zdA=="
+  "signature": "45aqzRcpMap7C3/L5cBG1DE6jnPvO7XZydE3WiJ/QqwlAFmMPFbp67bGFuCN1m+YWLm0WkBSz4UbOUeYjt1jpA=="
 }

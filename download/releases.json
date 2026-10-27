@@ -1,5 +1,33 @@
 [
   {
+    "version": "2.57.0",
+    "date": "2026-10-27",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.57.0/PCGameLauncherCompanion.exe",
+    "size": 88178475,
+    "sha256": "2521ca6a49b1d55d780931d07722a1c151b45425c9d1a2018478b45ce96e33d1",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.57.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.57.0/PCGameLauncherCompanion-2.57.0-win-x64.zip",
+      "size": 82441020,
+      "sha256": "5044ee19411e96c0f06046a40500ecbd1f8d2df971c0f7418f9e1aba4d627c36"
+    },
+    "notes": "„Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale · Handy-Website: Adresse und Code direkt auf der Offline-Seite eingeben („Handy manuell verbinden“)",
+    "changes": {
+      "neu": [
+        "„Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale",
+        "Handy-Website: Adresse und Code direkt auf der Offline-Seite eingeben („Handy manuell verbinden“)"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "github.io-Seite: Eine Heimnetz-Adresse (z. B. 192.168.178.116) führte zu „nicht erreichbar“ – der Browser verbietet einer https-Seite den Zugriff auf http im Heimnetz. Jetzt öffnet „PC verbinden“ direkt die Seite deines PCs mit dem Code; ohne „http://“ und ohne Port eingetippt wird automatisch http und Port 8787 genommen",
+        "Feste Adresse: Der Begleiter fragt den Router (z. B. FRITZ!Box) auch nach dem Namen zur eigenen IP – so wird ….fritz.box gefunden, auch wenn der PC dort anders heißt als in Windows"
+      ]
+    },
+    "signature": "45aqzRcpMap7C3/L5cBG1DE6jnPvO7XZydE3WiJ/QqwlAFmMPFbp67bGFuCN1m+YWLm0WkBSz4UbOUeYjt1jpA=="
+  },
+  {
     "version": "2.56.0",
     "date": "2026-10-27",
     "channel": "stable",
@@ -1460,39 +1488,5 @@
       "behoben": []
     },
     "signature": "d9BnCobWZpujdb5l33ZrVt6ktS+QnRuCMOD0CqAJy1Depqjx+uLGZ0zz3qQpGqaurZ05onwJoVvE4uWy+gUhrw=="
-  },
-  {
-    "version": "2.11.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.11.0/PCGameLauncherCompanion.exe",
-    "size": 87368685,
-    "sha256": "4522f137d34554b1285c16757a4176948cabd49b1f28c5d68c4461bba3be396f",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.11.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.11.0/PCGameLauncherCompanion-2.11.0-win-x64.zip",
-      "size": 81635064,
-      "sha256": "a04465dd89f692ccf00c28ba8b5629fe780fecbcf338d511a761c244f0f89802"
-    },
-    "notes": "19 neue Plugins im Katalog (jetzt 33): Wochenstatistik, „Was spiele ich?“ (Zufallsspiel mit Start), Weiterspielen, Tageslimit, Spiel-Serie, Spielzeit-Meilensteine, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, Bibliothek in Zahlen, Zufallssound, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Wettkampf-Modus (Aktionen), Clip-Knöpfe für OBS (Aktionen), Pastell-, E-Sport- und OLED-Themes · Programme: Bearbeiten wie am Handy – lange auf ein Symbol drücken oder „Bearbeiten“ oben, dann ein Symbol antippen · Wiederverbinden nach dem Einschalten des PCs meist in ~0,3 s (vorher bis 3,8 s): Solange die App offen ist, prüft sie alle 0,5 s mit einer winzigen Anfrage, ob der PC wieder da ist – Browser bremsen wiederholte Verbindungsversuche sonst aus",
-    "changes": {
-      "neu": [
-        "19 neue Plugins im Katalog (jetzt 33): Wochenstatistik, „Was spiele ich?“ (Zufallsspiel mit Start), Weiterspielen, Tageslimit, Spiel-Serie, Spielzeit-Meilensteine, GPU-Temperatur-Ampel, RAM-Wächter, Speicherplatz, Leistung pro Spiel, Bibliothek in Zahlen, Zufallssound, Fokus-Timer (Pomodoro), Weltzeit-Uhr, Wettkampf-Modus (Aktionen), Clip-Knöpfe für OBS (Aktionen), Pastell-, E-Sport- und OLED-Themes",
-        "Programme: Bearbeiten wie am Handy – lange auf ein Symbol drücken oder „Bearbeiten“ oben, dann ein Symbol antippen"
-      ],
-      "verbessert": [
-        "Wiederverbinden nach dem Einschalten des PCs meist in ~0,3 s (vorher bis 3,8 s): Solange die App offen ist, prüft sie alle 0,5 s mit einer winzigen Anfrage, ob der PC wieder da ist – Browser bremsen wiederholte Verbindungsversuche sonst aus",
-        "Nichts springt mehr beim Öffnen: Home, Soundboard und Assistent zeigen kurz Platzhalter in der richtigen Größe, bis der PC antwortet (vorher rutschten Kacheln nach unten, während man tippen wollte)",
-        "Meldungen erscheinen am Handy klein oben statt über Knöpfen, Chat und Leiste; Antippen schließt sie",
-        "Kopfzeile nicht mehr durchscheinend – darunter gescrollter Text überlagert den Titel nicht mehr"
-      ],
-      "behoben": [
-        "Hervorgehobene Knöpfe (z. B. „Deck aus meinen Sachen erstellen“, „Fertig“) wurden nach dem Antippen am Handy dunkel mit unlesbarer Schrift",
-        "Spiel-Cover hoben sich am Handy nach dem Antippen an und blieben verschoben (Maus-Effekte gelten jetzt nur noch mit Maus)",
-        "Drei-Punkte-Knöpfe lagen über den Programm-Symbolen"
-      ]
-    },
-    "signature": "Ftm+DV7r3bd60A4R7hv0tYz3uUZouWp7Qt4uzwHXWhROAESThfQwdr6i0bDauYbLYqM3G0J4c0BeumNmK4gDxw=="
   }
 ]
