@@ -329,10 +329,11 @@ public static class RequestOrigin
     /// <summary>Further own names found at runtime (router name, Tailscale name) – see <see cref="StableAddress"/>.</summary>
     public static Func<string, bool>? OwnHost;
 
-    public static bool HostAllowed(string host, string? publicUrl)
+    /// <param name="ownHost">Instead of the process-wide <see cref="OwnHost"/> (tests run several companions at once).</param>
+    public static bool HostAllowed(string host, string? publicUrl, Func<string, bool>? ownHost = null)
     {
         host = host.Trim('[', ']');
-        if (OwnHost?.Invoke(host) == true) return true;
+        if ((ownHost ?? OwnHost)?.Invoke(host) == true) return true;
         if (IPAddress.TryParse(host, out _)) return true; // an IP address cannot be re-pointed by someone else's DNS
         if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) return true;
         var pc = Environment.MachineName;

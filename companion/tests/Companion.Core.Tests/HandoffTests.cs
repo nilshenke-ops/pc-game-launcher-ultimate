@@ -135,13 +135,14 @@ public class HandoffTests
             var stable = new StableAddress(() => new[] { "192.168.178.116" }, "gaming-pc", h => Task.FromResult(new[] { IPAddress.Parse("192.168.178.116") }), () => Task.FromResult<string?>(null));
             await stable.RefreshAsync();
             typeof(Pgl.Core.Services.CompanionServices).GetProperty(nameof(Pgl.Core.Services.CompanionServices.Stable))!.GetBackingField().SetValue(s, stable);
-            RequestOrigin.OwnHost = stable.IsOwnHost;
             var urls = (await admin.Ok("pairing.create")).GetProperty("urls").EnumerateArray().Select(u => u.GetString()!).ToList();
             Assert.StartsWith("http://gaming-pc.fritz.box:", urls[0]); // website (https) not first: PC has no https address
             Assert.Contains(urls, u => u.StartsWith("http://192.168.178.116:"));
-            Assert.True(RequestOrigin.HostAllowed("gaming-pc.fritz.box", null));
+            // Checked with this companion's own names – the process-wide hook is shared by tests running in parallel.
+            Assert.True(RequestOrigin.HostAllowed("gaming-pc.fritz.box", null, stable.IsOwnHost));
+            Assert.False(RequestOrigin.HostAllowed("evil.example", null, stable.IsOwnHost));
         }
-        finally { Environment.SetEnvironmentVariable("PGL_TEST_LAN_HOST", null); RequestOrigin.OwnHost = null; }
+        finally { Environment.SetEnvironmentVariable("PGL_TEST_LAN_HOST", null); }
     }
 }
 
