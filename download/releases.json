@@ -1,5 +1,44 @@
 [
   {
+    "version": "2.51.0",
+    "date": "2026-10-27",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.51.0/PCGameLauncherCompanion.exe",
+    "size": 88021202,
+    "sha256": "82b1114f50a1b04bb042bf4b5dd71445f67d8c7b4cfbfa90936e619439ef034c",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.51.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.51.0/PCGameLauncherCompanion-2.51.0-win-x64.zip",
+      "size": 82282349,
+      "sha256": "e22fbc6e5ba0e5d09773361d99baffca3fe99ffee5d744304fb0765bef22b197"
+    },
+    "notes": "Neue Seite „Spiele-Infos“ (Spielbegleiter): Releases, Saisons & Events, Update-Erklärer, Faktencheck, Barrierefreiheit, Editionen & DLCs und Empfehlungen – alles ohne PC nutzbar und mit dem PC abgeglichen · Releases: Spiele, DLCs, Updates und Saisons mit Termin „Bestätigt“ (nur mit Quelle), „Unbestätigt“ oder „Nur Zeitraum“ (z. B. Q1 2027); Monatsansicht „Was kommt“, Erschienenes getrennt, Favoriten, Kategorien, „In den Kalender“ mit Erinnerung und „Auf die Wunschliste“ · Saisons & Events: Beginn/Ende mit der Zeitzone aus der Ankündigung; angezeigt in deiner Ortszeit und laut Ankündigung, Status kommt/läuft/vorbei – ohne Ende wird nie behauptet, dass etwas noch läuft; Start und Ende in den Kalender",
+    "changes": {
+      "neu": [
+        "Neue Seite „Spiele-Infos“ (Spielbegleiter): Releases, Saisons & Events, Update-Erklärer, Faktencheck, Barrierefreiheit, Editionen & DLCs und Empfehlungen – alles ohne PC nutzbar und mit dem PC abgeglichen",
+        "Releases: Spiele, DLCs, Updates und Saisons mit Termin „Bestätigt“ (nur mit Quelle), „Unbestätigt“ oder „Nur Zeitraum“ (z. B. Q1 2027); Monatsansicht „Was kommt“, Erschienenes getrennt, Favoriten, Kategorien, „In den Kalender“ mit Erinnerung und „Auf die Wunschliste“",
+        "Saisons & Events: Beginn/Ende mit der Zeitzone aus der Ankündigung; angezeigt in deiner Ortszeit und laut Ankündigung, Status kommt/läuft/vorbei – ohne Ende wird nie behauptet, dass etwas noch läuft; Start und Ende in den Kalender",
+        "Update-Erklärer: offizielle Patchnotes direkt von Steam laden (über den PC, nur die Entwickler-Ankündigungen) oder einfügen; sortiert nach Gameplay, Neue Inhalte, Fehlerbehebungen, Technik – jede Zeile wörtlich aus dem Original, Kurzfassung nur aus Originalsätzen, Original immer abrufbar; Version, Datum, Quelle, eigene Notizen, gelesen/ungelesen",
+        "Faktencheck: Einzel-/Mehrspieler, Crossplay, Koop, lokal/online, offline, Controller, Cloud-Speicher, Ultrawide, Mods, Barrierefreiheit – mit Quelle und Stand; Vergleich bis zu 4 Spielen mit markierten Unterschieden und „Muss haben“-Filter; Unbekanntes zählt nie als Ja",
+        "Barrierefreiheit: Untertitel (auch Größe), freie Tastenbelegung, Farbenblind-Modi, Kontrast, Textgröße, Schwierigkeit, Hilfen, Controller, Spieltempo, visuelle Ton-Hinweise, Halten/Umschalten – vergleichen und filtern",
+        "Editionen & DLCs: Inhalte nebeneinander, „Habe ich“ selbst markieren, Warnung vor Doppelkäufen; Preise nur mit Quelle",
+        "Empfehlungen „Wenn dir dieses Spiel gefällt …“: regelbasiert aus deinen Daten (Genre & Spielgefühl, Bibliotheks-Kategorien, Spielweise), jeder Grund sichtbar, gespielte ausblendbar, Plattform- und Budgetfilter, Vorlieben (mag ich / mag ich nicht), Empfehlungen merken",
+        "Wunschliste: Art (Spiel/DLC mit Hauptspiel), Priorität, eigene Kategorien, eigener Shop-Link (nur https); Suche, Filter, Höchstpreis (Einträge ohne gemessenen Preis werden gezählt statt versteckt), Sortierung; Preisverlauf als Diagramm mit Datum, höchstem und niedrigstem selbst gemessenem Preis; ehrliche Anzeige, ob die Zielpreis-Benachrichtigung aktiv ist"
+      ],
+      "verbessert": [
+        "Sammlungen: neues Feldformat „Datum und Uhrzeit“, Sortierung „früheste zuerst“; beim Bearbeiten älterer Einträge werden neu hinzugekommene Felder mit „Unbekannt“ vorbelegt",
+        "Spiel-Fakten sind jetzt der Faktencheck unter Spiele-Infos (alte Links leiten weiter); der Gruppen-Finder nutzt sie wie bisher",
+        "Klickbare Listenzeilen (z. B. Format-Auswahl im Studio) sehen jetzt wie Listen aus statt wie graue Standard-Knöpfe"
+      ],
+      "behoben": [
+        "Deal Radar: Offline bearbeitete Einträge zeigten den Preisverlauf bis zum Abgleich als leer an",
+        "Deal Radar: Bei geändertem Zielpreis wurde die Key-Shop-Benachrichtigung nicht zurückgesetzt"
+      ]
+    },
+    "signature": "kdB0kDgKGuDQlr+iWO5DhvXYd8AePNtZzUoFWJLbsg1uh1hjl7C4pxqPn5huqY2erZeZvci5dTvxhWPeXdO4eg=="
+  },
+  {
     "version": "2.50.0",
     "date": "2026-10-26",
     "channel": "stable",
@@ -1435,33 +1474,5 @@
       "behoben": []
     },
     "signature": "SYu1A2/kDDXV6bPSbiFrRxHRO1xYcptMZPv7BtE0qhlYkAf8ENfSRCjxuOhgZYZuFPNYFignXjhibE0l6c+ODg=="
-  },
-  {
-    "version": "2.5.1",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.5.1/PCGameLauncherCompanion.exe",
-    "size": 87211739,
-    "sha256": "4bf7140f644beb80d2a0c0c0c70e44f40adfb6ce473ddf3dc4af7b536d1e05c2",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.5.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.5.1/PCGameLauncherCompanion-2.5.1-win-x64.zip",
-      "size": 81476931,
-      "sha256": "13abf6478d92461ed2aefec40d7f76ac1e936a26c8310473d8c247640af39fc2"
-    },
-    "notes": "Der PC meldet, wenn der Router ihm eine neue WLAN-Adresse gegeben hat (gekoppelte Handys suchen ihn sonst unter der alten), mit Lösung: QR-Code neu scannen, feste IP im Router; dieselbe Ursache steht auf dem Handy bei „PC nicht erreichbar“ · Hauptfunktion geprüft – Handy einmal koppeln, danach automatisch verbunden, Programme am PC starten: im Test 31–175 ms vom Tippen bis das Programm am PC läuft, 0,5 s vom Öffnen der App bis zum laufenden Programm, keine erneute Kopplung nach Schließen des Browsers oder Neustart des PCs · Schnelleres Wiederverbinden: Solange die App auf dem Bildschirm ist, versucht sie es höchstens alle 3 s (vorher bis 15 s) – nach dem Einschalten des PCs im Test nach 0,8–1,4 s wieder verbunden; ein Tippen auf „Spielen“ ohne Verbindung startet sofort einen neuen Verbindungsversuch (der Start selbst wird nie aufgehoben und später ausgeführt)",
-    "changes": {
-      "neu": [
-        "Der PC meldet, wenn der Router ihm eine neue WLAN-Adresse gegeben hat (gekoppelte Handys suchen ihn sonst unter der alten), mit Lösung: QR-Code neu scannen, feste IP im Router; dieselbe Ursache steht auf dem Handy bei „PC nicht erreichbar“"
-      ],
-      "verbessert": [
-        "Hauptfunktion geprüft – Handy einmal koppeln, danach automatisch verbunden, Programme am PC starten: im Test 31–175 ms vom Tippen bis das Programm am PC läuft, 0,5 s vom Öffnen der App bis zum laufenden Programm, keine erneute Kopplung nach Schließen des Browsers oder Neustart des PCs",
-        "Schnelleres Wiederverbinden: Solange die App auf dem Bildschirm ist, versucht sie es höchstens alle 3 s (vorher bis 15 s) – nach dem Einschalten des PCs im Test nach 0,8–1,4 s wieder verbunden; ein Tippen auf „Spielen“ ohne Verbindung startet sofort einen neuen Verbindungsversuch (der Start selbst wird nie aufgehoben und später ausgeführt)",
-        "Gerät koppeln am PC: Ist der Autostart aus, wird er mit einem Klick angeboten – sonst ist der PC nach einem Neustart für das Handy nicht erreichbar"
-      ],
-      "behoben": []
-    },
-    "signature": "lUst+obEn0FYsWllSSclzKFaOMYdjqMW9pIbaCBARL8Gxim2lFYvCCRNZlfUfj+IZ8fV6bp1Ix2ty3BF0+NOzw=="
   }
 ]
