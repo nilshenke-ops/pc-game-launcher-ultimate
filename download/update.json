@@ -1,28 +1,34 @@
 {
-  "version": "2.54.0",
+  "version": "2.55.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.54.0/PCGameLauncherCompanion.exe",
-  "size": 88096990,
-  "sha256": "d4246a13a7930687b93746d4091db9a905b8e75d1285acdeaca4e90db34ca59f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.55.0/PCGameLauncherCompanion.exe",
+  "size": 88163033,
+  "sha256": "355c262d475ae800e4dcafd608f8f5a3c8c211d36e5377f81abf0bdeedc2e62b",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.54.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.54.0/PCGameLauncherCompanion-2.54.0-win-x64.zip",
-    "size": 82357652,
-    "sha256": "006c3480527a766937a9ed6aa2e06760c47b6b992fcf284f7a7bf813f9743971"
+    "fileName": "PCGameLauncherCompanion-2.55.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.55.0/PCGameLauncherCompanion-2.55.0-win-x64.zip",
+    "size": 82426410,
+    "sha256": "bd589d617c25e229f865f5d7c7c560d2ffea868446f34be4beced024aa51c669"
   },
-  "notes": "Deal Radar: Preisvergleich von Keyforsteam direkt im Spiel – „Preise laden“ zeigt alle Angebote mit Shop (offiziell oder Key-Shop), Shop-Bewertung, Edition, Region, Plattform, Preis inklusive Zahlungsgebühr und Gutschein · Zusammenfassung: günstigster offizieller Shop und günstigster Key-Shop derselben Edition; Filter nach Edition, Region und „Nur offizielle Shops“ · Konto-Angebote (fremdes Spielkonto statt Key) sind standardmäßig ausgeblendet und deutlich markiert",
+  "notes": "JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste · Ergebnis wird geprüft: ein gestartetes Spiel muss vom PC als laufend erkannt werden, ein Profil als aktiv – sonst sagt JARVIS ehrlich, was fehlt · Mehrere Schritte in einem Satz („Öffne Discord und starte anschließend mein Spiel“); schlägt ein Schritt fehl, hört JARVIS auf und sagt es",
   "changes": {
     "neu": [
-      "Deal Radar: Preisvergleich von Keyforsteam direkt im Spiel – „Preise laden“ zeigt alle Angebote mit Shop (offiziell oder Key-Shop), Shop-Bewertung, Edition, Region, Plattform, Preis inklusive Zahlungsgebühr und Gutschein",
-      "Zusammenfassung: günstigster offizieller Shop und günstigster Key-Shop derselben Edition; Filter nach Edition, Region und „Nur offizielle Shops“",
-      "Konto-Angebote (fremdes Spielkonto statt Key) sind standardmäßig ausgeblendet und deutlich markiert",
-      "Findet Keyforsteam das Spiel unter seinem Namen nicht, lässt sich der Link der Spieleseite einfügen",
-      "Abruf nur auf Knopfdruck über den PC, höchstens eine Seite alle 5 Sekunden (wie es keyforsteam.de in robots.txt verlangt), 6 Stunden zwischengespeichert"
+      "JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste",
+      "Ergebnis wird geprüft: ein gestartetes Spiel muss vom PC als laufend erkannt werden, ein Profil als aktiv – sonst sagt JARVIS ehrlich, was fehlt",
+      "Mehrere Schritte in einem Satz („Öffne Discord und starte anschließend mein Spiel“); schlägt ein Schritt fehl, hört JARVIS auf und sagt es",
+      "Website auf Zuruf ändern: neue Startseite für ein Spiel, Startseite übersichtlich ordnen, Favoriten nach oben, Spieleübersicht sortieren (bleibt gespeichert), Kategorie für Lieblingsspiele, Profil für das nächste Spiel, Startseite zum Profil – mit „Rückgängig“",
+      "„Warum ruckelt mein Spiel?“: misst jetzt Prozessor, Arbeitsspeicher, Grafikkarte, Grafikspeicher, Temperaturen und Laufwerke und nennt nur echte Engstellen (bei Lag auch das Netzwerk)",
+      "„Welche Spiele sind zu zweit spielbar?“ aus deinen Kategorien und deinem Faktencheck – Unbekanntes wird gezählt, nicht geraten",
+      "„Starte mein Spiel“ nimmt das zuletzt gespielte Spiel und sagt, welches",
+      "Nur Gaming: andere Themen lehnt JARVIS freundlich ab; Code-Änderungen macht er nie zur Laufzeit",
+      "JARVIS-Sitzung: gilt nur, solange die Website offen und JARVIS eingeschaltet ist (spätestens nach 15 Minuten ohne Auftrag aus); ausgeschaltet gibt es wie bisher nur Knöpfe"
     ],
-    "verbessert": [],
+    "verbessert": [
+      "Spieleübersicht merkt sich die Sortierung"
+    ],
     "behoben": []
   },
-  "signature": "vaVeH9BIWeeipx+q0bhJugEjxO3dGB3wb6zQ6ddCLk2Qaoc73QItLcTV6v3tXUtwvi0mdk1nKug20cBfFHbXxw=="
+  "signature": "vXnrJifiLXPI7jHJyWEUvjgPjwTlGFVeR5gAzunRVH/WbIWdw3aK2lG/qNSz8kECd2aUtV1nJk7FWXWOqfRD0A=="
 }

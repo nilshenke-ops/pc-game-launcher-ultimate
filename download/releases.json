@@ -1,5 +1,39 @@
 [
   {
+    "version": "2.55.0",
+    "date": "2026-10-27",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.55.0/PCGameLauncherCompanion.exe",
+    "size": 88163033,
+    "sha256": "355c262d475ae800e4dcafd608f8f5a3c8c211d36e5377f81abf0bdeedc2e62b",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.55.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.55.0/PCGameLauncherCompanion-2.55.0-win-x64.zip",
+      "size": 82426410,
+      "sha256": "bd589d617c25e229f865f5d7c7c560d2ffea868446f34be4beced024aa51c669"
+    },
+    "notes": "JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste · Ergebnis wird geprüft: ein gestartetes Spiel muss vom PC als laufend erkannt werden, ein Profil als aktiv – sonst sagt JARVIS ehrlich, was fehlt · Mehrere Schritte in einem Satz („Öffne Discord und starte anschließend mein Spiel“); schlägt ein Schritt fehl, hört JARVIS auf und sagt es",
+    "changes": {
+      "neu": [
+        "JARVIS Gaming: der Assistent heißt jetzt JARVIS (Menü „JARVIS“, auch unter /jarvis) und führt klare Aufträge direkt aus, statt nur Knöpfe anzubieten – Spiele und Programme starten, Profile aktivieren, Sounds abspielen/stoppen, Quick Actions, Ziele, Wunschliste",
+        "Ergebnis wird geprüft: ein gestartetes Spiel muss vom PC als laufend erkannt werden, ein Profil als aktiv – sonst sagt JARVIS ehrlich, was fehlt",
+        "Mehrere Schritte in einem Satz („Öffne Discord und starte anschließend mein Spiel“); schlägt ein Schritt fehl, hört JARVIS auf und sagt es",
+        "Website auf Zuruf ändern: neue Startseite für ein Spiel, Startseite übersichtlich ordnen, Favoriten nach oben, Spieleübersicht sortieren (bleibt gespeichert), Kategorie für Lieblingsspiele, Profil für das nächste Spiel, Startseite zum Profil – mit „Rückgängig“",
+        "„Warum ruckelt mein Spiel?“: misst jetzt Prozessor, Arbeitsspeicher, Grafikkarte, Grafikspeicher, Temperaturen und Laufwerke und nennt nur echte Engstellen (bei Lag auch das Netzwerk)",
+        "„Welche Spiele sind zu zweit spielbar?“ aus deinen Kategorien und deinem Faktencheck – Unbekanntes wird gezählt, nicht geraten",
+        "„Starte mein Spiel“ nimmt das zuletzt gespielte Spiel und sagt, welches",
+        "Nur Gaming: andere Themen lehnt JARVIS freundlich ab; Code-Änderungen macht er nie zur Laufzeit",
+        "JARVIS-Sitzung: gilt nur, solange die Website offen und JARVIS eingeschaltet ist (spätestens nach 15 Minuten ohne Auftrag aus); ausgeschaltet gibt es wie bisher nur Knöpfe"
+      ],
+      "verbessert": [
+        "Spieleübersicht merkt sich die Sortierung"
+      ],
+      "behoben": []
+    },
+    "signature": "vXnrJifiLXPI7jHJyWEUvjgPjwTlGFVeR5gAzunRVH/WbIWdw3aK2lG/qNSz8kECd2aUtV1nJk7FWXWOqfRD0A=="
+  },
+  {
     "version": "2.54.0",
     "date": "2026-10-27",
     "channel": "stable",
@@ -1452,36 +1486,5 @@
       "behoben": []
     },
     "signature": "7dTDs65yD3/SfYiliGThlDXoyR5zx1f/klG5znN6lLsIrhquRZp4ajn11Hl0Obaxcl8b34axuc/YNF8XBmPVHg=="
-  },
-  {
-    "version": "2.9.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.9.0/PCGameLauncherCompanion.exe",
-    "size": 87317060,
-    "sha256": "18535c508214f8298eed815616f67c7b791a28c9e6b1752dda2e99e22eb2a1bd",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.9.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.9.0/PCGameLauncherCompanion-2.9.0-win-x64.zip",
-      "size": 81581391,
-      "sha256": "62ce7653411d99d176c8efde73c7dcb63ca0a00baac8a254362fd4a648324618"
-    },
-    "notes": "Echte Logos: Discord, OBS, Spotify, Steam, Epic, EA, Battle.net, Twitch, YouTube, Valorant, Browser und gut 40 weitere Programme zeigen ihr Logo in der Markenfarbe – auf den App-Kacheln, im Deck (neuer Reiter „Logo“ im Tasten-Editor) und auch ohne PC · Der PC liest jetzt auch die Symbole von Startmenü- und Store-Apps (z. B. Minecraft Launcher, Spotify aus dem Store) und ergänzt sie einmalig für schon vorhandene Programme · Untere Leiste und Menü: Symbole „Farbig“ oder „Schlicht“ (wie früher) wählbar – beim Anpassen der Leiste oder unter Einstellungen → Navigation",
-    "changes": {
-      "neu": [
-        "Echte Logos: Discord, OBS, Spotify, Steam, Epic, EA, Battle.net, Twitch, YouTube, Valorant, Browser und gut 40 weitere Programme zeigen ihr Logo in der Markenfarbe – auf den App-Kacheln, im Deck (neuer Reiter „Logo“ im Tasten-Editor) und auch ohne PC",
-        "Der PC liest jetzt auch die Symbole von Startmenü- und Store-Apps (z. B. Minecraft Launcher, Spotify aus dem Store) und ergänzt sie einmalig für schon vorhandene Programme",
-        "Untere Leiste und Menü: Symbole „Farbig“ oder „Schlicht“ (wie früher) wählbar – beim Anpassen der Leiste oder unter Einstellungen → Navigation"
-      ],
-      "verbessert": [
-        "Deck-Tasten und App-Kacheln im Glanz-Look (Licht von oben, Tiefe unten); „Aus meinen Sachen erstellen“ nutzt kräftige Farben und Logos statt Grau"
-      ],
-      "behoben": [
-        "Deck ohne PC: Ein neues Deck wurde zwar für den PC vorgemerkt, aber auf dem Handy nicht angezeigt („Noch kein Deck“) – jetzt sofort sichtbar und bearbeitbar",
-        "Grau dargestellte 🎵-Taste aus dem ersten Deck wird als farbiges Symbol gezeigt"
-      ]
-    },
-    "signature": "9gWzAbTJAsB3Gt/0u3Xlz7z4mnhAw1d9uicwwccWpPDKBVRm0heAndj+E4x98zYxdYm4Fb5FR9dfAibVoXYH8Q=="
   }
 ]
