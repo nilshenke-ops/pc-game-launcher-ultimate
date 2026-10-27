@@ -1,39 +1,36 @@
 {
-  "version": "2.51.0",
+  "version": "2.52.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.51.0/PCGameLauncherCompanion.exe",
-  "size": 88021202,
-  "sha256": "82b1114f50a1b04bb042bf4b5dd71445f67d8c7b4cfbfa90936e619439ef034c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.52.0/PCGameLauncherCompanion.exe",
+  "size": 88067051,
+  "sha256": "369920c00090e4179ad091e5a1cc3e605cc9ce1fd8c6755e98e7d6bb11ebe3da",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.51.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.51.0/PCGameLauncherCompanion-2.51.0-win-x64.zip",
-    "size": 82282349,
-    "sha256": "e22fbc6e5ba0e5d09773361d99baffca3fe99ffee5d744304fb0765bef22b197"
+    "fileName": "PCGameLauncherCompanion-2.52.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.52.0/PCGameLauncherCompanion-2.52.0-win-x64.zip",
+    "size": 82327843,
+    "sha256": "63603684269e1ec3b9aff2f0034f68b1e1f58d6bf17ecac53fdca9d272838186"
   },
-  "notes": "Neue Seite „Spiele-Infos“ (Spielbegleiter): Releases, Saisons & Events, Update-Erklärer, Faktencheck, Barrierefreiheit, Editionen & DLCs und Empfehlungen – alles ohne PC nutzbar und mit dem PC abgeglichen · Releases: Spiele, DLCs, Updates und Saisons mit Termin „Bestätigt“ (nur mit Quelle), „Unbestätigt“ oder „Nur Zeitraum“ (z. B. Q1 2027); Monatsansicht „Was kommt“, Erschienenes getrennt, Favoriten, Kategorien, „In den Kalender“ mit Erinnerung und „Auf die Wunschliste“ · Saisons & Events: Beginn/Ende mit der Zeitzone aus der Ankündigung; angezeigt in deiner Ortszeit und laut Ankündigung, Status kommt/läuft/vorbei – ohne Ende wird nie behauptet, dass etwas noch läuft; Start und Ende in den Kalender",
+  "notes": "Ultimate Gaming Bingo (Was spiele ich? → Bingo): per Satz („Erstelle ein 4×4-Bingo für Minecraft auf mittel“) oder Einstellungen – 3×3, 4×4, 5×5; Leicht, Mittel, Schwer, Sehr schwer, Gemischt; Spielmodi (Speed, Survival, Challenge, Fun, Exploration, Boss, Achievement, Co-op, Random, Custom – nur die, die zum Spiel passen); bevorzugte Aufgabenarten; Anfänger/Erfahrene; Spoiler an/aus; freie Mitte optional (standardmäßig aus); Zeitlimit; eigene Regeln; Spielfortschritt · Eingebauter Aufgabenkatalog, von Hand geschrieben für Minecraft, Elden Ring, PEAK, Terraria, Stardew Valley, Rocket League, Counter-Strike 2, Valorant, Fortnite, Lethal Company, Phasmophobia, Subnautica, Sea of Thieves, Baldur's Gate 3, Forza Horizon und EA SPORTS FC – plus allgemeine Sätze für Survival, Horror, Open World, Rennspiele, Shooter, Koop, Strategie und Sport; funktioniert ohne PC und ohne KI · Mit KI am PC (DeepSeek, Claude oder Ollama): spielspezifische Aufgaben als geprüftes JSON mit Schwierigkeit, Kategorie und Begründung; unbekannte Spiele werden ehrlich als „allgemein“ markiert",
   "changes": {
     "neu": [
-      "Neue Seite „Spiele-Infos“ (Spielbegleiter): Releases, Saisons & Events, Update-Erklärer, Faktencheck, Barrierefreiheit, Editionen & DLCs und Empfehlungen – alles ohne PC nutzbar und mit dem PC abgeglichen",
-      "Releases: Spiele, DLCs, Updates und Saisons mit Termin „Bestätigt“ (nur mit Quelle), „Unbestätigt“ oder „Nur Zeitraum“ (z. B. Q1 2027); Monatsansicht „Was kommt“, Erschienenes getrennt, Favoriten, Kategorien, „In den Kalender“ mit Erinnerung und „Auf die Wunschliste“",
-      "Saisons & Events: Beginn/Ende mit der Zeitzone aus der Ankündigung; angezeigt in deiner Ortszeit und laut Ankündigung, Status kommt/läuft/vorbei – ohne Ende wird nie behauptet, dass etwas noch läuft; Start und Ende in den Kalender",
-      "Update-Erklärer: offizielle Patchnotes direkt von Steam laden (über den PC, nur die Entwickler-Ankündigungen) oder einfügen; sortiert nach Gameplay, Neue Inhalte, Fehlerbehebungen, Technik – jede Zeile wörtlich aus dem Original, Kurzfassung nur aus Originalsätzen, Original immer abrufbar; Version, Datum, Quelle, eigene Notizen, gelesen/ungelesen",
-      "Faktencheck: Einzel-/Mehrspieler, Crossplay, Koop, lokal/online, offline, Controller, Cloud-Speicher, Ultrawide, Mods, Barrierefreiheit – mit Quelle und Stand; Vergleich bis zu 4 Spielen mit markierten Unterschieden und „Muss haben“-Filter; Unbekanntes zählt nie als Ja",
-      "Barrierefreiheit: Untertitel (auch Größe), freie Tastenbelegung, Farbenblind-Modi, Kontrast, Textgröße, Schwierigkeit, Hilfen, Controller, Spieltempo, visuelle Ton-Hinweise, Halten/Umschalten – vergleichen und filtern",
-      "Editionen & DLCs: Inhalte nebeneinander, „Habe ich“ selbst markieren, Warnung vor Doppelkäufen; Preise nur mit Quelle",
-      "Empfehlungen „Wenn dir dieses Spiel gefällt …“: regelbasiert aus deinen Daten (Genre & Spielgefühl, Bibliotheks-Kategorien, Spielweise), jeder Grund sichtbar, gespielte ausblendbar, Plattform- und Budgetfilter, Vorlieben (mag ich / mag ich nicht), Empfehlungen merken",
-      "Wunschliste: Art (Spiel/DLC mit Hauptspiel), Priorität, eigene Kategorien, eigener Shop-Link (nur https); Suche, Filter, Höchstpreis (Einträge ohne gemessenen Preis werden gezählt statt versteckt), Sortierung; Preisverlauf als Diagramm mit Datum, höchstem und niedrigstem selbst gemessenem Preis; ehrliche Anzeige, ob die Zielpreis-Benachrichtigung aktiv ist"
+      "Ultimate Gaming Bingo (Was spiele ich? → Bingo): per Satz („Erstelle ein 4×4-Bingo für Minecraft auf mittel“) oder Einstellungen – 3×3, 4×4, 5×5; Leicht, Mittel, Schwer, Sehr schwer, Gemischt; Spielmodi (Speed, Survival, Challenge, Fun, Exploration, Boss, Achievement, Co-op, Random, Custom – nur die, die zum Spiel passen); bevorzugte Aufgabenarten; Anfänger/Erfahrene; Spoiler an/aus; freie Mitte optional (standardmäßig aus); Zeitlimit; eigene Regeln; Spielfortschritt",
+      "Eingebauter Aufgabenkatalog, von Hand geschrieben für Minecraft, Elden Ring, PEAK, Terraria, Stardew Valley, Rocket League, Counter-Strike 2, Valorant, Fortnite, Lethal Company, Phasmophobia, Subnautica, Sea of Thieves, Baldur's Gate 3, Forza Horizon und EA SPORTS FC – plus allgemeine Sätze für Survival, Horror, Open World, Rennspiele, Shooter, Koop, Strategie und Sport; funktioniert ohne PC und ohne KI",
+      "Mit KI am PC (DeepSeek, Claude oder Ollama): spielspezifische Aufgaben als geprüftes JSON mit Schwierigkeit, Kategorie und Begründung; unbekannte Spiele werden ehrlich als „allgemein“ markiert",
+      "DeepSeek als Bingo-KI (Modell „deepseek-flash“ = DeepSeek-V4.1-Flash laut DeepSeek): Schlüssel nur am PC, verschlüsselt, nie im Backup; Monatsgrenze für Anfragen; JSON-Modus",
+      "Spielfeld: abhaken und zurücknehmen, Fortschritt in Prozent, erledigte/offene Aufgaben, Reihen, Spalten und Diagonalen, Bingo-Animation (abschaltbar, respektiert „weniger Bewegung“), Aufgabe ersetzen (mit Begründung der Schwierigkeit), neu mischen, zurücksetzen mit Bestätigung, neues Bingo ohne Wiederholung, Speed-Countdown",
+      "Mehrspieler: gemeinsame Karte (wer was erledigt hat) oder Wettbewerb (jeder hakt für sich ab, Rangliste); Abgleich in Echtzeit über deinen PC für alle gekoppelten Geräte",
+      "Meine Bingos: Status, Fortschritt, Bewertung, Notiz, Favoriten, Suche, Filter nach Spiel/Schwierigkeit/Status, Sortierung, kopieren, als Vorlage, löschen, Link teilen, als Bild, als Datei",
+      "Eigene Aufgaben je Spiel oder für alle Spiele (Schwierigkeit, Kategorie, Beschreibung, Favorit); beim Erstellen wählbar: KI/Katalog, gemischt oder nur eigene",
+      "KI-Assistent: Bingos direkt im Chat erstellen und spielen, „Mach das vorherige Bingo schwieriger“, „ohne Wiederholung“, Rückfrage wenn das Spiel fehlt – auch ohne PC",
+      "Bingo als Home-Widget und im PC-Overlay: abhaken, ohne die App zu öffnen"
     ],
-    "verbessert": [
-      "Sammlungen: neues Feldformat „Datum und Uhrzeit“, Sortierung „früheste zuerst“; beim Bearbeiten älterer Einträge werden neu hinzugekommene Felder mit „Unbekannt“ vorbelegt",
-      "Spiel-Fakten sind jetzt der Faktencheck unter Spiele-Infos (alte Links leiten weiter); der Gruppen-Finder nutzt sie wie bisher",
-      "Klickbare Listenzeilen (z. B. Format-Auswahl im Studio) sehen jetzt wie Listen aus statt wie graue Standard-Knöpfe"
-    ],
+    "verbessert": [],
     "behoben": [
-      "Deal Radar: Offline bearbeitete Einträge zeigten den Preisverlauf bis zum Abgleich als leer an",
-      "Deal Radar: Bei geändertem Zielpreis wurde die Key-Shop-Benachrichtigung nicht zurückgesetzt"
+      "Sammlungen/Journal: Eine Änderung direkt vor dem Schließen oder Neuladen der Seite konnte verloren gehen (Speichern wurde vom Browser abgebrochen). Jetzt wird erst nach abgeschlossenem Speichern bestätigt und eine Sicherheitskopie beim nächsten Start nachgetragen",
+      "Sammlungen/Journal: Während eines laufenden Abgleichs mit dem PC konnte eine gleichzeitig gemachte neuere Änderung im Browser von der älteren überschrieben werden"
     ]
   },
-  "signature": "kdB0kDgKGuDQlr+iWO5DhvXYd8AePNtZzUoFWJLbsg1uh1hjl7C4pxqPn5huqY2erZeZvci5dTvxhWPeXdO4eg=="
+  "signature": "Sm781Vpp+a65xbxqRvRHCqDDjtV3/iXxOpxfLa1Um1ufdo+caA1uX3t368mkjOBsEGldqA7Tv2tsunoNRnMV0Q=="
 }

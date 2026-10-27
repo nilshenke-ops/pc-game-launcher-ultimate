@@ -1,5 +1,41 @@
 [
   {
+    "version": "2.52.0",
+    "date": "2026-10-27",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.52.0/PCGameLauncherCompanion.exe",
+    "size": 88067051,
+    "sha256": "369920c00090e4179ad091e5a1cc3e605cc9ce1fd8c6755e98e7d6bb11ebe3da",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.52.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.52.0/PCGameLauncherCompanion-2.52.0-win-x64.zip",
+      "size": 82327843,
+      "sha256": "63603684269e1ec3b9aff2f0034f68b1e1f58d6bf17ecac53fdca9d272838186"
+    },
+    "notes": "Ultimate Gaming Bingo (Was spiele ich? → Bingo): per Satz („Erstelle ein 4×4-Bingo für Minecraft auf mittel“) oder Einstellungen – 3×3, 4×4, 5×5; Leicht, Mittel, Schwer, Sehr schwer, Gemischt; Spielmodi (Speed, Survival, Challenge, Fun, Exploration, Boss, Achievement, Co-op, Random, Custom – nur die, die zum Spiel passen); bevorzugte Aufgabenarten; Anfänger/Erfahrene; Spoiler an/aus; freie Mitte optional (standardmäßig aus); Zeitlimit; eigene Regeln; Spielfortschritt · Eingebauter Aufgabenkatalog, von Hand geschrieben für Minecraft, Elden Ring, PEAK, Terraria, Stardew Valley, Rocket League, Counter-Strike 2, Valorant, Fortnite, Lethal Company, Phasmophobia, Subnautica, Sea of Thieves, Baldur's Gate 3, Forza Horizon und EA SPORTS FC – plus allgemeine Sätze für Survival, Horror, Open World, Rennspiele, Shooter, Koop, Strategie und Sport; funktioniert ohne PC und ohne KI · Mit KI am PC (DeepSeek, Claude oder Ollama): spielspezifische Aufgaben als geprüftes JSON mit Schwierigkeit, Kategorie und Begründung; unbekannte Spiele werden ehrlich als „allgemein“ markiert",
+    "changes": {
+      "neu": [
+        "Ultimate Gaming Bingo (Was spiele ich? → Bingo): per Satz („Erstelle ein 4×4-Bingo für Minecraft auf mittel“) oder Einstellungen – 3×3, 4×4, 5×5; Leicht, Mittel, Schwer, Sehr schwer, Gemischt; Spielmodi (Speed, Survival, Challenge, Fun, Exploration, Boss, Achievement, Co-op, Random, Custom – nur die, die zum Spiel passen); bevorzugte Aufgabenarten; Anfänger/Erfahrene; Spoiler an/aus; freie Mitte optional (standardmäßig aus); Zeitlimit; eigene Regeln; Spielfortschritt",
+        "Eingebauter Aufgabenkatalog, von Hand geschrieben für Minecraft, Elden Ring, PEAK, Terraria, Stardew Valley, Rocket League, Counter-Strike 2, Valorant, Fortnite, Lethal Company, Phasmophobia, Subnautica, Sea of Thieves, Baldur's Gate 3, Forza Horizon und EA SPORTS FC – plus allgemeine Sätze für Survival, Horror, Open World, Rennspiele, Shooter, Koop, Strategie und Sport; funktioniert ohne PC und ohne KI",
+        "Mit KI am PC (DeepSeek, Claude oder Ollama): spielspezifische Aufgaben als geprüftes JSON mit Schwierigkeit, Kategorie und Begründung; unbekannte Spiele werden ehrlich als „allgemein“ markiert",
+        "DeepSeek als Bingo-KI (Modell „deepseek-flash“ = DeepSeek-V4.1-Flash laut DeepSeek): Schlüssel nur am PC, verschlüsselt, nie im Backup; Monatsgrenze für Anfragen; JSON-Modus",
+        "Spielfeld: abhaken und zurücknehmen, Fortschritt in Prozent, erledigte/offene Aufgaben, Reihen, Spalten und Diagonalen, Bingo-Animation (abschaltbar, respektiert „weniger Bewegung“), Aufgabe ersetzen (mit Begründung der Schwierigkeit), neu mischen, zurücksetzen mit Bestätigung, neues Bingo ohne Wiederholung, Speed-Countdown",
+        "Mehrspieler: gemeinsame Karte (wer was erledigt hat) oder Wettbewerb (jeder hakt für sich ab, Rangliste); Abgleich in Echtzeit über deinen PC für alle gekoppelten Geräte",
+        "Meine Bingos: Status, Fortschritt, Bewertung, Notiz, Favoriten, Suche, Filter nach Spiel/Schwierigkeit/Status, Sortierung, kopieren, als Vorlage, löschen, Link teilen, als Bild, als Datei",
+        "Eigene Aufgaben je Spiel oder für alle Spiele (Schwierigkeit, Kategorie, Beschreibung, Favorit); beim Erstellen wählbar: KI/Katalog, gemischt oder nur eigene",
+        "KI-Assistent: Bingos direkt im Chat erstellen und spielen, „Mach das vorherige Bingo schwieriger“, „ohne Wiederholung“, Rückfrage wenn das Spiel fehlt – auch ohne PC",
+        "Bingo als Home-Widget und im PC-Overlay: abhaken, ohne die App zu öffnen"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "Sammlungen/Journal: Eine Änderung direkt vor dem Schließen oder Neuladen der Seite konnte verloren gehen (Speichern wurde vom Browser abgebrochen). Jetzt wird erst nach abgeschlossenem Speichern bestätigt und eine Sicherheitskopie beim nächsten Start nachgetragen",
+        "Sammlungen/Journal: Während eines laufenden Abgleichs mit dem PC konnte eine gleichzeitig gemachte neuere Änderung im Browser von der älteren überschrieben werden"
+      ]
+    },
+    "signature": "Sm781Vpp+a65xbxqRvRHCqDDjtV3/iXxOpxfLa1Um1ufdo+caA1uX3t368mkjOBsEGldqA7Tv2tsunoNRnMV0Q=="
+  },
+  {
     "version": "2.51.0",
     "date": "2026-10-27",
     "channel": "stable",
@@ -1445,34 +1481,5 @@
       "behoben": []
     },
     "signature": "c5b6VLyzWOTn1z41kozehdCixHKigzFqxhQbOv7+H6GovhV/Qq/MXkAQp3KrdFBkUFCKBUzYoSQvujpcDKwtyw=="
-  },
-  {
-    "version": "2.6.0",
-    "date": "2026-10-19",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.6.0/PCGameLauncherCompanion.exe",
-    "size": 87274312,
-    "sha256": "46d8cc2e151647dcf42226a4a489e9a36d337a540b41690c423b8f17f27b3138",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.6.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.6.0/PCGameLauncherCompanion-2.6.0-win-x64.zip",
-      "size": 81540736,
-      "sha256": "b0afcb4832fa10b6aea6b8cd9bf6914ce4706fe9ca2fceb9d41d6189c00f0634"
-    },
-    "notes": "Backlog (Dashboard → Backlog): Status (Noch spielen, Als Nächstes, Gerade aktiv, Pausiert, Durchgespielt, Nicht mehr interessant), Priorität, eigenes Ziel in Stunden mit Fortschritt aus dem Gaming-Verlauf, Filter nach Status/Plattform/Kategorie/Spielzeit, Sortierung, Zufallsauswahl (optional nach Priorität gewichtet), Export als JSON/CSV, Import mit Vorschau; nichts wird automatisch als durchgespielt markiert · Themes je Spiel über Gaming-Profile: Ein Profil kann eigene Farben und ein Hintergrundbild haben – startet ein zugeordnetes Spiel, zeigen PC, Handy und iPad dieses Theme, danach wieder das eigene Design; pro Gerät abschaltbar · GameQuest: 9 Launcher-Erfolge (eigenes Profil, Gerät gekoppelt, Automatisierungen, Quick Actions, Sounds, eigenes Widget, Profil-Theme, Backlog durchgespielt), abschaltbar, gezählt nur beim Öffnen der Seite",
-    "changes": {
-      "neu": [
-        "Backlog (Dashboard → Backlog): Status (Noch spielen, Als Nächstes, Gerade aktiv, Pausiert, Durchgespielt, Nicht mehr interessant), Priorität, eigenes Ziel in Stunden mit Fortschritt aus dem Gaming-Verlauf, Filter nach Status/Plattform/Kategorie/Spielzeit, Sortierung, Zufallsauswahl (optional nach Priorität gewichtet), Export als JSON/CSV, Import mit Vorschau; nichts wird automatisch als durchgespielt markiert",
-        "Themes je Spiel über Gaming-Profile: Ein Profil kann eigene Farben und ein Hintergrundbild haben – startet ein zugeordnetes Spiel, zeigen PC, Handy und iPad dieses Theme, danach wieder das eigene Design; pro Gerät abschaltbar",
-        "GameQuest: 9 Launcher-Erfolge (eigenes Profil, Gerät gekoppelt, Automatisierungen, Quick Actions, Sounds, eigenes Widget, Profil-Theme, Backlog durchgespielt), abschaltbar, gezählt nur beim Öffnen der Seite",
-        "Statistik-Karte (Gaming-Verlauf): Zusammenfassung für 7 Tage, Monat, Jahr oder alles mit Vergleich zum vorherigen Zeitraum, Inhalte wählbar, Hoch- oder Querformat, als Bild (PNG) oder Daten (CSV/JSON) speichern – nur lokal, fehlende Werte werden weggelassen"
-      ],
-      "verbessert": [
-        "Grundlage für die nächsten Ausbaustufen: Funktionsmatrix gegen den Code (docs/PLAN-ADVANCED.md) und Messwerte vorher/nachher (docs/PERFORMANCE.md)"
-      ],
-      "behoben": []
-    },
-    "signature": "SYu1A2/kDDXV6bPSbiFrRxHRO1xYcptMZPv7BtE0qhlYkAf8ENfSRCjxuOhgZYZuFPNYFignXjhibE0l6c+ODg=="
   }
 ]
