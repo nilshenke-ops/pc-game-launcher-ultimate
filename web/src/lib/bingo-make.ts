@@ -51,25 +51,50 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
     let pool: Task[];
     let provider: string;
     const notes: string[] = [];
+    let mix: ((webCount: number, aiCount: number) => string) | null = null;
     const base = poolFor(o.game, o.genre);
     // A new card should not repeat the last ones: their tasks are used only when nothing else is left.
     const recent = recentTasks(o.game);
     o = { ...o, avoid: [...(o.avoid ?? []), ...recent.last], avoidOld: recent.older };
     if (o.taskSource !== "own" && o.web) {
       const r = await client.call<{ name: string; appId: number | null; source: string; achievements: WebAchievement[]; genres?: string[]; categories?: string[]; description?: string | null }>("bingo.webTasks", { game: o.game });
-      // What kind of game it is decides the extra tasks: real achievements first, the fitting genre set fills up.
+      // What kind of game it is decides the extra tasks. Real achievements, the own catalog (if any) and the fitting
+      // genre set are mixed, so every difficulty has enough different tasks and cards do not repeat.
       const genre = genreFromInfo(r);
       const asked = o.game;
-      o = { ...o, genre, game: r.name || o.game };
-      const own = webTasks(r.achievements);
-      const extra = poolFor("", genre).tasks;
-      const n = o.size * o.size;
-      pool = own.length >= Math.ceil(n * 1.3) ? own : [...own, ...extra];
-      provider = r.appId ? `Steam (${r.name})` : `Wikipedia (${r.name})`;
-      if (r.name.toLowerCase() !== asked.toLowerCase()) notes.push(`Gefunden als „${r.name}“.`);
+      const found = r.name || o.game;
+      const again = norm(found) !== norm(asked) ? recentTasks(found) : { last: [], older: [] };
+      o = { ...o, genre, game: base.from === "catalog" ? base.name : found, avoid: [...(o.avoid ?? []), ...again.last], avoidOld: [...(o.avoidOld ?? []), ...again.older] };
+      const web = webTasks(r.achievements);
+      const extra = base.from === "catalog" ? base.tasks : poolFor("", genre).tasks;
+      const where = r.appId ? "Steam" : /microsoft/i.test(r.source) ? "Microsoft Store (Xbox)" : "Wikipedia";
+      // With an AI on the PC: it gets what was found and writes tasks that make sense for exactly this game.
+      let ai: Task[] = [];
+      let aiName = "";
+      if (opts.useAi && opts.aiAvailable) {
+        const facts = [`${r.name} (${where})`, r.genres?.length ? `Genre: ${r.genres.join(", ")}` : "", r.categories?.length ? `Merkmale: ${r.categories.slice(0, 8).join(", ")}` : "",
+          r.description ? `Beschreibung: ${r.description}` : "", r.achievements.length ? `Steam-Erfolge: ${r.achievements.filter((a) => !a.hidden).slice(0, 30).map((a) => a.name + (a.description ? ` (${a.description})` : "")).join("; ")}` : ""].filter(Boolean).join("\n").slice(0, 2000);
+        try {
+          const levels = levelPlan(o.difficulty === "mixed" ? "mixed" : o.difficulty, n);
+          const res = await client.call<{ known: boolean; tasks: unknown[]; provider: string; model?: string | null }>("assistant.bingoPlan", {
+            game: o.game, size: o.size, levels, mode: o.mode, players: o.players, categories: o.categories, exclude: [...(o.exclude ?? []), ...(o.avoid ?? []), ...(o.avoidOld ?? [])].slice(-60), rules: o.rules, progress: o.progress, spoilers: !!o.spoilers, facts,
+          });
+          ai = sanitizeAiTasks(res, o.game);
+          aiName = res.model ? `${res.provider} (${res.model})` : res.provider;
+        } catch (e) { notes.push(`Die KI konnte diesmal nicht mitschreiben (${(e as Error).message}) – Aufgaben ohne KI.`); }
+      }
+      // Game-specific tasks (achievements, AI with the found facts) first; the general set only when they are too few.
+      pool = web.length + ai.length >= Math.ceil(n * 1.25) && ai.length ? [...web, ...ai] : [...web, ...ai, ...extra];
+      provider = `${base.from === "catalog" ? "Katalog + " : ""}${where} (${r.name})${aiName ? ` + ${aiName}` : ""}`;
+      if (norm(r.name) !== norm(asked) && base.from !== "catalog") notes.push(`Gefunden als „${r.name}“.`);
       const kind = [...(r.genres ?? []), ...(r.categories ?? []).filter((c) => /mehrspieler|koop|geteilt|online/i.test(c))].slice(0, 5).join(", ");
-      if (kind || r.description) notes.push(`Laut ${r.appId ? "Steam" : "Wikipedia"}: ${kind ? kind + ". " : ""}${shortText(r.description ?? "", 180)}`);
-      notes.push(own.length ? `${Math.min(own.length, n)} Aufgaben aus den Steam-Erfolgen${pool.length > own.length ? `, dazu passende Aufgaben für ${GENRES[genre]?.name ?? "dieses Spiel"}` : ""}.` : `Keine Steam-Erfolge – Aufgaben passend zum Spiel (${GENRES[genre]?.name ?? "allgemein"}).`);
+      if (kind || r.description) notes.push(`Laut ${where}: ${kind ? kind + ". " : ""}${shortText(r.description ?? "", 180)}`);
+      mix = (w, k) => {
+        const g = n - w - k;
+        const parts = [w ? `${w} echte Steam-Erfolge` : "", k ? `${k} Aufgaben, die die KI mit diesen Infos geschrieben hat` : "",
+          g ? `${g} ${base.from === "catalog" ? `eingebaute ${base.name}-Aufgaben` : `Aufgaben für ${GENRES[genre]?.name ?? "dieses Spiel"}`}` : ""].filter(Boolean);
+        return `Auf der Karte: ${parts.join(", ")} – jede neue Karte wird anders.`;
+      };
       if (!o.spoilers && r.achievements.some((a) => a.hidden)) notes.push("Versteckte Erfolge sind nicht dabei (Spoiler) – mit „mit Spoiler“ kommen sie dazu.");
     } else if (o.taskSource !== "own" && opts.useAi && opts.aiAvailable) {
       const levels = levelPlan(o.difficulty === "mixed" ? "mixed" : o.difficulty, n - (o.taskSource === "mixed" ? Math.floor(n / 2) : 0));
@@ -91,6 +116,7 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
       if (e instanceof NotEnoughTasks) throw new Error(o.taskSource === "own" ? `Für ${o.size}×${o.size} braucht es ${e.need} eigene Aufgaben zu diesem Spiel – vorhanden: ${e.have}.` : `Nicht genug passende Aufgaben (${e.have} von ${e.need}). Andere Einstellungen wählen oder eigene Aufgaben ergänzen.`);
       throw e;
     }
+    if (mix) notes.push(mix(picked.tasks.filter((t) => t.source === "web").length, picked.tasks.filter((t) => t.source === "ai").length));
     const players = opts.players?.length ? opts.players : o.players > 1 ? Array.from({ length: o.players }, (_, i) => `Spieler ${i + 1}`) : ["Ich"];
     const card: Card = {
       v: 2, title: (opts.title || cardTitle(o)).slice(0, 80), size: o.size, cells: toCells(picked.tasks, o.size, !!o.freeCenter), freeCenter: !!o.freeCenter,

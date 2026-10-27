@@ -34,16 +34,17 @@ export async function bingoFromChat(question: string, previousId: string | null,
   if ("error" in o) return { reply: reply(t(o.error), { suggestions: BINGO_EXAMPLES() }) };
   const inCatalog = poolFor(o.game, o.genre).from === "catalog";
   const webOk = ai.online && (ai.web === true || (ai.web === undefined && (webAlways() || saysInternet(question))));
-  if (o.taskSource !== "own" && !inCatalog) {
+  // Every game – with or without own tasks: the internet makes the card more fitting and more varied, but only after a "Ja".
+  if (o.taskSource !== "own") {
     if (webOk) o.web = true;
     else if (ai.web === undefined && ai.online) {
       // Ask before going on the internet (once – or never again with "immer erlauben").
       return {
-        reply: reply(t("Für „{g}“ habe ich keine eigenen Aufgaben. Soll ich im Internet nachsehen? Dein PC sucht das Spiel bei Steam (Erfolge, Genre, Beschreibung) und sonst bei Wikipedia – daraus werden passende Aufgaben, die Schwierigkeit kommt davon, wie viele Spieler einen Erfolg geschafft haben.", { g: o.game }), {
+        reply: reply((inCatalog ? t("Für „{g}“ habe ich eigene Aufgaben. Soll ich zusätzlich im Internet nachsehen, damit das Bingo abwechslungsreicher wird?", { g: o.game }) : t("Für „{g}“ habe ich keine eigenen Aufgaben. Soll ich im Internet nachsehen?", { g: o.game })) + " " + (ai.provider ? t("Dein PC sucht das Spiel bei Steam (Erfolge, Genre, Beschreibung), im Microsoft Store (Xbox) und sonst bei Wikipedia. Mit diesen Infos schreibt die KI ({p}) passende Aufgaben dazu; die Schwierigkeit echter Erfolge kommt davon, wie viele Spieler sie geschafft haben.", { p: ai.provider }) : t("Dein PC sucht das Spiel bei Steam (Erfolge, Genre, Beschreibung), im Microsoft Store (Xbox) und sonst bei Wikipedia – daraus werden passende Aufgaben; die Schwierigkeit echter Erfolge kommt davon, wie viele Spieler sie geschafft haben.")), {
           actions: [
             { kind: "bingoChoice", label: t("Ja, im Internet nachsehen"), params: { question, web: true } },
             { kind: "bingoChoice", label: t("Ja, immer erlauben"), params: { question, web: true, always: true } },
-            { kind: "bingoChoice", label: ai.provider ? t("Nein, die KI schreibt sie") : t("Nein, allgemeine Aufgaben"), params: { question, web: false } },
+            { kind: "bingoChoice", label: ai.provider ? t("Nein, die KI schreibt sie") : inCatalog ? t("Nein, nur eingebaute Aufgaben") : t("Nein, allgemeine Aufgaben"), params: { question, web: false } },
           ],
         }),
       };

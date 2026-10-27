@@ -256,3 +256,42 @@ describe("genreFromInfo (what Steam/Wikipedia say about a game)", () => {
     expect(genreFromInfo({ description: "Ein Survival-Horror-Spiel" })).toBe("horror");
   });
 });
+
+describe("variety (every card different, also on the same difficulty)", () => {
+  it("numbers in tasks change, and a task counts as repeated whatever number it had", async () => {
+    const { vary } = await import("./bingo");
+    const rnd = seeded(7);
+    const seen = new Set(Array.from({ length: 30 }, () => vary("Besiege {3/5/10} Gegner", rnd)));
+    expect(seen.size).toBe(3);
+    const pool = poolFor("Irgendein Rennspiel", "racing").tasks;
+    const first = toCells(pickTasks(pool, [], opts({ size: 3, difficulty: "easy", game: "X" }), seeded(3)).tasks, 3, false, seeded(3));
+    expect(first.every((c) => !/[{}]/.test(c.text))).toBe(true);
+    // The next card avoids what the first one had – even when the number differs.
+    const next = pickTasks(pool, [], opts({ size: 3, difficulty: "easy", game: "X", avoid: first.map((c) => c.text) }), seeded(9)).tasks;
+    const norm = (s: string) => s.replace(/\{[^}]*\}|\d+/g, "#");
+    const again = next.filter((t) => first.some((c) => norm(c.text) === norm(t.text))).length;
+    expect(again).toBe(0);
+  });
+  it("five easy cards in a row for a game without own tasks: no two the same", () => {
+    const pool = poolFor("Skyrim", "openworld").tasks;
+    expect(pool.filter((t) => t.level === 1).length).toBeGreaterThanOrEqual(15);
+    const cards: string[][] = [];
+    for (let i = 0; i < 5; i++) {
+      const last = cards[cards.length - 1] ?? [];
+      cards.push(pickTasks(pool, [], opts({ size: 4, difficulty: "easy", game: "Skyrim", avoid: last, avoidOld: cards.slice(-3, -1).flat() }), seeded(i + 20)).tasks.map((t) => t.text).sort());
+    }
+    expect(new Set(cards.map((c) => c.join("|"))).size).toBe(5);
+    // Consecutive cards share nothing.
+    for (let i = 1; i < cards.length; i++) expect(cards[i].filter((x) => cards[i - 1].includes(x)).length).toBe(0);
+  });
+});
+
+describe("Microsoft Store categories (Xbox games)", () => {
+  it("English store categories are understood", async () => {
+    const { genreFromInfo } = await import("./bingo");
+    expect(genreFromInfo({ genres: ["Role playing"] })).toBe("openworld");
+    expect(genreFromInfo({ genres: ["Shooter"] })).toBe("shooter");
+    expect(genreFromInfo({ genres: ["Racing & flying"] })).toBe("racing");
+    expect(genreFromInfo({ genres: ["Strategy"] })).toBe("strategy");
+  });
+});

@@ -78,6 +78,8 @@ public sealed class BingoRequest
     public string? Rules { get; set; }
     public string? Progress { get; set; }
     public bool Spoilers { get; set; }
+    /// <summary>What the PC found about the game on the internet (Steam, Microsoft Store, Wikipedia) – only with the user's consent.</summary>
+    public string? Facts { get; set; }
 }
 
 public sealed record PlannedTask(string Text, int Level, string Category, bool Team, string? Why);
@@ -102,6 +104,7 @@ public static class BingoPlan
         r.Mode = r.Mode is { Length: <= 20 } m && Regex.IsMatch(m, "^[a-z]+$") ? m : "classic";
         r.Rules = Clip(r.Rules, 300);
         r.Progress = Clip(r.Progress, 200);
+        r.Facts = Clip(r.Facts?.Replace("\r", "").Replace("\n", " · "), 2000);
         return r;
     }
 
@@ -128,6 +131,7 @@ public static class BingoPlan
         sb.Append(r.Players > 1 ? " Einige Aufgaben dürfen Teamaufgaben sein (\"team\": true).\n" : " Keine Teamaufgaben.\n");
         if (r.Categories!.Count > 0) sb.Append($"Bevorzugte Kategorien: {string.Join(", ", r.Categories)}.\n");
         if (r.Progress != null) sb.Append($"Spielfortschritt des Spielers: {r.Progress}\n");
+        if (r.Facts != null) sb.Append($"Was im Internet über das Spiel steht (Steam, Microsoft Store/Xbox oder Wikipedia – nutze das, um zu verstehen, was für ein Spiel es ist und was man darin tut; erfinde nichts darüber hinaus, wiederhole die Erfolge nicht wörtlich):\n{r.Facts}\n");
         if (r.Rules != null) sb.Append($"Eigene Regeln (einhalten): {r.Rules}\n");
         sb.Append(r.Spoilers ? "Spoiler sind erlaubt.\n" : "Keine Spoiler: keine Namen später Bosse, Orte oder Story-Wendungen.\n");
         if (r.Exclude!.Count > 0) sb.Append("Diese Aufgaben NICHT wiederholen: " + string.Join(" | ", r.Exclude.Take(40)) + "\n");

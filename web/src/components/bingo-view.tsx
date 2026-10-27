@@ -88,7 +88,7 @@ export function BingoMaker({ initial, onMade }: { initial?: Partial<BingoOptions
   const [useAi, setUseAi] = useState(true);
   // Steam achievements only for games without own catalog tasks, only with the PC, only when ticked (= asked first).
   const [web, setWeb] = useState(webAlways);
-  const webOk = ai.online && o.taskSource !== "own" && o.game.trim().length > 1 && poolFor(o.game.trim()).from !== "catalog";
+  const webOk = ai.online && o.taskSource !== "own" && o.game.trim().length > 1;
   const [noRepeat, setNoRepeat] = useState(false);
   const [busy, setBusy] = useState(false);
   const set = <K extends keyof BingoOptions>(k: K, v: BingoOptions[K]) => setO((x) => ({ ...x, [k]: v }));
@@ -201,7 +201,7 @@ export function BingoMaker({ initial, onMade }: { initial?: Partial<BingoOptions
           </details>
           <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
             <span className="tiny muted">
-              {webOk && <label className="checkbox" style={{ display: "flex", marginBottom: 4 }}><input type="checkbox" checked={web} onChange={(e) => { setWeb(e.target.checked); if (!e.target.checked && webAlways()) setWebAlways(false); }} />{t("Passende Aufgaben aus dem Internet laden (Steam-Erfolge und Spielart von „{g}“, sonst Wikipedia) – dein PC fragt dafür Steam bzw. Wikipedia", { g: o.game.trim() })}{webAlways() && <span className="tiny muted"> · {t("immer erlaubt – Häkchen weg nimmt das zurück")}</span>}</label>}
+              {webOk && <label className="checkbox" style={{ display: "flex", marginBottom: 4 }}><input type="checkbox" checked={web} onChange={(e) => { setWeb(e.target.checked); if (!e.target.checked && webAlways()) setWebAlways(false); }} />{t("Passende Aufgaben aus dem Internet laden (Steam-Erfolge und Spielart von „{g}“, sonst Microsoft Store/Xbox oder Wikipedia) – dein PC fragt dafür diese Seiten", { g: o.game.trim() })}{webAlways() && <span className="tiny muted"> · {t("immer erlaubt – Häkchen weg nimmt das zurück")}</span>}</label>}
               {o.taskSource === "own" ? t("Aufgaben: nur deine eigenen.") : ai.provider ? <label className="checkbox"><input type="checkbox" checked={useAi} onChange={(e) => setUseAi(e.target.checked)} />{t("KI am PC benutzen: {p}", { p: ai.provider })}</label>
                 : ai.online ? t("Keine KI am PC eingerichtet – Aufgaben aus dem eingebauten Katalog. (KI-Assistent → Einrichten)") : t("Ohne PC: Aufgaben aus dem eingebauten Katalog.")}
             </span>

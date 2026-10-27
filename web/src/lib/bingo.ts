@@ -117,7 +117,9 @@ export function poolFor(game: string, genre?: string | null): { tasks: Task[]; f
   const g = findGame(game);
   if (g) return { tasks: g.tasks.map((l) => parseLine(l, "catalog")).filter((x): x is Task => !!x), from: "catalog", name: g.name, note: g.note };
   const gen = GENRES[genre ?? "generic"] ?? GENRES.generic;
-  return { tasks: gen.tasks.map((l) => parseLine(l, "genre")).filter((x): x is Task => !!x), from: "genre", name: gen.name };
+  // The genre set first, the general set adds variety (both are honest for any game).
+  const lines = gen === GENRES.generic ? gen.tasks : [...gen.tasks, ...GENRES.generic.tasks];
+  return { tasks: lines.map((l) => parseLine(l, "genre")).filter((x): x is Task => !!x), from: "genre", name: gen.name };
 }
 
 // ------------------------------------------------------------------------------------------ difficulty
@@ -152,6 +154,14 @@ export class NotEnoughTasks extends Error {
 }
 
 const key = (s: string) => norm(s).replace(/[^\p{L}\p{N} ]/gu, "");
+/** A task with changing numbers ("Besiege {3/5/10} Gegner") is the same task whatever number came out of it. */
+const numKey = (s: string) => key(s.replace(/\{[^}]*\}/g, "0").replace(/\d+(?:[.,]\d+)?/g, "0"));
+const taskKey = (text: string) => (text.includes("{") ? numKey(text) : key(text));
+/** Texts already used (exact, and with any number) – so both plain and number tasks are recognised. */
+const usedSet = (texts: string[]) => new Set(texts.flatMap((x) => [key(x), numKey(x)]));
+
+/** "Besiege {3/5/10} Gegner" → one of the numbers, so the same task reads differently from card to card. */
+export const vary = (text: string, rnd: () => number = Math.random) => text.replace(/\{([^}]+)\}/g, (_, a: string) => { const o = a.split("/"); return o[Math.floor(rnd() * o.length)]; });
 
 function shuffle<T>(a: T[], rnd: () => number): T[] {
   const x = [...a];
@@ -161,10 +171,10 @@ function shuffle<T>(a: T[], rnd: () => number): T[] {
 
 /** Tasks a card may use at all: fits the players, no spoilers unless wanted, nothing excluded. */
 export function usable(tasks: Task[], o: Pick<BingoOptions, "players" | "spoilers" | "exclude" | "beginner" | "expert">): Task[] {
-  const ex = new Set((o.exclude ?? []).map(key));
+  const ex = usedSet(o.exclude ?? []);
   const seen = new Set<string>();
   return tasks.filter((t) => {
-    const k = key(t.text);
+    const k = taskKey(t.text);
     if (seen.has(k) || ex.has(k)) return false;
     if (t.team && o.players < 2) return false;
     if (t.spoiler && !o.spoilers) return false;
@@ -189,15 +199,15 @@ export function pickTasks(pool: Task[], own: Task[], o: BingoOptions, rnd: () =>
     return { tasks: shuffle(ownOk, rnd).slice(0, n), notes };
   }
   if (o.taskSource === "mixed") chosen = shuffle(ownOk, rnd).slice(0, Math.floor(n / 2));
-  const taken = new Set(chosen.map((t) => key(t.text)));
-  const rest = usable(pool, o).filter((t) => !taken.has(key(t.text)));
+  const taken = new Set(chosen.map((t) => taskKey(t.text)));
+  const rest = usable(pool, o).filter((t) => !taken.has(taskKey(t.text)));
   const prefer = new Set<Category>([...o.categories, ...(MODE_CAT[o.mode] ? [MODE_CAT[o.mode]!] : [])]);
   const diff = o.mode === "challenge" ? harder(o.difficulty) : o.mode === "speed" ? easier(o.difficulty) : o.difficulty;
   const plan = levelPlan(diff, n - chosen.length);
   // Boss bingo: boss tasks count as preferred everywhere. Tasks of the last cards come last (only if nothing else is left).
-  const avoid = new Set((o.avoid ?? []).map(key));
-  const avoidOld = new Set((o.avoidOld ?? []).map(key));
-  const rank = (t: Task) => (avoid.has(key(t.text)) ? 4 : avoidOld.has(key(t.text)) ? 2 : 0) + (prefer.has(t.category) || (o.mode === "boss" && t.boss) ? 0 : 1);
+  const avoid = usedSet(o.avoid ?? []);
+  const avoidOld = usedSet(o.avoidOld ?? []);
+  const rank = (t: Task) => (avoid.has(taskKey(t.text)) ? 4 : avoidOld.has(taskKey(t.text)) ? 2 : 0) + (prefer.has(t.category) || (o.mode === "boss" && t.boss) ? 0 : 1);
   const byLevel = (l: number) => shuffle(rest.filter((t) => t.level === l), rnd).sort((a, b) => rank(a) - rank(b));
   const left: Task[][] = [byLevel(1), byLevel(2), byLevel(3), byLevel(4)];
   const short: number[] = [0, 0, 0, 0];
@@ -216,7 +226,7 @@ export function pickTasks(pool: Task[], own: Task[], o: BingoOptions, rnd: () =>
   });
   if (chosen.length < n) throw new NotEnoughTasks(n, chosen.length);
   if (prefer.size && !chosen.some((t) => prefer.has(t.category))) notes.push("Für die gewählte Art gab es keine passenden Aufgaben – andere wurden genommen.");
-  const again = chosen.slice(0, n).filter((t) => avoid.has(key(t.text))).length;
+  const again = chosen.slice(0, n).filter((t) => avoid.has(taskKey(t.text))).length;
   if (again) notes.push(`${again} Aufgaben gab es schon in deinem letzten Bingo zu diesem Spiel – mehr verschiedene gibt es dafür nicht.`);
   return { tasks: chosen.slice(0, n), notes };
 }
@@ -235,7 +245,7 @@ export function genreFromInfo(info: { genres?: string[]; categories?: string[]; 
   if (/shooter|ego-perspektive|fps\b|third-person-shooter/.test(all)) return "shooter";
   if (/sport|fußball|fussball|basketball|tennis|golf/.test(g) || /\b(fußball|fussball|basketball)\b/.test(all)) return "sports";
   if (/strategie|strategy|aufbau|city-builder/.test(all)) return "strategy";
-  if (/open.?world|offene[nr]? welt|rollenspiel|abenteuer|adventure|rpg/.test(all)) return "openworld";
+  if (/open.?world|offene[nr]? welt|rollenspiel|role.?playing|abenteuer|adventure|rpg/.test(all)) return "openworld";
   if ((info.categories ?? []).some((c) => /koop|co-op/i.test(c))) return "coop";
   return "generic";
 }
@@ -260,7 +270,7 @@ export function webTasks(list: WebAchievement[]): Task[] {
 
 /** Tasks on a board (shuffled), with the optional free centre (odd sizes only). */
 export function toCells(tasks: Task[], size: number, freeCenter: boolean, rnd: () => number = Math.random): Cell[] {
-  const cells: Cell[] = shuffle(tasks, rnd).map((t) => ({ text: t.text, level: t.level, category: t.category, source: t.source, why: t.why ?? whyLevel(t), done: false }));
+  const cells: Cell[] = shuffle(tasks, rnd).map((t) => ({ text: vary(t.text, rnd), level: t.level, category: t.category, source: t.source, why: t.why ?? whyLevel(t), done: false }));
   if (freeCenter && size % 2 === 1) cells.splice((size * size - 1) / 2, 0, { text: "Frei", free: true, done: true });
   return cells;
 }
@@ -349,13 +359,13 @@ export function shuffleCard(card: Card, rnd: () => number = Math.random): Card {
 export function replaceCell(card: Card, i: number, pool: Task[], rnd: () => number = Math.random): Card | null {
   const cur = card.cells[i];
   if (!cur || cur.free) return null;
-  const used = new Set([...card.cells.map((c) => key(c.text)), ...(card.history ?? []).map(key)]);
+  const used = usedSet([...card.cells.map((c) => c.text), ...(card.history ?? [])]);
   const players = card.players?.length ?? 1;
-  const free = pool.filter((t) => !used.has(key(t.text)) && !(t.team && players < 2) && !t.spoiler);
+  const free = pool.filter((t) => !used.has(taskKey(t.text)) && !(t.team && players < 2) && !t.spoiler);
   if (!free.length) return null;
   const same = free.filter((t) => t.level === (cur.level ?? 2));
   const pick = (same.length ? same : free)[Math.floor(rnd() * (same.length ? same : free).length)];
-  const cells = card.cells.map((c, j) => (j === i ? { text: pick.text, level: pick.level, category: pick.category, source: pick.source, why: pick.why ?? whyLevel(pick), done: false, doneBy: [] } : c));
+  const cells = card.cells.map((c, j) => (j === i ? { text: vary(pick.text, rnd), level: pick.level, category: pick.category, source: pick.source, why: pick.why ?? whyLevel(pick), done: false, doneBy: [] } : c));
   return { ...card, cells, history: [...(card.history ?? []), cur.text].slice(-200) };
 }
 

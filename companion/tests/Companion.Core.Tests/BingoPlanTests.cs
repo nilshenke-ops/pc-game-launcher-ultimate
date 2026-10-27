@@ -68,6 +68,16 @@ public class BingoPlanTests
     }
 
     [Fact]
+    public void Facts_from_the_internet_reach_the_prompt_readable_and_limited()
+    {
+        var p = BingoPlan.Prompt(BingoPlan.Check(new BingoRequest { Game = "Halo 5: Guardians", Size = 3, Facts = "Halo 5 (Xbox)\nGenre: Shooter\nBeschreibung: Multiplayer" + new string('x', 3000) }));
+        Assert.Contains("Was im Internet über das Spiel steht", p);
+        Assert.Contains("Halo 5 (Xbox) · Genre: Shooter · Beschreibung", p);
+        Assert.DoesNotContain(new string('x', 2001), p);
+        Assert.DoesNotContain("Was im Internet", BingoPlan.Prompt(BingoPlan.Check(new BingoRequest { Game = "Minecraft", Size = 3 })));
+    }
+
+    [Fact]
     public void Prompt_names_the_game_the_levels_and_what_must_not_repeat()
     {
         var p = BingoPlan.Prompt(BingoPlan.Check(new BingoRequest { Game = "Elden Ring", Size = 4, Levels = new[] { 0, 3, 10, 3 }, Exclude = new() { "Besiege Margit" }, Players = 2, Progress = "Durchgespielt" }));

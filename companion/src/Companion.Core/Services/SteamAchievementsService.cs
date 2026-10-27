@@ -23,6 +23,8 @@ public sealed class SteamAchievementsService : IDisposable
     public string CommunityBase { get; init; } = "https://steamcommunity.com";
     public string ApiBase { get; init; } = "https://api.steampowered.com";
     public string WikiBase { get; init; } = "https://de.wikipedia.org";
+    /// <summary>Microsoft Store catalog (what the Xbox app sells) – for games that are not on Steam.</summary>
+    public string MsBase { get; init; } = "https://displaycatalog.mp.microsoft.com";
     public Func<TimeSpan, Task> Delay { get; init; } = t => Task.Delay(t);
 
     public SteamAchievementsService(HttpMessageHandler? http = null)
@@ -34,7 +36,8 @@ public sealed class SteamAchievementsService : IDisposable
 
     public sealed record Achievement(string Name, string Description, bool Hidden, double? Percent);
 
-    static string Site(string url) => url.Contains("wikipedia", StringComparison.OrdinalIgnoreCase) || url.Contains("wiki.", StringComparison.OrdinalIgnoreCase) ? "Wikipedia" : "Steam";
+    static string Site(string url) => url.Contains("wikipedia", StringComparison.OrdinalIgnoreCase) || url.Contains("wiki.", StringComparison.OrdinalIgnoreCase) ? "Wikipedia"
+        : url.Contains("microsoft", StringComparison.OrdinalIgnoreCase) || url.Contains("ms.", StringComparison.OrdinalIgnoreCase) ? "Microsoft Store" : "Steam";
 
     async Task<string> GetAsync(string url)
     {
@@ -63,10 +66,37 @@ public sealed class SteamAchievementsService : IDisposable
             var apps = items.EnumerateArray().Where(i => i.TryGetProperty("type", out var t) && t.GetString() == "app" && i.TryGetProperty("id", out var id) && id.TryGetInt32(out _))
                 .Select(i => (id: i.GetProperty("id").GetInt32(), name: i.TryGetProperty("name", out var n) ? n.GetString() ?? "" : "")).ToList();
             static string F(string s) => Regex.Replace(s.ToLowerInvariant(), "[^a-z0-9]+", "");
-            return apps.Cast<(int, string)?>().FirstOrDefault(a => F(a!.Value.Item2) == F(wanted)) ?? apps.Cast<(int, string)?>().FirstOrDefault();
+            return apps.Cast<(int, string)?>().FirstOrDefault(a => F(a!.Value.Item2) == F(wanted)) ?? apps.Cast<(int, string)?>().FirstOrDefault(a => SameGame(a!.Value.Item2, wanted));
         }
         catch (JsonException) { return null; }
     }
+
+    static readonly HashSet<string> EditionWords = new(StringComparer.Ordinal)
+    {
+        "special", "edition", "remastered", "remaster", "deluxe", "goty", "game", "of", "the", "year", "definitive", "anniversary", "enhanced", "complete",
+        "ultimate", "legendary", "gold", "standard", "director", "directors", "s", "cut", "hd", "collection", "digital", "premium", "classic", "version",
+    };
+
+    /// <summary>
+    /// A store hit is the wanted game only if its name is the wanted name plus a series prefix and/or edition words:
+    /// "Skyrim" → "The Elder Scrolls V: Skyrim Special Edition" yes, "Minecraft" → "Minecraft Dungeons" no (another game).
+    /// </summary>
+    public static bool SameGame(string storeName, string wanted)
+    {
+        static string[] W(string s) => Regex.Split(s.ToLowerInvariant(), "[^\\p{L}\\p{N}]+").Where(x => x.Length > 0).ToArray();
+        var name = W(storeName);
+        var want = W(wanted);
+        if (want.Length == 0 || name.Length == 0) return false;
+        if (string.Concat(name) == string.Concat(want)) return true;
+        for (var i = 0; i + want.Length <= name.Length; i++)
+        {
+            if (!name.Skip(i).Take(want.Length).SequenceEqual(want)) continue;
+            return name.Skip(i + want.Length).All(EditionWords.Contains);
+        }
+        return false;
+    }
+
+
 
     /// <summary>Achievements from the community page: the page embeds them as JSON (sometimes JSON inside a JSON string).</summary>
     public static List<Achievement> ParsePage(string html, Dictionary<string, double> percent)
@@ -175,6 +205,45 @@ public sealed class SteamAchievementsService : IDisposable
         catch (JsonException) { return null; }
     }
 
+    /// <summary>Product ids of games from the Microsoft Store suggestions.</summary>
+    public static List<string> ParseMsSuggest(string json)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("Results", out var res) || res.ValueKind != JsonValueKind.Array) return new();
+            return res.EnumerateArray().Where(r => r.TryGetProperty("Products", out var p) && p.ValueKind == JsonValueKind.Array).SelectMany(r => r.GetProperty("Products").EnumerateArray())
+                .Where(p => p.TryGetProperty("Type", out var t) && t.GetString() == "Game" && p.TryGetProperty("ProductId", out _))
+                .Select(p => p.GetProperty("ProductId").GetString() ?? "").Where(id => Regex.IsMatch(id, "^[A-Z0-9]{12}$")).Distinct().Take(6).ToList();
+        }
+        catch (JsonException) { return new(); }
+    }
+
+    /// <summary>The wanted game from Microsoft Store product details: title, description and category (only the same game, see <see cref="SameGame"/>).</summary>
+    public static (string id, string title, string? description, List<string> categories)? ParseMsProduct(string json, string wanted)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty("Products", out var list) || list.ValueKind != JsonValueKind.Array) return null;
+            foreach (var p in list.EnumerateArray())
+            {
+                if (p.TryGetProperty("ProductKind", out var k) && k.GetString() != "Game") continue;
+                if (!p.TryGetProperty("LocalizedProperties", out var lps) || lps.ValueKind != JsonValueKind.Array || lps.GetArrayLength() == 0) continue;
+                var lp = lps[0];
+                var title = lp.TryGetProperty("ProductTitle", out var tt) ? tt.GetString() ?? "" : "";
+                if (!SameGame(title, wanted)) continue;
+                var desc = lp.TryGetProperty("ShortDescription", out var sd) && sd.GetString() is { Length: > 0 } d ? d : lp.TryGetProperty("ProductDescription", out var pd) ? pd.GetString() : null;
+                var cats = new List<string>();
+                if (p.TryGetProperty("Properties", out var pr) && pr.TryGetProperty("Categories", out var cs) && cs.ValueKind == JsonValueKind.Array)
+                    cats.AddRange(cs.EnumerateArray().Select(c => c.GetString() ?? "").Where(c => c.Length is > 0 and < 60).Take(5));
+                return (p.GetProperty("ProductId").GetString() ?? "", title, desc == null ? null : Clean(desc.Length > 600 ? desc[..600] : desc), cats);
+            }
+        }
+        catch (Exception e) when (e is JsonException or InvalidOperationException or KeyNotFoundException) { }
+        return null;
+    }
+
     public static string? ParseWikiSummary(string json)
     {
         try
@@ -218,12 +287,16 @@ public sealed class SteamAchievementsService : IDisposable
                 catch (RpcException) { /* no achievements – the genre and features still help */ }
                 result = new { source = Source, appId = app.id, name = app.name, url = $"{StoreBase}/app/{app.id}", achievements = list, genres = info.Genres, categories = info.Categories, description = info.Description };
             }
+            else if (await MicrosoftAsync(game) is { } ms)
+            {
+                result = new { source = "Microsoft Store / Xbox (displaycatalog.mp.microsoft.com)", appId = (int?)null, name = ms.title, url = $"https://www.xbox.com/de-DE/games/store/x/{ms.id}", achievements = new List<Achievement>(), genres = ms.categories, categories = new List<string>(), description = ms.description };
+            }
             else
             {
                 string? title;
                 try { title = PickWikiTitle(await GetAsync($"{WikiBase}/w/rest.php/v1/search/title?q={Uri.EscapeDataString(game)}&limit=5")); }
                 catch (RpcException e) when (steamDown is not null) { throw new RpcException("unavailable", $"{steamDown.Message} {e.Message}"); }
-                if (title is null) throw steamDown ?? new RpcException("not-found", $"Zu „{game}“ habe ich weder bei Steam noch bei Wikipedia ein Spiel gefunden.");
+                if (title is null) throw steamDown ?? new RpcException("not-found", $"Zu „{game}“ habe ich weder bei Steam noch im Microsoft Store (Xbox) noch bei Wikipedia ein Spiel gefunden.");
                 var summary = ParseWikiSummary(await GetAsync($"{WikiBase}/api/rest_v1/page/summary/{Uri.EscapeDataString(title)}"));
                 result = new { source = "Wikipedia (de.wikipedia.org)", appId = (int?)null, name = title.Replace('_', ' '), url = $"{WikiBase}/wiki/{Uri.EscapeDataString(title)}", achievements = new List<Achievement>(), genres = new List<string>(), categories = new List<string>(), description = summary };
             }
@@ -231,6 +304,18 @@ public sealed class SteamAchievementsService : IDisposable
             return result;
         }
         finally { _one.Release(); }
+    }
+
+    /// <summary>Not on Steam: is it a game of the Microsoft Store / Xbox? Errors there only mean "not found here".</summary>
+    async Task<(string id, string title, string? description, List<string> categories)?> MicrosoftAsync(string game)
+    {
+        try
+        {
+            var ids = ParseMsSuggest(await GetAsync($"{MsBase}/v7.0/productFamilies/autosuggest?market=DE&languages=de-de&query={Uri.EscapeDataString(game)}&productFamilyNames=Games"));
+            if (ids.Count == 0) return null;
+            return ParseMsProduct(await GetAsync($"{MsBase}/v7.0/products?bigIds={string.Join(",", ids)}&market=DE&languages=de-de"), game);
+        }
+        catch (RpcException) { return null; }
     }
 
     public void Dispose() { _http.Dispose(); _one.Dispose(); }

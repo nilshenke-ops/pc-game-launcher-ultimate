@@ -32,7 +32,9 @@ public class SteamAchievementsTests
             var u = r.RequestUri!.ToString();
             Asked.Add(u);
             if (u.Contains("storesearch") && u.Contains("busy")) return Task.FromResult(new HttpResponseMessage((HttpStatusCode)429));
-            var body = u.Contains("storesearch") ? (u.Contains("Make") ? Search : u.Contains("nurwiki") ? """{"total":0,"items":[]}""" : Search)
+            var body = u.Contains("storesearch") ? (u.Contains("Make") ? Search : u.Contains("nurwiki") || u.Contains("Halo") ? """{"total":0,"items":[]}""" : Search)
+                : u.Contains("autosuggest") ? (u.Contains("Halo") ? """{"Results":[{"Products":[{"Type":"Game","ProductId":"9NP1P1WFS0LB","Title":"Halo Wars"},{"Type":"Game","ProductId":"9PP5G1F0C2B6","Title":"Halo Infinite"}]}]}""" : """{"Results":[]}""")
+                : u.Contains("bigIds") ? """{"Products":[{"ProductKind":"Game","ProductId":"9NP1P1WFS0LB","LocalizedProperties":[{"ProductTitle":"Halo Wars: Definitive Edition","ShortDescription":"Echtzeit-Strategie im Halo-Universum."}],"Properties":{"Categories":["Strategy"]}},{"ProductKind":"Game","ProductId":"9PP5G1F0C2B6","LocalizedProperties":[{"ProductTitle":"Halo Infinite","ShortDescription":"Der Master Chief kehrt zurück – ein Ego-Shooter."}],"Properties":{"Categories":["Shooter"]}}]}"""
                 : u.Contains("appdetails") ? Details : u.Contains("GetGlobalAchievementPercentages") ? Percent : u.Contains("/achievements/4711") ? Page()
                 : u.Contains("search/title") ? """{"pages":[{"key":"Nurwiki_(Band)","description":"deutsche Band"},{"key":"Nurwiki","description":"Computerspiel von 2019"}]}"""
                 : u.Contains("page/summary/Nurwiki") ? """{"extract":"Nurwiki ist ein Survival-Horror-Computerspiel."}""" : "";
@@ -57,6 +59,13 @@ public class SteamAchievementsTests
         Assert.Empty(SteamAchievementsService.ParsePage("<html>nichts</html>", new()));
         Assert.Equal(4711, SteamAchievementsService.PickApp(Search, "test game")!.Value.id); // exact name before the first hit
         Assert.Null(SteamAchievementsService.PickApp("""{"total":0,"items":[]}""", "x"));
+        // Only the same game (series prefix and edition words are fine), never another game of the series.
+        Assert.True(SteamAchievementsService.SameGame("The Elder Scrolls V: Skyrim Special Edition", "Skyrim"));
+        Assert.True(SteamAchievementsService.SameGame("Make Way", "Makeway"));
+        Assert.False(SteamAchievementsService.SameGame("Minecraft Dungeons", "Minecraft"));
+        Assert.False(SteamAchievementsService.SameGame("Minecraft Legends", "Minecraft"));
+        Assert.False(SteamAchievementsService.SameGame("The Elder Scrolls V: Skyrim VR", "Skyrim"));
+        Assert.Null(SteamAchievementsService.PickApp("""{"total":2,"items":[{"type":"app","name":"Minecraft Dungeons","id":1672970},{"type":"app","name":"Minecraft Legends","id":1928870}]}""", "Minecraft"));
     }
 
     [Fact]
@@ -80,6 +89,11 @@ public class SteamAchievementsTests
         Assert.Equal("Nurwiki", wiki.GetProperty("name").GetString());
         Assert.Contains("Survival-Horror", wiki.GetProperty("description").GetString());
         Assert.Equal(0, wiki.GetProperty("achievements").GetArrayLength());
+        // Not on Steam, but in the Microsoft Store (Xbox): that game, not another of the series.
+        var halo = JsonSerializer.SerializeToElement(await w.TasksAsync("Halo Infinite"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        Assert.Equal("Halo Infinite", halo.GetProperty("name").GetString());
+        Assert.Equal("Shooter", halo.GetProperty("genres")[0].GetString());
+        Assert.Contains("Ego-Shooter", halo.GetProperty("description").GetString());
         // Steam busy (429): Wikipedia is still asked.
         Assert.Equal("Nurwiki", JsonSerializer.SerializeToElement(await w.TasksAsync("busy"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }).GetProperty("name").GetString());
         Assert.Null(SteamAchievementsService.PickWikiTitle("""{"pages":[{"key":"Band","description":"Musikgruppe"}]}"""));

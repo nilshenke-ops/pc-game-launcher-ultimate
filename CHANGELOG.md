@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.59.0 – 2026-10-27
+### Neu
+- Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia
+- Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen
+- Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung
+### Verbessert
+- Mehr Abwechslung bei gleicher Schwierigkeit: deutlich größere Aufgaben-Sets je Spielart, Aufgaben mit wechselnden Zahlen („Besiege 3 / 5 / 10 Gegner“), echte Erfolge, KI- und eingebaute Aufgaben werden gemischt; die letzte Karte wird nicht wiederholt
+- Die Karte sagt, woraus sie besteht (z. B. „6 echte Steam-Erfolge, 3 Aufgaben von der KI“)
+### Behoben
+- „Minecraft“ wurde bei Steam als „Minecraft Dungeons“ gefunden (falsche Erfolge) – jetzt zählt nur dasselbe Spiel (Reihenname davor und Editionen wie „Special Edition“ sind erlaubt)
+
 ## 2.58.0 – 2026-10-27
 ### Neu
 - JARVIS/Assistent: Bingo für jedes Spiel direkt im Chat – der PC sieht im Internet nach, was das für ein Spiel ist (Steam: Erfolge, Genre, Mehrspieler, Beschreibung; nicht auf Steam: Wikipedia) und macht passende Aufgaben daraus
