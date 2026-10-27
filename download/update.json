@@ -1,31 +1,31 @@
 {
-  "version": "2.58.0",
+  "version": "2.59.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.58.0/PCGameLauncherCompanion.exe",
-  "size": 88182584,
-  "sha256": "2c53e6f7adf7d21876da16505542b203c51a45635cf90131cde9bb0a9a02aa72",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion.exe",
+  "size": 88143500,
+  "sha256": "cf9aae4470a25e3a58a22d376b06be1086038129983d3d7ee94677ed49fb78db",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.58.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.58.0/PCGameLauncherCompanion-2.58.0-win-x64.zip",
-    "size": 82445167,
-    "sha256": "7d5dcababfe2905b604a82a88d41a7c1cb3e50a60d5c4a397730641029d41bab"
+    "fileName": "PCGameLauncherCompanion-2.59.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion-2.59.0-win-x64.zip",
+    "size": 82404321,
+    "sha256": "3ba90d48000c44c1af66c554fa34961266ffc4b15bbb02cae17b6edabd7ab1a1"
   },
-  "notes": "JARVIS/Assistent: Bingo für jedes Spiel direkt im Chat – der PC sieht im Internet nach, was das für ein Spiel ist (Steam: Erfolge, Genre, Mehrspieler, Beschreibung; nicht auf Steam: Wikipedia) und macht passende Aufgaben daraus · „Ja, immer erlauben“: Danach fragt JARVIS beim Bingo nicht mehr, ob er im Internet nachsehen darf (im Bingo-Maker ist das Häkchen dann vorausgewählt) · Wenige Steam-Erfolge: Die Karte wird mit Aufgaben zur erkannten Spielart aufgefüllt (z. B. Rennspiel für Make Way)",
+  "notes": "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia · Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen · Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung",
   "changes": {
     "neu": [
-      "JARVIS/Assistent: Bingo für jedes Spiel direkt im Chat – der PC sieht im Internet nach, was das für ein Spiel ist (Steam: Erfolge, Genre, Mehrspieler, Beschreibung; nicht auf Steam: Wikipedia) und macht passende Aufgaben daraus",
-      "„Ja, immer erlauben“: Danach fragt JARVIS beim Bingo nicht mehr, ob er im Internet nachsehen darf (im Bingo-Maker ist das Häkchen dann vorausgewählt)"
+      "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia",
+      "Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen",
+      "Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung"
     ],
     "verbessert": [
-      "Wenige Steam-Erfolge: Die Karte wird mit Aufgaben zur erkannten Spielart aufgefüllt (z. B. Rennspiel für Make Way)",
-      "Die Karte trägt den gefundenen Namen („Makeway“ → „Make Way“), und der Chat sagt, was über das Spiel gefunden wurde"
+      "Mehr Abwechslung bei gleicher Schwierigkeit: deutlich größere Aufgaben-Sets je Spielart, Aufgaben mit wechselnden Zahlen („Besiege 3 / 5 / 10 Gegner“), echte Erfolge, KI- und eingebaute Aufgaben werden gemischt; die letzte Karte wird nicht wiederholt",
+      "Die Karte sagt, woraus sie besteht (z. B. „6 echte Steam-Erfolge, 3 Aufgaben von der KI“)"
     ],
     "behoben": [
-      "Bingo für ein Spiel ohne eigene Aufgaben (z. B. Make Way) schickte zur Bingo-Seite, wo das Erstellen dann auch scheiterte – jetzt entsteht die Karte immer im Chat; klappt KI oder Internet nicht, wird mit allgemeinen Aufgaben erstellt und der Grund steht dabei",
-      "Steam ausgelastet: Es wird trotzdem bei Wikipedia nachgesehen; Fehlermeldungen nennen die richtige Seite"
+      "„Minecraft“ wurde bei Steam als „Minecraft Dungeons“ gefunden (falsche Erfolge) – jetzt zählt nur dasselbe Spiel (Reihenname davor und Editionen wie „Special Edition“ sind erlaubt)"
     ]
   },
-  "signature": "U2CKzOGYZvRkgqkW6xSIUFsluAAJsTCcqzHwGKR+INjmczhyUXuBdyZeSn3GsMeSrOt8GRYPX6UodE7iVdfLLw=="
+  "signature": "5PMrIJYC0fNy5qnpjlJGZlIhsLeXi/5XP3R5X64nUzwsxH1z15Gyri/qaVZO7KNVMdTAptdl7VJQ2Gmz/ecsaA=="
 }

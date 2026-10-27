@@ -1,5 +1,36 @@
 [
   {
+    "version": "2.59.0",
+    "date": "2026-10-27",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion.exe",
+    "size": 88143500,
+    "sha256": "cf9aae4470a25e3a58a22d376b06be1086038129983d3d7ee94677ed49fb78db",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.59.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion-2.59.0-win-x64.zip",
+      "size": 82404321,
+      "sha256": "3ba90d48000c44c1af66c554fa34961266ffc4b15bbb02cae17b6edabd7ab1a1"
+    },
+    "notes": "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia · Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen · Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung",
+    "changes": {
+      "neu": [
+        "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia",
+        "Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen",
+        "Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung"
+      ],
+      "verbessert": [
+        "Mehr Abwechslung bei gleicher Schwierigkeit: deutlich größere Aufgaben-Sets je Spielart, Aufgaben mit wechselnden Zahlen („Besiege 3 / 5 / 10 Gegner“), echte Erfolge, KI- und eingebaute Aufgaben werden gemischt; die letzte Karte wird nicht wiederholt",
+        "Die Karte sagt, woraus sie besteht (z. B. „6 echte Steam-Erfolge, 3 Aufgaben von der KI“)"
+      ],
+      "behoben": [
+        "„Minecraft“ wurde bei Steam als „Minecraft Dungeons“ gefunden (falsche Erfolge) – jetzt zählt nur dasselbe Spiel (Reihenname davor und Editionen wie „Special Edition“ sind erlaubt)"
+      ]
+    },
+    "signature": "5PMrIJYC0fNy5qnpjlJGZlIhsLeXi/5XP3R5X64nUzwsxH1z15Gyri/qaVZO7KNVMdTAptdl7VJQ2Gmz/ecsaA=="
+  },
+  {
     "version": "2.58.0",
     "date": "2026-10-27",
     "channel": "stable",
@@ -1464,31 +1495,5 @@
       "behoben": []
     },
     "signature": "v7kB1CneHZxOoqO+O6JOzLUGbBF0xZekcR2yM4+EvHWqU9Tfx9xc5+8y3Tpm0TrPTbhF8ML6PLdnyPKudM5c4Q=="
-  },
-  {
-    "version": "2.13.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.13.0/PCGameLauncherCompanion.exe",
-    "size": 87392080,
-    "sha256": "2891e20aa51cf57b09025ce28e415bd6bff43df5e450ec5a89238603786a28da",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.13.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.13.0/PCGameLauncherCompanion-2.13.0-win-x64.zip",
-      "size": 81657978,
-      "sha256": "ae7bf9e46cf7e9172cceef33c8e10b794aee392d3ec27de6b4c247d7fb963ad9"
-    },
-    "notes": "Original-Logos für Steam- und Epic-Spiele: Der PC liest das Symbol direkt aus der Spieldatei (z. B. RocketLeague.exe) – genau das Logo des Spiels, auch für schon vorhandene Spiele (einmalig im Hintergrund). Installer, Crash-Handler, Anti-Cheat- und Redist-Dateien werden dabei übersprungen",
-    "changes": {
-      "neu": [
-        "Original-Logos für Steam- und Epic-Spiele: Der PC liest das Symbol direkt aus der Spieldatei (z. B. RocketLeague.exe) – genau das Logo des Spiels, auch für schon vorhandene Spiele (einmalig im Hintergrund). Installer, Crash-Handler, Anti-Cheat- und Redist-Dateien werden dabei übersprungen"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "Ließ sich ein Cover nicht laden (z. B. ohne Internet), zeigte eine Deck-Taste ein kaputtes Bild – jetzt erscheint das Logo bzw. ein Spiel-Symbol; ebenso auf den App-Kacheln"
-      ]
-    },
-    "signature": "250oz/VhyW05oyiAtrvPJBfvCo9a4cpdMtglgOp5sYR6nj8AJE99NA0z8ZSQGVDVg0w/iGBQQIgKguCCpKhuMQ=="
   }
 ]
