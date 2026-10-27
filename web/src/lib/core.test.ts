@@ -251,3 +251,15 @@ describe("direct pairing link (website https → PC http in the home network)", 
     expect(directPairUrl("http://192.168.1.5:8787", "AB\"<x>")).toBe("http://192.168.1.5:8787/#/pair?code=ABX");
   });
 });
+
+describe("home-network addresses typed on the https website", async () => {
+  const { pcAddressToWs, directPairUrl } = await import("./address");
+  it("are plain http with the companion's port, so the PC's own page opens", () => {
+    expect(pcAddressToWs("192.168.178.116", true)).toBe("ws://192.168.178.116:8787/ws");
+    expect(pcAddressToWs("192.168.178.116:8787", true)).toBe("ws://192.168.178.116:8787/ws");
+    expect(pcAddressToWs("laptop-nils.fritz.box", true)).toBe("ws://laptop-nils.fritz.box:8787/ws");
+    expect(pcAddressToWs("gaming-pc.tail1234.ts.net", true)).toBe("wss://gaming-pc.tail1234.ts.net/ws");
+    expect(directPairUrl("192.168.178.116", "kpdh-v2w8")).toBe("http://192.168.178.116:8787/#/pair?code=KPDH-V2W8");
+    expect(directPairUrl("http://192.168.178.116:8787", "")).toBe("http://192.168.178.116:8787/#/pair");
+  });
+});

@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.57.0 – 2026-10-27
+### Neu
+- „Handy manuell verbinden“ am PC (Gerät koppeln): Schritt für Schritt, welche Adresse im Handy-Browser einzutippen ist, der Code, und wie die Kopplung dauerhaft bleibt – zu Hause im WLAN ohne Tailscale
+- Handy-Website: Adresse und Code direkt auf der Offline-Seite eingeben („Handy manuell verbinden“)
+### Behoben
+- github.io-Seite: Eine Heimnetz-Adresse (z. B. 192.168.178.116) führte zu „nicht erreichbar“ – der Browser verbietet einer https-Seite den Zugriff auf http im Heimnetz. Jetzt öffnet „PC verbinden“ direkt die Seite deines PCs mit dem Code; ohne „http://“ und ohne Port eingetippt wird automatisch http und Port 8787 genommen
+- Feste Adresse: Der Begleiter fragt den Router (z. B. FRITZ!Box) auch nach dem Namen zur eigenen IP – so wird ….fritz.box gefunden, auch wenn der PC dort anders heißt als in Windows
+
 ## 2.56.0 – 2026-10-27
 ### Neu
 - Bingo für jedes Spiel: Spiele ohne eigene Katalog-Aufgaben bekommen echte Aufgaben aus ihren Steam-Erfolgen – JARVIS fragt vorher, ob er dafür ins Internet darf; die Schwierigkeit kommt aus dem Anteil der Spieler, die den Erfolg haben (ab 35 % leicht, ab 12 % mittel, ab 3 % schwer, darunter sehr schwer); versteckte Erfolge nur mit „mit Spoiler“

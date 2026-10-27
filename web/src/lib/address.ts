@@ -1,12 +1,20 @@
 // Turns what a person types or scans as "PC-Adresse" into the WebSocket address of the companion.
 // Accepts e.g. "gaming-pc.tail1234.ts.net", "https://gaming-pc.tail1234.ts.net", "wss://…/ws" or "192.168.1.5:8787".
 
+const DEFAULT_PORT = 8787;
+const HOME_HOST = /^(10\.\d+\.\d+\.\d+|192\.168\.\d+\.\d+|172\.(1[6-9]|2\d|3[01])\.\d+\.\d+|[a-z0-9-]+\.(fritz\.box|local|lan|home|speedport\.ip))$/;
+
 export function pcAddressToWs(input: string, pageIsHttps: boolean): string | null {
   let s = input.trim();
   if (!s) return null;
-  if (!/^[a-z]+:\/\//i.test(s)) s = (pageIsHttps ? "https://" : "http://") + s;
+  const typedScheme = /^[a-z]+:\/\//i.test(s);
+  // A home-network address (192.168.x.x, 10.x, name.fritz.box, name.local …) is always plain http – the PC has no
+  // certificate for it; typed without a port it means the companion's default port.
+  const home = !typedScheme && HOME_HOST.test(s.split(/[/:]/)[0].toLowerCase());
+  if (!typedScheme) s = (pageIsHttps && !home ? "https://" : "http://") + s;
   let u: URL;
   try { u = new URL(s); } catch { return null; }
+  if (home && !u.port) u.port = String(DEFAULT_PORT);
   if (!["http:", "https:", "ws:", "wss:"].includes(u.protocol) || !u.hostname) return null;
   const secure = u.protocol === "https:" || u.protocol === "wss:";
   const base = u.pathname.replace(/\/+$/, "");

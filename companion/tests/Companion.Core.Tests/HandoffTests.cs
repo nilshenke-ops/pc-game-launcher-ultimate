@@ -85,13 +85,31 @@ public class HandoffTests
         Assert.False(st.IsOwnHost("gaming-pc.lan"));
 
         // Name resolves elsewhere (another device): not used.
-        var other = new StableAddress(() => new[] { "192.168.178.20" }, "Gaming-PC", h => Task.FromResult(new[] { IPAddress.Parse("192.168.178.116") }), () => Task.FromResult<string?>(null));
+        var other = new StableAddress(() => new[] { "192.168.178.20" }, "Gaming-PC", h => Task.FromResult(new[] { IPAddress.Parse("192.168.178.116") }), () => Task.FromResult<string?>(null), reverse: _ => Task.FromResult<string?>(null));
         await other.RefreshAsync();
         Assert.Null(other.RouterName);
         // No Wi-Fi address at all: nothing.
         var none = new StableAddress(Array.Empty<string>, "Gaming-PC", Dns, () => Task.FromResult<string?>(null));
         await none.RefreshAsync();
         Assert.Null(none.RouterName);
+    }
+
+    [Fact]
+    public async Task Router_name_is_also_asked_from_the_router_when_the_PC_name_differs()
+    {
+        // Windows calls the PC "DESKTOP-7Q2", the FRITZ!Box knows it as "laptop-nils".
+        var lan = new[] { "192.168.178.116" };
+        Task<IPAddress[]> Dns(string host) => host == "laptop-nils.fritz.box" ? Task.FromResult(new[] { IPAddress.Parse("192.168.178.116") }) : throw new System.Net.Sockets.SocketException();
+        var st = new StableAddress(() => lan, "DESKTOP-7Q2", Dns, () => Task.FromResult<string?>(null), reverse: ip => Task.FromResult<string?>(ip == "192.168.178.116" ? "laptop-nils.fritz.box." : null));
+        await st.RefreshAsync();
+        Assert.Equal("laptop-nils.fritz.box", st.RouterName);
+        // A reverse name outside the home network's router names, or one that points elsewhere, is not taken.
+        var foreign = new StableAddress(() => lan, "DESKTOP-7Q2", h => Task.FromResult(new[] { IPAddress.Parse("10.0.0.9") }), () => Task.FromResult<string?>(null), reverse: _ => Task.FromResult<string?>("laptop-nils.fritz.box"));
+        await foreign.RefreshAsync();
+        Assert.Null(foreign.RouterName);
+        var isp = new StableAddress(() => lan, "DESKTOP-7Q2", Dns, () => Task.FromResult<string?>(null), reverse: _ => Task.FromResult<string?>("p5dd1234.dip0.t-ipconnect.de"));
+        await isp.RefreshAsync();
+        Assert.Null(isp.RouterName);
     }
 
     [Fact]

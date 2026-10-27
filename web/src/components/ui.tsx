@@ -1,10 +1,11 @@
 import { cloneElement, isValidElement, useEffect, useId, useRef, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, MonitorSmartphone, RefreshCw, WifiOff, X, XCircle } from "lucide-react";
 import { createPortal } from "react-dom";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { dismissToast, useToasts } from "../lib/hooks";
 import { t } from "../lib/i18n";
-import { client, type RpcError } from "../lib/rpc";
+import { client, HOSTED, rememberLanPc, type RpcError } from "../lib/rpc";
+import { directPairUrl } from "../lib/address";
 
 export function Button({ children, variant, size, icon, busy, block, className = "", ...rest }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "primary" | "danger" | "ghost"; size?: "sm" | "lg"; icon?: ReactNode; busy?: boolean; block?: boolean }) {
   const cls = ["btn", variant, size, block && "block", !children && "icon", className].filter(Boolean).join(" ");
@@ -123,12 +124,43 @@ export function OfflineState() {
       <p className="muted">{paired
         ? t("Dein PC ist gerade nicht erreichbar. Sobald er an ist und der Nexus Gaming Hub läuft, erscheinen hier deine Inhalte.")
         : t("Kein PC verbunden. Verbinde deinen PC, um diesen Bereich zu nutzen.")}</p>
-      <div className="row" style={{ justifyContent: "center" }}>
-        {paired
-          ? <Button variant="primary" icon={<RefreshCw size={16} />} onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
-          : <Link to="/connect" className="btn primary"><MonitorSmartphone size={16} />{t("PC verbinden")}</Link>}
-      </div>
+      {!paired && HOSTED ? <QuickConnect /> : (
+        <div className="row" style={{ justifyContent: "center" }}>
+          {paired
+            ? <Button variant="primary" icon={<RefreshCw size={16} />} onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>
+            : <Link to="/connect" className="btn primary"><MonitorSmartphone size={16} />{t("PC verbinden")}</Link>}
+        </div>
+      )}
     </div>
+  );
+}
+
+/**
+ * Connect the phone by hand, right here: the address shown on the PC ("Gerät koppeln") and the code. A home-network
+ * address (http) opens the PC's own page with the code – the github.io page itself may not talk to it (browser rule).
+ */
+function QuickConnect() {
+  const nav = useNavigate();
+  const go = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const address = String(f.get("pc") ?? "").trim();
+    const code = String(f.get("code") ?? "").trim().toUpperCase();
+    if (!address) return;
+    const direct = location.protocol === "https:" ? directPairUrl(address, code) : null;
+    if (direct) { rememberLanPc(direct); location.href = direct; return; }
+    nav(`/connect?pc=${encodeURIComponent(address)}${code ? `&code=${encodeURIComponent(code)}` : ""}`);
+  };
+  return (
+    <form className="stack quick-connect" onSubmit={go}>
+      <b className="small">{t("Handy manuell verbinden")}</b>
+      <label className="field"><span className="label">{t("PC-Adresse")}</span>
+        <input className="input mono" name="pc" placeholder="192.168.178.116:8787" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} required /></label>
+      <label className="field"><span className="label">{t("Kopplungscode")}</span>
+        <input className="input code-input" name="code" placeholder="XXXX-XXXX" maxLength={9} autoCapitalize="characters" spellCheck={false} /></label>
+      <Button type="submit" variant="primary" block icon={<MonitorSmartphone size={16} />}>{t("PC verbinden")}</Button>
+      <span className="tiny muted">{t("Beides steht am PC unter „Gerät koppeln“. Im WLAN öffnet sich dafür die Seite deines PCs – die danach zum Startbildschirm hinzufügen, dann bleibt das Handy dauerhaft gekoppelt.")}</span>
+    </form>
   );
 }
 

@@ -20,7 +20,7 @@ public static class RpcApi
         rpc.Register("pairing.create", ctx =>
         {
             var (code, expires) = s.Pairing.CreateCode();
-            return new { code, expiresAt = expires, urls = PairingUrls(s, code), pcAddress = PcAddress(s) };
+            return new { code, expiresAt = expires, urls = PairingUrls(s, code), pcAddress = PcAddress(s), addresses = DeviceAddresses(s) };
         });
         rpc.Register("pairing.cancel", ctx => { s.Pairing.CancelCode(); return true; });
         rpc.Register("pairing.pending", ctx =>
@@ -32,6 +32,7 @@ public static class RpcApi
                 expiresAt = active?.expiresAt,
                 urls = active == null ? null : PairingUrls(s, active.Value.code),
                 pcAddress = PcAddress(s),
+                addresses = DeviceAddresses(s),
                 pending = s.Pairing.Pending().Select(p => new { requestId = p.RequestId, deviceName = p.DeviceName, platform = p.Platform, ip = p.Ip, createdAt = p.CreatedAt }),
             };
         });

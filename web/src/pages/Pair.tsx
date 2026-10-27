@@ -90,7 +90,12 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
       const ws = pcAddressToWs(address, location.protocol === "https:");
       if (!ws) { setError({ code: "address", message: t("Bitte eine gültige PC-Adresse eingeben, z. B. gaming-pc.tail1234.ts.net") }); return; }
       if (isLoopbackAddress(ws) && !isLoopbackAddress(location.hostname)) { setError({ code: "address", message: t("127.0.0.1 und localhost bedeuten immer „dieses Gerät“ – damit sucht das iPad sich selbst, nicht deinen PC. Nimm die Adresse aus dem Nexus Gaming Hub unter „Gerät koppeln“ (z. B. https://gaming-pc.tail1234.ts.net) oder scanne den QR-Code.") }); return; }
-      if (location.protocol === "https:" && ws.startsWith("ws:")) { setError({ code: "address", message: t("Diese Website (https) darf eine http-Adresse im Heimnetz nicht öffnen – das blockiert der Browser. Nimm „Beim PC öffnen und koppeln“ unten (oder scanne den QR-Code am PC mit der Kamera).") }); return; }
+      if (location.protocol === "https:" && ws.startsWith("ws:")) {
+        // An https page may not talk to http in the home network (the browser blocks it) – the PC's own page may.
+        // So we go there with the code; the pairing then lives on that page (bookmark it / add it to the home screen).
+        const direct = directPairUrl(address, code);
+        if (direct) { rememberLanPc(direct); location.href = direct; return; }
+      }
       if (ws !== serverUrl() || conn.phase !== "online") {
         setServerUrl(ws);
         setConnecting(true);
@@ -144,7 +149,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
               {direct && (
                 <Banner kind="info" title={t("Im Heimnetz direkt beim PC koppeln")}>
                   <a className="btn primary block" href={direct} onClick={() => rememberLanPc(direct)} style={{ margin: "8px 0" }}>{t("Beim PC öffnen und koppeln")}</a>
-                  {t("Die Adresse beginnt mit http:// – mit ihr verbindet sich nur die Seite, die der PC selbst anbietet. Der Knopf öffnet sie mit dem Code; Handy und PC müssen im selben WLAN sein. Tipp: Diese Seite danach zum Startbildschirm hinzufügen. Von unterwegs geht es nur mit einer https-Adresse des PCs (z. B. Tailscale Funnel).")}
+                  {t("Die Adresse beginnt mit http:// – damit kann sich nur die Seite verbinden, die dein PC selbst anbietet (die github.io-Seite darf das nicht, das blockiert der Browser). „PC verbinden“ bringt dich mit dem Code direkt dorthin; Handy und PC müssen im selben WLAN sein. Danach diese PC-Seite zum Startbildschirm hinzufügen – dann bleibt das Handy dauerhaft gekoppelt, ohne Tailscale. Nur von unterwegs (anderes Netz) braucht es eine https-Adresse des PCs, z. B. Tailscale.")}
                 </Banner>
               )}
               <Field label={t("Name dieses Geräts")} hint={t("So erscheint das Gerät später in der Geräteliste am PC.")}>
@@ -196,14 +201,14 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
 export function PairPage() {
   const conn = useConn();
   const now = useNow(1000);
-  const [code, setCode] = useState<{ code: string; expiresAt: string; urls: string[]; pcAddress?: string } | null>(null);
+  const [code, setCode] = useState<{ code: string; expiresAt: string; urls: string[]; pcAddress?: string; addresses?: { url: string; kind: string }[] } | null>(null);
   const [qr, setQr] = useState<string>("");
   const [urlIndex, setUrlIndex] = useState(0);
   const isLocal = !!conn.me?.isLocal;
 
   const load = useCallback(() => {
     if (!isLocal) return;
-    client.call<{ code?: string; expiresAt?: string; urls?: string[]; pcAddress?: string }>("pairing.pending").then((r) => setCode(r.code ? { code: r.code, expiresAt: r.expiresAt!, urls: r.urls ?? [], pcAddress: r.pcAddress } : null)).catch(() => {});
+    client.call<{ code?: string; expiresAt?: string; urls?: string[]; pcAddress?: string; addresses?: { url: string; kind: string }[] }>("pairing.pending").then((r) => setCode(r.code ? { code: r.code, expiresAt: r.expiresAt!, urls: r.urls ?? [], pcAddress: r.pcAddress, addresses: r.addresses } : null)).catch(() => {});
   }, [isLocal]);
   useEffect(load, [load]);
   useEvent<{ topic: string }>("changed", (d) => { if (d.topic === "pairing") load(); });
@@ -285,6 +290,7 @@ export function PairPage() {
           </div>
         </Card>
 
+        <ManualCard code={code && !expired ? code.code : null} addresses={code?.addresses ?? []} />
         <Card title={t("QR-Code & Adresse")} icon={<QrCode size={18} />}>
           {code && !expired && url ? (
             <div className="stack">
@@ -304,5 +310,36 @@ export function PairPage() {
         </Card>
       </div>
     </>
+  );
+}
+
+/** "Handy manuell verbinden": what to type on the phone – the PC's own page (works in the home network without
+ * Tailscale and stays paired), the code, and how the address stays the same for good. */
+function ManualCard({ code, addresses }: { code: string | null; addresses: { url: string; kind: string }[] }) {
+  const lan = addresses.filter((a) => a.url.startsWith("http://") && a.kind !== "tailscale");
+  const stable = lan.find((a) => a.kind === "router") ?? lan.find((a) => a.kind === "mdns");
+  const ip = lan.find((a) => a.kind === "lan");
+  const https = addresses.find((a) => a.url.startsWith("https://"));
+  const best = stable ?? ip;
+  const copy = (s: string) => navigator.clipboard?.writeText(s).then(() => toast(t("Kopiert"), "success"), () => {});
+  return (
+    <Card title={t("Handy manuell verbinden")} icon={<Smartphone size={18} />}>
+      <div className="stack">
+        <ol className="steps small">
+          <li>{t("Handy ins selbe WLAN wie diesen PC.")}</li>
+          <li>{t("Im Handy-Browser (Chrome, Safari) diese Adresse eintippen – nicht die github.io-Seite:")}
+            {best ? <button type="button" className="manual-addr" onClick={() => copy(best.url)} title={t("Kopieren")}>{best.url.replace(/^http:\/\//, "")}</button> : <span className="bad-text"> {t("keine WLAN-Adresse gefunden")}</span>}
+          </li>
+          <li>{code ? <>{t("Dort den Code eingeben:")} <b className="mono">{code}</b></> : t("Dort den Code eingeben – oben „Neuen Code erzeugen“.")}</li>
+          <li>{t("Hier am PC „Erlauben“ klicken.")}</li>
+          <li>{t("Am Handy die Seite zum Startbildschirm hinzufügen (Browser-Menü). Ab dann ist das Handy dauerhaft gekoppelt – ohne Tailscale, ohne neuen Code.")}</li>
+        </ol>
+        {stable && ip && <p className="tiny muted">{t("Geht der Name nicht, nimm die Nummer: {ip}", { ip: ip.url.replace(/^http:\/\//, "") })}</p>}
+        {!stable && <Banner kind="info" title={t("Damit die Adresse gleich bleibt")}>{t("Dein Router vergibt die Nummer {ip} – sie kann sich ändern, dann ist die Kopplung unter der alten Nummer weg. In der FRITZ!Box: Heimnetz → Netzwerk → diesen PC bearbeiten → „Diesem Netzwerkgerät immer die gleiche IPv4-Adresse zuweisen“. Danach erkennt der Nexus Gaming Hub meist auch den Namen ….fritz.box von selbst.", { ip: ip ? ip.url.replace(/^http:\/\/|:\d+$/g, "") : "–" })}</Banner>}
+        <p className="tiny muted">{https
+          ? t("Von unterwegs und auf der github.io-Seite: {u} (https).", { u: https.url })
+          : t("Die github.io-Seite und der Zugriff von unterwegs brauchen eine https-Adresse des PCs (z. B. Tailscale, kostenlos – Einstellungen → Verbindung). Zu Hause im WLAN geht es ohne.")}</p>
+      </div>
+    </Card>
   );
 }

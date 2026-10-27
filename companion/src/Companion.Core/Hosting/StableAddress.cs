@@ -20,6 +20,7 @@ public sealed class StableAddress
 
     readonly Func<IReadOnlyList<string>> _lanIps;
     readonly Func<string, Task<IPAddress[]>> _resolve;
+    readonly Func<string, Task<string?>> _reverse;
     readonly Func<Task<string?>> _tailscaleStatus;
     readonly Func<string, Task<bool>> _isThisCompanion;
     readonly string _machine;
@@ -31,8 +32,9 @@ public sealed class StableAddress
     public event Action? Changed;
 
     public StableAddress(Func<IReadOnlyList<string>> lanIps, string? machineName = null, Func<string, Task<IPAddress[]>>? resolve = null,
-        Func<Task<string?>>? tailscaleStatus = null, Func<string, Task<bool>>? isThisCompanion = null)
+        Func<Task<string?>>? tailscaleStatus = null, Func<string, Task<bool>>? isThisCompanion = null, Func<string, Task<string?>>? reverse = null)
     {
+        _reverse = reverse ?? (async ip => (await Dns.GetHostEntryAsync(IPAddress.Parse(ip))).HostName);
         _lanIps = lanIps;
         _machine = (machineName ?? Environment.MachineName).Trim().ToLowerInvariant();
         _resolve = resolve ?? (h => Dns.GetHostAddressesAsync(h));
@@ -74,6 +76,21 @@ public sealed class StableAddress
                 if (addrs.Any(a => own.Contains(a.ToString()))) return host;
             }
             catch { /* name unknown in this network */ }
+        }
+        // The router may know the PC under another name (renamed in the FRITZ!Box, other DHCP name): ask it which name
+        // belongs to this PC's address – and take it only if that name leads back to this PC.
+        foreach (var ip in own)
+        {
+            try
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+                var name = (await _reverse(ip).WaitAsync(cts.Token))?.Trim().TrimEnd('.').ToLowerInvariant();
+                if (string.IsNullOrEmpty(name) || name.Length > 253 || !name.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '.')) continue;
+                if (!RouterSuffixes.Any(sfx => name.EndsWith("." + sfx, StringComparison.Ordinal))) continue;
+                var addrs = await _resolve(name).WaitAsync(cts.Token);
+                if (addrs.Any(a => own.Contains(a.ToString()))) return name;
+            }
+            catch { /* no reverse entry */ }
         }
         return null;
     }
