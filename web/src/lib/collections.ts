@@ -2,7 +2,7 @@
 // comparisons, controls …): one description of the fields gives the form, the checks, search, filters and CSV export.
 // Entries are stored with lib/journal.ts (in the browser, compared with the PC). Pure logic – tested in collections.test.ts.
 
-export type FieldType = "text" | "textarea" | "number" | "select" | "tags" | "game" | "images" | "image" | "url" | "bool" | "date" | "rows" | "ref";
+export type FieldType = "text" | "textarea" | "number" | "select" | "tags" | "game" | "images" | "image" | "url" | "bool" | "date" | "datetime" | "rows" | "ref";
 
 export interface FieldDef {
   key: string;
@@ -70,6 +70,8 @@ function checkValue(f: FieldDef, v: unknown, path: { key: string; row?: number; 
     case "bool": return typeof v === "boolean" ? null : { ...path, message: "„{f}“: ungültiger Wert.", vars: { f: f.label } };
     case "url": return typeof v === "string" && isUrl(v) ? null : { ...path, message: "„{f}“ muss eine Adresse mit https:// sein.", vars: { f: f.label } };
     case "date": return typeof v === "string" && !isNaN(Date.parse(v)) ? null : { ...path, message: "„{f}“: ungültiges Datum.", vars: { f: f.label } };
+    // Wall-clock time as typed ("2026-11-01T19:00"); the time zone it belongs to is a field of its own.
+    case "datetime": return typeof v === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(v) && !isNaN(Date.parse(v)) ? null : { ...path, message: "„{f}“: ungültige Zeit.", vars: { f: f.label } };
     case "tags": case "images": return Array.isArray(v) && v.every((x) => typeof x === "string") ? null : { ...path, message: "„{f}“: ungültige Liste.", vars: { f: f.label } };
     case "image": case "ref": return typeof v === "string" ? null : { ...path, message: "„{f}“: ungültiger Wert.", vars: { f: f.label } };
     case "game": return typeof v === "object" ? null : { ...path, message: "„{f}“: ungültiger Wert.", vars: { f: f.label } };
@@ -125,6 +127,7 @@ export function valueText(f: FieldDef, v: unknown): string {
   if (f.type === "tags") return (v as string[]).join(", ");
   if (f.type === "game") return (v as { gameName?: string }).gameName ?? "";
   if (f.type === "rows" || f.type === "images") return String((v as unknown[]).length);
+  if (f.type === "datetime") return String(v).replace("T", " ");
   return String(v);
 }
 

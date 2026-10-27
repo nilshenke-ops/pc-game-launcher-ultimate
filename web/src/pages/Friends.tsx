@@ -3,15 +3,15 @@
 // the server status and the reminders in the PC calendar.
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useSearchParams } from "react-router-dom";
-import { CalendarPlus, ClipboardPaste, Download, Gamepad2, IdCard, Lock, PartyPopper, Plus, RefreshCw, RotateCcw, Server, Share2, Shield, Trash2, Trophy, Users, Vote } from "lucide-react";
+import { Navigate, useSearchParams } from "react-router-dom";
+import { CalendarPlus, ClipboardPaste, Download, IdCard, Lock, PartyPopper, Plus, RefreshCw, RotateCcw, Server, Share2, Shield, Trash2, Trophy, Users, Vote } from "lucide-react";
 import { t } from "../lib/i18n";
 import { dateTime } from "../lib/format";
 import { toast, useConn } from "../lib/hooks";
 import { client } from "../lib/rpc";
 import { downloadText, getEntry, newId, useJournal, type Entry } from "../lib/journal";
 import { toIcs } from "../lib/calendar";
-import { FACTS, PLAYER, SERVER, TEAM } from "../lib/collection-schemas";
+import { PLAYER, SERVER, TEAM } from "../lib/collection-schemas";
 import { groupBy, type Data } from "../lib/collections";
 import {
   applyNightReply, applyPollReply, groupFinder, inZone, isPast, linkFor, newKey, readLink, rsvpCount, tally, validTz, zonedToUtc,
@@ -22,8 +22,8 @@ import { Tournaments } from "../components/tournament-view";
 import { JImage, SyncBadge, trySave, useGames } from "../components/journal-ui";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Meter, Modal, PageHead } from "../components/ui";
 
-type Tab = "players" | "finder" | "polls" | "nights" | "teams" | "tournaments" | "servers" | "facts";
-const TABS: Tab[] = ["players", "finder", "polls", "nights", "teams", "tournaments", "servers", "facts"];
+type Tab = "players" | "finder" | "polls" | "nights" | "teams" | "tournaments" | "servers";
+const TABS: Tab[] = ["players", "finder", "polls", "nights", "teams", "tournaments", "servers"];
 const base = () => `${location.origin}${location.pathname}`;
 
 async function shareOrCopy(url: string, title: string) {
@@ -33,6 +33,8 @@ async function shareOrCopy(url: string, title: string) {
 
 export default function FriendsPage() {
   const [params, setParams] = useSearchParams();
+  // The game facts moved to Spiele-Infos → Faktencheck (old links still work).
+  if (params.get("tab") === "facts") return <Navigate to={`/infos?tab=facts${params.get("id") ? `&id=${params.get("id")}` : ""}`} replace />;
   const tab = (TABS.includes(params.get("tab") as Tab) ? params.get("tab") : "players") as Tab;
   const link = params.get("l");
   const focus = params.get("id");
@@ -42,7 +44,7 @@ export default function FriendsPage() {
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Freunde & Gruppe")} text={t("Spieler-Karten, gemeinsame Spiele, Abstimmungen, Gaming-Abende, Teams, Turniere und Server – privat, auf diesem Gerät gespeichert. Geteilt wird nur per Link, den du selbst verschickst.")} actions={<SyncBadge />} />
       <div className="stack">
         <div className="chips j-tabs" role="tablist" aria-label={t("Bereich")}>
-          {([["players", <IdCard size={15} />, t("Spieler-Karten")], ["finder", <Users size={15} />, t("Was spielen wir?")], ["polls", <Vote size={15} />, t("Abstimmungen")], ["nights", <PartyPopper size={15} />, t("Gaming-Abende")], ["teams", <Shield size={15} />, t("Teams")], ["tournaments", <Trophy size={15} />, t("Turniere")], ["servers", <Server size={15} />, t("Server")], ["facts", <Gamepad2 size={15} />, t("Spiel-Fakten")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
+          {([["players", <IdCard size={15} />, t("Spieler-Karten")], ["finder", <Users size={15} />, t("Was spielen wir?")], ["polls", <Vote size={15} />, t("Abstimmungen")], ["nights", <PartyPopper size={15} />, t("Gaming-Abende")], ["teams", <Shield size={15} />, t("Teams")], ["tournaments", <Trophy size={15} />, t("Turniere")], ["servers", <Server size={15} />, t("Server")]] as [Tab, ReactNode, string][]).map(([v, icon, label]) => (
             <button key={v} type="button" role="tab" aria-selected={tab === v} className={`chip ${tab === v ? "on" : ""}`} onClick={() => setTab(v)}>{icon}{label}</button>
           ))}
         </div>
@@ -58,8 +60,6 @@ export default function FriendsPage() {
         {tab === "servers" && <CollectionView key="sv" schema={SERVER} icon={<Server size={18} />} focus={focus}
           intro={t("Status nur auf Knopfdruck über den PC – für Minecraft Java und Steam/Source-Server. Für andere Spiele steht „Unbekannt“, nichts wird erfunden.")}
           cardExtra={(e) => <StatusBadge s={e.data.lastStatus as ServerStatus | undefined} />} detail={(e, save) => <ServerStatusView e={e} save={save} />} />}
-        {tab === "facts" && <CollectionView key="fa" schema={FACTS} icon={<Gamepad2 size={18} />} focus={focus}
-          intro={t("Angaben zu Spielen, die der Gruppen-Finder nutzt. Crossplay zählt nur mit Quelle; alles ohne Beleg gilt als unbekannt.")} />}
       </div>
     </>
   );
@@ -137,7 +137,7 @@ function GroupFinder({ onPlan }: { onPlan: (game: string, names: string[]) => vo
               })}
             </div>
           )}
-          <span className="tiny muted">{t("Grundlage sind nur die Spiele auf den Karten und die Spiel-Fakten (Reiter „Spiel-Fakten“). Ohne Quelle wird Crossplay nie angenommen.")}</span>
+          <span className="tiny muted">{t("Grundlage sind nur die Spiele auf den Karten und die Spiel-Fakten (Spiele-Infos → Faktencheck). Ohne Quelle wird Crossplay nie angenommen.")}</span>
         </div>
       )}
     </Card>

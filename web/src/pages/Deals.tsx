@@ -10,13 +10,16 @@ import { clientId, keyShopLinks, lowestSeen, money, parsePrice, priceInput } fro
 import { CompatPanel } from "../components/compat-panel";
 import { fetchMsPrice, phonePrices, savePhonePrice, type MsResult } from "../lib/ms-store";
 import { loadCatalogPart, loadSteamIndex, lookup, shard, type SteamIndex } from "../lib/steam-index";
-import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Sparkline, Switch } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
+import { TagInput } from "../components/journal-ui";
+import { allCategories, chartPoints, filterWishes, sortWishes, type WishFilter, type WishSort } from "../lib/wishlist";
 
 interface Wish {
   id: string; title: string; steamAppId?: string | null; targetCents?: number | null; notes?: string | null; addedAt?: string;
   currency?: string | null; finalCents?: number | null; initialCents?: number | null; discountPercent?: number | null;
   checkedAt?: string | null; error?: string | null; history?: { at: string; final: number; initial: number }[];
   fromSteamWishlist?: boolean; msProductId?: string | null; msTitle?: string | null; msFinalCents?: number | null; msInitialCents?: number | null; msCurrency?: string | null; msError?: string | null; msImage?: string | null; msFromPhone?: number | null; steamFromList?: number | null; steamImage?: string | null;
+  kind?: "game" | "dlc"; baseGame?: string | null; priority?: number; categories?: string[]; shopUrl?: string | null;
   ggKeyshopCents?: number | null; ggRetailCents?: number | null; ggKeyshopLowCents?: number | null; ggRetailLowCents?: number | null; ggCurrency?: string | null; ggUrl?: string | null; ggError?: string | null; ggCheckedAt?: string | null;
 }
 interface DealData {
@@ -29,19 +32,28 @@ interface Hit { appId: string; name: string; finalCents?: number | null; initial
 const COUNTRIES = ["de", "at", "ch", "fr", "nl", "be", "it", "es", "pl", "gb", "us"];
 const saved = (online: boolean) => toast(online ? t("Gespeichert") : t("Gespeichert – wird beim Verbinden auf den PC übertragen"), "success");
 
-function WishEditor({ wish, onClose }: { wish: Wish; onClose: () => void }) {
+const PRIORITIES = ["Niedrig", "Normal", "Hoch"];
+
+function WishEditor({ wish, onClose, allCats = [] }: { wish: Wish; onClose: () => void; allCats?: string[] }) {
   const conn = useConn();
   const [title, setTitle] = useState(wish.title);
   const [appId, setAppId] = useState(wish.steamAppId ?? "");
   const [target, setTarget] = useState(priceInput(wish.targetCents));
   const [notes, setNotes] = useState(wish.notes ?? "");
+  const [kind, setKind] = useState<"game" | "dlc">(wish.kind ?? "game");
+  const [baseGame, setBaseGame] = useState(wish.baseGame ?? "");
+  const [priority, setPriority] = useState(wish.priority ?? 1);
+  const [cats, setCats] = useState<string[]>(wish.categories ?? []);
+  const [shopUrl, setShopUrl] = useState(wish.shopUrl ?? "");
   const [busy, setBusy] = useState(false);
   const cents = parsePrice(target);
   const badId = appId.trim() !== "" && !/^\d{1,10}$/.test(appId.trim());
+  const badUrl = shopUrl.trim() !== "" && !/^https:\/\/[^\s]+\.[^\s]+/.test(shopUrl.trim());
   const save = async () => {
     setBusy(true);
     try {
-      await client.call("deals.save", { id: wish.id, title: title.trim(), steamAppId: appId.trim() || null, targetCents: cents, notes: notes.trim() || null });
+      await client.call("deals.save", { id: wish.id, title: title.trim(), steamAppId: appId.trim() || null, targetCents: cents, notes: notes.trim() || null,
+        kind, baseGame: kind === "dlc" ? baseGame.trim() || null : null, priority, categories: cats.slice(0, 8), shopUrl: shopUrl.trim() || null });
       saved(conn.auth === "ok"); onClose();
     } catch (e) { toast((e as Error).message, "error"); } finally { setBusy(false); }
   };
@@ -53,7 +65,7 @@ function WishEditor({ wish, onClose }: { wish: Wish; onClose: () => void }) {
     <Modal title={wish.title ? t("Eintrag bearbeiten") : t("Spiel von Hand eintragen")} onClose={onClose} footer={<>
       {wish.title && <Button variant="danger" onClick={remove} style={{ marginRight: "auto" }}>{t("Entfernen")}</Button>}
       <Button onClick={onClose}>{t("Abbrechen")}</Button>
-      <Button variant="primary" busy={busy} disabled={!title.trim() || Number.isNaN(cents) || badId} onClick={save}>{t("Speichern")}</Button>
+      <Button variant="primary" busy={busy} disabled={!title.trim() || Number.isNaN(cents) || badId || badUrl || cats.length > 8} onClick={save}>{t("Speichern")}</Button>
     </>}>
       <Field label={t("Spiel")}><input className="input" value={title} maxLength={80} onChange={(e) => setTitle(e.target.value)} /></Field>
       <div className="grid-2">
@@ -64,6 +76,15 @@ function WishEditor({ wish, onClose }: { wish: Wish; onClose: () => void }) {
           <input className="input mono" inputMode="numeric" value={appId} maxLength={10} onChange={(e) => setAppId(e.target.value)} />
         </Field>
       </div>
+      <div className="grid-2">
+        <Field label={t("Art")}><select className="input" value={kind} onChange={(e) => setKind(e.target.value as "game" | "dlc")}><option value="game">{t("Spiel")}</option><option value="dlc">{t("DLC / Erweiterung")}</option></select></Field>
+        <Field label={t("Priorität")}><select className="input" value={priority} onChange={(e) => setPriority(Number(e.target.value))}>{PRIORITIES.map((p, i) => <option key={i} value={i}>{t(p)}</option>)}</select></Field>
+      </div>
+      {kind === "dlc" && <Field label={t("Gehört zu Spiel")}><input className="input" value={baseGame} maxLength={80} onChange={(e) => setBaseGame(e.target.value)} /></Field>}
+      <Field label={t("Shop-Link oder offizielle Seite (optional)")} hint={t("Nur ein Link zum Öffnen – der PC liest diese Seite nicht aus.")} error={badUrl ? t("Bitte mit https:// beginnen") : undefined}>
+        <input className="input" inputMode="url" placeholder="https://" value={shopUrl} maxLength={500} onChange={(e) => setShopUrl(e.target.value)} />
+      </Field>
+      <div className="stack-xs"><b className="small">{t("Kategorien")}</b><TagInput value={cats} onChange={setCats} suggestions={allCats} />{cats.length > 8 && <span className="tiny" style={{ color: "var(--danger)" }}>{t("Höchstens 8 Kategorien.")}</span>}</div>
       <Field label={t("Notiz")}><input className="input" value={notes} maxLength={300} onChange={(e) => setNotes(e.target.value)} /></Field>
     </Modal>
   );
@@ -161,9 +182,31 @@ function DealTile({ w, onOpen }: { w: Wish; onOpen: () => void }) {
         {!!w.discountPercent && <span className="badge accent">−{w.discountPercent} %</span>}
       </span>}
       <span className="deal-name ellipsis">{w.title}</span>
+      {(w.kind === "dlc" || (w.priority ?? 1) === 2) && <span className="row" style={{ gap: 4, padding: "0 10px" }}>{w.kind === "dlc" && <span className="badge">DLC</span>}{(w.priority ?? 1) === 2 && <span className="badge warn">{t("Hohe Priorität")}</span>}</span>}
       <PriceRow store="xbox" cents={w.msFinalCents} currency={w.msCurrency} best={c === "xbox"} />
       <PriceRow store="steam" cents={w.finalCents} currency={w.currency} best={c === "steam"} />
     </button>
+  );
+}
+
+const hostOf = (u: string) => { try { return new URL(u).host; } catch { return u; } };
+
+/** Own price measurements over time, with dates and lowest/highest price – only what was really seen. */
+function PriceChart({ history, currency }: { history: { at: string; final: number; initial: number }[]; currency?: string | null }) {
+  const c = chartPoints(history);
+  if (!c) return null;
+  const W = 300, H = 90, P = 6;
+  const pts = c.points.map((p) => [P + p.x * (W - 2 * P), P + (1 - p.y) * (H - 2 * P)] as const);
+  // A step line: a price stays until the next measurement.
+  const d = pts.map(([x, y], i) => (i === 0 ? `M${x},${y}` : `H${x}V${y}`)).join("");
+  return (
+    <figure className="price-chart" aria-label={t("Preisverlauf von {a} bis {b}", { a: money(c.min, currency), b: money(c.max, currency) })}>
+      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img">
+        <path d={d} fill="none" stroke="var(--primary)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        {pts.map(([x, y], i) => <circle key={i} cx={x} cy={y} r="2.5" fill="var(--primary)"><title>{`${dateTime(c.points[i].at)}: ${money(c.points[i].cents, currency)}`}</title></circle>)}
+      </svg>
+      <figcaption className="row between tiny muted"><span>{dateTime(c.from)}</span><span>{t("höchster {a} · niedrigster {b}", { a: money(c.max, currency), b: money(c.min, currency) })}</span><span>{dateTime(c.to)}</span></figcaption>
+    </figure>
   );
 }
 
@@ -222,9 +265,14 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
         <div className="stack-xs">
           <b className="small">{t("Preisverlauf bei Steam (eigene Messungen)")}</b>
           {(w.history?.length ?? 0) > 1 ? <>
-            <div className="deal-spark wide"><Sparkline values={w.history!.map((p) => p.final)} max={Math.max(...w.history!.map((p) => p.initial), 1)} /></div>
+            <PriceChart history={w.history!} currency={w.currency} />
             <span className="tiny muted">{t("{n} Messungen seit {d}", { n: w.history!.length, d: dateTime(w.history![0].at) })}{low != null ? " · " + t("niedrigster selbst gesehener Preis {p}", { p: money(low, w.currency) }) : ""}</span>
           </> : <span className="tiny muted">{t("Erscheint ab der zweiten Prüfung – gezeigt werden nur Preise, die dieser PC selbst gesehen hat.")}</span>}
+        </div>
+        <div className="stack-xs small">
+          <span>{[w.kind === "dlc" ? t("DLC") + (w.baseGame ? ` · ${t("zu {g}", { g: w.baseGame })}` : "") : t("Spiel"), t("Priorität: {p}", { p: t(PRIORITIES[w.priority ?? 1]) }), ...(w.categories ?? [])].join(" · ")}</span>
+          <span className="tiny muted">{w.targetCents == null ? t("Benachrichtigung bei Zielpreis: aus (kein Zielpreis)") : !data.enabled ? t("Benachrichtigung bei Zielpreis: aus (Preisabfrage ist aus)") : t("Benachrichtigung bei Zielpreis: aktiv")}</span>
+          {w.shopUrl && <a className="btn sm" style={{ alignSelf: "flex-start" }} href={w.shopUrl} target="_blank" rel="noreferrer noopener"><ExternalLink size={14} />{t("Eigener Shop-Link: {h}", { h: hostOf(w.shopUrl) })}</a>}
         </div>
         <div className="tiny muted">
           {w.fromSteamWishlist && <span className="badge" style={{ marginRight: 6 }}>{t("von deiner Steam-Wunschliste")}</span>}
@@ -392,8 +440,13 @@ export default function Deals() {
   };
   const lastPhone = Math.max(0, ...Object.values(phone).map((v) => v.at));
   const configure = (p: { enabled?: boolean }) => client.call("deals.configure", p).then(() => saved(conn.auth === "ok"), (e: Error) => toast(e.message, "error"));
-  // Reached targets first, then the biggest discount.
-  const items = [...(d?.items ?? [])].sort((a, b) => Number(isHit(b)) - Number(isHit(a)) || (b.discountPercent ?? 0) - (a.discountPercent ?? 0) || a.title.localeCompare(b.title));
+  const [f, setF] = useState<WishFilter>({});
+  const [sortBy, setSortBy] = useState<WishSort>("smart");
+  const [maxPrice, setMaxPrice] = useState("");
+  const maxCents = maxPrice.trim() ? parsePrice(maxPrice) : null;
+  const filtered = filterWishes(d?.items ?? [], { ...f, maxCents: maxCents != null && !Number.isNaN(maxCents) ? maxCents : null });
+  const items = sortWishes(filtered.shown, sortBy);
+  const cats = allCategories(d?.items ?? []);
   const open = d?.items.find((w) => w.id === openId);
   return (
     <>
@@ -412,11 +465,24 @@ export default function Deals() {
             )}
             {!d.enabled && <Banner kind="info">{t("Die Preisabfrage ist aus – deshalb gibt es noch keine Preise.")} {canManage && <Button size="sm" variant="primary" onClick={() => configure({ enabled: true })}>{t("Einschalten")}</Button>}</Banner>}
             {d.wishlistError && <Banner kind="warn">{d.wishlistError}</Banner>}
-            {items.length === 0 ? (
+            {d.items.length === 0 ? (
               <Card><Empty icon={<Tag size={26} />} title={t("Die Wunschliste ist leer")} text={t("Tippe oben einfach den Namen eines Spiels ein – oder lass deine Steam-Wunschliste übernehmen.")} /></Card>
             ) : (
               <>
                 <div className="row between"><b>{t("Wunschliste")}</b><span className="tiny muted">{d.items.length}/300</span></div>
+                <div className="row deal-filters" style={{ gap: 8, flexWrap: "wrap" }}>
+                  <input className="input" style={{ maxWidth: 200 }} placeholder={t("Suchen …")} aria-label={t("Suchen")} value={f.q ?? ""} onChange={(e) => setF({ ...f, q: e.target.value })} />
+                  <select className="input" style={{ maxWidth: 150 }} aria-label={t("Art")} value={f.kind ?? ""} onChange={(e) => setF({ ...f, kind: e.target.value as WishFilter["kind"] })}><option value="">{t("Art")}: {t("alle")}</option><option value="game">{t("Spiele")}</option><option value="dlc">{t("DLCs")}</option></select>
+                  <select className="input" style={{ maxWidth: 170 }} aria-label={t("Priorität")} value={f.priority ?? ""} onChange={(e) => setF({ ...f, priority: e.target.value === "" ? null : Number(e.target.value) })}><option value="">{t("Priorität")}: {t("alle")}</option>{PRIORITIES.map((p, i) => <option key={i} value={i}>{t(p)}</option>)}</select>
+                  {cats.length > 0 && <select className="input" style={{ maxWidth: 180 }} aria-label={t("Kategorie")} value={f.category ?? ""} onChange={(e) => setF({ ...f, category: e.target.value })}><option value="">{t("Kategorie")}: {t("alle")}</option>{cats.map((c) => <option key={c} value={c}>{c}</option>)}</select>}
+                  <input className="input" style={{ maxWidth: 130 }} inputMode="decimal" placeholder={t("bis … €")} aria-label={t("Höchstpreis")} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} />
+                  <select className="input" style={{ maxWidth: 190 }} aria-label={t("Sortierung")} value={sortBy} onChange={(e) => setSortBy(e.target.value as WishSort)}>
+                    <option value="smart">{t("Ziel erreicht & Rabatt")}</option><option value="priority">{t("Priorität")}</option><option value="price">{t("Preis (günstigste zuerst)")}</option><option value="title">{t("Name A–Z")}</option><option value="added">{t("Zuletzt hinzugefügt")}</option>
+                  </select>
+                  <button type="button" className={`chip ${f.onlyTarget ? "on" : ""}`} onClick={() => setF({ ...f, onlyTarget: !f.onlyTarget })}><BadgePercent size={13} />{t("Ziel erreicht")}</button>
+                </div>
+                {filtered.withoutPrice > 0 && <span className="tiny muted">{t("{n} Einträge ohne gemessenen Preis sind beim Höchstpreis ausgeblendet.", { n: filtered.withoutPrice })}</span>}
+                {items.length === 0 && <span className="small muted">{t("Nichts passt zum Filter.")}</span>}
                 <div className="deal-grid">{items.map((w) => <DealTile key={w.id} w={w} onOpen={() => setOpenId(w.id)} />)}</div>
               </>
             )}
@@ -429,7 +495,7 @@ export default function Deals() {
         )}
       </Loadable>
       {open && !edit && d && <DealDetail w={open} data={d} canManage={canManage} onEdit={() => setEdit(open)} onClose={() => setOpenId(null)} />}
-      {edit && <WishEditor wish={edit} onClose={() => setEdit(null)} />}
+      {edit && <WishEditor wish={edit} onClose={() => setEdit(null)} allCats={allCategories(d?.items ?? [])} />}
     </>
   );
 }

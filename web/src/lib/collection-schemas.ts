@@ -1,5 +1,6 @@
 // The collections of "Welten & Bauen", "Builds & Technik", "Freunde & Gruppe" and "Medien" – field lists only (UI: components/collection-view.tsx).
-import type { Data, FieldError, Schema } from "./collections";
+import type { Data, FieldDef, FieldError, Schema } from "./collections";
+import { ACCESS_KEYS, FACT_KEYS, TIME_ZONES } from "./infos";
 import { parseTime } from "./media";
 
 const o = (...pairs: [string, string][]) => pairs.map(([value, label]) => ({ value, label }));
@@ -198,19 +199,132 @@ export const SERVER: Schema = {
   ],
 };
 
+const TRI = o(["unknown", "Unbekannt"], ["yes", "Ja"], ["partial", "Teilweise"], ["no", "Nein"]);
+const tri = (key: string, label: string, extra: Partial<FieldDef> = {}): FieldDef => ({ key, label, type: "select", required: true, options: TRI, ...extra });
+
+/** Fact check (F14) – also used by the group finder (crossplay only with a source). */
 export const FACTS: Schema = {
   kind: "facts", label: "Spiel-Fakten",
   fields: [
     { key: "title", label: "Spiel", type: "text", required: true, maxLen: 100, card: true },
     { key: "game", label: "In der Bibliothek", type: "game" },
-    { key: "crossplay", label: "Crossplay", type: "select", required: true, options: o(["unknown", "Unbekannt"], ["yes", "Ja"], ["partial", "Teilweise"], ["no", "Nein"]), card: true, filter: true },
+    { key: "platforms", label: "Plattformen", type: "tags", hint: PLATFORMS, filter: true },
+    { key: "feel", label: "Genre & Spielgefühl", type: "tags", hint: "Eigene Stichwörter, z. B. Survival, Koop, entspannt – daraus entstehen die Empfehlungen.", filter: true },
+    ...FACT_KEYS.filter((k) => k.key !== "crossplay" && k.key !== "coop").slice(0, 2).map((k) => tri(k.key, k.label)),
+    tri("crossplay", "Crossplay", { card: true, filter: true }),
     { key: "crossplaySource", label: "Quelle für Crossplay", type: "url", hint: "Pflicht bei „Ja“ oder „Teilweise“ – ohne Beleg gilt Crossplay als unbekannt." },
+    tri("coop", "Koop", { filter: true }),
+    ...FACT_KEYS.filter((k) => !["crossplay", "coop", "singleplayer", "multiplayer"].includes(k.key)).map((k) => tri(k.key, k.label)),
     { key: "maxPlayers", label: "Spieler gleichzeitig (online)", type: "number", int: true, min: 1, max: 1000 },
-    { key: "coop", label: "Koop", type: "select", options: o(["unknown", "Unbekannt"], ["yes", "Ja"], ["no", "Nein"]) },
-    { key: "platforms", label: "Plattformen", type: "tags", hint: PLATFORMS },
+    { key: "source", label: "Quelle", type: "url", hint: "Shop-Seite, Hersteller-Seite oder Patchnotes – damit andere die Angaben nachprüfen können." },
+    { key: "checkedOn", label: "Stand", type: "date", hint: "Wann die Angaben zuletzt geprüft wurden – Spiele ändern sich mit Updates." },
     { key: "notes", label: "Notizen", type: "textarea", maxLen: 4000 },
   ],
   check: (d) => (d.crossplay === "yes" || d.crossplay === "partial") && !d.crossplaySource ? [{ key: "crossplaySource", message: "Crossplay „Ja/Teilweise“ nur mit Quelle – sonst „Unbekannt“ wählen." }] : [],
+};
+
+/** Accessibility finder (F24). */
+export const ACCESS: Schema = {
+  kind: "access", label: "Barrierefreiheit",
+  fields: [
+    { key: "title", label: "Spiel", type: "text", required: true, maxLen: 100, card: true },
+    { key: "game", label: "In der Bibliothek", type: "game" },
+    ...ACCESS_KEYS.map((k) => tri(k.key, k.label)),
+    { key: "source", label: "Quelle", type: "url", hint: "Z. B. die Barrierefreiheits-Seite des Herstellers oder ein Test von Can I Play That." },
+    { key: "checkedOn", label: "Stand", type: "date" },
+    { key: "notes", label: "Notizen", type: "textarea", maxLen: 4000, hint: "Eigene Erfahrungen, z. B. was gut geklappt hat." },
+  ],
+};
+
+const SOURCE_NEEDED = "„Bestätigt“ nur mit Quelle – sonst „Unbestätigt“ wählen.";
+
+/** Release and DLC calendar (F12). */
+export const RELEASE: Schema = {
+  kind: "release", label: "Release",
+  fields: [
+    { key: "title", label: "Titel", type: "text", required: true, maxLen: 100, card: true },
+    { key: "game", label: "Gehört zu (Bibliothek)", type: "game" },
+    { key: "type", label: "Art", type: "select", required: true, options: o(["game", "Spiel"], ["dlc", "DLC / Erweiterung"], ["update", "Großes Update"], ["season", "Saison"], ["other", "Sonstiges"]), card: true, filter: true },
+    { key: "dateStatus", label: "Termin", type: "select", required: true, options: o(["unconfirmed", "Unbestätigt"], ["confirmed", "Bestätigt"], ["window", "Nur Zeitraum bekannt"]), card: true, filter: true },
+    { key: "date", label: "Datum", type: "date", card: true },
+    { key: "window", label: "Zeitraum", type: "text", maxLen: 40, placeholder: "z. B. Q1 2027, Frühjahr 2027" },
+    { key: "platforms", label: "Plattformen", type: "tags", hint: PLATFORMS, filter: true },
+    { key: "source", label: "Quelle", type: "url", hint: "Offizielle Ankündigung, Shop-Seite oder Presseseite des Herstellers." },
+    { key: "favorite", label: "Favorit", type: "bool", filter: true },
+    { key: "tags", label: "Kategorien", type: "tags" },
+    { key: "notes", label: "Notizen", type: "textarea", maxLen: 4000 },
+    { key: "calendarId", label: "Kalender", type: "text", hidden: true },
+  ],
+  check: (d) => {
+    const e: FieldError[] = [];
+    if (d.dateStatus === "window") { if (!String(d.window ?? "").trim()) e.push({ key: "window", message: "Zeitraum angeben – oder ein Datum mit „Unbestätigt“." }); }
+    else if (!d.date) e.push({ key: "date", message: "„{f}“ fehlt.", vars: { f: "Datum" } });
+    if (d.dateStatus === "confirmed" && !d.source) e.push({ key: "source", message: SOURCE_NEEDED });
+    return e;
+  },
+};
+
+/** Seasons and events (F17) – times as announced, with the announcement's time zone. */
+export const GAMEEVENT: Schema = {
+  kind: "gameevent", label: "Saison / Event",
+  fields: [
+    { key: "title", label: "Titel", type: "text", required: true, maxLen: 100, card: true },
+    { key: "game", label: "Spiel", type: "game", card: true },
+    { key: "type", label: "Art", type: "select", required: true, options: o(["season", "Saison"], ["event", "Event"], ["pass", "Battle Pass"], ["tournament", "Turnier"], ["maintenance", "Wartung"], ["other", "Sonstiges"]), filter: true },
+    { key: "status", label: "Termin", type: "select", required: true, options: o(["unconfirmed", "Unbestätigt"], ["confirmed", "Bestätigt"]), filter: true },
+    { key: "start", label: "Beginn", type: "datetime", required: true },
+    { key: "end", label: "Ende", type: "datetime", hint: "Leer lassen, wenn das Ende nicht bekannt ist – dann wird auch nichts behauptet." },
+    { key: "tz", label: "Zeitzone der Angabe", type: "select", options: TIME_ZONES.filter(Boolean).map((z) => ({ value: z, label: z })), hint: "Die Zeitzone aus der Ankündigung. Leer = deine eigene. Angezeigt wird immer auch deine Ortszeit." },
+    { key: "source", label: "Quelle", type: "url" },
+    { key: "favorite", label: "Favorit", type: "bool", filter: true },
+    { key: "tags", label: "Kategorien", type: "tags" },
+    { key: "notes", label: "Notizen", type: "textarea", maxLen: 4000 },
+    { key: "calendarIds", label: "Kalender", type: "tags", hidden: true },
+  ],
+  check: (d) => {
+    const e: FieldError[] = [];
+    if (d.status === "confirmed" && !d.source) e.push({ key: "source", message: SOURCE_NEEDED });
+    if (typeof d.start === "string" && typeof d.end === "string" && d.end <= d.start) e.push({ key: "end", message: "Das Ende muss nach dem Beginn liegen." });
+    return e;
+  },
+};
+
+/** Update explainer (F13): the original patch notes stay as they are. */
+export const PATCH: Schema = {
+  kind: "patch", label: "Patchnotes",
+  fields: [
+    { key: "title", label: "Titel", type: "text", required: true, maxLen: 200, card: true },
+    { key: "game", label: "Spiel", type: "game", card: true },
+    { key: "version", label: "Version", type: "text", maxLen: 40, card: true },
+    { key: "date", label: "Datum", type: "date", required: true, card: true },
+    { key: "source", label: "Quelle", type: "url", required: true, hint: "Link zu den offiziellen Patchnotes." },
+    { key: "original", label: "Originaltext", type: "textarea", required: true, maxLen: 60000, hint: "Unverändert einfügen – sortiert wird nur zur Übersicht, der Originaltext bleibt erhalten." },
+    { key: "read", label: "Gelesen", type: "bool", filter: true },
+    { key: "notes", label: "Eigene Notizen", type: "textarea", maxLen: 4000 },
+    { key: "steamGid", label: "Steam-ID", type: "text", hidden: true },
+  ],
+};
+
+/** Editions and DLC comparison (F16). */
+export const EDITIONS: Schema = {
+  kind: "editions", label: "Editionen & DLCs",
+  fields: [
+    { key: "title", label: "Spiel", type: "text", required: true, maxLen: 100, card: true },
+    { key: "game", label: "In der Bibliothek", type: "game" },
+    { key: "rows", label: "Editionen, DLCs und Pakete", type: "rows", maxRows: 40, hint: "Inhalt mit Komma trennen. Gleiche Bezeichnungen werden als gleicher Inhalt erkannt – so fallen Doppelkäufe auf.", columns: [
+      { key: "kind", label: "Art", type: "select", required: true, options: o(["edition", "Edition"], ["dlc", "DLC"], ["bundle", "Paket / Pass"]) },
+      { key: "name", label: "Name", type: "text", required: true, maxLen: 60 },
+      { key: "contents", label: "Inhalt", type: "text", maxLen: 500 },
+      { key: "platform", label: "Plattform / Shop", type: "text", maxLen: 40 },
+      { key: "price", label: "Preis", type: "number", min: 0, max: 10000 },
+      { key: "priceSource", label: "Preis-Quelle", type: "url" },
+      { key: "confirmed", label: "Inhalt bestätigt", type: "bool" },
+      { key: "owned", label: "Habe ich", type: "bool" },
+    ] },
+    { key: "source", label: "Quelle", type: "url", hint: "Z. B. die Shop-Seite mit dem Editionsvergleich." },
+    { key: "notes", label: "Notizen", type: "textarea", maxLen: 4000 },
+  ],
+  check: (d) => ((d.rows as Data[] | undefined) ?? []).flatMap((r, i) => r.price != null && !r.priceSource ? [{ key: "rows", row: i, col: "priceSource", message: "Preis nur mit Quelle (Zeile {n}).", vars: { n: i + 1 } }] : []),
 };
 
 export const TEAM: Schema = {

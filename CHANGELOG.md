@@ -4,6 +4,25 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.51.0 – 2026-10-27
+### Neu
+- Neue Seite „Spiele-Infos“ (Spielbegleiter): Releases, Saisons & Events, Update-Erklärer, Faktencheck, Barrierefreiheit, Editionen & DLCs und Empfehlungen – alles ohne PC nutzbar und mit dem PC abgeglichen
+- Releases: Spiele, DLCs, Updates und Saisons mit Termin „Bestätigt“ (nur mit Quelle), „Unbestätigt“ oder „Nur Zeitraum“ (z. B. Q1 2027); Monatsansicht „Was kommt“, Erschienenes getrennt, Favoriten, Kategorien, „In den Kalender“ mit Erinnerung und „Auf die Wunschliste“
+- Saisons & Events: Beginn/Ende mit der Zeitzone aus der Ankündigung; angezeigt in deiner Ortszeit und laut Ankündigung, Status kommt/läuft/vorbei – ohne Ende wird nie behauptet, dass etwas noch läuft; Start und Ende in den Kalender
+- Update-Erklärer: offizielle Patchnotes direkt von Steam laden (über den PC, nur die Entwickler-Ankündigungen) oder einfügen; sortiert nach Gameplay, Neue Inhalte, Fehlerbehebungen, Technik – jede Zeile wörtlich aus dem Original, Kurzfassung nur aus Originalsätzen, Original immer abrufbar; Version, Datum, Quelle, eigene Notizen, gelesen/ungelesen
+- Faktencheck: Einzel-/Mehrspieler, Crossplay, Koop, lokal/online, offline, Controller, Cloud-Speicher, Ultrawide, Mods, Barrierefreiheit – mit Quelle und Stand; Vergleich bis zu 4 Spielen mit markierten Unterschieden und „Muss haben“-Filter; Unbekanntes zählt nie als Ja
+- Barrierefreiheit: Untertitel (auch Größe), freie Tastenbelegung, Farbenblind-Modi, Kontrast, Textgröße, Schwierigkeit, Hilfen, Controller, Spieltempo, visuelle Ton-Hinweise, Halten/Umschalten – vergleichen und filtern
+- Editionen & DLCs: Inhalte nebeneinander, „Habe ich“ selbst markieren, Warnung vor Doppelkäufen; Preise nur mit Quelle
+- Empfehlungen „Wenn dir dieses Spiel gefällt …“: regelbasiert aus deinen Daten (Genre & Spielgefühl, Bibliotheks-Kategorien, Spielweise), jeder Grund sichtbar, gespielte ausblendbar, Plattform- und Budgetfilter, Vorlieben (mag ich / mag ich nicht), Empfehlungen merken
+- Wunschliste: Art (Spiel/DLC mit Hauptspiel), Priorität, eigene Kategorien, eigener Shop-Link (nur https); Suche, Filter, Höchstpreis (Einträge ohne gemessenen Preis werden gezählt statt versteckt), Sortierung; Preisverlauf als Diagramm mit Datum, höchstem und niedrigstem selbst gemessenem Preis; ehrliche Anzeige, ob die Zielpreis-Benachrichtigung aktiv ist
+### Verbessert
+- Sammlungen: neues Feldformat „Datum und Uhrzeit“, Sortierung „früheste zuerst“; beim Bearbeiten älterer Einträge werden neu hinzugekommene Felder mit „Unbekannt“ vorbelegt
+- Spiel-Fakten sind jetzt der Faktencheck unter Spiele-Infos (alte Links leiten weiter); der Gruppen-Finder nutzt sie wie bisher
+- Klickbare Listenzeilen (z. B. Format-Auswahl im Studio) sehen jetzt wie Listen aus statt wie graue Standard-Knöpfe
+### Behoben
+- Deal Radar: Offline bearbeitete Einträge zeigten den Preisverlauf bis zum Abgleich als leer an
+- Deal Radar: Bei geändertem Zielpreis wurde die Key-Shop-Benachrichtigung nicht zurückgesetzt
+
 ## 2.50.0 – 2026-10-26
 ### Neu
 - Fester Name im WLAN ohne Router-Einstellung: Der PC meldet sich selbst per Bonjour/mDNS als „nexus-<PC-Name>.local“ an. Der QR-Code nutzt diesen Namen – bekommt der PC eine neue IP, finden iPhone und iPad ihn trotzdem

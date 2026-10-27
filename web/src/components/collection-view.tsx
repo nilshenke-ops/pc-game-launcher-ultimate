@@ -30,8 +30,8 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, 
   const [q, setQ] = useState("");
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [archived, setArchived] = useState(false);
-  const [sort, setSort] = useState<"changed" | "title" | "date">("changed");
-  const dateField = schema.fields.find((f) => f.type === "date");
+  const [sort, setSort] = useState<"changed" | "title" | "date" | "dateAsc">("changed");
+  const dateField = schema.fields.find((f) => f.type === "date" || f.type === "datetime");
   const [table, setTable] = useState(false);
   const [edit, setEdit] = useState<{ id: string; data: Data; isNew: boolean } | null>(null);
   const [open, setOpen] = useState<string | null>(focus ?? null);
@@ -48,6 +48,8 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, 
       return String(e.data[f.key] ?? "") === v;
     }));
     if (sort === "date" && dateField) return [...l].sort((a, b) => String(b.data[dateField.key] ?? "").localeCompare(String(a.data[dateField.key] ?? "")));
+    // Earliest first; entries without a date at the end.
+    if (sort === "dateAsc" && dateField) return [...l].sort((a, b) => String(a.data[dateField.key] ?? "\uffff").localeCompare(String(b.data[dateField.key] ?? "\uffff")));
     return sort === "title" ? [...l].sort((a, b) => String(a.data.title ?? "").localeCompare(String(b.data.title ?? ""))) : l;
   }, [list, q, filters, archived, sort, filterFields, dateField]);
   const listValues = (key: string) => [...new Set(list.flatMap((e) => ((e.data[key] as string[]) ?? [])))].sort();
@@ -77,7 +79,7 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, 
                   <option value="">{fieldLabel(f)}: {t("alle")}</option>{listValues(f.key).map((v) => <option key={v} value={v}>{v}</option>)}
                 </select>
               ))}
-              <select className="input" style={{ maxWidth: 190 }} value={sort} aria-label={t("Sortierung")} onChange={(e) => setSort(e.target.value as "changed" | "title" | "date")}><option value="changed">{t("Zuletzt geändert")}</option><option value="title">{t("Name A–Z")}</option>{dateField && <option value="date">{t("{f} (neueste zuerst)", { f: fieldLabel(dateField) })}</option>}</select>
+              <select className="input" style={{ maxWidth: 190 }} value={sort} aria-label={t("Sortierung")} onChange={(e) => setSort(e.target.value as "changed" | "title" | "date" | "dateAsc")}><option value="changed">{t("Zuletzt geändert")}</option><option value="title">{t("Name A–Z")}</option>{dateField && <option value="date">{t("{f} (neueste zuerst)", { f: fieldLabel(dateField) })}</option>}{dateField && <option value="dateAsc">{t("{f} (früheste zuerst)", { f: fieldLabel(dateField) })}</option>}</select>
               <Button size="sm" variant="ghost" icon={table ? <LayoutGrid size={14} /> : <List size={14} />} aria-pressed={table} onClick={() => setTable(!table)}>{table ? t("Karten") : t("Tabelle")}</Button>
             </div>
             <div className="chips">
@@ -124,7 +126,7 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, 
           }}>{t("Löschen")}</Button>
           <Button variant="ghost" icon={cur.data.archived ? <ArchiveRestore size={15} /> : <Archive size={15} />} onClick={() => { trySave(schema.kind, cur.id, { ...cur.data, archived: !cur.data.archived }); setOpen(null); }}>{cur.data.archived ? t("Zurückholen") : t("Archivieren")}</Button>
           <Button variant="ghost" icon={<Copy size={15} />} onClick={() => { const id = newId(); if (trySave(schema.kind, id, { ...cur.data, title: `${String(cur.data.title ?? "")} (${t("Kopie")})`, archived: false })) { toast(t("Kopie angelegt"), "success"); setOpen(id); } }}>{t("Duplizieren")}</Button>
-          <Button variant="primary" icon={<Pencil size={15} />} onClick={() => setEdit({ id: cur.id, data: cur.data, isNew: false })}>{t("Bearbeiten")}</Button>
+          <Button variant="primary" icon={<Pencil size={15} />} onClick={() => setEdit({ id: cur.id, data: { ...blank(schema), ...cur.data }, isNew: false })}>{t("Bearbeiten")}</Button>
         </>}>
           <EntryDetail schema={schema} e={cur} games={games} extra={detail?.(cur, (d) => trySave(schema.kind, cur.id, d))} />
         </Modal>
@@ -242,6 +244,7 @@ function FieldInput({ f, value, onChange, games, errors }: { f: FieldDef; value:
     case "select": return <Field label={label} hint={hint} error={err}><select className="input" value={String(value ?? "")} onChange={(e) => onChange(e.target.value || null)}>{!f.required && <option value="">–</option>}{f.options!.map((o) => <option key={o.value} value={o.value}>{t(o.label)}</option>)}</select></Field>;
     case "bool": return <label className="checkbox"><input type="checkbox" checked={!!value} onChange={(e) => onChange(e.target.checked)} />{fieldLabel(f)}</label>;
     case "date": return <Field label={label} hint={hint} error={err}><input type="date" className="input" value={String(value ?? "").slice(0, 10)} onChange={(e) => onChange(e.target.value || null)} /></Field>;
+    case "datetime": return <Field label={label} hint={hint} error={err}><input type="datetime-local" className="input" value={String(value ?? "").slice(0, 16)} onChange={(e) => onChange(e.target.value ? e.target.value.slice(0, 16) : null)} /></Field>;
     case "tags": return <TagInput value={(value as string[]) ?? []} onChange={onChange} />;
     case "game": return <>{<GamePicker value={(value as object) ?? {}} onChange={onChange} games={games} label={fieldLabel(f) + (f.required ? " *" : "")} />}{err && <span className="tiny" style={{ color: "var(--danger)" }}>{err}</span>}</>;
     case "images": return <ImagePicker value={(value as string[]) ?? []} onChange={onChange} />;

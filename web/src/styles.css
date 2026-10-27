@@ -322,6 +322,10 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
 .list { display: flex; flex-direction: column; }
 .list-item { display: flex; align-items: center; gap: 12px; padding: 11px 4px; border-top: 1px solid var(--border); min-height: 54px; }
 .list-item:first-child { border-top: 0; }
+button.list-item { width: 100%; background: none; border-left: 0; border-right: 0; border-bottom: 0; border-radius: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+button.list-item:first-child { border-top: 0; }
+@media (hover: hover) { button.list-item:hover { background: rgba(127, 127, 127, 0.07); } }
+button.list-item:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 .list-item .title { font-weight: 600; }
 .list-item .sub { font-size: 0.8rem; color: var(--muted); }
 .thumb { width: 40px; height: 40px; border-radius: 11px; flex: 0 0 auto; display: grid; place-items: center; font-weight: 800; font-size: 0.82rem; color: #fff; overflow: hidden; background-size: cover; background-position: center; }
@@ -1529,3 +1533,14 @@ select.input.studio-tpl { width: auto; min-height: 34px; }
 .studio-badge.earned { opacity: 1; border-color: var(--tier); box-shadow: 0 0 24px -12px var(--tier); }
 .studio-badge-icon { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; flex: none; background: rgba(255,255,255,.06); color: var(--muted); border: 2px solid var(--border-strong); }
 .studio-badge.earned .studio-badge-icon { color: #0b0f19; background: radial-gradient(circle at 30% 30%, #fff, var(--tier)); border-color: var(--tier); }
+
+/* Spiele-Infos (2.51) */
+.price-chart { margin: 0; display: flex; flex-direction: column; gap: 4px; }
+.price-chart svg { width: 100%; height: 90px; background: var(--surface-2, rgba(127,127,127,.08)); border-radius: 10px; }
+.patch-cat { border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; }
+.patch-cat > summary { cursor: pointer; display: flex; gap: 8px; align-items: center; }
+.patch-lines { margin: 8px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; font-size: 14px; overflow-wrap: anywhere; }
+.patch-original { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; max-height: 50vh; overflow: auto; background: var(--surface-2, rgba(127,127,127,.08)); padding: 10px; border-radius: 10px; margin: 0; }
+.tri-grid { display: grid; gap: 6px 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); }
+.row-diff td:first-child { font-weight: 600; }
+.row-diff { background: rgba(250, 204, 21, 0.07); }

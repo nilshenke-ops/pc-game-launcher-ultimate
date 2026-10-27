@@ -54,6 +54,7 @@
     "quests.removeMatch": "manage",
     "quests.configure": "manage",
     "deals.list": "view",
+    "news.steam": "view",
     "deals.configure": "manage",
     "deals.search": "manage",
     "deals.save": "manage",

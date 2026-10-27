@@ -58,6 +58,16 @@ public sealed class WishItem
     public DateTime? GgCheckedAt { get; set; }
     /// <summary>Key shop price at which "target reached" was last told.</summary>
     public int? GgNotifiedAtCents { get; set; }
+    /// <summary>"game" or "dlc" (set by the user).</summary>
+    public string Kind { get; set; } = "game";
+    /// <summary>For a DLC: the game it belongs to (free text).</summary>
+    public string? BaseGame { get; set; }
+    /// <summary>0 = low, 1 = normal, 2 = high.</summary>
+    public int Priority { get; set; } = 1;
+    /// <summary>Own categories ("Koop", "Geschenk" …), at most 8.</summary>
+    public List<string> Categories { get; set; } = new();
+    /// <summary>A shop or official page chosen by the user (https only) – a link, never read by the PC.</summary>
+    public string? ShopUrl { get; set; }
 }
 
 public sealed class DealsFile
@@ -162,6 +172,17 @@ public sealed class DealService : IDisposable
         if (w.TargetCents is < 0 or > 100_000_00) throw Bad("Zielpreis ungültig.");
         w.Title = DeviceStore.Sanitize(w.Title, 80, "Spiel");
         w.Notes = w.Notes == null ? null : DeviceStore.Sanitize(w.Notes, 300, "");
+        w.Kind = w.Kind is "dlc" ? "dlc" : "game";
+        w.BaseGame = w.Kind == "dlc" && !string.IsNullOrWhiteSpace(w.BaseGame) ? DeviceStore.Sanitize(w.BaseGame, 80, "") : null;
+        if (w.Priority is < 0 or > 2) throw Bad("Priorität ungültig.");
+        w.Categories = (w.Categories ?? new()).Select(c => DeviceStore.Sanitize(c ?? "", 30, "")).Where(c => c.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        if (w.Categories.Count > 8) throw Bad("Höchstens 8 Kategorien.");
+        if (!string.IsNullOrWhiteSpace(w.ShopUrl))
+        {
+            if (w.ShopUrl.Length > 500 || !Uri.TryCreate(w.ShopUrl.Trim(), UriKind.Absolute, out var u) || u.Scheme != Uri.UriSchemeHttps) throw Bad("Shop-Link muss mit https:// beginnen.");
+            w.ShopUrl = u.ToString();
+        }
+        else w.ShopUrl = null;
         var r = _store.Update(f =>
         {
             if (string.IsNullOrEmpty(w.Id)) w.Id = Ids.New("wish");
@@ -181,9 +202,9 @@ public sealed class DealService : IDisposable
             var old = f.Items[i];
             if (old.Title != w.Title) { old.MsProductId = null; old.MsTitle = null; old.MsImage = null; old.MsFinalCents = old.MsInitialCents = null; }
             old.Title = w.Title; old.Notes = w.Notes;
-            if (old.TargetCents != w.TargetCents) old.NotifiedAtCents = null;
+            old.Kind = w.Kind; old.BaseGame = w.BaseGame; old.Priority = w.Priority; old.Categories = w.Categories; old.ShopUrl = w.ShopUrl;
+            if (old.TargetCents != w.TargetCents) { old.NotifiedAtCents = null; old.GgNotifiedAtCents = null; }
             old.TargetCents = w.TargetCents;
-            if (old.TargetCents != w.TargetCents) old.GgNotifiedAtCents = null;
             if (old.SteamAppId != w.SteamAppId) { ClearGg(old); old.SteamAppId = w.SteamAppId; old.SteamImage = null; old.History.Clear(); old.FinalCents = old.InitialCents = old.DiscountPercent = null; old.CheckedAt = null; }
             return old;
         });

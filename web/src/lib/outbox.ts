@@ -295,7 +295,8 @@ function applyLocally(method: string, p: Params): unknown {
       return p;
     case "quests.removeMatch": patch<{ matches: WithId[] }>("quests.get", (d) => ({ ...d, matches: d.matches.filter((m) => m.id !== p.id) })); return true;
     case "deals.save":
-      patch<{ items: WithId[] }>("deals.list", (d) => ({ ...d, items: upsert(d.items, { history: [], ...p } as unknown as WithId) }));
+      // Editing keeps the measured price history; only a new entry starts without one.
+      patch<{ items: WithId[] }>("deals.list", (d) => ({ ...d, items: upsert(d.items, (d.items.some((i) => i.id === p.id) ? p : { history: [], ...p }) as unknown as WithId) }));
       return p;
     case "deals.remove": patch<{ items: WithId[] }>("deals.list", (d) => ({ ...d, items: d.items.filter((i) => i.id !== p.id) })); return true;
     case "deals.configure":

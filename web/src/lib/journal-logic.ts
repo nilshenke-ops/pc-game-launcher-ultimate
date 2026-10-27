@@ -25,7 +25,14 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   team: (id) => `/friends?tab=teams&id=${id}`,
   tournament: (id) => `/friends?tab=tournaments&id=${id}`,
   server: (id) => `/friends?tab=servers&id=${id}`,
-  facts: (id) => `/friends?tab=facts&id=${id}`,
+  facts: (id) => `/infos?tab=facts&id=${id}`,
+  access: (id) => `/infos?tab=access&id=${id}`,
+  release: (id) => `/infos?tab=releases&id=${id}`,
+  gameevent: (id) => `/infos?tab=events&id=${id}`,
+  patch: (id) => `/infos?tab=patches&id=${id}`,
+  editions: (id) => `/infos?tab=editions&id=${id}`,
+  recfav: () => `/infos?tab=recs`,
+  recpref: () => `/infos?tab=recs`,
   bingo: () => `/play?tab=bingo`,
   photo: (id) => `/media?tab=museum&id=${id}`,
   album: (id) => `/media?tab=museum&album=${id}`,
@@ -36,7 +43,7 @@ export const KIND_PATH: Record<string, (id: string) => string> = {
   design: (id) => `/studio?tab=designs&id=${id}`,
   expo: (id) => `/studio?tab=expo&id=${id}`,
 };
-export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack", card: "Sammelkarte", design: "Poster / Banner", expo: "Ausstellung" };
+export const KIND_LABEL: Record<string, string> = { memory: "Erinnerung", path: "Zielpfad", find: "Sammlung", story: "Story", wiki: "Wiki", world: "Minecraft-Welt", project: "Bauprojekt", markers: "Karten-Marker", build: "Build / Loadout", modlist: "Mod-Sammlung", gfx: "Grafikvergleich", controls: "Steuerung", challenge: "Challenge", bingo: "Bingo", player: "Spieler-Karte", poll: "Abstimmung", night: "Gaming-Abend", team: "Team", tournament: "Turnier", server: "Server", facts: "Spiel-Fakten", access: "Barrierefreiheit", release: "Release", gameevent: "Saison / Event", patch: "Patchnotes", editions: "Editionen & DLCs", recfav: "Gemerkte Empfehlung", recpref: "Vorlieben", photo: "Foto", album: "Sammlung", book: "Erinnerungsbuch", clipmark: "Clip-Momente", track: "Soundtrack", card: "Sammelkarte", design: "Poster / Banner", expo: "Ausstellung" };
 
 export function entryTitle(e: Entry): string {
   const d = e.data as { title?: string; text?: string; did?: string; gameName?: string };

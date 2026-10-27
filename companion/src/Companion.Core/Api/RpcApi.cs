@@ -237,6 +237,9 @@ public static class RpcApi
         rpc.Register("deals.search", async ctx => await s.Deals.SearchAsync(ctx.Str("term", 80)));
         rpc.Register("deals.save", ctx => s.Deals.Save(ctx.Bind<WishItem>()));
         rpc.Register("deals.remove", ctx => { s.Deals.Remove(ctx.Str("id", 64)); return true; });
+        // Official patch notes / announcements of a Steam game – only on request (F13 Update-Erklärer).
+        rpc.Register("news.steam", async ctx => await s.News.SteamAsync(ctx.Str("appId", 10),
+            ctx.Params.TryGetProperty("count", out var nc) && nc.ValueKind == JsonValueKind.Number && nc.TryGetInt32(out var n) ? n : 8));
         rpc.Register("deals.refresh", async ctx => await s.Deals.CheckAllAsync(force: true));
         // GG.deals key: checked with one real request before it is stored (encrypted like the Steam key); "" removes it.
         rpc.Register("deals.ggKey", async ctx =>

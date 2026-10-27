@@ -75,6 +75,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public BackupService Backup { get; }
     public QuestService Quests { get; }
     public DealService Deals { get; }
+    public NewsService News { get; }
     public GameModePrograms GameModePrograms { get; }
     public Assistant.AssistantService Assistant { get; }
     public RelayClient Relay { get; }
@@ -188,6 +189,7 @@ public sealed class CompanionServices : IAsyncDisposable
             QuickActions.List().Count, Library.List().Count(i => i.Backlog == "completed"), Soundboard.Get().Sounds.Count,
             Widgets.List().Count, Profiles.Get().Profiles.Count(p => p.Theme != null));
         Deals = new DealService(paths, Rpc) { SteamId = () => Steam.KnownSteamId(), GgBase = Environment.GetEnvironmentVariable("PGL_GG_BASE") is { Length: > 0 } gg ? gg : "https://api.gg.deals" };
+        News = new NewsService { ApiBase = Environment.GetEnvironmentVariable("PGL_STEAM_NEWS_BASE") is { Length: > 0 } nb ? nb : "https://api.steampowered.com" };
         Deals.GgDealsKey = () => Settings.Get().GgDealsKeyProtected is { } k ? Platform.Secrets.Unprotect(k) : null;
         // Games from the library are never closed by the game mode (process names and the started EXE).
         GameModePrograms = new GameModePrograms(paths, platform.Processes, platform.ProcessControl, Rpc, () => Library.List().Where(i => i.Kind == ItemKind.Game)
@@ -581,6 +583,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Steam.Dispose();
         Launchers.Dispose();
         Deals.Dispose();
+        News.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
         await Relay.DisposeAsync();
