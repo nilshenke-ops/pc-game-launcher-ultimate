@@ -1,30 +1,28 @@
 {
-  "version": "2.60.0",
+  "version": "2.61.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.60.0/PCGameLauncherCompanion.exe",
-  "size": 88157230,
-  "sha256": "0b4df189aa234c6a7af3af35a92afef9dc662841e061f42b7c1aec89880f2f43",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.61.0/PCGameLauncherCompanion.exe",
+  "size": 88159509,
+  "sha256": "276f3396d39e3cec607f769221c197beaf33745cab16038338fcfa48ac002462",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.60.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.60.0/PCGameLauncherCompanion-2.60.0-win-x64.zip",
-    "size": 82416616,
-    "sha256": "f3f2141180c407726c68649e0068802ce4dffba48174ace2714dec35bcf42d4c"
+    "fileName": "PCGameLauncherCompanion-2.61.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.61.0/PCGameLauncherCompanion-2.61.0-win-x64.zip",
+    "size": 82418726,
+    "sha256": "085b445ce95f78fb860120f3a5fa52ef1bd203a3a31df85891e98ef63c5a017c"
   },
-  "notes": "„Gerät koppeln“ prüft vorher, ob Handys den PC überhaupt erreichen dürfen (Windows-Firewall, Netzwerk als „öffentlich“ eingestuft) – mit dem Knopf „Für Handys im Heimnetz freigeben“ erledigt der PC das selbst (Windows fragt einmal nach Erlaubnis) · Nach dem Koppeln über die IP-Adresse prüft das Handy selbst, ob es den PC auch unter seinem festen Namen (z. B. …fritz.box) erreicht, und bietet „Jetzt umziehen“ an – danach bleibt die Verbindung, auch wenn der Router dem PC eine neue IP gibt · Hilfe unter dem QR-Code, falls sich die Seite am Handy nicht öffnet (Gast-WLAN, mobile Daten, VPN)",
+  "notes": "Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar · Dasselbe am Handy unter „Mehr“ → „Bearbeiten“ · Kategorien in der Seitenleiste lassen sich einklappen (mit Anzahl), „Aufräumen (Vorschlag)“ und „Alle anzeigen“ mit einem Klick",
   "changes": {
     "neu": [
-      "„Gerät koppeln“ prüft vorher, ob Handys den PC überhaupt erreichen dürfen (Windows-Firewall, Netzwerk als „öffentlich“ eingestuft) – mit dem Knopf „Für Handys im Heimnetz freigeben“ erledigt der PC das selbst (Windows fragt einmal nach Erlaubnis)",
-      "Nach dem Koppeln über die IP-Adresse prüft das Handy selbst, ob es den PC auch unter seinem festen Namen (z. B. …fritz.box) erreicht, und bietet „Jetzt umziehen“ an – danach bleibt die Verbindung, auch wenn der Router dem PC eine neue IP gibt",
-      "Hilfe unter dem QR-Code, falls sich die Seite am Handy nicht öffnet (Gast-WLAN, mobile Daten, VPN)"
+      "Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar",
+      "Dasselbe am Handy unter „Mehr“ → „Bearbeiten“",
+      "Kategorien in der Seitenleiste lassen sich einklappen (mit Anzahl), „Aufräumen (Vorschlag)“ und „Alle anzeigen“ mit einem Klick"
     ],
     "verbessert": [
-      "QR-Code: zuerst die Heimnetz-IP – die öffnet jedes Handy im selben Netz ohne extra App (auch Android, das „.local“-Namen oft nicht kennt); der feste Name wird danach automatisch angeboten",
-      "Adresswahl: der Netzwerkadapter mit Router zuerst (PC am Kabel, Handy im WLAN); Tailscale-, VPN-, virtuelle und 169.254-Adressen landen nie mehr im QR-Code",
-      "Diagnose zeigt die Firewall-Freigabe für Handys im Heimnetz"
+      "Übersichtlicher Start: selten genutzte Bereiche liegen anfangs im Ordner „Weitere Funktionen“ (einmalig auch für bestehende Leisten, die nie angepasst wurden – eigene Einstellungen bleiben unverändert)"
     ],
     "behoben": []
   },
-  "signature": "qpH1zDw2zWXw73WS1Cro2tyMrG1gIUKMYxfUkeV4s8U8ixspduL+WTbR6+rldIZrLfitOqoIEv1i9ULCutM4CQ=="
+  "signature": "/hUyIOf9J4dKhkykq4bTl3il0/6xT6Lj03ND8LirUILeWxYXy0eQVzWolyB9++qoefKBFFfRpcCwM0NtEsAD3A=="
 }
