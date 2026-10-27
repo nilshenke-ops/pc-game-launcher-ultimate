@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.61.0 – 2026-10-27
+### Neu
+- Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar
+- Dasselbe am Handy unter „Mehr“ → „Bearbeiten“
+- Kategorien in der Seitenleiste lassen sich einklappen (mit Anzahl), „Aufräumen (Vorschlag)“ und „Alle anzeigen“ mit einem Klick
+### Verbessert
+- Übersichtlicher Start: selten genutzte Bereiche liegen anfangs im Ordner „Weitere Funktionen“ (einmalig auch für bestehende Leisten, die nie angepasst wurden – eigene Einstellungen bleiben unverändert)
+
 ## 2.60.0 – 2026-10-27
 ### Neu
 - „Gerät koppeln“ prüft vorher, ob Handys den PC überhaupt erreichen dürfen (Windows-Firewall, Netzwerk als „öffentlich“ eingestuft) – mit dem Knopf „Für Handys im Heimnetz freigeben“ erledigt der PC das selbst (Windows fragt einmal nach Erlaubnis)

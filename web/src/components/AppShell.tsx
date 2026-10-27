@@ -2,12 +2,13 @@ import { PrivacyButton } from "./privacy";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, ChevronDown, Menu, MonitorSmartphone, PanelBottom, RotateCcw, Search, Smartphone } from "lucide-react";
+import { Bell, Check, ChevronDown, Menu, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Smartphone } from "lucide-react";
+import { SheetNav, SidebarNav } from "./sidebar-nav";
 import { client, exitDemo, HOSTED, lanPc } from "../lib/rpc";
 import { connView, isHomeNetworkHost } from "../lib/conn-state";
 import { DEMO_BUILD } from "../lib/demo-flag";
 import { t } from "../lib/i18n";
-import { arrangeNav, DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "../lib/nav";
+import { DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "../lib/nav";
 
 /** Colour of an area's symbol – only when colourful symbols are switched on (Leiste anpassen / Navigation). */
 const icStyle = (path: string, on: boolean) => (on ? { ["--ic" as string]: navColor(path) } : undefined);
@@ -101,13 +102,13 @@ function NeedsPc() {
 export function AppShell({ children }: { children: ReactNode }) {
   const [palette, setPalette] = useState(false);
   const [more, setMore] = useState(false);
+  const [sheetEdit, setSheetEdit] = useState(false);
   const [barEdit, setBarEdit] = useState(false);
   const loc = useLocation();
   const conn = useConn();
   const { state } = useAppState();
   const prefs = usePrefs();
   const all = navItems();
-  const items = arrangeNav(all, prefs.nav);
   const current = all.find((i) => i.path !== "/" && loc.pathname.startsWith(i.path)) ?? all[0];
   useEffect(() => { document.documentElement.toggleAttribute("data-nav-plain", !prefs.nav.colors); }, [prefs.nav.colors]);
 
@@ -141,7 +142,6 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => { const on = () => setAppUpdated(true); window.addEventListener("pgl-app-updated", on); return () => window.removeEventListener("pgl-app-updated", on); }, []);
   const [showOutbox, setShowOutbox] = useState(false);
 
-  const groups = [...new Set(items.map((i) => i.group))];
   const preview = client.preview;
   const notifCount = preview ? 0 : state?.counts.notifications ?? 0;
 
@@ -153,17 +153,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <img src="icons/icon-192.png" alt="" />
           <div><b>Nexus</b><small>Gaming Hub</small></div>
         </div>
-        {groups.map((g) => (
-          <nav className="nav-group" key={g} aria-label={g}>
-            <span>{g}</span>
-            {items.filter((i) => i.group === g).map((i) => (
-              <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} style={icStyle(i.path, prefs.nav.colors)}>
-                <i.icon size={18} />{i.label}
-                {i.path === "/notifications" && notifCount > 0 && <span className="count">{notifCount}</span>}
-              </NavLink>
-            ))}
-          </nav>
-        ))}
+        <SidebarNav items={all} notifCount={notifCount} />
         <div style={{ marginTop: "auto", padding: "14px 10px 4px" }} className="tiny muted">
           {preview ? t("Kein PC verbunden") : state ? `${state.pcName} · v${state.version}` : conn.hello?.info.pcName}
         </div>
@@ -216,18 +206,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {barEdit && <BarEditor items={all} onClose={() => setBarEdit(false)} />}
       {more && (
-        <Modal title={t("Alle Bereiche")} onClose={() => setMore(false)}
-          footer={<Button icon={<PanelBottom size={16} />} onClick={() => { setMore(false); setBarEdit(true); }}>{t("Leiste anpassen")}</Button>}>
-          {groups.map((g) => (
-            <section key={g} className="sheet-group" aria-label={g}>
-              <h3>{g}</h3>
-              <div className="sheet-grid">
-                {items.filter((i) => i.group === g).map((i) => (
-                  <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={icStyle(i.path, prefs.nav.colors)}><span className="nav-tile"><i.icon size={22} /></span>{i.label}</NavLink>
-                ))}
-              </div>
-            </section>
-          ))}
+        <Modal title={sheetEdit ? t("Bereiche bearbeiten") : t("Alle Bereiche")} onClose={() => { setMore(false); setSheetEdit(false); }}
+          footer={<>
+            <Button icon={sheetEdit ? <Check size={16} /> : <Pencil size={16} />} variant={sheetEdit ? "primary" : undefined} onClick={() => setSheetEdit(!sheetEdit)}>{sheetEdit ? t("Fertig") : t("Bearbeiten")}</Button>
+            <Button icon={<PanelBottom size={16} />} onClick={() => { setMore(false); setSheetEdit(false); setBarEdit(true); }}>{t("Leiste anpassen")}</Button>
+          </>}>
+          <SheetNav items={all} edit={sheetEdit} />
         </Modal>
       )}
       {palette && <CommandPalette onClose={() => setPalette(false)} />}

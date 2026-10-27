@@ -1,7 +1,7 @@
 import { Activity, Images, Info, BarChart3, Archive, ArchiveRestore, BookMarked, Bug, Dices, Globe2, NotebookPen, Users, Wrench, Cpu, Camera, FolderUp, Gamepad, LayoutTemplate, Package, AudioLines, Bell, Bot, CalendarDays, Command, Crosshair, Download, Gamepad2, Gauge, Globe, Grid3x3, HardDrive, Headphones, Heart, HelpCircle, History, Home, Keyboard, LayoutGrid, Link2, ListTodo, Mic, Monitor, MonitorSmartphone, Moon, Music, Palette, Play, Puzzle, Radio, Rocket, Settings, Shapes, ShieldCheck, Smartphone, Sofa, Sparkles, Star, Stethoscope, Swords, Tag, Timer, Trophy, Tv, Video, Volume2, Wand2, Wifi, Zap, type LucideIcon } from "lucide-react";
 import { t } from "./i18n";
 
-export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string }
+export interface NavItem { path: string; label: string; short?: string; icon: LucideIcon; group: string; keywords?: string; /** Stable id of the category (for "eingeklappt", independent of the language). */ gid?: string }
 
 /** Sections that cannot be hidden – otherwise the app could lock itself out of its own settings or the PC connection. */
 export const NAV_FIXED = new Set(["/", "/settings", "/connect"]);
@@ -11,7 +11,8 @@ export const DEFAULT_BOTTOM = ["/", "/deck", "/games", "/soundboard"];
 /** Single definition of all sections, used by sidebar, mobile menu and global search. */
 export function navItems(): NavItem[] {
   const g = { play: t("Spielbegleiter"), dash: t("Dashboard"), ctrl: t("Steuerung"), audio: t("Audio"), sys: t("System"), conn: t("Verbindung"), ext: t("Erweiterungen"), admin: t("Verwaltung") };
-  return [
+  const gid = new Map(Object.entries(g).map(([k, v]) => [v, k]));
+  const list: NavItem[] = [
     { path: "/", label: t("Home"), icon: Home, group: g.dash, keywords: "dashboard übersicht" },
     { path: "/deck", label: t("Deck"), icon: Grid3x3, group: g.dash, keywords: "stream deck tasten knöpfe raster tablet fernbedienung buttons elgato streamdeck" },
     { path: "/games", label: t("Spiele"), icon: Gamepad2, group: g.dash, keywords: "steam epic xbox launcher bibliothek game center" },
@@ -68,6 +69,12 @@ export function navItems(): NavItem[] {
     { path: "/updates", label: t("Updates & Versionen"), short: t("Updates"), icon: Download, group: g.admin, keywords: "update version download herunterladen neueste windows exe änderungen" },
     { path: "/help", label: t("Hilfe"), icon: HelpCircle, group: g.admin, keywords: "anleitung download begleiter" },
   ];
+  return list.map((i) => ({ ...i, gid: gid.get(i.group) }));
+}
+
+/** The removed sections ("Weitere Funktionen"), in the usual order. Fixed sections are never in it. */
+export function hiddenNav(items: NavItem[], nav: { hidden: string[] }): NavItem[] {
+  return items.filter((i) => !NAV_FIXED.has(i.path) && nav.hidden.includes(i.path));
 }
 
 /** The user's own order and hidden sections (Einstellungen → Design → Navigation). Order is kept inside each category. */

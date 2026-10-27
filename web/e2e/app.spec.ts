@@ -178,6 +178,35 @@ test("Backlog am Handy: Spiel aufnehmen, Status ändern, Zufallsauswahl, Export"
   expect(file).toMatchObject({ format: "nexus-backlog", entries: [{ name: "E2E Testspiel", status: "next", priority: 3 }] });
 });
 
+test("Leiste bearbeiten: Bereich entfernen → „Weitere Funktionen“, dort erreichbar, wieder hinzufügen, bleibt nach Neuladen", async () => {
+  await pc.goto(`${COMPANION}/#/`);
+  const bar = pc.locator(".sidebar .nav-group:not(.nav-folder)");
+  const folder = pc.locator(".sidebar .nav-folder");
+  await expect(bar.getByRole("link", { name: "Backlog" })).toBeVisible();
+  await pc.getByRole("button", { name: "Seitenleiste ordnen" }).click();
+  await pc.getByRole("button", { name: "Backlog in „Weitere Funktionen“ verschieben" }).click();
+  // Home, Einstellungen and PC verbinden cannot be removed.
+  await expect(pc.getByRole("button", { name: "Home in „Weitere Funktionen“ verschieben" })).toHaveCount(0);
+  await pc.getByRole("button", { name: "Ordnen beenden" }).click();
+  await expect(bar.getByRole("link", { name: "Backlog" })).toHaveCount(0);
+  // Still one tap away in the folder.
+  if (!(await folder.getByRole("link", { name: "Backlog" }).isVisible())) await folder.locator(".nav-group-head").click();
+  await folder.getByRole("link", { name: "Backlog" }).click();
+  await expect(pc.getByRole("heading", { name: "Backlog" }).first()).toBeVisible();
+  await pc.reload();
+  await expect(bar.getByRole("link", { name: "Backlog" })).toHaveCount(0);
+  await pc.getByRole("button", { name: "Seitenleiste ordnen" }).click();
+  await pc.getByRole("button", { name: "Backlog wieder in die Leiste" }).click();
+  await pc.getByRole("button", { name: "Ordnen beenden" }).click();
+  await expect(bar.getByRole("link", { name: "Backlog" })).toBeVisible();
+  // Categories fold.
+  const sys = pc.locator(".sidebar .nav-group-head", { hasText: "System" });
+  await sys.click();
+  await expect(sys).toHaveAttribute("aria-expanded", "false");
+  await sys.click();
+  await expect(sys).toHaveAttribute("aria-expanded", "true");
+});
+
 test("Globale Suche findet das Spiel", async () => {
   await pc.goto(`${COMPANION}/#/`);
   await pc.keyboard.press("Control+k");
@@ -601,10 +630,12 @@ test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => 
   for (const g of ["Dashboard", "Steuerung", "Audio", "System", "Verbindung", "Erweiterungen", "Verwaltung"]) await expect(sidebar.getByRole("navigation", { name: g })).toBeVisible();
   await pc.goto(`${COMPANION}/#/settings?s=design`);
   await pc.getByRole("button", { name: "Programme ausblenden" }).click();
-  await expect(sidebar.getByRole("link", { name: "Programme" })).toHaveCount(0);
+  // Gone from the categories – it waits in the folder "Weitere Funktionen".
+  await expect(sidebar.locator(".nav-group:not(.nav-folder)").getByRole("link", { name: "Programme" })).toHaveCount(0);
+  await expect(sidebar.locator(".nav-folder")).toContainText("Weitere Funktionen");
   await expect(pc.getByRole("button", { name: "Einstellungen ausblenden" })).toBeDisabled();
   await pc.getByRole("button", { name: "Programme einblenden" }).click();
-  await expect(sidebar.getByRole("link", { name: "Programme" })).toBeVisible();
+  await expect(sidebar.locator(".nav-group:not(.nav-folder)").getByRole("link", { name: "Programme" })).toBeVisible();
   await pc.goto(`${COMPANION}/#/`);
 });
 

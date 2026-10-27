@@ -6,7 +6,7 @@ import { hmacSha256, loginProof, sha256, toHex, utf8 } from "./sha256";
 import { en } from "./en";
 // @ts-expect-error plain JS helper shared with the CLI script
 import { collectKeys } from "../../scripts/i18n-keys.mjs";
-import { ALL_WIDGETS, contrast, defaultPrefs, sanitizePrefs } from "./prefs-core";
+import { ALL_WIDGETS, contrast, defaultPrefs, sanitizePrefs, TIDY_HIDDEN } from "./prefs-core";
 import { templates } from "./custom-widgets";
 import { connectionQuality } from "./net-quality";
 import { arrangeNav, navItems } from "./nav";
@@ -125,7 +125,13 @@ describe("navigation", () => {
   it("sanitizes navigation prefs", () => {
     const p = sanitizePrefs({ nav: { order: ["/games", "javascript:x", 5], hidden: ["/x/../y"], bottom: [] } });
     expect(p.nav.order).toEqual(["/games"]);
-    expect(p.nav.hidden).toEqual([]);
+    // An untouched bar from before 2.61 is tidied once: rarely used sections go into "Weitere Funktionen".
+    expect(p.nav.hidden).toEqual(TIDY_HIDDEN);
+    expect(p.nav.tidied).toBe(true);
+    // After that, the own choice stays – also "alle anzeigen" (nothing hidden) and an own list.
+    expect(sanitizePrefs({ nav: { hidden: [], tidied: true } }).nav.hidden).toEqual([]);
+    expect(sanitizePrefs({ nav: { hidden: ["/deals"] } }).nav.hidden).toEqual(["/deals"]);
+    expect(sanitizePrefs({ nav: { collapsed: ["sys", "BAD!", 3] } }).nav.collapsed).toEqual(["sys"]);
     expect(p.nav.bottom).toEqual(["/", "/deck", "/games", "/soundboard"]);
     // The untouched bar from before 2.7.0 gets the deck; an own choice stays as it is.
     expect(sanitizePrefs({ nav: { bottom: ["/", "/games", "/soundboard", "/quick"] } }).nav.bottom).toEqual(["/", "/deck", "/games", "/soundboard"]);

@@ -475,3 +475,8 @@ Stichworte: kann nicht grenzen geht nicht unmöglich
 Seite: /pair
 Stichworte: qr code öffnet nicht handy verbindet nicht lan kabel wlan firewall öffentliches netzwerk privat gast wlan feste adresse fritz box umziehen
 PC am Kabel und Handy im WLAN geht, wenn beide am selben Router hängen. Unter „Gerät koppeln“ steht oben, ob die Windows-Firewall Handys durchlässt; sonst „Für Handys im Heimnetz freigeben“ antippen (Windows fragt einmal; die Regel gilt nur für den Begleiter und seinen Port, ein als „öffentlich“ eingestuftes Heimnetz wird dabei als privat eingestuft). Der QR-Code nutzt zuerst die IP-Adresse – die öffnet jedes Handy ohne extra App. Nach dem Koppeln bietet das Handy „Feste Adresse gefunden – Jetzt umziehen“ an, dann bleibt die Verbindung, auch wenn der Router eine neue IP vergibt. Nicht im Gast-WLAN, nicht über mobile Daten, VPN am Handy aus.
+
+## Seitenleiste ordnen
+Seite: /
+Stichworte: leiste ordnen bereich entfernen ausblenden hinzufügen weitere funktionen ordner aufräumen kategorien einklappen menü übersichtlich
+Am PC oben in der Seitenleiste auf den Stift („Seitenleiste ordnen“), am Handy unter „Mehr“ → „Bearbeiten“. Mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste (dort weiter anklickbar), mit „+“ wieder zurück. Kategorien lassen sich mit einem Klick auf ihre Überschrift einklappen. „Aufräumen (Vorschlag)“ legt selten genutzte Bereiche in den Ordner, „Alle anzeigen“ holt alle zurück. Home, Einstellungen und PC verbinden bleiben immer.

@@ -24,7 +24,7 @@ export function NavEditor() {
     <Card title={t("Navigation")} icon={<Menu size={18} />}
       actions={<Button size="sm" variant="ghost" icon={<RotateCcw size={15} />} onClick={() => setNav(() => structuredClone(DEFAULT_NAV))}>{t("Standard")}</Button>}>
       <div className="stack">
-        <p className="small muted">{t("Reihenfolge innerhalb der Kategorien ändern und selten genutzte Bereiche ausblenden. Ausgeblendete Bereiche bleiben über die Suche erreichbar. Home, Einstellungen und PC verbinden lassen sich nicht ausblenden.")}</p>
+        <p className="small muted">{t("Reihenfolge innerhalb der Kategorien ändern und selten genutzte Bereiche ausblenden. Ausgeblendete Bereiche liegen im Ordner „Weitere Funktionen“ am Ende der Leiste und in der Suche. Schneller geht es direkt in der Leiste mit dem Stift. Home, Einstellungen und PC verbinden bleiben immer.")}</p>
         <div className="nav-editor">
           {groups.map((g) => (
             <section key={g}>
