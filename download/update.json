@@ -1,36 +1,28 @@
 {
-  "version": "2.53.0",
+  "version": "2.54.0",
   "date": "2026-10-27",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion.exe",
-  "size": 88088602,
-  "sha256": "c6d6ec9ed80fe894de704890a124d90c1b8006b602ce9a1a7f60c3ecfe1eee71",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.54.0/PCGameLauncherCompanion.exe",
+  "size": 88096990,
+  "sha256": "d4246a13a7930687b93746d4091db9a905b8e75d1285acdeaca4e90db34ca59f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.53.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion-2.53.0-win-x64.zip",
-    "size": 82349246,
-    "sha256": "cd0528b8973cd69ff1a7f27b5714e26df5d8ba45eb5fbc3032f8cc3291100fce"
+    "fileName": "PCGameLauncherCompanion-2.54.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.54.0/PCGameLauncherCompanion-2.54.0-win-x64.zip",
+    "size": 82357652,
+    "sha256": "006c3480527a766937a9ed6aa2e06760c47b6b992fcf284f7a7bf813f9743971"
   },
-  "notes": "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt · Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF · Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
+  "notes": "Deal Radar: Preisvergleich von Keyforsteam direkt im Spiel – „Preise laden“ zeigt alle Angebote mit Shop (offiziell oder Key-Shop), Shop-Bewertung, Edition, Region, Plattform, Preis inklusive Zahlungsgebühr und Gutschein · Zusammenfassung: günstigster offizieller Shop und günstigster Key-Shop derselben Edition; Filter nach Edition, Region und „Nur offizielle Shops“ · Konto-Angebote (fremdes Spielkonto statt Key) sind standardmäßig ausgeblendet und deutlich markiert",
   "changes": {
     "neu": [
-      "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt",
-      "Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF",
-      "Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
-      "Leistungsarchiv: gemessene CPU/GPU/RAM-Last aus Sitzungen übernehmen oder Messungen selbst eintragen (FPS, 1 % Low, Frametime, Temperaturen), zwei Messungen vergleichen, Verlauf je Wert, Verknüpfung mit dem Grafikvergleich",
-      "Mehrere eigene Startseiten: anlegen, umbenennen, löschen und per Tipp wechseln (Handy und großer Bildschirm getrennt)",
-      "Startseite als Link oder Datei teilen – nur die Widget-Anordnung, mit Vorschau vor dem Hinzufügen als neue Seite",
-      "Datenzentrum (Einstellungen → Backup): Bereiche wählen, als JSON-Datei, Tabelle (CSV) oder PDF sichern; Import mit Vorschau und eigener Wahl bei Unterschieden (neuere behalten, meine, aus der Datei, beide behalten)",
-      "Suche (Strg+K) findet auch ohne PC deine Sammlungen samt Text (Wiki, Bingos, Notizen …) und deine Startseiten",
-      "Wiki: „Links ohne Ziel“ in der Übersicht mit „Anlegen“"
+      "Deal Radar: Preisvergleich von Keyforsteam direkt im Spiel – „Preise laden“ zeigt alle Angebote mit Shop (offiziell oder Key-Shop), Shop-Bewertung, Edition, Region, Plattform, Preis inklusive Zahlungsgebühr und Gutschein",
+      "Zusammenfassung: günstigster offizieller Shop und günstigster Key-Shop derselben Edition; Filter nach Edition, Region und „Nur offizielle Shops“",
+      "Konto-Angebote (fremdes Spielkonto statt Key) sind standardmäßig ausgeblendet und deutlich markiert",
+      "Findet Keyforsteam das Spiel unter seinem Namen nicht, lässt sich der Link der Spieleseite einfügen",
+      "Abruf nur auf Knopfdruck über den PC, höchstens eine Seite alle 5 Sekunden (wie es keyforsteam.de in robots.txt verlangt), 6 Stunden zwischengespeichert"
     ],
-    "verbessert": [
-      "Wiki: Umbenennen einer Seite behält den alten Titel als „Auch bekannt als“, Links darauf funktionieren weiter"
-    ],
-    "behoben": [
-      "Einstellungen auf dem Handy: lange Inhalte (z. B. der Datenordner) machten die Seite breiter als den Bildschirm"
-    ]
+    "verbessert": [],
+    "behoben": []
   },
-  "signature": "FjRL3BNLrnwUdZ7+rY4YeGnL0RKRMOdcm4IMomdv9Uqy9VEJYD230l/m87xrdWkCqFFDD+yeN0wa+VcYQFGkiQ=="
+  "signature": "vaVeH9BIWeeipx+q0bhJugEjxO3dGB3wb6zQ6ddCLk2Qaoc73QItLcTV6v3tXUtwvi0mdk1nKug20cBfFHbXxw=="
 }
