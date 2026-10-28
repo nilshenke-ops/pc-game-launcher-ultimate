@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.71.0 – 2026-10-28
+### Neu
+- Medal als Aufnahmeprogramm (Overlay & Aufnahme): „Replay speichern“ drückt die Medal-Clip-Taste F8 (Werkseinstellung, änderbar); die Taste für „Aufnahme starten/stoppen“ wird wie in Medal eingetragen
+- Aufnahmen: Clips und Screenshots aus Medal erscheinen automatisch – der Begleiter findet den in Medal gewählten Aufnahmeordner (aus Medals eigenen Dateien unter %APPDATA%\Medal\store) sowie die üblichen Orte (C:\Medal, Videos\Medal) und sortiert nach Medals Spielordnern, auch für Spiele, die nicht in der Bibliothek sind
+### Verbessert
+- Medals Vorschaubilder, Editor- und Cache-Dateien werden nicht als Aufnahmen gezeigt
+
 ## 2.70.0 – 2026-10-28
 ### Neu
 - Programme: Alle installierten Apps erscheinen automatisch – ohne „Hinzufügen“. Der Begleiter liest das Windows-Startmenü (Desktop-Programme aus dem Web-Installer wie Discord, Apps aus dem Microsoft Store, Xbox-Apps) beim Start und danach alle 10 Minuten; jede App startet mit einem Tipp

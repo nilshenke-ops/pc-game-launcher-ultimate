@@ -157,7 +157,7 @@ function FolderSettings({ list }: { list: CaptureList }) {
           <input className="input" value={path} placeholder={t("z. B. D:\\Aufnahmen")} aria-label={t("Ordnerpfad am PC")} onChange={(e) => setPath(e.target.value)} />
           <Button type="submit" disabled={!path.trim()}>{t("Hinzufügen")}</Button>
         </form>
-      ) : <p className="tiny muted" style={{ marginTop: 8 }}>{t("Eigene Ordner fügst du direkt am PC hinzu (dort hat die App Verwaltungsrechte). OBS-Ordner kommen automatisch dazu, sobald OBS etwas speichert.")}</p>}
+      ) : <p className="tiny muted" style={{ marginTop: 8 }}>{t("Eigene Ordner fügst du direkt am PC hinzu (dort hat die App Verwaltungsrechte). OBS-Ordner kommen automatisch dazu, sobald OBS etwas speichert; Medal, NVIDIA, Xbox Game Bar und Steam werden von selbst gefunden.")}</p>}
     </Card>
   );
 }

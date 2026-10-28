@@ -28,6 +28,8 @@ public static class CaptureProviders
         new CaptureProvider("steam", "Steam (Spielaufnahme)", new[] { "record", "replay", "overlay" },
             new Dictionary<string, string> { ["overlay"] = "Shift+Tab" },
             "Funktioniert in Spielen, die über Steam laufen. Die Tasten für Aufnahme und Clip wie in Steam → Einstellungen → Spielaufnahme eintragen."),
+        new CaptureProvider("medal", "Medal", new[] { "record", "replay" }, new Dictionary<string, string> { ["replay"] = "F8" },
+            "Der Launcher drückt die Tastenkürzel von Medal: Clip = F8 (Werkseinstellung). Für „Aufnahme starten/stoppen“ die Taste wie in Medal → Einstellungen → Hotkeys eintragen. Clips und Screenshots aus dem Medal-Ordner erscheinen automatisch unter Aufnahmen."),
         new CaptureProvider("discord", "Discord", new[] { "replay", "overlay" }, new Dictionary<string, string>(),
             "Discord kann keine durchgehende Aufnahme, nur Clips (die letzten Sekunden). Die Tasten wie in Discord → Einstellungen → Clips bzw. Overlay eintragen."),
     };

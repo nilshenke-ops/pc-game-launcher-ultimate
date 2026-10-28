@@ -513,3 +513,6 @@ Auf der JARVIS-Seite unter „Stimme & Ton“: Stimme wählen (die natürlichste
 
 ## Installierte Apps automatisch (Programme)
 Unter Programme erscheinen alle installierten Apps von selbst (Discord, Spotify, Apps aus dem Microsoft Store, Xbox-Apps, alles aus dem Windows-Startmenü) – ohne „Hinzufügen“. Der Begleiter prüft beim Start und alle 10 Minuten; „Jetzt prüfen“ sofort. Abschalten: Schalter „Installierte Apps automatisch anzeigen“ oben unter Programme. Deinstallierte verschwinden, selbst entfernte bleiben ausgeblendet. Deinstaller, Hilfe-/Web-Links und Windows-Systemwerkzeuge werden nicht aufgenommen. Nur mit dem Windows-Begleiter.
+
+## Medal
+Medal ist als Aufnahmeprogramm wählbar (Overlay & Aufnahme): Clip/„Replay speichern“ = F8 (Werkseinstellung), Taste für „Aufnahme starten/stoppen“ wie in Medal → Einstellungen → Hotkeys eintragen. Clips und Screenshots aus dem Medal-Ordner erscheinen automatisch unter Aufnahmen, sortiert nach Medals Spielordnern. Ein anderer Medal-Ordner wird aus Medals Einstellungen erkannt; sonst am PC unter Aufnahmen als eigenen Ordner hinzufügen.

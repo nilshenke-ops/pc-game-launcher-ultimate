@@ -2285,7 +2285,7 @@ export const en: Record<string, string> = {
   "Der Austausch-Ordner ist leer": "The exchange folder is empty",
   "Dieser Browser erlaubt keinen Speicher (z. B. privates Fenster) – Dateien können nur bei verbundenem PC gesendet werden.": "This browser allows no storage (e.g. private window) – files can only be sent while the PC is connected.",
   "Dieser Launcher gibt keinen Update-Stand preis": "This launcher does not reveal its update state",
-  "Eigene Ordner fügst du direkt am PC hinzu (dort hat die App Verwaltungsrechte). OBS-Ordner kommen automatisch dazu, sobald OBS etwas speichert.": "Add your own folders directly at the PC (the app has admin rights there). OBS folders are added automatically as soon as OBS saves something.",
+  "Eigene Ordner fügst du direkt am PC hinzu (dort hat die App Verwaltungsrechte). OBS-Ordner kommen automatisch dazu, sobald OBS etwas speichert; Medal, NVIDIA, Xbox Game Bar und Steam werden von selbst gefunden.": "Add your own folders directly at the PC (the app has admin rights there). OBS folders are added automatically as soon as OBS saves something; Medal, NVIDIA, Xbox Game Bar and Steam are found by themselves.",
   "Gespeichert – wird gesendet, sobald der PC verbunden ist": "Saved – will be sent once the PC is connected",
   "Gesucht wird in: {f}. Eigene Ordner fügst du am PC hinzu (Einstellungen dieser Seite am PC).": "Searched in: {f}. Add your own folders at the PC (settings of this page on the PC).",
   "Gruppieren nach": "Group by",
@@ -5709,4 +5709,5 @@ export const en: Record<string, string> = {
   "{a} Apps hinzugefügt, {r} entfernt": "{a} apps added, {r} removed",
   "Installierte Apps automatisch anzeigen": "Show installed apps automatically",
   "Discord, Spotify, Apps aus dem Microsoft Store und alle anderen Programme aus dem Startmenü erscheinen hier von selbst – ohne Hinzufügen. Deinstallierte verschwinden wieder; was du entfernst, bleibt ausgeblendet.": "Discord, Spotify, Microsoft Store apps and every other program in the Start menu show up here by themselves – no need to add them. Uninstalled ones disappear again; anything you remove stays hidden.",
+  "Der Launcher drückt die Tastenkürzel von Medal: Clip = F8 (Werkseinstellung). Für „Aufnahme starten/stoppen“ die Taste wie in Medal → Einstellungen → Hotkeys eintragen. Clips und Screenshots aus dem Medal-Ordner erscheinen automatisch unter Aufnahmen.": "The launcher presses Medal's shortcuts: clip = F8 (factory setting). For “Start/stop recording” enter the key set in Medal → Settings → Hotkeys. Clips and screenshots from the Medal folder appear under Captures automatically.",
 };

@@ -36,7 +36,7 @@ public sealed record CaptureItem(string Id, string Name, string Folder, string K
 }
 
 /// <summary>
-/// Screenshots and clips in known folders (Windows Game Bar, NVIDIA, Steam, OBS and folders added at the PC). Only picture
+/// Screenshots and clips in known folders (Windows Game Bar, NVIDIA, Steam, Medal, OBS and folders added at the PC). Only picture
 /// and video files are listed – nothing else of a folder is visible. Thumbnails come from Windows itself; deleting moves a
 /// file to the recycle bin (never a permanent delete).
 /// </summary>
@@ -76,6 +76,10 @@ public sealed class CaptureLibraryService
         var vids = Environment.GetFolderPath(Environment.SpecialFolder.MyVideos);
         var list = new List<CaptureFolder>();
         if (pics.Length > 0) list.Add(new() { Path = Path.Combine(pics, "Screenshots"), Label = "Bildschirmfotos (Windows)", Source = "auto" });
+        // Medal before "Videos": its folder may lie inside it and the first folder names the source.
+        foreach (var m in MedalFolders(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            DriveRoots().Select(r => Path.Combine(r, "Medal")).Append(vids.Length > 0 ? Path.Combine(vids, "Medal") : "")))
+            list.Add(new() { Path = m, Label = MedalLabel, Source = "auto" });
         if (vids.Length > 0)
         {
             list.Add(new() { Path = Path.Combine(vids, "Captures"), Label = "Xbox Game Bar", Source = "auto" });
@@ -89,6 +93,70 @@ public sealed class CaptureLibraryService
             catch { /* not readable */ }
         }
         return list.Where(f => Directory.Exists(f.Path));
+    }
+
+    public const string MedalLabel = "Medal";
+    /// <summary>Medal's own sub-folders that hold no captures of the user (preview pictures, editor and cache files).</summary>
+    static readonly HashSet<string> MedalSkip = new(StringComparer.OrdinalIgnoreCase) { "Thumbnails", "Thumbs", "Cache", "Temp", "Editor", "Logs" };
+
+    static IEnumerable<string> DriveRoots()
+    {
+        try { return DriveInfo.GetDrives().Where(d => d.DriveType == DriveType.Fixed && d.IsReady).Select(d => d.RootDirectory.FullName).ToList(); }
+        catch { return Array.Empty<string>(); }
+    }
+
+    /// <summary>
+    /// Medal's capture folder: the one chosen in Medal (read from Medal's own files in %APPDATA%\Medal\store – folder
+    /// settings and the folders of clips it knows) plus the usual places (C:\Medal, Videos\Medal). Only folders that exist.
+    /// </summary>
+    public static List<string> MedalFolders(string appData, IEnumerable<string> candidates)
+    {
+        var found = new List<string>();
+        void Add(string? dir)
+        {
+            if (string.IsNullOrWhiteSpace(dir) || found.Count >= 8) return;
+            try { dir = Path.GetFullPath(dir).TrimEnd('/', '\\'); } catch { return; }
+            if (Directory.Exists(dir) && !found.Contains(dir, StringComparer.OrdinalIgnoreCase)) found.Add(dir);
+        }
+        var store = appData.Length > 0 ? Path.Combine(appData, "Medal", "store") : "";
+        if (store.Length > 0 && Directory.Exists(store))
+            foreach (var file in SafeFiles(store))
+            {
+                try
+                {
+                    if (new FileInfo(file).Length > 50_000_000) continue;
+                    var reader = new System.Text.Json.Utf8JsonReader(File.ReadAllBytes(file), new System.Text.Json.JsonReaderOptions { AllowTrailingCommas = true, CommentHandling = System.Text.Json.JsonCommentHandling.Skip });
+                    string prop = "";
+                    while (reader.Read())
+                    {
+                        if (reader.TokenType == System.Text.Json.JsonTokenType.PropertyName) { prop = reader.GetString() ?? ""; continue; }
+                        if (reader.TokenType != System.Text.Json.JsonTokenType.String) continue;
+                        var v = reader.GetString();
+                        if (v == null || v.Length < 4 || v.Length > 400 || !Path.IsPathFullyQualified(v)) continue;
+                        if (Images.Contains(Path.GetExtension(v)) || Videos.Contains(Path.GetExtension(v)))
+                        {
+                            // A clip Medal knows: its capture folder is the parent of "Clips"/"Screenshots".
+                            if (!File.Exists(v)) continue;
+                            var d = new DirectoryInfo(Path.GetDirectoryName(v)!);
+                            for (var up = d; up != null; up = up.Parent)
+                                if (up.Name.Equals("Clips", StringComparison.OrdinalIgnoreCase) || up.Name.Equals("Screenshots", StringComparison.OrdinalIgnoreCase)) { d = up.Parent ?? up; break; }
+                            if (!MedalSkip.Contains(d.Name)) Add(d.FullName);
+                        }
+                        else if (Regex.IsMatch(prop, "folder|directory|dir$|location|savepath|clippath", RegexOptions.IgnoreCase) && !Regex.IsMatch(prop, "temp|cache|log|thumb|install|download", RegexOptions.IgnoreCase))
+                            Add(v);
+                    }
+                }
+                catch { /* not readable or no JSON – Medal's format is not documented */ }
+            }
+        foreach (var c in candidates) Add(c);
+        // Nested folders (C:\Medal and C:\Medal\Clips) are listed once.
+        return found.Where(f => !found.Any(o => o != f && f.StartsWith(o + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))).ToList();
+    }
+
+    static IEnumerable<string> SafeFiles(string dir)
+    {
+        try { return Directory.EnumerateFiles(dir, "*.json", SearchOption.TopDirectoryOnly).Take(30).ToList(); }
+        catch { return Array.Empty<string>(); }
     }
 
     public static string IdOf(string fullPath) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fullPath.ToLowerInvariant())))[..16].ToLowerInvariant();
@@ -147,7 +215,7 @@ public sealed class CaptureLibraryService
                 foreach (var e in entries)
                 {
                     if (e.Attributes.HasFlag(FileAttributes.ReparsePoint) || e.Attributes.HasFlag(FileAttributes.Hidden) || e.Name.StartsWith('.')) continue;
-                    if (e is DirectoryInfo) { if (depth < MaxDepth) stack.Push((e.FullName, depth + 1)); continue; }
+                    if (e is DirectoryInfo) { if (depth < MaxDepth && !(folder.Label == MedalLabel && MedalSkip.Contains(e.Name))) stack.Push((e.FullName, depth + 1)); continue; }
                     var ext = Path.GetExtension(e.Name);
                     var kind = Images.Contains(ext) ? "image" : Videos.Contains(ext) ? "video" : null;
                     if (kind == null || e is not FileInfo fi) continue;
@@ -155,6 +223,7 @@ public sealed class CaptureLibraryService
                     if (!seen.Add(fi.FullName.ToLowerInvariant())) continue;
                     if (result.Count >= MaxFiles) { truncated = true; break; }
                     var (game, itemId) = GuessGame(fi.FullName, fi.Name, games);
+                    if (game == null && folder.Label == MedalLabel) game = MedalGame(fi.FullName, folder.Path); // Medal sorts by game folder
                     if (folder.Source == "auto-games" && itemId == null) continue;
                     result.Add(new CaptureItem(IdOf(fi.FullName), fi.Name, folder.Label, kind, fi.Length, fi.LastWriteTimeUtc, game, itemId, false, new()) { FullPath = fi.FullName });
                 }
@@ -185,6 +254,15 @@ public sealed class CaptureLibraryService
             if (parent == n || (file.StartsWith(n) && (file.Length == n.Length || !char.IsLetterOrDigit(file[n.Length])))) return (g.Name, g.Id);
         }
         return (null, null);
+    }
+
+    /// <summary>Medal's game folder (…\Clips\Valorant\clip.mp4 → "Valorant"); null directly in Clips/Screenshots.</summary>
+    internal static string? MedalGame(string fullPath, string root)
+    {
+        var parent = Path.GetDirectoryName(fullPath);
+        if (parent == null || string.Equals(parent.TrimEnd('/', '\\'), root.TrimEnd('/', '\\'), StringComparison.OrdinalIgnoreCase)) return null;
+        var name = Path.GetFileName(parent);
+        return Regex.IsMatch(name, "^(clips|screenshots|videos|uploads|medal|local|bookmarks)$", RegexOptions.IgnoreCase) ? null : name;
     }
 
     CaptureItem Find(string id)

@@ -68,6 +68,47 @@ public class CaptureLibraryTests
     static JsonElement J(object o) => JsonSerializer.SerializeToElement(o, Json.Options);
 
     [Fact]
+    public void Medal_Ordner_wird_aus_Medals_Dateien_gefunden_und_nach_Spiel_sortiert()
+    {
+        using var dir = new TempDir();
+        var root = Directory.CreateDirectory(Path.Combine(dir.Path, "D", "MeineClips")).FullName;   // chosen in Medal
+        var clip = Path.Combine(root, "Clips", "Valorant", "MedalTVValorant20261028.mp4");
+        Directory.CreateDirectory(Path.GetDirectoryName(clip)!); File.WriteAllBytes(clip, new byte[50]);
+        Directory.CreateDirectory(Path.Combine(root, "Screenshots"));
+        File.WriteAllBytes(Path.Combine(root, "Screenshots", "shot.png"), new byte[5]);
+        Directory.CreateDirectory(Path.Combine(root, "Thumbnails"));
+        File.WriteAllBytes(Path.Combine(root, "Thumbnails", "MedalTVValorant20261028.jpg"), new byte[5]); // Medal's preview
+        var appData = Path.Combine(dir.Path, "AppData");
+        var store = Directory.CreateDirectory(Path.Combine(appData, "Medal", "store")).FullName;
+        File.WriteAllText(Path.Combine(store, "clips.json"), JsonSerializer.Serialize(new { clips = new { a = new { FilePath = clip, Thumbnail = Path.Combine(root, "Thumbnails", "x.jpg") } } }));
+        File.WriteAllText(Path.Combine(store, "broken.json"), "{ kein json");
+        var usual = Path.Combine(dir.Path, "C", "Medal"); // does not exist → not listed
+
+        var found = CaptureLibraryService.MedalFolders(appData, new[] { usual, root, Path.Combine(root, "Clips") });
+        Assert.Equal(new[] { Path.GetFullPath(root) }, found);
+
+        var paths = new AppPaths(Path.Combine(dir.Path, "data"));
+        var lib = new CaptureLibraryService(paths, new LibraryService(paths, new GenericPlatform(), new NullHub()), new GenericPlatform(), new NullHub(),
+            () => found.Select(f => new CaptureFolder { Path = f, Label = CaptureLibraryService.MedalLabel, Source = "auto" }));
+        lib.Scan();
+        var items = J(lib.List()).GetProperty("items").EnumerateArray().ToList();
+        Assert.Equal(2, items.Count); // the preview picture is not a capture
+        var v = items.First(i => i.GetProperty("kind").GetString() == "video");
+        Assert.Equal("Valorant", v.GetProperty("game").GetString());   // Medal's game folder, even if not in the library
+        Assert.Equal("Medal", v.GetProperty("folder").GetString());
+        Assert.False(items.First(i => i.GetProperty("kind").GetString() == "image").TryGetProperty("game", out var g) && g.ValueKind == JsonValueKind.String);
+    }
+
+    [Fact]
+    public void Medal_ist_ein_Aufnahmeprogramm_mit_Clip_Taste_F8()
+    {
+        var m = CaptureProviders.Get("medal")!;
+        Assert.Equal("Medal", m.Name);
+        Assert.Equal("F8", m.Defaults["replay"]);
+        Assert.Contains("record", m.Actions);
+    }
+
+    [Fact]
     public void Only_pictures_and_videos_are_listed_with_the_right_game_and_no_private_videos()
     {
         using var dir = new TempDir();

@@ -22,6 +22,8 @@ export const CAPTURE_PROVIDERS: CaptureProviderInfo[] = [
     note: "Der Launcher drückt die Tastenkürzel der Game Bar. „Replay speichern“ braucht „Im Hintergrund aufzeichnen“ in den Windows-Einstellungen (Spielen → Aufzeichnungen)." },
   { id: "steam", name: "Steam (Spielaufnahme)", actions: ["record", "replay", "overlay"], defaults: { overlay: "Shift+Tab" },
     note: "Funktioniert in Spielen, die über Steam laufen. Die Tasten für Aufnahme und Clip wie in Steam → Einstellungen → Spielaufnahme eintragen." },
+  { id: "medal", name: "Medal", actions: ["record", "replay"], defaults: { replay: "F8" },
+    note: "Der Launcher drückt die Tastenkürzel von Medal: Clip = F8 (Werkseinstellung). Für „Aufnahme starten/stoppen“ die Taste wie in Medal → Einstellungen → Hotkeys eintragen. Clips und Screenshots aus dem Medal-Ordner erscheinen automatisch unter Aufnahmen." },
   { id: "discord", name: "Discord", actions: ["replay", "overlay"], defaults: {},
     note: "Discord kann keine durchgehende Aufnahme, nur Clips (die letzten Sekunden). Die Tasten wie in Discord → Einstellungen → Clips bzw. Overlay eintragen." },
 ];
