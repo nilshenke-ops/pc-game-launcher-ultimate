@@ -1,5 +1,34 @@
 [
   {
+    "version": "2.73.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.73.0/PCGameLauncherCompanion.exe",
+    "size": 88297749,
+    "sha256": "04c8ff36f8a8d83ab510eccab6fb40b335023356a44520b4e8fa017ba68f2470",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.73.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.73.0/PCGameLauncherCompanion-2.73.0-win-x64.zip",
+      "size": 82561037,
+      "sha256": "363a041a65de9edf75e10292d910cd66a18e4c3f120c86a33ed4596229e98636"
+    },
+    "notes": "JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt · Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo (nichts Erfundenes); neu im Katalog: GTA V/Online, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires. Gespeicherte und geschaffte Challenges werden nicht wiederholt · Gaming-Gedächtnis: „Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte“ wird dem Spiel zugeordnet; „Wo war ich zuletzt in Minecraft?“, „Was sollte ich heute in Elden Ring machen?“ (mit Plan, Zielpfaden, offenen Funden, Bauprojekten, offenen Challenges und der letzten Spielsitzung vom PC), „Zeig mir alle offenen Projekte in meinen Spielen“, „Was weißt du über mich als Gamer?“, „Was spiele ich am meisten?“, „Was habe ich zuletzt gespielt?“",
+    "changes": {
+      "neu": [
+        "JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt",
+        "Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo (nichts Erfundenes); neu im Katalog: GTA V/Online, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires. Gespeicherte und geschaffte Challenges werden nicht wiederholt",
+        "Gaming-Gedächtnis: „Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte“ wird dem Spiel zugeordnet; „Wo war ich zuletzt in Minecraft?“, „Was sollte ich heute in Elden Ring machen?“ (mit Plan, Zielpfaden, offenen Funden, Bauprojekten, offenen Challenges und der letzten Spielsitzung vom PC), „Zeig mir alle offenen Projekte in meinen Spielen“, „Was weißt du über mich als Gamer?“, „Was spiele ich am meisten?“, „Was habe ich zuletzt gespielt?“",
+        "Meine Challenges: Stufe und Herkunft sichtbar, Sterne-Bewertung, geschaffte Challenges optional als erledigtes Ziel im Gedächtnis des Spiels"
+      ],
+      "verbessert": [
+        "JARVIS kennzeichnet die Herkunft: [vom PC gemessen], [deine Angabe], [Schätzung] – und sagt ausdrücklich, dass er keinen Spielstand ausliest"
+      ],
+      "behoben": []
+    },
+    "signature": "+l4msIpLNUYnbrKDQuVgb78ETILIhVVkj2Lv9WjI7TLCCk19Omps0ZeWnvj4s3mlomkhApc4kddD5XMLF/iXLQ=="
+  },
+  {
     "version": "2.72.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1487,37 +1516,5 @@
       "behoben": []
     },
     "signature": "HmX4i8yzp/DSJOfmgoRpuAicNtXqmaW8HGMHz0UiWONEkM+KDxPVH7soBwcw0/w88TE1Z9VL1QPXnQMGOLfITw=="
-  },
-  {
-    "version": "2.27.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.27.0/PCGameLauncherCompanion.exe",
-    "size": 87563447,
-    "sha256": "60bf0a87c51e37d248b3839e4f25ca8d45790aaadf8d0a3681694c50f77f7ae1",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.27.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.27.0/PCGameLauncherCompanion-2.27.0-win-x64.zip",
-      "size": 81827441,
-      "sha256": "e462d72a5352d8c613e1e7b344ac955173ae706bcd91467894f183400b99c22e"
-    },
-    "notes": "Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau · Der Ladebildschirm zeigt nur, was wirklich bekannt ist: „wird gesendet“ → „Startbefehl angekommen“ → „Läuft auf dem PC“ erst, wenn der PC das Spiel erkennt; Fehler mit Grund · Bewegter Hintergrund: Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle – Tempo, Menge und Deckkraft einstellbar",
-    "changes": {
-      "neu": [
-        "Spielstart-Animation (Ladebildschirm) bei jedem Start – aus der Bibliothek, vom Deck, aus der Suche, aus Widgets und Plugins: 8 Vorlagen (Neon-Portal, Cyberpunk, Weltraumreise, Minimal Dark, Digital Glitch, Energiewelle, Lila Galaxie, Blaues Hologramm), Dauer 1–8 s, Schnellmodus, eigener Text, Bild des Spiels, Vorschau",
-        "Der Ladebildschirm zeigt nur, was wirklich bekannt ist: „wird gesendet“ → „Startbefehl angekommen“ → „Läuft auf dem PC“ erst, wenn der PC das Spiel erkennt; Fehler mit Grund",
-        "Bewegter Hintergrund: Partikel, Sternenflug, Neon-Raster, Wellen, Funken, Eiskristalle – Tempo, Menge und Deckkraft einstellbar",
-        "Seitenübergänge: Einblenden, Gleiten, Zoom, Unschärfe oder keiner, Dauer einstellbar",
-        "Atmosphären: Cyberpunk, Neon, Space, Ice, Fire, Fantasy, Retro Arcade, Minimal Dark, Glass, Mono – Farben plus passender Hintergrund und Ladebildschirm in einem Tipp"
-      ],
-      "verbessert": [
-        "Die Animation hält einen Start nie auf: der Befehl geht vorher an den PC, Antippen/Esc überspringt sofort, ein Fehler in der Animation zeigt einfach nichts",
-        "Bei „Animationen reduzieren“, leichter Darstellung oder der Systemeinstellung „Bewegung reduzieren“: Standbild statt Animation; der Hintergrund hält an, wenn die Seite nicht sichtbar ist",
-        "Alles läuft ohne PC und kommt mit Design-Code und Konto in andere Browser mit"
-      ],
-      "behoben": []
-    },
-    "signature": "nU+iKXfAmV1bh+k7B4X3hX+e3X9WYX7G1jkM8zBzUJjK00SfoJ83ePvXYSgGS1okhgPelx7qawQJG8FZoOT/ow=="
   }
 ]

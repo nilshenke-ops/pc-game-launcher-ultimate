@@ -1,31 +1,29 @@
 {
-  "version": "2.72.0",
+  "version": "2.73.0",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.72.0/PCGameLauncherCompanion.exe",
-  "size": 88288181,
-  "sha256": "00774a5602d6169b62418f7f2e73128da38f9b78c2e57e9369ac1f3dffdeb1e1",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.73.0/PCGameLauncherCompanion.exe",
+  "size": 88297749,
+  "sha256": "04c8ff36f8a8d83ab510eccab6fb40b335023356a44520b4e8fa017ba68f2470",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.72.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.72.0/PCGameLauncherCompanion-2.72.0-win-x64.zip",
-    "size": 82551474,
-    "sha256": "b4e3906e3cd7c106263d16452e4d1c01aeffd0619cc7d0f0301a481c3430d299"
+    "fileName": "PCGameLauncherCompanion-2.73.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.73.0/PCGameLauncherCompanion-2.73.0-win-x64.zip",
+    "size": 82561037,
+    "sha256": "363a041a65de9edf75e10292d910cd66a18e4c3f120c86a33ed4596229e98636"
   },
-  "notes": "Automatisierungen: neue Auslöser „Wenn ein Programm startet / beendet wird“ (z. B. Discord öffnet → Spotify öffnen), „Zu einer Uhrzeit“ mit Wochentagen und „Wenn der PC startet“ (Begleiter startet mit Windows) · Neue Schritte für Quick Actions und Automatisierungen: „Spiel/Programm schließen“ (z. B. beim Spielstart nur Minecraft schließen), „Alle anderen Spiele schließen“ (das auslösende Spiel bleibt offen), „Alle Spiele schließen“, „Quick Action ausführen“ · Neue Bedingungen: „Nur weiter zur Uhrzeit …“ (auch über Mitternacht), „Nur weiter an Wochentagen …“, „Nur weiter, wenn ein / kein Spiel läuft“",
+  "notes": "JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt · Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo (nichts Erfundenes); neu im Katalog: GTA V/Online, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires. Gespeicherte und geschaffte Challenges werden nicht wiederholt · Gaming-Gedächtnis: „Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte“ wird dem Spiel zugeordnet; „Wo war ich zuletzt in Minecraft?“, „Was sollte ich heute in Elden Ring machen?“ (mit Plan, Zielpfaden, offenen Funden, Bauprojekten, offenen Challenges und der letzten Spielsitzung vom PC), „Zeig mir alle offenen Projekte in meinen Spielen“, „Was weißt du über mich als Gamer?“, „Was spiele ich am meisten?“, „Was habe ich zuletzt gespielt?“",
   "changes": {
     "neu": [
-      "Automatisierungen: neue Auslöser „Wenn ein Programm startet / beendet wird“ (z. B. Discord öffnet → Spotify öffnen), „Zu einer Uhrzeit“ mit Wochentagen und „Wenn der PC startet“ (Begleiter startet mit Windows)",
-      "Neue Schritte für Quick Actions und Automatisierungen: „Spiel/Programm schließen“ (z. B. beim Spielstart nur Minecraft schließen), „Alle anderen Spiele schließen“ (das auslösende Spiel bleibt offen), „Alle Spiele schließen“, „Quick Action ausführen“",
-      "Neue Bedingungen: „Nur weiter zur Uhrzeit …“ (auch über Mitternacht), „Nur weiter an Wochentagen …“, „Nur weiter, wenn ein / kein Spiel läuft“",
-      "Vorlagen unter Automatisierungen: Spiel startet → Minecraft schließen / andere Spiele schließen / Discord öffnen, Programm öffnet → anderes Programm öffnen, PC startet → Apps öffnen, Spiel beendet → Programm schließen, abends Pausen-Hinweis, Wochenend-Profil – alles danach frei änderbar"
+      "JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt",
+      "Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo (nichts Erfundenes); neu im Katalog: GTA V/Online, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires. Gespeicherte und geschaffte Challenges werden nicht wiederholt",
+      "Gaming-Gedächtnis: „Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte“ wird dem Spiel zugeordnet; „Wo war ich zuletzt in Minecraft?“, „Was sollte ich heute in Elden Ring machen?“ (mit Plan, Zielpfaden, offenen Funden, Bauprojekten, offenen Challenges und der letzten Spielsitzung vom PC), „Zeig mir alle offenen Projekte in meinen Spielen“, „Was weißt du über mich als Gamer?“, „Was spiele ich am meisten?“, „Was habe ich zuletzt gespielt?“",
+      "Meine Challenges: Stufe und Herkunft sichtbar, Sterne-Bewertung, geschaffte Challenges optional als erledigtes Ziel im Gedächtnis des Spiels"
     ],
     "verbessert": [
-      "Schrittauswahl nach Gruppen geordnet (Spiele & Programme, Bedingungen & Ablauf, Profile & Hinweise, Ton, Aufnahme & Licht)",
-      "„Wenn ein Spiel startet“ reagiert nur noch auf Spiele; Programme haben einen eigenen Auslöser (ältere Regeln mit einem gewählten Programm laufen weiter)",
-      "Schließen ist immer sanft wie das X des Fensters (Spiele dürfen nach dem Speichern fragen), nie erzwungen; Windows-Prozesse, Spiele-Launcher/Anti-Cheat und der Begleiter selbst werden nie geschlossen. Eine aufgerufene Quick Action mit Rückfrage startet nicht automatisch, Quick Actions rufen sich nicht endlos gegenseitig auf"
+      "JARVIS kennzeichnet die Herkunft: [vom PC gemessen], [deine Angabe], [Schätzung] – und sagt ausdrücklich, dass er keinen Spielstand ausliest"
     ],
     "behoben": []
   },
-  "signature": "Pxema0vwi/4sRNDijehtv6kexbXRxS7MeNt+4ImqIh/QxILhiZPdIJ/pfDK/QRzJeAaz/EoucweMvoWUf7gS5w=="
+  "signature": "+l4msIpLNUYnbrKDQuVgb78ETILIhVVkj2Lv9WjI7TLCCk19Omps0ZeWnvj4s3mlomkhApc4kddD5XMLF/iXLQ=="
 }
