@@ -20,6 +20,7 @@ import { useLaunch } from "../components/launch-tiles";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Modal, PageHead, Switch, Thumb } from "../components/ui";
 import { GamePicker, gameLabel, SyncBadge, trySave, useGames } from "../components/journal-ui";
 import { BingoArea } from "../components/bingo-view";
+import { doneToMemory, finishChallenge, setDoneToMemory } from "../lib/challenge-chat";
 
 type Tab = "time" | "challenges" | "bingo";
 const TABS: Tab[] = ["time", "challenges", "bingo"];
@@ -127,7 +128,20 @@ function SuggestionCard({ s, highlight, launching, onLaunch }: { s: Suggestion; 
 
 // ============================================================================================ F5 – challenges
 
-const SOURCE_LABEL: Record<string, string> = { generic: "Allgemeiner Vorschlag", data: "Aus deinen Daten", own: "Eigene Challenge" };
+const SOURCE_LABEL: Record<string, string> = { generic: "Allgemeiner Vorschlag", data: "Aus deinen Daten", own: "Eigene Challenge", catalog: "JARVIS · geprüfter Katalog", genre: "JARVIS · allgemein fürs Genre" };
+const LEVEL_NAME: Record<number, string> = { 1: "Leicht", 2: "Mittel", 3: "Schwer", 4: "Sehr schwer" };
+
+/** 1–5 stars; tapping the current value removes the rating. */
+function Stars({ value, onChange }: { value: number | null | undefined; onChange: (v: number | null) => void }) {
+  return (
+    <span className="row nowrap" role="group" aria-label={t("Bewertung")} style={{ gap: 0 }}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button key={n} type="button" className="btn ghost sm" style={{ padding: "0 3px", minWidth: 0 }} aria-label={t("{n} Sterne", { n })} aria-pressed={(value ?? 0) >= n}
+          onClick={() => onChange(value === n ? null : n)}>{(value ?? 0) >= n ? "★" : "☆"}</button>
+      ))}
+    </span>
+  );
+}
 
 function Challenges() {
   const { items, stats } = useLibraryAndStats();
@@ -140,6 +154,7 @@ function Challenges() {
   const [shown, setShown] = useState<Challenge[]>([]);
   const [edit, setEdit] = useState<Entry<Challenge> | "new" | null>(null);
   const [showDone, setShowDone] = useState(false);
+  const [toMemory, setToMemory] = useState(doneToMemory);
   const ctx = useMemo(() => ({
     games: items, stats,
     nextStages: paths.filter((p) => !p.data.archived && !p.data.template).flatMap((p) => { const n = pathProgress(p.data).next; return n ? [{ pathId: p.id, title: p.data.title, stage: n.title }] : []; }),
@@ -152,6 +167,7 @@ function Challenges() {
     <>
       <Card title={t("Challenge-Generator")} icon={<Swords size={18} />} actions={<Button size="sm" icon={<Plus size={15} />} onClick={() => setEdit("new")}>{t("Eigene Challenge")}</Button>}>
         <div className="stack-sm">
+          <p className="small muted">{t("Tipp: Frag JARVIS – z. B. „Erstelle fünf mittelschwere Minecraft-Challenges“ oder „sehr schwere Elden-Ring-Challenge ohne Spoiler“. Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo und landen hier.")}</p>
           <Banner kind="info">{t("Allgemeine Vorschläge passen nicht zu jedem Spiel („falls das Spiel es erlaubt“). Vorschläge „aus deinen Daten“ stammen aus Backlog, Verlauf, Zielpfaden und Funden. Geprüfte spielspezifische Challenges gibt es nur, wenn du sie selbst anlegst – Nexus erfindet keine.")}</Banner>
           <div className="row" style={{ gap: 8 }}>
             <select className="input" style={{ maxWidth: 200 }} value={maxMinutes} onChange={(e) => setMaxMinutes(Number(e.target.value))} aria-label={t("Zeit")}>
@@ -173,11 +189,13 @@ function Challenges() {
           <div className="stack-sm">
             {(showDone ? [...open, ...done] : open).map((e) => (
               <div key={e.id} className="j-conflict">
-                <label className="checkbox grow"><input type="checkbox" checked={e.data.status === "done"} onChange={() => trySave("challenge", e.id, { ...e.data, status: e.data.status === "done" ? "open" : "done", doneAt: e.data.status === "done" ? null : new Date().toISOString() })} />
-                  <span><span className={e.data.status === "done" ? "muted" : ""}>{e.data.text}</span><br /><span className="badge">{t(SOURCE_LABEL[e.data.source])}</span>{gameLabel(e.data, games) && <span className="tiny muted"> · {gameLabel(e.data, games)}</span>}{e.data.doneAt && <span className="tiny muted"> · {t("geschafft {d}", { d: dateTime(e.data.doneAt) })}</span>}</span></label>
+                <label className="checkbox grow"><input type="checkbox" checked={e.data.status === "done"} onChange={() => e.data.status === "done" ? trySave("challenge", e.id, { ...e.data, status: "open", doneAt: null }) : finishChallenge(e)} />
+                  <span><span className={e.data.status === "done" ? "muted" : ""}>{e.data.text}</span><br /><span className="badge">{t(SOURCE_LABEL[e.data.source] ?? e.data.source)}</span>{e.data.level && <span className="badge">{t(LEVEL_NAME[e.data.level])}</span>}{gameLabel(e.data, games) && <span className="tiny muted"> · {gameLabel(e.data, games)}</span>}{e.data.doneAt && <span className="tiny muted"> · {t("geschafft {d}", { d: dateTime(e.data.doneAt) })}</span>}</span></label>
+                <Stars value={e.data.rating} onChange={(rating) => trySave("challenge", e.id, { ...e.data, rating })} />
                 <Button size="sm" variant="ghost" icon={<Pencil size={14} />} aria-label={t("Bearbeiten")} onClick={() => setEdit(e)} />
               </div>
             ))}
+            <Switch checked={toMemory} onChange={(v) => { setDoneToMemory(v); setToMemory(v); }} label={t("Geschaffte Challenges im Gaming-Gedächtnis notieren")} hint={t("Dann steht unter „Wo war ich?“ des Spiels: „Challenge geschafft: …“.")} />
             {done.length > 0 && <div><Button size="sm" variant="ghost" onClick={() => setShowDone(!showDone)}>{showDone ? t("Geschaffte ausblenden") : t("Geschaffte zeigen ({n})", { n: done.length })}</Button></div>}
           </div>
         )}

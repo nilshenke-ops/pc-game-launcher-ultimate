@@ -229,6 +229,71 @@ export const CATALOG: CatalogGame[] = [
       "2tT|Spielt gemeinsam und gewinnt", "3tT|Erzielt ein Tor, an dem alle beteiligt sind",
     ],
   },
+  {
+    id: "gta", name: "GTA V", aliases: ["gta", "gta v", "gta 5", "gta online", "grand theft auto v", "grand theft auto 5", "grand theft auto"],
+    caps: { team: true, solo: true }, note: "GTA V (Story) und GTA Online",
+    tasks: [
+      "1e|Fahre mit der Seilbahn auf den Mount Chiliad", "1c|Kaufe ein neues Kleidungsstück", "1f|Mach ein Selfie mit dem Handy", "1k|Gewinne ein Straßenrennen", "1e|Fahre von Los Santos bis nach Paleto Bay",
+      "2e|Springe mit dem Fallschirm von einem Hochhaus oder Berg", "2c|Tune ein Auto bei Los Santos Customs", "2h|Schließe eine Story-Mission mit Gold-Medaille ab", "2f|Fliege mit einem Flugzeug unter einer Brücke durch",
+      "3h|Entkomme einer Fahndung mit 3 Sternen", "3c|Kaufe eine Immobilie", "3h|Gewinne ein Rennen, ohne irgendwo anzustoßen",
+      "4h|Entkomme einer Fahndung mit 5 Sternen", "4p|Schließe einen Heist (Raubüberfall) ab",
+      "2tT|Fahrt gemeinsam ein Rennen in GTA Online", "3tT|Schließt gemeinsam eine Mission in GTA Online ab", "4tT|Schließt gemeinsam einen Heist in GTA Online ab",
+    ],
+  },
+  {
+    id: "roblox", name: "Roblox", aliases: ["roblox"],
+    caps: { build: true, team: true, solo: true }, note: "Roblox ist eine Plattform mit vielen Spielen – die Aufgaben sind allgemein",
+    tasks: [
+      "1e|Probiere ein Spiel aus, das du noch nie gespielt hast", "1f|Ändere das Outfit deines Avatars", "1f|Mach einen Screenshot mit deinem Avatar", "1c|Hol dir ein kostenloses Item im Avatar-Shop",
+      "2h|Schaffe einen Obby bis zum Ende", "2e|Spiele an einem Abend drei verschiedene Spiele", "2b|Baue eine kleine Szene in Roblox Studio",
+      "3h|Schaffe einen schweren Obby, ohne eine Stufe zu überspringen", "3k|Gewinne eine Runde in einem kompetitiven Spiel",
+      "4h|Gewinne 3 Runden hintereinander in einem kompetitiven Spiel", "4b|Veröffentliche ein eigenes kleines Spiel aus Roblox Studio",
+      "1tT|Ladet euch gegenseitig in ein Spiel ein", "2tT|Spielt gemeinsam ein neues Spiel", "3tT|Gewinnt gemeinsam eine Runde in einem Teamspiel",
+    ],
+  },
+  {
+    id: "palworld", name: "Palworld", aliases: ["palworld"],
+    caps: { build: true, boss: true, team: true, solo: true, survival: true },
+    tasks: [
+      "1c|Fange einen Pal", "1b|Stelle eine Palbox auf und gründe deine Basis", "1s|Überlebe die erste Nacht", "1c|Sammle Holz, Stein und Fasern", "1k|Besiege einen wilden Pal",
+      "2c|Fange 10 verschiedene Pals", "2f|Reite auf einem Pal", "2b|Weise einem Pal eine Arbeit in deiner Basis zu", "2e|Schalte eine Schnellreise-Statue frei", "2c|Erweitere deine Basis um ein neues Gebäude",
+      "3kB|Besiege einen Turmboss", "3c|Brüte einen Pal aus einem Ei aus", "3e|Fliege auf einem fliegenden Pal", "3kB|Besiege einen Alpha-Pal",
+      "4c|Fange 50 verschiedene Pals", "4kB|Besiege alle Turmbosse", "4s|Überlebe eine Nacht in einem kalten oder heißen Gebiet ohne passende Ausrüstung",
+      "2tT|Baut gemeinsam eine Basis", "3tTB|Besiegt gemeinsam einen Turmboss",
+    ],
+  },
+  {
+    id: "cyberpunk", name: "Cyberpunk 2077", aliases: ["cyberpunk 2077", "cyberpunk", "cyberpunk 2077 phantom liberty"],
+    caps: { boss: true, solo: true },
+    tasks: [
+      "1e|Erkunde einen Bezirk von Night City, in dem du noch nicht warst", "1c|Kaufe ein neues Kleidungsstück", "1f|Mach ein Foto im Fotomodus", "1k|Schließe einen Gig eines Fixers ab",
+      "2c|Lass dir beim Ripperdoc neue Cyberware einbauen", "2c|Kaufe ein Fahrzeug", "2h|Schließe einen Gig ab, ohne entdeckt zu werden", "2p|Steige eine Stufe auf und verteile Attributpunkte", "2e|Fahre einmal durch die Badlands",
+      "3k|Schalte einen Gegner nur mit Quickhacks aus", "3h|Stoppe einen Cyberpsycho, ohne ihn zu töten", "3p|Schließe eine Nebenmission ab", "3h|Erledige eine NCPD-Meldung ohne Schusswaffe",
+      "4h|Spiele einen Abschnitt auf der Schwierigkeit „Sehr schwer“", "4h|Schließe drei Gigs hintereinander ab, ohne entdeckt zu werden",
+    ],
+  },
+  {
+    id: "lordsofthefallen", name: "Lords of the Fallen", aliases: ["lords of the fallen", "lords of the fallen 2023"],
+    caps: { boss: true, team: true, solo: true }, note: "Lords of the Fallen (2023)",
+    tasks: [
+      "1k|Besiege 10 Gegner", "1c|Finde ein neues Ausrüstungsteil", "1e|Schau dir mit der Lampe die Schattenwelt (Umbral) an", "1p|Ruhe an einem Rastpunkt aus",
+      "2kB|Besiege einen Boss", "2e|Finde mit der Lampe einen versteckten Weg im Umbral", "2c|Verbessere eine Waffe", "2p|Steige eine Stufe auf",
+      "3kB|Besiege einen Boss ohne Heilung", "3h|Erreiche den nächsten Rastpunkt, ohne zu sterben", "3h|Überstehe einen Abschnitt im Umbral, ohne herauszukommen",
+      "4kB|Besiege einen Boss beim ersten Versuch", "4h|Besiege einen Boss nur mit der Startwaffe",
+      "2tT|Spielt einen Abschnitt im Koop", "3tTB|Besiegt gemeinsam einen Boss",
+    ],
+  },
+  {
+    id: "aoe", name: "Age of Empires", aliases: ["age of empires", "age of empires ii", "age of empires 2", "age of empires iv", "age of empires 4", "aoe2", "aoe4", "age of empires ii definitive edition", "age of empires iv anniversary edition"],
+    caps: { build: true, team: true, solo: true }, note: "Age of Empires II und IV",
+    tasks: [
+      "1b|Baue 5 Häuser", "1c|Sammle 500 Nahrung", "1p|Steige ins nächste Zeitalter auf", "1k|Besiege eine gegnerische Einheit", "1e|Erkunde die Karte mit deinem Späher",
+      "2b|Baue eine Burg", "2p|Erreiche das dritte Zeitalter", "2k|Zerstöre ein gegnerisches Gebäude", "2h|Habe 30 Dorfbewohner gleichzeitig",
+      "3k|Gewinne ein Spiel gegen die KI auf „Schwer“", "3b|Baue ein Weltwunder", "3h|Gewinne, ohne dein Stadtzentrum zu verlieren",
+      "4k|Gewinne gegen die KI auf der höchsten Schwierigkeit", "4h|Gewinne ein Ranglistenspiel",
+      "2tT|Gewinnt gemeinsam gegen die KI", "3tT|Gewinnt ein Teamspiel online",
+    ],
+  },
 ];
 
 /** Genre sets for games without own tasks – honest and general, nothing game-specific is claimed. */

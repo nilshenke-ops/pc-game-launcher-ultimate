@@ -59,18 +59,27 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     let r: StepResult;
     const { setupReply, applySetup } = await import("./assistant-setup");
     // A play-time question first: "… bis morgen bei 2 Stunden pro Tag" is not a design wish.
+    // Challenges from the checked catalog ("fünf mittelschwere Minecraft-Challenges", "schwieriger", "geschafft").
+    const { challengeIntent } = await import("./challenge-chat");
+    const chi = challengeIntent(part);
     const { playtimeIntent } = await import("./playtime");
-    const pt = playtimeIntent(part);
+    const pt = chi ? null : playtimeIntent(part);
     const { coachIntent } = await import("./game-coach");
-    const ci = pt ? null : coachIntent(part);
+    const ci = pt || chi ? null : coachIntent(part);
     const { gamingIntent } = await import("./gaming-intel");
-    const gi = pt || ci ? null : gamingIntent(part);
+    const gi = pt || ci || chi ? null : gamingIntent(part);
     const { researchIntent } = await import("./gaming-research");
-    const ri = pt || ci || gi ? null : researchIntent(part);
-    const setup = pt || ci || gi || ri ? null : setupReply(part, getPrefs(), navItems());
-    const site = setup || pt || ci || gi || ri ? null : siteIntent(part);
+    const ri = pt || ci || gi || chi ? null : researchIntent(part);
+    const setup = pt || ci || gi || ri || chi ? null : setupReply(part, getPrefs(), navItems());
+    const site = setup || pt || ci || gi || ri || chi ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (ci) {
+    if (chi) {
+      const { challengeAnswer } = await import("./challenge-chat");
+      const a = challengeAnswer(chi);
+      r = { text: a.text, ok: a.ok };
+      sources.add("Aufgaben-Katalog");
+      buttons.push(...a.navigate.map((n) => ({ kind: "navigate", label: n.label, path: n.path })));
+    } else if (ci) {
       // Quest-Coach: your own journal first (where you were, plans, open quests, spoiler level).
       const { coachAnswer } = await import("./game-coach");
       const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);

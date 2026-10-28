@@ -85,8 +85,14 @@ export function randomSuggestion(list: Suggestion[], rnd?: () => number) {
 
 // ------------------------------------------------------------------------------------------ F5 challenges
 
-export type ChallengeSource = "generic" | "data" | "own";
-export interface Challenge { text: string; source: ChallengeSource; gameId?: string | null; gameName?: string | null; status: "open" | "done"; doneAt?: string | null; minutes?: number | null; note?: string; links?: string[] }
+export type ChallengeSource = "generic" | "data" | "own" | "catalog" | "genre";
+export interface Challenge {
+  text: string; source: ChallengeSource; gameId?: string | null; gameName?: string | null; status: "open" | "done"; doneAt?: string | null; minutes?: number | null; note?: string; links?: string[];
+  /** From the bingo catalog: 1 = leicht … 4 = sehr schwer, and its category (JARVIS challenges). */
+  level?: 1 | 2 | 3 | 4; category?: string;
+  /** Own rating 1–5 stars. */
+  rating?: number | null;
+}
 
 /** Generic ideas: they do not claim anything about a particular game ("falls das Spiel es erlaubt"). */
 export const GENERIC_CHALLENGES: { text: string; minutes?: number; tags: string[] }[] = [

@@ -5753,4 +5753,9 @@ export const en: Record<string, string> = {
   "Bedingungen & Ablauf": "Conditions & flow",
   "Profile & Hinweise": "Profiles & notices",
   "Aufnahme & Licht": "Recording & lighting",
+  "Dann steht unter „Wo war ich?“ des Spiels: „Challenge geschafft: …“.": "Then the game's “Where was I?” says: “Challenge done: …”.",
+  "Geschaffte Challenges im Gaming-Gedächtnis notieren": "Note finished challenges in the gaming memory",
+  "Tipp: Frag JARVIS – z. B. „Erstelle fünf mittelschwere Minecraft-Challenges“ oder „sehr schwere Elden-Ring-Challenge ohne Spoiler“. Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo und landen hier.": "Tip: ask JARVIS – e.g. “Create five medium Minecraft challenges” or “very hard Elden Ring challenge without spoilers”. The tasks come from the same checked catalog as the gaming bingo and land here.",
+  "JARVIS · geprüfter Katalog": "JARVIS · checked catalog",
+  "JARVIS · allgemein fürs Genre": "JARVIS · general for the genre",
 };

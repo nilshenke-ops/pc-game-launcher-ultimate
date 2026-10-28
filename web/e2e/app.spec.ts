@@ -1512,6 +1512,35 @@ test("Automatisierungen: Vorlage „andere Spiele schließen“, Uhrzeit mit Woc
   await p.context().close();
 });
 
+test("JARVIS: Gaming-Gedächtnis (Plan, heute, offene Projekte) und Challenge-Generator (Anzahl, schwieriger, geschafft)", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  const ask = async (q: string) => { await say.fill(q); await say.press("Enter"); };
+  await ask("Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte.");
+  await expect(last()).toContainText("Für Minecraft gemerkt");
+  await ask("Was sollte ich heute in Minecraft machen?");
+  await expect(last()).toContainText("Mein Minecraft-Haus fertigbauen");
+  await ask("Erstelle drei leichte Minecraft-Challenges");
+  await expect(last()).toContainText("3 Challenges für Minecraft · Leicht");
+  await expect(last()).toContainText("geprüfter Aufgaben-Katalog für Minecraft");
+  await ask("Zeig mir alle offenen Projekte in meinen Spielen.");
+  await expect(last()).toContainText("▸ Minecraft");
+  await expect(last()).toContainText("Plan: Mein Minecraft-Haus fertigbauen");
+  await ask("Erstelle eine sehr schwere Elden-Ring-Challenge ohne Story-Spoiler.");
+  await expect(last()).toContainText("Challenge für Elden Ring · Sehr schwer");
+  await ask("Mach die aktuelle Challenge leichter.");
+  await expect(last()).toContainText("jetzt Schwer");
+  await ask("Challenge geschafft");
+  await expect(last()).toContainText("Geschafft: Elden Ring:");
+  await expect(last()).toContainText("Im Gedächtnis von Elden Ring");
+  await p.goto(`${COMPANION}/#/play?tab=challenges`);
+  await expect(p.getByText("JARVIS · geprüfter Katalog").first()).toBeVisible();
+  await p.context().close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

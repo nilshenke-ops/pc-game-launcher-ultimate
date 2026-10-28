@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.73.0 – 2026-10-28
+### Neu
+- JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt
+- Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo (nichts Erfundenes); neu im Katalog: GTA V/Online, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires. Gespeicherte und geschaffte Challenges werden nicht wiederholt
+- Gaming-Gedächtnis: „Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte“ wird dem Spiel zugeordnet; „Wo war ich zuletzt in Minecraft?“, „Was sollte ich heute in Elden Ring machen?“ (mit Plan, Zielpfaden, offenen Funden, Bauprojekten, offenen Challenges und der letzten Spielsitzung vom PC), „Zeig mir alle offenen Projekte in meinen Spielen“, „Was weißt du über mich als Gamer?“, „Was spiele ich am meisten?“, „Was habe ich zuletzt gespielt?“
+- Meine Challenges: Stufe und Herkunft sichtbar, Sterne-Bewertung, geschaffte Challenges optional als erledigtes Ziel im Gedächtnis des Spiels
+### Verbessert
+- JARVIS kennzeichnet die Herkunft: [vom PC gemessen], [deine Angabe], [Schätzung] – und sagt ausdrücklich, dass er keinen Spielstand ausliest
+
 ## 2.72.0 – 2026-10-28
 ### Neu
 - Automatisierungen: neue Auslöser „Wenn ein Programm startet / beendet wird“ (z. B. Discord öffnet → Spotify öffnen), „Zu einer Uhrzeit“ mit Wochentagen und „Wenn der PC startet“ (Begleiter startet mit Windows)
