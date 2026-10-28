@@ -1,30 +1,30 @@
 {
-  "version": "2.66.0",
+  "version": "2.67.0",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.66.0/PCGameLauncherCompanion.exe",
-  "size": 88207133,
-  "sha256": "9e0deb732024251a5ea04a7018a46ad417d9fbd8d37fe8e4636b59dc43603777",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.67.0/PCGameLauncherCompanion.exe",
+  "size": 88262217,
+  "sha256": "c29d00b4209f8b6a3b994672879c050eafce2b83adc4bb78a700a69520d3a71a",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.66.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.66.0/PCGameLauncherCompanion-2.66.0-win-x64.zip",
-    "size": 82467192,
-    "sha256": "e7b8f63cb9d52a4a42e7cd7d8d3a8cc6ae9feb097d4c574c8e04483ad793e000"
+    "fileName": "PCGameLauncherCompanion-2.67.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.67.0/PCGameLauncherCompanion-2.67.0-win-x64.zip",
+    "size": 82525769,
+    "sha256": "8be504b7562b5eea7a5f9e7982d4d127f8ea0d0653674c156b738e00b2059d2f"
   },
-  "notes": "JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle: · „Was ist Hollow Knight für ein Spiel?“, „Erzähl mir was über …“, „Wer hat … entwickelt?“, „Wann ist … erschienen?“, „Lohnt sich …?“ – Beschreibung, Genre, Entwickler, Erscheinungsdatum, Steam-Preis, Metacritic-Wertung, Plattformen (auch Steam Deck/Linux) und wie viele gerade spielen; ohne PC aus Microsoft Store/Wikipedia · „Was kostet Hades?“ / „Ist … im Angebot?“ – aktueller Steam-Preis mit Rabatt, Weg zum Deal Radar",
+  "notes": "JARVIS nutzt jetzt auch Epic, Xbox, Twitch und YouTube – nur auf deine Frage, über die offiziellen bzw. öffentlichen Schnittstellen, mit Quelle: · Epic: „Was gibt es bei Epic gratis?“ – die Gratis-Spiele von jetzt und von nächster Woche direkt vom Epic Games Store (über den PC; ohne PC über GamerPower) · Xbox: „Was kostet Forza Horizon 5 im Microsoft Store / auf Xbox?“ – Preis der günstigsten kaufbaren Edition (auch ohne PC); „Ist Starfield im Game Pass?“ – aus dem PC-Game-Pass-Katalog",
   "changes": {
     "neu": [
-      "JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle:",
-      "„Was ist Hollow Knight für ein Spiel?“, „Erzähl mir was über …“, „Wer hat … entwickelt?“, „Wann ist … erschienen?“, „Lohnt sich …?“ – Beschreibung, Genre, Entwickler, Erscheinungsdatum, Steam-Preis, Metacritic-Wertung, Plattformen (auch Steam Deck/Linux) und wie viele gerade spielen; ohne PC aus Microsoft Store/Wikipedia",
-      "„Was kostet Hades?“ / „Ist … im Angebot?“ – aktueller Steam-Preis mit Rabatt, Weg zum Deal Radar",
-      "„Wie viele Leute spielen gerade Counter-Strike 2?“ – aktuelle Spielerzahl auf Steam",
-      "„Läuft Cyberpunk 2077 auf meinem PC?“ – Steams Systemanforderungen neben den echten Werten deines PCs (✓/✗ je Punkt)",
-      "„Was ist der Weltrekord in Celeste?“ – bestätigte Speedrun-Rekorde je Kategorie von speedrun.com, mit Läufer und Datum",
-      "„Gute Free-to-Play-Shooter?“ – beliebte kostenlose PC-Spiele nach Art (Shooter, MMORPG, MOBA, Battle Royale, für schwache PCs …) von FreeToGame.com"
+      "JARVIS nutzt jetzt auch Epic, Xbox, Twitch und YouTube – nur auf deine Frage, über die offiziellen bzw. öffentlichen Schnittstellen, mit Quelle:",
+      "Epic: „Was gibt es bei Epic gratis?“ – die Gratis-Spiele von jetzt und von nächster Woche direkt vom Epic Games Store (über den PC; ohne PC über GamerPower)",
+      "Xbox: „Was kostet Forza Horizon 5 im Microsoft Store / auf Xbox?“ – Preis der günstigsten kaufbaren Edition (auch ohne PC); „Ist Starfield im Game Pass?“ – aus dem PC-Game-Pass-Katalog",
+      "Twitch: „Wer streamt gerade Elden Ring?“ – die Live-Streams mit den meisten Zuschauern über Twitchs eigene Schnittstelle (dieselbe kostenlose Twitch-Anwendung wie für IGDB); ohne Zugang die Twitch-Suche als Link",
+      "YouTube: „Zeig mir einen Guide für Hollow Knight“ / „… den Trailer zu …“ – mit eigenem kostenlosen YouTube-API-Schlüssel (am PC, verschlüsselt) die passenden Videos im Chat, sonst die YouTube-Suche als Link; YouTube wird nicht ausgelesen"
     ],
-    "verbessert": [],
+    "verbessert": [
+      "„Was gibt es bei Epic gratis?“ wird auch ohne das Wort „Spiele“ verstanden"
+    ],
     "behoben": []
   },
-  "signature": "ntV7C1lDCoE7iuX6Aa+oA+E4rT13UCapn1Wg54MSk705YUwrc4X1Ik9e1Irmtgzc0Gn5lM2fDSuYyjkLVDvkrQ=="
+  "signature": "3nha7cu8/7Ajwx3fDUzXfm7Ay3vVm8vzyTDSVD36w+m4cEW6PS6q7FX1V7Uv9R10+vNNUDv8xMZJ8pGGhQGl+w=="
 }

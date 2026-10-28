@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.67.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.67.0/PCGameLauncherCompanion.exe",
+    "size": 88262217,
+    "sha256": "c29d00b4209f8b6a3b994672879c050eafce2b83adc4bb78a700a69520d3a71a",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.67.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.67.0/PCGameLauncherCompanion-2.67.0-win-x64.zip",
+      "size": 82525769,
+      "sha256": "8be504b7562b5eea7a5f9e7982d4d127f8ea0d0653674c156b738e00b2059d2f"
+    },
+    "notes": "JARVIS nutzt jetzt auch Epic, Xbox, Twitch und YouTube – nur auf deine Frage, über die offiziellen bzw. öffentlichen Schnittstellen, mit Quelle: · Epic: „Was gibt es bei Epic gratis?“ – die Gratis-Spiele von jetzt und von nächster Woche direkt vom Epic Games Store (über den PC; ohne PC über GamerPower) · Xbox: „Was kostet Forza Horizon 5 im Microsoft Store / auf Xbox?“ – Preis der günstigsten kaufbaren Edition (auch ohne PC); „Ist Starfield im Game Pass?“ – aus dem PC-Game-Pass-Katalog",
+    "changes": {
+      "neu": [
+        "JARVIS nutzt jetzt auch Epic, Xbox, Twitch und YouTube – nur auf deine Frage, über die offiziellen bzw. öffentlichen Schnittstellen, mit Quelle:",
+        "Epic: „Was gibt es bei Epic gratis?“ – die Gratis-Spiele von jetzt und von nächster Woche direkt vom Epic Games Store (über den PC; ohne PC über GamerPower)",
+        "Xbox: „Was kostet Forza Horizon 5 im Microsoft Store / auf Xbox?“ – Preis der günstigsten kaufbaren Edition (auch ohne PC); „Ist Starfield im Game Pass?“ – aus dem PC-Game-Pass-Katalog",
+        "Twitch: „Wer streamt gerade Elden Ring?“ – die Live-Streams mit den meisten Zuschauern über Twitchs eigene Schnittstelle (dieselbe kostenlose Twitch-Anwendung wie für IGDB); ohne Zugang die Twitch-Suche als Link",
+        "YouTube: „Zeig mir einen Guide für Hollow Knight“ / „… den Trailer zu …“ – mit eigenem kostenlosen YouTube-API-Schlüssel (am PC, verschlüsselt) die passenden Videos im Chat, sonst die YouTube-Suche als Link; YouTube wird nicht ausgelesen"
+      ],
+      "verbessert": [
+        "„Was gibt es bei Epic gratis?“ wird auch ohne das Wort „Spiele“ verstanden"
+      ],
+      "behoben": []
+    },
+    "signature": "3nha7cu8/7Ajwx3fDUzXfm7Ay3vVm8vzyTDSVD36w+m4cEW6PS6q7FX1V7Uv9R10+vNNUDv8xMZJ8pGGhQGl+w=="
+  },
+  {
     "version": "2.66.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1471,31 +1501,5 @@
       "behoben": []
     },
     "signature": "ixBQFdbHi4ac2FZ6G9x6yU9e4ltBiJC3jEk1hMjLiDiJVvHhqbh4F1sKCO4lBsVZOmLiYwqpt7kKX23dand9UA=="
-  },
-  {
-    "version": "2.21.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.21.0/PCGameLauncherCompanion.exe",
-    "size": 87573024,
-    "sha256": "dfc124529e2569c461df25cb3950a232534e56f53c52efd6123e0a361d00771a",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.21.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.21.0/PCGameLauncherCompanion-2.21.0-win-x64.zip",
-      "size": 81838112,
-      "sha256": "d84df4421c057836e1c0f0cf9fbb76bc8ae9e3cc85a44d4ad62656c11dbbe7f1"
-    },
-    "notes": "Startzeit-Analyse: je Spiel, wie lange es vom Tippen auf „Spielen“ dauert, bis das Spiel läuft – zuletzt, üblich, schnellster und langsamster Start, Verlauf und Hinweis, wenn Starts langsamer werden · Nach einem Start sucht der PC 3 Minuten lang jede Sekunde nach dem Spiel – „läuft“, Profilwechsel und Automatisierungen beim Spielstart kommen schneller",
-    "changes": {
-      "neu": [
-        "Startzeit-Analyse: je Spiel, wie lange es vom Tippen auf „Spielen“ dauert, bis das Spiel läuft – zuletzt, üblich, schnellster und langsamster Start, Verlauf und Hinweis, wenn Starts langsamer werden"
-      ],
-      "verbessert": [
-        "Nach einem Start sucht der PC 3 Minuten lang jede Sekunde nach dem Spiel – „läuft“, Profilwechsel und Automatisierungen beim Spielstart kommen schneller"
-      ],
-      "behoben": []
-    },
-    "signature": "BUVKpFYYBom+jPVuw+e+cri726cOMjQG8e07pm3oZe+XYvKQM+4MS9K3ifj7qDD5Ot/c1PIITJRJU9ZIQgGI+w=="
   }
 ]
