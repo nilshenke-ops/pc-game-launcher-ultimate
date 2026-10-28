@@ -1,5 +1,34 @@
 [
   {
+    "version": "2.63.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.63.0/PCGameLauncherCompanion.exe",
+    "size": 88164058,
+    "sha256": "91dcfe9f7e3831678928a0fc8a5bce2ae94a0bff9eaaa57c3d885e24b08ac554",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.63.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.63.0/PCGameLauncherCompanion-2.63.0-win-x64.zip",
+      "size": 82423781,
+      "sha256": "075432cbbd1242447e675444a24af73cbe02a27365ab3875fc589a735645895e"
+    },
+    "notes": "Bingo mit Internet auch ohne PC: Ist der PC nicht verbunden, fragt JARVIS trotzdem, ob er nachsehen darf – dann sieht das Handy selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es weiter nur über den PC, Steam erlaubt Websites keine direkten Abfragen) · Neue Aufgaben-Sets für Schleichen, Rätsel, Jump'n'Run, Rollenspiel, Roguelike, Sandbox & Bauen, Kampfspiel und Simulation · Aus der Beschreibung werden bis zu drei Spielarten erkannt und gemischt (z. B. Hello Neighbor: Schleichen + Horror + Rätsel) statt nur einer",
+    "changes": {
+      "neu": [
+        "Bingo mit Internet auch ohne PC: Ist der PC nicht verbunden, fragt JARVIS trotzdem, ob er nachsehen darf – dann sieht das Handy selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es weiter nur über den PC, Steam erlaubt Websites keine direkten Abfragen)",
+        "Neue Aufgaben-Sets für Schleichen, Rätsel, Jump'n'Run, Rollenspiel, Roguelike, Sandbox & Bauen, Kampfspiel und Simulation"
+      ],
+      "verbessert": [
+        "Aus der Beschreibung werden bis zu drei Spielarten erkannt und gemischt (z. B. Hello Neighbor: Schleichen + Horror + Rätsel) statt nur einer",
+        "Allgemeine Aufgaben füllen nur noch auf, wenn die passenden nicht reichen",
+        "Klappt die Suche über den PC nicht, sieht das Gerät selbst nach"
+      ],
+      "behoben": []
+    },
+    "signature": "inQCrMYsouiX8nvPz8vKVq5wRcT+esbyW4xU/J9AEbdl1tJH73Q043FaXb9AG4UaMwPR8PRiVL07nNPmUt+N9w=="
+  },
+  {
     "version": "2.62.0",
     "date": "2026-10-27",
     "channel": "stable",
@@ -1466,32 +1495,5 @@
       "behoben": []
     },
     "signature": "WdUnMVm0CTeGTmGramj5+JxaeedLlwbriexn1uwpdM7dqEYZAMeZFwm91Yg5soM/GCsBy71kw6dz3mCo3IJuKw=="
-  },
-  {
-    "version": "2.17.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.17.0/PCGameLauncherCompanion.exe",
-    "size": 87434867,
-    "sha256": "c531f667d8469f8e1cb90c092a2db6affc040eac3999d660554cc8b50d5f3520",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.17.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.17.0/PCGameLauncherCompanion-2.17.0-win-x64.zip",
-      "size": 81699002,
-      "sha256": "af2f2015c339b6c1f3c3068401fbb9d64407852761a8ff17e4a3db3a78cd0d28"
-    },
-    "notes": "Installieren am PC (Einstellungen → Installation & Autostart): eigener Programmordner, Startmenü-Eintrag, optional Desktop-Symbol, Autostart und Eintrag in „Apps & Features“ – ohne Administrator und ohne extra Setup-Programm · Deinstallieren aus der App oder über „Apps & Features“: entfernt Verknüpfungen, Autostart, Eintrag und Programmordner; Einstellungen und Daten bleiben auf Wunsch erhalten · Ein laufender Begleiter wird beim Deinstallieren über „Apps & Features“ von selbst beendet",
-    "changes": {
-      "neu": [
-        "Installieren am PC (Einstellungen → Installation & Autostart): eigener Programmordner, Startmenü-Eintrag, optional Desktop-Symbol, Autostart und Eintrag in „Apps & Features“ – ohne Administrator und ohne extra Setup-Programm",
-        "Deinstallieren aus der App oder über „Apps & Features“: entfernt Verknüpfungen, Autostart, Eintrag und Programmordner; Einstellungen und Daten bleiben auf Wunsch erhalten"
-      ],
-      "verbessert": [
-        "Ein laufender Begleiter wird beim Deinstallieren über „Apps & Features“ von selbst beendet"
-      ],
-      "behoben": []
-    },
-    "signature": "cfPvpTaWbqJWFWFuleTfxax4JZJVwogrRZszMajIiL+KmiJpy4hHKkNZ89JJOgaTQb0ndbWkPocljYUC08Ixzw=="
   }
 ]

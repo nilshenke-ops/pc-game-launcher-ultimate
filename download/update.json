@@ -1,26 +1,29 @@
 {
-  "version": "2.62.0",
-  "date": "2026-10-27",
+  "version": "2.63.0",
+  "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.62.0/PCGameLauncherCompanion.exe",
-  "size": 88160637,
-  "sha256": "a84ef3efbdc600c3d4190c797df09edf2729d31616bb0db8b05107b7d0f1a3b5",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.63.0/PCGameLauncherCompanion.exe",
+  "size": 88164058,
+  "sha256": "91dcfe9f7e3831678928a0fc8a5bce2ae94a0bff9eaaa57c3d885e24b08ac554",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.62.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.62.0/PCGameLauncherCompanion-2.62.0-win-x64.zip",
-    "size": 82420050,
-    "sha256": "e6947dce628b83869d52a012f8f84db8a37de80345a8e2f95b231bf84d1e84ca"
+    "fileName": "PCGameLauncherCompanion-2.63.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.63.0/PCGameLauncherCompanion-2.63.0-win-x64.zip",
+    "size": 82423781,
+    "sha256": "075432cbbd1242447e675444a24af73cbe02a27365ab3875fc589a735645895e"
   },
-  "notes": "Reiter auf den Seiten ordnen (Journal, Was spiele ich?, Welten, Builds, Freunde, Medien, Spiele-Infos, Kreativ-Studio, Auswertungen): Stift neben den Reitern, „−“ legt einen Reiter unter „Weitere“, „+“ holt ihn zurück – gelöscht wird nichts, „Weitere“ klappt die Reiter auf, Links auf einen Reiter funktionieren weiter · Alle Seiten mit Reitern nutzen jetzt denselben Baustein – gleiches Aussehen und gleiche Bedienung; die Auswahl wird mit dem Design gespeichert und mit dem PC abgeglichen",
+  "notes": "Bingo mit Internet auch ohne PC: Ist der PC nicht verbunden, fragt JARVIS trotzdem, ob er nachsehen darf – dann sieht das Handy selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es weiter nur über den PC, Steam erlaubt Websites keine direkten Abfragen) · Neue Aufgaben-Sets für Schleichen, Rätsel, Jump'n'Run, Rollenspiel, Roguelike, Sandbox & Bauen, Kampfspiel und Simulation · Aus der Beschreibung werden bis zu drei Spielarten erkannt und gemischt (z. B. Hello Neighbor: Schleichen + Horror + Rätsel) statt nur einer",
   "changes": {
     "neu": [
-      "Reiter auf den Seiten ordnen (Journal, Was spiele ich?, Welten, Builds, Freunde, Medien, Spiele-Infos, Kreativ-Studio, Auswertungen): Stift neben den Reitern, „−“ legt einen Reiter unter „Weitere“, „+“ holt ihn zurück – gelöscht wird nichts, „Weitere“ klappt die Reiter auf, Links auf einen Reiter funktionieren weiter"
+      "Bingo mit Internet auch ohne PC: Ist der PC nicht verbunden, fragt JARVIS trotzdem, ob er nachsehen darf – dann sieht das Handy selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es weiter nur über den PC, Steam erlaubt Websites keine direkten Abfragen)",
+      "Neue Aufgaben-Sets für Schleichen, Rätsel, Jump'n'Run, Rollenspiel, Roguelike, Sandbox & Bauen, Kampfspiel und Simulation"
     ],
     "verbessert": [
-      "Alle Seiten mit Reitern nutzen jetzt denselben Baustein – gleiches Aussehen und gleiche Bedienung; die Auswahl wird mit dem Design gespeichert und mit dem PC abgeglichen"
+      "Aus der Beschreibung werden bis zu drei Spielarten erkannt und gemischt (z. B. Hello Neighbor: Schleichen + Horror + Rätsel) statt nur einer",
+      "Allgemeine Aufgaben füllen nur noch auf, wenn die passenden nicht reichen",
+      "Klappt die Suche über den PC nicht, sieht das Gerät selbst nach"
     ],
     "behoben": []
   },
-  "signature": "SGygbhSpwLBMo7Q/P+KkmJ12qeh/1/DDBm/mc6BArfy225QZx14NXXypTh/rD0N6wTGwjeegJetiVuERDglSCg=="
+  "signature": "inQCrMYsouiX8nvPz8vKVq5wRcT+esbyW4xU/J9AEbdl1tJH73Q043FaXb9AG4UaMwPR8PRiVL07nNPmUt+N9w=="
 }
