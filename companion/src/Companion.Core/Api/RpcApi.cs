@@ -235,6 +235,10 @@ public static class RpcApi
         rpc.Register("assistant.bingo", async ctx => await s.Assistant.BingoTasksAsync(ctx.Str("game", 100), ctx.Int("size", 4, 3, 5)));
         // Achievements of a Steam game as bingo tasks – only after the user agreed to look on the internet.
         rpc.Register("bingo.webTasks", async ctx => await s.SteamAchievements.TasksAsync(ctx.Str("game", 100)));
+        // Play time: measured (Steam, sessions) and researched averages (IGDB) – the web app calculates and labels estimates.
+        rpc.Register("playtime.status", _ => s.Playtime.Status());
+        rpc.Register("playtime.lookup", async ctx => await s.Playtime.LookupAsync(ctx.Str("game", 100), ctx.Bool("refresh")));
+        rpc.Register("playtime.configure", ctx => s.Playtime.Configure(ctx.Params.TryGetProperty("clientId", out var c) ? c.GetString() : null, ctx.Params.TryGetProperty("clientSecret", out var k) ? k.GetString() : null, ctx.Session.IsLocalAdmin));
         rpc.Register("assistant.bingoPlan", async ctx => await s.Assistant.PlanBingoAsync(ctx.Bind<Assistant.BingoRequest>()));
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
         rpc.Register("assistant.ollamaModels", async ctx => await s.Assistant.OllamaModelsAsync());

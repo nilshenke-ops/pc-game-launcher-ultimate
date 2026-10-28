@@ -47,10 +47,23 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     const last = n === parts.length - 1;
     let r: StepResult;
     const { setupReply, applySetup } = await import("./assistant-setup");
-    const setup = setupReply(part, getPrefs(), navItems());
-    const site = setup ? null : siteIntent(part);
+    // A play-time question first: "… bis morgen bei 2 Stunden pro Tag" is not a design wish.
+    const { playtimeIntent } = await import("./playtime");
+    const pt = playtimeIntent(part);
+    const setup = pt ? null : setupReply(part, getPrefs(), navItems());
+    const site = setup || pt ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (setup) {
+    if (pt) {
+      // Spielzeitanalyse: PC data when connected, otherwise the stored values – never invented numbers.
+      const { playtimeAnswer } = await import("./playtime-chat");
+      // Asked right after opening the page: wait a moment for the PC instead of answering "nicht verbunden".
+      for (let i = 0; !ctx.online && client.status.phase === "connecting" && i < 40; i++) await new Promise((res) => setTimeout(res, 100));
+      const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
+      const a = await playtimeAnswer(pt, online);
+      r = { text: a.text, ok: a.ok };
+      a.sources.forEach((x) => sources.add(x));
+      buttons.push({ kind: "navigate", label: t("Spielzeit ansehen und ändern"), path: `/journal?tab=playtime${a.entryId ? `&id=${a.entryId}` : ""}` });
+    } else if (setup) {
       const ops = setup.actions.filter((a) => a.kind === "setup");
       if (ops.length === 1) {
         // A clear change of this website: applied right away (with "Rückgängig").

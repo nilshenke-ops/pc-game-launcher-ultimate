@@ -458,6 +458,16 @@ public sealed class HistoryService
         _hub.Changed("history");
     }
 
+    /// <summary>Play time the companion measured itself for a game (sessions it saw; a running one counts until now).</summary>
+    public (int minutes, int sessions, DateTime? first, DateTime? last) MeasuredFor(Func<string, bool> isGame)
+    {
+        var now = DateTime.UtcNow;
+        // A session without an end older than 12 h was never closed (PC crashed, companion ended) – it would count for days.
+        var list = _store.Get(f => f.Sessions.Where(x => isGame(x.Name) && (x.EndedAt != null || now - x.StartedAt < TimeSpan.FromHours(12))).Select(x => (x.StartedAt, x.EndedAt)).ToList());
+        var minutes = list.Sum(x => Math.Max(0, ((x.EndedAt ?? now) - x.StartedAt).TotalMinutes));
+        return ((int)Math.Round(minutes), list.Count, list.Count > 0 ? list.Min(x => x.StartedAt) : null, list.Count > 0 ? list.Max(x => x.EndedAt ?? x.StartedAt) : null);
+    }
+
     public void SessionEnded(string itemId, DateTime at)
     {
         if (!Enabled) return;

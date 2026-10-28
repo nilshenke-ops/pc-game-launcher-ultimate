@@ -278,3 +278,4 @@ Details: SECURITY.md.
 - Xbox-/Store-Apps werden als Startmenü-Einträge angeboten; ob ein Eintrag ein Spiel ist, wählt der Nutzer beim Hinzufügen.
 - Der Service Worker (Offline-Cache) funktioniert nur über https/localhost, nicht über `http://<IP>` im WLAN – die App selbst funktioniert dort trotzdem.
 - Die Größe der EXE (≈84 MB) kommt von der eingebetteten .NET-Laufzeit; eine kleinere Variante (`--framework-dependent`) setzt installierte .NET-8-Desktop- und ASP.NET-Core-Runtimes voraus.
+- **2.64.0 JARVIS Spielzeitanalyse:** Restzeit als Spanne aus Steam-Spielzeit/gemessenen Sitzungen, IGDB „Time to Beat“ (eigener Twitch-Zugang am PC) und deinem Fortschritt; Tage pro Tagesbudget, Fristen, Quellen; Spiele-Journal → Spielzeit zum Ansehen/Ändern/Löschen. FERTIG UND GETESTET (Unit, Browser mit IGDB-Mock, e2e). Echte IGDB-Antworten und Steam-`localconfig.vdf` auf Windows: NICHT TESTBAR hier. Details: docs/JARVIS-GAMING-INTELLIGENCE.md.

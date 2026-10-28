@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.64.0 – 2026-10-28
+### Neu
+- JARVIS Spielzeitanalyse: „Wie lange brauche ich noch für …?“, „Wie lange dauert … insgesamt?“, „… für 100 %?“, „… bei 45 Minuten täglich?“, „Schaffe ich … bis Freitag?“ – mit Spanne statt exakter Zahl, Tagen beim eigenen Tagesbudget, Bedarf pro Tag bis zur Frist und Quellen
+- Gemessen, recherchiert und geschätzt sind getrennt gekennzeichnet: Spielzeit aus Steam (am PC aus Steams eigener Datei, sonst über das Steam-Konto) oder aus den vom Begleiter gemessenen Sitzungen; Durchschnittsdauern (Hauptstory, mit Nebenaufgaben, 100 %) aus der offiziellen IGDB-Schnittstelle „Time to Beat“ mit Anzahl der Spieler und Datum
+- Fortschritt sagen: „Ich bin bei 40 % in …“ – wird mit Datum gemerkt und für die Schätzung genutzt (eigenes Tempo und Durchschnitt)
+- Spiele-Journal → Spielzeit: alles sehen, ändern (Fortschritt, eigene Spielzeit z. B. von der Konsole, eigene Dauer) und löschen; wird über den PC zwischen Geräten abgeglichen
+- Am PC: IGDB-Zugang mit eigener kostenloser Twitch-Anwendung eintragen (Geheimnis verschlüsselt nur auf dem PC, wird nie angezeigt)
+### Verbessert
+- Ohne PC zeigt JARVIS die gespeicherten Werte mit Datum; bricht die Verbindung während der Frage ab, sagt er das
+- Liegen eigenes Tempo und Durchschnitt weit auseinander, zählt dein Tempo und der Durchschnitt wird genannt (statt einer nutzlosen Riesen-Spanne)
+### Behoben
+- „… bis morgen bei 2 Stunden pro Tag“ wurde als Design-Wunsch („Tag“ → helles Design) verstanden
+
 ## 2.63.0 – 2026-10-28
 ### Neu
 - Bingo mit Internet auch ohne PC: Ist der PC nicht verbunden, fragt JARVIS trotzdem, ob er nachsehen darf – dann sieht das Handy selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es weiter nur über den PC, Steam erlaubt Websites keine direkten Abfragen)

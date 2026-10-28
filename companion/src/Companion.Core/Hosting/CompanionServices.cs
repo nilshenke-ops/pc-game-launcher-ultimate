@@ -78,6 +78,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public NewsService News { get; }
     public KeyforsteamService Keyforsteam { get; }
     public SteamAchievementsService SteamAchievements { get; }
+    /// <summary>Play time (Steam, measured sessions) and average durations (IGDB) for "Wie lange brauche ich noch?".</summary>
+    public PlaytimeService Playtime { get; }
     public GameModePrograms GameModePrograms { get; }
     public Assistant.AssistantService Assistant { get; }
     public RelayClient Relay { get; }
@@ -194,6 +196,7 @@ public sealed class CompanionServices : IAsyncDisposable
         News = new NewsService { ApiBase = Environment.GetEnvironmentVariable("PGL_STEAM_NEWS_BASE") is { Length: > 0 } nb ? nb : "https://api.steampowered.com" };
         Keyforsteam = new KeyforsteamService { Base = Environment.GetEnvironmentVariable("PGL_KEYFORSTEAM_BASE") is { Length: > 0 } kb ? kb : "https://www.keyforsteam.de" };
         SteamAchievements = new SteamAchievementsService { StoreBase = Environment.GetEnvironmentVariable("PGL_STEAM_STORE_BASE") is { Length: > 0 } sb ? sb : "https://store.steampowered.com", CommunityBase = Environment.GetEnvironmentVariable("PGL_STEAM_COMMUNITY_BASE") is { Length: > 0 } cb ? cb : "https://steamcommunity.com", ApiBase = Environment.GetEnvironmentVariable("PGL_STEAM_NEWS_BASE") is { Length: > 0 } ab ? ab : "https://api.steampowered.com" };
+        Playtime = new PlaytimeService(paths, platform.Secrets, Steam, History) { TokenBase = Environment.GetEnvironmentVariable("PGL_TWITCH_BASE") is { Length: > 0 } tw ? tw : "https://id.twitch.tv", IgdbBase = Environment.GetEnvironmentVariable("PGL_IGDB_BASE") is { Length: > 0 } ig ? ig : "https://api.igdb.com" };
         Deals.GgDealsKey = () => Settings.Get().GgDealsKeyProtected is { } k ? Platform.Secrets.Unprotect(k) : null;
         // Games from the library are never closed by the game mode (process names and the started EXE).
         GameModePrograms = new GameModePrograms(paths, platform.Processes, platform.ProcessControl, Rpc, () => Library.List().Where(i => i.Kind == ItemKind.Game)
@@ -590,6 +593,7 @@ public sealed class CompanionServices : IAsyncDisposable
         News.Dispose();
         Keyforsteam.Dispose();
         SteamAchievements.Dispose();
+        Playtime.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
         await Relay.DisposeAsync();

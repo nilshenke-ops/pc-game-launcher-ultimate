@@ -75,6 +75,46 @@ public sealed partial class SteamService : IDisposable
     /// <summary>The linked Steam account, otherwise the one signed in on this PC (for the public wish list).</summary>
     public string? KnownSteamId() => _store.Snapshot().SteamId ?? LocalAccount()?.steamId;
 
+    /// <summary>The games of the linked account with Steam's total play time (Web API, from the last sync).</summary>
+    public (IReadOnlyList<SteamOwnedGame> games, DateTime? lastSync) Owned() { var f = _store.Snapshot(); return (f.Owned, f.LastSync); }
+
+    /// <summary>
+    /// Total play time Steam itself keeps on this PC for the signed-in account (userdata/&lt;id&gt;/config/localconfig.vdf,
+    /// "Playtime" in minutes) – works without a Web API key. Only read, never written.
+    /// </summary>
+    public Dictionary<long, (int minutes, DateTime? lastPlayed)> LocalPlaytime()
+    {
+        var result = new Dictionary<long, (int, DateTime?)>();
+        if (LocalAccount() is not { } acc || !long.TryParse(acc.steamId, out var id64)) return result;
+        var accountId = (id64 - 76561197960265728L).ToString();
+        foreach (var root in _roots)
+        {
+            var file = Path.Combine(root, "userdata", accountId, "config", "localconfig.vdf");
+            if (!File.Exists(file)) continue;
+            try { foreach (var kv in ParseLocalPlaytime(File.ReadAllText(file))) result[kv.Key] = kv.Value; }
+            catch (Exception ex) { Log.Warn("steam", "localconfig.vdf nicht lesbar: " + ex.Message); }
+        }
+        return result;
+    }
+
+    public static Dictionary<long, (int minutes, DateTime? lastPlayed)> ParseLocalPlaytime(string vdf)
+    {
+        var result = new Dictionary<long, (int, DateTime?)>();
+        var apps = Vdf.Parse(vdf).Child("UserLocalConfigStore")?.Child("Software")?.Child("Valve")?.Child("Steam")?.Child("apps");
+        if (apps == null) return result;
+        foreach (var (key, value) in apps)
+        {
+            if (value is not Vdf.Node n || !long.TryParse(key, out var appId)) continue;
+            if (!int.TryParse(n.Str("Playtime"), out var minutes) || minutes <= 0) continue;
+            DateTime? last = long.TryParse(n.Str("LastPlayed"), out var t) && t > 0 ? DateTimeOffset.FromUnixTimeSeconds(t).UtcDateTime : null;
+            result[appId] = (minutes, last);
+        }
+        return result;
+    }
+
+    /// <summary>Installed Steam games on this PC (app id, name).</summary>
+    public IReadOnlyList<(string appId, string name)> InstalledGames() { if (DateTime.UtcNow - _scannedAt > TimeSpan.FromMinutes(1)) ScanInstalled(); return _installed.Select(i => (i.Target, i.Name)).ToList(); }
+
     public (string steamId, string? name)? LocalAccount()
     {
         foreach (var root in _roots)

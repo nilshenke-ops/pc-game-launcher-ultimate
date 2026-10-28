@@ -1354,6 +1354,46 @@ test("Medien: Fotomuseum erkennt dasselbe Bild, Foto ins Erinnerungsbuch, Clip-M
   await ctx.close();
 });
 
+test("JARVIS Spielzeitanalyse: nichts erfunden, eigene Angaben mit Quelle, Spanne statt Zahl, Frist, sichtbar und löschbar", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  // Unknown play time and no IGDB access: no number, and it says what is missing and where to add it.
+  await say.fill("Wie lange brauche ich noch für E2E Langspiel?");
+  await say.press("Enter");
+  await expect(last()).toContainText("JARVIS – Spielzeitanalyse: E2E Langspiel");
+  await expect(last()).toContainText("Durchschnittsdauer: nicht bekannt");
+  await expect(last()).toContainText("lässt sich nicht seriös sagen");
+  await expect(last()).toContainText("IGDB-Zugang");
+  await expect(last()).not.toContainText(/\d+ – \d+ Tage/);
+  // A progress statement is remembered with date.
+  await say.fill("Ich bin bei 25 % in E2E Langspiel");
+  await say.press("Enter");
+  await expect(last()).toContainText("Gemerkt: E2E Langspiel – 25 %");
+  // Own figures on the Spielzeit page, marked as such.
+  await last().getByRole("link", { name: "Spielzeit ansehen und ändern" }).or(last().getByRole("button", { name: "Spielzeit ansehen und ändern" })).click();
+  const card = p.locator(".card", { hasText: "E2E Langspiel" }).first();
+  await card.getByLabel("Eigene Spielzeit in Std. (z. B. Konsole)").fill("5");
+  await card.getByLabel("Eigene Dauer Hauptstory in Std.").fill("20");
+  await card.getByLabel("Fortschritt in % (deine Angabe)").click();
+  await expect(card).toContainText("Bisher gespielt: 5 Std. · deine Angabe");
+  await expect(card).toContainText("Geschätzt noch (Hauptstory): 12,8 Std. – 17,3 Std.");
+  // Days at a daily budget and a deadline, as a range.
+  await p.goto(`${COMPANION}/#/assistant`);
+  await say.fill("Schaffe ich E2E Langspiel bis morgen bei 1 Stunde pro Tag?");
+  await say.press("Enter");
+  await expect(last()).toContainText("[deine Angabe]");
+  await expect(last()).toContainText("bei 1 Std. pro Tag: 13 – 18 Tage");
+  await expect(last()).toContainText("eher nicht");
+  // Deletable.
+  await p.goto(`${COMPANION}/#/journal?tab=playtime`);
+  await p.getByRole("button", { name: "„E2E Langspiel“ löschen" }).click();
+  await p.getByRole("dialog").getByRole("button", { name: "Löschen" }).click();
+  await expect(p.locator(".card", { hasText: "E2E Langspiel" })).toHaveCount(0);
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

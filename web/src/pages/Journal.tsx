@@ -3,8 +3,9 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { PageTabs } from "../components/page-tabs";
+import { PlaytimeTab } from "../components/playtime-tab";
 import { useSearchParams } from "react-router-dom";
-import { Archive, ArchiveRestore, ArrowDown, ArrowUp, BookOpen, Copy, Eye, EyeOff, Flag, Gift, History as HistoryIcon, MapPin, Pencil, Plus, Route, Search, Star, Trash2, Trophy } from "lucide-react";
+import { Archive, ArchiveRestore, Clock, ArrowDown, ArrowUp, BookOpen, Copy, Eye, EyeOff, Flag, Gift, History as HistoryIcon, MapPin, Pencil, Plus, Route, Search, Star, Trash2, Trophy } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast } from "../lib/hooks";
 import { dateTime } from "../lib/format";
@@ -16,8 +17,8 @@ import {
 import { Button, Card, confirmDialog, Empty, Field, Meter, Modal, PageHead, Segmented, Switch } from "../components/ui";
 import { ExportImport, SearchBox, fromLocalInput, GamePicker, gameLabel, ImagePicker, ImageStrip, LinkedList, LinkPicker, localIsoNow, SyncBadge, TagInput, toLocalInput, trySave, useGames } from "../components/journal-ui";
 
-type Tab = "memory" | "goals" | "finds" | "story";
-const TABS: Tab[] = ["memory", "goals", "finds", "story"];
+type Tab = "memory" | "goals" | "finds" | "story" | "playtime";
+const TABS: Tab[] = ["memory", "goals", "finds", "story", "playtime"];
 
 export default function JournalPage() {
   const [params, setParams] = useSearchParams();
@@ -30,11 +31,12 @@ export default function JournalPage() {
         text={t("Wo du warst, was du vorhast, was du gefunden hast und wie die Story weitergeht – gespeichert auf diesem Gerät, auch ohne PC.")}
         actions={<SyncBadge />} />
       <div className="stack">
-        <PageTabs page="journal" tabs={[["memory", <HistoryIcon size={15} />, t("Wo war ich?")], ["goals", <Route size={15} />, t("Zielpfade")], ["finds", <MapPin size={15} />, t("Sammlung")], ["story", <BookOpen size={15} />, t("Story")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setTab(v)} />
+        <PageTabs page="journal" tabs={[["memory", <HistoryIcon size={15} />, t("Wo war ich?")], ["goals", <Route size={15} />, t("Zielpfade")], ["finds", <MapPin size={15} />, t("Sammlung")], ["story", <BookOpen size={15} />, t("Story")], ["playtime", <Clock size={15} />, t("Spielzeit")]] as [Tab, ReactNode, string][]} value={tab} onChange={(v) => setTab(v)} />
         {tab === "memory" && <MemoryTab games={games} focus={params.get("id")} newFor={params.get("new")} />}
         {tab === "goals" && <GoalsTab games={games} focus={params.get("id")} />}
         {tab === "finds" && <FindsTab games={games} focus={params.get("id")} />}
         {tab === "story" && <StoryTab games={games} focus={params.get("id")} />}
+        {tab === "playtime" && <PlaytimeTab focus={params.get("id")} />}
       </div>
     </>
   );
