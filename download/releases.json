@@ -1,5 +1,37 @@
 [
   {
+    "version": "2.75.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.75.0/PCGameLauncherCompanion.exe",
+    "size": 88319123,
+    "sha256": "6f873973ef0d5b009e230a0120d1ea9404cd968c3ef21706d6703087d36f087f",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.75.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.75.0/PCGameLauncherCompanion-2.75.0-win-x64.zip",
+      "size": 82581714,
+      "sha256": "e8281d6bc6c167b4df719f8d92f91d5dd3421890ce19ea836c8acadb1d6f91d1"
+    },
+    "notes": "PC-Steuerung (Steuerung → PC-Steuerung): Verbindungsstatus mit letztem Kontakt und Fehlermeldung, Live-Werte (CPU, RAM, GPU, Laufwerke – alle 5 s nur solange die Seite offen ist), laufende Spiele/Programme mit „Beenden“ (mit Bestätigung, sanft wie das X), Favoriten und zuletzt Gestartetes mit einem Tipp, Programme mit dem meisten Speicher/CPU (nur auf Tipp gemessen), Links zu Verbindungs-Check, Geräten & Rechten, Verbindungseinstellungen und Remote Desktop · Spielsitzungen vergleichen: zwei Sitzungen mit CPU/RAM/GPU-Werten nebeneinander (vom PC während des Spielens gemessen) · JARVIS Leistungsanalyse: „Warum läuft mein Spiel langsam?“, „Welche Programme verbrauchen am meisten RAM?“, „Ist meine GPU aktuell stark ausgelastet?“, „Was könnte meine FPS beeinträchtigen?“, „Wie warm ist meine GPU?“ – getrennt in 📊 Gemessen, 💡 Vermutung und ✅ sichere nächste Schritte; nichts wird automatisch geändert oder geschlossen",
+    "changes": {
+      "neu": [
+        "PC-Steuerung (Steuerung → PC-Steuerung): Verbindungsstatus mit letztem Kontakt und Fehlermeldung, Live-Werte (CPU, RAM, GPU, Laufwerke – alle 5 s nur solange die Seite offen ist), laufende Spiele/Programme mit „Beenden“ (mit Bestätigung, sanft wie das X), Favoriten und zuletzt Gestartetes mit einem Tipp, Programme mit dem meisten Speicher/CPU (nur auf Tipp gemessen), Links zu Verbindungs-Check, Geräten & Rechten, Verbindungseinstellungen und Remote Desktop",
+        "Spielsitzungen vergleichen: zwei Sitzungen mit CPU/RAM/GPU-Werten nebeneinander (vom PC während des Spielens gemessen)",
+        "JARVIS Leistungsanalyse: „Warum läuft mein Spiel langsam?“, „Welche Programme verbrauchen am meisten RAM?“, „Ist meine GPU aktuell stark ausgelastet?“, „Was könnte meine FPS beeinträchtigen?“, „Wie warm ist meine GPU?“ – getrennt in 📊 Gemessen, 💡 Vermutung und ✅ sichere nächste Schritte; nichts wird automatisch geändert oder geschlossen",
+        "Begleiter: library.close (Spiel/Programm aus der Bibliothek sanft schließen), monitor.now (eine Messung für Fragen), system.topProcesses (Speicher/CPU je Programm, nur auf Anfrage, 5 s zwischengespeichert)"
+      ],
+      "verbessert": [
+        "FPS werden weiterhin nur als „nicht verfügbar“ angezeigt, solange kein zuverlässiger Frame-Zähler eingebunden ist; JARVIS nennt das ausdrücklich",
+        "Windows-Prozesse, Treiber, Launcher, Anti-Cheat und Sicherheitssoftware werden nie zum Schließen vorgeschlagen"
+      ],
+      "behoben": [
+        "Anmelde-Sperre zählt nur noch fehlgeschlagene Versuche: Mehrere Geräte hinter einem Router, Relay oder Tailscale, die sich oft neu verbinden, wurden nach 20 gültigen Anmeldungen in 5 Minuten fälschlich abgewiesen („Nicht angemeldet“). Schutz gegen Raten bleibt (20 Fehlversuche → kurze Sperre)"
+      ]
+    },
+    "signature": "17GiagpYCNaaQLrBObz2fYrUI0BOUCJrnMBP+FkXeb5vAW6uJRX3rzVVs7ihoedqu1A8+CUkt+PA0PQF964C/g=="
+  },
+  {
     "version": "2.74.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1483,37 +1515,5 @@
       "behoben": []
     },
     "signature": "W7db8GDmtLEV72snFt9ijKIU+zPgire/kc51vT6lHK1ger8tX+vcnUFZpKAfI0AOs2AGNRo+5dpgjfPL+VTsNQ=="
-  },
-  {
-    "version": "2.29.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.29.0/PCGameLauncherCompanion.exe",
-    "size": 87627914,
-    "sha256": "bfac0df9b62729bf4016a9b6b6ef9992b50f03cbac248e5f9db7a19c72e64aea",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.29.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.29.0/PCGameLauncherCompanion-2.29.0-win-x64.zip",
-      "size": 81892382,
-      "sha256": "74aec897073055810188b029dba937e0b92475fd0d76d946c7f413152bb43327"
-    },
-    "notes": "Gaming-Raum (Navigation → Gaming-Raum): gezeichneter 2.5D-Raum, dessen Objekte zu vorhandenen Bereichen führen – PC → Spiele, Poster mit deinem Lieblingsspiel → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck · Raum bearbeiten: bis zu 6 Varianten, 5 Stile, Lichtfarbe, Objekte ein-/ausblenden, Deko aus deinen Sammelstücken platzieren und verschieben (ziehen oder Pfeiltasten) · Optional als Startseite – das Dashboard bleibt über „Dashboard“ erreichbar",
-    "changes": {
-      "neu": [
-        "Gaming-Raum (Navigation → Gaming-Raum): gezeichneter 2.5D-Raum, dessen Objekte zu vorhandenen Bereichen führen – PC → Spiele, Poster mit deinem Lieblingsspiel → Bibliothek, Regal → Backlog, Pokal → Trophäenraum, Lampe → Design, Lautsprecher → Soundboard, Controller → Deck",
-        "Raum bearbeiten: bis zu 6 Varianten, 5 Stile, Lichtfarbe, Objekte ein-/ausblenden, Deko aus deinen Sammelstücken platzieren und verschieben (ziehen oder Pfeiltasten)",
-        "Optional als Startseite – das Dashboard bleibt über „Dashboard“ erreichbar",
-        "Trophäenraum → „Sammlung & Fortschritt“: Fortschrittsbaum (Level, Trophäen, Spielzeit – nur aus deinen echten Daten) mit Sammelstücken und Raum-Stilen als Belohnung",
-        "Belohnungskisten: eine pro erreichtem Level ab Level 2, kostenlos, Inhalt vorher sichtbar, jedes Teil gleich wahrscheinlich, nie doppelt",
-        "Regal für Launcher-Sammelstücke: hinstellen, verschieben, herausnehmen – klar getrennt von den Erfolgen aus deinen echten Spieldaten"
-      ],
-      "verbessert": [
-        "Raum und Sammlung funktionieren ohne PC und kommen mit dem Konto in andere Browser mit",
-        "Kein Echtgeld, keine Vorteile, kein Zeitdruck, keine Anmeldepflicht – alles nur Deko"
-      ],
-      "behoben": []
-    },
-    "signature": "ZLwceROg9fWt+eVMS/jyVYMTnr6nZQGdPWZTodHowFht+CgaG48MVQcm3XyCH19UnEdAyeiUHUGXEH9bO8N4zQ=="
   }
 ]

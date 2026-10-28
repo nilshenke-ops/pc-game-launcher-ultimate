@@ -1,30 +1,32 @@
 {
-  "version": "2.74.0",
+  "version": "2.75.0",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.74.0/PCGameLauncherCompanion.exe",
-  "size": 88304337,
-  "sha256": "8f449d5f935658b3dd2956245ab711b3dc77dd42e4545c87a147cca38de228eb",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.75.0/PCGameLauncherCompanion.exe",
+  "size": 88319123,
+  "sha256": "6f873973ef0d5b009e230a0120d1ea9404cd968c3ef21706d6703087d36f087f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.74.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.74.0/PCGameLauncherCompanion-2.74.0-win-x64.zip",
-    "size": 82567797,
-    "sha256": "47d9bed5257de3c51f0247347a7c4d7ae742690dc66beb0199335a61d90f0d6f"
+    "fileName": "PCGameLauncherCompanion-2.75.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.75.0/PCGameLauncherCompanion-2.75.0-win-x64.zip",
+    "size": 82581714,
+    "sha256": "e8281d6bc6c167b4df719f8d92f91d5dd3421890ce19ea836c8acadb1d6f91d1"
   },
-  "notes": "KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten · Vorschau vor dem Speichern: Änderungen werden erst angezeigt („Design-Vorschau – noch nicht gespeichert“), dann „Übernehmen“ oder „Verwerfen“ (Leiste unten oder per Chat); „Letzte Designänderung rückgängig“ und „Ursprüngliches Design wiederherstellen“ (Chat und Einstellungen → Design) · Neue Themes: Minecraft, Purple Gaming, Blue Gaming (zusätzlich zu Neon, Minimal Dark, Cyberpunk, Schwarz-Weiß, Light Mode …)",
+  "notes": "PC-Steuerung (Steuerung → PC-Steuerung): Verbindungsstatus mit letztem Kontakt und Fehlermeldung, Live-Werte (CPU, RAM, GPU, Laufwerke – alle 5 s nur solange die Seite offen ist), laufende Spiele/Programme mit „Beenden“ (mit Bestätigung, sanft wie das X), Favoriten und zuletzt Gestartetes mit einem Tipp, Programme mit dem meisten Speicher/CPU (nur auf Tipp gemessen), Links zu Verbindungs-Check, Geräten & Rechten, Verbindungseinstellungen und Remote Desktop · Spielsitzungen vergleichen: zwei Sitzungen mit CPU/RAM/GPU-Werten nebeneinander (vom PC während des Spielens gemessen) · JARVIS Leistungsanalyse: „Warum läuft mein Spiel langsam?“, „Welche Programme verbrauchen am meisten RAM?“, „Ist meine GPU aktuell stark ausgelastet?“, „Was könnte meine FPS beeinträchtigen?“, „Wie warm ist meine GPU?“ – getrennt in 📊 Gemessen, 💡 Vermutung und ✅ sichere nächste Schritte; nichts wird automatisch geändert oder geschlossen",
   "changes": {
     "neu": [
-      "KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten",
-      "Vorschau vor dem Speichern: Änderungen werden erst angezeigt („Design-Vorschau – noch nicht gespeichert“), dann „Übernehmen“ oder „Verwerfen“ (Leiste unten oder per Chat); „Letzte Designänderung rückgängig“ und „Ursprüngliches Design wiederherstellen“ (Chat und Einstellungen → Design)",
-      "Neue Themes: Minecraft, Purple Gaming, Blue Gaming (zusätzlich zu Neon, Minimal Dark, Cyberpunk, Schwarz-Weiß, Light Mode …)",
-      "Einstellungen → Darstellung: Abstände (kompakt/normal/luftig), Schatten (keine/weich/kräftig), Rahmen (dezent/deutlich), große Schaltflächen für iPad/Touch"
+      "PC-Steuerung (Steuerung → PC-Steuerung): Verbindungsstatus mit letztem Kontakt und Fehlermeldung, Live-Werte (CPU, RAM, GPU, Laufwerke – alle 5 s nur solange die Seite offen ist), laufende Spiele/Programme mit „Beenden“ (mit Bestätigung, sanft wie das X), Favoriten und zuletzt Gestartetes mit einem Tipp, Programme mit dem meisten Speicher/CPU (nur auf Tipp gemessen), Links zu Verbindungs-Check, Geräten & Rechten, Verbindungseinstellungen und Remote Desktop",
+      "Spielsitzungen vergleichen: zwei Sitzungen mit CPU/RAM/GPU-Werten nebeneinander (vom PC während des Spielens gemessen)",
+      "JARVIS Leistungsanalyse: „Warum läuft mein Spiel langsam?“, „Welche Programme verbrauchen am meisten RAM?“, „Ist meine GPU aktuell stark ausgelastet?“, „Was könnte meine FPS beeinträchtigen?“, „Wie warm ist meine GPU?“ – getrennt in 📊 Gemessen, 💡 Vermutung und ✅ sichere nächste Schritte; nichts wird automatisch geändert oder geschlossen",
+      "Begleiter: library.close (Spiel/Programm aus der Bibliothek sanft schließen), monitor.now (eine Messung für Fragen), system.topProcesses (Speicher/CPU je Programm, nur auf Anfrage, 5 s zwischengespeichert)"
     ],
     "verbessert": [
-      "Auch die bisherigen Design-Befehle („Mach das Design hell“, „Hintergrund Weltall“ …) zeigen jetzt zuerst eine Vorschau statt sofort zu speichern",
-      "Lesbarkeit geschützt: zu schwache Akzentfarben werden angepasst oder nicht übernommen (mit Hinweis); Menü, Widgets und Funktionen ändert der Design-Editor nie"
+      "FPS werden weiterhin nur als „nicht verfügbar“ angezeigt, solange kein zuverlässiger Frame-Zähler eingebunden ist; JARVIS nennt das ausdrücklich",
+      "Windows-Prozesse, Treiber, Launcher, Anti-Cheat und Sicherheitssoftware werden nie zum Schließen vorgeschlagen"
     ],
-    "behoben": []
+    "behoben": [
+      "Anmelde-Sperre zählt nur noch fehlgeschlagene Versuche: Mehrere Geräte hinter einem Router, Relay oder Tailscale, die sich oft neu verbinden, wurden nach 20 gültigen Anmeldungen in 5 Minuten fälschlich abgewiesen („Nicht angemeldet“). Schutz gegen Raten bleibt (20 Fehlversuche → kurze Sperre)"
+    ]
   },
-  "signature": "kwbvZk3dA5oNK54ssX0qEG0ReyPN+Xajl7KruLnvXYpNoYTi2Rxwr1OBvyluQ+3ogfXRsNnkYcjkzHK3BsJL0w=="
+  "signature": "17GiagpYCNaaQLrBObz2fYrUI0BOUCJrnMBP+FkXeb5vAW6uJRX3rzVVs7ihoedqu1A8+CUkt+PA0PQF964C/g=="
 }
