@@ -1404,6 +1404,19 @@ test("JARVIS Gaming-Wissen: Sensitivität rechnen, Ratgeber mit Quelle, Ausgaben
   await say.press("Enter");
   await expect(last()).toContainText("Counter-Strike 2 1,2 → Valorant 0,377");
   await expect(last()).toContainText("43,3 cm");
+  // Tone "locker": a one-liner after the answer, facts unchanged; "sachlich" again removes it.
+  await say.fill("Sei lockerer");
+  await say.press("Enter");
+  await expect(last()).toContainText("Ab jetzt locker");
+  await p.locator("summary", { hasText: "Stimme & Ton" }).click();
+  await expect(p.getByRole("button", { name: "Locker (mit Sprüchen)" })).toHaveAttribute("aria-pressed", "true");
+  await say.fill("Rechne meine CS2-Sensitivität 1,2 bei 800 DPI in Valorant um");
+  await say.press("Enter");
+  await expect(last()).toContainText("Valorant 0,377");
+  await expect(last()).toContainText("😏");
+  await say.fill("Sprich wieder sachlich");
+  await say.press("Enter");
+  await expect(last()).toContainText("wieder sachlich");
   await say.fill("Meine Augen brennen nach dem Zocken");
   await say.press("Enter");
   await expect(last()).toContainText("20-20-20");

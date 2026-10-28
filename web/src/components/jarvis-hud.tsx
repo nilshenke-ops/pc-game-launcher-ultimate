@@ -2,12 +2,14 @@
 // matters for gaming (PC, running game, profile, memory) and his skills as a command deck. Pure CSS animation,
 // switched off with "weniger Bewegung"; no timers – everything comes from existing state.
 
-import { Brain, Gamepad2, Mic, Volume2, VolumeX, Wifi, WifiOff, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Brain, Gamepad2, Mic, SlidersHorizontal, Volume2, VolumeX, Wifi, WifiOff, Zap } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useAppState } from "../lib/state";
 import { useJournalVersion } from "../lib/journal";
 import { memoryCount } from "../lib/jarvis-memory";
-import { setVoice, stopSpeaking, useVoice } from "../lib/jarvis-voice";
+import { NATURAL_LABEL, naturalness, setVoice, setVoiceCfg, stopSpeaking, testVoice, useVoice, voiceCfg, voicesFor } from "../lib/jarvis-voice";
+import { setStyle, useStyle, type JarvisStyle } from "../lib/jarvis-style";
 
 /** Skills = small tools with one purpose each; the deck only fills in an example – nothing runs before sending. */
 const SKILLS = () => [
@@ -47,11 +49,55 @@ export function JarvisHud({ busy, listening, active, online, onPick }: { busy: b
             </button>
           )}
         </div>
+        {voice.supported && <VoiceSettings />}
         <details className="jv-skills">
           <summary className="small"><Mic size={13} /> {t("Fähigkeiten")}</summary>
           <div className="chips wrap">{SKILLS().map((s) => <button key={s.name} type="button" className="chip" title={s.ex} onClick={() => onPick(s.ex)}>{s.name}</button>)}</div>
         </details>
       </div>
     </div>
+  );
+}
+
+/** Which voice JARVIS speaks with (the most human-sounding voices of this device first), speed, pitch and his tone. */
+function VoiceSettings() {
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>(() => window.speechSynthesis.getVoices());
+  useEffect(() => {
+    const up = () => setVoices(window.speechSynthesis.getVoices());
+    window.speechSynthesis.addEventListener?.("voiceschanged", up);
+    up();
+    return () => window.speechSynthesis.removeEventListener?.("voiceschanged", up);
+  }, []);
+  const [cfg, setCfg] = useState(voiceCfg);
+  const style = useStyle();
+  const lang = document.documentElement.lang === "en" ? "en-US" : "de-DE";
+  const list = voicesFor(lang, voices);
+  const update = (c: Partial<typeof cfg>) => { setVoiceCfg(c); setCfg(voiceCfg()); };
+  const best = list[0];
+  const chosen = list.find((v) => v.voiceURI === cfg.voiceURI) ?? best;
+  return (
+    <details className="jv-skills">
+      <summary className="small"><SlidersHorizontal size={13} /> {t("Stimme & Ton")}</summary>
+      <div className="stack-sm small" style={{ marginTop: 8 }}>
+        {list.length === 0 ? <span className="muted">{t("Dieser Browser hat keine Stimmen für diese Sprache.")}</span> : (
+          <label className="stack-sm">
+            <span>{t("Stimme")}</span>
+            <select className="input" value={cfg.voiceURI ?? ""} onChange={(e) => update({ voiceURI: e.target.value || null })} aria-label={t("Stimme")}>
+              <option value="">{t("Automatisch (natürlichste: {n})", { n: best?.name ?? "–" })}</option>
+              {list.map((v) => <option key={v.voiceURI} value={v.voiceURI}>{v.name} – {t(NATURAL_LABEL[naturalness(v)])}</option>)}
+            </select>
+          </label>
+        )}
+        {chosen && naturalness(chosen) < 2 && <span className="muted">{t("Für eine wirklich menschlich klingende Stimme: am PC oder Android den Browser Microsoft Edge nutzen (Stimmen „… Online (Natural)“, z. B. Conrad, Killian, Katja, Amala) oder unter Android in den Einstellungen „Google Sprachausgabe“ mit einer hochwertigen deutschen Stimme wählen. iPhone/iPad: Einstellungen → Bedienungshilfen → Gesprochene Inhalte → Stimmen → Deutsch → eine „Premium“- oder „Erweitert“-Stimme laden.")}</span>}
+        <label className="row" style={{ gap: 8 }}><span style={{ minWidth: 70 }}>{t("Tempo")}</span><input type="range" min={0.6} max={1.6} step={0.05} value={cfg.rate} onChange={(e) => update({ rate: Number(e.target.value) })} aria-label={t("Tempo")} className="grow" /><span>{cfg.rate.toFixed(2)}×</span></label>
+        <label className="row" style={{ gap: 8 }}><span style={{ minWidth: 70 }}>{t("Tonhöhe")}</span><input type="range" min={0.5} max={1.5} step={0.05} value={cfg.pitch} onChange={(e) => update({ pitch: Number(e.target.value) })} aria-label={t("Tonhöhe")} className="grow" /><span>{cfg.pitch.toFixed(2)}</span></label>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <button type="button" className="chip" onClick={() => testVoice(style === "locker" ? t("Na, wer hat mich gerufen? Ich bin JARVIS – und ich hab heute richtig Bock aufs Zocken.") : undefined)}>{t("Probe hören")}</button>
+          <span className="muted">{t("Ton")}:</span>
+          {(["sachlich", "locker"] as JarvisStyle[]).map((s) => <button key={s} type="button" className={`chip ${style === s ? "on" : ""}`} aria-pressed={style === s} onClick={() => setStyle(s)}>{s === "sachlich" ? t("Sachlich") : t("Locker (mit Sprüchen)")}</button>)}
+        </div>
+        <span className="muted tiny">{t("„Locker“ hängt nach erledigten Aufträgen einen frechen Spruch an – Zahlen und Fakten bleiben gleich, bei Fehlern und Rückfragen gibt es keinen Spruch. JARVIS ahmt keine echte Person nach.")}</span>
+      </div>
+    </details>
   );
 }

@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.69.0 – 2026-10-28
+### Neu
+- JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“
+- Ton „Locker (mit Sprüchen)“: nach erledigten Aufträgen ein frecher Spruch unter der Antwort (spät nachts mit Hinweis auf die Uhrzeit) – Zahlen und Fakten bleiben unverändert, bei Fehlern und Rückfragen kein Spruch; per Chat umschaltbar („Sei lockerer“ / „Sprich wieder sachlich“). JARVIS ahmt keine echte Person nach
+### Verbessert
+- Emojis werden nicht mehr vorgelesen
+
 ## 2.68.1 – 2026-10-28
 ### Behoben
 - Handy koppeln mit eingeschaltetem Tailscale-HTTPS: Der QR-Code führte zur Website mit dem Tailscale-Namen (…ts.net) – den findet ein Handy ohne laufendes Tailscale nicht („ERR_NAME_NOT_RESOLVED“). Jetzt öffnet der QR-Code zuerst die WLAN-IP (funktioniert immer im selben WLAN); der Tailscale-Link bleibt für unterwegs auswählbar

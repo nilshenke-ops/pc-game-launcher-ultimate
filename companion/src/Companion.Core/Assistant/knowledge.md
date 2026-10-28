@@ -505,3 +505,8 @@ Frag JARVIS z. B. „Was gibt es bei Epic gratis?“ (jetzt und demnächst), „
 Seite: /journal
 Stichworte: wo war ich stehen geblieben was als nächstes quest nebenquest hinweis merken erinnern spoiler keine spoiler lösung story zusammenfassen welches spiel passt minuten
 Frag JARVIS z. B. „Wo war ich in Hogwarts Legacy stehen geblieben?“, „Was sollte ich in … als Nächstes machen?“, „Ich bin in … gerade bei …“, „Speichere diesen Hinweis für …: …“, „Erinnere mich daran, dass ich in … noch die Nebenquest … machen will“, „Keine Spoiler für …“ / „Ausführliche Lösung für …“, „Wie komme ich in … weiter bei …?“, „Fasse die Story von … bis zu meinem Stand zusammen“ oder „Ich habe heute 20 Minuten“. JARVIS nutzt nur deine Einträge im Spiele-Journal (ansehen, ändern, löschen dort) und erfindet keinen Fortschritt.
+
+## JARVIS: Stimme und Ton
+Seite: /assistant
+Stichworte: stimme ändern natürlich menschlich tempo tonhöhe locker lustig sprüche sachlich sprachausgabe
+Auf der JARVIS-Seite unter „Stimme & Ton“: Stimme wählen (die natürlichsten stehen oben – am menschlichsten klingen die „Natural“-Stimmen im Browser Microsoft Edge, auf iPhone/iPad „Premium“/„Erweitert“-Stimmen), Tempo, Tonhöhe, „Probe hören“. Ton „Locker“ hängt nach erledigten Aufträgen einen Spruch an; „Sei lockerer“ / „Sprich wieder sachlich“ geht auch im Chat.

@@ -28,6 +28,14 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
   if (offTopic(question)) return { reply: reply(OFF_TOPIC()), steps: [] };
   if (codeRequest(question)) return { reply: reply(CODE()), steps: [] };
+  // "Sei lockerer" / "Sprich wieder sachlich": JARVIS' tone, right away.
+  const tone = /^(?:jarvis,?\s*)?(?:sei|sprich|rede|antworte)\b.{0,25}\b(locker(?:er)?|lustig(?:er)?|frech(?:er)?|mit sprüchen)\b/i.test(question) ? "locker"
+    : /^(?:jarvis,?\s*)?(?:sei|sprich|rede|antworte)\b.{0,25}\b(sachlich(?:er)?|seriös(?:er)?|ernst(?:er)?|ohne sprüche|normal)\b/i.test(question) ? "sachlich" : null;
+  if (tone) {
+    const { setStyle } = await import("./jarvis-style");
+    setStyle(tone);
+    return { reply: reply(tone === "locker" ? "✓ Ab jetzt locker. Ich hoffe, du verträgst Sprüche. 😏 (Zurück mit „Sprich wieder sachlich“.)" : "✓ Ab jetzt wieder sachlich – keine Sprüche mehr."), steps: [{ text: question, ok: true }] };
+  }
   // "Merk dir einen Hinweis für Elden Ring: …" belongs to that game's journal, not to the general memory.
   const { coachIntent: coach } = await import("./game-coach");
   const mem = coach(question) ? null : memoryIntent(question);
@@ -168,7 +176,9 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     texts.push(parts.length > 1 ? `${n + 1}. ${r.text}` : r.text);
     if (r.ok === false && !last) { texts.push(t("Die weiteren Schritte habe ich deshalb nicht ausgeführt.")); break; }
   }
-  const out = reply(texts.join("\n\n"), buttons.slice(0, 8), [...sources]);
+  // Tone "locker": a one-liner after a successful answer (facts unchanged); never after an error or an open question.
+  const { withStyle } = await import("./jarvis-style");
+  const out = reply(withStyle(texts.join("\n\n"), steps.length > 0 && steps.every((x) => x.ok === true) ? true : null), buttons.slice(0, 8), [...sources]);
   // The log page ("JARVIS-Protokoll") – only what really happened.
   try { logDone(question, steps.map((s, i) => ({ text: texts[i] ?? s.text, ok: s.ok }))); } catch { /* storage full – the result is still shown */ }
   return { reply: out, steps, undo, navigate, conversationId, bingoId };
