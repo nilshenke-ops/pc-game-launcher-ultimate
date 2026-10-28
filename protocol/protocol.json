@@ -58,6 +58,7 @@
     "quests.configure": "manage",
     "deals.list": "view",
     "news.steam": "view",
+    "games.facts": "view",
     "deals.keyforsteam": "view",
     "jarvis.session": "view",
     "bingo.webTasks": "view",

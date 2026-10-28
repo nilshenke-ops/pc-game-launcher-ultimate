@@ -267,6 +267,8 @@ public static class RpcApi
         rpc.Register("deals.save", ctx => s.Deals.Save(ctx.Bind<WishItem>()));
         rpc.Register("deals.remove", ctx => { s.Deals.Remove(ctx.Str("id", 64)); return true; });
         // Official patch notes / announcements of a Steam game – only on request (F13 Update-Erklärer).
+        // JARVIS: what a game is, its price and how many play it right now – Steam's own store data, only on request.
+        rpc.Register("games.facts", async ctx => await s.SteamAchievements.FactsAsync(ctx.Str("name", 100)));
         rpc.Register("news.steam", async ctx =>
         {
             var count = ctx.Params.TryGetProperty("count", out var nc) && nc.ValueKind == JsonValueKind.Number && nc.TryGetInt32(out var n) ? n : 8;

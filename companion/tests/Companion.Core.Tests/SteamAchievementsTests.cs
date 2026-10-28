@@ -114,4 +114,22 @@ public class SteamAchievementsTests
         Assert.Null(await s.FindAppAsync("Halo"));
         await Assert.ThrowsAsync<RpcException>(() => s.FindAppAsync("x"));
     }
+
+    [Fact]
+    public void Store_facts_are_passed_on_as_Steam_says_nothing_filled_in()
+    {
+        const string json = """{"1145360":{"success":true,"data":{"name":"Hades","is_free":false,"short_description":"Trotze dem Gott der Toten &amp; <b>entkomme</b>.","developers":["Supergiant Games"],"publishers":["Supergiant Games"],"price_overview":{"currency":"EUR","initial":2450,"final":1225,"discount_percent":50},"platforms":{"windows":true,"mac":true,"linux":false},"metacritic":{"score":93,"url":"https://www.metacritic.com/game/pc/hades"},"genres":[{"id":"1","description":"Action"},{"id":"25","description":"Indie"}],"release_date":{"coming_soon":false,"date":"17. Sep. 2020"}}}}""";
+        var f = SteamAchievementsService.ParseFacts(json, 1145360, "x");
+        Assert.Equal(("Hades", 1225, 2450, 50, 93), (f.Name, f.PriceCents, f.InitialCents, f.Discount, f.Metacritic));
+        Assert.Equal("Trotze dem Gott der Toten & entkomme.", f.Description);
+        Assert.Equal(new[] { "Windows", "macOS" }, f.Platforms);
+        Assert.Equal("17. Sep. 2020", f.Release);
+        Assert.Null(f.PlayersNow);
+        // A free game has no price, an unknown score stays unknown.
+        var free = SteamAchievementsService.ParseFacts("""{"730":{"success":true,"data":{"name":"Counter-Strike 2","is_free":true}}}""", 730, "x");
+        Assert.True(free.Free);
+        Assert.Null(free.PriceCents);
+        Assert.Null(free.Metacritic);
+        Assert.Equal("not-found", Assert.Throws<RpcException>(() => SteamAchievementsService.ParseFacts("""{"1":{"success":false}}""", 1, "x")).Code);
+    }
 }

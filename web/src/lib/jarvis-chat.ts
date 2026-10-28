@@ -52,8 +52,10 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     const pt = playtimeIntent(part);
     const { gamingIntent } = await import("./gaming-intel");
     const gi = pt ? null : gamingIntent(part);
-    const setup = pt || gi ? null : setupReply(part, getPrefs(), navItems());
-    const site = setup || pt || gi ? null : siteIntent(part);
+    const { researchIntent } = await import("./gaming-research");
+    const ri = pt || gi ? null : researchIntent(part);
+    const setup = pt || gi || ri ? null : setupReply(part, getPrefs(), navItems());
+    const site = setup || pt || gi || ri ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
     if (gi) {
       // Gaming knowledge beyond the app: free games, news, sensitivity, health, setup, lag, controller, spending.
@@ -61,6 +63,15 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       for (let i = 0; !ctx.online && gi.kind === "news" && client.status.phase === "connecting" && i < 40; i++) await new Promise((res) => setTimeout(res, 100));
       const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
       const a = await gamingAnswer(gi, online);
+      r = { text: a.text, ok: a.ok };
+      a.sources.forEach((x) => sources.add(x));
+      buttons.push(...a.links.map((l) => ({ kind: "openUrl", label: l.label, params: { url: l.url } })), ...(a.navigate ?? []).map((n) => ({ kind: "navigate", label: n.label, path: n.path })));
+    } else if (ri) {
+      // Research on request: Steam (through the PC), speedrun.com, FreeToGame, Microsoft Store / Wikipedia.
+      const { researchAnswer } = await import("./gaming-research");
+      for (let i = 0; !ctx.online && client.status.phase === "connecting" && i < 40; i++) await new Promise((res) => setTimeout(res, 100));
+      const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
+      const a = await researchAnswer(ri, online);
       r = { text: a.text, ok: a.ok };
       a.sources.forEach((x) => sources.add(x));
       buttons.push(...a.links.map((l) => ({ kind: "openUrl", label: l.label, params: { url: l.url } })), ...(a.navigate ?? []).map((n) => ({ kind: "navigate", label: n.label, path: n.path })));

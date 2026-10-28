@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.66.0 – 2026-10-28
+### Neu
+- JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle:
+- „Was ist Hollow Knight für ein Spiel?“, „Erzähl mir was über …“, „Wer hat … entwickelt?“, „Wann ist … erschienen?“, „Lohnt sich …?“ – Beschreibung, Genre, Entwickler, Erscheinungsdatum, Steam-Preis, Metacritic-Wertung, Plattformen (auch Steam Deck/Linux) und wie viele gerade spielen; ohne PC aus Microsoft Store/Wikipedia
+- „Was kostet Hades?“ / „Ist … im Angebot?“ – aktueller Steam-Preis mit Rabatt, Weg zum Deal Radar
+- „Wie viele Leute spielen gerade Counter-Strike 2?“ – aktuelle Spielerzahl auf Steam
+- „Läuft Cyberpunk 2077 auf meinem PC?“ – Steams Systemanforderungen neben den echten Werten deines PCs (✓/✗ je Punkt)
+- „Was ist der Weltrekord in Celeste?“ – bestätigte Speedrun-Rekorde je Kategorie von speedrun.com, mit Läufer und Datum
+- „Gute Free-to-Play-Shooter?“ – beliebte kostenlose PC-Spiele nach Art (Shooter, MMORPG, MOBA, Battle Royale, für schwache PCs …) von FreeToGame.com
+
 ## 2.65.0 – 2026-10-28
 ### Neu
 - JARVIS kennt jetzt Gaming über die App hinaus – immer nur auf deine Frage, mit Quelle:

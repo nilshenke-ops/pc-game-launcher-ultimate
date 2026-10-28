@@ -268,6 +268,80 @@ public sealed class SteamAchievementsService : IDisposable
         return app;
     }
 
+    public sealed record GameFacts(int AppId, string Name, string Url, List<string> Developers, List<string> Publishers, string? Release, bool ComingSoon,
+        bool Free, int? PriceCents, int? InitialCents, int Discount, string? Currency, int? Metacritic, string? MetacriticUrl, List<string> Genres,
+        string? Description, List<string> Platforms, int? PlayersNow, DateTime FetchedAt, string Source);
+
+    readonly Dictionary<int, GameFacts> _facts = new();
+
+    /// <summary>
+    /// JARVIS "Was ist X für ein Spiel / was kostet es / wie viele spielen gerade?": Steam's own store page data
+    /// (appdetails, German, prices in €) and the current player count (ISteamUserStats) – passed on as Steam says it, kept 30 min.
+    /// </summary>
+    public async Task<GameFacts> FactsAsync(string game)
+    {
+        var app = await FindAppAsync(game) ?? throw new RpcException("not-found", $"„{game.Trim()}“ habe ich im Steam-Shop nicht eindeutig gefunden.");
+        lock (_facts) if (_facts.TryGetValue(app.id, out var c) && DateTime.UtcNow - c.FetchedAt < TimeSpan.FromMinutes(30)) return c;
+        var f = ParseFacts(await GetAsync($"{StoreBase}/api/appdetails?appids={app.id}&l=german&cc=DE"), app.id, app.name);
+        try
+        {
+            using var doc = JsonDocument.Parse(await GetAsync($"{ApiBase}/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid={app.id}"));
+            if (doc.RootElement.TryGetProperty("response", out var r) && r.TryGetProperty("player_count", out var pc) && pc.TryGetInt32(out var n)) f = f with { PlayersNow = n };
+        }
+        catch (Exception e) when (e is RpcException or JsonException) { /* no count – said as unknown */ }
+        lock (_facts) { if (_facts.Count > 300) _facts.Clear(); _facts[app.id] = f; }
+        return f;
+    }
+
+    public static GameFacts ParseFacts(string json, int appId, string fallbackName)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            if (!doc.RootElement.TryGetProperty(appId.ToString(), out var root) || !root.TryGetProperty("success", out var ok) || ok.ValueKind != JsonValueKind.True || !root.TryGetProperty("data", out var d))
+                throw new RpcException("not-found", "Steam hat zu diesem Spiel keine Shop-Daten.");
+            string? S(JsonElement e, string k) => e.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.String && v.GetString() is { Length: > 0 } x ? x : null;
+            List<string> L(string k, string? field = null)
+            {
+                var list = new List<string>();
+                if (d.TryGetProperty(k, out var a) && a.ValueKind == JsonValueKind.Array)
+                    foreach (var x in a.EnumerateArray())
+                        if ((field == null ? (x.ValueKind == JsonValueKind.String ? x.GetString() : null) : S(x, field)) is { Length: > 0 } v && list.Count < 8) list.Add(v.Length > 80 ? v[..80] : v);
+                return list;
+            }
+            int? price = null, initial = null; var discount = 0; string? cur = null;
+            if (d.TryGetProperty("price_overview", out var po) && po.ValueKind == JsonValueKind.Object)
+            {
+                if (po.TryGetProperty("final", out var fi) && fi.TryGetInt32(out var fv)) price = fv;
+                if (po.TryGetProperty("initial", out var ii) && ii.TryGetInt32(out var iv)) initial = iv;
+                if (po.TryGetProperty("discount_percent", out var di) && di.TryGetInt32(out var dv)) discount = dv;
+                cur = S(po, "currency");
+            }
+            int? mc = null; string? mcUrl = null;
+            if (d.TryGetProperty("metacritic", out var m) && m.ValueKind == JsonValueKind.Object)
+            {
+                if (m.TryGetProperty("score", out var sc) && sc.TryGetInt32(out var sv)) mc = sv;
+                mcUrl = S(m, "url") is { } u && u.StartsWith("https://") ? u : null;
+            }
+            string? release = null; var soon = false;
+            if (d.TryGetProperty("release_date", out var rd) && rd.ValueKind == JsonValueKind.Object)
+            {
+                release = S(rd, "date");
+                soon = rd.TryGetProperty("coming_soon", out var cs) && cs.ValueKind == JsonValueKind.True;
+            }
+            var platforms = new List<string>();
+            if (d.TryGetProperty("platforms", out var pl) && pl.ValueKind == JsonValueKind.Object)
+                foreach (var (k, label) in new[] { ("windows", "Windows"), ("mac", "macOS"), ("linux", "Linux / Steam Deck (SteamOS)") })
+                    if (pl.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.True) platforms.Add(label);
+            var desc = S(d, "short_description");
+            if (desc != null) { desc = System.Net.WebUtility.HtmlDecode(Regex.Replace(desc, "<[^>]+>", "")).Trim(); if (desc.Length > 600) desc = desc[..600] + " …"; }
+            return new GameFacts(appId, S(d, "name") ?? fallbackName, $"https://store.steampowered.com/app/{appId}", L("developers"), L("publishers"), release, soon,
+                d.TryGetProperty("is_free", out var fr) && fr.ValueKind == JsonValueKind.True, price, initial, discount, cur, mc, mcUrl, L("genres", "description"),
+                desc, platforms, null, DateTime.UtcNow, "Steam-Shop (store.steampowered.com)");
+        }
+        catch (JsonException) { throw new RpcException("unavailable", "Steam hat unerwartet geantwortet."); }
+    }
+
     /// <summary>
     /// Everything the internet says about a game for a bingo: Steam (achievements with unlock rates, genres, features,
     /// description) – or, for games not on Steam, the Wikipedia summary. Only the user's agreement triggers this.

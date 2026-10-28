@@ -83,7 +83,19 @@ Nicht testbar hier: echte IGDB-Antworten (es gibt keine Twitch-Anwendung in dies
 
 Getestet: Unit-Tests (Absichten, Rechnung, Antworten mit Mock), e2e (Sensitivität, Ratgeber, Ausgaben eintragen/löschen) und ein Browser-Test mit echtem Internet (GamerPower: echte Epic-Angebote; Steam-News zu Hades über den Begleiter).
 
-## 7. Weitere Funktionen A–J – noch offen
+## 7. JARVIS recherchiert (2.66.0)
+| Frage | Quelle | ohne PC |
+|---|---|---|
+| Was ist … für ein Spiel / Entwickler / Erscheinungsdatum / lohnt es sich | Steam-Shop `appdetails` (über den PC, Spiel per Name – nur dasselbe Spiel) | Microsoft Store / Wikipedia |
+| Was kostet … / im Angebot? | Steam-Shop Deutschland (Preis, Rabatt) | nein (Deal Radar mit gemerkten Preisen) |
+| Wie viele spielen gerade … | Steam `GetNumberOfCurrentPlayers` (nur Steam-Spieler, so gesagt) | nein |
+| Läuft … auf meinem PC? | Steams Systemanforderungen + echte PC-Werte (bestehender Kompatibilitäts-Check) | nein |
+| Weltrekord / Speedrun | speedrun.com API (bestätigte Läufe, CORS erlaubt) | ja |
+| Free-to-Play-Spiele nach Art | FreeToGame.com API (Namensnennung mit Link) | ja |
+
+Live getestet mit echtem Internet: Hollow Knight (Steam-Daten, 7 882 Spieler), Hades (24,50 €, Anforderungen gegen den Test-PC), Counter-Strike 2 (1,2 Mio. Spieler), Celeste (Weltrekorde), Free-to-Play-Shooter.
+
+## 8. Weitere Funktionen A–J – noch offen
 Diese Punkte sind **noch nicht umgesetzt**. Für jeden steht, worauf er aufbauen kann:
 - **A Zeitplaner:** Zeit-Finder und Kalender plus die Spielzeitanalyse.
 - **B Fortschrittsassistent:** Journal „Wo war ich?“ und die Fortschrittsangabe.

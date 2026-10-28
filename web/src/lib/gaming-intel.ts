@@ -50,7 +50,7 @@ export function gamingIntent(text: string): GamingIntent | null {
   const q = text.trim();
   const l = q.toLowerCase();
   // Free games right now ("Welche Spiele gibt es gerade gratis auf Epic?").
-  if (/\b(gratis|kostenlos\w*|umsonst|free|geschenkt|verschenkt\w*)\b/.test(l) && /\b(spiele?|games?|items?|loot|dlcs?|skins?|giveaways?)\b/.test(l) && !/\bbingo\b/.test(l)) {
+  if (/\b(gratis|kostenlos\w*|umsonst|free|geschenkt|verschenkt\w*)\b/.test(l) && /\b(spiele?|games?|items?|loot|dlcs?|skins?|giveaways?)\b/.test(l) && !/\bbingo\b/.test(l) && !/free[- ]?to[- ]?play|\bf2p\b/.test(l)) {
     const platform = /\bsteam\b/.test(l) ? "steam" : /\bepic\b/.test(l) ? "epic-games-store" : /\bgog\b/.test(l) ? "gog" : /\bxbox\b/.test(l) ? "xbox-series-xs.xbox-one" : /\b(ps5|ps4|playstation)\b/.test(l) ? "ps5.ps4" : /\bswitch\b/.test(l) ? "switch" : /\b(handy|android)\b/.test(l) ? "android" : /\b(iphone|ios)\b/.test(l) ? "ios" : /\bpc\b/.test(l) ? "pc" : null;
     return { kind: "free", platform, loot: /\b(items?|loot|dlcs?|skins?|ingame|in-game)\b/.test(l) };
   }
