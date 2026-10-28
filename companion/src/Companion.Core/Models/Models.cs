@@ -242,6 +242,8 @@ public sealed class Sound
     public int Volume { get; set; } = 100;
     public string? SourceUrl { get; set; }
     public string? Color { get; set; }
+    /// <summary>Emoji shown on the tile (no text, at most a few characters).</summary>
+    public string? Icon { get; set; }
     /// <summary>Repeat until stopped (stop button or "stop all sounds").</summary>
     public bool Loop { get; set; }
     public DateTime AddedAt { get; set; } = DateTime.UtcNow;

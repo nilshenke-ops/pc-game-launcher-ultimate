@@ -1728,3 +1728,7 @@ select.input.studio-tpl { width: auto; min-height: 34px; }
 }
 .design-preview-bar .grow { min-width: 180px; }
 @media (min-width: 900px) { .design-preview-bar { bottom: 24px; } }
+.discord-check { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.discord-check li { padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.discord-check li.ok b { color: var(--success, #34d399); }
+.discord-check li.todo b { color: var(--warning, #fbbf24); }

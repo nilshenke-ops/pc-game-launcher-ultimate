@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { discordSteps } from "../lib/discord-check";
 import { Cable, ExternalLink, Headphones, Mic, RefreshCw, Speaker, Stethoscope, Volume2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -128,6 +129,13 @@ export default function AudioCenter() {
                     <li>{t("In Discord → Sprache & Video: Eingabegerät = „CABLE Output“.")}</li>
                     <li>{t("Monitoring auf deine Kopfhörer stellen, um selbst mitzuhören.")}</li>
                   </ol>
+                  <ul className="discord-check small" aria-label={t("Discord-Check")}>
+                    {discordSteps(s, q.data.devices).map((x) => (
+                      <li key={x.label} className={x.state}><b>{x.state === "ok" ? "✓" : x.state === "todo" ? "✗" : "?"} {t(x.label)}</b><div className="tiny muted">{x.detail}</div></li>
+                    ))}
+                  </ul>
+                  {dirty && <p className="tiny muted">{t("Der Check zeigt deine Auswahl – zum Übernehmen oben „Speichern“.")}</p>}
+                  <Button size="sm" icon={<Volume2 size={15} />} disabled={!q.data.devices.find((d) => d.id === s.outputDeviceId)?.isVirtualCable} onClick={() => tone("output")}>{t("Testton ins Kabel (Freunde sollten ihn hören)")}</Button>
                   <Banner kind="info">{t("Ob andere Teilnehmer den Sound wirklich hören, kann die App nicht prüfen – am besten mit einem Freund oder dem Discord-Mikrofontest kontrollieren.")}</Banner>
                   <a className="btn" href="https://vb-audio.com/Cable/" target="_blank" rel="noreferrer"><ExternalLink size={16} />{t("VB-Audio Virtual Cable (offizielle Seite)")}</a>
                 </div>

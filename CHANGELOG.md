@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.76.0 – 2026-10-28
+### Neu
+- Soundboard: Icon (Emoji) je Sound-Kachel, „Zufallssound“ (aus der aktuellen Auswahl), Vorschläge für Soundboard-Profile beim Anlegen einer Sammlung (Minecraft, Elden Ring, Discord, Horror-Gaming, Lustige Sounds, Eigene Sammlung)
+- Audio Center → Discord einrichten: Discord-Check mit fünf Schritten live aus deiner Auswahl (Kabel installiert, Soundboard aufs Kabel, Mikrofon im Kabel, selbst mithören, Discord-Eingabegerät) – der letzte Schritt ehrlich als „kann keine App prüfen“; „Testton ins Kabel“
+- Abschlussbericht des Ausbaus in docs/AUSBAU-SECHS-FUNKTIONEN.md
+### Verbessert
+- Das Kabel selbst als Mikrofon gewählt wird erkannt und erklärt
+
 ## 2.75.0 – 2026-10-28
 ### Neu
 - PC-Steuerung (Steuerung → PC-Steuerung): Verbindungsstatus mit letztem Kontakt und Fehlermeldung, Live-Werte (CPU, RAM, GPU, Laufwerke – alle 5 s nur solange die Seite offen ist), laufende Spiele/Programme mit „Beenden“ (mit Bestätigung, sanft wie das X), Favoriten und zuletzt Gestartetes mit einem Tipp, Programme mit dem meisten Speicher/CPU (nur auf Tipp gemessen), Links zu Verbindungs-Check, Geräten & Rechten, Verbindungseinstellungen und Remote Desktop

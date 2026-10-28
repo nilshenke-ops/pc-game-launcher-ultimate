@@ -125,6 +125,8 @@ export interface Sound {
   volume: number;
   sourceUrl?: string;
   color?: string;
+  /** Emoji on the tile. */
+  icon?: string | null;
   loop?: boolean;
   addedAt: string;
 }

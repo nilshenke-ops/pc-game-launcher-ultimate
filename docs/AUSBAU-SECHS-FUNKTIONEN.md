@@ -23,10 +23,10 @@ liegen im Browser und werden über den PC zwischen Geräten abgeglichen (Journal
 
 ## 2. Reihenfolge
 
-1. Gaming-Gedächtnis + Challenge-Generator in JARVIS (reine Web-App, keine neue Abhängigkeit) – **2.73.0**
-2. KI-Design-Editor mit Vorschau (baut auf den vorhandenen Design-Einstellungen auf)
-3. PC-Steuerzentrale + Performance-Analyse (brauchen den Windows-Begleiter)
-4. Soundboard-Ausbau + Discord-Assistent
+1. Gaming-Gedächtnis + Challenge-Generator in JARVIS – **2.73.0**
+2. KI-Design-Editor mit Vorschau – **2.74.0**
+3. PC-Steuerzentrale + Performance-Analyse – **2.75.0**
+4. Soundboard-Ausbau + Discord-Check – **2.76.0**
 
 ## 3. Grenzen (ehrlich)
 
@@ -38,3 +38,33 @@ liegen im Browser und werden über den PC zwischen Geräten abgeglichen (Journal
   Nutzer selbst; der Begleiter installiert keine Treiber und ändert die Windows-Standardgeräte nicht.
 - iOS/iPadOS: Die Website im WLAN braucht die Erlaubnis „Lokales Netzwerk“ für Safari bzw. die Home-Bildschirm-App;
   unterwegs nur über Tailscale/Relay.
+
+## 4. Abschlussbericht
+
+### Umgesetzt
+| Funktion | Version | Was neu ist | Erweiterte Bestandteile |
+|---|---|---|---|
+| 1 Gaming-Gedächtnis | 2.73.0 | Plan mit Spielerkennung, „zuletzt“/„heute“, alle offenen Projekte, Gamer-Profil, meist/zuletzt gespielt, Herkunft [vom PC gemessen]/[deine Angabe]/[Schätzung], letzte Sitzung vom PC, geschaffte Challenge → Gedächtnis | Quest-Coach (`web/src/lib/game-coach.ts`), Spiele-Journal |
+| 5 Challenge-Generator | 2.73.0 | JARVIS-Chat mit Anzahl, Schwierigkeit, Kategorie, Zeit, Spoiler, Mitspieler, schwieriger/leichter/noch eine/geschafft/bewerten; Katalog + GTA, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires; Sterne | `web/src/lib/challenge-chat.ts`, `bingo-catalog.ts`, `pages/Play.tsx` (Bingo blieb, wie es war) |
+| 6 KI-Design-Editor | 2.74.0 | Sprache → mehrere Designwerte, Vorschau-Leiste, Übernehmen/Verwerfen, Rückgängig, Ursprungsdesign, Abstände/Schatten/Rahmen/große Schaltflächen, Themes Minecraft/Purple/Blue | `prefs.ts`/`prefs-core.ts` (vorhandene Theme-Verwaltung), `design-ai.ts`, `design-preview-bar.tsx`, Einstellungen → Design |
+| 3/7 PC-Steuerung + Leistung | 2.75.0 | Seite PC-Steuerung, Beenden mit Bestätigung, Programme mit meistem RAM/CPU (auf Anfrage), Sitzungsvergleich, JARVIS-Leistungsfragen (Messung/Vermutung/Schritte); Anmelde-Sperre zählt nur Fehlversuche | `pages/Control.tsx`, `perf-chat.ts`, Begleiter `ProcessUsageService.cs`, RPCs `library.close`, `monitor.now`, `system.topProcesses` |
+| 12 Soundboard | 2.76.0 | Icon je Kachel, Zufallssound, Profil-Vorschläge für Sammlungen, Discord-Check (5 Schritte, live), Testton ins Kabel | `pages/Soundboard.tsx`, `pages/AudioCenter.tsx`, `discord-check.ts`, Begleiter `Sound.Icon` |
+
+### Tests
+Jede Stufe: Begleiter-Tests (xUnit), Web-Tests (Vitest) und Browser-Tests (Playwright, echter Begleiter unter Linux) grün vor jeder Veröffentlichung; neu u. a. `challenge-chat.test.ts`, `design-ai.test.ts`, `perf-chat.test.ts`, `discord-check.test.ts`, `ProcessUsageTests.cs`, `SoundIconTests.cs`, Anmelde-Sperre in `RpcTests.cs` und End-to-End-Tests für Gedächtnis/Challenges, Design-Vorschau und PC-Steuerung.
+
+### Was wo funktioniert
+- **iPhone/iPad/PC-Browser (ohne PC):** Gedächtnis, Challenges, Bingo, Design-Editor (alles im Browser gespeichert, Abgleich sobald der PC verbunden ist). Gamer-Profil mit gespeichertem PC-Stand (gekennzeichnet).
+- **Mit Windows-Begleiter:** Live-Werte, Beenden, Programm-Messung, Leistungsfragen, Remote Desktop, Soundboard am PC, Discord-Check der Geräte.
+- **Nicht im Linux-Testsystem prüfbar (nur auf deinem Windows-PC):** Abspielen von Sounds, virtuelles Kabel, Programm schließen (Windows-Funktion), GPU-Werte über nvidia-smi.
+
+### Zusätzliche Installationen
+Für Discord: ein virtuelles Audiokabel (z. B. VB-Audio Virtual Cable) – installierst du selbst; der Begleiter installiert keine Treiber. Sonst nichts Neues.
+
+### Grenzen
+FPS werden nicht gemessen (kein PresentMon eingebunden). Spielstände werden nicht ausgelesen. Ob Discord-Teilnehmer etwas hören, kann keine App prüfen. Ausgeschaltete PCs lassen sich nicht steuern.
+
+### Was du selbst tun musst
+1. Begleiter am PC aktualisieren (Update-Zentrale oder Download-Seite).
+2. Für Discord: Kabel installieren, im Audio Center Ausgabe „CABLE Input“ + Mikrofon-Durchleitung, in Discord Eingabegerät „CABLE Output“; der Discord-Check zeigt, was fehlt.
+3. Am iPhone/iPad Safari den Zugriff auf „Lokales Netzwerk“ erlauben (bzw. unterwegs Tailscale nutzen).

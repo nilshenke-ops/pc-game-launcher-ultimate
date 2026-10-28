@@ -415,8 +415,12 @@ public sealed class SoundboardService
         public bool? Favorite { get; set; }
         public int? Volume { get; set; }
         public string? Color { get; set; }
+        public string? Icon { get; set; }
         public bool? Loop { get; set; }
     }
+
+    /// <summary>An emoji for a tile: 1–8 characters, no letters, digits, spaces or markup; "" removes it.</summary>
+    public static string? CleanIcon(string? icon) => icon is { Length: > 0 and <= 8 } && Regex.IsMatch(icon, @"^[^\p{L}\p{N}\s<>&""']+$") ? icon : null;
 
     public Sound Update(SoundUpdate u)
     {
@@ -429,6 +433,7 @@ public sealed class SoundboardService
             if (u.Volume != null) s.Volume = Math.Clamp(u.Volume.Value, 0, 200);
             if (u.Color != null) s.Color = Regex.IsMatch(u.Color, "^#[0-9a-fA-F]{6}$") ? u.Color : null;
             if (u.Loop != null) s.Loop = u.Loop.Value;
+            if (u.Icon != null) s.Icon = CleanIcon(u.Icon);
             return s;
         });
         _hub.Changed("sounds");

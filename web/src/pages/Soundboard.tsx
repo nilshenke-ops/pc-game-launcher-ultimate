@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Clock, MonitorSmartphone, Download, FileAudio, Headphones, Link2, ListMusic, Music, Pause, Pencil, Play, Plus, Search, Square, Star, Trash2, Upload, Volume2 } from "lucide-react";
+import { Clock, MonitorSmartphone, Download, FileAudio, Headphones, Link2, ListMusic, Music, Pause, Pencil, Play, Plus, Search, Shuffle, Square, Star, Trash2, Upload, Volume2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useRpc, toast, useCan } from "../lib/hooks";
@@ -12,6 +12,10 @@ import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, Pag
 import { addPendingFiles, addPendingUrl, MAX_SOUND_BYTES, previewPending, removePending, retryPending, uploadBytes, usePendingSounds } from "../lib/pending-sounds";
 
 const COLORS = ["#22d3ee", "#a78bfa", "#f472b6", "#34d399", "#fbbf24", "#fb923c", "#f87171", "#60a5fa"];
+/** Emoji for the tiles (no free text: only these). */
+const ICONS = ["🔥", "😂", "💀", "👻", "🎃", "💥", "🎉", "👏", "📢", "🚨", "🐔", "🐐", "🤖", "⚔️", "🛡️", "🎮", "🏆", "💎", "⛏️", "🧟", "🎵", "😱", "🤡", "❤️"];
+/** Suggestions for soundboard profiles (collections). */
+const PROFILE_NAMES = ["Minecraft", "Elden Ring", "Discord", "Horror-Gaming", "Lustige Sounds", "Eigene Sammlung"];
 /** Uploads a local audio file to the PC (used by the import dialog while connected). */
 export async function uploadSound(file: File, onProgress?: (p: number) => void) {
   if (file.size > MAX_SOUND_BYTES) throw new Error(t("{f}: Datei ist zu groß (max. 20 MB).", { f: file.name }));
@@ -144,6 +148,7 @@ export default function Soundboard() {
             <option value="">{t("Alle Sounds")}</option>
             {data?.collections.map((c) => <option key={c.id} value={c.id}>{c.name} ({c.soundIds.length})</option>)}
           </select>
+          <Button icon={<Shuffle size={16} />} disabled={!shown.some((x) => !missing.has(x.id))} onClick={() => { const pool = shown.filter((x) => !missing.has(x.id)); const r = pool[Math.floor(Math.random() * pool.length)]; if (r) { play(r); toast(t("Zufallssound: {n}", { n: r.name }), "info"); } }}>{t("Zufallssound")}</Button>
           {canManage && <Button icon={<ListMusic size={16} />} onClick={() => setColEdit(activeCol ? structuredClone(activeCol) : { id: "", name: "", soundIds: [] })}>{activeCol ? t("Sammlung bearbeiten") : t("Neue Sammlung")}</Button>}
         </div>
         <div className="chips">
@@ -164,7 +169,7 @@ export default function Soundboard() {
               const live = now.playing.find((p) => p.soundId === s.id);
               return (
                 <button key={s.id} className={`pad ${playingIds.has(s.id) ? "playing" : ""} ${missing.has(s.id) ? "missing" : ""}`} style={{ ["--pad" as string]: s.color ?? COLORS[i % COLORS.length], ["--dur" as string]: `${(live?.durationMs ?? 2000) / 1000}s` }} onClick={() => play(s)} aria-label={t("{n} abspielen", { n: s.name })}>
-                  <b>{s.name}</b>
+                  <b>{s.icon && <span className="pad-icon" aria-hidden>{s.icon} </span>}{s.name}</b>
                   <span className="pad-meta">{s.favorite && <Star size={12} fill="currentColor" color="#fde047" />}{missing.has(s.id) ? <b className="pad-missing">{t("Datei fehlt")}</b> : <>{s.categories[0] ?? s.format.toUpperCase()}{s.volume !== 100 ? ` · ${s.volume}%` : ""}{s.loop ? " · ↻" : ""}</>}</span>
                   {canManage && <span className="pad-edit btn ghost icon sm" role="button" tabIndex={0} aria-label={t("Bearbeiten")} onClick={(e) => { e.stopPropagation(); setEditing(s); }} onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditing(s); } }}><Pencil size={13} /></span>}
                 </button>
@@ -281,7 +286,7 @@ function ImportDialog({ onClose, offline }: { onClose: () => void; offline: bool
 function EditSound({ sound, onClose }: { sound: Sound; onClose: () => void }) {
   const [s, setS] = useState({ ...sound, cats: sound.categories.join(", ") });
   const save = async () => {
-    try { await client.call("sounds.update", { id: s.id, name: s.name, favorite: s.favorite, volume: s.volume, loop: !!s.loop, color: s.color ?? "", categories: s.cats.split(",").map((x) => x.trim()).filter(Boolean) }); onClose(); }
+    try { await client.call("sounds.update", { id: s.id, name: s.name, favorite: s.favorite, volume: s.volume, loop: !!s.loop, color: s.color ?? "", icon: s.icon ?? "", categories: s.cats.split(",").map((x) => x.trim()).filter(Boolean) }); onClose(); }
     catch (e) { toast((e as Error).message, "error"); }
   };
   const remove = async () => {
@@ -300,6 +305,12 @@ function EditSound({ sound, onClose }: { sound: Sound; onClose: () => void }) {
       <Field label={t("Eigene Lautstärke: {v} %", { v: s.volume })}><input type="range" min={0} max={200} value={s.volume} onChange={(e) => setS({ ...s, volume: +e.target.value })} /></Field>
       <Field label={t("Farbe")}>
         <div className="row">{COLORS.map((c) => <button key={c} type="button" onClick={() => setS({ ...s, color: c })} aria-label={c} style={{ width: 34, height: 34, borderRadius: 10, background: c, border: s.color === c ? "3px solid var(--text)" : "1px solid var(--border)", cursor: "pointer" }} />)}</div>
+      </Field>
+      <Field label={t("Icon")}>
+        <div className="row" style={{ gap: 6 }}>
+          <button type="button" className={`chip ${!s.icon ? "on" : ""}`} onClick={() => setS({ ...s, icon: null })}>{t("Ohne")}</button>
+          {ICONS.map((ic) => <button key={ic} type="button" className={`chip ${s.icon === ic ? "on" : ""}`} aria-label={ic} aria-pressed={s.icon === ic} onClick={() => setS({ ...s, icon: ic })} style={{ fontSize: 18 }}>{ic}</button>)}
+        </div>
       </Field>
       <label className="checkbox"><input type="checkbox" checked={s.favorite} onChange={(e) => setS({ ...s, favorite: e.target.checked })} />{t("Favorit")}</label>
       <label className="checkbox"><input type="checkbox" checked={!!s.loop} onChange={(e) => setS({ ...s, loop: e.target.checked })} />{t("Wiederholen, bis gestoppt (↻)")}</label>
@@ -322,6 +333,8 @@ function CollectionEditor({ col, sounds, onClose }: { col: SoundCollection; soun
       <Button variant="primary" disabled={!c.name.trim()} onClick={save}>{t("Speichern")}</Button>
     </>}>
       <Field label={t("Name")}><input className="input" value={c.name} maxLength={40} onChange={(e) => setC({ ...c, name: e.target.value })} placeholder={t("z. B. Memes")} /></Field>
+      {!c.id && <div className="chips" role="group" aria-label={t("Vorschläge")}>{PROFILE_NAMES.map((n) => <button key={n} type="button" className={`chip ${c.name === t(n) ? "on" : ""}`} onClick={() => setC({ ...c, name: t(n) })}>{t(n)}</button>)}</div>}
+      <p className="tiny muted">{t("Eine Sammlung ist ein Soundboard-Profil: nur ihre Sounds werden gezeigt. Gaming-Profile können beim Spielstart automatisch die passende Sammlung wählen.")}</p>
       <div className="list" style={{ maxHeight: "45vh", overflow: "auto" }}>
         {sounds.map((s) => <label key={s.id} className="list-item checkbox"><input type="checkbox" checked={c.soundIds.includes(s.id)} onChange={() => toggle(s.id)} />{s.name}</label>)}
       </div>
