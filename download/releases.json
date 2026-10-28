@@ -1,5 +1,33 @@
 [
   {
+    "version": "2.76.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.76.0/PCGameLauncherCompanion.exe",
+    "size": 88320476,
+    "sha256": "dd2d8954f24728e77cc10fb8ad120cd59570ad3c8389f78a98529c01f6951151",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.76.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.76.0/PCGameLauncherCompanion-2.76.0-win-x64.zip",
+      "size": 82582910,
+      "sha256": "0137241d65126bc6b09133ca188c6d7575d7b6041c986606a200ce50563c98e4"
+    },
+    "notes": "Soundboard: Icon (Emoji) je Sound-Kachel, „Zufallssound“ (aus der aktuellen Auswahl), Vorschläge für Soundboard-Profile beim Anlegen einer Sammlung (Minecraft, Elden Ring, Discord, Horror-Gaming, Lustige Sounds, Eigene Sammlung) · Audio Center → Discord einrichten: Discord-Check mit fünf Schritten live aus deiner Auswahl (Kabel installiert, Soundboard aufs Kabel, Mikrofon im Kabel, selbst mithören, Discord-Eingabegerät) – der letzte Schritt ehrlich als „kann keine App prüfen“; „Testton ins Kabel“ · Abschlussbericht des Ausbaus in docs/AUSBAU-SECHS-FUNKTIONEN.md",
+    "changes": {
+      "neu": [
+        "Soundboard: Icon (Emoji) je Sound-Kachel, „Zufallssound“ (aus der aktuellen Auswahl), Vorschläge für Soundboard-Profile beim Anlegen einer Sammlung (Minecraft, Elden Ring, Discord, Horror-Gaming, Lustige Sounds, Eigene Sammlung)",
+        "Audio Center → Discord einrichten: Discord-Check mit fünf Schritten live aus deiner Auswahl (Kabel installiert, Soundboard aufs Kabel, Mikrofon im Kabel, selbst mithören, Discord-Eingabegerät) – der letzte Schritt ehrlich als „kann keine App prüfen“; „Testton ins Kabel“",
+        "Abschlussbericht des Ausbaus in docs/AUSBAU-SECHS-FUNKTIONEN.md"
+      ],
+      "verbessert": [
+        "Das Kabel selbst als Mikrofon gewählt wird erkannt und erklärt"
+      ],
+      "behoben": []
+    },
+    "signature": "1wg65praMfag2OS6Ph92Lv09Hm6r1kJsG8eQFpbDjpXsjz8FR/babExoRUZhRpydEvU+08lz/uSFmRXeEROwlQ=="
+  },
+  {
     "version": "2.75.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1487,33 +1515,5 @@
       "behoben": []
     },
     "signature": "wXkzvx+luD7xfBOKInaCweWr9C1bFSsq6JPG7mu1Qmcb0q5YOlyyoUM9ZtEhuosGM0stQbCjKzZFNK2DezruOw=="
-  },
-  {
-    "version": "2.30.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.30.0/PCGameLauncherCompanion.exe",
-    "size": 87635020,
-    "sha256": "a53df2de038cbb8e90a500433d44a6945b895939eece072ab48bf2176a078fdb",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.30.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.30.0/PCGameLauncherCompanion-2.30.0-win-x64.zip",
-      "size": 81899820,
-      "sha256": "e741a51e775e33bac22d750c20d8f16c08dfe399c6d4333fc35515d927bee83f"
-    },
-    "notes": "Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts · HUD-Layouts für das große Overlay: bis zu 10 Anordnungen unter einem Namen speichern (z. B. „Ranked“, „Streaming“), mit Vorschau, mit einem Tipp anwenden, überschreiben oder löschen · Der Ton wird nur im Browser ausgewertet – nichts wird aufgenommen oder gesendet; beim Beenden des Teilens stoppt der Visualizer von selbst",
-    "changes": {
-      "neu": [
-        "Musik-Visualizer als Widget (Home und Overlay): Balken, Welle oder Kreis – nur zu echtem Ton: PC-Ton teilen (Chrome/Edge am PC, „Systemaudio teilen“), Mikrofon oder eigene Audiodatei; ohne Quelle bewegt sich nichts",
-        "HUD-Layouts für das große Overlay: bis zu 10 Anordnungen unter einem Namen speichern (z. B. „Ranked“, „Streaming“), mit Vorschau, mit einem Tipp anwenden, überschreiben oder löschen"
-      ],
-      "verbessert": [
-        "Der Ton wird nur im Browser ausgewertet – nichts wird aufgenommen oder gesendet; beim Beenden des Teilens stoppt der Visualizer von selbst",
-        "HUD-Layouts lassen sich auch ohne PC ändern und werden beim Verbinden übertragen"
-      ],
-      "behoben": []
-    },
-    "signature": "W7db8GDmtLEV72snFt9ijKIU+zPgire/kc51vT6lHK1ger8tX+vcnUFZpKAfI0AOs2AGNRo+5dpgjfPL+VTsNQ=="
   }
 ]
