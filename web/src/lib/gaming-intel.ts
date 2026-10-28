@@ -50,7 +50,7 @@ export function gamingIntent(text: string): GamingIntent | null {
   const q = text.trim();
   const l = q.toLowerCase();
   // Free games right now ("Welche Spiele gibt es gerade gratis auf Epic?").
-  if (/\b(gratis|kostenlos\w*|umsonst|free|geschenkt|verschenkt\w*)\b/.test(l) && /\b(spiele?|games?|items?|loot|dlcs?|skins?|giveaways?)\b/.test(l) && !/\bbingo\b/.test(l) && !/free[- ]?to[- ]?play|\bf2p\b/.test(l)) {
+  if (/\b(gratis|kostenlos\w*|umsonst|free|geschenkt|verschenkt\w*)\b/.test(l) && (/\b(spiele?|games?|items?|loot|dlcs?|skins?|giveaways?)\b/.test(l) || /\b(epic|steam|gog|prime gaming|xbox|playstation|ps[45]|switch|itch)\b/.test(l)) && !/\bbingo\b/.test(l) && !/free[- ]?to[- ]?play|\bf2p\b/.test(l)) {
     const platform = /\bsteam\b/.test(l) ? "steam" : /\bepic\b/.test(l) ? "epic-games-store" : /\bgog\b/.test(l) ? "gog" : /\bxbox\b/.test(l) ? "xbox-series-xs.xbox-one" : /\b(ps5|ps4|playstation)\b/.test(l) ? "ps5.ps4" : /\bswitch\b/.test(l) ? "switch" : /\b(handy|android)\b/.test(l) ? "android" : /\b(iphone|ios)\b/.test(l) ? "ios" : /\bpc\b/.test(l) ? "pc" : null;
     return { kind: "free", platform, loot: /\b(items?|loot|dlcs?|skins?|ingame|in-game)\b/.test(l) };
   }
@@ -108,6 +108,20 @@ type Giveaway = { id: number; title: string; worth: string; open_giveaway_url: s
 export async function gamingAnswer(i: GamingIntent, online: boolean, fetcher: typeof fetch = fetch): Promise<GamingReply> {
   switch (i.kind) {
     case "free": {
+      // Epic with the PC: Epic's own list, with the games coming next week.
+      if (i.platform === "epic-games-store" && !i.loot && online) {
+        try {
+          const r = await client.call<{ items: { title: string; url: string; start: string; end: string; normalPrice?: string | null; now: boolean }[] }>("news.epicFree");
+          const now = r.items.filter((x) => x.now), next = r.items.filter((x) => !x.now);
+          if (now.length || next.length) {
+            const f = (x: { title: string; start: string; end: string; normalPrice?: string | null; now: boolean }) => `• ${x.title}${x.normalPrice ? ` · sonst ${x.normalPrice}` : ""} · ${x.now ? `bis ${day(x.end)}` : `ab ${day(x.start)} bis ${day(x.end)}`}`;
+            return {
+              text: [`JARVIS – Epic Games Store gratis:`, now.length ? `Jetzt:\n${now.map(f).join("\n")}` : "Jetzt: nichts", next.length ? `Demnächst:\n${next.map(f).join("\n")}` : "", "", "ℹ Einlösen musst du selbst im Epic-Store – ich melde mich nirgends an.", "Quelle: Epic Games Store"].filter((x) => x !== "").join("\n"),
+              sources: ["Epic Games Store"], links: [...now.slice(0, 3).map((x) => ({ label: x.title.slice(0, 40), url: x.url })), { label: "Epic: Gratis-Spiele", url: "https://store.epicgames.com/de/free-games" }], ok: true,
+            };
+          }
+        } catch { /* Epic not reachable – GamerPower below */ }
+      }
       const type = i.loot ? "loot" : "game";
       const url = i.platform ? `https://www.gamerpower.com/api/filter?platform=${i.platform}&type=${type}` : `https://www.gamerpower.com/api/giveaways?type=${type}&sort-by=popularity`;
       try {

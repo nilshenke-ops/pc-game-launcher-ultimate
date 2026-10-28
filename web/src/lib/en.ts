@@ -5671,4 +5671,12 @@ export const en: Record<string, string> = {
   "Noch keine Ausgaben": "No spending yet",
   "Sag JARVIS z. B. „Ich habe 19,99 € für Hades ausgegeben“ oder trag es hier ein. Gerechnet wird nur mit deinen Angaben – Shop-Konten werden nicht ausgelesen.": "Tell JARVIS e.g. “I spent €19.99 on Hades” or enter it here. Only your own entries are counted – shop accounts are not read.",
   "Betrag": "Amount",
+  "Dieselbe Twitch-Anwendung nutzt JARVIS auch für „Wer streamt gerade …?“.": "JARVIS also uses the same Twitch app for “Who is streaming … right now?”.",
+  "Ohne Schlüssel öffnet JARVIS die YouTube-Suche. Mit einem kostenlosen Schlüssel (console.cloud.google.com → „YouTube Data API v3“ aktivieren → Anmeldedaten → API-Schlüssel) zeigt er die Videos direkt im Chat.": "Without a key JARVIS opens the YouTube search. With a free key (console.cloud.google.com → enable “YouTube Data API v3” → Credentials → API key) it shows the videos right in the chat.",
+  "Schlüssel eingerichtet – JARVIS zeigt passende Videos direkt im Chat.": "Key set up – JARVIS shows matching videos right in the chat.",
+  "YouTube (optional)": "YouTube (optional)",
+  "YouTube-API-Schlüssel": "YouTube API key",
+  "YouTube-Schlüssel entfernt": "YouTube key removed",
+  "YouTube-Schlüssel gespeichert": "YouTube key saved",
+  "Zugänge für JARVIS (IGDB, Twitch, YouTube)": "Access for JARVIS (IGDB, Twitch, YouTube)",
 };

@@ -12,6 +12,8 @@ public sealed class PlaytimeFile
 {
     public string? TwitchClientId { get; set; }
     public string? TwitchSecretProtected { get; set; }
+    /// <summary>Optional YouTube Data API key (videos for JARVIS) – encrypted, set only at the PC.</summary>
+    public string? YouTubeKeyProtected { get; set; }
     /// <summary>Normalised game name → durations found (kept 7 days).</summary>
     public Dictionary<string, GameDurations> Cache { get; set; } = new();
 }
@@ -46,6 +48,8 @@ public sealed class PlaytimeService : IDisposable
     readonly SemaphoreSlim _one = new(1, 1);
     public string TokenBase { get; init; } = "https://id.twitch.tv";
     public string IgdbBase { get; init; } = "https://api.igdb.com";
+    public string HelixBase { get; init; } = "https://api.twitch.tv";
+    public string YouTubeBase { get; init; } = "https://www.googleapis.com";
     public static readonly TimeSpan CacheFor = TimeSpan.FromDays(7);
 
     public PlaytimeService(AppPaths paths, ISecretProtector secrets, SteamService? steam, HistoryService? history, HttpMessageHandler? handler = null)
@@ -57,7 +61,86 @@ public sealed class PlaytimeService : IDisposable
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("NexusGamingHub (+https://github.com/nilshenke-ops/pc-game-launcher-ultimate)");
     }
 
-    public object Status() { var f = _store.Snapshot(); return new { igdb = f.TwitchClientId != null && f.TwitchSecretProtected != null, clientId = f.TwitchClientId }; }
+    public object Status() { var f = _store.Snapshot(); return new { igdb = f.TwitchClientId != null && f.TwitchSecretProtected != null, clientId = f.TwitchClientId, youtube = f.YouTubeKeyProtected != null }; }
+
+    public object ConfigureYouTube(string key, bool isLocalAdmin)
+    {
+        if (!isLocalAdmin) throw new RpcException("forbidden", "Den YouTube-Schlüssel trägt man nur direkt am PC ein.");
+        if (key.Length > 0 && !System.Text.RegularExpressions.Regex.IsMatch(key, "^AIza[0-9A-Za-z_-]{35}$")) throw new RpcException("invalid-params", "Ein YouTube-API-Schlüssel beginnt mit „AIza“ und hat 39 Zeichen (console.cloud.google.com → YouTube Data API v3 → Anmeldedaten).");
+        _store.Update(f => f.YouTubeKeyProtected = key.Length == 0 ? null : _secrets.Protect(key));
+        Log.Info("playtime", key.Length == 0 ? "YouTube-Schlüssel entfernt." : "YouTube-Schlüssel gespeichert (geschützt).");
+        return Status();
+    }
+
+    /// <summary>
+    /// "Wer streamt gerade X?": Twitch's own API (Helix) with the user's Twitch app (the same one as for IGDB) – the
+    /// category of exactly this game, then its live streams with the most viewers.
+    /// </summary>
+    public async Task<object> StreamsAsync(string game)
+    {
+        game = game.Trim();
+        if (game.Length is < 2 or > 100) throw new RpcException("invalid-params", "Spielname mit 2–100 Zeichen.");
+        var f = _store.Snapshot();
+        if (f.TwitchClientId == null || f.TwitchSecretProtected == null) throw new RpcException("not-configured", "Für Twitch braucht JARVIS die kostenlose Twitch-Anwendung – am PC unter Spiele-Journal → Spielzeit eintragen (dieselbe wie für IGDB).");
+        var cats = await HelixAsync($"search/categories?query={Uri.EscapeDataString(game)}&first=10", f);
+        string? id = null, name = null;
+        using (var doc = JsonDocument.Parse(cats))
+            foreach (var c in doc.RootElement.TryGetProperty("data", out var d) && d.ValueKind == JsonValueKind.Array ? d.EnumerateArray() : default)
+            {
+                var n = c.TryGetProperty("name", out var nv) ? nv.GetString() ?? "" : "";
+                if (Norm(n) == Norm(game) || (id == null && SteamAchievementsService.SameGame(n, game))) { id = c.GetProperty("id").GetString(); name = n; if (Norm(n) == Norm(game)) break; }
+            }
+        if (id == null || !System.Text.RegularExpressions.Regex.IsMatch(id, "^[0-9]{1,20}$")) throw new RpcException("not-found", $"Twitch hat keine Kategorie „{game}“.");
+        var list = new List<object>();
+        using (var doc = JsonDocument.Parse(await HelixAsync($"streams?game_id={id}&first=6", f)))
+            foreach (var st in doc.RootElement.TryGetProperty("data", out var d) && d.ValueKind == JsonValueKind.Array ? d.EnumerateArray() : default)
+            {
+                string S(string k) => st.TryGetProperty(k, out var v) && v.ValueKind == JsonValueKind.String ? v.GetString() ?? "" : "";
+                var login = S("user_login");
+                if (!System.Text.RegularExpressions.Regex.IsMatch(login, "^[a-zA-Z0-9_]{2,30}$")) continue;
+                list.Add(new { user = S("user_name"), title = S("title") is { Length: > 140 } t ? t[..140] : S("title"), viewers = st.TryGetProperty("viewer_count", out var vc) && vc.TryGetInt32(out var v2) ? v2 : 0, language = S("language"), url = $"https://www.twitch.tv/{login}" });
+            }
+        return new { game = name, url = $"https://www.twitch.tv/directory/category/{id}", streams = list, fetchedAt = DateTime.UtcNow, source = "Twitch (api.twitch.tv, Helix)" };
+    }
+
+    async Task<string> HelixAsync(string path, PlaytimeFile f)
+    {
+        var token = await TokenAsync(f);
+        using var req = new HttpRequestMessage(HttpMethod.Get, $"{HelixBase}/helix/{path}");
+        req.Headers.Add("Client-ID", f.TwitchClientId);
+        req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        using var resp = await _http.SendAsync(req);
+        if ((int)resp.StatusCode == 401) { _token = null; throw new RpcException("unavailable", "Twitch hat den Zugang abgelehnt – bitte am PC prüfen."); }
+        if (!resp.IsSuccessStatusCode) throw new RpcException("unavailable", $"Twitch antwortet mit {(int)resp.StatusCode}.");
+        return await resp.Content.ReadAsStringAsync();
+    }
+
+    /// <summary>
+    /// "Zeig mir ein Video zu X": with the user's own YouTube Data API key the top videos (search.list); without a key only
+    /// the link to YouTube's own search – nothing is scraped.
+    /// </summary>
+    public async Task<object> YouTubeAsync(string query)
+    {
+        query = query.Trim();
+        if (query.Length is < 2 or > 150) throw new RpcException("invalid-params", "Suche mit 2–150 Zeichen.");
+        var searchUrl = "https://www.youtube.com/results?search_query=" + Uri.EscapeDataString(query);
+        var f = _store.Snapshot();
+        if (f.YouTubeKeyProtected == null) return new { configured = false, searchUrl, videos = Array.Empty<object>(), source = "YouTube-Suche (Link)" };
+        var key = _secrets.Unprotect(f.YouTubeKeyProtected) ?? throw new RpcException("unavailable", "Der gespeicherte YouTube-Schlüssel lässt sich nicht entschlüsseln – bitte am PC neu eintragen.");
+        using var resp = await _http.GetAsync($"{YouTubeBase}/youtube/v3/search?part=snippet&type=video&maxResults=5&relevanceLanguage=de&safeSearch=moderate&q={Uri.EscapeDataString(query)}&key={Uri.EscapeDataString(key)}");
+        if ((int)resp.StatusCode is 400 or 403) throw new RpcException("unavailable", "YouTube hat den Schlüssel abgelehnt oder das Tageskontingent ist aufgebraucht.");
+        if (!resp.IsSuccessStatusCode) throw new RpcException("unavailable", $"YouTube antwortet mit {(int)resp.StatusCode}.");
+        var videos = new List<object>();
+        using (var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync()))
+            foreach (var it in doc.RootElement.TryGetProperty("items", out var items) && items.ValueKind == JsonValueKind.Array ? items.EnumerateArray() : default)
+            {
+                var vid = it.TryGetProperty("id", out var idv) && idv.TryGetProperty("videoId", out var v) ? v.GetString() ?? "" : "";
+                if (!System.Text.RegularExpressions.Regex.IsMatch(vid, "^[A-Za-z0-9_-]{11}$") || !it.TryGetProperty("snippet", out var sn)) continue;
+                string S(string k) => sn.TryGetProperty(k, out var x) && x.ValueKind == JsonValueKind.String ? System.Net.WebUtility.HtmlDecode(x.GetString() ?? "") : "";
+                videos.Add(new { title = S("title"), channel = S("channelTitle"), published = S("publishedAt"), url = $"https://www.youtube.com/watch?v={vid}" });
+            }
+        return new { configured = true, searchUrl, videos, source = "YouTube (YouTube Data API)" };
+    }
 
     public object Configure(string? clientId, string? secret, bool isLocalAdmin)
     {

@@ -95,7 +95,19 @@ Getestet: Unit-Tests (Absichten, Rechnung, Antworten mit Mock), e2e (Sensitivit�
 
 Live getestet mit echtem Internet: Hollow Knight (Steam-Daten, 7 882 Spieler), Hades (24,50 €, Anforderungen gegen den Test-PC), Counter-Strike 2 (1,2 Mio. Spieler), Celeste (Weltrekorde), Free-to-Play-Shooter.
 
-## 8. Weitere Funktionen A–J – noch offen
+## 8. Epic, Xbox, Twitch, YouTube (2.67.0)
+| Frage | Quelle | Zugang | ohne PC |
+|---|---|---|---|
+| Epic gratis (jetzt + demnächst) | Epic-Store `freeGamesPromotions` (öffentliche Liste der Store-Seite), nur 100-%-Angebote | keiner | GamerPower |
+| Xbox-/Microsoft-Store-Preis | `displaycatalog.mp.microsoft.com` | keiner | ja |
+| Im Game Pass? | PC-Game-Pass-Katalog (bestehende Game-Pass-Funktion) | Game Pass am PC eingeschaltet | nein |
+| Wer streamt gerade? | Twitch Helix (`search/categories`, `streams`) | dieselbe Twitch-Anwendung wie IGDB | Link zur Twitch-Suche |
+| Videos / Guides / Trailer | YouTube Data API v3 `search.list` | optional eigener Schlüssel (am PC, DPAPI) | Link zur YouTube-Suche |
+
+Nicht möglich bzw. bewusst nicht gebaut: Epic-Preise (kein offenes API), YouTube/Twitch ohne Zugang auslesen (Scraping), Google-Suche.
+Live getestet: Epic (Sker Ritual, Home jetzt; Sorry We're Closed ab 29.10.), Forza Horizon 5 (69,99 € Standard Edition), YouTube-Link. Twitch mit Test-Zugangsdaten → von Twitch abgelehnt, ehrliche Meldung + Link; mit echter Anwendung mit Mock getestet (C#).
+
+## 9. Weitere Funktionen A–J – noch offen
 Diese Punkte sind **noch nicht umgesetzt**. Für jeden steht, worauf er aufbauen kann:
 - **A Zeitplaner:** Zeit-Finder und Kalender plus die Spielzeitanalyse.
 - **B Fortschrittsassistent:** Journal „Wo war ich?“ und die Fortschrittsangabe.

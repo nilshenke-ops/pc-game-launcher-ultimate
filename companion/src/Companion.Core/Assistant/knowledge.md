@@ -495,3 +495,8 @@ Frag JARVIS z. B. „Welche Spiele gibt es gerade gratis auf Epic?“ (Liste von
 Seite: /assistant
 Stichworte: was ist für ein spiel infos entwickler erscheinungsdatum lohnt sich metacritic preis kostet angebot spielerzahl wie viele spielen läuft auf meinem pc systemanforderungen weltrekord speedrun free to play f2p kostenlos shooter mmorpg
 Frag JARVIS z. B. „Was ist Hollow Knight für ein Spiel?“, „Was kostet Hades?“, „Wie viele Leute spielen gerade Counter-Strike 2?“, „Läuft Cyberpunk 2077 auf meinem PC?“, „Was ist der Weltrekord in Celeste?“ oder „Gute Free-to-Play-Shooter?“. Steam-Daten (Infos, Preis, Spielerzahl, Anforderungen) kommen über den PC; Weltrekorde (speedrun.com) und Free-to-Play-Listen (FreeToGame) gehen auch ohne PC. JARVIS sucht nur auf deine Frage und nennt immer die Quelle; Google wird nicht ausgelesen.
+
+## JARVIS: Epic, Xbox, Game Pass, Twitch, YouTube
+Seite: /assistant
+Stichworte: epic gratis diese woche nächste woche xbox microsoft store preis game pass twitch streams wer streamt youtube video guide trailer tutorial schlüssel
+Frag JARVIS z. B. „Was gibt es bei Epic gratis?“ (jetzt und demnächst), „Was kostet Forza Horizon 5 im Microsoft Store?“, „Ist Starfield im Game Pass?“ (Game Pass am PC einschalten), „Wer streamt gerade Elden Ring?“ (mit der kostenlosen Twitch-Anwendung, dieselbe wie für IGDB) oder „Zeig mir einen Guide für Hollow Knight“. Für Videos direkt im Chat am PC unter Spiele-Journal → Spielzeit einen kostenlosen YouTube-API-Schlüssel eintragen – ohne Schlüssel öffnet JARVIS die YouTube-Suche.

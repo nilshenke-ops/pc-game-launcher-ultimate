@@ -88,4 +88,69 @@ public class PlaytimeTests
         await p.LookupAsync("Bad \" ; fields *", true);
         Assert.Contains(igdb.Asked, a => a.Contains("search \"Bad  ; fields *\""));
     }
+
+    sealed class Media : HttpMessageHandler
+    {
+        public List<string> Asked { get; } = new();
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct)
+        {
+            var u = r.RequestUri!.ToString();
+            Asked.Add(u);
+            string json = u.Contains("oauth2/token") ? """{"access_token":"tok","expires_in":5000}"""
+                : u.Contains("/helix/search/categories") ? """{"data":[{"id":"111","name":"Elden Ring Nightreign"},{"id":"512953","name":"Elden Ring"}]}"""
+                : u.Contains("/helix/streams") ? """{"data":[{"user_login":"streamer_1","user_name":"Streamer 1","title":"Blind run","viewer_count":4200,"language":"de"},{"user_login":"bad login!","user_name":"x","title":"x","viewer_count":1}]}"""
+                : u.Contains("/youtube/v3/search") ? """{"items":[{"id":{"videoId":"dQw4w9WgXcQ"},"snippet":{"title":"Elden Ring Guide &amp; Tipps","channelTitle":"Kanal","publishedAt":"2026-01-01T00:00:00Z"}},{"id":{"videoId":"bad"},"snippet":{"title":"x"}}]}""" : "";
+            if (u.Contains("/helix/")) Assert.Equal("Bearer tok", r.Headers.Authorization?.ToString());
+            return Task.FromResult(new HttpResponseMessage(json.Length > 0 ? HttpStatusCode.OK : HttpStatusCode.NotFound) { Content = new StringContent(json) });
+        }
+    }
+
+    [Fact]
+    public async Task Twitch_streams_and_YouTube_only_with_the_users_own_access_never_scraped()
+    {
+        using var dir = new TempDir();
+        var media = new Media();
+        using var p = new PlaytimeService(new AppPaths(dir.Path), new PlainSecretProtector(), null, null, media) { TokenBase = "https://id.test", HelixBase = "https://helix.test", YouTubeBase = "https://yt.test" };
+        Assert.Equal("not-configured", (await Assert.ThrowsAsync<RpcException>(() => p.StreamsAsync("Elden Ring"))).Code);
+        // Without a key: only the link to YouTube's own search.
+        var none = JsonSerializer.SerializeToElement(await p.YouTubeAsync("Elden Ring Guide"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        Assert.False(none.GetProperty("configured").GetBoolean());
+        Assert.Equal("https://www.youtube.com/results?search_query=Elden%20Ring%20Guide", none.GetProperty("searchUrl").GetString());
+        Assert.Empty(media.Asked);
+
+        p.Configure("abcdefghij0123456789", "secretsecret0123456789", isLocalAdmin: true);
+        var s = JsonSerializer.SerializeToElement(await p.StreamsAsync("Elden Ring"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        Assert.Equal("Elden Ring", s.GetProperty("game").GetString()); // the same game, not "Nightreign"
+        Assert.Contains(media.Asked, a => a.Contains("game_id=512953"));
+        Assert.Equal(1, s.GetProperty("streams").GetArrayLength()); // the odd login is left out
+        Assert.Equal("https://www.twitch.tv/streamer_1", s.GetProperty("streams")[0].GetProperty("url").GetString());
+
+        Assert.Equal("forbidden", Assert.Throws<RpcException>(() => p.ConfigureYouTube("AIza" + new string('a', 35), isLocalAdmin: false)).Code);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => p.ConfigureYouTube("nope", isLocalAdmin: true)).Code);
+        p.ConfigureYouTube("AIza" + new string('a', 35), isLocalAdmin: true);
+        Assert.DoesNotContain("AIza", JsonSerializer.Serialize(p.Status()));
+        var y = JsonSerializer.SerializeToElement(await p.YouTubeAsync("Elden Ring Guide"), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        Assert.Equal(1, y.GetProperty("videos").GetArrayLength());
+        Assert.Equal("Elden Ring Guide & Tipps", y.GetProperty("videos")[0].GetProperty("title").GetString());
+        Assert.Equal("https://www.youtube.com/watch?v=dQw4w9WgXcQ", y.GetProperty("videos")[0].GetProperty("url").GetString());
+    }
+
+    [Fact]
+    public void Epic_free_games_are_only_the_100_percent_offers_now_and_next()
+    {
+        const string json = """
+        {"data":{"Catalog":{"searchStore":{"elements":[
+          {"title":"Gratis Jetzt","productSlug":"gratis-jetzt/home","price":{"totalPrice":{"fmtPrice":{"originalPrice":"22,39 €"}}},"promotions":{"promotionalOffers":[{"promotionalOffers":[{"startDate":"2026-10-22T15:00:00.000Z","endDate":"2026-10-29T15:00:00.000Z","discountSetting":{"discountPercentage":0}}]}],"upcomingPromotionalOffers":[]}},
+          {"title":"Nur Rabatt","productSlug":"rabatt","promotions":{"promotionalOffers":[{"promotionalOffers":[{"startDate":"2026-10-19T15:00:00.000Z","endDate":"2026-11-02T16:00:00.000Z","discountSetting":{"discountPercentage":40}}]}]}},
+          {"title":"Bald Gratis","catalogNs":{"mappings":[{"pageSlug":"bald-gratis"}]},"promotions":{"promotionalOffers":[],"upcomingPromotionalOffers":[{"promotionalOffers":[{"startDate":"2026-10-29T15:00:00.000Z","endDate":"2026-11-05T15:00:00.000Z","discountSetting":{"discountPercentage":0}}]}]}},
+          {"title":"Ohne Aktion","productSlug":"x","promotions":null}
+                ]}}}}
+        """;
+        var l = NewsService.ParseEpic(json, new DateTime(2026, 10, 28, 12, 0, 0, DateTimeKind.Utc));
+        Assert.Equal(new[] { "Gratis Jetzt", "Bald Gratis" }, l.Select(x => x.Title));
+        Assert.True(l[0].Now);
+        Assert.False(l[1].Now);
+        Assert.Equal("https://store.epicgames.com/de/p/gratis-jetzt", l[0].Url);
+        Assert.Equal("22,39 €", l[0].NormalPrice);
+    }
 }

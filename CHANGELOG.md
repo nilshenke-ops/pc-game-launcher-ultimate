@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.67.0 – 2026-10-28
+### Neu
+- JARVIS nutzt jetzt auch Epic, Xbox, Twitch und YouTube – nur auf deine Frage, über die offiziellen bzw. öffentlichen Schnittstellen, mit Quelle:
+- Epic: „Was gibt es bei Epic gratis?“ – die Gratis-Spiele von jetzt und von nächster Woche direkt vom Epic Games Store (über den PC; ohne PC über GamerPower)
+- Xbox: „Was kostet Forza Horizon 5 im Microsoft Store / auf Xbox?“ – Preis der günstigsten kaufbaren Edition (auch ohne PC); „Ist Starfield im Game Pass?“ – aus dem PC-Game-Pass-Katalog
+- Twitch: „Wer streamt gerade Elden Ring?“ – die Live-Streams mit den meisten Zuschauern über Twitchs eigene Schnittstelle (dieselbe kostenlose Twitch-Anwendung wie für IGDB); ohne Zugang die Twitch-Suche als Link
+- YouTube: „Zeig mir einen Guide für Hollow Knight“ / „… den Trailer zu …“ – mit eigenem kostenlosen YouTube-API-Schlüssel (am PC, verschlüsselt) die passenden Videos im Chat, sonst die YouTube-Suche als Link; YouTube wird nicht ausgelesen
+### Verbessert
+- „Was gibt es bei Epic gratis?“ wird auch ohne das Wort „Spiele“ verstanden
+
 ## 2.66.0 – 2026-10-28
 ### Neu
 - JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle:

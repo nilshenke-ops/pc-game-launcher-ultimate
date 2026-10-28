@@ -84,12 +84,14 @@ function PlaytimeCard({ e, online, focused }: { e: Entry<PlaytimeEntry>; online:
 
 /** At the PC only: the free Twitch app for IGDB "Time to Beat". The secret is stored encrypted on the PC and never shown again. */
 function IgdbCard() {
-  const st = useRpc<{ igdb: boolean; clientId?: string | null }>("playtime.status", {}, [], true);
+  const st = useRpc<{ igdb: boolean; clientId?: string | null; youtube?: boolean }>("playtime.status", {}, [], true);
+  const [yt, setYt] = useState("");
+  const saveYt = (key: string) => client.call("media.configureYouTube", { key }).then(() => { setYt(""); st.reload(); toast(key ? t("YouTube-Schlüssel gespeichert") : t("YouTube-Schlüssel entfernt"), "success"); }, (e: Error) => toast(e.message, "error"));
   const [id, setId] = useState("");
   const [secret, setSecret] = useState("");
   const save = (clientId: string, clientSecret: string) => client.call("playtime.configure", { clientId, clientSecret }).then(() => { setSecret(""); setId(""); st.reload(); toast(clientId ? t("IGDB-Zugang gespeichert") : t("IGDB-Zugang entfernt"), "success"); }, (e: Error) => toast(e.message, "error"));
   return (
-    <Card title={t("Durchschnittsdauern (IGDB)")} icon={<KeyRound size={18} />}>
+    <Card title={t("Zugänge für JARVIS (IGDB, Twitch, YouTube)")} icon={<KeyRound size={18} />}>
       <div className="stack-sm small">
         {st.data?.igdb ? <p style={{ margin: 0 }}>✓ {t("IGDB-Zugang eingerichtet (Client-ID {c}). Das Geheimnis liegt verschlüsselt nur auf diesem PC.", { c: st.data.clientId ?? "" })}</p>
           : <p className="muted" style={{ margin: 0 }}>{t("Für Durchschnittsdauern (Hauptstory, mit Nebenaufgaben, 100 %) nutzt JARVIS die offizielle IGDB-Schnittstelle. Dafür brauchst du eine kostenlose Twitch-Anwendung: dev.twitch.tv → Konsole → Anwendung registrieren (Kategorie „Application Integration“, OAuth-Weiterleitung http://localhost) → Client-ID und neues Geheimnis hier eintragen. Ohne Zugang kannst du eigene Dauern eintragen.")}</p>}
@@ -100,6 +102,13 @@ function IgdbCard() {
             <Button variant="primary" disabled={!id || !secret} onClick={() => void save(id, secret)}>{t("Speichern")}</Button>
             {st.data?.igdb && <Button variant="ghost" onClick={() => void save("", "")}>{t("Entfernen")}</Button>}
           </div>
+        </div>
+        <p className="muted" style={{ margin: "6px 0 0" }}>{t("Dieselbe Twitch-Anwendung nutzt JARVIS auch für „Wer streamt gerade …?“.")}</p>
+        <p style={{ margin: "10px 0 0" }}><b>{t("YouTube (optional)")}</b> – {st.data?.youtube ? "✓ " + t("Schlüssel eingerichtet – JARVIS zeigt passende Videos direkt im Chat.") : t("Ohne Schlüssel öffnet JARVIS die YouTube-Suche. Mit einem kostenlosen Schlüssel (console.cloud.google.com → „YouTube Data API v3“ aktivieren → Anmeldedaten → API-Schlüssel) zeigt er die Videos direkt im Chat.")}</p>
+        <div className="row" style={{ gap: 8, alignItems: "flex-end" }}>
+          <Field label={t("YouTube-API-Schlüssel")}><input className="input mono" type="password" autoComplete="off" value={yt} onChange={(e) => setYt(e.target.value.trim())} /></Field>
+          <Button variant="primary" disabled={!yt} onClick={() => void saveYt(yt)}>{t("Speichern")}</Button>
+          {st.data?.youtube && <Button variant="ghost" onClick={() => void saveYt("")}>{t("Entfernen")}</Button>}
         </div>
       </div>
     </Card>

@@ -4,6 +4,7 @@
 
 import { client } from "./rpc";
 import { lookupGame, sameGame } from "./game-lookup";
+import { fetchMsPrice } from "./ms-store";
 
 export type ResearchIntent =
   | { kind: "info"; game: string }
@@ -11,7 +12,11 @@ export type ResearchIntent =
   | { kind: "players"; game: string }
   | { kind: "speedrun"; game: string }
   | { kind: "f2p"; tag: string | null; label: string | null }
-  | { kind: "compat"; game: string };
+  | { kind: "compat"; game: string }
+  | { kind: "gamepass"; game: string }
+  | { kind: "xboxPrice"; game: string }
+  | { kind: "twitch"; game: string }
+  | { kind: "youtube"; query: string };
 
 const clean = (g: string) => g.replace(/^(?:das spiel|dem spiel|das|dem|den|der|die)\s+/i, "").replace(/\s+(?:auf steam|bei steam|gerade|aktuell|momentan|eigentlich|so)$/i, "").replace(/[„“"]/g, "").trim();
 const ok = (g: string) => g.length >= 2 && g.length <= 80 && !/^(es|das|ich|mein|meinem|du|ein|eine)$/i.test(g);
@@ -32,6 +37,15 @@ export function researchIntent(text: string): ResearchIntent | null {
     return { kind: "f2p", tag: t?.[1] ?? null, label: t?.[2] ?? null };
   }
   let g: string | null;
+  if ((g = pick(/\b(?:ist|gibt es)\s+(.+?)\s+(?:im|in|bei)\s+(?:dem\s+)?(?:pc[- ]?|xbox[- ]?)?game ?pass(?: ultimate)?(?: drin| dabei)?[?!.]*$/i, q))) return { kind: "gamepass", game: g };
+  if ((g = pick(/\b(?:was kostet|wie teuer ist|preis (?:von|für))\s+(.+?)\s+(?:auf|bei|im|in)\s+(?:der\s+|dem\s+)?(?:xbox|microsoft[- ]?store)(?:[- ]store)?[?!.]*$/i, q))) return { kind: "xboxPrice", game: g };
+  if ((g = pick(/\bwer streamt\s+(?:gerade\s+|aktuell\s+|jetzt\s+|momentan\s+)?(.+?)[?!.]*$/i, q) ?? pick(/\b(?:twitch[- ]?streams?|streams?|livestreams?)\s+(?:zu|von|für|über)\s+(.+?)(?:\s+auf twitch)?[?!.]*$/i, q) ?? pick(/^(?:zeig mir\s+)?(.+?)\s+auf twitch[?!.]*$/i, q)))
+    return { kind: "twitch", game: g };
+  const yt = /\b(?:zeig|such|finde?|gib)(?:\s+mir)?\s+(?:ein(?:e|en)?\s+|ein paar\s+|den\s+|die\s+|das\s+)?(?:youtube[- ]?)?(?:videos?|guides?|tutorials?|anleitung(?:en)?|walkthroughs?|let'?s plays?|trailer)\s+(?:zu|für|über|von|zum|zur)\s+(.+?)(?:\s+auf youtube)?[?!.]*$/i.exec(q) ?? /\byoutube[- ]?(?:videos?|suche)?\s+(?:zu|für|über|von)\s+(.+?)[?!.]*$/i.exec(q) ?? /^(?:such\s+)?(.+?)\s+auf youtube[?!.]*$/i.exec(q);
+  if (yt && ok(clean(yt[1]))) {
+    const kind = /trailer/i.test(q) ? " Trailer" : /guide|tutorial|anleitung|walkthrough/i.test(q) ? " Guide" : "";
+    return { kind: "youtube", query: clean(yt[1]) + (kind && !new RegExp(kind.trim(), "i").test(yt[1]) ? kind : "") };
+  }
   if ((g = pick(/\b(?:weltrekord|world ?record|wr|speedrun(?:-?rekord)?|schnellste[rn]? speedrun|bestzeit)\s+(?:in|von|bei|für|im)\s+(.+?)[?!.]*$/i, q)))
     return { kind: "speedrun", game: g };
   if ((g = pick(/\bwie ?viele (?:leute|spieler|menschen|personen)?\s*(?:spielen|zocken)\s+(?:gerade|aktuell|momentan|jetzt|noch)?\s*(.+?)[?!.]*$/i, q) ?? pick(/\bspielerzahl(?:en)?\s+(?:von|bei|in|für)\s+(.+?)[?!.]*$/i, q)))
@@ -66,6 +80,9 @@ export function fmtRun(sec: number): string {
   const tail = `${String(s).padStart(2, "0")}${ms ? "," + String(ms).padStart(3, "0") : ""}`;
   return h ? `${h}:${String(m).padStart(2, "0")}:${tail}` : `${m}:${tail}`;
 }
+
+const twitchSearch = (g: string) => `https://www.twitch.tv/search?term=${encodeURIComponent(g)}`;
+const ytSearch = (q: string) => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
 
 export async function researchAnswer(i: ResearchIntent, online: boolean, fetcher: typeof fetch = fetch): Promise<ResearchReply> {
   switch (i.kind) {
@@ -131,6 +148,47 @@ export async function researchAnswer(i: ResearchIntent, online: boolean, fetcher
         checks.push(...req);
         return { text: `JARVIS – Läuft ${f.name} auf deinem PC?\n${V[r.verdict] ?? r.verdict}\n${checks.join("\n")}${r.note ? `\n\nℹ ${r.note}` : ""}\nQuelle: Systemanforderungen im Steam-Shop + Werte deines PCs`, sources: ["Steam-Shop", "dein PC"], links: [{ label: "Steam-Seite", url: f.url }], ok: true };
       } catch (e) { return { text: `Prüfung für „${i.game}“ nicht möglich: ${(e as Error).message}`, sources: ["Steam"], links: [], ok: false }; }
+    }
+    case "gamepass": {
+      if (!online) return { text: "Den PC-Game-Pass-Katalog lädt der PC – ohne Verbindung kann ich das nicht nachsehen.", sources: ["JARVIS"], links: [], ok: null };
+      try {
+        const gp = await client.call<{ enabled: boolean; lastSync?: string | null; games: { title: string; installed: boolean; isNew: boolean }[] }>("gamepass.list");
+        if (!gp.enabled || !gp.lastSync) return { text: "Der Game-Pass-Katalog ist am PC noch nicht eingeschaltet bzw. geladen (Einstellungen → Game Pass). Danach kann ich nachsehen.", sources: ["JARVIS"], links: [], navigate: [{ label: "Einstellungen öffnen", path: "/settings" }], ok: null };
+        const hit = gp.games.find((x) => x.title.toLowerCase() === i.game.toLowerCase()) ?? gp.games.find((x) => sameGame(x.title, i.game));
+        const when = new Date(gp.lastSync).toLocaleString("de-DE", { dateStyle: "short", timeStyle: "short" });
+        return hit
+          ? { text: `✓ Ja – ${hit.title} ist im PC Game Pass${hit.isNew ? " (neu dazugekommen)" : ""}${hit.installed ? ", und es ist auf deinem PC installiert" : ""}.\n\nℹ Stand des Katalogs: ${when}. Geprüft ist PC Game Pass; Spiele können den Pass wieder verlassen.\nQuelle: Microsofts PC-Game-Pass-Katalog`, sources: ["Microsoft PC Game Pass"], links: [], ok: true }
+          : { text: `${i.game} ist laut PC-Game-Pass-Katalog (Stand ${when}) gerade nicht dabei.\n\nℹ Geprüft ist nur PC Game Pass – nicht die Konsolen- oder Cloud-Liste.\nQuelle: Microsofts PC-Game-Pass-Katalog`, sources: ["Microsoft PC Game Pass"], links: [], ok: null };
+      } catch (e) { return { text: `Game Pass: ${(e as Error).message}`, sources: ["Microsoft"], links: [], ok: false }; }
+    }
+    case "xboxPrice": {
+      const r = await fetchMsPrice(i.game, "DE", fetcher);
+      if ("error" in r) return { text: `Im Microsoft Store (Xbox) finde ich keinen Preis für „${i.game}“: ${r.error}`, sources: ["Microsoft Store"], links: [], ok: null };
+      const m = (c: number) => (c / 100).toLocaleString("de-DE", { style: "currency", currency: r.currency || "EUR" });
+      return { text: `JARVIS – ${r.title} im Microsoft Store (Xbox/PC): ${r.finalCents === 0 ? "kostenlos" : m(r.finalCents)}${r.initialCents > r.finalCents ? ` – reduziert (sonst ${m(r.initialCents)})` : ""} (Stand ${time()}, Deutschland).\n\nℹ Günstigste kaufbare Edition mit passendem Namen; mit Game Pass evtl. enthalten.\nQuelle: Microsoft Store (displaycatalog.mp.microsoft.com)`, sources: ["Microsoft Store"], links: [{ label: "Im Microsoft Store", url: `https://www.xbox.com/de-DE/games/store/x/${r.productId}` }], ok: true };
+    }
+    case "twitch": {
+      if (!online) return { text: `Live-Streams frage ich über deine Twitch-Anwendung am PC ab – ohne PC öffne ich dir die Twitch-Suche.`, sources: ["Twitch"], links: [{ label: `„${i.game}“ auf Twitch`, url: twitchSearch(i.game) }], ok: null };
+      try {
+        const r = await client.call<{ game: string; url: string; streams: { user: string; title: string; viewers: number; language: string; url: string }[] }>("media.twitch", { game: i.game });
+        if (!r.streams.length) return { text: `${r.game}: gerade streamt niemand auf Twitch.`, sources: ["Twitch"], links: [{ label: "Kategorie auf Twitch", url: r.url }], ok: null };
+        const lines = r.streams.map((x) => `• ${x.user} – ${x.viewers.toLocaleString("de-DE")} Zuschauer${x.language ? ` · ${x.language.toUpperCase()}` : ""} · „${x.title}“`);
+        return { text: `JARVIS – gerade live auf Twitch: ${r.game} (Stand ${time()})\n${lines.join("\n")}\n\nQuelle: Twitch`, sources: ["Twitch"], links: [...r.streams.slice(0, 3).map((x) => ({ label: x.user, url: x.url })), { label: "Alle Streams", url: r.url }], ok: true };
+      } catch (e) {
+        const code = (e as { code?: string }).code;
+        return { text: code === "not-configured" ? `${(e as Error).message}\nBis dahin öffne ich dir die Twitch-Suche.` : `Twitch: ${(e as Error).message}`, sources: ["Twitch"], links: [{ label: `„${i.game}“ auf Twitch`, url: twitchSearch(i.game) }], ok: code === "not-configured" ? null : false };
+      }
+    }
+    case "youtube": {
+      const link = { label: `YouTube: „${i.query}“`, url: ytSearch(i.query) };
+      if (!online) return { text: `Hier ist die YouTube-Suche zu „${i.query}“. Eine Liste mit Videos kann ich nur über den PC mit eigenem YouTube-Schlüssel holen.`, sources: ["YouTube"], links: [link], ok: null };
+      try {
+        const r = await client.call<{ configured: boolean; searchUrl: string; videos: { title: string; channel: string; published: string; url: string }[] }>("media.youtube", { query: i.query });
+        if (!r.configured) return { text: `Hier ist die YouTube-Suche zu „${i.query}“.\n\nℹ Für eine Liste der passenden Videos direkt hier: am PC unter Spiele-Journal → Spielzeit einen kostenlosen YouTube-API-Schlüssel eintragen (optional). Ich lese YouTube sonst nicht aus.`, sources: ["YouTube"], links: [link], ok: null };
+        if (!r.videos.length) return { text: `Zu „${i.query}“ finde ich auf YouTube keine Videos.`, sources: ["YouTube"], links: [link], ok: null };
+        const lines = r.videos.map((v) => `• ${v.title} – ${v.channel}${v.published ? ` (${new Date(v.published).toLocaleDateString("de-DE")})` : ""}`);
+        return { text: `JARVIS – Videos zu „${i.query}“:\n${lines.join("\n")}\n\nQuelle: YouTube`, sources: ["YouTube"], links: [...r.videos.slice(0, 3).map((v) => ({ label: v.title.slice(0, 40), url: v.url })), link], ok: true };
+      } catch (e) { return { text: `YouTube: ${(e as Error).message}`, sources: ["YouTube"], links: [link], ok: false }; }
     }
     case "speedrun": {
       try {

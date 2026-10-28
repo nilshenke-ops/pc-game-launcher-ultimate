@@ -7,6 +7,7 @@ describe("JARVIS Gaming-Wissen: was gefragt ist", () => {
     expect(gamingIntent("Gibt es kostenlose Spiele?")).toEqual({ kind: "free", platform: null, loot: false });
     expect(gamingIntent("Gratis Ingame-Items für PS5")).toMatchObject({ kind: "free", platform: "ps5.ps4", loot: true });
     expect(gamingIntent("Erstelle ein Bingo für kostenlose Spiele")).toBeNull();
+    expect(gamingIntent("Was gibt es bei Epic gratis?")).toEqual({ kind: "free", platform: "epic-games-store", loot: false });
   });
   it("Neuigkeiten und Patches", () => {
     expect(gamingIntent("Was ist neu in Hades?")).toEqual({ kind: "news", game: "Hades" });
