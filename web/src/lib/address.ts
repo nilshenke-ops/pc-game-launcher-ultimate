@@ -45,7 +45,9 @@ export function wsToPcAddress(ws: string): string {
  * address is not a plain http one.
  */
 export function directPairUrl(input: string, code: string): string | null {
-  const ws = pcAddressToWs(input, false);
+  // Only a home-network address (IP, name.fritz.box, name.local) or a typed http:// one – a name like
+  // gaming.tail1234.ts.net without scheme is an https address and is reached directly, not via http.
+  const ws = pcAddressToWs(input, true);
   if (!ws || !ws.startsWith("ws://")) return null;
   const u = new URL(ws.replace(/^ws:/, "http:"));
   const c = code.toUpperCase().replace(/[^A-Z0-9-]/g, "").slice(0, 9);

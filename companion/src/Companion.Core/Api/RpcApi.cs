@@ -865,30 +865,44 @@ public static class RpcApi
 
     static object DeviceAddresses(CompanionServices s) => Addresses(s).Select(a => new { a.url, a.kind });
 
-    /// <summary>What a person types as "PC-Adresse" on the hosted web app: the best address (see <see cref="Addresses"/>).</summary>
-    static string? PcAddress(CompanionServices s)
+    /// <summary>What a person types as "PC-Adresse" on the hosted web app (see <see cref="PickPcAddress"/>).</summary>
+    static string? PcAddress(CompanionServices s) => PickPcAddress(Addresses(s));
+
+    /// <summary>
+    /// An https address (own address, Tailscale https) first – the website needs it. Otherwise the Wi-Fi IP: names like
+    /// gaming.fritz.box or the Tailscale name without https do not resolve on many phones (Android "Privates DNS", a VPN,
+    /// Tailscale off); the IP always opens in the same network.
+    /// </summary>
+    public static string? PickPcAddress(IReadOnlyList<(string url, string kind)> all)
     {
-        var url = Addresses(s).FirstOrDefault().url;
+        var url = all.FirstOrDefault(a => a.kind is "public" or "tailscale-https").url ?? all.FirstOrDefault(a => a.kind == "lan").url ?? all.FirstOrDefault().url;
         if (url == null || !Uri.TryCreate(url, UriKind.Absolute, out var u)) return null;
         // https is implied by the hosted page; keep the scheme only for plain http (home network/testing).
         return u.Scheme == "https" ? u.Authority : $"{u.Scheme}://{u.Authority}";
     }
 
-    static List<string> PairingUrls(CompanionServices s, string code)
+    static List<string> PairingUrls(CompanionServices s, string code) => OrderPairingUrls(Addresses(s), s.Settings.Get().WebAppUrl, code);
+
+    /// <summary>The links for the QR code, best first (the QR shows the first; the others are selectable).</summary>
+    public static List<string> OrderPairingUrls(IReadOnlyList<(string url, string kind)> addresses, string? webAppUrl, string code)
     {
-        var set = s.Settings.Get();
         var urls = new List<string>();
-        var addresses = Addresses(s);
-        // First choice: the hosted web app (online even while the PC is off) with code and PC address filled in.
-        // Only with an https PC address (own address or Tailscale Serve): an https page cannot connect to plain http.
-        var webIsHttps = set.WebAppUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
+        // The hosted web app (online even while the PC is off) with code and PC address filled in – only with an https
+        // PC address (own address or Tailscale Serve): an https page cannot connect to plain http.
+        var webIsHttps = webAppUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
         var pcIsHttps = addresses.FirstOrDefault().url?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
-        if (set.WebAppUrl is { } web && PcAddress(s) is { } pc && (!webIsHttps || pcIsHttps))
-            urls.Add($"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}");
-        // The QR code: the plain home-network IP first – every phone opens it (also Android, also with "Privates DNS"),
-        // as long as both are in the same network. After pairing, the phone moves to the fixed name by itself if that works.
-        var order = addresses.OrderBy(a => a.kind switch { "public" or "tailscale-https" => 0, "lan" => 1, "router" => 2, "mdns" => 3, _ => 4 });
-        urls.AddRange(order.Select(a => $"{a.url}/#/pair?code={code}"));
+        string? hosted = webAppUrl is { } web && PickPcAddress(addresses) is { } pc && (!webIsHttps || pcIsHttps) ? $"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}" : null;
+        // A Tailscale https name only resolves on phones that run Tailscale themselves. The phone that scans the code
+        // stands next to the PC – in the same Wi-Fi the plain IP always opens, so it comes first (the Tailscale link stays
+        // selectable for "unterwegs"). Only an own public address (Funnel, domain) works from anywhere and may lead.
+        var lanFirst = addresses.FirstOrDefault().kind == "tailscale-https" && addresses.Any(a => a.kind == "lan");
+        if (hosted != null && !lanFirst) urls.Add(hosted);
+        // Otherwise the plain home-network IP first – every phone opens it (also Android, also with "Privates DNS"),
+        // as long as both are in the same network.
+        var order = addresses.OrderBy(a => a.kind switch { "public" => 0, "lan" => lanFirst ? 0 : 1, "tailscale-https" => lanFirst ? 2 : 0, "router" => 3, "mdns" => 4, _ => 5 });
+        var direct = order.Select(a => $"{a.url}/#/pair?code={code}").ToList();
+        if (hosted != null && lanFirst) direct.Insert(Math.Min(1, direct.Count), hosted);
+        urls.AddRange(direct);
         return urls;
     }
 

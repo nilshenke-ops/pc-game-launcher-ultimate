@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.68.1 – 2026-10-28
+### Behoben
+- Handy koppeln mit eingeschaltetem Tailscale-HTTPS: Der QR-Code führte zur Website mit dem Tailscale-Namen (…ts.net) – den findet ein Handy ohne laufendes Tailscale nicht („ERR_NAME_NOT_RESOLVED“). Jetzt öffnet der QR-Code zuerst die WLAN-IP (funktioniert immer im selben WLAN); der Tailscale-Link bleibt für unterwegs auswählbar
+- „Beim PC öffnen und koppeln“ sprang bei einer …ts.net-Adresse auf http://…ts.net (falsch) – solche Namen werden jetzt direkt über https verbunden
+- Als „PC-Adresse“ wird ohne https-Adresse die WLAN-IP angeboten statt gaming.fritz.box – Router-Namen findet Android mit „Privates DNS“ oder einem VPN oft nicht
+### Verbessert
+- Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst
+- Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt)
+- Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)
+
 ## 2.68.0 – 2026-10-28
 ### Neu
 - JARVIS Quest-Coach – nutzt dein Gaming-Gedächtnis (Spiele-Journal) statt jede Frage ohne Zusammenhang zu beantworten; nichts wird erfunden:

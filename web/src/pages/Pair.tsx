@@ -114,7 +114,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
     else if (conn.phase === "offline" && conn.lastError) {
       setConnecting(false);
       setState({ step: "form" });
-      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der Nexus Gaming Hub? Ist der Tailscale-Funnel aktiv („tailscale funnel --bg 8787“)? Stimmt die Adresse mit der im Nexus Gaming Hub unter „Gerät koppeln“ überein? Im selben WLAN geht es auch ohne Tailscale: QR-Code am PC scannen.") });
+      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der Nexus Gaming Hub? Bei einer …ts.net-Adresse: Ist die Tailscale-App am Handy an und mit demselben Konto angemeldet (sonst findet das Handy den Namen nicht – Fehler „ERR_NAME_NOT_RESOLVED“)? Stimmt die Adresse mit der im Nexus Gaming Hub unter „Gerät koppeln“ überein? Im selben WLAN geht es auch ohne Tailscale: QR-Code am PC scannen.") });
     }
   }, [connecting, conn.phase, conn.hello, conn.lastError, request]);
 

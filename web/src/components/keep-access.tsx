@@ -146,7 +146,7 @@ export function StableAddressOffer() {
   return (
     <Banner kind="info" title={t("Feste Adresse gefunden: {h}", { h: new URL(found.url).host })}
       actions={<><Button variant="primary" size="sm" busy={busy} onClick={move}>{t("Jetzt umziehen")}</Button><Button size="sm" onClick={later}>{t("Später")}</Button></>}>
-      {t("Du bist über die IP-Adresse verbunden. Vergibt der Router dem PC eine neue, findet dieses Handy ihn nicht mehr. Unter dem festen Namen bleibt die Verbindung – ein Tipp, ohne neu zu koppeln. Danach diese Adresse als Lesezeichen bzw. auf den Home-Bildschirm legen.")}
+      {t("Du bist über die IP-Adresse verbunden. Vergibt der Router dem PC eine neue, findet dieses Handy ihn nicht mehr. Unter dem festen Namen bleibt die Verbindung – ein Tipp, ohne neu zu koppeln. Danach diese Adresse als Lesezeichen bzw. auf den Home-Bildschirm legen.")} {t("Achtung: Läuft am Handy ein VPN (auch Tailscale) oder „Privates DNS“, findet es den Namen oft nicht – dann lieber bei der IP bleiben. Die IP-Seite bleibt gekoppelt.")}
     </Banner>
   );
 }

@@ -311,7 +311,7 @@ function Connection() {
             <div className="row nowrap"><input className="input" type="number" min={1024} max={65535} value={f.port} disabled={!isLocal} onChange={(e) => setF({ ...f, port: +e.target.value })} style={{ maxWidth: 140 }} />
               {isLocal && <Button onClick={() => s.save({ port: f.port }, true)}>{t("Übernehmen")}</Button>}</div>
           </Field>
-          <div className="stack-sm"><span className="label">{t("Adressen für dein Handy")}</span>{(st.data?.lanUrls ?? []).map((u) => <code key={u}>{u}</code>)}{st.data && st.data.lanUrls.length === 0 && <span className="small muted">{t("Keine WLAN-Adresse gefunden.")}</span>}</div>
+          <div className="stack-sm"><span className="label">{t("Adressen für dein Handy")}</span>{lanList(st.data?.lanUrls ?? []).map((a) => <div key={a.url} className="row" style={{ gap: 8, flexWrap: "wrap" }}><code>{a.url}</code><span className="small muted">{a.label}</span></div>)}{st.data && st.data.lanUrls.length === 0 && <span className="small muted">{t("Keine WLAN-Adresse gefunden.")}</span>}</div>
           <Banner kind="info">{t("Im Heimnetz ist die Verbindung unverschlüsselt (http). Anmeldungen sind trotzdem per Challenge-Response geschützt; für Zugriffe von außen bitte nur https/wss nutzen.")}</Banner>
         </div>
       </Card>
@@ -653,4 +653,11 @@ function Privacy() {
       )}
     </Loadable>
   );
+}
+
+/** Wi-Fi addresses first (they always open at home), a Tailscale address (100.64.0.0/10) labelled as such. */
+function lanList(urls: string[]) {
+  const kind = (u: string) => { const h = (() => { try { return new URL(u).hostname; } catch { return ""; } })(); const m = /^100\.(\d+)\./.exec(h); return m && Number(m[1]) >= 64 && Number(m[1]) <= 127 ? "tailscale" : "lan"; };
+  return urls.map((url) => ({ url, k: kind(url) })).sort((a, b) => (a.k === b.k ? 0 : a.k === "lan" ? -1 : 1))
+    .map((a) => ({ url: a.url, label: a.k === "lan" ? t("WLAN – zu Hause, Handy im selben WLAN") : t("Tailscale – unterwegs, Tailscale-App am Handy an") }));
 }

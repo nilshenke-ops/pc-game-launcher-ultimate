@@ -5687,4 +5687,8 @@ export const en: Record<string, string> = {
   "Vollständige Story auf Wunsch": "Full story on request",
   "z. B. PC (Steam), Xbox": "e.g. PC (Steam), Xbox",
   "z. B. alles erkunden, Story zuerst": "e.g. explore everything, story first",
+  "Achtung: Läuft am Handy ein VPN (auch Tailscale) oder „Privates DNS“, findet es den Namen oft nicht – dann lieber bei der IP bleiben. Die IP-Seite bleibt gekoppelt.": "Note: if the phone runs a VPN (Tailscale too) or “Private DNS”, it often cannot find the name – then stay with the IP. The IP page stays paired.",
+  "Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der Nexus Gaming Hub? Bei einer …ts.net-Adresse: Ist die Tailscale-App am Handy an und mit demselben Konto angemeldet (sonst findet das Handy den Namen nicht – Fehler „ERR_NAME_NOT_RESOLVED“)? Stimmt die Adresse mit der im Nexus Gaming Hub unter „Gerät koppeln“ überein? Im selben WLAN geht es auch ohne Tailscale: QR-Code am PC scannen.": "The PC cannot be reached at this address. Check: is the PC on and the Nexus Gaming Hub running? For a …ts.net address: is the Tailscale app on the phone switched on and signed in with the same account (otherwise the phone cannot find the name – error “ERR_NAME_NOT_RESOLVED”)? Does the address match the one in the Nexus Gaming Hub under “Pair device”? In the same Wi-Fi it also works without Tailscale: scan the QR code on the PC.",
+  "WLAN – zu Hause, Handy im selben WLAN": "Wi-Fi – at home, phone in the same Wi-Fi",
+  "Tailscale – unterwegs, Tailscale-App am Handy an": "Tailscale – on the go, Tailscale app on the phone switched on",
 };

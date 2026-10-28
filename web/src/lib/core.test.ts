@@ -256,6 +256,9 @@ describe("direct pairing link (website https → PC http in the home network)", 
     expect(directPairUrl("http://192.168.178.116:8787", "kpdh-v2w8")).toBe("http://192.168.178.116:8787/#/pair?code=KPDH-V2W8");
     expect(directPairUrl("192.168.178.116:8787", "")).toBe("http://192.168.178.116:8787/#/pair");
     expect(directPairUrl("https://gaming-pc.tail1234.ts.net", "ABCD-EFGH")).toBeNull();
+    // Without scheme a Tailscale name is an https address – no jump to http://name (ERR_NAME_NOT_RESOLVED on the phone).
+    expect(directPairUrl("gaming.tail72a60b.ts.net", "ABCD-EFGH")).toBeNull();
+    expect(directPairUrl("gaming.fritz.box", "ABCD-EFGH")).toBe("http://gaming.fritz.box:8787/#/pair?code=ABCD-EFGH");
     expect(directPairUrl("javascript:alert(1)", "ABCD-EFGH")).toBeNull();
     expect(directPairUrl("http://192.168.1.5:8787", "AB\"<x>")).toBe("http://192.168.1.5:8787/#/pair?code=ABX");
   });
