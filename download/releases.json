@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.74.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.74.0/PCGameLauncherCompanion.exe",
+    "size": 88304337,
+    "sha256": "8f449d5f935658b3dd2956245ab711b3dc77dd42e4545c87a147cca38de228eb",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.74.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.74.0/PCGameLauncherCompanion-2.74.0-win-x64.zip",
+      "size": 82567797,
+      "sha256": "47d9bed5257de3c51f0247347a7c4d7ae742690dc66beb0199335a61d90f0d6f"
+    },
+    "notes": "KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten · Vorschau vor dem Speichern: Änderungen werden erst angezeigt („Design-Vorschau – noch nicht gespeichert“), dann „Übernehmen“ oder „Verwerfen“ (Leiste unten oder per Chat); „Letzte Designänderung rückgängig“ und „Ursprüngliches Design wiederherstellen“ (Chat und Einstellungen → Design) · Neue Themes: Minecraft, Purple Gaming, Blue Gaming (zusätzlich zu Neon, Minimal Dark, Cyberpunk, Schwarz-Weiß, Light Mode …)",
+    "changes": {
+      "neu": [
+        "KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten",
+        "Vorschau vor dem Speichern: Änderungen werden erst angezeigt („Design-Vorschau – noch nicht gespeichert“), dann „Übernehmen“ oder „Verwerfen“ (Leiste unten oder per Chat); „Letzte Designänderung rückgängig“ und „Ursprüngliches Design wiederherstellen“ (Chat und Einstellungen → Design)",
+        "Neue Themes: Minecraft, Purple Gaming, Blue Gaming (zusätzlich zu Neon, Minimal Dark, Cyberpunk, Schwarz-Weiß, Light Mode …)",
+        "Einstellungen → Darstellung: Abstände (kompakt/normal/luftig), Schatten (keine/weich/kräftig), Rahmen (dezent/deutlich), große Schaltflächen für iPad/Touch"
+      ],
+      "verbessert": [
+        "Auch die bisherigen Design-Befehle („Mach das Design hell“, „Hintergrund Weltall“ …) zeigen jetzt zuerst eine Vorschau statt sofort zu speichern",
+        "Lesbarkeit geschützt: zu schwache Akzentfarben werden angepasst oder nicht übernommen (mit Hinweis); Menü, Widgets und Funktionen ändert der Design-Editor nie"
+      ],
+      "behoben": []
+    },
+    "signature": "kwbvZk3dA5oNK54ssX0qEG0ReyPN+Xajl7KruLnvXYpNoYTi2Rxwr1OBvyluQ+3ogfXRsNnkYcjkzHK3BsJL0w=="
+  },
+  {
     "version": "2.73.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1485,36 +1515,5 @@
       "behoben": []
     },
     "signature": "ZLwceROg9fWt+eVMS/jyVYMTnr6nZQGdPWZTodHowFht+CgaG48MVQcm3XyCH19UnEdAyeiUHUGXEH9bO8N4zQ=="
-  },
-  {
-    "version": "2.28.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.28.0/PCGameLauncherCompanion.exe",
-    "size": 87616675,
-    "sha256": "05c4b6240ea1985f9b77d5a9d278af6b99f8ebea1be59d25ce3c35741a616aa5",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.28.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.28.0/PCGameLauncherCompanion-2.28.0-win-x64.zip",
-      "size": 81881251,
-      "sha256": "1e312d242a704b5dbbb8e2aef776b89eec00145c4c2b0afeb99e96c6b086b66c"
-    },
-    "notes": "Spiele-Bibliothek mit drei Ansichten: Raster, Liste und Holo – die Wahl bleibt gespeichert · Holo-Ansicht: drehendes Schaufenster mit dem gewählten Spiel groß in der Mitte, darunter Spielzeit und letzter Start (nur vom PC erfasste Werte), Favorit, Bearbeiten und Spielen; bedienbar mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel · Listenansicht: kompakte Zeilen mit Bild, Bewertung, Spielzeit und Spielen-Knopf",
-    "changes": {
-      "neu": [
-        "Spiele-Bibliothek mit drei Ansichten: Raster, Liste und Holo – die Wahl bleibt gespeichert",
-        "Holo-Ansicht: drehendes Schaufenster mit dem gewählten Spiel groß in der Mitte, darunter Spielzeit und letzter Start (nur vom PC erfasste Werte), Favorit, Bearbeiten und Spielen; bedienbar mit Pfeiltasten, Wischen, Mausrad, Schieberegler oder Tipp auf ein Nachbarspiel",
-        "Listenansicht: kompakte Zeilen mit Bild, Bewertung, Spielzeit und Spielen-Knopf",
-        "Gamer-Pass-Editor im Trophäenraum: eigenes Bild (im Browser auf 256 px verkleinert), Titel, bis zu 3 Lieblingsspiele, bis zu 4 Abzeichen aus echten Erfolgen, Rahmen (Neon, Gold, Holo, Pixel), 8 Hintergründe, eigene Farbe, Bereiche ein-/ausblenden und umsortieren, Live-Vorschau, Rückgängig und Zurücksetzen"
-      ],
-      "verbessert": [
-        "Große Bibliotheken: Raster und Liste bauen zuerst 120 Spiele auf und laden beim Scrollen nach (bei 3010 Spielen Wechsel der Ansicht 0,2 s statt 1,3–1,8 s)",
-        "Die Holo-Ansicht zeichnet nur die 9 Spiele um die Mitte – auch bei Tausenden Spielen",
-        "Der Gamer-Pass kommt mit dem Konto in andere Browser mit; nichts wird automatisch veröffentlicht"
-      ],
-      "behoben": []
-    },
-    "signature": "HmX4i8yzp/DSJOfmgoRpuAicNtXqmaW8HGMHz0UiWONEkM+KDxPVH7soBwcw0/w88TE1Z9VL1QPXnQMGOLfITw=="
   }
 ]
