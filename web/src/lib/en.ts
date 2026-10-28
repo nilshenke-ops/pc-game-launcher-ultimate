@@ -5679,4 +5679,12 @@ export const en: Record<string, string> = {
   "YouTube-Schlüssel entfernt": "YouTube key removed",
   "YouTube-Schlüssel gespeichert": "YouTube key saved",
   "Zugänge für JARVIS (IGDB, Twitch, YouTube)": "Access for JARVIS (IGDB, Twitch, YouTube)",
+  "Ausführliche Lösung": "Detailed solution",
+  "Bevorzugte Spielweise": "Preferred play style",
+  "Keine Story-Spoiler": "No story spoilers",
+  "Nur Hinweise zur aktuellen Stelle": "Only hints for the current spot",
+  "Spoiler-Stufe für JARVIS": "Spoiler level for JARVIS",
+  "Vollständige Story auf Wunsch": "Full story on request",
+  "z. B. PC (Steam), Xbox": "e.g. PC (Steam), Xbox",
+  "z. B. alles erkunden, Story zuerst": "e.g. explore everything, story first",
 };

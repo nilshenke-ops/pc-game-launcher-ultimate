@@ -24,6 +24,11 @@ export interface PlaytimeEntry {
   progress?: Progress | null;
   /** Average minutes per day you want to plan with. */
   minutesPerDay?: number | null;
+  /** How much JARVIS may reveal for this game (Quest-Coach); unset = no story spoilers. */
+  spoiler?: "none" | "hints" | "solution" | "full" | null;
+  /** Platform you play it on and your play style – your own words, for JARVIS' advice. */
+  platform?: string | null;
+  playstyle?: string | null;
 }
 
 export interface Estimate {
@@ -149,7 +154,15 @@ const cleanGame = (s: string) => s
   .replace(/[?!.,"„“]+/g, " ").replace(/\s+/g, " ").trim();
 
 export function playtimeIntent(raw: string): PlaytimeIntent | null {
-  const t = raw.trim().replace(/^jarvis[,:]?\s*/i, "");
+  // "Ich möchte Hogwarts Legacy abschließen. Wie lange brauche ich noch, und was sollte ich als Nächstes machen?"
+  // – the game comes from the first sentence; the "what next" part is answered by the Quest-Coach.
+  const full = raw.trim().replace(/^jarvis[,:]?\s*/i, "");
+  const context = /\bich (?:möchte|moechte|will|würde gerne|wuerde gerne)\s+(.{2,80}?)\s+(?:abschließen|abschliessen|durchspielen|beenden|schaffen|fertig spielen|zu ende spielen|zu ende bringen)\b/i.exec(full)?.[1] ?? null;
+  const t = full.replace(/,?\s*(?:und|&)\s+was (?:sollte|soll|kann) ich.*$/i, "").replace(/^.*?\b(?:abschließen|abschliessen|durchspielen|beenden|schaffen)[.!]\s+/i, "").trim();
+  if (context && /^wie lange (?:brauche|brauch) ich (?:noch|dafür noch|dafuer noch)?\s*\??$/i.test(t)) {
+    const goal0: Goal = /100\s*%|100 prozent|komplett|vollständig/i.test(full) ? "complete" : /nebenquest|nebenaufgabe/i.test(full) ? "extra" : "main";
+    return { kind: "question", game: cleanGame(context), ask: "remaining", goal: goal0, minutesPerDay: minutesPerDayOf(full), deadline: null };
+  }
   let m = /^(?:ich bin|bin)\s+(?:bei|zu|auf)\s+(\d{1,3})\s*(?:%|prozent)\s+(?:in|bei|von)\s+(.{2,80}?)[.!]?$/i.exec(t)
     ?? /^(?:in|bei)\s+(.{2,80}?)\s+bin ich\s+(?:bei|zu)\s+(\d{1,3})\s*(?:%|prozent)/i.exec(t);
   if (m) {

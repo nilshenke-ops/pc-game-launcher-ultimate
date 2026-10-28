@@ -500,3 +500,8 @@ Frag JARVIS z. B. „Was ist Hollow Knight für ein Spiel?“, „Was kostet Had
 Seite: /assistant
 Stichworte: epic gratis diese woche nächste woche xbox microsoft store preis game pass twitch streams wer streamt youtube video guide trailer tutorial schlüssel
 Frag JARVIS z. B. „Was gibt es bei Epic gratis?“ (jetzt und demnächst), „Was kostet Forza Horizon 5 im Microsoft Store?“, „Ist Starfield im Game Pass?“ (Game Pass am PC einschalten), „Wer streamt gerade Elden Ring?“ (mit der kostenlosen Twitch-Anwendung, dieselbe wie für IGDB) oder „Zeig mir einen Guide für Hollow Knight“. Für Videos direkt im Chat am PC unter Spiele-Journal → Spielzeit einen kostenlosen YouTube-API-Schlüssel eintragen – ohne Schlüssel öffnet JARVIS die YouTube-Suche.
+
+## JARVIS Quest-Coach: Wo war ich, was als Nächstes, Spoiler
+Seite: /journal
+Stichworte: wo war ich stehen geblieben was als nächstes quest nebenquest hinweis merken erinnern spoiler keine spoiler lösung story zusammenfassen welches spiel passt minuten
+Frag JARVIS z. B. „Wo war ich in Hogwarts Legacy stehen geblieben?“, „Was sollte ich in … als Nächstes machen?“, „Ich bin in … gerade bei …“, „Speichere diesen Hinweis für …: …“, „Erinnere mich daran, dass ich in … noch die Nebenquest … machen will“, „Keine Spoiler für …“ / „Ausführliche Lösung für …“, „Wie komme ich in … weiter bei …?“, „Fasse die Story von … bis zu meinem Stand zusammen“ oder „Ich habe heute 20 Minuten“. JARVIS nutzt nur deine Einträge im Spiele-Journal (ansehen, ändern, löschen dort) und erfindet keinen Fortschritt.

@@ -107,7 +107,22 @@ Live getestet mit echtem Internet: Hollow Knight (Steam-Daten, 7 882 Spieler), H
 Nicht möglich bzw. bewusst nicht gebaut: Epic-Preise (kein offenes API), YouTube/Twitch ohne Zugang auslesen (Scraping), Google-Suche.
 Live getestet: Epic (Sker Ritual, Home jetzt; Sorry We're Closed ab 29.10.), Forza Horizon 5 (69,99 € Standard Edition), YouTube-Link. Twitch mit Test-Zugangsdaten → von Twitch abgelehnt, ehrliche Meldung + Link; mit echter Anwendung mit Mock getestet (C#).
 
-## 9. Weitere Funktionen A–J – noch offen
+## 9. Quest-Coach (2.68.0)
+Gaming-Gedächtnis = Spiele-Journal (lokal auf dem Gerät, über den PC abgeglichen, Export/Import vorhanden): „Wo war ich?“ (Stelle, Erledigtes, Plan, Notizen), Zielpfade (Etappen), Sammlung (offene Quests/Aufgaben), Story (Kapitel mit Fortschrittsmarke und Spoiler-Kennzeichen), Spielzeit (Fortschritt, Spoiler-Stufe, Plattform, Spielweise). JARVIS liest und schreibt nur diese Einträge; Quest-Inhalte aus dem Internet gibt es nur als Links passend zur Spoiler-Stufe (kein erfundener Lösungsweg).
+
+## 10. Abgleich mit dem Master-Auftrag „Gaming Intelligence Ultimate“
+| Punkt | Stand |
+|---|---|
+| 6 Gaming-Gedächtnis & Quest-Coach | umgesetzt (2.68.0) – Journal + JARVIS; Erklärung einzelner Quests nur über Links/Videos, eine KI-Erklärung nur mit eingerichteter KI am PC |
+| 6 Spoiler-Schutz | umgesetzt: Stufe je Spiel, Story bis zur Fortschrittsmarke, Nachfrage ohne bekannte Stelle |
+| 7 Bibliothek & Spielzeit | umgesetzt: Steam/Epic/EA/Xbox/Game Pass/manuell (seit 2.43), Spielzeit Steam/gemessen/manuell, IGDB-Dauern, Restzeit-Rechner, Tage, Fristen, Zeit-Finder |
+| 8 PC-Diagnose | vorhanden (Gaming-Doktor, Leistungsmessung, Kompatibilität); FPS werden nicht gemessen und nicht behauptet |
+| 9 Achievements / Builds / Minecraft | vorhanden (Steam-Erfolge, Builds & Technik, Welten & Bauprojekte); JARVIS-Materiallisten aus Beschreibungen: offen |
+| 10 Recherche | umgesetzt über erlaubte APIs (Steam, Epic, Microsoft, IGDB, speedrun.com, FreeToGame, GamerPower, Twitch, YouTube); allgemeine Websuche nur mit Such-API-Schlüssel (z. B. Brave Search) – noch nicht eingebaut |
+| 11 Koop-Finder & Gaming-Abend | vorhanden (Gruppen-Finder, Gaming-Abend, Abstimmung, Bingo) |
+| 12 Sprache & Mehrfachaktionen | vorhanden (Spracheingabe/-ausgabe, mehrere Schritte mit Prüfung und Abbruch bei Fehler) |
+
+## 11. Weitere Funktionen A–J – noch offen
 Diese Punkte sind **noch nicht umgesetzt**. Für jeden steht, worauf er aufbauen kann:
 - **A Zeitplaner:** Zeit-Finder und Kalender plus die Spielzeitanalyse.
 - **B Fortschrittsassistent:** Journal „Wo war ich?“ und die Fortschrittsangabe.

@@ -1418,6 +1418,41 @@ test("JARVIS Gaming-Wissen: Sensitivität rechnen, Ratgeber mit Quelle, Ausgaben
   await expect(p.getByText("12,50 € · E2E Kaufspiel")).toHaveCount(0);
 });
 
+test("JARVIS Quest-Coach: Stand merken, offene Nebenquest, Spoiler-Stufe, „Wo war ich?“ und „Was als Nächstes?“ aus dem Journal", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  const ask = async (q: string) => { await say.fill(q); await say.press("Enter"); };
+  await ask("Wo war ich in E2E Questspiel stehen geblieben?");
+  await expect(last()).toContainText("rate nicht");
+  await ask("Ich bin in E2E Questspiel gerade bei der Quest Der Kartenraum");
+  await expect(last()).toContainText("Gemerkt: E2E Questspiel");
+  await ask("Erinnere mich daran, dass ich in E2E Questspiel noch die Nebenquest Der verlorene Kessel machen will");
+  await expect(last()).toContainText("„Nebenquest Der verlorene Kessel“");
+  await ask("Speichere diesen Hinweis für E2E Questspiel: Kessel liegt hinter dem Wasserfall");
+  await expect(last()).toContainText("Hinweis für E2E Questspiel gespeichert");
+  await ask("Wo war ich in E2E Questspiel?");
+  await expect(last()).toContainText("Stelle: der Quest Der Kartenraum");
+  await expect(last()).toContainText("Offen: Nebenquest Der verlorene Kessel");
+  await ask("Was sollte ich in E2E Questspiel als Nächstes machen?");
+  await expect(last()).toContainText("Noch offen: Nebenquest Der verlorene Kessel");
+  await expect(last()).toContainText("keine Story-Spoiler");
+  // The example from the brief: one sentence, both answers.
+  await ask("JARVIS, ich möchte E2E Questspiel abschließen. Wie lange brauche ich noch, und was sollte ich als Nächstes machen?");
+  await expect(last()).toContainText("Spielzeitanalyse: E2E Questspiel");
+  await expect(last()).toContainText("lässt sich nicht seriös sagen");
+  await expect(last()).toContainText("Noch offen: Nebenquest Der verlorene Kessel");
+  await ask("Ausführliche Lösung für E2E Questspiel");
+  await expect(last()).toContainText("Spoiler-Stufe für E2E Questspiel: ausführliche Lösung");
+  // Everything is visible, changeable and deletable in the journal.
+  await p.goto(`${COMPANION}/#/journal?tab=finds`);
+  await expect(p.getByText("Nebenquest Der verlorene Kessel").first()).toBeVisible();
+  await p.goto(`${COMPANION}/#/journal?tab=playtime`);
+  await expect(p.locator(".card", { hasText: "E2E Questspiel" }).getByLabel("Spoiler-Stufe für JARVIS")).toHaveValue("solution");
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

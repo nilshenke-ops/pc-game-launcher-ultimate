@@ -7,6 +7,7 @@ describe("Spielzeit: was gefragt ist", () => {
   it("versteht die Fragen aus dem Auftrag", () => {
     expect(playtimeIntent("JARVIS, wie lange brauche ich noch, bis ich Hogwarts Legacy durchgespielt habe?")).toMatchObject({ kind: "question", game: "Hogwarts Legacy", ask: "remaining", goal: "main" });
     expect(playtimeIntent("Wie lange dauert Elden Ring insgesamt?")).toMatchObject({ ask: "total", game: "Elden Ring" });
+    expect(playtimeIntent("JARVIS, ich möchte Hogwarts Legacy abschließen. Wie lange brauche ich noch, und was sollte ich als Nächstes machen?")).toMatchObject({ kind: "question", game: "Hogwarts Legacy", ask: "remaining", goal: "main" });
     expect(playtimeIntent("Wie lange brauche ich für 100 % in Hollow Knight?")).toMatchObject({ goal: "complete", game: "Hollow Knight" });
     expect(playtimeIntent("Wie lange brauche ich noch für Hogwarts Legacy bei 45 Minuten täglich?")).toMatchObject({ game: "Hogwarts Legacy", minutesPerDay: 45 });
     expect(playtimeIntent("Schaffe ich die Hauptstory von Hogwarts Legacy bis Freitag?")).toMatchObject({ game: "Hogwarts Legacy", ask: "remaining" });

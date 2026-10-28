@@ -76,6 +76,18 @@ function PlaytimeCard({ e, online, focused }: { e: Entry<PlaytimeEntry>; online:
             <input className="input" inputMode="decimal" defaultValue={d.ownDurations?.mainHours ?? ""} onBlur={(ev) => { const v = num(ev.target.value); set({ ownDurations: { ...(d.ownDurations ?? {}), mainHours: v } }); }} />
           </Field>
         </div>
+        <div className="grid-3">
+          <Field label={t("Spoiler-Stufe für JARVIS")}>
+            <select className="input" value={d.spoiler ?? "none"} onChange={(ev) => set({ spoiler: ev.target.value as PlaytimeEntry["spoiler"] })}>
+              <option value="none">{t("Keine Story-Spoiler")}</option>
+              <option value="hints">{t("Nur Hinweise zur aktuellen Stelle")}</option>
+              <option value="solution">{t("Ausführliche Lösung")}</option>
+              <option value="full">{t("Vollständige Story auf Wunsch")}</option>
+            </select>
+          </Field>
+          <Field label={t("Plattform")}><input className="input" maxLength={40} defaultValue={d.platform ?? ""} placeholder={t("z. B. PC (Steam), Xbox")} onBlur={(ev) => set({ platform: ev.target.value.trim() || null })} /></Field>
+          <Field label={t("Bevorzugte Spielweise")}><input className="input" maxLength={120} defaultValue={d.playstyle ?? ""} placeholder={t("z. B. alles erkunden, Story zuerst")} onBlur={(ev) => set({ playstyle: ev.target.value.trim() || null })} /></Field>
+        </div>
         {d.progress && <span className="tiny muted">{t("Fortschritt angegeben am {d}", { d: day(d.progress.at) })}</span>}
       </div>
     </Card>

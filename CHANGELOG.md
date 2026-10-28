@@ -4,6 +4,20 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.68.0 – 2026-10-28
+### Neu
+- JARVIS Quest-Coach – nutzt dein Gaming-Gedächtnis (Spiele-Journal) statt jede Frage ohne Zusammenhang zu beantworten; nichts wird erfunden:
+- „Wo war ich (in Hogwarts Legacy) stehen geblieben?“ – letzte Notiz, Stelle, Plan fürs nächste Mal, Fortschritt, nächste Etappe deiner Zielpfade, offene Quests
+- „Was sollte ich in … als Nächstes machen?“ – dein eigener Plan, nächste Etappe, offene Aufgaben und die geschätzte Restzeit; ohne Einträge sagt JARVIS das statt etwas zu empfehlen
+- „Ich bin in … gerade bei …“, „Speichere diesen Hinweis für …: …“, „Erinnere mich daran, dass ich in … noch die Nebenquest … machen will“ – landet in „Wo war ich?“ bzw. als offener Eintrag in der Sammlung (ansehen, ändern, löschen)
+- Spoiler-Stufe je Spiel („Keine Spoiler für …“, „Nur Hinweise …“, „Ausführliche Lösung für …“) – gilt für „Wie komme ich in … weiter bei …?“: ohne bekannte Stelle fragt JARVIS nach, statt Späteres zu verraten; Links zu Tipps/Lösungen passend zur Stufe (mit YouTube-Schlüssel auch die Videos)
+- „Fasse die Story von … bis zu meinem Stand zusammen“ – nur aus deinen Story-Notizen, bis zu deinem Kapitel, Spoiler ausgeblendet
+- „Ich habe heute 20 Minuten“ / „Welches Spiel passt in 30 Minuten?“ – passende Spiele aus Bibliothek, Verlauf und Backlog (Zeit-Finder)
+- „Ich möchte … abschließen. Wie lange brauche ich noch, und was sollte ich als Nächstes machen?“ – beides in einer Antwort
+- Spielzeit-Reiter: Spoiler-Stufe, Plattform und bevorzugte Spielweise je Spiel
+### Behoben
+- „Was sollte ich … als Nächstes machen?“ wurde an „als Nächstes“ in zwei Aufträge zerlegt
+
 ## 2.67.0 – 2026-10-28
 ### Neu
 - JARVIS nutzt jetzt auch Epic, Xbox, Twitch und YouTube – nur auf deine Frage, über die offiziellen bzw. öffentlichen Schnittstellen, mit Quelle:

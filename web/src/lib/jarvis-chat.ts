@@ -28,10 +28,13 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
   if (offTopic(question)) return { reply: reply(OFF_TOPIC()), steps: [] };
   if (codeRequest(question)) return { reply: reply(CODE()), steps: [] };
-  const mem = memoryIntent(question);
+  // "Merk dir einen Hinweis für Elden Ring: …" belongs to that game's journal, not to the general memory.
+  const { coachIntent: coach } = await import("./game-coach");
+  const mem = coach(question) ? null : memoryIntent(question);
   if (mem) return { reply: memoryReply(mem, reply), steps: [] };
 
-  const parts = splitSteps(question);
+  // "Was sollte ich in X als Nächstes machen?" is one question, not two steps around "als Nächstes".
+  const parts = coach(question) ? [question.trim()] : splitSteps(question);
   const steps: JarvisStep[] = [];
   const buttons: AssistantAction[] = [];
   const texts: string[] = [];
@@ -50,14 +53,24 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     // A play-time question first: "… bis morgen bei 2 Stunden pro Tag" is not a design wish.
     const { playtimeIntent } = await import("./playtime");
     const pt = playtimeIntent(part);
+    const { coachIntent } = await import("./game-coach");
+    const ci = pt ? null : coachIntent(part);
     const { gamingIntent } = await import("./gaming-intel");
-    const gi = pt ? null : gamingIntent(part);
+    const gi = pt || ci ? null : gamingIntent(part);
     const { researchIntent } = await import("./gaming-research");
-    const ri = pt || gi ? null : researchIntent(part);
-    const setup = pt || gi || ri ? null : setupReply(part, getPrefs(), navItems());
-    const site = setup || pt || gi || ri ? null : siteIntent(part);
+    const ri = pt || ci || gi ? null : researchIntent(part);
+    const setup = pt || ci || gi || ri ? null : setupReply(part, getPrefs(), navItems());
+    const site = setup || pt || ci || gi || ri ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (gi) {
+    if (ci) {
+      // Quest-Coach: your own journal first (where you were, plans, open quests, spoiler level).
+      const { coachAnswer } = await import("./game-coach");
+      const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
+      const a = await coachAnswer(ci, online);
+      r = { text: a.text, ok: a.ok };
+      a.sources.forEach((x) => sources.add(x));
+      buttons.push(...a.links.map((l) => ({ kind: "openUrl", label: l.label, params: { url: l.url } })), ...a.navigate.map((n) => ({ kind: "navigate", label: n.label, path: n.path })));
+    } else if (gi) {
       // Gaming knowledge beyond the app: free games, news, sensitivity, health, setup, lag, controller, spending.
       const { gamingAnswer } = await import("./gaming-intel");
       for (let i = 0; !ctx.online && gi.kind === "news" && client.status.phase === "connecting" && i < 40; i++) await new Promise((res) => setTimeout(res, 100));
@@ -83,6 +96,13 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
       const a = await playtimeAnswer(pt, online);
       r = { text: a.text, ok: a.ok };
+      // "… und was sollte ich als Nächstes machen?" in the same sentence: the Quest-Coach answers that part.
+      if (/\bwas (?:sollte|soll|kann) ich\b.*\bals (?:nächstes|naechstes)\b/i.test(question)) {
+        const { coachAnswer } = await import("./game-coach");
+        const c = await coachAnswer({ kind: "next", game: pt.game }, online);
+        r = { text: `${r.text}\n\n${c.text}`, ok: r.ok };
+        buttons.push(...c.navigate.map((n) => ({ kind: "navigate", label: n.label, path: n.path })));
+      }
       a.sources.forEach((x) => sources.add(x));
       buttons.push({ kind: "navigate", label: t("Spielzeit ansehen und ändern"), path: `/journal?tab=playtime${a.entryId ? `&id=${a.entryId}` : ""}` });
     } else if (setup) {
