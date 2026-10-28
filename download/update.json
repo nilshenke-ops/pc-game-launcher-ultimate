@@ -1,28 +1,27 @@
 {
-  "version": "2.70.0",
+  "version": "2.71.0",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.70.0/PCGameLauncherCompanion.exe",
-  "size": 88276477,
-  "sha256": "0c32fbd791544d7998832a7483b6f271a795cbb0b1c814e04beed8e0732f5adc",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.71.0/PCGameLauncherCompanion.exe",
+  "size": 88278546,
+  "sha256": "1bf543c3b234ec1a060c96c842abf5a353a1a382ce47689a8343affd86e4cb81",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.70.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.70.0/PCGameLauncherCompanion-2.70.0-win-x64.zip",
-    "size": 82538920,
-    "sha256": "19c9aab0cf4abd7809eddea6d49fc1ee6f2d93d563f716aa29caebc4e3575e42"
+    "fileName": "PCGameLauncherCompanion-2.71.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.71.0/PCGameLauncherCompanion-2.71.0-win-x64.zip",
+    "size": 82541281,
+    "sha256": "94fdda62c113496b3cce0d3eb8711cd7aa192c26ee7d61a5759715d40fff5c8e"
   },
-  "notes": "Programme: Alle installierten Apps erscheinen automatisch – ohne „Hinzufügen“. Der Begleiter liest das Windows-Startmenü (Desktop-Programme aus dem Web-Installer wie Discord, Apps aus dem Microsoft Store, Xbox-Apps) beim Start und danach alle 10 Minuten; jede App startet mit einem Tipp · Schalter „Installierte Apps automatisch anzeigen“ und „Jetzt prüfen“ oben unter Programme (Standard: an) · Deinstallierte Apps verschwinden wieder; selbst entfernte bleiben ausgeblendet, bis sie deinstalliert werden. Schon vorhandene Einträge (gleicher Name oder gleiches Ziel) kommen nicht doppelt. Nicht aufgenommen werden Deinstallationsprogramme, Liesmich-/Hilfe-/Web-Verknüpfungen und Windows-Systemwerkzeuge",
+  "notes": "Medal als Aufnahmeprogramm (Overlay & Aufnahme): „Replay speichern“ drückt die Medal-Clip-Taste F8 (Werkseinstellung, änderbar); die Taste für „Aufnahme starten/stoppen“ wird wie in Medal eingetragen · Aufnahmen: Clips und Screenshots aus Medal erscheinen automatisch – der Begleiter findet den in Medal gewählten Aufnahmeordner (aus Medals eigenen Dateien unter %APPDATA%\\Medal\\store) sowie die üblichen Orte (C:\\Medal, Videos\\Medal) und sortiert nach Medals Spielordnern, auch für Spiele, die nicht in der Bibliothek sind · Medals Vorschaubilder, Editor- und Cache-Dateien werden nicht als Aufnahmen gezeigt",
   "changes": {
     "neu": [
-      "Programme: Alle installierten Apps erscheinen automatisch – ohne „Hinzufügen“. Der Begleiter liest das Windows-Startmenü (Desktop-Programme aus dem Web-Installer wie Discord, Apps aus dem Microsoft Store, Xbox-Apps) beim Start und danach alle 10 Minuten; jede App startet mit einem Tipp",
-      "Schalter „Installierte Apps automatisch anzeigen“ und „Jetzt prüfen“ oben unter Programme (Standard: an)"
+      "Medal als Aufnahmeprogramm (Overlay & Aufnahme): „Replay speichern“ drückt die Medal-Clip-Taste F8 (Werkseinstellung, änderbar); die Taste für „Aufnahme starten/stoppen“ wird wie in Medal eingetragen",
+      "Aufnahmen: Clips und Screenshots aus Medal erscheinen automatisch – der Begleiter findet den in Medal gewählten Aufnahmeordner (aus Medals eigenen Dateien unter %APPDATA%\\Medal\\store) sowie die üblichen Orte (C:\\Medal, Videos\\Medal) und sortiert nach Medals Spielordnern, auch für Spiele, die nicht in der Bibliothek sind"
     ],
     "verbessert": [
-      "Deinstallierte Apps verschwinden wieder; selbst entfernte bleiben ausgeblendet, bis sie deinstalliert werden. Schon vorhandene Einträge (gleicher Name oder gleiches Ziel) kommen nicht doppelt. Nicht aufgenommen werden Deinstallationsprogramme, Liesmich-/Hilfe-/Web-Verknüpfungen und Windows-Systemwerkzeuge",
-      "Ein Xbox-/Store-Spiel, das zuerst als App auftauchte, wird beim Xbox-Abgleich zum Spiel"
+      "Medals Vorschaubilder, Editor- und Cache-Dateien werden nicht als Aufnahmen gezeigt"
     ],
     "behoben": []
   },
-  "signature": "oU5PQXxdCN+NkadcTI2zn3NNOFCgmLrTKIwLjW87EHBGqEPVMPNS+iP4IByUZWmYwK0FJsCm2NVwGtLIR4dgrA=="
+  "signature": "+Pvm8rDOwZFBjqLzBJI3f32pW/jhlDLsOo2Rsl5KrTY435cBYEnt0ImyHx4Pz3KyPiBOboFSSIWqyDEElfXz9w=="
 }
