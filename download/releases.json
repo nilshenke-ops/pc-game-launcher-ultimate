@@ -1,5 +1,32 @@
 [
   {
+    "version": "2.69.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.69.0/PCGameLauncherCompanion.exe",
+    "size": 88273474,
+    "sha256": "18a687a53116ea29f6c1289e940986dacc1709089ab59ad2e158d71ceaa04340",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.69.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.69.0/PCGameLauncherCompanion-2.69.0-win-x64.zip",
+      "size": 82536742,
+      "sha256": "dd32eea5ffa1a2fb491ae1171ee61418d64cce95843c796840c311d7b91ea4fd"
+    },
+    "notes": "JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“ · Ton „Locker (mit Sprüchen)“: nach erledigten Aufträgen ein frecher Spruch unter der Antwort (spät nachts mit Hinweis auf die Uhrzeit) – Zahlen und Fakten bleiben unverändert, bei Fehlern und Rückfragen kein Spruch; per Chat umschaltbar („Sei lockerer“ / „Sprich wieder sachlich“). JARVIS ahmt keine echte Person nach · Emojis werden nicht mehr vorgelesen",
+    "changes": {
+      "neu": [
+        "JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“",
+        "Ton „Locker (mit Sprüchen)“: nach erledigten Aufträgen ein frecher Spruch unter der Antwort (spät nachts mit Hinweis auf die Uhrzeit) – Zahlen und Fakten bleiben unverändert, bei Fehlern und Rückfragen kein Spruch; per Chat umschaltbar („Sei lockerer“ / „Sprich wieder sachlich“). JARVIS ahmt keine echte Person nach"
+      ],
+      "verbessert": [
+        "Emojis werden nicht mehr vorgelesen"
+      ],
+      "behoben": []
+    },
+    "signature": "WvsfphPx68ArDgg+kqEthw6XspNbeML9Vgw0mYYqvJhwKjW+oBnkyHSIKiO6V1zuRz/XuK0whp2PExiFtzNtZw=="
+  },
+  {
     "version": "2.68.1",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1484,32 +1511,5 @@
       "behoben": []
     },
     "signature": "y/woR1sWx17zY1e8dEyhi2YaD6DRi8g0H7yk4mSDLfUjTGM8DbUKMCHlYk6SBzJ6HeZIVu4opkDWiQI50hlMLg=="
-  },
-  {
-    "version": "2.24.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.24.0/PCGameLauncherCompanion.exe",
-    "size": 87552931,
-    "sha256": "3b0729ee90143b72663aa5e1a51bccb855aa11623f234979c262ef7ced2e8d18",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.24.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.24.0/PCGameLauncherCompanion-2.24.0-win-x64.zip",
-      "size": 81816758,
-      "sha256": "7e8e8c7b29a981372001c416a99e5bac7d68c80a1504128eff613ea44bc865ac"
-    },
-    "notes": "Deal Radar ohne PC zeigt jetzt auch Steam-Preise: eine Steam-Preisliste der rund 3000 beliebtesten Spiele (Bestseller, meistgewünscht, neu, im Angebot) liegt neben der Website und wird alle 6 Stunden erneuert",
-    "changes": {
-      "neu": [
-        "Deal Radar ohne PC zeigt jetzt auch Steam-Preise: eine Steam-Preisliste der rund 3000 beliebtesten Spiele (Bestseller, meistgewünscht, neu, im Angebot) liegt neben der Website und wird alle 6 Stunden erneuert"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "„Minecraft“ wurde im Microsoft Store als „Minecraft Legends“ erkannt (falscher Preis und falsches Bild) – jetzt zählt nur das Spiel selbst oder eine Edition davon („Minecraft: Java & Bedrock Edition“), auf PC und Handy",
-        "Die Steam-Suche am PC nimmt kein ähnliches Spiel mehr (vorher wurde aus „Minecraft“ „Minecraft Dungeons“); gibt es ein Spiel bei Steam nicht, steht das dabei"
-      ]
-    },
-    "signature": "oa700ukpLaEJ0+zCewt4IkaTPTgHRCsdYc0eUFi7uakonzlZFcrATqGMmjRBrl7wmInSAGMIHiUIUmXoomEWWQ=="
   }
 ]

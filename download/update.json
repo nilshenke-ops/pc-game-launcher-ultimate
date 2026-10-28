@@ -1,30 +1,27 @@
 {
-  "version": "2.68.1",
+  "version": "2.69.0",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion.exe",
-  "size": 88269471,
-  "sha256": "3612480804f9084f22438c0b2200ca5c0acd9bb0e879591f6c44658e574ce0ee",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.69.0/PCGameLauncherCompanion.exe",
+  "size": 88273474,
+  "sha256": "18a687a53116ea29f6c1289e940986dacc1709089ab59ad2e158d71ceaa04340",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.68.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion-2.68.1-win-x64.zip",
-    "size": 82532514,
-    "sha256": "2dac025e4b3684dfb015c5159525f252fdc13186a9f90ca824ecbeb648c9cbe8"
+    "fileName": "PCGameLauncherCompanion-2.69.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.69.0/PCGameLauncherCompanion-2.69.0-win-x64.zip",
+    "size": 82536742,
+    "sha256": "dd32eea5ffa1a2fb491ae1171ee61418d64cce95843c796840c311d7b91ea4fd"
   },
-  "notes": "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst · Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt) · Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)",
+  "notes": "JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“ · Ton „Locker (mit Sprüchen)“: nach erledigten Aufträgen ein frecher Spruch unter der Antwort (spät nachts mit Hinweis auf die Uhrzeit) – Zahlen und Fakten bleiben unverändert, bei Fehlern und Rückfragen kein Spruch; per Chat umschaltbar („Sei lockerer“ / „Sprich wieder sachlich“). JARVIS ahmt keine echte Person nach · Emojis werden nicht mehr vorgelesen",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst",
-      "Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt)",
-      "Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)"
+    "neu": [
+      "JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“",
+      "Ton „Locker (mit Sprüchen)“: nach erledigten Aufträgen ein frecher Spruch unter der Antwort (spät nachts mit Hinweis auf die Uhrzeit) – Zahlen und Fakten bleiben unverändert, bei Fehlern und Rückfragen kein Spruch; per Chat umschaltbar („Sei lockerer“ / „Sprich wieder sachlich“). JARVIS ahmt keine echte Person nach"
     ],
-    "behoben": [
-      "Handy koppeln mit eingeschaltetem Tailscale-HTTPS: Der QR-Code führte zur Website mit dem Tailscale-Namen (…ts.net) – den findet ein Handy ohne laufendes Tailscale nicht („ERR_NAME_NOT_RESOLVED“). Jetzt öffnet der QR-Code zuerst die WLAN-IP (funktioniert immer im selben WLAN); der Tailscale-Link bleibt für unterwegs auswählbar",
-      "„Beim PC öffnen und koppeln“ sprang bei einer …ts.net-Adresse auf http://…ts.net (falsch) – solche Namen werden jetzt direkt über https verbunden",
-      "Als „PC-Adresse“ wird ohne https-Adresse die WLAN-IP angeboten statt gaming.fritz.box – Router-Namen findet Android mit „Privates DNS“ oder einem VPN oft nicht"
-    ]
+    "verbessert": [
+      "Emojis werden nicht mehr vorgelesen"
+    ],
+    "behoben": []
   },
-  "signature": "L54XtWLiKZzKxbfck70i6A/9RVsTCr9MSwfPayEfiioEXN9Vp/KDCITUbOV6gxothPJLnaqWKpbgoNroR0fLnA=="
+  "signature": "WvsfphPx68ArDgg+kqEthw6XspNbeML9Vgw0mYYqvJhwKjW+oBnkyHSIKiO6V1zuRz/XuK0whp2PExiFtzNtZw=="
 }
