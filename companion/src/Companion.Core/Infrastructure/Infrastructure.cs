@@ -228,6 +228,18 @@ public sealed class RateLimiter
         }
     }
 
+    /// <summary>True while the limit for <paramref name="key"/> is reached – without recording a hit.</summary>
+    public bool Blocked(string key)
+    {
+        if (!_hits.TryGetValue(key, out var q)) return false;
+        lock (q)
+        {
+            var now = _now();
+            while (q.Count > 0 && now - q.Peek() > _window) q.Dequeue();
+            return q.Count >= _max;
+        }
+    }
+
     public TimeSpan RetryAfter(string key)
     {
         if (!_hits.TryGetValue(key, out var q)) return TimeSpan.Zero;

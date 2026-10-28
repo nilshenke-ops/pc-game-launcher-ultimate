@@ -525,3 +525,8 @@ Challenges im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „
 
 ## KI-Design-Editor
 JARVIS: „Mach mein Dashboard etwas heller“, „Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, „minimalistischer“, „runder“, „mehr Abstand“, „keine Schatten“. Erst Vorschau, dann „Übernehmen“ oder „Verwerfen“; „Letzte Designänderung rückgängig“, „Ursprüngliches Design wiederherstellen“. Auch unter Einstellungen → Design. Themes: Neon, Minimal Dark, Cyberpunk, Minecraft, Purple Gaming, Blue Gaming, Schwarz-Weiß, Light Mode u. a.
+
+## PC-Steuerung und Leistungsanalyse
+Seite: /control
+Stichworte: pc steuerung steuerzentrale programme beenden schließen laufend favoriten zuletzt status verbindung letzter kontakt ram cpu gpu leistung langsam ruckelt fps sitzung vergleichen prozesse speicher
+Steuerung → PC-Steuerung: Verbindung (letzter Kontakt), Live-Werte, laufende Programme mit „Beenden“ (Bestätigung, sanft), Favoriten, Zuletzt gestartet, Programme mit dem meisten Speicher („Jetzt messen“), Sitzungen vergleichen, Remote Desktop. JARVIS: „Warum läuft mein Spiel langsam?“, „Welche Programme verbrauchen am meisten RAM?“, „Ist meine GPU ausgelastet?“, „Was könnte meine FPS beeinträchtigen?“ – Messwerte und Vermutungen getrennt. FPS werden nicht gemessen.

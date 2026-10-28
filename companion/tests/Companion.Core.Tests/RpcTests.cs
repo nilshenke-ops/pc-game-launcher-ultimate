@@ -66,6 +66,19 @@ public class RpcTests
     }
 
     [Fact]
+    public async Task Only_failed_logins_count_towards_the_lockout()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        // Many valid logins from one address (several devices behind one router, frequent reconnects): never locked out.
+        for (var i = 0; i < 30; i++) await new TestClient(s.Rpc, new TestChannel("127.0.0.1", loopback: true)).Ok("auth.login", new { adminToken = s.Rpc.AdminToken });
+        // Guessing is stopped after 20 failures – then even the right token waits.
+        var guesser = new TestClient(s.Rpc, new TestChannel("127.0.0.1", loopback: true));
+        for (var i = 0; i < 20; i++) Assert.Equal("auth-failed", await guesser.Error("auth.login", new { adminToken = "wrong-token-wrong-token" }));
+        Assert.Equal("rate-limited", await guesser.Error("auth.login", new { adminToken = s.Rpc.AdminToken }));
+    }
+
+    [Fact]
     public async Task Full_pairing_flow_and_permissions()
     {
         using var dir = new TempDir();

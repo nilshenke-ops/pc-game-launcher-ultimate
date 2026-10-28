@@ -205,15 +205,19 @@ public sealed class RpcServer : IHub
     Task<object?> Login(RpcContext ctx)
     {
         var s = ctx.Session;
-        if (!_loginLimiter.TryHit(s.Channel.RemoteIp))
-            throw new RpcException("rate-limited", "Zu viele Anmeldeversuche. Bitte kurz warten.");
+        // Only failed attempts count (protection against guessing): devices that reconnect often – several of them
+        // behind one router, relay or Tailscale address – are never locked out by their own valid logins.
+        var ip = s.Channel.RemoteIp;
+        if (_loginLimiter.Blocked(ip))
+            throw new RpcException("rate-limited", "Zu viele fehlgeschlagene Anmeldeversuche. Bitte kurz warten.");
+        RpcException Fail(string code, string message) { _loginLimiter.TryHit(ip); return new RpcException(code, message); }
         var admin = ctx.OptStr("adminToken", 100);
         if (admin != null)
         {
             if (!s.Channel.IsLoopback || s.Channel.Transport != "local")
-                throw new RpcException("forbidden", "Die PC-Anmeldung ist nur direkt auf diesem PC möglich.");
+                throw Fail("forbidden", "Die PC-Anmeldung ist nur direkt auf diesem PC möglich.");
             if (!CryptographicOperations.FixedTimeEquals(Encoding.UTF8.GetBytes(admin), Encoding.UTF8.GetBytes(AdminToken)))
-                throw new RpcException("auth-failed", "PC-Sitzung abgelaufen. Bitte das Companion-Fenster neu öffnen.");
+                throw Fail("auth-failed", "PC-Sitzung abgelaufen. Bitte das Companion-Fenster neu öffnen.");
             s.IsLocalAdmin = true;
             s.Permissions = new HashSet<string>(Permissions.LocalAdmin);
             return Task.FromResult<object?>(new { isLocal = true, device = (object?)null, permissions = s.Permissions });
@@ -224,7 +228,7 @@ public sealed class RpcServer : IHub
         if (device == null)
         {
             Log.Warn("auth", $"Fehlgeschlagene Anmeldung von {s.Channel.RemoteIp}.");
-            throw new RpcException("auth-failed", "Dieses Gerät ist nicht (mehr) gekoppelt. Bitte neu koppeln.");
+            throw Fail("auth-failed", "Dieses Gerät ist nicht (mehr) gekoppelt. Bitte neu koppeln.");
         }
         if (LoginBlocked?.Invoke(device.Id) is { } why) throw new RpcException("paused", why);
         s.Device = device;

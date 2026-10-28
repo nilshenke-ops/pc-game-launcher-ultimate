@@ -35,6 +35,7 @@ export function navItems(): NavItem[] {
     { path: "/quick", label: t("Quick Actions"), short: t("Aktionen"), icon: Zap, group: g.dash, keywords: "schnellstart makro" },
     { path: "/assistant", label: t("JARVIS"), short: t("JARVIS"), icon: Sparkles, group: g.dash, keywords: "jarvis ki ai claude chat frage hilfe sprache befehl assistent fragen auftrag" },
     { path: "/widgets", label: t("Widget-Baukasten"), short: t("Widgets"), icon: Shapes, group: g.dash, keywords: "widgets eigene editor desktop baukasten design uhr knopf setup designer" },
+    { path: "/control", label: t("PC-Steuerung"), short: t("Steuerung"), icon: Gauge, group: g.ctrl, keywords: "pc steuern steuerzentrale fernsteuerung programme beenden schließen laufend favoriten status verbindung ram cpu gpu leistung performance sitzung vergleichen" },
     { path: "/remote", label: t("Remote Desktop"), short: t("Remote"), icon: MonitorSmartphone, group: g.ctrl, keywords: "remote desktop fernsteuerung fernsteuern bildschirm übertragen live handy ipad touch maus tastatur pc steuern spiegeln screen" },
     { path: "/profiles", label: t("Gaming-Profile"), short: t("Profile"), icon: Swords, group: g.ctrl, keywords: "competitive streaming" },
     { path: "/automations", label: t("Automatisierungen"), short: t("Abläufe"), icon: Bot, group: g.ctrl, keywords: "regeln wenn dann automation hub ablauf" },

@@ -65,18 +65,29 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     // Design wishes in plain language: shown as a preview first, saved only with "Übernehmen".
     const { designIntent } = await import("./design-ai");
     const di = chi ? null : designIntent(part, getPreview()?.theme ?? getPrefs().theme);
+    // Performance questions: real values from the PC, measured facts kept apart from suspicions.
+    const { perfIntent } = await import("./perf-chat");
+    const pfi = chi || di ? null : perfIntent(part);
     const { playtimeIntent } = await import("./playtime");
-    const pt = chi || di ? null : playtimeIntent(part);
+    const pt = chi || di || pfi ? null : playtimeIntent(part);
     const { coachIntent } = await import("./game-coach");
-    const ci = pt || chi || di ? null : coachIntent(part);
+    const ci = pt || chi || di || pfi ? null : coachIntent(part);
     const { gamingIntent } = await import("./gaming-intel");
-    const gi = pt || ci || chi || di ? null : gamingIntent(part);
+    const gi = pt || ci || chi || di || pfi ? null : gamingIntent(part);
     const { researchIntent } = await import("./gaming-research");
-    const ri = pt || ci || gi || chi || di ? null : researchIntent(part);
-    const setup = pt || ci || gi || ri || chi || di ? null : setupReply(part, getPrefs(), navItems());
-    const site = setup || pt || ci || gi || ri || chi || di ? null : siteIntent(part);
+    const ri = pt || ci || gi || chi || di || pfi ? null : researchIntent(part);
+    const setup = pt || ci || gi || ri || chi || di || pfi ? null : setupReply(part, getPrefs(), navItems());
+    const site = setup || pt || ci || gi || ri || chi || di || pfi ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (di) {
+    if (pfi) {
+      const { perfAnswer } = await import("./perf-chat");
+      for (let i = 0; !ctx.online && client.status.phase === "connecting" && i < 40; i++) await new Promise((res) => setTimeout(res, 100));
+      const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
+      const a = await perfAnswer(pfi, online);
+      r = { text: a.text, ok: a.ok };
+      sources.add("Messwerte des PCs");
+      buttons.push(...a.navigate.map((n) => ({ kind: "navigate", label: n.label, path: n.path })));
+    } else if (di) {
       if (di.kind === "change") {
         previewTheme(di.theme, di.changes);
         r = { text: [`JARVIS – Design-Vorschau:`, ...di.changes.map((c) => "• " + c), ...di.notes.map((n) => "ℹ " + n), "", "Noch nicht gespeichert. Unten „Übernehmen“ oder „Verwerfen“ tippen – oder sag es mir. Funktionen, Menü und Widgets bleiben unverändert."].join("\n"), ok: true };

@@ -53,6 +53,7 @@ public sealed class CompanionServices : IAsyncDisposable
     Timer? _scheduleTimer;
     /// <summary>PC values with the user's switches applied (switched-off values are not measured).</summary>
     public IMetricsSource Metrics { get; }
+    public ProcessUsageService ProcessUsage { get; } = new();
     public NetworkDiagnostics Network { get; }
     public UpdateService Updates { get; }
     public PluginService Plugins { get; }
@@ -474,6 +475,20 @@ public sealed class CompanionServices : IAsyncDisposable
         };
     }
 
+    (DateTime at, MetricsSample sample)? _nowSample;
+    readonly object _nowLock = new();
+    /// <summary>The current values plus what runs (one measurement, reused for 2 s).</summary>
+    public object MetricsNow()
+    {
+        MetricsSample sample;
+        lock (_nowLock)
+        {
+            if (_nowSample is not { } c || DateTime.UtcNow - c.at > TimeSpan.FromSeconds(2)) _nowSample = (DateTime.UtcNow, Metrics.Sample());
+            sample = _nowSample.Value.sample;
+        }
+        return new { sample, running = RunningList(), gameRunning = Sessions.Running().Any(r => Library.Get(r.itemId)?.Kind == ItemKind.Game) };
+    }
+
     public List<object> RunningList() =>
         Sessions.Running().Select(r => (object)new { itemId = r.itemId, name = Library.Get(r.itemId)?.Name ?? "?", since = r.since }).ToList();
 
@@ -556,7 +571,7 @@ public sealed class CompanionServices : IAsyncDisposable
     /// Closes a game/program from the library gently (like clicking its X; the program may still ask to save). Never forced,
     /// never Windows' own processes or game launchers/anti-cheat, never this companion.
     /// </summary>
-    async Task<string> CloseItemAsync(LibraryItem item)
+    public async Task<string> CloseItemAsync(LibraryItem item)
     {
         var own = Environment.ProcessId;
         var snapshot = Platform.Processes.Snapshot(withPaths: item.InstallDir != null);

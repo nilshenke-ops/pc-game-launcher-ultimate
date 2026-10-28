@@ -4,6 +4,18 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.75.0 – 2026-10-28
+### Neu
+- PC-Steuerung (Steuerung → PC-Steuerung): Verbindungsstatus mit letztem Kontakt und Fehlermeldung, Live-Werte (CPU, RAM, GPU, Laufwerke – alle 5 s nur solange die Seite offen ist), laufende Spiele/Programme mit „Beenden“ (mit Bestätigung, sanft wie das X), Favoriten und zuletzt Gestartetes mit einem Tipp, Programme mit dem meisten Speicher/CPU (nur auf Tipp gemessen), Links zu Verbindungs-Check, Geräten & Rechten, Verbindungseinstellungen und Remote Desktop
+- Spielsitzungen vergleichen: zwei Sitzungen mit CPU/RAM/GPU-Werten nebeneinander (vom PC während des Spielens gemessen)
+- JARVIS Leistungsanalyse: „Warum läuft mein Spiel langsam?“, „Welche Programme verbrauchen am meisten RAM?“, „Ist meine GPU aktuell stark ausgelastet?“, „Was könnte meine FPS beeinträchtigen?“, „Wie warm ist meine GPU?“ – getrennt in 📊 Gemessen, 💡 Vermutung und ✅ sichere nächste Schritte; nichts wird automatisch geändert oder geschlossen
+- Begleiter: library.close (Spiel/Programm aus der Bibliothek sanft schließen), monitor.now (eine Messung für Fragen), system.topProcesses (Speicher/CPU je Programm, nur auf Anfrage, 5 s zwischengespeichert)
+### Verbessert
+- FPS werden weiterhin nur als „nicht verfügbar“ angezeigt, solange kein zuverlässiger Frame-Zähler eingebunden ist; JARVIS nennt das ausdrücklich
+- Windows-Prozesse, Treiber, Launcher, Anti-Cheat und Sicherheitssoftware werden nie zum Schließen vorgeschlagen
+### Behoben
+- Anmelde-Sperre zählt nur noch fehlgeschlagene Versuche: Mehrere Geräte hinter einem Router, Relay oder Tailscale, die sich oft neu verbinden, wurden nach 20 gültigen Anmeldungen in 5 Minuten fälschlich abgewiesen („Nicht angemeldet“). Schutz gegen Raten bleibt (20 Fehlversuche → kurze Sperre)
+
 ## 2.74.0 – 2026-10-28
 ### Neu
 - KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten

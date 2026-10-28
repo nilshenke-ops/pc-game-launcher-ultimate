@@ -199,6 +199,14 @@ public static class RpcApi
         rpc.Register("library.update", ctx => s.Library.UpdateMetadata(ctx.Bind<LibraryService.MetadataUpdate>()));
         rpc.Register("library.updateTarget", ctx => s.Library.UpdateTarget(ctx.Str("id", 64), ctx.OptStr("target", 400), ctx.Str("args", 500, false), ctx.Str("workingDir", 400, false)));
         rpc.Register("library.remove", ctx => s.Library.Remove(ctx.Str("id", 64)) ? true : throw NotFound());
+        // Gentle close of a running game/program from the library (like its X) – never forced, never system processes.
+        rpc.Register("library.close", async ctx =>
+        {
+            var item = s.Library.Get(ctx.Str("id", 64)) ?? throw new RpcException("not-found", "Eintrag nicht gefunden.");
+            if (!s.Platform.ProcessControl.Supported) throw new RpcException("unsupported", "Schließen geht nur im Windows-Begleiter.");
+            var msg = await s.CloseItemAsync(item);
+            return new { ok = !msg.StartsWith("Fehler", StringComparison.Ordinal), message = msg };
+        });
         rpc.Register("library.launch", ctx =>
         {
             var r = s.Library.Launch(ctx.Str("id", 64), ctx.Session.Who);
@@ -511,6 +519,9 @@ public static class RpcApi
         rpc.Register("audio.diagnose", ctx => new { at = DateTime.UtcNow, checks = s.Audio.Diagnose() });
 
         // ------------------------------------------------------------ monitor / network
+        // One look at the values (JARVIS: "Ist meine GPU ausgelastet?"), kept 2 s so several questions measure once.
+        rpc.Register("monitor.now", _ => s.MetricsNow());
+        rpc.Register("system.topProcesses", async ctx => await s.ProcessUsage.TopAsync());
         rpc.Register("monitor.subscribe", ctx => s.Monitor.Subscribe(ctx.Session));
         rpc.Register("monitor.unsubscribe", ctx => { s.Monitor.Unsubscribe(ctx.Session); return true; });
         rpc.Register("network.diagnose", async ctx => (object?)await s.Network.Run());

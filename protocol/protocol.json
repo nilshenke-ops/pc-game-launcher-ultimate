@@ -40,6 +40,7 @@
     "library.updateTarget": "local",
     "library.remove": "manage",
     "library.launch": "launch",
+    "library.close": "launch",
 
     "gamemode.get": "view",
     "gamemode.candidates": "admin",
@@ -215,6 +216,8 @@
     "audio.unsubscribe": "view",
 
     "monitor.subscribe": "view",
+    "monitor.now": "view",
+    "system.topProcesses": "manage",
     "monitor.unsubscribe": "view",
     "network.diagnose": "view",
 

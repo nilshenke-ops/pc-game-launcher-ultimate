@@ -47,6 +47,7 @@ const InventoryPage = lazy(() => import("./pages/Inventory"));
 const CrashesPage = lazy(() => import("./pages/Crashes"));
 const GameStatePage = lazy(() => import("./pages/GameState"));
 const RemotePage = lazy(() => import("./pages/Remote"));
+const ControlPage = lazy(() => import("./pages/Control"));
 const MovePage = lazy(() => import("./pages/Move"));
 const JournalPage = lazy(() => import("./pages/Journal"));
 const WikiPage = lazy(() => import("./pages/Wiki"));
@@ -166,6 +167,7 @@ function Gate() {
           <Route path="/crashes" element={<CrashesPage />} />
           <Route path="/gamestate" element={<GameStatePage />} />
           <Route path="/remote" element={<RemotePage />} />
+          <Route path="/control" element={<ControlPage />} />
           <Route path="/move" element={<MovePage />} />
           <Route path="/layouts" element={<LayoutsPage />} />
           <Route path="/peripherals" element={<PeripheralsPage />} />

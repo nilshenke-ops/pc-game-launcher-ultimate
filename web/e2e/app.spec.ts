@@ -1575,6 +1575,28 @@ test("KI-Design-Editor: Vorschau, Verwerfen, Übernehmen (bleibt nach Neuladen),
   await p.context().close();
 });
 
+test("PC-Steuerung und Leistungsanalyse: echte Werte vom Begleiter, Messung auf Anfrage, JARVIS trennt Messung und Vermutung", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/control`);
+  await expect(p.getByRole("heading", { name: "PC-Steuerung" })).toBeVisible();
+  await expect(p.getByText("Verbunden", { exact: true })).toBeVisible();
+  await expect(p.getByText(/^CPU:/).first()).toBeVisible({ timeout: 10000 });
+  await p.getByRole("button", { name: "Jetzt messen" }).click();
+  await expect(p.getByText("Arbeitsspeicher", { exact: true })).toBeVisible({ timeout: 10000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  await say.fill("Welche Programme verbrauchen am meisten RAM?"); await say.press("Enter");
+  await expect(last()).toContainText("📊 Gemessen (vom PC, jetzt)", { timeout: 15000 });
+  await expect(last()).toContainText("Meister RAM:");
+  await say.fill("Warum läuft mein Spiel langsam?"); await say.press("Enter");
+  await expect(last()).toContainText("💡 Vermutung");
+  await expect(last()).toContainText("FPS: Nicht verfügbar");
+  await expect(last()).toContainText("nichts passiert automatisch");
+  await p.context().close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();
