@@ -1,34 +1,30 @@
 {
-  "version": "2.68.0",
+  "version": "2.68.1",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.0/PCGameLauncherCompanion.exe",
-  "size": 88268453,
-  "sha256": "d533619ce58533877e0d04089cfb9c2d5997513d89436e743486cf4aa8be99e4",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion.exe",
+  "size": 88269471,
+  "sha256": "3612480804f9084f22438c0b2200ca5c0acd9bb0e879591f6c44658e574ce0ee",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.68.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.0/PCGameLauncherCompanion-2.68.0-win-x64.zip",
-    "size": 82531808,
-    "sha256": "fecb8545ca53438bb630f8121780eebca8a8ce313e093f07ca6f1a7fd941d142"
+    "fileName": "PCGameLauncherCompanion-2.68.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion-2.68.1-win-x64.zip",
+    "size": 82532514,
+    "sha256": "2dac025e4b3684dfb015c5159525f252fdc13186a9f90ca824ecbeb648c9cbe8"
   },
-  "notes": "JARVIS Quest-Coach – nutzt dein Gaming-Gedächtnis (Spiele-Journal) statt jede Frage ohne Zusammenhang zu beantworten; nichts wird erfunden: · „Wo war ich (in Hogwarts Legacy) stehen geblieben?“ – letzte Notiz, Stelle, Plan fürs nächste Mal, Fortschritt, nächste Etappe deiner Zielpfade, offene Quests · „Was sollte ich in … als Nächstes machen?“ – dein eigener Plan, nächste Etappe, offene Aufgaben und die geschätzte Restzeit; ohne Einträge sagt JARVIS das statt etwas zu empfehlen",
+  "notes": "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst · Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt) · Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)",
   "changes": {
-    "neu": [
-      "JARVIS Quest-Coach – nutzt dein Gaming-Gedächtnis (Spiele-Journal) statt jede Frage ohne Zusammenhang zu beantworten; nichts wird erfunden:",
-      "„Wo war ich (in Hogwarts Legacy) stehen geblieben?“ – letzte Notiz, Stelle, Plan fürs nächste Mal, Fortschritt, nächste Etappe deiner Zielpfade, offene Quests",
-      "„Was sollte ich in … als Nächstes machen?“ – dein eigener Plan, nächste Etappe, offene Aufgaben und die geschätzte Restzeit; ohne Einträge sagt JARVIS das statt etwas zu empfehlen",
-      "„Ich bin in … gerade bei …“, „Speichere diesen Hinweis für …: …“, „Erinnere mich daran, dass ich in … noch die Nebenquest … machen will“ – landet in „Wo war ich?“ bzw. als offener Eintrag in der Sammlung (ansehen, ändern, löschen)",
-      "Spoiler-Stufe je Spiel („Keine Spoiler für …“, „Nur Hinweise …“, „Ausführliche Lösung für …“) – gilt für „Wie komme ich in … weiter bei …?“: ohne bekannte Stelle fragt JARVIS nach, statt Späteres zu verraten; Links zu Tipps/Lösungen passend zur Stufe (mit YouTube-Schlüssel auch die Videos)",
-      "„Fasse die Story von … bis zu meinem Stand zusammen“ – nur aus deinen Story-Notizen, bis zu deinem Kapitel, Spoiler ausgeblendet",
-      "„Ich habe heute 20 Minuten“ / „Welches Spiel passt in 30 Minuten?“ – passende Spiele aus Bibliothek, Verlauf und Backlog (Zeit-Finder)",
-      "„Ich möchte … abschließen. Wie lange brauche ich noch, und was sollte ich als Nächstes machen?“ – beides in einer Antwort",
-      "Spielzeit-Reiter: Spoiler-Stufe, Plattform und bevorzugte Spielweise je Spiel"
+    "neu": [],
+    "verbessert": [
+      "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst",
+      "Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt)",
+      "Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)"
     ],
-    "verbessert": [],
     "behoben": [
-      "„Was sollte ich … als Nächstes machen?“ wurde an „als Nächstes“ in zwei Aufträge zerlegt"
+      "Handy koppeln mit eingeschaltetem Tailscale-HTTPS: Der QR-Code führte zur Website mit dem Tailscale-Namen (…ts.net) – den findet ein Handy ohne laufendes Tailscale nicht („ERR_NAME_NOT_RESOLVED“). Jetzt öffnet der QR-Code zuerst die WLAN-IP (funktioniert immer im selben WLAN); der Tailscale-Link bleibt für unterwegs auswählbar",
+      "„Beim PC öffnen und koppeln“ sprang bei einer …ts.net-Adresse auf http://…ts.net (falsch) – solche Namen werden jetzt direkt über https verbunden",
+      "Als „PC-Adresse“ wird ohne https-Adresse die WLAN-IP angeboten statt gaming.fritz.box – Router-Namen findet Android mit „Privates DNS“ oder einem VPN oft nicht"
     ]
   },
-  "signature": "YdxZ2YlRVqSEbVRncIPw1MvSfmqKDVpO2/UoOTw76wRAASPU0kDc4C8mcmojuvkIsjG/Dyh/9BbWTj+D04B6Aw=="
+  "signature": "L54XtWLiKZzKxbfck70i6A/9RVsTCr9MSwfPayEfiioEXN9Vp/KDCITUbOV6gxothPJLnaqWKpbgoNroR0fLnA=="
 }

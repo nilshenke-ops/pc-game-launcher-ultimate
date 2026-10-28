@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.68.1",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion.exe",
+    "size": 88269471,
+    "sha256": "3612480804f9084f22438c0b2200ca5c0acd9bb0e879591f6c44658e574ce0ee",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.68.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion-2.68.1-win-x64.zip",
+      "size": 82532514,
+      "sha256": "2dac025e4b3684dfb015c5159525f252fdc13186a9f90ca824ecbeb648c9cbe8"
+    },
+    "notes": "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst · Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt) · Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst",
+        "Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt)",
+        "Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)"
+      ],
+      "behoben": [
+        "Handy koppeln mit eingeschaltetem Tailscale-HTTPS: Der QR-Code führte zur Website mit dem Tailscale-Namen (…ts.net) – den findet ein Handy ohne laufendes Tailscale nicht („ERR_NAME_NOT_RESOLVED“). Jetzt öffnet der QR-Code zuerst die WLAN-IP (funktioniert immer im selben WLAN); der Tailscale-Link bleibt für unterwegs auswählbar",
+        "„Beim PC öffnen und koppeln“ sprang bei einer …ts.net-Adresse auf http://…ts.net (falsch) – solche Namen werden jetzt direkt über https verbunden",
+        "Als „PC-Adresse“ wird ohne https-Adresse die WLAN-IP angeboten statt gaming.fritz.box – Router-Namen findet Android mit „Privates DNS“ oder einem VPN oft nicht"
+      ]
+    },
+    "signature": "L54XtWLiKZzKxbfck70i6A/9RVsTCr9MSwfPayEfiioEXN9Vp/KDCITUbOV6gxothPJLnaqWKpbgoNroR0fLnA=="
+  },
+  {
     "version": "2.68.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1481,34 +1511,5 @@
       ]
     },
     "signature": "oa700ukpLaEJ0+zCewt4IkaTPTgHRCsdYc0eUFi7uakonzlZFcrATqGMmjRBrl7wmInSAGMIHiUIUmXoomEWWQ=="
-  },
-  {
-    "version": "2.23.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.23.0/PCGameLauncherCompanion.exe",
-    "size": 87550771,
-    "sha256": "1f2536d51347d423fec1bb63084024f43da17135f0ecb417e8e9a9bfc4733b35",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.23.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.23.0/PCGameLauncherCompanion-2.23.0-win-x64.zip",
-      "size": 81815155,
-      "sha256": "3d7e15993b3c9efbc2fa30250b1be5ad7a7394149a888065238bbdfd8e6ceb16"
-    },
-    "notes": "Design-Profil (optional): Benutzername + Passwort nehmen dein Design (Farben, Hintergrund, Startseite, Leiste, Sprache) in einen neuen Browser mit – Ende-zu-Ende verschlüsselt, gespeichert auf deinem PC; Änderungen werden automatisch gesichert · Design-Code: das Design ganz ohne Konto und ohne PC in einen anderen Browser kopieren · Fenster-Layouts ohne PC anlegen: je Programm einen Platz (Hälfte, Viertel, maximiert, Mitte) und den Monitor wählen, mit kleiner Vorschau",
-    "changes": {
-      "neu": [
-        "Design-Profil (optional): Benutzername + Passwort nehmen dein Design (Farben, Hintergrund, Startseite, Leiste, Sprache) in einen neuen Browser mit – Ende-zu-Ende verschlüsselt, gespeichert auf deinem PC; Änderungen werden automatisch gesichert",
-        "Design-Code: das Design ganz ohne Konto und ohne PC in einen anderen Browser kopieren",
-        "Fenster-Layouts ohne PC anlegen: je Programm einen Platz (Hälfte, Viertel, maximiert, Mitte) und den Monitor wählen, mit kleiner Vorschau",
-        "Neun neue Widgets für Startseite und Game-Overlay: Zähler, Pausen-Erinnerung, Spielzeit heute, Ping, Aktive Ziele, Level & XP, Deals, Controller-Akku, Zufallsspiel"
-      ],
-      "verbessert": [
-        "Deal Radar am Handy: ohne PC prüft das Handy die Xbox-Preise selbst beim Microsoft Store (auch gleich nach dem Hinzufügen); Steam-Preise bleiben vom letzten Abgleich am PC"
-      ],
-      "behoben": []
-    },
-    "signature": "VtScv0dheFFPec+4/cODxyogv4Zunl4ilxGVzldvqJIKhOgNAnO792IkFZWpXuw57ujqS23k7+IVzow+uAKyjw=="
   }
 ]
