@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.66.0",
+    "date": "2026-10-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.66.0/PCGameLauncherCompanion.exe",
+    "size": 88207133,
+    "sha256": "9e0deb732024251a5ea04a7018a46ad417d9fbd8d37fe8e4636b59dc43603777",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.66.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.66.0/PCGameLauncherCompanion-2.66.0-win-x64.zip",
+      "size": 82467192,
+      "sha256": "e7b8f63cb9d52a4a42e7cd7d8d3a8cc6ae9feb097d4c574c8e04483ad793e000"
+    },
+    "notes": "JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle: · „Was ist Hollow Knight für ein Spiel?“, „Erzähl mir was über …“, „Wer hat … entwickelt?“, „Wann ist … erschienen?“, „Lohnt sich …?“ – Beschreibung, Genre, Entwickler, Erscheinungsdatum, Steam-Preis, Metacritic-Wertung, Plattformen (auch Steam Deck/Linux) und wie viele gerade spielen; ohne PC aus Microsoft Store/Wikipedia · „Was kostet Hades?“ / „Ist … im Angebot?“ – aktueller Steam-Preis mit Rabatt, Weg zum Deal Radar",
+    "changes": {
+      "neu": [
+        "JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle:",
+        "„Was ist Hollow Knight für ein Spiel?“, „Erzähl mir was über …“, „Wer hat … entwickelt?“, „Wann ist … erschienen?“, „Lohnt sich …?“ – Beschreibung, Genre, Entwickler, Erscheinungsdatum, Steam-Preis, Metacritic-Wertung, Plattformen (auch Steam Deck/Linux) und wie viele gerade spielen; ohne PC aus Microsoft Store/Wikipedia",
+        "„Was kostet Hades?“ / „Ist … im Angebot?“ – aktueller Steam-Preis mit Rabatt, Weg zum Deal Radar",
+        "„Wie viele Leute spielen gerade Counter-Strike 2?“ – aktuelle Spielerzahl auf Steam",
+        "„Läuft Cyberpunk 2077 auf meinem PC?“ – Steams Systemanforderungen neben den echten Werten deines PCs (✓/✗ je Punkt)",
+        "„Was ist der Weltrekord in Celeste?“ – bestätigte Speedrun-Rekorde je Kategorie von speedrun.com, mit Läufer und Datum",
+        "„Gute Free-to-Play-Shooter?“ – beliebte kostenlose PC-Spiele nach Art (Shooter, MMORPG, MOBA, Battle Royale, für schwache PCs …) von FreeToGame.com"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "ntV7C1lDCoE7iuX6Aa+oA+E4rT13UCapn1Wg54MSk705YUwrc4X1Ik9e1Irmtgzc0Gn5lM2fDSuYyjkLVDvkrQ=="
+  },
+  {
     "version": "2.65.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1467,33 +1497,5 @@
       "behoben": []
     },
     "signature": "BUVKpFYYBom+jPVuw+e+cri726cOMjQG8e07pm3oZe+XYvKQM+4MS9K3ifj7qDD5Ot/c1PIITJRJU9ZIQgGI+w=="
-  },
-  {
-    "version": "2.20.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.20.0/PCGameLauncherCompanion.exe",
-    "size": 87521832,
-    "sha256": "cc14d915549d253f8d504965d3dea490cab14888bf543893e4c63fbdc05ea542",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.20.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.20.0/PCGameLauncherCompanion-2.20.0-win-x64.zip",
-      "size": 81785836,
-      "sha256": "f69dc78022620122bcc4f7ad6af3fe66fb78608f055d990d384711f1f2ed28a3"
-    },
-    "notes": "Tastatur & Maus belegen (Windows): Tasten und Maustasten am PC umlegen – auf eine andere Taste, eine Tastenkombination (Strg/Shift/Alt/Win + Taste), eine Maustaste oder sperren. Profile für überall oder nur für bestimmte Spiele, umgeschaltet nach dem Programm im Vordergrund · Anklickbare Tastatur (deutsches Layout) und Maustasten im Editor; „Am PC drücken“ übernimmt die Taste direkt von der echten Tastatur oder Maus · Erkannte Tastaturen und Mäuse mit Namen; Royal Kludge und Attack Shark werden erkannt – die Belegung funktioniert mit jedem Gerät",
-    "changes": {
-      "neu": [
-        "Tastatur & Maus belegen (Windows): Tasten und Maustasten am PC umlegen – auf eine andere Taste, eine Tastenkombination (Strg/Shift/Alt/Win + Taste), eine Maustaste oder sperren. Profile für überall oder nur für bestimmte Spiele, umgeschaltet nach dem Programm im Vordergrund",
-        "Anklickbare Tastatur (deutsches Layout) und Maustasten im Editor; „Am PC drücken“ übernimmt die Taste direkt von der echten Tastatur oder Maus",
-        "Erkannte Tastaturen und Mäuse mit Namen; Royal Kludge und Attack Shark werden erkannt – die Belegung funktioniert mit jedem Gerät",
-        "Notaus: Strg+Alt+F12 am PC schaltet alle Belegungen sofort aus und wieder an; auch per Knopf in der App",
-        "Profile lassen sich ohne PC vorbereiten und werden beim Verbinden übertragen; im Backup enthalten"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "M8q3v6kshhFD7vdtVHRSZ9en5iGRnL1fIiQ+GF90oR47d3d9LRm7gII/nRDBJ39i0JKj/R+mgWKTnLh9rX+5Pw=="
   }
 ]

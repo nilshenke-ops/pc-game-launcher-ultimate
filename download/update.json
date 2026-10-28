@@ -1,31 +1,30 @@
 {
-  "version": "2.65.0",
+  "version": "2.66.0",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.65.0/PCGameLauncherCompanion.exe",
-  "size": 88195212,
-  "sha256": "4777be25e1d2d0dc07a957c1d3a032a9ada73167163b4b59c036c53920b4e361",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.66.0/PCGameLauncherCompanion.exe",
+  "size": 88207133,
+  "sha256": "9e0deb732024251a5ea04a7018a46ad417d9fbd8d37fe8e4636b59dc43603777",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.65.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.65.0/PCGameLauncherCompanion-2.65.0-win-x64.zip",
-    "size": 82455235,
-    "sha256": "a65c4e3686c443dd5217fb0f8001f99c02475da170dc516cd306891f18570a3f"
+    "fileName": "PCGameLauncherCompanion-2.66.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.66.0/PCGameLauncherCompanion-2.66.0-win-x64.zip",
+    "size": 82467192,
+    "sha256": "e7b8f63cb9d52a4a42e7cd7d8d3a8cc6ae9feb097d4c574c8e04483ad793e000"
   },
-  "notes": "JARVIS kennt jetzt Gaming über die App hinaus – immer nur auf deine Frage, mit Quelle: · Gratis-Spiele: „Welche Spiele gibt es gerade gratis (auf Epic/Steam/GOG/Xbox …)?“ – aktuelle Angebote von GamerPower.com mit Plattform, Normalpreis und Enddatum (abgelaufene werden ausgeblendet), auch ohne PC; eingelöst wird nichts · Neuigkeiten: „Was ist neu in Hades?“ / „Gibt es ein Update für …?“ – die offiziellen Steam-Ankündigungen des Entwicklers, Spiel per Name gefunden (nur dasselbe Spiel), über den PC",
+  "notes": "JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle: · „Was ist Hollow Knight für ein Spiel?“, „Erzähl mir was über …“, „Wer hat … entwickelt?“, „Wann ist … erschienen?“, „Lohnt sich …?“ – Beschreibung, Genre, Entwickler, Erscheinungsdatum, Steam-Preis, Metacritic-Wertung, Plattformen (auch Steam Deck/Linux) und wie viele gerade spielen; ohne PC aus Microsoft Store/Wikipedia · „Was kostet Hades?“ / „Ist … im Angebot?“ – aktueller Steam-Preis mit Rabatt, Weg zum Deal Radar",
   "changes": {
     "neu": [
-      "JARVIS kennt jetzt Gaming über die App hinaus – immer nur auf deine Frage, mit Quelle:",
-      "Gratis-Spiele: „Welche Spiele gibt es gerade gratis (auf Epic/Steam/GOG/Xbox …)?“ – aktuelle Angebote von GamerPower.com mit Plattform, Normalpreis und Enddatum (abgelaufene werden ausgeblendet), auch ohne PC; eingelöst wird nichts",
-      "Neuigkeiten: „Was ist neu in Hades?“ / „Gibt es ein Update für …?“ – die offiziellen Steam-Ankündigungen des Entwicklers, Spiel per Name gefunden (nur dasselbe Spiel), über den PC",
-      "Sensitivität umrechnen: „Rechne meine CS2-Sensitivität 1,2 bei 800 DPI in Valorant um“ und cm/360 – für Counter-Strike 2, Apex Legends, Valorant und Overwatch 2, gerechnet mit den festen Engine-Werten",
-      "Ratgeber mit Quellen: Augen (20-20-20, AAO), Haltung (OSHA), gesund zocken, Bildschirm & FPS-Limit mit G-Sync/FreeSync (Blur Busters), Lag, Controller-Drift, Headset/Mikrofon – mit Weg zur passenden Seite (Ping Doctor, Controller-Test, Audio Center); ersetzt keinen Arzt",
-      "Ausgaben: „Ich habe 19,99 € für Hades ausgegeben“, „Wie viel habe ich diesen Monat für Spiele ausgegeben?“ – nur deine Angaben, neuer Reiter Spiele-Journal → Ausgaben zum Ansehen, Eintragen und Löschen"
+      "JARVIS recherchiert selbst – nur auf deine Frage, nur über offene, erlaubte Schnittstellen (kein Google-Auslesen), immer mit Quelle:",
+      "„Was ist Hollow Knight für ein Spiel?“, „Erzähl mir was über …“, „Wer hat … entwickelt?“, „Wann ist … erschienen?“, „Lohnt sich …?“ – Beschreibung, Genre, Entwickler, Erscheinungsdatum, Steam-Preis, Metacritic-Wertung, Plattformen (auch Steam Deck/Linux) und wie viele gerade spielen; ohne PC aus Microsoft Store/Wikipedia",
+      "„Was kostet Hades?“ / „Ist … im Angebot?“ – aktueller Steam-Preis mit Rabatt, Weg zum Deal Radar",
+      "„Wie viele Leute spielen gerade Counter-Strike 2?“ – aktuelle Spielerzahl auf Steam",
+      "„Läuft Cyberpunk 2077 auf meinem PC?“ – Steams Systemanforderungen neben den echten Werten deines PCs (✓/✗ je Punkt)",
+      "„Was ist der Weltrekord in Celeste?“ – bestätigte Speedrun-Rekorde je Kategorie von speedrun.com, mit Läufer und Datum",
+      "„Gute Free-to-Play-Shooter?“ – beliebte kostenlose PC-Spiele nach Art (Shooter, MMORPG, MOBA, Battle Royale, für schwache PCs …) von FreeToGame.com"
     ],
-    "verbessert": [
-      "Links zu Quellen und Angeboten öffnen sich aus dem Chat in einem neuen Tab"
-    ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "mkzpMoIZSi/7F0d5s6f2pNWQz5JaxKTqSsA88ImnzUSrDpCVGE0OJpIbsPGUncKOuD56tgyT+WGGlVLVL8LoTw=="
+  "signature": "ntV7C1lDCoE7iuX6Aa+oA+E4rT13UCapn1Wg54MSk705YUwrc4X1Ik9e1Irmtgzc0Gn5lM2fDSuYyjkLVDvkrQ=="
 }
