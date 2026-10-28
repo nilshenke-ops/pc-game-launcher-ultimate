@@ -5,8 +5,9 @@ import { client } from "./rpc";
 import { getEntry, listKind, newId, saveEntry } from "./journal";
 import { norm } from "./journal-logic";
 import { GENRES } from "./bingo-catalog";
+import { lookupGame } from "./game-lookup";
 import {
-  cardTitle, genreFromInfo, levelPlan, pickTasks, poolFor, sanitizeAiTasks, toCells, webTasks, NotEnoughTasks,
+  cardTitle, genresFromInfo, levelPlan, poolForGenres, pickTasks, poolFor, sanitizeAiTasks, toCells, webTasks, NotEnoughTasks,
   type BingoOptions, type Card, type Category, type Level, type Task, type WebAchievement,
 } from "./bingo";
 
@@ -42,7 +43,7 @@ export interface Made { id: string; card: Card }
 /** First sentence, at most `max` characters, cut at a word. */
 const shortText = (s: string, max: number) => { const first = s.split(/(?<=[a-zäöüß)"“][.!?])\s+(?=[A-ZÄÖÜ])/)[0]; return first.length <= max ? first : first.slice(0, first.lastIndexOf(" ", max)) + " …"; };
 
-export async function createCard(input: BingoOptions, opts: { useAi: boolean; aiAvailable: boolean; title?: string; players?: string[] }): Promise<Made> {
+export async function createCard(input: BingoOptions, opts: { useAi: boolean; aiAvailable: boolean; title?: string; players?: string[]; /** false: no PC – this device looks the game up itself (Microsoft Store, Wikipedia). */ pcOnline?: boolean }): Promise<Made> {
   if (running) throw new Error("Es wird schon ein Bingo erstellt – einen Moment.");
   const p = (async () => {
     let o = input;
@@ -57,17 +58,27 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
     const recent = recentTasks(o.game);
     o = { ...o, avoid: [...(o.avoid ?? []), ...recent.last], avoidOld: recent.older };
     if (o.taskSource !== "own" && o.web) {
-      const r = await client.call<{ name: string; appId: number | null; source: string; achievements: WebAchievement[]; genres?: string[]; categories?: string[]; description?: string | null }>("bingo.webTasks", { game: o.game });
+      // With the PC: Steam (achievements), else Microsoft Store/Wikipedia through the PC. Without the PC (or when it fails):
+      // this device asks the Microsoft Store and Wikipedia itself – Steam allows that only to the PC.
+      type WebInfo = { name: string; appId: number | null; source: string; achievements: WebAchievement[]; genres?: string[]; categories?: string[]; description?: string | null; text?: string | null };
+      const fromBrowser = async (): Promise<WebInfo> => { const g = await lookupGame(o.game); return { ...g, appId: null, achievements: [] }; };
+      let r: WebInfo;
+      if (opts.pcOnline !== false) {
+        try { r = await client.call<WebInfo>("bingo.webTasks", { game: o.game }); }
+        catch (e) { r = await fromBrowser(); notes.push(`Über den PC hat die Suche nicht geklappt (${(e as Error).message}) – dieses Gerät hat selbst nachgesehen.`); }
+      } else r = await fromBrowser();
       // What kind of game it is decides the extra tasks. Real achievements, the own catalog (if any) and the fitting
-      // genre set are mixed, so every difficulty has enough different tasks and cards do not repeat.
-      const genre = genreFromInfo(r);
+      // sets for every kind of game found (e.g. stealth + horror + puzzles) are mixed, so cards fit and do not repeat.
+      const kinds = genresFromInfo(r);
+      const genre = kinds[0];
+      const kindNames = kinds.filter((k) => GENRES[k] && k !== "generic").map((k) => GENRES[k].name);
       const asked = o.game;
       const found = r.name || o.game;
       const again = norm(found) !== norm(asked) ? recentTasks(found) : { last: [], older: [] };
       o = { ...o, genre, game: base.from === "catalog" ? base.name : found, avoid: [...(o.avoid ?? []), ...again.last], avoidOld: [...(o.avoidOld ?? []), ...again.older] };
       const web = webTasks(r.achievements);
-      const extra = base.from === "catalog" ? base.tasks : poolFor("", genre).tasks;
-      const where = r.appId ? "Steam" : /microsoft/i.test(r.source) ? "Microsoft Store (Xbox)" : "Wikipedia";
+      const extra = base.from === "catalog" ? base.tasks : poolForGenres(kinds);
+      const where = r.appId ? "Steam" : [/microsoft/i.test(r.source) ? "Microsoft Store (Xbox)" : "", /wikipedia/i.test(r.source) ? "Wikipedia" : ""].filter(Boolean).join(" und ") || "Internet";
       // With an AI on the PC: it gets what was found and writes tasks that make sense for exactly this game.
       let ai: Task[] = [];
       let aiName = "";
@@ -87,12 +98,12 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
       pool = web.length + ai.length >= Math.ceil(n * 1.25) && ai.length ? [...web, ...ai] : [...web, ...ai, ...extra];
       provider = `${base.from === "catalog" ? "Katalog + " : ""}${where} (${r.name})${aiName ? ` + ${aiName}` : ""}`;
       if (norm(r.name) !== norm(asked) && base.from !== "catalog") notes.push(`Gefunden als „${r.name}“.`);
-      const kind = [...(r.genres ?? []), ...(r.categories ?? []).filter((c) => /mehrspieler|koop|geteilt|online/i.test(c))].slice(0, 5).join(", ");
+      const kind = [...(r.genres ?? []).filter((g) => !/^(other|andere|sonstige)$/i.test(g.trim())), ...(r.categories ?? []).filter((c) => /mehrspieler|koop|geteilt|online/i.test(c))].slice(0, 5).join(", ");
       if (kind || r.description) notes.push(`Laut ${where}: ${kind ? kind + ". " : ""}${shortText(r.description ?? "", 180)}`);
       mix = (w, k) => {
         const g = n - w - k;
         const parts = [w ? `${w} echte Steam-Erfolge` : "", k ? `${k} Aufgaben, die die KI mit diesen Infos geschrieben hat` : "",
-          g ? `${g} ${base.from === "catalog" ? `eingebaute ${base.name}-Aufgaben` : `Aufgaben für ${GENRES[genre]?.name ?? "dieses Spiel"}`}` : ""].filter(Boolean);
+          g ? `${g} ${base.from === "catalog" ? `eingebaute ${base.name}-Aufgaben` : kindNames.length ? `Aufgaben passend zu ${kindNames.join(", ")}` : "allgemeine Aufgaben"}` : ""].filter(Boolean);
         return `Auf der Karte: ${parts.join(", ")} – jede neue Karte wird anders.`;
       };
       if (!o.spoilers && r.achievements.some((a) => a.hidden)) notes.push("Versteckte Erfolge sind nicht dabei (Spoiler) – mit „mit Spoiler“ kommen sie dazu.");
@@ -107,7 +118,7 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
     } else {
       pool = base.tasks;
       provider = base.from === "catalog" ? "Katalog" : `Allgemeine Aufgaben (${base.name})`;
-      if (base.from === "genre") notes.push("Für dieses Spiel gibt es keine eigenen Katalog-Aufgaben – die Aufgaben sind allgemein. Mit einer KI am PC werden sie spielspezifisch.");
+      if (base.from === "genre") notes.push("Für dieses Spiel gibt es keine eigenen Katalog-Aufgaben – ohne Suche im Internet sind die Aufgaben allgemein. Mit „im Internet nachsehen“ werden sie passend zum Spiel.");
       if (base.note) notes.push(base.note);
     }
     let picked: { tasks: Task[]; notes: string[] };

@@ -88,7 +88,7 @@ export function BingoMaker({ initial, onMade }: { initial?: Partial<BingoOptions
   const [useAi, setUseAi] = useState(true);
   // Steam achievements only for games without own catalog tasks, only with the PC, only when ticked (= asked first).
   const [web, setWeb] = useState(webAlways);
-  const webOk = ai.online && o.taskSource !== "own" && o.game.trim().length > 1;
+  const webOk = o.taskSource !== "own" && o.game.trim().length > 1;
   const [noRepeat, setNoRepeat] = useState(false);
   const [busy, setBusy] = useState(false);
   const set = <K extends keyof BingoOptions>(k: K, v: BingoOptions[K]) => setO((x) => ({ ...x, [k]: v }));
@@ -116,11 +116,11 @@ export function BingoMaker({ initial, onMade }: { initial?: Partial<BingoOptions
         exclude: noRepeat && last ? [...last.data.cells.map((c) => c.text), ...(last.data.history ?? [])] : o.exclude };
       const players = o.players > 1 ? Array.from({ length: o.players }, (_, i) => names[i]?.trim() || `${t("Spieler")} ${i + 1}`) : undefined;
       let r: Awaited<ReturnType<typeof createCard>>;
-      try { r = await createCard(opts, { useAi, aiAvailable: !!ai.provider, players }); }
+      try { r = await createCard(opts, { useAi, aiAvailable: !!ai.provider, players, pcOnline: ai.online }); }
       catch (e) {
         // KI or internet failed: the card is still made from the fitting general tasks, the toast says why.
         if (opts.taskSource === "own" || (!opts.web && !(useAi && ai.provider))) throw e;
-        r = await createCard({ ...opts, web: false }, { useAi: false, aiAvailable: false, players });
+        r = await createCard({ ...opts, web: false }, { useAi: false, aiAvailable: false, players, pcOnline: ai.online });
         toast(t("{w} hat nicht geklappt ({e}) – deshalb anders erstellt.", { w: opts.web ? t("Die Suche im Internet") : t("Die KI"), e: (e as Error).message }), "info");
       }
       if (players && multi === "versus") trySave("bingo", r.id, { ...r.card, multi: "versus" });

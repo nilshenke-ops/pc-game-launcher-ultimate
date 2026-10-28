@@ -33,14 +33,15 @@ export async function bingoFromChat(question: string, previousId: string | null,
   const o = resolveOptions(r, previous, () => (games.length ? games[Math.floor(Math.random() * games.length)] : null));
   if ("error" in o) return { reply: reply(t(o.error), { suggestions: BINGO_EXAMPLES() }) };
   const inCatalog = poolFor(o.game, o.genre).from === "catalog";
-  const webOk = ai.online && (ai.web === true || (ai.web === undefined && (webAlways() || saysInternet(question))));
+  // With or without the PC: without it, this device asks the Microsoft Store and Wikipedia itself (Steam only via the PC).
+  const webOk = ai.web === true || (ai.web === undefined && (webAlways() || saysInternet(question)));
   // Every game – with or without own tasks: the internet makes the card more fitting and more varied, but only after a "Ja".
   if (o.taskSource !== "own") {
     if (webOk) o.web = true;
-    else if (ai.web === undefined && ai.online) {
+    else if (ai.web === undefined) {
       // Ask before going on the internet (once – or never again with "immer erlauben").
       return {
-        reply: reply((inCatalog ? t("Für „{g}“ habe ich eigene Aufgaben. Soll ich zusätzlich im Internet nachsehen, damit das Bingo abwechslungsreicher wird?", { g: o.game }) : t("Für „{g}“ habe ich keine eigenen Aufgaben. Soll ich im Internet nachsehen?", { g: o.game })) + " " + (ai.provider ? t("Dein PC sucht das Spiel bei Steam (Erfolge, Genre, Beschreibung), im Microsoft Store (Xbox) und sonst bei Wikipedia. Mit diesen Infos schreibt die KI ({p}) passende Aufgaben dazu; die Schwierigkeit echter Erfolge kommt davon, wie viele Spieler sie geschafft haben.", { p: ai.provider }) : t("Dein PC sucht das Spiel bei Steam (Erfolge, Genre, Beschreibung), im Microsoft Store (Xbox) und sonst bei Wikipedia – daraus werden passende Aufgaben; die Schwierigkeit echter Erfolge kommt davon, wie viele Spieler sie geschafft haben.")), {
+        reply: reply((inCatalog ? t("Für „{g}“ habe ich eigene Aufgaben. Soll ich zusätzlich im Internet nachsehen, damit das Bingo abwechslungsreicher wird?", { g: o.game }) : t("Für „{g}“ habe ich keine eigenen Aufgaben. Soll ich im Internet nachsehen?", { g: o.game })) + " " + (!ai.online ? t("Dein PC ist gerade nicht verbunden – dann sieht dieses Gerät selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es nur über den PC), und nimmt Aufgaben, die zu dieser Art Spiel passen.") : ai.provider ? t("Dein PC sucht das Spiel bei Steam (Erfolge, Genre, Beschreibung), im Microsoft Store (Xbox) und sonst bei Wikipedia. Mit diesen Infos schreibt die KI ({p}) passende Aufgaben dazu; die Schwierigkeit echter Erfolge kommt davon, wie viele Spieler sie geschafft haben.", { p: ai.provider }) : t("Dein PC sucht das Spiel bei Steam (Erfolge, Genre, Beschreibung), im Microsoft Store (Xbox) und sonst bei Wikipedia – daraus werden passende Aufgaben; die Schwierigkeit echter Erfolge kommt davon, wie viele Spieler sie geschafft haben.")), {
           actions: [
             { kind: "bingoChoice", label: t("Ja, im Internet nachsehen"), params: { question, web: true } },
             { kind: "bingoChoice", label: t("Ja, immer erlauben"), params: { question, web: true, always: true } },
@@ -48,8 +49,6 @@ export async function bingoFromChat(question: string, previousId: string | null,
           ],
         }),
       };
-    } else if (saysInternet(question) && !ai.online) {
-      return { reply: reply(t("Für die Suche im Internet brauche ich die Verbindung zu deinem PC – gerade ist er nicht erreichbar.")) };
     }
   }
   // Made right here in the chat – if one way fails, the next one is tried and the note says so.
@@ -59,7 +58,7 @@ export async function bingoFromChat(question: string, previousId: string | null,
   const failed: string[] = [];
   for (const [i, x] of tries.entries()) {
     try {
-      const made = await createCard(x.o, { useAi: x.useAi, aiAvailable: x.useAi && ai.online && !!ai.provider });
+      const made = await createCard(x.o, { useAi: x.useAi, aiAvailable: x.useAi && ai.online && !!ai.provider, pcOnline: ai.online });
       const c = made.card;
       const text = t("Hier ist dein {s}×{s}-Bingo für {g} ({d}{m}) mit {n} Aufgaben. Tippe ein Feld an, wenn du die Aufgabe geschafft hast.", {
         s: c.size, g: c.gameName ?? "", d: t(DIFFICULTY_LABEL[c.difficulty ?? "medium"]), m: c.mode && c.mode !== "classic" ? ", " + t(MODE_LABEL[c.mode]) : "", n: c.cells.filter((x) => !x.free).length,

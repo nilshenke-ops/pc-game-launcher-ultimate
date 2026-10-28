@@ -24,7 +24,7 @@ export const MODE_LABEL: Record<BingoMode, string> = { classic: "Klassisch", spe
 const MODE_CAT: Partial<Record<BingoMode, Category>> = { survival: "survival", challenge: "challenge", fun: "fun", exploration: "explore", boss: "combat", achievement: "progress", coop: "team" };
 
 export type TaskSource = "catalog" | "genre" | "ai" | "own" | "web";
-export interface Task { text: string; level: Level; category: Category; team?: boolean; boss?: boolean; spoiler?: boolean; source: TaskSource; why?: string }
+export interface Task { text: string; level: Level; category: Category; team?: boolean; boss?: boolean; spoiler?: boolean; source: TaskSource; why?: string; /** General task that only fills up when the fitting ones run out. */ filler?: boolean }
 
 export interface Cell extends BingoCell { level?: Level; category?: Category; source?: TaskSource; why?: string; doneBy?: string[]; doneAt?: string }
 
@@ -207,7 +207,7 @@ export function pickTasks(pool: Task[], own: Task[], o: BingoOptions, rnd: () =>
   // Boss bingo: boss tasks count as preferred everywhere. Tasks of the last cards come last (only if nothing else is left).
   const avoid = usedSet(o.avoid ?? []);
   const avoidOld = usedSet(o.avoidOld ?? []);
-  const rank = (t: Task) => (avoid.has(taskKey(t.text)) ? 4 : avoidOld.has(taskKey(t.text)) ? 2 : 0) + (prefer.has(t.category) || (o.mode === "boss" && t.boss) ? 0 : 1);
+  const rank = (t: Task) => (avoid.has(taskKey(t.text)) ? 5 : avoidOld.has(taskKey(t.text)) ? 3 : 0) + (t.filler ? 2 : 0) + (prefer.has(t.category) || (o.mode === "boss" && t.boss) ? 0 : 1);
   const byLevel = (l: number) => shuffle(rest.filter((t) => t.level === l), rnd).sort((a, b) => rank(a) - rank(b));
   const left: Task[][] = [byLevel(1), byLevel(2), byLevel(3), byLevel(4)];
   const short: number[] = [0, 0, 0, 0];
@@ -235,19 +235,54 @@ export function pickTasks(pool: Task[], own: Task[], o: BingoOptions, rnd: () =>
 
 export interface WebAchievement { name: string; description: string; hidden: boolean; percent: number | null }
 
-/** Which genre task set fits a game, from what Steam/Wikipedia say about it (genres, features, description). */
-export function genreFromInfo(info: { genres?: string[]; categories?: string[]; description?: string | null }): string {
+/** Words that show a kind of game (German and English: Steam, Microsoft Store and Wikipedia describe games in both). */
+const MECHANICS: [string, RegExp][] = [
+  ["stealth", /schleich|stealth|unentdeckt|heimlich|sneak|versteck/g],
+  ["horror", /horror|grusel|unheimlich|creepy/g],
+  ["puzzle", /rätsel|raetsel|puzzle|knobel|denkspiel/g],
+  ["racing", /rennspiel|racing|motorsport|\brennen\b|\brace\b/g],
+  ["shooter", /shooter|ego-perspektive|\bfps\b|schusswaffe|third-person-shooter/g],
+  ["fighting", /kampfspiel|fighting game|beat .?em up|prügelspiel/g],
+  ["platformer", /jump.?.?n.?.?run|platformer|plattformer|plattform-spiel|jump and run/g],
+  ["roguelike", /roguelike|roguelite|rogue-like|prozedural generiert/g],
+  ["rpg", /rollenspiel|role.?playing|\brpg\b|charakterentwicklung/g],
+  ["survival", /survival|überleben|ueberleben|überlebens/g],
+  ["sandbox", /sandbox|\bcrafting\b|kreativmodus|bauen und|aufbauen/g],
+  ["strategy", /strategie|strategy|city-builder|aufbauspiel|echtzeit-strategie/g],
+  ["simulation", /simulation|simulator|landwirtschaft|farming|wirtschaftssimulation|management/g],
+  ["sports", /\bsport\b|sportspiel|fußball|fussball|basketball|tennis|golf|eishockey|sports\b/g],
+  ["openworld", /open.?world|offene[nr]? welt|frei erkundbar|abenteuer|adventure/g],
+];
+
+/**
+ * The kinds of game a description shows, strongest first (at most 3): "Stealth-Horror-Spiel mit Rätseln" → stealth,
+ * horror, puzzle. Genres count double (they are the store's own words); Koop/Mehrspieler adds the team set.
+ */
+export function genresFromInfo(info: { genres?: string[]; categories?: string[]; description?: string | null; text?: string | null }): string[] {
   const g = (info.genres ?? []).join(" ").toLowerCase();
-  const all = `${g} ${(info.description ?? "").toLowerCase()}`;
-  if (/renn|racing|rennspiel|motorsport/.test(all)) return "racing";
-  if (/horror|grusel/.test(all)) return "horror";
-  if (/survival|überleben|ueberleben/.test(all)) return "survival";
-  if (/shooter|ego-perspektive|fps\b|third-person-shooter/.test(all)) return "shooter";
-  if (/sport|fußball|fussball|basketball|tennis|golf/.test(g) || /\b(fußball|fussball|basketball)\b/.test(all)) return "sports";
-  if (/strategie|strategy|aufbau|city-builder/.test(all)) return "strategy";
-  if (/open.?world|offene[nr]? welt|rollenspiel|role.?playing|abenteuer|adventure|rpg/.test(all)) return "openworld";
-  if ((info.categories ?? []).some((c) => /koop|co-op/i.test(c))) return "coop";
-  return "generic";
+  const desc = (info.description ?? "").toLowerCase();
+  const text = (info.text ?? "").toLowerCase().slice(0, 12000);
+  const score = new Map<string, number>();
+  for (const [id, re] of MECHANICS) {
+    const n = (g.match(re)?.length ?? 0) * 3 + (desc.match(re)?.length ?? 0) * 2 + Math.min(4, text.match(re)?.length ?? 0);
+    if (n > 0) score.set(id, n);
+  }
+  // "Survival-Horror" is horror first; "Action-Adventure" alone says little.
+  const ids = [...score.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id).slice(0, 3);
+  if ((info.categories ?? []).some((c) => /koop|co-op|kooperativ/i.test(c)) || /\bkoop|co-op|kooperativ/.test(desc)) ids.push("coop");
+  return ids.length ? ids : ["generic"];
+}
+
+/** The one genre set that fits best (shown on the card). */
+export function genreFromInfo(info: { genres?: string[]; categories?: string[]; description?: string | null; text?: string | null }): string {
+  return genresFromInfo(info)[0];
+}
+
+/** Tasks of several kinds of game mixed (plus the general set) – for games without own catalog tasks. */
+export function poolForGenres(ids: string[]): Task[] {
+  const specific = [...new Set(ids.filter((id) => GENRES[id] && id !== "generic"))];
+  const parse = (l: string, filler: boolean): Task | null => { const x = parseLine(l, "genre"); return x ? { ...x, filler: filler || undefined } : null; };
+  return [...specific.flatMap((id) => GENRES[id].tasks.map((l) => parse(l, false))), ...GENRES.generic.tasks.map((l) => parse(l, specific.length > 0))].filter((x): x is Task => !!x);
 }
 
 /** Difficulty from the worldwide unlock rate: many players have it → easy, very few → very hard. */

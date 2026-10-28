@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.63.0 – 2026-10-28
+### Neu
+- Bingo mit Internet auch ohne PC: Ist der PC nicht verbunden, fragt JARVIS trotzdem, ob er nachsehen darf – dann sieht das Handy selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es weiter nur über den PC, Steam erlaubt Websites keine direkten Abfragen)
+- Neue Aufgaben-Sets für Schleichen, Rätsel, Jump'n'Run, Rollenspiel, Roguelike, Sandbox & Bauen, Kampfspiel und Simulation
+### Verbessert
+- Aus der Beschreibung werden bis zu drei Spielarten erkannt und gemischt (z. B. Hello Neighbor: Schleichen + Horror + Rätsel) statt nur einer
+- Allgemeine Aufgaben füllen nur noch auf, wenn die passenden nicht reichen
+- Klappt die Suche über den PC nicht, sieht das Gerät selbst nach
+
 ## 2.62.0 – 2026-10-27
 ### Neu
 - Reiter auf den Seiten ordnen (Journal, Was spiele ich?, Welten, Builds, Freunde, Medien, Spiele-Infos, Kreativ-Studio, Auswertungen): Stift neben den Reitern, „−“ legt einen Reiter unter „Weitere“, „+“ holt ihn zurück – gelöscht wird nichts, „Weitere“ klappt die Reiter auf, Links auf einen Reiter funktionieren weiter

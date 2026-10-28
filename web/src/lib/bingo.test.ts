@@ -250,8 +250,9 @@ describe("genreFromInfo (what Steam/Wikipedia say about a game)", () => {
     const { genreFromInfo } = await import("./bingo");
     expect(genreFromInfo({ genres: ["Action", "Gelegenheitsspiele", "Indie", "Rennspiele"], categories: ["Mehrspieler", "Geteilter Bildschirm"] })).toBe("racing");
     expect(genreFromInfo({ genres: ["Action"], description: "Ein Ego-Shooter in einer zerstörten Stadt." })).toBe("shooter");
-    expect(genreFromInfo({ genres: ["Simulation"], categories: ["Online-Koop"] })).toBe("coop");
-    expect(genreFromInfo({ genres: ["Indie"], categories: [], description: "Ein Puzzle." })).toBe("generic");
+    expect(genreFromInfo({ genres: ["Simulation"], categories: ["Online-Koop"] })).toBe("simulation");
+    expect(genreFromInfo({ genres: ["Indie"], categories: [], description: "Ein Puzzle." })).toBe("puzzle");
+    expect(genreFromInfo({ genres: ["Indie"], categories: [], description: "Ein Spiel." })).toBe("generic");
     expect(genreFromInfo({ genres: ["Sport"] })).toBe("sports");
     expect(genreFromInfo({ description: "Ein Survival-Horror-Spiel" })).toBe("horror");
   });
@@ -289,9 +290,24 @@ describe("variety (every card different, also on the same difficulty)", () => {
 describe("Microsoft Store categories (Xbox games)", () => {
   it("English store categories are understood", async () => {
     const { genreFromInfo } = await import("./bingo");
-    expect(genreFromInfo({ genres: ["Role playing"] })).toBe("openworld");
+    expect(genreFromInfo({ genres: ["Role playing"] })).toBe("rpg");
     expect(genreFromInfo({ genres: ["Shooter"] })).toBe("shooter");
     expect(genreFromInfo({ genres: ["Racing & flying"] })).toBe("racing");
     expect(genreFromInfo({ genres: ["Strategy"] })).toBe("strategy");
+  });
+});
+
+describe("several kinds of game from one description (also without the PC)", () => {
+  it("Hello Neighbor: stealth, horror and puzzles – the tasks come from all three", async () => {
+    const { genresFromInfo, poolForGenres } = await import("./bingo");
+    const ids = genresFromInfo({ description: "Hello Neighbor ist ein Stealth-Horror-Computerspiel", text: "Der Spieler muss sich in das Haus des Nachbarn schleichen und Rätsel lösen, um in den Keller zu gelangen. Verstecke helfen dabei." });
+    expect(ids.slice(0, 3).sort()).toEqual(["horror", "puzzle", "stealth"]);
+    const pool = poolForGenres(ids);
+    expect(pool.some((t) => /unentdeckt/.test(t.text))).toBe(true);
+    expect(pool.some((t) => /Rätsel/.test(t.text))).toBe(true);
+    // Enough different tasks for a 5×5 card on every difficulty.
+    for (const l of [1, 2, 3, 4]) expect(pool.filter((t) => t.level === l && !t.team).length).toBeGreaterThanOrEqual(8);
+    expect(genresFromInfo({ description: "Ein Spiel." })).toEqual(["generic"]);
+    expect(genresFromInfo({ categories: ["Online-Koop"], genres: ["Simulation"] })).toEqual(["simulation", "coop"]);
   });
 });

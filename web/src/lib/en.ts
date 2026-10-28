@@ -5624,4 +5624,5 @@ export const en: Record<string, string> = {
   "Weitere": "More",
   "{n} in „Weitere“ verschieben": "Move {n} to “More”",
   "{n} wieder anzeigen": "Show {n} again",
+  "Dein PC ist gerade nicht verbunden – dann sieht dieses Gerät selbst im Microsoft Store (Xbox) und bei Wikipedia nach, was für ein Spiel es ist (Steam-Erfolge gibt es nur über den PC), und nimmt Aufgaben, die zu dieser Art Spiel passen.": "Your PC is not connected right now – then this device itself looks in the Microsoft Store (Xbox) and on Wikipedia what kind of game it is (Steam achievements only via the PC) and takes tasks that fit this kind of game.",
 };

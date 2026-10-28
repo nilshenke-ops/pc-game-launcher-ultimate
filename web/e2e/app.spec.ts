@@ -1196,6 +1196,8 @@ test("Was spiele ich?: Ultimate Bingo – Satz verstehen, 3×3/4×4/5×5, Reihe 
   const box = page.getByRole("textbox").last();
   await box.fill("Erstelle ein 4×4-Bingo für Minecraft auf mittel");
   await box.press("Enter");
+  // JARVIS asks first whether it may look on the internet (for every game) – "Nein" keeps the built-in tasks.
+  await page.getByRole("button", { name: /^Nein,/ }).last().click();
   await expect(page.locator(".as-bingo .bingo-cell")).toHaveCount(16);
   await page.locator(".as-bingo .bingo-cell").first().click();
   await expect(page.locator(".as-bingo .bingo-progress")).toContainText("1 von 16");
