@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.70.0 – 2026-10-28
+### Neu
+- Programme: Alle installierten Apps erscheinen automatisch – ohne „Hinzufügen“. Der Begleiter liest das Windows-Startmenü (Desktop-Programme aus dem Web-Installer wie Discord, Apps aus dem Microsoft Store, Xbox-Apps) beim Start und danach alle 10 Minuten; jede App startet mit einem Tipp
+- Schalter „Installierte Apps automatisch anzeigen“ und „Jetzt prüfen“ oben unter Programme (Standard: an)
+### Verbessert
+- Deinstallierte Apps verschwinden wieder; selbst entfernte bleiben ausgeblendet, bis sie deinstalliert werden. Schon vorhandene Einträge (gleicher Name oder gleiches Ziel) kommen nicht doppelt. Nicht aufgenommen werden Deinstallationsprogramme, Liesmich-/Hilfe-/Web-Verknüpfungen und Windows-Systemwerkzeuge
+- Ein Xbox-/Store-Spiel, das zuerst als App auftauchte, wird beim Xbox-Abgleich zum Spiel
+
 ## 2.69.0 – 2026-10-28
 ### Neu
 - JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“

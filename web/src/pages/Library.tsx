@@ -10,8 +10,8 @@ import { memorySummary, type Memory } from "../lib/journal-logic";
 import { HoloLibrary, type HoloInfo } from "../components/holo-library";
 import { IconWorkshop } from "../components/icon-workshop";
 import { exportIcon, loadSafeImage } from "../lib/icon-art";
-import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile } from "../lib/types";
-import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Thumb } from "../components/ui";
+import type { DetectedItem, ItemKind, LibraryItem, ProfilesFile, Settings } from "../lib/types";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented, Switch, Thumb } from "../components/ui";
 import { CompatPanel } from "../components/compat-panel";
 import { AppTile, useLaunch } from "../components/launch-tiles";
 import { GamePassView } from "./GamePass";
@@ -95,6 +95,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
           {!isGame && items.length > 0 && <Button icon={editMode ? <Check size={16} /> : <Pencil size={16} />} variant={editMode ? "primary" : undefined} aria-pressed={editMode} onClick={() => setEditMode(!editMode)}>{editMode ? t("Fertig") : t("Bearbeiten")}</Button>}
           <Button variant="primary" icon={<Plus size={17} />} onClick={() => setAdding(true)}>{t("Hinzufügen")}</Button>
         </>} />
+      {!isGame && canManage && <AutoApps />}
       {!isGame && editMode && <p className="small muted" style={{ marginTop: -8 }}>{t("Tippe auf ein Programm, um es zu bearbeiten. Tipp: Lange drücken geht auch ohne Bearbeiten-Modus.")}</p>}
 
       <div className="stack" style={{ marginBottom: 18 }}>
@@ -406,6 +407,33 @@ function MemoryNote({ item }: { item: LibraryItem }) {
         {s && <Link className="btn sm" to={`/journal?tab=memory&id=${s.latestId}`}>{t("Verlauf")}</Link>}
         <Link className="btn sm ghost" to={`/journal?tab=memory&new=${item.id}`}>{t("Neuer Eintrag")}</Link>
       </div>
+    </div>
+  );
+}
+
+/** "Installierte Apps automatisch anzeigen": the PC lists every installed app (desktop, Microsoft Store, Xbox) here by itself. */
+function AutoApps() {
+  const st = useRpc<{ settings: Settings }>("settings.get", {}, ["settings"]);
+  const [busy, setBusy] = useState(false);
+  if (!st.data) return null;
+  const on = st.data.settings.appsEnabled !== false;
+  const sync = async () => {
+    setBusy(true);
+    try {
+      const r = await client.call<{ added: number; removed: number; supported: boolean }>("library.syncApps");
+      toast(!r.supported ? t("Das geht nur mit dem Begleiter auf einem Windows-PC.") : r.added + r.removed === 0 ? t("Alles aktuell – keine neuen Apps gefunden.") : t("{a} Apps hinzugefügt, {r} entfernt", { a: r.added, r: r.removed }), r.supported ? "success" : "info");
+    } catch (e) { toast((e as Error).message, "error"); }
+    setBusy(false);
+  };
+  const toggle = async (v: boolean) => {
+    try { await client.call("settings.save", { appsEnabled: v }); if (v) await sync(); }
+    catch (e) { toast((e as Error).message, "error"); }
+  };
+  return (
+    <div className="row" data-testid="auto-apps" style={{ marginBottom: 14, gap: 10, alignItems: "center" }}>
+      <div className="grow"><Switch checked={on} onChange={(v) => void toggle(v)} label={t("Installierte Apps automatisch anzeigen")}
+        hint={t("Discord, Spotify, Apps aus dem Microsoft Store und alle anderen Programme aus dem Startmenü erscheinen hier von selbst – ohne Hinzufügen. Deinstallierte verschwinden wieder; was du entfernst, bleibt ausgeblendet.")} /></div>
+      {on && <Button size="sm" icon={<RefreshCw size={15} />} busy={busy} onClick={() => void sync()}>{t("Jetzt prüfen")}</Button>}
     </div>
   );
 }

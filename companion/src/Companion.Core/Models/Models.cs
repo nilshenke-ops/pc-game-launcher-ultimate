@@ -400,6 +400,8 @@ public sealed class Settings
     public bool EaEnabled { get; set; }
     /// <summary>Xbox link: installed Xbox app / PC Game Pass games (XboxGames folders) kept in the library.</summary>
     public bool XboxEnabled { get; set; }
+    /// <summary>All installed apps (start menu: desktop programs, Microsoft Store, Xbox) appear under "Programme" without adding them.</summary>
+    public bool AppsEnabled { get; set; } = true;
     /// <summary>Set once all launcher links were switched on automatically (installed games appear without any setup; each can be switched off later).</summary>
     public bool AutoLinkDone { get; set; }
     /// <summary>OBS Studio WebSocket server (obs-websocket 5) used for recording and replays.</summary>

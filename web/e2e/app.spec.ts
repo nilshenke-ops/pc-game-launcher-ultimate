@@ -1466,6 +1466,22 @@ test("JARVIS Quest-Coach: Stand merken, offene Nebenquest, Spoiler-Stufe, „Wo 
   await expect(p.locator(".card", { hasText: "E2E Questspiel" }).getByLabel("Spoiler-Stufe für JARVIS")).toHaveValue("solution");
 });
 
+test("Programme: installierte Apps automatisch anzeigen – Schalter, Prüfen, ehrlicher Hinweis ohne Windows", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/programs`);
+  const sw = p.getByRole("switch", { name: /Installierte Apps automatisch anzeigen/ });
+  await expect(sw).toBeChecked();
+  await p.getByRole("button", { name: "Jetzt prüfen" }).click();
+  await expect(p.getByText("Das geht nur mit dem Begleiter auf einem Windows-PC.").first()).toBeVisible();
+  await sw.click();
+  await expect(sw).not.toBeChecked();
+  await expect(p.getByRole("button", { name: "Jetzt prüfen" })).toHaveCount(0);
+  await sw.click();
+  await expect(sw).toBeChecked();
+  await p.context().close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

@@ -76,11 +76,22 @@ public sealed partial class LauncherService : IDisposable
             foreach (var s in new[] { Epic, Ea, Xbox })
                 try { if (Enabled(s)) Sync(s); }
                 catch (Exception ex) { Log.Warn("launchers", $"{s}: {ex.Message}"); }
+            try { SyncApps(); }
+            catch (Exception ex) { Log.Warn("launchers", "Apps: " + ex.Message); }
             return Task.CompletedTask;
         }), null, TimeSpan.FromSeconds(6), TimeSpan.FromMinutes(10));
     }
 
     public void Dispose() => _timer?.Dispose();
+
+    /// <summary>Installed apps from the start menu under "Programme" (setting "Installierte Apps automatisch anzeigen").</summary>
+    public object SyncApps()
+    {
+        if (!_settings.Get().AppsEnabled || !_platform.Desktop.CanListApps) return new { added = 0, removed = 0, supported = _platform.Desktop.CanListApps };
+        var (added, removed) = _library.ReconcileApps(_platform.Desktop.StartMenuApps());
+        if (added + removed > 0) Log.Info("launchers", $"Apps: {added} hinzugefügt, {removed} entfernt.");
+        return new { added, removed, supported = true };
+    }
 
     bool Enabled(string source) => source switch { Epic => _settings.Get().EpicEnabled, Ea => _settings.Get().EaEnabled, _ => _settings.Get().XboxEnabled };
 

@@ -59,6 +59,7 @@ public sealed class SettingsService
         public bool? EpicEnabled { get; set; }
         public bool? EaEnabled { get; set; }
         public bool? XboxEnabled { get; set; }
+        public bool? AppsEnabled { get; set; }
         public string? OverlayCorner { get; set; }
         public Pgl.Core.Platform.MetricSwitches? Metrics { get; set; }
     }
@@ -89,6 +90,7 @@ public sealed class SettingsService
             if (u.EpicEnabled != null) s.EpicEnabled = u.EpicEnabled.Value;
             if (u.EaEnabled != null) s.EaEnabled = u.EaEnabled.Value;
             if (u.XboxEnabled != null) s.XboxEnabled = u.XboxEnabled.Value;
+            if (u.AppsEnabled != null) s.AppsEnabled = u.AppsEnabled.Value;
             if (u.OverlayCorner != null) s.OverlayCorner = u.OverlayCorner;
             if (u.Metrics != null) s.Metrics = u.Metrics.Copy();
             return Json.Deserialize<Settings>(Json.Serialize(s))!;

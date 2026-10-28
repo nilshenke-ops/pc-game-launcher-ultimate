@@ -5704,4 +5704,9 @@ export const en: Record<string, string> = {
   "„Locker“ hängt nach erledigten Aufträgen einen frechen Spruch an – Zahlen und Fakten bleiben gleich, bei Fehlern und Rückfragen gibt es keinen Spruch. JARVIS ahmt keine echte Person nach.": "“Casual” adds a cheeky line after completed tasks – numbers and facts stay the same, there is no joke after errors or questions. JARVIS does not imitate a real person.",
   "Standard (klingt nach Computer)": "Standard (sounds like a computer)",
   "Sehr natürlich": "Very natural",
+  "Das geht nur mit dem Begleiter auf einem Windows-PC.": "This only works with the companion on a Windows PC.",
+  "Alles aktuell – keine neuen Apps gefunden.": "All up to date – no new apps found.",
+  "{a} Apps hinzugefügt, {r} entfernt": "{a} apps added, {r} removed",
+  "Installierte Apps automatisch anzeigen": "Show installed apps automatically",
+  "Discord, Spotify, Apps aus dem Microsoft Store und alle anderen Programme aus dem Startmenü erscheinen hier von selbst – ohne Hinzufügen. Deinstallierte verschwinden wieder; was du entfernst, bleibt ausgeblendet.": "Discord, Spotify, Microsoft Store apps and every other program in the Start menu show up here by themselves – no need to add them. Uninstalled ones disappear again; anything you remove stays hidden.",
 };

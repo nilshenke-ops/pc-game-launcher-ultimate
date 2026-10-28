@@ -194,6 +194,8 @@ export interface Settings {
   mutedNotificationKeys: string[];
   steamCoversFromCdn: boolean;
   gamePassEnabled?: boolean;
+  /** Installed apps (start menu, Microsoft Store) appear under "Programme" without adding them. */
+  appsEnabled?: boolean;
   gamePassMarket?: string;
   coverSearch?: boolean;
   obsUrl?: string | null;

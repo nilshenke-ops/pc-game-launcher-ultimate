@@ -160,6 +160,7 @@ export async function demoCall(method: string, p: Record<string, any> = {}): Pro
     }
     case "library.launch": demoNotice(`Auf deinem PC würde jetzt „${name(p.id)}“ starten.`);
     case "library.detect": return { items: [{ key: "demo:1", kind: "game", name: "Beispielspiel (Steam)", source: "steam", target: "1", processNames: [], origin: "Steam", alreadyAdded: false }], detectors: ["Steam", "Epic Games", "Startmenü / Microsoft Store / Xbox"] };
+    case "library.syncApps": return { added: 0, removed: 0, supported: false };
     case "library.addDetected": case "library.addPath": case "library.remove": case "library.updateTarget": case "library.pickFile":
       demoNotice("Die Bibliothek kann erst mit dem Companion auf deinem PC bearbeitet werden.");
 

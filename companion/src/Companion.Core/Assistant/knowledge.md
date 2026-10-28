@@ -510,3 +510,6 @@ Frag JARVIS z. B. „Wo war ich in Hogwarts Legacy stehen geblieben?“, „Was 
 Seite: /assistant
 Stichworte: stimme ändern natürlich menschlich tempo tonhöhe locker lustig sprüche sachlich sprachausgabe
 Auf der JARVIS-Seite unter „Stimme & Ton“: Stimme wählen (die natürlichsten stehen oben – am menschlichsten klingen die „Natural“-Stimmen im Browser Microsoft Edge, auf iPhone/iPad „Premium“/„Erweitert“-Stimmen), Tempo, Tonhöhe, „Probe hören“. Ton „Locker“ hängt nach erledigten Aufträgen einen Spruch an; „Sei lockerer“ / „Sprich wieder sachlich“ geht auch im Chat.
+
+## Installierte Apps automatisch (Programme)
+Unter Programme erscheinen alle installierten Apps von selbst (Discord, Spotify, Apps aus dem Microsoft Store, Xbox-Apps, alles aus dem Windows-Startmenü) – ohne „Hinzufügen“. Der Begleiter prüft beim Start und alle 10 Minuten; „Jetzt prüfen“ sofort. Abschalten: Schalter „Installierte Apps automatisch anzeigen“ oben unter Programme. Deinstallierte verschwinden, selbst entfernte bleiben ausgeblendet. Deinstaller, Hilfe-/Web-Links und Windows-Systemwerkzeuge werden nicht aufgenommen. Nur mit dem Windows-Begleiter.
