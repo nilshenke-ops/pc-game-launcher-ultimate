@@ -101,4 +101,17 @@ public class SteamAchievementsTests
         Assert.Equal("unavailable", (await Assert.ThrowsAsync<RpcException>(() => none.TasksAsync("Gibt es nicht"))).Code);
         await Assert.ThrowsAsync<RpcException>(() => none.TasksAsync("x"));
     }
+
+    [Fact]
+    public async Task Steam_app_by_name_is_the_same_game_and_cached()
+    {
+        var steam = new Steam();
+        using var s = new SteamAchievementsService(steam) { StoreBase = "https://store.test", Delay = _ => Task.CompletedTask };
+        Assert.Equal((4711, "Test Game"), await s.FindAppAsync("test game")); // not the soundtrack
+        var asked = steam.Asked.Count;
+        await s.FindAppAsync("Test Game");
+        Assert.Equal(asked, steam.Asked.Count); // cached
+        Assert.Null(await s.FindAppAsync("Halo"));
+        await Assert.ThrowsAsync<RpcException>(() => s.FindAppAsync("x"));
+    }
 }

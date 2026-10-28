@@ -50,10 +50,21 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     // A play-time question first: "… bis morgen bei 2 Stunden pro Tag" is not a design wish.
     const { playtimeIntent } = await import("./playtime");
     const pt = playtimeIntent(part);
-    const setup = pt ? null : setupReply(part, getPrefs(), navItems());
-    const site = setup || pt ? null : siteIntent(part);
+    const { gamingIntent } = await import("./gaming-intel");
+    const gi = pt ? null : gamingIntent(part);
+    const setup = pt || gi ? null : setupReply(part, getPrefs(), navItems());
+    const site = setup || pt || gi ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (pt) {
+    if (gi) {
+      // Gaming knowledge beyond the app: free games, news, sensitivity, health, setup, lag, controller, spending.
+      const { gamingAnswer } = await import("./gaming-intel");
+      for (let i = 0; !ctx.online && gi.kind === "news" && client.status.phase === "connecting" && i < 40; i++) await new Promise((res) => setTimeout(res, 100));
+      const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
+      const a = await gamingAnswer(gi, online);
+      r = { text: a.text, ok: a.ok };
+      a.sources.forEach((x) => sources.add(x));
+      buttons.push(...a.links.map((l) => ({ kind: "openUrl", label: l.label, params: { url: l.url } })), ...(a.navigate ?? []).map((n) => ({ kind: "navigate", label: n.label, path: n.path })));
+    } else if (pt) {
       // Spielzeitanalyse: PC data when connected, otherwise the stored values – never invented numbers.
       const { playtimeAnswer } = await import("./playtime-chat");
       // Asked right after opening the page: wait a moment for the PC instead of answering "nicht verbunden".

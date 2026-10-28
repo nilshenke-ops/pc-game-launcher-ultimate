@@ -70,7 +70,20 @@ Jeder Wert wird mit Quelle und Datum gespeichert (`source`, `updatedAt` / `fetch
 
 Nicht testbar hier: echte IGDB-Antworten (es gibt keine Twitch-Anwendung in dieser Umgebung; getestet mit einem Mock in genau dem API-Format) und Steams `localconfig.vdf` auf einem echten Windows-PC (getestet ist der Parser mit dem echten Dateiformat).
 
-## 6. Weitere Funktionen A–J – noch offen
+## 6. Gaming-Wissen über die App hinaus (2.65.0)
+| Frage | Quelle | ohne PC |
+|---|---|---|
+| „Welche Spiele gibt es gerade gratis (auf Epic …)?“ | GamerPower.com API (frei, ohne Schlüssel, Namensnennung mit Link) – abgelaufene ausgeblendet | ja (CORS erlaubt) |
+| „Was ist neu in …?“ | Steam Store-Suche (nur dasselbe Spiel) + ISteamNews (offizielle Ankündigungen) | nein – Steam erlaubt Browser-Abfragen nicht |
+| Sensitivität umrechnen, cm/360 | Rechnung mit festen Engine-Werten (CS2/Apex 0,022, Valorant 0,07, Overwatch 2 0,0066) | ja |
+| Augen, Haltung, gesund zocken | AAO (20-20-20), OSHA Computer Workstations | ja |
+| Bildschirm & FPS-Limit | Blur Busters G-SYNC 101 | ja |
+| Lag, Controller, Headset | Checklisten + Weg zu Ping Doctor / Controller-Test / Audio Center (nur auf Wunsch) | ja |
+| Ausgaben | nur deine Angaben (Journal „spend“, über den PC abgeglichen) | ja |
+
+Getestet: Unit-Tests (Absichten, Rechnung, Antworten mit Mock), e2e (Sensitivität, Ratgeber, Ausgaben eintragen/löschen) und ein Browser-Test mit echtem Internet (GamerPower: echte Epic-Angebote; Steam-News zu Hades über den Begleiter).
+
+## 7. Weitere Funktionen A–J – noch offen
 Diese Punkte sind **noch nicht umgesetzt**. Für jeden steht, worauf er aufbauen kann:
 - **A Zeitplaner:** Zeit-Finder und Kalender plus die Spielzeitanalyse.
 - **B Fortschrittsassistent:** Journal „Wo war ich?“ und die Fortschrittsangabe.

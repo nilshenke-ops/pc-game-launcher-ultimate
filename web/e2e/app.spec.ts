@@ -1394,6 +1394,30 @@ test("JARVIS Spielzeitanalyse: nichts erfunden, eigene Angaben mit Quelle, Spann
   await expect(p.locator(".card", { hasText: "E2E Langspiel" })).toHaveCount(0);
 });
 
+test("JARVIS Gaming-Wissen: Sensitivität rechnen, Ratgeber mit Quelle, Ausgaben notieren und löschen", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  await say.fill("Rechne meine CS2-Sensitivität 1,2 bei 800 DPI in Valorant um");
+  await say.press("Enter");
+  await expect(last()).toContainText("Counter-Strike 2 1,2 → Valorant 0,377");
+  await expect(last()).toContainText("43,3 cm");
+  await say.fill("Meine Augen brennen nach dem Zocken");
+  await say.press("Enter");
+  await expect(last()).toContainText("20-20-20");
+  await expect(last().getByRole("button", { name: "AAO: Bildschirm & Augen" })).toBeVisible();
+  await say.fill("Ich habe 12,50 € für E2E Kaufspiel ausgegeben");
+  await say.press("Enter");
+  await expect(last()).toContainText("Notiert: 12,50 € für E2E Kaufspiel");
+  await last().getByRole("button", { name: "Ausgaben ansehen" }).click();
+  await expect(p.getByText("12,50 € · E2E Kaufspiel")).toBeVisible();
+  await p.getByRole("button", { name: /^Ausgabe vom .* löschen$/ }).first().click();
+  await p.getByRole("dialog").getByRole("button", { name: "Löschen" }).click();
+  await expect(p.getByText("12,50 € · E2E Kaufspiel")).toHaveCount(0);
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

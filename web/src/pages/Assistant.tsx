@@ -189,6 +189,8 @@ function Turn({ turn, onSuggest, onBingo }: { turn: ChatState["turns"][number]; 
   const r = turn.reply!;
   const run = async (a: AssistantAction, i: number) => {
     if (a.kind === "navigate" && a.path) { nav(a.path); return; }
+    // A source or offer link (https only) – opened in a new tab, nothing else happens.
+    if (a.kind === "openUrl" && typeof a.params?.url === "string" && /^https:\/\//.test(a.params.url)) { window.open(a.params.url, "_blank", "noopener,noreferrer"); return; }
     // Answer to "Soll ich im Internet nachsehen?" for a bingo.
     if (a.kind === "bingoChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/bingo-chat").then((m) => m.setWebAlways(true)); onBingo(String(a.params.question ?? ""), a.params.web === true, a.label); return; }
     if (a.kind === "jarvisForget" && a.params) {

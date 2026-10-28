@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.65.0 – 2026-10-28
+### Neu
+- JARVIS kennt jetzt Gaming über die App hinaus – immer nur auf deine Frage, mit Quelle:
+- Gratis-Spiele: „Welche Spiele gibt es gerade gratis (auf Epic/Steam/GOG/Xbox …)?“ – aktuelle Angebote von GamerPower.com mit Plattform, Normalpreis und Enddatum (abgelaufene werden ausgeblendet), auch ohne PC; eingelöst wird nichts
+- Neuigkeiten: „Was ist neu in Hades?“ / „Gibt es ein Update für …?“ – die offiziellen Steam-Ankündigungen des Entwicklers, Spiel per Name gefunden (nur dasselbe Spiel), über den PC
+- Sensitivität umrechnen: „Rechne meine CS2-Sensitivität 1,2 bei 800 DPI in Valorant um“ und cm/360 – für Counter-Strike 2, Apex Legends, Valorant und Overwatch 2, gerechnet mit den festen Engine-Werten
+- Ratgeber mit Quellen: Augen (20-20-20, AAO), Haltung (OSHA), gesund zocken, Bildschirm & FPS-Limit mit G-Sync/FreeSync (Blur Busters), Lag, Controller-Drift, Headset/Mikrofon – mit Weg zur passenden Seite (Ping Doctor, Controller-Test, Audio Center); ersetzt keinen Arzt
+- Ausgaben: „Ich habe 19,99 € für Hades ausgegeben“, „Wie viel habe ich diesen Monat für Spiele ausgegeben?“ – nur deine Angaben, neuer Reiter Spiele-Journal → Ausgaben zum Ansehen, Eintragen und Löschen
+### Verbessert
+- Links zu Quellen und Angeboten öffnen sich aus dem Chat in einem neuen Tab
+
 ## 2.64.0 – 2026-10-28
 ### Neu
 - JARVIS Spielzeitanalyse: „Wie lange brauche ich noch für …?“, „Wie lange dauert … insgesamt?“, „… für 100 %?“, „… bei 45 Minuten täglich?“, „Schaffe ich … bis Freitag?“ – mit Spanne statt exakter Zahl, Tagen beim eigenen Tagesbudget, Bedarf pro Tag bis zur Frist und Quellen

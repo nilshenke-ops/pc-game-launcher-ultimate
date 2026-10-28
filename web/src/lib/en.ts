@@ -5662,4 +5662,13 @@ export const en: Record<string, string> = {
   "nicht seriös möglich – es fehlen Angaben": "not possible honestly – data is missing",
   "recherchiert": "researched",
   "„{n}“ löschen?": "Delete “{n}”?",
+  "Ausgabe vom {d} löschen": "Delete expense from {d}",
+  "Ausgaben": "Spending",
+  "Ausgaben für Spiele": "Spending on games",
+  "Betrag in €": "Amount in €",
+  "Der Eintrag wird auf diesem Gerät und beim nächsten Abgleich auf dem PC gelöscht.": "The entry is deleted on this device and, at the next sync, on the PC.",
+  "Einträge erscheinen hier – du kannst jeden wieder löschen.": "Entries appear here – you can delete each one again.",
+  "Noch keine Ausgaben": "No spending yet",
+  "Sag JARVIS z. B. „Ich habe 19,99 € für Hades ausgegeben“ oder trag es hier ein. Gerechnet wird nur mit deinen Angaben – Shop-Konten werden nicht ausgelesen.": "Tell JARVIS e.g. “I spent €19.99 on Hades” or enter it here. Only your own entries are counted – shop accounts are not read.",
+  "Betrag": "Amount",
 };

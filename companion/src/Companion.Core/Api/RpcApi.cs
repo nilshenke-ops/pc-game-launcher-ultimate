@@ -267,8 +267,17 @@ public static class RpcApi
         rpc.Register("deals.save", ctx => s.Deals.Save(ctx.Bind<WishItem>()));
         rpc.Register("deals.remove", ctx => { s.Deals.Remove(ctx.Str("id", 64)); return true; });
         // Official patch notes / announcements of a Steam game – only on request (F13 Update-Erklärer).
-        rpc.Register("news.steam", async ctx => await s.News.SteamAsync(ctx.Str("appId", 10),
-            ctx.Params.TryGetProperty("count", out var nc) && nc.ValueKind == JsonValueKind.Number && nc.TryGetInt32(out var n) ? n : 8));
+        rpc.Register("news.steam", async ctx =>
+        {
+            var count = ctx.Params.TryGetProperty("count", out var nc) && nc.ValueKind == JsonValueKind.Number && nc.TryGetInt32(out var n) ? n : 8;
+            // By name (JARVIS: "Was ist neu in Hades?"): the Steam store search finds the app – only the same game.
+            if (ctx.OptStr("name", 100) is { Length: > 0 } name)
+            {
+                var app = await s.SteamAchievements.FindAppAsync(name) ?? throw new RpcException("not-found", $"„{name}“ habe ich im Steam-Shop nicht eindeutig gefunden.");
+                return new { app = new { app.id, app.name, url = $"https://store.steampowered.com/app/{app.id}" }, news = await s.News.SteamAsync(app.id.ToString(), count) };
+            }
+            return await s.News.SteamAsync(ctx.Str("appId", 10), count);
+        });
         // Price comparison from keyforsteam.de – only on request, at most one page every 5 s, cached 6 h.
         rpc.Register("deals.keyforsteam", async ctx => await s.Keyforsteam.PricesAsync(ctx.OptStr("name", 200), ctx.OptStr("url", 400)));
         rpc.Register("deals.refresh", async ctx => await s.Deals.CheckAllAsync(force: true));

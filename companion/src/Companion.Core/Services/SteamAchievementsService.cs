@@ -254,6 +254,20 @@ public sealed class SteamAchievementsService : IDisposable
         catch (JsonException) { return null; }
     }
 
+    readonly Dictionary<string, (DateTime At, (int id, string name)? App)> _apps = new();
+
+    /// <summary>Name → Steam app (store search, same game only – "Minecraft" is not "Minecraft Dungeons"); cached a day.</summary>
+    public async Task<(int id, string name)?> FindAppAsync(string game)
+    {
+        game = game.Trim();
+        if (game.Length is < 2 or > 100) throw new RpcException("invalid-params", "Spielname mit 2–100 Zeichen.");
+        var key = game.ToLowerInvariant();
+        lock (_apps) if (_apps.TryGetValue(key, out var c) && DateTime.UtcNow - c.At < TimeSpan.FromDays(1)) return c.App;
+        var app = PickApp(await GetAsync($"{StoreBase}/api/storesearch/?term={Uri.EscapeDataString(game)}&l=german&cc=DE"), game);
+        lock (_apps) { if (_apps.Count > 500) _apps.Clear(); _apps[key] = (DateTime.UtcNow, app); }
+        return app;
+    }
+
     /// <summary>
     /// Everything the internet says about a game for a bingo: Steam (achievements with unlock rates, genres, features,
     /// description) – or, for games not on Steam, the Wikipedia summary. Only the user's agreement triggers this.
