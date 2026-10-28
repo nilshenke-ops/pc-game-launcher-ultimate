@@ -92,7 +92,8 @@ public sealed record LaunchResult(bool Ok, string Message, string? Code = null);
 
 // ---------------------------------------------------------------- Quick actions, profiles, automations
 
-public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify, ToggleOverlay, ObsRecordToggle, ObsReplaySave, ObsReplayBufferToggle, Wait, IfRunning, IfNotRunning, MediaKey, ApplyLayout, RgbColor, RgbProfile }
+public enum StepType { LaunchItem, ActivateProfile, RevertProfile, PlaySound, StopAllSounds, SetCollection, SetAudioOutput, RunDiagnostics, Notify, ToggleOverlay, ObsRecordToggle, ObsReplaySave, ObsReplayBufferToggle, Wait, IfRunning, IfNotRunning, MediaKey, ApplyLayout, RgbColor, RgbProfile,
+    CloseItem, CloseOtherGames, CloseAllGames, RunQuickAction, IfTime, IfWeekday, IfGameRunning, IfNoGameRunning }
 
 public sealed class ActionStep
 {
@@ -176,7 +177,7 @@ public sealed class ProfileBaseline
 /// <summary>What a profile activation changes: set = profile value, or the saved baseline when switching away from an override.</summary>
 public sealed record ProfileAudioPlan(bool SetOutput, string? OutputDeviceId, int? SoundboardVolume, bool SetCollection, string? SoundCollectionId);
 
-public enum TriggerType { GameStarted, GameStopped, CompanionStarted, AudioDeviceMissing, RelayDisconnected, UpdateFailed, ProfileActivated }
+public enum TriggerType { GameStarted, GameStopped, CompanionStarted, AudioDeviceMissing, RelayDisconnected, UpdateFailed, ProfileActivated, ProgramStarted, ProgramStopped, Schedule }
 
 public sealed class AutomationRule
 {
@@ -184,7 +185,7 @@ public sealed class AutomationRule
     public string Name { get; set; } = "";
     public bool Enabled { get; set; } = true;
     public TriggerType Trigger { get; set; }
-    /// <summary>Optional filter (game id, profile id, device id). Null matches all.</summary>
+    /// <summary>Optional filter (game/program id, profile id, device id). Null matches all. Schedule: "HH:mm" or "HH:mm|1,2,3" (weekdays, 1 = Monday).</summary>
     public string? TriggerRef { get; set; }
     public List<ActionStep> Actions { get; set; } = new();
     public DateTime? LastRunAt { get; set; }

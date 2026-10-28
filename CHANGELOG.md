@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.72.0 – 2026-10-28
+### Neu
+- Automatisierungen: neue Auslöser „Wenn ein Programm startet / beendet wird“ (z. B. Discord öffnet → Spotify öffnen), „Zu einer Uhrzeit“ mit Wochentagen und „Wenn der PC startet“ (Begleiter startet mit Windows)
+- Neue Schritte für Quick Actions und Automatisierungen: „Spiel/Programm schließen“ (z. B. beim Spielstart nur Minecraft schließen), „Alle anderen Spiele schließen“ (das auslösende Spiel bleibt offen), „Alle Spiele schließen“, „Quick Action ausführen“
+- Neue Bedingungen: „Nur weiter zur Uhrzeit …“ (auch über Mitternacht), „Nur weiter an Wochentagen …“, „Nur weiter, wenn ein / kein Spiel läuft“
+- Vorlagen unter Automatisierungen: Spiel startet → Minecraft schließen / andere Spiele schließen / Discord öffnen, Programm öffnet → anderes Programm öffnen, PC startet → Apps öffnen, Spiel beendet → Programm schließen, abends Pausen-Hinweis, Wochenend-Profil – alles danach frei änderbar
+### Verbessert
+- Schrittauswahl nach Gruppen geordnet (Spiele & Programme, Bedingungen & Ablauf, Profile & Hinweise, Ton, Aufnahme & Licht)
+- „Wenn ein Spiel startet“ reagiert nur noch auf Spiele; Programme haben einen eigenen Auslöser (ältere Regeln mit einem gewählten Programm laufen weiter)
+- Schließen ist immer sanft wie das X des Fensters (Spiele dürfen nach dem Speichern fragen), nie erzwungen; Windows-Prozesse, Spiele-Launcher/Anti-Cheat und der Begleiter selbst werden nie geschlossen. Eine aufgerufene Quick Action mit Rückfrage startet nicht automatisch, Quick Actions rufen sich nicht endlos gegenseitig auf
+
 ## 2.71.0 – 2026-10-28
 ### Neu
 - Medal als Aufnahmeprogramm (Overlay & Aufnahme): „Replay speichern“ drückt die Medal-Clip-Taste F8 (Werkseinstellung, änderbar); die Taste für „Aufnahme starten/stoppen“ wird wie in Medal eingetragen

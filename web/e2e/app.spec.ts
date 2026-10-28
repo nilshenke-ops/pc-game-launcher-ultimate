@@ -1482,6 +1482,36 @@ test("Programme: installierte Apps automatisch anzeigen – Schalter, Prüfen, e
   await p.context().close();
 });
 
+test("Automatisierungen: Vorlage „andere Spiele schließen“, Uhrzeit mit Wochentagen, Bedingungen und Quick Action als Schritt", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/automations`);
+  await p.getByRole("button", { name: "Vorlagen" }).click();
+  await p.getByRole("button", { name: "Spiel startet → alle anderen Spiele schließen" }).click();
+  const dlg = p.getByRole("dialog");
+  await expect(dlg.getByRole("textbox", { name: "Name" })).toHaveValue("Nur ein Spiel gleichzeitig");
+  await dlg.getByRole("button", { name: "Speichern" }).click();
+  const card = p.locator(".card", { hasText: "Nur ein Spiel gleichzeitig" });
+  await expect(card).toContainText("Wenn ein Spiel startet");
+  await expect(card).toContainText("Alle anderen Spiele schließen");
+
+  await p.getByRole("button", { name: "Neue Regel" }).click();
+  await dlg.getByRole("textbox", { name: "Name" }).fill("E2E Wochenende abends");
+  await dlg.getByRole("combobox", { name: "Auslöser" }).selectOption("schedule");
+  await dlg.locator('input[type="time"]').first().fill("21:30");
+  for (const d of ["Mo", "Di", "Mi", "Do", "Fr"]) await dlg.getByRole("button", { name: d, exact: true }).click();
+  const actionSel = dlg.getByRole("combobox", { name: "Aktion" }).first();
+  await actionSel.selectOption("ifNoGameRunning");
+  await dlg.getByRole("button", { name: "Schritt hinzufügen" }).click();
+  await dlg.getByRole("combobox", { name: "Aktion" }).nth(1).selectOption("notify");
+  await dlg.getByPlaceholder("Text des Hinweises").fill("Zeit zum Zocken");
+  await dlg.getByRole("button", { name: "Speichern" }).click();
+  const c2 = p.locator(".card", { hasText: "E2E Wochenende abends" });
+  await expect(c2).toContainText("Zu einer Uhrzeit: 21:30 Wochenende");
+  await expect(c2).toContainText("Nur weiter, wenn kein Spiel läuft → Hinweis anzeigen: Zeit zum Zocken");
+  await p.context().close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

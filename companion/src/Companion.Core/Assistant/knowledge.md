@@ -516,3 +516,6 @@ Unter Programme erscheinen alle installierten Apps von selbst (Discord, Spotify,
 
 ## Medal
 Medal ist als Aufnahmeprogramm wählbar (Overlay & Aufnahme): Clip/„Replay speichern“ = F8 (Werkseinstellung), Taste für „Aufnahme starten/stoppen“ wie in Medal → Einstellungen → Hotkeys eintragen. Clips und Screenshots aus dem Medal-Ordner erscheinen automatisch unter Aufnahmen, sortiert nach Medals Spielordnern. Ein anderer Medal-Ordner wird aus Medals Einstellungen erkannt; sonst am PC unter Aufnahmen als eigenen Ordner hinzufügen.
+
+## Automatisierungen: Auslöser, Bedingungen, Schließen
+Steuerung → Automatisierungen → „Vorlagen“ oder „Neue Regel“. Auslöser: Spiel startet/beendet, Programm startet/beendet (z. B. Discord), Zu einer Uhrzeit (mit Wochentagen), PC startet (Begleiter startet mit Windows), Profil aktiviert, Audiogerät fehlt, Relay getrennt, Update fehlgeschlagen. Schritte: starten, Spiel/Programm schließen, alle anderen Spiele schließen (das auslösende bleibt offen), alle Spiele schließen, Quick Action ausführen, Profil, Sound, Hinweis, Overlay, Aufnahme, Fenster-Layout, RGB, Medientaste, Warten. Bedingungen: läuft/läuft nicht, ein/kein Spiel läuft, Uhrzeit von–bis, Wochentage. Schließen ist sanft wie das X (nie erzwungen). Beispiel „Wenn ich ein Spiel öffne, schließt sich Minecraft“: Vorlage „Spiel startet → Minecraft schließen“.

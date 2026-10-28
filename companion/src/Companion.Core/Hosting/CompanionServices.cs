@@ -50,6 +50,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public StableAddress Stable { get; }
     public MdnsResponder Mdns { get; private set; }
     Timer? _stableTimer;
+    Timer? _scheduleTimer;
     /// <summary>PC values with the user's switches applied (switched-off values are not measured).</summary>
     public IMetricsSource Metrics { get; }
     public NetworkDiagnostics Network { get; }
@@ -238,6 +239,20 @@ public sealed class CompanionServices : IAsyncDisposable
                 ? $"{key} ist selbst als Hotkey belegt – das würde sich endlos selbst auslösen."
                 : await Platform.KeySender.SendAsync(key);
         Runner.IsRunning = id => Sessions.Running().Any(r => r.itemId == id);
+        Runner.AnyGameRunning = () => Sessions.Running().Any(r => Library.Get(r.itemId)?.Kind == ItemKind.Game);
+        Runner.QuickAction = id => QuickActions.Get(id);
+        if (Platform.ProcessControl.Supported)
+        {
+            Runner.CloseItem = async id => Library.Get(id) is { } it ? await CloseItemAsync(it) : "Fehler: Eintrag nicht gefunden.";
+            Runner.CloseGames = async except =>
+            {
+                var games = Sessions.Running().Select(r => Library.Get(r.itemId)).Where(i => i is { Kind: ItemKind.Game } && i.Id != except).Cast<LibraryItem>().ToList();
+                if (games.Count == 0) return except == null ? "Kein Spiel lief" : "Kein anderes Spiel lief";
+                var res = new List<string>();
+                foreach (var g in games) res.Add(await CloseItemAsync(g));
+                return string.Join(", ", res);
+            };
+        }
         Runner.ItemName = id => Library.Get(id)?.Name;
         Runner.ApplyLayout = id =>
         {
@@ -293,7 +308,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             Activity.GameChanged();
-            _ = Automations.Fire(TriggerType.GameStarted, item.Id);
+            _ = Automations.FireItem(item, started: true);
             _ = GameModePrograms.GameStartedAsync();
             UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs") _ = ObsReplayBuffer(true);
@@ -318,7 +333,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 Profiles.Revert($"Spiel beendet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             Activity.GameChanged();
-            _ = Automations.Fire(TriggerType.GameStopped, item.Id);
+            _ = Automations.FireItem(item, started: false);
             if (Sessions.Running().Count == 0) _ = GameModePrograms.AllGamesStoppedAsync();
             GameActivity.RunWhenIdle("quests", () => { try { Quests.Get(); } catch (Exception ex) { Log.Warn("quests", ex.Message); } return Task.CompletedTask; });
             UpdateGameMode();
@@ -447,6 +462,14 @@ public sealed class CompanionServices : IAsyncDisposable
             StepType.ApplyLayout => $"Fenster-Layout „{Layouts.Export().Layouts.FirstOrDefault(l => l.Id == st.Ref)?.Name ?? "?"}“",
             StepType.RgbColor => "RGB-Farbe " + st.Ref,
             StepType.RgbProfile => $"RGB-Profil „{st.Ref}“",
+            StepType.CloseItem => $"{Item()} schließen",
+            StepType.CloseOtherGames => "Andere Spiele schließen",
+            StepType.CloseAllGames => "Alle Spiele schließen",
+            StepType.RunQuickAction => $"Quick Action „{QuickActions.Get(st.Ref ?? "")?.Name ?? "?"}“",
+            StepType.IfTime => $"Nur {st.Ref?.Replace("-", " – ")} Uhr",
+            StepType.IfWeekday => "Nur an bestimmten Tagen",
+            StepType.IfGameRunning => "Nur wenn ein Spiel läuft",
+            StepType.IfNoGameRunning => "Nur wenn kein Spiel läuft",
             _ => st.Type.ToString(),
         };
     }
@@ -525,7 +548,29 @@ public sealed class CompanionServices : IAsyncDisposable
         Launchers.Start();
         ApplyRelaySettings(Settings.Get());
         _ = Automations.Fire(TriggerType.CompanionStarted, null);
+        _scheduleTimer = new Timer(_ => _ = Automations.CheckSchedule(DateTime.Now), null, TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
+    }
+
+    /// <summary>
+    /// Closes a game/program from the library gently (like clicking its X; the program may still ask to save). Never forced,
+    /// never Windows' own processes or game launchers/anti-cheat, never this companion.
+    /// </summary>
+    async Task<string> CloseItemAsync(LibraryItem item)
+    {
+        var own = Environment.ProcessId;
+        var snapshot = Platform.Processes.Snapshot(withPaths: item.InstallDir != null);
+        var prefix = item.InstallDir is { Length: > 3 } dir ? dir.TrimEnd('\\', '/') + Path.DirectorySeparatorChar : null;
+        var procs = snapshot.Where(p => p.Pid != own && !GameModePrograms.Blocked.Contains(p.Name)
+            && (item.ProcessNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase) || (prefix != null && p.Path?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) == true))).ToList();
+        if (procs.Count == 0) return $"{item.Name} lief nicht";
+        string? error = null; var closed = false;
+        foreach (var p in procs)
+        {
+            var err = await Task.Run(() => Platform.ProcessControl.CloseGracefully(p.Pid, TimeSpan.FromSeconds(8)));
+            if (err == null) closed = true; else error ??= err;
+        }
+        return closed ? $"{item.Name} geschlossen" : $"Fehler: {item.Name} nicht geschlossen ({error})";
     }
 
     /// <summary>Runs a hotkey's action – on key press and for "Jetzt testen" in the app.</summary>
@@ -580,6 +625,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Monitor.Dispose();
         LanAddress.Dispose();
         _stableTimer?.Dispose();
+        _scheduleTimer?.Dispose();
         Mdns.Dispose();
         GamePass.Dispose();
         Updates.Dispose();

@@ -54,7 +54,8 @@ export interface DetectedItem {
 }
 
 export type StepType = "launchItem" | "activateProfile" | "revertProfile" | "playSound" | "stopAllSounds" | "setCollection" | "setAudioOutput" | "runDiagnostics" | "notify"
-  | "toggleOverlay" | "obsRecordToggle" | "obsReplaySave" | "obsReplayBufferToggle" | "wait" | "ifRunning" | "ifNotRunning" | "mediaKey" | "applyLayout" | "rgbColor" | "rgbProfile";
+  | "toggleOverlay" | "obsRecordToggle" | "obsReplaySave" | "obsReplayBufferToggle" | "wait" | "ifRunning" | "ifNotRunning" | "mediaKey" | "applyLayout" | "rgbColor" | "rgbProfile"
+  | "closeItem" | "closeOtherGames" | "closeAllGames" | "runQuickAction" | "ifTime" | "ifWeekday" | "ifGameRunning" | "ifNoGameRunning";
 export interface ActionStep { type: StepType; ref?: string | null }
 
 export interface QuickAction {
@@ -95,7 +96,7 @@ export interface ProfilesFile {
   autoSwitch: boolean;
 }
 
-export type TriggerType = "gameStarted" | "gameStopped" | "companionStarted" | "audioDeviceMissing" | "relayDisconnected" | "updateFailed" | "profileActivated";
+export type TriggerType = "gameStarted" | "gameStopped" | "companionStarted" | "audioDeviceMissing" | "relayDisconnected" | "updateFailed" | "profileActivated" | "programStarted" | "programStopped" | "schedule";
 export interface AutomationRule {
   id: string;
   name: string;

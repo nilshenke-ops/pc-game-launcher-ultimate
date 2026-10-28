@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { t } from "../lib/i18n";
 import { useRpc } from "../lib/hooks";
-import type { ActionStep, AudioDevice, LibraryItem, ProfilesFile, Sound, SoundsFile, StepType } from "../lib/types";
+import type { ActionStep, AudioDevice, LibraryItem, ProfilesFile, QuickAction, Sound, SoundsFile, StepType } from "../lib/types";
 import { pendingRef, usePendingSounds } from "../lib/pending-sounds";
 import { Button } from "./ui";
 
@@ -27,6 +27,14 @@ export function stepLabels(): Record<StepType, string> {
     applyLayout: t("Fenster-Layout anwenden"),
     rgbColor: t("RGB-Farbe setzen (OpenRGB)"),
     rgbProfile: t("RGB-Profil laden (OpenRGB)"),
+    closeItem: t("Spiel/Programm schließen"),
+    closeOtherGames: t("Alle anderen Spiele schließen"),
+    closeAllGames: t("Alle Spiele schließen"),
+    runQuickAction: t("Quick Action ausführen"),
+    ifTime: t("Nur weiter zur Uhrzeit …"),
+    ifWeekday: t("Nur weiter an Wochentagen …"),
+    ifGameRunning: t("Nur weiter, wenn ein Spiel läuft"),
+    ifNoGameRunning: t("Nur weiter, wenn kein Spiel läuft"),
   };
 }
 
@@ -35,7 +43,26 @@ export const mediaKeyLabels = (): Record<string, string> => ({
 });
 
 /** Building blocks that control the flow – not available for a single hotkey action. */
-export const CONTROL_STEPS: StepType[] = ["wait", "ifRunning", "ifNotRunning"];
+export const CONTROL_STEPS: StepType[] = ["wait", "ifRunning", "ifNotRunning", "ifTime", "ifWeekday", "ifGameRunning", "ifNoGameRunning"];
+
+/** Order and groups in the step picker – the list got long. */
+const GROUPS: [string, StepType[]][] = [
+  ["Spiele & Programme", ["launchItem", "closeItem", "closeOtherGames", "closeAllGames", "runQuickAction", "applyLayout"]],
+  ["Bedingungen & Ablauf", ["wait", "ifRunning", "ifNotRunning", "ifGameRunning", "ifNoGameRunning", "ifTime", "ifWeekday"]],
+  ["Profile & Hinweise", ["activateProfile", "revertProfile", "notify", "toggleOverlay", "runDiagnostics"]],
+  ["Ton", ["playSound", "stopAllSounds", "setCollection", "setAudioOutput", "mediaKey"]],
+  ["Aufnahme & Licht", ["obsRecordToggle", "obsReplaySave", "obsReplayBufferToggle", "rgbColor", "rgbProfile"]],
+];
+
+export const weekdayLabels = () => [t("Mo"), t("Di"), t("Mi"), t("Do"), t("Fr"), t("Sa"), t("So")];
+/** "1,2,3,4,5" → "Mo–Fr"-like short text. */
+export const describeDays = (ref: string | null | undefined) => {
+  const d = (ref ?? "").split(",").filter(Boolean).map(Number);
+  if (d.length === 7) return t("täglich");
+  if (d.join(",") === "1,2,3,4,5") return t("Mo–Fr");
+  if (d.join(",") === "6,7") return t("Wochenende");
+  return d.map((x) => weekdayLabels()[x - 1]).join(", ");
+};
 
 /** Lists the selectable targets for steps (items, profiles, sounds …). */
 export function useStepRefs() {
@@ -46,7 +73,9 @@ export function useStepRefs() {
   const pending = usePendingSounds();
   const layouts = useRpc<{ layouts: { id: string; name: string }[] }>("layouts.list", {}, ["layouts"]);
   const rgb = useRpc<{ profiles: string[] }>("rgb.status", {}, []);
+  const quick = useRpc<{ actions: QuickAction[] }>("quick.list", {}, ["quick"]);
   return {
+    quick: quick.data?.actions ?? [],
     layouts: layouts.data?.layouts ?? [],
     rgbProfiles: rgb.data?.profiles ?? [],
     items: lib.data?.items ?? [],
@@ -73,6 +102,10 @@ export function describeStep(s: ActionStep, refs: ReturnType<typeof useStepRefs>
       case "mediaKey": return mediaKeyLabels()[s.ref ?? ""];
       case "applyLayout": return refs.layouts.find((l) => l.id === s.ref)?.name;
       case "rgbColor": case "rgbProfile": return s.ref ?? undefined;
+      case "closeItem": return refs.items.find((i) => i.id === s.ref)?.name;
+      case "runQuickAction": return refs.quick.find((q) => q.id === s.ref)?.name;
+      case "ifTime": return s.ref ? s.ref.replace("-", " – ") : undefined;
+      case "ifWeekday": return s.ref ? describeDays(s.ref) : undefined;
       default: return null;
     }
   })();
@@ -87,6 +120,21 @@ function RefSelect({ step, refs, onChange }: { step: ActionStep; refs: ReturnTyp
     </select>
   );
   switch (step.type) {
+    case "closeItem": return sel(refs.items.map((i) => ({ id: i.id, name: `${i.kind === "game" ? "🎮" : "🗔"} ${i.name}` })));
+    case "runQuickAction": return sel(refs.quick.map((q) => ({ id: q.id, name: q.name })));
+    case "ifTime": {
+      const [from, to] = /^\d\d:\d\d-\d\d:\d\d$/.test(step.ref ?? "") ? step.ref!.split("-") : ["18:00", "23:00"];
+      return (
+        <label className="row nowrap small" style={{ gap: 8 }}>
+          <input className="input" type="time" value={from} aria-label={t("Von")} onChange={(e) => e.target.value && onChange(`${e.target.value}-${to}`)} />
+          {t("bis")}
+          <input className="input" type="time" value={to} aria-label={t("Bis")} onChange={(e) => e.target.value && onChange(`${from}-${e.target.value}`)} />
+        </label>
+      );
+    }
+    case "ifWeekday": return <DayPicker value={step.ref ?? ""} onChange={onChange} />;
+    case "closeOtherGames": return <span className="small muted">{t("Das Spiel, das die Regel ausgelöst hat, bleibt offen. Sanft wie das X – das Spiel darf noch nach Speichern fragen.")}</span>;
+    case "closeAllGames": return <span className="small muted">{t("Sanft wie das X – nie erzwungen.")}</span>;
     case "launchItem": case "ifRunning": case "ifNotRunning": return sel(refs.items.map((i) => ({ id: i.id, name: `${i.kind === "game" ? "🎮" : "🗔"} ${i.name}` })));
     case "mediaKey": return sel(Object.entries(mediaKeyLabels()).map(([id, name]) => ({ id, name })));
     case "wait": return (
@@ -120,6 +168,17 @@ function RefSelect({ step, refs, onChange }: { step: ActionStep; refs: ReturnTyp
   }
 }
 
+/** Weekday chips; "1,2,3" = Monday to Wednesday. */
+export function DayPicker({ value, onChange }: { value: string; onChange: (v: string | null) => void }) {
+  const on = new Set(value.split(",").filter(Boolean).map(Number));
+  const toggle = (d: number) => { const n = new Set(on); if (n.has(d)) n.delete(d); else n.add(d); onChange(n.size ? [...n].sort().join(",") : null); };
+  return (
+    <div className="chips" role="group" aria-label={t("Wochentage")}>
+      {weekdayLabels().map((l, i) => <button key={l} type="button" className={`chip ${on.has(i + 1) ? "on" : ""}`} aria-pressed={on.has(i + 1)} onClick={() => toggle(i + 1)}>{l}</button>)}
+    </div>
+  );
+}
+
 export function StepEditor({ steps, onChange, max = 20 }: { steps: ActionStep[]; onChange: (s: ActionStep[]) => void; max?: number }) {
   const refs = useStepRefs();
   // A single hotkey action has no flow: waiting or conditions would do nothing there.
@@ -130,8 +189,11 @@ export function StepEditor({ steps, onChange, max = 20 }: { steps: ActionStep[];
     <div className="stack">
       {steps.map((s, i) => (
         <div key={i} className="step-row">
-          <select className="input" value={s.type} onChange={(e) => update(i, { type: e.target.value as StepType, ref: null })} aria-label={t("Aktion")}>
-            {Object.entries(labels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+          <select className="input" value={s.type} onChange={(e) => update(i, { type: e.target.value as StepType, ref: e.target.value === "ifTime" ? "18:00-23:00" : e.target.value === "ifWeekday" ? "1,2,3,4,5" : null })} aria-label={t("Aktion")}>
+            {GROUPS.map(([g, types]) => {
+              const shown = types.filter((k) => labels[k]);
+              return shown.length ? <optgroup key={g} label={t(g)}>{shown.map((k) => <option key={k} value={k}>{labels[k]}</option>)}</optgroup> : null;
+            })}
           </select>
           <RefSelect step={s} refs={refs} onChange={(ref) => update(i, { ref })} />
           <div className="row nowrap">
@@ -147,5 +209,5 @@ export function StepEditor({ steps, onChange, max = 20 }: { steps: ActionStep[];
 }
 
 export function stepsValid(steps: ActionStep[]) {
-  return steps.length > 0 && steps.every((s) => !["launchItem", "activateProfile", "playSound", "wait", "ifRunning", "ifNotRunning", "mediaKey", "applyLayout", "rgbColor", "rgbProfile"].includes(s.type) || !!s.ref);
+  return steps.length > 0 && steps.every((s) => !["launchItem", "activateProfile", "playSound", "wait", "ifRunning", "ifNotRunning", "mediaKey", "applyLayout", "rgbColor", "rgbProfile", "closeItem", "runQuickAction", "ifTime", "ifWeekday"].includes(s.type) || !!s.ref);
 }

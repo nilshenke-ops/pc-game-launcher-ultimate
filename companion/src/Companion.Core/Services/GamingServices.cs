@@ -858,6 +858,19 @@ public sealed class ActionRunner
     public Func<string, Task<string>>? RgbColor { get; set; }
     /// <summary>Loads an OpenRGB profile; returns a short result text.</summary>
     public Func<string, Task<string>>? RgbProfile { get; set; }
+    /// <summary>Closes a game/program gently (like its X, never forced); returns a short result text.</summary>
+    public Func<string, Task<string>>? CloseItem { get; set; }
+    /// <summary>Closes every running game from the library except the given one (null = all); returns a short result text.</summary>
+    public Func<string?, Task<string>>? CloseGames { get; set; }
+    /// <summary>Steps of a quick action (null if unknown) and whether it asks before running.</summary>
+    public Func<string, QuickAction?>? QuickAction { get; set; }
+    public Func<bool>? AnyGameRunning { get; set; }
+    /// <summary>Local time for time and weekday conditions (tests set their own).</summary>
+    public Func<DateTime> Now { get; set; } = () => DateTime.Now;
+    /// <summary>The game/program whose start or end triggered the running automation ("all other games" keeps it open).</summary>
+    public static readonly AsyncLocal<string?> TriggerItem = new();
+    static readonly AsyncLocal<int> Nested = new();
+
     public static readonly Dictionary<string, string> MediaKeys = new()
     {
         ["playpause"] = "MediaPlayPause", ["next"] = "MediaNextTrack", ["prev"] = "MediaPreviousTrack", ["stop"] = "MediaStop",
@@ -865,7 +878,22 @@ public sealed class ActionRunner
     };
 
     public const int MaxWaitSeconds = 300;
-    static readonly StepType[] Control = { StepType.Wait, StepType.IfRunning, StepType.IfNotRunning };
+    static readonly StepType[] Control = { StepType.Wait, StepType.IfRunning, StepType.IfNotRunning, StepType.IfTime, StepType.IfWeekday, StepType.IfGameRunning, StepType.IfNoGameRunning };
+    static readonly System.Text.RegularExpressions.Regex TimeRange = new(@"^([01]\d|2[0-3]):[0-5]\d-([01]\d|2[0-3]):[0-5]\d$");
+    static readonly System.Text.RegularExpressions.Regex Weekdays = new(@"^[1-7](,[1-7]){0,6}$");
+
+    /// <summary>"22:00-02:00" also works across midnight; the end minute is excluded.</summary>
+    public static bool InTimeRange(string range, DateTime now)
+    {
+        var parts = range.Split('-');
+        var from = TimeSpan.Parse(parts[0]); var to = TimeSpan.Parse(parts[1]);
+        var t = new TimeSpan(now.Hour, now.Minute, 0);
+        return from <= to ? t >= from && t < to : t >= from || t < to;
+    }
+
+    /// <summary>1 = Monday … 7 = Sunday.</summary>
+    public static int WeekdayOf(DateTime d) => d.DayOfWeek == DayOfWeek.Sunday ? 7 : (int)d.DayOfWeek;
+    static readonly string[] DayNames = { "", "Mo", "Di", "Mi", "Do", "Fr", "Sa", "So" };
 
     /// <summary>Checks building blocks that need a value: wait 1–300 s in total, conditions need a game/program.</summary>
     public static void Check(IReadOnlyCollection<ActionStep> steps, bool allowControl = true)
@@ -885,6 +913,10 @@ public sealed class ActionRunner
             if (st.Type == StepType.ApplyLayout && !System.Text.RegularExpressions.Regex.IsMatch(st.Ref ?? "", "^lay_[A-Za-z0-9_-]{1,40}$")) throw Bad("Das Fenster-Layout fehlt.");
             if (st.Type == StepType.RgbColor && !System.Text.RegularExpressions.Regex.IsMatch(st.Ref ?? "", "^#[0-9a-fA-F]{6}$")) throw Bad("RGB-Farbe als #RRGGBB.");
             if (st.Type == StepType.RgbProfile && (string.IsNullOrWhiteSpace(st.Ref) || st.Ref.Length > 60)) throw Bad("Das RGB-Profil fehlt.");
+            if (st.Type is StepType.CloseItem && string.IsNullOrEmpty(st.Ref)) throw Bad("Was soll geschlossen werden? Ein Spiel oder Programm wählen.");
+            if (st.Type is StepType.RunQuickAction && !System.Text.RegularExpressions.Regex.IsMatch(st.Ref ?? "", "^qa_[A-Za-z0-9_-]{1,40}$")) throw Bad("Die Quick Action fehlt.");
+            if (st.Type is StepType.IfTime && !TimeRange.IsMatch(st.Ref ?? "")) throw Bad("Uhrzeit als „von-bis“, z. B. 18:00-23:00.");
+            if (st.Type is StepType.IfWeekday && !Weekdays.IsMatch(st.Ref ?? "")) throw Bad("Mindestens einen Wochentag wählen.");
         }
         if (total > MaxWaitSeconds) throw Bad($"Zusammen höchstens {MaxWaitSeconds} Sekunden warten.");
     }
@@ -929,6 +961,37 @@ public sealed class ActionRunner
                         var go = s.Type == StepType.IfRunning ? running : !running;
                         results.Add(go ? $"Bedingung erfüllt: {name} läuft{(running ? "" : " nicht")}" : $"Beendet: {name} läuft{(running ? "" : " nicht")}");
                         if (!go) { onStep?.Invoke(index, results[^1]); return results; }
+                        break;
+                    case StepType.IfTime:
+                    case StepType.IfWeekday:
+                    case StepType.IfGameRunning:
+                    case StepType.IfNoGameRunning:
+                        var now = Now();
+                        var (ok, text) = s.Type switch
+                        {
+                            StepType.IfTime => (InTimeRange(s.Ref ?? "", now), $"Uhrzeit {now:HH:mm} {(InTimeRange(s.Ref ?? "", now) ? "liegt" : "liegt nicht")} in {s.Ref}"),
+                            StepType.IfWeekday => ((s.Ref ?? "").Split(',').Contains(WeekdayOf(now).ToString()), $"Heute ist {DayNames[WeekdayOf(now)]}"),
+                            StepType.IfGameRunning => (AnyGameRunning?.Invoke() ?? false, (AnyGameRunning?.Invoke() ?? false) ? "Ein Spiel läuft" : "Kein Spiel läuft"),
+                            _ => (!(AnyGameRunning?.Invoke() ?? false), (AnyGameRunning?.Invoke() ?? false) ? "Ein Spiel läuft" : "Kein Spiel läuft"),
+                        };
+                        results.Add(ok ? "Bedingung erfüllt: " + text : "Beendet: " + text);
+                        if (!ok) { onStep?.Invoke(index, results[^1]); return results; }
+                        break;
+                    case StepType.CloseItem:
+                        results.Add(CloseItem == null ? "Fehler: Schließen geht nur im Windows-Begleiter." : await CloseItem(s.Ref ?? ""));
+                        break;
+                    case StepType.CloseOtherGames:
+                    case StepType.CloseAllGames:
+                        results.Add(CloseGames == null ? "Fehler: Schließen geht nur im Windows-Begleiter." : await CloseGames(s.Type == StepType.CloseOtherGames ? TriggerItem.Value : null));
+                        break;
+                    case StepType.RunQuickAction:
+                        var qa = QuickAction?.Invoke(s.Ref ?? "");
+                        if (qa == null) { results.Add("Fehler: Quick Action nicht gefunden."); break; }
+                        if (Nested.Value > 0) { results.Add($"Fehler: „{qa.Name}“ – eine Quick Action in einer aufgerufenen Quick Action wird nicht ausgeführt."); break; }
+                        if (qa.RequireConfirm) { results.Add($"Fehler: „{qa.Name}“ fragt vor dem Ausführen nach – nur von Hand startbar."); break; }
+                        Nested.Value++;
+                        try { var inner = await RunAsync(qa.Steps, $"{by} → {qa.Name}", null, ct); results.Add($"„{qa.Name}“: " + string.Join(", ", inner)); }
+                        finally { Nested.Value--; }
                         break;
                     case StepType.LaunchItem:
                         var r = LaunchItem!(s.Ref ?? "", by);
@@ -1084,6 +1147,7 @@ public sealed class AutomationEngine
         if (r.Actions.Count > 10) throw new RpcException("invalid-params", "Maximal 10 Aktionen pro Regel.");
         if (r.Actions.Any(a => !AllowedSteps.Contains(a.Type))) throw new RpcException("invalid-params", "Unbekannte Aktion.");
         ActionRunner.Check(r.Actions);
+        if (r.Trigger == TriggerType.Schedule && !ScheduleRef.IsMatch(r.TriggerRef ?? "")) throw new RpcException("invalid-params", "Uhrzeit fehlt (z. B. 18:00), Wochentage optional.");
         var conflict = Conflict(r);
         if (conflict != null) throw new RpcException("conflict", conflict);
         var res = _store.Update(f =>
@@ -1136,6 +1200,38 @@ public sealed class AutomationEngine
             }
             if (!_perRule.TryHit(rule.Id)) { Log.Warn("automation", $"Regel „{rule.Name}“ gedrosselt (zu häufig ausgelöst)."); continue; }
             await Execute(rule, "Automatisierung");
+        }
+    }
+
+    /// <summary>
+    /// A game or program from the library started or ended: games fire "Spiel …", programs "Programm …". Older rules that name
+    /// a program under "Spiel …" keep working. The item is remembered for "alle anderen Spiele schließen".
+    /// </summary>
+    public async Task FireItem(LibraryItem item, bool started)
+    {
+        ActionRunner.TriggerItem.Value = item.Id;
+        if (item.Kind == ItemKind.Game) { await Fire(started ? TriggerType.GameStarted : TriggerType.GameStopped, item.Id); return; }
+        await Fire(started ? TriggerType.ProgramStarted : TriggerType.ProgramStopped, item.Id);
+        var legacy = started ? TriggerType.GameStarted : TriggerType.GameStopped;
+        if (List().Any(r => r.Enabled && r.Trigger == legacy && r.TriggerRef == item.Id)) await Fire(legacy, item.Id);
+    }
+
+    static readonly System.Text.RegularExpressions.Regex ScheduleRef = new(@"^([01]\d|2[0-3]):[0-5]\d(\|[1-7](,[1-7]){0,6})?$");
+    string _lastScheduleMinute = "";
+
+    /// <summary>Runs "Zu einer Uhrzeit" rules whose minute is now (called every ~20 s; each minute counts once).</summary>
+    public async Task CheckSchedule(DateTime localNow)
+    {
+        var minute = localNow.ToString("yyyy-MM-dd HH:mm");
+        if (minute == _lastScheduleMinute) return;
+        _lastScheduleMinute = minute;
+        var hhmm = localNow.ToString("HH:mm");
+        var day = ActionRunner.WeekdayOf(localNow).ToString();
+        foreach (var r in List().Where(r => r.Enabled && r.Trigger == TriggerType.Schedule && r.TriggerRef != null))
+        {
+            var parts = r.TriggerRef!.Split('|');
+            if (parts[0] != hhmm || (parts.Length > 1 && !parts[1].Split(',').Contains(day))) continue;
+            await Fire(TriggerType.Schedule, r.TriggerRef);
         }
     }
 

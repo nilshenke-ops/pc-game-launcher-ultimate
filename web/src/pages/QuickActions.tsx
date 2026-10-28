@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ArrowLeft, ArrowRight, Pencil, Plus, Zap } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -35,6 +36,7 @@ export default function QuickActions() {
     <>
       <PageHead eyebrow={t("Start")} title={t("Quick Actions")} text={t("Eigene Ein-Tipp-Aktionen: mehrere Schritte wie „Discord öffnen + Profil Streaming + Sound“ auf einmal.")}
         actions={canManage && <Button variant="primary" icon={<Plus size={17} />} onClick={() => setEdit(structuredClone(blank))}>{t("Neue Aktion")}</Button>} />
+      <p className="small muted" style={{ marginTop: -8 }}>{t("Automatisch statt per Tipp – z. B. „Spiel startet → Minecraft schließen“, „Programm öffnet → Discord öffnen“, „PC startet → Apps öffnen“ oder zu einer Uhrzeit:")} <Link to="/automations">{t("Automatisierungen")}</Link></p>
       <RunsPanel />
       {cats.length > 0 && (
         <div className="chips" style={{ marginBottom: 16 }}>
