@@ -1,27 +1,31 @@
 {
-  "version": "2.71.0",
+  "version": "2.72.0",
   "date": "2026-10-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.71.0/PCGameLauncherCompanion.exe",
-  "size": 88278546,
-  "sha256": "1bf543c3b234ec1a060c96c842abf5a353a1a382ce47689a8343affd86e4cb81",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.72.0/PCGameLauncherCompanion.exe",
+  "size": 88288181,
+  "sha256": "00774a5602d6169b62418f7f2e73128da38f9b78c2e57e9369ac1f3dffdeb1e1",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.71.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.71.0/PCGameLauncherCompanion-2.71.0-win-x64.zip",
-    "size": 82541281,
-    "sha256": "94fdda62c113496b3cce0d3eb8711cd7aa192c26ee7d61a5759715d40fff5c8e"
+    "fileName": "PCGameLauncherCompanion-2.72.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.72.0/PCGameLauncherCompanion-2.72.0-win-x64.zip",
+    "size": 82551474,
+    "sha256": "b4e3906e3cd7c106263d16452e4d1c01aeffd0619cc7d0f0301a481c3430d299"
   },
-  "notes": "Medal als Aufnahmeprogramm (Overlay & Aufnahme): „Replay speichern“ drückt die Medal-Clip-Taste F8 (Werkseinstellung, änderbar); die Taste für „Aufnahme starten/stoppen“ wird wie in Medal eingetragen · Aufnahmen: Clips und Screenshots aus Medal erscheinen automatisch – der Begleiter findet den in Medal gewählten Aufnahmeordner (aus Medals eigenen Dateien unter %APPDATA%\\Medal\\store) sowie die üblichen Orte (C:\\Medal, Videos\\Medal) und sortiert nach Medals Spielordnern, auch für Spiele, die nicht in der Bibliothek sind · Medals Vorschaubilder, Editor- und Cache-Dateien werden nicht als Aufnahmen gezeigt",
+  "notes": "Automatisierungen: neue Auslöser „Wenn ein Programm startet / beendet wird“ (z. B. Discord öffnet → Spotify öffnen), „Zu einer Uhrzeit“ mit Wochentagen und „Wenn der PC startet“ (Begleiter startet mit Windows) · Neue Schritte für Quick Actions und Automatisierungen: „Spiel/Programm schließen“ (z. B. beim Spielstart nur Minecraft schließen), „Alle anderen Spiele schließen“ (das auslösende Spiel bleibt offen), „Alle Spiele schließen“, „Quick Action ausführen“ · Neue Bedingungen: „Nur weiter zur Uhrzeit …“ (auch über Mitternacht), „Nur weiter an Wochentagen …“, „Nur weiter, wenn ein / kein Spiel läuft“",
   "changes": {
     "neu": [
-      "Medal als Aufnahmeprogramm (Overlay & Aufnahme): „Replay speichern“ drückt die Medal-Clip-Taste F8 (Werkseinstellung, änderbar); die Taste für „Aufnahme starten/stoppen“ wird wie in Medal eingetragen",
-      "Aufnahmen: Clips und Screenshots aus Medal erscheinen automatisch – der Begleiter findet den in Medal gewählten Aufnahmeordner (aus Medals eigenen Dateien unter %APPDATA%\\Medal\\store) sowie die üblichen Orte (C:\\Medal, Videos\\Medal) und sortiert nach Medals Spielordnern, auch für Spiele, die nicht in der Bibliothek sind"
+      "Automatisierungen: neue Auslöser „Wenn ein Programm startet / beendet wird“ (z. B. Discord öffnet → Spotify öffnen), „Zu einer Uhrzeit“ mit Wochentagen und „Wenn der PC startet“ (Begleiter startet mit Windows)",
+      "Neue Schritte für Quick Actions und Automatisierungen: „Spiel/Programm schließen“ (z. B. beim Spielstart nur Minecraft schließen), „Alle anderen Spiele schließen“ (das auslösende Spiel bleibt offen), „Alle Spiele schließen“, „Quick Action ausführen“",
+      "Neue Bedingungen: „Nur weiter zur Uhrzeit …“ (auch über Mitternacht), „Nur weiter an Wochentagen …“, „Nur weiter, wenn ein / kein Spiel läuft“",
+      "Vorlagen unter Automatisierungen: Spiel startet → Minecraft schließen / andere Spiele schließen / Discord öffnen, Programm öffnet → anderes Programm öffnen, PC startet → Apps öffnen, Spiel beendet → Programm schließen, abends Pausen-Hinweis, Wochenend-Profil – alles danach frei änderbar"
     ],
     "verbessert": [
-      "Medals Vorschaubilder, Editor- und Cache-Dateien werden nicht als Aufnahmen gezeigt"
+      "Schrittauswahl nach Gruppen geordnet (Spiele & Programme, Bedingungen & Ablauf, Profile & Hinweise, Ton, Aufnahme & Licht)",
+      "„Wenn ein Spiel startet“ reagiert nur noch auf Spiele; Programme haben einen eigenen Auslöser (ältere Regeln mit einem gewählten Programm laufen weiter)",
+      "Schließen ist immer sanft wie das X des Fensters (Spiele dürfen nach dem Speichern fragen), nie erzwungen; Windows-Prozesse, Spiele-Launcher/Anti-Cheat und der Begleiter selbst werden nie geschlossen. Eine aufgerufene Quick Action mit Rückfrage startet nicht automatisch, Quick Actions rufen sich nicht endlos gegenseitig auf"
     ],
     "behoben": []
   },
-  "signature": "+Pvm8rDOwZFBjqLzBJI3f32pW/jhlDLsOo2Rsl5KrTY435cBYEnt0ImyHx4Pz3KyPiBOboFSSIWqyDEElfXz9w=="
+  "signature": "Pxema0vwi/4sRNDijehtv6kexbXRxS7MeNt+4ImqIh/QxILhiZPdIJ/pfDK/QRzJeAaz/EoucweMvoWUf7gS5w=="
 }
