@@ -4,14 +4,14 @@ import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   ArchiveRestore, Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
-  LifeBuoy, Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Upload, UserX,
+  LifeBuoy, Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Undo2, Upload, UserX,
 } from "lucide-react";
 import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import {
-  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, PRESETS, profileThemeActive, sanitizePrefs, setPrefs, usePrefs, type Layout, type Theme, type WidgetSize,
+  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, designHistory, PRESETS, profileThemeActive, restoreOriginalDesign, sanitizePrefs, setPrefs, undoDesign, usePrefs, type Layout, type Theme, type WidgetSize,
 } from "../lib/prefs";
 import type { Settings } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
@@ -167,11 +167,24 @@ function Design() {
           </div>
         </div>
       </Card>
+      <Card title={t("KI-Design-Editor")} icon={<LayoutGrid size={18} />}>
+        <div className="stack-sm">
+          <p className="small muted">{t("Sag JARVIS, wie es aussehen soll – z. B. „Mach mein Dashboard etwas heller“, „Cyberpunk-Stil“, „dunkles Design mit lila Neon-Akzenten“ oder „Schaltflächen größer für mein iPad“. Du siehst erst eine Vorschau und entscheidest dann: Übernehmen oder Verwerfen.")}</p>
+          <div className="row">
+            <Button icon={<Undo2 size={15} />} disabled={designHistory().length === 0} onClick={() => { if (undoDesign()) toast(t("Letzte Designänderung rückgängig gemacht"), "success"); }}>{t("Letzte Designänderung rückgängig")}</Button>
+            <Button variant="ghost" onClick={async () => { if (await confirmDialog(t("Ursprüngliches Design wiederherstellen?"), t("Das Design von vor der ersten Änderung durch den Design-Editor kommt zurück. „Rückgängig“ holt das jetzige wieder."))) { restoreOriginalDesign(); toast(t("Ursprüngliches Design wiederhergestellt"), "success"); } }}>{t("Ursprüngliches Design wiederherstellen")}</Button>
+          </div>
+        </div>
+      </Card>
       <Card title={t("Darstellung")} icon={<LayoutGrid size={18} />}>
         <div className="grid-2">
           <Field label={t("Schriftgröße: {v} %", { v: Math.round(th.fontScale * 100) })}><input type="range" min={0.85} max={1.35} step={0.05} value={th.fontScale} onChange={(e) => setTheme({ fontScale: +e.target.value })} /></Field>
           <Field label={t("Ecken-Rundung: {v} px", { v: th.radius })}><input type="range" min={0} max={28} value={th.radius} onChange={(e) => setTheme({ radius: +e.target.value })} /></Field>
           <Field label={t("Deckkraft der Karten: {v} %", { v: Math.round(th.surfaceAlpha * 100) })}><input type="range" min={0.35} max={1} step={0.01} value={th.surfaceAlpha} onChange={(e) => setTheme({ surfaceAlpha: +e.target.value })} /></Field>
+          <Field label={t("Abstände")}><Segmented value={th.density ?? "normal"} onChange={(density) => setTheme({ density })} options={[{ value: "compact", label: t("Kompakt") }, { value: "normal", label: t("Normal") }, { value: "roomy", label: t("Luftig") }]} /></Field>
+          <Field label={t("Schatten")}><Segmented value={th.shadow ?? "soft"} onChange={(shadow) => setTheme({ shadow })} options={[{ value: "none", label: t("Keine") }, { value: "soft", label: t("Weich") }, { value: "strong", label: t("Kräftig") }]} /></Field>
+          <Field label={t("Rahmen")}><Segmented value={th.border ?? "subtle"} onChange={(border) => setTheme({ border })} options={[{ value: "subtle", label: t("Dezent") }, { value: "bold", label: t("Deutlich") }]} /></Field>
+          <Switch checked={!!th.touch} onChange={(touch) => setTheme({ touch })} label={t("Große Schaltflächen (iPad, Touch)")} />
           <Switch checked={th.reduceMotion} onChange={(reduceMotion) => setTheme({ reduceMotion })} label={t("Animationen reduzieren")} />
           <Switch checked={!!th.lite} onChange={(lite) => setTheme({ lite })} label={t("Leichte Darstellung (spart Leistung)")}
             hint={t("Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.")} />

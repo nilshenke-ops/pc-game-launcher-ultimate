@@ -5,7 +5,7 @@
 
 import { client } from "./rpc";
 import { t } from "./i18n";
-import { getPrefs, setPrefs } from "./prefs";
+import { commitPreview, discardPreview, getPrefs, getPreview, previewTheme, restoreOriginalDesign, setPrefs, undoDesign } from "./prefs";
 import type { Prefs } from "./prefs-core";
 import { navItems } from "./nav";
 import type { AssistantAction, AssistantReply } from "./assistant";
@@ -62,18 +62,30 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     // Challenges from the checked catalog ("fünf mittelschwere Minecraft-Challenges", "schwieriger", "geschafft").
     const { challengeIntent } = await import("./challenge-chat");
     const chi = challengeIntent(part);
+    // Design wishes in plain language: shown as a preview first, saved only with "Übernehmen".
+    const { designIntent } = await import("./design-ai");
+    const di = chi ? null : designIntent(part, getPreview()?.theme ?? getPrefs().theme);
     const { playtimeIntent } = await import("./playtime");
-    const pt = chi ? null : playtimeIntent(part);
+    const pt = chi || di ? null : playtimeIntent(part);
     const { coachIntent } = await import("./game-coach");
-    const ci = pt || chi ? null : coachIntent(part);
+    const ci = pt || chi || di ? null : coachIntent(part);
     const { gamingIntent } = await import("./gaming-intel");
-    const gi = pt || ci || chi ? null : gamingIntent(part);
+    const gi = pt || ci || chi || di ? null : gamingIntent(part);
     const { researchIntent } = await import("./gaming-research");
-    const ri = pt || ci || gi || chi ? null : researchIntent(part);
-    const setup = pt || ci || gi || ri || chi ? null : setupReply(part, getPrefs(), navItems());
-    const site = setup || pt || ci || gi || ri || chi ? null : siteIntent(part);
+    const ri = pt || ci || gi || chi || di ? null : researchIntent(part);
+    const setup = pt || ci || gi || ri || chi || di ? null : setupReply(part, getPrefs(), navItems());
+    const site = setup || pt || ci || gi || ri || chi || di ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (chi) {
+    if (di) {
+      if (di.kind === "change") {
+        previewTheme(di.theme, di.changes);
+        r = { text: [`JARVIS – Design-Vorschau:`, ...di.changes.map((c) => "• " + c), ...di.notes.map((n) => "ℹ " + n), "", "Noch nicht gespeichert. Unten „Übernehmen“ oder „Verwerfen“ tippen – oder sag es mir. Funktionen, Menü und Widgets bleiben unverändert."].join("\n"), ok: true };
+      } else if (di.kind === "apply") r = commitPreview() ? { text: "✓ Design übernommen und gespeichert (auch für deine anderen Geräte über den PC). „Letzte Designänderung rückgängig“ holt das vorherige zurück.", ok: true } : { text: "Es gibt gerade keine Design-Vorschau zum Übernehmen.", ok: null };
+      else if (di.kind === "discard") { const had = !!getPreview(); discardPreview(); r = had ? { text: "✓ Vorschau verworfen – dein Design ist wie vorher.", ok: true } : { text: "Es gibt gerade keine Design-Vorschau.", ok: null }; }
+      else if (di.kind === "undo") r = undoDesign() ? { text: "✓ Letzte Designänderung rückgängig gemacht.", ok: true } : { text: "Es gibt keine frühere Designänderung zum Zurückholen.", ok: null };
+      else { restoreOriginalDesign(); r = { text: "✓ Ursprüngliches Design wiederhergestellt. „Letzte Designänderung rückgängig“ holt das bisherige zurück.", ok: true }; }
+      sources.add(t("Einstellungen dieses Geräts"));
+    } else if (chi) {
       const { challengeAnswer } = await import("./challenge-chat");
       const a = challengeAnswer(chi);
       r = { text: a.text, ok: a.ok };
@@ -126,11 +138,18 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       const ops = setup.actions.filter((a) => a.kind === "setup");
       if (ops.length === 1) {
         // A clear change of this website: applied right away (with "Rückgängig").
-        undo ??= getPrefs();
         const o = ops[0].params as never;
-        setPrefs((p) => applySetup(p, o, window.matchMedia("(max-width: 699px)").matches));
-        if ((o as { op: string; value?: string }).op === "lang") client.call("settings.save", { language: (o as { value: string }).value }).catch(() => {});
-        r = { text: "✓ " + setup.text, ok: true };
+        const mobile = window.matchMedia("(max-width: 699px)").matches;
+        if (["mode", "preset", "scene", "font", "motion", "resetTheme"].includes((o as { op: string }).op)) {
+          // A design change: preview first, saved with "Übernehmen".
+          previewTheme(applySetup({ ...getPrefs(), theme: getPreview()?.theme ?? getPrefs().theme }, o, mobile).theme, [setup.text]);
+          r = { text: `JARVIS – Design-Vorschau: ${setup.text}\nNoch nicht gespeichert – unten „Übernehmen“ oder „Verwerfen“.`, ok: true };
+        } else {
+          undo ??= getPrefs();
+          setPrefs((p) => applySetup(p, o, mobile));
+          if ((o as { op: string; value?: string }).op === "lang") client.call("settings.save", { language: (o as { value: string }).value }).catch(() => {});
+          r = { text: "✓ " + setup.text, ok: true };
+        }
         buttons.push(...setup.actions.filter((a) => a.kind !== "setup"));
       } else {
         // Several possibilities (e.g. which place in a full bar) – only this question is asked.

@@ -1541,6 +1541,40 @@ test("JARVIS: Gaming-Gedächtnis (Plan, heute, offene Projekte) und Challenge-Ge
   await p.context().close();
 });
 
+test("KI-Design-Editor: Vorschau, Verwerfen, Übernehmen (bleibt nach Neuladen), Rückgängig, ursprüngliches Design", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  const ask = async (q: string) => { await say.fill(q); await say.press("Enter"); };
+  const primary = () => p.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim());
+  const before = await primary();
+  await ask("Verwende ein dunkles Design mit lila Neon-Akzenten.");
+  await expect(last()).toContainText("Design-Vorschau");
+  const bar = p.getByRole("region", { name: "Design-Vorschau" });
+  await expect(bar).toBeVisible();
+  expect(await primary()).toBe("#c084fc");
+  await bar.getByRole("button", { name: "Verwerfen" }).click();
+  await expect(bar).toHaveCount(0);
+  expect(await primary()).toBe(before);
+  // Preview, then "Übernehmen" in the chat: saved and still there after reloading.
+  await ask("Mach die Schaltflächen größer, damit ich sie auf meinem iPad besser bedienen kann, und Cyberpunk-Stil");
+  await expect(bar).toBeVisible();
+  expect(await p.evaluate(() => document.documentElement.dataset.touch)).toBe("1");
+  await ask("Übernehmen");
+  await expect(last()).toContainText("Design übernommen");
+  await p.reload();
+  await expect(p.getByRole("textbox", { name: "Nachricht an den Assistenten" })).toBeVisible({ timeout: 15000 });
+  expect(await p.evaluate(() => document.documentElement.dataset.touch)).toBe("1");
+  expect(await primary()).toBe("#facc15");
+  await ask("Letzte Designänderung rückgängig");
+  await expect(last()).toContainText("rückgängig gemacht");
+  expect(await primary()).toBe(before);
+  expect(await p.evaluate(() => document.documentElement.dataset.touch)).toBe("0");
+  await p.context().close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

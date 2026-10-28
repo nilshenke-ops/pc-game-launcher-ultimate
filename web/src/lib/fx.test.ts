@@ -17,7 +17,7 @@ describe("effects (start animation, moving background, transitions)", () => {
   it("has the eight loading-screen templates and valid atmospheres", () => {
     expect(LAUNCH_STYLES.map((s) => s.id)).toEqual(["neon-portal", "cyberpunk", "space", "minimal", "glitch", "energy", "galaxy", "hologram"]);
     const atmos = Object.values(PRESETS).filter((p) => p.atmo);
-    expect(atmos.map((p) => p.name)).toEqual(expect.arrayContaining(["Cyberpunk", "Neon", "Space", "Ice", "Fire", "Fantasy", "Retro Arcade", "Minimal Dark", "Glass", "Mono"]));
+    expect(atmos.map((p) => p.name)).toEqual(expect.arrayContaining(["Cyberpunk", "Neon", "Space", "Ice", "Fire", "Fantasy", "Retro Arcade", "Minimal Dark", "Glass", "Schwarz-Weiß", "Minecraft", "Purple Gaming", "Blue Gaming"]));
     for (const p of atmos) {
       expect(BG_ANIMS.some((b) => b.id === p.atmo!.bg)).toBe(true);
       expect(LAUNCH_STYLES.some((s) => s.id === p.atmo!.launch)).toBe(true);

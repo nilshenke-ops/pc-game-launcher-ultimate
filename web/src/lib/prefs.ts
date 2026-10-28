@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { setLanguage } from "./i18n";
-import { BG_SCENES, defaultPrefs, hexToRgb, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
+import { BG_SCENES, DEFAULT_THEME, defaultPrefs, hexToRgb, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
 import type { ProfileTheme } from "./types";
 
 export * from "./prefs-core";
@@ -19,7 +19,58 @@ export function getPrefs() { return prefs; }
 // Theme of the active gaming profile (from the PC). It is laid over the own design and never stored in it, so the own
 // design comes back by itself when the profile ends, the PC is unreachable or the user switches it off.
 let profileTheme: ProfileTheme | null = null;
-const effectiveTheme = () => (prefs.profileThemes ? withProfileTheme(prefs.theme, profileTheme) : prefs.theme);
+// A design shown but not yet saved (JARVIS design editor): it lies over everything until "Übernehmen" or "Verwerfen".
+let preview: { theme: Theme; changes: string[] } | null = null;
+const effectiveTheme = () => preview?.theme ?? (prefs.profileThemes ? withProfileTheme(prefs.theme, profileTheme) : prefs.theme);
+const previewListeners = new Set<() => void>();
+const HISTORY_KEY = "pgl.design.history";
+const ORIGINAL_KEY = "pgl.design.original";
+
+/** Shows a design without saving it. */
+export function previewTheme(theme: Theme, changes: string[]) {
+  preview = { theme: sanitizePrefs({ ...prefs, theme }).theme, changes };
+  applyTheme(effectiveTheme());
+  previewListeners.forEach((l) => l());
+}
+export function discardPreview() { preview = null; applyTheme(effectiveTheme()); previewListeners.forEach((l) => l()); }
+/** Saves the previewed design; the one before goes into the history (for "Rückgängig"). */
+export function commitPreview(): boolean {
+  if (!preview) return false;
+  const next = preview.theme;
+  pushDesignHistory(prefs.theme);
+  preview = null;
+  setPrefs((p) => ({ ...p, theme: next }));
+  previewListeners.forEach((l) => l());
+  return true;
+}
+export function getPreview() { return preview; }
+export function usePreview() { return useSyncExternalStore((fn) => { previewListeners.add(fn); return () => previewListeners.delete(fn); }, () => preview); }
+
+/** Earlier saved designs, newest last (at most 10); the very first one is kept as "Ausgangsdesign". */
+export function designHistory(): Theme[] { return (readJson<Theme[]>(HISTORY_KEY) ?? []).filter((x) => x && typeof x === "object"); }
+function pushDesignHistory(t: Theme) {
+  if (!readJson(ORIGINAL_KEY)) writeJson(ORIGINAL_KEY, t);
+  writeJson(HISTORY_KEY, [...designHistory(), t].slice(-10));
+}
+/** Back to the design before the last saved change. */
+export function undoDesign(): boolean {
+  const h = designHistory();
+  const prev = h.pop();
+  if (!prev) return false;
+  writeJson(HISTORY_KEY, h);
+  preview = null;
+  setPrefs((p) => ({ ...p, theme: prev }));
+  previewListeners.forEach((l) => l());
+  return true;
+}
+/** The design from before the first change through the design editor (or the Nexus default). */
+export function originalDesign(): Theme { return readJson<Theme>(ORIGINAL_KEY) ?? DEFAULT_THEME; }
+export function restoreOriginalDesign() {
+  pushDesignHistory(prefs.theme);
+  preview = null;
+  setPrefs((p) => ({ ...p, theme: originalDesign() }));
+  previewListeners.forEach((l) => l());
+}
 export function setProfileTheme(pt: ProfileTheme | null | undefined) {
   const next = pt ?? null;
   if (JSON.stringify(next) === JSON.stringify(profileTheme)) return;
@@ -108,7 +159,14 @@ export function applyTheme(t: Theme) {
     // Built-in scenes are landscapes: keep the ground visible on tall phone screens.
     "--bg-pos": !t.bgImage && t.bgScene ? "center bottom" : "center",
   };
+  if (t.border === "bold") { vars["--border"] = dark ? "rgba(255,255,255,0.18)" : "rgba(15,23,42,0.22)"; vars["--border-strong"] = dark ? "rgba(255,255,255,0.32)" : "rgba(15,23,42,0.38)"; }
   for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
+  // Shadows: "soft" is the stylesheet's own value.
+  if (t.shadow === "none") { root.style.setProperty("--shadow", "none"); root.style.setProperty("--glow", "none"); }
+  else if (t.shadow === "strong") { root.style.setProperty("--shadow", dark ? "0 18px 44px -10px rgba(0,0,0,0.8)" : "0 18px 40px -12px rgba(15,23,42,0.4)"); root.style.removeProperty("--glow"); }
+  else { root.style.removeProperty("--shadow"); root.style.removeProperty("--glow"); }
+  root.dataset.density = t.density ?? "normal";
+  root.dataset.touch = t.touch ? "1" : "0";
   root.dataset.mode = t.mode;
   // Landscapes with a sky colour are anchored at the bottom on phones; patterns (comic, arcade, space) stay full-screen.
   const scene = !t.bgImage && t.bgScene ? BG_SCENES.find((s) => s.id === t.bgScene) : undefined;

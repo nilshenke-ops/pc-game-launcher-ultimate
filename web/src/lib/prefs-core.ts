@@ -19,6 +19,12 @@ export interface Theme {
   bgImage?: string | null; // data URL or https URL
   bgScene?: string | null; // built-in background (public/backgrounds/<id>.svg)
   bgDim: number; // 0 .. 0.9
+  /** Spacing inside cards and between elements. */
+  density?: "compact" | "normal" | "roomy";
+  /** Bigger buttons and fields (iPad, touch). */
+  touch?: boolean;
+  shadow?: "none" | "soft" | "strong";
+  border?: "subtle" | "bold";
 }
 
 /**
@@ -108,7 +114,10 @@ export const PRESETS: Record<string, Palette & { mode: "dark" | "light"; atmo?: 
   retro: { name: "Retro Arcade", primary: "#f472b6", accent: "#facc15", background: "#12061f", mode: "dark", atmo: { bg: "grid", launch: "glitch" } },
   minimal: { name: "Minimal Dark", primary: "#e5e7eb", accent: "#9ca3af", background: "#0a0a0b", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
   glass: { name: "Glass", primary: "#93c5fd", accent: "#c4b5fd", background: "#0b1220", mode: "dark", atmo: { bg: "waves", launch: "hologram", surfaceAlpha: 0.45 } },
-  mono: { name: "Mono", primary: "#f5f5f5", accent: "#a3a3a3", background: "#111111", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
+  mono: { name: "Schwarz-Weiß", primary: "#f5f5f5", accent: "#a3a3a3", background: "#111111", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
+  minecraft: { name: "Minecraft", primary: "#4ade80", accent: "#b45309", background: "#0a120a", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
+  purple: { name: "Purple Gaming", primary: "#a855f7", accent: "#6366f1", background: "#0b0716", mode: "dark", atmo: { bg: "particles", launch: "neon-portal" } },
+  blue: { name: "Blue Gaming", primary: "#3b82f6", accent: "#22d3ee", background: "#050b1a", mode: "dark", atmo: { bg: "particles", launch: "hologram" } },
 };
 
 export const DEFAULT_THEME: Theme = {
@@ -277,6 +286,10 @@ export function sanitizePrefs(input: unknown): Prefs {
     bgImage: typeof t.bgImage === "string" && (t.bgImage.startsWith("data:image/") || t.bgImage.startsWith("https://")) && t.bgImage.length < 1_200_000 ? t.bgImage : null,
     bgScene: typeof t.bgScene === "string" && BG_SCENES.some((s) => s.id === t.bgScene) ? t.bgScene : null,
     bgDim: num(t.bgDim, 0, 0.9, d.theme.bgDim),
+    density: t.density === "compact" || t.density === "roomy" ? t.density : "normal",
+    touch: !!t.touch,
+    shadow: t.shadow === "none" || t.shadow === "strong" ? t.shadow : "soft",
+    border: t.border === "bold" ? "bold" : "subtle",
   };
   const ids = new Set(ALL_WIDGETS.map((w) => w.id));
   const layouts = Array.isArray(p.layouts)

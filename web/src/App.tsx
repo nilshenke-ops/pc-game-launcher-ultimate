@@ -1,3 +1,4 @@
+import { DesignPreviewBar } from "./components/design-preview-bar";
 import { Component, lazy, Suspense, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { getRoom, subscribeRoom } from "./lib/room";
 import { startDesignAutoSave } from "./lib/design-account";
@@ -197,6 +198,7 @@ export default function App() {
       <div className="app-bg" aria-hidden><div className="img" /><div className="grid" /><AnimatedBackground /></div>
       <AccessGate><Gate /></AccessGate>
       <Toasts />
+      <DesignPreviewBar />
       <LaunchCinema />
       <ConfirmHost />
     </Router>

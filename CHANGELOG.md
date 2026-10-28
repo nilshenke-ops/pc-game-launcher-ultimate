@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.74.0 – 2026-10-28
+### Neu
+- KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten
+- Vorschau vor dem Speichern: Änderungen werden erst angezeigt („Design-Vorschau – noch nicht gespeichert“), dann „Übernehmen“ oder „Verwerfen“ (Leiste unten oder per Chat); „Letzte Designänderung rückgängig“ und „Ursprüngliches Design wiederherstellen“ (Chat und Einstellungen → Design)
+- Neue Themes: Minecraft, Purple Gaming, Blue Gaming (zusätzlich zu Neon, Minimal Dark, Cyberpunk, Schwarz-Weiß, Light Mode …)
+- Einstellungen → Darstellung: Abstände (kompakt/normal/luftig), Schatten (keine/weich/kräftig), Rahmen (dezent/deutlich), große Schaltflächen für iPad/Touch
+### Verbessert
+- Auch die bisherigen Design-Befehle („Mach das Design hell“, „Hintergrund Weltall“ …) zeigen jetzt zuerst eine Vorschau statt sofort zu speichern
+- Lesbarkeit geschützt: zu schwache Akzentfarben werden angepasst oder nicht übernommen (mit Hinweis); Menü, Widgets und Funktionen ändert der Design-Editor nie
+
 ## 2.73.0 – 2026-10-28
 ### Neu
 - JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt

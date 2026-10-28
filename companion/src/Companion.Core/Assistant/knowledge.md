@@ -522,3 +522,6 @@ Steuerung → Automatisierungen → „Vorlagen“ oder „Neue Regel“. Auslö
 
 ## JARVIS: Challenges und Gaming-Gedächtnis
 Challenges im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „sehr schwere Elden-Ring-Challenge ohne Spoiler“, „nur 20 Minuten“, „mit Freunden“, „schwieriger“, „leichter“, „noch eine“, „Challenge geschafft“, „Bewerte … mit 4 Sternen“. Aufgaben aus dem geprüften Katalog des Gaming-Bingos; gespeichert unter Was spiele ich? → Challenges. Gedächtnis: „Merke dir, dass ich als Nächstes … (Spiel im Satz)“, „Wo war ich zuletzt in X?“, „Was sollte ich heute in X machen?“, „Zeig mir alle offenen Projekte“, „Was weißt du über mich als Gamer?“. Spielstände werden nicht ausgelesen.
+
+## KI-Design-Editor
+JARVIS: „Mach mein Dashboard etwas heller“, „Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, „minimalistischer“, „runder“, „mehr Abstand“, „keine Schatten“. Erst Vorschau, dann „Übernehmen“ oder „Verwerfen“; „Letzte Designänderung rückgängig“, „Ursprüngliches Design wiederherstellen“. Auch unter Einstellungen → Design. Themes: Neon, Minimal Dark, Cyberpunk, Minecraft, Purple Gaming, Blue Gaming, Schwarz-Weiß, Light Mode u. a.
