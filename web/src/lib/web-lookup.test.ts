@@ -5,7 +5,7 @@ const ls = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, 
 vi.stubGlobal("localStorage", ls);
 vi.stubGlobal("window", { localStorage: ls, sessionStorage: ls });
 
-const { lookupIntent, topicOf, relevant, lookup, lookupAnswer, fromMemory, learnedReply, webPermission, setWebPermission, toEnglish, contextOf, introFromHtml, askPermission, score, sourcesFor } = await import("./web-lookup");
+const { lookupIntent, topicOf, relevant, lookup, lookupAnswer, fromMemory, learnedReply, webPermission, setWebPermission, toEnglish, contextOf, introFromHtml, askPermission, score, sourcesFor, aiAnswer } = await import("./web-lookup");
 const { GAMES, gameMentioned } = await import("./knowledge-sources");
 const { _resetForTests } = await import("./journal");
 const { openQuestions, learnedAll } = await import("./jarvis-memory");
@@ -185,6 +185,18 @@ describe("Viele Quellen", () => {
     expect(a.text).toContain("Beste Quelle: Super User (Stack Exchange, PC-Hilfe) – Antwort von Tech, 40 Stimmen, akzeptiert");
     expect(a.links[0].url).toBe("https://superuser.com/a/9");
     expect(calls.some((c) => c.includes("site=superuser") && c.includes("graphics%20card"))).toBe(true);
+  });
+});
+
+describe("Kostenlose KI ohne Quelle", () => {
+  it("nur auf Tipp, klar markiert, nicht als Wissen gemerkt", async () => {
+    const i = lookupIntent("Was ist ein Blorbfisch?")!;
+    const a = await aiAnswer(i, { call: async <T,>(m: string, p?: unknown): Promise<T> => { expect(m).toBe("assistant.freeAnswer"); expect(p).toEqual({ question: "Was ist ein Blorbfisch?" }); return { answer: "Das kenne ich nicht.", sure: false, provider: "Gemini", model: "gemini-3.5-flash-lite" } as T; } });
+    expect(a.text).toMatch(/^⚠ KI-Antwort von Gemini \(kostenlos\) – ohne Quelle, nicht nachgeprüft/);
+    expect(a.text).toContain("Die KI ist sich selbst nicht sicher");
+    expect(learnedAll()).toHaveLength(0);
+    const none = await aiAnswer(i, { call: async () => { throw Object.assign(new Error("x"), { code: "assistant-local" }); } });
+    expect(none.text).toContain("Gemini-Schlüssel");
   });
 });
 

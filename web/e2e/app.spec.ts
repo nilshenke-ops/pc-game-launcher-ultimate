@@ -1623,6 +1623,9 @@ test("JARVIS schlägt Unbekanntes nach: fragt vorher, Spiel-Wiki mit Quelle, mer
   await expect(last()).toContainText("Darf ich im Internet nachsehen?");
   await last().getByRole("button", { name: "Ja, nachsehen" }).click();
   await expect(last()).toContainText("ich erfinde keine Antwort");
+  // With the PC: the free AI may answer without a source – only on a tap. This test PC has no AI set up: said honestly.
+  await last().getByRole("button", { name: "KI fragen (ohne Quelle)" }).click();
+  await expect(last()).toContainText("Am PC ist noch keine KI eingerichtet");
   await say.fill("Welche Fragen konntest du nicht beantworten?"); await say.press("Enter");
   await expect(last()).toContainText("Was ist ein Blorbfisch?");
   // Several sources at once, the best wins: Skyrim (not in the catalog) → UESP, Fandom, Arqade, Wikipedia.

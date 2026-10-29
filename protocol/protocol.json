@@ -48,6 +48,7 @@
     "assistant.status": "view",
     "assistant.ask": "view",
     "assistant.summarize": "view",
+    "assistant.freeAnswer": "view",
     "assistant.bingo": "view",
     "assistant.bingoPlan": "view",
     "assistant.reset": "view",

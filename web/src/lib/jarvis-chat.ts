@@ -22,7 +22,7 @@ const OFF_TOPIC = () => t("Ich bin JARVIS Gaming – ich kümmere mich nur um de
 const CODE = () => t("Neue Funktionen oder Seiten sind Änderungen am Programmcode – die mache ich nicht nebenbei im Chat, und meinen eigenen Code ändere ich nie. Dafür gibt es den Entwicklungsweg mit Versionskontrolle, Tests und einem Update über die Update-Zentrale. Innerhalb der App (Startseiten, Widgets, Leiste, Kategorien, Profile, Design) ändere ich dagegen direkt, was du sagst.");
 const opens = (s: string) => /\b(oeffne|öffne|offne|zeig|zeige|geh|gehe|wechsel)\b/i.test(s);
 
-export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean }
+export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean }
 
 export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<JarvisTurn> {
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
@@ -96,8 +96,8 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     // A question ("Was ist ein Creeper in Minecraft?") is not an order to open a page.
     const site = setup || pt || ci || gi || ri || chi || di || pfi || lke || lk?.kind === "question" ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (lke) {
-      const a = await lookupFlow(lke, ctx);
+    if (lke || (ctx.ai && lk)) {
+      const a = await lookupFlow((lke ?? lk)!, ctx);
       r = { text: a.text, ok: a.ok };
       if (a.source) sources.add(a.source);
       buttons.push(...a.actions);
@@ -278,6 +278,7 @@ function mentions(text: string, topic: string): boolean {
 /** Known from earlier → from memory; otherwise look it up (after permission) – nothing is guessed. */
 async function lookupFlow(i: import("./web-lookup").LookupIntent, ctx: JarvisCtx): Promise<{ text: string; ok: boolean | null; source?: string; actions: AssistantAction[] }> {
   const w = await import("./web-lookup");
+  if (ctx.ai) { const a = await w.aiAnswer(i, { call: (m, p) => client.call(m, p) }); return { text: a.text, ok: a.ok, source: a.source, actions: [] }; }
   const known = w.fromMemory(i);
   const links = (l: { label: string; url: string }[]): AssistantAction[] => l.map((x) => ({ kind: "openUrl", label: x.label, params: { url: x.url } }));
   if (known) { const a = w.learnedReply(known); return { text: a.text, ok: a.ok, source: a.source, actions: links(a.links) }; }
@@ -289,7 +290,9 @@ async function lookupFlow(i: import("./web-lookup").LookupIntent, ctx: JarvisCtx
   if (ctx.lookup === true || perm === "always" || i.kind === "explicit") {
     const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
     const a = await w.lookupAnswer(i, fetch, online ? { call: (m, p) => client.call(m, p) } : undefined);
-    return { text: a.text, ok: a.ok, source: a.source, actions: links(a.links) };
+    // Nothing found: the free AI at the PC may answer from its own knowledge – only on a tap, marked "ohne Quelle".
+    const ai: AssistantAction[] = a.ok === null && online && !a.ask ? [{ kind: "aiAnswer", label: t("KI fragen (ohne Quelle)"), params: { question: i.raw } }] : [];
+    return { text: a.text, ok: a.ok, source: a.source, actions: [...ai, ...links(a.links)] };
   }
   const q = w.askPermission(i);
   return { text: q.text, ok: null, actions: [

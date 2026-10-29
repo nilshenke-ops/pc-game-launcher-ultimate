@@ -295,7 +295,7 @@ export async function lookupAnswer(i: LookupIntent, f: Fetch = fetch, pc?: PcHel
   const list = top.map((x, n) => `[${n + 1}] ${x.source}: ${x.title}`).join("\n");
   let text: string;
   if (summary?.answered) {
-    text = `JARVIS – ${i.topic}${i.game ? ` (${i.game})` : ""}\n${summary.answer}\n\nQuellen (beste: ${sourceLabel(best)}):\n${list}\n(Zusammengefasst von ${summary.provider === "claude" ? "Claude" : summary.provider === "ollama" ? "deiner lokalen KI" : summary.provider} nur aus diesen Quellen.)`;
+    text = `JARVIS – ${i.topic}${i.game ? ` (${i.game})` : ""}\n${summary.answer}\n\nQuellen (beste: ${sourceLabel(best)}):\n${list}\n(Zusammengefasst von ${providerLabel(summary.provider)} nur aus diesen Quellen.)`;
   } else {
     const en = best.lang === "en" ? "\n(Quelle auf Englisch – wörtlich übernommen, nicht übersetzt.)" : "";
     const note = summary && !summary.answered ? "\nDie Quellen beantworten die Frage nicht direkt – das hier kommt ihr am nächsten." : "";
@@ -307,3 +307,17 @@ export async function lookupAnswer(i: LookupIntent, f: Fetch = fetch, pc?: PcHel
   const links = [best, ...others.slice(0, 2)].map((x) => ({ label: `${sourceLabel(x)}: ${x.title}`.slice(0, 60), url: x.url }));
   return { text, ok: true, links: [...links, ...videoLinks, ...social], source: sourceLabel(best) };
 }
+
+const providerLabel = (p: string) => ({ claude: "Claude", ollama: "deiner lokalen KI", gemini: "Gemini (kostenlos)", deepseek: "DeepSeek" } as Record<string, string>)[p.toLowerCase()] ?? p;
+
+/** "KI fragen (ohne Quelle)": the AI at the PC answers from its own knowledge – shown as unchecked, never saved as knowledge. */
+export async function aiAnswer(i: LookupIntent, pc: PcHelp): Promise<LookupReply> {
+  try {
+    const r = await pc.call<{ answer: string; sure: boolean; provider: string; model: string }>("assistant.freeAnswer", { question: i.raw });
+    return { text: `⚠ KI-Antwort von ${providerLabel(r.provider)} – ohne Quelle, nicht nachgeprüft, kann falsch sein:\n${r.answer}${r.sure ? "" : "\n\n(Die KI ist sich selbst nicht sicher.)"}\n\nDas merke ich mir nicht als Wissen – dafür brauche ich eine Quelle.`, ok: null, links: [], source: providerLabel(r.provider) };
+  } catch (e) {
+    const code = (e as { code?: string }).code;
+    return { text: code === "assistant-local" ? "Am PC ist noch keine KI eingerichtet. Kostenlos geht es mit einem Gemini-Schlüssel (KI-Assistent → „Kostenlose KI für JARVIS-Recherche“) oder mit Ollama auf dem PC." : `Die KI konnte nicht antworten: ${(e as Error).message}`, ok: code === "assistant-local" ? null : false, links: [] };
+  }
+}
+

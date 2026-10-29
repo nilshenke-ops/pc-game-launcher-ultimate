@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.80.0 – 2026-10-29
+### Neu
+- Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit)
+- Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat)
+- „KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)
+- Verständliche Fehlermeldungen für Gemini: falscher Schlüssel, unbekanntes Modell, kostenloses Kontingent aufgebraucht, Region nicht verfügbar
+### Hinweise
+- Die Google-Suche über Gemini ist im kostenlosen Tarif nicht enthalten und wird nicht genutzt; im kostenlosen Tarif darf Google die gesendeten Texte (Frage + öffentliche Wiki-Stellen) zur Produktverbesserung nutzen
+- ChatGPT hat keinen kostenlosen Zugang für Apps; die kostenlose ChatGPT-Webseite automatisch zu bedienen erlauben die OpenAI-Bedingungen nicht – deshalb nicht eingebaut
+
 ## 2.79.0 – 2026-10-29
 ### Neu
 - JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts …

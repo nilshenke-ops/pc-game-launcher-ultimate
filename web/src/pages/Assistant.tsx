@@ -24,6 +24,40 @@ interface Status {
   examples: string[];
   bingoAi?: "assistant" | "deepseek"; bingoProvider?: string | null;
   deepSeek?: { keySet: boolean; model: string; monthlyRequests: number; used: number; inputTokens: number; outputTokens: number };
+  gemini?: { keySet: boolean; model: string; monthlyRequests: number; used: number }; researchAi?: string | null;
+}
+
+/** Free AI for JARVIS research: Gemini with an own key from Google AI Studio (free tier, only entered at the PC). */
+function ResearchAiCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
+  const gm = st.gemini;
+  const [key, setKey] = useState("");
+  const [model, setModel] = useState(gm?.model ?? "gemini-3.5-flash-lite");
+  const [cap, setCap] = useState(String(gm?.monthlyRequests ?? 1000));
+  if (!gm) return null;
+  return (
+    <Card title={t("Kostenlose KI für JARVIS-Recherche (Gemini)")} icon={<Sparkles size={18} />} className="flat">
+      <div className="stack-sm">
+        <p className="small muted">{t("Fasst die Quellen, die JARVIS findet, auf Deutsch zusammen (mit Quellennummern) und beantwortet auf deinen Tipp „Gemini fragen“ Fragen, zu denen keine Quelle passt – dann deutlich als „ohne Quelle“ markiert. Gerade aktiv: {p}.", { p: st.researchAi ?? t("keine KI – JARVIS zeigt die beste Fundstelle") })}</p>
+        <p className="small muted">{t("Ist als Modus oben Claude oder die lokale KI (Ollama) gewählt, schreibt diese – Gemini springt nie heimlich ein.")}</p>
+        {atPc ? (
+          <form className="row" onSubmit={(e) => { e.preventDefault(); if (key.trim()) void save({ geminiKey: key.trim() }, t("Schlüssel gespeichert")).then(() => setKey("")); }}>
+            <Field label={gm.keySet ? t("Gemini-Schlüssel (gespeichert – neu eintragen zum Ersetzen)") : t("Gemini-API-Schlüssel")} hint={t("Kostenlos auf aistudio.google.com → „Get API key“ (Google-Konto nötig, keine Zahlungsdaten). Wird nur auf diesem PC verschlüsselt gespeichert, nie angezeigt und nie ins Backup geschrieben.")}>
+              <input className="input mono" type="password" autoComplete="off" value={key} placeholder="AIza…" onChange={(e) => setKey(e.target.value)} />
+            </Field>
+            <Button type="submit" icon={<KeyRound size={16} />} disabled={!key.trim()}>{t("Speichern")}</Button>
+            {gm.keySet && <Button variant="danger" onClick={() => void save({ geminiKey: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
+          </form>
+        ) : <p className="small muted">{gm.keySet ? t("Ein Gemini-Schlüssel ist auf dem PC gespeichert.") : t("Den Gemini-Schlüssel trägst du direkt am PC ein – er verlässt den PC nie.")}</p>}
+        <form className="row" onSubmit={(e) => { e.preventDefault(); void save({ geminiModel: model.trim(), geminiMonthlyRequests: Number(cap) || 0 }); }}>
+          <Field label={t("Modell")} hint={t("„gemini-3.5-flash-lite“ ist laut Google das schnellste kostenlose Modell. Es wird genau dieses Modell angefragt – nie heimlich ein anderes.")}><input className="input mono" value={model} maxLength={60} onChange={(e) => setModel(e.target.value)} /></Field>
+          <Field label={t("Höchstens Anfragen pro Monat")}><input className="input" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} /></Field>
+          <Button type="submit">{t("Übernehmen")}</Button>
+        </form>
+        <p className="small">{t("Diesen Monat: {n} von {m} Gemini-Anfragen.", { n: gm.used, m: gm.monthlyRequests })}</p>
+        <p className="tiny muted">{t("Gut zu wissen: Im kostenlosen Tarif darf Google die gesendeten Texte laut eigener Preisseite zur Verbesserung seiner Produkte nutzen. Gesendet werden nur deine Frage und die gefundenen Textstellen aus öffentlichen Wikis – keine Daten von deinem PC. Die Google-Suche über Gemini ist nicht kostenlos und wird nicht genutzt. ChatGPT hat keinen kostenlosen Zugang für Apps; die kostenlose ChatGPT-Webseite automatisch zu bedienen erlauben die OpenAI-Bedingungen nicht.")}</p>
+      </div>
+    </Card>
+  );
 }
 
 /** Which AI writes bingo tasks – the assistant's own (above) or DeepSeek with an own key (only entered at the PC). */
@@ -134,6 +168,7 @@ function SettingsDialog({ st, onClose }: { st: Status; onClose: () => void }) {
             options={[{ value: "local", label: t("Lokal (0 €)") }, { value: "ollama", label: t("Lokale KI (0 €)") }, { value: "claude", label: t("Claude (kostenpflichtig)") }]} />
         </Field>
         {view === "ollama" && <OllamaCard st={st} atPc={atPc} save={save} />}
+        <ResearchAiCard st={st} atPc={atPc} save={save} />
         <BingoAiCard st={st} atPc={atPc} save={save} />
         {view === "claude" && !st.keySet && <Banner kind="info">{t("Claude kostet pro Anfrage Geld (dein Anthropic-Konto). Für 0 € nimm „Lokal“ oder „Lokale KI“.")}</Banner>}
         {view === "claude" && <Card title={t("Claude")} icon={<Sparkles size={18} />} className="flat">
@@ -180,7 +215,7 @@ function ChatBingo({ id }: { id: string }) {
   return <div className="as-bingo"><b className="small">{e.data.title}</b><BingoBoardLazy e={e} /></div>;
 }
 
-function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string) => void }) {
+function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean) => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
   // Settings before a set-up change, to undo it with one tap.
@@ -192,6 +227,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"]
     // A source or offer link (https only) – opened in a new tab, nothing else happens.
     if (a.kind === "openUrl" && typeof a.params?.url === "string" && /^https:\/\//.test(a.params.url)) { window.open(a.params.url, "_blank", "noopener,noreferrer"); return; }
     // Answer to "Soll ich im Internet nachsehen?" for a bingo.
+    if (a.kind === "aiAnswer" && a.params) { setDone({ [i]: true }); onLookup(String(a.params.question ?? ""), true, a.label, true); return; }
     if (a.kind === "lookupChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/web-lookup").then((m) => m.setWebPermission("always")); onLookup(String(a.params.question ?? ""), a.params.ok === true, a.label); return; }
     if (a.kind === "bingoChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/bingo-chat").then((m) => m.setWebAlways(true)); onBingo(String(a.params.question ?? ""), a.params.web === true, a.label); return; }
     if (a.kind === "jarvisForget" && a.params) {
@@ -264,7 +300,7 @@ export default function Assistant() {
 
   useEffect(() => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(chat)); } catch { /* private mode */ } end.current?.scrollIntoView({ block: "end" }); }, [chat]);
 
-  const ask = async (q: string, extra: { bingoWeb?: boolean; lookup?: boolean; shown?: string } = {}) => {
+  const ask = async (q: string, extra: { bingoWeb?: boolean; lookup?: boolean; ai?: boolean; shown?: string } = {}) => {
     const question = q.trim();
     if (!question || busy) return;
     setText("");
@@ -275,7 +311,7 @@ export default function Assistant() {
         // JARVIS: understands the request, runs named gaming actions and website changes directly, reports the real result.
         const { jarvisAsk } = await import("../lib/jarvis-chat");
         const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup });
+        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai });
         setChat((c) => ({ conversationId: r.conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply: r.reply, bingoId: r.bingoId, undo: r.undo }] }));
         speak(r.reply.text);
         if (r.navigate) navTo(r.navigate);
@@ -361,7 +397,7 @@ export default function Assistant() {
               <div className="chips">{(jv.enabled ? jarvisChips() : online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
-          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label) => void ask(q, { lookup: ok, shown: label })} />)}
+          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label, ai) => void ask(q, { lookup: ok, ai, shown: label })} />)}
           {busy && <div className="as-turn bot"><Bot size={18} aria-hidden /><div className="as-bubble as-typing" aria-label={t("Antwort wird erstellt")}><i /><i /><i /></div></div>}
           <div ref={end} />
         </div>

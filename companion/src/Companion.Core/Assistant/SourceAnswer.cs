@@ -54,12 +54,45 @@ public static class SourceAnswer
     public static string Prompt(Request r) =>
         $"Frage: {r.Question}\n\n" + string.Join("\n\n", r.Passages.Select((p, i) => $"[{i + 1}] {p.Title} ({p.Source})\n{p.Text}"));
 
-    /// <summary>Checked answer: text without links or markup, source numbers only within range.</summary>
-    public static (bool answered, string answer, int best) Parse(string json, int count)
+    /// <summary>
+    /// "Gemini fragen (ohne Quelle)": only when the user taps it after no source matched. The answer comes from the AI's own
+    /// knowledge and is shown marked as unchecked; the AI has to say when it is not sure instead of guessing.
+    /// </summary>
+    public const string FreeSystem =
+        "Du bist JARVIS, ein Gaming-Assistent. Beantworte die Frage aus deinem Wissen auf Deutsch in höchstens 5 kurzen Sätzen. " +
+        "Erfinde nichts: Weißt du es nicht sicher (z. B. sehr neue Spiele, Patches, Zahlenwerte), sag das ehrlich und setze \"sure\" auf false. " +
+        "Keine Links. Gib nur JSON zurück: {\"answer\": \"…\", \"sure\": true|false}";
+
+    public static string CheckQuestion(string? q)
+    {
+        var t = (q ?? "").Trim();
+        if (t.Length is < 3 or > 300 || t.Any(char.IsControl)) throw new RpcException("invalid-params", "Frage mit 3–300 Zeichen angeben.");
+        return t;
+    }
+
+    public static (string answer, bool sure) ParseFree(string json)
+    {
+        using var doc = ParseObject(json);
+        var root = doc.RootElement;
+        var text = root.TryGetProperty("answer", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "";
+        text = Regex.Replace(text, @"https?://\S+|<[^>]*>|[`*_#]", "").Trim();
+        if (text.Length > 1200) text = text[..1200].TrimEnd() + " …";
+        if (text.Length < 5) throw new RpcException("assistant-format", "Die KI hat keine verwertbare Antwort geliefert.");
+        return (text, root.TryGetProperty("sure", out var s) && s.ValueKind == JsonValueKind.True);
+    }
+
+    static JsonDocument ParseObject(string json)
     {
         var m = Regex.Match(json ?? "", @"\{[\s\S]*\}");
         if (!m.Success) throw new RpcException("assistant-format", "Die KI hat keine verwertbare Antwort geliefert.");
-        using var doc = JsonDocument.Parse(m.Value);
+        try { return JsonDocument.Parse(m.Value); }
+        catch (JsonException) { throw new RpcException("assistant-format", "Die KI hat keine verwertbare Antwort geliefert."); }
+    }
+
+    /// <summary>Checked answer: text without links or markup, source numbers only within range.</summary>
+    public static (bool answered, string answer, int best) Parse(string json, int count)
+    {
+        using var doc = ParseObject(json);
         var root = doc.RootElement;
         var answered = root.TryGetProperty("answered", out var a) && a.ValueKind == JsonValueKind.True;
         var text = root.TryGetProperty("answer", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "";

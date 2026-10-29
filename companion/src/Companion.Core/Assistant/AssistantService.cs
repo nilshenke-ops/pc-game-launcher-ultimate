@@ -19,6 +19,8 @@ public sealed class AssistantUsageMonth
     public int DeepSeekRequests { get; set; }
     public long DeepSeekInputTokens { get; set; }
     public long DeepSeekOutputTokens { get; set; }
+    /// <summary>Gemini (free tier with the user's own key): counted against the user's own monthly cap.</summary>
+    public int GeminiRequests { get; set; }
 }
 
 public sealed class AssistantFile
@@ -43,6 +45,11 @@ public sealed class AssistantFile
     public string DeepSeekModel { get; set; } = DeepSeekClient.DefaultModel;
     /// <summary>At most this many DeepSeek requests per month (protects against unexpected cost).</summary>
     public int DeepSeekMonthlyRequests { get; set; } = 200;
+    /// <summary>Google Gemini API key (free tier from Google AI Studio), protected like the other keys. Never returned, never in a backup.</summary>
+    public string? GeminiKeyProtected { get; set; }
+    public string GeminiModel { get; set; } = GeminiClient.DefaultModel;
+    /// <summary>At most this many Gemini requests per month (Google also limits the free tier per minute and day).</summary>
+    public int GeminiMonthlyRequests { get; set; } = 1000;
 }
 
 /// <summary>Entry point for the assistant: chooses local or Claude, keeps conversations, counts cost against the monthly limit.</summary>
@@ -57,13 +64,14 @@ public sealed class AssistantService
     public ClaudeAssistant Claude { get; }
     public OllamaAssistant Ollama { get; }
     public DeepSeekClient DeepSeek { get; }
+    public GeminiClient Gemini { get; }
     readonly SemaphoreSlim _bingoBusy = new(1, 1);
 
     sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, GeminiClient? gemini = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
@@ -71,6 +79,7 @@ public sealed class AssistantService
         Claude = claude ?? new ClaudeAssistant(data);
         Ollama = ollama ?? new OllamaAssistant(data);
         DeepSeek = deepSeek ?? new DeepSeekClient();
+        Gemini = gemini ?? new GeminiClient();
     }
 
     string MonthKey => _now().ToString("yyyy-MM");
@@ -92,6 +101,8 @@ public sealed class AssistantService
             bingoAi = f.BingoAi,
             deepSeek = new { keySet = f.DeepSeekKeyProtected != null, model = f.DeepSeekModel, monthlyRequests = f.DeepSeekMonthlyRequests, used = month.DeepSeekRequests, inputTokens = month.DeepSeekInputTokens, outputTokens = month.DeepSeekOutputTokens },
             bingoProvider = BingoProviderName(f),
+            gemini = new { keySet = f.GeminiKeyProtected != null, model = f.GeminiModel, monthlyRequests = f.GeminiMonthlyRequests, used = month.GeminiRequests },
+            researchAi = ResearchProvider(f)?.label,
         };
     }
 
@@ -100,6 +111,7 @@ public sealed class AssistantService
         public string? Mode { get; set; } public string? Model { get; set; } public bool? LocalFirst { get; set; } public double? MonthlyLimitUsd { get; set; } public string? ApiKey { get; set; }
         public string? OllamaUrl { get; set; } public string? OllamaModel { get; set; } public bool? OllamaWhileGaming { get; set; }
         public string? BingoAi { get; set; } public string? DeepSeekKey { get; set; } public string? DeepSeekModel { get; set; } public int? DeepSeekMonthlyRequests { get; set; }
+        public string? GeminiKey { get; set; } public string? GeminiModel { get; set; } public int? GeminiMonthlyRequests { get; set; }
     }
 
     /// <summary>Which AI would write bingo tasks right now (null = none – the app then uses its own catalog).</summary>
@@ -123,10 +135,14 @@ public sealed class AssistantService
     /// <param name="atPc">The key may only be set or removed at the PC itself (it costs money and leaves the home network).</param>
     public object Configure(Config c, bool atPc)
     {
-        if ((c.ApiKey != null || c.DeepSeekKey != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
+        if ((c.ApiKey != null || c.DeepSeekKey != null || c.GeminiKey != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
         if (c.BingoAi is not (null or "assistant" or "deepseek")) throw new RpcException("invalid-params", "Bingo-KI muss „assistant“ oder „deepseek“ sein.");
         if (c.DeepSeekModel != null && !Regex.IsMatch(c.DeepSeekModel, @"^[A-Za-z0-9._:-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger DeepSeek-Modellname.");
         if (c.DeepSeekMonthlyRequests is < 0 or > 5000) throw new RpcException("invalid-params", "DeepSeek-Anfragen pro Monat: 0–5000.");
+        if (c.GeminiModel != null && !Regex.IsMatch(c.GeminiModel, @"^[a-z0-9.-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger Gemini-Modellname (z. B. gemini-3.5-flash-lite).");
+        if (c.GeminiMonthlyRequests is < 0 or > 50000) throw new RpcException("invalid-params", "Gemini-Anfragen pro Monat: 0–50000.");
+        var gmKey = c.GeminiKey?.Trim();
+        if (!string.IsNullOrEmpty(gmKey) && !GeminiClient.LooksLikeKey(gmKey)) throw new RpcException("invalid-params", "Das sieht nicht wie ein Gemini-API-Schlüssel aus (aus Google AI Studio, beginnt mit „AIza“).");
         var dsKey = c.DeepSeekKey?.Trim();
         if (!string.IsNullOrEmpty(dsKey) && (dsKey.Length is < 20 or > 200 || dsKey.Any(char.IsWhiteSpace) || !dsKey.StartsWith("sk-") || dsKey.StartsWith("sk-ant-")))
             throw new RpcException("invalid-params", "Das sieht nicht wie ein DeepSeek-API-Schlüssel aus (beginnt mit „sk-“).");
@@ -159,6 +175,9 @@ public sealed class AssistantService
             }
             if (c.DeepSeekModel != null) f.DeepSeekModel = c.DeepSeekModel;
             if (c.DeepSeekMonthlyRequests != null) f.DeepSeekMonthlyRequests = c.DeepSeekMonthlyRequests.Value;
+            if (c.GeminiModel != null) f.GeminiModel = c.GeminiModel;
+            if (c.GeminiMonthlyRequests != null) f.GeminiMonthlyRequests = c.GeminiMonthlyRequests.Value;
+            if (gmKey != null) f.GeminiKeyProtected = gmKey.Length == 0 ? null : _secrets.Protect(gmKey);
             if (dsKey != null)
             {
                 f.DeepSeekKeyProtected = dsKey.Length == 0 ? null : _secrets.Protect(dsKey);
@@ -172,6 +191,7 @@ public sealed class AssistantService
         });
         if (key != null) Log.Info("assistant", key.Length == 0 ? "Claude-Schlüssel entfernt." : "Claude-Schlüssel gespeichert (geschützt)."); // never the key itself
         if (dsKey != null) Log.Info("assistant", dsKey.Length == 0 ? "DeepSeek-Schlüssel entfernt." : "DeepSeek-Schlüssel gespeichert (geschützt).");
+        if (gmKey != null) Log.Info("assistant", gmKey.Length == 0 ? "Gemini-Schlüssel entfernt." : "Gemini-Schlüssel gespeichert (geschützt).");
         _hub.Changed("assistant");
         return Status();
     }
@@ -386,50 +406,92 @@ public sealed class AssistantService
     readonly SemaphoreSlim _summaryBusy = new(1, 1);
 
     /// <summary>
-    /// A German answer written only from the passages JARVIS found (see <see cref="SourceAnswer"/>). Uses the AI chosen at the
-    /// PC: Claude or the local AI (Ollama) when that is the assistant mode, otherwise DeepSeek when its key is set. Limits apply.
+    /// Which AI writes JARVIS research answers: Claude or the local AI (Ollama) when that is the assistant mode, otherwise
+    /// Gemini (free tier) when its key is set, otherwise DeepSeek. Never switched silently – the answer names the provider.
     /// </summary>
+    static (string id, string label)? ResearchProvider(AssistantFile f) =>
+        f.Mode == "claude" && f.KeyProtected != null ? ("claude", "Claude")
+        : f.Mode == "ollama" && !string.IsNullOrEmpty(f.OllamaModel) ? ("ollama", $"Ollama ({f.OllamaModel})")
+        : f.GeminiKeyProtected != null ? ("gemini", $"Gemini ({f.GeminiModel}, kostenlos)")
+        : f.DeepSeekKeyProtected != null ? ("deepseek", $"DeepSeek ({f.DeepSeekModel})") : null;
+
+    async Task<(string text, string provider, string? model, double cost)> ResearchCompleteAsync(string system, string prompt, CancellationToken ct)
+    {
+        var f = _store.Snapshot();
+        var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+        switch (ResearchProvider(f)?.id)
+        {
+            case "claude":
+            {
+                if (f.MonthlyLimitUsd <= 0 || (month?.CostUsd ?? 0) >= f.MonthlyLimitUsd) throw new RpcException("assistant-limit", $"Das Monatslimit für Claude ({f.MonthlyLimitUsd:0.00} $) ist erreicht.");
+                var key = _secrets.Unprotect(f.KeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Claude-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+                var res = await Claude.CompleteAsync(key, f.Model, system, prompt, ct);
+                var cost = ClaudeAssistant.Cost(res.Model, res.Input, res.Output, res.CacheRead, res.CacheWrite);
+                RecordUsage(res.Input, res.Output, res.CacheRead, res.CacheWrite, cost);
+                return (res.Text, "Claude", ClaudeAssistant.PriceOf(res.Model).Label, cost);
+            }
+            case "ollama":
+            {
+                var res = await Ollama.CompleteAsync(f.OllamaUrl, f.OllamaModel ?? "", system, prompt, ct, json: true);
+                return (res.Text, "Ollama", f.OllamaModel, 0);
+            }
+            case "gemini":
+            {
+                if ((month?.GeminiRequests ?? 0) >= f.GeminiMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.GeminiMonthlyRequests} Gemini-Anfragen ist erreicht (änderbar am PC unter KI-Assistent → Gemini).");
+                var key = _secrets.Unprotect(f.GeminiKeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Gemini-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+                var res = await Gemini.CompleteJsonAsync(key, f.GeminiModel, system, prompt, ct);
+                CountMonth(m => m.GeminiRequests++);
+                return (res.Text, "Gemini", res.Model, 0);
+            }
+            case "deepseek":
+            {
+                if ((month?.DeepSeekRequests ?? 0) >= f.DeepSeekMonthlyRequests) throw new RpcException("assistant-limit", $"Das Monatslimit von {f.DeepSeekMonthlyRequests} DeepSeek-Anfragen ist erreicht.");
+                var key = _secrets.Unprotect(f.DeepSeekKeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte DeepSeek-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+                var res = await DeepSeek.CompleteJsonAsync(key, f.DeepSeekModel, system, prompt, ct);
+                CountMonth(m => { m.DeepSeekRequests++; m.DeepSeekInputTokens += res.PromptTokens; m.DeepSeekOutputTokens += res.OutputTokens; });
+                return (res.Text, "DeepSeek", res.Model, 0);
+            }
+            default: throw new RpcException("assistant-local", "Keine KI eingerichtet – JARVIS zeigt dann die beste Fundstelle wörtlich. Kostenlos: am PC unter KI-Assistent einen Gemini-Schlüssel eintragen oder Ollama einrichten.");
+        }
+    }
+
+    void CountMonth(Action<AssistantUsageMonth> change)
+    {
+        _store.Update(file =>
+        {
+            var m = file.Usage.FirstOrDefault(u => u.Month == MonthKey);
+            if (m == null) { m = new AssistantUsageMonth { Month = MonthKey }; file.Usage.Add(m); }
+            change(m);
+        });
+        _hub.Changed("assistant");
+    }
+
+    /// <summary>A German answer written only from the passages JARVIS found (see <see cref="SourceAnswer"/>). Limits apply.</summary>
     public async Task<object> SummarizeAsync(SourceAnswer.Request req, CancellationToken ct = default)
     {
         var r = SourceAnswer.Check(req);
         if (!await _summaryBusy.WaitAsync(0, ct)) throw new RpcException("assistant-busy", "Ich fasse gerade schon etwas zusammen – einen Moment.");
         try
         {
-            var f = _store.Snapshot();
-            string text; string provider; string? model; double cost = 0;
-            if (f.Mode == "claude" && f.KeyProtected != null)
-            {
-                var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
-                if (f.MonthlyLimitUsd <= 0 || (month?.CostUsd ?? 0) >= f.MonthlyLimitUsd) throw new RpcException("assistant-limit", $"Das Monatslimit für Claude ({f.MonthlyLimitUsd:0.00} $) ist erreicht.");
-                var key = _secrets.Unprotect(f.KeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte Claude-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
-                var res = await Claude.CompleteAsync(key, f.Model, SourceAnswer.System, SourceAnswer.Prompt(r), ct);
-                cost = ClaudeAssistant.Cost(res.Model, res.Input, res.Output, res.CacheRead, res.CacheWrite);
-                RecordUsage(res.Input, res.Output, res.CacheRead, res.CacheWrite, cost);
-                (text, provider, model) = (res.Text, "Claude", ClaudeAssistant.PriceOf(res.Model).Label);
-            }
-            else if (f.Mode == "ollama")
-            {
-                var res = await Ollama.CompleteAsync(f.OllamaUrl, f.OllamaModel ?? "", SourceAnswer.System, SourceAnswer.Prompt(r), ct, json: true);
-                (text, provider, model) = (res.Text, "Ollama", f.OllamaModel);
-            }
-            else if (f.DeepSeekKeyProtected != null)
-            {
-                var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
-                if ((month?.DeepSeekRequests ?? 0) >= f.DeepSeekMonthlyRequests) throw new RpcException("assistant-limit", $"Das Monatslimit von {f.DeepSeekMonthlyRequests} DeepSeek-Anfragen ist erreicht.");
-                var key = _secrets.Unprotect(f.DeepSeekKeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte DeepSeek-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
-                var res = await DeepSeek.CompleteJsonAsync(key, f.DeepSeekModel, SourceAnswer.System, SourceAnswer.Prompt(r), ct);
-                _store.Update(file =>
-                {
-                    var m = file.Usage.FirstOrDefault(u => u.Month == MonthKey);
-                    if (m == null) { m = new AssistantUsageMonth { Month = MonthKey }; file.Usage.Add(m); }
-                    m.DeepSeekRequests++; m.DeepSeekInputTokens += res.PromptTokens; m.DeepSeekOutputTokens += res.OutputTokens;
-                });
-                _hub.Changed("assistant");
-                (text, provider, model) = (res.Text, "DeepSeek", res.Model);
-            }
-            else throw new RpcException("assistant-local", "Keine KI eingerichtet – JARVIS zeigt dann die beste Fundstelle wörtlich.");
+            var (text, provider, model, cost) = await ResearchCompleteAsync(SourceAnswer.System, SourceAnswer.Prompt(r), ct);
             var (answered, answer, best) = SourceAnswer.Parse(text, r.Passages.Count);
             return new { answered, answer, best, provider, model, costUsd = Math.Round(cost, 4) };
+        }
+        finally { _summaryBusy.Release(); }
+    }
+
+    public sealed class FreeQuestion { public string Question { get; set; } = ""; }
+
+    /// <summary>Only on the user's tap "KI fragen (ohne Quelle)": the AI's own knowledge, returned marked as unchecked.</summary>
+    public async Task<object> FreeAnswerAsync(FreeQuestion q, CancellationToken ct = default)
+    {
+        var question = SourceAnswer.CheckQuestion(q.Question);
+        if (!await _summaryBusy.WaitAsync(0, ct)) throw new RpcException("assistant-busy", "Ich frage gerade schon nach – einen Moment.");
+        try
+        {
+            var (text, provider, model, cost) = await ResearchCompleteAsync(SourceAnswer.FreeSystem, $"Frage: {question}", ct);
+            var (answer, sure) = SourceAnswer.ParseFree(text);
+            return new { answer, sure, provider, model, costUsd = Math.Round(cost, 4) };
         }
         finally { _summaryBusy.Release(); }
     }
