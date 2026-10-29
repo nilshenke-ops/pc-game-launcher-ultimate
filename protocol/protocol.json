@@ -47,6 +47,7 @@
     "gamemode.save": "admin",
     "assistant.status": "view",
     "assistant.ask": "view",
+    "assistant.summarize": "view",
     "assistant.bingo": "view",
     "assistant.bingoPlan": "view",
     "assistant.reset": "view",

@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.78.0 – 2026-10-29
+### Neu
+- JARVIS fragt viele Quellen gleichzeitig und nimmt die beste: Spiele-Wikis (neu: Skyrim/UESP und Elder Scrolls Wiki, Fortnite, Cyberpunk 2077, GTA, Palworld, Baldur's Gate 3), Wikipedia (deutsch und englisch) und bei Spieler-Fragen („stärkste“, „beste“, „wie/wo …“) Arqade (Stack Exchange) mit Antworten und Stimmen von Spielern (CC BY-SA, mit Autor)
+- Spiele, die nicht im Katalog stehen, erkennt er am Satzende („… in Skyrim“, „… bei Hollow Knight“); deutsche Spielwörter werden für englische Quellen übersetzt (stärkste Waffe → strongest weapon)
+- Mit verbundenem PC: deutsche Antwort, die die KI am PC nur aus den gefundenen Quellen schreibt, mit Quellennummern [1], [2] … (neuer Befehl `assistant.summarize`; ohne KI am PC zeigt JARVIS die beste Textstelle); dazu passende YouTube-Videos über deinen eigenen YouTube-Schlüssel
+- „Beste Quelle“ und „Weitere Quellen“ in jeder Antwort; Suche bei YouTube, TikTok, Reddit und Instagram als Knöpfe zum Selbst-Ansehen (diese Seiten erlauben kein automatisches Durchsuchen – JARVIS liest sie nicht aus)
+- Neue Fragen: „Wo finde ich …“, „Wie besiege ich …“, „Wie bekomme ich …“
+### Behoben
+- „Was ist die stärkst WAFFE in Skyrim“ fand nichts: das Spiel blieb im Suchbegriff und nur Wikipedia wurde gefragt
+
 ## 2.77.0 – 2026-10-29
 ### Neu
 - JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet

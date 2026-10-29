@@ -383,6 +383,57 @@ public sealed class AssistantService
         finally { _bingoBusy.Release(); }
     }
 
+    readonly SemaphoreSlim _summaryBusy = new(1, 1);
+
+    /// <summary>
+    /// A German answer written only from the passages JARVIS found (see <see cref="SourceAnswer"/>). Uses the AI chosen at the
+    /// PC: Claude or the local AI (Ollama) when that is the assistant mode, otherwise DeepSeek when its key is set. Limits apply.
+    /// </summary>
+    public async Task<object> SummarizeAsync(SourceAnswer.Request req, CancellationToken ct = default)
+    {
+        var r = SourceAnswer.Check(req);
+        if (!await _summaryBusy.WaitAsync(0, ct)) throw new RpcException("assistant-busy", "Ich fasse gerade schon etwas zusammen – einen Moment.");
+        try
+        {
+            var f = _store.Snapshot();
+            string text; string provider; string? model; double cost = 0;
+            if (f.Mode == "claude" && f.KeyProtected != null)
+            {
+                var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+                if (f.MonthlyLimitUsd <= 0 || (month?.CostUsd ?? 0) >= f.MonthlyLimitUsd) throw new RpcException("assistant-limit", $"Das Monatslimit für Claude ({f.MonthlyLimitUsd:0.00} $) ist erreicht.");
+                var key = _secrets.Unprotect(f.KeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte Claude-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+                var res = await Claude.CompleteAsync(key, f.Model, SourceAnswer.System, SourceAnswer.Prompt(r), ct);
+                cost = ClaudeAssistant.Cost(res.Model, res.Input, res.Output, res.CacheRead, res.CacheWrite);
+                RecordUsage(res.Input, res.Output, res.CacheRead, res.CacheWrite, cost);
+                (text, provider, model) = (res.Text, "Claude", ClaudeAssistant.PriceOf(res.Model).Label);
+            }
+            else if (f.Mode == "ollama")
+            {
+                var res = await Ollama.CompleteAsync(f.OllamaUrl, f.OllamaModel ?? "", SourceAnswer.System, SourceAnswer.Prompt(r), ct, json: true);
+                (text, provider, model) = (res.Text, "Ollama", f.OllamaModel);
+            }
+            else if (f.DeepSeekKeyProtected != null)
+            {
+                var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+                if ((month?.DeepSeekRequests ?? 0) >= f.DeepSeekMonthlyRequests) throw new RpcException("assistant-limit", $"Das Monatslimit von {f.DeepSeekMonthlyRequests} DeepSeek-Anfragen ist erreicht.");
+                var key = _secrets.Unprotect(f.DeepSeekKeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte DeepSeek-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+                var res = await DeepSeek.CompleteJsonAsync(key, f.DeepSeekModel, SourceAnswer.System, SourceAnswer.Prompt(r), ct);
+                _store.Update(file =>
+                {
+                    var m = file.Usage.FirstOrDefault(u => u.Month == MonthKey);
+                    if (m == null) { m = new AssistantUsageMonth { Month = MonthKey }; file.Usage.Add(m); }
+                    m.DeepSeekRequests++; m.DeepSeekInputTokens += res.PromptTokens; m.DeepSeekOutputTokens += res.OutputTokens;
+                });
+                _hub.Changed("assistant");
+                (text, provider, model) = (res.Text, "DeepSeek", res.Model);
+            }
+            else throw new RpcException("assistant-local", "Keine KI eingerichtet – JARVIS zeigt dann die beste Fundstelle wörtlich.");
+            var (answered, answer, best) = SourceAnswer.Parse(text, r.Passages.Count);
+            return new { answered, answer, best, provider, model, costUsd = Math.Round(cost, 4) };
+        }
+        finally { _summaryBusy.Release(); }
+    }
+
     static List<string> EnoughTasks(List<string> tasks, int need)
     {
         if (tasks.Count < need) throw new RpcException("assistant-bingo", $"Die KI hat nur {tasks.Count} von {need} Aufgaben geliefert – bitte noch einmal versuchen.");

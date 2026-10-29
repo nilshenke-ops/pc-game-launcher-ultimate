@@ -1625,6 +1625,23 @@ test("JARVIS schlägt Unbekanntes nach: fragt vorher, Spiel-Wiki mit Quelle, mer
   await expect(last()).toContainText("ich erfinde keine Antwort");
   await say.fill("Welche Fragen konntest du nicht beantworten?"); await say.press("Enter");
   await expect(last()).toContainText("Was ist ein Blorbfisch?");
+  // Several sources at once, the best wins: Skyrim (not in the catalog) → UESP, Fandom, Arqade, Wikipedia.
+  const json = (body: unknown) => ({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(body) });
+  await p.route("https://en.uesp.net/**", (route) => route.fulfill(json({ query: { search: [] } })));
+  await p.route("https://elderscrolls.fandom.com/**", (route) => route.fulfill(json(new URL(route.request().url()).searchParams.get("list") === "search"
+    ? { query: { search: [{ title: "Weapons (Skyrim)", snippet: "" }] } }
+    : { parse: { text: { "*": "<aside>Infobox</aside><p>Weapons in The Elder Scrolls V: Skyrim offer a similar level of diversity as previous titles.</p>" } } })));
+  await p.route("https://api.stackexchange.com/**", (route) => route.fulfill(json(route.request().url().includes("/answers")
+    ? { items: [{ answer_id: 257238, score: 4, is_accepted: false, body: "<p>A Daedric or Dragonbone weapon smithed to Legendary is the strongest without enchantments.</p>", owner: { display_name: "Comic Sans Seraphim" } }] }
+    : { items: [{ question_id: 257237, title: "What is the strongest weapon in Skyrim without enchantments or DLC?", score: 4, is_answered: true }] })));
+  await say.fill("Was ist die stärkste Waffe in Skyrim?"); await say.press("Enter");
+  await expect(last()).toContainText("Darf ich im Internet nachsehen?");
+  await expect(last()).toContainText("UESP (Elder Scrolls Wiki), Elder Scrolls Wiki (Fandom), Arqade (Stack Exchange)");
+  await last().getByRole("button", { name: "Ja, nachsehen" }).click();
+  await expect(last()).toContainText("Daedric or Dragonbone");
+  await expect(last()).toContainText("Beste Quelle: Arqade (Stack Exchange) – Antwort von Comic Sans Seraphim");
+  await expect(last()).toContainText("Weitere Quellen: Elder Scrolls Wiki (Fandom)");
+  await expect(last().getByRole("button", { name: "TikTok-Suche" })).toBeVisible();
   await p.context().close();
 });
 

@@ -248,6 +248,7 @@ public static class RpcApi
         rpc.Register("playtime.status", _ => s.Playtime.Status());
         rpc.Register("playtime.lookup", async ctx => await s.Playtime.LookupAsync(ctx.Str("game", 100), ctx.Bool("refresh")));
         rpc.Register("playtime.configure", ctx => s.Playtime.Configure(ctx.Params.TryGetProperty("clientId", out var c) ? c.GetString() : null, ctx.Params.TryGetProperty("clientSecret", out var k) ? k.GetString() : null, ctx.Session.IsLocalAdmin));
+        rpc.Register("assistant.summarize", async ctx => await s.Assistant.SummarizeAsync(ctx.Bind<Assistant.SourceAnswer.Request>()));
         rpc.Register("assistant.bingoPlan", async ctx => await s.Assistant.PlanBingoAsync(ctx.Bind<Assistant.BingoRequest>()));
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
         rpc.Register("assistant.ollamaModels", async ctx => await s.Assistant.OllamaModelsAsync());

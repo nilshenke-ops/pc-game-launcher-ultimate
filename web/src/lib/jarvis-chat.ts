@@ -287,7 +287,8 @@ async function lookupFlow(i: import("./web-lookup").LookupIntent, ctx: JarvisCtx
     return { text: t("Ohne nachzusehen weiß ich das nicht – ich rate nicht. Die Frage steht unter „JARVIS: offene Fragen“."), ok: null, actions: [] };
   }
   if (ctx.lookup === true || perm === "always" || i.kind === "explicit") {
-    const a = await w.lookupAnswer(i);
+    const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
+    const a = await w.lookupAnswer(i, fetch, online ? { call: (m, p) => client.call(m, p) } : undefined);
     return { text: a.text, ok: a.ok, source: a.source, actions: links(a.links) };
   }
   const q = w.askPermission(i);
