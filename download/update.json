@@ -1,29 +1,30 @@
 {
-  "version": "2.77.0",
+  "version": "2.78.0",
   "date": "2026-10-29",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion.exe",
-  "size": 88325439,
-  "sha256": "7c667f8e6e2c8e26f003fcea4413c05196cd17203f58270c1887d91d6a3b6e53",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.78.0/PCGameLauncherCompanion.exe",
+  "size": 88333964,
+  "sha256": "70f356832e71851792ef364f945ff3ff2a411422079bdbaa4e58a930173a449f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.77.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion-2.77.0-win-x64.zip",
-    "size": 82588353,
-    "sha256": "63988e62dc5ccdb2bbbd17b219e58381d32b91a141eb60e78d279ab9669fe305"
+    "fileName": "PCGameLauncherCompanion-2.78.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.78.0/PCGameLauncherCompanion-2.78.0-win-x64.zip",
+    "size": 82597262,
+    "sha256": "7e55199849a4ba1c110f3f6ae0fe57d0ebcafb1d1eae2aa7017b77c9bf17a239"
   },
-  "notes": "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet · Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen · JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
+  "notes": "JARVIS fragt viele Quellen gleichzeitig und nimmt die beste: Spiele-Wikis (neu: Skyrim/UESP und Elder Scrolls Wiki, Fortnite, Cyberpunk 2077, GTA, Palworld, Baldur's Gate 3), Wikipedia (deutsch und englisch) und bei Spieler-Fragen („stärkste“, „beste“, „wie/wo …“) Arqade (Stack Exchange) mit Antworten und Stimmen von Spielern (CC BY-SA, mit Autor) · Spiele, die nicht im Katalog stehen, erkennt er am Satzende („… in Skyrim“, „… bei Hollow Knight“); deutsche Spielwörter werden für englische Quellen übersetzt (stärkste Waffe → strongest weapon) · Mit verbundenem PC: deutsche Antwort, die die KI am PC nur aus den gefundenen Quellen schreibt, mit Quellennummern [1], [2] … (neuer Befehl `assistant.summarize`; ohne KI am PC zeigt JARVIS die beste Textstelle); dazu passende YouTube-Videos über deinen eigenen YouTube-Schlüssel",
   "changes": {
     "neu": [
-      "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet",
-      "Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen",
-      "JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
-      "Ehrlich bei Lücken: Findet er nichts wirklich Passendes, sagt er das und notiert die Frage unter „JARVIS: offene Fragen“ – „Welche Fragen konntest du nicht beantworten?“"
+      "JARVIS fragt viele Quellen gleichzeitig und nimmt die beste: Spiele-Wikis (neu: Skyrim/UESP und Elder Scrolls Wiki, Fortnite, Cyberpunk 2077, GTA, Palworld, Baldur's Gate 3), Wikipedia (deutsch und englisch) und bei Spieler-Fragen („stärkste“, „beste“, „wie/wo …“) Arqade (Stack Exchange) mit Antworten und Stimmen von Spielern (CC BY-SA, mit Autor)",
+      "Spiele, die nicht im Katalog stehen, erkennt er am Satzende („… in Skyrim“, „… bei Hollow Knight“); deutsche Spielwörter werden für englische Quellen übersetzt (stärkste Waffe → strongest weapon)",
+      "Mit verbundenem PC: deutsche Antwort, die die KI am PC nur aus den gefundenen Quellen schreibt, mit Quellennummern [1], [2] … (neuer Befehl `assistant.summarize`; ohne KI am PC zeigt JARVIS die beste Textstelle); dazu passende YouTube-Videos über deinen eigenen YouTube-Schlüssel",
+      "„Beste Quelle“ und „Weitere Quellen“ in jeder Antwort; Suche bei YouTube, TikTok, Reddit und Instagram als Knöpfe zum Selbst-Ansehen (diese Seiten erlauben kein automatisches Durchsuchen – JARVIS liest sie nicht aus)",
+      "Neue Fragen: „Wo finde ich …“, „Wie besiege ich …“, „Wie bekomme ich …“"
     ],
-    "verbessert": [
-      "Wissensfragen öffnen keine Seite mehr („Was ist ein Creeper in Minecraft?“ sprang zu „Welten & Bauen“) und starten nichts; passt die eingebaute App-Hilfe nicht zum Thema, schlägt JARVIS nach statt eine unpassende Antwort zu geben"
-    ],
-    "behoben": []
+    "verbessert": [],
+    "behoben": [
+      "„Was ist die stärkst WAFFE in Skyrim“ fand nichts: das Spiel blieb im Suchbegriff und nur Wikipedia wurde gefragt"
+    ]
   },
-  "signature": "Jk+ERij+a2IbXERClZu89YYQmJwbIFTkIQKXU8J2Du9P7uHo3tMCe5Vot6iJrJqMVMD1u2nVs7jD8Xnxb/vo1A=="
+  "signature": "Eq04V61cE6hkvV8EfG32d30VwY0JYBDZqwPftTcB/ygqoL6xcMZk0FUmlJvD0/S0VpQsKNjs44b9vN811go5rQ=="
 }
