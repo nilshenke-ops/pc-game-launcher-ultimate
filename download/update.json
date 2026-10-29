@@ -1,30 +1,27 @@
 {
-  "version": "2.79.0",
+  "version": "2.80.0",
   "date": "2026-10-29",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.79.0/PCGameLauncherCompanion.exe",
-  "size": 88338744,
-  "sha256": "884d128062ebcbb75357f139eb3aad21f06b623327e36210d457045d40cd59c9",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion.exe",
+  "size": 88347370,
+  "sha256": "fa36e483d5d7d60fd9f3ee08fac0e1cd6fa46e95b78468a6b04effea903d155c",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.79.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.79.0/PCGameLauncherCompanion-2.79.0-win-x64.zip",
-    "size": 82601958,
-    "sha256": "54ab10bae7f04d71b56469a079ceb666b3a41b38e07a084e2a919fe374666de4"
+    "fileName": "PCGameLauncherCompanion-2.80.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion-2.80.0-win-x64.zip",
+    "size": 82610084,
+    "sha256": "965967deac3e4360215d9ed80428b836944493250c12554201f48c450d1e5a95"
   },
-  "notes": "JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts … · Neue Themenquellen außerhalb von Spielen: Klexikon (Kinder-Lexikon, einfach erklärt), Wikivoyage (Reisen), Super User (PC-Probleme mit Antworten und Stimmen), Board & Card Games (Brettspiel-Regeln) · Spiele werden überall im Satz erkannt („Wie besiege ich Hornet in Hollow Knight?“), mehrdeutige Namen (Rust, Halo, Hades …) nur nach „in/bei …“",
+  "notes": "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit) · Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat) · „KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
   "changes": {
     "neu": [
-      "JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts …",
-      "Neue Themenquellen außerhalb von Spielen: Klexikon (Kinder-Lexikon, einfach erklärt), Wikivoyage (Reisen), Super User (PC-Probleme mit Antworten und Stimmen), Board & Card Games (Brettspiel-Regeln)",
-      "Spiele werden überall im Satz erkannt („Wie besiege ich Hornet in Hollow Knight?“), mehrdeutige Namen (Rust, Halo, Hades …) nur nach „in/bei …“",
-      "Neue Frageformen: „Was tun, wenn …“, „Wie kann ich …“, „Welche … gibt es …“, „Wie behebe/repariere ich …“"
+      "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit)",
+      "Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat)",
+      "„KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
+      "Verständliche Fehlermeldungen für Gemini: falscher Schlüssel, unbekanntes Modell, kostenloses Kontingent aufgebraucht, Region nicht verfügbar"
     ],
-    "verbessert": [
-      "Trefferwahl: die Seite mit genau dem gefragten Namen zuerst (auch wenn die Suche sie nicht oben zeigt), keine Unterseiten wie „…/Netflix series“, keine Wiki-Bausteine als Antwort; bis zu drei Treffer je Quelle werden versucht",
-      "„… in Rom“ ist ein Ort, kein Spiel: dann werden die allgemeinen Quellen gefragt"
-    ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "Js81aD3gMCBtrZC5lCmINozYcV0/2NGfCeESMN0DxGm/mRk8e+YEZImCAbJTdMKrMcweWDu6f/F7fjFBvzGIVA=="
+  "signature": "zTFPiPpATZcYp+ayL7N/iSS6OsEBOgfJ+zwZKHkKg0/K6Y1C1ldN7KVJmMK22DRnltELWkHQR5D7Oexaqlvawg=="
 }

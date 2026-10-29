@@ -1,5 +1,32 @@
 [
   {
+    "version": "2.80.0",
+    "date": "2026-10-29",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion.exe",
+    "size": 88347370,
+    "sha256": "fa36e483d5d7d60fd9f3ee08fac0e1cd6fa46e95b78468a6b04effea903d155c",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.80.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion-2.80.0-win-x64.zip",
+      "size": 82610084,
+      "sha256": "965967deac3e4360215d9ed80428b836944493250c12554201f48c450d1e5a95"
+    },
+    "notes": "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit) · Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat) · „KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
+    "changes": {
+      "neu": [
+        "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit)",
+        "Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat)",
+        "„KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
+        "Verständliche Fehlermeldungen für Gemini: falscher Schlüssel, unbekanntes Modell, kostenloses Kontingent aufgebraucht, Region nicht verfügbar"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "zTFPiPpATZcYp+ayL7N/iSS6OsEBOgfJ+zwZKHkKg0/K6Y1C1ldN7KVJmMK22DRnltELWkHQR5D7Oexaqlvawg=="
+  },
+  {
     "version": "2.79.0",
     "date": "2026-10-29",
     "channel": "stable",
@@ -1479,36 +1506,5 @@
       "behoben": []
     },
     "signature": "yBmJQTniTIPMqt2O1UUtydWjeignM210RbE2MsGXm4kigWI9EQ2fr/9WTVMWiKpwokTO+ciDABj8e4SZ59t9RA=="
-  },
-  {
-    "version": "2.34.0",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.34.0/PCGameLauncherCompanion.exe",
-    "size": 87712031,
-    "sha256": "61f13328ab5a7a47e2af725b41d65bfdfd7d9487545b0e5fadafb46940a6990b",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.34.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.34.0/PCGameLauncherCompanion-2.34.0-win-x64.zip",
-      "size": 81974743,
-      "sha256": "be12c6ab5a0d39f7dd5259aed9e5d7ee2797dc704ff715bc4b53755bb8fe97e9"
-    },
-    "notes": "Hardware-Inventar (System → Hardware-Inventar): Prozessor, Arbeitsspeicher, Grafikkarte mit Treiberversion und -datum, Audio-Ausgänge und Mikrofone, Controller mit Akku, Tastaturen und Mäuse, Monitore, Laufwerke und Netzwerkadapter – was nicht lesbar ist, steht mit Grund da · Fehlerberichte pro Spiel (System → Fehlerberichte): nach einem Absturz (Windows-Absturzbericht des Spiels gefunden) oder einem sehr kurzen Spiel legt der PC automatisch einen Bericht an und benachrichtigt dich · Ein Bericht enthält Fehlerbaustein, Ausnahmecode, Spielversion, letzten Start, Gaming-Profil, System und Änderungen kurz davor; mögliche Ursachen sind als Vermutung mit Begründung markiert",
-    "changes": {
-      "neu": [
-        "Hardware-Inventar (System → Hardware-Inventar): Prozessor, Arbeitsspeicher, Grafikkarte mit Treiberversion und -datum, Audio-Ausgänge und Mikrofone, Controller mit Akku, Tastaturen und Mäuse, Monitore, Laufwerke und Netzwerkadapter – was nicht lesbar ist, steht mit Grund da",
-        "Fehlerberichte pro Spiel (System → Fehlerberichte): nach einem Absturz (Windows-Absturzbericht des Spiels gefunden) oder einem sehr kurzen Spiel legt der PC automatisch einen Bericht an und benachrichtigt dich",
-        "Ein Bericht enthält Fehlerbaustein, Ausnahmecode, Spielversion, letzten Start, Gaming-Profil, System und Änderungen kurz davor; mögliche Ursachen sind als Vermutung mit Begründung markiert",
-        "Berichte durchsuchen, zwei Berichte vergleichen, auf Anforderung erstellen und als Text exportieren – wahlweise ohne Benutzername, PC-Name und E-Mail",
-        "Plugin-Prüflabor: „Alle prüfen“ bzw. Details → „Prüfen“ zeigt Paket-Unversehrtheit, Manifest und Version, unbekannte Einträge, Berechtigungen, Abhängigkeiten, Konflikte, Fehler der letzten 7 Tage, Update und vorherige Version"
-      ],
-      "verbessert": [
-        "Das Inventar ist ohne PC mit dem letzten Stand und Datum sichtbar",
-        "Die Prüfung führt keinen Plugin-Code aus und ändert nichts"
-      ],
-      "behoben": []
-    },
-    "signature": "MxiKh70zB3jt0UEEUbRa3cnyWxJEh45dUSwsRo5BAriqBtJD1k0K88tuPJVv4Vuas0NO9d8bIZHAqLbqYZAbRQ=="
   }
 ]
