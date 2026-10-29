@@ -1,30 +1,30 @@
 {
-  "version": "2.78.0",
+  "version": "2.79.0",
   "date": "2026-10-29",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.78.0/PCGameLauncherCompanion.exe",
-  "size": 88333964,
-  "sha256": "70f356832e71851792ef364f945ff3ff2a411422079bdbaa4e58a930173a449f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.79.0/PCGameLauncherCompanion.exe",
+  "size": 88338744,
+  "sha256": "884d128062ebcbb75357f139eb3aad21f06b623327e36210d457045d40cd59c9",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.78.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.78.0/PCGameLauncherCompanion-2.78.0-win-x64.zip",
-    "size": 82597262,
-    "sha256": "7e55199849a4ba1c110f3f6ae0fe57d0ebcafb1d1eae2aa7017b77c9bf17a239"
+    "fileName": "PCGameLauncherCompanion-2.79.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.79.0/PCGameLauncherCompanion-2.79.0-win-x64.zip",
+    "size": 82601958,
+    "sha256": "54ab10bae7f04d71b56469a079ceb666b3a41b38e07a084e2a919fe374666de4"
   },
-  "notes": "JARVIS fragt viele Quellen gleichzeitig und nimmt die beste: Spiele-Wikis (neu: Skyrim/UESP und Elder Scrolls Wiki, Fortnite, Cyberpunk 2077, GTA, Palworld, Baldur's Gate 3), Wikipedia (deutsch und englisch) und bei Spieler-Fragen („stärkste“, „beste“, „wie/wo …“) Arqade (Stack Exchange) mit Antworten und Stimmen von Spielern (CC BY-SA, mit Autor) · Spiele, die nicht im Katalog stehen, erkennt er am Satzende („… in Skyrim“, „… bei Hollow Knight“); deutsche Spielwörter werden für englische Quellen übersetzt (stärkste Waffe → strongest weapon) · Mit verbundenem PC: deutsche Antwort, die die KI am PC nur aus den gefundenen Quellen schreibt, mit Quellennummern [1], [2] … (neuer Befehl `assistant.summarize`; ohne KI am PC zeigt JARVIS die beste Textstelle); dazu passende YouTube-Videos über deinen eigenen YouTube-Schlüssel",
+  "notes": "JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts … · Neue Themenquellen außerhalb von Spielen: Klexikon (Kinder-Lexikon, einfach erklärt), Wikivoyage (Reisen), Super User (PC-Probleme mit Antworten und Stimmen), Board & Card Games (Brettspiel-Regeln) · Spiele werden überall im Satz erkannt („Wie besiege ich Hornet in Hollow Knight?“), mehrdeutige Namen (Rust, Halo, Hades …) nur nach „in/bei …“",
   "changes": {
     "neu": [
-      "JARVIS fragt viele Quellen gleichzeitig und nimmt die beste: Spiele-Wikis (neu: Skyrim/UESP und Elder Scrolls Wiki, Fortnite, Cyberpunk 2077, GTA, Palworld, Baldur's Gate 3), Wikipedia (deutsch und englisch) und bei Spieler-Fragen („stärkste“, „beste“, „wie/wo …“) Arqade (Stack Exchange) mit Antworten und Stimmen von Spielern (CC BY-SA, mit Autor)",
-      "Spiele, die nicht im Katalog stehen, erkennt er am Satzende („… in Skyrim“, „… bei Hollow Knight“); deutsche Spielwörter werden für englische Quellen übersetzt (stärkste Waffe → strongest weapon)",
-      "Mit verbundenem PC: deutsche Antwort, die die KI am PC nur aus den gefundenen Quellen schreibt, mit Quellennummern [1], [2] … (neuer Befehl `assistant.summarize`; ohne KI am PC zeigt JARVIS die beste Textstelle); dazu passende YouTube-Videos über deinen eigenen YouTube-Schlüssel",
-      "„Beste Quelle“ und „Weitere Quellen“ in jeder Antwort; Suche bei YouTube, TikTok, Reddit und Instagram als Knöpfe zum Selbst-Ansehen (diese Seiten erlauben kein automatisches Durchsuchen – JARVIS liest sie nicht aus)",
-      "Neue Fragen: „Wo finde ich …“, „Wie besiege ich …“, „Wie bekomme ich …“"
+      "JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts …",
+      "Neue Themenquellen außerhalb von Spielen: Klexikon (Kinder-Lexikon, einfach erklärt), Wikivoyage (Reisen), Super User (PC-Probleme mit Antworten und Stimmen), Board & Card Games (Brettspiel-Regeln)",
+      "Spiele werden überall im Satz erkannt („Wie besiege ich Hornet in Hollow Knight?“), mehrdeutige Namen (Rust, Halo, Hades …) nur nach „in/bei …“",
+      "Neue Frageformen: „Was tun, wenn …“, „Wie kann ich …“, „Welche … gibt es …“, „Wie behebe/repariere ich …“"
     ],
-    "verbessert": [],
-    "behoben": [
-      "„Was ist die stärkst WAFFE in Skyrim“ fand nichts: das Spiel blieb im Suchbegriff und nur Wikipedia wurde gefragt"
-    ]
+    "verbessert": [
+      "Trefferwahl: die Seite mit genau dem gefragten Namen zuerst (auch wenn die Suche sie nicht oben zeigt), keine Unterseiten wie „…/Netflix series“, keine Wiki-Bausteine als Antwort; bis zu drei Treffer je Quelle werden versucht",
+      "„… in Rom“ ist ein Ort, kein Spiel: dann werden die allgemeinen Quellen gefragt"
+    ],
+    "behoben": []
   },
-  "signature": "Eq04V61cE6hkvV8EfG32d30VwY0JYBDZqwPftTcB/ygqoL6xcMZk0FUmlJvD0/S0VpQsKNjs44b9vN811go5rQ=="
+  "signature": "Js81aD3gMCBtrZC5lCmINozYcV0/2NGfCeESMN0DxGm/mRk8e+YEZImCAbJTdMKrMcweWDu6f/F7fjFBvzGIVA=="
 }

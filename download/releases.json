@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.79.0",
+    "date": "2026-10-29",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.79.0/PCGameLauncherCompanion.exe",
+    "size": 88338744,
+    "sha256": "884d128062ebcbb75357f139eb3aad21f06b623327e36210d457045d40cd59c9",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.79.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.79.0/PCGameLauncherCompanion-2.79.0-win-x64.zip",
+      "size": 82601958,
+      "sha256": "54ab10bae7f04d71b56469a079ceb666b3a41b38e07a084e2a919fe374666de4"
+    },
+    "notes": "JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts … · Neue Themenquellen außerhalb von Spielen: Klexikon (Kinder-Lexikon, einfach erklärt), Wikivoyage (Reisen), Super User (PC-Probleme mit Antworten und Stimmen), Board & Card Games (Brettspiel-Regeln) · Spiele werden überall im Satz erkannt („Wie besiege ich Hornet in Hollow Knight?“), mehrdeutige Namen (Rust, Halo, Hades …) nur nach „in/bei …“",
+    "changes": {
+      "neu": [
+        "JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts …",
+        "Neue Themenquellen außerhalb von Spielen: Klexikon (Kinder-Lexikon, einfach erklärt), Wikivoyage (Reisen), Super User (PC-Probleme mit Antworten und Stimmen), Board & Card Games (Brettspiel-Regeln)",
+        "Spiele werden überall im Satz erkannt („Wie besiege ich Hornet in Hollow Knight?“), mehrdeutige Namen (Rust, Halo, Hades …) nur nach „in/bei …“",
+        "Neue Frageformen: „Was tun, wenn …“, „Wie kann ich …“, „Welche … gibt es …“, „Wie behebe/repariere ich …“"
+      ],
+      "verbessert": [
+        "Trefferwahl: die Seite mit genau dem gefragten Namen zuerst (auch wenn die Suche sie nicht oben zeigt), keine Unterseiten wie „…/Netflix series“, keine Wiki-Bausteine als Antwort; bis zu drei Treffer je Quelle werden versucht",
+        "„… in Rom“ ist ein Ort, kein Spiel: dann werden die allgemeinen Quellen gefragt"
+      ],
+      "behoben": []
+    },
+    "signature": "Js81aD3gMCBtrZC5lCmINozYcV0/2NGfCeESMN0DxGm/mRk8e+YEZImCAbJTdMKrMcweWDu6f/F7fjFBvzGIVA=="
+  },
+  {
     "version": "2.78.0",
     "date": "2026-10-29",
     "channel": "stable",
@@ -1480,37 +1510,5 @@
       "behoben": []
     },
     "signature": "MxiKh70zB3jt0UEEUbRa3cnyWxJEh45dUSwsRo5BAriqBtJD1k0K88tuPJVv4Vuas0NO9d8bIZHAqLbqYZAbRQ=="
-  },
-  {
-    "version": "2.33.0",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.33.0/PCGameLauncherCompanion.exe",
-    "size": 87679213,
-    "sha256": "e7cd4c60be0c1ce047412b0a825d465535ddd9b203cea3abf6d8fd6a3008f98a",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.33.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.33.0/PCGameLauncherCompanion-2.33.0-win-x64.zip",
-      "size": 81941944,
-      "sha256": "415cc1da5ac0b64597bf60ba5ec071e31c5c93904d91d16610097bc5e2bcccd2"
-    },
-    "notes": "Savegame-Tresor (Spiele → Savegame-Tresor): Spielstände sichern, prüfen und zurückholen – mit Verlauf, Größe und Grund jeder Sicherung · Sichere Vorschläge statt Raten: Steam-Cloud-Ordner des Spiels oder Ordner mit genau dem Namen des Spiels (Gespeicherte Spiele, Dokumente\\My Games, AppData); eigene Ordner nur direkt am PC · Automatisch nach dem Spielen oder täglich (nur wenn sich etwas geändert hat), Anzahl der Sicherungen einstellbar",
-    "changes": {
-      "neu": [
-        "Savegame-Tresor (Spiele → Savegame-Tresor): Spielstände sichern, prüfen und zurückholen – mit Verlauf, Größe und Grund jeder Sicherung",
-        "Sichere Vorschläge statt Raten: Steam-Cloud-Ordner des Spiels oder Ordner mit genau dem Namen des Spiels (Gespeicherte Spiele, Dokumente\\My Games, AppData); eigene Ordner nur direkt am PC",
-        "Automatisch nach dem Spielen oder täglich (nur wenn sich etwas geändert hat), Anzahl der Sicherungen einstellbar",
-        "Vor dem Zurückholen eine Vorschau: was ersetzt wird, was zurückkommt, was entfernt wird – mit Warnung, wenn der jetzige Stand neuer ist",
-        "Konfigurationsdateien (ini, cfg, json, xml, txt …) mit Versionen und Vergleich: neue, geänderte und entfernte Einstellungen nebeneinander"
-      ],
-      "verbessert": [
-        "Jede Sicherung hat eine SHA-256-Prüfliste; „Prüfen“ findet beschädigte Sicherungen, beschädigte werden nie zurückgeholt",
-        "Der jetzige Stand wird vor jedem Zurückholen automatisch gesichert; solange das Spiel läuft, passiert nichts",
-        "Regeln lassen sich ohne PC ändern und werden beim Verbinden übertragen; Orte und Regeln sind Teil des Konfigurations-Backups"
-      ],
-      "behoben": []
-    },
-    "signature": "Bg1tF7RTNXOKhoieL3MUwCAkgh9LJASzpiiPhERcZbyX2TDRu9J5mdGUJ0mk3wAztoGbANnF5ZYr1ha4+OOEpQ=="
   }
 ]
