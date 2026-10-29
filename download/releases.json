@@ -1,5 +1,34 @@
 [
   {
+    "version": "2.77.0",
+    "date": "2026-10-29",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion.exe",
+    "size": 88325439,
+    "sha256": "7c667f8e6e2c8e26f003fcea4413c05196cd17203f58270c1887d91d6a3b6e53",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.77.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion-2.77.0-win-x64.zip",
+      "size": 82588353,
+      "sha256": "63988e62dc5ccdb2bbbd17b219e58381d32b91a141eb60e78d279ab9669fe305"
+    },
+    "notes": "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet · Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen · JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
+    "changes": {
+      "neu": [
+        "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet",
+        "Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen",
+        "JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
+        "Ehrlich bei Lücken: Findet er nichts wirklich Passendes, sagt er das und notiert die Frage unter „JARVIS: offene Fragen“ – „Welche Fragen konntest du nicht beantworten?“"
+      ],
+      "verbessert": [
+        "Wissensfragen öffnen keine Seite mehr („Was ist ein Creeper in Minecraft?“ sprang zu „Welten & Bauen“) und starten nichts; passt die eingebaute App-Hilfe nicht zum Thema, schlägt JARVIS nach statt eine unpassende Antwort zu geben"
+      ],
+      "behoben": []
+    },
+    "signature": "Jk+ERij+a2IbXERClZu89YYQmJwbIFTkIQKXU8J2Du9P7uHo3tMCe5Vot6iJrJqMVMD1u2nVs7jD8Xnxb/vo1A=="
+  },
+  {
     "version": "2.76.0",
     "date": "2026-10-28",
     "channel": "stable",
@@ -1486,34 +1515,5 @@
       ]
     },
     "signature": "c8hnFbOS3tgqkl4hwec/6upSxuiUNIawH/oW2J27dNkIU5ItrTfsbcqCYTVVecfz6eSWY6KAO0zUWVu4J6FFoA=="
-  },
-  {
-    "version": "2.31.0",
-    "date": "2026-10-20",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.31.0/PCGameLauncherCompanion.exe",
-    "size": 87596737,
-    "sha256": "8344e8d86041bed372e1b1376d0e2dbb86f1db7c9801cde850d737e07657397f",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.31.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.31.0/PCGameLauncherCompanion-2.31.0-win-x64.zip",
-      "size": 81861166,
-      "sha256": "7eccc09edc17dd1cefa970eeb182fff8c77cd164d5329268ca1559710afe36e1"
-    },
-    "notes": "Icon-Werkstatt: eigene Icons (1:1) und Cover (2:3) gestalten – Vorlagen (Neon, Retro, Minimal, Gold, Ice, Fire), Symbol oder Emoji, eigenes Bild mit Zoom, Form (abgerundet, Kreis, Sechseck, Quadrat), Farben, Verlauf, Rand, Muster, Leuchten, Live-Vorschau · Erreichbar dort, wo das Bild gebraucht wird: Spiel/Programm bearbeiten, Deck-Taste, Gamer-Pass – mit „Übernehmen“ oder „Als Bild speichern“ · Selbst gestaltete Icons haben Vorrang vor dem Marken-Logo eines Programms",
-    "changes": {
-      "neu": [
-        "Icon-Werkstatt: eigene Icons (1:1) und Cover (2:3) gestalten – Vorlagen (Neon, Retro, Minimal, Gold, Ice, Fire), Symbol oder Emoji, eigenes Bild mit Zoom, Form (abgerundet, Kreis, Sechseck, Quadrat), Farben, Verlauf, Rand, Muster, Leuchten, Live-Vorschau",
-        "Erreichbar dort, wo das Bild gebraucht wird: Spiel/Programm bearbeiten, Deck-Taste, Gamer-Pass – mit „Übernehmen“ oder „Als Bild speichern“"
-      ],
-      "verbessert": [
-        "Selbst gestaltete Icons haben Vorrang vor dem Marken-Logo eines Programms",
-        "Sicherer Bild-Upload: Cover-Bilder werden im Browser neu gezeichnet (keine Metadaten, kein SVG, nur PNG/JPEG/WebP/GIF) und passend verkleinert",
-        "Private Lobby: ehrlich als „noch nicht verfügbar“ erklärt (braucht einen eigenen Server) – keine Attrappe"
-      ],
-      "behoben": []
-    },
-    "signature": "wXkzvx+luD7xfBOKInaCweWr9C1bFSsq6JPG7mu1Qmcb0q5YOlyyoUM9ZtEhuosGM0stQbCjKzZFNK2DezruOw=="
   }
 ]

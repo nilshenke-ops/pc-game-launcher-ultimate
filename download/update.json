@@ -1,28 +1,29 @@
 {
-  "version": "2.76.0",
-  "date": "2026-10-28",
+  "version": "2.77.0",
+  "date": "2026-10-29",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.76.0/PCGameLauncherCompanion.exe",
-  "size": 88320476,
-  "sha256": "dd2d8954f24728e77cc10fb8ad120cd59570ad3c8389f78a98529c01f6951151",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion.exe",
+  "size": 88325439,
+  "sha256": "7c667f8e6e2c8e26f003fcea4413c05196cd17203f58270c1887d91d6a3b6e53",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.76.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.76.0/PCGameLauncherCompanion-2.76.0-win-x64.zip",
-    "size": 82582910,
-    "sha256": "0137241d65126bc6b09133ca188c6d7575d7b6041c986606a200ce50563c98e4"
+    "fileName": "PCGameLauncherCompanion-2.77.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion-2.77.0-win-x64.zip",
+    "size": 82588353,
+    "sha256": "63988e62dc5ccdb2bbbd17b219e58381d32b91a141eb60e78d279ab9669fe305"
   },
-  "notes": "Soundboard: Icon (Emoji) je Sound-Kachel, „Zufallssound“ (aus der aktuellen Auswahl), Vorschläge für Soundboard-Profile beim Anlegen einer Sammlung (Minecraft, Elden Ring, Discord, Horror-Gaming, Lustige Sounds, Eigene Sammlung) · Audio Center → Discord einrichten: Discord-Check mit fünf Schritten live aus deiner Auswahl (Kabel installiert, Soundboard aufs Kabel, Mikrofon im Kabel, selbst mithören, Discord-Eingabegerät) – der letzte Schritt ehrlich als „kann keine App prüfen“; „Testton ins Kabel“ · Abschlussbericht des Ausbaus in docs/AUSBAU-SECHS-FUNKTIONEN.md",
+  "notes": "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet · Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen · JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
   "changes": {
     "neu": [
-      "Soundboard: Icon (Emoji) je Sound-Kachel, „Zufallssound“ (aus der aktuellen Auswahl), Vorschläge für Soundboard-Profile beim Anlegen einer Sammlung (Minecraft, Elden Ring, Discord, Horror-Gaming, Lustige Sounds, Eigene Sammlung)",
-      "Audio Center → Discord einrichten: Discord-Check mit fünf Schritten live aus deiner Auswahl (Kabel installiert, Soundboard aufs Kabel, Mikrofon im Kabel, selbst mithören, Discord-Eingabegerät) – der letzte Schritt ehrlich als „kann keine App prüfen“; „Testton ins Kabel“",
-      "Abschlussbericht des Ausbaus in docs/AUSBAU-SECHS-FUNKTIONEN.md"
+      "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet",
+      "Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen",
+      "JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
+      "Ehrlich bei Lücken: Findet er nichts wirklich Passendes, sagt er das und notiert die Frage unter „JARVIS: offene Fragen“ – „Welche Fragen konntest du nicht beantworten?“"
     ],
     "verbessert": [
-      "Das Kabel selbst als Mikrofon gewählt wird erkannt und erklärt"
+      "Wissensfragen öffnen keine Seite mehr („Was ist ein Creeper in Minecraft?“ sprang zu „Welten & Bauen“) und starten nichts; passt die eingebaute App-Hilfe nicht zum Thema, schlägt JARVIS nach statt eine unpassende Antwort zu geben"
     ],
     "behoben": []
   },
-  "signature": "1wg65praMfag2OS6Ph92Lv09Hm6r1kJsG8eQFpbDjpXsjz8FR/babExoRUZhRpydEvU+08lz/uSFmRXeEROwlQ=="
+  "signature": "Jk+ERij+a2IbXERClZu89YYQmJwbIFTkIQKXU8J2Du9P7uHo3tMCe5Vot6iJrJqMVMD1u2nVs7jD8Xnxb/vo1A=="
 }
