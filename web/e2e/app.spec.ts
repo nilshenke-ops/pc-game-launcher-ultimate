@@ -1028,6 +1028,12 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await say.press("Enter");
   await expect.poll(() => tablet.evaluate(() => document.documentElement.hasAttribute("data-nav-plain"))).toBe(true);
   await expect(tablet.locator(".as-turn.bot").last().getByRole("button", { name: "Rückgängig" })).toBeVisible();
+  // Something the app does not know ("Ship or Burn", no question form): without the PC JARVIS offers to look it up
+  // in the open sources instead of "Das weiß ich ohne PC nicht".
+  await say.fill("Ship or Burn");
+  await say.press("Enter");
+  await expect(tablet.locator(".as-turn.bot").last()).toContainText("Darf ich im Internet nachsehen?");
+  await expect(tablet.locator(".as-turn.bot").last()).not.toContainText("Das weiß ich ohne PC nicht");
   await tablet.locator(".bottom-nav").getByRole("link", { name: "Verbinden" }).click();
   await expect(tablet.getByRole("heading", { name: "PC verbinden" })).toBeVisible();
 
@@ -1626,6 +1632,23 @@ test("JARVIS schlägt Unbekanntes nach: fragt vorher, Spiel-Wiki mit Quelle, mer
   // With the PC: the free AI may answer without a source – only on a tap. This test PC has no AI set up: said honestly.
   await last().getByRole("button", { name: "KI fragen (ohne Quelle)" }).click();
   await expect(last()).toContainText("Am PC ist noch keine KI eingerichtet");
+  // Not a question, just a name the app does not know: JARVIS still finds out instead of "weiß ich nicht".
+  await say.fill("Blorbfisch Deluxe"); await say.press("Enter");
+  await expect(last()).toContainText("Darf ich im Internet nachsehen?");
+  // "Direkt von der KI": asks the AI at the PC first; none set up here → honest, then the sources.
+  await p.evaluate(() => localStorage.setItem("pgl.jarvis.answerFrom", JSON.stringify("ai")));
+  await say.fill("Was ist ein Glorbtier?"); await say.press("Enter");
+  await expect(last()).toContainText("Darf ich die KI an deinem PC fragen");
+  await last().getByRole("button", { name: "Ja, KI fragen" }).click();
+  await expect(last()).toContainText("Am PC ist noch keine KI eingerichtet");
+  await expect(last()).toContainText("Deshalb habe ich in den Quellen nachgesehen");
+  // "Quellen, sonst KI": nothing found → the AI is asked right away, without an extra tap.
+  await p.evaluate(() => localStorage.setItem("pgl.jarvis.answerFrom", JSON.stringify("auto")));
+  await say.fill("Was ist ein Wumpelkraut?"); await say.press("Enter");
+  await last().getByRole("button", { name: "Ja, nachsehen" }).click();
+  await expect(last()).toContainText("ich erfinde keine Antwort");
+  await expect(last()).toContainText("Am PC ist noch keine KI eingerichtet");
+  await p.evaluate(() => localStorage.removeItem("pgl.jarvis.answerFrom"));
   await say.fill("Welche Fragen konntest du nicht beantworten?"); await say.press("Enter");
   await expect(last()).toContainText("Was ist ein Blorbfisch?");
   // Several sources at once, the best wins: Skyrim (not in the catalog) → UESP, Fandom, Arqade, Wikipedia.

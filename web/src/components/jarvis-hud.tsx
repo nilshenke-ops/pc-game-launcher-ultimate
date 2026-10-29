@@ -2,7 +2,7 @@
 // matters for gaming (PC, running game, profile, memory) and his skills as a command deck. Pure CSS animation,
 // switched off with "weniger Bewegung"; no timers – everything comes from existing state.
 
-import { setWebPermission, webPermission, type WebPermission } from "../lib/web-lookup";
+import { answerMode, setAnswerMode, setWebPermission, webPermission, type AnswerMode, type WebPermission } from "../lib/web-lookup";
 import { useEffect, useState } from "react";
 import { Brain, Gamepad2, Mic, SlidersHorizontal, Volume2, VolumeX, Wifi, WifiOff, Zap } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -108,8 +108,15 @@ function VoiceSettings() {
 function WebLookupSetting() {
   const [v, setV] = useState<WebPermission>(webPermission);
   const set = (x: WebPermission) => { setWebPermission(x); setV(x); };
+  const [m, setM] = useState<AnswerMode>(answerMode);
+  const setMode = (x: AnswerMode) => { setAnswerMode(x); setM(x); };
   return (
     <div className="stack-sm">
+      <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+        <span className="muted">{t("Antworten auf Wissensfragen")}:</span>
+        {(["sources", "auto", "ai"] as AnswerMode[]).map((x) => <button key={x} type="button" className={`chip ${m === x ? "on" : ""}`} aria-pressed={m === x} onClick={() => setMode(x)}>{x === "sources" ? t("Aus Quellen") : x === "auto" ? t("Quellen, sonst KI") : t("Direkt von der KI")}</button>)}
+      </div>
+      <span className="muted tiny">{m === "sources" ? t("JARVIS antwortet aus Wikis und Frage-Antwort-Seiten mit Quelle. Findet er nichts, kannst du die KI am PC per Knopf fragen.") : m === "auto" ? t("Erst die Quellen; findet JARVIS nichts, fragt er sofort die KI am PC (z. B. das kostenlose Gemini) – die Antwort ist dann als „ohne Quelle“ markiert.") : t("JARVIS fragt gleich die KI am PC (z. B. das kostenlose Gemini) – schnell, aber ohne Quelle und deshalb markiert; mit „In Quellen nachsehen“ prüfst du nach. Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach.")}</span>
       <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
         <span className="muted">{t("Unbekanntes nachschlagen")}:</span>
         {(["ask", "always", "never"] as WebPermission[]).map((x) => <button key={x} type="button" className={`chip ${v === x ? "on" : ""}`} aria-pressed={v === x} onClick={() => set(x)}>{x === "ask" ? t("Vorher fragen") : x === "always" ? t("Immer") : t("Nie")}</button>)}

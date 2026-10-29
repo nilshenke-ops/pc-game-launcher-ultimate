@@ -22,7 +22,7 @@ const OFF_TOPIC = () => t("Ich bin JARVIS Gaming – ich kümmere mich nur um de
 const CODE = () => t("Neue Funktionen oder Seiten sind Änderungen am Programmcode – die mache ich nicht nebenbei im Chat, und meinen eigenen Code ändere ich nie. Dafür gibt es den Entwicklungsweg mit Versionskontrolle, Tests und einem Update über die Update-Zentrale. Innerhalb der App (Startseiten, Widgets, Leiste, Kategorien, Profile, Design) ändere ich dagegen direkt, was du sagst.");
 const opens = (s: string) => /\b(oeffne|öffne|offne|zeig|zeige|geh|gehe|wechsel)\b/i.test(s);
 
-export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean }
+export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "In Quellen nachsehen" after an AI answer. */ sources?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean }
 
 export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<JarvisTurn> {
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
@@ -211,8 +211,10 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       const navs = res.reply.actions.filter((a) => a.auto && a.kind === "navigate");
       // A knowledge question the built-in help cannot really answer (no hit, or a text that does not even mention the
       // topic): look it up instead – and never start or open anything for a question.
-      if (lk?.kind === "question" && (res.reply.unsure || !mentions(res.reply.text, lk.topic))) {
-        const a = await lookupFlow(lk, ctx);
+      // Nothing the built-in help knows ("Ship or Burn"): looked up too – JARVIS does not stop at "weiß ich nicht".
+      const lkf = lk ?? (res.reply.unsure && !autos.length ? (await import("./web-lookup")).fallbackIntent(part) : null);
+      if (lkf?.kind === "question" && (res.reply.unsure || !mentions(res.reply.text, lkf.topic))) {
+        const a = await lookupFlow(lkf, ctx);
         r = { text: a.text, ok: a.ok };
         if (a.source) sources.add(a.source);
         buttons.push(...a.actions);
@@ -245,8 +247,9 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     } else {
       const [{ answerOffline }, lib] = await Promise.all([import("./assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
       const o = answerOffline(part, { library: lib.items ?? [], paired: !!client.credentials });
-      if (o.unsure && lk) {
-        const a = await lookupFlow(lk, ctx);
+      const lkf = o.unsure ? lk ?? (await import("./web-lookup")).fallbackIntent(part) : null;
+      if (lkf) {
+        const a = await lookupFlow(lkf, ctx);
         r = { text: a.text, ok: a.ok };
         if (a.source) sources.add(a.source);
         buttons.push(...a.actions);
@@ -287,16 +290,31 @@ async function lookupFlow(i: import("./web-lookup").LookupIntent, ctx: JarvisCtx
     noteOpenQuestion(i.raw);
     return { text: t("Ohne nachzusehen weiß ich das nicht – ich rate nicht. Die Frage steht unter „JARVIS: offene Fragen“."), ok: null, actions: [] };
   }
+  const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
+  const pc = online ? { call: <T,>(m: string, p?: unknown) => client.call<T>(m, p) } : undefined;
+  // "Direkt KI" needs the PC (the AI runs there); without it JARVIS looks in the sources and says why.
+  const mode = ctx.sources || (w.answerMode() === "ai" && !pc) ? "sources" : w.answerMode();
   if (ctx.lookup === true || perm === "always" || i.kind === "explicit") {
-    const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
-    const a = await w.lookupAnswer(i, fetch, online ? { call: (m, p) => client.call(m, p) } : undefined);
+    if (mode === "ai" && pc) {
+      const a = await w.aiAnswer(i, pc);
+      if (a.aiAnswered) return { text: a.text, ok: a.ok, source: a.source, actions: [{ kind: "lookupChoice", label: t("In Quellen nachsehen"), params: { question: i.raw, ok: true, sources: true } }] };
+      // No AI at the PC (or it failed): the sources instead – said openly.
+      const b = await w.lookupAnswer(i, fetch, pc);
+      return { text: `${a.text}\n\n${t("Deshalb habe ich in den Quellen nachgesehen:")}\n${b.text}`, ok: b.ok, source: b.source, actions: links(b.links) };
+    }
+    const a = await w.lookupAnswer(i, fetch, pc);
+    if (a.ok === null && !a.ask && pc && mode === "auto") {
+      // Nothing found: ask the AI right away (setting "Quellen, sonst KI").
+      const b = await w.aiAnswer(i, pc);
+      return { text: `${a.text}\n\n${b.text}`, ok: b.aiAnswered ? null : a.ok, source: b.source ?? a.source, actions: links(a.links) };
+    }
     // Nothing found: the free AI at the PC may answer from its own knowledge – only on a tap, marked "ohne Quelle".
-    const ai: AssistantAction[] = a.ok === null && online && !a.ask ? [{ kind: "aiAnswer", label: t("KI fragen (ohne Quelle)"), params: { question: i.raw } }] : [];
+    const ai: AssistantAction[] = a.ok === null && pc && !a.ask ? [{ kind: "aiAnswer", label: t("KI fragen (ohne Quelle)"), params: { question: i.raw } }] : [];
     return { text: a.text, ok: a.ok, source: a.source, actions: [...ai, ...links(a.links)] };
   }
-  const q = w.askPermission(i);
+  const q = w.askPermission(i, mode);
   return { text: q.text, ok: null, actions: [
-    { kind: "lookupChoice", label: t("Ja, nachsehen"), params: { question: i.raw, ok: true } },
+    { kind: "lookupChoice", label: mode === "ai" ? t("Ja, KI fragen") : t("Ja, nachsehen"), params: { question: i.raw, ok: true } },
     { kind: "lookupChoice", label: t("Ja, immer erlauben"), params: { question: i.raw, ok: true, always: true } },
     { kind: "lookupChoice", label: t("Nein"), params: { question: i.raw, ok: false } },
   ] };

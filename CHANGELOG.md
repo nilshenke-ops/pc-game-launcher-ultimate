@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.81.0 – 2026-10-29
+### Neu
+- JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC
+- Einstellung „Antworten auf Wissensfragen“ (JARVIS → Stimme & Ton): „Aus Quellen“ (Standard; KI per Knopf), „Quellen, sonst KI“ (findet er nichts, fragt er sofort die KI am PC) und „Direkt von der KI“ (gleich die KI am PC, z. B. das kostenlose Gemini; mit Knopf „In Quellen nachsehen“) – KI-Antworten bleiben als „ohne Quelle“ markiert
+- Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach und sagt das
+### Unverändert
+- Vor dem ersten Gang ins Internet fragt JARVIS weiter („Ja“, „Ja, immer erlauben“, „Nein“); nach „Immer erlauben“ sucht er sofort ohne Rückfrage
+
 ## 2.80.0 – 2026-10-29
 ### Neu
 - Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit)

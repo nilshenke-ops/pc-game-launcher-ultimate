@@ -62,12 +62,33 @@ export function lookupIntent(raw: string): LookupIntent | null {
   return { kind: explicit ? "explicit" : "question", topic, game, raw: q };
 }
 
+/**
+ * Anything JARVIS could not answer otherwise ("Ship or Burn", "Hornet Hollow Knight"): looked up as well instead of
+ * "Das weiß ich nicht". Not for orders (start, open, close …) and not for long texts.
+ */
+export function fallbackIntent(raw: string): LookupIntent | null {
+  const q = raw.trim().replace(/^jarvis[,:]?\s*/i, "").replace(/[?!.]+$/, "").trim();
+  if (q.length < 2 || q.length > 80 || q.split(/\s+/).length > 10) return null;
+  if (/^(?:starte?|öffne|schlie(?:ß|ss)e?|beende|mach|stell|setz|spiel|zeig|leg|lösch|erstell|füg|merk|vergiss|wechsel|aktivier|deaktivier|schalt|spiele?|hallo|hi|hey|danke|ok|ja|nein)\b/i.test(q)) return null;
+  let game = gameInText(q) ?? gameMentioned(q) ?? contextOf(q);
+  let topic = topicOf(q, game);
+  if (topic.length < 2 && game) { topic = game; game = null; }
+  if (topic.length < 2) return null;
+  return { kind: "question", topic, game, raw: q };
+}
+
 // ------------------------------------------------------------------ permission
 
 const KEY = "pgl.jarvis.web";
 export type WebPermission = "ask" | "always" | "never";
 export const webPermission = (): WebPermission => { const v = readJson<string>(KEY); return v === "always" || v === "never" ? v : "ask"; };
 export const setWebPermission = (v: WebPermission) => writeJson(KEY, v === "ask" ? null : v);
+
+/** Where answers to knowledge questions come from: sources (AI only on a tap), sources then the AI automatically, the AI directly. */
+const MODE_KEY = "pgl.jarvis.answerFrom";
+export type AnswerMode = "sources" | "auto" | "ai";
+export const answerMode = (): AnswerMode => { const v = readJson<string>(MODE_KEY); return v === "auto" || v === "ai" ? v : "sources"; };
+export const setAnswerMode = (v: AnswerMode) => writeJson(MODE_KEY, v === "sources" ? null : v);
 
 // ------------------------------------------------------------------ words, relevance, English search terms
 
@@ -239,14 +260,15 @@ export async function lookup(topic: string, game: string | null, f: Fetch = fetc
 
 // ------------------------------------------------------------------ chat answer
 
-export interface LookupReply { text: string; ok: boolean | null; links: { label: string; url: string }[]; source?: string; ask?: boolean }
+export interface LookupReply { text: string; ok: boolean | null; links: { label: string; url: string }[]; source?: string; ask?: boolean; /** The AI really answered (not: no AI set up / error). */ aiAnswered?: boolean }
 /** What JARVIS can use from the PC (when online): videos with the user's YouTube key, an AI summary of the passages. */
 export interface PcHelp { call: <T>(method: string, params?: unknown) => Promise<T> }
 type Summary = { answered: boolean; answer: string; best: number; provider: string; model: string };
 
 export function fromMemory(i: LookupIntent): Learned | undefined { return findLearned(learnedKey(i.topic, i.game)); }
 
-export function askPermission(i: LookupIntent): LookupReply {
+export function askPermission(i: LookupIntent, mode: AnswerMode = "sources"): LookupReply {
+  if (mode === "ai") return { text: `Dazu habe ich nichts eingespeichert. Darf ich die KI an deinem PC fragen (z. B. das kostenlose Gemini)? Gesendet wird nur deine Frage „${i.raw}“. Die Antwort kommt dann ohne Quelle – ich markiere sie so.`, ok: null, links: [], ask: true };
   return { text: `Dazu habe ich nichts eingespeichert. Darf ich im Internet nachsehen? Ich frage mehrere offene Wissensquellen gleichzeitig (${sourcesFor(i.topic, i.game, i.raw).join(", ")}) und nehme die beste – keine Suchmaschine, gesendet wird nur der Suchbegriff „${i.topic}${i.game ? ` ${i.game}` : ""}“. Mit verbundenem PC kommen passende YouTube-Videos dazu (nur mit deinem eigenen Schlüssel); TikTok, Instagram und Reddit öffne ich dir nur als Suche.`, ok: null, links: [], ask: true };
 }
 
@@ -314,7 +336,7 @@ const providerLabel = (p: string) => ({ claude: "Claude", ollama: "deiner lokale
 export async function aiAnswer(i: LookupIntent, pc: PcHelp): Promise<LookupReply> {
   try {
     const r = await pc.call<{ answer: string; sure: boolean; provider: string; model: string }>("assistant.freeAnswer", { question: i.raw });
-    return { text: `⚠ KI-Antwort von ${providerLabel(r.provider)} – ohne Quelle, nicht nachgeprüft, kann falsch sein:\n${r.answer}${r.sure ? "" : "\n\n(Die KI ist sich selbst nicht sicher.)"}\n\nDas merke ich mir nicht als Wissen – dafür brauche ich eine Quelle.`, ok: null, links: [], source: providerLabel(r.provider) };
+    return { text: `⚠ KI-Antwort von ${providerLabel(r.provider)} – ohne Quelle, nicht nachgeprüft, kann falsch sein:\n${r.answer}${r.sure ? "" : "\n\n(Die KI ist sich selbst nicht sicher.)"}\n\nDas merke ich mir nicht als Wissen – dafür brauche ich eine Quelle.`, ok: null, links: [], source: providerLabel(r.provider), aiAnswered: true };
   } catch (e) {
     const code = (e as { code?: string }).code;
     return { text: code === "assistant-local" ? "Am PC ist noch keine KI eingerichtet. Kostenlos geht es mit einem Gemini-Schlüssel (KI-Assistent → „Kostenlose KI für JARVIS-Recherche“) oder mit Ollama auf dem PC." : `Die KI konnte nicht antworten: ${(e as Error).message}`, ok: code === "assistant-local" ? null : false, links: [] };

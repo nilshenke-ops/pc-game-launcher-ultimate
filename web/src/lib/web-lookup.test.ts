@@ -5,7 +5,7 @@ const ls = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, 
 vi.stubGlobal("localStorage", ls);
 vi.stubGlobal("window", { localStorage: ls, sessionStorage: ls });
 
-const { lookupIntent, topicOf, relevant, lookup, lookupAnswer, fromMemory, learnedReply, webPermission, setWebPermission, toEnglish, contextOf, introFromHtml, askPermission, score, sourcesFor, aiAnswer } = await import("./web-lookup");
+const { lookupIntent, topicOf, relevant, lookup, lookupAnswer, fromMemory, learnedReply, webPermission, setWebPermission, toEnglish, contextOf, introFromHtml, askPermission, score, sourcesFor, aiAnswer, fallbackIntent, askPermission: askPerm2 } = await import("./web-lookup");
 const { GAMES, gameMentioned } = await import("./knowledge-sources");
 const { _resetForTests } = await import("./journal");
 const { openQuestions, learnedAll } = await import("./jarvis-memory");
@@ -197,6 +197,21 @@ describe("Kostenlose KI ohne Quelle", () => {
     expect(learnedAll()).toHaveLength(0);
     const none = await aiAnswer(i, { call: async () => { throw Object.assign(new Error("x"), { code: "assistant-local" }); } });
     expect(none.text).toContain("Gemini-Schlüssel");
+  });
+});
+
+describe("Nicht wissen ist kein Ende", () => {
+  it("auch ein bloßer Begriff oder Spielname wird nachgeschlagen, Befehle nicht", () => {
+    expect(fallbackIntent("Ship or Burn")).toMatchObject({ kind: "question", topic: "Ship or Burn", game: null });
+    expect(fallbackIntent("Hornet Hollow Knight")).toMatchObject({ topic: "Hornet", game: "Hollow Knight" });
+    expect(fallbackIntent("Starte Minecraft")).toBeNull();
+    expect(fallbackIntent("Danke")).toBeNull();
+    expect(fallbackIntent("x".repeat(90))).toBeNull();
+  });
+  it("Modus „Direkt von der KI“: die Erlaubnisfrage nennt die KI und was gesendet wird", () => {
+    const q = askPerm2(fallbackIntent("Ship or Burn")!, "ai");
+    expect(q.text).toContain("Darf ich die KI an deinem PC fragen");
+    expect(q.text).toContain("ohne Quelle");
   });
 });
 

@@ -215,7 +215,7 @@ function ChatBingo({ id }: { id: string }) {
   return <div className="as-bingo"><b className="small">{e.data.title}</b><BingoBoardLazy e={e} /></div>;
 }
 
-function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean) => void }) {
+function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
   // Settings before a set-up change, to undo it with one tap.
@@ -228,7 +228,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"]
     if (a.kind === "openUrl" && typeof a.params?.url === "string" && /^https:\/\//.test(a.params.url)) { window.open(a.params.url, "_blank", "noopener,noreferrer"); return; }
     // Answer to "Soll ich im Internet nachsehen?" for a bingo.
     if (a.kind === "aiAnswer" && a.params) { setDone({ [i]: true }); onLookup(String(a.params.question ?? ""), true, a.label, true); return; }
-    if (a.kind === "lookupChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/web-lookup").then((m) => m.setWebPermission("always")); onLookup(String(a.params.question ?? ""), a.params.ok === true, a.label); return; }
+    if (a.kind === "lookupChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/web-lookup").then((m) => m.setWebPermission("always")); onLookup(String(a.params.question ?? ""), a.params.ok === true, a.label, false, a.params.sources === true); return; }
     if (a.kind === "bingoChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/bingo-chat").then((m) => m.setWebAlways(true)); onBingo(String(a.params.question ?? ""), a.params.web === true, a.label); return; }
     if (a.kind === "jarvisForget" && a.params) {
       const { forgetNow } = await import("../lib/jarvis-chat");
@@ -300,7 +300,7 @@ export default function Assistant() {
 
   useEffect(() => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(chat)); } catch { /* private mode */ } end.current?.scrollIntoView({ block: "end" }); }, [chat]);
 
-  const ask = async (q: string, extra: { bingoWeb?: boolean; lookup?: boolean; ai?: boolean; shown?: string } = {}) => {
+  const ask = async (q: string, extra: { bingoWeb?: boolean; lookup?: boolean; ai?: boolean; sources?: boolean; shown?: string } = {}) => {
     const question = q.trim();
     if (!question || busy) return;
     setText("");
@@ -311,7 +311,7 @@ export default function Assistant() {
         // JARVIS: understands the request, runs named gaming actions and website changes directly, reports the real result.
         const { jarvisAsk } = await import("../lib/jarvis-chat");
         const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai });
+        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai, sources: extra.sources });
         setChat((c) => ({ conversationId: r.conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply: r.reply, bingoId: r.bingoId, undo: r.undo }] }));
         speak(r.reply.text);
         if (r.navigate) navTo(r.navigate);
@@ -397,7 +397,7 @@ export default function Assistant() {
               <div className="chips">{(jv.enabled ? jarvisChips() : online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
-          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label, ai) => void ask(q, { lookup: ok, ai, shown: label })} />)}
+          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label, ai, sources) => void ask(q, { lookup: ok, ai, sources, shown: label })} />)}
           {busy && <div className="as-turn bot"><Bot size={18} aria-hidden /><div className="as-bubble as-typing" aria-label={t("Antwort wird erstellt")}><i /><i /><i /></div></div>}
           <div ref={end} />
         </div>
