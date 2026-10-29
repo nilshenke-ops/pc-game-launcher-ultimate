@@ -1,26 +1,24 @@
 {
-  "version": "2.81.0",
+  "version": "2.82.0",
   "date": "2026-10-29",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.81.0/PCGameLauncherCompanion.exe",
-  "size": 88348844,
-  "sha256": "f13d5fecc30667b0670e866ea66dd3ea6eb6da0e16d8c0f9f5e8b58a6c46ba31",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.82.0/PCGameLauncherCompanion.exe",
+  "size": 88378330,
+  "sha256": "b11d6606f25c7d2f734b870f87b1a9042ea2229c90a382258789bf911dfb66b7",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.81.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.81.0/PCGameLauncherCompanion-2.81.0-win-x64.zip",
-    "size": 82611491,
-    "sha256": "ee5c9b0d8c41d968964088591a6a3064435e3c24052ec86ce80ae43bdf475658"
+    "fileName": "PCGameLauncherCompanion-2.82.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.82.0/PCGameLauncherCompanion-2.82.0-win-x64.zip",
+    "size": 82640493,
+    "sha256": "f533cd2a9c4d2de39556762e0715c90a648005af32fb661fa3c274381982c17c"
   },
-  "notes": "JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC · Einstellung „Antworten auf Wissensfragen“ (JARVIS → Stimme & Ton): „Aus Quellen“ (Standard; KI per Knopf), „Quellen, sonst KI“ (findet er nichts, fragt er sofort die KI am PC) und „Direkt von der KI“ (gleich die KI am PC, z. B. das kostenlose Gemini; mit Knopf „In Quellen nachsehen“) – KI-Antworten bleiben als „ohne Quelle“ markiert · Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach und sagt das",
+  "notes": "",
   "changes": {
-    "neu": [
-      "JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC",
-      "Einstellung „Antworten auf Wissensfragen“ (JARVIS → Stimme & Ton): „Aus Quellen“ (Standard; KI per Knopf), „Quellen, sonst KI“ (findet er nichts, fragt er sofort die KI am PC) und „Direkt von der KI“ (gleich die KI am PC, z. B. das kostenlose Gemini; mit Knopf „In Quellen nachsehen“) – KI-Antworten bleiben als „ohne Quelle“ markiert",
-      "Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach und sagt das"
-    ],
+    "neu": [],
     "verbessert": [],
-    "behoben": []
+    "behoben": [
+      "Verbindungs-Check: Prüfung 6 (Anmeldung) meldete direkt nach dem Öffnen manchmal „Fehler“, obwohl die Anmeldung noch lief – der Check wartet jetzt kurz darauf"
+    ]
   },
-  "signature": "M8Yrxwyq2VBlC3KfsnHpP+M5y3V7Tz6upEx5G4XUHMrhojS4kaC93jl/p/v1BTYM01l2DOQ6PDlZdYmvJj+GFw=="
+  "signature": "1ThKNG+ixZSSptjlx+c8NwvhSvv0fG/mjfkEOLW3b+HYVsrfPV3sDDx1hERtXys0/jFFmyyoj/yGm+E6aTzeKg=="
 }

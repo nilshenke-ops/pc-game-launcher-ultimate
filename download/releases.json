@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.82.0",
+    "date": "2026-10-29",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.82.0/PCGameLauncherCompanion.exe",
+    "size": 88378330,
+    "sha256": "b11d6606f25c7d2f734b870f87b1a9042ea2229c90a382258789bf911dfb66b7",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.82.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.82.0/PCGameLauncherCompanion-2.82.0-win-x64.zip",
+      "size": 82640493,
+      "sha256": "f533cd2a9c4d2de39556762e0715c90a648005af32fb661fa3c274381982c17c"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Verbindungs-Check: Prüfung 6 (Anmeldung) meldete direkt nach dem Öffnen manchmal „Fehler“, obwohl die Anmeldung noch lief – der Check wartet jetzt kurz darauf"
+      ]
+    },
+    "signature": "1ThKNG+ixZSSptjlx+c8NwvhSvv0fG/mjfkEOLW3b+HYVsrfPV3sDDx1hERtXys0/jFFmyyoj/yGm+E6aTzeKg=="
+  },
+  {
     "version": "2.81.0",
     "date": "2026-10-29",
     "channel": "stable",
@@ -1464,40 +1488,5 @@
       "behoben": []
     },
     "signature": "CZN9vrJPk+ZeTZVJqFZMDPc4j10neD/jyQk0gAzjaVLueSRU470X/gpQaWH+jahLsu2saw54BqD82OO0rJ2sBA=="
-  },
-  {
-    "version": "2.36.0",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.36.0/PCGameLauncherCompanion.exe",
-    "size": 87782714,
-    "sha256": "a115aafb9f01b01495edbfea2f42fd92902dc582848fb515c9315a0f923dddff",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.36.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.36.0/PCGameLauncherCompanion-2.36.0-win-x64.zip",
-      "size": 82044778,
-      "sha256": "61900183a0034609eb3e76b39cdf897222c814624e3239f3d8d040f80b55e27b"
-    },
-    "notes": "Remote Desktop (Steuerung → Remote Desktop): der echte Windows-Bildschirm live auf iPhone, iPad oder einem anderen Browser – über die bestehende angemeldete Verbindung (WLAN direkt, von unterwegs über den eigenen Tunnel oder das Relay) · Touch-Maus (tippen, Doppeltippen, halten = Rechtsklick, halten und ziehen, wischen = scrollen, zwei Finger = Rechtsklick) und Touchpad-Modus mit eigenem Zeiger · Bildschirmtastatur mit Umlauten, Strg/Alt/Umschalt/Windows zum Antippen, Sondertasten, F1–F12 und Kombinationen (Strg+C/V/X/Z/A, Alt+Tab, Win+D, Task-Manager); Maus und Tastatur am Computer-Browser",
-    "changes": {
-      "neu": [
-        "Remote Desktop (Steuerung → Remote Desktop): der echte Windows-Bildschirm live auf iPhone, iPad oder einem anderen Browser – über die bestehende angemeldete Verbindung (WLAN direkt, von unterwegs über den eigenen Tunnel oder das Relay)",
-        "Touch-Maus (tippen, Doppeltippen, halten = Rechtsklick, halten und ziehen, wischen = scrollen, zwei Finger = Rechtsklick) und Touchpad-Modus mit eigenem Zeiger",
-        "Bildschirmtastatur mit Umlauten, Strg/Alt/Umschalt/Windows zum Antippen, Sondertasten, F1–F12 und Kombinationen (Strg+C/V/X/Z/A, Alt+Tab, Win+D, Task-Manager); Maus und Tastatur am Computer-Browser",
-        "Zoom, Pause, Vollbild, Qualität (Automatisch, Wenig Daten, Ausgewogen, Hohe Qualität) mit gemessener Bildrate, Datenrate und Antwortzeit",
-        "Eigene Rechte „Bildschirm ansehen“ und „Fernsteuern“ (nie automatisch vergeben); Freigabe, Höchstdauer und Ende ohne Eingabe nur am PC einstellbar",
-        "Am PC: Leiste „… steuert diesen PC – Beenden“, Benachrichtigung und „Sitzung beenden“",
-        "Einstellungen für Remote Desktop werden auf dem Gerät gespeichert und gehen auch ohne PC",
-        "Anleitung: docs/REMOTE-DESKTOP.md"
-      ],
-      "verbessert": [
-        "Datenschutztaste beendet auf Wunsch auch eine laufende Fernsteuerung und lässt bis zum Ausschalten keine neue zu",
-        "Bilder werden nur bei Bedarf geschickt: höchstens zwei unterwegs, unverändertes Bild nicht doppelt, bei Stillstand weniger Aufnahmen (spart Leistung beim Spielen)",
-        "Sitzungen enden nach Höchstdauer, ohne Eingabe, ohne Antwort, bei Verbindungsabbruch oder entzogenem Recht – gedrückte Tasten werden immer losgelassen"
-      ],
-      "behoben": []
-    },
-    "signature": "JaMPVFdbhuXadZ01E2jOl4C2neroIirOxunlk3yIHcPmZS/ESp8jWniPCiCB3WxhFScf09QZ3JjIrKb18IydRQ=="
   }
 ]
