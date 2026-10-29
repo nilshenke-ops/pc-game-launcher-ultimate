@@ -1597,6 +1597,37 @@ test("PC-Steuerung und Leistungsanalyse: echte Werte vom Begleiter, Messung auf 
   await p.context().close();
 });
 
+test("JARVIS schlägt Unbekanntes nach: fragt vorher, Spiel-Wiki mit Quelle, merkt es sich, nichts erfunden", async ({ browser }) => {
+  const p = await adminPage(browser);
+  // The test machine has no free internet: the wiki answers like the real MediaWiki API.
+  await p.route("https://de.minecraft.wiki/api.php**", (route) => {
+    const u = new URL(route.request().url());
+    const body = u.searchParams.get("list") === "search"
+      ? { query: { search: [{ title: "Creeper", snippet: "Creeper" }] } }
+      : { query: { pages: { 1: { title: "Creeper", extract: "Creeper sind aggressive Monster, die nur in der Oberwelt spawnen. Beim Angriff explodieren sie." } } } };
+    return route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(body) });
+  });
+  await p.route("https://*.wikipedia.org/**", (route) => route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [] } }) }));
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  await say.fill("Was ist ein Creeper in Minecraft?"); await say.press("Enter");
+  await expect(last()).toContainText("Darf ich im Internet nachsehen?", { timeout: 15000 });
+  await last().getByRole("button", { name: "Ja, nachsehen" }).click();
+  await expect(last()).toContainText("Creeper sind aggressive Monster");
+  await expect(last()).toContainText("Quelle: Minecraft Wiki");
+  await say.fill("Was ist ein Creeper in Minecraft?"); await say.press("Enter");
+  await expect(last()).toContainText("von mir nachgeschlagen am");
+  await say.fill("Was ist ein Blorbfisch?"); await say.press("Enter");
+  await expect(last()).toContainText("Darf ich im Internet nachsehen?");
+  await last().getByRole("button", { name: "Ja, nachsehen" }).click();
+  await expect(last()).toContainText("ich erfinde keine Antwort");
+  await say.fill("Welche Fragen konntest du nicht beantworten?"); await say.press("Enter");
+  await expect(last()).toContainText("Was ist ein Blorbfisch?");
+  await p.context().close();
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

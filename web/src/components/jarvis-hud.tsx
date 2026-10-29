@@ -2,6 +2,7 @@
 // matters for gaming (PC, running game, profile, memory) and his skills as a command deck. Pure CSS animation,
 // switched off with "weniger Bewegung"; no timers – everything comes from existing state.
 
+import { setWebPermission, webPermission, type WebPermission } from "../lib/web-lookup";
 import { useEffect, useState } from "react";
 import { Brain, Gamepad2, Mic, SlidersHorizontal, Volume2, VolumeX, Wifi, WifiOff, Zap } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -96,8 +97,24 @@ function VoiceSettings() {
           <span className="muted">{t("Ton")}:</span>
           {(["sachlich", "locker"] as JarvisStyle[]).map((s) => <button key={s} type="button" className={`chip ${style === s ? "on" : ""}`} aria-pressed={style === s} onClick={() => setStyle(s)}>{s === "sachlich" ? t("Sachlich") : t("Locker (mit Sprüchen)")}</button>)}
         </div>
+        <WebLookupSetting />
         <span className="muted tiny">{t("„Locker“ hängt nach erledigten Aufträgen einen frechen Spruch an – Zahlen und Fakten bleiben gleich, bei Fehlern und Rückfragen gibt es keinen Spruch. JARVIS ahmt keine echte Person nach.")}</span>
       </div>
     </details>
+  );
+}
+
+/** Whether JARVIS may look unknown things up in open wikis (Wikipedia, game wikis): ask each time, always, never. */
+function WebLookupSetting() {
+  const [v, setV] = useState<WebPermission>(webPermission);
+  const set = (x: WebPermission) => { setWebPermission(x); setV(x); };
+  return (
+    <div className="stack-sm">
+      <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+        <span className="muted">{t("Unbekanntes nachschlagen")}:</span>
+        {(["ask", "always", "never"] as WebPermission[]).map((x) => <button key={x} type="button" className={`chip ${v === x ? "on" : ""}`} aria-pressed={v === x} onClick={() => set(x)}>{x === "ask" ? t("Vorher fragen") : x === "always" ? t("Immer") : t("Nie")}</button>)}
+      </div>
+      <span className="muted tiny">{t("Nur offene Wissensquellen: Wikipedia und offizielle Spiele-Wikis (Minecraft, Terraria, Stardew Valley, Elden Ring). Gesendet wird nur der Suchbegriff. Gefundenes steht mit Quelle unter Wiki → „JARVIS-Wissen (nachgeschlagen)“.")}</span>
+    </div>
   );
 }

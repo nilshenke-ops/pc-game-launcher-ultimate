@@ -8,6 +8,9 @@ import type { WikiPage } from "./journal-logic";
 
 export const MEMORY_TITLE = "JARVIS-Gedächtnis";
 export const LOG_TITLE = "JARVIS-Protokoll";
+export const LEARNED_TITLE = "JARVIS-Wissen (nachgeschlagen)";
+export const OPEN_TITLE = "JARVIS: offene Fragen";
+const MAX_LEARNED = 200;
 const MAX_LOG = 100;
 const MAX_FACTS = 300;
 
@@ -87,3 +90,31 @@ export function lastLog(n = 8): string[] { return lines(page(LOG_TITLE)).slice(-
 export const memoryCount = () => lines(page(MEMORY_TITLE)).length;
 export const memoryPageId = () => page(MEMORY_TITLE)?.id ?? null;
 export const logPageId = () => page(LOG_TITLE)?.id ?? null;
+
+// ------------------------------------------------------------------ looked up on the internet (on request)
+
+export interface Learned { key: string; at: string; text: string; source: string; url: string; title: string }
+const LEARNED_INTRO = "Was JARVIS auf deine Frage im Internet nachgeschlagen hat – mit Quelle. Beim nächsten Mal antwortet er von hier, ohne erneut nachzusehen. Zeilen löschen = vergessen.";
+const LEARNED_RX = /^- (\S+) · \{(.+?)\} (.+?) ⟶ (.+) — Quelle: (.+?) <(https:\/\/[^>]+)>$/;
+
+export function learnedAll(): Learned[] {
+  return lines(page(LEARNED_TITLE)).map((l) => LEARNED_RX.exec(l)).filter((m): m is RegExpExecArray => !!m)
+    .map((m) => ({ at: m[1], key: m[2], title: m[3], text: m[4], source: m[5], url: m[6] }));
+}
+export const learnedKey = (topic: string, game: string | null) => `${game ? fold(game) + "|" : ""}${fold(topic).replace(/\s+/g, " ").trim()}`;
+export function findLearned(key: string): Learned | undefined { return learnedAll().find((x) => x.key === key); }
+export function saveLearned(x: Omit<Learned, "at">) {
+  const clean = (v: string) => v.replace(/[\n\r]+/g, " ").replace(/[<>{}]/g, "").replace(/ ⟶ | — Quelle: /g, " – ").trim();
+  const line = `- ${today()} · {${x.key}} ${clean(x.title)} ⟶ ${clean(x.text).slice(0, 600)} — Quelle: ${clean(x.source)} <${x.url.replace(/[<>\s]/g, "")}>`;
+  const rest = lines(page(LEARNED_TITLE)).filter((l) => !l.includes(`{${x.key}}`));
+  write(LEARNED_TITLE, LEARNED_INTRO, [...rest, line].slice(-MAX_LEARNED));
+}
+export const learnedPageId = () => page(LEARNED_TITLE)?.id ?? null;
+
+/** Questions JARVIS could not answer, so you can see where he is still missing knowledge (no answer is made up). */
+export function noteOpenQuestion(question: string) {
+  const q = question.replace(/\s+/g, " ").trim().slice(0, 200);
+  const rest = lines(page(OPEN_TITLE)).filter((l) => !l.endsWith(`„${q}“`));
+  write(OPEN_TITLE, "Fragen, auf die JARVIS keine verlässliche Antwort gefunden hat. Nichts davon wurde erfunden.", [...rest, `- ${today()} · „${q}“`].slice(-100));
+}
+export const openQuestions = () => lines(page(OPEN_TITLE)).map((l) => l.slice(2));

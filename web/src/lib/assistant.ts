@@ -3,7 +3,7 @@
 import { t } from "./i18n";
 
 export interface AssistantAction { kind: string; label: string; method?: string | null; params?: Record<string, unknown>; path?: string | null; confirm?: boolean; /** JARVIS may run it now (decided on the PC). */ auto?: boolean; target?: string | null }
-export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "ollama" | "claude" | "offline" | "device"; model?: string | null; costUsd?: number | null; /** Could not be done – JARVIS stops further steps. */ failed?: boolean }
+export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "ollama" | "claude" | "offline" | "device"; model?: string | null; costUsd?: number | null; /** Could not be done – JARVIS stops further steps. */ failed?: boolean; /** No good answer known – JARVIS may look it up. */ unsure?: boolean }
 export interface ChatState { conversationId: string | null; turns: { role: "user" | "bot"; text?: string; reply?: AssistantReply; bingoId?: string; /** Settings before a JARVIS change of this website – for "Rückgängig". */ undo?: unknown }[] }
 
 export const CHAT_KEY = "pgl.assistant.chat";

@@ -530,3 +530,6 @@ JARVIS: „Mach mein Dashboard etwas heller“, „Cyberpunk-Stil“, „Minecra
 Seite: /control
 Stichworte: pc steuerung steuerzentrale programme beenden schließen laufend favoriten zuletzt status verbindung letzter kontakt ram cpu gpu leistung langsam ruckelt fps sitzung vergleichen prozesse speicher
 Steuerung → PC-Steuerung: Verbindung (letzter Kontakt), Live-Werte, laufende Programme mit „Beenden“ (Bestätigung, sanft), Favoriten, Zuletzt gestartet, Programme mit dem meisten Speicher („Jetzt messen“), Sitzungen vergleichen, Remote Desktop. JARVIS: „Warum läuft mein Spiel langsam?“, „Welche Programme verbrauchen am meisten RAM?“, „Ist meine GPU ausgelastet?“, „Was könnte meine FPS beeinträchtigen?“ – Messwerte und Vermutungen getrennt. FPS werden nicht gemessen.
+
+## JARVIS schlägt nach
+JARVIS beantwortet Wissensfragen („Was ist ein Creeper in Minecraft?“, „Such im Internet nach …“) aus Spiele-Wikis (Minecraft, Terraria, Stardew Valley, Elden Ring) und Wikipedia – erst nach „Ja“ oder „Immer erlauben“, mit Quelle. Gelerntes steht im Wiki unter „JARVIS-Wissen (nachgeschlagen)“, Fragen ohne Antwort unter „JARVIS: offene Fragen“. Einstellen: JARVIS → Stimme & Ton → Unbekanntes nachschlagen.

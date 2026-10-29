@@ -43,6 +43,8 @@ public sealed class AssistantReply
     public bool Failed { get; set; }
     /// <summary>Recognised command or data answer (not a guess from the help texts) – used to decide whether Claude is needed.</summary>
     [System.Text.Json.Serialization.JsonIgnore] public bool Confident { get; set; } = true;
+    /// <summary>The built-in help had no good match – JARVIS may then look the question up (with the user's permission).</summary>
+    public bool Unsure => !Confident;
 }
 
 /// <summary>Live facts and fuzzy lookups used by both the local assistant and Claude's tools.</summary>

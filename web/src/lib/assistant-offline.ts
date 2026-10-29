@@ -84,7 +84,7 @@ export function answerOffline(question: string, ctx: OfflineContext): AssistantR
 
   const hits = search(SECTIONS, q, 3);
   if (!hits.length || hits[0].score < 2.5) {
-    return reply(t("Das weiß ich ohne PC nicht. Frag mich zur App (z. B. „Wie richte ich Discord ein?“), lass dich zu einer Seite bringen („Öffne das Deck“) oder frag nach deinem Backlog."), { suggestions: offlineExamples().slice(0, 4) });
+    return { ...reply(t("Das weiß ich ohne PC nicht. Frag mich zur App (z. B. „Wie richte ich Discord ein?“), lass dich zu einer Seite bringen („Öffne das Deck“) oder frag nach deinem Backlog."), { suggestions: offlineExamples().slice(0, 4) }), unsure: true };
   }
   const top = hits[0].section;
   return reply(top.text, {

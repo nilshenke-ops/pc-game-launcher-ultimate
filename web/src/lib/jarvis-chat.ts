@@ -12,7 +12,7 @@ import type { AssistantAction, AssistantReply } from "./assistant";
 import { codeRequest, offTopic, siteIntent, splitSteps } from "./jarvis";
 import { runAuto, runSite, type StepResult } from "./jarvis-run";
 import { ensureJarvis } from "./jarvis-session";
-import { forget, lastLog, logDone, logPageId, memoryIntent, memoryPageId, recall, remember, type MemoryIntent } from "./jarvis-memory";
+import { forget, lastLog, logDone, logPageId, memoryIntent, memoryPageId, noteOpenQuestion, recall, remember, type MemoryIntent } from "./jarvis-memory";
 import type { LibraryItem } from "./types";
 
 export interface JarvisStep { text: string; ok: boolean | null }
@@ -22,7 +22,7 @@ const OFF_TOPIC = () => t("Ich bin JARVIS Gaming – ich kümmere mich nur um de
 const CODE = () => t("Neue Funktionen oder Seiten sind Änderungen am Programmcode – die mache ich nicht nebenbei im Chat, und meinen eigenen Code ändere ich nie. Dafür gibt es den Entwicklungsweg mit Versionskontrolle, Tests und einem Update über die Update-Zentrale. Innerhalb der App (Startseiten, Widgets, Leiste, Kategorien, Profile, Design) ändere ich dagegen direkt, was du sagst.");
 const opens = (s: string) => /\b(oeffne|öffne|offne|zeig|zeige|geh|gehe|wechsel)\b/i.test(s);
 
-export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean }
+export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean }
 
 export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<JarvisTurn> {
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
@@ -35,6 +35,18 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     const { setStyle } = await import("./jarvis-style");
     setStyle(tone);
     return { reply: reply(tone === "locker" ? "✓ Ab jetzt locker. Ich hoffe, du verträgst Sprüche. 😏 (Zurück mit „Sprich wieder sachlich“.)" : "✓ Ab jetzt wieder sachlich – keine Sprüche mehr."), steps: [{ text: question, ok: true }] };
+  }
+  // What JARVIS learned by looking things up, and where he still has gaps.
+  if (/\bwas hast du (?:alles )?nachgeschlagen\b|\bdein (?:nachgeschlagenes )?wissen\b|jarvis-wissen/i.test(question)) {
+    const { learnedAll, learnedPageId } = await import("./jarvis-memory");
+    const l = learnedAll().reverse();
+    const id = learnedPageId();
+    return { reply: reply(l.length ? [`JARVIS – nachgeschlagen (${l.length})`, ...l.slice(0, 12).map((x) => `• ${x.title} – ${x.source}, ${x.at}`)].join("\n") : t("Ich habe noch nichts nachgeschlagen."), id ? [{ kind: "navigate", label: t("JARVIS-Wissen öffnen"), path: `/wiki?id=${id}` }] : []), steps: [] };
+  }
+  if (/\bwelche fragen (?:konntest|kannst) du nicht\b|\boffene fragen\b|\bwas weißt du (?:noch )?nicht\b/i.test(question)) {
+    const { openQuestions } = await import("./jarvis-memory");
+    const o = openQuestions().reverse();
+    return { reply: reply(o.length ? [t("JARVIS – Fragen ohne verlässliche Antwort ({n})", { n: o.length }), ...o.slice(0, 12).map((x) => "• " + x)].join("\n") : t("Bisher keine – auf alles, was du gefragt hast, hatte ich eine Antwort mit Quelle.")), steps: [] };
   }
   // "Merk dir einen Hinweis für Elden Ring: …" belongs to that game's journal, not to the general memory.
   const { coachIntent: coach } = await import("./game-coach");
@@ -62,24 +74,34 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     // Challenges from the checked catalog ("fünf mittelschwere Minecraft-Challenges", "schwieriger", "geschafft").
     const { challengeIntent } = await import("./challenge-chat");
     const chi = challengeIntent(part);
+    // "Such im Internet nach …" / "Wikipedia: …" – asked for directly.
+    const { lookupIntent } = await import("./web-lookup");
+    const lk = lookupIntent(part);
+    const lke = !chi && lk?.kind === "explicit" ? lk : null;
     // Design wishes in plain language: shown as a preview first, saved only with "Übernehmen".
     const { designIntent } = await import("./design-ai");
-    const di = chi ? null : designIntent(part, getPreview()?.theme ?? getPrefs().theme);
+    const di = chi || lke ? null : designIntent(part, getPreview()?.theme ?? getPrefs().theme);
     // Performance questions: real values from the PC, measured facts kept apart from suspicions.
     const { perfIntent } = await import("./perf-chat");
-    const pfi = chi || di ? null : perfIntent(part);
+    const pfi = chi || di || lke ? null : perfIntent(part);
     const { playtimeIntent } = await import("./playtime");
-    const pt = chi || di || pfi ? null : playtimeIntent(part);
+    const pt = chi || di || pfi || lke ? null : playtimeIntent(part);
     const { coachIntent } = await import("./game-coach");
-    const ci = pt || chi || di || pfi ? null : coachIntent(part);
+    const ci = pt || chi || di || pfi || lke ? null : coachIntent(part);
     const { gamingIntent } = await import("./gaming-intel");
-    const gi = pt || ci || chi || di || pfi ? null : gamingIntent(part);
+    const gi = pt || ci || chi || di || pfi || lke ? null : gamingIntent(part);
     const { researchIntent } = await import("./gaming-research");
-    const ri = pt || ci || gi || chi || di || pfi ? null : researchIntent(part);
-    const setup = pt || ci || gi || ri || chi || di || pfi ? null : setupReply(part, getPrefs(), navItems());
-    const site = setup || pt || ci || gi || ri || chi || di || pfi ? null : siteIntent(part);
+    const ri = pt || ci || gi || chi || di || pfi || lke ? null : researchIntent(part);
+    const setup = pt || ci || gi || ri || chi || di || pfi || lke ? null : setupReply(part, getPrefs(), navItems());
+    // A question ("Was ist ein Creeper in Minecraft?") is not an order to open a page.
+    const site = setup || pt || ci || gi || ri || chi || di || pfi || lke || lk?.kind === "question" ? null : siteIntent(part);
     const { isBingoRequest } = await import("./bingo");
-    if (pfi) {
+    if (lke) {
+      const a = await lookupFlow(lke, ctx);
+      r = { text: a.text, ok: a.ok };
+      if (a.source) sources.add(a.source);
+      buttons.push(...a.actions);
+    } else if (pfi) {
       const { perfAnswer } = await import("./perf-chat");
       for (let i = 0; !ctx.online && client.status.phase === "connecting" && i < 40; i++) await new Promise((res) => setTimeout(res, 100));
       const online = ctx.online || (client.status.phase === "online" && client.status.auth === "ok" && !client.demo);
@@ -187,6 +209,14 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       res.reply.sources.forEach((s) => sources.add(s));
       const autos = res.reply.actions.filter((a) => a.auto && a.kind !== "navigate");
       const navs = res.reply.actions.filter((a) => a.auto && a.kind === "navigate");
+      // A knowledge question the built-in help cannot really answer (no hit, or a text that does not even mention the
+      // topic): look it up instead – and never start or open anything for a question.
+      if (lk?.kind === "question" && (res.reply.unsure || !mentions(res.reply.text, lk.topic))) {
+        const a = await lookupFlow(lk, ctx);
+        r = { text: a.text, ok: a.ok };
+        if (a.source) sources.add(a.source);
+        buttons.push(...a.actions);
+      } else {
       buttons.push(...res.reply.actions.filter((a) => !a.auto));
       if (autos.length) {
         const results: StepResult[] = [];
@@ -201,15 +231,29 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       } else if (navs.length && last) {
         navigate = navs[0].path ?? undefined;
         r = { text: t("✓ {n}", { n: navs[0].label }), ok: true };
+      } else if (lk && res.reply.unsure) {
+        // The built-in help has nothing good: look it up instead of a vague answer.
+        const a = await lookupFlow(lk, ctx);
+        r = { text: a.text, ok: a.ok };
+        if (a.source) sources.add(a.source);
+        buttons.push(...a.actions);
       } else {
         r = { text: res.reply.text, ok: res.reply.failed ? false : null };
         if (navs.length) buttons.push(...navs);
       }
+      }
     } else {
       const [{ answerOffline }, lib] = await Promise.all([import("./assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
       const o = answerOffline(part, { library: lib.items ?? [], paired: !!client.credentials });
-      r = { text: o.text, ok: null };
-      buttons.push(...o.actions);
+      if (o.unsure && lk) {
+        const a = await lookupFlow(lk, ctx);
+        r = { text: a.text, ok: a.ok };
+        if (a.source) sources.add(a.source);
+        buttons.push(...a.actions);
+      } else {
+        r = { text: o.text, ok: null };
+        buttons.push(...o.actions);
+      }
     }
     steps.push({ text: part, ok: r.ok });
     texts.push(parts.length > 1 ? `${n + 1}. ${r.text}` : r.text);
@@ -221,6 +265,37 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
   // The log page ("JARVIS-Protokoll") – only what really happened.
   try { logDone(question, steps.map((s, i) => ({ text: texts[i] ?? s.text, ok: s.ok }))); } catch { /* storage full – the result is still shown */ }
   return { reply: out, steps, undo, navigate, conversationId, bingoId };
+}
+
+/** Does an answer talk about the asked topic at all? ("Creeper" in a text about the worlds page: no.) */
+function mentions(text: string, topic: string): boolean {
+  const norm = (x: string) => x.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  const words = norm(topic).split(/[^a-z0-9äöüß]+/).filter((w) => w.length >= 3);
+  const t = norm(text);
+  return words.length === 0 || words.some((w) => t.includes(w.length > 5 ? w.slice(0, -1) : w));
+}
+
+/** Known from earlier → from memory; otherwise look it up (after permission) – nothing is guessed. */
+async function lookupFlow(i: import("./web-lookup").LookupIntent, ctx: JarvisCtx): Promise<{ text: string; ok: boolean | null; source?: string; actions: AssistantAction[] }> {
+  const w = await import("./web-lookup");
+  const known = w.fromMemory(i);
+  const links = (l: { label: string; url: string }[]): AssistantAction[] => l.map((x) => ({ kind: "openUrl", label: x.label, params: { url: x.url } }));
+  if (known) { const a = w.learnedReply(known); return { text: a.text, ok: a.ok, source: a.source, actions: links(a.links) }; }
+  const perm = w.webPermission();
+  if (ctx.lookup === false || (perm === "never" && i.kind !== "explicit")) {
+    noteOpenQuestion(i.raw);
+    return { text: t("Ohne nachzusehen weiß ich das nicht – ich rate nicht. Die Frage steht unter „JARVIS: offene Fragen“."), ok: null, actions: [] };
+  }
+  if (ctx.lookup === true || perm === "always" || i.kind === "explicit") {
+    const a = await w.lookupAnswer(i);
+    return { text: a.text, ok: a.ok, source: a.source, actions: links(a.links) };
+  }
+  const q = w.askPermission(i);
+  return { text: q.text, ok: null, actions: [
+    { kind: "lookupChoice", label: t("Ja, nachsehen"), params: { question: i.raw, ok: true } },
+    { kind: "lookupChoice", label: t("Ja, immer erlauben"), params: { question: i.raw, ok: true, always: true } },
+    { kind: "lookupChoice", label: t("Nein"), params: { question: i.raw, ok: false } },
+  ] };
 }
 
 function memoryReply(m: MemoryIntent, reply: (text: string, actions?: AssistantAction[], sources?: string[]) => AssistantReply): AssistantReply {
