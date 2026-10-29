@@ -208,6 +208,11 @@ describe("Nicht wissen ist kein Ende", () => {
     expect(fallbackIntent("Danke")).toBeNull();
     expect(fallbackIntent("x".repeat(90))).toBeNull();
   });
+  it("Rückmeldungen zur letzten Antwort werden nicht nachgeschlagen, Folgefragen behalten das Spiel", () => {
+    for (const x of ["Das macht teilweise noch kein Sinn es soll Mittel sein und ich bin impostor", "passt nicht", "es soll schwerer sein", "ich bin Impostor", "Stimmt", "Genau so"]) expect(fallbackIntent(x), x).toBeNull();
+    expect(fallbackIntent("Wer ist der Boss?", "Hollow Knight")).toMatchObject({ game: "Hollow Knight" });
+    expect(fallbackIntent("Ship or Burn")?.game).toBeNull();
+  });
   it("Modus „Direkt von der KI“: die Erlaubnisfrage nennt die KI und was gesendet wird", () => {
     const q = askPerm2(fallbackIntent("Ship or Burn")!, "ai");
     expect(q.text).toContain("Darf ich die KI an deinem PC fragen");

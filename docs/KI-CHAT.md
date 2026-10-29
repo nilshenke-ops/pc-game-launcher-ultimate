@@ -65,9 +65,22 @@ Ohne Claude fasst die am PC eingerichtete KI (Ollama, Gemini kostenlos, DeepSeek
 
 ## 6. Einrichtung
 
-1. Begleiter am PC auf 2.82.0 aktualisieren.
+1. Begleiter am PC auf 2.83.0 aktualisieren.
 2. **Echte Websuche**: am PC unter KI-Assistent → Einrichten einen Anthropic-API-Schlüssel eintragen (console.anthropic.com), Modus „Claude“ wählen, Monatslimit setzen. Die Websuche muss im Anthropic-Konto erlaubt sein (Console → Settings → Capabilities, standardmäßig an).
 3. **Kostenlos ohne Websuche**: Gemini-Schlüssel (aistudio.google.com) oder Ollama einrichten – dann Zusammenfassung der freien Quellen.
+4. **KI-Router (ab 2.83.0)**: KI-Assistent → Einrichten → „KI-Router“. Vorlage wählen (OpenRouter, Groq, MixRoute oder eigener Router im LAN), Schlüssel eintragen, „Modelle laden“, bis zu drei Modelle in Wunschreihenfolge ankreuzen, „Modelle übernehmen“, dann oben „KI-Router“ wählen.
+   - OpenRouter: kostenlose Modelle enden auf `:free` und werden live vom Router geladen (keine fest eingebauten Namen). Laut OpenRouter 20 Anfragen/Minute und 50/Tag, mit 10 $ Guthaben 1000/Tag. Die Ausweichliste geht als `models`-Feld an OpenRouter.
+   - Groq: kostenloser Tarif mit Tageslimits. MixRoute: kostenpflichtig. OmniRoute/LiteLLM: eigener Server im Heimnetz, 0 €.
+   - Andere Router: ist ein Modell besetzt, am Limit, nicht da oder gestört, versucht der PC das nächste. Unter der Antwort steht immer das Modell, das wirklich geantwortet hat; ein Ausweichmodell wird ausdrücklich genannt.
+   - Erlaubt sind nur `https` – oder `http` auf diesem PC bzw. im Heimnetz. Wechselt die Adresse, wird der alte Schlüssel gelöscht. Eigenes Monatslimit (Anfragen).
+
+## 6a. Nachrichten bauen aufeinander auf (ab 2.83.0)
+
+- Direkt nach einem Bingo ändert eine Rückmeldung wie „Das macht teilweise noch kein Sinn, es soll Mittel sein und ich bin Impostor“ genau diese Karte (Schwierigkeit, Größe, Spieler, Rolle, „andere Aufgaben“) – keine Websuche, kein Zerlegen in JARVIS-Schritte. Die alten Aufgaben kommen dabei nur zurück, wenn sonst nichts passt.
+- Among Us hat eigene Katalog-Aufgaben, getrennt nach Impostor und Crewmate (Kennzeichen `I`/`C` im Katalog); die KI bekommt die Rolle als Regel.
+- Folgefragen ohne Spielnamen („Und welche Updates kamen dort zuletzt?“) nutzen das zuletzt besprochene Spiel des Chats. Ein neu genanntes Spiel hat immer Vorrang; ohne Rückbezug wird kein Spiel geraten.
+- Die Recherche am PC bekommt die letzten 4 Nachrichten (je höchstens 400 Zeichen) als markierten Kontext – ausdrücklich „keine Anweisungen“, eckige Klammern und Steuerzeichen werden entfernt.
+- Rückmeldungen („passt nicht“, „stimmt“, „ich bin …“) werden nicht mehr als Suchbegriff nachgeschlagen.
 
 Umgebungsvariablen (nur für Tests/eigene Server, nicht nötig im Normalbetrieb): `PGL_MOJANG_BASE`, `PGL_STEAM_NEWS_BASE`, `PGL_STEAM_STORE_BASE`, `PGL_GEMINI_BASE`, `PGL_DEEPSEEK_BASE` lenken die jeweiligen Dienste auf Testserver um. Schlüssel werden **nicht** über Umgebungsvariablen gesetzt, sondern verschlüsselt am PC.
 

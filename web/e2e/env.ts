@@ -11,6 +11,7 @@ export const HOSTED_PORT = 18901;
 export const HOSTED_SITE = `http://127.0.0.1:${HOSTED_PORT}`;
 export const OBS_PORT = 18455;
 export const MOJANG_PORT = 18903;
+export const ROUTER_PORT = 18904;
 export const OBS_URL = `ws://127.0.0.1:${OBS_PORT}`;
 export const OBS_PASSWORD = "e2e-obs-passwort";
 

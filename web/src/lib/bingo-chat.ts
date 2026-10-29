@@ -6,7 +6,7 @@ import { client, readJson, writeJson } from "./rpc";
 import { getEntry } from "./journal";
 import type { LibraryItem } from "./types";
 import type { AssistantReply } from "./assistant";
-import { DIFFICULTY_LABEL, MODE_LABEL, parseRequest, poolFor, resolveOptions, type Card } from "./bingo";
+import { DIFFICULTY_LABEL, MODE_LABEL, ROLE_LABEL, parseRequest, poolFor, resolveOptions, type Card } from "./bingo";
 import { createCard } from "./bingo-make";
 
 export const BINGO_EXAMPLES = () => [t("Erstelle ein 4×4-Bingo für Minecraft auf mittel"), t("Mach mir ein 3×3-Bingo für Elden Ring auf leicht"), t("Erstelle ein 5×5-Bingo für PEAK auf gemischt")];
@@ -61,7 +61,7 @@ export async function bingoFromChat(question: string, previousId: string | null,
       const made = await createCard(x.o, { useAi: x.useAi, aiAvailable: x.useAi && ai.online && !!ai.provider, pcOnline: ai.online });
       const c = made.card;
       const text = t("Hier ist dein {s}×{s}-Bingo für {g} ({d}{m}) mit {n} Aufgaben. Tippe ein Feld an, wenn du die Aufgabe geschafft hast.", {
-        s: c.size, g: c.gameName ?? "", d: t(DIFFICULTY_LABEL[c.difficulty ?? "medium"]), m: c.mode && c.mode !== "classic" ? ", " + t(MODE_LABEL[c.mode]) : "", n: c.cells.filter((x) => !x.free).length,
+        s: c.size, g: c.gameName ?? "", d: t(DIFFICULTY_LABEL[c.difficulty ?? "medium"]), m: (c.mode && c.mode !== "classic" ? ", " + t(MODE_LABEL[c.mode]) : "") + (c.role ? ", " + t("als {r}", { r: ROLE_LABEL[c.role] }) : ""), n: c.cells.filter((x) => !x.free).length,
       });
       const notes = [...failed, ...(c.notesFromMaker ?? []).map((x) => t(x))];
       return {

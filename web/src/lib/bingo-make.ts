@@ -41,6 +41,8 @@ export interface Made { id: string; card: Card }
  * never swapped in silently.
  */
 /** First sentence, at most `max` characters, cut at a word. */
+/** The own rules for the AI plus the played role ("Ich spiele als Impostor …"), so it writes only tasks that role can do. */
+const aiRules = (o: BingoOptions) => [o.role === "impostor" ? "Ich spiele als Impostor: nur Aufgaben, die ein Impostor machen kann (z. B. Sabotage, Lüftungsschächte, Ausschalten, Täuschen) oder die für alle gelten – keine Crewmate-Aufgaben." : o.role === "crewmate" ? "Ich spiele als Crewmate: nur Aufgaben, die ein Crewmate machen kann (z. B. Aufgaben erledigen, Leichen melden, Notfall-Meeting, Impostor überführen) oder die für alle gelten – keine Impostor-Aufgaben." : "", o.rules].filter(Boolean).join(" ").slice(0, 300) || undefined;
 const shortText = (s: string, max: number) => { const first = s.split(/(?<=[a-zäöüß)"“][.!?])\s+(?=[A-ZÄÖÜ])/)[0]; return first.length <= max ? first : first.slice(0, first.lastIndexOf(" ", max)) + " …"; };
 
 export async function createCard(input: BingoOptions, opts: { useAi: boolean; aiAvailable: boolean; title?: string; players?: string[]; /** false: no PC – this device looks the game up itself (Microsoft Store, Wikipedia). */ pcOnline?: boolean }): Promise<Made> {
@@ -88,7 +90,7 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
         try {
           const levels = levelPlan(o.difficulty === "mixed" ? "mixed" : o.difficulty, n);
           const res = await client.call<{ known: boolean; tasks: unknown[]; provider: string; model?: string | null }>("assistant.bingoPlan", {
-            game: o.game, size: o.size, levels, mode: o.mode, players: o.players, categories: o.categories, exclude: [...(o.exclude ?? []), ...(o.avoid ?? []), ...(o.avoidOld ?? [])].slice(-60), rules: o.rules, progress: o.progress, spoilers: !!o.spoilers, facts,
+            game: o.game, size: o.size, levels, mode: o.mode, players: o.players, categories: o.categories, exclude: [...(o.exclude ?? []), ...(o.avoid ?? []), ...(o.avoidOld ?? [])].slice(-60), rules: aiRules(o), progress: o.progress, spoilers: !!o.spoilers, facts,
           });
           ai = sanitizeAiTasks(res, o.game);
           aiName = res.model ? `${res.provider} (${res.model})` : res.provider;
@@ -110,7 +112,7 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
     } else if (o.taskSource !== "own" && opts.useAi && opts.aiAvailable) {
       const levels = levelPlan(o.difficulty === "mixed" ? "mixed" : o.difficulty, n - (o.taskSource === "mixed" ? Math.floor(n / 2) : 0));
       const r = await client.call<{ known: boolean; tasks: unknown[]; provider: string; model?: string | null; costUsd?: number }>("assistant.bingoPlan", {
-        game: o.game, size: o.size, levels, mode: o.mode, players: o.players, categories: o.categories, exclude: [...(o.exclude ?? []), ...(o.avoid ?? []), ...(o.avoidOld ?? [])].slice(-60), rules: o.rules, progress: o.progress, spoilers: !!o.spoilers,
+        game: o.game, size: o.size, levels, mode: o.mode, players: o.players, categories: o.categories, exclude: [...(o.exclude ?? []), ...(o.avoid ?? []), ...(o.avoidOld ?? [])].slice(-60), rules: aiRules(o), progress: o.progress, spoilers: !!o.spoilers,
       });
       pool = sanitizeAiTasks(r, o.game);
       provider = r.model ? `${r.provider} (${r.model})` : r.provider;
@@ -132,7 +134,7 @@ export async function createCard(input: BingoOptions, opts: { useAi: boolean; ai
     const card: Card = {
       v: 2, title: (opts.title || cardTitle(o)).slice(0, 80), size: o.size, cells: toCells(picked.tasks, o.size, !!o.freeCenter), freeCenter: !!o.freeCenter,
       gameName: o.game, difficulty: o.difficulty, mode: o.mode, players, multi: players.length > 1 ? "shared" : undefined, win: "line",
-      timeLimitMin: o.mode === "speed" ? (o.timeLimitMin ?? 30) : o.timeLimitMin ?? null, rules: o.rules, createdAt: new Date().toISOString(), provider, genre: o.genre ?? null,
+      timeLimitMin: o.mode === "speed" ? (o.timeLimitMin ?? 30) : o.timeLimitMin ?? null, rules: o.rules, role: o.role ?? null, createdAt: new Date().toISOString(), provider, genre: o.genre ?? null,
       history: o.exclude?.slice(-200), notesFromMaker: [...notes, ...picked.notes], rating: null, favorite: false,
     };
     const id = newId();

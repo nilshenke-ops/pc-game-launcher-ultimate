@@ -24,7 +24,11 @@ export const MODE_LABEL: Record<BingoMode, string> = { classic: "Klassisch", spe
 const MODE_CAT: Partial<Record<BingoMode, Category>> = { survival: "survival", challenge: "challenge", fun: "fun", exploration: "explore", boss: "combat", achievement: "progress", coop: "team" };
 
 export type TaskSource = "catalog" | "genre" | "ai" | "own" | "web";
-export interface Task { text: string; level: Level; category: Category; team?: boolean; boss?: boolean; spoiler?: boolean; source: TaskSource; why?: string; /** General task that only fills up when the fitting ones run out. */ filler?: boolean }
+export interface Task { text: string; level: Level; category: Category; team?: boolean; boss?: boolean; spoiler?: boolean; source: TaskSource; why?: string; /** General task that only fills up when the fitting ones run out. */ filler?: boolean; /** Only for this role (e.g. Among Us: Impostor or Crewmate). */ role?: Role }
+
+/** A role in games with hidden roles (Among Us): tasks of the other role are left out. */
+export type Role = "impostor" | "crewmate";
+export const ROLE_LABEL: Record<Role, string> = { impostor: "Impostor", crewmate: "Crewmate" };
 
 export interface Cell extends BingoCell { level?: Level; category?: Category; source?: TaskSource; why?: string; doneBy?: string[]; doneAt?: string }
 
@@ -51,6 +55,7 @@ export interface Card extends Bingo {
   genre?: string | null;
   /** Texts of earlier cards in this series, so "new without repeating" really avoids them. */
   history?: string[];
+  role?: Role | null;
   notesFromMaker?: string[];
 }
 
@@ -78,6 +83,8 @@ export interface BingoOptions {
   /** Tasks from the game's Steam achievements (only after the user agreed to look on the internet). */
   web?: boolean;
   genre?: string | null;
+  /** Played role (Among Us): only tasks for this role or for everyone. */
+  role?: Role | null;
 }
 
 export const DEFAULT_OPTIONS: BingoOptions = { game: "", size: 4, difficulty: "medium", mode: "classic", players: 1, categories: [], taskSource: "auto" };
@@ -85,9 +92,10 @@ export const DEFAULT_OPTIONS: BingoOptions = { game: "", size: 4, difficulty: "m
 // ------------------------------------------------------------------------------------------ catalog
 
 export function parseLine(line: string, source: TaskSource): Task | null {
-  const m = /^([1-4])([ekcbtfhps])([TB!]*)\|(.{3,90})$/.exec(line);
+  const m = /^([1-4])([ekcbtfhps])([TB!IC]*)\|(.{3,90})$/.exec(line);
   if (!m) return null;
-  return { text: m[4], level: Number(m[1]) as Level, category: CAT_CODE[m[2]], team: m[3].includes("T") || undefined, boss: m[3].includes("B") || undefined, spoiler: m[3].includes("!") || undefined, source };
+  const role: Role | undefined = m[3].includes("I") ? "impostor" : m[3].includes("C") ? "crewmate" : undefined;
+  return { text: m[4], level: Number(m[1]) as Level, category: CAT_CODE[m[2]], team: m[3].includes("T") || undefined, boss: m[3].includes("B") || undefined, spoiler: m[3].includes("!") || undefined, ...(role ? { role } : {}), source };
 }
 
 /** The built-in game for a name ("Minecraft: Java Edition" → Minecraft), or null. */
@@ -170,7 +178,7 @@ function shuffle<T>(a: T[], rnd: () => number): T[] {
 }
 
 /** Tasks a card may use at all: fits the players, no spoilers unless wanted, nothing excluded. */
-export function usable(tasks: Task[], o: Pick<BingoOptions, "players" | "spoilers" | "exclude" | "beginner" | "expert">): Task[] {
+export function usable(tasks: Task[], o: Pick<BingoOptions, "players" | "spoilers" | "exclude" | "beginner" | "expert"> & { role?: Role | null }): Task[] {
   const ex = usedSet(o.exclude ?? []);
   const seen = new Set<string>();
   return tasks.filter((t) => {
@@ -178,6 +186,7 @@ export function usable(tasks: Task[], o: Pick<BingoOptions, "players" | "spoiler
     if (seen.has(k) || ex.has(k)) return false;
     if (t.team && o.players < 2) return false;
     if (t.spoiler && !o.spoilers) return false;
+    if (t.role && o.role && t.role !== o.role) return false;
     if (o.beginner && t.level > 2) return false;
     if (o.expert && t.level < 2) return false;
     seen.add(k);
@@ -413,18 +422,42 @@ export interface Request {
   /** The game should be drawn from the library. */
   randomGame?: boolean;
   /** Based on the previous card (harder/easier/new without repeating). */
-  fromPrevious?: "harder" | "easier" | "fresh" | null;
+  fromPrevious?: "harder" | "easier" | "fresh" | "adjust" | null;
   question?: string;
 }
 
 const NUM: Record<string, number> = { ein: 1, eine: 1, einen: 1, zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6, sieben: 7, acht: 8, one: 1, two: 2, three: 3, four: 4, five: 5 };
 
-/** Is this chat message about a bingo at all? */
-export function isBingoRequest(text: string, hasPrevious = false) {
+/** "ich bin Impostor", "als Crewmate", "ich spiele Hochstapler" → the role, or null. */
+export function parseRole(text: string): Role | null {
+  const s = text.toLowerCase();
+  if (/\b(impostor|imposter|hochstapler(in)?|verräter)\b/.test(s)) return "impostor";
+  if (/\b(crewmate|crew-?mitglied|besatzung(smitglied)?|crew)\b/.test(s)) return "crewmate";
+  return null;
+}
+
+/**
+ * Right after a bingo in the chat: does this message change that card ("es soll mittel sein und ich bin Impostor",
+ * "größer", "für zwei Spieler", "das passt nicht", "andere Aufgaben")? Only asked when the last answer was a bingo.
+ */
+export function isBingoFollowUp(text: string) {
+  const s = " " + text.toLowerCase().replace(/[„“”"!?.,]/g, " ").replace(/\s+/g, " ") + " ";
+  // Clearly something else: launching, the PC, settings or a new question about a game.
+  if (/\b(starte|start|öffne|beende|schließe|lautstärke|herunterfahren|neustart|wie geht es|wann|wer ist|was kostet|preis)\b/.test(s)) return false;
+  if (parseRole(s)) return true;
+  if (/\b(sehr schwer|schwer|schwierig|schwieriger|schwerer|mittel|mittelschwer|normal|leicht|leichter|einfach|einfacher|gemischt|extrem)\b/.test(s)) return true;
+  if (/[345]\s*(x|×|\*|mal)\s*[345]|\b(größer|kleiner|mehr felder|weniger felder)\b/.test(s)) return true;
+  if (/\b(für|mit) (\d|zwei|drei|vier|fünf) (spieler|personen|leute|freunden)\b|\bzu (zweit|dritt|viert)\b|\balleine?\b|\bsolo\b/.test(s)) return true;
+  if (/\b(macht|ergibt) (noch )?(teilweise |oft |gar )?(kein(en)?|wenig) sinn\b|\bpasst (noch )?(nicht|nich)\b|\bandere aufgaben\b|\b(neue|bessere) aufgaben\b|\bnochmal\b|\bnoch ?mal\b|\bohne spoiler\b|\bmit spoiler\b|\b(lustiger|witziger)\b|\bauf zeit\b|\bfreie mitte\b/.test(s)) return true;
+  return false;
+}
+
+/** Is this chat message about a bingo at all? `afterBingo`: the last answer in the chat was a bingo. */
+export function isBingoRequest(text: string, hasPrevious = false, afterBingo = false) {
   const s = text.toLowerCase();
   // "Bingo-Widget auf die Startseite" is a setup command, not a new card.
   if (/widget|overlay|startseite|home-bildschirm/.test(s)) return false;
-  return /bingo/.test(s) || (hasPrevious && /\b(vorherige|letzte|das)\b.*\b(schwieriger|schwerer|leichter|einfacher)\b/.test(s));
+  return /bingo/.test(s) || (hasPrevious && /\b(vorherige|letzte|das)\b.*\b(schwieriger|schwerer|leichter|einfacher)\b/.test(s)) || (afterBingo && isBingoFollowUp(text));
 }
 
 /**
@@ -463,6 +496,9 @@ export function parseRequest(text: string, ctx: { library?: string[]; previous?:
   if (/mit spoiler/.test(s)) o.spoilers = true;
   if (/freie mitte|freies feld|mit frei/.test(s)) o.freeCenter = true;
   if (/eigene(n)? aufgaben/.test(s)) o.taskSource = /nur|ausschließlich/.test(s) ? "own" : "mixed";
+  if (/ohne spoiler/.test(s)) o.spoilers = false;
+  const role = parseRole(s);
+  if (role) o.role = role;
 
   // The game: built-in names, library names, then "für X" / "X-Bingo".
   const lib = (ctx.library ?? []).filter((n) => n.length >= 2);
@@ -484,6 +520,8 @@ export function parseRequest(text: string, ctx: { library?: string[]; previous?:
     if (/schwieriger|schwerer/.test(s)) fromPrevious = "harder";
     else if (/leichter|einfacher/.test(s)) fromPrevious = "easier";
     else if (/ohne (aufgaben aus|wiederhol)|nicht wiederhol|komplett neu/.test(s)) fromPrevious = "fresh";
+    // "es soll mittel sein und ich bin Impostor": the same game, the card changed as said.
+    else if (!o.game && isBingoFollowUp(text)) fromPrevious = "adjust";
   }
   if (!o.game && !randomGame && !fromPrevious) return { action: "ask", options: o, question: "Für welches Spiel soll das Bingo sein?" };
   return { action: "create", options: o, randomGame, fromPrevious };
@@ -500,9 +538,13 @@ export function resolveOptions(r: Request, previous: Card | null, pickGame: () =
     base.players = previous.players?.length || 1;
     base.genre = previous.genre ?? null;
     base.freeCenter = !!previous.freeCenter;
+    base.role = previous.role ?? null;
+    if (previous.rules) base.rules = previous.rules;
     if (r.fromPrevious === "harder") base.difficulty = harder(base.difficulty);
     if (r.fromPrevious === "easier") base.difficulty = easier(base.difficulty);
-    base.exclude = [...previous.cells.filter((c) => !c.free).map((c) => c.text), ...(previous.history ?? [])];
+    const before = [...previous.cells.filter((c) => !c.free).map((c) => c.text), ...(previous.history ?? [])];
+    // Adjusting: the old tasks only come back when nothing else fits; "fresh"/"harder"/"easier" never repeat them.
+    if (r.fromPrevious === "adjust") base.avoid = before; else base.exclude = before;
   }
   const o: BingoOptions = { ...base, ...Object.fromEntries(Object.entries(r.options).filter(([, v]) => v !== undefined)) } as BingoOptions;
   if (r.fromPrevious === "harder" && previous && !r.options.difficulty) o.difficulty = harder(previous.difficulty ?? "medium");

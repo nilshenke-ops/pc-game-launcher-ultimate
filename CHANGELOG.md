@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.83.0 – 2026-10-29
+### Neu – KI-Router (kostenlos möglich)
+- KI-Router für JARVIS: OpenRouter, Groq, MixRoute oder ein eigener Router im Heimnetz (OmniRoute, LiteLLM) – am PC unter KI-Assistent → Einrichten; Vorlagen mit Adresse und Hinweisen zu Kosten und Limits
+- Modelle werden live vom Router geladen („Nur kostenlose Modelle“ vorausgewählt), bis zu drei in Wunschreihenfolge; ist eins besetzt oder am Limit, antwortet das nächste – unter der Antwort steht das Modell, das wirklich geantwortet hat, ein Ausweichmodell wird genannt
+- Router-Schlüssel nur am PC, verschlüsselt, nie angezeigt, nie im Backup; nur https (oder http im Heimnetz); eigenes Monatslimit
+- „Wer antwortet?“ bietet jetzt auch Gemini (kostenlos) und den KI-Router als Standard-KI; der Router ist auch in der Modellwahl im Chat und für die Recherche-Zusammenfassung wählbar
+- Neuer Befehl `assistant.routerModels`
+### Verbessert – Nachrichten bauen aufeinander auf
+- Direkt nach einem Bingo ändert eine Rückmeldung die Karte („es soll Mittel sein und ich bin Impostor“, „größer“, „für zwei Spieler“, „andere Aufgaben“) – statt eine Wiki-Suche zu starten
+- Among Us im Bingo-Katalog mit getrennten Aufgaben für Impostor und Crewmate; die Rolle geht auch als Regel an die KI
+- Folgefragen ohne Spielnamen nutzen das zuletzt besprochene Spiel; die Recherche bekommt die letzten 4 Nachrichten als Kontext
+### Behoben
+- Rückmeldungen wie „das macht keinen Sinn“ oder „ich bin Impostor“ wurden als Suchbegriff nachgeschlagen („Ohne PC habe ich nur offene Wikis durchsucht …“)
+- Mit JARVIS an stand unter KI-Antworten „Lokal · 0 €“ statt des Modells, das wirklich geantwortet hat – jetzt steht dort das echte Modell (auch ein Ausweichmodell des Routers)
+
 ## 2.82.0 – 2026-10-29
 ### Neu – Gaming-KI-Chat mit echter Webrecherche
 - Entscheidung vor jeder Antwort: Wissensfrage direkt an das gewählte Modell, aktuelle Fragen (Neuigkeiten, Patchnotes, Updates, Release, Version) mit echter Suche, eigene Notizen aus dem Journal, Funktionen nur über die eingebaute Funktion, mehrere Schritte nacheinander; ohne erkennbares Spiel fragt JARVIS nach („Zu welchem Spiel ist die Quest?“)

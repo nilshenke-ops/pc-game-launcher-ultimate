@@ -28,14 +28,17 @@ const NEEDS_GAME = /\b(?:quest\w*|mission\w*|boss\w*|kapitel|level|build|skillun
 const HELP_REQUEST = /^(?:jarvis[,:]?\s*)?(?:erklär\w*|wie\b|was\b|welche\w*|hilf\w*|gib mir|zeig mir|tipps?\b|ich brauche hilfe|kannst du mir)/i;
 /** A game named the app does not know yet ("in E2E Questspiel", "bei Hollow Knight") – then it is no unclear game. */
 const NAMED_GAME = /\b(?:in|bei|für|aus)\s+[A-Z0-9ÄÖÜ][\w'’:.-]+/;
+/** "da", "dort", "in dem Spiel", "den Boss" – the message refers to what was said before in the chat. */
+export const REFERS_BACK = /\b(?:da|dort|dabei|darin|davon|dafür|damit|dazu|hier|in dem spiel|im spiel|in diesem spiel|das spiel|dem spiel|den boss|der boss|die quest|es|ihn|sie|und (?:was|wie|wo|wann))\b/i;
 const MY_GAME = /\bmein(?:em|en)? (?:angegebenen |aktuellen |letzten |zuletzt gespielten )?spiel\b/i;
 
 /** Which way a chat message goes. `force` = the switch "Im Internet suchen" is on. */
-export function routeQuestion(text: string, opts: { force?: boolean; coach?: boolean } = {}): Route {
+export function routeQuestion(text: string, opts: { force?: boolean; coach?: boolean; /** The game talked about last in this chat. */ contextGame?: string | null } = {}): Route {
   const q = text.trim();
   // The game coach ("Ich bin in X bei …", "Was sollte ich in X als Nächstes machen?") owns its sentences – notes (C).
   if (opts.coach && !opts.force) return { kind: "notes", why: "deine gespeicherten Gaming-Notizen", game: gameInText(q) ?? null, force: false };
-  const game = gameInText(q) ?? gameMentioned(q) ?? null;
+  // Follow-up questions ("und wie besiege ich den dort?") keep the game from before in the chat.
+  const game = gameInText(q) ?? gameMentioned(q) ?? (opts.contextGame && REFERS_BACK.test(q) && !NAMED_GAME.test(q) ? opts.contextGame : null);
   const force = !!opts.force || EXPLICIT.test(q);
   if (force && !FUNCTION.test(q.replace(/^(?:jarvis[,:]?\s*)?such\w*/i, ""))) return { kind: "research", why: opts.force ? "Schalter „Im Internet suchen“" : "ausdrücklich gewünschte Internetrecherche", game, force: true };
   if (MULTI.test(q) && FUNCTION.test(q)) return { kind: "multi", why: "mehrere Schritte", game, force: false };
@@ -81,7 +84,7 @@ type Pc = { call: <T>(method: string, params?: unknown) => Promise<T> };
 const safeUrl = (u: string) => /^https:\/\//.test(u) ? u : "";
 
 /** Research one question. With the PC: server search (Claude) or free sources; without: the open wikis in the browser. */
-export async function research(question: string, opts: { pc: Pc | null; webSearch: boolean; route: Route; requestId: string; engine: string; onPhase?: (p: Phase, text?: string) => void; fetcher?: typeof fetch }): Promise<ResearchReply> {
+export async function research(question: string, opts: { pc: Pc | null; webSearch: boolean; route: Route; requestId: string; engine: string; onPhase?: (p: Phase, text?: string) => void; fetcher?: typeof fetch; /** The last turns of this chat – only for the AI on the PC, as context. */ history?: { role: "user" | "bot"; text: string }[] }): Promise<ResearchReply> {
   const w = await import("./web-lookup");
   let game = opts.route.game;
   if (!game && MY_GAME.test(question)) {
@@ -94,7 +97,7 @@ export async function research(question: string, opts: { pc: Pc | null; webSearc
   // Claude's web search runs entirely at the PC (it decides what to search).
   if (opts.pc && opts.webSearch && engine !== "free") {
     opts.onPhase?.("start");
-    const r = await opts.pc.call<ServerResult>("assistant.research", { question: q, game, force: opts.route.force, requestId: opts.requestId, engine: engine === "claude" ? "claude" : "auto" });
+    const r = await opts.pc.call<ServerResult>("assistant.research", { question: q, game, force: opts.route.force, requestId: opts.requestId, history: (opts.history ?? []).slice(-4).map((h) => ({ role: h.role, text: h.text.slice(0, 400) })), engine: engine === "claude" ? "claude" : "auto" });
     return fromServer(r);
   }
   // Free sources: the open wikis from here, then the PC adds official patch notes/announcements and summarises.
@@ -104,7 +107,7 @@ export async function research(question: string, opts: { pc: Pc | null; webSearc
   const passages = found.all.slice(0, 5).map((x) => ({ title: x.title, source: x.source.split(" – ")[0], url: x.url, text: x.text }));
   if (opts.pc) {
     opts.onPhase?.("sources");
-    const r = await opts.pc.call<ServerResult>("assistant.research", { question: q, game, force: opts.route.force, requestId: opts.requestId, engine: "free", passages });
+    const r = await opts.pc.call<ServerResult>("assistant.research", { question: q, game, force: opts.route.force, requestId: opts.requestId, history: (opts.history ?? []).slice(-4).map((h) => ({ role: h.role, text: h.text.slice(0, 400) })), engine: "free", passages });
     return fromServer(r, found.errors);
   }
   // Without the PC: only the open wikis, the best passage word for word.
@@ -140,3 +143,22 @@ function fromServer(r: ServerResult, extraErrors: string[] = []): ResearchReply 
 export const phaseText = (p: Phase | null, provider?: string) => p === "start" ? `Recherche startet${provider ? ` (${provider})` : ""} …` : p === "search" ? "Suche läuft …" : p === "sources" ? "Quellen werden ausgewertet …" : p === "writing" ? "Antwort wird erstellt …" : "Antwort wird erstellt …";
 
 export const gameOf = (name: string | null) => (name ? gameSources(name)?.name ?? name : null);
+
+/**
+ * What a new message builds on: the last turns of this chat (text only) and the game talked about last – from the
+ * user's words, an answer's game or a bingo card made in the chat. Newest first wins; at most the last 8 turns count.
+ */
+/** Does the message point back to what was said before ("da", "dort", "in dem Spiel")? Then the chat's game is meant. */
+export const refersBack = (q: string) => REFERS_BACK.test(q) && !NAMED_GAME.test(q);
+
+export function chatContext(turns: { role: "user" | "bot"; text?: string; reply?: { text: string }; bingoId?: string }[], bingoGame: (id: string) => string | null = () => null): { history: { role: "user" | "bot"; text: string }[]; game: string | null } {
+  const recent = turns.slice(-8);
+  const history = recent.map((x) => ({ role: x.role, text: (x.role === "user" ? x.text : x.reply?.text) ?? "" })).filter((x) => x.text.trim()).slice(-4);
+  let game: string | null = null;
+  for (const x of [...recent].reverse()) {
+    const text = x.role === "user" ? x.text ?? "" : x.reply?.text ?? "";
+    game = (x.bingoId ? bingoGame(x.bingoId) : null) ?? gameInText(text) ?? gameMentioned(text);
+    if (game) break;
+  }
+  return { history, game };
+}

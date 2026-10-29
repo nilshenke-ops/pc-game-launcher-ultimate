@@ -831,6 +831,8 @@ html.desktop-widget-mode .app-bg { display: none; }
 .as-tool { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; min-height: 28px; }
 .as-tool:hover { color: var(--text); border-color: rgba(var(--primary-rgb), 0.5); }
 .as-sources { border: 1px solid rgba(var(--primary-rgb), 0.28); border-radius: 12px; padding: 6px 10px; background: rgba(var(--primary-rgb), 0.06); }
+.as-models { max-height: 240px; overflow-y: auto; display: grid; gap: 4px; padding: 6px 8px; border: 1px solid var(--border, rgba(255,255,255,.12)); border-radius: 10px; }
+.as-models label { gap: 8px; align-items: center; min-height: 32px; overflow-wrap: anywhere; }
 .as-sources summary { cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .as-cites { margin: 6px 0 2px; padding-left: 22px; display: grid; gap: 4px; font-size: 13px; }
 .as-cites a { color: var(--primary); word-break: break-word; }

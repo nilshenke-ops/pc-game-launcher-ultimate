@@ -1,7 +1,7 @@
 import { expect, test, devices, type Browser, type Page } from "@playwright/test";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
-import { COMPANION, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, OBS_URL, RELAY, state } from "./env";
+import { COMPANION, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, OBS_URL, RELAY, ROUTER_PORT, state } from "./env";
 import { ACCESS_HASH } from "../src/lib/access";
 import { NEW_WIDGET_PLUGINS } from "./plugins-list";
 
@@ -1207,6 +1207,17 @@ test("Was spiele ich?: Ultimate Bingo – Satz verstehen, 3×3/4×4/5×5, Reihe 
   await expect(page.locator(".as-bingo .bingo-cell")).toHaveCount(16);
   await page.locator(".as-bingo .bingo-cell").first().click();
   await expect(page.locator(".as-bingo .bingo-progress")).toContainText("1 von 16");
+  // The chat builds on itself: a follow-up right after a bingo changes that card – no web lookup, no new question.
+  await box.fill("Erstelle ein 4×4-Bingo für Among Us auf leicht");
+  await box.press("Enter");
+  await page.getByRole("button", { name: /^Nein,/ }).last().click();
+  await expect(page.getByText(/Bingo für Among Us \(Leicht/).last()).toBeVisible();
+  await box.fill("Das macht teilweise noch kein Sinn es soll Mittel sein und ich bin impostor");
+  await box.press("Enter");
+  await page.getByRole("button", { name: /^Nein,/ }).last().click();
+  await expect(page.getByText(/Bingo für Among Us \(Mittel, als Impostor\)/).last()).toBeVisible();
+  await expect(page.getByText("Ohne PC habe ich nur offene Wikis")).toHaveCount(0);
+  await expect(page.locator(".as-bingo").last().locator(".bingo-cell")).toHaveCount(16);
 
   await page.goto(`${COMPANION}/#/play?tab=challenges`);
   await page.getByRole("button", { name: "Vorschläge erzeugen" }).click();
@@ -1743,6 +1754,59 @@ test("KI-Chat ohne PC: nur offene Wikis, offen gesagt – keine vorgetäuschte W
   await ctx.close();
 });
 
+
+test("KI-Router: nur am PC einzurichten, kostenlose Modelle live, Reihenfolge, Ausweichmodell wird genannt", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  await p.getByRole("button", { name: "Einrichten", exact: true }).click();
+  const dlg = p.getByRole("dialog", { name: "Assistent einrichten" });
+  // Not set up yet: choosing the router only shows what is missing – the mode stays free/local.
+  await dlg.getByRole("radio", { name: "KI-Router" }).click();
+  await expect(dlg.getByText("Trag unten Router-Adresse, Schlüssel und mindestens ein Modell ein")).toBeVisible();
+  const card = dlg.locator(".card", { hasText: "KI-Router (OpenRouter, Groq, MixRoute …)" });
+  await card.getByRole("button", { name: "OpenRouter", exact: true }).click();
+  await expect(card.getByLabel("Router-Adresse")).toHaveValue("https://openrouter.ai/api/v1");
+  await expect(card.getByText(/20 Anfragen pro Minute, 50 pro Tag/)).toBeVisible();
+  // Plain http into the internet is refused; the own router on this PC (stand-in) is fine.
+  await card.getByLabel("Router-Adresse").fill("http://example.com/v1");
+  await card.getByRole("button", { name: "Speichern", exact: true }).click();
+  await expect(p.getByText("Ohne https nur auf diesem PC oder im Heimnetz").first()).toBeVisible();
+  await card.getByLabel("Router-Adresse").fill(`http://127.0.0.1:${ROUTER_PORT}/v1`);
+  await card.getByLabel("Router-Schlüssel").fill("sk-test-router");
+  await card.getByRole("button", { name: "Speichern", exact: true }).click();
+  await expect(card.getByLabel("Schlüssel (gespeichert – neu eintragen zum Ersetzen)")).toBeVisible();
+  await expect(card.getByLabel("Schlüssel (gespeichert – neu eintragen zum Ersetzen)")).toHaveValue(""); // never shown again
+  // Models live from the router: only the free ones by default.
+  await card.getByRole("button", { name: "Modelle laden" }).click();
+  await expect(card.getByRole("checkbox")).toHaveCount(2);
+  await expect(card.getByText("test/paid-model")).toHaveCount(0);
+  await card.getByRole("checkbox", { name: /test\/busy-model:free/ }).check();
+  await card.getByRole("checkbox", { name: /test\/good-model:free/ }).check();
+  await expect(card.getByText("Reihenfolge: 1. test/busy-model:free → 2. test/good-model:free")).toBeVisible();
+  await card.getByRole("button", { name: "Modelle übernehmen" }).click();
+  await dlg.getByRole("radio", { name: "Lokal (0 €)" }).click();
+  await dlg.getByRole("radio", { name: "KI-Router" }).click();
+  await expect(dlg.getByRole("radio", { name: "KI-Router" })).toHaveAttribute("aria-checked", "true");
+  await expect(dlg.getByText("Trag unten Router-Adresse")).toHaveCount(0);
+  await dlg.getByRole("button", { name: "Fertig" }).click();
+  await expect(p.locator(".page-head .badge").last()).toHaveText("KI-Router · test/busy-model:free");
+  // The first model is busy → the next one answers, and the answer says which model it really was.
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  await say.fill("Erzähl mir einen kurzen Gaming-Witz"); await say.press("Enter");
+  const last = p.locator(".as-turn.bot").last();
+  await expect(last).toContainText("Router-Antwort auf: Erzähl mir einen kurzen Gaming-Witz");
+  await expect(last.locator(".as-meta")).toContainText("test/good-model:free · kostenlos");
+  await expect(last).toContainText("Ausweichmodell test/good-model:free");
+  // Clean up: back to local, router removed.
+  await p.getByRole("button", { name: "Einrichten", exact: true }).click();
+  await dlg.getByRole("radio", { name: "Lokal (0 €)" }).click();
+  await card.getByRole("button", { name: "Router entfernen" }).click();
+  await expect(card.getByLabel("Router-Adresse")).toHaveValue("");
+  await dlg.getByRole("button", { name: "Fertig" }).click();
+  await expect(p.locator(".page-head .badge").last()).toHaveText("Lokal · 0 €");
+  await p.context().close();
+});
 
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });

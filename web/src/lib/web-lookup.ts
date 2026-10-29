@@ -66,15 +66,28 @@ export function lookupIntent(raw: string): LookupIntent | null {
  * Anything JARVIS could not answer otherwise ("Ship or Burn", "Hornet Hollow Knight"): looked up as well instead of
  * "Das weiß ich nicht". Not for orders (start, open, close …) and not for long texts.
  */
-export function fallbackIntent(raw: string): LookupIntent | null {
+export function fallbackIntent(raw: string, contextGame: string | null = null): LookupIntent | null {
   const q = raw.trim().replace(/^jarvis[,:]?\s*/i, "").replace(/[?!.]+$/, "").trim();
   if (q.length < 2 || q.length > 80 || q.split(/\s+/).length > 10) return null;
   if (/^(?:starte?|öffne|schlie(?:ß|ss)e?|beende|mach|stell|setz|spiel|zeig|leg|lösch|erstell|füg|merk|vergiss|wechsel|aktivier|deaktivier|schalt|spiele?|hallo|hi|hey|danke|ok|ja|nein)\b/i.test(q)) return null;
-  let game = gameInText(q) ?? gameMentioned(q) ?? contextOf(q);
+  if (isFeedback(q)) return null;
+  let game = gameInText(q) ?? gameMentioned(q) ?? contextOf(q) ?? contextGame;
   let topic = topicOf(q, game);
   if (topic.length < 2 && game) { topic = game; game = null; }
   if (topic.length < 2) return null;
   return { kind: "question", topic, game, raw: q };
+}
+
+/**
+ * A reply to the last answer, not a question to look up: "das macht keinen Sinn", "es soll mittel sein", "ich bin
+ * Impostor", "passt nicht", "stimmt", "genau", "nein, anders".
+ */
+export function isFeedback(raw: string) {
+  const q = raw.trim().toLowerCase();
+  if (/^(?:das|es|passt|stimmt|genau|super|cool|toll|nice|perfekt|aber|nicht|nee|nö|doch|eher|lieber|besser|anders)\b/.test(q) && !/\?\s*$/.test(raw.trim())) return true;
+  if (/\b(?:macht|ergibt) (?:noch )?(?:teilweise |oft |gar )?(?:kein(?:en)?|wenig) sinn\b|\bpasst (?:noch )?nicht\b|\bsoll(?:te)? (?:lieber |eher )?\w+ sein\b/.test(q)) return true;
+  if (/^ich (?:bin|spiele|habe|hab|will|möchte|finde|meinte|meine)\b/.test(q) && !/\?\s*$/.test(raw.trim())) return true;
+  return false;
 }
 
 // ------------------------------------------------------------------ permission

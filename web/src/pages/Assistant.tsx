@@ -13,13 +13,13 @@ import { getPrefs, setPrefs } from "../lib/prefs";
 import { navItems } from "../lib/nav";
 import type { SetupOp } from "../lib/assistant-setup";
 import type { LibraryItem } from "../lib/types";
-import { useJournal } from "../lib/journal";
+import { getEntry, useJournal } from "../lib/journal";
 import { readCache } from "../lib/offline-cache";
 import type { Card as BingoCard } from "../lib/bingo";
 import { chosenEngine, phaseText, setChosenEngine, setWebSwitch, webSwitch, type Cite, type Phase } from "../lib/research-chat";
 
 interface Status {
-  mode: "local" | "ollama" | "claude"; model: string; free: boolean;
+  mode: "local" | "ollama" | "claude" | "gemini" | "router"; model: string; free: boolean;
   ollama: { url: string; model?: string | null; whileGaming: boolean; recommended: { id: string; label: string; note: string }[] }; localFirst: boolean; monthlyLimitUsd: number; keySet: boolean; claudeReady: boolean;
   models: { id: string; label: string; input: number; output: number; cacheRead: number; note: string }[];
   usage: { month: string; requests: number; inputTokens: number; outputTokens: number; costUsd: number };
@@ -28,6 +28,94 @@ interface Status {
   deepSeek?: { keySet: boolean; model: string; monthlyRequests: number; used: number; inputTokens: number; outputTokens: number };
   engines?: { id: string; label: string; free: boolean }[]; webSearch?: boolean;
   gemini?: { keySet: boolean; model: string; monthlyRequests: number; used: number }; researchAi?: string | null;
+  router?: { baseUrl?: string | null; keySet: boolean; models: string[]; monthlyRequests: number; used: number; ready: boolean };
+}
+
+/** Ready-made router addresses: free models via OpenRouter or Groq, paid MixRoute, or an own router in the home network. */
+const ROUTER_PRESETS = [
+  { id: "openrouter", label: "OpenRouter", url: "https://openrouter.ai/api/v1", note: "Kostenlose Modelle enden auf „:free“ (laut OpenRouter 20 Anfragen pro Minute, 50 pro Tag). Schlüssel kostenlos auf openrouter.ai → Keys." },
+  { id: "groq", label: "Groq", url: "https://api.groq.com/openai/v1", note: "Kostenloser Tarif mit Tageslimits. Schlüssel kostenlos auf console.groq.com → API Keys." },
+  { id: "mixroute", label: "MixRoute", url: "https://api.mixroute.ai/v1", note: "Kostenpflichtig (Abrechnung bei MixRoute) – nur nutzen, wenn du dort Guthaben hast." },
+  { id: "lan", label: "Eigener Router (LAN)", url: "http://192.168.0.10:4000/v1", note: "OmniRoute oder LiteLLM auf einem Rechner in deinem Heimnetz – 0 €, Schlüssel nur falls dein Router einen verlangt. Adresse anpassen." },
+] as const;
+
+/** OpenAI-compatible AI router (OpenRouter, Groq, MixRoute, OmniRoute/LiteLLM): up to three models in order, the next answers when one is busy. */
+function RouterCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
+  const rt = st.router;
+  const [url, setUrl] = useState(rt?.baseUrl ?? "");
+  const [key, setKey] = useState("");
+  const [picked, setPicked] = useState<string[]>(rt?.models ?? []);
+  const [own, setOwn] = useState("");
+  const [cap, setCap] = useState(String(rt?.monthlyRequests ?? 1500));
+  const [list, setList] = useState<{ id: string; free?: boolean | null }[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [freeOnly, setFreeOnly] = useState(true);
+  useEffect(() => { setUrl(rt?.baseUrl ?? ""); setPicked(rt?.models ?? []); }, [rt?.baseUrl, rt?.models?.join("|")]);
+  if (!rt) return null;
+  const load = () => { setErr(null); setList(null); client.call<{ models: { id: string; free?: boolean | null }[] }>("assistant.routerModels").then((r) => setList(r.models), (e: Error) => setErr(e.message)); };
+  const toggle = (id: string) => setPicked((p) => p.includes(id) ? p.filter((x) => x !== id) : p.length >= 3 ? p : [...p, id]);
+  const shown = (list ?? []).filter((m) => !freeOnly || m.free === true).slice(0, 60);
+  const preset = ROUTER_PRESETS.find((p) => url && url.startsWith(p.url.replace(/:\d+.*$/, "")));
+  return (
+    <Card title={t("KI-Router (OpenRouter, Groq, MixRoute …)")} icon={<Sparkles size={18} />} className="flat">
+      <div className="stack-sm">
+        <p className="small muted">{t("Ein Router bündelt viele KI-Modelle hinter einer Adresse. Du wählst bis zu drei Modelle in deiner Reihenfolge – ist eins überlastet oder am Limit, antwortet das nächste. Unter jeder Antwort steht, welches Modell wirklich geantwortet hat.")}</p>
+        {atPc ? (
+          <>
+            <div className="row wrap">
+              {ROUTER_PRESETS.map((p) => <Button key={p.id} variant={preset?.id === p.id ? "primary" : "ghost"} onClick={() => setUrl(p.url)}>{p.label}</Button>)}
+            </div>
+            {preset && <p className="tiny muted">{t(preset.note)}</p>}
+            <form className="row" onSubmit={(e) => { e.preventDefault(); void save({ routerBase: url.trim(), ...(key.trim() ? { routerKey: key.trim() } : {}) }, t("Router gespeichert")).then(() => setKey("")); }}>
+              <Field label={t("Router-Adresse")} hint={t("Nur https – oder http für einen Router in deinem Heimnetz. Wechselst du die Adresse, wird der alte Schlüssel gelöscht.")}>
+                <input className="input mono" value={url} maxLength={200} placeholder="https://openrouter.ai/api/v1" onChange={(e) => setUrl(e.target.value)} />
+              </Field>
+              <Field label={rt.keySet ? t("Schlüssel (gespeichert – neu eintragen zum Ersetzen)") : t("Router-Schlüssel")} hint={t("Wird nur auf diesem PC verschlüsselt gespeichert, nie angezeigt und nie ins Backup geschrieben.")}>
+                <input className="input mono" type="password" autoComplete="off" value={key} placeholder="sk-…" onChange={(e) => setKey(e.target.value)} />
+              </Field>
+              <Button type="submit" icon={<KeyRound size={16} />} disabled={!url.trim()}>{t("Speichern")}</Button>
+              {rt.keySet && <Button variant="danger" onClick={() => void save({ routerKey: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
+              {rt.baseUrl && <Button variant="ghost" onClick={() => void save({ routerBase: "" }, t("Router entfernt"))}>{t("Router entfernen")}</Button>}
+            </form>
+          </>
+        ) : <p className="small muted">{rt.baseUrl ? t("Router: {u}{k}", { u: rt.baseUrl, k: rt.keySet ? t(" · Schlüssel gespeichert") : "" }) : t("Adresse und Schlüssel des Routers trägst du direkt am PC ein – der Schlüssel verlässt den PC nie.")}</p>}
+        {rt.baseUrl && atPc && (
+          <div className="stack-sm">
+            <div className="row wrap">
+              <Button variant="ghost" icon={<RefreshCw size={16} />} onClick={load}>{t("Modelle laden")}</Button>
+              <Switch checked={freeOnly} onChange={setFreeOnly} label={t("Nur kostenlose Modelle")} />
+            </div>
+            {err && <Banner kind="warn">{err}</Banner>}
+            {list && (shown.length ? (
+              <div className="as-models" role="group" aria-label={t("Modelle")}>
+                {shown.map((m) => (
+                  <label key={m.id} className="row small">
+                    <input type="checkbox" checked={picked.includes(m.id)} disabled={!picked.includes(m.id) && picked.length >= 3} onChange={() => toggle(m.id)} />
+                    <span className="mono">{m.id}</span>{m.free === true && <span className="badge ok">{t("kostenlos")}</span>}
+                  </label>
+                ))}
+              </div>
+            ) : <p className="small muted">{freeOnly ? t("Der Router meldet gerade keine kostenlosen Modelle.") : t("Der Router meldet keine Modelle.")}</p>)}
+            <form className="row" onSubmit={(e) => { e.preventDefault(); const v = own.trim(); if (v && !picked.includes(v) && picked.length < 3) setPicked([...picked, v]); setOwn(""); }}>
+              <Field label={t("Modell von Hand hinzufügen")} hint={t("Genau so, wie der Router es nennt, z. B. „…:free“ bei OpenRouter.")}><input className="input mono" value={own} maxLength={120} onChange={(e) => setOwn(e.target.value)} /></Field>
+              <Button type="submit" disabled={!own.trim() || picked.length >= 3}>{t("Hinzufügen")}</Button>
+            </form>
+            <p className="small">{picked.length ? t("Reihenfolge: {l}", { l: picked.map((m, i) => `${i + 1}. ${m}`).join(" → ") }) : t("Noch kein Modell gewählt.")}</p>
+            <div className="row wrap">
+              <Button disabled={!picked.length} onClick={() => void save({ routerModels: picked })}>{t("Modelle übernehmen")}</Button>
+              {picked.length > 0 && <Button variant="ghost" onClick={() => setPicked([])}>{t("Auswahl leeren")}</Button>}
+            </div>
+          </div>
+        )}
+        <form className="row" onSubmit={(e) => { e.preventDefault(); void save({ routerMonthlyRequests: Number(cap) || 0 }); }}>
+          <Field label={t("Höchstens Anfragen pro Monat")} hint={t("Danach antwortet bis Monatsende wieder der lokale Assistent.")}><input className="input" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value)} /></Field>
+          <Button type="submit">{t("Übernehmen")}</Button>
+        </form>
+        <p className="small">{t("Diesen Monat: {n} von {m} Router-Anfragen.", { n: rt.used, m: rt.monthlyRequests })}</p>
+        <p className="tiny muted">{t("Datenschutz: Mit dem Router gehen deine Frage und der Gesprächsverlauf an den Router-Anbieter und von dort an das Modell. Kostenlose Modelle dürfen Eingaben laut Anbietern teils zum Training nutzen. Daten von deinem PC, Passwörter und Schlüssel der App sind nie dabei.")}</p>
+      </div>
+    </Card>
+  );
 }
 
 /** Free AI for JARVIS research: Gemini with an own key from Google AI Studio (free tier, only entered at the PC). */
@@ -160,17 +248,20 @@ function SettingsDialog({ st, onClose }: { st: Status; onClose: () => void }) {
   // Which option is shown: Claude can be opened before a key exists (the key is entered there).
   const [view, setView] = useState(st.mode);
   useEffect(() => setView(st.mode), [st.mode]);
-  const choose = (m: Status["mode"]) => { setView(m); if (m !== "claude" || st.keySet) void save({ mode: m }); };
+  const ready = (m: Status["mode"]) => m === "claude" ? st.keySet : m === "gemini" ? !!st.gemini?.keySet : m === "router" ? !!st.router?.ready : true;
+  const choose = (m: Status["mode"]) => { setView(m); if (ready(m)) void save({ mode: m }); };
   const save = (p: Record<string, unknown>, ok = t("Gespeichert")) => client.call("assistant.configure", p).then(() => toast(ok, "success"), (e: Error) => toast(e.message, "error")) as Promise<void>;
   const model = st.models.find((m) => m.id === st.model);
   return (
     <Modal title={t("Assistent einrichten")} onClose={onClose} wide footer={<Button onClick={onClose}>{t("Fertig")}</Button>}>
       <div className="stack">
-        <Field label={t("Wer antwortet?")} hint={view === "local" ? t("Lokal: läuft auf deinem PC, ohne Internet, kostenlos. Versteht Befehle und Fragen zur App.") : view === "ollama" ? t("Lokale KI: zusätzlich ein freies Sprachmodell auf deinem PC für freie Fragen – ebenfalls 0 €.") : t("Claude: freie Fragen und Gespräche. Kostet pro Anfrage (dein Anthropic-Konto).")}>
+        <Field label={t("Wer antwortet?")} hint={view === "local" ? t("Lokal: läuft auf deinem PC, ohne Internet, kostenlos. Versteht Befehle und Fragen zur App.") : view === "ollama" ? t("Lokale KI: zusätzlich ein freies Sprachmodell auf deinem PC für freie Fragen – ebenfalls 0 €.") : view === "gemini" ? t("Gemini: freie Fragen mit deinem kostenlosen Google-Schlüssel. Befehle erledigt weiter der lokale Assistent.") : view === "router" ? t("KI-Router: freie Fragen über OpenRouter, Groq & Co. – mit kostenlosen Modellen 0 €, bei Ausfall springt dein nächstes Modell ein.") : t("Claude: freie Fragen und Gespräche. Kostet pro Anfrage (dein Anthropic-Konto).")}>
           <Segmented value={view} onChange={choose} label={t("Wer antwortet?")}
-            options={[{ value: "local", label: t("Lokal (0 €)") }, { value: "ollama", label: t("Lokale KI (0 €)") }, { value: "claude", label: t("Claude (kostenpflichtig)") }]} />
+            options={[{ value: "local", label: t("Lokal (0 €)") }, { value: "ollama", label: t("Lokale KI (0 €)") }, { value: "gemini", label: t("Gemini (kostenlos)") }, { value: "router", label: t("KI-Router") }, { value: "claude", label: t("Claude (kostenpflichtig)") }]} />
         </Field>
+        {view !== st.mode && !ready(view) && <Banner kind="info">{view === "router" ? t("Trag unten Router-Adresse, Schlüssel und mindestens ein Modell ein – dann wähle „KI-Router“ noch einmal.") : view === "gemini" ? t("Trag unten zuerst den Gemini-Schlüssel ein – dann wähle „Gemini“ noch einmal.") : t("Trag zuerst den API-Schlüssel ein.")}</Banner>}
         {view === "ollama" && <OllamaCard st={st} atPc={atPc} save={save} />}
+        <RouterCard st={st} atPc={atPc} save={save} />
         <ResearchAiCard st={st} atPc={atPc} save={save} />
         <BingoAiCard st={st} atPc={atPc} save={save} />
         {view === "claude" && !st.keySet && <Banner kind="info">{t("Claude kostet pro Anfrage Geld (dein Anthropic-Konto). Für 0 € nimm „Lokal“ oder „Lokale KI“.")}</Banner>}
@@ -307,7 +398,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
         {r.cites && <Sources cites={r.cites} info={r.research} />}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
         {!r.cancelled && !r.actions.some((a) => a.kind === "lookupChoice" || a.kind === "bingoChoice") && (
@@ -372,10 +463,26 @@ export default function Assistant() {
     };
     const eng = online ? engine : "auto";
     try {
+      // The chat builds on itself: right after a bingo, "es soll mittel sein und ich bin Impostor" changes that card
+      // (not a web lookup and not split into JARVIS steps). Also after "im Internet nachsehen?" for such a change.
+      const lastBot = [...chat.turns].reverse().find((x) => x.role === "bot");
+      const lastBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
+      const afterBingo = !!lastBot?.bingoId || (extra.bingoWeb !== undefined && !!lastBingo);
+      if (afterBingo && lastBingo) {
+        const { isBingoFollowUp } = await import("../lib/bingo");
+        if (isBingoFollowUp(question)) {
+          const { bingoFromChat } = await import("../lib/bingo-chat");
+          const b = await bingoFromChat(question, lastBingo, { online, provider: online ? st.data?.bingoProvider ?? null : null, web: extra.bingoWeb });
+          if (add(b.reply, { bingoId: b.bingoId }) && jv.enabled) speak(b.reply.text);
+          return;
+        }
+      }
       // The decision before every answer: research (B) and "which game?" (clarify) here; the rest as before.
-      const { routeQuestion, research, clarifyReply } = await import("../lib/research-chat");
+      const { routeQuestion, research, clarifyReply, chatContext } = await import("../lib/research-chat");
       const { coachIntent } = await import("../lib/game-coach");
-      const route = extra.research ? { ...routeQuestion(question, { force: true }), kind: "research" as const } : routeQuestion(question, { force: web, coach: !!coachIntent(question) });
+      // Messages in one chat build on each other: the game from before and the last turns go along.
+      const ctx = chatContext(chat.turns, (id) => getEntry<BingoCard>(id)?.data.gameName ?? null);
+      const route = extra.research ? { ...routeQuestion(question, { force: true, contextGame: ctx.game }), kind: "research" as const } : routeQuestion(question, { force: web, coach: !!coachIntent(question), contextGame: ctx.game });
       if (route.kind === "clarify") {
         const lib = readCacheNames();
         add(clarifyReply(question, lib));
@@ -394,7 +501,7 @@ export default function Assistant() {
           ], sources: [], suggestions: [], mode: "device" });
           return;
         }
-        const r = await research(question, { pc: online ? { call: (m, p) => client.call(m, p) } : null, webSearch: !!st.data?.webSearch, route, requestId, engine: eng, onPhase: setPhase });
+        const r = await research(question, { pc: online ? { call: (m, p) => client.call(m, p) } : null, webSearch: !!st.data?.webSearch, route, requestId, engine: eng, onPhase: setPhase, history: ctx.history });
         add(r);
         return;
       }
@@ -402,7 +509,7 @@ export default function Assistant() {
         // JARVIS: understands the request, runs named gaming actions and website changes directly, reports the real result.
         const { jarvisAsk } = await import("../lib/jarvis-chat");
         const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai, sources: extra.sources, engine: eng, requestId });
+        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai, sources: extra.sources, engine: eng, requestId, contextGame: ctx.game });
         if (!add(r.reply, { bingoId: r.bingoId, undo: r.undo }, r.conversationId)) return;
         speak(r.reply.text);
         if (r.navigate) navTo(r.navigate);
@@ -483,7 +590,7 @@ export default function Assistant() {
         text={jv.enabled ? t("Sag oder schreib mir, was ich tun soll – ich starte Spiele, stelle Profile ein, ordne deine Website und untersuche Ruckler. Nur Gaming, nur auf deinen Auftrag.") : s?.claudeReady ? t("Frag alles zu deinem PC, deinen Spielen und der App. Antworten kommen von Claude – Befehle erledigt der lokale Assistent kostenlos.") : s?.mode === "ollama" ? t("Frag alles zu deinem PC, deinen Spielen und der App. Alles läuft auf deinem PC – 0 €, ohne Konto.") : t("Frag alles zu deinem PC, deinen Spielen und der App. Der lokale Assistent läuft auf deinem PC – ohne Internet und kostenlos.")}
         actions={<>
           <span className={`badge ${jv.active ? "ok" : ""}`} title={t("Nur solange diese Seite offen ist und JARVIS an ist. Ohne Auftrag tut JARVIS nichts.")}>{jv.active ? t("JARVIS aktiv") : jv.enabled ? (online ? t("JARVIS verbindet …") : t("JARVIS ohne PC")) : t("JARVIS aus")}</span>
-          {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "ollama" ? t("Lokale KI · 0 €") : t("Lokal · 0 €")}</span>}
+          {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "ollama" ? t("Lokale KI · 0 €") : s.mode === "router" && s.router?.ready ? t("KI-Router · {m}", { m: s.router.models[0] }) : s.mode === "gemini" && s.gemini?.keySet ? t("Gemini · kostenlos") : t("Lokal · 0 €")}</span>}
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />

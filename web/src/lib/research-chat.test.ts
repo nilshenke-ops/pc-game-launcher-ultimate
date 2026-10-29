@@ -5,7 +5,7 @@ const ls = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, 
 vi.stubGlobal("localStorage", ls);
 vi.stubGlobal("window", { localStorage: ls, sessionStorage: ls });
 
-const { routeQuestion, research, clarifyReply, phaseText } = await import("./research-chat");
+const { routeQuestion, research, clarifyReply, phaseText, chatContext } = await import("./research-chat");
 const { _resetForTests } = await import("./journal");
 beforeEach(() => { store.clear(); _resetForTests(); });
 
@@ -45,6 +45,33 @@ const pcWith = (answer: (m: string, p: Record<string, unknown>) => unknown) => {
   return { calls, pc: { call: async <T,>(m: string, p?: unknown): Promise<T> => { calls.push({ m, p: p as Record<string, unknown> }); return answer(m, p as Record<string, unknown>) as T; } } };
 };
 const noWiki = (async () => new Response(JSON.stringify({ query: { search: [] } }), { status: 200 })) as unknown as typeof fetch;
+
+describe("Nachrichten bauen aufeinander auf", () => {
+  it("das Spiel aus dem Chat gilt für Folgefragen, der Verlauf geht als Kontext mit", async () => {
+    const turns = [
+      { role: "user" as const, text: "Erstelle ein Bingo für Among Us" },
+      { role: "bot" as const, reply: { text: "Hier ist dein 4×4-Bingo …" }, bingoId: "b1" },
+      { role: "user" as const, text: "Was gibt es Neues zu Hollow Knight?" },
+      { role: "bot" as const, reply: { text: "Silksong ist erschienen." } },
+    ];
+    const ctx = chatContext(turns, (id) => (id === "b1" ? "Among Us" : null));
+    expect(ctx.game).toBe("Hollow Knight");
+    expect(ctx.history).toHaveLength(4);
+    expect(chatContext(turns.slice(0, 2), (id) => (id === "b1" ? "Among Us" : null)).game).toBe("Among Us");
+    // "dort" points back → the game from before; a newly named game wins; without a reference no game is guessed.
+    expect(routeQuestion("Und welche Updates kamen dort zuletzt?", { contextGame: "Hollow Knight" }).game).toBe("Hollow Knight");
+    expect(routeQuestion("Welche Updates kamen zuletzt für Minecraft?", { contextGame: "Hollow Knight" }).game).toBe("Minecraft");
+    expect(routeQuestion("Wie ist das Wetter?", { contextGame: "Hollow Knight" }).game).toBeNull();
+    // A quest question with the game from before is no "Für welches Spiel?".
+    expect(routeQuestion("Wie schaffe ich die Quest dort?", { contextGame: "Hollow Knight" }).kind).not.toBe("clarify");
+    const { calls, pc } = pcWith(() => ({ answered: true, answer: "Ja. [1]", searched: true, searches: 1, provider: "Claude", sources: [{ n: 1, title: "x", url: "https://x.example/", provider: "Claude-Websuche", cited: true }] }));
+    await research("Und welche Updates kamen dort zuletzt?", { pc, webSearch: true, route: routeQuestion("Und welche Updates kamen dort zuletzt?", { contextGame: "Hollow Knight" }), requestId: "r9", engine: "auto", history: [{ role: "user", text: "a".repeat(900) }, { role: "bot", text: "b" }] });
+    expect(calls[0].p).toMatchObject({ game: "Hollow Knight" });
+    const h = calls[0].p.history as { text: string }[];
+    expect(h).toHaveLength(2);
+    expect(h[0].text).toHaveLength(400);
+  });
+});
 
 describe("Recherche", () => {
   it("mit Claude-Websuche am PC: Antwort mit nummerierten, anklickbaren Quellen und Datum", async () => {

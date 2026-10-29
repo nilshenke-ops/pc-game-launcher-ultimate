@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CATALOG, GENRES } from "./bingo-catalog";
 import {
-  DEFAULT_OPTIONS, DIFFICULTIES, findGame, isBingoRequest, levelPlan, modesFor, NotEnoughTasks, parseLine, parseRequest, pickTasks, poolFor, progress, replaceCell,
+  DEFAULT_OPTIONS, DIFFICULTIES, findGame, isBingoFollowUp, isBingoRequest, levelPlan, modesFor, NotEnoughTasks, parseLine, parseRequest, pickTasks, poolFor, progress, replaceCell,
   resetCard, resolveOptions, sanitizeAiTasks, sanitizeCard, shuffleCard, standings, status, toCells, toggleCell, type BingoOptions, type Card, type Task,
 } from "./bingo";
 
@@ -185,6 +185,35 @@ describe("chat requests", () => {
     expect(isBingoRequest("wie spät ist es")).toBe(false);
     expect(isBingoRequest("Füge das Bingo-Widget zur Startseite hinzu")).toBe(false);
     expect(isBingoRequest("Erstelle ein 5×5-Minecraft-Bingo auf schwer")).toBe(true);
+  });
+  it("a follow-up right after a bingo changes that card (context of the chat)", () => {
+    const prev: Card = { title: "x", size: 4, gameName: "Among Us", difficulty: "easy", cells: card(4).cells };
+    const q = "Das macht teilweise noch kein Sinn es soll Mittel sein und ich bin impostor";
+    expect(isBingoFollowUp(q)).toBe(true);
+    expect(isBingoRequest(q, true, true)).toBe(true);
+    // Without a bingo right before, the same sentence is no bingo request.
+    expect(isBingoRequest(q, true, false)).toBe(false);
+    const req = r(q, prev);
+    expect(req).toMatchObject({ action: "create", fromPrevious: "adjust" });
+    const o = resolveOptions(req, prev, () => null) as BingoOptions;
+    expect([o.game, o.size, o.difficulty, o.role]).toEqual(["Among Us", 4, "medium", "impostor"]);
+    // The old tasks are only avoided (come back last), not forbidden.
+    expect(o.avoid).toContain("A0");
+    expect(o.exclude ?? []).not.toContain("A0");
+    const picked = pickTasks(poolFor("Among Us").tasks, [], o, seeded(3)).tasks;
+    expect(picked).toHaveLength(16);
+    expect(picked.some((t) => t.role === "crewmate")).toBe(false);
+    expect(picked.filter((t) => t.role === "impostor").length).toBeGreaterThanOrEqual(8);
+    const crew = pickTasks(poolFor("Among Us").tasks, [], { ...o, role: "crewmate" }, seeded(3)).tasks;
+    expect(crew.some((t) => t.role === "impostor")).toBe(false);
+    // 5×5 works for each role.
+    expect(pickTasks(poolFor("Among Us").tasks, [], { ...o, size: 5 }, seeded(5)).tasks).toHaveLength(25);
+    expect(pickTasks(poolFor("Among Us").tasks, [], { ...o, size: 5, role: "crewmate" }, seeded(5)).tasks).toHaveLength(25);
+    // Other follow-ups; other questions stay what they are.
+    for (const x of ["größer bitte", "für zwei Spieler", "andere Aufgaben", "das passt nicht", "ich bin crewmate", "5x5"]) expect(isBingoFollowUp(x), x).toBe(true);
+    for (const x of ["Starte Among Us", "Wann kommt das nächste Update?", "Wie geht es meinem PC?", "danke"]) expect(isBingoFollowUp(x), x).toBe(false);
+    // A new game in the follow-up is a new card for that game.
+    expect(r("und jetzt für Minecraft auf mittel", prev).options.game).toBe("Minecraft");
   });
   it("asks when the game is missing and picks from the library when asked to", () => {
     expect(resolveOptions(r("Erstelle ein Bingo"), null, () => null)).toEqual({ error: "Für welches Spiel soll das Bingo sein?" });

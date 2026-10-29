@@ -21,6 +21,8 @@ public sealed class AssistantUsageMonth
     public long DeepSeekOutputTokens { get; set; }
     /// <summary>Gemini (free tier with the user's own key): counted against the user's own monthly cap.</summary>
     public int GeminiRequests { get; set; }
+    /// <summary>KI-Router (OpenRouter, Groq, MixRoute, OmniRoute/LiteLLM): counted against the user's own monthly cap.</summary>
+    public int RouterRequests { get; set; }
 }
 
 public sealed class AssistantFile
@@ -50,6 +52,11 @@ public sealed class AssistantFile
     public string GeminiModel { get; set; } = GeminiClient.DefaultModel;
     /// <summary>At most this many Gemini requests per month (Google also limits the free tier per minute and day).</summary>
     public int GeminiMonthlyRequests { get; set; } = 1000;
+    /// <summary>OpenAI-compatible router: base address (https, or http only in the home network), key (protected), up to 3 models in priority order.</summary>
+    public string? RouterBase { get; set; }
+    public string? RouterKeyProtected { get; set; }
+    public List<string> RouterModels { get; set; } = new();
+    public int RouterMonthlyRequests { get; set; } = 1500;
 }
 
 /// <summary>Entry point for the assistant: chooses local or Claude, keeps conversations, counts cost against the monthly limit.</summary>
@@ -65,13 +72,14 @@ public sealed class AssistantService
     public OllamaAssistant Ollama { get; }
     public DeepSeekClient DeepSeek { get; }
     public GeminiClient Gemini { get; }
+    public OpenAiCompatClient Router { get; }
     readonly SemaphoreSlim _bingoBusy = new(1, 1);
 
-    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public List<GeminiClient.Turn> Gemini = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
+    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public List<GeminiClient.Turn> Gemini = new(); public List<GeminiClient.Turn> Router = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, GeminiClient? gemini = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, GeminiClient? gemini = null, OpenAiCompatClient? router = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
@@ -80,6 +88,7 @@ public sealed class AssistantService
         Ollama = ollama ?? new OllamaAssistant(data);
         DeepSeek = deepSeek ?? new DeepSeekClient();
         Gemini = gemini ?? new GeminiClient();
+        Router = router ?? new OpenAiCompatClient();
     }
 
     string MonthKey => _now().ToString("yyyy-MM");
@@ -102,6 +111,7 @@ public sealed class AssistantService
             deepSeek = new { keySet = f.DeepSeekKeyProtected != null, model = f.DeepSeekModel, monthlyRequests = f.DeepSeekMonthlyRequests, used = month.DeepSeekRequests, inputTokens = month.DeepSeekInputTokens, outputTokens = month.DeepSeekOutputTokens },
             bingoProvider = BingoProviderName(f),
             gemini = new { keySet = f.GeminiKeyProtected != null, model = f.GeminiModel, monthlyRequests = f.GeminiMonthlyRequests, used = month.GeminiRequests },
+            router = new { baseUrl = f.RouterBase, keySet = f.RouterKeyProtected != null, models = f.RouterModels, monthlyRequests = f.RouterMonthlyRequests, used = month.RouterRequests, ready = RouterReady(f) },
             researchAi = ResearchProvider(f)?.label,
             engines = Engines(),
             webSearch = f.Mode == "claude" && f.KeyProtected != null,
@@ -114,6 +124,21 @@ public sealed class AssistantService
         public string? OllamaUrl { get; set; } public string? OllamaModel { get; set; } public bool? OllamaWhileGaming { get; set; }
         public string? BingoAi { get; set; } public string? DeepSeekKey { get; set; } public string? DeepSeekModel { get; set; } public int? DeepSeekMonthlyRequests { get; set; }
         public string? GeminiKey { get; set; } public string? GeminiModel { get; set; } public int? GeminiMonthlyRequests { get; set; }
+        public string? RouterBase { get; set; } public string? RouterKey { get; set; } public List<string>? RouterModels { get; set; } public int? RouterMonthlyRequests { get; set; }
+    }
+
+    static bool RouterReady(AssistantFile f) => f.RouterBase != null && f.RouterModels.Count > 0 && (f.RouterKeyProtected != null || IsHomeNetwork(f.RouterBase));
+    static bool IsHomeNetwork(string url) => Uri.TryCreate(url, UriKind.Absolute, out var u) && (u.IsLoopback || u.Host == "localhost" ||
+        (System.Net.IPAddress.TryParse(u.Host, out var ip) && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && ip.GetAddressBytes() is var b &&
+         (b[0] == 10 || (b[0] == 172 && b[1] >= 16 && b[1] <= 31) || (b[0] == 192 && b[1] == 168))));
+
+    /// <summary>Router address: https anywhere, http only on this PC or in the home network (self-hosted OmniRoute/LiteLLM). Keeps the path ("/api/v1").</summary>
+    static string CheckRouterUrl(string url)
+    {
+        if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var u) || u.Scheme is not ("http" or "https") || !string.IsNullOrEmpty(u.UserInfo) || !string.IsNullOrEmpty(u.Query) || !string.IsNullOrEmpty(u.Fragment))
+            throw new RpcException("invalid-params", "Router-Adresse z. B. https://openrouter.ai/api/v1");
+        if (u.Scheme == "http" && !IsHomeNetwork(u.ToString())) throw new RpcException("invalid-params", "Ohne https nur auf diesem PC oder im Heimnetz (z. B. http://192.168.0.10:20128/v1).");
+        return u.GetLeftPart(UriPartial.Path).TrimEnd('/');
     }
 
     /// <summary>Which AI would write bingo tasks right now (null = none – the app then uses its own catalog).</summary>
@@ -137,19 +162,24 @@ public sealed class AssistantService
     /// <param name="atPc">The key may only be set or removed at the PC itself (it costs money and leaves the home network).</param>
     public object Configure(Config c, bool atPc)
     {
-        if ((c.ApiKey != null || c.DeepSeekKey != null || c.GeminiKey != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
+        if ((c.ApiKey != null || c.DeepSeekKey != null || c.GeminiKey != null || c.RouterKey != null || c.RouterBase != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
         if (c.BingoAi is not (null or "assistant" or "deepseek")) throw new RpcException("invalid-params", "Bingo-KI muss „assistant“ oder „deepseek“ sein.");
         if (c.DeepSeekModel != null && !Regex.IsMatch(c.DeepSeekModel, @"^[A-Za-z0-9._:-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger DeepSeek-Modellname.");
         if (c.DeepSeekMonthlyRequests is < 0 or > 5000) throw new RpcException("invalid-params", "DeepSeek-Anfragen pro Monat: 0–5000.");
         if (c.GeminiModel != null && !Regex.IsMatch(c.GeminiModel, @"^[a-z0-9.-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger Gemini-Modellname (z. B. gemini-3.5-flash-lite).");
         if (c.GeminiMonthlyRequests is < 0 or > 50000) throw new RpcException("invalid-params", "Gemini-Anfragen pro Monat: 0–50000.");
+        var rBase = c.RouterBase == null ? null : c.RouterBase.Trim().Length == 0 ? "" : CheckRouterUrl(c.RouterBase);
+        var rKey = c.RouterKey?.Trim();
+        if (!string.IsNullOrEmpty(rKey) && (rKey.Length is < 8 or > 300 || rKey.Any(char.IsWhiteSpace))) throw new RpcException("invalid-params", "Das sieht nicht wie ein API-Schlüssel aus.");
+        if (c.RouterModels != null && (c.RouterModels.Count > 3 || c.RouterModels.Any(m => !Regex.IsMatch(m ?? "", @"^[A-Za-z0-9._:/@~-]{2,120}$")))) throw new RpcException("invalid-params", "Höchstens 3 Modelle mit gültigem Namen.");
+        if (c.RouterMonthlyRequests is < 0 or > 100000) throw new RpcException("invalid-params", "Router-Anfragen pro Monat: 0–100000.");
         var gmKey = c.GeminiKey?.Trim();
         if (!string.IsNullOrEmpty(gmKey) && !GeminiClient.LooksLikeKey(gmKey)) throw new RpcException("invalid-params", "Das sieht nicht wie ein Gemini-API-Schlüssel aus (aus Google AI Studio, beginnt mit „AIza“).");
         var dsKey = c.DeepSeekKey?.Trim();
         if (!string.IsNullOrEmpty(dsKey) && (dsKey.Length is < 20 or > 200 || dsKey.Any(char.IsWhiteSpace) || !dsKey.StartsWith("sk-") || dsKey.StartsWith("sk-ant-")))
             throw new RpcException("invalid-params", "Das sieht nicht wie ein DeepSeek-API-Schlüssel aus (beginnt mit „sk-“).");
         if (c.OllamaUrl != null && !atPc) throw new RpcException("forbidden", "Die Ollama-Adresse kannst du nur direkt am PC ändern.");
-        if (c.Mode is not (null or "local" or "ollama" or "claude")) throw new RpcException("invalid-params", "Modus muss „local“, „ollama“ oder „claude“ sein.");
+        if (c.Mode is not (null or "local" or "ollama" or "claude" or "gemini" or "router")) throw new RpcException("invalid-params", "Modus muss „local“, „ollama“, „claude“, „gemini“ oder „router“ sein.");
         var ollamaUrl = c.OllamaUrl == null ? null : CheckOllamaUrl(c.OllamaUrl);
         if (c.OllamaModel is { Length: > 100 } || (c.OllamaModel != null && !Regex.IsMatch(c.OllamaModel, @"^[A-Za-z0-9._:/-]*$"))) throw new RpcException("invalid-params", "Ungültiger Modellname.");
         if (c.Model != null && ClaudeAssistant.Models.All(m => m.Id != c.Model)) throw new RpcException("invalid-params", "Unbekanntes Modell.");
@@ -162,6 +192,14 @@ public sealed class AssistantService
             if (c.Mode != null)
             {
                 if (c.Mode == "claude" && f.KeyProtected == null && string.IsNullOrEmpty(key)) throw new RpcException("assistant-key", "Für Claude zuerst am PC einen API-Schlüssel eintragen.");
+                if (c.Mode == "gemini" && !(gmKey != null ? gmKey.Length > 0 : f.GeminiKeyProtected != null)) throw new RpcException("assistant-key", "Für Gemini als Standard zuerst am PC einen kostenlosen Gemini-Schlüssel eintragen.");
+                if (c.Mode == "router")
+                {
+                    var b2 = rBase != null ? (rBase.Length == 0 ? null : rBase) : f.RouterBase;
+                    var m2 = rBase is "" ? new List<string>() : c.RouterModels ?? f.RouterModels;
+                    var k2 = rKey != null ? rKey.Length > 0 : rBase == null || rBase == f.RouterBase ? f.RouterKeyProtected != null : false;
+                    if (b2 == null || m2.Count == 0 || !(k2 || IsHomeNetwork(b2))) throw new RpcException("assistant-key", "Für den KI-Router zuerst am PC Adresse, Schlüssel und ein Modell eintragen.");
+                }
                 f.Mode = c.Mode;
             }
             if (c.Model != null) f.Model = c.Model;
@@ -180,6 +218,18 @@ public sealed class AssistantService
             if (c.GeminiModel != null) f.GeminiModel = c.GeminiModel;
             if (c.GeminiMonthlyRequests != null) f.GeminiMonthlyRequests = c.GeminiMonthlyRequests.Value;
             if (gmKey != null) f.GeminiKeyProtected = gmKey.Length == 0 ? null : _secrets.Protect(gmKey);
+            if (rBase != null)
+            {
+                // Another address: the old key must not go there – it is removed unless a new one comes along.
+                if (rBase != (f.RouterBase ?? "") && rKey == null) f.RouterKeyProtected = null;
+                f.RouterBase = rBase.Length == 0 ? null : rBase;
+                if (rBase.Length == 0) f.RouterModels = new();
+            }
+            if (rKey != null) f.RouterKeyProtected = rKey.Length == 0 ? null : _secrets.Protect(rKey);
+            if (c.RouterModels != null) f.RouterModels = c.RouterModels.Distinct().ToList();
+            if (c.RouterMonthlyRequests != null) f.RouterMonthlyRequests = c.RouterMonthlyRequests.Value;
+            if (f.Mode == "router" && !RouterReady(f)) f.Mode = "local";
+            if (f.Mode == "gemini" && f.GeminiKeyProtected == null) f.Mode = "local";
             if (dsKey != null)
             {
                 f.DeepSeekKeyProtected = dsKey.Length == 0 ? null : _secrets.Protect(dsKey);
@@ -194,6 +244,7 @@ public sealed class AssistantService
         if (key != null) Log.Info("assistant", key.Length == 0 ? "Claude-Schlüssel entfernt." : "Claude-Schlüssel gespeichert (geschützt)."); // never the key itself
         if (dsKey != null) Log.Info("assistant", dsKey.Length == 0 ? "DeepSeek-Schlüssel entfernt." : "DeepSeek-Schlüssel gespeichert (geschützt).");
         if (gmKey != null) Log.Info("assistant", gmKey.Length == 0 ? "Gemini-Schlüssel entfernt." : "Gemini-Schlüssel gespeichert (geschützt).");
+        if (rKey != null) Log.Info("assistant", rKey.Length == 0 ? "Router-Schlüssel entfernt." : "Router-Schlüssel gespeichert (geschützt).");
         _hub.Changed("assistant");
         return Status();
     }
@@ -248,6 +299,7 @@ public sealed class AssistantService
             var useClaude = mode == "claude";
             var useOllama = mode == "ollama";
             var useGemini = mode == "gemini";
+            var useRouter = mode == "router";
             if (useOllama && !f.OllamaWhileGaming && Data.GameRunning())
             {
                 reply = await Local.AnswerAsync(text);
@@ -258,7 +310,7 @@ public sealed class AssistantService
             var simple = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 8 && !Regex.IsMatch(" " + text.ToLowerInvariant() + " ", @" (und|and|dann|then|aber|but|oder|or) ");
             // Local model: the exact local assistant always goes first – small models invent numbers (measured with
             // qwen2.5:1.5b) – so commands, live values and help answers never come from the model. Claude: only short single requests.
-            if ((useOllama && f.LocalFirst) || ((useClaude || useGemini) && f.LocalFirst && simple))
+            if ((useOllama && f.LocalFirst) || ((useClaude || useGemini || useRouter) && f.LocalFirst && simple))
             {
                 var local = await Local.AnswerAsync(text);
                 // Only commands and live-data answers count; help-text guesses go to Claude, which explains better.
@@ -276,6 +328,7 @@ public sealed class AssistantService
                 return Done(conversationId, o.Reply, note);
             }
             if (useGemini) return Done(conversationId, await GeminiChatAsync(f, conv.Gemini, text, who, ct), note);
+            if (useRouter) return Done(conversationId, await RouterChatAsync(f, conv.Router, text, who, ct), note);
             if (!useClaude)
             {
                 reply = await Local.AnswerAsync(text);
@@ -306,7 +359,8 @@ public sealed class AssistantService
     static (string mode, string claudeModel) ResolveEngine(AssistantFile f, string? engine)
     {
         engine = string.IsNullOrWhiteSpace(engine) ? "auto" : engine.Trim();
-        if (engine == "auto") return (f.Mode == "claude" && f.KeyProtected == null ? "local" : f.Mode, f.Model);
+        if (engine == "auto") return (f.Mode switch { "claude" when f.KeyProtected == null => "local", "gemini" when f.GeminiKeyProtected == null => "local", "router" when !RouterReady(f) => "local", _ => f.Mode }, f.Model);
+        if (engine == "router") return RouterReady(f) ? ("router", f.Model) : throw new RpcException("assistant-key", "Der KI-Router ist am PC noch nicht eingerichtet (Adresse, Schlüssel, Modell).");
         if (engine == "local") return ("local", f.Model);
         if (engine == "ollama") return string.IsNullOrEmpty(f.OllamaModel) ? throw new RpcException("assistant-key", "Die lokale KI (Ollama) ist am PC noch nicht eingerichtet.") : ("ollama", f.Model);
         if (engine == "gemini") return f.GeminiKeyProtected == null ? throw new RpcException("assistant-key", "Für Gemini zuerst am PC einen kostenlosen Gemini-Schlüssel eintragen.") : ("gemini", f.Model);
@@ -328,6 +382,7 @@ public sealed class AssistantService
         list.Add(new { id = "local", label = "Eingebaut (ohne KI, 0 €)", free = true });
         if (!string.IsNullOrEmpty(f.OllamaModel)) list.Add(new { id = "ollama", label = $"Lokale KI: {f.OllamaModel} (0 €)", free = true });
         if (f.GeminiKeyProtected != null) list.Add(new { id = "gemini", label = $"Gemini {f.GeminiModel} (kostenlos)", free = true });
+        if (RouterReady(f)) list.Add(new { id = "router", label = $"KI-Router: {f.RouterModels[0]}{(f.RouterModels.All(m => m.EndsWith(":free")) ? " (kostenlos)" : "")}", free = f.RouterModels.All(m => m.EndsWith(":free")) });
         if (f.KeyProtected != null) foreach (var m in ClaudeAssistant.Models) list.Add(new { id = "claude:" + m.Id, label = $"{m.Label} (kostenpflichtig, Websuche)", free = false });
         return list;
     }
@@ -336,8 +391,40 @@ public sealed class AssistantService
     {
         "claude" when f.KeyProtected != null => ClaudeAssistant.PriceOf(f.Model).Label,
         "ollama" when !string.IsNullOrEmpty(f.OllamaModel) => $"lokale KI {f.OllamaModel}",
+        "gemini" when f.GeminiKeyProtected != null => $"Gemini {f.GeminiModel}",
+        "router" when RouterReady(f) => $"KI-Router {f.RouterModels[0]}",
         _ => "eingebaut",
     };
+
+    /// <summary>The KI-Router as chat brain: same rules as Gemini – no tools, no live data, says so instead of guessing.</summary>
+    async Task<AssistantReply> RouterChatAsync(AssistantFile f, List<GeminiClient.Turn> history, string text, string who, CancellationToken ct)
+    {
+        var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+        if ((month?.RouterRequests ?? 0) >= f.RouterMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.RouterMonthlyRequests} Router-Anfragen ist erreicht.");
+        history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]\n{text}"));
+        if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
+        var res = await Router.ChatAsync(f.RouterBase!, RouterKey(f), f.RouterModels, ChatSystem(), history, json: false, ct);
+        history.Add(new GeminiClient.Turn("model", res.Text));
+        CountMonth(m => m.RouterRequests++);
+        var fallback = res.Model != f.RouterModels[0] && !res.Model.StartsWith(f.RouterModels[0].Split(':')[0]);
+        return new AssistantReply { Text = res.Text.Trim(), Mode = "router", Model = res.Model, CostUsd = 0, Sources = { fallback ? $"KI-Router – Ausweichmodell {res.Model} (das erste war nicht verfügbar)" : "KI-Router – ohne Live-Daten vom PC" } };
+    }
+
+    string? RouterKey(AssistantFile f) => f.RouterKeyProtected == null ? null : _secrets.Unprotect(f.RouterKeyProtected) ?? throw new RpcException("assistant-key", "Der gespeicherte Router-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+
+    /// <summary>The models the router offers right now (to choose up to three at the PC); free ones first.</summary>
+    public async Task<object> RouterModelsAsync(CancellationToken ct = default)
+    {
+        var f = _store.Snapshot();
+        if (f.RouterBase == null) throw new RpcException("assistant-key", "Zuerst am PC die Router-Adresse eintragen.");
+        var list = await Router.ModelsAsync(f.RouterBase, RouterKey(f), ct);
+        return new { models = list.Select(m => new { id = m.Id, free = m.Free, context = m.Context }) };
+    }
+
+    string ChatSystem() => "Du bist JARVIS, der Gaming-Assistent im „Nexus Gaming Hub“. Antworte in der Sprache des Nutzers (meist Deutsch), kurz und konkret. " +
+            "Du hast in diesem Modus KEINE Werkzeuge und KEINE Live-Daten vom PC: Fragt der Nutzer nach Werten seines PCs, seinen Spielen oder Spielzeiten, sag ehrlich, dass du sie hier nicht siehst. Behaupte nie, etwas gestartet oder erledigt zu haben. " +
+            "Erfinde nichts; bist du unsicher (neue Spiele, Patches, Zahlen), sag das und empfiehl „Im Internet suchen“. Keine Spoiler ohne Wunsch. Nur Gaming-Themen. Keine Hilfe bei Cheats oder Anti-Cheat-Umgehung.\n\n" +
+            "Wissensbasis der App:\n" + Data.Knowledge.FullText;
 
     /// <summary>Gemini as chat brain (free tier, own key): no tools and no live data – it says so instead of guessing.</summary>
     async Task<AssistantReply> GeminiChatAsync(AssistantFile f, List<GeminiClient.Turn> history, string text, string who, CancellationToken ct)
@@ -345,10 +432,7 @@ public sealed class AssistantService
         var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
         if ((month?.GeminiRequests ?? 0) >= f.GeminiMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.GeminiMonthlyRequests} Gemini-Anfragen ist erreicht.");
         var key = _secrets.Unprotect(f.GeminiKeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Gemini-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
-        var system = "Du bist JARVIS, der Gaming-Assistent im „Nexus Gaming Hub“. Antworte in der Sprache des Nutzers (meist Deutsch), kurz und konkret. " +
-            "Du hast in diesem Modus KEINE Werkzeuge und KEINE Live-Daten vom PC: Fragt der Nutzer nach Werten seines PCs, seinen Spielen oder Spielzeiten, sag ehrlich, dass du sie hier nicht siehst. Behaupte nie, etwas gestartet oder erledigt zu haben. " +
-            "Erfinde nichts; bist du unsicher (neue Spiele, Patches, Zahlen), sag das und empfiehl „Im Internet suchen“. Keine Spoiler ohne Wunsch. Nur Gaming-Themen. Keine Hilfe bei Cheats oder Anti-Cheat-Umgehung.\n\n" +
-            "Wissensbasis der App:\n" + Data.Knowledge.FullText;
+        var system = ChatSystem();
         history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]\n{text}"));
         if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
         var res = await Gemini.ChatAsync(key, f.GeminiModel, system, history, ct);
@@ -500,7 +584,9 @@ public sealed class AssistantService
     static (string id, string label)? ResearchProvider(AssistantFile f) =>
         f.Mode == "claude" && f.KeyProtected != null ? ("claude", "Claude")
         : f.Mode == "ollama" && !string.IsNullOrEmpty(f.OllamaModel) ? ("ollama", $"Ollama ({f.OllamaModel})")
+        : f.Mode == "router" && RouterReady(f) ? ("router", $"KI-Router ({f.RouterModels[0]})")
         : f.GeminiKeyProtected != null ? ("gemini", $"Gemini ({f.GeminiModel}, kostenlos)")
+        : RouterReady(f) ? ("router", $"KI-Router ({f.RouterModels[0]})")
         : f.DeepSeekKeyProtected != null ? ("deepseek", $"DeepSeek ({f.DeepSeekModel})") : null;
 
     async Task<(string text, string provider, string? model, double cost)> ResearchCompleteAsync(string system, string prompt, CancellationToken ct)
@@ -530,6 +616,13 @@ public sealed class AssistantService
                 var res = await Gemini.CompleteJsonAsync(key, f.GeminiModel, system, prompt, ct);
                 CountMonth(m => m.GeminiRequests++);
                 return (res.Text, "Gemini", res.Model, 0);
+            }
+            case "router":
+            {
+                if ((month?.RouterRequests ?? 0) >= f.RouterMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.RouterMonthlyRequests} Router-Anfragen ist erreicht.");
+                var res = await Router.ChatAsync(f.RouterBase!, RouterKey(f), f.RouterModels, system, new[] { new GeminiClient.Turn("user", prompt) }, json: true, ct);
+                CountMonth(m => m.RouterRequests++);
+                return (res.Text, "KI-Router", res.Model, 0);
             }
             case "deepseek":
             {

@@ -22,7 +22,7 @@ const OFF_TOPIC = () => t("Ich bin JARVIS Gaming – ich kümmere mich nur um de
 const CODE = () => t("Neue Funktionen oder Seiten sind Änderungen am Programmcode – die mache ich nicht nebenbei im Chat, und meinen eigenen Code ändere ich nie. Dafür gibt es den Entwicklungsweg mit Versionskontrolle, Tests und einem Update über die Update-Zentrale. Innerhalb der App (Startseiten, Widgets, Leiste, Kategorien, Profile, Design) ändere ich dagegen direkt, was du sagst.");
 const opens = (s: string) => /\b(oeffne|öffne|offne|zeig|zeige|geh|gehe|wechsel)\b/i.test(s);
 
-export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "In Quellen nachsehen" after an AI answer. */ sources?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean; /** AI chosen in the chat ("auto" = mode at the PC). */ engine?: string; /** For "Abbrechen". */ requestId?: string }
+export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "In Quellen nachsehen" after an AI answer. */ sources?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean; /** AI chosen in the chat ("auto" = mode at the PC). */ engine?: string; /** For "Abbrechen". */ requestId?: string; /** The game talked about last in this chat (follow-up questions). */ contextGame?: string | null }
 
 export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<JarvisTurn> {
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
@@ -62,6 +62,9 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
   let undo: Prefs | undefined;
   let navigate: string | undefined;
   let conversationId = ctx.conversationId;
+  // Which AI really answered (router fallback model, Gemini, Claude …) – shown under the answer, never hidden.
+  let answeredBy: Pick<AssistantReply, "mode" | "model" | "costUsd"> | null = null;
+  let costSum = 0;
   let bingoId: string | undefined;
   const session = ctx.online ? await ensureJarvis() : false;
 
@@ -207,12 +210,14 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       const res = await client.call<{ conversationId: string; reply: AssistantReply & { actions: (AssistantAction & { auto?: boolean })[] }; jarvis?: boolean }>("assistant.ask", { conversationId, text: part, jarvis: session, engine: ctx.engine, requestId: ctx.requestId });
       conversationId = res.conversationId;
       res.reply.sources.forEach((s) => sources.add(s));
+      costSum += res.reply.costUsd ?? 0;
+      if (res.reply.mode !== "local") answeredBy = { mode: res.reply.mode, model: res.reply.model ?? null, costUsd: res.reply.costUsd != null ? costSum : null };
       const autos = res.reply.actions.filter((a) => a.auto && a.kind !== "navigate");
       const navs = res.reply.actions.filter((a) => a.auto && a.kind === "navigate");
       // A knowledge question the built-in help cannot really answer (no hit, or a text that does not even mention the
       // topic): look it up instead – and never start or open anything for a question.
       // Nothing the built-in help knows ("Ship or Burn"): looked up too – JARVIS does not stop at "weiß ich nicht".
-      const lkf = lk ?? (res.reply.unsure && !autos.length ? (await import("./web-lookup")).fallbackIntent(part) : null);
+      const lkf = lk ?? (res.reply.unsure && !autos.length ? (await import("./web-lookup")).fallbackIntent(part, (await import("./research-chat")).refersBack(part) ? ctx.contextGame ?? null : null) : null);
       if (lkf?.kind === "question" && (res.reply.unsure || !mentions(res.reply.text, lkf.topic))) {
         const a = await lookupFlow(lkf, ctx);
         r = { text: a.text, ok: a.ok };
@@ -247,7 +252,7 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
     } else {
       const [{ answerOffline }, lib] = await Promise.all([import("./assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
       const o = answerOffline(part, { library: lib.items ?? [], paired: !!client.credentials });
-      const lkf = o.unsure ? lk ?? (await import("./web-lookup")).fallbackIntent(part) : null;
+      const lkf = o.unsure ? lk ?? (await import("./web-lookup")).fallbackIntent(part, (await import("./research-chat")).refersBack(part) ? ctx.contextGame ?? null : null) : null;
       if (lkf) {
         const a = await lookupFlow(lkf, ctx);
         r = { text: a.text, ok: a.ok };
@@ -264,7 +269,7 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
   }
   // Tone "locker": a one-liner after a successful answer (facts unchanged); never after an error or an open question.
   const { withStyle } = await import("./jarvis-style");
-  const out = reply(withStyle(texts.join("\n\n"), steps.length > 0 && steps.every((x) => x.ok === true) ? true : null), buttons.slice(0, 8), [...sources]);
+  const out = { ...reply(withStyle(texts.join("\n\n"), steps.length > 0 && steps.every((x) => x.ok === true) ? true : null), buttons.slice(0, 8), [...sources]), ...(answeredBy ?? {}) };
   // The log page ("JARVIS-Protokoll") – only what really happened.
   try { logDone(question, steps.map((s, i) => ({ text: texts[i] ?? s.text, ok: s.ok }))); } catch { /* storage full – the result is still shown */ }
   return { reply: out, steps, undo, navigate, conversationId, bingoId };

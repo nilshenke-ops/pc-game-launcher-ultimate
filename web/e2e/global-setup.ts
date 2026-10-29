@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { NEW_WIDGET_PLUGINS } from "./plugins-list";
-import { COMPANION, COMPANION_PORT, HOSTED_PORT, HOSTED_SITE, MOJANG_PORT, OBS_PASSWORD, OBS_PORT, RELAY, RELAY_PORT, STATE_FILE } from "./env";
+import { COMPANION, COMPANION_PORT, HOSTED_PORT, HOSTED_SITE, MOJANG_PORT, ROUTER_PORT, OBS_PASSWORD, OBS_PORT, RELAY, RELAY_PORT, STATE_FILE } from "./env";
 
 const ROOT = resolve(fileURLToPath(new URL(".", import.meta.url)), "../..");
 const SECRET = "e2e-relay-secret-0123456789abcdef";
@@ -75,14 +75,18 @@ export default async function setup() {
   // Stand-in for Mojang's patch notes feed (JARVIS research without Claude).
   const mojang = spawn(process.execPath, [join(ROOT, "web/e2e/fixtures/fake-mojang.mjs"), String(MOJANG_PORT)], { stdio: "ignore", detached: true });
   mojang.unref();
+  // Stand-in for an OpenAI-compatible AI router (OpenRouter style) – the busy first model tests the fallback.
+  const router = spawn(process.execPath, [join(ROOT, "web/e2e/fixtures/fake-router.mjs"), String(ROUTER_PORT)], { stdio: "ignore", detached: true });
+  router.unref();
   companion.unref(); relay.unref();
   await waitFor(`${COMPANION}/healthz`);
   await waitFor(`${RELAY}/healthz`);
   await waitFor(`${HOSTED_SITE}/`);
   await waitFor(`http://127.0.0.1:${OBS_PORT}/state`);
   await waitFor(`http://127.0.0.1:${MOJANG_PORT}/healthz`);
+  await waitFor(`http://127.0.0.1:${ROUTER_PORT}/healthz`);
   // Wait until the companion is connected to the relay.
   const end = Date.now() + 20000;
   while (Date.now() < end && (await (await fetch(`${RELAY}/healthz`)).json()).companionsOnline < 1) await new Promise((r) => setTimeout(r, 300));
-  writeFileSync(STATE_FILE, JSON.stringify({ dataDir, workDir: work, adminToken: readFileSync(tokenFile, "utf8").trim(), pids: [companion.pid, relay.pid, staticServer.pid, obs.pid, mojang.pid] }));
+  writeFileSync(STATE_FILE, JSON.stringify({ dataDir, workDir: work, adminToken: readFileSync(tokenFile, "utf8").trim(), pids: [companion.pid, relay.pid, staticServer.pid, obs.pid, mojang.pid, router.pid] }));
 }

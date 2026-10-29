@@ -2,7 +2,7 @@
 // game. Each line: "<level><category><flags>|<task>".
 //   level    1 leicht · 2 mittel · 3 schwer · 4 sehr schwer
 //   category e Erkunden · k Kampf · c Sammeln · b Bauen · t Team · f Spaß · h Herausforderung · p Fortschritt · s Überleben
-//   flags    T braucht Mitspieler · B Bosskampf · ! Spoiler (nur wenn erlaubt)
+//   flags    T braucht Mitspieler · B Bosskampf · ! Spoiler (nur wenn erlaubt) · I nur als Impostor · C nur als Crewmate
 // Only things that exist in the base game are named; tasks that depend on a daily map (PEAK) stay general.
 
 export interface CatalogGame {
@@ -101,6 +101,26 @@ export const CATALOG: CatalogGame[] = [
       "4c|Vollende das Gemeinschaftszentrum", "4e|Erreiche Ebene 100 in der Schädelhöhle", "4c|Spende alle Mineralien und Artefakte einer Sorte", "4f|Heirate jemanden", "4c|Fange die Legende",
       "1tT|Erntet gemeinsam ein Feld", "2tT|Geht zusammen fischen", "3tT|Erreicht gemeinsam Ebene 80 in der Mine",
     ],
+  },
+  {
+    id: "amongus", name: "Among Us", aliases: ["among us", "amongus"],
+    caps: { team: true },
+    tasks: [
+      "1e|Spiele eine Runde auf einer Karte, die du selten spielst", "1f|Wähle eine Farbe, die du sonst nie nimmst", "1f|Trage einen Hut, den du noch nie getragen hast", "1k|Gib in einem Meeting deine Stimme ab",
+      "1p|Spiele 3 Runden hintereinander", "2e|Spiele je eine Runde auf The Skeld und auf Polus", "2f|Sag in einem Meeting nur einen einzigen Satz", "2h|Überlebe eine ganze Runde", "3e|Spiele auf jeder Karte (The Skeld, MIRA HQ, Polus, The Airship, The Fungle) eine Runde",
+      "1pC|Erledige alle deine Aufgaben", "1pC|Repariere die Kabel", "1pC|Erledige eine Aufgabe in der Krankenstation (MedBay)", "1cC|Ziehe die Karte im Admin-Raum durch", "1kC|Drücke den Notfall-Knopf",
+      "2kC|Melde eine Leiche", "2pC|Behebe eine Sabotage (Licht, Kommunikation, Reaktor oder Sauerstoff)", "2pC|Erledige alle Aufgaben, bevor das erste Meeting beginnt", "2hC|Bestätige jemanden als sicher, weil du ihn eine Sichtaufgabe machen gesehen hast",
+      "2eC|Erledige als Geist alle deine restlichen Aufgaben", "3kC|Stimme richtig für einen Impostor, der rausgeworfen wird", "3hC|Gewinne als Crewmate durch erledigte Aufgaben", "3kC|Überführe einen Impostor mit einem echten Beweis",
+      "3hC|Gewinne als Crewmate durch Rauswählen aller Impostor", "4hC|Überlebe als einer der letzten drei Crewmates und gewinnt trotzdem", "4kC|Erwische einen Impostor beim Benutzen eines Lüftungsschachts und überführe ihn",
+      "1kI|Schalte einen Crewmate aus", "1kI|Benutze einen Lüftungsschacht", "1pI|Löse eine Sabotage aus", "1fI|Tu so, als würdest du eine Aufgabe erledigen", "2kI|Schalte jemanden aus, ohne dass die Leiche in dieser Runde gefunden wird",
+      "2pI|Sabotiere das Licht und schalte im Dunkeln jemanden aus", "2hI|Überlebe ein Meeting, in dem du verdächtigt wirst", "2kI|Schließe mit einer Türen-Sabotage jemanden ein", "3kI|Melde eine Leiche, die du selbst verursacht hast, und bleib unverdächtig",
+      "3hI|Lass einen Crewmate statt dir rauswählen", "3kI|Schalte 3 Crewmates in einer Runde aus", "3hI|Gewinne als Impostor", "4kI|Schalte zwei Crewmates kurz hintereinander aus, ohne erwischt zu werden",
+      "4hI|Gewinne als Impostor, ohne dass dich jemand im Meeting beschuldigt", "4hI|Gewinne als letzter Impostor allein",
+      "2fI|Lauf eine Weile mit einer Gruppe mit, ohne aufzufallen", "2pI|Sabotiere den Reaktor oder den Sauerstoff", "2pI|Sabotiere die Kommunikation, damit niemand seine Aufgaben sieht", "3pI|Schalte jemanden aus, während die anderen eine Sabotage beheben",
+      "2fC|Erledige eine Sichtaufgabe direkt vor einem Mitspieler", "2kC|Rufe ein Notfall-Meeting mit einem echten Verdacht ein", "2pC|Erledige 3 Aufgaben, ohne dass dich jemand begleitet", "3pC|Behebe den Reaktor oder den Sauerstoff in letzter Sekunde",
+      "2h|Spiele eine Runde mit mindestens 10 Spielern", "2f|Sag in einem Meeting, wo du zuletzt warst – ehrlich",
+    ],
+    note: "Aufgaben für Impostor und Crewmate getrennt – sag „ich bin Impostor“ oder „ich bin Crewmate“. Kartennamen wie im Spiel (Stand 2026: The Skeld, MIRA HQ, Polus, The Airship, The Fungle).",
   },
   {
     id: "rocketleague", name: "Rocket League", aliases: ["rocket league", "rocketleague"],

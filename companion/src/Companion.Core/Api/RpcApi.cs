@@ -259,6 +259,7 @@ public static class RpcApi
         rpc.Register("assistant.freeAnswer", async ctx => await s.Assistant.FreeAnswerAsync(ctx.Bind<Assistant.AssistantService.FreeQuestion>()));
         rpc.Register("assistant.bingoPlan", async ctx => await s.Assistant.PlanBingoAsync(ctx.Bind<Assistant.BingoRequest>()));
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
+        rpc.Register("assistant.routerModels", async ctx => await s.Assistant.RouterModelsAsync());
         rpc.Register("assistant.ollamaModels", async ctx => await s.Assistant.OllamaModelsAsync());
         rpc.Register("assistant.configure", ctx => s.Assistant.Configure(ctx.Bind<Assistant.AssistantService.Config>(), ctx.Session.IsLocalAdmin));
 
