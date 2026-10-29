@@ -1,27 +1,26 @@
 {
-  "version": "2.80.0",
+  "version": "2.81.0",
   "date": "2026-10-29",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion.exe",
-  "size": 88347370,
-  "sha256": "fa36e483d5d7d60fd9f3ee08fac0e1cd6fa46e95b78468a6b04effea903d155c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.81.0/PCGameLauncherCompanion.exe",
+  "size": 88348844,
+  "sha256": "f13d5fecc30667b0670e866ea66dd3ea6eb6da0e16d8c0f9f5e8b58a6c46ba31",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.80.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion-2.80.0-win-x64.zip",
-    "size": 82610084,
-    "sha256": "965967deac3e4360215d9ed80428b836944493250c12554201f48c450d1e5a95"
+    "fileName": "PCGameLauncherCompanion-2.81.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.81.0/PCGameLauncherCompanion-2.81.0-win-x64.zip",
+    "size": 82611491,
+    "sha256": "ee5c9b0d8c41d968964088591a6a3064435e3c24052ec86ce80ae43bdf475658"
   },
-  "notes": "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit) · Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat) · „KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
+  "notes": "JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC · Einstellung „Antworten auf Wissensfragen“ (JARVIS → Stimme & Ton): „Aus Quellen“ (Standard; KI per Knopf), „Quellen, sonst KI“ (findet er nichts, fragt er sofort die KI am PC) und „Direkt von der KI“ (gleich die KI am PC, z. B. das kostenlose Gemini; mit Knopf „In Quellen nachsehen“) – KI-Antworten bleiben als „ohne Quelle“ markiert · Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach und sagt das",
   "changes": {
     "neu": [
-      "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit)",
-      "Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat)",
-      "„KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
-      "Verständliche Fehlermeldungen für Gemini: falscher Schlüssel, unbekanntes Modell, kostenloses Kontingent aufgebraucht, Region nicht verfügbar"
+      "JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC",
+      "Einstellung „Antworten auf Wissensfragen“ (JARVIS → Stimme & Ton): „Aus Quellen“ (Standard; KI per Knopf), „Quellen, sonst KI“ (findet er nichts, fragt er sofort die KI am PC) und „Direkt von der KI“ (gleich die KI am PC, z. B. das kostenlose Gemini; mit Knopf „In Quellen nachsehen“) – KI-Antworten bleiben als „ohne Quelle“ markiert",
+      "Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach und sagt das"
     ],
     "verbessert": [],
     "behoben": []
   },
-  "signature": "zTFPiPpATZcYp+ayL7N/iSS6OsEBOgfJ+zwZKHkKg0/K6Y1C1ldN7KVJmMK22DRnltELWkHQR5D7Oexaqlvawg=="
+  "signature": "M8Yrxwyq2VBlC3KfsnHpP+M5y3V7Tz6upEx5G4XUHMrhojS4kaC93jl/p/v1BTYM01l2DOQ6PDlZdYmvJj+GFw=="
 }
