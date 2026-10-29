@@ -114,7 +114,7 @@ function WebLookupSetting() {
         <span className="muted">{t("Unbekanntes nachschlagen")}:</span>
         {(["ask", "always", "never"] as WebPermission[]).map((x) => <button key={x} type="button" className={`chip ${v === x ? "on" : ""}`} aria-pressed={v === x} onClick={() => set(x)}>{x === "ask" ? t("Vorher fragen") : x === "always" ? t("Immer") : t("Nie")}</button>)}
       </div>
-      <span className="muted tiny">{t("Mehrere offene Wissensquellen gleichzeitig, die beste gewinnt: Spiele-Wikis (Minecraft, Terraria, Stardew Valley, Elden Ring, Skyrim/UESP, Fortnite, Cyberpunk, GTA, Palworld, Baldur’s Gate 3), Wikipedia und bei Spieler-Fragen Arqade (Stack Exchange). Mit PC: YouTube-Videos (eigener Schlüssel) und eine deutsche Zusammenfassung durch die KI am PC – nur aus den Quellen. TikTok, Instagram und Reddit nur als Such-Link. Gesendet wird nur der Suchbegriff. Gefundenes steht mit Quelle unter Wiki → „JARVIS-Wissen (nachgeschlagen)“.")}</span>
+      <span className="muted tiny">{t("Mehrere offene Wissensquellen gleichzeitig, die beste gewinnt: die Wikis von über 80 Spielen (z. B. Minecraft, Skyrim/UESP, Zelda, Pokémon/Bulbapedia, League of Legends, Fortnite, Hollow Knight, Witcher, Fallout), Wikipedia, Klexikon (einfach erklärt), Wikivoyage (Reisen) und Frage-Antwort-Seiten mit Stimmen: Arqade (Spiele), Super User (PC-Probleme), Board & Card Games (Brettspiele). Mit PC: YouTube-Videos (eigener Schlüssel) und eine deutsche Zusammenfassung durch die KI am PC – nur aus den Quellen. TikTok, Instagram und Reddit nur als Such-Link. Gesendet wird nur der Suchbegriff. Gefundenes steht mit Quelle unter Wiki → „JARVIS-Wissen (nachgeschlagen)“.")}</span>
     </div>
   );
 }

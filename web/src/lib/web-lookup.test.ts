@@ -5,7 +5,8 @@ const ls = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, 
 vi.stubGlobal("localStorage", ls);
 vi.stubGlobal("window", { localStorage: ls, sessionStorage: ls });
 
-const { lookupIntent, topicOf, relevant, lookup, lookupAnswer, fromMemory, learnedReply, webPermission, setWebPermission, toEnglish, contextOf, introFromHtml, askPermission, score } = await import("./web-lookup");
+const { lookupIntent, topicOf, relevant, lookup, lookupAnswer, fromMemory, learnedReply, webPermission, setWebPermission, toEnglish, contextOf, introFromHtml, askPermission, score, sourcesFor } = await import("./web-lookup");
+const { GAMES, gameMentioned } = await import("./knowledge-sources");
 const { _resetForTests } = await import("./journal");
 const { openQuestions, learnedAll } = await import("./jarvis-memory");
 
@@ -147,3 +148,43 @@ describe("Hilfen", () => {
     expect(score("strongest weapon", "Skyrim:Weapons", "the strongest weapons")).toBeCloseTo(0.8);
   });
 });
+
+describe("Viele Quellen", () => {
+  it("über 80 Spiele mit eigenem Wiki, alle über https und mit offizieller Schnittstelle", () => {
+    expect(GAMES.length).toBeGreaterThanOrEqual(80);
+    const apis = GAMES.flatMap((g) => g.wikis.map((w) => w.api));
+    expect(apis.every((a) => /^https:\/\/[a-z0-9.-]+\/(?:[a-z-]+\/)*api\.php$/.test(a))).toBe(true);
+    expect(apis.some((a) => /pcgamingwiki|howlongtobeat|google|tiktok|instagram|reddit/.test(a))).toBe(false);
+    expect(new Set(GAMES.map((g) => g.name)).size).toBe(GAMES.length);
+  });
+  it("erkennt Spiele im Satz und wählt Quellen nach Thema", () => {
+    expect(lookupIntent("Wie besiege ich Hornet in Hollow Knight?")).toMatchObject({ topic: "Hornet", game: "Hollow Knight" });
+    expect(gameMentioned("Welche Legende ist in Apex Legends am besten")).toBe("Apex Legends");
+    expect(gameMentioned("Was ist Rust für eine Sprache")).toBeNull(); // everyday words only after "in …"
+    expect(lookupIntent("Was ist Hollow Knight?")).toMatchObject({ topic: "Hollow Knight", game: null });
+    expect(sourcesFor("Hornet", "Hollow Knight", "Wie besiege ich Hornet in Hollow Knight?")).toEqual(["Hollow Knight Wiki (Fandom)", "Arqade (Stack Exchange)", "Wikipedia (deutsch)", "Wikipedia (englisch)"]);
+    expect(sourcesFor("Pikachu", "Pokémon", "Was ist Pikachu in Pokémon?")).toContain("Bulbapedia");
+    expect(lookupIntent("Was tun wenn die Grafikkarte zu heiß wird?")).toMatchObject({ topic: "Grafikkarte zu heiß wird", game: null });
+    expect(sourcesFor("Grafikkarte zu heiß", null, "Was tun wenn die Grafikkarte zu heiß wird")).toContain("Super User (Stack Exchange, PC-Hilfe)");
+    expect(sourcesFor("Regeln von Catan", null, "Wie sind die Regeln von Catan?")).toContain("Board & Card Games (Stack Exchange)");
+    expect(sourcesFor("Sehenswürdigkeiten in Rom", null, "Welche Sehenswürdigkeiten gibt es in Rom für eine Reise")).toContain("Wikivoyage (deutsch)");
+    expect(sourcesFor("Vulkan", null, "Was ist ein Vulkan?")).toEqual(["Klexikon (Kinder-Lexikon, einfach erklärt)", "Wikipedia (deutsch)", "Wikipedia (englisch)"]);
+  });
+  it("Super User beantwortet PC-Fragen mit Spieler-/Nutzer-Antwort", async () => {
+    const calls: string[] = [];
+    const f = (async (url: string) => {
+      calls.push(url);
+      const u = new URL(url);
+      const body = u.host === "api.stackexchange.com"
+        ? (u.pathname.endsWith("/answers") ? { items: [{ answer_id: 9, score: 40, is_accepted: true, body: "<p>Clean the fans and check that the GPU fan curve is not set too low; then monitor temperatures.</p>", owner: { display_name: "Tech" } }] } : { items: [{ question_id: 1, title: "Graphics card gets too hot while gaming", score: 30, is_answered: true }] })
+        : { query: { search: [] } };
+      return new Response(JSON.stringify(body), { status: 200 });
+    }) as unknown as typeof fetch;
+    const a = await lookupAnswer(lookupIntent("Was tun wenn die Grafikkarte zu heiß wird?")!, f);
+    expect(a.text).toContain("Clean the fans");
+    expect(a.text).toContain("Beste Quelle: Super User (Stack Exchange, PC-Hilfe) – Antwort von Tech, 40 Stimmen, akzeptiert");
+    expect(a.links[0].url).toBe("https://superuser.com/a/9");
+    expect(calls.some((c) => c.includes("site=superuser") && c.includes("graphics%20card"))).toBe(true);
+  });
+});
+

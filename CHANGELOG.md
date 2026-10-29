@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.79.0 – 2026-10-29
+### Neu
+- JARVIS kennt jetzt die Wikis von über 80 Spielen (vorher 10), jedes einzeln geprüft: u. a. Hollow Knight, Valheim, Zelda, Pokémon (Bulbapedia), League of Legends (offiziell), Genshin Impact, Rocket League, Fallout, Witcher, Dark Souls, Hogwarts Legacy, Among Us, Apex, Valorant, Overwatch, Counter-Strike, Rainbow Six, Call of Duty, Sims, Satisfactory, Factorio, RimWorld, Subnautica, Hades, Dead by Daylight, Rust, ARK, Don't Starve, Path of Exile, Warframe, Sea of Thieves, No Man's Sky, Borderlands, Assassin's Creed, Red Dead, Mario, Halo, World of Warcraft, Hearthstone, Lethal Company, Helldivers 2, Monster Hunter, Sekiro, Bloodborne, Starfield, Diablo, Dota 2, Resident Evil, Forza, Need for Speed, Smash Bros., God of War, The Last of Us, Final Fantasy, Kingdom Hearts …
+- Neue Themenquellen außerhalb von Spielen: Klexikon (Kinder-Lexikon, einfach erklärt), Wikivoyage (Reisen), Super User (PC-Probleme mit Antworten und Stimmen), Board & Card Games (Brettspiel-Regeln)
+- Spiele werden überall im Satz erkannt („Wie besiege ich Hornet in Hollow Knight?“), mehrdeutige Namen (Rust, Halo, Hades …) nur nach „in/bei …“
+- Neue Frageformen: „Was tun, wenn …“, „Wie kann ich …“, „Welche … gibt es …“, „Wie behebe/repariere ich …“
+### Verbessert
+- Trefferwahl: die Seite mit genau dem gefragten Namen zuerst (auch wenn die Suche sie nicht oben zeigt), keine Unterseiten wie „…/Netflix series“, keine Wiki-Bausteine als Antwort; bis zu drei Treffer je Quelle werden versucht
+- „… in Rom“ ist ein Ort, kein Spiel: dann werden die allgemeinen Quellen gefragt
+
 ## 2.78.0 – 2026-10-29
 ### Neu
 - JARVIS fragt viele Quellen gleichzeitig und nimmt die beste: Spiele-Wikis (neu: Skyrim/UESP und Elder Scrolls Wiki, Fortnite, Cyberpunk 2077, GTA, Palworld, Baldur's Gate 3), Wikipedia (deutsch und englisch) und bei Spieler-Fragen („stärkste“, „beste“, „wie/wo …“) Arqade (Stack Exchange) mit Antworten und Stimmen von Spielern (CC BY-SA, mit Autor)

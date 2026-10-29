@@ -1,7 +1,7 @@
 // JARVIS looks things up that nobody taught him – in several open knowledge sources at once, then takes the best one:
-// the game's own wikis (Minecraft, Terraria, Stardew Valley, Elden Ring, Skyrim/UESP, Fortnite, Cyberpunk, GTA,
-// Palworld, Baldur's Gate 3), Wikipedia (German and English) and for game questions Arqade (Stack Exchange, answers
-// by players with votes – good for "Was ist die stärkste Waffe …"). With the PC online: matching YouTube videos (only
+// the game's own wikis (80+ games, see knowledge-sources.ts), Wikipedia (German and English), Klexikon (simple German),
+// Wikivoyage (travel), and Q&A sites with votes: Arqade for player questions ("Was ist die stärkste Waffe …"), Super User
+// for PC problems, Board & Card Games for board games. With the PC online: matching YouTube videos (only
 // with the user's own key) and a German summary of the found passages by the AI chosen at the PC, citing [n].
 // Only official interfaces (MediaWiki API, Stack Exchange API) – no search engine is scraped, no site that forbids
 // automated access is used. TikTok, Instagram and Reddit offer no allowed search interface: JARVIS opens their search
@@ -10,32 +10,14 @@
 
 import { gameInText } from "./challenge-chat";
 import { findLearned, learnedKey, noteOpenQuestion, saveLearned, type Learned } from "./jarvis-memory";
+import { GAMES, KLEXIKON, QA_SITES, WIKIPEDIA, WIKIVOYAGE, gameMentioned, gameSources, type QaSite, type Source } from "./knowledge-sources";
 import { readJson, writeJson } from "./rpc";
 
-export interface Source { name: string; api: string; page: (title: string) => string; lang: "de" | "en"; extracts: boolean; /** Search only this namespace (UESP keeps each game in its own). */ ns?: number }
+export type { Source } from "./knowledge-sources";
 
-const wiki = (name: string, api: string, base: string, lang: "de" | "en", extracts = true, ns?: number): Source =>
-  ({ name, api, lang, extracts, ns, page: (t) => base + encodeURIComponent(t.replace(/ /g, "_")).replace(/%3A/g, ":") });
-
-/** Official or community wikis of games, checked to answer with CORS (works on iPhone/iPad without the PC). */
-export const GAME_WIKIS: Record<string, Source[]> = {
-  "Minecraft": [wiki("Minecraft Wiki", "https://de.minecraft.wiki/api.php", "https://de.minecraft.wiki/w/", "de")],
-  "Terraria": [wiki("Terraria Wiki (offiziell)", "https://terraria.wiki.gg/api.php", "https://terraria.wiki.gg/wiki/", "en")],
-  "Stardew Valley": [wiki("Stardew Valley Wiki (offiziell)", "https://stardewvalleywiki.com/mediawiki/api.php", "https://stardewvalleywiki.com/", "en")],
-  "Elden Ring": [wiki("Elden Ring Wiki (Fandom)", "https://eldenring.fandom.com/api.php", "https://eldenring.fandom.com/wiki/", "en", false)],
-  "Skyrim": [wiki("UESP (Elder Scrolls Wiki)", "https://en.uesp.net/w/api.php", "https://en.uesp.net/wiki/", "en", true, 134), wiki("Elder Scrolls Wiki (Fandom)", "https://elderscrolls.fandom.com/api.php", "https://elderscrolls.fandom.com/wiki/", "en", false)],
-  "Fortnite": [wiki("Fortnite Wiki (Fandom)", "https://fortnite.fandom.com/api.php", "https://fortnite.fandom.com/wiki/", "en", false)],
-  "Cyberpunk 2077": [wiki("Cyberpunk Wiki (Fandom)", "https://cyberpunk.fandom.com/api.php", "https://cyberpunk.fandom.com/wiki/", "en", false)],
-  "GTA V": [wiki("GTA Wiki (Fandom)", "https://gta.fandom.com/api.php", "https://gta.fandom.com/wiki/", "en", false)],
-  "Palworld": [wiki("Palworld Wiki (offiziell)", "https://palworld.wiki.gg/api.php", "https://palworld.wiki.gg/wiki/", "en")],
-  "Baldur's Gate 3": [wiki("bg3.wiki", "https://bg3.wiki/w/api.php", "https://bg3.wiki/wiki/", "en", false)],
-};
-/** Names a player writes after "in …" that are not (yet) in the game catalog. */
-const WIKI_ALIASES: Record<string, string> = { "skyrim": "Skyrim", "elder scrolls": "Skyrim", "the elder scrolls": "Skyrim", "the elder scrolls v": "Skyrim", "tes": "Skyrim", "cyberpunk": "Cyberpunk 2077", "gta": "GTA V", "gta 5": "GTA V", "gta v": "GTA V", "bg3": "Baldur's Gate 3", "baldurs gate 3": "Baldur's Gate 3" };
-const WIKIPEDIA = (lang: "de" | "en") => wiki(`Wikipedia (${lang === "de" ? "deutsch" : "englisch"})`, `https://${lang}.wikipedia.org/w/api.php`, `https://${lang}.wikipedia.org/wiki/`, lang);
-const ARQADE = "Arqade (Stack Exchange)";
-
-export const wikisFor = (game: string | null): Source[] => (game ? GAME_WIKIS[game] ?? GAME_WIKIS[WIKI_ALIASES[game.toLowerCase()] ?? ""] ?? [] : []);
+/** Game name → its wikis (for the permission text and tests). */
+export const GAME_WIKIS: Record<string, Source[]> = Object.fromEntries(GAMES.map((g) => [g.name, g.wikis]));
+export const wikisFor = (game: string | null): Source[] => gameSources(game)?.wikis ?? [];
 
 // ------------------------------------------------------------------ understanding the question
 
@@ -48,7 +30,10 @@ export function topicOf(raw: string, game: string | null): string {
   let s = raw.trim().replace(/^jarvis[,:]?\s*/i, "").replace(/[?!.]+$/, "");
   s = s.replace(/^(?:such|schau|guck|sieh)\w*\s+(?:mal\s+)?(?:im internet|online|im web|in der wikipedia|bei wikipedia|im wiki|nach)\s*(?:nach\s+)?/i, "")
     .replace(/^(?:wikipedia|wiki|nachschlagen)\s*[:\-]?\s*/i, "")
-    .replace(/^(?:wo|wie)\s+(?:finde|bekomme|kriege|besiege|töte|craft\w*|baue|findet|bekommt|besiegt)\s+(?:ich|man)\s+/i, "")
+    .replace(/^(?:wo|wie)\s+(?:finde|bekomme|kriege|besiege|töte|craft\w*|baue|findet|bekommt|besiegt|kühle|repariere|behebe|löse)\s+(?:ich|man)\s+/i, "")
+    .replace(/^welche[rsn]?\s+((?:\S+\s+){0,1}\S+)\s+gibt\s+es\s+/i, "$1 ")
+    .replace(/^was\s+gibt\s+es\s+(?:über|zu|für)?\s*/i, "")
+    .replace(/^(?:was\s+tun|was\s+mache\s+ich|wie\s+kann\s+(?:ich|man))\s+(?:wenn|bei|gegen)?\s*/i, "")
     .replace(/^(?:was|wer|wo|wann|wie|welche[rsn]?|warum|wieso|weshalb)\s+(?:ist|sind|war|waren|macht|bedeutet|heißt|heisst|bewirkt|kann|können|gibt es|genau|eigentlich)?\s*/i, "")
     .replace(/^(?:erkläre?|erklär|beschreibe?)\s+(?:mir\s+)?(?:mal\s+)?(?:was\s+)?/i, "")
     .replace(/\s+(?:ist|sind|bedeutet|macht|heißt)$/i, "");
@@ -61,16 +46,18 @@ export function contextOf(raw: string): string | null {
   const m = raw.trim().replace(/[?!.]+$/, "").match(/\s(?:in|bei|für|aus)\s+((?:[A-Z0-9][\w'’:.-]*)(?:\s+[A-Z0-9][\w'’:.-]*){0,4})$/);
   if (!m) return null;
   const name = m[1].trim();
-  return WIKI_ALIASES[name.toLowerCase()] ?? name;
+  return gameSources(name)?.name ?? name;
 }
 
 export function lookupIntent(raw: string): LookupIntent | null {
   const q = raw.trim();
   const explicit = /^(?:jarvis[,:]?\s*)?(?:such|schau|guck|sieh)\w*\s+(?:mal\s+)?(?:im internet|online|im web|in der wikipedia|bei wikipedia|im wiki)\b|^(?:jarvis[,:]?\s*)?(?:wikipedia|wiki|nachschlagen)\s*[:\-]/i.test(q);
-  const question = /^(?:jarvis[,:]?\s*)?(?:was|wer|wo|wann|welche[rsn]?|warum|wieso|weshalb)\s+(?:ist|sind|war|waren|bedeutet|macht|heißt|heisst|bewirkt)\b|^(?:jarvis[,:]?\s*)?(?:erkläre?|erklär|beschreibe?)\s+(?:mir\s+)?|^(?:jarvis[,:]?\s*)?(?:wo|wie)\s+(?:finde|bekomme|kriege|besiege|töte|baue|findet|bekommt|besiegt)\s+(?:ich|man)\s/i.test(q);
+  const question = /^(?:jarvis[,:]?\s*)?(?:was|wer|wo|wann|welche[rsn]?|warum|wieso|weshalb)\s+(?:ist|sind|war|waren|bedeutet|macht|heißt|heisst|bewirkt)\b|^(?:jarvis[,:]?\s*)?(?:erkläre?|erklär|beschreibe?)\s+(?:mir\s+)?|^(?:jarvis[,:]?\s*)?(?:wo|wie)\s+(?:finde|bekomme|kriege|besiege|töte|baue|findet|bekommt|besiegt|kühle|repariere|behebe|löse)\s+(?:ich|man)\s|^(?:jarvis[,:]?\s*)?(?:was|welche[rsn]?(?:\s+\S+){1,2})\s+gibt\s+es\s|^(?:jarvis[,:]?\s*)?(?:was\s+tun|was\s+mache\s+ich|wie\s+kann\s+(?:ich|man))\s/i.test(q);
   if (!explicit && !question) return null;
-  const game = gameInText(q) ?? contextOf(q);
-  const topic = topicOf(q, game);
+  let game = gameInText(q) ?? gameMentioned(q) ?? contextOf(q);
+  let topic = topicOf(q, game);
+  // "Was ist Hollow Knight?" – the game itself is the topic.
+  if (topic.length < 2 && game) { topic = game; game = null; }
   if (topic.length < 2 || topic.length > 80) return null;
   return { kind: explicit ? "explicit" : "question", topic, game, raw: q };
 }
@@ -94,6 +81,10 @@ const GLOSSARY: [string, string][] = Object.entries({
   erz: "ore", diamant: "diamond", eisen: "iron", gold: "gold", endboss: "final boss", boss: "boss", gegner: "enemy", drache: "dragon", drachen: "dragons", fundort: "location", versteck: "hideout",
   rezept: "recipe", verzauber: "enchantment", fahigkeit: "skill", talent: "perk", klasse: "class", rasse: "race", begleiter: "follower", pferd: "horse", haus: "house", schatz: "treasure", schlussel: "key",
   karte: "map", aufgabe: "quest", schaden: "damage", ausrustung: "gear", skillung: "build", fahrzeug: "vehicle", auto: "car", geld: "money", ende: "ending", geheim: "secret",
+  treiber: "driver", grafikkarte: "graphics card", prozessor: "cpu", arbeitsspeicher: "ram", festplatte: "hard drive", bildschirm: "monitor", tastatur: "keyboard", maus: "mouse", lufter: "fan",
+  netzteil: "power supply", absturz: "crash", sturzt: "crashes", ruckel: "stutter", langsam: "slow", uberhitz: "overheating", heiss: "hot", laut: "loud", fehler: "error", startet: "start",
+  installier: "install", deinstallier: "uninstall", mikrofon: "microphone", kopfhorer: "headset", lautsprecher: "speakers", ton: "sound", verbindung: "connection", internet: "internet",
+  regel: "rules", wurfel: "dice", karten: "cards", zug: "turn", punkte: "points", gewinn: "win",
 }).sort((a, b) => b[0].length - a[0].length);
 export function toEnglish(topic: string): string {
   return topic.split(/\s+/).map((w) => {
@@ -138,83 +129,112 @@ async function getJson(f: Fetch, url: string, ms = 7000): Promise<unknown> {
 /** First paragraphs of a page without infoboxes, tables and "For other uses" notes (wikis without TextExtracts). */
 export function introFromHtml(html: string): string {
   const clean = html.replace(/<(style|script|aside|table|figure|noscript)\b[\s\S]*?<\/\1>/gi, " ").replace(/<div[^>]*class="[^"]*(?:hatnote|notice|dablink|navbox)[^"]*"[\s\S]*?<\/div>/gi, " ");
-  const paras = [...clean.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)].map((m) => strip(m[1]).replace(/\[\d+\]/g, "")).filter((p) => p.length > 40 && !/^(?:for other uses|this article|not to be confused|main article)/i.test(p));
+  const paras = [...clean.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/gi)].map((m) => strip(m[1]).replace(/\[\s*\d+\s*\]/g, "").replace(/\s+([,.;:!?])/g, "$1")).filter((p) => p.length > 40 && !/^(?:for other uses|for the article|this article|not to be confused|main article)/i.test(p));
   return paras.slice(0, 2).join(" ");
+}
+
+/** The text of one page: TextExtracts where the wiki has it, else the first paragraphs from action=parse. */
+async function pageText(src: Source, title: string, f: Fetch): Promise<string> {
+  if (src.extracts) {
+    const ex = await getJson(f, `${src.api}?action=query&prop=extracts&exintro=1&explaintext=1&exsentences=4&redirects=1&titles=${encodeURIComponent(title)}&format=json&origin=*`) as { query?: { pages?: Record<string, { extract?: string }> } };
+    const e = (Object.values(ex.query?.pages ?? {})[0]?.extract ?? "").replace(/^(?:for (?:the article|other uses)|this article is about|not to be confused)[^.]*\.\s*/i, "").trim();
+    if (e) return e;
+  }
+  // No TextExtracts, or an empty extract (intro built from templates): the first paragraphs of the rendered page.
+  try {
+    const p = await getJson(f, `${src.api}?action=parse&page=${encodeURIComponent(title)}&prop=text&section=0&redirects=1&format=json&origin=*`) as { parse?: { text?: { "*"?: string } | string } };
+    return introFromHtml(typeof p.parse?.text === "string" ? p.parse.text : p.parse?.text?.["*"] ?? "");
+  } catch { return ""; }
+}
+
+/** Exact title ("Ganondorf", "Pikachu (Pokémon)") before sub-pages and longer titles ("Geralt of Rivia/Netflix series"). */
+function titleRank(query: string, title: string): number {
+  const q = words(query).join(" "), t = words(title.replace(/\s*\([^)]*\)$/, "")).join(" ");
+  return (t === q ? 1 : 0) - (title.includes("/") ? 0.5 : 0) - Math.max(0, words(title).length - words(query).length) * 0.05;
 }
 
 /** min: a game's own wiki may hit on the title alone (Fandom search has no snippets); Wikipedia needs more. */
 async function askWiki(src: Source, query: string, f: Fetch, context: string | null, min = 0.6): Promise<Found | null> {
   const q = context ? `${query} ${context}` : query;
   const search = await getJson(f, `${src.api}?action=query&list=search&srsearch=${encodeURIComponent(q)}&srlimit=5&srprop=snippet${src.ns !== undefined ? `&srnamespace=${src.ns}` : ""}&format=json&origin=*`) as { query?: { search?: { title: string; snippet: string }[] } };
-  const ranked = (search.query?.search ?? []).map((h) => ({ ...h, s: score(query, h.title, strip(h.snippet ?? "")) })).sort((a, b) => b.s - a.s);
-  const hit = ranked[0];
-  if (!hit || hit.s < min) return null;
-  const snippet = strip(hit.snippet ?? "");
-  let text = snippet;
-  if (src.extracts) {
-    const ex = await getJson(f, `${src.api}?action=query&prop=extracts&exintro=1&explaintext=1&exsentences=4&redirects=1&titles=${encodeURIComponent(hit.title)}&format=json&origin=*`) as { query?: { pages?: Record<string, { extract?: string }> } };
-    const e = Object.values(ex.query?.pages ?? {})[0]?.extract?.trim();
-    if (e) text = e;
-  } else {
-    try {
-      const p = await getJson(f, `${src.api}?action=parse&page=${encodeURIComponent(hit.title)}&prop=text&section=0&redirects=1&format=json&origin=*`) as { parse?: { text?: { "*"?: string } | string } };
-      const html = typeof p.parse?.text === "string" ? p.parse.text : p.parse?.text?.["*"] ?? "";
-      const intro = introFromHtml(html);
-      if (intro) text = intro;
-    } catch { /* the search snippet is enough */ }
+  const hits = (search.query?.search ?? []).map((h) => ({ title: h.title, snippet: strip(h.snippet ?? ""), s: score(query, h.title, strip(h.snippet ?? "")) }));
+  // The page named exactly like the topic, even when the search lists it further down (or not at all).
+  if (src.ns === undefined && words(query).length <= 3 && !hits.some((h) => titleRank(query, h.title) >= 1)) hits.push({ title: query, snippet: "", s: 1 });
+  const ranked = hits.filter((h) => h.s >= min).sort((a, b) => b.s + titleRank(query, b.title) - (a.s + titleRank(query, a.title)));
+  for (const hit of ranked.slice(0, 3)) {
+    // Search snippets of template-heavy pages are wiki code ("|Sprite HW= File:…") – no answer.
+    const snippet = /\|\s*\w+\s*=|File:|\{\{|\[\[/.test(hit.snippet) ? "" : hit.snippet;
+    let text = (await pageText(src, hit.title, f)) || snippet;
+    // The snippet shows the place where the asked words stand – keep it when the intro does not contain them.
+    if (snippet && text !== snippet && score(query, "", text) < score(query, "", snippet)) text = `${clip(text, 400)} … ${snippet} …`;
+    if (text.length < 40) continue;
+    const kind = src.name.startsWith("Wikipedia") ? "wikipedia" : "wiki";
+    return { title: hit.title, text: clip(text, 700), url: src.page(hit.title), source: src.name, lang: src.lang, score: hit.s, kind };
   }
-  // The snippet shows the place where the asked words stand – keep it when the intro does not contain them.
-  if (snippet && text !== snippet && score(query, "", text) < score(query, "", snippet)) text = `${clip(text, 400)} … ${snippet} …`;
-  if (text.length < 20) return null;
-  const kind = src.name.startsWith("Wikipedia") ? "wikipedia" : "wiki";
-  return { title: hit.title, text: clip(text, 700), url: src.page(hit.title), source: src.name, lang: src.lang, score: hit.s, kind };
+  return null;
 }
 
-/** Arqade: player questions with answers and votes (CC BY-SA). Two requests: matching question, then its best answer. */
-async function askArqade(query: string, context: string | null, f: Fetch): Promise<Found | null> {
+/** Stack Exchange: matching question, then its best answer (with votes and author, CC BY-SA). Two requests. */
+async function askQa(key: QaSite, query: string, context: string | null, f: Fetch): Promise<Found | null> {
+  const site = QA_SITES[key];
   const q = [query, context].filter(Boolean).join(" ");
-  const s = await getJson(f, `https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=${encodeURIComponent(q)}&answers=1&site=gaming&pagesize=5`) as { items?: { question_id: number; title: string; score: number; is_answered: boolean; tags?: string[] }[] };
+  const s = await getJson(f, `https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=${encodeURIComponent(q)}&answers=1&site=${site.site}&pagesize=5`) as { items?: { question_id: number; title: string; score: number; is_answered: boolean; tags?: string[] }[] };
   const ranked = (s.items ?? []).map((x) => ({ ...x, s: score(query, strip(x.title), "") })).filter((x) => x.s >= 0.5).sort((a, b) => b.s - a.s || b.score - a.score);
   const qn = ranked[0];
   if (!qn) return null;
-  const a = await getJson(f, `https://api.stackexchange.com/2.3/questions/${qn.question_id}/answers?order=desc&sort=votes&site=gaming&filter=withbody&pagesize=1`) as { items?: { answer_id: number; score: number; is_accepted: boolean; body: string; owner?: { display_name?: string } }[] };
+  const a = await getJson(f, `https://api.stackexchange.com/2.3/questions/${qn.question_id}/answers?order=desc&sort=votes&site=${site.site}&filter=withbody&pagesize=1`) as { items?: { answer_id: number; score: number; is_accepted: boolean; body: string; owner?: { display_name?: string } }[] };
   const ans = a.items?.[0];
   if (!ans || ans.score < 0) return null;
   const body = strip(ans.body);
   if (body.length < 30) return null;
   const by = ans.owner?.display_name ? `Antwort von ${strip(ans.owner.display_name)}, ` : "";
-  return { title: strip(qn.title), text: clip(body, 900), url: `https://gaming.stackexchange.com/a/${ans.answer_id}`, source: `${ARQADE} – ${by}${ans.score} Stimmen${ans.is_accepted ? ", akzeptiert" : ""}, CC BY-SA`, lang: "en", score: Math.min(1, qn.s + Math.min(0.2, ans.score / 50) + (ans.is_accepted ? 0.1 : 0)), kind: "qa" };
+  return { title: strip(qn.title), text: clip(body, 900), url: `https://${site.host}/a/${ans.answer_id}`, source: `${site.name} – ${by}${ans.score} Stimmen${ans.is_accepted ? ", akzeptiert" : ""}, CC BY-SA`, lang: "en", score: Math.min(1, qn.s + Math.min(0.2, ans.score / 50) + (ans.is_accepted ? 0.1 : 0)), kind: "qa" };
 }
 
 const OPINION = /\b(?:st(?:ä|ae)rkst|best|schnellst|seltenst|teuerst|gef(?:ä|ae)hrlichst|schwierigst|einfachst|leichtest|lohnt|sollte ich|empfiehl)/i;
 const looksGaming = (s: string) => /\b(?:spiel|game|boss|waffe|level|quest|mod|build|skill|loot|craft|server|map|item|charakter|klasse)/i.test(s);
+const looksPc = (s: string) => /\b(?:pc|computer|laptop|windows|treiber|grafikkarte|gpu|cpu|prozessor|ram|arbeitsspeicher|ssd|festplatte|monitor|bildschirm|tastatur|maus|headset|mikrofon|lüfter|luefter|netzteil|bios|wlan|lan|router|bluescreen|fps|ruckel|absturz|abstürz|stürzt|berhitz|nvidia|amd|intel|steam|discord|usb|bluetooth|controller)/i.test(s);
+const looksBoardGame = (s: string) => /\b(?:brettspiel|kartenspiel|schach|monopoly|catan|siedler|uno|mau[- ]?mau|skat|poker|würfel|wuerfel|mensch ärgere|carcassonne|magic the gathering|yu-?gi-?oh)/i.test(s);
+const looksTravel = (s: string) => /\b(?:reise|urlaub|sehenswürdig|sehenswuerdig|ausflug|städtetrip|staedtetrip|anreise|unterkunft|strand|insel)/i.test(s);
+const howOrWhy = (raw: string) => /^(?:jarvis[,:]?\s*)?(?:wie|wo|welche[rsn]?|warum|wieso|weshalb|lohnt|sollte|kann ich|was tun|was mache ich)\b/i.test(raw);
 
 /** Players' answers fit "which is best / how / where" questions – not "what is X" (that is what wikis are for). */
-const wantsPlayers = (topic: string, game: string | null, raw: string) => (!!game || looksGaming(topic)) && (OPINION.test(topic) || /^(?:jarvis[,:]?\s*)?(?:wie|wo|welche[rsn]?|warum|wieso|lohnt|sollte)\b/i.test(raw));
+const wantsPlayers = (topic: string, game: string | null, raw: string) => (wikisFor(game).length > 0 || looksGaming(topic)) && (OPINION.test(topic) || howOrWhy(raw));
 
-/** Sources for a question: game wikis, Arqade (game how-to/opinion questions), Wikipedia de/en. */
+type Job = { name: string; run: () => Promise<Found | null>; bonus: number };
+/** Which sources fit the question – game wikis, Q&A sites by topic, Klexikon/Wikivoyage by topic, always Wikipedia. */
+function plan(topic: string, game: string | null, raw: string, f: Fetch): Job[] {
+  const en = toEnglish(topic) || topic;
+  const all = `${topic} ${raw}`;
+  // "… in Rom" is a place, not a game: only a known game turns the topic sources off.
+  const isGame = wikisFor(game).length > 0 || looksGaming(all);
+  const jobs: Job[] = [];
+  for (const src of wikisFor(game)) jobs.push({ name: src.name, run: () => askWiki(src, src.lang === "en" ? en : topic, f, null, 0.5), bonus: 0.25 });
+  if (wantsPlayers(topic, game, raw)) jobs.push({ name: QA_SITES.gaming.name, run: () => askQa("gaming", en, game, f), bonus: OPINION.test(topic) ? 0.3 : 0.05 });
+  if (!isGame && looksPc(all) && howOrWhy(raw)) jobs.push({ name: QA_SITES.superuser.name, run: () => askQa("superuser", en, null, f), bonus: 0.2 });
+  if (looksBoardGame(all)) jobs.push({ name: QA_SITES.boardgames.name, run: () => askQa("boardgames", en, null, f), bonus: howOrWhy(raw) ? 0.2 : 0 });
+  if (!isGame && looksTravel(all)) jobs.push({ name: WIKIVOYAGE.name, run: () => askWiki(WIKIVOYAGE, game ?? topic, f, null), bonus: 0.15 });
+  // Simple German for everything that is not about a game.
+  if (!isGame) jobs.push({ name: KLEXIKON.name, run: () => askWiki(KLEXIKON, topic, f, null, 0.8), bonus: 0.05 });
+  // Wikipedia always with the game as context – else the general meaning of a word would answer a game question.
+  jobs.push({ name: WIKIPEDIA("de").name, run: () => askWiki(WIKIPEDIA("de"), topic, f, game), bonus: 0.08 }, { name: WIKIPEDIA("en").name, run: () => askWiki(WIKIPEDIA("en"), en, f, game), bonus: 0 });
+  return jobs;
+}
+
+/** The sources JARVIS would ask for this question (shown before he asks for permission). */
 export function sourcesFor(topic: string, game: string | null, raw = ""): string[] {
-  const g = wikisFor(game).map((s) => s.name);
-  return [...g, ...(wantsPlayers(topic, game, raw) ? [ARQADE] : []), WIKIPEDIA("de").name, WIKIPEDIA("en").name];
+  return plan(topic, game, raw, fetch).map((j) => j.name);
 }
 
 /** All sources at once; each hit is scored, the best one first. */
 export async function lookup(topic: string, game: string | null, f: Fetch = fetch, raw = ""): Promise<{ found: Found | null; all: Found[]; tried: string[]; errors: string[] }> {
-  const en = toEnglish(topic) || topic;
-  const opinion = OPINION.test(topic);
-  const jobs: [string, () => Promise<Found | null>, number][] = [];
-  for (const src of wikisFor(game)) jobs.push([src.name, () => askWiki(src, src.lang === "en" ? en : topic, f, null, 0.5), 0.25]);
-  if (wantsPlayers(topic, game, raw)) jobs.push([ARQADE, () => askArqade(en, game, f), opinion ? 0.3 : 0.05]);
-  // Wikipedia always with the game as context – else the general meaning of a word would answer a game question.
-  const wp = (lang: "de" | "en") => () => askWiki(WIKIPEDIA(lang), lang === "en" ? en : topic, f, game);
-  jobs.push([WIKIPEDIA("de").name, wp("de"), 0.08], [WIKIPEDIA("en").name, wp("en"), 0]);
-  const tried = jobs.map((j) => j[0]);
+  const jobs = plan(topic, game, raw, f);
   const errors: string[] = [];
-  const res = await Promise.all(jobs.map(async ([name, run, bonus]) => {
-    try { const r = await run(); return r ? { ...r, score: r.score + bonus } : null; } catch (e) { errors.push(`${name}: ${(e as Error).name === "AbortError" ? "keine Antwort" : (e as Error).message}`); return null; }
+  const res = await Promise.all(jobs.map(async (j) => {
+    try { const r = await j.run(); return r ? { ...r, score: r.score + j.bonus } : null; } catch (e) { errors.push(`${j.name}: ${(e as Error).name === "AbortError" ? "keine Antwort" : (e as Error).message}`); return null; }
   }));
   const all = res.filter((x): x is Found => !!x).sort((a, b) => b.score - a.score);
-  return { found: all[0] ?? null, all, tried, errors };
+  return { found: all[0] ?? null, all, tried: jobs.map((j) => j.name), errors };
 }
 
 // ------------------------------------------------------------------ chat answer
