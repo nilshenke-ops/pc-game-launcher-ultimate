@@ -27,17 +27,27 @@ public sealed class GeminiClient
     }
 
     public sealed record Result(string Text, long PromptTokens, long OutputTokens, string Model);
+    public sealed record Turn(string Role, string Text);
+
+    /// <summary>A chat answer (plain text) for the conversation so far; roles "user" and "model".</summary>
+    public Task<Result> ChatAsync(string apiKey, string model, string system, IReadOnlyList<Turn> history, CancellationToken ct = default) =>
+        SendAsync(apiKey, model, system, new JsonArray(history.Select(t => (JsonNode)new JsonObject { ["role"] = t.Role, ["parts"] = new JsonArray { new JsonObject { ["text"] = t.Text } } }).ToArray()), json: false, ct);
 
     /// <summary>A Google API key from AI Studio: "AIza" + 35 characters (a little slack for future lengths).</summary>
     public static bool LooksLikeKey(string key) => System.Text.RegularExpressions.Regex.IsMatch(key, @"^AIza[0-9A-Za-z_-]{30,60}$");
 
-    public async Task<Result> CompleteJsonAsync(string apiKey, string model, string system, string prompt, CancellationToken ct = default)
+    public Task<Result> CompleteJsonAsync(string apiKey, string model, string system, string prompt, CancellationToken ct = default) =>
+        SendAsync(apiKey, model, system, new JsonArray { new JsonObject { ["role"] = "user", ["parts"] = new JsonArray { new JsonObject { ["text"] = prompt } } } }, json: true, ct);
+
+    async Task<Result> SendAsync(string apiKey, string model, string system, JsonArray contents, bool json, CancellationToken ct)
     {
+        var config = new JsonObject { ["maxOutputTokens"] = 2000, ["temperature"] = 0.3 };
+        if (json) config["responseMimeType"] = "application/json";
         var body = new JsonObject
         {
             ["systemInstruction"] = new JsonObject { ["parts"] = new JsonArray { new JsonObject { ["text"] = system } } },
-            ["contents"] = new JsonArray { new JsonObject { ["role"] = "user", ["parts"] = new JsonArray { new JsonObject { ["text"] = prompt } } } },
-            ["generationConfig"] = new JsonObject { ["responseMimeType"] = "application/json", ["maxOutputTokens"] = 2000, ["temperature"] = 0.3 },
+            ["contents"] = contents,
+            ["generationConfig"] = config,
         };
         using var req = new HttpRequestMessage(HttpMethod.Post, $"{BaseUrl.TrimEnd('/')}/v1beta/models/{Uri.EscapeDataString(model)}:generateContent") { Content = JsonContent.Create(body) };
         req.Headers.Add("x-goog-api-key", apiKey); // header, not URL – the key never lands in a log line
@@ -45,6 +55,7 @@ public sealed class GeminiClient
         try { resp = await _http.SendAsync(req, ct); }
         catch (HttpRequestException) { throw new RpcException("assistant-offline", "Keine Verbindung zu Gemini (Internet?)."); }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw new RpcException("assistant-busy", "Gemini hat zu lange gebraucht – bitte gleich noch einmal versuchen."); }
+        catch (TaskCanceledException) { throw new RpcException("cancelled", "Abgebrochen."); }
         using (resp)
         {
             var raw = await resp.Content.ReadAsStringAsync(ct);

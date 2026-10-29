@@ -827,6 +827,18 @@ html.desktop-widget-mode .app-bg { display: none; }
 .as-actions { gap: 8px; }
 .as-sugg { flex-wrap: wrap; overflow: visible; }
 .as-meta { opacity: 0.85; }
+.as-tools { gap: 6px; flex-wrap: wrap; }
+.as-tool { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; min-height: 28px; }
+.as-tool:hover { color: var(--text); border-color: rgba(var(--primary-rgb), 0.5); }
+.as-sources { border: 1px solid rgba(var(--primary-rgb), 0.28); border-radius: 12px; padding: 6px 10px; background: rgba(var(--primary-rgb), 0.06); }
+.as-sources summary { cursor: pointer; font-size: 13px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.as-cites { margin: 6px 0 2px; padding-left: 22px; display: grid; gap: 4px; font-size: 13px; }
+.as-cites a { color: var(--primary); word-break: break-word; }
+.as-quote { margin-top: 2px; font-style: italic; }
+.as-progress { justify-content: space-between; gap: 8px; align-items: center; }
+.as-options { gap: 8px; flex-wrap: wrap; align-items: center; padding: 0 2px 8px; }
+.as-engine { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; }
+.as-engine select { min-height: 34px; max-width: min(320px, 70vw); }
 .as-input { display: flex; gap: 8px; align-items: center; }
 .as-input .input { flex: 1; }
 .as-typing { flex-direction: row; gap: 5px; padding: 14px 16px; }

@@ -1671,6 +1671,79 @@ test("JARVIS schlägt Unbekanntes nach: fragt vorher, Spiel-Wiki mit Quelle, mer
   await p.context().close();
 });
 
+test("KI-Chat: Weiche vor jeder Antwort, Recherche mit Quellen und Datum, Abbrechen, Modellwahl, Rückfrage beim Spiel", async ({ browser }) => {
+  const p = await adminPage(browser);
+  // No free internet on the test machine: the open wikis answer "nothing found"; Mojang's feed is a local stand-in.
+  const empty = (route: import("@playwright/test").Route) => route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [] }, items: [] }) });
+  await p.route(/api\.php|wikipedia\.org|api\.stackexchange\.com/, empty);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  const last = () => p.locator(".as-turn.bot").last();
+  // Model choice: only what is set up at this PC (no Claude key here → no Claude in the list).
+  const engines = p.getByRole("combobox", { name: "KI-Modell für diesen Chat" });
+  await expect(engines).toBeVisible();
+  await expect(engines.locator("option")).toHaveText([/^Automatisch/, "Eingebaut (ohne KI, 0 €)"]);
+
+  // B: current question → asks first, then a real search (Mojang patch notes); no AI at this PC → the passages themselves.
+  await say.fill("Was gibt es Neues bei Minecraft?"); await say.press("Enter");
+  await expect(last()).toContainText("Darf ich im Internet nachsehen?");
+  await last().getByRole("button", { name: "Ja, nachsehen" }).click();
+  await expect(p.locator(".as-progress")).toBeVisible(); // phase line with "Abbrechen" while it runs
+  await expect(last()).toContainText("Keine KI am PC eingerichtet – ich zeige die Fundstellen wörtlich", { timeout: 20000 });
+  await expect(last()).toContainText("Minecraft 26.4 Snapshot 6 (Vorabversion) (27.10.2026)");
+  const sources = last().locator(".as-sources");
+  await expect(sources).toContainText("Quellen (2)");
+  await expect(sources).toContainText("Mojang-Patchnotes");
+  // The stand-in runs on http – only https links become clickable (the real feed is https).
+  await expect(sources).toContainText("Minecraft Java Edition 26.3 (Vollversion)");
+  await expect(sources.getByRole("link")).toHaveCount(0);
+  await expect(last().getByRole("button", { name: "Antwort kopieren" })).toBeVisible();
+  await expect(last().getByRole("button", { name: "Neu erzeugen" })).toBeVisible();
+
+  // clarify: no game named → JARVIS asks instead of guessing.
+  await say.fill("Erkläre mir eine Quest spoilerfrei."); await say.press("Enter");
+  await expect(last()).toContainText("Zu welchem Spiel ist die Quest?");
+
+  // A: stable knowledge goes straight to the chosen model (here the built-in one) – no search, no sources panel.
+  await say.fill("Was ist der Unterschied zwischen RAM und VRAM?"); await say.press("Enter");
+  await expect(last().locator(".as-meta")).toBeVisible();
+  await expect(last().locator(".as-sources")).toHaveCount(0);
+
+  // Switch "Im Internet suchen" + cancel: the request stops, a late answer is dropped.
+  await p.getByRole("button", { name: "Im Internet suchen" }).click();
+  await say.fill("Suche die neuesten offiziellen Patchnotes für Minecraft."); await say.press("Enter");
+  await p.locator(".as-progress").getByRole("button", { name: "Abbrechen" }).click();
+  await expect(last()).toContainText("Abgebrochen – die Anfrage wurde gestoppt.");
+  await p.waitForTimeout(3500);
+  await expect(last()).toContainText("Abgebrochen"); // nothing arrived afterwards
+  await p.getByRole("button", { name: "Im Internet suchen" }).click();
+
+  // Phone, tablet and PC: the chat fits without sideways scrolling.
+  for (const size of [{ width: 390, height: 844 }, { width: 820, height: 1180 }, { width: 1440, height: 900 }]) {
+    await p.setViewportSize(size);
+    await expect(say).toBeVisible();
+    expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  }
+  await p.context().close();
+});
+
+test("KI-Chat ohne PC: nur offene Wikis, offen gesagt – keine vorgetäuschte Websuche", async ({ browser }) => {
+  const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  await p.route(/api\.php|wikipedia\.org|api\.stackexchange\.com/, (route) => route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [] } }) }));
+  await p.goto(`${HOSTED_SITE}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  await p.getByRole("button", { name: "Im Internet suchen" }).click();
+  await say.fill("Was gibt es Neues zu Hollow Knight?"); await say.press("Enter");
+  const last = p.locator(".as-turn.bot").last();
+  await expect(last).toContainText("Ohne PC habe ich nur offene Wikis durchsucht", { timeout: 20000 });
+  await expect(last).toContainText("ich erfinde keine Antwort");
+  expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  await ctx.close();
+});
+
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

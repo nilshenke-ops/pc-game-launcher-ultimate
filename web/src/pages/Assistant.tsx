@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Bot, Cpu, Grid3x3, KeyRound, Mic, MicOff, Plus, RefreshCw, Send, Settings2, Sparkles, Undo2, User } from "lucide-react";
+import { Bot, Copy, Cpu, Globe, Grid3x3, KeyRound, Mic, MicOff, Plus, RefreshCw, Send, Settings2, Sparkles, Square, StepForward, Undo2, User } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
@@ -14,7 +14,9 @@ import { navItems } from "../lib/nav";
 import type { SetupOp } from "../lib/assistant-setup";
 import type { LibraryItem } from "../lib/types";
 import { useJournal } from "../lib/journal";
+import { readCache } from "../lib/offline-cache";
 import type { Card as BingoCard } from "../lib/bingo";
+import { chosenEngine, phaseText, setChosenEngine, setWebSwitch, webSwitch, type Cite, type Phase } from "../lib/research-chat";
 
 interface Status {
   mode: "local" | "ollama" | "claude"; model: string; free: boolean;
@@ -24,6 +26,7 @@ interface Status {
   examples: string[];
   bingoAi?: "assistant" | "deepseek"; bingoProvider?: string | null;
   deepSeek?: { keySet: boolean; model: string; monthlyRequests: number; used: number; inputTokens: number; outputTokens: number };
+  engines?: { id: string; label: string; free: boolean }[]; webSearch?: boolean;
   gemini?: { keySet: boolean; model: string; monthlyRequests: number; used: number }; researchAi?: string | null;
 }
 
@@ -215,7 +218,39 @@ function ChatBingo({ id }: { id: string }) {
   return <div className="as-bingo"><b className="small">{e.data.title}</b><BingoBoardLazy e={e} /></div>;
 }
 
-function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void }) {
+/** Games of the last loaded library (for "Für welches Spiel?" suggestions) – most recently added first. */
+function readCacheNames(): string[] {
+  return (readCache<{ items: LibraryItem[] }>("library.list")?.data.items ?? []).filter((x) => x.kind === "game" && !x.duplicateOf).map((x) => x.name).slice(0, 4);
+}
+
+/** The numbered sources under a researched answer – only pages really found; a clear line when no search ran. */
+function Sources({ cites, info }: { cites: Cite[]; info?: AssistantReply["research"] }) {
+  const searched = info?.searched !== false;
+  const line = !searched ? t("Keine Internetsuche durchgeführt") : [info?.provider, info?.searches ? t("{n} Suche(n)", { n: info.searches }) : null].filter(Boolean).join(" · ");
+  return (
+    <details className="as-sources" open={cites.length > 0 && cites.length <= 3}>
+      <summary><Globe size={14} aria-hidden /> {cites.length ? t("Quellen ({n})", { n: cites.length }) : t("Keine Quellen")}{line ? ` · ${line}` : ""}</summary>
+      {cites.length > 0 && (
+        <ol className="as-cites">
+          {cites.map((c) => (
+            <li key={c.n} value={c.n}>
+              {c.url ? <a href={c.url} target="_blank" rel="noopener noreferrer nofollow">{c.title}</a> : <span>{c.title}</span>}
+              <span className="tiny muted"> · {c.provider}{c.date ? ` · ${c.date}` : ""}</span>
+              {c.quote && <div className="tiny muted as-quote">„{c.quote}“</div>}
+            </li>
+          ))}
+        </ol>
+      )}
+      {(info?.others?.length ?? 0) > 0 && (
+        <div className="tiny muted">{t("Weitere Treffer (nicht zitiert)")}: {info!.others!.map((c, i) => <span key={c.n}>{i > 0 && ", "}{c.url ? <a href={c.url} target="_blank" rel="noopener noreferrer nofollow">{c.title}</a> : c.title}</span>)}</div>
+      )}
+      {(info?.queries?.length ?? 0) > 0 && <div className="tiny muted">{t("Gesucht nach")}: {info!.queries!.map((q) => `„${q}“`).join(", ")}</div>}
+      {(info?.errors?.length ?? 0) > 0 && <div className="tiny muted">⚠ {info!.errors.join(" · ")}</div>}
+    </details>
+  );
+}
+
+function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void; /** Only on the last answer. */ onRegenerate?: () => void; onContinue?: () => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
   // Settings before a set-up change, to undo it with one tap.
@@ -269,11 +304,19 @@ function Turn({ turn, onSuggest, onBingo, onLookup }: { turn: ChatState["turns"]
             {before && <Button size="sm" variant="ghost" icon={<Undo2 size={15} />} onClick={() => { const b = before; setPrefs(() => b); setBefore(null); setDone({}); toast(t("Rückgängig gemacht"), "info"); }}>{t("Rückgängig")}</Button>}
           </div>
         )}
+        {r.cites && <Sources cites={r.cites} info={r.research} />}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
+        {!r.cancelled && !r.actions.some((a) => a.kind === "lookupChoice" || a.kind === "bingoChoice") && (
+          <div className="row as-tools">
+            <button type="button" className="as-tool" aria-label={t("Antwort kopieren")} title={t("Kopieren")} onClick={() => { void navigator.clipboard?.writeText(r.text).then(() => toast(t("Kopiert"), "success"), () => toast(t("Kopieren nicht möglich"), "error")); }}><Copy size={14} aria-hidden /> {t("Kopieren")}</button>
+            {onRegenerate && <button type="button" className="as-tool" onClick={onRegenerate}><RefreshCw size={14} aria-hidden /> {t("Neu erzeugen")}</button>}
+            {onContinue && <button type="button" className="as-tool" onClick={onContinue}><StepForward size={14} aria-hidden /> {t("Fortsetzen")}</button>}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -295,24 +338,72 @@ export default function Assistant() {
   const [params, setParams] = useSearchParams();
   const jv = useJarvis();
   const navTo = useNavigate();
+  // The AI chosen for this chat (only the ones set up at the PC are offered) and the switch "Im Internet suchen".
+  const [engine, setEngine] = useState(chosenEngine);
+  const [web, setWeb] = useState(webSwitch);
+  // Running request: its id (for "Abbrechen"), the phase and the text Claude is writing right now.
+  const running = useRef<string | null>(null);
+  const [phase, setPhase] = useState<Phase | null>(null);
+  const [live, setLive] = useState("");
+  useEffect(() => client.on("assistant.progress", (d) => {
+    const x = d as { requestId?: string; phase?: Phase; text?: string | null };
+    if (!x.requestId || x.requestId !== running.current) return;
+    if (x.phase) setPhase(x.phase);
+    if (x.phase === "writing" && x.text) setLive((v) => (v + x.text).slice(-4000));
+  }), []);
   // Opening this page starts the JARVIS session (if switched on) – it lasts while this tab is open.
   useEffect(() => { openJarvis(); }, [online]);
 
   useEffect(() => { try { sessionStorage.setItem(CHAT_KEY, JSON.stringify(chat)); } catch { /* private mode */ } end.current?.scrollIntoView({ block: "end" }); }, [chat]);
 
-  const ask = async (q: string, extra: { bingoWeb?: boolean; lookup?: boolean; ai?: boolean; sources?: boolean; shown?: string } = {}) => {
+  const ask = async (q: string, extra: { bingoWeb?: boolean; lookup?: boolean; ai?: boolean; sources?: boolean; shown?: string; research?: boolean } = {}) => {
     const question = q.trim();
     if (!question || busy) return;
     setText("");
     setChat((c) => ({ ...c, turns: [...c.turns, { role: "user", text: extra.shown ?? question }] }));
     setBusy(true);
+    const requestId = "r" + Math.random().toString(36).slice(2, 12);
+    running.current = requestId; setPhase(null); setLive("");
+    // A cancelled request may still answer later – that answer is dropped.
+    const add = (reply: AssistantReply, more: Partial<ChatState["turns"][number]> = {}, conversationId?: string | null) => {
+      if (running.current !== requestId) return false;
+      setChat((c) => ({ conversationId: conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply, ...more }] }));
+      return true;
+    };
+    const eng = online ? engine : "auto";
     try {
+      // The decision before every answer: research (B) and "which game?" (clarify) here; the rest as before.
+      const { routeQuestion, research, clarifyReply } = await import("../lib/research-chat");
+      const { coachIntent } = await import("../lib/game-coach");
+      const route = extra.research ? { ...routeQuestion(question, { force: true }), kind: "research" as const } : routeQuestion(question, { force: web, coach: !!coachIntent(question) });
+      if (route.kind === "clarify") {
+        const lib = readCacheNames();
+        add(clarifyReply(question, lib));
+        return;
+      }
+      if (route.kind === "research" && extra.lookup !== false) {
+        const { webPermission } = await import("../lib/web-lookup");
+        const perm = webPermission();
+        // Going online needs the user's yes – the switch "Im Internet suchen" or "Such im Internet …" is that yes.
+        if (!route.force && !extra.lookup && perm !== "always") {
+          if (perm === "never") { add({ text: t("Das bräuchte aktuelle Infos aus dem Internet – nachsehen ist ausgeschaltet (JARVIS → Stimme & Ton). Ohne Suche kann ich das nicht verlässlich beantworten."), actions: [], sources: [], suggestions: [], mode: "device" }); return; }
+          add({ text: t("Dafür brauche ich aktuelle Infos. Darf ich im Internet nachsehen? Gesendet wird nur deine Frage – an die Websuche am PC (falls eingerichtet) bzw. an offene Wikis und offizielle Patchnotes."), actions: [
+            { kind: "lookupChoice", label: t("Ja, nachsehen"), params: { question, ok: true } },
+            { kind: "lookupChoice", label: t("Ja, immer erlauben"), params: { question, ok: true, always: true } },
+            { kind: "lookupChoice", label: t("Nein"), params: { question, ok: false } },
+          ], sources: [], suggestions: [], mode: "device" });
+          return;
+        }
+        const r = await research(question, { pc: online ? { call: (m, p) => client.call(m, p) } : null, webSearch: !!st.data?.webSearch, route, requestId, engine: eng, onPhase: setPhase });
+        add(r);
+        return;
+      }
       if (jv.enabled) {
         // JARVIS: understands the request, runs named gaming actions and website changes directly, reports the real result.
         const { jarvisAsk } = await import("../lib/jarvis-chat");
         const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai, sources: extra.sources });
-        setChat((c) => ({ conversationId: r.conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply: r.reply, bingoId: r.bingoId, undo: r.undo }] }));
+        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai, sources: extra.sources, engine: eng, requestId });
+        if (!add(r.reply, { bingoId: r.bingoId, undo: r.undo }, r.conversationId)) return;
         speak(r.reply.text);
         if (r.navigate) navTo(r.navigate);
         return;
@@ -337,12 +428,27 @@ export default function Assistant() {
         setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: r }] }));
         return;
       }
-      const r = await client.call<{ conversationId: string; reply: AssistantReply }>("assistant.ask", { conversationId: chat.conversationId, text: question });
-      setChat((c) => ({ conversationId: r.conversationId, turns: [...c.turns, { role: "bot", reply: r.reply }] }));
+      const r = await client.call<{ conversationId: string; reply: AssistantReply }>("assistant.ask", { conversationId: chat.conversationId, text: question, engine: eng, requestId });
+      add(r.reply, {}, r.conversationId);
     } catch (e) {
-      setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: { text: (e as Error).message, actions: [], sources: [], suggestions: [], mode: "local" } }] }));
-    } finally { setBusy(false); }
+      // The real error (key, limit, timeout, no connection) – never a made-up answer instead.
+      add({ text: (e as Error).message, actions: [], sources: [], suggestions: [], mode: "local" });
+    } finally {
+      if (running.current === requestId) { running.current = null; setBusy(false); setPhase(null); setLive(""); }
+    }
   };
+
+  /** Stops the running answer: the PC cancels the request (Claude/Gemini/search), a late answer is dropped. */
+  const cancel = () => {
+    const id = running.current;
+    if (!id) return;
+    running.current = null;
+    if (online) client.call("assistant.cancel", { requestId: id }).catch(() => {});
+    setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: { text: t("⏹ Abgebrochen – die Anfrage wurde gestoppt."), actions: [], sources: [], suggestions: [], mode: "device", cancelled: true } }] }));
+    setBusy(false); setPhase(null); setLive("");
+  };
+  const lastUser = [...chat.turns].reverse().find((x) => x.role === "user")?.text ?? null;
+  const lastBot = chat.turns.length - 1;
 
   // Opened from the search (Ctrl+K → "Assistent fragen …").
   useEffect(() => {
@@ -397,9 +503,33 @@ export default function Assistant() {
               <div className="chips">{(jv.enabled ? jarvisChips() : online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
-          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label, ai, sources) => void ask(q, { lookup: ok, ai, sources, shown: label })} />)}
-          {busy && <div className="as-turn bot"><Bot size={18} aria-hidden /><div className="as-bubble as-typing" aria-label={t("Antwort wird erstellt")}><i /><i /><i /></div></div>}
+          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label, ai, sources) => void ask(q, { lookup: ok, ai, sources, shown: label })}
+            onRegenerate={i === lastBot && !busy && lastUser && turn.role === "bot" ? () => void ask(lastUser, { shown: t("↻ {q}", { q: lastUser }) }) : undefined}
+            onContinue={i === lastBot && !busy && turn.role === "bot" && online ? () => void ask(t("Mach bitte genau da weiter, wo deine letzte Antwort aufgehört hat.")) : undefined} />)}
+          {busy && (
+            <div className="as-turn bot">
+              <Bot size={18} aria-hidden />
+              <div className="as-bubble" aria-live="polite">
+                {live ? <div className="as-text">{live}</div> : <div className="as-typing" aria-hidden><i /><i /><i /></div>}
+                <div className="row as-progress">
+                  <span className="tiny muted">{phaseText(phase)}</span>
+                  <Button size="sm" variant="ghost" icon={<Square size={13} />} onClick={cancel}>{t("Abbrechen")}</Button>
+                </div>
+              </div>
+            </div>
+          )}
           <div ref={end} />
+        </div>
+        <div className="row as-options">
+          {online && (s?.engines?.length ?? 0) > 1 && (
+            <label className="as-engine">
+              <span className="tiny muted">{t("KI")}</span>
+              <select className="input" value={s!.engines!.some((x) => x.id === engine) ? engine : "auto"} aria-label={t("KI-Modell für diesen Chat")} onChange={(e) => { setEngine(e.target.value); setChosenEngine(e.target.value); }}>
+                {s!.engines!.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
+              </select>
+            </label>
+          )}
+          <button type="button" className={`chip ${web ? "on" : ""}`} aria-pressed={web} title={s?.webSearch ? t("Claude-Websuche am PC (kostet pro Suche)") : online ? t("Offene Wikis + offizielle Patchnotes, zusammengefasst von der KI am PC") : t("Ohne PC: nur offene Wikis")} onClick={() => { setWeb(!web); setWebSwitch(!web); }}><Globe size={14} aria-hidden /> {t("Im Internet suchen")}</button>
         </div>
         <form className="as-input" onSubmit={(e) => { e.preventDefault(); void ask(text); }}>
           <input className="input" value={text} maxLength={2000} placeholder={jv.enabled ? t("Dein Auftrag an JARVIS, z. B. „Starte Minecraft und aktiviere mein Minecraft-Profil“") : t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />

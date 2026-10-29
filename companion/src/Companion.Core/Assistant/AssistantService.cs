@@ -67,7 +67,7 @@ public sealed class AssistantService
     public GeminiClient Gemini { get; }
     readonly SemaphoreSlim _bingoBusy = new(1, 1);
 
-    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
+    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public List<GeminiClient.Turn> Gemini = new(); public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
@@ -103,6 +103,8 @@ public sealed class AssistantService
             bingoProvider = BingoProviderName(f),
             gemini = new { keySet = f.GeminiKeyProtected != null, model = f.GeminiModel, monthlyRequests = f.GeminiMonthlyRequests, used = month.GeminiRequests },
             researchAi = ResearchProvider(f)?.label,
+            engines = Engines(),
+            webSearch = f.Mode == "claude" && f.KeyProtected != null,
         };
     }
 
@@ -210,7 +212,7 @@ public sealed class AssistantService
     /// <param name="owner">Device (or "local") – a conversation belongs to the device that started it.</param>
     /// <param name="jarvis">JARVIS session is active: actions the user named may be run directly (see <see cref="Jarvis"/>).</param>
     /// <param name="jarvisRequested">The website asked for JARVIS (even if the session ran out) – gaming-only rules apply.</param>
-    public async Task<object> AskAsync(string owner, string who, string? conversationId, string text, CancellationToken ct = default, bool jarvis = false, bool jarvisRequested = false)
+    public async Task<object> AskAsync(string owner, string who, string? conversationId, string text, CancellationToken ct = default, bool jarvis = false, bool jarvisRequested = false, string? engine = null)
     {
         text = text.Trim();
         if (text.Length is 0 or > 2000) throw new RpcException("invalid-params", "Frage mit 1–2000 Zeichen.");
@@ -242,8 +244,10 @@ public sealed class AssistantService
             conv.LastUsed = _now(); conv.Turns++;
             var f = _store.Snapshot();
             AssistantReply reply;
-            var useClaude = f.Mode == "claude" && f.KeyProtected != null;
-            var useOllama = f.Mode == "ollama";
+            var (mode, claudeModel) = ResolveEngine(f, engine);
+            var useClaude = mode == "claude";
+            var useOllama = mode == "ollama";
+            var useGemini = mode == "gemini";
             if (useOllama && !f.OllamaWhileGaming && Data.GameRunning())
             {
                 reply = await Local.AnswerAsync(text);
@@ -254,7 +258,7 @@ public sealed class AssistantService
             var simple = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 8 && !Regex.IsMatch(" " + text.ToLowerInvariant() + " ", @" (und|and|dann|then|aber|but|oder|or) ");
             // Local model: the exact local assistant always goes first – small models invent numbers (measured with
             // qwen2.5:1.5b) – so commands, live values and help answers never come from the model. Claude: only short single requests.
-            if ((useOllama && f.LocalFirst) || (useClaude && f.LocalFirst && simple))
+            if ((useOllama && f.LocalFirst) || ((useClaude || useGemini) && f.LocalFirst && simple))
             {
                 var local = await Local.AnswerAsync(text);
                 // Only commands and live-data answers count; help-text guesses go to Claude, which explains better.
@@ -271,6 +275,7 @@ public sealed class AssistantService
                 var o = await Ollama.AskAsync(f.OllamaUrl, f.OllamaModel ?? "", conv.Ollama, text, $"[Kontext – nicht vom Nutzer: Zeit {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]", ct);
                 return Done(conversationId, o.Reply, note);
             }
+            if (useGemini) return Done(conversationId, await GeminiChatAsync(f, conv.Gemini, text, who, ct), note);
             if (!useClaude)
             {
                 reply = await Local.AnswerAsync(text);
@@ -285,13 +290,71 @@ public sealed class AssistantService
             }
             var key = _secrets.Unprotect(f.KeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Schlüssel lässt sich nicht entschlüsseln (anderer Windows-Benutzer?). Bitte am PC neu eintragen.");
             var context = $"[Kontext – nicht vom Nutzer: Zeit {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]";
-            var result = await Claude.AskAsync(key, f.Model, conv.Claude, text, context, ct);
+            var result = await Claude.AskAsync(key, claudeModel, conv.Claude, text, context, ct);
             var cost = ClaudeAssistant.Cost(result.ServedBy, result.Input, result.Output, result.CacheRead, result.CacheWrite);
             RecordUsage(result.Input, result.Output, result.CacheRead, result.CacheWrite, cost);
             result.Reply.CostUsd = Math.Round(cost, 4);
             return Done(conversationId, result.Reply, note);
         }
         finally { conv.Lock.Release(); }
+    }
+
+    /// <summary>
+    /// The engine chosen in the chat ("auto" = the mode set at the PC). Only engines that are set up can be chosen –
+    /// never silently another one: a missing key or model is an error the chat shows.
+    /// </summary>
+    static (string mode, string claudeModel) ResolveEngine(AssistantFile f, string? engine)
+    {
+        engine = string.IsNullOrWhiteSpace(engine) ? "auto" : engine.Trim();
+        if (engine == "auto") return (f.Mode == "claude" && f.KeyProtected == null ? "local" : f.Mode, f.Model);
+        if (engine == "local") return ("local", f.Model);
+        if (engine == "ollama") return string.IsNullOrEmpty(f.OllamaModel) ? throw new RpcException("assistant-key", "Die lokale KI (Ollama) ist am PC noch nicht eingerichtet.") : ("ollama", f.Model);
+        if (engine == "gemini") return f.GeminiKeyProtected == null ? throw new RpcException("assistant-key", "Für Gemini zuerst am PC einen kostenlosen Gemini-Schlüssel eintragen.") : ("gemini", f.Model);
+        if (engine.StartsWith("claude"))
+        {
+            if (f.KeyProtected == null) throw new RpcException("assistant-key", "Für Claude zuerst am PC einen API-Schlüssel eintragen.");
+            var model = engine.StartsWith("claude:") ? engine[7..] : f.Model;
+            if (ClaudeAssistant.Models.All(m => m.Id != model)) throw new RpcException("invalid-params", "Unbekanntes Claude-Modell.");
+            return ("claude", model);
+        }
+        throw new RpcException("invalid-params", "Unbekannte KI.");
+    }
+
+    /// <summary>The engines the chat can offer right now (set up at the PC), with the model that will really answer.</summary>
+    public List<object> Engines()
+    {
+        var f = _store.Snapshot();
+        var list = new List<object> { new { id = "auto", label = $"Automatisch ({ModeLabel(f)})", free = f.Mode != "claude" } };
+        list.Add(new { id = "local", label = "Eingebaut (ohne KI, 0 €)", free = true });
+        if (!string.IsNullOrEmpty(f.OllamaModel)) list.Add(new { id = "ollama", label = $"Lokale KI: {f.OllamaModel} (0 €)", free = true });
+        if (f.GeminiKeyProtected != null) list.Add(new { id = "gemini", label = $"Gemini {f.GeminiModel} (kostenlos)", free = true });
+        if (f.KeyProtected != null) foreach (var m in ClaudeAssistant.Models) list.Add(new { id = "claude:" + m.Id, label = $"{m.Label} (kostenpflichtig, Websuche)", free = false });
+        return list;
+    }
+
+    static string ModeLabel(AssistantFile f) => f.Mode switch
+    {
+        "claude" when f.KeyProtected != null => ClaudeAssistant.PriceOf(f.Model).Label,
+        "ollama" when !string.IsNullOrEmpty(f.OllamaModel) => $"lokale KI {f.OllamaModel}",
+        _ => "eingebaut",
+    };
+
+    /// <summary>Gemini as chat brain (free tier, own key): no tools and no live data – it says so instead of guessing.</summary>
+    async Task<AssistantReply> GeminiChatAsync(AssistantFile f, List<GeminiClient.Turn> history, string text, string who, CancellationToken ct)
+    {
+        var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+        if ((month?.GeminiRequests ?? 0) >= f.GeminiMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.GeminiMonthlyRequests} Gemini-Anfragen ist erreicht.");
+        var key = _secrets.Unprotect(f.GeminiKeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Gemini-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+        var system = "Du bist JARVIS, der Gaming-Assistent im „Nexus Gaming Hub“. Antworte in der Sprache des Nutzers (meist Deutsch), kurz und konkret. " +
+            "Du hast in diesem Modus KEINE Werkzeuge und KEINE Live-Daten vom PC: Fragt der Nutzer nach Werten seines PCs, seinen Spielen oder Spielzeiten, sag ehrlich, dass du sie hier nicht siehst. Behaupte nie, etwas gestartet oder erledigt zu haben. " +
+            "Erfinde nichts; bist du unsicher (neue Spiele, Patches, Zahlen), sag das und empfiehl „Im Internet suchen“. Keine Spoiler ohne Wunsch. Nur Gaming-Themen. Keine Hilfe bei Cheats oder Anti-Cheat-Umgehung.\n\n" +
+            "Wissensbasis der App:\n" + Data.Knowledge.FullText;
+        history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]\n{text}"));
+        if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
+        var res = await Gemini.ChatAsync(key, f.GeminiModel, system, history, ct);
+        history.Add(new GeminiClient.Turn("model", res.Text));
+        CountMonth(m => m.GeminiRequests++);
+        return new AssistantReply { Text = res.Text.Trim(), Mode = "gemini", Model = res.Model, CostUsd = 0, Sources = { "Gemini (kostenlos) – ohne Live-Daten vom PC" } };
     }
 
     readonly AsyncLocal<(string text, bool jarvis)> _ask = new();
@@ -404,6 +467,31 @@ public sealed class AssistantService
     }
 
     readonly SemaphoreSlim _summaryBusy = new(1, 1);
+
+    /// <summary>Claude is the assistant mode, has a key and the monthly limit is not reached – then research uses its web search.</summary>
+    public bool ClaudeReady()
+    {
+        var f = _store.Snapshot();
+        var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
+        return f.Mode == "claude" && f.KeyProtected != null && f.MonthlyLimitUsd > 0 && (month?.CostUsd ?? 0) < f.MonthlyLimitUsd;
+    }
+
+    public sealed record ClaudeResearch(ClaudeAssistant.ResearchResult Result, string ModelLabel, double CostUsd);
+
+    /// <summary>US dollars per web search (Anthropic: $10 per 1,000 searches, 10/2026), added to the token cost.</summary>
+    public const double SearchPriceUsd = 0.01;
+
+    /// <summary>Researched answer from Claude with web search; tokens and searches count against the monthly limit.</summary>
+    public async Task<ClaudeResearch> ClaudeResearchAsync(string question, string context, bool force, ClaudeAssistant.ResearchProgress progress, CancellationToken ct = default)
+    {
+        var f = _store.Snapshot();
+        if (!ClaudeReady()) throw new RpcException("assistant-limit", $"Claude ist nicht bereit (Modus, Schlüssel oder Monatslimit von {f.MonthlyLimitUsd:0.00} $).");
+        var key = _secrets.Unprotect(f.KeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Claude-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
+        var r = await Claude.ResearchAsync(key, f.Model, question, context, force, progress, ct);
+        var cost = ClaudeAssistant.Cost(r.Model, r.Input, r.Output, r.CacheRead, r.CacheWrite) + r.Searches * SearchPriceUsd;
+        RecordUsage(r.Input, r.Output, r.CacheRead, r.CacheWrite, cost);
+        return new ClaudeResearch(r, ClaudeAssistant.PriceOf(r.Model).Label, cost);
+    }
 
     /// <summary>
     /// Which AI writes JARVIS research answers: Claude or the local AI (Ollama) when that is the assistant mode, otherwise

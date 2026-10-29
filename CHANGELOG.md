@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.82.0 – 2026-10-29
+### Neu – Gaming-KI-Chat mit echter Webrecherche
+- Entscheidung vor jeder Antwort: Wissensfrage direkt an das gewählte Modell, aktuelle Fragen (Neuigkeiten, Patchnotes, Updates, Release, Version) mit echter Suche, eigene Notizen aus dem Journal, Funktionen nur über die eingebaute Funktion, mehrere Schritte nacheinander; ohne erkennbares Spiel fragt JARVIS nach („Zu welchem Spiel ist die Quest?“)
+- Echte Websuche mit Claude (offizielle Claude-Websuche, höchstens 3 Suchen je Frage, ca. 0,01 $ je Suche im Monatslimit): Antwort mit nummerierten, anklickbaren Quellen, Datum, zitierter Stelle; Bestätigtes, Schlussfolgerungen und Widersprüche getrennt; Webinhalte gelten nie als Anweisung
+- Ohne Claude: offizielle Minecraft-Patchnotes (Mojang-Feed), Steam-Ankündigungen und offene Wikis – zusammengefasst von der KI am PC (Gemini kostenlos, Ollama, DeepSeek) oder als Fundstelle wörtlich; „Keine Internetsuche durchgeführt“, wenn keine lief
+- Chat: Modellwahl (nur eingerichtete KIs, Gemini jetzt auch als Chat), Schalter „Im Internet suchen“, Phasen „Suche läuft / Quellen werden ausgewertet / Antwort wird erstellt“, Live-Text mit Claude, Abbrechen (stoppt die Anfrage am PC), Quellenbereich, Kopieren, Neu erzeugen, Fortsetzen
+- Neue Befehle `assistant.research`, `assistant.cancel`; `assistant.ask` mit Modellwahl und Abbruch
+- Doku `docs/KI-CHAT.md` (Bestandsanalyse, Architektur, Routing, Sicherheit, Einrichtung, Tests)
+### Behoben
+- Verbindungs-Check: Prüfung 6 (Anmeldung) meldete direkt nach dem Öffnen manchmal „Fehler“, obwohl die Anmeldung noch lief – der Check wartet jetzt kurz darauf
+
 ## 2.81.0 – 2026-10-29
 ### Neu
 - JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC

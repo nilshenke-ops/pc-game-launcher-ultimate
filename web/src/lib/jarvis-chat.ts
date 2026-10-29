@@ -22,7 +22,7 @@ const OFF_TOPIC = () => t("Ich bin JARVIS Gaming – ich kümmere mich nur um de
 const CODE = () => t("Neue Funktionen oder Seiten sind Änderungen am Programmcode – die mache ich nicht nebenbei im Chat, und meinen eigenen Code ändere ich nie. Dafür gibt es den Entwicklungsweg mit Versionskontrolle, Tests und einem Update über die Update-Zentrale. Innerhalb der App (Startseiten, Widgets, Leiste, Kategorien, Profile, Design) ändere ich dagegen direkt, was du sagst.");
 const opens = (s: string) => /\b(oeffne|öffne|offne|zeig|zeige|geh|gehe|wechsel)\b/i.test(s);
 
-export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "In Quellen nachsehen" after an AI answer. */ sources?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean }
+export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "In Quellen nachsehen" after an AI answer. */ sources?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean; /** AI chosen in the chat ("auto" = mode at the PC). */ engine?: string; /** For "Abbrechen". */ requestId?: string }
 
 export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<JarvisTurn> {
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
@@ -204,7 +204,7 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
       buttons.push(...b.reply.actions);
       b.reply.sources.forEach((x) => sources.add(x));
     } else if (ctx.online) {
-      const res = await client.call<{ conversationId: string; reply: AssistantReply & { actions: (AssistantAction & { auto?: boolean })[] }; jarvis?: boolean }>("assistant.ask", { conversationId, text: part, jarvis: session });
+      const res = await client.call<{ conversationId: string; reply: AssistantReply & { actions: (AssistantAction & { auto?: boolean })[] }; jarvis?: boolean }>("assistant.ask", { conversationId, text: part, jarvis: session, engine: ctx.engine, requestId: ctx.requestId });
       conversationId = res.conversationId;
       res.reply.sources.forEach((s) => sources.add(s));
       const autos = res.reply.actions.filter((a) => a.auto && a.kind !== "navigate");

@@ -322,3 +322,12 @@ export async function coachAnswer(i: CoachIntent, online: boolean): Promise<Coac
     }
   }
 }
+
+/** The game played most recently on the PC (measured play time), for "mein Spiel" – null when unknown. */
+export async function lastPlayedGame(online: boolean): Promise<string | null> {
+  const { items, stats } = await pcData(online);
+  const games = items.filter((x) => x.kind === "game" && !x.duplicateOf);
+  const last = stats.filter((s) => s.totalMinutes > 0 && games.some((g) => g.id === s.itemId)).sort((a, b) => Date.parse(b.lastPlayed) - Date.parse(a.lastPlayed))[0];
+  return last ? games.find((g) => g.id === last.itemId)!.name : null;
+}
+

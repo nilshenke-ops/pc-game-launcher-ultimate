@@ -100,4 +100,40 @@ public class GeminiTests
         a.Configure(new AssistantService.Config { Mode = "ollama", OllamaModel = "llama3" }, atPc: true);
         Assert.StartsWith("Ollama", JsonSerializer.SerializeToElement(a.Status(), Json.Options).GetProperty("researchAi").GetString());
     }
+
+    [Fact]
+    public async Task Modellwahl_im_Chat_nur_eingerichtete_KIs_und_Gemini_als_Chat_ohne_Live_Daten()
+    {
+        using var dir = new TempDir();
+        await using var s = Fixtures.Services(dir);
+        var fake = new FakeGoogle(_ => (HttpStatusCode.OK, Reply("Ein Creeper ist ein explodierendes Monster in Minecraft.")));
+        var a = new AssistantService(new AppPaths(Path.Combine(dir.Path, "d")), new GenericPlatform().Secrets, new NullHub(), new AssistantData(s), gemini: new GeminiClient(fake) { BaseUrl = "http://gemini.test" });
+        // Not set up → a clear error, never silently another AI.
+        Assert.Equal("assistant-key", (await Assert.ThrowsAsync<RpcException>(() => a.AskAsync("dev", "Handy", null, "Was ist ein Creeper?", engine: "gemini"))).Code);
+        Assert.Equal("assistant-key", (await Assert.ThrowsAsync<RpcException>(() => a.AskAsync("dev", "Handy", null, "Was ist ein Creeper?", engine: "claude:claude-haiku-5-5"))).Code);
+        Assert.Equal("invalid-params", (await Assert.ThrowsAsync<RpcException>(() => a.AskAsync("dev", "Handy", null, "Hallo", engine: "chatgpt"))).Code);
+        var ids = JsonSerializer.SerializeToElement(a.Engines(), Json.Options).EnumerateArray().Select(e => e.GetProperty("id").GetString()).ToList();
+        Assert.Equal(new[] { "auto", "local" }, ids);
+
+        a.Configure(new AssistantService.Config { GeminiKey = Key }, atPc: true);
+        ids = JsonSerializer.SerializeToElement(a.Engines(), Json.Options).EnumerateArray().Select(e => e.GetProperty("id").GetString()).ToList();
+        Assert.Contains("gemini", ids);
+        var r = JsonSerializer.SerializeToElement(await a.AskAsync("dev", "Handy", null, "Erklär mir genau, was ein Creeper in Minecraft ist und warum er explodiert", engine: "gemini"), Json.Options);
+        var reply = r.GetProperty("reply");
+        Assert.Equal("gemini", reply.GetProperty("mode").GetString());
+        Assert.Equal("gemini-3.5-flash-lite", reply.GetProperty("model").GetString()); // the model that really answered
+        Assert.Equal("Ein Creeper ist ein explodierendes Monster in Minecraft.", reply.GetProperty("text").GetString());
+        using (var body = JsonDocument.Parse(fake.Requests.Last().body))
+        {
+            Assert.False(body.RootElement.GetProperty("generationConfig").TryGetProperty("responseMimeType", out _)); // chat = plain text
+            Assert.Contains("KEINE Live-Daten", body.RootElement.GetProperty("systemInstruction").GetRawText());
+        }
+        // Second turn keeps the conversation.
+        await a.AskAsync("dev", "Handy", r.GetProperty("conversationId").GetString(), "Und wie besiege ich ihn am besten ohne Schaden zu nehmen?", engine: "gemini");
+        using (var body2 = JsonDocument.Parse(fake.Requests.Last().body)) Assert.Equal(3, body2.RootElement.GetProperty("contents").GetArrayLength());
+        // Commands stay with the exact built-in assistant (no AI guess).
+        var cmd = JsonSerializer.SerializeToElement(await a.AskAsync("dev", "Handy", null, "Was kannst du?", engine: "gemini"), Json.Options);
+        Assert.NotEqual("gemini", cmd.GetProperty("reply").GetProperty("mode").GetString());
+    }
 }
+

@@ -5,7 +5,7 @@ import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { tmpdir } from "node:os";
 import { NEW_WIDGET_PLUGINS } from "./plugins-list";
-import { COMPANION, COMPANION_PORT, HOSTED_PORT, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, RELAY, RELAY_PORT, STATE_FILE } from "./env";
+import { COMPANION, COMPANION_PORT, HOSTED_PORT, HOSTED_SITE, MOJANG_PORT, OBS_PASSWORD, OBS_PORT, RELAY, RELAY_PORT, STATE_FILE } from "./env";
 
 const ROOT = resolve(fileURLToPath(new URL(".", import.meta.url)), "../..");
 const SECRET = "e2e-relay-secret-0123456789abcdef";
@@ -55,7 +55,7 @@ export default async function setup() {
 
   const tokenFile = join(work, "admin.txt");
   const dotnet = process.env.DOTNET ?? (existsSync("/opt/dotnet/dotnet") ? "/opt/dotnet/dotnet" : "dotnet");
-  const companion = spawn(dotnet, [dll, "--data", dataDir], { env: { ...process.env, PGL_WEB_DIR: join(ROOT, "web/dist"), PGL_ADMIN_TOKEN_FILE: tokenFile, PGL_TEST_LAN_HOST: "127.0.0.1", PGL_REMOTE_TESTSOURCE: "1" }, stdio: "ignore", detached: true });
+  const companion = spawn(dotnet, [dll, "--data", dataDir], { env: { ...process.env, PGL_WEB_DIR: join(ROOT, "web/dist"), PGL_ADMIN_TOKEN_FILE: tokenFile, PGL_TEST_LAN_HOST: "127.0.0.1", PGL_REMOTE_TESTSOURCE: "1", PGL_MOJANG_BASE: `http://127.0.0.1:${MOJANG_PORT}` }, stdio: "ignore", detached: true });
   const relay = spawn(process.execPath, [relayMain], { env: { ...process.env, PGL_RELAY_CONFIG: relayCfg }, stdio: "ignore", detached: true });
   // Stand-in for the static host (Cloudflare Pages / GitHub Pages): serves the hosted build on its own origin.
   const staticServer = spawn(process.execPath, ["-e", `
@@ -72,13 +72,17 @@ export default async function setup() {
   // Stand-in for OBS Studio's WebSocket server (recording and replay buffer).
   const obs = spawn(process.execPath, [join(ROOT, "web/e2e/fixtures/fake-obs.mjs"), String(OBS_PORT), OBS_PASSWORD], { stdio: "ignore", detached: true });
   obs.unref();
+  // Stand-in for Mojang's patch notes feed (JARVIS research without Claude).
+  const mojang = spawn(process.execPath, [join(ROOT, "web/e2e/fixtures/fake-mojang.mjs"), String(MOJANG_PORT)], { stdio: "ignore", detached: true });
+  mojang.unref();
   companion.unref(); relay.unref();
   await waitFor(`${COMPANION}/healthz`);
   await waitFor(`${RELAY}/healthz`);
   await waitFor(`${HOSTED_SITE}/`);
   await waitFor(`http://127.0.0.1:${OBS_PORT}/state`);
+  await waitFor(`http://127.0.0.1:${MOJANG_PORT}/healthz`);
   // Wait until the companion is connected to the relay.
   const end = Date.now() + 20000;
   while (Date.now() < end && (await (await fetch(`${RELAY}/healthz`)).json()).companionsOnline < 1) await new Promise((r) => setTimeout(r, 300));
-  writeFileSync(STATE_FILE, JSON.stringify({ dataDir, workDir: work, adminToken: readFileSync(tokenFile, "utf8").trim(), pids: [companion.pid, relay.pid, staticServer.pid, obs.pid] }));
+  writeFileSync(STATE_FILE, JSON.stringify({ dataDir, workDir: work, adminToken: readFileSync(tokenFile, "utf8").trim(), pids: [companion.pid, relay.pid, staticServer.pid, obs.pid, mojang.pid] }));
 }

@@ -31,6 +31,9 @@ export function ConnectionCheck() {
     const out: Check[] = [];
     const now = () => new Date().toISOString();
     const add = (c: Omit<Check, "at" | "id">) => out.push({ ...c, id: out.length + 1, at: now() });
+    // A sign-in that is still running (page just opened, slow PC) is waited for – else check 6 would report an error that isn't one.
+    const settling = () => { const x = client.status; return !client.demo && !!client.credentials && (x.auth === "checking" || (x.phase === "connecting" && x.attempt <= 1) || (x.phase === "online" && x.auth === "none")); };
+    for (let i = 0; i < 40 && settling(); i++) await new Promise((r) => setTimeout(r, 200));
     const c = client.status;
     const url = client.demo ? "" : serverUrl();
     let wsHttp: string | null = null;

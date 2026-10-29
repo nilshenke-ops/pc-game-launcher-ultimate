@@ -78,6 +78,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public QuestService Quests { get; }
     public DealService Deals { get; }
     public NewsService News { get; }
+    public ResearchService Research { get; }
     public KeyforsteamService Keyforsteam { get; }
     public SteamAchievementsService SteamAchievements { get; }
     /// <summary>Play time (Steam, measured sessions) and average durations (IGDB) for "Wie lange brauche ich noch?".</summary>
@@ -204,6 +205,7 @@ public sealed class CompanionServices : IAsyncDisposable
         GameModePrograms = new GameModePrograms(paths, platform.Processes, platform.ProcessControl, Rpc, () => Library.List().Where(i => i.Kind == ItemKind.Game)
             .SelectMany(i => i.ProcessNames.Concat(i.Source == LaunchSource.Exe ? new[] { Path.GetFileNameWithoutExtension(i.Target) } : Array.Empty<string>())));
         Assistant = new Assistant.AssistantService(paths, platform.Secrets, Rpc, new Assistant.AssistantData(this));
+        Research = new ResearchService(Assistant, News, SteamAchievements, Rpc) { MojangBase = Environment.GetEnvironmentVariable("PGL_MOJANG_BASE") is { Length: > 0 } mb ? mb : "https://launchercontent.mojang.com" };
 
         Wire();
         Rpc.HelloInfo = HelloInfo;

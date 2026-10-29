@@ -239,7 +239,11 @@ public static class RpcApi
             var wants = ctx.Params.TryGetProperty("jarvis", out var j) && j.ValueKind == JsonValueKind.True;
             var jarvis = wants && ctx.Session.JarvisUntil is { } until && until > DateTime.UtcNow;
             if (jarvis) ctx.Session.JarvisUntil = DateTime.UtcNow + Assistant.Jarvis.Idle;
-            return await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), jarvis: jarvis, jarvisRequested: wants);
+            // Cancellable: "assistant.cancel" with the same requestId stops the answer (only from this device).
+            var (cts, key) = s.Research.Begin(ctx.Session.PrefsKey, ctx.OptStr("requestId", 64));
+            try { return await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), cts.Token, jarvis: jarvis, jarvisRequested: wants, engine: ctx.OptStr("engine", 40)); }
+            catch (OperationCanceledException) { throw new RpcException("cancelled", "Abgebrochen."); }
+            finally { s.Research.End(key); }
         });
         rpc.Register("assistant.bingo", async ctx => await s.Assistant.BingoTasksAsync(ctx.Str("game", 100), ctx.Int("size", 4, 3, 5)));
         // Achievements of a Steam game as bingo tasks – only after the user agreed to look on the internet.
@@ -249,6 +253,9 @@ public static class RpcApi
         rpc.Register("playtime.lookup", async ctx => await s.Playtime.LookupAsync(ctx.Str("game", 100), ctx.Bool("refresh")));
         rpc.Register("playtime.configure", ctx => s.Playtime.Configure(ctx.Params.TryGetProperty("clientId", out var c) ? c.GetString() : null, ctx.Params.TryGetProperty("clientSecret", out var k) ? k.GetString() : null, ctx.Session.IsLocalAdmin));
         rpc.Register("assistant.summarize", async ctx => await s.Assistant.SummarizeAsync(ctx.Bind<Assistant.SourceAnswer.Request>()));
+        // Research with sources (Claude web search, or free official sources + the AI at the PC); progress goes to this connection only.
+        rpc.Register("assistant.research", async ctx => await s.Research.RunAsync(ctx.Bind<ResearchService.Request>(), ctx.Session));
+        rpc.Register("assistant.cancel", ctx => new { cancelled = s.Research.Cancel(ctx.Session.PrefsKey, ctx.Str("requestId", 64)) });
         rpc.Register("assistant.freeAnswer", async ctx => await s.Assistant.FreeAnswerAsync(ctx.Bind<Assistant.AssistantService.FreeQuestion>()));
         rpc.Register("assistant.bingoPlan", async ctx => await s.Assistant.PlanBingoAsync(ctx.Bind<Assistant.BingoRequest>()));
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });

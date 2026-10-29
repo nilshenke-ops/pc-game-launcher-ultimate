@@ -49,6 +49,8 @@
     "assistant.ask": "view",
     "assistant.summarize": "view",
     "assistant.freeAnswer": "view",
+    "assistant.research": "view",
+    "assistant.cancel": "view",
     "assistant.bingo": "view",
     "assistant.bingoPlan": "view",
     "assistant.reset": "view",
