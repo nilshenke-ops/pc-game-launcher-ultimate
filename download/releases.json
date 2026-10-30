@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.83.1",
+    "date": "2026-10-30",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.1/PCGameLauncherCompanion.exe",
+    "size": 88396097,
+    "sha256": "84d3b2e4236da6b319f6fc08252b7672f40dd52bdaedd40a2b4b531f7ef6b676",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.83.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.1/PCGameLauncherCompanion-2.83.1-win-x64.zip",
+      "size": 82658746,
+      "sha256": "d4d3c59293bd58bd3ab9ff27b6553c3c01072150697d49575ac2e69d8064d4c4"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Gerät koppeln: Die Tailscale-Adresse (https://…ts.net) fehlte bis zu 5 Minuten, wenn Windows den Begleiter vor Tailscale gestartet hatte. Der Begleiter sieht jetzt jede Minute nach, solange Tailscale installiert, aber noch nicht gefunden ist, und sofort beim Öffnen der Koppeln-Seite – die Adresse erscheint dort von selbst, sobald Tailscale verbunden ist"
+      ]
+    },
+    "signature": "hrnbnG9Yk7Mn/pPmZjI4XkK3OjsVcCxtuevpJv9/AEI7MjbovnpPH8aFSNtofEZX5OAhTbaATn9bON/zJpoGrw=="
+  },
+  {
     "version": "2.83.0",
     "date": "2026-10-29",
     "channel": "stable",
@@ -1449,38 +1473,5 @@
       "behoben": []
     },
     "signature": "yghunHzk4LoUnPvU3P5chZ035AMlnHET5258pIMD5/A7ISY8FCnkDMiV9WicC+IOvHZK138BH+Tit2aCDzhCbg=="
-  },
-  {
-    "version": "2.38.0",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.38.0/PCGameLauncherCompanion.exe",
-    "size": 87802541,
-    "sha256": "05ac745306091dd20e51161a58c33b6388bea6de84d4ca1e21dc98eb0e40f378",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.38.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.38.0/PCGameLauncherCompanion-2.38.0-win-x64.zip",
-      "size": 82064046,
-      "sha256": "a667e570bddce4972913603adb82152ad97a0483ed0865f0243ef81a7abf02ef"
-    },
-    "notes": "Neuer Bereich „Spielbegleiter“ mit Spiele-Journal und Gaming-Wiki – funktioniert ohne PC: gespeichert im Browser, beim Verbinden mit dem PC abgeglichen (andere Geräte sehen dasselbe, alles im PC-Backup) · „Wo war ich noch mal?“: Verlauf je Spiel (was gemacht, wo, was als Nächstes, Bilder); beim Spielstart erscheint die letzte eigene Notiz, auch im Bearbeiten-Fenster des Spiels · Zielpfade: eigene Etappen mit Belohnungen und Meilensteinen, Fortschritt aus den Etappen, Vorlagen und eigene Vorlagen, Archiv – ohne tägliche Pflichten oder Fristen",
-    "changes": {
-      "neu": [
-        "Neuer Bereich „Spielbegleiter“ mit Spiele-Journal und Gaming-Wiki – funktioniert ohne PC: gespeichert im Browser, beim Verbinden mit dem PC abgeglichen (andere Geräte sehen dasselbe, alles im PC-Backup)",
-        "„Wo war ich noch mal?“: Verlauf je Spiel (was gemacht, wo, was als Nächstes, Bilder); beim Spielstart erscheint die letzte eigene Notiz, auch im Bearbeiten-Fenster des Spiels",
-        "Zielpfade: eigene Etappen mit Belohnungen und Meilensteinen, Fortschritt aus den Etappen, Vorlagen und eigene Vorlagen, Archiv – ohne tägliche Pflichten oder Fristen",
-        "Quest- und Fundsammlung: Kategorien, Status offen/gefunden/erledigt, Tags, Bilder, Favoriten, Suche, Filter, Sortierung",
-        "Story ohne Spoiler: Kapitel, Figuren, offene Fragen und eigener Stand; die spoilerfreie Ansicht verdeckt alles danach und alles als Spoiler Markierte",
-        "Gaming-Wiki: [[Links]] zwischen Seiten (fehlende Seite mit einem Tipp anlegen), Rückverweise, automatisches Speichern, Versionen mit Wiederherstellen, doppelte Seiten zusammenführen, Markdown-Export",
-        "Alle Einträge lassen sich untereinander verknüpfen; Export und Import als Datei geht ohne PC"
-      ],
-      "verbessert": [
-        "Wurde ein Eintrag auf zwei Geräten geändert, gilt die neuere Änderung; die andere bleibt als Konflikt-Kopie auf dem PC und lässt sich wiederherstellen",
-        "Backup enthält die Sammlungen (Bilder zusammen mit den Audiodateien)"
-      ],
-      "behoben": []
-    },
-    "signature": "YbKQWNvL4ROceHbSlVszRAZzfTuJ0yycveIvMqoD6ZhCE/Q3q82KuiqSXo27hw7WIp4Uz8kC8uafNrjBelmX6Q=="
   }
 ]

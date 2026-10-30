@@ -1,25 +1,24 @@
 {
-  "version": "2.83.0",
-  "date": "2026-10-29",
+  "version": "2.83.1",
+  "date": "2026-10-30",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.0/PCGameLauncherCompanion.exe",
-  "size": 88395985,
-  "sha256": "5cbff30d3fc415e689a170a615bfcb698d4335ce20a2f57413c5595ba06c80f1",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.1/PCGameLauncherCompanion.exe",
+  "size": 88396097,
+  "sha256": "84d3b2e4236da6b319f6fc08252b7672f40dd52bdaedd40a2b4b531f7ef6b676",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.83.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.0/PCGameLauncherCompanion-2.83.0-win-x64.zip",
-    "size": 82658652,
-    "sha256": "abe8f58b009c687bd498f16ef59f879ff0f639ba0f1d236d22e4109ed9198f74"
+    "fileName": "PCGameLauncherCompanion-2.83.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.1/PCGameLauncherCompanion-2.83.1-win-x64.zip",
+    "size": 82658746,
+    "sha256": "d4d3c59293bd58bd3ab9ff27b6553c3c01072150697d49575ac2e69d8064d4c4"
   },
   "notes": "",
   "changes": {
     "neu": [],
     "verbessert": [],
     "behoben": [
-      "Rückmeldungen wie „das macht keinen Sinn“ oder „ich bin Impostor“ wurden als Suchbegriff nachgeschlagen („Ohne PC habe ich nur offene Wikis durchsucht …“)",
-      "Mit JARVIS an stand unter KI-Antworten „Lokal · 0 €“ statt des Modells, das wirklich geantwortet hat – jetzt steht dort das echte Modell (auch ein Ausweichmodell des Routers)"
+      "Gerät koppeln: Die Tailscale-Adresse (https://…ts.net) fehlte bis zu 5 Minuten, wenn Windows den Begleiter vor Tailscale gestartet hatte. Der Begleiter sieht jetzt jede Minute nach, solange Tailscale installiert, aber noch nicht gefunden ist, und sofort beim Öffnen der Koppeln-Seite – die Adresse erscheint dort von selbst, sobald Tailscale verbunden ist"
     ]
   },
-  "signature": "8qev3qm7wMOihvCX+5wQ1zC+XE7lyEhqbPZ0NE21wolZTMTLT6ztzw9+72H73YqMlNjVD9dx1lsG9aMtqWNkog=="
+  "signature": "hrnbnG9Yk7Mn/pPmZjI4XkK3OjsVcCxtuevpJv9/AEI7MjbovnpPH8aFSNtofEZX5OAhTbaATn9bON/zJpoGrw=="
 }
