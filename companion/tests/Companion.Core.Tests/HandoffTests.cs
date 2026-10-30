@@ -213,4 +213,28 @@ public class HomeNetworkTests
         Assert.True(st.CanFix);
         Assert.Contains("Netzwerk 2", st.Detail);
     }
+
+    [Fact]
+    public async Task Tailscale_connected_after_the_companion_started_is_found_on_the_next_look_and_reported_once()
+    {
+        // Windows started the companion first: Tailscale still "Starting", a moment later "Running".
+        var state = "Starting";
+        var calls = 0;
+        var gate = new TaskCompletionSource();
+        var st = new StableAddress(() => new[] { "192.168.178.116" }, "gaming", _ => Task.FromResult(Array.Empty<IPAddress>()),
+            async () => { calls++; await gate.Task; return "{\"BackendState\":\"" + state + "\",\"Self\":{\"DNSName\":\"gaming.tail72a60b.ts.net.\"}}"; },
+            url => Task.FromResult(url == "https://gaming.tail72a60b.ts.net"), reverse: _ => Task.FromResult<string?>(null));
+        var changed = 0;
+        st.Changed += () => changed++;
+        var a = st.RefreshAsync(); var b = st.RefreshAsync(); // page + timer at the same moment: one run
+        gate.SetResult();
+        await Task.WhenAll(a, b);
+        Assert.Equal(1, calls);
+        Assert.Null(st.TailscaleName);
+        state = "Running";
+        await st.RefreshAsync();
+        Assert.Equal("gaming.tail72a60b.ts.net", st.TailscaleName);
+        Assert.True(st.TailscaleHttps);
+        Assert.Equal(1, changed);
+    }
 }

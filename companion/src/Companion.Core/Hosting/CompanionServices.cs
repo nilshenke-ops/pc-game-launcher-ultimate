@@ -553,7 +553,16 @@ public sealed class CompanionServices : IAsyncDisposable
         Sessions.Start();
         LanAddress.Start();
         if (Settings.Get().LanAccess) Mdns.Start();
-        _stableTimer = new Timer(_ => _ = Stable.RefreshAsync(), null, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(5));
+        // Fixed addresses (router name, Tailscale): every 5 minutes – every minute while Tailscale is installed but not seen
+        // yet (Windows often starts the companion before Tailscale is connected) or its https address is not up yet in the
+        // first 15 minutes, so the pairing page shows the Tailscale address right after Tailscale connects.
+        var started = DateTime.UtcNow;
+        _stableTimer = new Timer(_ =>
+        {
+            var at = Stable.CheckedAt;
+            var waiting = TailscaleCli.Exe() != null && (Stable.TailscaleName == null || (!Stable.TailscaleHttps && DateTime.UtcNow - started < TimeSpan.FromMinutes(15)));
+            if (at == null || DateTime.UtcNow - at > TimeSpan.FromMinutes(5) || waiting) _ = Stable.RefreshAsync();
+        }, null, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(1));
         GamePass.Start();
         Updates.StartAutoCheck();
         Covers.Start();

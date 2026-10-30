@@ -19,6 +19,8 @@ public static class RpcApi
         // ------------------------------------------------------------ pairing
         rpc.Register("pairing.create", ctx =>
         {
+            // A fresh look for Tailscale/router names in the background – a newly found address reaches the page as "pairing" change.
+            if (s.Stable.CheckedAt is not { } at || DateTime.UtcNow - at > TimeSpan.FromSeconds(30)) _ = s.Stable.RefreshAsync();
             var (code, expires) = s.Pairing.CreateCode();
             return new { code, expiresAt = expires, urls = PairingUrls(s, code), pcAddress = PcAddress(s), addresses = DeviceAddresses(s) };
         });
@@ -33,6 +35,7 @@ public static class RpcApi
         });
         rpc.Register("pairing.pending", ctx =>
         {
+            if (s.Stable.CheckedAt is not { } at || DateTime.UtcNow - at > TimeSpan.FromSeconds(30)) _ = s.Stable.RefreshAsync();
             var active = s.Pairing.ActiveCode();
             return new
             {

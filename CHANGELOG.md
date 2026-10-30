@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.83.1 – 2026-10-30
+### Behoben
+- Gerät koppeln: Die Tailscale-Adresse (https://…ts.net) fehlte bis zu 5 Minuten, wenn Windows den Begleiter vor Tailscale gestartet hatte. Der Begleiter sieht jetzt jede Minute nach, solange Tailscale installiert, aber noch nicht gefunden ist, und sofort beim Öffnen der Koppeln-Seite – die Adresse erscheint dort von selbst, sobald Tailscale verbunden ist
+
 ## 2.83.0 – 2026-10-29
 ### Neu – KI-Router (kostenlos möglich)
 - KI-Router für JARVIS: OpenRouter, Groq, MixRoute oder ein eigener Router im Heimnetz (OmniRoute, LiteLLM) – am PC unter KI-Assistent → Einrichten; Vorlagen mit Adresse und Hinweisen zu Kosten und Limits

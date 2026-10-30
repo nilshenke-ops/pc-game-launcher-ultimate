@@ -47,7 +47,16 @@ public sealed class StableAddress
         (RouterName != null && host.Equals(RouterName, StringComparison.OrdinalIgnoreCase)) ||
         (TailscaleName != null && host.Equals(TailscaleName, StringComparison.OrdinalIgnoreCase));
 
-    public async Task RefreshAsync()
+    readonly object _gate = new();
+    Task? _refreshing;
+
+    /// <summary>Looks again (timer, pairing page, Tailscale card) – calls at the same time share one run.</summary>
+    public Task RefreshAsync()
+    {
+        lock (_gate) return _refreshing is { IsCompleted: false } running ? running : _refreshing = RefreshCoreAsync();
+    }
+
+    async Task RefreshCoreAsync()
     {
         var before = (RouterName, TailscaleName, TailscaleHttps);
         RouterName = await FindRouterName();
