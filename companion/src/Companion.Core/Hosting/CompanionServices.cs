@@ -617,9 +617,25 @@ public sealed class CompanionServices : IAsyncDisposable
     /// While a game runs: background work waits (GameActivity) and the companion steps back (lower priority, efficiency
     /// mode, smaller memory footprint). While the large overlay is open, the companion runs normally so it reacts at once.
     /// </summary>
+    /// <summary>The JARVIS island is shown when switched on – during a game only with "in Spielen" (see Settings).</summary>
+    public static bool IslandWanted(Settings set, bool gaming) => set.IslandDesktop && (!gaming || set.IslandInGames);
+
+    bool? _islandShown;
+    public string? UpdateIsland()
+    {
+        var want = IslandWanted(Settings.Get(), Sessions.AnyGameRunning());
+        if (_islandShown == want) return null;
+        var err = Platform.Island.SetVisible(want);
+        _islandShown = err == null ? want : null;
+        if (err != null && want) Log.Warn("island", err);
+        Rpc.Changed("island");
+        return err;
+    }
+
     void UpdateGameMode()
     {
         var gaming = Sessions.AnyGameRunning();
+        UpdateIsland();
         GameActivity.Set(gaming);
         Platform.DesktopWidgets.SetPaused(gaming);
         var step = gaming && Platform.Overlay.Visible != "full";

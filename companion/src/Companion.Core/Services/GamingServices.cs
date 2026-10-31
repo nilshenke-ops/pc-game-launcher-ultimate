@@ -142,6 +142,14 @@ public sealed class SettingsService
         return r;
     }
 
+    /// <summary>JARVIS island: on the desktop/over programs, and separately during games.</summary>
+    public Settings SetIsland(bool? desktop, bool? games)
+    {
+        var r = _store.Update(s => { if (desktop != null) s.IslandDesktop = desktop.Value; if (games != null) s.IslandInGames = games.Value; return Json.Deserialize<Settings>(Json.Serialize(s))!; });
+        _hub.Changed("island");
+        return r;
+    }
+
     /// <summary>Arrangement of the large overlay (checked: known id format, at most 24 widgets, positions on screen, sensible sizes).</summary>
     public Settings SetOverlayLayout(OverlayLayout? layout)
     {

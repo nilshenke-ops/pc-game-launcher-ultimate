@@ -21,6 +21,7 @@ sealed class WindowsPlatform : IPlatform
         Hotkeys = new HotkeyRegistrar(ui);
         OverlayWindows = new WindowsOverlay(ui, Metrics);
         DesktopWidgetWindows = new WindowsDesktopWidgets(ui);
+        IslandWindow = new WindowsDesktopIsland(ui);
     }
 
     public string Name => $"Windows {Environment.OSVersion.Version}";
@@ -41,6 +42,8 @@ sealed class WindowsPlatform : IPlatform
     public IAudioLoopback AudioLoopback { get; } = new WindowsAudioLoopback();
     public WindowsOverlay OverlayWindows { get; }
     public IOverlay Overlay => OverlayWindows;
+    public WindowsDesktopIsland IslandWindow { get; }
+    public IDesktopIsland Island => IslandWindow;
     public IKeySender KeySender { get; } = new WindowsKeySender();
     public IGameMode GameMode { get; } = new WindowsGameMode();
     public IProcessControl ProcessControl { get; } = new WindowsProcessControl();

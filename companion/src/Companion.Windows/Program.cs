@@ -78,6 +78,7 @@ sealed class TrayAppContext : ApplicationContext
     readonly TrayIcon _tray;
     readonly CompanionServices _services;
     readonly WindowsOverlay _overlay;
+    readonly WindowsDesktopIsland _island;
     readonly WindowsDesktopWidgets _desktopWidgets;
     readonly RemoteIndicator _remoteBar;
     readonly EventWaitHandle _showSignal = new(false, EventResetMode.AutoReset, @"Local\PCGameLauncherUltimate.Show");
@@ -99,6 +100,7 @@ sealed class TrayAppContext : ApplicationContext
         ((WindowsAutostart)platform.Autostart).RepairMovedPath();
         _overlay = platform.OverlayWindows;
         _desktopWidgets = platform.DesktopWidgetWindows;
+        _island = platform.IslandWindow;
         _services = new CompanionServices(platform, new AppPaths());
         _overlay.Corner = () => _services.Settings.Get().OverlayCorner;
         _services.Obs.RecordingChanged += (active, _) => _overlay.Recording = active;
@@ -140,6 +142,8 @@ sealed class TrayAppContext : ApplicationContext
         _overlay.Origin = $"http://127.0.0.1:{_services.Web.Port}";
         _overlay.AdminToken = _services.Rpc.AdminToken;
         _desktopWidgets.Ready(_form.WebEnvironment, _overlay.Origin, _services.Rpc.AdminToken);
+        _island.Ready(_form.WebEnvironment, _overlay.Origin, _services.Rpc.AdminToken);
+        _services.UpdateIsland();
         if (_services.Web.StartError != null)
             MessageBox.Show(_services.Web.StartError, "Nexus Gaming Hub – Webserver", MessageBoxButtons.OK, MessageBoxIcon.Warning);
     }
@@ -176,6 +180,7 @@ sealed class TrayAppContext : ApplicationContext
         _form.Hide();
         try { _overlay.Dispose(); } catch { }
         try { _desktopWidgets.Dispose(); } catch { }
+        try { _island.Dispose(); } catch { }
         try { _remoteBar.Dispose(); } catch { }
         try { await _services.DisposeAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5)); } catch { }
         _form.Close();

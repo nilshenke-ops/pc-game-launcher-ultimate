@@ -415,6 +415,10 @@ public sealed class Settings
     public bool ObsReplayWhilePlaying { get; set; }
     /// <summary>Own ping targets for the network diagnosis (e.g. a game server), at most 3.</summary>
     public List<PingTarget> PingTargets { get; set; } = new();
+    /// <summary>JARVIS island at the top of the screen on the desktop and over programs (Windows companion). Off until switched on.</summary>
+    public bool IslandDesktop { get; set; }
+    /// <summary>The island also while a game from the library runs (off: it hides during games).</summary>
+    public bool IslandInGames { get; set; }
     /// <summary>Screen corner of the small in-game overlay (Windows companion).</summary>
     public string OverlayCorner { get; set; } = "top-right";
     /// <summary>Program used for recording and replays: obs, nvidia, xbox, steam or discord (see CaptureProviders).</summary>

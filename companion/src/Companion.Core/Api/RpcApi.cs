@@ -244,8 +244,12 @@ public static class RpcApi
             if (jarvis) ctx.Session.JarvisUntil = DateTime.UtcNow + Assistant.Jarvis.Idle;
             // Cancellable: "assistant.cancel" with the same requestId stops the answer (only from this device).
             var (cts, key) = s.Research.Begin(ctx.Session.PrefsKey, ctx.OptStr("requestId", 64));
-            try { return await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), cts.Token, jarvis: jarvis, jarvisRequested: wants, engine: ctx.OptStr("engine", 40)); }
-            catch (OperationCanceledException) { throw new RpcException("cancelled", "Abgebrochen."); }
+            // The JARVIS island on the PC screen shows the same (local sessions only: answers never go to other devices).
+            s.Rpc.Broadcast("jarvis.activity", new { phase = "busy" }, Permissions.Local);
+            try { var answer = await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), cts.Token, jarvis: jarvis, jarvisRequested: wants, engine: ctx.OptStr("engine", 40));
+                IslandAnswer(s, answer); return answer; }
+            catch (OperationCanceledException) { s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = false, text = "Abgebrochen." }, Permissions.Local); throw new RpcException("cancelled", "Abgebrochen."); }
+            catch (RpcException e) { s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = false, text = e.Message }, Permissions.Local); throw; }
             finally { s.Research.End(key); }
         });
         rpc.Register("assistant.bingo", async ctx => await s.Assistant.BingoTasksAsync(ctx.Str("game", 100), ctx.Int("size", 4, 3, 5)));
@@ -662,6 +666,16 @@ public static class RpcApi
             return await s.Capture.ToggleOverlay(mode) is { } err ? throw new RpcException("unsupported", err) : (object)new { visible = s.Platform.Overlay.Visible };
         });
         rpc.Register("overlay.hide", _ => { s.Platform.Overlay.Hide(); return true; });
+        // JARVIS island at the top of the screen (Windows): on/off for desktop & programs, separately for games.
+        rpc.Register("island.get", _ => IslandInfo(s));
+        rpc.Register("island.configure", ctx =>
+        {
+            bool? Opt(string k) => ctx.Params.TryGetProperty(k, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
+            var desktop = Opt("desktop"); var games = Opt("games");
+            s.Settings.SetIsland(desktop, games);
+            var err = s.UpdateIsland();
+            return new { info = IslandInfo(s), error = err };
+        });
         rpc.Register("overlay.layout", _ => new { layout = s.Settings.Get().OverlayLayout });
         rpc.Register("overlay.saveLayout", ctx =>
         {
@@ -877,6 +891,22 @@ public static class RpcApi
         if (set.LanAccess && s.Mdns.Running) list.Add(($"http://{s.Mdns.Name}:{port}", "mdns"));
         if (set.LanAccess && s.Stable.TailscaleName is { } ts2) list.Add(($"http://{ts2}:{port}", "tailscale"));
         return list.DistinctBy(a => a.url).ToList();
+    }
+
+    /// <summary>The newest answer for the island: its text and – if JARVIS waits for a yes – that one action.</summary>
+    static void IslandAnswer(CompanionServices s, object answer)
+    {
+        var reply = answer.GetType().GetProperty("reply")?.GetValue(answer) as Assistant.AssistantReply;
+        if (reply == null) return;
+        var ask = reply.Actions.FirstOrDefault(a => a.Confirm && !a.Auto && !string.IsNullOrEmpty(a.Method));
+        s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = !reply.Failed, text = reply.Text.Length > 280 ? reply.Text[..280] : reply.Text,
+            ask = ask == null ? null : new { kind = ask.Kind, label = ask.Label, method = ask.Method, @params = ask.Params, confirm = true } }, Permissions.Local);
+    }
+
+    static object IslandInfo(CompanionServices s)
+    {
+        var set = s.Settings.Get();
+        return new { supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, gameRunning = s.Sessions.AnyGameRunning() };
     }
 
     static object TailscaleInfo(CompanionServices s) => new

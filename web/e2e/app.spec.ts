@@ -1755,6 +1755,64 @@ test("KI-Chat ohne PC: nur offene Wikis, offen gesagt – keine vorgetäuschte W
 });
 
 
+test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ablehnen, Widgets, nicht im Website-Kopf", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.locator(".isl")).toHaveCount(0); // never in the website's top bar
+  // The switches live in the PC software; this test companion is not the Windows one – it says so instead of pretending.
+  await p.goto(`${COMPANION}/#/assistant`);
+  await expect(p.getByText("Insel oben auf dem PC-Bildschirm")).toBeVisible();
+  await expect(p.getByText("Die Insel gibt es nur im Windows-Begleiter.").first()).toBeVisible();
+  // The island page as the Windows window shows it: only the eyes until something happens.
+  const isl = await p.context().newPage();
+  // Like the Windows window: the companion hands the page its admin token before it loads.
+  await isl.addInitScript((tok) => { (window as unknown as { __PGL_ADMIN__: string; __PGL_EMBEDDED__: boolean }).__PGL_ADMIN__ = tok; (window as unknown as { __PGL_EMBEDDED__: boolean }).__PGL_EMBEDDED__ = true; }, state().adminToken);
+  await isl.setViewportSize({ width: 580, height: 470 });
+  await isl.goto(`${COMPANION}/#/island`);
+  const bar = isl.locator(".isl");
+  await expect(bar.getByRole("img", { name: "JARVIS: Bereit" })).toBeVisible({ timeout: 15000 });
+  // The mouse leaves the window (like moving away from the top of the screen) → only the eyes.
+  const leave = () => isl.locator(".isl-host").dispatchEvent("mouseout", { relatedTarget: null });
+  await leave();
+  await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/);
+  await expect(bar.locator(".isl-text")).toHaveCount(0);
+  await isl.locator(".isl-host").dispatchEvent("mouseover", { relatedTarget: null }); // the mouse comes in from the screen
+  await expect(isl.locator(".isl-host")).toHaveClass(/s-bar/);
+  await expect(bar).toContainText("JARVIS – antippen für Widgets");
+  await leave();
+  await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/);
+  // A launch asked in the chat (JARVIS off: it needs a yes) reaches the island from the PC; "Ablehnen" starts nothing.
+  await p.evaluate(() => localStorage.setItem("pgl.jarvis", "false"));
+  await p.reload();
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  await say.fill("Starte E2E Testspiel"); await say.press("Enter");
+  await expect(bar).toContainText("JARVIS fragt: E2E Testspiel starten?");
+  await expect(isl.locator(".isl-host")).toHaveClass(/s-ask/);
+  await expect(bar.getByRole("img", { name: "JARVIS: Fragt dich" })).toBeVisible();
+  await bar.getByRole("button", { name: "Ablehnen" }).click();
+  await expect(bar.getByRole("button", { name: "Erlauben" })).toHaveCount(0);
+  await expect(bar.getByRole("img", { name: "JARVIS: Bereit" })).toBeVisible();
+  // Widgets: game, clock, music keys, focus timer; a question goes to JARVIS and the answer shows up here.
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
+  await expect(panel).toBeVisible();
+  await expect(isl.locator(".isl-host")).toHaveClass(/s-panel/);
+  await expect(panel).toContainText("Musik am PC");
+  await expect(panel.getByRole("button", { name: "Wiedergabe/Pause" })).toBeEnabled();
+  await isl.screenshot({ path: "test-results/island-panel.png", animations: "disabled" });
+  await panel.getByRole("button", { name: "5 min", exact: true }).click();
+  await expect(panel).toContainText(/[45]:[0-5]\d/);
+  await panel.getByRole("button", { name: "Stopp" }).click();
+  await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Wie geht es meinem PC?");
+  await panel.getByRole("button", { name: "Fragen" }).click();
+  await expect(panel.locator(".isl-last")).toContainText("CPU");
+  await panel.getByRole("button", { name: "Schließen" }).click();
+  // Poking the eyes too often makes JARVIS dizzy (nothing else happens).
+  for (let k = 0; k < 5; k++) await bar.locator(".isl-eyes").click();
+  await expect(bar.getByRole("img", { name: "JARVIS: Schwindelig" })).toBeVisible();
+  await p.context().close();
+});
+
 test("KI-Router: nur am PC einzurichten, kostenlose Modelle live, Reihenfolge, Ausweichmodell wird genannt", async ({ browser }) => {
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });

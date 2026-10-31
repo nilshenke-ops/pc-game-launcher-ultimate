@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { IslandSettingsCard } from "../components/island-settings";
 import { Circle, Clapperboard, Keyboard, Layers, Puzzle, Save, Video } from "lucide-react";
 import { Link } from "react-router-dom";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
@@ -60,6 +61,8 @@ export default function OverlaySettings() {
       {!online && <div style={{ marginBottom: 16 }}><Banner kind="info">{t("PC nicht verbunden: Tastenkürzel, OBS-Verbindung und Overlay-Ecke werden auf diesem Gerät gespeichert und beim nächsten Verbinden auf den PC übertragen.")}</Banner></div>}
       <div className="stack">
         {cap.data && <CaptureCard cap={cap.data} online={online} canManage={canManage} canLaunch={canLaunch} run={run} />}
+
+        <IslandSettingsCard />
 
         <Card title={t("Tastenkürzel")} icon={<Keyboard size={18} />}>
           <ShortcutEditor hotkeys={hk.data?.hotkeys.map((x) => x.hotkey) ?? []} statuses={hk.data?.hotkeys.map((x) => x.status) ?? []} canManage={canManage} cap={cap.data} />

@@ -32,6 +32,8 @@ public interface IPlatform
     IAudioLoopback AudioLoopback => NullAudioLoopback.Instance;
     /// <summary>In-game overlay window (Windows companion only).</summary>
     IOverlay Overlay => NullOverlay.Instance;
+    /// <summary>The JARVIS island at the top of the screen (Windows companion only).</summary>
+    IDesktopIsland Island => NullDesktopIsland.Instance;
     /// <summary>Presses keyboard shortcuts of other programs (NVIDIA, Xbox Game Bar …). Windows companion only.</summary>
     IKeySender KeySender => NullKeySender.Instance;
     /// <summary>Makes the companion step back while a game runs (priority, efficiency mode, memory). No-op elsewhere.</summary>
@@ -152,6 +154,26 @@ public interface IOverlay
     string? Toggle(string mode);
     void Hide();
     event Action? Changed;
+}
+
+/// <summary>
+/// The JARVIS island: a small always-on-top window at the top centre of the screen. Collapsed it only shows JARVIS'
+/// eyes; it opens on hover or tap. Shown or hidden by the companion (switches "in Programmen" / "in Spielen").
+/// </summary>
+public interface IDesktopIsland
+{
+    bool Supported { get; }
+    bool Visible { get; }
+    /// <summary>Shows or hides the window. Returns an error text (e.g. WebView2 not ready yet) or null.</summary>
+    string? SetVisible(bool on);
+}
+
+public sealed class NullDesktopIsland : IDesktopIsland
+{
+    public static readonly NullDesktopIsland Instance = new();
+    public bool Supported => false;
+    public bool Visible => false;
+    public string? SetVisible(bool on) => on ? "Die JARVIS-Insel auf dem Bildschirm gibt es nur im Windows-Begleiter." : null;
 }
 
 public sealed class NullOverlay : IOverlay

@@ -69,6 +69,7 @@ const Deck = lazy(() => import("./pages/Deck"));
 const Assistant = lazy(() => import("./pages/Assistant"));
 const Deals = lazy(() => import("./pages/Deals"));
 const DesktopWidget = lazy(() => import("./pages/DesktopWidget"));
+const IslandPage = lazy(() => import("./pages/IslandPage"));
 const Connect = lazy(() => import("./pages/Connect"));
 const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
@@ -111,6 +112,8 @@ function Gate() {
 
   // The in-game overlay window (Windows companion) shows only the overlay, without navigation.
   if (loc.pathname === "/overlay") return <Suspense fallback={null}><Overlay /></Suspense>;
+  // The JARVIS island window (Windows companion) shows only the island.
+  if (loc.pathname === "/island") return <Suspense fallback={null}><IslandPage /></Suspense>;
   // A desktop widget window (Windows companion) shows only that widget.
   if (loc.pathname.startsWith("/desktop-widget/"))
     return <Suspense fallback={null}><Routes><Route path="/desktop-widget/:id" element={<DesktopWidget />} /></Routes></Suspense>;
