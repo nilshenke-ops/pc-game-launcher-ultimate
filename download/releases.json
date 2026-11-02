@@ -1,5 +1,30 @@
 [
   {
+    "version": "2.87.1",
+    "date": "2026-11-02",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.1/PCGameLauncherCompanion.exe",
+    "size": 88416189,
+    "sha256": "b6299598a7f61b9577dd1f499e466cc2051d931c2165180208938c8161292fc4",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.87.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.1/PCGameLauncherCompanion-2.87.1-win-x64.zip",
+      "size": 82912055,
+      "sha256": "6e57819ec234dc4aee8a19cdb2dff136e053c1d16c8d2ff5e2e70090e10fc04c"
+    },
+    "notes": "Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern · Der Browser wird bei jeder Anmeldung gebeten, den gespeicherten Stand dauerhaft zu behalten",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern",
+        "Der Browser wird bei jeder Anmeldung gebeten, den gespeicherten Stand dauerhaft zu behalten"
+      ],
+      "behoben": []
+    },
+    "signature": "mnW0r94Sn/mW/xZTotsPBsXP+06xU/DTbUBbKdrL0OKc6VQPlfg8svtZuyKVJpN5Wz4SZ1LQCqCESbw79fZYTg=="
+  },
+  {
     "version": "2.87.0",
     "date": "2026-11-02",
     "channel": "stable",
@@ -1439,31 +1464,5 @@
       ]
     },
     "signature": "Yn8zfyh/5Z910G4L3MhtLMZh/bqxo3GM1Uzl55ewQN9o/eUGQZjq5xc+WLZe5gCOITEDCg8bMJITdmV5l1z48g=="
-  },
-  {
-    "version": "2.42.1",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.1/PCGameLauncherCompanion.exe",
-    "size": 87950128,
-    "sha256": "03a4b139cf9919beecfeac25bde7eaed2fec023650edde84ac7ef94068ba71c4",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.42.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.1/PCGameLauncherCompanion-2.42.1-win-x64.zip",
-      "size": 82212153,
-      "sha256": "473966da1337c8b9e071a46cb80531b420f65c69fefa090b696304c425c841c3"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Startseite am PC: zeigte „Online“ und „Lokal verbunden“, als wäre ein Handy verbunden – gemeint war nur das Fenster am PC selbst. Jetzt steht dort „Begleiter läuft“ und „Dieses Fenster läuft am PC“, dazu welche gekoppelten Geräte gerade wirklich verbunden sind (oder dass noch keins gekoppelt ist)",
-        "„Erste Schritte“ am PC hakte „PC verbinden“ ab, obwohl kein Handy gekoppelt war – am PC heißt der Schritt jetzt „Handy koppeln“ und ist erst erledigt, wenn ein Gerät gekoppelt ist",
-        "Geräteliste am PC: verbindet oder trennt sich ein Handy, aktualisiert sich die Anzeige sofort (vorher erst nach Neuladen)"
-      ]
-    },
-    "signature": "76YfJlbwweVC37n+tXdUp8FbWRK2q/Il8QKuZyWP/jTk8qUoQ7wsvcnyavkRwUMpgC5ve3fGZo0UoSxAOzrMXQ=="
   }
 ]

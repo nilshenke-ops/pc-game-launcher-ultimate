@@ -1,27 +1,25 @@
 {
-  "version": "2.87.0",
+  "version": "2.87.1",
   "date": "2026-11-02",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.0/PCGameLauncherCompanion.exe",
-  "size": 88415440,
-  "sha256": "ab943660f19c06ebbc66f331cdfe9f955208a76b165e78a8bf3db59cee9f0487",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.1/PCGameLauncherCompanion.exe",
+  "size": 88416189,
+  "sha256": "b6299598a7f61b9577dd1f499e466cc2051d931c2165180208938c8161292fc4",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.87.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.0/PCGameLauncherCompanion-2.87.0-win-x64.zip",
-    "size": 82911234,
-    "sha256": "0a31142f8f094e2fcf28c35093d6ac1797cef16f8a7ee4ad61560050b3b932d0"
+    "fileName": "PCGameLauncherCompanion-2.87.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.1/PCGameLauncherCompanion-2.87.1-win-x64.zip",
+    "size": 82912055,
+    "sha256": "6e57819ec234dc4aee8a19cdb2dff136e053c1d16c8d2ff5e2e70090e10fc04c"
   },
-  "notes": "Der letzte Stand bleibt auf dem Handy: Nach dem ersten Koppeln bleibt die Anmeldung bestehen, und auch bei ausgeschaltetem PC siehst du PC-Name, aktives Profil, Zähler, Spiele, Steam-Bibliothek, Game Pass, Deck und deine Listen – mit „Stand …“-Datum · Was gerade läuft oder spielt wird offline nie als aktuell gezeigt; gestartet wird nichts ohne PC (Änderungen werden wie bisher vorgemerkt) · Abmelden oder Gerät entfernen löscht den gespeicherten Stand vom Handy vollständig",
+  "notes": "Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern · Der Browser wird bei jeder Anmeldung gebeten, den gespeicherten Stand dauerhaft zu behalten",
   "changes": {
-    "neu": [
-      "Der letzte Stand bleibt auf dem Handy: Nach dem ersten Koppeln bleibt die Anmeldung bestehen, und auch bei ausgeschaltetem PC siehst du PC-Name, aktives Profil, Zähler, Spiele, Steam-Bibliothek, Game Pass, Deck und deine Listen – mit „Stand …“-Datum"
-    ],
+    "neu": [],
     "verbessert": [
-      "Was gerade läuft oder spielt wird offline nie als aktuell gezeigt; gestartet wird nichts ohne PC (Änderungen werden wie bisher vorgemerkt)",
-      "Abmelden oder Gerät entfernen löscht den gespeicherten Stand vom Handy vollständig"
+      "Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern",
+      "Der Browser wird bei jeder Anmeldung gebeten, den gespeicherten Stand dauerhaft zu behalten"
     ],
     "behoben": []
   },
-  "signature": "JshVilvytNU4uqRrfbV8HO4FY/3OSUrSrD15A6mXKAj0tSeDZwA7/awGV1JCFRG8MLsZIuERz7ZtNPWfqO4i+w=="
+  "signature": "mnW0r94Sn/mW/xZTotsPBsXP+06xU/DTbUBbKdrL0OKc6VQPlfg8svtZuyKVJpN5Wz4SZ1LQCqCESbw79fZYTg=="
 }
