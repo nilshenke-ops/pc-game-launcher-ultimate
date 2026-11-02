@@ -48,6 +48,7 @@ public class SessionTests
     [Fact]
     public async Task Unauthorised_devices_cannot_send_commands()
     {
+        if (OperatingSystem.IsWindows()) return; // Unix executable (Windows only allows .exe/.lnk)
         using var dir = new TempDir();
         await using var s = Fixtures.Services(dir);
         var admin = await Fixtures.Admin(s);

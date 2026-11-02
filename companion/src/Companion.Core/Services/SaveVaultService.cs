@@ -100,10 +100,12 @@ public sealed class SaveVaultService
         var env = _env();
         var cmp = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
         var inUser = env.UserRoots.Select(r => System.IO.Path.GetFullPath(r).TrimEnd('\\', '/')).FirstOrDefault(r => full.StartsWith(r + System.IO.Path.DirectorySeparatorChar, cmp));
-        var inSteam = env.SteamRoots.Select(r => System.IO.Path.Combine(System.IO.Path.GetFullPath(r), "userdata")).Any(r => full.StartsWith(r + System.IO.Path.DirectorySeparatorChar, cmp));
+        var steamRoot = env.SteamRoots.Select(r => System.IO.Path.Combine(System.IO.Path.GetFullPath(r), "userdata")).FirstOrDefault(r => full.StartsWith(r + System.IO.Path.DirectorySeparatorChar, cmp));
+        var inSteam = steamRoot != null;
         var inGame = _library.List().Where(i => i.InstallDir is { Length: > 3 }).Any(i => full.StartsWith(System.IO.Path.GetFullPath(i.InstallDir!).TrimEnd('\\', '/') + System.IO.Path.DirectorySeparatorChar, cmp));
         if (inUser == null && !inSteam && !inGame) return null;
-        var rel = inUser != null ? full[(inUser.Length + 1)..] : full;
+        // The deny list applies below the allowed root only (a PC folder called "Temp" above Steam's userdata is no reason).
+        var rel = inUser != null ? full[(inUser.Length + 1)..] : steamRoot != null ? full[(steamRoot.Length + 1)..] : full;
         if (Denied.Any(d => rel.StartsWith(d.Replace('\\', System.IO.Path.DirectorySeparatorChar) , cmp) || rel.Contains(System.IO.Path.DirectorySeparatorChar + d.Replace('\\', System.IO.Path.DirectorySeparatorChar) + System.IO.Path.DirectorySeparatorChar, cmp))) return null;
         return full;
     }

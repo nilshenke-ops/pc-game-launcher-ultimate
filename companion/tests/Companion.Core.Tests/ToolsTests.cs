@@ -63,6 +63,7 @@ public class ToolsTests
     {
         using var dir = new TempDir();
         var s = Fixtures.Services(dir);
+        if (OperatingSystem.IsWindows()) return; // Unix executable and file modes
         var exe = Path.Combine(dir.Path, "game.sh");
         File.WriteAllText(exe, "#!/bin/sh\n");
         File.SetUnixFileMode(exe, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
