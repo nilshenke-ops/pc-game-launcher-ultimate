@@ -1,5 +1,36 @@
 [
   {
+    "version": "2.86.0",
+    "date": "2026-11-02",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.86.0/PCGameLauncherCompanion.exe",
+    "size": 88414913,
+    "sha256": "0feef8c5c3c710021add792afa08aa506195ac257a83a0f67df9dc2e16fccb0d",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.86.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.86.0/PCGameLauncherCompanion-2.86.0-win-x64.zip",
+      "size": 82910693,
+      "sha256": "13953d46c53272fc45d162431af582c43a2c1b81598fd3de4c65aca4d66e4b01"
+    },
+    "notes": "16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit · Neue Einstellung „Oberfläche“: Flach (wie bisher), Glas (durchsichtig mit Unschärfe und Lichtkante), Weich 3D (Karten und Knöpfe wie aus Ton, Felder eingedrückt) und Erhaben 3D (Karten mit Tiefe, heller Oberkante und langem Schatten) – unabhängig vom Theme wählbar · Neue Oberfläche „Klar-Glas“: fast ganz durchsichtig wie Apples „Liquid Glass“ oder Nothing OS (Lichtkante, starke Unschärfe, kräftige Farben); die „Deckkraft der Karten“ regelt, wie klar – dazu die Designs Apple Glas, Apple Glas hell, Nothing OS und Nothing OS hell (runde Ecken)",
+    "changes": {
+      "neu": [
+        "16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit",
+        "Neue Einstellung „Oberfläche“: Flach (wie bisher), Glas (durchsichtig mit Unschärfe und Lichtkante), Weich 3D (Karten und Knöpfe wie aus Ton, Felder eingedrückt) und Erhaben 3D (Karten mit Tiefe, heller Oberkante und langem Schatten) – unabhängig vom Theme wählbar",
+        "Neue Oberfläche „Klar-Glas“: fast ganz durchsichtig wie Apples „Liquid Glass“ oder Nothing OS (Lichtkante, starke Unschärfe, kräftige Farben); die „Deckkraft der Karten“ regelt, wie klar – dazu die Designs Apple Glas, Apple Glas hell, Nothing OS und Nothing OS hell (runde Ecken)",
+        "Glas-Unschärfe als Regler (4–40 px); Glas bleibt immer lesbar (Mindest-Deckkraft)",
+        "3D-Neigung: Karten neigen sich leicht zur Maus – nur mit Maus, nur ohne „Animationen reduzieren“ und ohne „Leichte Darstellung“; auf Handy und iPad bleibt alles ruhig",
+        "6 neue eigene Hintergründe (Chrom-Streifen, Petrol-Welle, Sonnenuntergang am Meer, Milchglas hell, Sanftes Grau, Mitternacht) – gezeichnet, keine Fotos; ein Design mit Hintergrund bringt ihn mit und nimmt ihn beim Wechsel wieder weg"
+      ],
+      "verbessert": [
+        "Alle bisherigen Designs bleiben unverändert (Oberfläche „Flach“); beim Wechsel zu ihnen wird die Oberfläche wieder flach"
+      ],
+      "behoben": []
+    },
+    "signature": "mzZaUbfZ3KEXkeK4Zoa6DfUSIU/pbd/wm76jtfO5b80Fwp14Q+DR/WiivUeBEt0ULs6574i538bVkE2NnXNRgw=="
+  },
+  {
     "version": "2.85.0",
     "date": "2026-11-02",
     "channel": "stable",
@@ -1442,38 +1473,5 @@
       ]
     },
     "signature": "q+E7wZor3y55hwr71zJrztNAcvrpcJz8Nx6ZcxCqgz38XMtluKdzDusRsM0eLDB4YQyd2Xmi2RLMAQtNeOj8Rw=="
-  },
-  {
-    "version": "2.41.0",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion.exe",
-    "size": 87877132,
-    "sha256": "5971b927293148f45d9a41d283006691b14230f18d4d680c7113c020641ad1df",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.41.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.41.0/PCGameLauncherCompanion-2.41.0-win-x64.zip",
-      "size": 82138479,
-      "sha256": "f7e1738405274da5ba728177974aaa1346f9620cfb48a1b3a0cfeebe25e008d5"
-    },
-    "notes": "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung · „Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“ · Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
-    "changes": {
-      "neu": [
-        "„Freunde & Gruppe“ (Spielbegleiter): Spieler-Karten mit Avatar, Plattformen, Spielen, Genres, Rollen, freiwilliger Verfügbarkeit, Zeitzone und Freigabe nur mit Zustimmung",
-        "„Was spielen wir?“: findet Spiele, die alle haben – gleiche Plattform zuerst; Crossplay zählt nur mit Quelle (Spiel-Fakten), sonst „unbekannt“",
-        "Spiele-Abstimmungen per Einladungs-Link: Freunde antworten mit einem Antwort-Link; schließen, Frist, „Link zurückziehen“ macht alte Links ungültig – keine Live-Zählung",
-        "Gaming-Abende: Datum mit Zeitzone (Freunde sehen ihre Ortszeit), Spiele und Alternativen, Zu-/Absagen per Link oder selbst, Notizen, Regeln, Absage, vergangene Abende; in den Gaming-Kalender (Erinnerung über den PC) und als .ics",
-        "Team-Rollenplaner: frei definierbare Rollen, Spieler und Platzhalter, mehrere Aufstellungen, Vorlagen",
-        "Mini-Turniere: K.-o., Doppel-K.-o. mit Verliererrunde und Entscheidungsfinale, Gruppen + Finalrunde, Jeder gegen jeden; Auslosen, Freilose, geprüfte Ergebnisse, Tabellen, Historie, CSV/Datei/Drucken – ohne Geld und Wetten",
-        "Server-Favoriten mit Status auf Knopfdruck über den PC (Minecraft Java Server List Ping, Steam/Source A2S); andere Spiele „Unbekannt“"
-      ],
-      "verbessert": [
-        "Turnier-Ergebnisse merken sich die Spieler: ändert sich ein früheres Ergebnis, werden spätere, nicht mehr passende Ergebnisse gemeldet statt still weiterverwendet",
-        "Zahlenfelder in Sammlungen sind für Screenreader beschriftet"
-      ],
-      "behoben": []
-    },
-    "signature": "D4XtkmEhTh1mqLqg6GdJM9lS5AT5nMcLaK/H485+iV9k+7JbHq2eErbIDwcfmfBCLVyez9aE018Cv0n2o29Rzg=="
   }
 ]

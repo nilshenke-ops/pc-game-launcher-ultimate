@@ -1,31 +1,31 @@
 {
-  "version": "2.85.0",
+  "version": "2.86.0",
   "date": "2026-11-02",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.85.0/PCGameLauncherCompanion.exe",
-  "size": 88408790,
-  "sha256": "6d438f586142c98f7f185c7c6eceab45e7e67bb715a129466551f6f7c2c3b207",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.86.0/PCGameLauncherCompanion.exe",
+  "size": 88414913,
+  "sha256": "0feef8c5c3c710021add792afa08aa506195ac257a83a0f67df9dc2e16fccb0d",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.85.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.85.0/PCGameLauncherCompanion-2.85.0-win-x64.zip",
-    "size": 82905010,
-    "sha256": "98672955f0e898d1cb4b61a0e1dbadba779a86a8083711e545c33aea20e59e55"
+    "fileName": "PCGameLauncherCompanion-2.86.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.86.0/PCGameLauncherCompanion-2.86.0-win-x64.zip",
+    "size": 82910693,
+    "sha256": "13953d46c53272fc45d162431af582c43a2c1b81598fd3de4c65aca4d66e4b01"
   },
-  "notes": "JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig · Tanzen zur echten Musik: der Begleiter hört auf den Ton des PCs (nur Lautstärke und Takt, nichts wird aufgenommen, gespeichert oder weitergeschickt außer der Pegel an die Fenster dieses PCs); die Augen hüpfen, daneben zeigt ein kleiner Equalizer den Pegel; bei Musikpause hört das Tanzen nach 3 Sekunden auf · Läuft ein Spiel aus der Bibliothek, ist der Roboter kurz überrascht und schaut dann konzentriert („Zockt mit“); nach 10 Minuten Ruhe schläft er (Berühren weckt ihn)",
+  "notes": "16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit · Neue Einstellung „Oberfläche“: Flach (wie bisher), Glas (durchsichtig mit Unschärfe und Lichtkante), Weich 3D (Karten und Knöpfe wie aus Ton, Felder eingedrückt) und Erhaben 3D (Karten mit Tiefe, heller Oberkante und langem Schatten) – unabhängig vom Theme wählbar · Neue Oberfläche „Klar-Glas“: fast ganz durchsichtig wie Apples „Liquid Glass“ oder Nothing OS (Lichtkante, starke Unschärfe, kräftige Farben); die „Deckkraft der Karten“ regelt, wie klar – dazu die Designs Apple Glas, Apple Glas hell, Nothing OS und Nothing OS hell (runde Ecken)",
   "changes": {
     "neu": [
-      "JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig",
-      "Tanzen zur echten Musik: der Begleiter hört auf den Ton des PCs (nur Lautstärke und Takt, nichts wird aufgenommen, gespeichert oder weitergeschickt außer der Pegel an die Fenster dieses PCs); die Augen hüpfen, daneben zeigt ein kleiner Equalizer den Pegel; bei Musikpause hört das Tanzen nach 3 Sekunden auf",
-      "Läuft ein Spiel aus der Bibliothek, ist der Roboter kurz überrascht und schaut dann konzentriert („Zockt mit“); nach 10 Minuten Ruhe schläft er (Berühren weckt ihn)",
-      "Im geöffneten Feld sitzt der Roboter mit weißem Kopf, schwarzem Display und Antenne – er nickt zur Musik, hüpft bei „erledigt“ und neigt den Kopf beim Schlafen"
+      "16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit",
+      "Neue Einstellung „Oberfläche“: Flach (wie bisher), Glas (durchsichtig mit Unschärfe und Lichtkante), Weich 3D (Karten und Knöpfe wie aus Ton, Felder eingedrückt) und Erhaben 3D (Karten mit Tiefe, heller Oberkante und langem Schatten) – unabhängig vom Theme wählbar",
+      "Neue Oberfläche „Klar-Glas“: fast ganz durchsichtig wie Apples „Liquid Glass“ oder Nothing OS (Lichtkante, starke Unschärfe, kräftige Farben); die „Deckkraft der Karten“ regelt, wie klar – dazu die Designs Apple Glas, Apple Glas hell, Nothing OS und Nothing OS hell (runde Ecken)",
+      "Glas-Unschärfe als Regler (4–40 px); Glas bleibt immer lesbar (Mindest-Deckkraft)",
+      "3D-Neigung: Karten neigen sich leicht zur Maus – nur mit Maus, nur ohne „Animationen reduzieren“ und ohne „Leichte Darstellung“; auf Handy und iPad bleibt alles ruhig",
+      "6 neue eigene Hintergründe (Chrom-Streifen, Petrol-Welle, Sonnenuntergang am Meer, Milchglas hell, Sanftes Grau, Mitternacht) – gezeichnet, keine Fotos; ein Design mit Hintergrund bringt ihn mit und nimmt ihn beim Wechsel wieder weg"
     ],
     "verbessert": [
-      "Der Begleiter lauscht nur, solange die Insel eingeschaltet und sichtbar ist (bei „in Spielen aus“ also auch nicht während eines Spiels)",
-      "Die Insel-Anzeige hing nach vielen Meldungen hintereinander auf einer alten Zeit fest – behoben",
-      "Release-Automatik: legt das Release ohne lesbaren Signaturschlüssel unsigniert an (Website erst nach dem Signieren), EXE-Pfad und Prüfschritt korrigiert"
+      "Alle bisherigen Designs bleiben unverändert (Oberfläche „Flach“); beim Wechsel zu ihnen wird die Oberfläche wieder flach"
     ],
     "behoben": []
   },
-  "signature": "/0XRTiVvUu9aK8rVauz/eicWLfbnui4RRUW6BxUgygIrdzR0A+esgpW97tHGyKldXYvHe/NaPLQFIx8ikIilcQ=="
+  "signature": "mzZaUbfZ3KEXkeK4Zoa6DfUSIU/pbd/wm76jtfO5b80Fwp14Q+DR/WiivUeBEt0ULs6574i538bVkE2NnXNRgw=="
 }
