@@ -1,5 +1,36 @@
 [
   {
+    "version": "2.85.0",
+    "date": "2026-11-02",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.85.0/PCGameLauncherCompanion.exe",
+    "size": 88408790,
+    "sha256": "6d438f586142c98f7f185c7c6eceab45e7e67bb715a129466551f6f7c2c3b207",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.85.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.85.0/PCGameLauncherCompanion-2.85.0-win-x64.zip",
+      "size": 82905010,
+      "sha256": "98672955f0e898d1cb4b61a0e1dbadba779a86a8083711e545c33aea20e59e55"
+    },
+    "notes": "JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig · Tanzen zur echten Musik: der Begleiter hört auf den Ton des PCs (nur Lautstärke und Takt, nichts wird aufgenommen, gespeichert oder weitergeschickt außer der Pegel an die Fenster dieses PCs); die Augen hüpfen, daneben zeigt ein kleiner Equalizer den Pegel; bei Musikpause hört das Tanzen nach 3 Sekunden auf · Läuft ein Spiel aus der Bibliothek, ist der Roboter kurz überrascht und schaut dann konzentriert („Zockt mit“); nach 10 Minuten Ruhe schläft er (Berühren weckt ihn)",
+    "changes": {
+      "neu": [
+        "JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig",
+        "Tanzen zur echten Musik: der Begleiter hört auf den Ton des PCs (nur Lautstärke und Takt, nichts wird aufgenommen, gespeichert oder weitergeschickt außer der Pegel an die Fenster dieses PCs); die Augen hüpfen, daneben zeigt ein kleiner Equalizer den Pegel; bei Musikpause hört das Tanzen nach 3 Sekunden auf",
+        "Läuft ein Spiel aus der Bibliothek, ist der Roboter kurz überrascht und schaut dann konzentriert („Zockt mit“); nach 10 Minuten Ruhe schläft er (Berühren weckt ihn)",
+        "Im geöffneten Feld sitzt der Roboter mit weißem Kopf, schwarzem Display und Antenne – er nickt zur Musik, hüpft bei „erledigt“ und neigt den Kopf beim Schlafen"
+      ],
+      "verbessert": [
+        "Der Begleiter lauscht nur, solange die Insel eingeschaltet und sichtbar ist (bei „in Spielen aus“ also auch nicht während eines Spiels)",
+        "Die Insel-Anzeige hing nach vielen Meldungen hintereinander auf einer alten Zeit fest – behoben",
+        "Release-Automatik: legt das Release ohne lesbaren Signaturschlüssel unsigniert an (Website erst nach dem Signieren), EXE-Pfad und Prüfschritt korrigiert"
+      ],
+      "behoben": []
+    },
+    "signature": "/0XRTiVvUu9aK8rVauz/eicWLfbnui4RRUW6BxUgygIrdzR0A+esgpW97tHGyKldXYvHe/NaPLQFIx8ikIilcQ=="
+  },
+  {
     "version": "2.84.0",
     "date": "2026-11-02",
     "channel": "stable",
@@ -1444,37 +1475,5 @@
       "behoben": []
     },
     "signature": "D4XtkmEhTh1mqLqg6GdJM9lS5AT5nMcLaK/H485+iV9k+7JbHq2eErbIDwcfmfBCLVyez9aE018Cv0n2o29Rzg=="
-  },
-  {
-    "version": "2.40.0",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.40.0/PCGameLauncherCompanion.exe",
-    "size": 87886807,
-    "sha256": "d4ec5dec10eb772eda0550b2603fde7f1f1e6f37818027c06deb2cf0dffe0823",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.40.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.40.0/PCGameLauncherCompanion-2.40.0-win-x64.zip",
-      "size": 82148976,
-      "sha256": "e97c3e7f4fcbbe80977d93e6a3610ea8b50cb634a4da6b7d27973590d3d2b77e"
-    },
-    "notes": "„Welten & Bauen“ (Spielbegleiter): Minecraft-Welten mit Edition, Version, Modus, Seed und Orten (Dimension, X/Y/Z, Gruppen); Nether ↔ Oberwelt umrechnen (Faktor 8), Abstand zwischen Orten, Orte als CSV – keine erfundene Karte · Bauprojekte mit Welt-Verknüpfung, Aufgaben und Material; Fortschritt nur aus abgehakten Aufgaben, fehlendes Material wird angezeigt; Vorlagen · Karten-Marker als Liste, Tabelle und Gruppen; auf einer Karte nur mit eigenem Kartenbild (Stelle antippen)",
-    "changes": {
-      "neu": [
-        "„Welten & Bauen“ (Spielbegleiter): Minecraft-Welten mit Edition, Version, Modus, Seed und Orten (Dimension, X/Y/Z, Gruppen); Nether ↔ Oberwelt umrechnen (Faktor 8), Abstand zwischen Orten, Orte als CSV – keine erfundene Karte",
-        "Bauprojekte mit Welt-Verknüpfung, Aufgaben und Material; Fortschritt nur aus abgehakten Aufgaben, fehlendes Material wird angezeigt; Vorlagen",
-        "Karten-Marker als Liste, Tabelle und Gruppen; auf einer Karte nur mit eigenem Kartenbild (Stelle antippen)",
-        "„Builds & Technik“: Builds/Loadouts mit freien Eigenschaften, Vorlagen, Duplizieren und Vergleich zweier Builds",
-        "Mod-Sammlungen mit Versionshinweisen – Status nur selbst markiert, nichts wird installiert oder heruntergeladen",
-        "Grafikvergleich mit Schieber über zwei eigene Screenshots (keine FPS aus Bildern)",
-        "Steuerungs-Lexikon: „Offiziell“ nur mit Quelle, sonst „Eigene Angabe“"
-      ],
-      "verbessert": [
-        "Gemeinsamer Sammlungs-Baukasten: Prüfung jeder Eingabe (auch Tabellenzeilen), Suche, Filter, Tabelle/Karten, Archiv, Export/Import und CSV; beim Löschen werden Verknüpfungen anderer Einträge entfernt"
-      ],
-      "behoben": []
-    },
-    "signature": "QlwOhmHu7sRM5xT4qTmtM2xRlTKyAObVgkrWBxwNzFoBXqiQe83LHRnVX9sX9w9Cx4ECP/DqGLIoT8dR4hRD4A=="
   }
 ]
