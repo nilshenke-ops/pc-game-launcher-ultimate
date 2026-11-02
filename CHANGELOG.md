@@ -5,7 +5,7 @@ Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.m
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
 ## 2.84.0 – 2026-10-31
-### Neu – JARVIS-Insel auf dem PC-Bildschirm (Vorschau, aus bis eingeschaltet)
+### Neu
 - Kleines Fenster oben in der Mitte des Bildschirms (Windows-Begleiter): zu sind nur JARVIS' Augen zu sehen; mit der Maus darüber zeigt er, was er tut, antippen öffnet Widgets – laufendes Spiel, Musiktasten am PC, Uhr, Fokus-Timer (5/15/25 min) und „Frag JARVIS“
 - Fragt JARVIS nach (z. B. ein Spiel starten), erscheinen „Erlauben“/„Ablehnen“ direkt in der Insel – von welchem Gerät aus du ihn auch gefragt hast; ohne Antwort verfällt die Frage nach 2 Minuten, nichts läuft von selbst
 - Augen mit Stimmungen: bereit (blinzeln), denkt nach, hört zu, fragt, erledigt, Fehler – und schwindelig, wenn man sie zu oft antippt; Ton bei „fertig“ und Rückfragen abschaltbar
@@ -13,8 +13,9 @@ für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 - Nimmt Spielen und Programmen nie den Fokus (nur das geöffnete Feld zum Tippen); ausgeblendet ruht ihr Browser-Teil (keine CPU)
 - Eigenes Design, angelehnt an „Island“-Apps – kein fremder Code, keine fremde Figur
 - Neue Befehle `island.get`, `island.configure`; JARVIS-Status geht nur an die Fenster dieses PCs
-### Grenzen
-- Auf dem Windows-Sperrbildschirm darf kein Programm etwas anzeigen; Spiele im exklusiven Vollbild verdecken die Insel (das entscheidet Windows)
+### Verbessert
+- JARVIS-Insel: Grenzen – auf dem Windows-Sperrbildschirm darf kein Programm etwas anzeigen; Spiele im exklusiven Vollbild verdecken die Insel (das entscheidet Windows)
+- Tests laufen jetzt auch unter Windows (Unix-only-Tests übersprungen); Spielstand-Tresor: die Sperrliste gilt nur unterhalb von Steams userdata-Ordner
 
 ## 2.83.1 – 2026-10-30
 ### Behoben
