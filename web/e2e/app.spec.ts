@@ -1755,6 +1755,67 @@ test("KI-Chat ohne PC: nur offene Wikis, offen gesagt – keine vorgetäuschte W
 });
 
 
+test("Designs: schlichte Themes mit Oberfläche (flach, Glas, weich 3D, erhaben 3D), 3D-Neigung, Zurücksetzen", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/settings?s=design`);
+  const html = p.locator("html");
+  await expect(html).toHaveAttribute("data-surface", "flat"); // the default design is unchanged
+  // A clean theme brings its own look: Clean Light = light page colour + soft 3D.
+  await p.getByRole("button", { name: "Clean Light" }).click();
+  await expect(html).toHaveAttribute("data-surface", "soft");
+  await expect(html).toHaveAttribute("data-mode", "light");
+  const shadow = await p.locator(".card").first().evaluate((e) => getComputedStyle(e).boxShadow);
+  expect(shadow).not.toBe("none");
+  await p.screenshot({ path: "test-results/design-soft.png", animations: "disabled" });
+  // The surface can be changed on its own, and the old themes go back to flat.
+  const surfaces = p.getByRole("radiogroup", { name: "Oberfläche" });
+  await surfaces.getByRole("radio", { name: "Erhaben 3D" }).click();
+  await expect(html).toHaveAttribute("data-surface", "raised");
+  await p.screenshot({ path: "test-results/design-raised.png", animations: "disabled" });
+  await p.getByRole("button", { name: "Petrol" }).click();
+  await expect(html).toHaveAttribute("data-surface", "glass");
+  await p.screenshot({ path: "test-results/design-glass.png", animations: "disabled" });
+  // Glass designs bring their own scene; the blur can be set; leaving them removes the scene again.
+  await p.getByRole("button", { name: "Liquid Glass" }).click();
+  await expect(html).toHaveAttribute("data-surface", "glass");
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).toContain("d-sea.svg");
+  const blur = p.getByRole("slider", { name: /Glas-Unschärfe: 30 px/ });
+  await blur.fill("12");
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--glass-blur").trim())).toBe("12px");
+  await p.screenshot({ path: "test-results/design-liquid.png", animations: "disabled" });
+  // Clear glass (Apple / Nothing OS): nearly see-through – the card background really is very transparent.
+  await p.getByRole("button", { name: "Apple Glas", exact: true }).click();
+  await expect(html).toHaveAttribute("data-surface", "clear");
+  const alpha = await p.locator(".card").first().evaluate((e) => { const m = /rgba\(\d+, \d+, \d+, ([\d.]+)\)/.exec(getComputedStyle(e).backgroundColor); return m ? +m[1] : 1; });
+  expect(alpha).toBeLessThan(0.2);
+  await p.screenshot({ path: "test-results/design-clear.png", animations: "disabled" });
+  await p.getByRole("button", { name: "Nothing OS", exact: true }).click();
+  await expect(html).toHaveAttribute("data-surface", "glass");
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--radius").trim())).toBe("28px");
+  await p.getByRole("button", { name: "Chrom", exact: true }).click();
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).toContain("d-chrome.svg");
+  await p.getByRole("button", { name: "Graphit" }).click();
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).not.toContain("d-chrome");
+  await p.screenshot({ path: "test-results/design-graphite.png", animations: "disabled" });
+  await p.getByRole("button", { name: "Neon Cyan" }).click();
+  await expect(html).toHaveAttribute("data-surface", "flat");
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).toBe("none");
+  // Tilt: switched on, the card under the mouse leans (this test browser has a mouse); switched off it stays still.
+  await p.setViewportSize({ width: 860, height: 1000 }); // cards wider than 900 px stay still on purpose
+  await p.getByText("Karten neigen sich zur Maus (3D)").click();
+  await expect(html).toHaveAttribute("data-tilt", "1");
+  const card = p.locator(".card").nth(1);
+  await card.hover({ position: { x: 760, y: 200 }, force: true }); // inside the card, lower right, clear of the sticky top bar
+  await expect(card).toHaveClass(/tilting/);
+  expect(await card.evaluate((e) => getComputedStyle(e).getPropertyValue("--ry"))).toMatch(/^[1-9.]+deg$/);
+  await p.mouse.move(2, 2);
+  await expect(card).not.toHaveClass(/tilting/);
+  await p.getByText("Karten neigen sich zur Maus (3D)").click();
+  await expect(html).toHaveAttribute("data-tilt", "0");
+  await p.context().close();
+});
+
 test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ablehnen, Widgets, nicht im Website-Kopf", async ({ browser }) => {
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });

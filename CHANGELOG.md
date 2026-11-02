@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.86.0 – 2026-11-02
+### Neu
+- 16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit
+- Neue Einstellung „Oberfläche“: Flach (wie bisher), Glas (durchsichtig mit Unschärfe und Lichtkante), Weich 3D (Karten und Knöpfe wie aus Ton, Felder eingedrückt) und Erhaben 3D (Karten mit Tiefe, heller Oberkante und langem Schatten) – unabhängig vom Theme wählbar
+- Neue Oberfläche „Klar-Glas“: fast ganz durchsichtig wie Apples „Liquid Glass“ oder Nothing OS (Lichtkante, starke Unschärfe, kräftige Farben); die „Deckkraft der Karten“ regelt, wie klar – dazu die Designs Apple Glas, Apple Glas hell, Nothing OS und Nothing OS hell (runde Ecken)
+- Glas-Unschärfe als Regler (4–40 px); Glas bleibt immer lesbar (Mindest-Deckkraft)
+- 3D-Neigung: Karten neigen sich leicht zur Maus – nur mit Maus, nur ohne „Animationen reduzieren“ und ohne „Leichte Darstellung“; auf Handy und iPad bleibt alles ruhig
+- 6 neue eigene Hintergründe (Chrom-Streifen, Petrol-Welle, Sonnenuntergang am Meer, Milchglas hell, Sanftes Grau, Mitternacht) – gezeichnet, keine Fotos; ein Design mit Hintergrund bringt ihn mit und nimmt ihn beim Wechsel wieder weg
+### Verbessert
+- Alle bisherigen Designs bleiben unverändert (Oberfläche „Flach“); beim Wechsel zu ihnen wird die Oberfläche wieder flach
+
 ## 2.85.0 – 2026-11-02
 ### Neu
 - JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig

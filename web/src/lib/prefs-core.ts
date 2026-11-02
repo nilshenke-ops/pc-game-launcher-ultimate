@@ -25,13 +25,30 @@ export interface Theme {
   touch?: boolean;
   shadow?: "none" | "soft" | "strong";
   border?: "subtle" | "bold";
+  /** Glass blur in px (glass surface only), 4 … 40. */
+  blur?: number;
+  /** How cards, buttons and fields look: flat (default), glass (see-through), soft (3D, pressed-in/raised like clay), raised (layered depth). */
+  surface?: Surface;
+  /** Cards tilt a little towards the mouse (only where a mouse exists, never with reduced motion). */
+  tilt?: boolean;
 }
+
+export type Surface = "flat" | "glass" | "clear" | "soft" | "raised";
+export const SURFACES: Surface[] = ["flat", "glass", "clear", "soft", "raised"];
+export const SURFACE_LABEL: Record<Surface, string> = { flat: "Flach", glass: "Glas", clear: "Klar-Glas", soft: "Weich 3D", raised: "Erhaben 3D" };
 
 /**
  * Built-in backgrounds (drawn SVGs in public/backgrounds) with matching colours that are applied on selection.
  * phone: there is a tall version "<id>-phone.svg" that is used on phones in portrait (scripts/make-cartoon-backgrounds.mjs).
  */
 export const BG_SCENES: { id: string; name: string; mode: "dark" | "light"; primary: string; accent: string; background: string; dim: number; sky?: string; phone?: boolean }[] = [
+  // Simple, modern scenes of the new designs (own drawings, scripts/make-design-backgrounds.mjs).
+  { id: "d-chrome", name: "Chrom-Streifen", mode: "dark", primary: "#f5f5f5", accent: "#94a3b8", background: "#17181b", dim: 0.25 },
+  { id: "d-teal", name: "Petrol-Welle", mode: "dark", primary: "#2de2e6", accent: "#7cf5c8", background: "#04191c", dim: 0.2 },
+  { id: "d-sea", name: "Sonnenuntergang am Meer", mode: "dark", primary: "#8ec5ff", accent: "#ffd29a", background: "#0c2236", dim: 0.15 },
+  { id: "d-frost", name: "Milchglas hell", mode: "light", primary: "#3b82f6", accent: "#ec6fa0", background: "#dfe9f5", dim: 0.12 },
+  { id: "d-grey", name: "Sanftes Grau", mode: "light", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", dim: 0.1 },
+  { id: "d-midnight", name: "Mitternacht", mode: "dark", primary: "#7aa2ff", accent: "#c084fc", background: "#080b18", dim: 0.2 },
   { id: "cartoon", name: "Cartoon", mode: "light", primary: "#0284c7", accent: "#f59e0b", background: "#e0f2fe", dim: 0.35, sky: "#4fc3f7", phone: true },
   { id: "cartoon-night", name: "Cartoon Nacht", mode: "dark", primary: "#a78bfa", accent: "#fde047", background: "#1e1b4b", dim: 0.3, sky: "#1e1b4b", phone: true },
   { id: "cartoon-sea", name: "Cartoon Unterwasser", mode: "light", primary: "#0369a1", accent: "#f97316", background: "#e0f2fe", dim: 0.45, sky: "#38bdf8", phone: true },
@@ -96,7 +113,7 @@ export function sanitizeFx(input: unknown): Fx {
 }
 
 /** Atmosphere: colours plus a matching moving background and start animation in one tap (everything stays changeable). */
-export interface Atmosphere { bg: BgAnim; launch: LaunchStyle; surfaceAlpha?: number }
+export interface Atmosphere { bg: BgAnim; launch: LaunchStyle; surfaceAlpha?: number; /** Look of cards and buttons that goes with this design. */ surface?: Surface; /** Built-in background scene (BG_SCENES) that goes with it. */ scene?: string; /** Glass blur in px. */ blur?: number; /** Corner radius in px (round designs). */ radius?: number }
 
 export const PRESETS: Record<string, Palette & { mode: "dark" | "light"; atmo?: Atmosphere }> = {
   neon: { name: "Neon Cyan", primary: "#22d3ee", accent: "#a78bfa", background: "#070b16", mode: "dark" },
@@ -118,6 +135,24 @@ export const PRESETS: Record<string, Palette & { mode: "dark" | "light"; atmo?: 
   minecraft: { name: "Minecraft", primary: "#4ade80", accent: "#b45309", background: "#0a120a", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
   purple: { name: "Purple Gaming", primary: "#a855f7", accent: "#6366f1", background: "#0b0716", mode: "dark", atmo: { bg: "particles", launch: "neon-portal" } },
   blue: { name: "Blue Gaming", primary: "#3b82f6", accent: "#22d3ee", background: "#050b1a", mode: "dark", atmo: { bg: "particles", launch: "hologram" } },
+  // Simple, modern, clean – each with a matching look of the surfaces (changeable below).
+  clean: { name: "Clean Light", primary: "#4f7cff", accent: "#35b8a6", background: "#e9edf4", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
+  softdark: { name: "Soft Dark", primary: "#7aa2ff", accent: "#5ee0c0", background: "#1c212c", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
+  mint: { name: "Mint", primary: "#0f9d8a", accent: "#6366f1", background: "#e6f2ee", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
+  sand: { name: "Sand", primary: "#c2410c", accent: "#0f766e", background: "#f1ece4", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
+  nothing: { name: "Nothing Rot", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "raised", surfaceAlpha: 1 } },
+  graphite: { name: "Graphit", primary: "#e5e7eb", accent: "#94a3b8", background: "#0f1013", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "raised", surfaceAlpha: 0.9 } },
+  petrol: { name: "Petrol", primary: "#2de2e6", accent: "#7cf5c8", background: "#04191c", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.5, scene: "d-teal", blur: 22 } },
+  frosted: { name: "Liquid Glass", primary: "#8ec5ff", accent: "#ffd29a", background: "#0c2236", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.34, scene: "d-sea", blur: 30 } },
+  milkglass: { name: "Milchglas hell", primary: "#3b82f6", accent: "#ec6fa0", background: "#dfe9f5", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.5, scene: "d-frost", blur: 26 } },
+  midnightglass: { name: "Mitternacht Glas", primary: "#7aa2ff", accent: "#c084fc", background: "#080b18", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.4, scene: "d-midnight", blur: 28 } },
+  chrome: { name: "Chrom", primary: "#f5f5f5", accent: "#94a3b8", background: "#17181b", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.55, scene: "d-chrome", blur: 14 } },
+  // Apple-style clear glass: nearly see-through, strong blur, bright edges. Nothing-OS-style: monochrome, red accent, round.
+  appleglass: { name: "Apple Glas", primary: "#0a84ff", accent: "#ff9f0a", background: "#0c2236", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "clear", surfaceAlpha: 0.5, scene: "d-sea", blur: 34, radius: 24 } },
+  applelight: { name: "Apple Glas hell", primary: "#007aff", accent: "#ff2d55", background: "#dfe9f5", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "clear", surfaceAlpha: 0.8, scene: "d-frost", blur: 32, radius: 24 } },
+  nothingos: { name: "Nothing OS", primary: "#ffffff", accent: "#e11d2e", background: "#0a0a0a", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.6, scene: "d-chrome", blur: 10, radius: 28 } },
+  nothingoslight: { name: "Nothing OS hell", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "clear", surfaceAlpha: 1, scene: "d-grey", blur: 18, radius: 28 } },
+  greyglass: { name: "Sanftes Grau", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.55, scene: "d-grey", blur: 20 } },
 };
 
 export const DEFAULT_THEME: Theme = {
@@ -290,6 +325,9 @@ export function sanitizePrefs(input: unknown): Prefs {
     touch: !!t.touch,
     shadow: t.shadow === "none" || t.shadow === "strong" ? t.shadow : "soft",
     border: t.border === "bold" ? "bold" : "subtle",
+    surface: SURFACES.includes(t.surface as Surface) ? (t.surface as Surface) : "flat",
+    blur: num(t.blur, 4, 40, 22),
+    tilt: !!t.tilt,
   };
   const ids = new Set(ALL_WIDGETS.map((w) => w.id));
   const layouts = Array.isArray(p.layouts)

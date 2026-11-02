@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { setLanguage } from "./i18n";
+import { setTilt } from "./tilt";
 import { BG_SCENES, DEFAULT_THEME, defaultPrefs, hexToRgb, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
 import type { ProfileTheme } from "./types";
 
@@ -165,6 +166,14 @@ export function applyTheme(t: Theme) {
   if (t.shadow === "none") { root.style.setProperty("--shadow", "none"); root.style.setProperty("--glow", "none"); }
   else if (t.shadow === "strong") { root.style.setProperty("--shadow", dark ? "0 18px 44px -10px rgba(0,0,0,0.8)" : "0 18px 40px -12px rgba(15,23,42,0.4)"); root.style.removeProperty("--glow"); }
   else { root.style.removeProperty("--shadow"); root.style.removeProperty("--glow"); }
+  // 3D looks: soft light/shadow pairs computed from the page colour (clay-like cards, pressed-in fields).
+  root.style.setProperty("--neu-hi", dark ? "rgba(255,255,255,0.055)" : "rgba(255,255,255,0.95)");
+  root.style.setProperty("--neu-lo", dark ? "rgba(0,0,0,0.5)" : "rgba(120,134,168,0.38)");
+  root.style.setProperty("--neu-bg", dark ? mix(t.background, "#ffffff", 0.025) : mix(t.background, "#ffffff", 0.35));
+  root.dataset.surface = t.surface ?? "flat";
+  root.style.setProperty("--glass-blur", `${Math.max(4, Math.min(40, t.blur ?? 22))}px`);
+  root.dataset.tilt = t.tilt ? "1" : "0";
+  setTilt(!!t.tilt && !t.reduceMotion && !t.lite && typeof matchMedia === "function" && matchMedia("(hover: hover) and (pointer: fine)").matches);
   root.dataset.density = t.density ?? "normal";
   root.dataset.touch = t.touch ? "1" : "0";
   root.dataset.mode = t.mode;

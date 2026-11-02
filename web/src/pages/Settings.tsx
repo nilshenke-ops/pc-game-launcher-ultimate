@@ -11,7 +11,7 @@ import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import {
-  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, designHistory, PRESETS, profileThemeActive, restoreOriginalDesign, sanitizePrefs, setPrefs, undoDesign, usePrefs, type Layout, type Theme, type WidgetSize,
+  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, designHistory, PRESETS, profileThemeActive, SURFACES, SURFACE_LABEL, restoreOriginalDesign, sanitizePrefs, setPrefs, undoDesign, usePrefs, type Layout, type Theme, type WidgetSize,
 } from "../lib/prefs";
 import type { Settings } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
@@ -140,7 +140,9 @@ function Design() {
           <div className="swatches">
             {Object.entries(PRESETS).map(([k, p]) => (
               <button key={k} className={`swatch ${th.preset === k ? "on" : ""}`} style={{ background: `linear-gradient(135deg, ${p.background} 40%, ${p.primary} 75%, ${p.accent})` }} onClick={() => setPrefs((x) => ({ ...x,
-                theme: { ...x.theme, preset: k, mode: p.mode, primary: p.primary, accent: p.accent, background: p.background, ...(p.atmo?.surfaceAlpha ? { surfaceAlpha: p.atmo.surfaceAlpha } : {}) },
+                theme: { ...x.theme, preset: k, mode: p.mode, primary: p.primary, accent: p.accent, background: p.background, surface: p.atmo?.surface ?? "flat", blur: p.atmo?.blur ?? 22, ...(p.atmo?.radius ? { radius: p.atmo.radius } : {}), ...(p.atmo?.surfaceAlpha ? { surfaceAlpha: p.atmo.surfaceAlpha } : {}),
+                  // A design with its own scene brings it; moving on to a design without one clears a scene of the designs (own pictures stay).
+                  ...(p.atmo?.scene ? { bgScene: p.atmo.scene, bgImage: null, bgDim: BG_SCENES.find((s) => s.id === p.atmo!.scene)?.dim ?? x.theme.bgDim } : x.theme.bgScene?.startsWith("d-") ? { bgScene: null, bgDim: DEFAULT_THEME.bgDim } : {}) },
                 fx: p.atmo ? { ...x.fx, bg: { ...x.fx.bg, kind: p.atmo.bg }, launch: { ...x.fx.launch, style: p.atmo.launch } } : x.fx }))} aria-pressed={th.preset === k}><span>{p.name}</span></button>
             ))}
             {prefs.palettes.map((p, i) => (
@@ -181,6 +183,13 @@ function Design() {
           <Field label={t("Schriftgröße: {v} %", { v: Math.round(th.fontScale * 100) })}><input type="range" min={0.85} max={1.35} step={0.05} value={th.fontScale} onChange={(e) => setTheme({ fontScale: +e.target.value })} /></Field>
           <Field label={t("Ecken-Rundung: {v} px", { v: th.radius })}><input type="range" min={0} max={28} value={th.radius} onChange={(e) => setTheme({ radius: +e.target.value })} /></Field>
           <Field label={t("Deckkraft der Karten: {v} %", { v: Math.round(th.surfaceAlpha * 100) })}><input type="range" min={0.35} max={1} step={0.01} value={th.surfaceAlpha} onChange={(e) => setTheme({ surfaceAlpha: +e.target.value })} /></Field>
+          <Field label={t("Oberfläche")} hint={t("Flach: wie bisher. Glas: durchsichtig mit Unschärfe. Klar-Glas: fast ganz durchsichtig wie bei Apple oder Nothing OS (Deckkraft der Karten regelt, wie klar). Weich 3D: Karten und Knöpfe wie aus Ton – erhaben, Felder eingedrückt. Erhaben 3D: Karten mit Tiefe, Kanten und Licht von oben.")}>
+            <Segmented value={th.surface ?? "flat"} onChange={(surface) => setTheme({ surface })} label={t("Oberfläche")}
+              options={SURFACES.map((s) => ({ value: s, label: t(SURFACE_LABEL[s]) }))} />
+          </Field>
+          {(th.surface === "glass" || th.surface === "clear") && <Field label={t("Glas-Unschärfe: {v} px", { v: th.blur ?? 22 })}><input type="range" min={4} max={40} value={th.blur ?? 22} onChange={(e) => setTheme({ blur: +e.target.value })} /></Field>}
+          <Switch checked={!!th.tilt} onChange={(tilt) => setTheme({ tilt })} label={t("Karten neigen sich zur Maus (3D)")}
+            hint={t("Nur mit Maus und nur ohne „Animationen reduzieren“ – auf Handy und iPad bleibt alles ruhig.")} />
           <Field label={t("Abstände")}><Segmented value={th.density ?? "normal"} onChange={(density) => setTheme({ density })} options={[{ value: "compact", label: t("Kompakt") }, { value: "normal", label: t("Normal") }, { value: "roomy", label: t("Luftig") }]} /></Field>
           <Field label={t("Schatten")}><Segmented value={th.shadow ?? "soft"} onChange={(shadow) => setTheme({ shadow })} options={[{ value: "none", label: t("Keine") }, { value: "soft", label: t("Weich") }, { value: "strong", label: t("Kräftig") }]} /></Field>
           <Field label={t("Rahmen")}><Segmented value={th.border ?? "subtle"} onChange={(border) => setTheme({ border })} options={[{ value: "subtle", label: t("Dezent") }, { value: "bold", label: t("Deutlich") }]} /></Field>

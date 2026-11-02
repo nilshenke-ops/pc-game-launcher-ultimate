@@ -1844,3 +1844,55 @@ html.island-mode .app-bg { display: none; }
 @keyframes isl-zzz { 0%, 100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-5px); } }
 @media (prefers-reduced-motion: reduce) { .isl-robot *, .isl-robot, .isl-bars i, .isl-eyes i { animation: none !important; transition: none !important; } }
 [data-motion="reduce"] .isl-robot *, [data-motion="reduce"] .isl-eyes i { animation: none !important; }
+
+/* ---------------------------------------------------------------- Surfaces: glass, soft 3D (clay), raised 3D */
+:root[data-surface="glass"] .card { background: rgba(var(--surface-rgb), max(0.5, calc(var(--surface-alpha) * 0.9))); /* never so clear that text is hard to read */ backdrop-filter: blur(var(--glass-blur, 22px)) saturate(1.6); -webkit-backdrop-filter: blur(var(--glass-blur, 22px)) saturate(1.6); border-color: rgba(255,255,255,0.22); box-shadow: inset 0 1px 0 rgba(255,255,255,0.32), inset 0 0 0 1px rgba(255,255,255,0.05), 0 10px 34px -12px rgba(0,0,0,0.45); }
+:root[data-surface="glass"] .sidebar, :root[data-surface="glass"] .topbar { background: rgba(var(--surface-rgb), max(0.4, calc(var(--surface-alpha) * 0.6))); backdrop-filter: blur(calc(var(--glass-blur, 22px) * 1.2)) saturate(1.6); -webkit-backdrop-filter: blur(calc(var(--glass-blur, 22px) * 1.2)) saturate(1.6); }
+:root[data-surface="glass"] .btn:not(.primary) { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.24); backdrop-filter: blur(10px); }
+:root[data-surface="glass"][data-mode="light"] .card { border-color: rgba(255,255,255,0.7); }
+
+/* Soft 3D: everything has the colour of the page; light from the top left raises cards and buttons, fields are pressed in. */
+:root[data-surface="soft"] .app-bg::before, :root[data-surface="soft"] .app-bg .grid { display: none; }
+:root[data-surface="soft"] .card { background: var(--neu-bg); border: 0; backdrop-filter: none; -webkit-backdrop-filter: none; box-shadow: 9px 9px 20px var(--neu-lo), -7px -7px 16px var(--neu-hi); }
+:root[data-surface="soft"] .card .card, :root[data-surface="soft"] .as-sources, :root[data-surface="soft"] .isl-card { box-shadow: inset 4px 4px 10px var(--neu-lo), inset -4px -4px 9px var(--neu-hi); }
+:root[data-surface="soft"] .sidebar, :root[data-surface="soft"] .topbar { background: var(--neu-bg); backdrop-filter: none; -webkit-backdrop-filter: none; border-color: transparent; box-shadow: 6px 0 16px -6px var(--neu-lo); }
+:root[data-surface="soft"] .topbar { box-shadow: 0 6px 16px -8px var(--neu-lo); }
+:root[data-surface="soft"] .btn:not(.primary) { --btn-bg: var(--neu-bg); border: 0; box-shadow: 5px 5px 11px var(--neu-lo), -4px -4px 9px var(--neu-hi); }
+:root[data-surface="soft"] .btn:not(.primary):active { box-shadow: inset 3px 3px 7px var(--neu-lo), inset -3px -3px 6px var(--neu-hi); }
+:root[data-surface="soft"] .btn.primary { box-shadow: 5px 5px 12px var(--neu-lo), -3px -3px 8px var(--neu-hi); }
+:root[data-surface="soft"] .input, :root[data-surface="soft"] select.input, :root[data-surface="soft"] textarea.input, :root[data-surface="soft"] .search-trigger { background: var(--neu-bg); border: 0; box-shadow: inset 4px 4px 9px var(--neu-lo), inset -3px -3px 8px var(--neu-hi); }
+:root[data-surface="soft"] .badge, :root[data-surface="soft"] .chip { box-shadow: 3px 3px 7px var(--neu-lo), -2px -2px 6px var(--neu-hi); border-color: transparent; }
+
+/* Raised 3D: layered depth – a bright top edge, a dark bottom edge and a long soft shadow. */
+:root[data-surface="raised"] .card { background: linear-gradient(180deg, rgba(var(--surface-rgb), calc(var(--surface-alpha) + 0.06)), rgba(var(--surface-rgb), var(--surface-alpha))); border-color: transparent;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -2px 0 rgba(0,0,0,0.12), 0 2px 0 rgba(0,0,0,0.1), 0 18px 34px -14px rgba(0,0,0,0.5); }
+:root[data-surface="raised"][data-mode="dark"] .card { box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -2px 0 rgba(0,0,0,0.35), 0 2px 0 rgba(0,0,0,0.5), 0 20px 36px -14px rgba(0,0,0,0.8); }
+:root[data-surface="raised"] .btn:not(.primary) { box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), 0 3px 0 rgba(0,0,0,0.18), 0 8px 14px -6px rgba(0,0,0,0.4); }
+:root[data-surface="raised"] .btn:not(.primary):active { transform: translateY(2px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.2), 0 1px 0 rgba(0,0,0,0.18); }
+:root[data-surface="raised"] .btn.primary { box-shadow: inset 0 1px 0 rgba(255,255,255,0.4), 0 3px 0 rgba(0,0,0,0.25), 0 10px 18px -6px rgba(var(--primary-rgb), 0.55); }
+:root[data-surface="raised"] .input, :root[data-surface="raised"] select.input { box-shadow: inset 0 2px 5px rgba(0,0,0,0.22); }
+
+/* Tilt: the card under the mouse leans towards it (set by lib/tilt.ts, only with a mouse and full motion). */
+:root[data-tilt="1"][data-motion="full"] .card.tilting { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0); transition: transform .08s linear; will-change: transform; }
+:root[data-tilt="1"][data-motion="full"] .card:not(.tilting) { transition: transform .35s var(--ease, ease); }
+@media (hover: none), (prefers-reduced-motion: reduce) { :root .card.tilting { transform: none !important; } }
+
+/* Glass: a soft highlight across the top of every card (the "liquid" look) and glass chips/badges. */
+:root[data-surface="glass"] .card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0) 38%); }
+:root[data-surface="glass"] .badge, :root[data-surface="glass"] .chip, :root[data-surface="glass"] .swatch { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+:root[data-surface="glass"] .input, :root[data-surface="glass"] select.input { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.22); }
+
+/* Clear glass (Apple "liquid glass" / Nothing OS): nearly see-through. The card opacity slider sets how clear (35 % = clearest). */
+:root[data-surface="clear"] .card { background: rgba(255,255,255, calc(var(--surface-alpha) * 0.3)); border: 1px solid rgba(255,255,255,0.34); backdrop-filter: blur(var(--glass-blur, 30px)) saturate(1.9) brightness(1.06); -webkit-backdrop-filter: blur(var(--glass-blur, 30px)) saturate(1.9) brightness(1.06);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 1px 0 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(255,255,255,0.1), 0 16px 42px -16px rgba(0,0,0,0.35); }
+:root[data-surface="clear"] .card::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(120% 90% at 0% 0%, rgba(255,255,255,0.28), rgba(255,255,255,0) 45%); }
+:root[data-surface="clear"][data-mode="dark"] .card, :root[data-surface="clear"][data-mode="dark"] .sidebar, :root[data-surface="clear"][data-mode="dark"] .topbar { text-shadow: 0 1px 10px rgba(0,0,0,0.35); }
+:root[data-surface="clear"] .sidebar, :root[data-surface="clear"] .topbar { background: rgba(255,255,255, calc(var(--surface-alpha) * 0.16)); backdrop-filter: blur(calc(var(--glass-blur, 30px) * 1.2)) saturate(1.9); -webkit-backdrop-filter: blur(calc(var(--glass-blur, 30px) * 1.2)) saturate(1.9); border-color: rgba(255,255,255,0.2); }
+:root[data-surface="clear"] .btn:not(.primary) { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.36); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+:root[data-surface="clear"] .btn.primary { box-shadow: inset 0 1px 0 rgba(255,255,255,0.45), 0 8px 20px -8px rgba(var(--primary-rgb), 0.6); }
+:root[data-surface="clear"] .input, :root[data-surface="clear"] select.input, :root[data-surface="clear"] textarea.input { background: rgba(255,255,255,0.14); border-color: rgba(255,255,255,0.3); }
+:root[data-surface="clear"] .badge, :root[data-surface="clear"] .chip { background: rgba(255,255,255,0.18); border-color: rgba(255,255,255,0.3); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+:root[data-surface="clear"][data-mode="light"] .card { border-color: rgba(255,255,255,0.8); background: rgba(255,255,255, calc(var(--surface-alpha) * 0.42)); }
+/* Clear glass in the dark: a light dark tint under the glass keeps light text readable over bright pictures. */
+:root[data-surface="clear"][data-mode="dark"] .card { background: rgba(10,18,36, calc(var(--surface-alpha) * 0.36)); }
+:root[data-surface="clear"][data-mode="dark"] .sidebar, :root[data-surface="clear"][data-mode="dark"] .topbar { background: rgba(10,18,36, calc(var(--surface-alpha) * 0.34)); }
