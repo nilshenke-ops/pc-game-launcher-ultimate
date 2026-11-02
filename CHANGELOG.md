@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.87.1 – 2026-11-02
+### Verbessert
+- Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern
+- Der Browser wird bei jeder Anmeldung gebeten, den gespeicherten Stand dauerhaft zu behalten
+
 ## 2.87.0 – 2026-11-02
 ### Neu
 - Der letzte Stand bleibt auf dem Handy: Nach dem ersten Koppeln bleibt die Anmeldung bestehen, und auch bei ausgeschaltetem PC siehst du PC-Name, aktives Profil, Zähler, Spiele, Steam-Bibliothek, Game Pass, Deck und deine Listen – mit „Stand …“-Datum

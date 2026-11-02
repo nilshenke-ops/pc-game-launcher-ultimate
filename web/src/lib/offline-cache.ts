@@ -13,8 +13,23 @@ const key = (method: string, params?: string) => PREFIX + method + (params && pa
 
 export function saveCache(method: string, data: unknown, params?: string) {
   if (!CACHED_METHODS.has(method)) return;
-  try { localStorage.setItem(key(method, params), JSON.stringify({ at: Date.now(), data })); } catch { /* storage full or blocked */ }
+  const k = key(method, params), v = JSON.stringify({ at: Date.now(), data });
+  try { localStorage.setItem(k, v); return; } catch { /* storage full or blocked */ }
+  // Full: the oldest saved copies make room (never the one being written); if it still does not fit, say so once.
+  try {
+    const old = Object.keys(localStorage).filter((x) => x.startsWith(PREFIX) && x !== k)
+      .map((x) => { try { return { x, at: (JSON.parse(localStorage.getItem(x) ?? "{}") as { at?: number }).at ?? 0 }; } catch { return { x, at: 0 }; } })
+      .sort((a, b) => a.at - b.at);
+    for (const o of old.slice(0, Math.max(1, Math.ceil(old.length / 3)))) localStorage.removeItem(o.x);
+    localStorage.setItem(k, v);
+  } catch { cacheFull = true; cacheListeners.forEach((l) => l()); }
 }
+
+/** True once a copy could not be saved even after making room – the app then says so instead of failing silently. */
+let cacheFull = false;
+const cacheListeners = new Set<() => void>();
+export const cacheIsFull = () => cacheFull;
+export const onCacheFull = (fn: () => void) => { cacheListeners.add(fn); return () => cacheListeners.delete(fn); };
 
 export function readCache<T>(method: string, params?: string): { at: number; data: T } | null {
   if (!CACHED_METHODS.has(method)) return null;

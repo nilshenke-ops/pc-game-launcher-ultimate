@@ -14,6 +14,7 @@ import { DEFAULT_BOTTOM, navColor, navItems, type NavItem } from "../lib/nav";
 const icStyle = (path: string, on: boolean) => (on ? { ["--ic" as string]: navColor(path) } : undefined);
 import { setPrefs, usePrefs } from "../lib/prefs";
 import { useConn, useConnectingSoon, useEvent, toast } from "../lib/hooks";
+import { onCacheFull } from "../lib/offline-cache";
 import { useAppState } from "../lib/state";
 import { Banner, Button, Modal, Segmented } from "./ui";
 import { CommandPalette } from "./CommandPalette";
@@ -138,6 +139,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => { void import("../lib/calendar-reminders").then((m) => m.startCalendarReminders()); }, []);
   useEffect(() => client.on("queued", () => toast(t("Gespeichert – wird übertragen, sobald der PC verbunden ist"), "info")), []);
   const waiting = useOutbox();
+  useEffect(() => { const off = onCacheFull(() => toast(t("Der Speicher dieses Geräts ist voll – der letzte Stand kann nicht ganz gespeichert werden. Browser-Daten der Seite aufräumen schafft Platz."), "warning")); return () => { off(); }; }, []);
   const [appUpdated, setAppUpdated] = useState(false);
   useEffect(() => { const on = () => setAppUpdated(true); window.addEventListener("pgl-app-updated", on); return () => window.removeEventListener("pgl-app-updated", on); }, []);
   const [showOutbox, setShowOutbox] = useState(false);

@@ -499,6 +499,7 @@ class Client {
         ? await this.call<Me>("auth.login", { adminToken: admin })
         : await this.call<Me>("auth.login", { deviceId: cred!.deviceId, proof: loginProof(cred!.token, hello.nonce) });
       this.set({ auth: "ok", me, authError: undefined, everAuthed: true });
+      askPersistentStorage(); // the browser may then keep the saved state even when space gets short
       if (!admin) rememberPc(hello.info?.pcName);
       writeJson(PERMS_KEY, me.permissions);
       this.emit("authenticated", me);
