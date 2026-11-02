@@ -141,7 +141,7 @@ jobs:
             echo "::warning::Secret PGL_UPDATE_SIGNING_KEY enthält keinen lesbaren Schlüssel – Release wird unsigniert erstellt, die Webseite wird nicht umgestellt."
             PGL_UPDATE_SIGNING_KEY=""; export PGL_UPDATE_SIGNING_KEY; EXTRA="--allow-unsigned"
           fi
-          node scripts/release-manifest.mjs --exe artifacts/companion/PCGameLauncherCompanion.exe \
+          node scripts/release-manifest.mjs --exe artifacts/PCGameLauncherCompanion.exe \
             --zip "artifacts/PCGameLauncherCompanion-$V-win-x64.zip" \
             --base-url "https://github.com/${{ github.repository }}/releases/download/v$V" \
             --history ../site/download/releases.json --out ../out $EXTRA
@@ -154,7 +154,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "v$V" --target "$GITHUB_SHA" --title "Version $V" --notes-file ../out/release-notes.md \
-            artifacts/companion/PCGameLauncherCompanion.exe "artifacts/PCGameLauncherCompanion-$V-win-x64.zip" \
+            artifacts/PCGameLauncherCompanion.exe "artifacts/PCGameLauncherCompanion-$V-win-x64.zip" \
             ../out/SHA256SUMS.txt ../out/update.json
       - name: Downloads prüfen (Erreichbarkeit, Größe, SHA-256)
         if: env.RELEASE == 'true'
