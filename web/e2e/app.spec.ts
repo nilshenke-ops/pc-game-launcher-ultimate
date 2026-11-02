@@ -1947,14 +1947,27 @@ test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch
   await expect.poll(() => ipad.evaluate(async () => !!(await navigator.serviceWorker?.getRegistration())?.active), { timeout: 15000 }).toBe(true);
   await ipad.reload();
 
+  // Look at the games once while the PC is on: that is what the phone keeps.
+  await ipad.goto(`${COMPANION}/#/games`).catch(() => {});
+  await expect(ipad.getByText("E2E Testspiel")).toBeVisible({ timeout: 30000 });
+  await expect.poll(() => ipad.evaluate(() => !!localStorage.getItem("pgl.cache.library.list") && !!localStorage.getItem("pgl.cache.state.get")), { timeout: 15000 }).toBe(true);
+
   // "Turn the PC off": stop the companion.
   const s = state();
   process.kill(s.pids[0], "SIGTERM");
   await expect.poll(async () => { try { await fetch(`${COMPANION}/healthz`); return "up"; } catch { return "down"; } }, { timeout: 15000 }).toBe("down");
 
+  await ipad.goto(`${COMPANION}/#/`).catch(() => {});
   await ipad.reload();
-  await expect(ipad.getByRole("heading", { name: "Warte auf deinen PC …" })).toBeVisible({ timeout: 15000 });
-  await ipad.getByRole("link", { name: "Design & Layout anpassen" }).click();
+  // The home page shows the saved overview of the PC (name, "Nicht verbunden", date of the last state).
+  await expect(ipad.getByText("Nicht verbunden").first()).toBeVisible({ timeout: 15000 });
+  await expect(ipad.getByText(/^Stand .* der PC ist gerade nicht verbunden/)).toBeVisible();
+  // Still signed in (pairing kept) and the last state is there: games from the saved copy, PC name from the saved overview.
+  expect(await ipad.evaluate(() => !!localStorage.getItem("pgl.cred"))).toBe(true);
+  await ipad.goto(`${COMPANION}/#/games`).catch(() => {});
+  await expect(ipad.getByText("E2E Testspiel")).toBeVisible({ timeout: 15000 });
+  await expect(ipad.getByRole("link", { name: "PC verbinden" })).toHaveCount(0);
+  await ipad.goto(`${COMPANION}/#/settings?s=design`).catch(() => {});
   await ipad.getByRole("button", { name: "Synthwave" }).click();
   expect(await ipad.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#f472b6");
 

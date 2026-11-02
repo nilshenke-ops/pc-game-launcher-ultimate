@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.87.0 – 2026-11-02
+### Neu
+- Der letzte Stand bleibt auf dem Handy: Nach dem ersten Koppeln bleibt die Anmeldung bestehen, und auch bei ausgeschaltetem PC siehst du PC-Name, aktives Profil, Zähler, Spiele, Steam-Bibliothek, Game Pass, Deck und deine Listen – mit „Stand …“-Datum
+### Verbessert
+- Was gerade läuft oder spielt wird offline nie als aktuell gezeigt; gestartet wird nichts ohne PC (Änderungen werden wie bisher vorgemerkt)
+- Abmelden oder Gerät entfernen löscht den gespeicherten Stand vom Handy vollständig
+
 ## 2.86.0 – 2026-11-02
 ### Neu
 - 16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit

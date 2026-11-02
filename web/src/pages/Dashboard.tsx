@@ -89,14 +89,14 @@ function StatusWidget() {
         {/* On the PC itself this window talks to its own companion – that says nothing about phones. */}
         {online ? <span className="badge ok"><span className="dot ok" />{local ? t("Begleiter läuft") : t("Online")}</span> : <span className="badge"><span className="dot error" />{t("Nicht verbunden")}</span>}
       </div>
-      <div className="row">
+      {online && <div className="row">
         {local ? <span className="badge">{t("Dieses Fenster läuft am PC")}</span>
           : <span className="badge info"><Wifi size={12} />{state.me.transport === "relay" ? t("Über Relay") : t("Lokal verbunden")}</span>}
         <span className={`badge ${relay === "connected" ? "ok" : relay === "disabled" ? "" : "warn"}`}>{t("Relay")}: {relay === "connected" ? t("verbunden") : relay === "disabled" ? t("aus") : relay}</span>
         {!local && <span className="badge">{state.me.name}</span>}
-      </div>
+      </div>}
       {local && online && <PairedDevicesLine />}
-      <div className="tiny muted">{t("Aktualisiert {t}", { t: updatedAt ? clock(updatedAt) : "–" })}</div>
+      <div className="tiny muted">{online ? t("Aktualisiert {t}", { t: updatedAt ? clock(updatedAt) : "–" }) : t("Stand {d} – der PC ist gerade nicht verbunden", { d: updatedAt ? new Date(updatedAt).toLocaleString() : "–" })}</div>
     </div>
   );
 }

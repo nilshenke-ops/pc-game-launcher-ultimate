@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { client } from "./rpc";
 import { setProfileTheme } from "./prefs";
+import { readCache, saveCache, savedOverview } from "./offline-cache";
 import type { AppState, Notification, PlayingState } from "./types";
 
 // Shared overview state (one request for all widgets), refreshed on relevant events with a short debounce.
@@ -8,12 +9,14 @@ import type { AppState, Notification, PlayingState } from "./types";
 let state = null as AppState | null;
 let error = null as string | null;
 let updatedAt = null as number | null;
+let stale = false;
 let timer: number | null = null;
 const listeners = new Set<() => void>();
-let snapshot: { state: AppState | null; error: string | null; updatedAt: number | null } = { state, error, updatedAt };
+let snapshot: { state: AppState | null; error: string | null; updatedAt: number | null; stale: boolean } = { state, error, updatedAt, stale };
+
 
 function publish() {
-  snapshot = { state, error, updatedAt };
+  snapshot = { state, error, updatedAt, stale };
   setProfileTheme(state?.activeProfile?.theme);
   listeners.forEach((l) => l());
 }
@@ -27,6 +30,8 @@ export function refreshState(delay = 150) {
       state = await client.call<AppState>("state.get");
       error = null;
       updatedAt = Date.now();
+      stale = false;
+      saveCache("state.get", savedOverview(state));
     } catch (e) { error = (e as Error).message; }
     publish();
   }, delay);
@@ -34,10 +39,20 @@ export function refreshState(delay = 150) {
 
 const TOPICS = new Set(["profiles", "library", "audio", "settings", "sounds", "devices", "notifications", "updates", "history"]);
 client.on("authenticated", () => refreshState(0));
-// Connection lost: forget the overview, so nothing (e.g. "Rocket League läuft") is shown as current while the PC is unreachable.
+// Connection lost: what is running or playing is forgotten, so nothing (e.g. "Rocket League läuft") is shown as current
+// while the PC is unreachable. Names, profile and counts of the last connection stay, marked as old ("Stand …").
+function showSaved() {
+  const saved = readCache<AppState>("state.get");
+  if (saved && client.credentials) { state = savedOverview(saved.data); error = null; updatedAt = saved.at; stale = true; } else { state = null; error = null; updatedAt = null; stale = false; }
+  publish();
+}
 client.subscribe(() => {
-  if (state && (client.status.phase !== "online" || client.status.auth !== "ok")) { state = null; error = null; updatedAt = null; publish(); }
+  const away = client.status.phase !== "online" || client.status.auth !== "ok";
+  if (!away || client.status.auth === "checking") return;
+  if (!client.credentials) { if (state) { state = null; error = null; updatedAt = null; stale = false; publish(); } return; } // signed out: nothing stays
+  if (!stale) showSaved();
 });
+showSaved();
 client.on("changed", (d) => { if (TOPICS.has((d as { topic: string }).topic)) refreshState(); });
 client.on("session", () => refreshState());
 client.on("profile.active", () => refreshState());

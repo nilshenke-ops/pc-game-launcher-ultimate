@@ -2,11 +2,13 @@
 // Always shown with its date ("Stand …") and never used to start anything – actions need the PC.
 // Cleared when this device signs out or is removed on the PC.
 
+import type { AppState } from "./types";
+
 const PREFIX = "pgl.cache.";
 // Plugins: list and files of installed plugins, so their widgets and themes also work while the PC is off.
 // Settings lists: kept so they can be changed without the PC (lib/outbox.ts queues the change and updates this copy).
 export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.list", "launchers.list", "plugins.list", "plugins.files",
-  "quick.list", "profiles.list", "automations.list", "hotkeys.list", "sounds.list", "audio.state", "settings.get", "history.get", "obs.status", "capture.status", "overlay.layout", "overlay.presets", "vault.list", "inventory.get", "privacy.status", "gamestate.list", "remote.status", "moves.list", "moves.options", "widgets.list", "network.targets", "quests.get", "deals.list", "deck.list", "calendar.list", "activity.get", "storage.get", "files.list", "captures.list", "layouts.list", "mods.overview", "mods.list", "rgb.status", "rgb.settings", "controllers.list", "input.list", "input.devices", "history.startTimes"]);
+  "quick.list", "profiles.list", "automations.list", "hotkeys.list", "sounds.list", "audio.state", "settings.get", "history.get", "obs.status", "capture.status", "overlay.layout", "overlay.presets", "vault.list", "inventory.get", "privacy.status", "gamestate.list", "remote.status", "moves.list", "moves.options", "widgets.list", "network.targets", "quests.get", "deals.list", "deck.list", "calendar.list", "activity.get", "storage.get", "files.list", "captures.list", "layouts.list", "mods.overview", "mods.list", "rgb.status", "rgb.settings", "controllers.list", "input.list", "input.devices", "history.startTimes", "state.get"]);
 const key = (method: string, params?: string) => PREFIX + method + (params && params !== "{}" ? params : "");
 
 export function saveCache(method: string, data: unknown, params?: string) {
@@ -22,3 +24,6 @@ export function readCache<T>(method: string, params?: string): { at: number; dat
 export function clearCaches() {
   try { for (const k of Object.keys(localStorage)) if (k.startsWith(PREFIX)) localStorage.removeItem(k); } catch { /* blocked */ }
 }
+
+/** What stays on this device from the overview: names, profile, counts – never what runs or plays right now. */
+export const savedOverview = (s: AppState): AppState => ({ ...s, running: [], playing: { playing: [], queued: 0 }, relay: { state: "off", clients: 0 }, updates: { ...s.updates, downloaded: false, canInstall: false } });

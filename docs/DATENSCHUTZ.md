@@ -61,6 +61,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 - **Zwischenspeicher für den Offline-Betrieb:** Listen (Bibliothek, Sounds, Profile …), wartende Änderungen, noch nicht übertragene Sounds und Plugin-Dateien.
   - Ein OBS-Passwort, das offline eingegeben wurde, wartet hier **unverschlüsselt**, bis der PC es übernimmt.
 - **Kalender-Erinnerungen:** welche Erinnerungen dieses Gerät schon gezeigt hat (`pgl.calendar.reminded`, höchstens 300 Einträge).
+- **Letzter Stand (`pgl.cache.*`):** zuletzt geladene Listen (Spiele, Steam, Game Pass, Deck, Einstellungen …) und die Übersicht des PCs (PC-Name, Profil, Zähler – ohne was gerade läuft oder spielt), damit alles auch bei ausgeschaltetem PC mit „Stand …“-Datum zu sehen ist. Keine Zugangsdaten darin. Wird beim Abmelden und beim Entfernen des Geräts gelöscht.
 - **Dateien und Vorschaubilder:** zum Senden vorgemerkte und „offline behaltene“ Dateien (IndexedDB `pgl-files`, zusammen höchstens 500 MB) und gesehene Vorschaubilder der Aufnahmen (`pgl-thumbs`, höchstens 600). Entfernen über den Bereich „Dateien“ bzw. die Website-Daten des Browsers.
 - **Service Worker:** die App-Dateien, damit die Seite auch bei ausgeschaltetem PC öffnet. Bei jedem Update wird aufgeräumt.
 
