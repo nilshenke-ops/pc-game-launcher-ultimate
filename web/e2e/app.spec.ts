@@ -1807,6 +1807,17 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await panel.getByRole("button", { name: "Fragen" }).click();
   await expect(panel.locator(".isl-last")).toContainText("CPU");
   await panel.getByRole("button", { name: "Schließen" }).click();
+  // Music: the test companion plays a steady tone like the PC's sound. Switched on, the companion listens, the eyes dance,
+  // and a bars equaliser shows next to them; switched off, it stops listening and the eyes calm down.
+  const { adminRpc } = await import("./rpc");
+  await leave(); // the mouse leaves the window: back to the compact notch
+  await expect(bar.getByRole("img", { name: "JARVIS: Tanzt" })).toHaveCount(0);
+  await adminRpc("island.configure", { desktop: true }); // not the Windows companion → it reports that it cannot show a window, but listens
+  await expect(bar.getByRole("img", { name: "JARVIS: Tanzt" })).toBeVisible({ timeout: 15000 });
+  await expect(bar.locator(".isl-bars")).toBeVisible();
+  await adminRpc("island.configure", { desktop: false });
+  await expect(bar.getByRole("img", { name: "JARVIS: Tanzt" })).toHaveCount(0, { timeout: 15000 });
+  await expect(bar.locator(".isl-bars")).toHaveCount(0);
   // Poking the eyes too often makes JARVIS dizzy (nothing else happens).
   for (let k = 0; k < 5; k++) await bar.locator(".isl-eyes").click();
   await expect(bar.getByRole("img", { name: "JARVIS: Schwindelig" })).toBeVisible();

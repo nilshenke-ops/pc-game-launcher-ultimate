@@ -9,7 +9,7 @@ import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { toast, useCan, useConn } from "../lib/hooks";
-import { clock, islandAnswer, islandBusy, islandClearAsk, islandPoke, islandSize, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
+import { clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPoke, islandSize, islandTouch, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
@@ -40,6 +40,26 @@ export function IslandEyes({ mood, big, onPoke }: { mood: Mood; big?: boolean; o
       <i /><i />
     </span>
   );
+}
+
+/** The robot of the panel: white head, black display with JARVIS' eyes, antenna – the mood moves the whole head. */
+export function RobotHead({ mood }: { mood: Mood }) {
+  return (
+    <span className={`isl-robot m-${mood}`} role="img" aria-label={t("JARVIS: {m}", { m: t(MOOD_LABEL[mood]) })}>
+      <span className="isl-antenna"><i /></span>
+      <span className="isl-head">
+        <span className="isl-ear l" /><span className="isl-ear r" />
+        <span className="isl-display"><IslandEyes mood={mood} big /></span>
+      </span>
+      {mood === "sleeping" && <span className="isl-zzz" aria-hidden>z z z</span>}
+    </span>
+  );
+}
+
+/** Equalizer next to the eyes while music plays – the bars follow the level the PC reports. */
+function Bars({ level }: { level: number }) {
+  const h = [0.5, 1, 0.7, 0.9, 0.6].map((k, i) => Math.max(0.18, Math.min(1, level * 1.6 * k + (i % 2 ? 0.05 : 0))));
+  return <span className="isl-bars" aria-hidden>{h.map((v, i) => <i key={i} style={{ transform: `scaleY(${v})` }} />)}</span>;
 }
 
 function FocusTimer({ sound }: { sound: boolean }) {
@@ -90,14 +110,19 @@ export function JarvisIsland() {
     if (x.phase === "busy") islandBusy(true);
     if (x.phase === "done") { islandBusy(false); islandAnswer(String(x.text ?? ""), x.ok === false ? false : true, x.ask ? [{ ...x.ask, confirm: true }] : []); }
   }), []);
+  // The sound the PC plays (level and beat only – nothing is recorded) and the running game drive dancing and gaming.
+  useEffect(() => client.on("island.audio", (d) => islandMusic(d as { playing?: boolean; level?: number; beat?: boolean })), []);
+  const gameName = app?.running?.[0]?.name ?? null;
+  useEffect(() => { islandGaming(!!gameName); }, [gameName]);
   // The window grows and shrinks with the content (the companion accepts only these four sizes).
   useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size }); }, [size]);
-  // Moods that end by time need a clock – one tick per second, only while needed.
+  // Moods that end by time need a clock – every second while something short-lived shows, otherwise every 15 s (sleep).
+  // (Only the yes/no matters: the music reports arrive ten times a second and must not restart the timer.)
+  const fast = !!(s.last || s.ask || s.pokes.length || s.music || open || hover || s.gaming);
   useEffect(() => {
-    if (!(s.last || s.ask || s.pokes.length || open || hover)) return;
-    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    const id = window.setInterval(() => setNow(Date.now()), fast ? 1000 : 15000);
     return () => window.clearInterval(id);
-  }, [s.last, s.ask, s.pokes.length, open, hover]);
+  }, [fast]);
   useEffect(() => { if (s.ask && now - s.ask.at >= ASK_TTL) islandClearAsk(); }, [now, s.ask]);
   useEffect(() => {
     const was = prevMood.current; prevMood.current = mood;
@@ -131,10 +156,11 @@ export function JarvisIsland() {
     : (mood === "happy" || mood === "error") && s.last ? s.last.text : game ? game.name : t("JARVIS – antippen für Widgets");
 
   return (
-    <div className={`isl-host s-${size}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+    <div className={`isl-host s-${size}`} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => setHover(false)}>
       <div className={`isl m-${mood}`}>
         <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} onClick={() => setOpen((o) => !o)}>
-          <IslandEyes mood={mood} onPoke={() => { islandPoke(); setNow(Date.now()); }} />
+          <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); setNow(Date.now()); }} />
+          {size === "notch" && mood === "dancing" && s.music && <Bars level={s.music.level} />}
           {size !== "notch" && <span className="isl-text">{text}</span>}
         </button>
         {size !== "notch" && !ask && <span className="isl-time">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
@@ -148,7 +174,7 @@ export function JarvisIsland() {
       {open && (
         <div className="isl-panel" role="dialog" aria-label={t("JARVIS-Insel")}>
           <div className="isl-card isl-jarvis">
-            <IslandEyes mood={mood} big />
+            <RobotHead mood={mood} />
             <div className="isl-main">
               <div className="row"><b>JARVIS</b><span className="badge">{t(MOOD_LABEL[mood])}</span></div>
               <div className="small muted isl-last">{s.last ? s.last.text : t("Noch nichts gefragt.")}</div>

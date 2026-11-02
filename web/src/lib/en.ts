@@ -5971,4 +5971,7 @@ export const en: Record<string, string> = {
   "Oben in der Mitte des Bildschirms sind nur JARVIS' Augen zu sehen. Fährst du mit der Maus darüber, zeigt er, was er tut; antippen öffnet Widgets (laufendes Spiel, Musiktasten, Uhr, Fokus-Timer, Frage an JARVIS). Fragt er nach (z. B. Spiel starten), bestätigst du direkt dort. Auf dem Windows-Sperrbildschirm darf kein Programm etwas anzeigen.": "At the top centre of the screen only JARVIS' eyes are visible. Hover over them and he shows what he is doing; a tap opens widgets (running game, music keys, clock, focus timer, ask JARVIS). When he asks (e.g. start a game), you confirm right there. Windows does not allow any program to show anything on the lock screen.",
   "Zum Einstellen muss der PC verbunden sein.": "The PC must be connected to change this.",
   "Insel oben auf dem PC-Bildschirm": "Island at the top of the PC screen",
+  "Zockt mit": "Gaming along",
+  "Schläft": "Sleeping",
+  "Überrascht": "Surprised",
 };

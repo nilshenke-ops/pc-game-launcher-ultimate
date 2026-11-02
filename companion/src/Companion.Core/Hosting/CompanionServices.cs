@@ -25,6 +25,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public CrashReportService Crashes { get; }
     public PrivacyService Privacy { get; }
     public RemoteService Remote { get; }
+    /// <summary>Beat/loudness of the PC's sound for the island – listens only while the island is shown.</summary>
+    public MusicActivity Music { get; }
     public MoveService Moves { get; }
     public GameStateService GameState { get; }
     public LibraryService Library { get; }
@@ -155,6 +157,7 @@ public sealed class CompanionServices : IAsyncDisposable
             PauseOthers = keep => Rpc.PauseDevices(d => d.Id != keep, "Der PC ist im Datenschutzmodus – dieses Gerät ist bis zum Ausschalten pausiert. Die Kopplung bleibt bestehen."),
         };
         Rpc.LoginBlocked = Privacy.Blocks;
+        Music = new MusicActivity(platform.AudioLoopback, d => Rpc.Broadcast("island.audio", d, Permissions.Local));
         Remote = new RemoteService(paths, platform.Screen, platform.RemoteInput, Rpc, Rpc.SendToAsync, audio: platform.AudioLoopback)
         {
             Notify = (key, title, text) => Notifications.Push(key, Severity.Warning, title, text, "/remote"),
@@ -625,6 +628,7 @@ public sealed class CompanionServices : IAsyncDisposable
     {
         var want = IslandWanted(Settings.Get(), Sessions.AnyGameRunning());
         if (_islandShown == want) return null;
+        if (want) Music.Start(); else Music.Stop();
         var err = Platform.Island.SetVisible(want);
         _islandShown = err == null ? want : null;
         if (err != null && want) Log.Warn("island", err);
@@ -657,6 +661,7 @@ public sealed class CompanionServices : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        Music.Dispose();
         try { await Rpc.CloseAllAsync("Der PC-Begleiter wird beendet."); } catch (Exception ex) { Log.Warn("companion", ex.Message); }
         Remote.Dispose();
         Moves.Dispose();

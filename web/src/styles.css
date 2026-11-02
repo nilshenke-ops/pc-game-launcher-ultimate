@@ -1756,6 +1756,10 @@ html.island-mode .app-bg { display: none; }
 .isl.m-happy { --isl-c: #6ee7a0; }
 .isl.m-error { --isl-c: #f87171; }
 .isl.m-dizzy { --isl-c: #c4a8ff; }
+.isl.m-dancing { --isl-c: #ff6b81; }
+.isl.m-gaming { --isl-c: #a78bfa; }
+.isl.m-sleeping { --isl-c: #7a8aa5; }
+.isl.m-surprised { --isl-c: #7cf5ff; }
 .isl.m-thinking, .isl.m-listening { --isl-c: #8fd8ff; }
 .s-notch .isl { justify-content: center; padding: 0; height: 34px; }
 .isl-pill { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1; background: none; border: 0; color: inherit; font: inherit; cursor: pointer; padding: 0; height: 100%; text-align: left; }
@@ -1799,3 +1803,44 @@ html.island-mode .app-bg { display: none; }
 @media (max-width: 420px) { .isl-grid { grid-template-columns: 1fr; } }
 @media (prefers-reduced-motion: reduce) { .isl-eyes i { animation: none !important; } }
 [data-motion="reduce"] .isl-eyes i { animation: none !important; }
+
+/* Pet moods (eyes) */
+.isl-eyes.m-dancing i { background: var(--isl-c, #ff6b81); box-shadow: 0 0 10px var(--isl-c, #ff6b81); animation: isl-dance .5s ease-in-out infinite alternate; }
+.isl-eyes.m-dancing i:last-child { animation-delay: .25s; }
+.isl-eyes.m-gaming i { height: 9px; width: 12px; background: #a78bfa; box-shadow: 0 0 12px #a78bfa; animation: isl-gaze 2.4s ease-in-out infinite; }
+.isl-eyes.big.m-gaming i { height: 16px; width: 24px; }
+.isl-eyes.m-sleeping i { height: 3px; width: 11px; background: #7a8aa5; box-shadow: none; animation: isl-breathe-eye 4s ease-in-out infinite; }
+.isl-eyes.big.m-sleeping i { height: 5px; width: 22px; }
+.isl-eyes.m-surprised i { width: 13px; height: 17px; background: #7cf5ff; box-shadow: 0 0 12px #7cf5ff; animation: isl-pop .35s ease-out; }
+.isl-eyes.big.m-surprised i { width: 24px; height: 30px; }
+@keyframes isl-dance { from { transform: translateY(-3px) scaleY(1.05); } to { transform: translateY(3px) scaleY(.8); } }
+@keyframes isl-gaze { 0%, 100% { transform: translateX(-3px); } 50% { transform: translateX(3px); } }
+@keyframes isl-breathe-eye { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+@keyframes isl-pop { from { transform: scale(.4); } to { transform: scale(1); } }
+.isl-bars { display: inline-flex; align-items: center; gap: 2px; height: 16px; margin-left: 6px; }
+.isl-bars i { display: block; width: 3px; height: 16px; border-radius: 2px; background: var(--isl-c, #ff6b81); transform-origin: center; transition: transform .12s linear; }
+
+/* The robot in the open panel */
+.isl-robot { position: relative; display: inline-flex; flex-direction: column; align-items: center; flex: none; width: 92px; }
+.isl-antenna { width: 3px; height: 14px; background: #cfd6e4; border-radius: 2px; position: relative; }
+.isl-antenna i { position: absolute; left: 50%; top: -7px; width: 10px; height: 10px; margin-left: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,.7); }
+.isl-head { position: relative; width: 84px; height: 66px; border-radius: 30px; background: linear-gradient(#f7f9fc, #d9dfeb); box-shadow: inset 0 -5px 8px rgba(0,0,0,.12), 0 6px 18px rgba(0,0,0,.45); display: grid; place-items: center; }
+.isl-ear { position: absolute; top: 22px; width: 8px; height: 20px; border-radius: 5px; background: #c8d0df; }
+.isl-ear.l { left: -5px; } .isl-ear.r { right: -5px; }
+.isl-display { width: 66px; height: 44px; border-radius: 20px; background: #05070b; display: grid; place-items: center; box-shadow: inset 0 2px 6px rgba(255,255,255,.06); }
+.isl-robot .isl-eyes { padding: 0; }
+.isl-robot.m-dancing .isl-head { animation: isl-head-dance .5s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+.isl-robot.m-happy .isl-head, .isl-robot.m-surprised .isl-head { animation: isl-head-hop .5s ease-out; }
+.isl-robot.m-sleeping .isl-head { transform: rotate(-9deg); transform-origin: 50% 100%; }
+.isl-robot.m-gaming .isl-head { animation: isl-head-gaze 2.4s ease-in-out infinite; }
+.isl-robot.m-dizzy .isl-head { animation: isl-head-dance .3s linear infinite alternate; }
+.isl-robot .isl-antenna i { animation: isl-antenna 2.2s ease-in-out infinite; }
+.isl-robot.m-sleeping .isl-antenna i { animation: none; opacity: .5; }
+.isl-zzz { position: absolute; right: -6px; top: 4px; font-size: .8rem; letter-spacing: 2px; color: #9fb0cc; animation: isl-zzz 3s ease-in-out infinite; }
+@keyframes isl-head-dance { from { transform: rotate(-7deg) translateY(0); } to { transform: rotate(7deg) translateY(-4px); } }
+@keyframes isl-head-hop { 0% { transform: translateY(0); } 40% { transform: translateY(-9px); } 100% { transform: translateY(0); } }
+@keyframes isl-head-gaze { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes isl-antenna { 0%, 100% { opacity: 1; } 50% { opacity: .55; } }
+@keyframes isl-zzz { 0%, 100% { opacity: .3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-5px); } }
+@media (prefers-reduced-motion: reduce) { .isl-robot *, .isl-robot, .isl-bars i, .isl-eyes i { animation: none !important; transition: none !important; } }
+[data-motion="reduce"] .isl-robot *, [data-motion="reduce"] .isl-eyes i { animation: none !important; }

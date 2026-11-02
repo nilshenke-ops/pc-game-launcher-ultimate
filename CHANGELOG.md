@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.85.0 – 2026-11-02
+### Neu
+- JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig
+- Tanzen zur echten Musik: der Begleiter hört auf den Ton des PCs (nur Lautstärke und Takt, nichts wird aufgenommen, gespeichert oder weitergeschickt außer der Pegel an die Fenster dieses PCs); die Augen hüpfen, daneben zeigt ein kleiner Equalizer den Pegel; bei Musikpause hört das Tanzen nach 3 Sekunden auf
+- Läuft ein Spiel aus der Bibliothek, ist der Roboter kurz überrascht und schaut dann konzentriert („Zockt mit“); nach 10 Minuten Ruhe schläft er (Berühren weckt ihn)
+- Im geöffneten Feld sitzt der Roboter mit weißem Kopf, schwarzem Display und Antenne – er nickt zur Musik, hüpft bei „erledigt“ und neigt den Kopf beim Schlafen
+### Verbessert
+- Der Begleiter lauscht nur, solange die Insel eingeschaltet und sichtbar ist (bei „in Spielen aus“ also auch nicht während eines Spiels)
+- Die Insel-Anzeige hing nach vielen Meldungen hintereinander auf einer alten Zeit fest – behoben
+- Release-Automatik: legt das Release ohne lesbaren Signaturschlüssel unsigniert an (Website erst nach dem Signieren), EXE-Pfad und Prüfschritt korrigiert
+
 ## 2.84.0 – 2026-10-31
 ### Neu
 - Kleines Fenster oben in der Mitte des Bildschirms (Windows-Begleiter): zu sind nur JARVIS' Augen zu sehen; mit der Maus darüber zeigt er, was er tut, antippen öffnet Widgets – laufendes Spiel, Musiktasten am PC, Uhr, Fokus-Timer (5/15/25 min) und „Frag JARVIS“
