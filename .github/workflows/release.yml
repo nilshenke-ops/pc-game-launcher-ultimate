@@ -132,13 +132,21 @@ jobs:
         env:
           PGL_UPDATE_SIGNING_KEY: ${{ secrets.PGL_UPDATE_SIGNING_KEY }}
         run: |
-          node scripts/release-manifest.mjs --check-key
+          # Without a readable key the release is created unsigned (companions install only signed updates) and the
+          # website is NOT switched – the maintainer signs it afterwards with scripts/sign-release.mjs.
+          EXTRA=""
+          if [ -z "$PGL_UPDATE_SIGNING_KEY" ]; then
+            EXTRA="--allow-unsigned"; echo "::warning::Secret PGL_UPDATE_SIGNING_KEY fehlt – Release wird unsigniert erstellt, die Webseite wird nicht umgestellt."
+          elif ! node scripts/release-manifest.mjs --check-key; then
+            echo "::warning::Secret PGL_UPDATE_SIGNING_KEY enthält keinen lesbaren Schlüssel – Release wird unsigniert erstellt, die Webseite wird nicht umgestellt."
+            PGL_UPDATE_SIGNING_KEY=""; export PGL_UPDATE_SIGNING_KEY; EXTRA="--allow-unsigned"
+          fi
           node scripts/release-manifest.mjs --exe artifacts/companion/PCGameLauncherCompanion.exe \
             --zip "artifacts/PCGameLauncherCompanion-$V-win-x64.zip" \
             --base-url "https://github.com/${{ github.repository }}/releases/download/v$V" \
-            --history ../site/download/releases.json --out ../out
+            --history ../site/download/releases.json --out ../out $EXTRA
           test "$(jq -r .version ../out/update.json)" = "$V"
-          test "$(jq -r .signature ../out/update.json)" != "null"
+          if jq -e '.signature == null' ../out/update.json >/dev/null; then echo "SIGNED=0" >> "$GITHUB_ENV"; else echo "SIGNED=1" >> "$GITHUB_ENV"; fi
       - name: GitHub Release erstellen
         if: env.RELEASE == 'true'
         working-directory: main
@@ -160,6 +168,7 @@ jobs:
           check "$(jq -r .url ../out/update.json)" "$(jq -r .size ../out/update.json)" "$(jq -r .sha256 ../out/update.json)"
           check "$(jq -r .zip.url ../out/update.json)" "$(jq -r .zip.size ../out/update.json)" "$(jq -r .zip.sha256 ../out/update.json)"
       - name: Webseite und Update-Manifest auf gh-pages veröffentlichen
+        if: env.RELEASE != 'true' || env.SIGNED == '1'
         working-directory: site
         run: |
           git rm -rq --ignore-unmatch assets icons index.html manifest.webmanifest offline-files.json sw.js
@@ -179,7 +188,7 @@ jobs:
             echo "gh-pages ist bereits aktuell."
           fi
       - name: Update-Erkennung mit dem echten Begleiter prüfen
-        if: env.RELEASE == 'true'
+        if: env.RELEASE == 'true' && env.SIGNED == '1'
         working-directory: main
         run: |
           for i in $(seq 1 30); do
