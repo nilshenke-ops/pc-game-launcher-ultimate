@@ -1,0 +1,1 @@
+import{j as t}from"./index-DNAlcyLo.js";import{b as e}from"./react-2SIwwJO3.js";import{J as s}from"./jarvis-island-BFo2e7ke.js";import"./skip-forward-B0U6wCuu.js";import"./pause-COK6Y1pO.js";function d(){return e.useEffect(()=>(document.documentElement.classList.add("island-mode"),()=>document.documentElement.classList.remove("island-mode")),[]),t.jsx(s,{})}export{d as default};
