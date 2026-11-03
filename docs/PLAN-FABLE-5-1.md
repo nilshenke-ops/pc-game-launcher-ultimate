@@ -1,5 +1,7 @@
 # Plan für Fable 5.1 – Fehleranalyse, Reparatur und Optimierung (Stand 2.88.1, 2026-11-03)
 
+> Die Arbeitsliste mit Einordnung (Art, Priorität, Aufwand, Gerät) steht in `docs/UMSETZUNGSPLAN-FABLE-5-1.md`.
+
 Dieser Plan vereint (A) meine eigenen, belegten Funde, (B) den Master-Prompt von ChatGPT/Gemini (Phasen 1–11) und (C) die offenen Aufträge des Nutzers. Jeder Punkt ist eingeordnet nach **Art** (Funktion / Animation / Design / Companion / Test / Doku) und **Status** (belegt = geprüft; vermutet = nur Verdacht; offen = nicht prüfbar ohne echtes Gerät).
 
 ## 0. Ehrliche Vorbemerkungen
