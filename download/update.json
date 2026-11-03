@@ -1,31 +1,34 @@
 {
-  "version": "2.91.0",
+  "version": "2.92.0",
   "date": "2026-11-03",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.91.0/PCGameLauncherCompanion.exe",
-  "size": 88429037,
-  "sha256": "95f7c2060acdebda93ed68ebfbb4fcc627ac89420b339e2d5ff8b8cf37deccd2",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.92.0/PCGameLauncherCompanion.exe",
+  "size": 88443618,
+  "sha256": "975f7b76fde7973c376e8219870e1bd5db9ac78482a3a90857c34034916b5a08",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.91.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.91.0/PCGameLauncherCompanion-2.91.0-win-x64.zip",
-    "size": 82924719,
-    "sha256": "06a2857e64d409fece3db1e145c4cadb93f70c97ba5ab29533539ae7b6725102"
+    "fileName": "PCGameLauncherCompanion-2.92.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.92.0/PCGameLauncherCompanion-2.92.0-win-x64.zip",
+    "size": 82939631,
+    "sha256": "b2826cd601fd0cd57d1f1fd01f23e7467945499e70527c6812de88bdf3473d3b"
   },
-  "notes": "Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert) · Pomodoro im Fokus-Timer der Insel: 25 Minuten Fokus, 5 Minuten Pause, nach vier Runden 15 Minuten; mit Zähler und Rückmeldung am Ende jeder Phase · Aussehen und Widgets der Insel stehen jetzt in den Einstellungen des PCs: Sie lassen sich auch vom Handy ändern (mit Administrator-Recht), und die Insel übernimmt jede Änderung sofort; dazu Position (links, Mitte, rechts) und Deckkraft (50–100 %) des Insel-Fensters",
+  "notes": "Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite · Neue Startseite: Begrüßung „Hallo …!“ mit „Jetzt starten“ (startet dein zuletzt gespieltes Spiel am PC), PC-Status mit Ring und Chips (Windows, Grafikkarte, Arbeitsspeicher), „Deine Spiele“-Kacheln, „Zuletzt verwendet“, „Performance“ mit Live-Verlauf der CPU-Last – alles aus den echten Daten des PCs; ohne Daten stehen Striche statt erfundener Zahlen. Controller: große Überschrift mit Glas-Controller und Symbol-Seitenleiste; Nacht-Blau: drei Kennzahlen-Karten (Bereit, Spiele, Gesamt-Spielzeit); Chrom: „Schnellzugriff“; Chrom Hell: Musik-Steuerung · Einstellungen → Allgemein: „Dein Name auf der Startseite“ (nur auf diesem Gerät gespeichert)",
   "changes": {
     "neu": [
-      "Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert)",
-      "Pomodoro im Fokus-Timer der Insel: 25 Minuten Fokus, 5 Minuten Pause, nach vier Runden 15 Minuten; mit Zähler und Rückmeldung am Ende jeder Phase",
-      "Aussehen und Widgets der Insel stehen jetzt in den Einstellungen des PCs: Sie lassen sich auch vom Handy ändern (mit Administrator-Recht), und die Insel übernimmt jede Änderung sofort; dazu Position (links, Mitte, rechts) und Deckkraft (50–100 %) des Insel-Fensters"
+      "Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite",
+      "Neue Startseite: Begrüßung „Hallo …!“ mit „Jetzt starten“ (startet dein zuletzt gespieltes Spiel am PC), PC-Status mit Ring und Chips (Windows, Grafikkarte, Arbeitsspeicher), „Deine Spiele“-Kacheln, „Zuletzt verwendet“, „Performance“ mit Live-Verlauf der CPU-Last – alles aus den echten Daten des PCs; ohne Daten stehen Striche statt erfundener Zahlen. Controller: große Überschrift mit Glas-Controller und Symbol-Seitenleiste; Nacht-Blau: drei Kennzahlen-Karten (Bereit, Spiele, Gesamt-Spielzeit); Chrom: „Schnellzugriff“; Chrom Hell: Musik-Steuerung",
+      "Einstellungen → Allgemein: „Dein Name auf der Startseite“ (nur auf diesem Gerät gespeichert)",
+      "Seitenleiste unten zeigt den echten Verbindungszustand („PC verbunden – Bereit zum Starten“)",
+      "Neues Seitenmenü wie in den Vorlagen: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet, JARVIS und Einstellungen, dazu **Mehr** – dort liegen alle weiteren Bereiche (Kategorien, „Weitere Funktionen“, Leiste ordnen); jedes Design hat seine eigene Menüvariante (Controller Dunkel nur mit Symbolen, Mehr öffnet dort die Bereichsliste)",
+      "„Favoriten“ im Menü öffnet die Spieleliste direkt mit dem Favoriten-Filter",
+      "Begleiter: Grundlage für eine ElevenLabs-Stimme in JARVIS (nur Standardstimmen, Schlüssel nur am PC, Monatslimit) – noch ohne Oberfläche und ohne Wirkung, solange kein Schlüssel hinterlegt ist"
     ],
     "verbessert": [
-      "Ungültige Werte für Vorlage, Augenfarbe, Position, Deckkraft und Widgets lehnt der Begleiter ab und ändert dann nichts",
-      "Das geöffnete Insel-Fenster zeigt nur die gewählten Widgets"
+      "Die Seitenleiste trägt die Marke „PC Game Launcher Ultimate“",
+      "Geändert: Alle bisherigen Designs (Neon Cyan, Emerald, Synthwave, Cyberpunk, Apple Glas, Nothing OS u. a.) sind entfernt; ein gespeichertes altes Design wird einmal durch das Lavendel-Glas ersetzt (Schriftgröße, Bewegung und Abstände bleiben). Eigene Farben („Eigenes Design“) bleiben unverändert",
+      "Geändert: Die Oberfläche (Flach, Glas, Klar-Glas, Weich 3D, Erhaben 3D), Glas-Unschärfe und 3D-Neigung lassen sich weiterhin einzeln einstellen"
     ],
-    "behoben": [
-      "Der Browser-Test „Insel-Aussehen“ war versehentlich gelöscht worden und läuft wieder (jetzt gegen die Einstellungen des PCs)"
-    ]
+    "behoben": []
   },
-  "signature": "fSGXko+QOP85jup8hDFWek/3MT1HQ0JD6R1x1t49qDr4Jf1OJO3veHgQX3Z+n3jO9UfugQ465gh4gwBVywgb9g=="
+  "signature": "N/50G7c82dzoDMcSw5efh/jeoUD7PJi5/ozAexWzeGolfGPe+ipRJ9Z8UXoz4xtU8IUg5onZtSS/rnpfQ8UrDA=="
 }

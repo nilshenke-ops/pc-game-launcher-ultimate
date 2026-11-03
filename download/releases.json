@@ -1,5 +1,39 @@
 [
   {
+    "version": "2.92.0",
+    "date": "2026-11-03",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.92.0/PCGameLauncherCompanion.exe",
+    "size": 88443618,
+    "sha256": "975f7b76fde7973c376e8219870e1bd5db9ac78482a3a90857c34034916b5a08",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.92.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.92.0/PCGameLauncherCompanion-2.92.0-win-x64.zip",
+      "size": 82939631,
+      "sha256": "b2826cd601fd0cd57d1f1fd01f23e7467945499e70527c6812de88bdf3473d3b"
+    },
+    "notes": "Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite · Neue Startseite: Begrüßung „Hallo …!“ mit „Jetzt starten“ (startet dein zuletzt gespieltes Spiel am PC), PC-Status mit Ring und Chips (Windows, Grafikkarte, Arbeitsspeicher), „Deine Spiele“-Kacheln, „Zuletzt verwendet“, „Performance“ mit Live-Verlauf der CPU-Last – alles aus den echten Daten des PCs; ohne Daten stehen Striche statt erfundener Zahlen. Controller: große Überschrift mit Glas-Controller und Symbol-Seitenleiste; Nacht-Blau: drei Kennzahlen-Karten (Bereit, Spiele, Gesamt-Spielzeit); Chrom: „Schnellzugriff“; Chrom Hell: Musik-Steuerung · Einstellungen → Allgemein: „Dein Name auf der Startseite“ (nur auf diesem Gerät gespeichert)",
+    "changes": {
+      "neu": [
+        "Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite",
+        "Neue Startseite: Begrüßung „Hallo …!“ mit „Jetzt starten“ (startet dein zuletzt gespieltes Spiel am PC), PC-Status mit Ring und Chips (Windows, Grafikkarte, Arbeitsspeicher), „Deine Spiele“-Kacheln, „Zuletzt verwendet“, „Performance“ mit Live-Verlauf der CPU-Last – alles aus den echten Daten des PCs; ohne Daten stehen Striche statt erfundener Zahlen. Controller: große Überschrift mit Glas-Controller und Symbol-Seitenleiste; Nacht-Blau: drei Kennzahlen-Karten (Bereit, Spiele, Gesamt-Spielzeit); Chrom: „Schnellzugriff“; Chrom Hell: Musik-Steuerung",
+        "Einstellungen → Allgemein: „Dein Name auf der Startseite“ (nur auf diesem Gerät gespeichert)",
+        "Seitenleiste unten zeigt den echten Verbindungszustand („PC verbunden – Bereit zum Starten“)",
+        "Neues Seitenmenü wie in den Vorlagen: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet, JARVIS und Einstellungen, dazu **Mehr** – dort liegen alle weiteren Bereiche (Kategorien, „Weitere Funktionen“, Leiste ordnen); jedes Design hat seine eigene Menüvariante (Controller Dunkel nur mit Symbolen, Mehr öffnet dort die Bereichsliste)",
+        "„Favoriten“ im Menü öffnet die Spieleliste direkt mit dem Favoriten-Filter",
+        "Begleiter: Grundlage für eine ElevenLabs-Stimme in JARVIS (nur Standardstimmen, Schlüssel nur am PC, Monatslimit) – noch ohne Oberfläche und ohne Wirkung, solange kein Schlüssel hinterlegt ist"
+      ],
+      "verbessert": [
+        "Die Seitenleiste trägt die Marke „PC Game Launcher Ultimate“",
+        "Geändert: Alle bisherigen Designs (Neon Cyan, Emerald, Synthwave, Cyberpunk, Apple Glas, Nothing OS u. a.) sind entfernt; ein gespeichertes altes Design wird einmal durch das Lavendel-Glas ersetzt (Schriftgröße, Bewegung und Abstände bleiben). Eigene Farben („Eigenes Design“) bleiben unverändert",
+        "Geändert: Die Oberfläche (Flach, Glas, Klar-Glas, Weich 3D, Erhaben 3D), Glas-Unschärfe und 3D-Neigung lassen sich weiterhin einzeln einstellen"
+      ],
+      "behoben": []
+    },
+    "signature": "N/50G7c82dzoDMcSw5efh/jeoUD7PJi5/ozAexWzeGolfGPe+ipRJ9Z8UXoz4xtU8IUg5onZtSS/rnpfQ8UrDA=="
+  },
+  {
     "version": "2.91.0",
     "date": "2026-11-03",
     "channel": "stable",
@@ -1454,30 +1488,5 @@
       ]
     },
     "signature": "Lb7y3XWObDdy5Vgkv8jPvIDr/NCWGkfGj2QXdXf2UbbPDvoOrinlX7uUuP6wxxZrn5+L9nB8tkwR1K/PY3ilmA=="
-  },
-  {
-    "version": "2.46.0",
-    "date": "2026-10-26",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion.exe",
-    "size": 87931185,
-    "sha256": "8ab5283bd34fb928d59cdfe882f6e490930d3128ed787fa0e7dcd5004460c03e",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.46.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.46.0/PCGameLauncherCompanion-2.46.0-win-x64.zip",
-      "size": 82192268,
-      "sha256": "5889cb18146b0b0cd1f5ae2e47c4d3bf8630d7c277e10b11dcbe978f83de1eb7"
-    },
-    "notes": "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“ · Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC",
-    "changes": {
-      "neu": [
-        "Elf neue fest eingebaute Widgets für die Startseite (kein Plugin nötig, über „Anpassen“ einblendbar): „Wo war ich?“, „Nächster Gaming-Abend“, „Offene Abstimmung“, „Foto des Tages“, „Bauprojekte“, „Soundtrack-Tipp“, „Offene Challenges“, „Würfel & Münze“, „Letzte Aufnahmen“, „Speicherplatz“ und „Meistgespielt (7 Tage)“",
-        "Die ersten acht funktionieren auch ohne PC-Verbindung; Aufnahmen, Speicherplatz und Meistgespielt kommen vom PC"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "drg1u76GZ8h24stRk9uxrNPQffLOik8Cp0dFR4kTzmK/oYLLk4A4dtBRpM6pjvXja3uffm7wTfVF+PAojX9rBA=="
   }
 ]
