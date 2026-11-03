@@ -62,7 +62,7 @@ sealed class IslandForm : Form
         ["notch"] = new Size(150, 34),
         ["bar"] = new Size(460, 40),
         ["ask"] = new Size(560, 40),
-        ["panel"] = new Size(580, 470),
+        ["panel"] = new Size(580, 520),
     };
 
     readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(7, 9, 13) };

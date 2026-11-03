@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.90.0 – 2026-11-03
+### Neu
+- Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones
+- Aussehen der JARVIS-Insel (am PC, unter „Einrichten“ bzw. Overlay & Aufnahme): sieben Vorlagen (Standard, Neon Gaming, Minimal Dunkel, Liquid Glass, Blau, Lila, Schwarz-Weiß) mit Vorschau – erst „Übernehmen“ ändert die echte Insel; dazu Augenfarbe und Augengröße; „Standard“ ist das bisherige Aussehen
+- Insel-Fenster zeigt eine Karte „PC-Werte“ (CPU, RAM, GPU) – gemessen nur, solange das Fenster offen ist; nicht messbare Werte stehen als „n. v.“, abgeschaltete als „aus“
+### Verbessert
+- Dialoge auf Handys im Querformat und bei offener Bildschirmtastatur: Titel, Schließen-Knopf und Knöpfe bleiben im Bild, der Inhalt scrollt (die Höhe richtet sich nach dem sichtbaren Bereich)
+- Sortierung „Zuletzt“ der Spielebibliothek: bei gleichem Zeitpunkt nach Name
+- Insel-Fenster am PC ist etwas höher (520 statt 470 px), damit die neue Karte Platz hat
+- Neue Tests: Wiederherstellungspunkt im Browser, Sortierung/Favorit nach dem Neuladen, Dialoge bei kleiner Höhe, Status-Pille, Insel-Aussehen
+
 ## 2.89.0 – 2026-11-03
 ### Neu
 - Verbindungsstatus: Nach vielen fehlgeschlagenen Versuchen steht „PC nicht erreichbar – die App versucht es weiter (Versuch n)“ statt endlos „Wiederverbindung läuft“

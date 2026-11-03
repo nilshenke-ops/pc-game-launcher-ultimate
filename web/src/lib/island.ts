@@ -116,15 +116,36 @@ export const MOOD_LABEL: Record<Mood, string> = {
 // ------------------------------------------------------------------ settings (this window only)
 
 const KEY = "pgl.island";
-export interface IslandPrefs { sound: boolean }
-export const islandPrefs = (): IslandPrefs => { try { const v = readJson<Partial<IslandPrefs>>(KEY); return { sound: v?.sound !== false }; } catch { return { sound: true }; } };
+/** Look of the island (only dark variants – the window itself is dark). "default" is the look before 2.90 and stays the standard. */
+export type IslandStyle = "default" | "neon" | "minimal" | "glass" | "blue" | "purple" | "mono";
+export const ISLAND_STYLES: { id: IslandStyle; label: string }[] = [
+  { id: "default", label: "Standard" }, { id: "neon", label: "Neon Gaming" }, { id: "minimal", label: "Minimal Dunkel" },
+  { id: "glass", label: "Liquid Glass" }, { id: "blue", label: "Blau" }, { id: "purple", label: "Lila" }, { id: "mono", label: "Schwarz-Weiß" },
+];
+export const isIslandStyle = (v: unknown): v is IslandStyle => ISLAND_STYLES.some((s) => s.id === v);
+/** Basic eye colour (the colour of "ready"; moods like asking or error keep their own colours so the state stays readable) and eye size. */
+export type IslandEye = "auto" | "cyan" | "green" | "pink" | "orange" | "white";
+export const ISLAND_EYES: { id: IslandEye; label: string; color: string | null }[] = [
+  { id: "auto", label: "Passend zur Vorlage", color: null }, { id: "cyan", label: "Cyan", color: "#22d3ee" }, { id: "green", label: "Grün", color: "#9ef0c8" },
+  { id: "pink", label: "Pink", color: "#f472b6" }, { id: "orange", label: "Orange", color: "#fb923c" }, { id: "white", label: "Weiß", color: "#ffffff" },
+];
+export type IslandEyeSize = "s" | "m" | "l";
+export const ISLAND_EYE_SIZES: { id: IslandEyeSize; label: string }[] = [{ id: "s", label: "Klein" }, { id: "m", label: "Normal" }, { id: "l", label: "Groß" }];
+export const isIslandEye = (v: unknown): v is IslandEye => ISLAND_EYES.some((e) => e.id === v);
+export const isIslandEyeSize = (v: unknown): v is IslandEyeSize => ISLAND_EYE_SIZES.some((e) => e.id === v);
+export const eyeColor = (e: IslandEye) => ISLAND_EYES.find((x) => x.id === e)?.color ?? null;
+export interface IslandPrefs { sound: boolean; style: IslandStyle; eye: IslandEye; eyeSize: IslandEyeSize }
+const readPrefs = (): IslandPrefs => { try { const v = readJson<Partial<IslandPrefs>>(KEY); return { sound: v?.sound !== false, style: isIslandStyle(v?.style) ? v.style : "default", eye: isIslandEye(v?.eye) ? v.eye : "auto", eyeSize: isIslandEyeSize(v?.eyeSize) ? v.eyeSize : "m" }; } catch { return { sound: true, style: "default", eye: "auto", eyeSize: "m" }; } };
+export const islandPrefs = readPrefs;
 const prefListeners = new Set<() => void>();
-let prefSnap = islandPrefs();
+let prefSnap = readPrefs();
 export function setIslandPrefs(p: Partial<IslandPrefs>) {
   prefSnap = { ...prefSnap, ...p };
   try { writeJson(KEY, prefSnap); } catch { /* storage blocked – only for this visit */ }
   prefListeners.forEach((l) => l());
 }
+// The island window and the PC's main window share this storage: a change made in one shows up in the other at once.
+if (typeof window !== "undefined") window.addEventListener("storage", (e) => { if (e.key === KEY) { prefSnap = readPrefs(); prefListeners.forEach((l) => l()); } });
 export const useIslandPrefs = () => useSyncExternalStore((fn) => { prefListeners.add(fn); return () => prefListeners.delete(fn); }, () => prefSnap);
 
 /** Focus timer: milliseconds → "m:ss". */

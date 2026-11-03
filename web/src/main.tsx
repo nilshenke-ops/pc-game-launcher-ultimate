@@ -7,9 +7,11 @@ import { captureAdminToken, captureHandoff, client, demoRequested } from "./lib/
 import { DEMO_BUILD } from "./lib/demo-flag";
 import { languageReady } from "./lib/i18n";
 import App from "./App";
+import { trackVisibleHeight } from "./lib/visible-height";
 
 declare const __BUILD_ID__: string;
 
+trackVisibleHeight();
 captureAdminToken();
 captureHandoff();
 if (DEMO_BUILD || demoRequested()) client.startDemo();

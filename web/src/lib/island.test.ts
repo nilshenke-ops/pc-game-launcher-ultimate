@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ASK_TTL, clock, DANCE_MS, HAPPY_MS, islandPet, petCommand, islandAnswer, islandClearAsk, islandGaming, islandMusic, islandSize, islandState, islandTouch, MUSIC_FRESH, moodOf, SLEEP_AFTER, SURPRISE_MS } from "./island";
+import { ISLAND_STYLES, eyeColor, isIslandEye, isIslandEyeSize, isIslandStyle, ASK_TTL, clock, DANCE_MS, HAPPY_MS, islandPet, petCommand, islandAnswer, islandClearAsk, islandGaming, islandMusic, islandSize, islandState, islandTouch, MUSIC_FRESH, moodOf, SLEEP_AFTER, SURPRISE_MS } from "./island";
 
 const base = { busy: false, listening: false, last: null, ask: null, pokes: [] as number[], music: null as { level: number; beatAt: number; at: number } | null, gaming: false, gamingSince: 0, lastActive: 1_000_000 };
 const now = 1_000_000;
@@ -102,5 +102,25 @@ describe("Befehle fürs Pet", () => {
     expect(moodOf({ ...base, pet: islandState().pet }, 7000 + 3600_000)).toBe("sleeping");
     islandTouch(8000);
     expect(islandState().pet).toBeNull();
+  });
+});
+
+describe("Aussehen der Insel", () => {
+  it("sieben Vorlagen, „Standard“ zuerst, nur bekannte Namen gelten", () => {
+    expect(ISLAND_STYLES.map((s) => s.id)).toEqual(["default", "neon", "minimal", "glass", "blue", "purple", "mono"]);
+    expect(isIslandStyle("neon")).toBe(true);
+    expect(isIslandStyle("rot")).toBe(false);
+    expect(isIslandStyle(undefined)).toBe(false);
+  });
+});
+
+describe("Augen der Insel", () => {
+  it("nur bekannte Farben und Größen; „auto“ hat keine eigene Farbe", () => {
+    expect(isIslandEye("pink")).toBe(true);
+    expect(isIslandEye("#ff0000")).toBe(false);
+    expect(eyeColor("auto")).toBeNull();
+    expect(eyeColor("white")).toBe("#ffffff");
+    expect(isIslandEyeSize("l")).toBe(true);
+    expect(isIslandEyeSize("xl")).toBe(false);
   });
 });

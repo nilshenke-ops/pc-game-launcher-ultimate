@@ -3,13 +3,15 @@
 // the bar with "Erlauben"/"Ablehnen". Tap: widgets (JARVIS, running game, media keys, clock, focus timer).
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { Check, Gamepad2, Pause, Play, SkipBack, SkipForward, Timer, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
-import { toast, useCan, useConn } from "../lib/hooks";
-import { clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
+import { toast, useEvent, useLiveSubscription, useCan, useConn } from "../lib/hooks";
+import { islandStats } from "../lib/island-stats";
+import type { MetricsSample } from "../lib/types";
+import { eyeColor, clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
@@ -60,6 +62,21 @@ export function RobotHead({ mood }: { mood: Mood }) {
 function Bars({ level }: { level: number }) {
   const h = [0.5, 1, 0.7, 0.9, 0.6].map((k, i) => Math.max(0.18, Math.min(1, level * 1.6 * k + (i % 2 ? 0.05 : 0))));
   return <span className="isl-bars" aria-hidden>{h.map((v, i) => <i key={i} style={{ transform: `scaleY(${v})` }} />)}</span>;
+}
+
+/** CPU, RAM and GPU from the PC – measured only while the opened panel is on screen (the PC then samples; closing it stops that). */
+function IslandStats({ online }: { online: boolean }) {
+  const [m, setM] = useState<MetricsSample | null>(null);
+  useLiveSubscription<MetricsSample>("monitor", setM, undefined, online);
+  useEvent<MetricsSample>("monitor.sample", (d) => { if (online) setM(d); });
+  const stats = islandStats(online ? m : null);
+  return (
+    <div className="isl-card isl-stats" aria-label={t("PC-Werte")}>
+      {stats.map((x) => (
+        <div key={x.id} className="isl-stat"><span className="tiny muted">{x.label}</span><b>{x.text}</b><i style={{ transform: `scaleX(${(x.pct ?? 0) / 100})` }} /></div>
+      ))}
+    </div>
+  );
 }
 
 function FocusTimer({ sound }: { sound: boolean }) {
@@ -159,7 +176,7 @@ export function JarvisIsland() {
     : (mood === "happy" || mood === "error") && s.last ? s.last.text : game ? game.name : t("JARVIS – antippen für Widgets");
 
   return (
-    <div className={`isl-host s-${size}`} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => setHover(false)}>
+    <div className={`isl-host s-${size}`} data-isl-style={prefs.style} data-isl-eye-size={prefs.eyeSize} data-isl-eye={eyeColor(prefs.eye) ? "1" : undefined} style={eyeColor(prefs.eye) ? ({ "--isl-eye": eyeColor(prefs.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => setHover(false)}>
       <div className={`isl m-${mood}`}>
         <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} onClick={() => setOpen((o) => !o)}>
           <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); setNow(Date.now()); }} />
@@ -211,6 +228,7 @@ export function JarvisIsland() {
                 </div>
               </div>
             </div>
+            <IslandStats online={online} />
             <FocusTimer sound={prefs.sound} />
           </div>
           <div className="row isl-foot">

@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { COMPANION, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, OBS_URL, RELAY, ROUTER_PORT, state } from "./env";
 import { ACCESS_HASH } from "../src/lib/access";
 import { NEW_WIDGET_PLUGINS } from "./plugins-list";
+import { adminRpc } from "./rpc";
 
 const ROOT_DIR = new URL("../..", import.meta.url).pathname;
 
@@ -250,6 +251,25 @@ test("Spielebibliothek: Sortierung „Zuletzt“ und Favorit bleiben nach dem Ne
   await pc.getByRole("button", { name: "Favorit entfernen" }).first().click();
   await expect(pc.getByRole("button", { name: "Favorit entfernen" })).toHaveCount(before);
   await pc.getByRole("radiogroup", { name: "Sortierung" }).getByRole("radio", { name: "A–Z" }).click();
+});
+
+test("Backup: Wiederherstellungspunkt anlegen, Einstellung ändern, Punkt prüfen und die Einstellung kommt zurück", async () => {
+  type S = { settings: { pcName: string } };
+  const orig = (await adminRpc<S>("settings.get")).settings.pcName;
+  await pc.goto(`${COMPANION}/#/settings?s=backup`);
+  await pc.getByRole("button", { name: "Jetzt anlegen" }).click();
+  await expect(pc.getByText("Wiederherstellungspunkt angelegt")).toBeVisible();
+  await adminRpc("settings.save", { pcName: "E2E-Backup-Test" });
+  expect((await adminRpc<S>("settings.get")).settings.pcName).toBe("E2E-Backup-Test");
+  // The newest point (the one just made) is first in the list: check it, restore only the settings.
+  await pc.getByRole("button", { name: "Prüfen & wiederherstellen" }).first().click();
+  await expect(pc.getByText("Backup ist gültig")).toBeVisible();
+  const parts = pc.locator(".checkbox input[type=checkbox]");
+  for (let i = 0; i < await parts.count(); i++) { const box = parts.nth(i); const label = (await box.locator("xpath=..").textContent()) ?? ""; if ((label.trim() === "Einstellungen") !== (await box.isChecked())) await box.click(); }
+  await pc.getByRole("button", { name: "Ausgewählte Bereiche wiederherstellen" }).click();
+  await pc.getByRole("dialog").getByRole("button", { name: "Wiederherstellen" }).click();
+  await expect(pc.getByText(/Wiederhergestellt: /)).toBeVisible();
+  await expect.poll(async () => (await adminRpc<S>("settings.get")).settings.pcName).toBe(orig);
 });
 
 test("Design wird gespeichert und übersteht das Neuladen", async () => {
@@ -644,6 +664,62 @@ test("Dialoge: Tastatur bleibt im Dialog, Fokus springt beim Tippen nicht zurüc
   expect(await pc.evaluate(() => document.activeElement === document.querySelectorAll(".modal input.input")[1])).toBe(true);
   await pc.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
+});
+
+test("Dialoge bei kleiner Höhe (Handy quer, Tastatur offen): Titel, Schließen und Knöpfe bleiben im Bild, der Inhalt scrollt", async () => {
+  const before = pc.viewportSize();
+  await pc.goto(`${COMPANION}/#/quick`);
+  for (const size of [{ width: 568, height: 320 }, { width: 390, height: 300 }]) {
+    await pc.setViewportSize(size);
+    await pc.getByRole("button", { name: "Neue Aktion" }).click();
+    const dialog = pc.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await dialog.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished))); // measure after the slide-in
+    const box = (await dialog.boundingBox())!;
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(size.height + 1);
+    await expect(dialog.getByRole("button", { name: "Schließen" })).toBeInViewport();
+    // Even with a very short window the content can be scrolled to the end, where the buttons are.
+    await dialog.evaluate((el) => { el.scrollTop = el.scrollHeight; });
+    await expect(dialog.locator(".modal-foot button").last()).toBeInViewport();
+    await pc.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+  }
+  await pc.setViewportSize(before ?? { width: 1280, height: 800 });
+});
+
+test("Status-Pille (Handy-Breite): aus bis eingeschaltet, zeigt die Verbindung, klappt auf, überdeckt nichts, gilt nur für dieses Gerät", async () => {
+  const before = pc.viewportSize();
+  await pc.setViewportSize({ width: 390, height: 844 });
+  await pc.goto(`${COMPANION}/#/games`);
+  await expect(pc.locator(".status-pill")).toHaveCount(0);
+  await pc.goto(`${COMPANION}/#/settings?s=design`);
+  await pc.getByText(/Status-Pille unter der oberen Leiste/).click();
+  expect(await pc.evaluate(() => localStorage.getItem("pgl.statusPill"))).toBe("true");
+  await pc.goto(`${COMPANION}/#/games`);
+  const pill = pc.locator(".status-pill");
+  await expect(pill).toBeVisible();
+  await expect(pill).toContainText("Verbunden");
+  // It sits below the top bar and never covers it.
+  const top = (await pc.locator(".topbar").boundingBox())!;
+  const pb = (await pill.boundingBox())!;
+  expect(pb.y).toBeGreaterThanOrEqual(top.y + top.height - 1);
+  expect(pb.x + pb.width).toBeLessThanOrEqual(391);
+  await pill.click();
+  await expect(pc.locator(".status-pill-panel")).toBeVisible();
+  await expect(pc.locator(".status-pill-panel")).toContainText("Verbunden");
+  await pill.click();
+  await expect(pc.locator(".status-pill-panel")).toHaveCount(0);
+  // Wide screens never show it, and switched off it is gone again.
+  await pc.setViewportSize({ width: 1280, height: 800 });
+  await expect(pc.locator(".status-pill")).toBeHidden();
+  await pc.setViewportSize({ width: 390, height: 844 });
+  await pc.goto(`${COMPANION}/#/settings?s=design`);
+  await pc.getByText(/Status-Pille unter der oberen Leiste/).click();
+  expect(await pc.evaluate(() => localStorage.getItem("pgl.statusPill"))).toBe("false");
+  await pc.goto(`${COMPANION}/#/games`);
+  await expect(pc.locator(".status-pill")).toHaveCount(0);
+  await pc.setViewportSize(before ?? { width: 1280, height: 800 });
 });
 
 test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => {
@@ -1894,6 +1970,12 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await expect(isl.locator(".isl-host")).toHaveClass(/s-panel/);
   await expect(panel).toContainText("Musik am PC");
   await expect(panel.getByRole("button", { name: "Wiedergabe/Pause" })).toBeEnabled();
+  // PC values: real numbers from the companion's sample or the honest "n. v." – never an invented number, never NaN.
+  const stats = panel.getByLabel("PC-Werte");
+  await expect(stats).toBeVisible();
+  await expect(stats).toContainText(/CPU/);
+  await expect.poll(async () => (await stats.textContent()) ?? "", { timeout: 15000 }).toMatch(/\d+ %|n\. v\.|aus/);
+  expect(await stats.textContent()).not.toMatch(/NaN|undefined/);
   await isl.screenshot({ path: "test-results/island-panel.png", animations: "disabled" });
   await panel.getByRole("button", { name: "5 min", exact: true }).click();
   await expect(panel).toContainText(/[45]:[0-5]\d/);
@@ -1905,7 +1987,9 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   // Music: the test companion plays a steady tone like the PC's sound. Switched on, the companion listens, the eyes dance,
   // and a bars equaliser shows next to them; switched off, it stops listening and the eyes calm down.
   const { adminRpc } = await import("./rpc");
-  await leave(); // the mouse leaves the window: back to the compact notch
+  // The mouse leaves the window: back to the compact notch. (After closing the panel the browser reports the still pointer as
+  // "inside" once more, so leaving is repeated until the notch stays.)
+  await expect(async () => { await leave(); await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/, { timeout: 600 }); }).toPass({ timeout: 10000 });
   await expect(bar.getByRole("img", { name: "JARVIS: Tanzt" })).toHaveCount(0);
   await adminRpc("island.configure", { desktop: true }); // not the Windows companion → it reports that it cannot show a window, but listens
   await expect(bar.getByRole("img", { name: "JARVIS: Tanzt" })).toBeVisible({ timeout: 15000 });

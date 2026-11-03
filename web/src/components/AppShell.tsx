@@ -16,6 +16,7 @@ import { setPrefs, usePrefs } from "../lib/prefs";
 import { useConn, useConnectingSoon, useEvent, toast } from "../lib/hooks";
 import { onCacheFull } from "../lib/offline-cache";
 import { useAppState } from "../lib/state";
+import { StatusPill } from "./status-pill";
 import { Banner, Button, Modal, Segmented } from "./ui";
 import { CommandPalette } from "./CommandPalette";
 import { UpdatePrompt } from "./UpdateCenter";
@@ -199,6 +200,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         )}
         <StatusStrip preview={preview} waiting={waiting} home={loc.pathname === "/"} hidePreview={loc.pathname === "/connect"} onShowOutbox={() => setShowOutbox(true)} />
         {showOutbox && <OutboxDialog onClose={() => setShowOutbox(false)} />}
+        <StatusPill />
 
         <main id="main" className={`content tx-${prefs.fx.transition.kind}`} style={{ ["--tx-ms" as string]: `${prefs.fx.transition.ms}ms` }} key={loc.pathname}>{children}</main>
       </div>

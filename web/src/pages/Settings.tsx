@@ -20,6 +20,7 @@ import { NavEditor } from "../components/NavEditor";
 import { HelpCenter } from "../components/help-center";
 import { TailscaleCard } from "../components/tailscale-card";
 import { DataCenter } from "../components/data-center";
+import { setStatusPill, useStatusPill } from "../lib/status-pill";
 
 type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
 
@@ -108,6 +109,7 @@ function General() {
 function Design() {
   const prefs = usePrefs();
   const th = prefs.theme;
+  const pill = useStatusPill();
   const setTheme = (p: Partial<Theme>) => setPrefs((x) => ({ ...x, theme: { ...x.theme, ...p } }));
   const ratio = contrast(th.mode === "dark" ? "#e8edf7" : "#0f172a", th.background);
   const primaryRatio = contrast(th.primary, th.background);
@@ -190,6 +192,8 @@ function Design() {
           {(th.surface === "glass" || th.surface === "clear") && <Field label={t("Glas-Unschärfe: {v} px", { v: th.blur ?? 22 })}><input type="range" min={4} max={40} value={th.blur ?? 22} onChange={(e) => setTheme({ blur: +e.target.value })} /></Field>}
           <Switch checked={!!th.tilt} onChange={(tilt) => setTheme({ tilt })} label={t("Karten neigen sich zur Maus (3D)")}
             hint={t("Nur mit Maus und nur ohne „Animationen reduzieren“ – auf Handy und iPad bleibt alles ruhig.")} />
+          <Switch checked={pill} onChange={setStatusPill} label={t("Status-Pille unter der oberen Leiste (Handy und iPad)")}
+            hint={t("Zeigt Verbindung, laufendes Spiel und wartende Änderungen; antippen für Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones. Gilt nur für dieses Gerät.")} />
           <Field label={t("Abstände")}><Segmented value={th.density ?? "normal"} onChange={(density) => setTheme({ density })} options={[{ value: "compact", label: t("Kompakt") }, { value: "normal", label: t("Normal") }, { value: "roomy", label: t("Luftig") }]} /></Field>
           <Field label={t("Schatten")}><Segmented value={th.shadow ?? "soft"} onChange={(shadow) => setTheme({ shadow })} options={[{ value: "none", label: t("Keine") }, { value: "soft", label: t("Weich") }, { value: "strong", label: t("Kräftig") }]} /></Field>
           <Field label={t("Rahmen")}><Segmented value={th.border ?? "subtle"} onChange={(border) => setTheme({ border })} options={[{ value: "subtle", label: t("Dezent") }, { value: "bold", label: t("Deutlich") }]} /></Field>

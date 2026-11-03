@@ -1,3 +1,4 @@
+import { sortLibrary } from "../lib/library-sort";
 import { useEffect, useMemo, useState } from "react";
 import { Box, Check, FolderOpen, Wand2, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, RefreshCw, Search, Star, Trash2 } from "lucide-react";
 import { client, readJson, writeJson } from "../lib/rpc";
@@ -72,8 +73,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
     const s = search.trim().toLowerCase();
     let list = items.filter((i) => (!s || i.name.toLowerCase().includes(s) || i.categories.some((c) => c.toLowerCase().includes(s))) &&
       (cat === "__all" || (cat === "__fav" ? i.favorite : cat === "__running" ? q.data?.running.includes(i.id) : cat.startsWith("src:") ? i.source === cat.slice(4) : i.categories.includes(cat))));
-    list = [...list].sort((a, b) => sort === "name" ? a.name.localeCompare(b.name) : sort === "rating" ? (b.rating ?? 0) - (a.rating ?? 0) || a.name.localeCompare(b.name) : sort === "recent" ? (lastLaunch.get(b.id) ?? 0) - (lastLaunch.get(a.id) ?? 0) : Date.parse(b.addedAt) - Date.parse(a.addedAt));
-    return [...list.filter((i) => i.favorite), ...list.filter((i) => !i.favorite)];
+    return sortLibrary(list, sort, lastLaunch);
   }, [items, search, cat, sort, lastLaunch, q.data]);
 
   // Tap on the tile = start (like an app icon); while the PC answers, the tile shows a spinner.
