@@ -1,5 +1,36 @@
 [
   {
+    "version": "2.90.0",
+    "date": "2026-11-03",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.90.0/PCGameLauncherCompanion.exe",
+    "size": 88422508,
+    "sha256": "e3cc9a32065821b1462ca6257d4b4ed415b6edc96ebc8e34e4dbba9ed83887fb",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.90.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.90.0/PCGameLauncherCompanion-2.90.0-win-x64.zip",
+      "size": 82918670,
+      "sha256": "7be161b051b78a3f274c3ffe977f0e42d4d41e21a652c515791e5bd33022758f"
+    },
+    "notes": "Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones · Aussehen der JARVIS-Insel (am PC, unter „Einrichten“ bzw. Overlay & Aufnahme): sieben Vorlagen (Standard, Neon Gaming, Minimal Dunkel, Liquid Glass, Blau, Lila, Schwarz-Weiß) mit Vorschau – erst „Übernehmen“ ändert die echte Insel; dazu Augenfarbe und Augengröße; „Standard“ ist das bisherige Aussehen · Insel-Fenster zeigt eine Karte „PC-Werte“ (CPU, RAM, GPU) – gemessen nur, solange das Fenster offen ist; nicht messbare Werte stehen als „n. v.“, abgeschaltete als „aus“",
+    "changes": {
+      "neu": [
+        "Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones",
+        "Aussehen der JARVIS-Insel (am PC, unter „Einrichten“ bzw. Overlay & Aufnahme): sieben Vorlagen (Standard, Neon Gaming, Minimal Dunkel, Liquid Glass, Blau, Lila, Schwarz-Weiß) mit Vorschau – erst „Übernehmen“ ändert die echte Insel; dazu Augenfarbe und Augengröße; „Standard“ ist das bisherige Aussehen",
+        "Insel-Fenster zeigt eine Karte „PC-Werte“ (CPU, RAM, GPU) – gemessen nur, solange das Fenster offen ist; nicht messbare Werte stehen als „n. v.“, abgeschaltete als „aus“"
+      ],
+      "verbessert": [
+        "Dialoge auf Handys im Querformat und bei offener Bildschirmtastatur: Titel, Schließen-Knopf und Knöpfe bleiben im Bild, der Inhalt scrollt (die Höhe richtet sich nach dem sichtbaren Bereich)",
+        "Sortierung „Zuletzt“ der Spielebibliothek: bei gleichem Zeitpunkt nach Name",
+        "Insel-Fenster am PC ist etwas höher (520 statt 470 px), damit die neue Karte Platz hat",
+        "Neue Tests: Wiederherstellungspunkt im Browser, Sortierung/Favorit nach dem Neuladen, Dialoge bei kleiner Höhe, Status-Pille, Insel-Aussehen"
+      ],
+      "behoben": []
+    },
+    "signature": "BAqJFSPGqFfF+5VAzk4FSyTP/YwRZvomYmZKejWwIoU5rnOAPKrmNKoFIRFaa4hQ1L7+deX7dEOunFWD5XzE4w=="
+  },
+  {
     "version": "2.89.0",
     "date": "2026-11-03",
     "channel": "stable",
@@ -1443,29 +1474,5 @@
       "behoben": []
     },
     "signature": "lKGj8Jzgn4nxUB7C0wFwEyyg7FQ6x3UggoQ246B1mqR8Cd+akRPogM5/plwf2tmgvOQ08VbwzTpg3Xenc2/+Sg=="
-  },
-  {
-    "version": "2.43.1",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion.exe",
-    "size": 87912749,
-    "sha256": "112226972f5c7ad236d8be3f0abce4770b8b529b2c48279260be9ab75b450808",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.43.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.43.1/PCGameLauncherCompanion-2.43.1-win-x64.zip",
-      "size": 82174180,
-      "sha256": "5e39dc2edbf423839769e2339c49da0b062bd51def72e2ef9fae924eff6bcf2b"
-    },
-    "notes": "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen",
-    "changes": {
-      "neu": [
-        "Deal Radar: zu jedem Spiel „Key-Shops (Deutschland)“ mit Links zu Instant Gaming und Eneba (Suche nach dem Spiel mit Euro-Preisen; bei Eneba nur Keys für Europa/Global). Ein Preis wird dort nicht angezeigt: beide Shops haben keine öffentliche Preisabfrage und sperren automatische Abfragen"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "fBk5hP0uE1zXEetjerrqL1e8utW4gwfVhfJF33RDSb4AJja5unvg6dUj14YO8GxwT/oZaGAdmVVml9p0x1fBew=="
   }
 ]
