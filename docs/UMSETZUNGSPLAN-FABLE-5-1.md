@@ -2,6 +2,22 @@
 
 Dies ist die **Arbeitsliste**. Die Begründungen und belegten Funde stehen in `docs/PLAN-FABLE-5-1.md`. Hier ist jeder Punkt als Arbeitspaket (AP) eingeordnet, damit er abgearbeitet und abgehakt werden kann.
 
+## Stand der Umsetzung (Version 2.89.0, 2026-11-03)
+| AP | Ergebnis | Beleg |
+|----|----------|-------|
+| 01 | **erledigt**: sechs Zustände, nach 20 Fehlversuchen „PC nicht erreichbar … (Versuch n)“ | `web/src/lib/conn-state.ts`, 7 Unit-Tests |
+| 02 | **teilweise**: Scan „gekoppelt, PC aus“ über alle Seiten: keine bleibt beim Laden hängen, keiner leer, kein Überlauf. Ob jede Seite „Stand“ oder „braucht PC“ ehrlich zeigt, ist **nicht seitenweise geprüft** | `web/scripts/scan-mobile.mjs --paired` |
+| 03 | **erledigt**: Meldung „Companion aktualisieren“ bei unbekannter Aktion | `outdatedCompanionMessage`, 2 Tests |
+| 04 | **erledigt**: 0 Bedienelemente unter 44 px (iPhone SE/13, Pixel 5, iPad; Ausnahmen: Links im Fließtext, Raum-Gegenstände mit vergrößerter Trefferfläche) | Scan, `styles.css` (`pointer: coarse`) |
+| 05 | **teilweise**: Querformat und obere Leiste geprüft (dabei Fehler gefunden und behoben: Glocke abgeschnitten). **Offen:** Bildschirmtastatur/Dialoge bei kleiner Höhe | Scan |
+| 06 | **erledigt**: nur Fortschrittsbalken animiert die Breite; „Weniger Bewegung“ stoppt alles | `css-motion.test.ts` |
+| 07 | **teilweise**: Kontrast aller 35 eingebauten Designs bestanden. **Offen:** Glas über Bildszenen (dynamisch, nicht statisch prüfbar) | `contrast.test.ts` |
+| 08 | **erledigt**: keine neuen Schwachstellen gefunden, zwei Restrisiken dokumentiert | `docs/SICHERHEIT-DURCHSICHT.md` |
+| 09 | **teilweise**: Matrix geschrieben; Lücken „Sortierung/Favorit nach Neuladen“ geschlossen. **Offen:** „Zuletzt verwendet“-Liste, Backup-Wiederherstellungspunkt im Browser | `docs/BEREICHSMATRIX.md`, 1 neuer Browser-Test |
+| 10 | **blockiert**: Der Text von Master-Prompt 2 steht nicht im Repository; Nutzer muss ihn bereitstellen | `docs/BEREICHSMATRIX.md` |
+| 11 | **teilweise**: `Assistant.tsx` 652 → 384 Zeilen (Einstellungskarten in `assistant-settings.tsx`, Code unverändert verschoben). `rpc.ts` bewusst **nicht** geteilt (eine zusammenhängende Klasse, hohes Risiko) | Diff geprüft, alle Tests grün |
+| 12 | **erledigt**: Link-Prüfung, alter 1.x-Bericht als historisch markiert | `scripts/check-links.mjs` |
+
 ## Legende
 **Art:** F = ganze Funktion · A = Animation · D = Design · C = Companion (Windows) · T = nur Test/Prüfung · S = Sicherheit · R = Refactoring · P = Prozess/Doku
 **Prio** (wie im Master-Prompt): P1 kritisch · P2 hoch · P3 mittel · P4 niedrig
