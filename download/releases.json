@@ -1,5 +1,29 @@
 [
   {
+    "version": "2.88.1",
+    "date": "2026-11-03",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion.exe",
+    "size": 88415961,
+    "sha256": "8cee77c92d0bfb293e0ad13e5ae169762557b1ed3ad7feb0df6742dc86ab7dc5",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.88.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion-2.88.1-win-x64.zip",
+      "size": 82911782,
+      "sha256": "abb37f587428f54ff35f638f94dce242525907189cc7078321a874a2c94f15ee"
+    },
+    "notes": "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte"
+      ],
+      "behoben": []
+    },
+    "signature": "PsYXZOoOeSn19FPPv3E3qG6hMwBz8LPaV1JumOCBFPkpqrITYjsJ7bicI9veRdCy5ymtZpl/rBDzywRciO8MwQ=="
+  },
+  {
     "version": "2.88.0",
     "date": "2026-11-03",
     "channel": "stable",
@@ -1442,29 +1466,5 @@
       "behoben": []
     },
     "signature": "lDyU6BAHx5qUs2/sq+APjJ0wzwbs5K6l2Ua9P4s1Kngt43n6w+B5McUcxtV79HzTvLvaUcVxjGa0GOmJCVo89w=="
-  },
-  {
-    "version": "2.42.3",
-    "date": "2026-10-21",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.3/PCGameLauncherCompanion.exe",
-    "size": 87906084,
-    "sha256": "28f00a1a2a70c2e10691e5dba150830873b55bd4a918ca72cc13aa1310d6607f",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.42.3-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.42.3/PCGameLauncherCompanion-2.42.3-win-x64.zip",
-      "size": 82167662,
-      "sha256": "494b305b0019abf9560699471281967b7b56f16735add15b3141272456b89ee4"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Deck und Kalender: Bei leerer Spiele-Bibliothek stand „Noch keine Spiele – sie erscheinen, sobald der PC einmal verbunden war“, auch wenn der PC verbunden ist. Jetzt: „Noch keine Spiele in der Bibliothek“ mit Hinweis und Link zu „Spiele“ → „Hinzufügen“ (Steam/Epic werden gefunden, alles andere als Datei freigeben); der alte Text nur noch, wenn wirklich noch nie ein PC verbunden war"
-      ]
-    },
-    "signature": "Ra0Y5mZCkc//Ky3a4okExtpeEZQ6ZZIVlR91LJPLmBR7IFVaFaUbEl5EIs6/v5p3mwkzZvgFyLza0YykKsDpoA=="
   }
 ]

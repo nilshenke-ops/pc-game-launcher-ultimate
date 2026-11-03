@@ -1,26 +1,24 @@
 {
-  "version": "2.88.0",
+  "version": "2.88.1",
   "date": "2026-11-03",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.0/PCGameLauncherCompanion.exe",
-  "size": 88416704,
-  "sha256": "5099f5211bb967a45a55d412267567314450c73c36a479754f48dfa5d17c1da4",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion.exe",
+  "size": 88415961,
+  "sha256": "8cee77c92d0bfb293e0ad13e5ae169762557b1ed3ad7feb0df6742dc86ab7dc5",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.88.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.0/PCGameLauncherCompanion-2.88.0-win-x64.zip",
-    "size": 82912440,
-    "sha256": "40e34424d68488ca3f292e150c4602d779ac4ba41fcd14beb8d213f7f05fdc07"
+    "fileName": "PCGameLauncherCompanion-2.88.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion-2.88.1-win-x64.zip",
+    "size": 82911782,
+    "sha256": "abb37f587428f54ff35f638f94dce242525907189cc7078321a874a2c94f15ee"
   },
-  "notes": "JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts · Tests für alle Adress- und QR-Varianten (WLAN, Tailscale, Relay, Adresswechsel, Direktlink)",
+  "notes": "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte",
   "changes": {
-    "neu": [
-      "JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts"
-    ],
+    "neu": [],
     "verbessert": [
-      "Tests für alle Adress- und QR-Varianten (WLAN, Tailscale, Relay, Adresswechsel, Direktlink)"
+      "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte"
     ],
     "behoben": []
   },
-  "signature": "IXSN+4OCU4mObDWtGjGn0Es0gkguf+d0ix5ZOYHESItWRqHXzniZ7amzPVdosHrLPV8YCOhGtm+gv9EKcgUNzw=="
+  "signature": "PsYXZOoOeSn19FPPv3E3qG6hMwBz8LPaV1JumOCBFPkpqrITYjsJ7bicI9veRdCy5ymtZpl/rBDzywRciO8MwQ=="
 }
