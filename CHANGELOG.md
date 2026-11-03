@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.88.0 – 2026-11-03
+### Neu
+- JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts
+### Verbessert
+- Tests für alle Adress- und QR-Varianten (WLAN, Tailscale, Relay, Adresswechsel, Direktlink)
+
 ## 2.87.1 – 2026-11-02
 ### Verbessert
 - Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern

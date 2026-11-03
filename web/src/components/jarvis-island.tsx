@@ -9,7 +9,7 @@ import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { toast, useCan, useConn } from "../lib/hooks";
-import { clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPoke, islandSize, islandTouch, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
+import { clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
@@ -118,7 +118,7 @@ export function JarvisIsland() {
   useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size }); }, [size]);
   // Moods that end by time need a clock – every second while something short-lived shows, otherwise every 15 s (sleep).
   // (Only the yes/no matters: the music reports arrive ten times a second and must not restart the timer.)
-  const fast = !!(s.last || s.ask || s.pokes.length || s.music || open || hover || s.gaming);
+  const fast = !!(s.last || s.ask || s.pokes.length || s.music || open || hover || s.gaming || s.pet);
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), fast ? 1000 : 15000);
     return () => window.clearInterval(id);
@@ -149,6 +149,9 @@ export function JarvisIsland() {
     e.preventDefault();
     const v = q.trim(); if (!v) return;
     setQ("");
+    // Commands for the pet itself work right here (nothing is sent to the PC's assistant).
+    const pet = petCommand(v);
+    if (pet) { islandPet(pet); islandAnswer(pet === "dance" ? t("Ich tanze!") : pet === "sleep" ? t("Gute Nacht – tippe mich an, dann bin ich wieder da.") : t("Bin wach!"), true); return; }
     // The answer arrives as "jarvis.activity" like any other – the island shows it.
     try { await client.call("assistant.ask", { text: v }); } catch (err) { islandAnswer((err as Error).message, false); }
   };

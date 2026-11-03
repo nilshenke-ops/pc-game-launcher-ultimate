@@ -5993,4 +5993,7 @@ export const en: Record<string, string> = {
   "Flach: wie bisher. Glas: durchsichtig mit Unschärfe. Klar-Glas: fast ganz durchsichtig wie bei Apple oder Nothing OS (Deckkraft der Karten regelt, wie klar). Weich 3D: Karten und Knöpfe wie aus Ton – erhaben, Felder eingedrückt. Erhaben 3D: Karten mit Tiefe, Kanten und Licht von oben.": "Flat: as before. Glass: see-through with blur. Clear glass: almost completely see-through like Apple or Nothing OS (the card opacity sets how clear). Soft 3D: cards and buttons like clay – raised, fields pressed in. Raised 3D: cards with depth, edges and light from above.",
   "Stand {d} – der PC ist gerade nicht verbunden": "As of {d} – the PC is not connected right now",
   "Der Speicher dieses Geräts ist voll – der letzte Stand kann nicht ganz gespeichert werden. Browser-Daten der Seite aufräumen schafft Platz.": "This device's storage is full – the last state cannot be saved completely. Clearing this site's browser data frees up space.",
+  "Ich tanze!": "I'm dancing!",
+  "Gute Nacht – tippe mich an, dann bin ich wieder da.": "Good night – tap me and I'm back.",
+  "Bin wach!": "I'm awake!",
 };

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ASK_TTL, clock, HAPPY_MS, islandAnswer, islandClearAsk, islandGaming, islandMusic, islandSize, islandState, islandTouch, MUSIC_FRESH, moodOf, SLEEP_AFTER, SURPRISE_MS } from "./island";
+import { ASK_TTL, clock, DANCE_MS, HAPPY_MS, islandPet, petCommand, islandAnswer, islandClearAsk, islandGaming, islandMusic, islandSize, islandState, islandTouch, MUSIC_FRESH, moodOf, SLEEP_AFTER, SURPRISE_MS } from "./island";
 
 const base = { busy: false, listening: false, last: null, ask: null, pokes: [] as number[], music: null as { level: number; beatAt: number; at: number } | null, gaming: false, gamingSince: 0, lastActive: 1_000_000 };
 const now = 1_000_000;
@@ -77,5 +77,30 @@ describe("JARVIS-Insel: Gesicht folgt dem echten Zustand", () => {
     expect(clock(5 * 60_000)).toBe("5:00");
     expect(clock(61_500)).toBe("1:02");
     expect(clock(-5)).toBe("0:00");
+  });
+});
+
+describe("Befehle fürs Pet", () => {
+  it("erkennt tanz, schlafen und aufwachen – auch mit „Jarvis“ davor", () => {
+    expect(petCommand("Tanz!")).toBe("dance");
+    expect(petCommand("Hey Jarvis, tanz mal")).toBe("dance");
+    expect(petCommand("Jarvis, geh schlafen")).toBe("sleep");
+    expect(petCommand("gute Nacht")).toBe("sleep");
+    expect(petCommand("wach auf")).toBe("wake");
+  });
+  it("hält normale Fragen heraus", () => {
+    expect(petCommand("Wie tanzt man Walzer?")).toBeNull();
+    expect(petCommand("Starte Rocket League")).toBeNull();
+    expect(petCommand("")).toBeNull();
+  });
+  it("tanzt 30 s lang, schläft bis zum Antippen, und Fragen/Denken gehen vor", () => {
+    islandPet("dance", 5000);
+    expect(moodOf({ ...base, pet: islandState().pet }, 6000)).toBe("dancing");
+    expect(moodOf({ ...base, pet: islandState().pet }, 5000 + DANCE_MS + 1)).toBe("idle");
+    expect(moodOf({ ...base, busy: true, pet: islandState().pet }, 6000)).toBe("thinking");
+    islandPet("sleep", 7000);
+    expect(moodOf({ ...base, pet: islandState().pet }, 7000 + 3600_000)).toBe("sleeping");
+    islandTouch(8000);
+    expect(islandState().pet).toBeNull();
   });
 });

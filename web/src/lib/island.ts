@@ -26,11 +26,13 @@ export interface IslandState {
   /** A game from the library runs (according to the PC), and since when. */
   gaming: boolean;
   gamingSince: number;
+  /** The pet was told to dance or go to sleep ("tanz", "geh schlafen") – until the time is up or someone touches it. */
+  pet: { mood: "dancing" | "sleeping"; until: number } | null;
   /** Last time someone used the island (hover, tap) or JARVIS did something – for the sleep mode. */
   lastActive: number;
 }
 
-let state: IslandState = { busy: false, listening: false, last: null, ask: null, pokes: [], music: null, gaming: false, gamingSince: 0, lastActive: Date.now() };
+let state: IslandState = { busy: false, listening: false, last: null, ask: null, pokes: [], music: null, gaming: false, gamingSince: 0, pet: null, lastActive: Date.now() };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const set = (p: Partial<IslandState>) => { state = { ...state, ...p }; emit(); };
@@ -52,8 +54,24 @@ export function islandMusic(d: { playing?: boolean; level?: number; beat?: boole
   set({ music: { level: Math.max(0, Math.min(1, Number(d.level) || 0)), beatAt: d.beat ? now : state.music?.beatAt ?? 0, at: now }, lastActive: now });
 }
 export function islandGaming(on: boolean, now = Date.now()) { if (on !== state.gaming) set({ gaming: on, gamingSince: on ? now : 0, lastActive: now }); }
-/** Someone used the island – it wakes up. */
-export function islandTouch(now = Date.now()) { if (now - state.lastActive > 1000) set({ lastActive: now }); }
+/** Someone used the island – it wakes up (also from "geh schlafen"). */
+export function islandTouch(now = Date.now()) { if (state.pet?.mood === "sleeping") set({ pet: null, lastActive: now }); else if (now - state.lastActive > 1000) set({ lastActive: now }); }
+
+/** Spoken or typed commands for the pet itself (not for JARVIS' brain): dance for a while, go to sleep, wake up. */
+export type PetCommand = "dance" | "sleep" | "wake";
+export function petCommand(text: string): PetCommand | null {
+  const s = text.toLowerCase().replace(/[.!?,]/g, " ").replace(/\s+/g, " ").trim().replace(/^(hey |hallo |ok )?jarvis /, "");
+  if (/^(tanz|tanze|tanz mal|tanz für mich|tanz bitte|dance)$/.test(s)) return "dance";
+  if (/^(geh|geh bitte|geh jetzt) (schlafen|pennen)$|^(schlaf|schlaf jetzt|schlaf ein|gute nacht)$|^go to sleep$/.test(s)) return "sleep";
+  if (/^(wach auf|aufwachen|guten morgen|wake up)$/.test(s)) return "wake";
+  return null;
+}
+export const DANCE_MS = 30_000;
+export function islandPet(cmd: PetCommand, now = Date.now()) {
+  if (cmd === "dance") set({ pet: { mood: "dancing", until: now + DANCE_MS }, lastActive: now });
+  else if (cmd === "sleep") set({ pet: { mood: "sleeping", until: Infinity } });
+  else set({ pet: null, lastActive: now });
+}
 export function islandPoke(now = Date.now()) { set({ pokes: [...state.pokes.filter((x) => now - x < 4000), now] }); }
 
 /** A question waits at most 2 minutes – then it is gone and nothing runs. */
@@ -69,12 +87,13 @@ export const MUSIC_FRESH = 4000;
 export const SURPRISE_MS = 3000;
 
 /** What the eyes show – first match wins. Pure, so it is tested without a browser. */
-export function moodOf(s: Pick<IslandState, "busy" | "listening" | "last" | "ask" | "pokes" | "music" | "gaming" | "gamingSince" | "lastActive">, now = Date.now()): Mood {
+export function moodOf(s: Pick<IslandState, "busy" | "listening" | "last" | "ask" | "pokes" | "music" | "gaming" | "gamingSince" | "lastActive"> & { pet?: IslandState["pet"] }, now = Date.now()): Mood {
   if (s.pokes.filter((x) => now - x < 4000).length >= 5) return "dizzy";
   if (s.ask && now - s.ask.at < ASK_TTL) return "asking";
   if (s.listening) return "listening";
   if (s.busy) return "thinking";
   if (s.last && now - s.last.at < HAPPY_MS) return s.last.ok === false ? "error" : "happy";
+  if (s.pet && now < s.pet.until) return s.pet.mood;
   if (s.gaming && now - s.gamingSince < SURPRISE_MS) return "surprised";
   if (s.music && now - s.music.at < MUSIC_FRESH) return "dancing";
   if (s.gaming) return "gaming";
