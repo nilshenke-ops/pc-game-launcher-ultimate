@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.88.1 – 2026-11-03
+### Verbessert
+- Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte
+
 ## 2.88.0 – 2026-11-03
 ### Neu
 - JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts

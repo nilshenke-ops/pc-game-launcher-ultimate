@@ -899,6 +899,23 @@ test("Download-Status ist ehrlich (Entwicklungsserver hat keine EXE)", async () 
   await expect(pc.getByRole("button", { name: "Begleiter herunterladen" })).toBeDisabled();
 });
 
+test("Auswertungen: drei Reiter laden am PC ohne Fehler und sagen ehrlich, wenn Daten fehlen", async () => {
+  const errors: string[] = [];
+  const on = (e: Error) => errors.push(e.message);
+  pc.on("pageerror", on);
+  await pc.goto(`${COMPANION}/#/insights`);
+  await expect(pc.getByRole("heading", { name: "Auswertungen" })).toBeVisible();
+  for (const tab of ["Spielstil", "Leistungsarchiv", "Jahresrückblick"]) {
+    await pc.getByRole("tab", { name: tab }).click();
+    await expect(pc.getByRole("tab", { name: tab })).toHaveAttribute("aria-selected", "true");
+    await expect(pc.locator("main")).not.toContainText(/NaN|undefined|Etwas ist schiefgelaufen/);
+  }
+  await pc.goto(`${COMPANION}/#/settings?s=backup`);
+  await expect(pc.getByText("Datenzentrum")).toBeVisible();
+  pc.off("pageerror", on);
+  expect(errors).toEqual([]);
+});
+
 test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async ({ browser }) => {
   // Opens without any PC information and shows "PC verbinden".
   const ctx = await newCtx(browser, { ...devices["iPad (gen 7)"], locale: "de-DE" });
