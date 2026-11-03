@@ -1,25 +1,26 @@
 {
-  "version": "2.87.1",
-  "date": "2026-11-02",
+  "version": "2.88.0",
+  "date": "2026-11-03",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.1/PCGameLauncherCompanion.exe",
-  "size": 88416189,
-  "sha256": "b6299598a7f61b9577dd1f499e466cc2051d931c2165180208938c8161292fc4",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.0/PCGameLauncherCompanion.exe",
+  "size": 88416704,
+  "sha256": "5099f5211bb967a45a55d412267567314450c73c36a479754f48dfa5d17c1da4",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.87.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.1/PCGameLauncherCompanion-2.87.1-win-x64.zip",
-    "size": 82912055,
-    "sha256": "6e57819ec234dc4aee8a19cdb2dff136e053c1d16c8d2ff5e2e70090e10fc04c"
+    "fileName": "PCGameLauncherCompanion-2.88.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.0/PCGameLauncherCompanion-2.88.0-win-x64.zip",
+    "size": 82912440,
+    "sha256": "40e34424d68488ca3f292e150c4602d779ac4ba41fcd14beb8d213f7f05fdc07"
   },
-  "notes": "Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern · Der Browser wird bei jeder Anmeldung gebeten, den gespeicherten Stand dauerhaft zu behalten",
+  "notes": "JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts · Tests für alle Adress- und QR-Varianten (WLAN, Tailscale, Relay, Adresswechsel, Direktlink)",
   "changes": {
-    "neu": [],
+    "neu": [
+      "JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts"
+    ],
     "verbessert": [
-      "Ist der Speicher des Handys voll, räumt die App die ältesten gespeicherten Stände weg und speichert den neuen; reicht das nicht, meldet sie es statt still zu scheitern",
-      "Der Browser wird bei jeder Anmeldung gebeten, den gespeicherten Stand dauerhaft zu behalten"
+      "Tests für alle Adress- und QR-Varianten (WLAN, Tailscale, Relay, Adresswechsel, Direktlink)"
     ],
     "behoben": []
   },
-  "signature": "mnW0r94Sn/mW/xZTotsPBsXP+06xU/DTbUBbKdrL0OKc6VQPlfg8svtZuyKVJpN5Wz4SZ1LQCqCESbw79fZYTg=="
+  "signature": "IXSN+4OCU4mObDWtGjGn0Es0gkguf+d0ix5ZOYHESItWRqHXzniZ7amzPVdosHrLPV8YCOhGtm+gv9EKcgUNzw=="
 }
