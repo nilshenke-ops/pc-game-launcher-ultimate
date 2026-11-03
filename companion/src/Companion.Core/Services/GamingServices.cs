@@ -150,6 +150,52 @@ public sealed class SettingsService
         return r;
     }
 
+    /// <summary>What the island may be set to (everything else is refused).</summary>
+    public static class IslandLook
+    {
+        public static readonly string[] Styles = { "default", "neon", "minimal", "glass", "blue", "purple", "mono" };
+        public static readonly string[] Eyes = { "auto", "cyan", "green", "pink", "orange", "white" };
+        public static readonly string[] EyeSizes = { "s", "m", "l" };
+        public static readonly string[] Widgets = { "game", "clock", "music", "focus", "stats", "temp", "net", "volume", "note" };
+        public static readonly string[] Positions = { "center", "left", "right" };
+        public static readonly string[] DefaultWidgets = { "game", "clock", "music", "focus", "stats" };
+        public const int MinOpacity = 50, MaxOpacity = 100;
+    }
+
+    public sealed class IslandLookUpdate
+    {
+        public string? Style { get; init; } public string? Eye { get; init; } public string? EyeSize { get; init; }
+        public List<string>? Widgets { get; init; } public string? Position { get; init; } public int? Opacity { get; init; }
+    }
+
+    /// <summary>Look of the island (template, eyes, widgets, place, opacity) – only known values; the island window and every device see the change.</summary>
+    public Settings SetIslandLook(IslandLookUpdate u)
+    {
+        if (u.Style is { } st && !IslandLook.Styles.Contains(st)) throw new RpcException("invalid-params", "Unbekannte Vorlage der Insel.");
+        if (u.Eye is { } ey && !IslandLook.Eyes.Contains(ey)) throw new RpcException("invalid-params", "Unbekannte Augenfarbe.");
+        if (u.EyeSize is { } es && !IslandLook.EyeSizes.Contains(es)) throw new RpcException("invalid-params", "Augengröße muss s, m oder l sein.");
+        if (u.Position is { } po && !IslandLook.Positions.Contains(po)) throw new RpcException("invalid-params", "Position muss center, left oder right sein.");
+        if (u.Opacity is { } op && (op < IslandLook.MinOpacity || op > IslandLook.MaxOpacity)) throw new RpcException("invalid-params", $"Deckkraft muss zwischen {IslandLook.MinOpacity} und {IslandLook.MaxOpacity} liegen.");
+        List<string>? widgets = null;
+        if (u.Widgets != null)
+        {
+            if (u.Widgets.Any(w => !IslandLook.Widgets.Contains(w))) throw new RpcException("invalid-params", "Unbekanntes Insel-Widget.");
+            widgets = IslandLook.Widgets.Where(u.Widgets.Contains).ToList(); // fixed order, no duplicates
+        }
+        var r = _store.Update(s =>
+        {
+            if (u.Style != null) s.IslandStyle = u.Style;
+            if (u.Eye != null) s.IslandEye = u.Eye;
+            if (u.EyeSize != null) s.IslandEyeSize = u.EyeSize;
+            if (widgets != null) s.IslandWidgets = widgets;
+            if (u.Position != null) s.IslandPosition = u.Position;
+            if (u.Opacity != null) s.IslandOpacity = u.Opacity.Value;
+            return Json.Deserialize<Settings>(Json.Serialize(s))!;
+        });
+        _hub.Changed("island");
+        return r;
+    }
+
     /// <summary>Arrangement of the large overlay (checked: known id format, at most 24 widgets, positions on screen, sensible sizes).</summary>
     public Settings SetOverlayLayout(OverlayLayout? layout)
     {

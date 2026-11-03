@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.91.0 – 2026-11-03
+### Neu
+- Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert)
+- Pomodoro im Fokus-Timer der Insel: 25 Minuten Fokus, 5 Minuten Pause, nach vier Runden 15 Minuten; mit Zähler und Rückmeldung am Ende jeder Phase
+- Aussehen und Widgets der Insel stehen jetzt in den Einstellungen des PCs: Sie lassen sich auch vom Handy ändern (mit Administrator-Recht), und die Insel übernimmt jede Änderung sofort; dazu Position (links, Mitte, rechts) und Deckkraft (50–100 %) des Insel-Fensters
+### Verbessert
+- Ungültige Werte für Vorlage, Augenfarbe, Position, Deckkraft und Widgets lehnt der Begleiter ab und ändert dann nichts
+- Das geöffnete Insel-Fenster zeigt nur die gewählten Widgets
+### Behoben
+- Der Browser-Test „Insel-Aussehen“ war versehentlich gelöscht worden und läuft wieder (jetzt gegen die Einstellungen des PCs)
+
 ## 2.90.0 – 2026-11-03
 ### Neu
 - Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones

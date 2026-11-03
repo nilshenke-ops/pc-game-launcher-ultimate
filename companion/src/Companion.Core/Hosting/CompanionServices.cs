@@ -626,7 +626,9 @@ public sealed class CompanionServices : IAsyncDisposable
     bool? _islandShown;
     public string? UpdateIsland()
     {
-        var want = IslandWanted(Settings.Get(), Sessions.AnyGameRunning());
+        var set = Settings.Get();
+        Platform.Island.SetLook(set.IslandPosition, set.IslandOpacity); // place and opacity follow the settings at once (also while it stays shown)
+        var want = IslandWanted(set, Sessions.AnyGameRunning());
         if (_islandShown == want) return null;
         if (want) Music.Start(); else Music.Stop();
         var err = Platform.Island.SetVisible(want);

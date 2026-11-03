@@ -166,6 +166,8 @@ public interface IDesktopIsland
     bool Visible { get; }
     /// <summary>Shows or hides the window. Returns an error text (e.g. WebView2 not ready yet) or null.</summary>
     string? SetVisible(bool on);
+    /// <summary>Place at the top edge ("center", "left", "right") and opacity in percent (50–100).</summary>
+    void SetLook(string position, int opacityPercent);
 }
 
 public sealed class NullDesktopIsland : IDesktopIsland
@@ -174,6 +176,7 @@ public sealed class NullDesktopIsland : IDesktopIsland
     public bool Supported => false;
     public bool Visible => false;
     public string? SetVisible(bool on) => on ? "Die JARVIS-Insel auf dem Bildschirm gibt es nur im Windows-Begleiter." : null;
+    public void SetLook(string position, int opacityPercent) { }
 }
 
 public sealed class NullOverlay : IOverlay

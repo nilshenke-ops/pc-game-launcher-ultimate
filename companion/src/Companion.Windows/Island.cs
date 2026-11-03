@@ -39,9 +39,18 @@ sealed class WindowsDesktopIsland(UiInvoker ui) : IDesktopIsland
             if (!on) { _form?.Rest(); return (string?)null; }
             if (_env == null || _origin == null || _token == null) return null; // opens as soon as the window is ready
             _form ??= new IslandForm(_env, _origin, _token);
+            _form.SetLook(_position, _opacity);
             _form.ShowIsland();
             return null;
         });
+    }
+
+    string _position = "center"; int _opacity = 100;
+    public void SetLook(string position, int opacityPercent)
+    {
+        _position = position is "left" or "right" ? position : "center";
+        _opacity = Math.Clamp(opacityPercent, 50, 100);
+        ui.Post(() => _form?.SetLook(_position, _opacity));
     }
 
     public void Dispose() => ui.Invoke(() => _form?.Dispose());
@@ -70,6 +79,7 @@ sealed class IslandForm : Form
     readonly string _origin, _token;
     bool _started;
     string _size = "notch";
+    string _position = "center";
 
     public IslandForm(CoreWebView2Environment env, string origin, string token)
     {
@@ -94,12 +104,23 @@ sealed class IslandForm : Form
         var w = LogicalToDeviceUnits(logical.Width);
         var h = LogicalToDeviceUnits(logical.Height);
         var r = LogicalToDeviceUnits(_size == "panel" ? 22 : 18);
-        Bounds = new Rectangle(screen.Left + (screen.Width - w) / 2, screen.Top, w, h);
+        var margin = LogicalToDeviceUnits(24);
+        var x = _position == "left" ? screen.Left + margin : _position == "right" ? screen.Right - w - margin : screen.Left + (screen.Width - w) / 2;
+        Bounds = new Rectangle(x, screen.Top, w, h);
         // Square at the top edge, round at the bottom – like a notch hanging from the screen edge.
         var rgn = CreateRoundRectRgn(0, -r, w + 1, h + 1, r * 2, r * 2);
         Region = Region.FromHrgn(rgn);
         DeleteObject(rgn);
         SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+    }
+
+    /// <summary>Place at the top edge (center, left, right) and window opacity in percent.</summary>
+    public void SetLook(string position, int opacityPercent)
+    {
+        Opacity = Math.Clamp(opacityPercent, 50, 100) / 100.0;
+        if (_position == position) return;
+        _position = position;
+        if (Visible) Place();
     }
 
     public async void ShowIsland()

@@ -1,14 +1,16 @@
 // Switches for the JARVIS island on the PC screen (Windows companion): on the desktop and over programs, and
 // separately during games (off by default – the island then hides while a game from the library runs).
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Sparkles } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, Field, Segmented, Switch } from "./ui";
 import { IslandEyes } from "./jarvis-island";
-import { ISLAND_EYES, ISLAND_EYE_SIZES, ISLAND_STYLES, eyeColor, setIslandPrefs, useIslandPrefs, type IslandEye, type IslandEyeSize, type IslandStyle } from "../lib/island";
+import { ISLAND_WIDGETS, toggleWidget } from "../lib/island-widgets";
+import { ISLAND_EYES, ISLAND_EYE_SIZES, ISLAND_STYLES, eyeColor, type IslandEye, type IslandEyeSize, type IslandStyle } from "../lib/island";
+import { ISLAND_POSITIONS, MIN_OPACITY, useIslandLook, type IslandPosition } from "../lib/island-look";
 import type { CSSProperties } from "react";
 
 interface IslandInfo { supported: boolean; visible: boolean; desktop: boolean; games: boolean; gameRunning: boolean }
@@ -40,20 +42,23 @@ function IslandSwitchesCard() {
   );
 }
 
-/** Look of the island: pick a template and see it first (preview), only "Übernehmen" changes the real island. Only in the PC's own window –
- *  the island window shares its storage with it; a phone cannot reach it. */
+/** Look of the island: pick a template, eyes, place and opacity and see it first (preview); only "Übernehmen" changes the real island.
+ *  The settings live on the PC, so a phone with the right to do so can change them too. */
 export function IslandStyleCard() {
-  const conn = useConn();
-  const prefs = useIslandPrefs();
-  const saved = prefs.style;
-  const [pick, setPick] = useState<IslandStyle>(saved);
-  const [eye, setEye] = useState<IslandEye>(prefs.eye);
-  const [eyeSize, setEyeSize] = useState<IslandEyeSize>(prefs.eyeSize);
-  const changed = pick !== saved || eye !== prefs.eye || eyeSize !== prefs.eyeSize;
-  const isDefault = prefs.style === "default" && prefs.eye === "auto" && prefs.eyeSize === "m";
-  if (!conn.me?.isLocal) return (
+  const { look, online, canManage, save } = useIslandLook();
+  const [pick, setPick] = useState<IslandStyle>(look.style);
+  const [eye, setEye] = useState<IslandEye>(look.eye);
+  const [eyeSize, setEyeSize] = useState<IslandEyeSize>(look.eyeSize);
+  const [position, setPosition] = useState<IslandPosition>(look.position);
+  const [opacity, setOpacity] = useState(look.opacity);
+  // What the PC has (also after a change from another device) becomes the new starting point of the preview.
+  const lookKey = JSON.stringify([look.style, look.eye, look.eyeSize, look.position, look.opacity]);
+  useEffect(() => { setPick(look.style); setEye(look.eye); setEyeSize(look.eyeSize); setPosition(look.position); setOpacity(look.opacity); }, [lookKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const changed = pick !== look.style || eye !== look.eye || eyeSize !== look.eyeSize || position !== look.position || opacity !== look.opacity;
+  const isDefault = look.style === "default" && look.eye === "auto" && look.eyeSize === "m" && look.position === "center" && look.opacity === 100;
+  if (!online || !canManage) return (
     <Card title={t("Aussehen der Insel")} icon={<Sparkles size={18} />} className="flat">
-      <p className="small muted">{t("Das Aussehen der Insel stellst du am PC selbst ein (in diesem Fenster am PC).")}</p>
+      <p className="small muted">{online ? t("Dafür brauchst du Administrator-Rechte am PC.") : t("Zum Einstellen muss der PC verbunden sein.")}</p>
     </Card>
   );
   return (
@@ -63,7 +68,7 @@ export function IslandStyleCard() {
         <div className="isl-styles" role="radiogroup" aria-label={t("Vorlage")}>
           {ISLAND_STYLES.map((s) => (
             <button key={s.id} type="button" role="radio" aria-checked={pick === s.id} className={`isl-style-card ${pick === s.id ? "on" : ""}`} onClick={() => setPick(s.id)}>
-              <div className="isl-host isl-preview" data-isl-style={s.id} data-isl-eye-size={eyeSize} data-isl-eye={eyeColor(eye) ? "1" : undefined} style={eyeColor(eye) ? ({ "--isl-eye": eyeColor(eye) } as CSSProperties) : undefined} aria-hidden><div className="isl m-idle"><IslandEyes mood="idle" /><span className="isl-text">{t("JARVIS – bereit")}</span></div></div>
+              <div className="isl-host isl-preview" data-isl-style={s.id} data-isl-eye-size={eyeSize} data-isl-eye={eyeColor(eye) ? "1" : undefined} style={{ ...(eyeColor(eye) ? ({ "--isl-eye": eyeColor(eye) } as CSSProperties) : {}), opacity: opacity / 100 }} aria-hidden><div className="isl m-idle"><IslandEyes mood="idle" /><span className="isl-text">{t("JARVIS – bereit")}</span></div></div>
               <span className="small">{t(s.label)}</span>
             </button>
           ))}
@@ -72,9 +77,13 @@ export function IslandStyleCard() {
           <Segmented value={eye} onChange={setEye} label={t("Augenfarbe")} options={ISLAND_EYES.map((e) => ({ value: e.id, label: t(e.label) }))} />
         </Field>
         <Field label={t("Augengröße")}><Segmented value={eyeSize} onChange={setEyeSize} label={t("Augengröße")} options={ISLAND_EYE_SIZES.map((e) => ({ value: e.id, label: t(e.label) }))} /></Field>
+        <Field label={t("Position am oberen Bildschirmrand")}><Segmented value={position} onChange={setPosition} label={t("Position")} options={ISLAND_POSITIONS.map((p) => ({ value: p.id, label: t(p.label) }))} /></Field>
+        <Field label={t("Deckkraft des Fensters: {v} %", { v: opacity })} hint={t("Nicht ganz durchsichtig: mindestens 50 %, damit die Insel lesbar bleibt.")}>
+          <input type="range" min={MIN_OPACITY} max={100} step={5} value={opacity} aria-label={t("Deckkraft")} onChange={(e) => setOpacity(+e.target.value)} />
+        </Field>
         <div className="row">
-          <Button variant="primary" disabled={!changed} onClick={() => { setIslandPrefs({ style: pick, eye, eyeSize }); toast(t("Aussehen der Insel übernommen"), "success"); }}>{t("Übernehmen")}</Button>
-          <Button disabled={isDefault && !changed} onClick={() => { setPick("default"); setEye("auto"); setEyeSize("m"); setIslandPrefs({ style: "default", eye: "auto", eyeSize: "m" }); }}>{t("Zurücksetzen")}</Button>
+          <Button variant="primary" disabled={!changed} onClick={async () => { if (await save({ style: pick, eye, eyeSize, position, opacity })) toast(t("Aussehen der Insel übernommen"), "success"); }}>{t("Übernehmen")}</Button>
+          <Button disabled={isDefault && !changed} onClick={async () => { setPick("default"); setEye("auto"); setEyeSize("m"); setPosition("center"); setOpacity(100); await save({ style: "default", eye: "auto", eyeSize: "m", position: "center", opacity: 100 }); }}>{t("Zurücksetzen")}</Button>
           {changed && <span className="tiny muted">{t("Vorschau – noch nicht übernommen")}</span>}
         </div>
       </div>
@@ -82,6 +91,20 @@ export function IslandStyleCard() {
   );
 }
 
+/** Which widgets the opened island shows. The usual ones are on; the new ones are off until switched on. Stored on the PC. */
+export function IslandWidgetsCard() {
+  const { look, online, canManage, save } = useIslandLook();
+  if (!online || !canManage) return null;
+  return (
+    <Card title={t("Widgets in der Insel")} icon={<Sparkles size={18} />} className="flat">
+      <div className="stack-sm">
+        <p className="small muted">{t("Wähle, was beim Antippen der Insel erscheint. Messwerte, Netzwerk-Ping und Temperaturen werden nur gemessen, solange die Insel offen ist.")}</p>
+        {ISLAND_WIDGETS.map((w) => <Switch key={w.id} checked={look.widgets.includes(w.id)} onChange={(on) => void save({ widgets: toggleWidget(look.widgets, w.id, on) })} label={t(w.label)} hint={t(w.hint)} />)}
+      </div>
+    </Card>
+  );
+}
+
 export function IslandSettingsCard() {
-  return <><IslandSwitchesCard /><IslandStyleCard /></>;
+  return <><IslandSwitchesCard /><IslandStyleCard /><IslandWidgetsCard /></>;
 }

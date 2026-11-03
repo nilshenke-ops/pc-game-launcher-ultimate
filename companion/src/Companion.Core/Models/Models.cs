@@ -419,6 +419,16 @@ public sealed class Settings
     public bool IslandDesktop { get; set; }
     /// <summary>The island also while a game from the library runs (off: it hides during games).</summary>
     public bool IslandInGames { get; set; }
+    /// <summary>Look of the island: template (default, neon, minimal, glass, blue, purple, mono), eye colour (auto, cyan, green, pink, orange, white) and size (s, m, l).</summary>
+    public string IslandStyle { get; set; } = "default";
+    public string IslandEye { get; set; } = "auto";
+    public string IslandEyeSize { get; set; } = "m";
+    /// <summary>Widgets in the opened island (ids, see IslandLook); null = the usual set.</summary>
+    public List<string>? IslandWidgets { get; set; }
+    /// <summary>Place at the top edge: center, left or right.</summary>
+    public string IslandPosition { get; set; } = "center";
+    /// <summary>Opacity of the island window in percent (50–100).</summary>
+    public int IslandOpacity { get; set; } = 100;
     /// <summary>Screen corner of the small in-game overlay (Windows companion).</summary>
     public string OverlayCorner { get; set; } = "top-right";
     /// <summary>Program used for recording and replays: obs, nvidia, xbox, steam or discord (see CaptureProviders).</summary>

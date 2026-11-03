@@ -8,9 +8,11 @@ import { Check, Gamepad2, Pause, Play, SkipBack, SkipForward, Timer, X } from "l
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
-import { toast, useEvent, useLiveSubscription, useCan, useConn } from "../lib/hooks";
-import { islandStats } from "../lib/island-stats";
-import type { MetricsSample } from "../lib/types";
+import { toast, useCan, useConn } from "../lib/hooks";
+import type { IslandWidgetId } from "../lib/island-widgets";
+import { useIslandLook } from "../lib/island-look";
+import { POMO_LABEL, POMO_START, pomoMs, pomoNext, type PomoState } from "../lib/pomodoro";
+import { IslandNet, IslandNote, IslandStats, IslandTemps, IslandVolume } from "./island-widgets";
 import { eyeColor, clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
 
@@ -64,40 +66,36 @@ function Bars({ level }: { level: number }) {
   return <span className="isl-bars" aria-hidden>{h.map((v, i) => <i key={i} style={{ transform: `scaleY(${v})` }} />)}</span>;
 }
 
-/** CPU, RAM and GPU from the PC – measured only while the opened panel is on screen (the PC then samples; closing it stops that). */
-function IslandStats({ online }: { online: boolean }) {
-  const [m, setM] = useState<MetricsSample | null>(null);
-  useLiveSubscription<MetricsSample>("monitor", setM, undefined, online);
-  useEvent<MetricsSample>("monitor.sample", (d) => { if (online) setM(d); });
-  const stats = islandStats(online ? m : null);
-  return (
-    <div className="isl-card isl-stats" aria-label={t("PC-Werte")}>
-      {stats.map((x) => (
-        <div key={x.id} className="isl-stat"><span className="tiny muted">{x.label}</span><b>{x.text}</b><i style={{ transform: `scaleX(${(x.pct ?? 0) / 100})` }} /></div>
-      ))}
-    </div>
-  );
-}
-
 function FocusTimer({ sound }: { sound: boolean }) {
   const [end, setEnd] = useState<number | null>(null);
+  const [pomo, setPomo] = useState<PomoState | null>(null); // set = Pomodoro mode (phases follow each other until "Stopp")
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     if (!end) return;
     const id = window.setInterval(() => {
       const n = Date.now(); setNow(n);
-      if (n >= end) { setEnd(null); islandAnswer(t("Fokuszeit vorbei – kurze Pause?"), true); if (sound) chime(true); }
+      if (n < end) return;
+      if (pomo) {
+        const next = pomoNext(pomo);
+        islandAnswer(next.phase === "focus" ? t("Pause vorbei – weiter mit Fokus ({n} geschafft)", { n: next.done }) : t(next.phase === "long" ? "Vier Fokus-Runden geschafft – lange Pause!" : "Fokus geschafft – kurze Pause!"), true);
+        if (sound) chime(true);
+        setPomo(next); setEnd(n + pomoMs(next.phase));
+      } else { setEnd(null); islandAnswer(t("Fokuszeit vorbei – kurze Pause?"), true); if (sound) chime(true); }
     }, 500);
     return () => window.clearInterval(id);
-  }, [end, sound]);
+  }, [end, sound, pomo]);
+  const stop = () => { setEnd(null); setPomo(null); };
   return (
     <div className="isl-card">
       <span className="isl-ic"><Timer size={18} /></span>
       <div className="isl-main">
-        <b className="isl-big">{end ? clock(end - now) : t("Fokus")}</b>
+        <b className="isl-big">{end ? clock(end - now) : t("Fokus")}{pomo && <span className="tiny muted"> {t(POMO_LABEL[pomo.phase])} · {pomo.done} ✓</span>}</b>
         <div className="row isl-mini">
-          {end ? <button type="button" className="chip" onClick={() => setEnd(null)}>{t("Stopp")}</button>
-            : [5, 15, 25].map((m) => <button key={m} type="button" className="chip" onClick={() => { setNow(Date.now()); setEnd(Date.now() + m * 60_000); }}>{m} min</button>)}
+          {end ? <button type="button" className="chip" onClick={stop}>{t("Stopp")}</button>
+            : <>
+              {[5, 15, 25].map((m) => <button key={m} type="button" className="chip" onClick={() => { setNow(Date.now()); setEnd(Date.now() + m * 60_000); }}>{m} min</button>)}
+              <button type="button" className="chip" title={t("25 min Fokus, 5 min Pause, nach vier Runden 15 min")} onClick={() => { setNow(Date.now()); setPomo(POMO_START); setEnd(Date.now() + pomoMs("focus")); }}>{t("Pomodoro")}</button>
+            </>}
         </div>
       </div>
     </div>
@@ -108,6 +106,7 @@ function FocusTimer({ sound }: { sound: boolean }) {
 export function JarvisIsland() {
   const s = useIsland();
   const prefs = useIslandPrefs();
+  const { look } = useIslandLook();
   const app = useAppState().state;
   const conn = useConn();
   const canMedia = useCan("launch");
@@ -155,6 +154,7 @@ export function JarvisIsland() {
   }, [open]);
 
   const game = app?.running?.[0] ?? null;
+  const has = (id: IslandWidgetId) => look.widgets.includes(id);
   const allow = async () => {
     if (!ask?.method) return;
     islandClearAsk();
@@ -176,7 +176,7 @@ export function JarvisIsland() {
     : (mood === "happy" || mood === "error") && s.last ? s.last.text : game ? game.name : t("JARVIS – antippen für Widgets");
 
   return (
-    <div className={`isl-host s-${size}`} data-isl-style={prefs.style} data-isl-eye-size={prefs.eyeSize} data-isl-eye={eyeColor(prefs.eye) ? "1" : undefined} style={eyeColor(prefs.eye) ? ({ "--isl-eye": eyeColor(prefs.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => setHover(false)}>
+    <div className={`isl-host s-${size}`} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => setHover(false)}>
       <div className={`isl m-${mood}`}>
         <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} onClick={() => setOpen((o) => !o)}>
           <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); setNow(Date.now()); }} />
@@ -205,6 +205,7 @@ export function JarvisIsland() {
             </div>
           </div>
           <div className="isl-grid">
+            {has("game") && (
             <div className="isl-card">
               <span className="isl-ic"><Gamepad2 size={18} /></span>
               <div className="isl-main">
@@ -212,12 +213,16 @@ export function JarvisIsland() {
                 <span className="tiny muted">{!online ? t("PC nicht verbunden") : game ? t("läuft seit {t}", { t: new Date(game.since).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }) : t("Laut deinem PC")}</span>
               </div>
             </div>
+            )}
+            {has("clock") && (
             <div className="isl-card">
               <div className="isl-main">
                 <b className="isl-big">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</b>
                 <span className="tiny muted">{new Date(now).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
               </div>
             </div>
+            )}
+            {has("music") && (
             <div className="isl-card">
               <div className="isl-main">
                 <b>{t("Musik am PC")}</b>
@@ -228,8 +233,13 @@ export function JarvisIsland() {
                 </div>
               </div>
             </div>
-            <IslandStats online={online} />
-            <FocusTimer sound={prefs.sound} />
+            )}
+            {has("stats") && <IslandStats online={online} />}
+            {has("temp") && <IslandTemps online={online} />}
+            {has("net") && <IslandNet online={online} />}
+            {has("volume") && <IslandVolume enabled={online && canMedia} press={media} />}
+            {has("focus") && <FocusTimer sound={prefs.sound} />}
+            {has("note") && <IslandNote />}
           </div>
           <div className="row isl-foot">
             <label className="row tiny"><input type="checkbox" checked={prefs.sound} onChange={(e) => setIslandPrefs({ sound: e.target.checked })} /> {t("Ton bei „fertig“ und Rückfragen")}</label>

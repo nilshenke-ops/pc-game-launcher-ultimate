@@ -1969,3 +1969,8 @@ html.island-mode .app-bg { display: none; }
 .isl-host[data-isl-eye-size="s"] .isl-eyes.big i { width: 10px; height: 19px; }
 .isl-host[data-isl-eye-size="l"] .isl-eyes.big i { width: 18px; height: 33px; }
 .isl-host[data-isl-eye] .isl.m-idle { --isl-c: var(--isl-eye) !important; }
+.isl-temps { grid-template-columns: auto repeat(3, 1fr); align-items: center; }
+.isl-bad { color: #f87171; }
+.isl-note { grid-column: 1 / -1; align-items: flex-start; }
+.isl-note textarea.input { height: auto; min-height: 64px; resize: none; padding: 8px 10px; width: 100%; }
+.isl-grid .isl-card .row.between { justify-content: space-between; gap: 10px; }

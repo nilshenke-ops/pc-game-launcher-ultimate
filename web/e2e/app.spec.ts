@@ -722,6 +722,87 @@ test("Status-Pille (Handy-Breite): aus bis eingeschaltet, zeigt die Verbindung, 
   await pc.setViewportSize(before ?? { width: 1280, height: 800 });
 });
 
+test("Insel-Aussehen: Vorlage erst als Vorschau, „Übernehmen“ speichert auf dem PC, ein anderes Gerät ändert es live, ungültiges wird abgelehnt", async () => {
+  type L = { look: { style: string; eye: string; eyeSize: string; position: string; opacity: number; widgets: string[] } };
+  const look = async () => (await adminRpc<L>("island.get")).look;
+  expect(await look()).toMatchObject({ style: "default", eye: "auto", eyeSize: "m", position: "center", opacity: 100 });
+  await pc.goto(`${COMPANION}/#/assistant`);
+  const group = pc.getByRole("radiogroup", { name: "Vorlage" });
+  await expect(group.getByRole("radio")).toHaveCount(7);
+  await group.getByRole("radio", { name: /Neon Gaming/ }).click();
+  await expect(pc.getByText("Vorschau – noch nicht übernommen")).toBeVisible();
+  expect((await look()).style).toBe("default"); // preview only: the PC still has the old look
+  await pc.getByRole("radiogroup", { name: "Augenfarbe" }).getByRole("radio", { name: "Pink" }).click();
+  await pc.getByRole("radiogroup", { name: "Augengröße" }).getByRole("radio", { name: "Groß" }).click();
+  await pc.getByRole("radiogroup", { name: "Position" }).getByRole("radio", { name: "Rechts" }).click();
+  await pc.getByRole("button", { name: "Übernehmen" }).click();
+  await expect.poll(look).toMatchObject({ style: "neon", eye: "pink", eyeSize: "l", position: "right", opacity: 100 });
+  await pc.goto(`${COMPANION}/#/island`);
+  await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-style", "neon");
+  await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-eye-size", "l");
+  expect(await pc.locator(".isl-eyes i").first().evaluate((e) => getComputedStyle(e).backgroundColor)).toBe("rgb(244, 114, 182)");
+  // Another device (here a second connection with the admin right) changes the look: the island window follows without reloading.
+  await adminRpc("island.configure", { look: { style: "blue", opacity: 70 } });
+  await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-style", "blue", { timeout: 15000 });
+  expect(await look()).toMatchObject({ style: "blue", eye: "pink", opacity: 70 }); // only the named parts changed
+  // Unknown values are refused and change nothing.
+  await expect(adminRpc("island.configure", { look: { style: "rot" } })).rejects.toThrow(/Vorlage/);
+  await expect(adminRpc("island.configure", { look: { opacity: 5 } })).rejects.toThrow(/Deckkraft/);
+  await expect(adminRpc("island.configure", { look: { widgets: ["kamera"] } })).rejects.toThrow(/Widget/);
+  expect(await look()).toMatchObject({ style: "blue", opacity: 70 });
+  await pc.goto(`${COMPANION}/#/assistant`);
+  await pc.getByRole("button", { name: "Zurücksetzen" }).click();
+  await expect.poll(look).toMatchObject({ style: "default", eye: "auto", eyeSize: "m", position: "center", opacity: 100 });
+  await pc.goto(`${COMPANION}/#/island`);
+  await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-style", "default");
+  await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-eye-size", "m");
+});
+
+test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, Lautstärke, Notiz bleibt, Pomodoro", async () => {
+  const sw = (name: RegExp) => pc.getByRole("switch", { name });
+  await pc.goto(`${COMPANION}/#/assistant`);
+  await expect(sw(/^Laufendes Spiel/)).toBeChecked();
+  await expect(sw(/^PC-Werte/)).toBeChecked();
+  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) await expect(sw(n)).not.toBeChecked();
+  // The switches follow the PC's answer (saved there first), so click and then wait for the state.
+  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) { await sw(n).click({ force: true }); await expect(sw(n)).toBeChecked(); }
+  // The choice is kept on the PC (so a phone sees and changes the same), in the fixed order.
+  await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).toEqual(["game", "clock", "music", "focus", "stats", "temp", "net", "volume", "note"]);
+  await pc.goto(`${COMPANION}/#/island`);
+  await pc.locator(".isl-host").dispatchEvent("mouseover", { relatedTarget: null });
+  await pc.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  const panel = pc.getByRole("dialog", { name: "JARVIS-Insel" });
+  await expect(panel).toBeVisible();
+  // Temperature and FPS: numbers from the PC or the honest "n. v." – FPS is never invented (the companion has no frame capture).
+  const temps = panel.getByLabel("Temperatur & FPS");
+  await expect(temps).toBeVisible();
+  await expect.poll(async () => (await temps.textContent()) ?? "", { timeout: 15000 }).toMatch(/CPU(\d+ °C|n\. v\.)/);
+  await expect(temps.locator(".isl-stat").nth(2)).toContainText("n. v.");
+  expect(await temps.textContent()).not.toMatch(/NaN|undefined/);
+  // Network: a real ping row or "Misst …"; volume keys are enabled; Pomodoro starts a 25 minute focus phase.
+  await expect(panel).toContainText("Netzwerk");
+  await expect.poll(async () => (await panel.textContent()) ?? "", { timeout: 20000 }).toMatch(/\d+ ms|keine Antwort|Misst/);
+  for (const b of ["Leiser", "Stumm", "Lauter"]) await expect(panel.getByRole("button", { name: b })).toBeEnabled();
+  await panel.getByRole("button", { name: "Pomodoro" }).click();
+  await expect(panel).toContainText(/24:5\d|25:00/);
+  await expect(panel).toContainText("0 ✓");
+  await panel.getByRole("button", { name: "Stopp" }).click();
+  // The note survives closing and reloading the window.
+  await panel.getByRole("textbox", { name: "Notiz" }).fill("E2E-Zettel: Pizza bestellen");
+  await pc.waitForTimeout(700);
+  await pc.reload();
+  await pc.locator(".isl-host").dispatchEvent("mouseover", { relatedTarget: null });
+  await pc.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  await expect(pc.getByRole("textbox", { name: "Notiz" })).toHaveValue("E2E-Zettel: Pizza bestellen");
+  // Clean up: defaults again, note removed.
+  await pc.getByRole("textbox", { name: "Notiz" }).fill("");
+  await pc.waitForTimeout(700);
+  await pc.goto(`${COMPANION}/#/assistant`);
+  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) { await sw(n).click({ force: true }); await expect(sw(n)).not.toBeChecked(); }
+  await expect(sw(/^Notiz/)).not.toBeChecked();
+  await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).toEqual(["game", "clock", "music", "focus", "stats"]);
+});
+
 test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => {
   await pc.goto(`${COMPANION}/#/network`);
   await expect(pc.getByRole("heading", { name: "Netzwerkdiagnose" })).toBeVisible();

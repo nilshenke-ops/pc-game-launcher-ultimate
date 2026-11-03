@@ -7,6 +7,7 @@ import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
 import { t } from "./i18n";
 import type { AssistantAction } from "./assistant";
+import { cleanWidgets, type IslandWidgetId } from "./island-widgets";
 
 export type Mood = "idle" | "thinking" | "listening" | "asking" | "happy" | "error" | "dizzy" | "dancing" | "gaming" | "sleeping" | "surprised";
 /** Window sizes the companion accepts: only the eyes, the bar, the bar with a question, the open widgets. */
@@ -134,8 +135,8 @@ export const ISLAND_EYE_SIZES: { id: IslandEyeSize; label: string }[] = [{ id: "
 export const isIslandEye = (v: unknown): v is IslandEye => ISLAND_EYES.some((e) => e.id === v);
 export const isIslandEyeSize = (v: unknown): v is IslandEyeSize => ISLAND_EYE_SIZES.some((e) => e.id === v);
 export const eyeColor = (e: IslandEye) => ISLAND_EYES.find((x) => x.id === e)?.color ?? null;
-export interface IslandPrefs { sound: boolean; style: IslandStyle; eye: IslandEye; eyeSize: IslandEyeSize }
-const readPrefs = (): IslandPrefs => { try { const v = readJson<Partial<IslandPrefs>>(KEY); return { sound: v?.sound !== false, style: isIslandStyle(v?.style) ? v.style : "default", eye: isIslandEye(v?.eye) ? v.eye : "auto", eyeSize: isIslandEyeSize(v?.eyeSize) ? v.eyeSize : "m" }; } catch { return { sound: true, style: "default", eye: "auto", eyeSize: "m" }; } };
+export interface IslandPrefs { sound: boolean; style: IslandStyle; eye: IslandEye; eyeSize: IslandEyeSize; widgets: IslandWidgetId[] }
+const readPrefs = (): IslandPrefs => { try { const v = readJson<Partial<IslandPrefs>>(KEY); return { sound: v?.sound !== false, style: isIslandStyle(v?.style) ? v.style : "default", eye: isIslandEye(v?.eye) ? v.eye : "auto", eyeSize: isIslandEyeSize(v?.eyeSize) ? v.eyeSize : "m", widgets: cleanWidgets(v?.widgets) }; } catch { return { sound: true, style: "default", eye: "auto", eyeSize: "m", widgets: cleanWidgets(undefined) }; } };
 export const islandPrefs = readPrefs;
 const prefListeners = new Set<() => void>();
 let prefSnap = readPrefs();

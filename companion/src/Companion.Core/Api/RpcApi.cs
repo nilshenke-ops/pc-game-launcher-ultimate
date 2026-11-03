@@ -673,6 +673,12 @@ public static class RpcApi
             bool? Opt(string k) => ctx.Params.TryGetProperty(k, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
             var desktop = Opt("desktop"); var games = Opt("games");
             s.Settings.SetIsland(desktop, games);
+            // The look (template, eyes, widgets, place, opacity) – changed from the PC or from a phone with the right to do so.
+            if (ctx.Params.TryGetProperty("look", out var lk) && lk.ValueKind == JsonValueKind.Object)
+            {
+                var upd = lk.Deserialize<SettingsService.IslandLookUpdate>(Json.Options) ?? new SettingsService.IslandLookUpdate();
+                s.Settings.SetIslandLook(upd);
+            }
             var err = s.UpdateIsland();
             return new { info = IslandInfo(s), error = err };
         });
@@ -906,7 +912,11 @@ public static class RpcApi
     static object IslandInfo(CompanionServices s)
     {
         var set = s.Settings.Get();
-        return new { supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, gameRunning = s.Sessions.AnyGameRunning() };
+        return new
+        {
+            supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, gameRunning = s.Sessions.AnyGameRunning(),
+            look = new { style = set.IslandStyle, eye = set.IslandEye, eyeSize = set.IslandEyeSize, widgets = set.IslandWidgets ?? SettingsService.IslandLook.DefaultWidgets.ToList(), position = set.IslandPosition, opacity = set.IslandOpacity },
+        };
     }
 
     static object TailscaleInfo(CompanionServices s) => new
