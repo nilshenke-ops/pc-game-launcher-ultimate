@@ -1,31 +1,31 @@
 {
-  "version": "2.90.0",
+  "version": "2.91.0",
   "date": "2026-11-03",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.90.0/PCGameLauncherCompanion.exe",
-  "size": 88422508,
-  "sha256": "e3cc9a32065821b1462ca6257d4b4ed415b6edc96ebc8e34e4dbba9ed83887fb",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.91.0/PCGameLauncherCompanion.exe",
+  "size": 88429037,
+  "sha256": "95f7c2060acdebda93ed68ebfbb4fcc627ac89420b339e2d5ff8b8cf37deccd2",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.90.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.90.0/PCGameLauncherCompanion-2.90.0-win-x64.zip",
-    "size": 82918670,
-    "sha256": "7be161b051b78a3f274c3ffe977f0e42d4d41e21a652c515791e5bd33022758f"
+    "fileName": "PCGameLauncherCompanion-2.91.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.91.0/PCGameLauncherCompanion-2.91.0-win-x64.zip",
+    "size": 82924719,
+    "sha256": "06a2857e64d409fece3db1e145c4cadb93f70c97ba5ab29533539ae7b6725102"
   },
-  "notes": "Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones · Aussehen der JARVIS-Insel (am PC, unter „Einrichten“ bzw. Overlay & Aufnahme): sieben Vorlagen (Standard, Neon Gaming, Minimal Dunkel, Liquid Glass, Blau, Lila, Schwarz-Weiß) mit Vorschau – erst „Übernehmen“ ändert die echte Insel; dazu Augenfarbe und Augengröße; „Standard“ ist das bisherige Aussehen · Insel-Fenster zeigt eine Karte „PC-Werte“ (CPU, RAM, GPU) – gemessen nur, solange das Fenster offen ist; nicht messbare Werte stehen als „n. v.“, abgeschaltete als „aus“",
+  "notes": "Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert) · Pomodoro im Fokus-Timer der Insel: 25 Minuten Fokus, 5 Minuten Pause, nach vier Runden 15 Minuten; mit Zähler und Rückmeldung am Ende jeder Phase · Aussehen und Widgets der Insel stehen jetzt in den Einstellungen des PCs: Sie lassen sich auch vom Handy ändern (mit Administrator-Recht), und die Insel übernimmt jede Änderung sofort; dazu Position (links, Mitte, rechts) und Deckkraft (50–100 %) des Insel-Fensters",
   "changes": {
     "neu": [
-      "Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones",
-      "Aussehen der JARVIS-Insel (am PC, unter „Einrichten“ bzw. Overlay & Aufnahme): sieben Vorlagen (Standard, Neon Gaming, Minimal Dunkel, Liquid Glass, Blau, Lila, Schwarz-Weiß) mit Vorschau – erst „Übernehmen“ ändert die echte Insel; dazu Augenfarbe und Augengröße; „Standard“ ist das bisherige Aussehen",
-      "Insel-Fenster zeigt eine Karte „PC-Werte“ (CPU, RAM, GPU) – gemessen nur, solange das Fenster offen ist; nicht messbare Werte stehen als „n. v.“, abgeschaltete als „aus“"
+      "Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert)",
+      "Pomodoro im Fokus-Timer der Insel: 25 Minuten Fokus, 5 Minuten Pause, nach vier Runden 15 Minuten; mit Zähler und Rückmeldung am Ende jeder Phase",
+      "Aussehen und Widgets der Insel stehen jetzt in den Einstellungen des PCs: Sie lassen sich auch vom Handy ändern (mit Administrator-Recht), und die Insel übernimmt jede Änderung sofort; dazu Position (links, Mitte, rechts) und Deckkraft (50–100 %) des Insel-Fensters"
     ],
     "verbessert": [
-      "Dialoge auf Handys im Querformat und bei offener Bildschirmtastatur: Titel, Schließen-Knopf und Knöpfe bleiben im Bild, der Inhalt scrollt (die Höhe richtet sich nach dem sichtbaren Bereich)",
-      "Sortierung „Zuletzt“ der Spielebibliothek: bei gleichem Zeitpunkt nach Name",
-      "Insel-Fenster am PC ist etwas höher (520 statt 470 px), damit die neue Karte Platz hat",
-      "Neue Tests: Wiederherstellungspunkt im Browser, Sortierung/Favorit nach dem Neuladen, Dialoge bei kleiner Höhe, Status-Pille, Insel-Aussehen"
+      "Ungültige Werte für Vorlage, Augenfarbe, Position, Deckkraft und Widgets lehnt der Begleiter ab und ändert dann nichts",
+      "Das geöffnete Insel-Fenster zeigt nur die gewählten Widgets"
     ],
-    "behoben": []
+    "behoben": [
+      "Der Browser-Test „Insel-Aussehen“ war versehentlich gelöscht worden und läuft wieder (jetzt gegen die Einstellungen des PCs)"
+    ]
   },
-  "signature": "BAqJFSPGqFfF+5VAzk4FSyTP/YwRZvomYmZKejWwIoU5rnOAPKrmNKoFIRFaa4hQ1L7+deX7dEOunFWD5XzE4w=="
+  "signature": "fSGXko+QOP85jup8hDFWek/3MT1HQ0JD6R1x1t49qDr4Jf1OJO3veHgQX3Z+n3jO9UfugQ465gh4gwBVywgb9g=="
 }
