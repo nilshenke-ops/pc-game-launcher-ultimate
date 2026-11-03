@@ -1,24 +1,30 @@
 {
-  "version": "2.88.1",
+  "version": "2.89.0",
   "date": "2026-11-03",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion.exe",
-  "size": 88415961,
-  "sha256": "8cee77c92d0bfb293e0ad13e5ae169762557b1ed3ad7feb0df6742dc86ab7dc5",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.89.0/PCGameLauncherCompanion.exe",
+  "size": 88417463,
+  "sha256": "6cd701919164ec82f4993b86b7a372b56fb555e693601c44ef156e588ea65f70",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.88.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion-2.88.1-win-x64.zip",
-    "size": 82911782,
-    "sha256": "abb37f587428f54ff35f638f94dce242525907189cc7078321a874a2c94f15ee"
+    "fileName": "PCGameLauncherCompanion-2.89.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.89.0/PCGameLauncherCompanion-2.89.0-win-x64.zip",
+    "size": 82913492,
+    "sha256": "0b218acbb8ec2426922541e27b3624480ad3688d4649939bdcdc2690bd19e877"
   },
-  "notes": "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte",
+  "notes": "Verbindungsstatus: Nach vielen fehlgeschlagenen Versuchen steht „PC nicht erreichbar – die App versucht es weiter (Versuch n)“ statt endlos „Wiederverbindung läuft“ · Ist der Companion auf dem PC älter als die Webseite, sagt die App klar „Der Companion auf deinem PC (vX) kennt diese Funktion noch nicht – bitte unter Einstellungen → Updates aktualisieren“ statt einer bloßen Fehlermeldung · Auf Touch-Geräten sind alle Knöpfe, Reiter, Eingabefelder, Schieberegler und Menüpunkte mindestens 44 × 44 px groß (vorher teils 28–36 px); gemessen auf allen Seiten im Hoch- und Querformat (iPhone SE/13, Pixel 5, iPad)",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte"
+    "neu": [
+      "Verbindungsstatus: Nach vielen fehlgeschlagenen Versuchen steht „PC nicht erreichbar – die App versucht es weiter (Versuch n)“ statt endlos „Wiederverbindung läuft“",
+      "Ist der Companion auf dem PC älter als die Webseite, sagt die App klar „Der Companion auf deinem PC (vX) kennt diese Funktion noch nicht – bitte unter Einstellungen → Updates aktualisieren“ statt einer bloßen Fehlermeldung"
     ],
-    "behoben": []
+    "verbessert": [
+      "Auf Touch-Geräten sind alle Knöpfe, Reiter, Eingabefelder, Schieberegler und Menüpunkte mindestens 44 × 44 px groß (vorher teils 28–36 px); gemessen auf allen Seiten im Hoch- und Querformat (iPhone SE/13, Pixel 5, iPad)",
+      "Tests: Kontrast aller eingebauten Designs, Animationen ohne Layout-Eigenschaften und „Weniger Bewegung“, alle Verbindungszustände, Favorit und Sortierung nach dem Neuladen"
+    ],
+    "behoben": [
+      "Obere Leiste auf schmalen Handys: Titel und Symbole schnitten rechts die Glocke ab (lange Titel wie „Einstellungen“); der Titel kürzt sich jetzt"
+    ]
   },
-  "signature": "PsYXZOoOeSn19FPPv3E3qG6hMwBz8LPaV1JumOCBFPkpqrITYjsJ7bicI9veRdCy5ymtZpl/rBDzywRciO8MwQ=="
+  "signature": "cgtuH0oc4xm3UE/q2/beLsF/K7QRoNx049IqBJNAm0IU9v6qGSqSs7dIOJLOeW9q2oa/GwunNv0Gf2paxdkoqg=="
 }
