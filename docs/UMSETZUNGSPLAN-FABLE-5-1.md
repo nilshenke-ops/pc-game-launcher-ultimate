@@ -2,7 +2,7 @@
 
 Dies ist die **Arbeitsliste**. Die Begründungen und belegten Funde stehen in `docs/PLAN-FABLE-5-1.md`. Hier ist jeder Punkt als Arbeitspaket (AP) eingeordnet, damit er abgearbeitet und abgehakt werden kann.
 
-## Stand der Umsetzung (Version 2.90.0, 2026-11-03)
+## Stand der Umsetzung (Version 2.91.0, 2026-11-03)
 | AP | Ergebnis | Beleg |
 |----|----------|-------|
 | 01 | **erledigt**: sechs Zustände, nach 20 Fehlversuchen „PC nicht erreichbar … (Versuch n)“ | `web/src/lib/conn-state.ts`, 7 Unit-Tests |
@@ -21,14 +21,14 @@ Dies ist die **Arbeitsliste**. Die Begründungen und belegten Funde stehen in `d
 ### Block 2 (braucht deinen Windows-PC / echte Handys) – **nicht erledigt**
 AP 20–26 sind unverändert offen. Hier gibt es keinen Windows-PC und kein Handy, deshalb habe ich dazu nichts „getestet“. Seit 2.90.0 sind in der Insel nur das Fenster etwas höher (520 statt 470 px) und neue Karten dazugekommen – beides am echten PC ungeprüft.
 
-### Block 3 – Stand
+### Block 3 – Stand (2.91.0)
 | AP | Ergebnis | Beleg |
 |----|----------|-------|
-| 30 | **erledigt (als Option, aus)**: Status-Pille unter der oberen Leiste für Handy/iPad-Breite: Verbindung, laufendes Spiel (nie aus dem gespeicherten Stand), wartende Änderungen, antippbar. Keine echte Dynamic Island. Auf echtem iPhone (Safe Area/Notch) ungeprüft | `status-pill.tsx`, Browser-Test, 2 Unit-Tests |
-| 31 | **teilweise**: Karte „PC-Werte“ (CPU, RAM, GPU; ehrlich „n. v.“/„aus“; misst nur bei offenem Fenster). Notizen, Pomodoro-Erweiterung, Netz, Lautstärke und FPS/Temperatur **nicht** gebaut; Uhr, Medientasten, Fokus-Timer und laufendes Spiel gab es schon | `island-stats.ts`, 3 Unit-Tests, Browser-Test |
-| 32 | **erledigt**: sieben Vorlagen mit Vorschau (erst „Übernehmen“ ändert die Insel), Standard bleibt das alte Aussehen; nur im PC-Fenster einstellbar | `IslandStyleCard`, Browser-Test, Unit-Test |
-| 33 | **teilweise**: Augenfarbe und Augengröße. **Nicht gebaut:** Position, Transparenz, Stimmenlautstärke, Autostart und Steuerung vom Handy (brauchen Begleiter-Änderungen am echten PC) | Browser-Test |
-| 34 | **nicht gebaut**: „Hey Jarvis“, Unterbrechen, ElevenLabs-Stimme (Mikrofon/Audio am echten PC nötig; Schlüssel nur am PC) | – |
+| 30 | **erledigt (als Option, aus)**: Status-Pille unter der oberen Leiste für Handy/iPad-Breite. Keine echte Dynamic Island. Auf echtem iPhone (Safe Area/Notch) ungeprüft | `status-pill.tsx`, Browser-Test |
+| 31 | **erledigt, soweit messbar**: Widgets Spiel, Uhr, Musik, Fokus/Pomodoro, PC-Werte, Temperatur & FPS, Netzwerk, Lautstärke, Notiz – einzeln wählbar (die neuen aus). **FPS gibt es nicht**: der Begleiter hat keinen Frame-Capture-Dienst (PresentMon), die Karte zeigt ehrlich „n. v.“. Zwischenablage-Widget bewusst **nicht** gebaut (Datenschutz: würde Inhalte mitlesen) | `island-widgets.ts(x)`, `pomodoro.ts`, 13 Unit-Tests, Browser-Test |
+| 32 | **erledigt**: sieben Vorlagen mit Vorschau, Standard bleibt das alte Aussehen | Browser-Test |
+| 33 | **erledigt bis auf Stimme**: Augenfarbe, Augengröße, Position (links/Mitte/rechts), Deckkraft (50–100 %), Widget-Auswahl – gespeichert in den Einstellungen des PCs, **vom Handy änderbar** (Administrator-Recht), die Insel folgt live; ungültige Werte werden abgelehnt. Autostart: die Insel startet mit dem Begleiter, sobald „Auf dem Desktop anzeigen“ an ist. **Am echten PC ungeprüft:** Position und Deckkraft des Fensters (`Island.cs`). Stimmenlautstärke entfällt, solange es keine Sprachausgabe gibt (AP 34) | 3 Begleiter-Tests (+ 8 Fälle), Browser-Test mit zweiter Verbindung |
+| 34 | **nicht gebaut, bewusst**: „Hey Jarvis“ braucht ein dauerhaft offenes Mikrofon (Datenschutz-Entscheidung des Nutzers nötig) und in WebView2 ist die Web-Spracherkennung nicht verlässlich; ElevenLabs braucht einen Schlüssel am PC und einen echten Test. Beides ohne PC nicht prüfbar | – |
 | 35 | **blockiert**: wie AP 10 (Text von Master-Prompt 2 fehlt) | – |
 
 ### Block 4 – Stand
