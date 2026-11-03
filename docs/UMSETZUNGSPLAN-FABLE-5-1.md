@@ -2,21 +2,41 @@
 
 Dies ist die **Arbeitsliste**. Die Begründungen und belegten Funde stehen in `docs/PLAN-FABLE-5-1.md`. Hier ist jeder Punkt als Arbeitspaket (AP) eingeordnet, damit er abgearbeitet und abgehakt werden kann.
 
-## Stand der Umsetzung (Version 2.89.0, 2026-11-03)
+## Stand der Umsetzung (Version 2.90.0, 2026-11-03)
 | AP | Ergebnis | Beleg |
 |----|----------|-------|
 | 01 | **erledigt**: sechs Zustände, nach 20 Fehlversuchen „PC nicht erreichbar … (Versuch n)“ | `web/src/lib/conn-state.ts`, 7 Unit-Tests |
 | 02 | **teilweise**: Scan „gekoppelt, PC aus“ über alle Seiten: keine bleibt beim Laden hängen, keiner leer, kein Überlauf. Ob jede Seite „Stand“ oder „braucht PC“ ehrlich zeigt, ist **nicht seitenweise geprüft** | `web/scripts/scan-mobile.mjs --paired` |
 | 03 | **erledigt**: Meldung „Companion aktualisieren“ bei unbekannter Aktion | `outdatedCompanionMessage`, 2 Tests |
 | 04 | **erledigt**: 0 Bedienelemente unter 44 px (iPhone SE/13, Pixel 5, iPad; Ausnahmen: Links im Fließtext, Raum-Gegenstände mit vergrößerter Trefferfläche) | Scan, `styles.css` (`pointer: coarse`) |
-| 05 | **teilweise**: Querformat und obere Leiste geprüft (dabei Fehler gefunden und behoben: Glocke abgeschnitten). **Offen:** Bildschirmtastatur/Dialoge bei kleiner Höhe | Scan |
+| 05 | **erledigt in der Cloud**: Querformat, obere Leiste (Fehler behoben), Dialoge bei 568×320 und 390×300 (Fehler behoben: Bottom-Sheet überschrieb die Höhenregel); bei offener Tastatur wandern Dialoge nach oben. **Nicht auf echtem iPhone geprüft** (Tastatur lässt sich im Browser-Test nur nachbilden) | Scan, Browser-Test, `visible-height.ts` |
 | 06 | **erledigt**: nur Fortschrittsbalken animiert die Breite; „Weniger Bewegung“ stoppt alles | `css-motion.test.ts` |
 | 07 | **teilweise**: Kontrast aller 35 eingebauten Designs bestanden. **Offen:** Glas über Bildszenen (dynamisch, nicht statisch prüfbar) | `contrast.test.ts` |
 | 08 | **erledigt**: keine neuen Schwachstellen gefunden, zwei Restrisiken dokumentiert | `docs/SICHERHEIT-DURCHSICHT.md` |
-| 09 | **teilweise**: Matrix geschrieben; Lücken „Sortierung/Favorit nach Neuladen“ geschlossen. **Offen:** „Zuletzt verwendet“-Liste, Backup-Wiederherstellungspunkt im Browser | `docs/BEREICHSMATRIX.md`, 1 neuer Browser-Test |
+| 09 | **erledigt**: Matrix geschrieben; Lücken geschlossen: Sortierung/Favorit nach Neuladen (Browser), „Zuletzt“-Reihenfolge (`library-sort.test.ts`), Backup-Punkt anlegen → ändern → wiederherstellen (Browser). Noch offen laut Matrix: Audio-Ausgabegerät (braucht Windows) | `docs/BEREICHSMATRIX.md`, 3 neue Tests |
 | 10 | **blockiert**: Der Text von Master-Prompt 2 steht nicht im Repository; Nutzer muss ihn bereitstellen | `docs/BEREICHSMATRIX.md` |
 | 11 | **teilweise**: `Assistant.tsx` 652 → 384 Zeilen (Einstellungskarten in `assistant-settings.tsx`, Code unverändert verschoben). `rpc.ts` bewusst **nicht** geteilt (eine zusammenhängende Klasse, hohes Risiko) | Diff geprüft, alle Tests grün |
 | 12 | **erledigt**: Link-Prüfung, alter 1.x-Bericht als historisch markiert | `scripts/check-links.mjs` |
+
+### Block 2 (braucht deinen Windows-PC / echte Handys) – **nicht erledigt**
+AP 20–26 sind unverändert offen. Hier gibt es keinen Windows-PC und kein Handy, deshalb habe ich dazu nichts „getestet“. Seit 2.90.0 sind in der Insel nur das Fenster etwas höher (520 statt 470 px) und neue Karten dazugekommen – beides am echten PC ungeprüft.
+
+### Block 3 – Stand
+| AP | Ergebnis | Beleg |
+|----|----------|-------|
+| 30 | **erledigt (als Option, aus)**: Status-Pille unter der oberen Leiste für Handy/iPad-Breite: Verbindung, laufendes Spiel (nie aus dem gespeicherten Stand), wartende Änderungen, antippbar. Keine echte Dynamic Island. Auf echtem iPhone (Safe Area/Notch) ungeprüft | `status-pill.tsx`, Browser-Test, 2 Unit-Tests |
+| 31 | **teilweise**: Karte „PC-Werte“ (CPU, RAM, GPU; ehrlich „n. v.“/„aus“; misst nur bei offenem Fenster). Notizen, Pomodoro-Erweiterung, Netz, Lautstärke und FPS/Temperatur **nicht** gebaut; Uhr, Medientasten, Fokus-Timer und laufendes Spiel gab es schon | `island-stats.ts`, 3 Unit-Tests, Browser-Test |
+| 32 | **erledigt**: sieben Vorlagen mit Vorschau (erst „Übernehmen“ ändert die Insel), Standard bleibt das alte Aussehen; nur im PC-Fenster einstellbar | `IslandStyleCard`, Browser-Test, Unit-Test |
+| 33 | **teilweise**: Augenfarbe und Augengröße. **Nicht gebaut:** Position, Transparenz, Stimmenlautstärke, Autostart und Steuerung vom Handy (brauchen Begleiter-Änderungen am echten PC) | Browser-Test |
+| 34 | **nicht gebaut**: „Hey Jarvis“, Unterbrechen, ElevenLabs-Stimme (Mikrofon/Audio am echten PC nötig; Schlüssel nur am PC) | – |
+| 35 | **blockiert**: wie AP 10 (Text von Master-Prompt 2 fehlt) | – |
+
+### Block 4 – Stand
+| AP | Ergebnis |
+|----|----------|
+| 40 | **offen, braucht dich**: GitHub-Secret `PGL_UPDATE_SIGNING_KEY` ist ungültig; bis zur Erneuerung signiert `publish.sh` lokal (funktioniert, 33 Downloads + Signatur gültig) |
+| 41 | **teilweise**: Dieser Stand steht hier und in `docs/BEREICHSMATRIX.md`, `docs/SICHERHEIT-DURCHSICHT.md`, `CHANGELOG.md`. Ein eigener Abschlussbericht je Fehler folgt erst, wenn Block 2 gelaufen ist |
+| 42 | **blockiert**: ARTEMIS braucht einen per Remote Control angehängten Rechner von dir |
 
 ## Legende
 **Art:** F = ganze Funktion · A = Animation · D = Design · C = Companion (Windows) · T = nur Test/Prüfung · S = Sicherheit · R = Refactoring · P = Prozess/Doku
