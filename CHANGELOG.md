@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.89.0 – 2026-11-03
+### Neu
+- Verbindungsstatus: Nach vielen fehlgeschlagenen Versuchen steht „PC nicht erreichbar – die App versucht es weiter (Versuch n)“ statt endlos „Wiederverbindung läuft“
+- Ist der Companion auf dem PC älter als die Webseite, sagt die App klar „Der Companion auf deinem PC (vX) kennt diese Funktion noch nicht – bitte unter Einstellungen → Updates aktualisieren“ statt einer bloßen Fehlermeldung
+### Verbessert
+- Auf Touch-Geräten sind alle Knöpfe, Reiter, Eingabefelder, Schieberegler und Menüpunkte mindestens 44 × 44 px groß (vorher teils 28–36 px); gemessen auf allen Seiten im Hoch- und Querformat (iPhone SE/13, Pixel 5, iPad)
+- Tests: Kontrast aller eingebauten Designs, Animationen ohne Layout-Eigenschaften und „Weniger Bewegung“, alle Verbindungszustände, Favorit und Sortierung nach dem Neuladen
+### Behoben
+- Obere Leiste auf schmalen Handys: Titel und Symbole schnitten rechts die Glocke ab (lange Titel wie „Einstellungen“); der Titel kürzt sich jetzt
+
 ## 2.88.1 – 2026-11-03
 ### Verbessert
 - Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte

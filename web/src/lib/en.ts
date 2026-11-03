@@ -5996,4 +5996,6 @@ export const en: Record<string, string> = {
   "Ich tanze!": "I'm dancing!",
   "Gute Nacht – tippe mich an, dann bin ich wieder da.": "Good night – tap me and I'm back.",
   "Bin wach!": "I'm awake!",
+  "PC nicht erreichbar – die App versucht es weiter (Versuch {n})": "PC not reachable – the app keeps trying (attempt {n})",
+  "Der Companion auf deinem PC{v} kennt diese Funktion noch nicht{a}. Bitte unter Einstellungen → Updates aktualisieren.": "The companion on your PC{v} does not know this function yet{a}. Please update under Settings → Updates.",
 };

@@ -235,6 +235,23 @@ test("Globale Suche findet das Spiel", async () => {
   await pc.keyboard.press("Escape");
 });
 
+test("Spielebibliothek: Sortierung „Zuletzt“ und Favorit bleiben nach dem Neuladen", async () => {
+  await pc.goto(`${COMPANION}/#/games`);
+  const sort = pc.getByRole("radiogroup", { name: "Sortierung" });
+  await sort.getByRole("radio", { name: "Zuletzt" }).click();
+  await expect(sort.getByRole("radio", { name: "Zuletzt" })).toHaveAttribute("aria-checked", "true");
+  const before = await pc.getByRole("button", { name: "Favorit entfernen" }).count();
+  await pc.getByRole("button", { name: "Als Favorit markieren" }).first().click();
+  await expect(pc.getByRole("button", { name: "Favorit entfernen" })).toHaveCount(before + 1);
+  await pc.reload();
+  await expect(pc.getByRole("radiogroup", { name: "Sortierung" }).getByRole("radio", { name: "Zuletzt" })).toHaveAttribute("aria-checked", "true");
+  await expect(pc.getByRole("button", { name: "Favorit entfernen" })).toHaveCount(before + 1);
+  // Back to how it was (the other tests start from the default order and no new favourite).
+  await pc.getByRole("button", { name: "Favorit entfernen" }).first().click();
+  await expect(pc.getByRole("button", { name: "Favorit entfernen" })).toHaveCount(before);
+  await pc.getByRole("radiogroup", { name: "Sortierung" }).getByRole("radio", { name: "A–Z" }).click();
+});
+
 test("Design wird gespeichert und übersteht das Neuladen", async () => {
   await phone.goto(`${COMPANION}/#/settings?s=design`);
   await phone.getByRole("button", { name: "Emerald" }).click();

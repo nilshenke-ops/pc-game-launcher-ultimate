@@ -1,6 +1,7 @@
 import { loginProof } from "./sha256";
 import { t } from "./i18n";
 import { clearCaches } from "./offline-cache";
+import { outdatedCompanionMessage } from "./conn-state";
 import { enqueue, outbox, QUEUEABLE } from "./outbox";
 
 export const PROTOCOL_VERSION = 1;
@@ -159,6 +160,7 @@ export function friendlyError(e: RpcError): RpcError {
     case "invalid-target": return new RpcError(e.code, t("Programm nicht installiert oder nicht gefunden: {m}", { m: e.message }));
     case "not-found": return new RpcError(e.code, e.message || t("Eintrag nicht gefunden."));
     case "unauthenticated": case "auth-failed": return new RpcError(e.code, t("Gerät nicht autorisiert – bitte neu koppeln."));
+    case "unknown-method": return new RpcError(e.code, outdatedCompanionMessage(client.status.hello?.info.version, e.message.replace(/^Unbekannte Aktion:\s*/, "")));
     case "forbidden": return new RpcError(e.code, t("Aktion nicht erlaubt: {m}", { m: e.message }));
     case "start-failed": case "launch-failed": return new RpcError(e.code, t("Aktion fehlgeschlagen: {m}", { m: e.message }));
     default: return e;

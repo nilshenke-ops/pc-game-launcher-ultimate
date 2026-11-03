@@ -1,3 +1,5 @@
+> **Historischer Bericht (Version 1.x).** Die genannten Zip-Downloads gibt es nicht mehr; der Download ist heute die einzelne Datei `PCGameLauncherCompanion.exe` (siehe `download/info` auf der Webseite und README). Aktuelle Arbeitsliste: `docs/UMSETZUNGSPLAN-FABLE-5-1.md`.
+
 # Abschlussbericht – Nexus Gaming Hub 2.26.0
 
 Stand: 20.10.2026 (Version 2.26.0; die Tabellen in Abschnitt 3–5 beschreiben den Stand 1.1, aktuelle Zahlen stehen bei den Versionen unten). Entwickelt und getestet in einer Linux-Cloud-Umgebung (kein Windows-PC, keine Audiogeräte, kein Discord verfügbar). Die Statusangaben unten folgen genau dieser Einschränkung.
