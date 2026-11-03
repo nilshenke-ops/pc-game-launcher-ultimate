@@ -4,6 +4,20 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.92.0 – 2026-11-03
+### Neu
+- Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite
+- Neue Startseite: Begrüßung „Hallo …!“ mit „Jetzt starten“ (startet dein zuletzt gespieltes Spiel am PC), PC-Status mit Ring und Chips (Windows, Grafikkarte, Arbeitsspeicher), „Deine Spiele“-Kacheln, „Zuletzt verwendet“, „Performance“ mit Live-Verlauf der CPU-Last – alles aus den echten Daten des PCs; ohne Daten stehen Striche statt erfundener Zahlen. Controller: große Überschrift mit Glas-Controller und Symbol-Seitenleiste; Nacht-Blau: drei Kennzahlen-Karten (Bereit, Spiele, Gesamt-Spielzeit); Chrom: „Schnellzugriff“; Chrom Hell: Musik-Steuerung
+- Einstellungen → Allgemein: „Dein Name auf der Startseite“ (nur auf diesem Gerät gespeichert)
+- Seitenleiste unten zeigt den echten Verbindungszustand („PC verbunden – Bereit zum Starten“)
+- Neues Seitenmenü wie in den Vorlagen: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet, JARVIS und Einstellungen, dazu **Mehr** – dort liegen alle weiteren Bereiche (Kategorien, „Weitere Funktionen“, Leiste ordnen); jedes Design hat seine eigene Menüvariante (Controller Dunkel nur mit Symbolen, Mehr öffnet dort die Bereichsliste)
+- „Favoriten“ im Menü öffnet die Spieleliste direkt mit dem Favoriten-Filter
+- Begleiter: Grundlage für eine ElevenLabs-Stimme in JARVIS (nur Standardstimmen, Schlüssel nur am PC, Monatslimit) – noch ohne Oberfläche und ohne Wirkung, solange kein Schlüssel hinterlegt ist
+### Verbessert
+- Die Seitenleiste trägt die Marke „PC Game Launcher Ultimate“
+- Geändert: Alle bisherigen Designs (Neon Cyan, Emerald, Synthwave, Cyberpunk, Apple Glas, Nothing OS u. a.) sind entfernt; ein gespeichertes altes Design wird einmal durch das Lavendel-Glas ersetzt (Schriftgröße, Bewegung und Abstände bleiben). Eigene Farben („Eigenes Design“) bleiben unverändert
+- Geändert: Die Oberfläche (Flach, Glas, Klar-Glas, Weich 3D, Erhaben 3D), Glas-Unschärfe und 3D-Neigung lassen sich weiterhin einzeln einstellen
+
 ## 2.91.0 – 2026-11-03
 ### Neu
 - Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert)

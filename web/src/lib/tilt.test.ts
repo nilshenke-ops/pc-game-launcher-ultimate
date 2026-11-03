@@ -18,11 +18,11 @@ describe("Oberflächen und schlichte Designs", () => {
     const p = defaultPrefs();
     expect(sanitizePrefs({ ...p, theme: { ...p.theme, surface: "soft", tilt: true } }).theme).toMatchObject({ surface: "soft", tilt: true });
     expect(sanitizePrefs({ ...p, theme: { ...p.theme, surface: "<script>", tilt: "ja" as unknown as boolean } }).theme).toMatchObject({ surface: "flat", tilt: true });
-    expect(sanitizePrefs({}).theme.surface).toBe("flat");
+    expect(sanitizePrefs({}).theme.surface).toBe("glass"); // the standard design is a glass one
     expect(SURFACES).toEqual(["flat", "glass", "clear", "soft", "raised"]);
   });
   it("neue Designs sind lesbar: Text auf der Seitenfarbe und Knopfschrift auf der Hauptfarbe haben genug Kontrast", () => {
-    for (const id of ["clean", "softdark", "mint", "sand", "nothing", "graphite", "petrol", "frosted", "milkglass", "midnightglass", "chrome", "greyglass", "appleglass", "applelight", "nothingos", "nothingoslight"]) {
+    for (const id of ["lavendel", "controller", "nacht", "chrom", "chromhell"]) {
       const p = PRESETS[id];
       expect(p, id).toBeTruthy();
       const text = p.mode === "dark" ? "#e8edf7" : "#0f172a";

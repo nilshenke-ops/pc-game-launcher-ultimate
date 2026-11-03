@@ -4,7 +4,7 @@
 // home screen, language) are touched; nothing is sent as a command to the PC.
 import { t } from "./i18n";
 import { fold, tokens } from "./knowledge";
-import { ALL_WIDGETS, BG_SCENES, DEFAULT_THEME, PRESETS, sanitizePrefs, type Prefs } from "./prefs-core";
+import { ALL_WIDGETS, BG_SCENES, DEFAULT_THEME, lookOf, PRESETS, sanitizePrefs, type Prefs } from "./prefs-core";
 import type { AssistantAction, AssistantReply } from "./assistant";
 import type { NavItem } from "./nav";
 
@@ -31,7 +31,7 @@ export function applySetup(p: Prefs, o: SetupOp, mobile: boolean): Prefs {
   const n = structuredClone(p);
   switch (o.op) {
     case "mode": n.theme.mode = o.value; n.theme.preset = "custom"; if (o.value === "light" && isDark(n.theme.background)) n.theme.background = "#eef2f7"; if (o.value === "dark" && !isDark(n.theme.background)) n.theme.background = "#070b16"; break;
-    case "preset": { const x = PRESETS[o.id]; if (x) n.theme = { ...n.theme, preset: o.id, mode: x.mode, primary: x.primary, accent: x.accent, background: x.background }; break; }
+    case "preset": { if (PRESETS[o.id]) n.theme = { ...n.theme, ...lookOf(o.id) }; break; }
     case "scene": {
       const s = BG_SCENES.find((b) => b.id === o.id);
       n.theme = s ? { ...n.theme, bgScene: s.id, bgImage: null, mode: s.mode, primary: s.primary, accent: s.accent, background: s.background, bgDim: s.dim, preset: "custom" } : { ...n.theme, bgScene: null, bgImage: null };
@@ -68,8 +68,8 @@ function isDark(hex: string) {
 // ------------------------------------------------------------------ understanding the request
 
 const COLORS: [RegExp, string][] = [
-  [/gruen|green|smaragd|emerald/, "emerald"], [/pink|rosa|lila|violett|purple|synth/, "synth"], [/orange|rot|red|ember|feuer/, "ember"],
-  [/blau|blue|ozean|ocean/, "ocean"], [/cyan|tuerkis|neon|standard ?farbe/, "neon"],
+  [/lavendel|lila|violett|purple|standard ?farbe/, "lavendel"], [/controller/, "controller"], [/blau|blue|nacht|ozean|ocean/, "nacht"],
+  [/chrom|silber|schwarz|grau|mono/, "chrom"], [/chrom hell|hellgrau/, "chromhell"],
 ];
 const WIDGET_WORDS: [RegExp, string][] = [
   [/uhr|datum|clock/, "clock"], [/notiz/, "notes"], [/timer|stoppuhr|countdown|wecker/, "timer"], [/medien|lautstaerke|musik ?steuer|media/, "media"],
@@ -172,7 +172,7 @@ export function setupReply(question: string, prefs: Prefs, items: NavItem[]): As
     return reply(t("Welcher Hintergrund? Zur Auswahl: {l}.", { l: BG_SCENES.map((s) => s.name).join(", ") }), BG_SCENES.slice(0, 4).map((s) => act(s.name, { op: "scene", id: s.id })));
   }
   // Light or dark.
-  if (design && /(\bhell|\blight\b|\bweiss|\btag\b)/.test(f)) return reply(t("Helles Design."), [act(t("Design hell"), PRESETS.daylight && !/farbe/.test(f) ? { op: "preset", id: "daylight" } : { op: "mode", value: "light" })]);
+  if (design && /(\bhell|\blight\b|\bweiss|\btag\b)/.test(f)) return reply(t("Helles Design."), [act(t("Design hell"), PRESETS.chromhell && !/farbe/.test(f) ? { op: "preset", id: "chromhell" } : { op: "mode", value: "light" })]);
   if (design && /(dunkel|dunkl|\bdark\b|schwarz|\bnacht)/.test(f)) return reply(t("Dunkles Design."), [act(t("Design dunkel"), { op: "mode", value: "dark" })]);
   // Colour.
   if (design || /mach .* (gruen|blau|pink|lila|orange|rot|cyan|tuerkis)/.test(f)) {
@@ -188,7 +188,7 @@ export function setupReply(question: string, prefs: Prefs, items: NavItem[]): As
     const off = /(aus|nicht|kein|off)/.test(f);
     return reply(off ? t("Spiele-Profile ändern das Design dieses Geräts nicht mehr.") : t("Spiele-Profile dürfen das Design dieses Geräts wieder ändern."), [act(off ? t("Profil-Designs aus") : t("Profil-Designs an"), { op: "profileThemes", on: !off })]);
   }
-  if (/(design|farben|theme).*(zuruecksetzen|standard|reset|wie am anfang)/.test(f)) return reply(t("Design wie am Anfang (Neon Cyan, dunkel)."), [act(t("Design zurücksetzen"), { op: "resetTheme" })]);
+  if (/(design|farben|theme).*(zuruecksetzen|standard|reset|wie am anfang)/.test(f)) return reply(t("Design wie am Anfang (Lavendel-Glas)."), [act(t("Design zurücksetzen"), { op: "resetTheme" })]);
   return null;
 }
 

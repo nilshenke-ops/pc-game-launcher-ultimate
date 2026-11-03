@@ -12,13 +12,13 @@ describe("KI-Design-Editor: Beispiele aus dem Auftrag", () => {
     expect(h.theme.mode).toBe("dark");
     expect(h.theme.background).not.toBe(base.background);
 
-    const c = change("Gestalte die Website im Cyberpunk-Stil.");
-    expect(c.theme.preset).toBe("cyberpunk");
-    expect(c.changes[0]).toBe("Theme „Cyberpunk“");
+    const c = change("Gestalte die Website im Chrom-Stil.");
+    expect(c.theme.preset).toBe("chrom");
+    expect(c.changes[0]).toBe("Theme „Chrom Dunkel“");
 
-    const m = change("Erstelle ein Minecraft-Theme mit grünen Akzenten.");
-    expect(m.theme.preset).toBe("minecraft");
-    expect(m.theme.primary).toBe("#4ade80");
+    const m = change("Nimm das Controller-Design.");
+    expect(m.theme.preset).toBe("controller");
+    expect(m.theme.primary).toBe("#9a8cff");
 
     const min = change("Mach das Design minimalistischer.");
     expect(min.theme.shadow).toBe("none");
@@ -34,11 +34,11 @@ describe("KI-Design-Editor: Beispiele aus dem Auftrag", () => {
     expect(b.changes).toEqual(["Größere Schaltflächen und Felder"]);
   });
   it("alle genannten Themes", () => {
-    for (const [q, id] of [["Neon Gaming", "neonglow"], ["Minimal Dark Design", "minimal"], ["Purple Gaming Theme", "purple"], ["Blue Gaming Theme", "blue"], ["Schwarz-Weiß Design", "mono"], ["Light Mode Design", "daylight"]] as const)
+    for (const [q, id] of [["Lavendel Design", "lavendel"], ["Controller Design", "controller"], ["Nacht-Blau Theme", "nacht"], ["Schwarz-Weiß Design", "chrom"], ["Light Mode Design", "chromhell"]] as const)
       expect(change(q).theme.preset, q).toBe(id);
   });
   it("weitere Stellgrößen", () => {
-    expect(change("Mach die Ecken runder").theme.radius).toBe(22);
+    expect(change("Mach die Ecken runder").theme.radius).toBe(Math.min(28, base.radius + 6));
     expect(change("Mehr Abstand zwischen den Karten").theme.density).toBe("roomy");
     expect(change("Kompakter bitte, das Design").theme.density).toBe("compact");
     expect(change("Keine Schatten im Design").theme.shadow).toBe("none");

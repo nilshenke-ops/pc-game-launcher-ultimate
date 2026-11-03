@@ -268,6 +268,11 @@ public static class RpcApi
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
         rpc.Register("assistant.routerModels", async ctx => await s.Assistant.RouterModelsAsync());
         rpc.Register("assistant.ollamaModels", async ctx => await s.Assistant.OllamaModelsAsync());
+        // JARVIS' voice (ElevenLabs): settings (the key only at the PC itself), the stock voices, and text → audio.
+        rpc.Register("voice.status", _ => s.Voice.Status());
+        rpc.Register("voice.configure", ctx => s.Voice.Configure(ctx.Bind<Assistant.VoiceService.Config>(), ctx.Session.IsLocalAdmin));
+        rpc.Register("voice.voices", async ctx => new { voices = await s.Voice.VoicesAsync(default) });
+        rpc.Register("voice.speak", async ctx => await s.Voice.SpeakAsync(ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("text", out var tx) && tx.ValueKind == JsonValueKind.String ? tx.GetString() : null, default));
         rpc.Register("assistant.configure", ctx => s.Assistant.Configure(ctx.Bind<Assistant.AssistantService.Config>(), ctx.Session.IsLocalAdmin));
 
         // ------------------------------------------------------------ GameQuest

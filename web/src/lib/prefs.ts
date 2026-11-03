@@ -2,7 +2,7 @@ import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { setLanguage } from "./i18n";
 import { setTilt } from "./tilt";
-import { BG_SCENES, DEFAULT_THEME, defaultPrefs, hexToRgb, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
+import { BG_SCENES, DEFAULT_THEME, defaultPrefs, hexToRgb, homeVariant, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
 import type { ProfileTheme } from "./types";
 
 export * from "./prefs-core";
@@ -171,6 +171,7 @@ export function applyTheme(t: Theme) {
   root.style.setProperty("--neu-lo", dark ? "rgba(0,0,0,0.5)" : "rgba(120,134,168,0.38)");
   root.style.setProperty("--neu-bg", dark ? mix(t.background, "#ffffff", 0.025) : mix(t.background, "#ffffff", 0.35));
   root.dataset.surface = t.surface ?? "flat";
+  root.dataset.home = homeVariant(t.preset);
   root.style.setProperty("--glass-blur", `${Math.max(4, Math.min(40, t.blur ?? 22))}px`);
   root.dataset.tilt = t.tilt ? "1" : "0";
   setTilt(!!t.tilt && !t.reduceMotion && !t.lite && typeof matchMedia === "function" && matchMedia("(hover: hover) and (pointer: fine)").matches);

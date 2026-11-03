@@ -2,8 +2,9 @@ import { PrivacyButton } from "./privacy";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Check, ChevronDown, Menu, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Smartphone } from "lucide-react";
-import { SheetNav, SidebarNav } from "./sidebar-nav";
+import { Bell, Check, ChevronDown, Menu, Monitor, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Smartphone, Wifi } from "lucide-react";
+import { SheetNav } from "./sidebar-nav";
+import { MockNav } from "./mock-nav";
 import { client, exitDemo, HOSTED, lanPc } from "../lib/rpc";
 import { connView, isHomeNetworkHost } from "../lib/conn-state";
 import { DEMO_BUILD } from "../lib/demo-flag";
@@ -26,6 +27,22 @@ import { startJournalSync } from "../lib/journal";
 import { MemoryHint } from "./memory-hint";
 import { startPendingSync } from "../lib/pending-sounds";
 
+/** Bottom of the sidebar: is the PC ready? (real connection state – never "bereit" without a connection) */
+function SideStatus({ preview, name, version }: { preview: boolean; name?: string; version?: string }) {
+  const conn = useConn();
+  const view = connView(conn, { demo: client.demo, hasCredentials: !!client.credentials });
+  const ready = view.key === "connected";
+  return (
+    <NavLink to="/diagnostics" className={`side-status ${ready ? "ok" : view.tone}`} aria-label={t("Verbindungsstatus: {s}", { s: t(view.label) })}>
+      <span className="side-status-ic"><Monitor size={18} /></span>
+      <span className="side-status-txt">
+        <b>{ready ? t("PC verbunden") : preview ? t("Kein PC verbunden") : t(view.short)}</b>
+        <small>{ready ? t("Bereit zum Starten") : name ? `${name}${version ? ` · v${version}` : ""}` : t(view.label)}</small>
+      </span>
+    </NavLink>
+  );
+}
+
 function ConnPill() {
   const conn = useConn();
   const nav = useNavigate();
@@ -37,6 +54,7 @@ function ConnPill() {
     <button className="conn-pill" onClick={() => nav("/diagnostics")} title={[t(view.label), conn.lastError].filter(Boolean).join(" – ")} aria-label={t("Verbindungsstatus: {s}", { s: t(view.label) })}>
       <span className={`dot ${kind} ${conn.phase === "connecting" ? "pulse" : ""}`} />
       <span className="label">{label}</span>
+      {view.key === "connected" && <Wifi size={16} className="conn-wifi" aria-hidden />}
     </button>
   );
 }
@@ -152,21 +170,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="shell">
       <a href="#main" className="sr-only">{t("Zum Inhalt springen")}</a>
       <aside className="sidebar" aria-label={t("Hauptnavigation")}>
-        <div className="brand">
-          <img src="icons/icon-192.png" alt="" />
-          <div><b>Nexus</b><small>Gaming Hub</small></div>
-        </div>
-        <SidebarNav items={all} notifCount={notifCount} />
-        <div style={{ marginTop: "auto", padding: "14px 10px 4px" }} className="tiny muted">
-          {preview ? t("Kein PC verbunden") : state ? `${state.pcName} · v${state.version}` : conn.hello?.info.pcName}
-        </div>
+        <MockNav items={all} notifCount={notifCount} onSheet={() => setMore(true)}
+          status={<SideStatus preview={preview} name={state?.pcName ?? conn.hello?.info.pcName} version={state?.version} />} />
       </aside>
 
       <div className="main">
         <header className="topbar">
           <span className="title">{current.label}</span>
           <button className="search-trigger" onClick={() => setPalette(true)} aria-label={t("Suche öffnen")}>
-            <Search size={17} /><span className="label">{t("Suchen …")}</span><kbd>Ctrl K</kbd>
+            <Search size={17} /><span className="label">{t("Suche nach Spielen, Apps …")}</span><kbd>Ctrl K</kbd>
           </button>
           <span className="spacer" />
           {!preview && state?.activeProfile && (

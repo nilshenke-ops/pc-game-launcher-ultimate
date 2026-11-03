@@ -11,7 +11,7 @@ import { t } from "../lib/i18n";
 import { useConn, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import {
-  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_THEME, designHistory, PRESETS, profileThemeActive, SURFACES, SURFACE_LABEL, restoreOriginalDesign, sanitizePrefs, setPrefs, undoDesign, usePrefs, type Layout, type Theme, type WidgetSize,
+  ALL_WIDGETS, BG_SCENES, contrast, DEFAULT_LAYOUT, DEFAULT_PRESET, DEFAULT_THEME, lookOf, designHistory, PRESETS, profileThemeActive, SURFACES, SURFACE_LABEL, restoreOriginalDesign, sanitizePrefs, setPrefs, undoDesign, usePrefs, type Layout, type Theme, type WidgetSize,
 } from "../lib/prefs";
 import type { Settings } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segmented, Switch } from "../components/ui";
@@ -21,6 +21,7 @@ import { HelpCenter } from "../components/help-center";
 import { TailscaleCard } from "../components/tailscale-card";
 import { DataCenter } from "../components/data-center";
 import { setStatusPill, useStatusPill } from "../lib/status-pill";
+import { setUserName, useUserName } from "../components/home-showcase";
 
 type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
 
@@ -81,11 +82,13 @@ function General() {
   const prefs = usePrefs();
   const [name, setName] = useState("");
   const [scan, setScan] = useState(5);
+  const uname = useUserName();
   useEffect(() => { if (s.data) { setName(s.data.settings.pcName); setScan(s.data.settings.processScanSeconds); } }, [s.data]);
   return (
     <Loadable loading={s.loading} error={s.error} onRetry={s.reload}>
       <Card title={t("Allgemein")} icon={<SettingsIcon size={18} />}>
         <div className="stack">
+          <Field label={t("Dein Name auf der Startseite")} hint={t("Steht in der Begrüßung („Hallo …!“). Nur auf diesem Gerät gespeichert.")}><input className="input" value={uname} maxLength={24} placeholder={t("Gamer")} onChange={(e) => setUserName(e.target.value)} /></Field>
           <Field label={t("Name dieses PCs")} hint={t("Wird auf gekoppelten Geräten angezeigt.")}><input className="input" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} /></Field>
           <Field label={t("Spielerkennung: alle {n} Sekunden prüfen", { n: scan })} hint={t("Niedrigere Werte erkennen Spielstarts schneller, kosten aber minimal mehr Leistung. Empfohlen: 5.")}>
             <input type="range" min={2} max={30} value={scan} onChange={(e) => setScan(+e.target.value)} />
@@ -142,17 +145,14 @@ function Design() {
           <div className="swatches">
             {Object.entries(PRESETS).map(([k, p]) => (
               <button key={k} className={`swatch ${th.preset === k ? "on" : ""}`} style={{ background: `linear-gradient(135deg, ${p.background} 40%, ${p.primary} 75%, ${p.accent})` }} onClick={() => setPrefs((x) => ({ ...x,
-                theme: { ...x.theme, preset: k, mode: p.mode, primary: p.primary, accent: p.accent, background: p.background, surface: p.atmo?.surface ?? "flat", blur: p.atmo?.blur ?? 22, ...(p.atmo?.radius ? { radius: p.atmo.radius } : {}), ...(p.atmo?.surfaceAlpha ? { surfaceAlpha: p.atmo.surfaceAlpha } : {}),
-                  // A design with its own scene brings it; moving on to a design without one clears a scene of the designs (own pictures stay).
-                  ...(p.atmo?.scene ? { bgScene: p.atmo.scene, bgImage: null, bgDim: BG_SCENES.find((s) => s.id === p.atmo!.scene)?.dim ?? x.theme.bgDim } : x.theme.bgScene?.startsWith("d-") ? { bgScene: null, bgDim: DEFAULT_THEME.bgDim } : {}) },
-                fx: p.atmo ? { ...x.fx, bg: { ...x.fx.bg, kind: p.atmo.bg }, launch: { ...x.fx.launch, style: p.atmo.launch } } : x.fx }))} aria-pressed={th.preset === k}><span>{p.name}</span></button>
+                theme: { ...x.theme, ...lookOf(k) }, fx: p.atmo ? { ...x.fx, bg: { ...x.fx.bg, kind: p.atmo.bg }, launch: { ...x.fx.launch, style: p.atmo.launch } } : x.fx }))} aria-pressed={th.preset === k}><span>{t(p.name)}{k === DEFAULT_PRESET ? ` · ${t("Standard")}` : ""}</span></button>
             ))}
             {prefs.palettes.map((p, i) => (
               <button key={"c" + i} className={`swatch ${th.preset === "custom:" + p.name ? "on" : ""}`} style={{ background: `linear-gradient(135deg, ${p.background} 40%, ${p.primary} 75%, ${p.accent})` }} onClick={() => setTheme({ preset: "custom:" + p.name, primary: p.primary, accent: p.accent, background: p.background })}><span>{p.name}</span></button>
             ))}
           </div>
-          <p className="tiny muted" style={{ margin: 0 }}>{t("Atmosphären wie Cyberpunk, Space, Ice, Fire oder Glass setzen zusätzlich einen passenden bewegten Hintergrund und Ladebildschirm – alles bleibt unten änderbar. Je Spiel: Theme im Gaming-Profil des Spiels.")}</p>
-          <Segmented value={th.mode} onChange={(mode) => setTheme({ mode, background: mode === "light" ? "#eef2f7" : PRESETS.neon.background, preset: "custom" })} options={[{ value: "dark", label: t("Dunkel") }, { value: "light", label: t("Hell") }]} />
+          <p className="tiny muted" style={{ margin: 0 }}>{t("Jedes Design bringt Hintergrund, Glas-Oberfläche und Aufbau der Startseite mit – alles bleibt unten änderbar. Je Spiel: Theme im Gaming-Profil des Spiels.")}</p>
+          <Segmented value={th.mode} onChange={(mode) => setTheme({ mode, background: mode === "light" ? "#eef2f7" : PRESETS[DEFAULT_PRESET].background, preset: "custom" })} options={[{ value: "dark", label: t("Dunkel") }, { value: "light", label: t("Hell") }]} />
         </div>
       </Card>
       <Card title={t("Farben")} icon={<Palette size={18} />}>

@@ -179,8 +179,16 @@ test("Backlog am Handy: Spiel aufnehmen, Status ändern, Zufallsauswahl, Export"
   expect(file).toMatchObject({ format: "nexus-backlog", entries: [{ name: "E2E Testspiel", status: "next", priority: 3 }] });
 });
 
+/** "Mehr" in the side menu holds all other areas – open it (stays open) before using the full navigation. */
+async function openMore(p: Page) {
+  const b = p.locator(".sidebar .mn-more-btn");
+  if ((await b.getAttribute("aria-expanded")) !== "true") await b.click();
+  await expect(p.locator(".sidebar .side-nav")).toBeVisible();
+}
+
 test("Leiste bearbeiten: Bereich entfernen → „Weitere Funktionen“, dort erreichbar, wieder hinzufügen, bleibt nach Neuladen", async () => {
   await pc.goto(`${COMPANION}/#/`);
+  await openMore(pc);
   const bar = pc.locator(".sidebar .nav-group:not(.nav-folder)");
   const folder = pc.locator(".sidebar .nav-folder");
   await expect(bar.getByRole("link", { name: "Backlog" })).toBeVisible();
@@ -274,12 +282,14 @@ test("Backup: Wiederherstellungspunkt anlegen, Einstellung ändern, Punkt prüfe
 
 test("Design wird gespeichert und übersteht das Neuladen", async () => {
   await phone.goto(`${COMPANION}/#/settings?s=design`);
-  await phone.getByRole("button", { name: "Emerald" }).click();
+  await phone.getByRole("button", { name: "Nacht-Blau" }).click();
   const primary = () => phone.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim());
-  expect(await primary()).toBe("#34d399");
+  expect(await primary()).toBe("#8b7cff");
   await phone.reload();
   await expect(phone.getByRole("heading", { name: "Einstellungen" })).toBeVisible();
-  expect(await primary()).toBe("#34d399");
+  expect(await primary()).toBe("#8b7cff");
+  // Back to the standard design for the tests that follow.
+  await phone.getByRole("button", { name: /Lavendel-Glas/ }).click();
 });
 
 test("Cartoon-Hintergrund am Handy: eigene Hochformat-Zeichnung, ohne PC wählbar", async ({ browser }) => {
@@ -821,6 +831,7 @@ test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => 
 
   // Navigation: categories like in the plan, hide a section, it is gone from the sidebar but still found by search.
   const sidebar = pc.locator(".sidebar");
+  await openMore(pc);
   for (const g of ["Dashboard", "Steuerung", "Audio", "System", "Verbindung", "Erweiterungen", "Verwaltung"]) await expect(sidebar.getByRole("navigation", { name: g })).toBeVisible();
   await pc.goto(`${COMPANION}/#/settings?s=design`);
   await pc.getByRole("button", { name: "Programme ausblenden" }).click();
@@ -1099,8 +1110,8 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
   // Design works without a PC.
   await tablet.goto(`${HOSTED_SITE}/#/settings?s=design`);
-  await tablet.getByRole("button", { name: "Emerald" }).click();
-  expect(await tablet.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#34d399");
+  await tablet.getByRole("button", { name: "Chrom Dunkel" }).click();
+  expect(await tablet.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#f2f2f4");
   // Add a sound without PC: stored on the iPad, marked "wartet auf PC".
   await tablet.goto(`${HOSTED_SITE}/#/soundboard`);
   await tablet.getByRole("button", { name: "Sounds hinzufügen" }).click();
@@ -1767,7 +1778,7 @@ test("KI-Design-Editor: Vorschau, Verwerfen, Übernehmen (bleibt nach Neuladen),
   await expect(bar).toHaveCount(0);
   expect(await primary()).toBe(before);
   // Preview, then "Übernehmen" in the chat: saved and still there after reloading.
-  await ask("Mach die Schaltflächen größer, damit ich sie auf meinem iPad besser bedienen kann, und Cyberpunk-Stil");
+  await ask("Mach die Schaltflächen größer, damit ich sie auf meinem iPad besser bedienen kann, und Controller-Design");
   await expect(bar).toBeVisible();
   expect(await p.evaluate(() => document.documentElement.dataset.touch)).toBe("1");
   await ask("Übernehmen");
@@ -1775,7 +1786,7 @@ test("KI-Design-Editor: Vorschau, Verwerfen, Übernehmen (bleibt nach Neuladen),
   await p.reload();
   await expect(p.getByRole("textbox", { name: "Nachricht an den Assistenten" })).toBeVisible({ timeout: 15000 });
   expect(await p.evaluate(() => document.documentElement.dataset.touch)).toBe("1");
-  expect(await primary()).toBe("#facc15");
+  expect(await primary()).toBe("#9a8cff");
   await ask("Letzte Designänderung rückgängig");
   await expect(last()).toContainText("rückgängig gemacht");
   expect(await primary()).toBe(before);
@@ -1946,52 +1957,83 @@ test("KI-Chat ohne PC: nur offene Wikis, offen gesagt – keine vorgetäuschte W
 });
 
 
-test("Designs: schlichte Themes mit Oberfläche (flach, Glas, weich 3D, erhaben 3D), 3D-Neigung, Zurücksetzen", async ({ browser }) => {
+test("Seitenmenü: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet, JARVIS, Einstellungen und „Mehr“ mit allen weiteren Bereichen", async () => {
+  await pc.goto(`${COMPANION}/#/`);
+  const menu = pc.locator(".sidebar").getByRole("navigation", { name: "Hauptmenü" });
+  for (const n of ["Home", "Spiele", "Apps", "Soundboard", "Favoriten", "Zuletzt verwendet", "JARVIS", "Einstellungen", "Mehr"]) await expect(menu.getByRole(n === "Mehr" ? "button" : "link", { name: n, exact: true })).toBeVisible();
+  await expect(menu.getByRole("link", { name: "Home", exact: true })).toHaveAttribute("aria-current", "page");
+  // Favoriten opens the games list with the favourites filter, Spiele shows all again.
+  await menu.getByRole("link", { name: "Favoriten", exact: true }).click();
+  await expect(pc).toHaveURL(/#\/games\?filter=fav/);
+  await expect(pc.getByRole("toolbar", { name: "Filter" }).getByRole("button", { name: /★ Favoriten/ })).toHaveClass(/\bon\b/);
+  await menu.getByRole("link", { name: "Spiele", exact: true }).click();
+  await expect(pc.getByRole("toolbar", { name: "Filter" }).getByRole("button", { name: "Alle", exact: true })).toHaveClass(/\bon\b/);
+  await menu.getByRole("link", { name: "JARVIS", exact: true }).click();
+  await expect(pc).toHaveURL(/#\/assistant/);
+  // "Mehr" opens the full navigation (categories, other functions) in the menu and closes it again.
+  const more = menu.getByRole("button", { name: "Mehr", exact: true });
+  if ((await more.getAttribute("aria-expanded")) === "true") await more.click();
+  await expect(pc.locator(".sidebar .side-nav")).toHaveCount(0);
+  await more.click();
+  await expect(more).toHaveAttribute("aria-expanded", "true");
+  await expect(pc.locator(".sidebar").getByRole("navigation", { name: "Audio" })).toBeVisible();
+  await pc.locator(".sidebar .side-nav").getByRole("link", { name: "Diagnose" }).first().click();
+  await expect(pc).toHaveURL(/#\/diagnostics/);
+  await more.click();
+  await expect(pc.locator(".sidebar .side-nav")).toHaveCount(0);
+  await pc.goto(`${COMPANION}/#/`);
+});
+
+test("Designs: fünf Designs (Lavendel-Glas ist Standard), jedes mit eigener Startseite, Oberfläche wählbar, 3D-Neigung, Zurücksetzen", async ({ browser }) => {
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
-  await p.goto(`${COMPANION}/#/settings?s=design`);
   const html = p.locator("html");
-  await expect(html).toHaveAttribute("data-surface", "flat"); // the default design is unchanged
-  // A clean theme brings its own look: Clean Light = light page colour + soft 3D.
-  await p.getByRole("button", { name: "Clean Light" }).click();
-  await expect(html).toHaveAttribute("data-surface", "soft");
-  await expect(html).toHaveAttribute("data-mode", "light");
-  const shadow = await p.locator(".card").first().evaluate((e) => getComputedStyle(e).boxShadow);
-  expect(shadow).not.toBe("none");
-  await p.screenshot({ path: "test-results/design-soft.png", animations: "disabled" });
-  // The surface can be changed on its own, and the old themes go back to flat.
+  // The standard design is the lavender glass one – with its own home screen made of real data.
+  await expect(html).toHaveAttribute("data-surface", "glass");
+  await expect(html).toHaveAttribute("data-home", "glass");
+  await expect(p.getByRole("heading", { level: 1, name: /^Hallo .+!/ })).toBeVisible();
+  await expect(p.getByRole("region", { name: "Deine Spiele" })).toBeVisible();
+  await expect(p.getByRole("region", { name: "Zuletzt verwendet" })).toBeVisible();
+  await expect(p.getByRole("link", { name: "Performance" })).toBeVisible();
+  await p.screenshot({ path: "test-results/design-lavendel.png", animations: "disabled" });
+  await p.goto(`${COMPANION}/#/settings?s=design`);
+  const swatches = p.locator(".swatch");
+  await expect(swatches).toHaveCount(5); // the other designs are gone
+  await expect(p.getByRole("button", { name: /Lavendel-Glas/ })).toHaveAttribute("aria-pressed", "true");
+  // Each design changes colours, background and the composition of the home screen.
+  for (const [name, home, mode, scene] of [["Controller Dunkel", "controller", "dark", "h-controller"], ["Nacht-Blau", "stats", "dark", "h-nacht"], ["Chrom Dunkel", "chrome", "dark", "h-chrom"], ["Chrom Hell", "chromelight", "light", "h-chromhell"]] as const) {
+    await p.getByRole("button", { name }).click();
+    await expect(html).toHaveAttribute("data-home", home);
+    await expect(html).toHaveAttribute("data-mode", mode);
+    expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).toContain(scene + ".svg");
+    await p.goto(`${COMPANION}/#/`);
+    await expect(p.locator(`.home-showcase.v-${home}`)).toBeVisible();
+    await expect(p.getByRole("region", { name: "Deine Spiele" })).toBeVisible();
+    await p.screenshot({ path: `test-results/design-${home}.png`, animations: "disabled" });
+    await p.goto(`${COMPANION}/#/settings?s=design`);
+  }
+  // The controller design keeps only the icons in the sidebar.
+  await p.getByRole("button", { name: "Controller Dunkel" }).click();
+  await p.goto(`${COMPANION}/#/`);
+  await expect(p.locator(".sidebar .mn-link:not(.active) .mn-t").first()).toBeHidden();
+  await p.goto(`${COMPANION}/#/settings?s=design`);
+  await p.getByRole("button", { name: /Lavendel-Glas/ }).click();
+  await expect(html).toHaveAttribute("data-home", "glass");
+  // The surface can still be changed on its own; the blur can be set (glass only).
   const surfaces = p.getByRole("radiogroup", { name: "Oberfläche" });
   await surfaces.getByRole("radio", { name: "Erhaben 3D" }).click();
   await expect(html).toHaveAttribute("data-surface", "raised");
-  await p.screenshot({ path: "test-results/design-raised.png", animations: "disabled" });
-  await p.getByRole("button", { name: "Petrol" }).click();
-  await expect(html).toHaveAttribute("data-surface", "glass");
-  await p.screenshot({ path: "test-results/design-glass.png", animations: "disabled" });
-  // Glass designs bring their own scene; the blur can be set; leaving them removes the scene again.
-  await p.getByRole("button", { name: "Liquid Glass" }).click();
-  await expect(html).toHaveAttribute("data-surface", "glass");
-  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).toContain("d-sea.svg");
-  const blur = p.getByRole("slider", { name: /Glas-Unschärfe: 30 px/ });
-  await blur.fill("12");
-  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--glass-blur").trim())).toBe("12px");
-  await p.screenshot({ path: "test-results/design-liquid.png", animations: "disabled" });
-  // Clear glass (Apple / Nothing OS): nearly see-through – the card background really is very transparent.
-  await p.getByRole("button", { name: "Apple Glas", exact: true }).click();
+  await surfaces.getByRole("radio", { name: "Klar-Glas" }).click();
   await expect(html).toHaveAttribute("data-surface", "clear");
   const alpha = await p.locator(".card").first().evaluate((e) => { const m = /rgba\(\d+, \d+, \d+, ([\d.]+)\)/.exec(getComputedStyle(e).backgroundColor); return m ? +m[1] : 1; });
-  expect(alpha).toBeLessThan(0.2);
-  await p.screenshot({ path: "test-results/design-clear.png", animations: "disabled" });
-  await p.getByRole("button", { name: "Nothing OS", exact: true }).click();
+  expect(alpha).toBeLessThan(0.3);
+  await surfaces.getByRole("radio", { name: "Glas", exact: true }).click();
   await expect(html).toHaveAttribute("data-surface", "glass");
-  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--radius").trim())).toBe("28px");
-  await p.getByRole("button", { name: "Chrom", exact: true }).click();
-  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).toContain("d-chrome.svg");
-  await p.getByRole("button", { name: "Graphit" }).click();
-  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).not.toContain("d-chrome");
-  await p.screenshot({ path: "test-results/design-graphite.png", animations: "disabled" });
-  await p.getByRole("button", { name: "Neon Cyan" }).click();
-  await expect(html).toHaveAttribute("data-surface", "flat");
-  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--bg-image"))).toBe("none");
+  const blur = p.getByRole("slider", { name: /Glas-Unschärfe: 26 px/ });
+  await blur.fill("12");
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--glass-blur").trim())).toBe("12px");
+  await p.getByRole("button", { name: /Lavendel-Glas/ }).click(); // back to the standard (blur included)
+  expect(await html.evaluate((e) => getComputedStyle(e).getPropertyValue("--glass-blur").trim())).toBe("26px");
   // Tilt: switched on, the card under the mouse leans (this test browser has a mouse); switched off it stays still.
   await p.setViewportSize({ width: 860, height: 1000 }); // cards wider than 900 px stay still on purpose
   await p.getByText("Karten neigen sich zur Maus (3D)").click();
@@ -2167,8 +2209,8 @@ test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch
   await expect(ipad.getByText("E2E Testspiel")).toBeVisible({ timeout: 15000 });
   await expect(ipad.getByRole("link", { name: "PC verbinden" })).toHaveCount(0);
   await ipad.goto(`${COMPANION}/#/settings?s=design`).catch(() => {});
-  await ipad.getByRole("button", { name: "Synthwave" }).click();
-  expect(await ipad.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#f472b6");
+  await ipad.getByRole("button", { name: "Nacht-Blau" }).click();
+  expect(await ipad.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--primary").trim())).toBe("#8b7cff");
 
   // "Turn the PC on" again: same data directory, so the iPad's pairing is still valid.
   const { spawn } = await import("node:child_process");

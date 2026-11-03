@@ -42,13 +42,12 @@ export const SURFACE_LABEL: Record<Surface, string> = { flat: "Flach", glass: "G
  * phone: there is a tall version "<id>-phone.svg" that is used on phones in portrait (scripts/make-cartoon-backgrounds.mjs).
  */
 export const BG_SCENES: { id: string; name: string; mode: "dark" | "light"; primary: string; accent: string; background: string; dim: number; sky?: string; phone?: boolean }[] = [
-  // Simple, modern scenes of the new designs (own drawings, scripts/make-design-backgrounds.mjs).
-  { id: "d-chrome", name: "Chrom-Streifen", mode: "dark", primary: "#f5f5f5", accent: "#94a3b8", background: "#17181b", dim: 0.25 },
-  { id: "d-teal", name: "Petrol-Welle", mode: "dark", primary: "#2de2e6", accent: "#7cf5c8", background: "#04191c", dim: 0.2 },
-  { id: "d-sea", name: "Sonnenuntergang am Meer", mode: "dark", primary: "#8ec5ff", accent: "#ffd29a", background: "#0c2236", dim: 0.15 },
-  { id: "d-frost", name: "Milchglas hell", mode: "light", primary: "#3b82f6", accent: "#ec6fa0", background: "#dfe9f5", dim: 0.12 },
-  { id: "d-grey", name: "Sanftes Grau", mode: "light", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", dim: 0.1 },
-  { id: "d-midnight", name: "Mitternacht", mode: "dark", primary: "#7aa2ff", accent: "#c084fc", background: "#080b18", dim: 0.2 },
+  // The scenes of the designs (own drawings, scripts/make-design-backgrounds.mjs).
+  { id: "h-lavendel", name: "Lavendel-Glas", mode: "dark", primary: "#b6a8ff", accent: "#8fd4ff", background: "#34336a", dim: 0.1 },
+  { id: "h-controller", name: "Controller Dunkel", mode: "dark", primary: "#9a8cff", accent: "#5aa9ff", background: "#0b0c16", dim: 0.1 },
+  { id: "h-nacht", name: "Nacht-Blau", mode: "dark", primary: "#8b7cff", accent: "#4da3ff", background: "#0a0d20", dim: 0.1 },
+  { id: "h-chrom", name: "Chrom Dunkel", mode: "dark", primary: "#f2f2f4", accent: "#a1a1aa", background: "#0e0e10", dim: 0.1 },
+  { id: "h-chromhell", name: "Chrom Hell", mode: "light", primary: "#2a2c32", accent: "#6b7280", background: "#d9dbe0", dim: 0.1 },
   { id: "cartoon", name: "Cartoon", mode: "light", primary: "#0284c7", accent: "#f59e0b", background: "#e0f2fe", dim: 0.35, sky: "#4fc3f7", phone: true },
   { id: "cartoon-night", name: "Cartoon Nacht", mode: "dark", primary: "#a78bfa", accent: "#fde047", background: "#1e1b4b", dim: 0.3, sky: "#1e1b4b", phone: true },
   { id: "cartoon-sea", name: "Cartoon Unterwasser", mode: "light", primary: "#0369a1", accent: "#f97316", background: "#e0f2fe", dim: 0.45, sky: "#38bdf8", phone: true },
@@ -115,49 +114,36 @@ export function sanitizeFx(input: unknown): Fx {
 /** Atmosphere: colours plus a matching moving background and start animation in one tap (everything stays changeable). */
 export interface Atmosphere { bg: BgAnim; launch: LaunchStyle; surfaceAlpha?: number; /** Look of cards and buttons that goes with this design. */ surface?: Surface; /** Built-in background scene (BG_SCENES) that goes with it. */ scene?: string; /** Glass blur in px. */ blur?: number; /** Corner radius in px (round designs). */ radius?: number }
 
+/** The designs. Each one brings its own look of the whole app, the home screen included (see HOME_VARIANT). */
+export type HomeVariant = "glass" | "controller" | "stats" | "chrome" | "chromelight";
 export const PRESETS: Record<string, Palette & { mode: "dark" | "light"; atmo?: Atmosphere }> = {
-  neon: { name: "Neon Cyan", primary: "#22d3ee", accent: "#a78bfa", background: "#070b16", mode: "dark" },
-  emerald: { name: "Emerald", primary: "#34d399", accent: "#22d3ee", background: "#06110f", mode: "dark" },
-  synth: { name: "Synthwave", primary: "#f472b6", accent: "#818cf8", background: "#0d0716", mode: "dark" },
-  ember: { name: "Ember", primary: "#fb923c", accent: "#f43f5e", background: "#120a07", mode: "dark" },
-  ocean: { name: "Deep Ocean", primary: "#60a5fa", accent: "#2dd4bf", background: "#060d1a", mode: "dark" },
-  daylight: { name: "Daylight", primary: "#0891b2", accent: "#7c3aed", background: "#eef2f7", mode: "light" },
-  cyberpunk: { name: "Cyberpunk", primary: "#facc15", accent: "#f0abfc", background: "#0c0612", mode: "dark", atmo: { bg: "grid", launch: "cyberpunk" } },
-  neonglow: { name: "Neon", primary: "#22d3ee", accent: "#f472b6", background: "#05030f", mode: "dark", atmo: { bg: "particles", launch: "neon-portal" } },
-  space: { name: "Space", primary: "#a78bfa", accent: "#38bdf8", background: "#03030c", mode: "dark", atmo: { bg: "stars", launch: "space" } },
-  ice: { name: "Ice", primary: "#7dd3fc", accent: "#e0f2fe", background: "#06121c", mode: "dark", atmo: { bg: "snow", launch: "hologram" } },
-  fire: { name: "Fire", primary: "#fb923c", accent: "#facc15", background: "#140604", mode: "dark", atmo: { bg: "embers", launch: "energy" } },
-  fantasy: { name: "Fantasy", primary: "#c084fc", accent: "#34d399", background: "#0d0a1a", mode: "dark", atmo: { bg: "particles", launch: "galaxy" } },
-  retro: { name: "Retro Arcade", primary: "#f472b6", accent: "#facc15", background: "#12061f", mode: "dark", atmo: { bg: "grid", launch: "glitch" } },
-  minimal: { name: "Minimal Dark", primary: "#e5e7eb", accent: "#9ca3af", background: "#0a0a0b", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
-  glass: { name: "Glass", primary: "#93c5fd", accent: "#c4b5fd", background: "#0b1220", mode: "dark", atmo: { bg: "waves", launch: "hologram", surfaceAlpha: 0.45 } },
-  mono: { name: "Schwarz-Weiß", primary: "#f5f5f5", accent: "#a3a3a3", background: "#111111", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
-  minecraft: { name: "Minecraft", primary: "#4ade80", accent: "#b45309", background: "#0a120a", mode: "dark", atmo: { bg: "none", launch: "minimal" } },
-  purple: { name: "Purple Gaming", primary: "#a855f7", accent: "#6366f1", background: "#0b0716", mode: "dark", atmo: { bg: "particles", launch: "neon-portal" } },
-  blue: { name: "Blue Gaming", primary: "#3b82f6", accent: "#22d3ee", background: "#050b1a", mode: "dark", atmo: { bg: "particles", launch: "hologram" } },
-  // Simple, modern, clean – each with a matching look of the surfaces (changeable below).
-  clean: { name: "Clean Light", primary: "#4f7cff", accent: "#35b8a6", background: "#e9edf4", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
-  softdark: { name: "Soft Dark", primary: "#7aa2ff", accent: "#5ee0c0", background: "#1c212c", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
-  mint: { name: "Mint", primary: "#0f9d8a", accent: "#6366f1", background: "#e6f2ee", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
-  sand: { name: "Sand", primary: "#c2410c", accent: "#0f766e", background: "#f1ece4", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "soft", surfaceAlpha: 1 } },
-  nothing: { name: "Nothing Rot", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "raised", surfaceAlpha: 1 } },
-  graphite: { name: "Graphit", primary: "#e5e7eb", accent: "#94a3b8", background: "#0f1013", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "raised", surfaceAlpha: 0.9 } },
-  petrol: { name: "Petrol", primary: "#2de2e6", accent: "#7cf5c8", background: "#04191c", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.5, scene: "d-teal", blur: 22 } },
-  frosted: { name: "Liquid Glass", primary: "#8ec5ff", accent: "#ffd29a", background: "#0c2236", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.34, scene: "d-sea", blur: 30 } },
-  milkglass: { name: "Milchglas hell", primary: "#3b82f6", accent: "#ec6fa0", background: "#dfe9f5", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.5, scene: "d-frost", blur: 26 } },
-  midnightglass: { name: "Mitternacht Glas", primary: "#7aa2ff", accent: "#c084fc", background: "#080b18", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.4, scene: "d-midnight", blur: 28 } },
-  chrome: { name: "Chrom", primary: "#f5f5f5", accent: "#94a3b8", background: "#17181b", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.55, scene: "d-chrome", blur: 14 } },
-  // Apple-style clear glass: nearly see-through, strong blur, bright edges. Nothing-OS-style: monochrome, red accent, round.
-  appleglass: { name: "Apple Glas", primary: "#0a84ff", accent: "#ff9f0a", background: "#0c2236", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "clear", surfaceAlpha: 0.5, scene: "d-sea", blur: 34, radius: 24 } },
-  applelight: { name: "Apple Glas hell", primary: "#007aff", accent: "#ff2d55", background: "#dfe9f5", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "clear", surfaceAlpha: 0.8, scene: "d-frost", blur: 32, radius: 24 } },
-  nothingos: { name: "Nothing OS", primary: "#ffffff", accent: "#e11d2e", background: "#0a0a0a", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.6, scene: "d-chrome", blur: 10, radius: 28 } },
-  nothingoslight: { name: "Nothing OS hell", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "clear", surfaceAlpha: 1, scene: "d-grey", blur: 18, radius: 28 } },
-  greyglass: { name: "Sanftes Grau", primary: "#e11d2e", accent: "#111827", background: "#e6e6e8", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.55, scene: "d-grey", blur: 20 } },
+  // Standard: lavender glass – see-through panels over soft violet light.
+  lavendel: { name: "Lavendel-Glas", primary: "#b6a8ff", accent: "#8fd4ff", background: "#34336a", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.5, blur: 26, radius: 24, scene: "h-lavendel" } },
+  controller: { name: "Controller Dunkel", primary: "#9a8cff", accent: "#5aa9ff", background: "#0b0c16", mode: "dark", atmo: { bg: "none", launch: "hologram", surface: "glass", surfaceAlpha: 0.42, blur: 24, radius: 24, scene: "h-controller" } },
+  nacht: { name: "Nacht-Blau", primary: "#8b7cff", accent: "#4da3ff", background: "#0a0d20", mode: "dark", atmo: { bg: "none", launch: "neon-portal", surface: "glass", surfaceAlpha: 0.5, blur: 22, radius: 22, scene: "h-nacht" } },
+  chrom: { name: "Chrom Dunkel", primary: "#f2f2f4", accent: "#a1a1aa", background: "#0e0e10", mode: "dark", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.5, blur: 24, radius: 24, scene: "h-chrom" } },
+  chromhell: { name: "Chrom Hell", primary: "#2a2c32", accent: "#6b7280", background: "#d9dbe0", mode: "light", atmo: { bg: "none", launch: "minimal", surface: "glass", surfaceAlpha: 0.5, blur: 24, radius: 24, scene: "h-chromhell" } },
 };
+/** Which composition the home screen uses for which design (a design without an entry – own colours – keeps the glass one). */
+export const HOME_VARIANT: Record<string, HomeVariant> = { lavendel: "glass", controller: "controller", nacht: "stats", chrom: "chrome", chromhell: "chromelight" };
+export const DEFAULT_PRESET = "lavendel";
+export const homeVariant = (preset: string): HomeVariant => HOME_VARIANT[preset] ?? "glass";
+/** Preset ids of earlier versions: a saved design with one of them is replaced by the standard design once. */
+export const LEGACY_PRESETS = new Set(["neon", "emerald", "synth", "ember", "ocean", "daylight", "cyberpunk", "neonglow", "space", "ice", "fire", "fantasy", "retro", "minimal", "glass", "mono", "minecraft", "purple", "blue",
+  "clean", "softdark", "mint", "sand", "nothing", "graphite", "petrol", "frosted", "milkglass", "midnightglass", "chrome", "appleglass", "applelight", "nothingos", "nothingoslight", "greyglass"]);
+
+/** The look fields a design sets (everything else – font size, motion, spacing – stays as the person has it). */
+export function lookOf(id: string): Pick<Theme, "preset" | "mode" | "primary" | "accent" | "background" | "surface" | "blur" | "radius" | "surfaceAlpha" | "bgScene" | "bgImage" | "bgDim"> {
+  const p = PRESETS[id] ?? PRESETS[DEFAULT_PRESET];
+  const key = PRESETS[id] ? id : DEFAULT_PRESET;
+  const scene = p.atmo?.scene ?? null;
+  return { preset: key, mode: p.mode, primary: p.primary, accent: p.accent, background: p.background, surface: p.atmo?.surface ?? "flat", blur: p.atmo?.blur ?? 22, radius: p.atmo?.radius ?? 16,
+    surfaceAlpha: p.atmo?.surfaceAlpha ?? 0.72, bgScene: scene, bgImage: null, bgDim: scene ? BG_SCENES.find((x) => x.id === scene)?.dim ?? 0.1 : 0.55 };
+}
 
 export const DEFAULT_THEME: Theme = {
-  preset: "neon", mode: "dark", primary: "#22d3ee", accent: "#a78bfa", background: "#070b16",
-  surfaceAlpha: 0.72, radius: 16, fontScale: 1, reduceMotion: false, bgImage: null, bgScene: null, bgDim: 0.55,
+  preset: "lavendel", mode: "dark", primary: "#b6a8ff", accent: "#8fd4ff", background: "#34336a",
+  surfaceAlpha: 0.5, radius: 24, fontScale: 1, reduceMotion: false, bgImage: null, bgScene: "h-lavendel", bgDim: 0.1, surface: "glass", blur: 26,
 };
 
 // ------------------------------------------------------------------ dashboard layouts
@@ -307,7 +293,10 @@ export function sanitizePrefs(input: unknown): Prefs {
   const p = input as Partial<Prefs>;
   const t = (p.theme ?? {}) as Partial<Theme>;
   const num = (v: unknown, min: number, max: number, def: number) => (typeof v === "number" && isFinite(v) ? Math.min(max, Math.max(min, v)) : def);
-  const theme: Theme = {
+  // A design of an earlier version no longer exists: the standard design takes its place (font size, motion and spacing stay).
+  const legacy = typeof t.preset === "string" && LEGACY_PRESETS.has(t.preset);
+  const fresh = t.preset === undefined || (typeof t.preset === "string" && !!PRESETS[t.preset]);
+  const theme: Theme = legacy ? { ...d.theme, fontScale: num(t.fontScale, 0.85, 1.35, 1), reduceMotion: !!t.reduceMotion, lite: !!t.lite, touch: !!t.touch, density: t.density === "compact" || t.density === "roomy" ? t.density : "normal", tilt: !!t.tilt } : {
     preset: typeof t.preset === "string" ? t.preset : d.theme.preset,
     mode: t.mode === "light" ? "light" : "dark",
     primary: HEX.test(t.primary ?? "") ? t.primary! : d.theme.primary,
@@ -319,13 +308,14 @@ export function sanitizePrefs(input: unknown): Prefs {
     reduceMotion: !!t.reduceMotion,
     lite: !!t.lite,
     bgImage: typeof t.bgImage === "string" && (t.bgImage.startsWith("data:image/") || t.bgImage.startsWith("https://")) && t.bgImage.length < 1_200_000 ? t.bgImage : null,
-    bgScene: typeof t.bgScene === "string" && BG_SCENES.some((s) => s.id === t.bgScene) ? t.bgScene : null,
+    // Fields a stored design does not have yet (new installs, empty input) come from the standard design.
+    bgScene: typeof t.bgScene === "string" && BG_SCENES.some((s) => s.id === t.bgScene) ? t.bgScene : t.bgScene === undefined && fresh ? d.theme.bgScene : null,
     bgDim: num(t.bgDim, 0, 0.9, d.theme.bgDim),
     density: t.density === "compact" || t.density === "roomy" ? t.density : "normal",
     touch: !!t.touch,
     shadow: t.shadow === "none" || t.shadow === "strong" ? t.shadow : "soft",
     border: t.border === "bold" ? "bold" : "subtle",
-    surface: SURFACES.includes(t.surface as Surface) ? (t.surface as Surface) : "flat",
+    surface: SURFACES.includes(t.surface as Surface) ? (t.surface as Surface) : t.surface === undefined && fresh ? d.theme.surface : "flat",
     blur: num(t.blur, 4, 40, 22),
     tilt: !!t.tilt,
   };
@@ -360,7 +350,7 @@ export function sanitizePrefs(input: unknown): Prefs {
     nav: sanitizeNav(p.nav),
     profileThemes: p.profileThemes !== false,
     homeShortcuts: Array.isArray(p.homeShortcuts) ? [...new Set(p.homeShortcuts.filter((x): x is string => typeof x === "string" && NAV_PATH.test(x)))].slice(0, 8) : [],
-    fx: sanitizeFx(p.fx),
+    fx: legacy ? sanitizeFx({ ...(p.fx as object), bg: { ...((p.fx as { bg?: object } | undefined)?.bg ?? {}), kind: "none" } }) : sanitizeFx(p.fx),
     tabs: sanitizeTabs(p.tabs),
     usage: p.usage && typeof p.usage === "object" ? Object.fromEntries(Object.entries(p.usage).filter(([, v]) => typeof v === "number").slice(0, 300)) : {},
   };

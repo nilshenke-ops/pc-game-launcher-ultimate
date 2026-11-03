@@ -60,7 +60,7 @@ export function SidebarNav({ items, notifCount }: { items: NavItem[]; notifCount
             {!folded && list.map((i) => (
               <div key={i.path} className="nav-row">
                 <NavLink to={i.path} end={i.path === "/"} className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`} style={ic(i.path, e.nav.colors)}>
-                  <i.icon size={18} />{i.label}
+                  <i.icon size={18} /><span className="nl">{i.label}</span>
                   {i.path === "/notifications" && notifCount > 0 && !edit && <span className="count">{notifCount}</span>}
                 </NavLink>
                 {edit && !NAV_FIXED.has(i.path) && (

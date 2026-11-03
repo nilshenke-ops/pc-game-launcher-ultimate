@@ -3,7 +3,7 @@
 // saved by this module – the result is shown as a preview first (prefs.ts: previewTheme → Übernehmen / Verwerfen).
 // Only design values change; navigation, widgets and functions stay as they are. Readability is protected.
 
-import { contrast, mix, PRESETS, type Theme } from "./prefs-core";
+import { contrast, lookOf, mix, type Theme } from "./prefs-core";
 
 export type DesignIntent =
   | { kind: "change"; theme: Theme; changes: string[]; notes: string[] }
@@ -13,15 +13,9 @@ const lc = (s: string) => s.toLowerCase().replace(/ä/g, "ae").replace(/ö/g, "o
 
 /** Named looks (also the ones from the brief: Neon Gaming, Minimal Dark, Cyberpunk, Minecraft, Purple, Blue, Schwarz-Weiß, Light). */
 const THEMES: [RegExp, string, string][] = [
-  [/neon.?gaming|\bneon\b(?!.?akzent)/, "neonglow", "Neon Gaming"],
-  [/cyberpunk/, "cyberpunk", "Cyberpunk"],
-  [/minecraft/, "minecraft", "Minecraft"],
-  [/purple.?gaming|lila.?gaming|violett.?gaming/, "purple", "Purple Gaming"],
-  [/blue.?gaming|blau.?gaming/, "blue", "Blue Gaming"],
-  [/schwarz.?weiss|black.?(and|&).?white|\bmono\b/, "mono", "Schwarz-Weiß"],
-  [/light.?mode|helles? (design|theme)|tag.?modus/, "daylight", "Light Mode"],
-  [/synthwave/, "synth", "Synthwave"], [/weltraum|space/, "space", "Space"], [/eis\b|\bice\b/, "ice", "Ice"], [/feuer|\bfire\b/, "fire", "Fire"],
-  [/fantasy/, "fantasy", "Fantasy"], [/retro|arcade/, "retro", "Retro Arcade"], [/glas\b|glass/, "glass", "Glass"], [/ozean|ocean/, "ocean", "Deep Ocean"],
+  [/lavendel|lavender/, "lavendel", "Lavendel-Glas"], [/controller/, "controller", "Controller Dunkel"], [/nacht.?blau|night.?blue/, "nacht", "Nacht-Blau"],
+  [/chrom.?hell|light.?chrome|light.?mode|helles? (design|theme)|tag.?modus/, "chromhell", "Chrom Hell"],
+  [/chrom|chrome|schwarz.?weiss|black.?(and|&).?white|\bmono\b/, "chrom", "Chrom Dunkel"],
 ];
 
 /** Accent colours; the second value is the brighter "neon" version. */
@@ -62,8 +56,7 @@ export function designIntent(raw: string, current: Theme): DesignIntent | null {
   const notes: string[] = [];
   const named = THEMES.find(([re]) => re.test(f));
   if (named) {
-    const p = PRESETS[named[1]];
-    t = { ...t, preset: named[1], mode: p.mode, primary: p.primary, accent: p.accent, background: p.background, bgScene: null, bgImage: null };
+    t = { ...t, ...lookOf(named[1]) };
     changes.push(`Theme „${named[2]}“`);
   }
   // Light / dark.

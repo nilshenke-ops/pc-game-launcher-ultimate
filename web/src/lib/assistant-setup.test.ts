@@ -12,12 +12,12 @@ describe("assistant: set up the app by request", () => {
   it("design: light, dark, colours, background, text size", () => {
     expect(run("Mach das Design hell").theme.mode).toBe("light");
     expect(run("Bitte dunkles Design").theme.mode).toBe("dark");
-    expect(run("Mach die Farben grün").theme.primary).toBe("#34d399");
+    expect(run("Mach die Farben blau").theme.primary).toBe("#8b7cff");
     const bg = run("Hintergrund Weltall");
     expect(bg.theme.bgScene).toBe("space");
     expect(run("Hintergrund entfernen", bg).theme.bgScene).toBeNull();
     expect(run("Schrift größer").theme.fontScale).toBeGreaterThan(1);
-    expect(run("Design zurücksetzen", run("Mach die Farben grün")).theme.primary).toBe("#22d3ee");
+    expect(run("Design zurücksetzen", run("Mach die Farben blau")).theme.primary).toBe("#b6a8ff");
   });
 
   it("bottom bar: add, remove, never more than four – offers a swap instead", () => {

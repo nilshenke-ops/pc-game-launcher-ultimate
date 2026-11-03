@@ -46,7 +46,7 @@ export function tileArt(item: LibraryItem, coverAllowed = true) {
   return cover ? { pic: cover } : {};
 }
 
-function Art({ item, coverAllowed }: { item: LibraryItem; coverAllowed: boolean }) {
+export function Art({ item, coverAllowed }: { item: LibraryItem; coverAllowed: boolean }) {
   const [broken, setBroken] = useState(false);
   const art = tileArt(item, coverAllowed);
   if (art.brand) return <span className="tile-brand"><BrandLogo brand={art.brand} size="56%" /></span>;

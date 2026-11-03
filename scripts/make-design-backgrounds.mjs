@@ -1,37 +1,60 @@
 #!/usr/bin/env node
-// Draws the simple, modern background scenes of the "Designs" (chrome stripes, teal flow, sunset sea, frosted shapes,
-// soft grey). Plain SVG (gradients, lines, blurred shapes) – no photos, nothing copied. Output: web/public/backgrounds/d-*.svg
+// Draws the background scenes of the five designs (lavender glass, controller dark, night blue, chrome dark, chrome light).
+// Plain SVG (gradients, rings, blurred light) – no photos, nothing copied. Output: web/public/backgrounds/h-*.svg
 import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 const out = join(new URL("..", import.meta.url).pathname, "web/public/backgrounds");
 const W = 1920, H = 1080;
 const svg = (defs, body) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice"><defs>${defs}</defs>${body}</svg>`;
-const blur = (id, sd) => `<filter id="${id}" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${sd}"/></filter>`;
-const stripes = (step, op, color) => Array.from({ length: Math.ceil(H / step) }, (_, i) => `<rect x="0" y="${i * step}" width="${W}" height="${step * 0.45}" fill="${color}" opacity="${op}"/>`).join("");
+const blur = (id, sd) => `<filter id="${id}" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="${sd}"/></filter>`;
+const lin = (id, stops, x1 = 0, y1 = 0, x2 = 1, y2 = 1) => `<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">${stops.map(([o, c, a = 1]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${a}"/>`).join("")}</linearGradient>`;
+const rad = (id, stops) => `<radialGradient id="${id}">${stops.map(([o, c, a = 1]) => `<stop offset="${o}" stop-color="${c}" stop-opacity="${a}"/>`).join("")}</radialGradient>`;
 
 const scenes = {
-  // Chrome stripes: horizontal brushed-metal bands with a bright diagonal light streak.
-  "d-chrome": svg(`<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2d31"/><stop offset=".5" stop-color="#8c9097"/><stop offset="1" stop-color="#1d1e21"/></linearGradient>
-    <linearGradient id="s" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>${blur("b", 30)}`,
-    `<rect width="${W}" height="${H}" fill="url(#g)"/><polygon points="700,0 1000,0 1500,${H} 1200,${H}" fill="url(#s)" filter="url(#b)"/>${stripes(14, 0.35, "#000")}${stripes(14, 0.08, "#fff").replace(/y="(\d+(?:\.\d+)?)"/g, (_, y) => `y="${+y + 7}"`)}`),
-  // Teal flow: dark teal with a glowing wave band and fine scan lines.
-  "d-teal": svg(`<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#021114"/><stop offset="1" stop-color="#05262b"/></linearGradient>
-    <linearGradient id="w" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#16d9d9" stop-opacity="0"/><stop offset=".5" stop-color="#2de2e6" stop-opacity=".95"/><stop offset="1" stop-color="#16d9d9" stop-opacity="0"/></linearGradient>${blur("b", 50)}${blur("c", 14)}`,
-    `<rect width="${W}" height="${H}" fill="url(#g)"/><path d="M-100 900 C 500 700 700 200 1100 -100 L 1500 -100 C 1150 300 1100 800 400 1200 Z" fill="url(#w)" filter="url(#b)" opacity=".8"/><path d="M200 1100 C 700 800 800 300 1200 -50 L 1300 -50 C 950 350 900 800 500 1150 Z" fill="#7cf5c8" filter="url(#c)" opacity=".35"/>${stripes(6, 0.12, "#000")}`),
-  // Sunset sea: warm sky, sun glow, layered blue waves (an own drawing, not a photo).
-  "d-sea": svg(`<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3a6b"/><stop offset=".45" stop-color="#e2793c"/><stop offset=".6" stop-color="#f6c36a"/></linearGradient>
-    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15508c"/><stop offset="1" stop-color="#05213f"/></linearGradient>${blur("b", 40)}`,
-    `<rect width="${W}" height="${H}" fill="url(#sky)"/><circle cx="1000" cy="560" r="150" fill="#ffd9a0" filter="url(#b)" opacity=".9"/><rect y="600" width="${W}" height="480" fill="url(#sea)"/>` +
-    [0, 1, 2, 3, 4].map((i) => `<path d="M0 ${700 + i * 70} Q 240 ${660 + i * 70} 480 ${700 + i * 70} T 960 ${700 + i * 70} T 1440 ${700 + i * 70} T 1920 ${700 + i * 70} V 1080 H0 Z" fill="#fff" opacity="${0.05 + i * 0.03}"/>`).join("")),
-  // Frost: pale blue-grey with big soft shapes – for glass cards.
-  "d-frost": svg(`<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cfe3f5"/><stop offset="1" stop-color="#e9eef7"/></linearGradient>${blur("b", 70)}`,
-    `<rect width="${W}" height="${H}" fill="url(#g)"/><circle cx="450" cy="300" r="320" fill="#8ec5ff" filter="url(#b)" opacity=".7"/><circle cx="1500" cy="780" r="380" fill="#ffd0e0" filter="url(#b)" opacity=".7"/><circle cx="1100" cy="150" r="240" fill="#c9b8ff" filter="url(#b)" opacity=".55"/>`),
-  // Soft grey: calm light grey with fine dark branches' shadows as soft lines (nothing busy).
-  "d-grey": svg(`<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1f1f3"/><stop offset="1" stop-color="#d4d5da"/></linearGradient>${blur("b", 60)}${blur("c", 3)}`,
-    `<rect width="${W}" height="${H}" fill="url(#g)"/><ellipse cx="500" cy="500" rx="420" ry="520" fill="#fff" filter="url(#b)" opacity=".7"/><path d="M780 0 C 760 300 860 600 800 1080" stroke="#1b1b1f" stroke-width="5" fill="none" filter="url(#c)" opacity=".75"/><path d="M1180 0 C 1230 350 1100 700 1160 1080" stroke="#1b1b1f" stroke-width="4" fill="none" filter="url(#c)" opacity=".6"/>`),
-  // Midnight: deep blue-black with two soft colour clouds – calm dark for glass.
-  "d-midnight": svg(`<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#070a16"/><stop offset="1" stop-color="#0d1530"/></linearGradient>${blur("b", 90)}`,
-    `<rect width="${W}" height="${H}" fill="url(#g)"/><circle cx="500" cy="700" r="360" fill="#3b5bff" filter="url(#b)" opacity=".5"/><circle cx="1500" cy="250" r="320" fill="#a24bff" filter="url(#b)" opacity=".4"/>`),
+  // Lavender glass: deep indigo on the left to pale lavender on the right, big see-through spheres with bright rims.
+  "h-lavendel": svg(
+    lin("g", [[0, "#2a2b64"], [0.45, "#58529f"], [1, "#c6c2ee"]]) + lin("rim", [[0, "#fff", 0.75], [1, "#fff", 0]], 0, 0, 1, 1) + rad("sph", [[0, "#fff", 0.0], [0.82, "#fff", 0.06], [1, "#fff", 0.38]]) + blur("b", 80) + blur("s", 6),
+    `<rect width="${W}" height="${H}" fill="url(#g)"/>
+     <circle cx="430" cy="120" r="430" fill="#7a6bff" filter="url(#b)" opacity=".5"/>
+     <circle cx="1650" cy="900" r="520" fill="#f2d3ff" filter="url(#b)" opacity=".55"/>
+     <circle cx="1560" cy="80" r="560" fill="url(#sph)"/><circle cx="1560" cy="80" r="560" fill="none" stroke="url(#rim)" stroke-width="5" filter="url(#s)"/>
+     <circle cx="1050" cy="1240" r="860" fill="url(#sph)"/><circle cx="1050" cy="1240" r="860" fill="none" stroke="url(#rim)" stroke-width="4" opacity=".8" filter="url(#s)"/>
+     <circle cx="1850" cy="1000" r="420" fill="none" stroke="#fff" stroke-width="3" opacity=".35" filter="url(#s)"/>`),
+  // Controller dark: near black, violet and blue light glowing from the right, thin glowing rings.
+  "h-controller": svg(
+    lin("g", [[0, "#05060c"], [1, "#0d0f22"]]) + rad("v", [[0, "#6c4cff", 0.75], [1, "#6c4cff", 0]]) + rad("bl", [[0, "#3b82ff", 0.7], [1, "#3b82ff", 0]]) + lin("rim", [[0, "#9fb4ff", 0.7], [1, "#9fb4ff", 0]]) + blur("s", 5),
+    `<rect width="${W}" height="${H}" fill="url(#g)"/>
+     <circle cx="1480" cy="360" r="620" fill="url(#v)"/><circle cx="1750" cy="900" r="560" fill="url(#bl)"/>
+     <circle cx="1500" cy="640" r="760" fill="none" stroke="url(#rim)" stroke-width="3" filter="url(#s)"/>
+     <circle cx="1280" cy="760" r="980" fill="none" stroke="url(#rim)" stroke-width="2" opacity=".6" filter="url(#s)"/>
+     <ellipse cx="1000" cy="1010" rx="1100" ry="120" fill="#5b4bd6" opacity=".16" filter="url(#s)"/>`),
+  // Night blue: deep navy with a violet-blue sweep and two large soft arcs.
+  "h-nacht": svg(
+    lin("g", [[0, "#060818"], [1, "#0b1236"]]) + lin("sw", [[0, "#4f46e5", 0], [0.5, "#5b6cff", 0.85], [1, "#a855f7", 0]], 0, 1, 1, 0) + rad("bl", [[0, "#2f6bff", 0.7], [1, "#2f6bff", 0]]) + blur("b", 70) + blur("s", 4),
+    `<rect width="${W}" height="${H}" fill="url(#g)"/>
+     <path d="M900 1200 C 1200 700 1500 520 2100 480 L 2100 1100 Z" fill="url(#sw)" filter="url(#b)" opacity=".9"/>
+     <circle cx="1650" cy="1000" r="520" fill="url(#bl)"/>
+     <circle cx="1700" cy="260" r="620" fill="none" stroke="#7c8cff" stroke-width="3" opacity=".4" filter="url(#s)"/>
+     <circle cx="1100" cy="900" r="900" fill="none" stroke="#7c8cff" stroke-width="2" opacity=".25" filter="url(#s)"/>`),
+  // Chrome dark: black with liquid-metal bands (long silver curves with bright edges).
+  "h-chrom": svg(
+    lin("g", [[0, "#0b0b0d"], [1, "#141517"]]) + lin("m1", [[0, "#1a1b1e"], [0.35, "#f4f4f6"], [0.55, "#6d7078"], [1, "#0c0c0e"]], 0, 0, 1, 1) + lin("m2", [[0, "#0c0c0e"], [0.4, "#9ea1a8"], [0.6, "#fff"], [1, "#1a1b1e"]], 1, 0, 0, 1) + blur("s", 3) + blur("b", 30),
+    `<rect width="${W}" height="${H}" fill="url(#g)"/>
+     <path d="M1050 -80 C 1350 120 1450 420 1260 640 C 1180 460 1080 220 1050 -80 Z" fill="url(#m1)" opacity=".95"/>
+     <path d="M1350 -60 C 1750 20 1960 260 1960 520 L 1960 -60 Z" fill="url(#m2)" opacity=".9"/>
+     <path d="M700 1160 C 780 760 1180 500 1960 560 L 1960 1160 Z" fill="url(#m2)" opacity=".85"/>
+     <path d="M700 1160 C 780 760 1180 500 1960 560" fill="none" stroke="#fff" stroke-width="3" opacity=".7" filter="url(#s)"/>
+     <path d="M1050 -80 C 1350 120 1450 420 1260 640" fill="none" stroke="#fff" stroke-width="3" opacity=".6" filter="url(#s)"/>
+     <ellipse cx="1180" cy="660" rx="260" ry="80" fill="#fff" opacity=".18" filter="url(#b)"/>`),
+  // Chrome light: silver-grey with the same bands in light tones.
+  "h-chromhell": svg(
+    lin("g", [[0, "#e4e6ea"], [1, "#a9acb3"]]) + lin("m1", [[0, "#6f7279"], [0.35, "#ffffff"], [0.6, "#b9bcc3"], [1, "#4a4c52"]], 0, 0, 1, 1) + lin("m2", [[0, "#4a4c52"], [0.4, "#d6d8dd"], [0.62, "#fff"], [1, "#8d9097"]], 1, 0, 0, 1) + blur("s", 3) + blur("b", 40),
+    `<rect width="${W}" height="${H}" fill="url(#g)"/>
+     <ellipse cx="500" cy="480" rx="520" ry="620" fill="#fff" opacity=".35" filter="url(#b)"/>
+     <path d="M1080 -80 C 1380 120 1480 420 1290 640 C 1210 460 1110 220 1080 -80 Z" fill="url(#m1)" opacity=".9"/>
+     <path d="M1380 -60 C 1780 20 1960 260 1960 520 L 1960 -60 Z" fill="url(#m2)" opacity=".85"/>
+     <path d="M720 1160 C 800 760 1200 500 1960 560 L 1960 1160 Z" fill="url(#m2)" opacity=".8"/>
+     <path d="M720 1160 C 800 760 1200 500 1960 560" fill="none" stroke="#fff" stroke-width="3" opacity=".9" filter="url(#s)"/>`),
 };
 for (const [id, body] of Object.entries(scenes)) writeFileSync(join(out, id + ".svg"), body);
 console.log(Object.keys(scenes).length + " Hintergründe geschrieben");

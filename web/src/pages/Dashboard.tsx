@@ -31,6 +31,7 @@ import { CustomWidgetView } from "../components/CustomWidgetView";
 import { CapturesWidget, ChallengesWidget, DiceWidget, MemoryWidget, NightWidget, PhotoWidget, PollWidget, ProjectsWidget, StorageWidget, TopPlayedWidget, TrackWidget } from "../components/more-widgets";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
 import { HomePages } from "../components/home-pages";
+import { HomeShowcase } from "../components/home-showcase";
 // Loaded only when the widget is shown (the task catalog is not needed on every start).
 const BingoWidget = lazy(() => import("../components/bingo-board").then((m) => ({ default: m.BingoWidget })));
 import { CUSTOM_WIDGET } from "../lib/prefs-core";
@@ -385,11 +386,13 @@ export default function Dashboard() {
 
   return (
     <>
-      <PageHead eyebrow={greeting} title={t("Gaming-Zentrale")} text={state ? t("{g} Spiele · {p} Programme · {s} Sounds", { g: state.counts.games, p: state.counts.programs, s: state.counts.sounds }) : undefined}
+      {edit ? (
+        <PageHead eyebrow={greeting} title={t("Gaming-Zentrale")} text={state ? t("{g} Spiele · {p} Programme · {s} Sounds", { g: state.counts.games, p: state.counts.programs, s: state.counts.sounds }) : undefined}
         actions={<>
           {edit && <Button icon={<RotateCcw size={16} />} onClick={() => updateWidgets(() => structuredClone(DEFAULT_LAYOUT.widgets))}>{t("Standard")}</Button>}
           <Button variant={edit ? "primary" : undefined} icon={edit ? <Check size={16} /> : <LayoutDashboard size={16} />} onClick={() => setEdit(!edit)}>{edit ? t("Fertig") : t("Anpassen")}</Button>
         </>} />
+      ) : <HomeShowcase onEdit={() => setEdit(true)} />}
       <HomePages layout={layout} mobile={mobile} edit={edit} pluginWidgets={pluginWidgets.map((x) => x.id)} />
       {state && !edit && <div style={{ marginBottom: 12 }}><StableAddressOffer /></div>}
       {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}

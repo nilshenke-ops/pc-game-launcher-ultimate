@@ -1,11 +1,11 @@
 import { sortLibrary } from "../lib/library-sort";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Check, FolderOpen, Wand2, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, RefreshCw, Search, Star, Trash2 } from "lucide-react";
 import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useRpc, toast, useCan, useIncremental } from "../lib/hooks";
 import { dateTime, gradientFor, initials, relTime } from "../lib/format";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useJournal } from "../lib/journal";
 import { memorySummary, type Memory } from "../lib/journal-logic";
 import { HoloLibrary, type HoloInfo } from "../components/holo-library";
@@ -38,6 +38,16 @@ export default function Library({ kind }: { kind: ItemKind }) {
   // Remembered on this device (also set by JARVIS: „Zuletzt gespielte nach oben“).
   const [sort, setSort] = useState<Sort>(() => { const v = readJson<string>(LIB_SORT_KEY); return v === "recent" || v === "added" || v === "rating" ? v : "name"; });
   useEffect(() => { writeJson(LIB_SORT_KEY, sort); }, [sort]);
+  // „Favoriten“ in the side menu opens this list with the favourites filter (?filter=fav); the plain link switches it off again.
+  const [params] = useSearchParams();
+  const urlFilter = params.get("filter");
+  const seenFilter = useRef(urlFilter);
+  useEffect(() => {
+    if (seenFilter.current === urlFilter) return;
+    seenFilter.current = urlFilter;
+    setCat(urlFilter === "fav" ? "__fav" : "__all");
+  }, [urlFilter]);
+  useEffect(() => { if (urlFilter === "fav") setCat("__fav"); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   const [editing, setEditing] = useState<LibraryItem | null>(null);
   const [adding, setAdding] = useState(false);
   const [syncing, setSyncing] = useState(false);
