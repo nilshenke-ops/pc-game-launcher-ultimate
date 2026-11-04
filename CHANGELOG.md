@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.1.0 – 2026-11-04
+### Neu
+- „Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde
+- Der erste eingerichtete kostenlose Zugang schaltet auf „Automatisch“ um (ohne Umweg über die Einstellungen); in der Insel (Reiter JARVIS) und im Chat lässt sich die KI mit einem Tipp wechseln: Automatisch, Gemini, Router, lokale KI, eingebaut, Standard des PCs
+- Kostenlose KI einrichten in drei Schritten (Insel und JARVIS-Seite): Gemini-Schlüssel aus Google AI Studio einfügen und testen; als Ersatz mit einem Tipp OpenRouter oder Groq einrichten – der PC wählt die kostenlosen Modelle selbst. ChatGPT bietet Apps keinen kostenlosen Zugang und wird deshalb nicht angeboten
+- Ohne PC (Handy, iPad, fremder Browser): allgemeine Fragen beantwortet eine freie KI ohne Konto und ohne Schlüssel (Pollinations) – erst nach deinem Ja auf diesem Gerät, gesendet wird nur die Frage mit den letzten Nachrichten, höchstens 20 Fragen pro Stunde; die Antwort ist als „Freie KI ohne PC“ gekennzeichnet; auch in der Insel auf dem Handy/iPad
+### Behoben
+- „Wie lange sollte man schlafen?“ wurde als Frage nach der Spielzeit gelesen und mit „keine erkannte Spielsitzung“ beantwortet – Spielzeit-Fragen brauchen jetzt einen Spielbezug
+- Die Antwort der Insel nennt, welche KI geantwortet hat
+
 ## 3.0.0 – 2026-11-04
 ### Neu
 - Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“)

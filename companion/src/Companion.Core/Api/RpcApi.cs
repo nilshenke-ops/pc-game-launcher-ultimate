@@ -273,6 +273,8 @@ public static class RpcApi
         rpc.Register("voice.configure", ctx => { var r = s.Voice.Configure(ctx.Bind<Assistant.VoiceService.Config>(), ctx.Session.IsLocalAdmin); s.Rpc.Changed("voice"); return r; });
         rpc.Register("voice.voices", async ctx => new { voices = await s.Voice.VoicesAsync(default) });
         rpc.Register("voice.speak", async ctx => await s.Voice.SpeakAsync(ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("text", out var tx) && tx.ValueKind == JsonValueKind.String ? tx.GetString() : null, default));
+        // One tap to a second free AI (OpenRouter or Groq with the person's own free key) – the PC picks the models.
+        rpc.Register("assistant.quickRouter", async ctx => await s.Assistant.QuickRouterAsync(ctx.Str("preset", 20), ctx.Str("key", 300), ctx.Session.IsLocalAdmin));
         rpc.Register("assistant.configure", ctx => s.Assistant.Configure(ctx.Bind<Assistant.AssistantService.Config>(), ctx.Session.IsLocalAdmin));
 
         // ------------------------------------------------------------ GameQuest
@@ -922,7 +924,10 @@ public static class RpcApi
         var reply = answer.GetType().GetProperty("reply")?.GetValue(answer) as Assistant.AssistantReply;
         if (reply == null) return;
         var ask = reply.Actions.FirstOrDefault(a => a.Confirm && !a.Auto && !string.IsNullOrEmpty(a.Method));
-        s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = !reply.Failed, text = reply.Text.Length > 280 ? reply.Text[..280] : reply.Text,
+        // Which AI answered (and why, when another one was skipped) – shown under the answer in the island.
+        var via = reply.Mode switch { "gemini" => "Gemini", "router" => $"KI-Router{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "ollama" => "lokale KI", "claude" => "Claude", _ => "eingebaut" };
+        var note = reply.Sources.FirstOrDefault(x => x.StartsWith("Automatisch:"));
+        s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = !reply.Failed, via, note, text = reply.Text.Length > 280 ? reply.Text[..280] : reply.Text,
             ask = ask == null ? null : new { kind = ask.Kind, label = ask.Label, method = ask.Method, @params = ask.Params, confirm = true } }, Permissions.Local);
     }
 

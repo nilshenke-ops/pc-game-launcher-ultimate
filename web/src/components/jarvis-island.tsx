@@ -100,10 +100,10 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
 
   // JARVIS' activity comes from the PC (whichever device asks him) – only to this PC's own windows.
   useEffect(() => client.on("jarvis.activity", (d) => {
-    const x = d as { phase?: string; ok?: boolean; text?: string; ask?: AssistantAction | null };
+    const x = d as { phase?: string; ok?: boolean; text?: string; via?: string; note?: string; ask?: AssistantAction | null };
     if (x.phase === "busy") islandBusy(true);
     if (x.phase === "done") {
-      islandBusy(false); islandAnswer(String(x.text ?? ""), x.ok === false ? false : true, x.ask ? [{ ...x.ask, confirm: true }] : []);
+      islandBusy(false); islandAnswer(String(x.text ?? ""), x.ok === false ? false : true, x.ask ? [{ ...x.ask, confirm: true }] : [], "jarvis", x.via, x.note);
       if (consumeSpoken() && x.text) speak(x.text); // only the answer to a question that was spoken
     }
   }), []);

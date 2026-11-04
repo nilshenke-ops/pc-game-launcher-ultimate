@@ -1960,7 +1960,7 @@ test("KI-Chat: Weiche vor jeder Antwort, Recherche mit Quellen und Datum, Abbrec
   // Model choice: only what is set up at this PC (no Claude key here → no Claude in the list).
   const engines = p.getByRole("combobox", { name: "KI-Modell für diesen Chat" });
   await expect(engines).toBeVisible();
-  await expect(engines.locator("option")).toHaveText([/^Automatisch/, "Eingebaut (ohne KI, 0 €)"]);
+  await expect(engines.locator("option")).toHaveText(["Standard des PCs (eingebaut)", "Eingebaut (ohne KI, 0 €)"]); // no free AI here → no "Automatisch" yet
 
   // B: current question → asks first, then a real search (Mojang patch notes); no AI at this PC → the passages themselves.
   await say.fill("Was gibt es Neues bei Minecraft?"); await say.press("Enter");
@@ -2366,6 +2366,67 @@ test("JARVIS-Insel 3.0: Tabs, Widgets im Wackel-Modus hinzufügen/entfernen, Tim
   await expect(panel).toContainText("Verlauf");
   await expect(panel).toContainText("Meldungen des PCs");
   await adminRpc("island.configure", { look: { widgets: before } });
+  await p.context().close();
+});
+
+test("Freie KI ohne PC: erst fragen (nur mit Ja), dann beantwortet sie allgemeine Fragen – gesendet wird nur die Frage", async ({ browser }) => {
+  const ctx = await newCtx(browser, { ...devices["iPad Mini"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  const sent: { body: string; headers: Record<string, string> }[] = [];
+  await p.route(/api\.php|wikipedia\.org|api\.stackexchange\.com/, (route) => route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [] } }) }));
+  await p.route(/text\.pollinations\.ai/, async (route) => {
+    if (route.request().method() === "OPTIONS") { await route.fulfill({ status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "content-type" } }); return; }
+    sent.push({ body: route.request().postData() ?? "", headers: route.request().headers() });
+    await route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ choices: [{ message: { content: "Erwachsene brauchen im Durchschnitt etwa 7 bis 9 Stunden Schlaf." } }], model: "gpt-oss-20b" }) });
+  });
+  await p.goto(`${HOSTED_SITE}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  await say.fill("Suche wie lange man im durchschnitt schlafen muss"); await say.press("Enter");
+  const last = p.locator(".as-turn.bot").last();
+  // Not asked yet: nothing is sent, the device is asked once.
+  await expect(last).toContainText("Pollinations", { timeout: 20000 });
+  expect(sent).toHaveLength(0);
+  await last.getByRole("button", { name: "Ja, freie KI nutzen" }).click();
+  await expect(p.locator(".as-turn.bot").last()).toContainText("7 bis 9 Stunden", { timeout: 20000 });
+  await expect(p.locator(".as-turn.bot").last()).toContainText("Freie KI ohne PC");
+  expect(sent).toHaveLength(1);
+  expect(sent[0].body).toContain("schlafen");
+  expect(Object.keys(sent[0].headers).filter((h) => /authorization|cookie/i.test(h))).toEqual([]);
+  // The next general question goes straight to it (the yes is remembered on this device).
+  await say.fill("Wie hoch ist der Mount Everest?"); await say.press("Enter");
+  // The chat still asks before looking anything up on the internet; after that the open wikis come first, then the free AI.
+  await p.locator(".as-turn.bot").last().getByRole("button", { name: "Ja, nachsehen" }).click();
+  await expect.poll(() => sent.length, { timeout: 20000 }).toBe(2);
+  expect(sent[1].body).toContain("Everest");
+  await ctx.close();
+});
+
+test("Automatisch & kostenlose KI einrichten: Insel zeigt den Einrichter, falsche Schlüssel werden abgelehnt, ohne KI gibt es kein „Automatisch“", async ({ browser }) => {
+  const { adminRpc } = await import("./rpc");
+  await expect(adminRpc("assistant.configure", { mode: "smart" })).rejects.toThrow(/kostenlose KI einrichten/);
+  await expect(adminRpc("assistant.quickRouter", { preset: "openrouter", key: "kurz" })).rejects.toThrow(/API-Schlüssel/);
+  await expect(adminRpc("assistant.quickRouter", { preset: "mistral", key: "x".repeat(30) })).rejects.toThrow(/openrouter/);
+  await expect(adminRpc("assistant.configure", { geminiKey: "sk-nicht-google-0123456789abcdef" })).rejects.toThrow(/Gemini-API-Schlüssel/);
+  const st = await adminRpc<{ mode: string; engines: { id: string }[] }>("assistant.status");
+  expect(st.engines.map((e) => e.id)).not.toContain("smart");
+  const p = await adminPage(browser);
+  const isl = await p.context().newPage();
+  await isl.addInitScript((tok) => { (window as unknown as { __PGL_ADMIN__: string; __PGL_EMBEDDED__: boolean }).__PGL_ADMIN__ = tok; (window as unknown as { __PGL_EMBEDDED__: boolean }).__PGL_EMBEDDED__ = true; }, state().adminToken);
+  await isl.setViewportSize({ width: 620, height: 380 });
+  await isl.goto(`${COMPANION}/#/island`);
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
+  await islandTab(panel, "JARVIS").click();
+  const setup = panel.locator("details.isl2-setup");
+  await expect(setup).toHaveAttribute("open", "");                       // nothing free set up yet → the helper is open
+  await expect(panel).toContainText("ChatGPT hat keinen kostenlosen Zugang");
+  const save = panel.getByRole("button", { name: "Speichern & testen" });
+  await expect(save).toBeDisabled();
+  await panel.getByLabel("Gemini-Schlüssel").fill("kein-schluessel");
+  await expect(save).toBeDisabled();                                      // only a key that looks like a Google key can be saved
+  await panel.getByLabel("Gemini-Schlüssel").fill("AIzaSyA0123456789abcdefghijklmnopqrstuv");
+  await expect(save).toBeEnabled();
+  await expect(panel.getByRole("radiogroup", { name: "Welche KI antwortet" })).toHaveCount(0); // no choice without a free AI
   await p.context().close();
 });
 

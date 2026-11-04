@@ -11,13 +11,17 @@ import { useAppState } from "../lib/state";
 import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
 import { useIslandLook } from "../lib/island-look";
 import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
-import { clock, islandAnswer, islandPet, islandPoke, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
+import { clock, islandAnswer, islandBusy, islandPet, islandPoke, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
 import { countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, useTimer } from "../lib/island-timer";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { nowPosition, nowSub, songTime, useNowPlaying } from "../lib/now-playing";
 import { accentOfCover } from "../lib/cover-accent";
 import { clearIslandHistory, useIslandHistory, type HistoryEntry } from "../lib/island-activity";
-import { markSpoken, useVoiceInput } from "../lib/island-voice";
+import { consumeSpoken, markSpoken, useVoiceInput } from "../lib/island-voice";
+import { speak } from "../lib/jarvis-voice";
+import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
+import { readJson, writeJson } from "../lib/rpc";
+import { FreeAiSetup, hasFreeAi, type AiStatus } from "./free-ai-setup";
 import { mainGame } from "../lib/running";
 import { homeRecent, type HistoryData } from "../lib/home-data";
 import { relTime } from "../lib/format";
@@ -92,12 +96,38 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const inbox = useRpc<{ items: Notification[] }>("notifications.list", {}, ["notifications"], online && current === "inbox");
   useEvent("notification", () => { if (current === "inbox") inbox.reload(); });
 
+  // Which AI answers: "Automatisch" (commands at the PC, questions per free AI with a spare) is the default; the chips switch to one AI for this question.
+  const ai = useRpc<AiStatus>("assistant.status", {}, ["assistant"], online && current === "jarvis");
+  const ENGINE_KEY = "pgl.island.engine";
+  const [engine, setEngineState] = useState<string>(() => { try { return readJson<string>(ENGINE_KEY) ?? "smart"; } catch { return "smart"; } });
+  const setEngine = (id: string) => { setEngineState(id); try { writeJson(ENGINE_KEY, id); } catch { /* storage blocked */ } };
+  const engineIds = (ai.data?.engines ?? []).map((e) => e.id);
+  const engineNow = engineIds.includes(engine) ? engine : engineIds.includes("smart") ? "smart" : "auto";
+  const consent = useFreeAiConsent();
+  const [pendingFree, setPendingFree] = useState<string | null>(null);
+  const turns = useRef<{ role: "user" | "bot"; text: string }[]>([]);
+
+  /** Without the PC: general questions go to the free AI (once allowed on this device); nothing else leaves the device. */
+  const askWithoutPc = async (v: string) => {
+    if (consent === "no") { islandAnswer(t("Ohne PC kann ich das hier nicht beantworten."), false); return; }
+    if (consent === "ask") { setPendingFree(v); return; }
+    islandBusy(true);
+    try {
+      const r = await askFreeAi(v, { history: turns.current });
+      turns.current = [...turns.current, { role: "user" as const, text: v }, { role: "bot" as const, text: r.text }].slice(-8);
+      islandAnswer(r.text, true, [], "jarvis", FREE_AI_NAME);
+      if (consumeSpoken()) speak(r.text);
+    } catch (e) { islandAnswer((e as Error).message, false); }
+    finally { islandBusy(false); }
+  };
+
   const send = async (text: string) => {
     const v = text.trim(); if (!v) return;
     setQ("");
     const pet = petCommand(v);
     if (pet) { islandPet(pet); islandAnswer(pet === "dance" ? t("Ich tanze!") : pet === "sleep" ? t("Gute Nacht – tippe mich an, dann bin ich wieder da.") : t("Bin wach!"), true); return; }
-    try { await client.call("assistant.ask", { text: v }); } catch (err) { islandAnswer((err as Error).message, false); }
+    if (!online) { await askWithoutPc(v); return; }
+    try { await client.call("assistant.ask", { text: v, ...(engineNow === "auto" ? {} : { engine: engineNow }) }); } catch (err) { islandAnswer((err as Error).message, false); }
   };
   const voice = useVoiceInput((said) => { markSpoken(); setTab("jarvis"); void send(said); }, (m) => toast(t(m), "error"));
   const submit = (e: FormEvent) => { e.preventDefault(); void send(q); };
@@ -272,23 +302,47 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     </div>
   );
 
+  const ENGINE_LABEL: Record<string, string> = { smart: "Automatisch", gemini: "Gemini", router: "Router", ollama: "Lokale KI", local: "Eingebaut" };
+  const noAiHere = !online && consent === "no";
   const jarvisTab = (
     <div className="isl2-chat">
       <div className="isl2-answer">
         <span className="badge">{t(MOOD_LABEL[mood])}</span>
         <p className="isl-last">{s.last ? s.last.text : t("Noch nichts gefragt.")}</p>
+        {s.last?.via && <span className="tiny isl2-via">{t("Antwort von {n}", { n: s.last.via })}{s.last.note && s.last.note.includes("deshalb") ? ` – ${s.last.note.replace(/^Automatisch:\s*/, "")}` : ""}</span>}
       </div>
+      {pendingFree && (
+        <div className="isl2-answer" role="group" aria-label={t("Freie KI erlauben")}>
+          <p className="tiny">{t(FREE_AI_NOTICE)}</p>
+          <div className="isl2-ctrls">
+            <button type="button" className="isl2-chip done" onClick={() => { const v = pendingFree; setPendingFree(null); setFreeAiConsent("yes"); void (async () => { islandBusy(true); try { const r = await askFreeAi(v, { history: turns.current }); islandAnswer(r.text, true, [], "jarvis", FREE_AI_NAME); } catch (e) { islandAnswer((e as Error).message, false); } finally { islandBusy(false); } })(); }}>{t("Ja, freie KI nutzen")}</button>
+            <button type="button" className="isl2-chip" onClick={() => { setPendingFree(null); setFreeAiConsent("no"); }}>{t("Nein")}</button>
+          </div>
+        </div>
+      )}
+      {online && engineIds.some((id) => id !== "local" && id !== "auto") && (
+        <div className="isl2-engines" role="radiogroup" aria-label={t("Welche KI antwortet")}>
+          {engineIds.filter((id) => id in ENGINE_LABEL).map((id) => (
+            <button key={id} type="button" role="radio" aria-checked={engineNow === id} className={`isl2-chip${engineNow === id ? " on" : ""}`} onClick={() => setEngine(id)}>{t(ENGINE_LABEL[id])}</button>
+          ))}
+          <button type="button" role="radio" aria-checked={engineNow === "auto"} className={`isl2-chip${engineNow === "auto" ? " on" : ""}`} onClick={() => setEngine("auto")} title={t("Die Einstellung des PCs")}>{t("Standard")}</button>
+        </div>
+      )}
       <form className="isl2-ask" onSubmit={submit}>
-        <button type="button" className={`isl2-mic${voice.listening ? " on" : ""}`} disabled={!voice.supported || !online} onClick={voice.toggle}
+        <button type="button" className={`isl2-mic${voice.listening ? " on" : ""}`} disabled={!voice.supported || noAiHere} onClick={voice.toggle}
           aria-pressed={voice.listening} aria-label={voice.listening ? t("Zuhören beenden") : t("Mit JARVIS sprechen")}
           title={voice.supported ? (voice.listening ? t("Zuhören beenden") : t("Mit JARVIS sprechen")) : t("In diesem Fenster gibt es keine Spracherkennung – schreib stattdessen, oder öffne JARVIS im Browser (Chrome, Edge).")}>
           {voice.listening ? <MicOff size={18} /> : <Mic size={18} />}
         </button>
         <input className="input" value={voice.listening ? voice.interim : q} maxLength={300} readOnly={voice.listening}
           placeholder={voice.listening ? t("Ich höre zu …") : t("Frag JARVIS …")} onChange={(e) => setQ(e.target.value)} aria-label={t("Frag JARVIS …")} />
-        <button type="submit" className="isl2-send" disabled={!q.trim() || !online || voice.listening} aria-label={t("Fragen")}><Send size={16} /></button>
+        <button type="submit" className="isl2-send" disabled={!q.trim() || noAiHere || voice.listening} aria-label={t("Fragen")}><Send size={16} /></button>
       </form>
-      <p className="tiny muted isl2-tip">{t("Sag oder schreib z. B. „Starte WhatsApp“ – vor dem Starten fragt JARVIS kurz nach. Gesprochene Fragen werden laut beantwortet.")}</p>
+      <p className="tiny muted isl2-tip">{online ? t("Befehle („Starte WhatsApp“) erledigt der PC, Fragen beantwortet eine kostenlose KI – fällt eine aus, springt die nächste ein. Gesprochene Fragen werden laut beantwortet.") : t("Ohne PC: allgemeine Fragen beantwortet die freie KI ohne Konto (nur mit deinem Ja).")}</p>
+      <details className="isl2-setup" open={online && !!ai.data && !hasFreeAi(ai.data)}>
+        <summary>{t("Kostenlose KI einrichten")}{hasFreeAi(ai.data) ? ` · ${t("eingerichtet")}` : ""}</summary>
+        <FreeAiSetup online={online} onChanged={ai.reload} />
+      </details>
     </div>
   );
 

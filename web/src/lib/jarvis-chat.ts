@@ -308,6 +308,13 @@ async function lookupFlow(i: import("./web-lookup").LookupIntent, ctx: JarvisCtx
       return { text: `${a.text}\n\n${t("Deshalb habe ich in den Quellen nachgesehen:")}\n${b.text}`, ok: b.ok, source: b.source, actions: links(b.links) };
     }
     const a = await w.lookupAnswer(i, fetch, pc);
+    // Without the PC and nothing found in the open wikis: the free AI without an account (only with this device's yes – asked once).
+    if (!pc && a.ok === null && !a.ask) {
+      const { freeAiAnswer } = await import("./free-ai-chat");
+      const fb: AssistantReply = { text: a.text, actions: [], sources: [], suggestions: [], mode: "device" };
+      const f = await freeAiAnswer(i.raw, [], fb);
+      if (f.mode === "free" || f.actions.length) return { text: f.text, ok: null, source: f.sources[0], actions: f.actions.length ? f.actions : links(a.links) };
+    }
     if (a.ok === null && !a.ask && pc && mode === "auto") {
       // Nothing found: ask the AI right away (setting "Quellen, sonst KI").
       const b = await w.aiAnswer(i, pc);

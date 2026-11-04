@@ -67,7 +67,7 @@ public sealed class LocalAssistant
         }
         if (Has(t, @" (welche|was fuer|meine|alle|which|my) (spiele|games|programme) ") || Has(t, @" (zeig|liste|list) (mir )?(meine |alle )?(spiele|games|bibliothek) "))
             return Library();
-        if (Has(t, @" (wie lange|wie viel|wieviel|spielzeit|gespielt|played|playtime|stunden) ") && !Has(t, @" (quest|ziel|level|xp) "))
+        if ((Has(t, @" (spielzeit|gespielt|gezockt|played|playtime) ") || (Has(t, @" (wie lange|wie viel|wieviel|stunden) ") && Has(t, @" (spiel|spiele|spielen|zocken|zocke|game|games|play) "))) && !Has(t, @" (quest|ziel|level|xp) "))
             return PlayTime(t);
         if (Has(t, @" (level|xp|erfolg|erfolge|achievement|quest|quests|ziele|ziel) ") && !Has(t, @" (wie (lege|richte|erstelle)|anlegen|einrichten|vorschlagen|vorschlag|setzen|neues|neue|empfiehl|suggest) "))
             return Quests();

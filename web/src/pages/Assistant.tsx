@@ -5,6 +5,7 @@ import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, confirmDialog, PageHead, Switch } from "../components/ui";
+import { FreeAiSetup, hasFreeAi, type AiStatus } from "../components/free-ai-setup";
 import { CHAT_KEY, emptyChat, formatCost, jarvisChips, offlineExamples, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
 import { openJarvis, setJarvisEnabled, useJarvis } from "../lib/jarvis-session";
 import { speak, stopSpeaking } from "../lib/jarvis-voice";
@@ -86,6 +87,8 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
     // A source or offer link (https only) – opened in a new tab, nothing else happens.
     if (a.kind === "openUrl" && typeof a.params?.url === "string" && /^https:\/\//.test(a.params.url)) { window.open(a.params.url, "_blank", "noopener,noreferrer"); return; }
     // Answer to "Soll ich im Internet nachsehen?" for a bingo.
+    // "Freie KI ohne PC erlauben?" – the answer is kept on this device; "yes" asks the question again.
+    if (a.kind === "freeAiChoice" && a.params) { setDone({ [i]: true }); void import("../lib/free-ai").then((m) => { m.setFreeAiConsent(a.params!.ok === true ? "yes" : "no"); if (a.params!.ok === true) onLookup(String(a.params!.question ?? ""), true, a.label); }); return; }
     if (a.kind === "aiAnswer" && a.params) { setDone({ [i]: true }); onLookup(String(a.params.question ?? ""), true, a.label, true); return; }
     if (a.kind === "lookupChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/web-lookup").then((m) => m.setWebPermission("always")); onLookup(String(a.params.question ?? ""), a.params.ok === true, a.label, false, a.params.sources === true); return; }
     if (a.kind === "bingoChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/bingo-chat").then((m) => m.setWebAlways(true)); onBingo(String(a.params.question ?? ""), a.params.web === true, a.label); return; }
@@ -131,7 +134,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
         {r.cites && <Sources cites={r.cites} info={r.research} />}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
         {!r.cancelled && !r.actions.some((a) => a.kind === "lookupChoice" || a.kind === "bingoChoice") && (
@@ -264,7 +267,9 @@ export default function Assistant() {
       if (!online) {
         // Without a PC: the help built into the app answers right here in the browser (no internet, 0 €).
         const [{ answerOffline }, lib] = await Promise.all([import("../lib/assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
-        const r = answerOffline(question, { library: lib.items ?? [], paired: !!client.credentials });
+        let r = answerOffline(question, { library: lib.items ?? [], paired: !!client.credentials });
+        // Not a question about the app: a general question goes to the free AI (only with this device's yes – asked once).
+        if (r.unsure) { const { freeAiAnswer } = await import("../lib/free-ai-chat"); r = await freeAiAnswer(question, chat.turns.map((x) => ({ role: x.role, text: x.role === "user" ? x.text ?? "" : x.reply?.text ?? "" })).filter((x) => x.text), r); }
         setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: r }] }));
         return;
       }
@@ -333,7 +338,12 @@ export default function Assistant() {
           hint={jv.enabled ? t("Was du ausdrücklich nennst, wird sofort erledigt und geprüft (Spiel starten, Profil, Sound, Website ordnen). Löschen, Energie und Unklares nur nach Rückfrage. Endet, wenn du ausschaltest oder die Website schließt – laufende Spiele bleiben offen.") : t("Aus: Ich schlage Aktionen nur als Knopf vor, ausgeführt wird erst nach deinem Tippen.")} />
       </Card>
       {online && <IslandSettingsCard />}
-      {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich richte die App für dich ein (Design, Leiste, Home, Sprache), beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät, ohne Internet. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
+      {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich richte die App für dich ein (Design, Leiste, Home, Sprache), beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät. Allgemeine Fragen beantwortet die freie KI ohne Konto – nur mit deinem Ja, dann geht deine Frage an Pollinations. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
+      {online && s && !hasFreeAi(s as unknown as AiStatus) && (
+        <Card title={t("Kostenlose KI einrichten – dann beantwortet JARVIS auch allgemeine Fragen")}>
+          <FreeAiSetup online={online} onChanged={() => st.reload()} />
+        </Card>
+      )}
 
       <Card className="as-chat">
         <div className="as-log" aria-live="polite">

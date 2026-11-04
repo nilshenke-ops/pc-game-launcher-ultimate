@@ -105,3 +105,12 @@ Umgebungsvariablen (nur für Tests/eigene Server, nicht nötig im Normalbetrieb)
 - Ohne Claude: Nachrichten nur aus offiziellen Feeds (Minecraft, Steam-Spiele) und Wikis – andere Spiele-News (Konsolen, Epic) nicht.
 - Live-Text beim Schreiben nur mit Claude; Gemini/Ollama/DeepSeek antworten am Stück (Phasenanzeige ja).
 - Mit echtem Claude-/Gemini-Schlüssel wurde in der Entwicklungsumgebung nicht getestet (keine Schlüssel vorhanden) – geprüft gegen Nachbildungen der offiziellen Schnittstellen und gegen die echte Fehlerantwort von Google.
+
+
+## 7. „Automatisch“ und die freie KI ohne PC (ab 3.1.0)
+
+- **Modus „Automatisch“ (`smart`)**: Befehle und PC-Werte beantwortet der eingebaute Assistent selbst (sicher, sofort, kostenlos); alles andere geht der Reihe nach an Gemini → KI-Router → lokale KI (Ollama, nicht während eines Spiels, außer erlaubt) → eingebauter Assistent. Übersprungen wird bei Limit, Ausfall, Netzfehler, Zeitüberschreitung oder abgelehntem Schlüssel; Abbrechen wird nie übersprungen. Die Antwort nennt die KI und den Grund des Wechsels. Ein offener, fehlgeschlagener Gesprächsschritt bleibt nicht im Verlauf der KI hängen.
+- **Einrichtung**: der erste kostenlose Zugang (Gemini-Schlüssel, Router, lokale KI) stellt von „eingebaut“ auf „Automatisch“ um. `assistant.quickRouter` richtet OpenRouter (kostenlose Modelle, größter Kontext zuerst) oder Groq mit einem Schlüssel ein, höchstens drei Modelle; nur am PC.
+- **Kein ChatGPT**: OpenAI bietet keinen kostenlosen API-Zugang; angeboten werden nur Dienste mit kostenlosem Tarif (Gemini, OpenRouter-Gratismodelle, Groq, Ollama).
+- **Websuche**: bleibt wie in 2.82 (Claude-Websuche oder freie Quellen). Gemini wird ohne „Google-Suche“-Werkzeug benutzt, weil dessen kostenloses Kontingent nicht verlässlich zugesagt ist und Kosten entstehen könnten.
+- **Ohne PC**: `lib/free-ai.ts` – Pollinations (`text.pollinations.ai/openai`), nur nach „Ja“ je Gerät, nur Frage + letzte Nachrichten, 20 Fragen pro Stunde, Antworten ohne Markup/Links, Kennzeichnung „Freie KI ohne PC“. Ist die Frage eine App-Frage, antwortet weiter die eingebaute Hilfe.

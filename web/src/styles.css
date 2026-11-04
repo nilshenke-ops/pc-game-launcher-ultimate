@@ -2632,3 +2632,20 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 @media (prefers-reduced-motion: reduce) { .isl2-wchip.on { animation: none; } }
 
 .isl2-ehead { display: flex; align-items: flex-start; gap: 10px; } .isl2-ehead p { margin: 0; flex: 1; } .isl2-ehead .isl2-chip.done { flex: none; }
+
+/* free AI set-up (island and JARVIS page) */
+.fas { display: grid; gap: 10px; }
+.fas-card { display: grid; gap: 8px; padding: 12px; border-radius: 16px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.08); }
+.fas-card ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.fas-field { display: grid; gap: 4px; }
+.fas-field .input { height: 36px; }
+.fas-copy { border: 0; background: rgba(255,255,255,0.14); color: inherit; border-radius: 8px; padding: 2px 6px; cursor: pointer; vertical-align: middle; }
+.fas-err { color: #fca5a5; }
+.fas a { color: inherit; text-decoration: underline; }
+
+.isl2-engines { display: flex; flex-wrap: wrap; gap: 6px; }
+.isl2-engines .isl2-chip.on { background: var(--isl-c, #9ef0c8); color: #04121a; }
+.isl2-via { opacity: .75; }
+.isl2-setup { border-radius: 14px; background: rgba(255,255,255,0.05); padding: 8px 10px; }
+.isl2-setup > summary { cursor: pointer; font-size: .8rem; font-weight: 600; }
+.isl2-setup[open] > summary { margin-bottom: 8px; }

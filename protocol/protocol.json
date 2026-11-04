@@ -55,6 +55,7 @@
     "assistant.bingoPlan": "view",
     "assistant.reset": "view",
     "assistant.configure": "admin",
+    "assistant.quickRouter": "admin",
     "voice.status": "view",
     "voice.configure": "admin",
     "voice.voices": "admin",

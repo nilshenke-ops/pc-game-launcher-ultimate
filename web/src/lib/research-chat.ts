@@ -110,12 +110,23 @@ export async function research(question: string, opts: { pc: Pc | null; webSearc
     const r = await opts.pc.call<ServerResult>("assistant.research", { question: q, game, force: opts.route.force, requestId: opts.requestId, history: (opts.history ?? []).slice(-4).map((h) => ({ role: h.role, text: h.text.slice(0, 400) })), engine: "free", passages });
     return fromServer(r, found.errors);
   }
+  // Without the PC and with this device's yes: the free AI answers (the wikis stay as sources); not asked yet and nothing found: the offer.
+  const { freeAiConsent } = await import("./free-ai");
+  if (freeAiConsent() === "yes") {
+    opts.onPhase?.("writing");
+    const { freeAiAnswer } = await import("./free-ai-chat");
+    const fb: ResearchReply = { text: "", actions: [], sources: [], suggestions: [], mode: "device", cites: [], research: { searched: false, provider: "", errors: [] } };
+    const a = await freeAiAnswer(q, (opts.history ?? []).map((h) => ({ role: h.role, text: h.text })), fb);
+    if (a.mode === "free") return { ...a, cites: found.all.slice(0, 5).map((x, i) => ({ n: i + 1, title: x.title, url: safeUrl(x.url), provider: x.source.split(" – ")[0], cited: false })), research: { searched: found.tried.length > 0, provider: "freie KI ohne PC (Pollinations) + offene Wikis", errors: found.errors } };
+  }
   // Without the PC: only the open wikis, the best passage word for word.
   const best = found.found;
   const cites = found.all.slice(0, 5).map((x, i) => ({ n: i + 1, title: x.title, url: safeUrl(x.url), provider: x.source.split(" – ")[0], cited: x === best }));
   const text = best
     ? `${best.text}${best.lang === "en" ? "\n(Quelle auf Englisch – wörtlich übernommen.)" : ""} [1]\n\nOhne PC habe ich nur offene Wikis durchsucht – keine Websuche, keine Nachrichtenseiten.`
     : `Ohne PC habe ich nur offene Wikis durchsucht (${found.tried.join(", ")}) und nichts Passendes gefunden – ich erfinde keine Antwort. Für eine echte Websuche den PC verbinden.`;
+  const { freeAiConsent: consentNow } = await import("./free-ai");
+  if (!best && consentNow() === "ask") { const { freeAiOffer } = await import("./free-ai-chat"); const o = freeAiOffer(question, text); return { ...o, cites: [], research: { searched: found.tried.length > 0, provider: "offene Wikis (im Browser)", errors: found.errors } }; }
   return { text, actions: [], sources: best ? [best.source.split(" – ")[0]] : [], suggestions: [], mode: "device", cites: best ? [cites.find((c) => c.cited)!, ...cites.filter((c) => !c.cited)].map((c, i) => ({ ...c, n: i + 1 })) : [], research: { searched: found.tried.length > 0, provider: "offene Wikis (im Browser)", errors: found.errors } };
 }
 
