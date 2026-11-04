@@ -1,0 +1,1 @@
+import{j as e,H as a,t,aB as s}from"./index-Ci_Q22Z3.js";import"./react-2SIwwJO3.js";function i(){return e.jsxs(e.Fragment,{children:[e.jsx(a,{eyebrow:t("System"),title:t("Speicher & Updates"),text:t("Wie voll deine Laufwerke sind, welche Spiele wie viel Platz brauchen und ob Updates ausstehen. Ohne PC siehst du den letzten Stand.")}),e.jsx(s,{full:!0})]})}export{i as default};
