@@ -1,28 +1,33 @@
 {
-  "version": "2.96.0",
+  "version": "2.97.0",
   "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.96.0/PCGameLauncherCompanion.exe",
-  "size": 88453335,
-  "sha256": "da09ca8e80cf9876bf7f2e11dd113045d705e0a3946528f1179faf3fff88c8bc",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.97.0/PCGameLauncherCompanion.exe",
+  "size": 88489358,
+  "sha256": "c3153d0fc88fab709a51808ad1c991eaea93613ea2e9bb1c3f88e5d467e6bd1a",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.96.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.96.0/PCGameLauncherCompanion-2.96.0-win-x64.zip",
-    "size": 82949500,
-    "sha256": "aac22dec24f3df50d977edf82a0e74360b161903cdb8ff029942ff7d132f6aca"
+    "fileName": "PCGameLauncherCompanion-2.97.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.97.0/PCGameLauncherCompanion-2.97.0-win-x64.zip",
+    "size": 82985593,
+    "sha256": "89dc6847cb95836b5ee2aebded83aa26bd1d3066ed5eb80d3bad80b675912ff8"
   },
-  "notes": "Handy wie in den Vorlagen: Oben schwebt die Leiste ohne Hintergrund über der Seite (erst beim Scrollen bekommt sie ihr Glas) mit Menü-Knopf links (öffnet „Alle Bereiche“), dem Verbindungspunkt und dem Datenschutz-Knopf; rechts Suche, **JARVIS**, **Anmeldung** und Benachrichtigungen · Startseite am Handy: kompakte Kacheln für „Deine Spiele“ mit großen Logos (Steam, Xbox App, Game Pass), runde Schnellzugriff-Knöpfe in den Chrom-Designs, „Anpassen“ als runder Knopf neben „Jetzt starten“; die große PC-Karte entfällt (der Punkt oben zeigt den Zustand, „Jetzt starten“ führt ohne PC zur Verbindung) · Seitentitel in der Kopfleiste nur noch außerhalb der Startseite",
+  "notes": "Die JARVIS-Insel gibt es jetzt auch in der App selbst (Handy und Webseite): eine kleine schwebende Insel oben, Tippen öffnet JARVIS, Timer, Spiel und alle Widgets; abschaltbar unter JARVIS → „Insel auch in dieser App zeigen“ (nur auf diesem Gerät) · Die Begrüßung nimmt den Namen deines Kontos („Hallo Nils!“); ein Tipp auf den Namen öffnet „Wie soll JARVIS dich nennen?“ · Viel mehr Logos statt Buchstaben bei Programmen: u. a. Adobe Acrobat, Canva, Copilot, ChatGPT, Claude, CurseForge, Dolby, iCloud, Instagram, Intel, KeePass, HP, Microsoft Edge/Store/365/Teams/OneDrive/Outlook, Medal, Modrinth, Logitech, Docker, Figma, Python, VPN- und Passwort-Programme",
   "changes": {
-    "neu": [],
+    "neu": [
+      "Die JARVIS-Insel gibt es jetzt auch in der App selbst (Handy und Webseite): eine kleine schwebende Insel oben, Tippen öffnet JARVIS, Timer, Spiel und alle Widgets; abschaltbar unter JARVIS → „Insel auch in dieser App zeigen“ (nur auf diesem Gerät)",
+      "Die Begrüßung nimmt den Namen deines Kontos („Hallo Nils!“); ein Tipp auf den Namen öffnet „Wie soll JARVIS dich nennen?“",
+      "Viel mehr Logos statt Buchstaben bei Programmen: u. a. Adobe Acrobat, Canva, Copilot, ChatGPT, Claude, CurseForge, Dolby, iCloud, Instagram, Intel, KeePass, HP, Microsoft Edge/Store/365/Teams/OneDrive/Outlook, Medal, Modrinth, Logitech, Docker, Figma, Python, VPN- und Passwort-Programme",
+      "Begleiter: Ein Programm, dessen Icon nicht gelesen werden konnte, wird noch zweimal versucht (Startmenü-Einträge bekommen ihr Icon oft erst später)"
+    ],
     "verbessert": [
-      "Handy wie in den Vorlagen: Oben schwebt die Leiste ohne Hintergrund über der Seite (erst beim Scrollen bekommt sie ihr Glas) mit Menü-Knopf links (öffnet „Alle Bereiche“), dem Verbindungspunkt und dem Datenschutz-Knopf; rechts Suche, **JARVIS**, **Anmeldung** und Benachrichtigungen",
-      "Startseite am Handy: kompakte Kacheln für „Deine Spiele“ mit großen Logos (Steam, Xbox App, Game Pass), runde Schnellzugriff-Knöpfe in den Chrom-Designs, „Anpassen“ als runder Knopf neben „Jetzt starten“; die große PC-Karte entfällt (der Punkt oben zeigt den Zustand, „Jetzt starten“ führt ohne PC zur Verbindung)",
-      "Seitentitel in der Kopfleiste nur noch außerhalb der Startseite"
+      "Programm-Kacheln und die Schnellstart-Kacheln im Glas-Look der Startseite (statt dunkler Kästen und bunter Flächen)",
+      "Startseite: Die Zeile mit Windows, Grafikkarte und Arbeitsspeicher ist weg"
     ],
     "behoben": [
-      "Browser-Test der Insel-Augenfarbe wartet jetzt, bis die Farbe eingeblendet ist (war zeitabhängig)"
+      "Handy-Startseite war verbuggt: Spiele-Kacheln wurden durch die 44-Pixel-Regel für Knöpfe plattgedrückt und die Seite war breiter als der Bildschirm („Alle anzeigen“ und Kacheln rechts abgeschnitten)",
+      "Browser-Test der Insel-Augenfarbe wartet auf die Einblendung"
     ]
   },
-  "signature": "kw1KGX8Aso9uVucYDe6mb+BJ7FfO4e0iim7zqawAG6hGE8ADLFUQkqMYfAuDY9++DM6UfJMuRyWCQpZb/owG/w=="
+  "signature": "pykd8Wszr/bgrOzbDtWJi/mIpOILIw8Xd2fRjq6sZhMND47fNupQPj4z3zUP404dJVrfG9Tk3h4pHyq6vRRbpQ=="
 }
