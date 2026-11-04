@@ -1,5 +1,34 @@
 [
   {
+    "version": "2.93.0",
+    "date": "2026-11-04",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion.exe",
+    "size": 88446747,
+    "sha256": "1e6d81151f42af3f37dffff35295f077f7c5af3b682decabbedbb65b2d4a1e6f",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.93.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion-2.93.0-win-x64.zip",
+      "size": 82942563,
+      "sha256": "6180f1ecd98a1e01d2fb5599c8f90de9a8f38c3684d28637dd95997f114b4441"
+    },
+    "notes": "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme · Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation) · Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)",
+    "changes": {
+      "neu": [
+        "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme"
+      ],
+      "verbessert": [
+        "Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation)",
+        "Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)"
+      ],
+      "behoben": [
+        "Auf dem Handy lag die Kopfleiste bei Glas-Designs durchsichtig über dem Inhalt und überdeckte Texte; sie hat jetzt einen eigenen Glas-Hintergrund und kleinere runde Knöpfe"
+      ]
+    },
+    "signature": "1nvHBji2D8eIxTUm78pWMoWA5g1lN6KBylryapSXUab5G53SjQCENEZLZ26ntbIAK7D+GaXiwIo9y09CPzQj5g=="
+  },
+  {
     "version": "2.92.0",
     "date": "2026-11-03",
     "channel": "stable",
@@ -1455,38 +1484,5 @@
       "behoben": []
     },
     "signature": "TSanr1wp3bSOeSF7kjBNvIrgzfA7eu/VIhEJl3ZRtC/vfexuxZiKMzr02AiO+vctTecFevpvUj/qnidpz7Pd/w=="
-  },
-  {
-    "version": "2.47.0",
-    "date": "2026-10-26",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.47.0/PCGameLauncherCompanion.exe",
-    "size": 87943063,
-    "sha256": "2eb945cad868d3c1043c8fd3da39a559ec0942248551df069dc7fbafaa48deee",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.47.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.47.0/PCGameLauncherCompanion-2.47.0-win-x64.zip",
-      "size": 82204171,
-      "sha256": "7dfa910a6a26c76f354bd362ddd77d16b34e0e8eac3c8462db22360e6f601c71"
-    },
-    "notes": "iPhone/iPad bleiben gekoppelt: Geräte & Verbindungen → „Dauerhaft auf diesem Gerät“ mit „Als App auf den Home-Bildschirm“ (die App vom Home-Bildschirm hat einen eigenen Speicher und bekommt per einmaligem Link einen eigenen Zugang – ohne neuen Code) und „Andere Adresse nutzen“ (Zugang auf eine feste Adresse des PCs übertragen) · Feste PC-Adresse: Der Begleiter findet einen Namen, der bei neuer IP gleich bleibt – Router-Name (z. B. gaming-pc.fritz.box, nur wenn er wirklich auf diesen PC zeigt) oder Tailscale-Name; der QR-Code nutzt ihn zuerst. Mit „tailscale serve“ erkennt er die https-Adresse selbst, dann klappt auch die Website von unterwegs · Die Website merkt sich die PC-App im WLAN und bietet „Zur PC-App (WLAN)“ statt nur „Offline – kein PC verbunden“",
-    "changes": {
-      "neu": [
-        "iPhone/iPad bleiben gekoppelt: Geräte & Verbindungen → „Dauerhaft auf diesem Gerät“ mit „Als App auf den Home-Bildschirm“ (die App vom Home-Bildschirm hat einen eigenen Speicher und bekommt per einmaligem Link einen eigenen Zugang – ohne neuen Code) und „Andere Adresse nutzen“ (Zugang auf eine feste Adresse des PCs übertragen)",
-        "Feste PC-Adresse: Der Begleiter findet einen Namen, der bei neuer IP gleich bleibt – Router-Name (z. B. gaming-pc.fritz.box, nur wenn er wirklich auf diesen PC zeigt) oder Tailscale-Name; der QR-Code nutzt ihn zuerst. Mit „tailscale serve“ erkennt er die https-Adresse selbst, dann klappt auch die Website von unterwegs",
-        "Die Website merkt sich die PC-App im WLAN und bietet „Zur PC-App (WLAN)“ statt nur „Offline – kein PC verbunden“",
-        "Diagnose: „Adresse dieser Seite“, „Home-Bildschirm-App“, „Dauerhafter Speicher“ und am PC „Feste Adresse“"
-      ],
-      "verbessert": [
-        "Nach dem Koppeln bittet die App den Browser, ihre Daten nicht von selbst zu löschen",
-        "Antwortet der PC auf einen Befehl nicht rechtzeitig, steht dabei, dass unklar ist, ob er ausgeführt wurde – Befehle werden nie automatisch wiederholt",
-        "Neuer Zugang per Link erscheint am PC als Benachrichtigung"
-      ],
-      "behoben": [
-        "Beim Wiederverbinden konnte eine ältere Verbindungsprüfung eine zweite Verbindung öffnen; außerdem verbindet die App jetzt auch, wenn Safari die Seite aus dem Zurück-Speicher wiederherstellt"
-      ]
-    },
-    "signature": "Lb7y3XWObDdy5Vgkv8jPvIDr/NCWGkfGj2QXdXf2UbbPDvoOrinlX7uUuP6wxxZrn5+L9nB8tkwR1K/PY3ilmA=="
   }
 ]

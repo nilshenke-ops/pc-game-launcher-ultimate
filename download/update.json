@@ -1,34 +1,29 @@
 {
-  "version": "2.92.0",
-  "date": "2026-11-03",
+  "version": "2.93.0",
+  "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.92.0/PCGameLauncherCompanion.exe",
-  "size": 88443618,
-  "sha256": "975f7b76fde7973c376e8219870e1bd5db9ac78482a3a90857c34034916b5a08",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion.exe",
+  "size": 88446747,
+  "sha256": "1e6d81151f42af3f37dffff35295f077f7c5af3b682decabbedbb65b2d4a1e6f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.92.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.92.0/PCGameLauncherCompanion-2.92.0-win-x64.zip",
-    "size": 82939631,
-    "sha256": "b2826cd601fd0cd57d1f1fd01f23e7467945499e70527c6812de88bdf3473d3b"
+    "fileName": "PCGameLauncherCompanion-2.93.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion-2.93.0-win-x64.zip",
+    "size": 82942563,
+    "sha256": "6180f1ecd98a1e01d2fb5599c8f90de9a8f38c3684d28637dd95997f114b4441"
   },
-  "notes": "Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite · Neue Startseite: Begrüßung „Hallo …!“ mit „Jetzt starten“ (startet dein zuletzt gespieltes Spiel am PC), PC-Status mit Ring und Chips (Windows, Grafikkarte, Arbeitsspeicher), „Deine Spiele“-Kacheln, „Zuletzt verwendet“, „Performance“ mit Live-Verlauf der CPU-Last – alles aus den echten Daten des PCs; ohne Daten stehen Striche statt erfundener Zahlen. Controller: große Überschrift mit Glas-Controller und Symbol-Seitenleiste; Nacht-Blau: drei Kennzahlen-Karten (Bereit, Spiele, Gesamt-Spielzeit); Chrom: „Schnellzugriff“; Chrom Hell: Musik-Steuerung · Einstellungen → Allgemein: „Dein Name auf der Startseite“ (nur auf diesem Gerät gespeichert)",
+  "notes": "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme · Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation) · Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)",
   "changes": {
     "neu": [
-      "Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite",
-      "Neue Startseite: Begrüßung „Hallo …!“ mit „Jetzt starten“ (startet dein zuletzt gespieltes Spiel am PC), PC-Status mit Ring und Chips (Windows, Grafikkarte, Arbeitsspeicher), „Deine Spiele“-Kacheln, „Zuletzt verwendet“, „Performance“ mit Live-Verlauf der CPU-Last – alles aus den echten Daten des PCs; ohne Daten stehen Striche statt erfundener Zahlen. Controller: große Überschrift mit Glas-Controller und Symbol-Seitenleiste; Nacht-Blau: drei Kennzahlen-Karten (Bereit, Spiele, Gesamt-Spielzeit); Chrom: „Schnellzugriff“; Chrom Hell: Musik-Steuerung",
-      "Einstellungen → Allgemein: „Dein Name auf der Startseite“ (nur auf diesem Gerät gespeichert)",
-      "Seitenleiste unten zeigt den echten Verbindungszustand („PC verbunden – Bereit zum Starten“)",
-      "Neues Seitenmenü wie in den Vorlagen: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet, JARVIS und Einstellungen, dazu **Mehr** – dort liegen alle weiteren Bereiche (Kategorien, „Weitere Funktionen“, Leiste ordnen); jedes Design hat seine eigene Menüvariante (Controller Dunkel nur mit Symbolen, Mehr öffnet dort die Bereichsliste)",
-      "„Favoriten“ im Menü öffnet die Spieleliste direkt mit dem Favoriten-Filter",
-      "Begleiter: Grundlage für eine ElevenLabs-Stimme in JARVIS (nur Standardstimmen, Schlüssel nur am PC, Monatslimit) – noch ohne Oberfläche und ohne Wirkung, solange kein Schlüssel hinterlegt ist"
+      "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme"
     ],
     "verbessert": [
-      "Die Seitenleiste trägt die Marke „PC Game Launcher Ultimate“",
-      "Geändert: Alle bisherigen Designs (Neon Cyan, Emerald, Synthwave, Cyberpunk, Apple Glas, Nothing OS u. a.) sind entfernt; ein gespeichertes altes Design wird einmal durch das Lavendel-Glas ersetzt (Schriftgröße, Bewegung und Abstände bleiben). Eigene Farben („Eigenes Design“) bleiben unverändert",
-      "Geändert: Die Oberfläche (Flach, Glas, Klar-Glas, Weich 3D, Erhaben 3D), Glas-Unschärfe und 3D-Neigung lassen sich weiterhin einzeln einstellen"
+      "Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation)",
+      "Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)"
     ],
-    "behoben": []
+    "behoben": [
+      "Auf dem Handy lag die Kopfleiste bei Glas-Designs durchsichtig über dem Inhalt und überdeckte Texte; sie hat jetzt einen eigenen Glas-Hintergrund und kleinere runde Knöpfe"
+    ]
   },
-  "signature": "N/50G7c82dzoDMcSw5efh/jeoUD7PJi5/ozAexWzeGolfGPe+ipRJ9Z8UXoz4xtU8IUg5onZtSS/rnpfQ8UrDA=="
+  "signature": "1nvHBji2D8eIxTUm78pWMoWA5g1lN6KBylryapSXUab5G53SjQCENEZLZ26ntbIAK7D+GaXiwIo9y09CPzQj5g=="
 }
