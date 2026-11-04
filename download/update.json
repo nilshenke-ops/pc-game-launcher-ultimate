@@ -1,35 +1,30 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.0.0/PCGameLauncherCompanion.exe",
-  "size": 94833574,
-  "sha256": "32d7923b75a35270e5b33f4d3b02cffb41ed013b1c9106d89b9d12884d437a1d",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.0/PCGameLauncherCompanion.exe",
+  "size": 94843236,
+  "sha256": "5ad8c888c5ab82fa67737c3fde9fcdc7ba2d09f6164ee00377222bf152306410",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.0.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.0.0/PCGameLauncherCompanion-3.0.0-win-x64.zip",
-    "size": 89109019,
-    "sha256": "c383bd6739485492d4b32b4e36bea06bd254c71ed8a1a6920043197356804bf2"
+    "fileName": "PCGameLauncherCompanion-3.1.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.0/PCGameLauncherCompanion-3.1.0-win-x64.zip",
+    "size": 89118137,
+    "sha256": "723adb59be949b1d64c2a618129d2905556829ee4b735d3bf325651956ba8f63"
   },
-  "notes": "Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“) · Mit JARVIS sprechen: Mikrofon in der Insel antippen, den Satz sagen, er wird als Frage geschickt und die Antwort laut vorgelesen (Spracherkennung des Browsers; im Windows-Insel-Fenster nur, wenn dessen Browser-Engine sie hat – sonst sagt die Insel das und man schreibt) · Apps-Reiter mit „WhatsApp“, sobald es in der Bibliothek steht, und den zuletzt gestarteten Programmen; ohne WhatsApp in der Bibliothek steht dort, was zu tun ist",
+  "notes": "„Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde · Der erste eingerichtete kostenlose Zugang schaltet auf „Automatisch“ um (ohne Umweg über die Einstellungen); in der Insel (Reiter JARVIS) und im Chat lässt sich die KI mit einem Tipp wechseln: Automatisch, Gemini, Router, lokale KI, eingebaut, Standard des PCs · Kostenlose KI einrichten in drei Schritten (Insel und JARVIS-Seite): Gemini-Schlüssel aus Google AI Studio einfügen und testen; als Ersatz mit einem Tipp OpenRouter oder Groq einrichten – der PC wählt die kostenlosen Modelle selbst. ChatGPT bietet Apps keinen kostenlosen Zugang und wird deshalb nicht angeboten",
   "changes": {
     "neu": [
-      "Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“)",
-      "Mit JARVIS sprechen: Mikrofon in der Insel antippen, den Satz sagen, er wird als Frage geschickt und die Antwort laut vorgelesen (Spracherkennung des Browsers; im Windows-Insel-Fenster nur, wenn dessen Browser-Engine sie hat – sonst sagt die Insel das und man schreibt)",
-      "Apps-Reiter mit „WhatsApp“, sobald es in der Bibliothek steht, und den zuletzt gestarteten Programmen; ohne WhatsApp in der Bibliothek steht dort, was zu tun ist",
-      "Musik: Titelbild, Fortschrittsbalken mit Zeiten und eine Akzentfarbe aus dem Titelbild (Windows-Begleiter)",
-      "Spiel-Ansicht bei laufendem Spiel: Name, Spielzeit, Verbindung zum PC, Overlay, Aufnahme und Replay",
-      "Timer: pausieren und fortsetzen, eigene Minuten, Fortschrittsring; die Pause bleibt auch in der geschlossenen Insel sichtbar",
-      "Meldungen mit Verlauf: Spiel gestartet/beendet, Verbindung verloren/wiederhergestellt, Timer, JARVIS-Antworten bleiben nach dem Verschwinden aus der Leiste erhalten (60 Einträge, nur auf diesem Gerät)",
-      "Mehrere Aktivitäten gleichzeitig: das Wichtigste führt die geschlossene Insel (Frage, JARVIS arbeitet, Meldung, Timer, Spiel, Musik), die anderen erscheinen als kleine Symbole",
-      "Widgets der Insel im Wackel-Modus: im Menü „⋯“ → „Widgets bearbeiten“ (oder ein Widget lange halten) – „−“ entfernt, „+“ fügt hinzu, gespeichert am PC"
+      "„Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde",
+      "Der erste eingerichtete kostenlose Zugang schaltet auf „Automatisch“ um (ohne Umweg über die Einstellungen); in der Insel (Reiter JARVIS) und im Chat lässt sich die KI mit einem Tipp wechseln: Automatisch, Gemini, Router, lokale KI, eingebaut, Standard des PCs",
+      "Kostenlose KI einrichten in drei Schritten (Insel und JARVIS-Seite): Gemini-Schlüssel aus Google AI Studio einfügen und testen; als Ersatz mit einem Tipp OpenRouter oder Groq einrichten – der PC wählt die kostenlosen Modelle selbst. ChatGPT bietet Apps keinen kostenlosen Zugang und wird deshalb nicht angeboten",
+      "Ohne PC (Handy, iPad, fremder Browser): allgemeine Fragen beantwortet eine freie KI ohne Konto und ohne Schlüssel (Pollinations) – erst nach deinem Ja auf diesem Gerät, gesendet wird nur die Frage mit den letzten Nachrichten, höchstens 20 Fragen pro Stunde; die Antwort ist als „Freie KI ohne PC“ gekennzeichnet; auch in der Insel auf dem Handy/iPad"
     ],
-    "verbessert": [
-      "Öffnen und Schließen laufen als echte Feder (Breite, Höhe und Rundung zusammen, mit kleinem Überschwingen): die Seite rechnet jedes Bild selbst, im Windows-Fenster bleibt das Fenster fest groß und bekommt nur die Form jedes Bildes – kein Neuberechnen der Seite, kein zweiter Takt im Begleiter, der abweichen könnte",
-      "Musik-Abfrage fragt seltener nach, wenn nichts läuft (alle 3 s bei Wiedergabe, sonst 6–10 s); das Titelbild geht nur einmal pro Titel über die Leitung"
-    ],
-    "behoben": []
+    "verbessert": [],
+    "behoben": [
+      "„Wie lange sollte man schlafen?“ wurde als Frage nach der Spielzeit gelesen und mit „keine erkannte Spielsitzung“ beantwortet – Spielzeit-Fragen brauchen jetzt einen Spielbezug",
+      "Die Antwort der Insel nennt, welche KI geantwortet hat"
+    ]
   },
-  "signature": "MWVUxId1zibAu6NQ+pm4MiBxt4JLASSGMr2qup+SB96LEfdTeRDyzTxK1tx+zr6l578L0zuNRIkn+u7QKqzXnA=="
+  "signature": "M2/puGdD1Gg7eKh2x6PtoI5yDzs++UQeIo4lodKJCvoyAZVymf6PZlGFt8+brwzyYW6abmhh3Dy/of5xwlRYXA=="
 }
