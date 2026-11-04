@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.1.1 – 2026-11-04
+### Neu
+- Nachricht schreiben vom Handy und iPad: Karte „Nachricht schreiben“ in der Insel (Reiter Apps) – Text schreiben oder sagen, dann mit einem Tipp in WhatsApp, Telegram, Nachrichten (SMS) oder E-Mail öffnen, oder über das Teilen-Blatt senden. Die App öffnet sich mit dem fertigen Text; Empfänger wählst du dort, gesendet wird erst mit deinem Tipp. Es wird nichts automatisch gesendet und keine Kontaktliste gelesen
+- Auch per Befehl in der Insel und im JARVIS-Chat: „Schreib bei WhatsApp: Bin gleich da“, „Schick eine Nachricht per Telegram: …“ (eine ausgeschriebene Telefonnummer wird übernommen, Namen aus deinen Kontakten kennt die App nicht)
+
 ## 3.1.0 – 2026-11-04
 ### Neu
 - „Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde

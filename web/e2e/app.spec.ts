@@ -2360,7 +2360,7 @@ test("JARVIS-Insel 3.0: Tabs, Widgets im Wackel-Modus hinzufügen/entfernen, Tim
   // Apps: WhatsApp is only offered when it is in the library – otherwise the island says what to do (no invented entry).
   await islandTab(panel, "Apps").click();
   await expect(panel).toContainText(/WhatsApp ist nicht in deiner Bibliothek|WhatsApp/);
-  await expect(panel.getByRole("button", { name: "WhatsApp" })).toHaveCount(0);
+  await expect(panel.getByRole("button", { name: "WhatsApp", exact: true })).toHaveCount(0);
   // Messages: the history is there (empty or with entries) next to the PC's messages.
   await islandTab(panel, "Meldungen").click();
   await expect(panel).toContainText("Verlauf");
@@ -2428,6 +2428,38 @@ test("Automatisch & kostenlose KI einrichten: Insel zeigt den Einrichter, falsch
   await expect(save).toBeEnabled();
   await expect(panel.getByRole("radiogroup", { name: "Welche KI antwortet" })).toHaveCount(0); // no choice without a free AI
   await p.context().close();
+});
+
+test("Nachricht schreiben (iPad/Handy ohne PC): Karte in der Insel, Befehl füllt sie, Link enthält den Text, im Chat ein Öffnen-Knopf", async ({ browser }) => {
+  const ctx = await newCtx(browser, { ...devices["iPad Mini"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  await p.goto(`${HOSTED_SITE}/#/`);
+  await p.getByRole("button", { name: "JARVIS-Insel öffnen" }).first().click();
+  const panel = p.getByRole("dialog", { name: "JARVIS-Insel" });
+  await islandTab(panel, "Apps").click();
+  const card = panel.getByRole("region", { name: "Nachricht schreiben" });
+  const open = card.getByRole("button", { name: /In WhatsApp öffnen/ });
+  await expect(open).toHaveAttribute("aria-disabled", "true");            // nothing to send yet
+  await card.getByLabel("Text der Nachricht").fill("Bin gleich da & bringe Snacks mit");
+  await expect(open).toHaveAttribute("href", "https://wa.me/?text=Bin%20gleich%20da%20%26%20bringe%20Snacks%20mit");
+  await card.getByRole("radio", { name: "Telegram" }).click();
+  await expect(card.getByRole("button", { name: /In Telegram öffnen/ })).toHaveAttribute("href", /^https:\/\/t\.me\/share\/url\?url=%20&text=Bin%20gleich/);
+  await card.getByRole("radio", { name: "WhatsApp" }).click();
+  // The words „Schreib bei WhatsApp: …“ in the JARVIS tab prepare the card – the opening tap stays the person's own.
+  await islandTab(panel, "JARVIS").click();
+  await panel.getByLabel("Frag JARVIS …").fill("Schreib bei WhatsApp: Treffen wir uns um acht?");
+  await panel.getByRole("button", { name: "Fragen" }).click();
+  await expect(card.getByLabel("Text der Nachricht")).toHaveValue("Treffen wir uns um acht?");
+  await expect(card.getByRole("button", { name: /In WhatsApp öffnen/ })).toHaveAttribute("href", "https://wa.me/?text=Treffen%20wir%20uns%20um%20acht%3F");
+  // In the chat: an answer with a button – and the link only opens on that tap (new tab, no opener).
+  await p.goto(`${HOSTED_SITE}/#/assistant`);
+  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
+  await say.fill("Schick eine Nachricht per Telegram: Bin unterwegs"); await say.press("Enter");
+  const last = p.locator(".as-turn.bot").last();
+  await expect(last).toContainText("Diese App schickt nichts selbst");
+  const [popup] = await Promise.all([p.waitForEvent("popup"), last.getByRole("button", { name: "In Telegram öffnen" }).click()]);
+  expect(popup.url()).toContain("t.me/share/url");
+  await ctx.close();
 });
 
 test("KI-Router: nur am PC einzurichten, kostenlose Modelle live, Reihenfolge, Ausweichmodell wird genannt", async ({ browser }) => {

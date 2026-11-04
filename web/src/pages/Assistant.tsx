@@ -88,6 +88,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
     if (a.kind === "openUrl" && typeof a.params?.url === "string" && /^https:\/\//.test(a.params.url)) { window.open(a.params.url, "_blank", "noopener,noreferrer"); return; }
     // Answer to "Soll ich im Internet nachsehen?" for a bingo.
     // "Freie KI ohne PC erlauben?" – the answer is kept on this device; "yes" asks the question again.
+    if (a.kind === "messageOpen" && a.params) { void import("../lib/messaging").then((m) => { const url = m.messageLink(a.params!.app as import("../lib/messaging").Messenger, String(a.params!.text ?? ""), typeof a.params!.phone === "string" ? a.params!.phone : null); if (url.startsWith("https://")) window.open(url, "_blank", "noopener,noreferrer"); else if (/^(sms:|mailto:)/.test(url)) window.location.href = url; }); return; }
     if (a.kind === "freeAiChoice" && a.params) { setDone({ [i]: true }); void import("../lib/free-ai").then((m) => { m.setFreeAiConsent(a.params!.ok === true ? "yes" : "no"); if (a.params!.ok === true) onLookup(String(a.params!.question ?? ""), true, a.label); }); return; }
     if (a.kind === "aiAnswer" && a.params) { setDone({ [i]: true }); onLookup(String(a.params.question ?? ""), true, a.label, true); return; }
     if (a.kind === "lookupChoice" && a.params) { setDone({ [i]: true }); if (a.params.always === true) void import("../lib/web-lookup").then((m) => m.setWebPermission("always")); onLookup(String(a.params.question ?? ""), a.params.ok === true, a.label, false, a.params.sources === true); return; }
@@ -199,6 +200,16 @@ export default function Assistant() {
     };
     const eng = online ? engine : "auto";
     try {
+      // "Schreib bei WhatsApp: …": the text is prepared and the messenger opens with ONE tap (the recipient is chosen there; nothing is sent here).
+      const { parseMessageCommand, MESSENGERS } = await import("../lib/messaging");
+      const msg = parseMessageCommand(question);
+      if (msg) {
+        const app = msg.app ?? "whatsapp";
+        const name = MESSENGERS.find((m) => m.id === app)?.label ?? "WhatsApp";
+        add({ text: msg.body ? t("Die Nachricht ist vorbereitet. Tippe auf „In {a} öffnen“ – dort wählst du den Empfänger und sendest selbst. Diese App schickt nichts selbst.", { a: name }) : t("Was soll in der Nachricht stehen? Schreib zum Beispiel: „Schreib bei WhatsApp: Bin gleich da“. Oder nutze die Karte „Nachricht schreiben“ in der Insel (Reiter Apps)."),
+          actions: msg.body ? [{ kind: "messageOpen", label: t("In {a} öffnen", { a: name }), params: { app, text: msg.body, phone: msg.phone } }] : [], sources: [t("Nachricht schreiben")], suggestions: [], mode: "device" });
+        return;
+      }
       // The chat builds on itself: right after a bingo, "es soll mittel sein und ich bin Impostor" changes that card
       // (not a web lookup and not split into JARVIS steps). Also after "im Internet nachsehen?" for such a change.
       const lastBot = [...chat.turns].reverse().find((x) => x.role === "bot");

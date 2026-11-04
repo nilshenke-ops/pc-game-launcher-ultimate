@@ -22,6 +22,8 @@ import { speak } from "../lib/jarvis-voice";
 import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { readJson, writeJson } from "../lib/rpc";
 import { FreeAiSetup, hasFreeAi, type AiStatus } from "./free-ai-setup";
+import { MessageCompose } from "./message-compose";
+import { parseMessageCommand, type Messenger } from "../lib/messaging";
 import { mainGame } from "../lib/running";
 import { homeRecent, type HistoryData } from "../lib/home-data";
 import { relTime } from "../lib/format";
@@ -78,6 +80,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const tabs = visibleTabs(look.widgets, !!game);
   const has = (id: IslandWidgetId) => look.widgets.includes(id);
   const [tab, setTab] = useState<IslandTab>("home");
+  const [msg, setMsg] = useState<{ text: string; app: Messenger; phone: string | null }>(() => ({ text: "", app: ((): Messenger => { const v = readJson<string>("pgl.island.msgapp"); return v === "telegram" || v === "sms" || v === "mail" ? v : "whatsapp"; })(), phone: null }));
   const [menu, setMenu] = useState(false);
   const [edit, setEdit] = useState(false);
   const hold = useRef<number | null>(null);
@@ -126,6 +129,14 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     setQ("");
     const pet = petCommand(v);
     if (pet) { islandPet(pet); islandAnswer(pet === "dance" ? t("Ich tanze!") : pet === "sleep" ? t("Gute Nacht – tippe mich an, dann bin ich wieder da.") : t("Bin wach!"), true); return; }
+    // "Schreib bei WhatsApp: …": the text is prepared in the card of the Apps tab – the tap on "öffnen" there is the user's own.
+    const cmd = parseMessageCommand(v);
+    if (cmd) {
+      const app = cmd.app ?? msg.app;
+      setMsg({ text: cmd.body || msg.text, app, phone: cmd.phone }); setTab("apps");
+      islandAnswer(cmd.body ? t("Die Nachricht ist vorbereitet – tippe auf „Öffnen“, dann wählst du dort den Empfänger.") : t("Schreib den Text in die Karte und tippe auf „Öffnen“."), true);
+      return;
+    }
     if (!online) { await askWithoutPc(v); return; }
     try { await client.call("assistant.ask", { text: v, ...(engineNow === "auto" ? {} : { engine: engineNow }) }); } catch (err) { islandAnswer((err as Error).message, false); }
   };
@@ -351,6 +362,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const recent = homeRecent(items, recentHist.data, 6).filter((i) => i.id !== wa?.id).slice(0, wa ? 5 : 6);
   const appsTab = (
     <div className="isl2-apps">
+      <MessageCompose text={msg.text} onText={(v) => setMsg((m) => ({ ...m, text: v }))} app={msg.app} phone={msg.phone}
+        onApp={(app) => { setMsg((m) => ({ ...m, app })); try { writeJson("pgl.island.msgapp", app); } catch { /* ignore */ } }} />
       {!online ? <p className="isl2-sub">{t("PC nicht verbunden")}</p> : (
         <>
           <div className="isl2-grid">

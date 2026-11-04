@@ -2649,3 +2649,11 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .isl2-setup { border-radius: 14px; background: rgba(255,255,255,0.05); padding: 8px 10px; }
 .isl2-setup > summary { cursor: pointer; font-size: .8rem; font-weight: 600; }
 .isl2-setup[open] > summary { margin-bottom: 8px; }
+
+/* Nachricht schreiben (Insel, Reiter Apps) */
+.isl2-compose { display: grid; gap: 8px; padding: 10px 12px; border-radius: 16px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08); }
+.isl2-composetitle { font-size: .82rem; }
+.isl2-composetext { width: 100%; resize: none; min-height: 48px; font-size: .9rem; }
+.isl2-composeapps, .isl2-composego { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.isl2-composego a.isl2-chip { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+.isl2-composego a.isl2-chip.off { opacity: .4; pointer-events: none; }
