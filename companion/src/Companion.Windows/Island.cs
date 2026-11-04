@@ -65,14 +65,13 @@ sealed class IslandForm : Form
     const uint SWP_NOACTIVATE = 0x10, SWP_SHOWWINDOW = 0x40;
     static readonly IntPtr HWND_TOPMOST = new(-1);
 
-    /// <summary>Sizes in logical pixels: only the eyes, the bar, the open panel.</summary>
-    static readonly Dictionary<string, Size> Sizes = new()
-    {
-        ["notch"] = new Size(150, 34),
-        ["bar"] = new Size(460, 40),
-        ["ask"] = new Size(560, 40),
-        ["panel"] = new Size(580, 520),
-    };
+    /// <summary>
+    /// The window is always as big as the open island plus room for the spring's overshoot (logical pixels; the page knows the same
+    /// numbers as WINDOW_W / WINDOW_H in island-spring.ts). It never changes size – only its visible shape does.
+    /// </summary>
+    const int WindowW = 620, WindowH = 380;
+    /// <summary>The closed island (eyes only), shown from the first moment until the page reports its own shape.</summary>
+    const int NotchW = 132, NotchH = 34, NotchR = 17;
 
     readonly WebView2 _web = new() { Dock = DockStyle.Fill, DefaultBackgroundColor = Color.FromArgb(7, 9, 13) };
     readonly CoreWebView2Environment _env;
@@ -80,6 +79,8 @@ sealed class IslandForm : Form
     bool _started;
     string _size = "notch";
     string _position = "center";
+    // The shape the page reported last (device pixels): width, height, corner radius.
+    int _curW, _curH, _curR;
 
     public IslandForm(CoreWebView2Environment env, string origin, string token)
     {
@@ -91,90 +92,39 @@ sealed class IslandForm : Form
         StartPosition = FormStartPosition.Manual;
         BackColor = Color.FromArgb(7, 9, 13);
         Controls.Add(_web);
-        _anim.Tick += OnAnimTick;
     }
 
     /// <summary>Not in Alt+Tab, never activated by showing or resizing (the game keeps the focus).</summary>
     protected override CreateParams CreateParams { get { var cp = base.CreateParams; cp.ExStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST; return cp; } }
     protected override bool ShowWithoutActivation => true;
 
-    // The window never "jumps" between sizes: it grows and shrinks like a drop. The window itself is first made large enough
-    // for both sizes (cheap – no re-layout of the page per frame); only its visible shape (a rounded region anchored at the
-    // top edge) is animated, and at the end the window gets exactly the target size.
-    readonly System.Windows.Forms.Timer _anim = new() { Interval = 8 };
-    readonly System.Diagnostics.Stopwatch _clock = new();
-    long _lastTicks;
-    // A real spring (not a fixed curve): it starts fast, overshoots a little and settles – and it keeps its speed when the
-    // size is changed again in the middle of a movement, so quick hover in/out never looks jerky.
-    const double Stiffness = 520, Damping = 30, MaxMs = 1000;
-    double _p, _v;                  // progress 0 → 1 of the current movement and its speed
-    int _curW, _curH;               // the visible shape right now (device pixels)
-    int _fromW, _fromH, _toW, _toH; // movement start / target
-    int _toRadius;
-    bool _animating;
-
+    // The page runs the spring (island-spring.ts) and tells the window the shape of every frame ("island-rect"); the window itself
+    // keeps its size. No timer in here, so screen and cut-out can never drift apart, and the page is never re-laid out while moving.
     int TargetX(int w, Rectangle screen) => _position == "left" ? screen.Left + LogicalToDeviceUnits(24) : _position == "right" ? screen.Right - w - LogicalToDeviceUnits(24) : screen.Left + (screen.Width - w) / 2;
 
-    /// <summary>A rounded shape of w × h anchored at the top edge of the window (square at the top, round at the bottom).</summary>
+    /// <summary>A rounded shape of w × h hanging from the top edge of the window (square at the top, round at the bottom).</summary>
     void Shape(int w, int h, int radius, int windowW)
     {
+        w = Math.Max(1, Math.Min(w, windowW)); h = Math.Max(1, Math.Min(h, Height));
         var off = _position == "left" ? 0 : _position == "right" ? windowW - w : (windowW - w) / 2;
         var rgn = CreateRoundRectRgn(off, -radius, off + w + 1, h + 1, radius * 2, radius * 2);
         var old = Region;
         Region = Region.FromHrgn(rgn);
         old?.Dispose();
         DeleteObject(rgn);
+        _curW = w; _curH = h; _curR = radius;
     }
 
-    void Place(bool animate = false)
+    void Place()
     {
         var screen = Screen.PrimaryScreen!.Bounds;
-        var logical = Sizes[_size];
-        var w = LogicalToDeviceUnits(logical.Width);
-        var h = LogicalToDeviceUnits(logical.Height);
-        var r = LogicalToDeviceUnits(_size == "panel" ? 22 : 18);
-        if (!animate || !Visible || _curW == 0)
-        {
-            _anim.Stop(); _animating = false;
-            Bounds = new Rectangle(TargetX(w, screen), screen.Top, w, h);
-            Shape(w, h, r, w);
-            _curW = w; _curH = h;
-            SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
-            return;
-        }
-        // From what is visible now to the new size; the window covers both (plus room for the overshoot) while it moves.
-        _fromW = _curW; _fromH = _curH; _toW = w; _toH = h; _toRadius = r;
-        var uw = Math.Max(_fromW, _toW) + (int)(Math.Abs(_toW - _fromW) * 0.22) + 4;
-        var uh = Math.Max(_fromH, _toH) + (int)(Math.Abs(_toH - _fromH) * 0.22) + 4;
-        Bounds = new Rectangle(TargetX(uw, screen), screen.Top, uw, uh);
+        var w = LogicalToDeviceUnits(WindowW);
+        var h = LogicalToDeviceUnits(WindowH);
+        Bounds = new Rectangle(TargetX(w, screen), screen.Top, w, h);
+        // Until the page reports a shape the closed island is shown – never the whole window.
+        if (_curW == 0) Shape(LogicalToDeviceUnits(NotchW), LogicalToDeviceUnits(NotchH), LogicalToDeviceUnits(NotchR), w);
+        else Shape(_curW, _curH, _curR, w);
         SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        // A running movement keeps its speed: continue from the shape that is visible now (progress restarts at 0 with the same speed share).
-        _p = 0; _v = _animating ? _v * 0.6 : 0;
-        _clock.Restart(); _lastTicks = 0; _animating = true;
-        _anim.Start();
-    }
-
-    void OnAnimTick(object? sender, EventArgs e)
-    {
-        try
-        {
-            var now = _clock.ElapsedTicks;
-            var dt = Math.Clamp((now - _lastTicks) / (double)System.Diagnostics.Stopwatch.Frequency, 0.001, 0.05);
-            _lastTicks = now;
-            // Integrate the spring in small steps (stable at any frame rate).
-            var steps = Math.Max(1, (int)Math.Ceiling(dt / 0.004)); var h = dt / steps;
-            for (var i = 0; i < steps; i++) { var a = Stiffness * (1 - _p) - Damping * _v; _v += a * h; _p += _v * h; }
-            var w = (int)Math.Round(_fromW + (_toW - _fromW) * _p);
-            var hh = (int)Math.Round(_fromH + (_toH - _fromH) * _p);
-            _curW = Math.Max(1, Math.Min(w, Width)); _curH = Math.Max(1, Math.Min(hh, Height));
-            Shape(_curW, _curH, _toRadius, Width);
-            var settled = Math.Abs(1 - _p) < 0.002 && Math.Abs(_v) < 0.02;
-            if (!settled && _clock.ElapsedMilliseconds < MaxMs) return;
-            // Done: the window gets exactly the target size.
-            _anim.Stop(); _animating = false; _v = 0;
-            Place(false);
-        }
-        catch (Exception ex) { _anim.Stop(); _animating = false; Log.Warn("island", "Animation abgebrochen: " + ex.Message); Place(false); }
     }
 
     /// <summary>Place at the top edge (center, left, right) and window opacity in percent.</summary>
@@ -183,7 +133,7 @@ sealed class IslandForm : Form
         Opacity = Math.Clamp(opacityPercent, 50, 100) / 100.0;
         if (_position == position) return;
         _position = position;
-        if (Visible) Place(false);
+        if (Visible) Place();
     }
 
     public async void ShowIsland()
@@ -215,22 +165,36 @@ sealed class IslandForm : Form
         catch (Exception ex) { Log.Error("island", "JARVIS-Insel konnte nicht starten: " + ex.Message); }
     }
 
-    /// <summary>The page asks for a size ("notch", "bar", "ask", "panel"); only known sizes, only these messages.</summary>
+    /// <summary>
+    /// Messages of the page: "island-rect" (the shape of this frame: w, h, r in logical pixels) and "island-size" (which size the
+    /// island aims at – only the open panel matters here: it takes the keyboard focus for typing). Nothing else is accepted.
+    /// </summary>
     void OnMessage(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
     {
-        string? size;
         try
         {
             using var doc = JsonDocument.Parse(e.WebMessageAsJson);
-            if (!doc.RootElement.TryGetProperty("type", out var type) || type.GetString() != "island-size") return;
-            size = doc.RootElement.TryGetProperty("size", out var s) ? s.GetString() : null;
+            var root = doc.RootElement;
+            if (!root.TryGetProperty("type", out var type)) return;
+            switch (type.GetString())
+            {
+                case "island-rect":
+                    if (!Visible || !root.TryGetProperty("w", out var w) || !root.TryGetProperty("h", out var h) || !root.TryGetProperty("r", out var r)) return;
+                    if (w.ValueKind != JsonValueKind.Number || h.ValueKind != JsonValueKind.Number || r.ValueKind != JsonValueKind.Number) return;
+                    var lw = Math.Clamp(w.GetDouble(), 1, WindowW); var lh = Math.Clamp(h.GetDouble(), 1, WindowH); var lr = Math.Clamp(r.GetDouble(), 0, 60);
+                    var k = DeviceDpi / 96.0; // the page measures in logical pixels (fractions allowed – the spring is smooth)
+                    Shape((int)Math.Round(lw * k), (int)Math.Round(lh * k), (int)Math.Round(lr * k), Width);
+                    break;
+                case "island-size":
+                    var size = root.TryGetProperty("size", out var s) ? s.GetString() : null;
+                    if (size is not ("notch" or "bar" or "ask" or "panel") || size == _size) return;
+                    _size = size;
+                    // Typing a question needs the keyboard: only the open panel takes the focus – after a click into it.
+                    if (size == "panel") Activate();
+                    break;
+            }
         }
-        catch (JsonException) { return; }
-        if (size == null || !Sizes.ContainsKey(size) || size == _size) return;
-        _size = size;
-        Place(true);
-        // Typing a question needs the keyboard: only the open panel takes the focus – after a click into it.
-        if (size == "panel") Activate();
+        catch (JsonException) { /* not ours */ }
     }
 
     /// <summary>Hidden (switched off, or a game runs): browser engine suspended – no CPU, less memory.</summary>
@@ -256,7 +220,7 @@ sealed class IslandForm : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) { _anim.Dispose(); _web.Dispose(); }
+        if (disposing) { _web.Dispose(); }
         base.Dispose(disposing);
     }
 }

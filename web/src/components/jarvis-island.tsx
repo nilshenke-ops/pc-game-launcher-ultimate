@@ -1,24 +1,29 @@
 // The JARVIS island in its own small window at the top of the PC screen (Windows companion, page #/island).
 // Collapsed: only JARVIS' eyes. Hover: a bar with what he is doing and the time. A question from JARVIS (launch …):
-// the bar with "Erlauben"/"Ablehnen". Tap: widgets (JARVIS, running game, media keys, clock, focus timer).
+// the bar with "Erlauben"/"Ablehnen". Tap: the open island with tabs (see island-panel.tsx).
+// The size changes with a spring (island-spring.ts) that this page runs itself: the Windows window stays as big as the open
+// island and only gets told the shape of every frame, so the screen and the window cut-out can never drift apart.
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { Bell, Check, Gamepad2, Pause, Play, SkipBack, SkipForward, Timer, X } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { Bell, Check, Gamepad2, Music, Timer as TimerIcon, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
-import { toast, useCan, useConn } from "../lib/hooks";
-import type { IslandWidgetId } from "../lib/island-widgets";
 import { useIslandLook } from "../lib/island-look";
+import { advanceTimer, countdownView, playTime, timerLive, useTimer } from "../lib/island-timer";
+import { IslandPanel } from "./island-panel";
+import { consumeSpoken } from "../lib/island-voice";
+import { speak } from "../lib/jarvis-voice";
+import { createBoxAnimator, islandBox, WINDOW_W, type Box } from "../lib/island-spring";
 import { POMO_LABEL } from "../lib/pomodoro";
-import { advanceTimer, countdownView, playTime, startCountdown, startPomodoro, stopCountdown, timerLive, useTimer } from "../lib/island-timer";
-import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, IslandStats, IslandStopwatch, IslandTemps, IslandVolume } from "./island-widgets";
-import { eyeColor, clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, islandNotice, noticeFresh, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
+import { useConn } from "../lib/hooks";
+import { eyeColor, clock, islandAnswer, islandEvent, islandBusy, islandClearAsk, islandGaming, islandMusic, islandSize, islandTouch, islandNotice, noticeFresh, moodOf, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
 import { mainGame, playedGames } from "../lib/running";
-import { nowLine, nowSub, useNowPlaying } from "../lib/now-playing";
+import { nowLine, useNowPlaying } from "../lib/now-playing";
+import { Bars, IslandEyes, TimerRing } from "./island-bits";
+export { IslandEyes, RobotHead } from "./island-bits";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
 
@@ -40,71 +45,6 @@ function chime(up = true) {
   } catch { /* no audio – the colour still shows it */ }
 }
 
-/** JARVIS' eyes – shape and colour per mood (CSS, see .isl-eyes). Tapping too often makes him dizzy. */
-export function IslandEyes({ mood, big, onPoke }: { mood: Mood; big?: boolean; onPoke?: () => void }) {
-  return (
-    <span className={`isl-eyes m-${mood}${big ? " big" : ""}`} role="img" aria-label={t("JARVIS: {m}", { m: t(MOOD_LABEL[mood]) })}
-      onClick={onPoke ? (e) => { e.stopPropagation(); onPoke(); } : undefined}>
-      <i /><i />
-    </span>
-  );
-}
-
-/** The robot of the panel: white head, black display with JARVIS' eyes, antenna – the mood moves the whole head. */
-export function RobotHead({ mood }: { mood: Mood }) {
-  return (
-    <span className={`isl-robot m-${mood}`} role="img" aria-label={t("JARVIS: {m}", { m: t(MOOD_LABEL[mood]) })}>
-      <span className="isl-antenna"><i /></span>
-      <span className="isl-head">
-        <span className="isl-ear l" /><span className="isl-ear r" />
-        <span className="isl-display"><IslandEyes mood={mood} big /></span>
-      </span>
-      {mood === "sleeping" && <span className="isl-zzz" aria-hidden>z z z</span>}
-    </span>
-  );
-}
-
-/** Equalizer next to the eyes while music plays – the bars follow the level the PC reports. */
-function Bars({ level }: { level: number }) {
-  const h = [0.5, 1, 0.7, 0.9, 0.6].map((k, i) => Math.max(0.18, Math.min(1, level * 1.6 * k + (i % 2 ? 0.05 : 0))));
-  return <span className="isl-bars" aria-hidden>{h.map((v, i) => <i key={i} style={{ transform: `scaleY(${v})` }} />)}</span>;
-}
-
-/** The focus timer card: the clock itself lives in island-timer, so it keeps running (and shows in the closed island) when the panel is shut. */
-function FocusTimer() {
-  const tm = useTimer();
-  const [now, setNow] = useState(Date.now());
-  const view = countdownView(tm, now);
-  useEffect(() => { if (!timerLive(tm)) return; const id = window.setInterval(() => setNow(Date.now()), 500); return () => window.clearInterval(id); }, [tm.end]);
-  return (
-    <div className="isl-card">
-      <span className="isl-ic"><Timer size={18} /></span>
-      <div className="isl-main">
-        <b className="isl-big">{view ? clock(view.left) : t("Fokus")}{tm.pomo && <span className="tiny muted"> {t(POMO_LABEL[tm.pomo.phase])} · {tm.pomo.done} ✓</span>}</b>
-        <div className="row isl-mini">
-          {view ? <button type="button" className="chip" onClick={stopCountdown}>{t("Stopp")}</button>
-            : <>
-              {[5, 15, 25].map((m) => <button key={m} type="button" className="chip" onClick={() => { setNow(Date.now()); startCountdown(m); }}>{m} min</button>)}
-              <button type="button" className="chip" title={t("25 min Fokus, 5 min Pause, nach vier Runden 15 min")} onClick={() => { setNow(Date.now()); startPomodoro(); }}>{t("Pomodoro")}</button>
-            </>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Round progress of the running timer, shown in the closed island. */
-function TimerRing({ progress }: { progress: number }) {
-  const r = 8, c = 2 * Math.PI * r;
-  return (
-    <svg className="isl-ring" viewBox="0 0 20 20" width="20" height="20" aria-hidden>
-      <circle cx="10" cy="10" r={r} className="bg" />
-      <circle cx="10" cy="10" r={r} className="fg" style={{ strokeDasharray: c, strokeDashoffset: c * (1 - progress) }} />
-    </svg>
-  );
-}
-
-
 /** Keeps something on screen for `ms` after it should go, so it can play its exit animation. */
 function useExit(show: boolean, ms: number) {
   const [mounted, setMounted] = useState(show);
@@ -125,19 +65,23 @@ function Confetti() {
   );
 }
 
+/** Width of the screen, for the narrow phone layout of the in-app island. */
+function useViewportW() {
+  const [w, setW] = useState(() => (typeof window === "undefined" ? 1280 : window.innerWidth));
+  useEffect(() => { const on = () => setW(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
+  return w;
+}
+const reducedMotion = () => (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) || document.documentElement.getAttribute("data-motion") === "reduce";
+
 /** The island page (own window of the Windows companion; opened in a browser it shows the same at the top). */
 export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) {
   const s = useIsland();
   const prefs = useIslandPrefs();
   const { look } = useIslandLook();
   const app = useAppState().state;
-  const conn = useConn();
-  const canMedia = useCan("launch");
-  const canSound = useCan("soundboard");
   const [hover, setHover] = useState(false);
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
-  const [q, setQ] = useState("");
   const mood = moodOf(s, now);
   const tm = useTimer();
   const np = useNowPlaying();
@@ -146,17 +90,22 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
   const hostRef = useRef<HTMLDivElement>(null);
-  const panelMounted = useExit(open, 380);
+  const panelMounted = useExit(open, 520);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
-  const online = conn.auth === "ok" && conn.phase === "online";
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
   const size = islandSize({ open, ask: !!ask, hover, mood, notice: !!notice });
+  const vw = useViewportW();
+  const box = islandBox(size, vw, floating);
+  const panelW = islandBox("panel", vw, floating).w;
 
   // JARVIS' activity comes from the PC (whichever device asks him) – only to this PC's own windows.
   useEffect(() => client.on("jarvis.activity", (d) => {
     const x = d as { phase?: string; ok?: boolean; text?: string; ask?: AssistantAction | null };
     if (x.phase === "busy") islandBusy(true);
-    if (x.phase === "done") { islandBusy(false); islandAnswer(String(x.text ?? ""), x.ok === false ? false : true, x.ask ? [{ ...x.ask, confirm: true }] : []); }
+    if (x.phase === "done") {
+      islandBusy(false); islandAnswer(String(x.text ?? ""), x.ok === false ? false : true, x.ask ? [{ ...x.ask, confirm: true }] : []);
+      if (consumeSpoken() && x.text) speak(x.text); // only the answer to a question that was spoken
+    }
   }), []);
   // The sound the PC plays (level and beat only – nothing is recorded) and the running game drive dancing and gaming.
   useEffect(() => client.on("island.audio", (d) => islandMusic(d as { playing?: boolean; level?: number; beat?: boolean })), []);
@@ -164,10 +113,52 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   useEffect(() => client.on("notification", (d) => islandNotice(d as { title?: unknown; severity?: unknown })), []);
   const gameName = playedGames(app?.running)[0]?.name ?? null; // a live wallpaper alone does not make the eyes "play along"
   useEffect(() => { islandGaming(!!gameName); }, [gameName]);
-  // The window grows and shrinks with the content (the companion accepts only these four sizes).
-  // While the panel is still folding away the native window keeps the big size, so closing is one smooth motion and not a jump.
-  const nativeSize = panelMounted && !open ? islandSize({ open: true, ask: !!ask, hover, mood, notice: !!notice }) : size;
-  useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size: nativeSize }); }, [nativeSize]);
+  // Games that start and end, and the connection to the PC, become short messages and history entries (not the first state after loading).
+  const gameSeen = useRef<{ name: string; since: number } | null | undefined>(undefined);
+  useEffect(() => {
+    const g = playedGames(app?.running)[0] ?? null, was = gameSeen.current;
+    gameSeen.current = g ? { name: g.name, since: Date.parse(g.since) || Date.now() } : null;
+    if (was === undefined) return;
+    if (g && !was) islandEvent("game", "success", t("Spiel gestartet: {n}", { n: g.name }));
+    else if (!g && was) islandEvent("game", "info", t("Spiel beendet: {n} ({t})", { n: was.name, t: playTime(was.since) ?? "–" }));
+  }, [app?.running]); // eslint-disable-line react-hooks/exhaustive-deps
+  const conn = useConn();
+  const online = conn.auth === "ok" && conn.phase === "online";
+  const wasOnline = useRef<boolean | null>(null), hadOnline = useRef(false);
+  useEffect(() => {
+    const was = wasOnline.current; wasOnline.current = online;
+    if (was === null || was === online) { if (online) hadOnline.current = true; return; }
+    if (!online && was) islandEvent("system", "warning", t("Verbindung zum PC verloren"));
+    else if (online && hadOnline.current) islandEvent("system", "success", t("Verbindung zum PC wiederhergestellt")); // not the very first connect after loading
+    if (online) hadOnline.current = true;
+  }, [online]);
+
+  // ---- the spring: width, height and corner radius of the island; in the Windows window the shape of every frame goes to the companion
+  const animRef = useRef<ReturnType<typeof createBoxAnimator> | null>(null);
+  const positionRef = useRef(look.position);
+  positionRef.current = look.position;
+  useLayoutEffect(() => {
+    const el = hostRef.current; if (!el) return;
+    const post = (m: unknown) => (window as HostWindow).chrome?.webview?.postMessage(m);
+    const apply = (b: Box) => {
+      el.style.width = `${b.w}px`; el.style.height = `${b.h}px`;
+      // In the Windows window the island hangs from the top edge: square at the top, round at the bottom (like the cut-out of the window).
+      el.style.borderRadius = floating ? `${b.r}px` : `0 0 ${b.r}px ${b.r}px`;
+      if (floating) return;
+      const winW = window.innerWidth || WINDOW_W, p = positionRef.current;
+      el.style.left = `${Math.round(p === "left" ? 0 : p === "right" ? winW - b.w : (winW - b.w) / 2)}px`;
+      post({ type: "island-rect", w: Math.round(b.w * 10) / 10, h: Math.round(b.h * 10) / 10, r: Math.round(b.r * 10) / 10 });
+    };
+    const a = createBoxAnimator(apply, box);
+    animRef.current = a;
+    a.to(box, true);
+    return () => { a.stop(); animRef.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [floating]);
+  useEffect(() => { animRef.current?.to(box, reducedMotion()); }, [box.w, box.h, box.r, look.position]); // eslint-disable-line react-hooks/exhaustive-deps
+  // The companion only needs to know when the panel is open (it takes the keyboard focus for typing then).
+  useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size }); }, [size]);
+
   // Moods that end by time need a clock – every second while something short-lived shows, otherwise every 15 s (sleep).
   // (Only the yes/no matters: the music reports arrive ten times a second and must not restart the timer.)
   const fast = !!(s.last || s.ask || s.pokes.length || s.music || open || hover || s.gaming || s.pet || s.notice || timerLive(tm));
@@ -179,8 +170,8 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   useEffect(() => {
     const ev = advanceTimer(now);
     if (!ev) return;
-    if (ev.kind === "phase") islandAnswer(ev.pomo.phase === "focus" ? t("Pause vorbei – weiter mit Fokus ({n} geschafft)", { n: ev.pomo.done }) : t(ev.pomo.phase === "long" ? "Vier Fokus-Runden geschafft – lange Pause!" : "Fokus geschafft – kurze Pause!"), true);
-    else islandAnswer(t("Fokuszeit vorbei – kurze Pause?"), true);
+    if (ev.kind === "phase") islandAnswer(ev.pomo.phase === "focus" ? t("Pause vorbei – weiter mit Fokus ({n} geschafft)", { n: ev.pomo.done }) : t(ev.pomo.phase === "long" ? "Vier Fokus-Runden geschafft – lange Pause!" : "Fokus geschafft – kurze Pause!"), true, [], "timer");
+    else islandAnswer(t("Fokuszeit vorbei – kurze Pause?"), true, [], "timer");
     if (prefs.sound) chime(true);
   }, [now]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (s.ask && now - s.ask.at >= ASK_TTL) islandClearAsk(); }, [now, s.ask]);
@@ -197,29 +188,22 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     return () => window.removeEventListener("keydown", key);
   }, [open]);
 
-  const game = mainGame(app?.running);
-  const has = (id: IslandWidgetId) => look.widgets.includes(id);
   const allow = async () => {
     if (!ask?.method) return;
     islandClearAsk();
     try { await client.call(ask.method, ask.params ?? {}); islandAnswer(t("Erledigt: {n}", { n: ask.label }), true); }
     catch (e) { islandAnswer((e as Error).message, false); }
   };
-  const media = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
-  const send = async (e: FormEvent) => {
-    e.preventDefault();
-    const v = q.trim(); if (!v) return;
-    setQ("");
-    // Commands for the pet itself work right here (nothing is sent to the PC's assistant).
-    const pet = petCommand(v);
-    if (pet) { islandPet(pet); islandAnswer(pet === "dance" ? t("Ich tanze!") : pet === "sleep" ? t("Gute Nacht – tippe mich an, dann bin ich wieder da.") : t("Bin wach!"), true); return; }
-    // The answer arrives as "jarvis.activity" like any other – the island shows it.
-    try { await client.call("assistant.ask", { text: v }); } catch (err) { islandAnswer((err as Error).message, false); }
-  };
+  const game = mainGame(app?.running);
   const gameTime = game ? playTime(game.since, now) : null;
   const timerText = live ? `${tm.pomo ? t(POMO_LABEL[tm.pomo.phase]) : t("Fokus")} · ${clock(live.left)}` : null;
+  // What leads the closed island, by importance: a question, JARVIS working, an answer or message, a running timer, a game, music.
+  // The other live things show as small marks next to the time, so nothing that is going on is hidden.
+  const gameText = game ? (gameTime ? `${game.name} · ${gameTime}` : game.name) : "";
+  const leadKind = ask || mood === "thinking" || mood === "listening" || ((mood === "happy" || mood === "error") && s.last) ? "jarvis" : notice ? "notice" : timerText ? "timer" : game ? "game" : mediaLine || (mood === "dancing" && s.music) ? "music" : null;
   const text = ask ? t("JARVIS fragt: {a}?", { a: ask.label }) : mood === "thinking" ? t("JARVIS denkt nach …") : mood === "listening" ? t("JARVIS hört zu …")
-    : (mood === "happy" || mood === "error") && s.last ? s.last.text : notice ? notice.text : timerText ? timerText : mood === "dancing" && s.music && !mediaLine ? t("Musik läuft") : mediaLine ? `♪ ${mediaLine}` : game ? (gameTime ? `${game.name} · ${gameTime}` : game.name) : t("JARVIS – antippen für Widgets");
+    : (mood === "happy" || mood === "error") && s.last ? s.last.text : notice ? notice.text : timerText ? timerText : game ? gameText : mediaLine ? `♪ ${mediaLine}` : mood === "dancing" && s.music ? t("Musik läuft") : t("JARVIS – antippen für Widgets");
+  const marks = ([live ? "timer" : null, game ? "game" : null, mediaLine || (mood === "dancing" && s.music) ? "music" : null] as const).filter((k): k is "timer" | "game" | "music" => !!k && k !== leadKind);
   // A counting text (timer, play time) keeps one element so only real changes of the message animate.
   const textKey = timerText && text === timerText ? "timer" : game && text.startsWith(game.name) ? `game:${game.name}` : text;
   // The eyes follow the mouse a little (a few pixels) while it is over the island.
@@ -232,25 +216,31 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   };
   const unfollow = () => { const el = hostRef.current; if (el) { el.style.setProperty("--ex", "0px"); el.style.setProperty("--ey", "0px"); } };
 
+  // While the panel folds away the content keeps the width of the open island – it is clipped by the shrinking shell, never squeezed.
+  const innerW = panelMounted ? panelW : box.w;
+
   return (
-    <div ref={hostRef} className={`isl-host s-${size} h-${mood}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
+    <div ref={hostRef} className={`isl-host v2 s-${size} h-${mood}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
+      <div className="isl-inner" style={{ width: innerW }}>
       {mood === "happy" && s.last && <Confetti key={s.last.at} />}
       {mood === "dancing" && s.music && s.music.beatAt > 0 && <span className="isl-beat" key={s.music.beatAt} aria-hidden />}
-      <div className={`isl m-${mood}`}>
-        <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} onClick={(e) => {
+      <div className={`isl m-${mood}`} aria-hidden={open || undefined}>
+        <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} tabIndex={open ? -1 : 0} onClick={(e) => {
           const id = Date.now(), x = e.clientX - e.currentTarget.getBoundingClientRect().left;
           setRipples((r) => [...r.slice(-3), { id, x }]); window.setTimeout(() => setRipples((r) => r.filter((q) => q.id !== id)), 600);
           setOpen((o) => !o);
         }}>
           {ripples.map((r) => <span key={r.id} className="isl-ripple" style={{ left: r.x }} aria-hidden />)}
-          <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); setNow(Date.now()); }} />
+          {live && size !== "notch" && !ask && <TimerRing progress={live.progress} />}
+          {/* A tap anywhere on the closed island opens it – the eyes included (poking them is for the open island's header). */}
+          <IslandEyes mood={mood} />
           {mood === "dancing" && s.music ? <Bars level={s.music.level} /> : mediaLine ? <Bars level={0.35} /> : null}
           {live && size === "notch" && <span className="isl-live"><TimerRing progress={live.progress} />{clock(live.left)}</span>}
-          {size !== "notch" && live && !ask && <TimerRing progress={live.progress} />}
           {notice && size !== "notch" && !ask && <Bell size={15} className="isl-bell" aria-hidden />}
           {size !== "notch" && <span className="isl-text" key={textKey}>{text}{mood === "thinking" && <span className="isl-dots" aria-hidden><i /><i /><i /></span>}</span>}
         </button>
-        {size !== "notch" && !ask && <span className="isl-time">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+        {size !== "notch" && !ask && marks.length > 0 && <span className="isl-marks" aria-hidden>{marks.map((k) => k === "timer" ? <TimerIcon key={k} size={13} /> : k === "game" ? <Gamepad2 key={k} size={13} /> : <Music key={k} size={13} />)}</span>}
+        {size !== "notch" && !ask && <span className="isl-time">{live ? clock(live.left) : new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
         {ask && (
           <span className="isl-ask">
             <button type="button" className="btn sm primary" onClick={() => void allow()}><Check size={15} /> {t("Erlauben")}</button>
@@ -259,72 +249,9 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
         )}
       </div>
       {panelMounted && (
-        <div className={`isl-panel-wrap${open ? "" : " closing"}`}><div className={`isl-panel${open ? "" : " closing"}`} role="dialog" aria-label={t("JARVIS-Insel")}>
-          <div className="isl-card isl-jarvis">
-            <RobotHead mood={mood} />
-            <div className="isl-main">
-              <div className="row"><b>JARVIS</b><span className="badge">{t(MOOD_LABEL[mood])}</span></div>
-              <div className="small muted isl-last">{s.last ? s.last.text : t("Noch nichts gefragt.")}</div>
-              <form className="row" onSubmit={send}>
-                <input className="input" value={q} maxLength={300} placeholder={t("Frag JARVIS …")} onChange={(e) => setQ(e.target.value)} aria-label={t("Frag JARVIS …")} />
-                <button type="submit" className="btn sm primary" disabled={!q.trim() || !online}>{t("Fragen")}</button>
-              </form>
-            </div>
-          </div>
-          <div className="isl-grid">
-            {has("game") && (
-            <div className="isl-card">
-              <span className="isl-ic"><Gamepad2 size={18} /></span>
-              <div className="isl-main">
-                <b className="ellipsis">{game ? game.name : t("Kein Spiel aktiv")}</b>
-                <span className="tiny muted">{!online ? t("PC nicht verbunden") : game ? t("läuft seit {t}", { t: new Date(game.since).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) }) : t("Laut deinem PC")}</span>
-              </div>
-            </div>
-            )}
-            {has("start") && <IslandStart online={online} canLaunch={canMedia} />}
-            {has("clock") && (
-            <div className="isl-card">
-              <div className="isl-main">
-                <b className="isl-big">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</b>
-                <span className="tiny muted">{new Date(now).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
-              </div>
-            </div>
-            )}
-            {has("music") && (
-            <div className="isl-card isl-media">
-              <div className="isl-main">
-                {np?.active ? (
-                  <>
-                    <b className="ellipsis" title={np.title}>{np.title}</b>
-                    <span className="tiny muted ellipsis">{nowSub(np)}{np.playing ? "" : ` · ${t("pausiert")}`}</span>
-                  </>
-                ) : <><b>{t("Musik am PC")}</b><span className="tiny muted">{online ? t("Gerade läuft nichts") : t("PC nicht verbunden")}</span></>}
-                <div className="row isl-mini">
-                  <button type="button" className="btn icon sm" disabled={!online || !canMedia} onClick={() => media("prev")} aria-label={t("Vorheriger Titel")}><SkipBack size={16} /></button>
-                  <button type="button" className="btn icon sm" disabled={!online || !canMedia} onClick={() => media("playpause")} aria-label={t("Wiedergabe/Pause")}><Play size={14} /><Pause size={14} /></button>
-                  <button type="button" className="btn icon sm" disabled={!online || !canMedia} onClick={() => media("next")} aria-label={t("Nächster Titel")}><SkipForward size={16} /></button>
-                </div>
-              </div>
-            </div>
-            )}
-            {has("stats") && <IslandStats online={online} />}
-            {has("temp") && <IslandTemps online={online} />}
-            {has("net") && <IslandNet online={online} />}
-            {has("volume") && <IslandVolume enabled={online && canMedia} press={media} />}
-            {has("focus") && <FocusTimer />}
-            {has("stopwatch") && <IslandStopwatch />}
-            {has("profile") && <IslandProfiles online={online} canLaunch={canMedia} />}
-            {has("sounds") && <IslandSounds online={online} canPlay={canSound} />}
-            {has("note") && <IslandNote />}
-          </div>
-          <div className="row isl-foot">
-            <label className="row tiny"><input type="checkbox" checked={prefs.sound} onChange={(e) => setIslandPrefs({ sound: e.target.checked })} /> {t("Ton bei „fertig“ und Rückfragen")}</label>
-            <span className="spacer" />
-            {floating && <Link to="/assistant" className="btn sm" onClick={() => setOpen(false)}>{t("JARVIS öffnen")}</Link>}
-            <button type="button" className="btn sm ghost" onClick={() => setOpen(false)}>{t("Schließen")}</button>
-          </div>
-        </div></div>
+        <div className={`isl2-wrap${open ? "" : " closing"}`}><IslandPanel mood={mood} now={now} floating={floating} onClose={() => setOpen(false)} /></div>
       )}
+      </div>
     </div>
   );
 }

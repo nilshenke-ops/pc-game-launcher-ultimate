@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.0.0 – 2026-11-04
+### Neu
+- Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“)
+- Mit JARVIS sprechen: Mikrofon in der Insel antippen, den Satz sagen, er wird als Frage geschickt und die Antwort laut vorgelesen (Spracherkennung des Browsers; im Windows-Insel-Fenster nur, wenn dessen Browser-Engine sie hat – sonst sagt die Insel das und man schreibt)
+- Apps-Reiter mit „WhatsApp“, sobald es in der Bibliothek steht, und den zuletzt gestarteten Programmen; ohne WhatsApp in der Bibliothek steht dort, was zu tun ist
+- Musik: Titelbild, Fortschrittsbalken mit Zeiten und eine Akzentfarbe aus dem Titelbild (Windows-Begleiter)
+- Spiel-Ansicht bei laufendem Spiel: Name, Spielzeit, Verbindung zum PC, Overlay, Aufnahme und Replay
+- Timer: pausieren und fortsetzen, eigene Minuten, Fortschrittsring; die Pause bleibt auch in der geschlossenen Insel sichtbar
+- Meldungen mit Verlauf: Spiel gestartet/beendet, Verbindung verloren/wiederhergestellt, Timer, JARVIS-Antworten bleiben nach dem Verschwinden aus der Leiste erhalten (60 Einträge, nur auf diesem Gerät)
+- Mehrere Aktivitäten gleichzeitig: das Wichtigste führt die geschlossene Insel (Frage, JARVIS arbeitet, Meldung, Timer, Spiel, Musik), die anderen erscheinen als kleine Symbole
+- Widgets der Insel im Wackel-Modus: im Menü „⋯“ → „Widgets bearbeiten“ (oder ein Widget lange halten) – „−“ entfernt, „+“ fügt hinzu, gespeichert am PC
+### Verbessert
+- Öffnen und Schließen laufen als echte Feder (Breite, Höhe und Rundung zusammen, mit kleinem Überschwingen): die Seite rechnet jedes Bild selbst, im Windows-Fenster bleibt das Fenster fest groß und bekommt nur die Form jedes Bildes – kein Neuberechnen der Seite, kein zweiter Takt im Begleiter, der abweichen könnte
+- Musik-Abfrage fragt seltener nach, wenn nichts läuft (alle 3 s bei Wiedergabe, sonst 6–10 s); das Titelbild geht nur einmal pro Titel über die Leitung
+
 ## 2.99.0 – 2026-11-04
 ### Neu
 - Wo die Insel erscheint (Einstellungen → Insel): nur in der App, auf dem Startbildschirm und in der App, in allen Programmen (z. B. Discord), nur in Spielen oder überall; der Begleiter erkennt dafür, welches Fenster vorne ist (nur die Art: Desktop, diese App oder ein Programm – kein Titel, nichts wird gespeichert)

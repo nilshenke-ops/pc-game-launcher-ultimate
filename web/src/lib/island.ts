@@ -8,6 +8,7 @@ import { readJson, writeJson } from "./rpc";
 import { t } from "./i18n";
 import type { AssistantAction } from "./assistant";
 import { cleanWidgets, type IslandWidgetId } from "./island-widgets";
+import { logIsland, type ActivityKind, type ActivityLevel } from "./island-activity";
 
 export type Mood = "idle" | "thinking" | "listening" | "asking" | "happy" | "error" | "dizzy" | "dancing" | "gaming" | "sleeping" | "surprised";
 /** Window sizes the companion accepts: only the eyes, the bar, the bar with a question, the open widgets. */
@@ -45,9 +46,10 @@ export const islandState = () => state;
 
 export function islandBusy(busy: boolean, listening = false) { if (busy !== state.busy || listening !== state.listening) set({ busy, listening }); }
 /** Only an action that needs a confirmation and runs a command becomes a question – never an automatic one or a link. */
-export function islandAnswer(text: string, ok: boolean | null, actions: AssistantAction[] = []) {
+export function islandAnswer(text: string, ok: boolean | null, actions: AssistantAction[] = [], kind: ActivityKind = "jarvis") {
   const ask = actions.find((a) => a.confirm && a.method && !a.auto) ?? null;
   set({ last: { text: text.slice(0, 280), ok, at: Date.now() }, ask: ask ? { action: ask, at: Date.now() } : null });
+  logIsland(kind, ok === false ? "error" : ok ? "success" : "info", text); // stays in the history after the bar has moved on
 }
 /** declined: the question is dropped and nothing runs – the eyes go back to normal (no "done"). */
 export function islandClearAsk(declined = false) { if (state.ask || declined) set({ ask: null, ...(declined ? { last: { text: t("Abgelehnt – nichts ausgeführt."), ok: null, at: 0 } } : {}) }); }
@@ -67,6 +69,13 @@ export function islandNotice(n: { title?: unknown; message?: unknown; severity?:
   if (!title) return;
   const sev = n.severity === "error" || n.severity === "Error" || n.severity === 3 ? "error" : n.severity === "warning" || n.severity === "Warning" || n.severity === 2 ? "warning" : "info";
   set({ notice: { text: title, severity: sev, at: now }, lastActive: now });
+  logIsland("notice", sev === "info" ? "info" : sev, title, now);
+}
+/** Something the island noticed itself (a game started, the PC connection dropped …): a short message in the bar and an entry in the history. */
+export function islandEvent(kind: ActivityKind, level: ActivityLevel, text: string, now = Date.now()) {
+  const sev = level === "error" ? "error" : level === "warning" ? "warning" : "info";
+  set({ notice: { text: text.slice(0, 90), severity: sev, at: now }, lastActive: now });
+  logIsland(kind, level, text, now);
 }
 export const noticeFresh = (s: Pick<IslandState, "notice">, now = Date.now()) => !!s.notice && now - s.notice.at < NOTICE_MS;
 

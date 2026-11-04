@@ -197,7 +197,8 @@ public sealed class NullForegroundWatcher : IForegroundWatcher
 }
 
 /// <summary>A song or video the PC plays (or has paused): which program, title and artist/channel.</summary>
-public sealed record NowPlayingInfo(string App, string Title, string Artist, bool Playing);
+/// <summary>What the PC plays: program, title, artist, playing or paused; the position and length in milliseconds (0 = the program does not say) and a small cover picture (data URL, may be missing) with a key that changes with the song.</summary>
+public sealed record NowPlayingInfo(string App, string Title, string Artist, bool Playing, long PositionMs = 0, long DurationMs = 0, string? Cover = null, string CoverKey = "");
 
 public interface INowPlaying
 {

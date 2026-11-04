@@ -189,6 +189,13 @@ async function openMore(p: Page) {
   return sheet;
 }
 
+/** The island's "⋯" menu holds "Schließen" (the old close button); tabs are reached by their names. */
+async function closeIsland(panel: import("@playwright/test").Locator) {
+  await panel.getByRole("button", { name: "Mehr", exact: true }).click();
+  await panel.getByRole("menuitem", { name: "Schließen" }).click();
+}
+const islandTab = (panel: import("@playwright/test").Locator, name: string) => panel.getByRole("tab", { name, exact: true });
+
 test("Leiste bearbeiten: Bereich entfernen → „Weitere Funktionen“, dort erreichbar, wieder hinzufügen, bleibt nach Neuladen", async () => {
   await pc.goto(`${COMPANION}/#/`);
   let sheet = await openMore(pc);
@@ -832,6 +839,7 @@ test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, 
   await pc.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
   const panel = pc.getByRole("dialog", { name: "JARVIS-Insel" });
   await expect(panel).toBeVisible();
+  await islandTab(panel, "PC").click(); // the PC values, temperatures, network and volume live under "PC"
   // Temperature and FPS: numbers from the PC or the honest "n. v." – FPS is never invented (the companion has no frame capture).
   const temps = panel.getByLabel("Temperatur & FPS");
   await expect(temps).toBeVisible();
@@ -842,16 +850,19 @@ test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, 
   await expect(panel).toContainText("Netzwerk");
   await expect.poll(async () => (await panel.textContent()) ?? "", { timeout: 20000 }).toMatch(/\d+ ms|keine Antwort|Misst/);
   for (const b of ["Leiser", "Stumm", "Lauter"]) await expect(panel.getByRole("button", { name: b })).toBeEnabled();
+  await islandTab(panel, "Fokus").click();
   await panel.getByRole("button", { name: "Pomodoro" }).click();
   await expect(panel).toContainText(/24:5\d|25:00/);
   await expect(panel).toContainText("0 ✓");
   await panel.getByRole("button", { name: "Stopp" }).click();
   // The note survives closing and reloading the window.
+  await islandTab(panel, "Notiz").click();
   await panel.getByRole("textbox", { name: "Notiz" }).fill("E2E-Zettel: Pizza bestellen");
   await pc.waitForTimeout(700);
   await pc.reload();
   await pc.locator(".isl-host").dispatchEvent("mouseover", { relatedTarget: null });
   await pc.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  await islandTab(pc.getByRole("dialog", { name: "JARVIS-Insel" }), "Notiz").click();
   await expect(pc.getByRole("textbox", { name: "Notiz" })).toHaveValue("E2E-Zettel: Pizza bestellen");
   // Clean up: defaults again, note removed.
   await pc.getByRole("textbox", { name: "Notiz" }).fill("");
@@ -2187,7 +2198,7 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   const isl = await p.context().newPage();
   // Like the Windows window: the companion hands the page its admin token before it loads.
   await isl.addInitScript((tok) => { (window as unknown as { __PGL_ADMIN__: string; __PGL_EMBEDDED__: boolean }).__PGL_ADMIN__ = tok; (window as unknown as { __PGL_EMBEDDED__: boolean }).__PGL_EMBEDDED__ = true; }, state().adminToken);
-  await isl.setViewportSize({ width: 580, height: 470 });
+  await isl.setViewportSize({ width: 620, height: 380 });
   await isl.goto(`${COMPANION}/#/island`);
   const bar = isl.locator(".isl");
   await expect(bar.getByRole("img", { name: "JARVIS: Bereit" })).toBeVisible({ timeout: 15000 });
@@ -2217,8 +2228,11 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
   await expect(panel).toBeVisible();
   await expect(isl.locator(".isl-host")).toHaveClass(/s-panel/);
-  await expect(panel).toContainText("Musik am PC");
+  // Home: three cards (JARVIS, music, focus) and the row of tabs.
+  await expect(panel.getByRole("tablist", { name: "Bereiche der Insel" })).toBeVisible();
+  await expect(panel).toContainText("Gerade läuft nichts");
   await expect(panel.getByRole("button", { name: "Wiedergabe/Pause" })).toBeEnabled();
+  await islandTab(panel, "PC").click();
   // PC values: real numbers from the companion's sample or the honest "n. v." – never an invented number, never NaN.
   const stats = panel.getByLabel("PC-Werte");
   await expect(stats).toBeVisible();
@@ -2226,20 +2240,23 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await expect.poll(async () => (await stats.textContent()) ?? "", { timeout: 15000 }).toMatch(/\d+ %|n\. v\.|aus/);
   expect(await stats.textContent()).not.toMatch(/NaN|undefined/);
   await isl.screenshot({ path: "test-results/island-panel.png", animations: "disabled" });
+  await islandTab(panel, "Fokus").click();
   await panel.getByRole("button", { name: "5 min", exact: true }).click();
   await expect(panel).toContainText(/[45]:[0-5]\d/);
+  await islandTab(panel, "JARVIS").click();
   await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Wie geht es meinem PC?");
   await panel.getByRole("button", { name: "Fragen" }).click();
   await expect(panel.locator(".isl-last")).toContainText("CPU");
-  await panel.getByRole("button", { name: "Schließen" }).click();
+  await closeIsland(panel);
   await expect(panel).toHaveCount(0, { timeout: 3000 }); // it plays its exit animation first, then it is gone
   // The focus timer keeps running with the panel shut: the closed island shows the time with a progress ring.
   await expect(async () => { await leave(); await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/, { timeout: 600 }); }).toPass({ timeout: 10000 });
   await expect(bar.locator(".isl-live")).toContainText(/[45]:[0-5]\d/);
   await expect(bar.locator(".isl-live .isl-ring")).toBeVisible();
   await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  await islandTab(panel, "Fokus").click();
   await panel.getByRole("button", { name: "Stopp" }).click();
-  await panel.getByRole("button", { name: "Schließen" }).click();
+  await closeIsland(panel);
   await expect(bar.locator(".isl-live")).toHaveCount(0);
   // Music: the test companion plays a steady tone like the PC's sound. Switched on, the companion listens, the eyes dance,
   // and a bars equaliser shows next to them; switched off, it stops listening and the eyes calm down.
@@ -2254,9 +2271,12 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await adminRpc("island.configure", { desktop: false });
   await expect(bar.getByRole("img", { name: "JARVIS: Tanzt" })).toHaveCount(0, { timeout: 15000 });
   await expect(bar.locator(".isl-bars")).toHaveCount(0);
-  // Poking the eyes too often makes JARVIS dizzy (nothing else happens).
-  for (let k = 0; k < 5; k++) await bar.locator(".isl-eyes").click();
-  await expect(bar.getByRole("img", { name: "JARVIS: Schwindelig" })).toBeVisible();
+  // A tap on the eyes of the closed island opens it (the middle of the small island is the eyes); poking the eyes in the open
+  // island's header too often makes JARVIS dizzy (nothing else happens).
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).dispatchEvent("click");
+  await expect(panel).toBeVisible();
+  for (let k = 0; k < 5; k++) await panel.locator(".isl2-head .isl-eyes").dispatchEvent("click");
+  await expect(panel.getByRole("img", { name: "JARVIS: Schwindelig" })).toBeVisible();
   await p.context().close();
 });
 
@@ -2268,21 +2288,24 @@ test("JARVIS-Insel: neue Widgets (Stoppuhr, Zuletzt gespielt, Profile, Sounds) u
   await adminRpc("island.configure", { look: { widgets: ["game", "start", "focus", "stopwatch", "profile", "sounds"] } });
   const isl = await p.context().newPage();
   await isl.addInitScript((tok) => { (window as unknown as { __PGL_ADMIN__: string; __PGL_EMBEDDED__: boolean }).__PGL_ADMIN__ = tok; (window as unknown as { __PGL_EMBEDDED__: boolean }).__PGL_EMBEDDED__ = true; }, state().adminToken);
-  await isl.setViewportSize({ width: 580, height: 520 });
+  await isl.setViewportSize({ width: 620, height: 380 });
   await isl.goto(`${COMPANION}/#/island`);
   await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
   const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
+  await islandTab(panel, "PC").click();
   await expect(panel).toContainText(/Noch nichts gestartet|E2E Testspiel/);
   await expect(panel.getByRole("button", { name: "Starten" })).toBeVisible();
   await expect(panel.getByText("Profile", { exact: true })).toBeVisible();
   await expect(panel.getByText("Sounds", { exact: true })).toBeVisible();
-  // Stopwatch: start, it counts, pause keeps the time, reset zeroes it.
+  // Stopwatch (under "Fokus"): start, it counts, pause keeps the time, reset zeroes it.
+  await islandTab(panel, "Fokus").click();
   const watch = panel.getByLabel("Stoppuhr", { exact: true });
   await expect(watch).toHaveText("0:00");
   await panel.getByRole("button", { name: "Start", exact: true }).click();
   await expect(watch).not.toHaveText("0:00", { timeout: 5000 });
-  await panel.getByRole("button", { name: "Schließen" }).click(); // keeps running with the panel shut
+  await closeIsland(panel); // keeps running with the panel shut
   await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  await islandTab(panel, "Fokus").click();
   await expect(panel.getByRole("button", { name: "Anhalten" })).toBeVisible();
   await panel.getByRole("button", { name: "Anhalten" }).click();
   const frozen = await watch.textContent();
@@ -2290,6 +2313,58 @@ test("JARVIS-Insel: neue Widgets (Stoppuhr, Zuletzt gespielt, Profile, Sounds) u
   await expect(watch).toHaveText(frozen ?? "");
   await panel.getByRole("button", { name: "Zurücksetzen" }).click();
   await expect(watch).toHaveText("0:00");
+  await adminRpc("island.configure", { look: { widgets: before } });
+  await p.context().close();
+});
+
+test("JARVIS-Insel 3.0: Tabs, Widgets im Wackel-Modus hinzufügen/entfernen, Timer pausieren, Verlauf, Mikrofon, WhatsApp-Hinweis, Feder-Größe", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
+  const { adminRpc } = await import("./rpc");
+  const before = (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets;
+  const isl = await p.context().newPage();
+  await isl.addInitScript((tok) => { (window as unknown as { __PGL_ADMIN__: string; __PGL_EMBEDDED__: boolean }).__PGL_ADMIN__ = tok; (window as unknown as { __PGL_EMBEDDED__: boolean }).__PGL_EMBEDDED__ = true; }, state().adminToken);
+  await isl.setViewportSize({ width: 620, height: 380 });
+  await isl.goto(`${COMPANION}/#/island`);
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
+  await expect(panel).toBeVisible();
+  // The spring ends exactly at the size of the open island (the page runs it and tells the Windows window the shape of every frame).
+  await expect.poll(async () => { const b = await isl.locator(".isl-host").boundingBox(); return b ? [Math.round(b.width), Math.round(b.height)] : null; }, { timeout: 5000 }).toEqual([560, 344]);
+  for (const n of ["Home", "Musik", "JARVIS", "Fokus", "Meldungen", "Apps", "PC"]) await expect(islandTab(panel, n)).toBeVisible();
+  await expect(islandTab(panel, "Notiz")).toHaveCount(0); // not switched on yet
+  // Wiggle mode: + adds a widget (saved on the PC), − removes it again.
+  await panel.getByRole("button", { name: "Mehr", exact: true }).click();
+  await panel.getByRole("menuitem", { name: "Widgets bearbeiten" }).click();
+  await panel.getByRole("button", { name: "Notiz hinzufügen" }).click();
+  await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).toContain("note");
+  await expect(panel.getByRole("button", { name: "Notiz entfernen" })).toBeVisible();
+  await panel.getByRole("button", { name: "Notiz entfernen" }).click({ force: true }); // it wiggles forever – never "stable" for the click check
+  await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).not.toContain("note");
+  await panel.getByRole("button", { name: "Fertig", exact: true }).click();
+  // Timer: start, pause keeps the time, resume continues, stop ends.
+  await islandTab(panel, "Fokus").click();
+  await panel.getByRole("button", { name: "15 min", exact: true }).click();
+  await panel.getByRole("button", { name: "Pausieren" }).click();
+  await expect(panel).toContainText("Pausiert");
+  const frozen = await panel.locator(".isl2-ttext .isl2-time").textContent();
+  await isl.waitForTimeout(2200);
+  await expect(panel.locator(".isl2-ttext .isl2-time")).toHaveText(frozen ?? "");
+  await panel.getByRole("button", { name: "Fortsetzen" }).click();
+  await expect(panel).not.toContainText("Pausiert");
+  await panel.getByRole("button", { name: "Stopp" }).click();
+  // JARVIS: microphone button exists (speech recognition is the browser's own; in the Windows window it may be missing – then it says so), text field works.
+  await islandTab(panel, "JARVIS").click();
+  await expect(panel.getByRole("button", { name: /Mit JARVIS sprechen|Zuhören beenden/ })).toBeVisible();
+  await expect(panel.getByRole("textbox", { name: "Frag JARVIS …" })).toBeVisible();
+  // Apps: WhatsApp is only offered when it is in the library – otherwise the island says what to do (no invented entry).
+  await islandTab(panel, "Apps").click();
+  await expect(panel).toContainText(/WhatsApp ist nicht in deiner Bibliothek|WhatsApp/);
+  await expect(panel.getByRole("button", { name: "WhatsApp" })).toHaveCount(0);
+  // Messages: the history is there (empty or with entries) next to the PC's messages.
+  await islandTab(panel, "Meldungen").click();
+  await expect(panel).toContainText("Verlauf");
+  await expect(panel).toContainText("Meldungen des PCs");
   await adminRpc("island.configure", { look: { widgets: before } });
   await p.context().close();
 });

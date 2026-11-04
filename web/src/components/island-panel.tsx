@@ -1,0 +1,400 @@
+// The open JARVIS island: a header (eyes, date and time, equalizer, "⋯"), three cards on "Home" (JARVIS, music, focus) and a row of
+// tabs underneath – music, JARVIS (write or speak), focus timer and stopwatch, notifications, apps (WhatsApp, last started), the PC
+// values and a note. Own design in the layout of "island" apps. Everything shown is real state of the PC; what the PC cannot tell stays "n. v.".
+
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, Mic, MicOff, Monitor, MoreHorizontal, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
+import { t } from "../lib/i18n";
+import { client } from "../lib/rpc";
+import { useAppState } from "../lib/state";
+import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
+import { useIslandLook } from "../lib/island-look";
+import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
+import { clock, islandAnswer, islandPet, islandPoke, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
+import { countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, useTimer } from "../lib/island-timer";
+import { POMO_LABEL } from "../lib/pomodoro";
+import { nowPosition, nowSub, songTime, useNowPlaying } from "../lib/now-playing";
+import { accentOfCover } from "../lib/cover-accent";
+import { clearIslandHistory, useIslandHistory, type HistoryEntry } from "../lib/island-activity";
+import { markSpoken, useVoiceInput } from "../lib/island-voice";
+import { mainGame } from "../lib/running";
+import { homeRecent, type HistoryData } from "../lib/home-data";
+import { relTime } from "../lib/format";
+import { brandFor } from "../lib/brands";
+import type { LibraryItem, Notification } from "../lib/types";
+import { BrandLogo } from "./brand-logo";
+import { Bars, IslandEyes } from "./island-bits";
+import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, IslandStats, IslandStopwatch, IslandTemps, IslandVolume } from "./island-widgets";
+
+export type IslandTab = "home" | "game" | "music" | "jarvis" | "focus" | "inbox" | "apps" | "pc" | "note";
+const TAB_META: Record<IslandTab, { icon: typeof Home; label: string }> = {
+  home: { icon: Home, label: "Home" }, game: { icon: Gamepad2, label: "Spiel" }, music: { icon: Music, label: "Musik" }, jarvis: { icon: MessageCircle, label: "JARVIS" }, focus: { icon: Timer, label: "Fokus" },
+  inbox: { icon: Inbox, label: "Meldungen" }, apps: { icon: LayoutGrid, label: "Apps" }, pc: { icon: Monitor, label: "PC" }, note: { icon: StickyNote, label: "Notiz" },
+};
+/** Widgets of the old panel that now live under the "PC" tab (music, focus, stopwatch and note have their own places). */
+const PC_WIDGETS: IslandWidgetId[] = ["game", "start", "clock", "stats", "temp", "net", "volume", "profile", "sounds"];
+
+/** Which tabs show: the fixed ones always, the others follow the widget choice in the settings (so nothing the person switched off comes back). */
+export function visibleTabs(widgets: IslandWidgetId[], gameRunning = false): IslandTab[] {
+  const has = (id: IslandWidgetId) => widgets.includes(id);
+  const tabs: IslandTab[] = ["home"];
+  if (gameRunning) tabs.push("game"); // the gaming view appears with a running game and goes with it
+  if (has("music")) tabs.push("music");
+  tabs.push("jarvis");
+  if (has("focus") || has("stopwatch")) tabs.push("focus");
+  tabs.push("inbox", "apps");
+  if (PC_WIDGETS.some(has)) tabs.push("pc");
+  if (has("note")) tabs.push("note");
+  return tabs;
+}
+
+/** The WhatsApp entry of the library (any item called "WhatsApp"); there is no way to open it without the PC knowing the program. */
+export const findWhatsApp = (items: LibraryItem[] | undefined) => items?.find((i) => /whatsapp/i.test(i.name));
+
+function AppLogo({ item }: { item: LibraryItem }) {
+  const b = brandFor(item);
+  if (b) return <BrandLogo brand={b} size={26} color="currentColor" />;
+  if (item.iconData) return <img src={item.iconData} alt="" width={26} height={26} />;
+  return <span className="isl2-letter" aria-hidden>{item.name.slice(0, 1).toUpperCase()}</span>;
+}
+
+export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now: number; floating: boolean; onClose: () => void }) {
+  const s = useIsland();
+  const prefs = useIslandPrefs();
+  const { look, save, canManage } = useIslandLook();
+  const app = useAppState().state;
+  const conn = useConn();
+  const canMedia = useCan("launch");
+  const canSound = useCan("soundboard");
+  const online = conn.auth === "ok" && conn.phase === "online";
+  const np = useNowPlaying();
+  const tm = useTimer();
+  const game = mainGame(app?.running);
+  const tabs = visibleTabs(look.widgets, !!game);
+  const has = (id: IslandWidgetId) => look.widgets.includes(id);
+  const [tab, setTab] = useState<IslandTab>("home");
+  const [menu, setMenu] = useState(false);
+  const [edit, setEdit] = useState(false);
+  const hold = useRef<number | null>(null);
+  // Holding a card (or "Widgets bearbeiten" in the menu) makes the widgets wiggle: − removes one, + adds one (saved at the PC, admin right needed).
+  const holdStart = () => { if (!canManage) return; hold.current = window.setTimeout(() => { hold.current = null; setEdit(true); navigator.vibrate?.(15); }, 600); };
+  const holdEnd = () => { if (hold.current) { clearTimeout(hold.current); hold.current = null; } };
+  const [q, setQ] = useState("");
+  const [accent, setAccent] = useState<string | null>(null);
+  useEffect(() => { let on = true; void accentOfCover(np?.cover).then((c) => { if (on) setAccent(c); }); return () => { on = false; }; }, [np?.cover]);
+  const hist = useIslandHistory();
+  const current: IslandTab = tabs.includes(tab) ? tab : "home";
+  const media = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
+
+  const lib = useRpc<{ items: LibraryItem[] }>("library.list", {}, ["library"], online && current === "apps");
+  const recentHist = useRpc<HistoryData>("history.get", {}, ["history"], online && current === "apps");
+  const inbox = useRpc<{ items: Notification[] }>("notifications.list", {}, ["notifications"], online && current === "inbox");
+  useEvent("notification", () => { if (current === "inbox") inbox.reload(); });
+
+  const send = async (text: string) => {
+    const v = text.trim(); if (!v) return;
+    setQ("");
+    const pet = petCommand(v);
+    if (pet) { islandPet(pet); islandAnswer(pet === "dance" ? t("Ich tanze!") : pet === "sleep" ? t("Gute Nacht – tippe mich an, dann bin ich wieder da.") : t("Bin wach!"), true); return; }
+    try { await client.call("assistant.ask", { text: v }); } catch (err) { islandAnswer((err as Error).message, false); }
+  };
+  const voice = useVoiceInput((said) => { markSpoken(); setTab("jarvis"); void send(said); }, (m) => toast(t(m), "error"));
+  const submit = (e: FormEvent) => { e.preventDefault(); void send(q); };
+
+  // Escape closes the "⋯" menu first, then the island.
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const key = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); setMenu(false); } };
+    const away = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false); };
+    window.addEventListener("keydown", key, true); window.addEventListener("mousedown", away);
+    return () => { window.removeEventListener("keydown", key, true); window.removeEventListener("mousedown", away); };
+  }, [menu]);
+
+  const launch = async (item: LibraryItem) => {
+    try { await client.call("library.launch", { id: item.id }); islandAnswer(t("{n} wird gestartet", { n: item.name }), true); }
+    catch (e) { islandAnswer((e as Error).message, false); }
+  };
+
+  // ---------------------------------------------------------------- cards of "Home"
+  const playing = !!np?.active && np.playing;
+  const view = countdownView(tm, now);
+  const ctl = !online || !canMedia;
+  const pos = nowPosition(np, now);
+  const timerSub = view ? (view.paused ? t("Pausiert") : tm.pomo ? t(POMO_LABEL[tm.pomo.phase]) : t("Läuft")) : t("Bereit zu starten");
+  const timerBtn = () => (view ? (view.paused ? resumeCountdown() : pauseCountdown()) : startCountdown(25));
+  const cover = np?.cover ? <img className="isl2-cover" src={np.cover} alt="" /> : <Music size={22} />;
+  const accentStyle = accent ? ({ "--tint": `color-mix(in srgb, ${accent} 62%, transparent)` } as React.CSSProperties) : undefined;
+  const gameSince = game ? new Date(game.since).getTime() : 0;
+
+  const homeCards = (
+    <div className="isl2-cards" onPointerDown={(e) => { if (!(e.target as HTMLElement).closest("button")) holdStart(); }} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}>
+      <div className={`isl2-card jv m-${mood}`}>
+        <button type="button" className="isl2-ctitle" onClick={() => setTab("jarvis")}>JARVIS</button>
+        <span className={`isl2-spin${mood === "thinking" || mood === "listening" ? " on" : ""}`} aria-hidden><i /></span>
+        <b className="isl2-big">{t(MOOD_LABEL[mood])}</b>
+        <span className="isl2-sub ellipsis">{s.last ? s.last.text : t("Tippen zum Fragen")}</span>
+      </div>
+      {game && (
+        <div className="isl2-card gm">
+          <button type="button" className="isl2-ctitle" onClick={() => setTab("game")}>{t("Spiel")}</button>
+          <span className="isl2-art" aria-hidden><Gamepad2 size={22} /></span>
+          <b className="isl2-big ellipsis" title={game.name}>{game.name}</b>
+          <span className="isl2-sub ellipsis">{playTime(gameSince, now) ?? t("läuft")}</span>
+        </div>
+      )}
+      {has("music") && (
+        <div className="isl2-card mu" style={accentStyle}>
+          <button type="button" className="isl2-ctitle" onClick={() => setTab("music")}>{t("Musik")}</button>
+          <span className="isl2-art" aria-hidden>{cover}</span>
+          {playing && <Bars level={0.4} />}
+          <b className="isl2-big ellipsis" title={np?.title}>{np?.active ? np.title : t("Nichts")}</b>
+          <span className="isl2-sub ellipsis">{np?.active ? nowSub(np) : online ? t("Gerade läuft nichts") : t("PC nicht verbunden")}</span>
+          {pos && <span className="isl2-prog" aria-hidden><i style={{ transform: `scaleX(${pos.ratio})` }} /></span>}
+          <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("playpause")} aria-label={t("Wiedergabe/Pause")}>{playing ? <Pause size={16} /> : <Play size={16} />}</button>
+        </div>
+      )}
+      {has("focus") && (
+        <div className="isl2-card fo">
+          <button type="button" className="isl2-ctitle" onClick={() => setTab("focus")}>{t("Fokus")}</button>
+          <b className="isl2-big isl2-time">{view ? clock(view.left) : "25:00"}</b>
+          <span className="isl2-sub">{timerSub}</span>
+          {view && <span className="isl2-prog" aria-hidden><i style={{ transform: `scaleX(${view.progress})` }} /></span>}
+          <button type="button" className="isl2-round" onClick={timerBtn} aria-label={view ? (view.paused ? t("Fortsetzen") : t("Pausieren")) : t("Fokus starten")}>{view && !view.paused ? <Pause size={16} /> : <Play size={16} />}</button>
+        </div>
+      )}
+    </div>
+  );
+
+  const label = (id: IslandWidgetId) => t(ISLAND_WIDGETS.find((w) => w.id === id)?.label ?? id);
+  const setWidget = (id: IslandWidgetId, on: boolean) => void save({ widgets: toggleWidget(look.widgets, id, on) });
+  const editor = (
+    <div className="isl2-edit">
+      <div className="isl2-ehead">
+        <p className="isl2-sub">{t("Alles wackelt: − nimmt ein Widget weg, + holt eines dazu. Die Auswahl gilt für die Insel auf diesem PC.")}</p>
+        <button type="button" className="isl2-chip done" onClick={() => setEdit(false)}>{t("Fertig")}</button>
+      </div>
+      <div className="isl2-wig" role="list" aria-label={t("Aktive Widgets")}>
+        {look.widgets.map((id) => (
+          <span key={id} role="listitem" className="isl2-wchip on">{label(id)}
+            <button type="button" className="isl2-minus" onClick={() => setWidget(id, false)} aria-label={t("{n} entfernen", { n: label(id) })}>−</button></span>
+        ))}
+      </div>
+      <div className="isl2-hhead"><b>{t("Hinzufügen")}</b></div>
+      <div className="isl2-wig" role="group" aria-label={t("Weitere Widgets")}>
+        {ISLAND_WIDGETS.filter((w) => !look.widgets.includes(w.id)).map((w) => (
+          <button key={w.id} type="button" className="isl2-wchip add" title={t(w.hint)} onClick={() => setWidget(w.id, true)} aria-label={t("{n} hinzufügen", { n: label(w.id) })}>+ {label(w.id)}</button>
+        ))}
+      </div>
+    </div>
+  );
+  const home = edit && canManage ? editor : homeCards;
+
+  // ---------------------------------------------------------------- the other tabs
+  const musicTab = (
+    <div className="isl2-music" style={accentStyle}>
+      <span className="isl2-art big" aria-hidden>{np?.cover ? <img className="isl2-cover" src={np.cover} alt="" /> : <Music size={34} />}</span>
+      <div className="isl2-mtext">
+        {np?.active ? (
+          <><b className="isl2-big ellipsis" title={np.title}>{np.title}</b><span className="isl2-sub ellipsis">{nowSub(np)}{np.playing ? "" : ` · ${t("pausiert")}`}</span></>
+        ) : (
+          <><b className="isl2-big">{t("Gerade läuft nichts")}</b><span className="isl2-sub">{online ? (np === null ? t("Dieser PC meldet keine Wiedergabe (nur der Windows-Begleiter).") : t("Läuft etwas in Spotify oder einem Browser-Tab, steht es hier.")) : t("PC nicht verbunden")}</span></>
+        )}
+        {pos && (
+          <div className="isl2-seek" role="progressbar" aria-label={t("Fortschritt")} aria-valuemin={0} aria-valuemax={Math.round(pos.total / 1000)} aria-valuenow={Math.round(pos.ms / 1000)}>
+            <span>{songTime(pos.ms)}</span><span className="isl2-prog"><i style={{ transform: `scaleX(${pos.ratio})` }} /></span><span>{songTime(pos.total)}</span>
+          </div>
+        )}
+        <div className="isl2-ctrls">
+          <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("prev")} aria-label={t("Vorheriger Titel")}><SkipBack size={16} /></button>
+          <button type="button" className="isl2-round big" disabled={ctl} onClick={() => media("playpause")} aria-label={t("Wiedergabe/Pause")}>{np?.playing ? <Pause size={18} /> : <Play size={18} />}</button>
+          <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("next")} aria-label={t("Nächster Titel")}><SkipForward size={16} /></button>
+          <span className="isl2-gap" />
+          <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("voldown")} aria-label={t("Leiser")}><Volume1 size={16} /></button>
+          <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("volup")} aria-label={t("Lauter")}><Volume2 size={16} /></button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Game view: what runs, since when, the connection, and the controls that exist at the PC (overlay, recording, replay).
+  const act = async (method: string, ok: string) => { try { const r = await client.call<{ message?: string }>(method, {}); toast(r?.message ? t(r.message) : ok, "success"); } catch (e) { toast((e as Error).message, "error"); } };
+  const gameTab = game ? (
+    <div className="isl2-game">
+      <div className="isl2-gtop">
+        <span className="isl2-art big" aria-hidden><Gamepad2 size={34} /></span>
+        <div className="isl2-mtext">
+          <b className="isl2-big ellipsis" title={game.name}>{game.name}</b>
+          <span className="isl2-sub">{t("läuft seit {t}", { t: new Date(gameSince).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })} · {playTime(gameSince, now) ?? "–"}</span>
+          <span className={`isl2-conn ${online ? "ok" : "off"}`}><i />{online ? t("PC verbunden") : t("PC nicht verbunden")}</span>
+        </div>
+      </div>
+      <div className="isl2-actions">
+        <button type="button" className="isl2-act" disabled={ctl} onClick={() => void act("overlay.toggle", t("Overlay umgeschaltet"))}><Layers size={17} />{t("Overlay")}</button>
+        <button type="button" className="isl2-act" disabled={ctl} onClick={() => void act("capture.recordToggle", t("Aufnahme umgeschaltet"))}><Radio size={17} />{t("Aufnahme")}</button>
+        <button type="button" className="isl2-act" disabled={ctl} onClick={() => void act("capture.replaySave", t("Replay gespeichert"))}><Star size={17} />{t("Replay")}</button>
+      </div>
+    </div>
+  ) : <p className="isl2-sub">{t("Kein Spiel aktiv")}</p>;
+
+  // Timer view: presets or your own minutes, the countdown with progress, pause and resume.
+  const [custom, setCustom] = useState("");
+  const focusTab = (
+    <div className="isl2-focus">
+      <div className="isl2-tcard">
+        <div className={`isl2-ring${view?.paused ? " paused" : ""}`} style={{ ["--p" as string]: view ? view.progress : 0 } as React.CSSProperties} aria-hidden><i /></div>
+        <div className="isl2-ttext">
+          <b className="isl2-time">{view ? clock(view.left) : "25:00"}</b>
+          <span className="isl2-sub">{timerSub}{tm.pomo ? ` · ${tm.pomo.done} ✓` : ""}</span>
+          <div className="isl2-ctrls">
+            {view ? (
+              <>
+                <button type="button" className="isl2-round big" onClick={() => (view.paused ? resumeCountdown() : pauseCountdown())} aria-label={view.paused ? t("Fortsetzen") : t("Pausieren")}>{view.paused ? <Play size={18} /> : <Pause size={18} />}</button>
+                <button type="button" className="isl2-chip" onClick={stopCountdown}>{t("Stopp")}</button>
+              </>
+            ) : (
+              <>
+                {[5, 15, 25, 45].map((m) => <button key={m} type="button" className="isl2-chip" onClick={() => startCountdown(m)}>{m} min</button>)}
+                <button type="button" className="isl2-chip" title={t("25 min Fokus, 5 min Pause, nach vier Runden 15 min")} onClick={() => startPomodoro()}>{t("Pomodoro")}</button>
+              </>
+            )}
+          </div>
+          {!view && (
+            <form className="isl2-custom" onSubmit={(e) => { e.preventDefault(); const m = Number(custom); if (m >= 1 && m <= 180) { startCountdown(m); setCustom(""); } }}>
+              <input className="input" inputMode="numeric" value={custom} maxLength={3} placeholder={t("Eigene Minuten")} aria-label={t("Eigene Minuten")} onChange={(e) => setCustom(e.target.value.replace(/\D/g, ""))} />
+              <button type="submit" className="isl2-chip" aria-label={t("Eigene Minuten starten")} disabled={!(Number(custom) >= 1 && Number(custom) <= 180)}>{t("Start")}</button>
+            </form>
+          )}
+        </div>
+      </div>
+      {has("stopwatch") && <IslandStopwatch />}
+    </div>
+  );
+
+  const jarvisTab = (
+    <div className="isl2-chat">
+      <div className="isl2-answer">
+        <span className="badge">{t(MOOD_LABEL[mood])}</span>
+        <p className="isl-last">{s.last ? s.last.text : t("Noch nichts gefragt.")}</p>
+      </div>
+      <form className="isl2-ask" onSubmit={submit}>
+        <button type="button" className={`isl2-mic${voice.listening ? " on" : ""}`} disabled={!voice.supported || !online} onClick={voice.toggle}
+          aria-pressed={voice.listening} aria-label={voice.listening ? t("Zuhören beenden") : t("Mit JARVIS sprechen")}
+          title={voice.supported ? (voice.listening ? t("Zuhören beenden") : t("Mit JARVIS sprechen")) : t("In diesem Fenster gibt es keine Spracherkennung – schreib stattdessen, oder öffne JARVIS im Browser (Chrome, Edge).")}>
+          {voice.listening ? <MicOff size={18} /> : <Mic size={18} />}
+        </button>
+        <input className="input" value={voice.listening ? voice.interim : q} maxLength={300} readOnly={voice.listening}
+          placeholder={voice.listening ? t("Ich höre zu …") : t("Frag JARVIS …")} onChange={(e) => setQ(e.target.value)} aria-label={t("Frag JARVIS …")} />
+        <button type="submit" className="isl2-send" disabled={!q.trim() || !online || voice.listening} aria-label={t("Fragen")}><Send size={16} /></button>
+      </form>
+      <p className="tiny muted isl2-tip">{t("Sag oder schreib z. B. „Starte WhatsApp“ – vor dem Starten fragt JARVIS kurz nach. Gesprochene Fragen werden laut beantwortet.")}</p>
+    </div>
+  );
+
+  const items = lib.data?.items;
+  const wa = findWhatsApp(items);
+  const recent = homeRecent(items, recentHist.data, 6).filter((i) => i.id !== wa?.id).slice(0, wa ? 5 : 6);
+  const appsTab = (
+    <div className="isl2-apps">
+      {!online ? <p className="isl2-sub">{t("PC nicht verbunden")}</p> : (
+        <>
+          <div className="isl2-grid">
+            {wa && <button type="button" className="isl2-app wa" disabled={!canMedia} onClick={() => void launch(wa)}><AppLogo item={wa} /><span className="ellipsis">WhatsApp</span></button>}
+            {recent.map((i) => <button key={i.id} type="button" className="isl2-app" disabled={!canMedia} onClick={() => void launch(i)} title={i.name}><AppLogo item={i} /><span className="ellipsis">{i.name}</span></button>)}
+          </div>
+          {!lib.loading && !wa && (
+            <p className="tiny muted">{t("WhatsApp ist nicht in deiner Bibliothek. Füge es unter „Apps“ hinzu, dann startet es von hier.")} {floating && <Link to="/programs" onClick={onClose}>{t("Apps öffnen")}</Link>}</p>
+          )}
+          {!lib.loading && !recent.length && !wa && <p className="isl2-sub">{t("Noch nichts gestartet")}</p>}
+        </>
+      )}
+    </div>
+  );
+
+  const list = (inbox.data?.items ?? []).filter((n) => !n.dismissed).slice(0, 5);
+  const dot = (l: HistoryEntry["level"]) => (l === "error" ? "error" : l === "warning" ? "warn" : "ok");
+  const inboxTab = (
+    <div className="isl2-inbox">
+      <div className="isl2-hhead"><b>{t("Verlauf")}</b>{hist.length > 0 && <button type="button" className="isl2-chip" onClick={clearIslandHistory} aria-label={t("Verlauf leeren")}><Trash2 size={13} /></button>}</div>
+      {hist.length === 0 ? <p className="isl2-sub">{t("Noch nichts passiert.")}</p> : hist.slice(0, 8).map((h) => (
+        <div key={h.id} className="isl2-note">
+          <span className={`dot ${dot(h.level)}`} />
+          <div className="isl2-ntext"><b className="ellipsis">{h.text}</b><span className="tiny muted">{relTime(h.at)}</span></div>
+        </div>
+      ))}
+      <div className="isl2-hhead"><b>{t("Meldungen des PCs")}</b></div>
+      {!online ? <p className="isl2-sub">{t("PC nicht verbunden")}</p>
+        : !inbox.loading && !list.length ? <p className="isl2-sub">{t("Keine offenen Meldungen.")}</p>
+        : list.map((n) => (
+          <div key={n.id} className="isl2-note">
+            <span className={`dot ${n.severity === "error" ? "error" : n.severity === "warning" ? "warn" : "ok"}`} />
+            <div className="isl2-ntext"><b className="ellipsis">{n.title}{n.count > 1 ? ` (${n.count}×)` : ""}</b><span className="tiny muted ellipsis">{n.message} · {relTime(n.at)}</span></div>
+          </div>
+        ))}
+    </div>
+  );
+
+  const pcTab = (
+    <div className="isl-grid">
+      {has("game") && (
+        <div className="isl-card">
+          <div className="isl-main">
+            <b className="ellipsis">{game ? game.name : t("Kein Spiel aktiv")}</b>
+            <span className="tiny muted">{!online ? t("PC nicht verbunden") : game ? `${t("läuft seit {t}", { t: new Date(game.since).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}${playTime(game.since, now) ? ` · ${playTime(game.since, now)}` : ""}` : t("Laut deinem PC")}</span>
+          </div>
+        </div>
+      )}
+      {has("start") && <IslandStart online={online} canLaunch={canMedia} />}
+      {has("clock") && (
+        <div className="isl-card"><div className="isl-main">
+          <b className="isl-big">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</b>
+          <span className="tiny muted">{new Date(now).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
+        </div></div>
+      )}
+      {has("stats") && <IslandStats online={online} />}
+      {has("temp") && <IslandTemps online={online} />}
+      {has("net") && <IslandNet online={online} />}
+      {has("volume") && <IslandVolume enabled={online && canMedia} press={media} />}
+      {has("profile") && <IslandProfiles online={online} canLaunch={canMedia} />}
+      {has("sounds") && <IslandSounds online={online} canPlay={canSound} />}
+    </div>
+  );
+
+  const body: Record<IslandTab, ReactNode> = { home, game: gameTab, music: musicTab, jarvis: jarvisTab, apps: appsTab, inbox: inboxTab, pc: pcTab, focus: focusTab, note: <IslandNote /> };
+
+  return (
+    <div className="isl2" role="dialog" aria-label={t("JARVIS-Insel")}>
+      <header className="isl2-head">
+        <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); }} />
+        <time className="isl2-date" dateTime={new Date(now).toISOString()}>{new Date(now).toLocaleString([], { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time>
+        <span className="isl2-grow" />
+        {playing && <Bars level={0.4} />}
+        <div className="isl2-moreWrap" ref={menuRef}>
+          <button type="button" className="isl2-more" aria-haspopup="menu" aria-expanded={menu} aria-label={t("Mehr")} onClick={() => setMenu((m) => !m)}><MoreHorizontal size={18} /></button>
+          {menu && (
+            <div className="isl2-menu" role="menu">
+              <label className="isl2-mi" role="menuitemcheckbox" aria-checked={prefs.sound}><input type="checkbox" checked={prefs.sound} onChange={(e) => setIslandPrefs({ sound: e.target.checked })} /> {t("Ton bei „fertig“ und Rückfragen")}</label>
+              {canManage && <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("home"); setEdit(true); }}>{t("Widgets bearbeiten")}</button>}
+              {floating && <Link to="/assistant" role="menuitem" className="isl2-mi" onClick={onClose}>{t("JARVIS öffnen")}</Link>}
+              {floating && <Link to="/overlay-settings" role="menuitem" className="isl2-mi" onClick={onClose}>{t("Insel-Einstellungen")}</Link>}
+              <button type="button" role="menuitem" className="isl2-mi" onClick={onClose}>{t("Schließen")}</button>
+            </div>
+          )}
+        </div>
+      </header>
+      <div className="isl2-body" role="tabpanel" id="isl2-panel" aria-labelledby={`isl2-tab-${current}`} key={current}>{body[current]}</div>
+      <nav className="isl2-tabs" role="tablist" aria-label={t("Bereiche der Insel")}>
+        {tabs.map((id) => {
+          const m = TAB_META[id], on = id === current;
+          return (
+            <button key={id} type="button" role="tab" id={`isl2-tab-${id}`} aria-selected={on} aria-controls="isl2-panel" aria-label={t(m.label)} title={t(m.label)}
+              className={`isl2-tab${on ? " on" : ""}`} onClick={() => setTab(id)}><m.icon size={17} />{on && <span>{t(m.label)}</span>}</button>
+          );
+        })}
+        <span className="isl2-grow" />
+        <button type="button" className="isl2-tab" disabled={ctl} onClick={() => media("mute")} aria-label={t("Ton aus/an")} title={t("Ton aus/an")}><VolumeX size={17} /></button>
+      </nav>
+    </div>
+  );
+}

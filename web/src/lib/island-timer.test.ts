@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { advanceTimer, countdownView, playTime, resetTimers, startCountdown, startPomodoro, stopCountdown, timerLive, timerState, watchMs, watchReset, watchText, watchToggle } from "./island-timer";
+import { advanceTimer, countdownView, pauseCountdown, playTime, resetTimers, resumeCountdown, startCountdown, startPomodoro, stopCountdown, timerLive, timerState, watchMs, watchReset, watchText, watchToggle } from "./island-timer";
 
 beforeEach(() => resetTimers());
 const T0 = 1_000_000;
@@ -15,6 +15,21 @@ describe("Insel-Timer", () => {
     expect(advanceTimer(T0 + 300_000)).toEqual({ kind: "done" });
     expect(timerLive(timerState())).toBe(false);
     expect(advanceTimer(T0 + 400_000)).toBeNull(); // nothing twice
+  });
+  it("Pause hält die Restzeit fest, Weiter macht genau dort weiter, Pomodoro-Phasen auch", () => {
+    startCountdown(10, 0);
+    pauseCountdown(4 * 60_000);
+    expect(timerState().end).toBeNull();
+    expect(timerLive(timerState())).toBe(true);                       // still shown in the closed island
+    expect(countdownView(timerState(), 99 * 60_000)).toMatchObject({ left: 6 * 60_000, paused: true });
+    expect(advanceTimer(99 * 60_000)).toBeNull();                      // a paused countdown never ends
+    resumeCountdown(50 * 60_000);
+    expect(countdownView(timerState(), 52 * 60_000)).toMatchObject({ left: 4 * 60_000, paused: false });
+    expect(advanceTimer(56 * 60_000)).toEqual({ kind: "done" });
+    startPomodoro(0); pauseCountdown(10 * 60_000); resumeCountdown(20 * 60_000);
+    expect(timerState().pomo?.phase).toBe("focus");
+    stopCountdown();
+    expect(timerLive(timerState())).toBe(false);
   });
   it("Minuten werden begrenzt (1 bis 180)", () => {
     startCountdown(0, T0); expect(timerState().total).toBe(60_000);

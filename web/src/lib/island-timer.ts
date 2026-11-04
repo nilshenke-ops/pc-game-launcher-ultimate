@@ -15,10 +15,12 @@ export interface TimerState {
   /** Stopwatch: running since / time collected before the last start. */
   watchStart: number | null;
   watchAcc: number;
+  /** Set = the countdown is paused with this much time left (end is null then). */
+  pausedLeft: number | null;
 }
 export type TimerEvent = { kind: "done" } | { kind: "phase"; pomo: PomoState };
 
-const initial = (): TimerState => ({ end: null, total: 0, pomo: null, watchStart: null, watchAcc: 0 });
+const initial = (): TimerState => ({ end: null, total: 0, pomo: null, watchStart: null, watchAcc: 0, pausedLeft: null });
 let state: TimerState = initial();
 const listeners = new Set<() => void>();
 const set = (s: TimerState) => { state = s; listeners.forEach((l) => l()); };
@@ -29,12 +31,15 @@ export const resetTimers = () => set(initial());
 
 export function startCountdown(minutes: number, now = Date.now()) {
   const ms = Math.max(1, Math.min(180, Math.round(minutes))) * 60_000;
-  set({ ...state, end: now + ms, total: ms, pomo: null });
+  set({ ...state, end: now + ms, total: ms, pomo: null, pausedLeft: null });
 }
 export function startPomodoro(now = Date.now()) {
-  set({ ...state, end: now + pomoMs(POMO_START.phase), total: pomoMs(POMO_START.phase), pomo: POMO_START });
+  set({ ...state, end: now + pomoMs(POMO_START.phase), total: pomoMs(POMO_START.phase), pomo: POMO_START, pausedLeft: null });
 }
-export function stopCountdown() { set({ ...state, end: null, total: 0, pomo: null }); }
+export function stopCountdown() { set({ ...state, end: null, total: 0, pomo: null, pausedLeft: null }); }
+/** Pause keeps the time that is left; "resume" continues from exactly there (also for a Pomodoro phase). */
+export function pauseCountdown(now = Date.now()) { if (state.end != null) set({ ...state, end: null, pausedLeft: Math.max(0, state.end - now) }); }
+export function resumeCountdown(now = Date.now()) { if (state.pausedLeft != null) set({ ...state, end: now + state.pausedLeft, pausedLeft: null }); }
 
 /** Called by the island's clock: when the countdown has run out it ends (or moves to the next Pomodoro phase) and says what happened. */
 export function advanceTimer(now = Date.now()): TimerEvent | null {
@@ -49,10 +54,10 @@ export function advanceTimer(now = Date.now()): TimerEvent | null {
 }
 
 /** Remaining time and progress (0..1) of the running countdown, or null. */
-export function countdownView(s: TimerState, now = Date.now()): { left: number; progress: number } | null {
-  if (s.end == null) return null;
-  const left = Math.max(0, s.end - now);
-  return { left, progress: s.total > 0 ? Math.min(1, Math.max(0, 1 - left / s.total)) : 0 };
+export function countdownView(s: TimerState, now = Date.now()): { left: number; progress: number; paused: boolean } | null {
+  if (s.end == null && s.pausedLeft == null) return null;
+  const left = Math.max(0, s.end != null ? s.end - now : s.pausedLeft!);
+  return { left, progress: s.total > 0 ? Math.min(1, Math.max(0, 1 - left / s.total)) : 0, paused: s.end == null };
 }
 
 // ------------------------------------------------------------------ stopwatch
@@ -70,7 +75,7 @@ export function watchText(ms: number): string {
 }
 
 /** Something is counting that the closed island should show. */
-export const timerLive = (s: TimerState) => s.end != null;
+export const timerLive = (s: TimerState) => s.end != null || s.pausedLeft != null;
 
 /** How long a game has been running, as "1:23 h" / "42 min" (no seconds – the island updates once a second anyway). */
 export function playTime(sinceIso: string | number, now = Date.now()): string | null {

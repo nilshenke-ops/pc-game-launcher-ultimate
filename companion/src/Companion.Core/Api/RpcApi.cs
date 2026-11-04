@@ -360,13 +360,15 @@ public static class RpcApi
         rpc.Register("activity.get", ctx => s.Activity.View(ctx.Session.Has(Permissions.Manage), DateTime.UtcNow));
         rpc.Register("activity.set", ctx => { s.Activity.Set(ctx.Bind<ActivityFile>()); return s.Activity.View(true, DateTime.UtcNow); });
         // What the PC plays right now (Spotify, a video in Firefox …) – read from Windows' media sessions; a short cache so many windows do not all ask Windows.
-        rpc.Register("media.now", _ =>
+        rpc.Register("media.now", ctx =>
         {
             var np = s.Platform.NowPlaying;
             if (!np.Supported) return new { supported = false };
             var i = s.NowPlayingCached();
-            return i == null ? new { supported = true, active = false, playing = false, app = "", title = "", artist = "" }
-                             : new { supported = true, active = true, playing = i.Playing, app = i.App, title = i.Title, artist = i.Artist };
+            if (i == null) return (object)new { supported = true, active = false, playing = false, app = "", title = "", artist = "", positionMs = 0L, durationMs = 0L, coverKey = "", cover = (string?)null };
+            // The cover goes along only when the asking window does not have this song's cover yet ("have" = its key) – not every few seconds.
+            var have = ctx.OptStr("have", 24);
+            return new { supported = true, active = true, playing = i.Playing, app = i.App, title = i.Title, artist = i.Artist, positionMs = i.PositionMs, durationMs = i.DurationMs, coverKey = i.CoverKey, cover = have == i.CoverKey ? null : i.Cover };
         });
         rpc.Register("media.key", async ctx =>
         {
