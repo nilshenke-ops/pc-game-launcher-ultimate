@@ -1,30 +1,25 @@
 {
-  "version": "3.1.0",
+  "version": "3.1.1",
   "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.0/PCGameLauncherCompanion.exe",
-  "size": 94843236,
-  "sha256": "5ad8c888c5ab82fa67737c3fde9fcdc7ba2d09f6164ee00377222bf152306410",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.1/PCGameLauncherCompanion.exe",
+  "size": 94846229,
+  "sha256": "0d8ce5c283f4023573100dd5bf731050d2676ef68373b6733c6a454bb4105c03",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.1.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.0/PCGameLauncherCompanion-3.1.0-win-x64.zip",
-    "size": 89118137,
-    "sha256": "723adb59be949b1d64c2a618129d2905556829ee4b735d3bf325651956ba8f63"
+    "fileName": "PCGameLauncherCompanion-3.1.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.1/PCGameLauncherCompanion-3.1.1-win-x64.zip",
+    "size": 89121463,
+    "sha256": "54537d34bfbe1cc84df8d8dcd2f735d79d671489e73ec4d51187e6801dec9b70"
   },
-  "notes": "„Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde · Der erste eingerichtete kostenlose Zugang schaltet auf „Automatisch“ um (ohne Umweg über die Einstellungen); in der Insel (Reiter JARVIS) und im Chat lässt sich die KI mit einem Tipp wechseln: Automatisch, Gemini, Router, lokale KI, eingebaut, Standard des PCs · Kostenlose KI einrichten in drei Schritten (Insel und JARVIS-Seite): Gemini-Schlüssel aus Google AI Studio einfügen und testen; als Ersatz mit einem Tipp OpenRouter oder Groq einrichten – der PC wählt die kostenlosen Modelle selbst. ChatGPT bietet Apps keinen kostenlosen Zugang und wird deshalb nicht angeboten",
+  "notes": "Nachricht schreiben vom Handy und iPad: Karte „Nachricht schreiben“ in der Insel (Reiter Apps) – Text schreiben oder sagen, dann mit einem Tipp in WhatsApp, Telegram, Nachrichten (SMS) oder E-Mail öffnen, oder über das Teilen-Blatt senden. Die App öffnet sich mit dem fertigen Text; Empfänger wählst du dort, gesendet wird erst mit deinem Tipp. Es wird nichts automatisch gesendet und keine Kontaktliste gelesen · Auch per Befehl in der Insel und im JARVIS-Chat: „Schreib bei WhatsApp: Bin gleich da“, „Schick eine Nachricht per Telegram: …“ (eine ausgeschriebene Telefonnummer wird übernommen, Namen aus deinen Kontakten kennt die App nicht)",
   "changes": {
     "neu": [
-      "„Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde",
-      "Der erste eingerichtete kostenlose Zugang schaltet auf „Automatisch“ um (ohne Umweg über die Einstellungen); in der Insel (Reiter JARVIS) und im Chat lässt sich die KI mit einem Tipp wechseln: Automatisch, Gemini, Router, lokale KI, eingebaut, Standard des PCs",
-      "Kostenlose KI einrichten in drei Schritten (Insel und JARVIS-Seite): Gemini-Schlüssel aus Google AI Studio einfügen und testen; als Ersatz mit einem Tipp OpenRouter oder Groq einrichten – der PC wählt die kostenlosen Modelle selbst. ChatGPT bietet Apps keinen kostenlosen Zugang und wird deshalb nicht angeboten",
-      "Ohne PC (Handy, iPad, fremder Browser): allgemeine Fragen beantwortet eine freie KI ohne Konto und ohne Schlüssel (Pollinations) – erst nach deinem Ja auf diesem Gerät, gesendet wird nur die Frage mit den letzten Nachrichten, höchstens 20 Fragen pro Stunde; die Antwort ist als „Freie KI ohne PC“ gekennzeichnet; auch in der Insel auf dem Handy/iPad"
+      "Nachricht schreiben vom Handy und iPad: Karte „Nachricht schreiben“ in der Insel (Reiter Apps) – Text schreiben oder sagen, dann mit einem Tipp in WhatsApp, Telegram, Nachrichten (SMS) oder E-Mail öffnen, oder über das Teilen-Blatt senden. Die App öffnet sich mit dem fertigen Text; Empfänger wählst du dort, gesendet wird erst mit deinem Tipp. Es wird nichts automatisch gesendet und keine Kontaktliste gelesen",
+      "Auch per Befehl in der Insel und im JARVIS-Chat: „Schreib bei WhatsApp: Bin gleich da“, „Schick eine Nachricht per Telegram: …“ (eine ausgeschriebene Telefonnummer wird übernommen, Namen aus deinen Kontakten kennt die App nicht)"
     ],
     "verbessert": [],
-    "behoben": [
-      "„Wie lange sollte man schlafen?“ wurde als Frage nach der Spielzeit gelesen und mit „keine erkannte Spielsitzung“ beantwortet – Spielzeit-Fragen brauchen jetzt einen Spielbezug",
-      "Die Antwort der Insel nennt, welche KI geantwortet hat"
-    ]
+    "behoben": []
   },
-  "signature": "M2/puGdD1Gg7eKh2x6PtoI5yDzs++UQeIo4lodKJCvoyAZVymf6PZlGFt8+brwzyYW6abmhh3Dy/of5xwlRYXA=="
+  "signature": "c4A2AMJmzRKzOQBAECMhVqndHVs3sSvG9RhYFBmCNf8tC8jk97xx5agSRj67yQowuB/8EJX6P46brya3a5LAcQ=="
 }
