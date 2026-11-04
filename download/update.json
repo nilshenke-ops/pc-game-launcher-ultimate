@@ -1,29 +1,30 @@
 {
-  "version": "2.93.0",
+  "version": "2.94.0",
   "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion.exe",
-  "size": 88446747,
-  "sha256": "1e6d81151f42af3f37dffff35295f077f7c5af3b682decabbedbb65b2d4a1e6f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion.exe",
+  "size": 88450955,
+  "sha256": "a75a8fb10241cf71acf64b606a0ea8898f52db59b1804150015176858957d929",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.93.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion-2.93.0-win-x64.zip",
-    "size": 82942563,
-    "sha256": "6180f1ecd98a1e01d2fb5599c8f90de9a8f38c3684d28637dd95997f114b4441"
+    "fileName": "PCGameLauncherCompanion-2.94.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion-2.94.0-win-x64.zip",
+    "size": 82947049,
+    "sha256": "094d2d039914a5a1c5f152d65acfb738821400ecda88d1012856df5f1d1c0608"
   },
-  "notes": "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme · Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation) · Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)",
+  "notes": "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen · Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer · Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
   "changes": {
     "neu": [
-      "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme"
+      "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen",
+      "Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer",
+      "Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
+      "Vier neue Widgets (einzeln einschaltbar): Stoppuhr, Zuletzt gespielt starten, Profile (JARVIS fragt vor dem Wechsel nach) und Sounds (die ersten Sounds des Soundboards)",
+      "Mehr Bewegung: ein Licht läuft beim Nachdenken und Zuhören um die Insel, ein Lichtkranz pulsiert bei Rückfragen und blitzt bei „Erledigt“ und Fehlern, das Panel klappt auf und die Karten folgen nacheinander, der Text wechselt weich, die Augen folgen der Maus ein Stück; mit „weniger Bewegung“ (Windows/Browser) bleibt alles ruhig"
     ],
-    "verbessert": [
-      "Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation)",
-      "Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)"
-    ],
+    "verbessert": [],
     "behoben": [
-      "Auf dem Handy lag die Kopfleiste bei Glas-Designs durchsichtig über dem Inhalt und überdeckte Texte; sie hat jetzt einen eigenen Glas-Hintergrund und kleinere runde Knöpfe"
+      "Der Fokus-Timer ging verloren, wenn man das Panel schloss; er läuft jetzt weiter"
     ]
   },
-  "signature": "1nvHBji2D8eIxTUm78pWMoWA5g1lN6KBylryapSXUab5G53SjQCENEZLZ26ntbIAK7D+GaXiwIo9y09CPzQj5g=="
+  "signature": "k35xVSNpoj6PenMkp1mwmHaSc+ZFlp7vUg86Cok65aw5BXSS+sWQNGPxEbgZUQWiVc0lyk1yllG5IzQkj9A+OQ=="
 }

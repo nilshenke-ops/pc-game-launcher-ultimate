@@ -1,5 +1,35 @@
 [
   {
+    "version": "2.94.0",
+    "date": "2026-11-04",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion.exe",
+    "size": 88450955,
+    "sha256": "a75a8fb10241cf71acf64b606a0ea8898f52db59b1804150015176858957d929",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.94.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion-2.94.0-win-x64.zip",
+      "size": 82947049,
+      "sha256": "094d2d039914a5a1c5f152d65acfb738821400ecda88d1012856df5f1d1c0608"
+    },
+    "notes": "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen · Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer · Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
+    "changes": {
+      "neu": [
+        "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen",
+        "Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer",
+        "Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
+        "Vier neue Widgets (einzeln einschaltbar): Stoppuhr, Zuletzt gespielt starten, Profile (JARVIS fragt vor dem Wechsel nach) und Sounds (die ersten Sounds des Soundboards)",
+        "Mehr Bewegung: ein Licht läuft beim Nachdenken und Zuhören um die Insel, ein Lichtkranz pulsiert bei Rückfragen und blitzt bei „Erledigt“ und Fehlern, das Panel klappt auf und die Karten folgen nacheinander, der Text wechselt weich, die Augen folgen der Maus ein Stück; mit „weniger Bewegung“ (Windows/Browser) bleibt alles ruhig"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "Der Fokus-Timer ging verloren, wenn man das Panel schloss; er läuft jetzt weiter"
+      ]
+    },
+    "signature": "k35xVSNpoj6PenMkp1mwmHaSc+ZFlp7vUg86Cok65aw5BXSS+sWQNGPxEbgZUQWiVc0lyk1yllG5IzQkj9A+OQ=="
+  },
+  {
     "version": "2.93.0",
     "date": "2026-11-04",
     "channel": "stable",
@@ -1456,33 +1486,5 @@
       ]
     },
     "signature": "E6swP91XzL4/O5B/M2x2uhBtbbyL1Mo9KW/zZels3hCOjKnu1L7ky8sKiPwiTSmD9MgXCIJJbNs59w1JDDpLtw=="
-  },
-  {
-    "version": "2.48.0",
-    "date": "2026-10-26",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.48.0/PCGameLauncherCompanion.exe",
-    "size": 87970985,
-    "sha256": "7a8585b0e4299c7b66a631dffbd6a2321a1cfcdb0803d654cc574b0a79350cd7",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.48.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.48.0/PCGameLauncherCompanion-2.48.0-win-x64.zip",
-      "size": 82232408,
-      "sha256": "bbd8900d4a7d4cfbfde5a23bad235321c2e08e1adb4bbcc6cc70169d178ad213"
-    },
-    "notes": "Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen: · Eigene Sammelkarten: Bild, Name, Beschreibung, Spiel, bis zu 6 eigene Werte, Farben, Hintergrundmuster und Seltenheits-Optik (nur Aussehen – nichts zu kaufen, keine Zufallsziehung); Sammlungen, Favoriten, Filter, duplizieren, als Bild speichern und über das Teilen-Menü des Geräts teilen · Poster- und Cover-Designer sowie Banner- und Profilbild-Werkstatt: Formate wie Steam-Cover 600 × 900 und „Library Hero“ (laut Steamworks), YouTube-Kanalbanner mit sichtbarem Bereich und Twitch-Banner (Angaben aus Ratgebern, so gekennzeichnet), Profilbild mit Kreis, eigene Formate; Vorlagen, Text, Formen und eigene Bilder; ziehen und vergrößern mit Finger oder Maus, Rückgängig/Wiederholen, Ebenen-Reihenfolge, Export als PNG oder JPG",
-    "changes": {
-      "neu": [
-        "Kreativ-Studio (neue Seite unter „Spielbegleiter“), funktioniert ohne PC und wird mit dem PC abgeglichen:",
-        "Eigene Sammelkarten: Bild, Name, Beschreibung, Spiel, bis zu 6 eigene Werte, Farben, Hintergrundmuster und Seltenheits-Optik (nur Aussehen – nichts zu kaufen, keine Zufallsziehung); Sammlungen, Favoriten, Filter, duplizieren, als Bild speichern und über das Teilen-Menü des Geräts teilen",
-        "Poster- und Cover-Designer sowie Banner- und Profilbild-Werkstatt: Formate wie Steam-Cover 600 × 900 und „Library Hero“ (laut Steamworks), YouTube-Kanalbanner mit sichtbarem Bereich und Twitch-Banner (Angaben aus Ratgebern, so gekennzeichnet), Profilbild mit Kreis, eigene Formate; Vorlagen, Text, Formen und eigene Bilder; ziehen und vergrößern mit Finger oder Maus, Rückgängig/Wiederholen, Ebenen-Reihenfolge, Export als PNG oder JPG",
-        "Virtuelle Ausstellung: Räume mit fünf Stilen, Karten, Poster und Museumsfotos aufhängen, verschieben, vergrößern, rahmen und beschriften, Vollbild-Rundgang, Raum als Bild speichern",
-        "Abzeichen: zwölf eingebaute und eigene Abzeichen, gezählt aus deinen echten Einträgen, mit Bedingung und Fortschritt; wird ein Eintrag gelöscht, ist das Abzeichen wieder offen"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "TSanr1wp3bSOeSF7kjBNvIrgzfA7eu/VIhEJl3ZRtC/vfexuxZiKMzr02AiO+vctTecFevpvUj/qnidpz7Pd/w=="
   }
 ]
