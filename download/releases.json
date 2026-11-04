@@ -1,5 +1,40 @@
 [
   {
+    "version": "3.0.0",
+    "date": "2026-11-04",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.0.0/PCGameLauncherCompanion.exe",
+    "size": 94833574,
+    "sha256": "32d7923b75a35270e5b33f4d3b02cffb41ed013b1c9106d89b9d12884d437a1d",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.0.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.0.0/PCGameLauncherCompanion-3.0.0-win-x64.zip",
+      "size": 89109019,
+      "sha256": "c383bd6739485492d4b32b4e36bea06bd254c71ed8a1a6920043197356804bf2"
+    },
+    "notes": "Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“) · Mit JARVIS sprechen: Mikrofon in der Insel antippen, den Satz sagen, er wird als Frage geschickt und die Antwort laut vorgelesen (Spracherkennung des Browsers; im Windows-Insel-Fenster nur, wenn dessen Browser-Engine sie hat – sonst sagt die Insel das und man schreibt) · Apps-Reiter mit „WhatsApp“, sobald es in der Bibliothek steht, und den zuletzt gestarteten Programmen; ohne WhatsApp in der Bibliothek steht dort, was zu tun ist",
+    "changes": {
+      "neu": [
+        "Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“)",
+        "Mit JARVIS sprechen: Mikrofon in der Insel antippen, den Satz sagen, er wird als Frage geschickt und die Antwort laut vorgelesen (Spracherkennung des Browsers; im Windows-Insel-Fenster nur, wenn dessen Browser-Engine sie hat – sonst sagt die Insel das und man schreibt)",
+        "Apps-Reiter mit „WhatsApp“, sobald es in der Bibliothek steht, und den zuletzt gestarteten Programmen; ohne WhatsApp in der Bibliothek steht dort, was zu tun ist",
+        "Musik: Titelbild, Fortschrittsbalken mit Zeiten und eine Akzentfarbe aus dem Titelbild (Windows-Begleiter)",
+        "Spiel-Ansicht bei laufendem Spiel: Name, Spielzeit, Verbindung zum PC, Overlay, Aufnahme und Replay",
+        "Timer: pausieren und fortsetzen, eigene Minuten, Fortschrittsring; die Pause bleibt auch in der geschlossenen Insel sichtbar",
+        "Meldungen mit Verlauf: Spiel gestartet/beendet, Verbindung verloren/wiederhergestellt, Timer, JARVIS-Antworten bleiben nach dem Verschwinden aus der Leiste erhalten (60 Einträge, nur auf diesem Gerät)",
+        "Mehrere Aktivitäten gleichzeitig: das Wichtigste führt die geschlossene Insel (Frage, JARVIS arbeitet, Meldung, Timer, Spiel, Musik), die anderen erscheinen als kleine Symbole",
+        "Widgets der Insel im Wackel-Modus: im Menü „⋯“ → „Widgets bearbeiten“ (oder ein Widget lange halten) – „−“ entfernt, „+“ fügt hinzu, gespeichert am PC"
+      ],
+      "verbessert": [
+        "Öffnen und Schließen laufen als echte Feder (Breite, Höhe und Rundung zusammen, mit kleinem Überschwingen): die Seite rechnet jedes Bild selbst, im Windows-Fenster bleibt das Fenster fest groß und bekommt nur die Form jedes Bildes – kein Neuberechnen der Seite, kein zweiter Takt im Begleiter, der abweichen könnte",
+        "Musik-Abfrage fragt seltener nach, wenn nichts läuft (alle 3 s bei Wiedergabe, sonst 6–10 s); das Titelbild geht nur einmal pro Titel über die Leitung"
+      ],
+      "behoben": []
+    },
+    "signature": "MWVUxId1zibAu6NQ+pm4MiBxt4JLASSGMr2qup+SB96LEfdTeRDyzTxK1tx+zr6l578L0zuNRIkn+u7QKqzXnA=="
+  },
+  {
     "version": "2.99.0",
     "date": "2026-11-04",
     "channel": "stable",
@@ -1438,33 +1473,5 @@
       "behoben": []
     },
     "signature": "vXnrJifiLXPI7jHJyWEUvjgPjwTlGFVeR5gAzunRVH/WbIWdw3aK2lG/qNSz8kECd2aUtV1nJk7FWXWOqfRD0A=="
-  },
-  {
-    "version": "2.54.0",
-    "date": "2026-10-27",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.54.0/PCGameLauncherCompanion.exe",
-    "size": 88096990,
-    "sha256": "d4246a13a7930687b93746d4091db9a905b8e75d1285acdeaca4e90db34ca59f",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.54.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.54.0/PCGameLauncherCompanion-2.54.0-win-x64.zip",
-      "size": 82357652,
-      "sha256": "006c3480527a766937a9ed6aa2e06760c47b6b992fcf284f7a7bf813f9743971"
-    },
-    "notes": "Deal Radar: Preisvergleich von Keyforsteam direkt im Spiel – „Preise laden“ zeigt alle Angebote mit Shop (offiziell oder Key-Shop), Shop-Bewertung, Edition, Region, Plattform, Preis inklusive Zahlungsgebühr und Gutschein · Zusammenfassung: günstigster offizieller Shop und günstigster Key-Shop derselben Edition; Filter nach Edition, Region und „Nur offizielle Shops“ · Konto-Angebote (fremdes Spielkonto statt Key) sind standardmäßig ausgeblendet und deutlich markiert",
-    "changes": {
-      "neu": [
-        "Deal Radar: Preisvergleich von Keyforsteam direkt im Spiel – „Preise laden“ zeigt alle Angebote mit Shop (offiziell oder Key-Shop), Shop-Bewertung, Edition, Region, Plattform, Preis inklusive Zahlungsgebühr und Gutschein",
-        "Zusammenfassung: günstigster offizieller Shop und günstigster Key-Shop derselben Edition; Filter nach Edition, Region und „Nur offizielle Shops“",
-        "Konto-Angebote (fremdes Spielkonto statt Key) sind standardmäßig ausgeblendet und deutlich markiert",
-        "Findet Keyforsteam das Spiel unter seinem Namen nicht, lässt sich der Link der Spieleseite einfügen",
-        "Abruf nur auf Knopfdruck über den PC, höchstens eine Seite alle 5 Sekunden (wie es keyforsteam.de in robots.txt verlangt), 6 Stunden zwischengespeichert"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "vaVeH9BIWeeipx+q0bhJugEjxO3dGB3wb6zQ6ddCLk2Qaoc73QItLcTV6v3tXUtwvi0mdk1nKug20cBfFHbXxw=="
   }
 ]
