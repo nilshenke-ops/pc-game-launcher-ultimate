@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.96.0 – 2026-11-04
+### Verbessert
+- Handy wie in den Vorlagen: Oben schwebt die Leiste ohne Hintergrund über der Seite (erst beim Scrollen bekommt sie ihr Glas) mit Menü-Knopf links (öffnet „Alle Bereiche“), dem Verbindungspunkt und dem Datenschutz-Knopf; rechts Suche, **JARVIS**, **Anmeldung** und Benachrichtigungen
+- Startseite am Handy: kompakte Kacheln für „Deine Spiele“ mit großen Logos (Steam, Xbox App, Game Pass), runde Schnellzugriff-Knöpfe in den Chrom-Designs, „Anpassen“ als runder Knopf neben „Jetzt starten“; die große PC-Karte entfällt (der Punkt oben zeigt den Zustand, „Jetzt starten“ führt ohne PC zur Verbindung)
+- Seitentitel in der Kopfleiste nur noch außerhalb der Startseite
+### Behoben
+- Browser-Test der Insel-Augenfarbe wartet jetzt, bis die Farbe eingeblendet ist (war zeitabhängig)
+
 ## 2.95.0 – 2026-11-04
 ### Verbessert
 - JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln

@@ -2286,3 +2286,58 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
   .isl-confetti, .isl-beat { display: none; }
 }
 [data-motion="reduce"] .isl-ripple, [data-motion="reduce"] .isl-confetti, [data-motion="reduce"] .isl-beat, [data-motion="reduce"] .isl-host.h-idle .isl-eyes { animation: none !important; }
+
+/* ================================================================== phone layout like the mock-ups (2.96): floating top bar, compact home */
+.topbar-menu, .jarvis-btn { display: none; }
+@media (max-width: 899px) {
+  .topbar-menu { display: grid; place-items: center; order: 0; width: 56px; height: 44px; border-radius: 22px; color: var(--text); cursor: pointer; font: inherit; padding: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.07)); border: 1px solid rgba(255,255,255,0.26); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  .jarvis-btn { display: inline-grid; }
+  .topbar .conn-pill { order: 1; } .topbar .privacy-btn { order: 2; } .topbar .title { order: 3; } .topbar .spacer { order: 4; }
+  .topbar .search-trigger { order: 5; } .topbar .jarvis-btn { order: 6; } .topbar .account-btn { order: 7; } .topbar .bell-btn { order: 8; }
+  /* the connection state is a small dot, the words are in the status card and in the diagnosis */
+  .topbar .conn-pill { width: 44px; min-width: 44px; height: 44px; padding: 0; justify-content: center; border-radius: 50%; }
+  .topbar .conn-pill .label, .topbar .conn-pill .conn-wifi { display: none; }
+  .topbar.on-home .title { display: none; }
+  /* floating over the page; the glass appears only once something scrolls under it */
+  :root[data-surface="glass"] .topbar { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid transparent; transition: background .25s ease, border-color .25s ease; }
+  :root[data-surface="glass"] .topbar.scrolled { background: rgba(var(--surface-rgb), 0.66); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border-bottom-color: rgba(255,255,255,0.12); }
+  .topbar { gap: 6px; }
+  @media (max-width: 380px) { .topbar { gap: 3px; padding-inline: 10px; } }
+
+  /* home */
+  .home-showcase { min-height: 0; gap: 26px; margin-bottom: 20px; }
+  .hs-title { font-size: clamp(2.2rem, 10.5vw, 3rem); }
+  .hs-sub { font-size: 1.02rem; }
+  .hs-actions { gap: 10px; flex-wrap: nowrap; margin-top: 20px; }
+  .hs-start { flex: 1 1 auto; max-width: 320px; min-height: 58px; justify-content: center; }
+  .hs-edit { width: 48px; min-width: 48px; height: 48px; padding: 0; justify-content: center; border-radius: 50%; flex: none; }
+  .hs-edit .hs-edit-t { display: none; }
+  /* the PC state only asks for attention when something is wrong; connected, the top bar dot says it */
+  .hs-status.is-online { display: none; }
+  .hs-status { padding: 14px 16px; border-radius: 24px; gap: 4px 14px; }
+  .hs-ring { width: 56px; height: 56px; padding: 3px; } .hs-ring svg { width: 24px; height: 24px; }
+  .hs-status-title { font-size: 1.15rem; }
+  .hs-chips { display: none; }
+  .hs-head h2, .hs-head h3 { font-size: 1.3rem; }
+  .hs-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .hs-tile { min-height: 108px; padding: 12px 14px; border-radius: 24px; }
+  .hs-tile-art { width: 46px; height: 46px; top: 36%; border-radius: 14px; }
+  .hs-tile-name { left: 14px; bottom: 12px; right: 52px; font-size: .95rem; }
+  .hs-tile-go { right: 10px; bottom: 9px; width: 32px; height: 32px; }
+  .hs-bottom { flex-direction: column; align-items: stretch; gap: 16px; }
+  .hs-minis { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 12px; padding: 2px 2px 6px; }
+  .hs-minis::-webkit-scrollbar { display: none; }
+  .hs-mini { width: 58px; height: 58px; min-width: 58px; border-radius: 20px; }
+  :root[data-home="chrome"] .hs-mini, :root[data-home="chromelight"] .hs-mini { border-radius: 50%; }
+  .hs-mini-art { width: 36px; height: 36px; border-radius: 11px; }
+  .hs-perf, .hs-music { flex: 1 1 auto; border-radius: 28px; padding: 14px 18px; }
+}
+
+.hs-tile-art.logo { display: grid; place-items: center; background: none !important; width: 96px; height: 96px; top: 38%; }
+.hs-tile-art.logo .brand-logo { filter: none; }
+@media (max-width: 899px) {
+  /* like the mock-ups: no status card on the phone – the dot in the top bar shows the state, "Jetzt starten" leads to the connection when there is no PC */
+  .hs-status, .hs-pillstatus { display: none; }
+  .hs-tile-art.logo { width: 60px; height: 60px; top: 38%; }
+}

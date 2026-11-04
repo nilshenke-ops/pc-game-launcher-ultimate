@@ -2,7 +2,7 @@ import { PrivacyButton } from "./privacy";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Check, ChevronDown, Menu, Monitor, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Smartphone, Wifi } from "lucide-react";
+import { Bell, Check, ChevronDown, Menu, Monitor, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Smartphone, Sparkles, Wifi } from "lucide-react";
 import { SheetNav } from "./sidebar-nav";
 import { MockNav } from "./mock-nav";
 import { client, exitDemo, HOSTED, lanPc } from "../lib/rpc";
@@ -124,6 +124,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [more, setMore] = useState(false);
   const [sheetEdit, setSheetEdit] = useState(false);
   const [barEdit, setBarEdit] = useState(false);
+  // Phone: the top bar floats over the page and only gets its glass once the page has scrolled under it.
+  const [scrolled, setScrolled] = useState(false);
+  useEffect(() => { const on = () => setScrolled(window.scrollY > 6); on(); window.addEventListener("scroll", on, { passive: true }); return () => window.removeEventListener("scroll", on); }, []);
   const loc = useLocation();
   const conn = useConn();
   const { state } = useAppState();
@@ -175,7 +178,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="main">
-        <header className="topbar">
+        <header className={`topbar${scrolled ? " scrolled" : ""}${loc.pathname === "/" ? " on-home" : ""}`}>
+          <button type="button" className="topbar-menu" onClick={() => setMore(true)} aria-label={t("Alle Bereiche öffnen")} aria-haspopup="dialog"><Menu size={22} /></button>
           <span className="title">{current.label}</span>
           <button className="search-trigger" onClick={() => setPalette(true)} aria-label={t("Suche öffnen")}>
             <Search size={17} /><span className="label">{t("Suche nach Spielen, Apps …")}</span><kbd>Ctrl K</kbd>
@@ -188,8 +192,9 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           <PrivacyButton />
           <ConnPill />
+          <NavLink to="/assistant" className="btn ghost icon jarvis-btn" aria-label="JARVIS" title="JARVIS"><Sparkles size={19} /></NavLink>
           <AccountButton />
-          <NavLink to="/notifications" className="btn ghost icon" aria-label={t("Benachrichtigungen")} style={{ position: "relative" }}>
+          <NavLink to="/notifications" className="btn ghost icon bell-btn" aria-label={t("Benachrichtigungen")} style={{ position: "relative" }}>
             <Bell size={19} />
             {notifCount > 0 && <span className="dot error" style={{ position: "absolute", top: 8, right: 9 }} />}
           </NavLink>

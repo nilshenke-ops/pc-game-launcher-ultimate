@@ -750,7 +750,7 @@ test("Insel-Aussehen: Vorlage erst als Vorschau, „Übernehmen“ speichert auf
   await pc.goto(`${COMPANION}/#/island`);
   await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-style", "neon");
   await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-eye-size", "l");
-  expect(await pc.locator(".isl-eyes i").first().evaluate((e) => getComputedStyle(e).backgroundColor)).toBe("rgb(244, 114, 182)");
+  await expect.poll(() => pc.locator(".isl-eyes i").first().evaluate((e) => getComputedStyle(e).backgroundColor)).toBe("rgb(244, 114, 182)"); // the colour fades in
   // Another device (here a second connection with the admin right) changes the look: the island window follows without reloading.
   await adminRpc("island.configure", { look: { style: "blue", opacity: 70 } });
   await expect(pc.locator(".isl-host")).toHaveAttribute("data-isl-style", "blue", { timeout: 15000 });

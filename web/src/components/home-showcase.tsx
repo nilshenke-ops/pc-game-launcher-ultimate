@@ -13,6 +13,8 @@ import { addPoint, cleanName, homeGames, homeQuick, homeRecent, NAME_KEY, perfSt
 import type { LibraryItem, MetricsSample } from "../lib/types";
 import { gradientFor } from "../lib/format";
 import { Art, useLaunch } from "./launch-tiles";
+import { BrandLogo } from "./brand-logo";
+import { brandById } from "../lib/brands";
 
 // ------------------------------------------------------------------ the name on the greeting (this device only)
 let name = cleanName(readJson<string>(NAME_KEY)) || "";
@@ -38,6 +40,19 @@ function ControllerArt() {
       {[[408, 130], [434, 156], [408, 182], [382, 156]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="13" fill="#fff" opacity=".26" stroke="#fff" strokeOpacity=".5" />)}
     </svg>
   );
+}
+
+
+/** Own simple marks for the launcher shortcuts (a ring with an X, a shopping bag with four panes) – plain shapes, white. */
+function XboxMark() {
+  return <svg viewBox="0 0 48 48" width="62%" height="62%" aria-hidden><defs><mask id="hs-x"><rect width="48" height="48" fill="#fff" /><path d="M15 15c5 5 13 13 18 18M33 15C28 20 20 28 15 33" stroke="#000" strokeWidth="4.6" strokeLinecap="round" fill="none" /></mask></defs><circle cx="24" cy="24" r="21" fill="#fff" mask="url(#hs-x)" /></svg>;
+}
+function BagMark() {
+  return <svg viewBox="0 0 48 48" width="62%" height="62%" aria-hidden><defs><mask id="hs-b"><rect width="48" height="48" fill="#fff" /><path d="M16 24h7v7h-7zM25 24h7v7h-7zM16 33h7v7h-7zM25 33h7v7h-7z" fill="#000" transform="translate(0,-4) scale(1)" /></mask></defs><path d="M17 17v-3a7 7 0 0114 0v3" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" /><rect x="8" y="17" width="32" height="25" rx="5" fill="#fff" mask="url(#hs-b)" /></svg>;
+}
+function SteamMark() {
+  const b = brandById("steam");
+  return b ? <BrandLogo brand={b} size="62%" color="#fff" /> : <Gamepad2 size={34} />;
 }
 
 function Spark({ points }: { points: number[] }) {
@@ -101,8 +116,8 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
       <div className="hs-head"><h2><Gamepad2 size={22} />{t("Deine Spiele")}</h2><Link to="/games" className="hs-all">{t("Alle anzeigen")} <ArrowRight size={14} /></Link></div>
       <div className="hs-tiles">
         {games.map((g) => <GameTile key={g.id} item={g} launch={launch} busy={launching.has(g.id)} />)}
-        {games.length === 0 && [["/steam", "Steam"], ["/gamepass", "Game Pass"], ["/launchers", t("Launcher")]].map(([to, label]) => (
-          <Link key={to} to={to} className="hs-tile link"><span className="hs-tile-art plain"><Gamepad2 size={34} /></span><span className="hs-tile-name">{label}</span><span className="hs-tile-go"><ArrowRight size={16} /></span></Link>
+        {games.length === 0 && [["/steam", "Steam", <SteamMark key="s" />], ["/launchers", t("Xbox App"), <XboxMark key="x" />], ["/gamepass", "Game Pass", <BagMark key="g" />]].map(([to, label, mark]) => (
+          <Link key={to as string} to={to as string} className="hs-tile link"><span className="hs-tile-art logo" style={{ background: gradientFor(label as string) }}>{mark}</span><span className="hs-tile-name">{label}</span><span className="hs-tile-go"><ArrowRight size={16} /></span></Link>
         ))}
         <Link to="/games" className="hs-tile add" aria-label={t("Spiel hinzufügen")}><span className="hs-tile-art plain"><Plus size={40} /></span><span className="hs-tile-name">{t("Spiel hinzufügen")}</span></Link>
       </div>
@@ -145,14 +160,14 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
       <div className="hs-eyebrow">{t("Willkommen zurück")}</div>
       <h1 className="hs-title big">{t("Deine Gaming-Zentrale")}</h1>
       <p className="hs-sub">{t("Spiele. Apps. Alles an einem Ort.")}</p>
-      <div className="hs-actions">{start}<button type="button" className="hs-edit" onClick={onEdit}><LayoutDashboard size={16} />{t("Anpassen")}</button></div>
+      <div className="hs-actions">{start}<button type="button" className="hs-edit" onClick={onEdit} aria-label={t("Anpassen")}><LayoutDashboard size={16} /><span className="hs-edit-t">{t("Anpassen")}</span></button></div>
     </div>
   ) : (
     <div className="hs-hero">
       {(variant === "chrome" || variant === "chromelight") && <div className="hs-eyebrow line">{t("PC Game Launcher Ultimate")}</div>}
       <h1 className="hs-title">{t("Hallo {n}!", { n: greeting })} <span className="hs-wave" aria-hidden>{variant === "chrome" || variant === "chromelight" ? "" : "👋"}</span></h1>
       <p className="hs-sub">{variant === "chrome" || variant === "chromelight" ? t("Deine Gaming-Zentrale – einfach. schnell. modern.") : t("Deine Gaming-Zentrale – einfach. schnell. überall.")}</p>
-      {variant !== "stats" && <div className="hs-actions">{start}<button type="button" className="hs-edit" onClick={onEdit}><LayoutDashboard size={16} />{t("Anpassen")}</button></div>}
+      {variant !== "stats" && <div className="hs-actions">{start}<button type="button" className="hs-edit" onClick={onEdit} aria-label={t("Anpassen")}><LayoutDashboard size={16} /><span className="hs-edit-t">{t("Anpassen")}</span></button></div>}
     </div>
   );
 
@@ -162,7 +177,7 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
   if (online && gpu) chips.push([<Gpu key="g" size={18} />, gpu.replace(/NVIDIA GeForce |AMD Radeon /i, "")]);
   if (online && ram) chips.push([variant === "controller" ? <Cpu key="c" size={18} /> : <MemoryStick key="r" size={18} />, ram]);
   const statusCard = (
-    <Link to="/diagnostics" className={`hs-status ${view.tone}`} aria-label={t("Verbindungsstatus: {s}", { s: t(view.label) })}>
+    <Link to="/diagnostics" className={`hs-status ${view.tone}${online ? " is-online" : ""}`} aria-label={t("Verbindungsstatus: {s}", { s: t(view.label) })}>
       <div className="hs-ring" aria-hidden><span><Monitor size={40} /></span></div>
       <div className="hs-status-body">
         <b className="hs-status-title">{online ? t("PC verbunden") : t(view.short)}</b>

@@ -640,6 +640,8 @@ export const en: Record<string, string> = {
   "Suche nach Spielen, Apps …": "Search games, apps …",
   "Hauptmenü": "Main menu",
   "Alles bereit!": "All set!",
+  "Xbox App": "Xbox app",
+  "Alle Bereiche öffnen": "Open all areas",
   "Zuletzt gespielt starten": "Start last played",
   "Dein zuletzt gestartetes Spiel oder Programm mit einem Tipp starten": "Start your last launched game or program with one tap",
   "Starten, anhalten, zurücksetzen – läuft auch bei geschlossener Insel weiter": "Start, pause, reset – keeps running when the island is closed",
