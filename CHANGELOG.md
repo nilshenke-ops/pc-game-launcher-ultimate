@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.95.0 – 2026-11-04
+### Verbessert
+- JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln
+- Das Panel klappt beim Schließen weich zu (statt zu verschwinden); die Augen wechseln die Form zwischen Stimmungen fließend
+### Neu
+- Mehr Leben: Die Augen schauen im Leerlauf gelegentlich umher und „atmen“, der Roboter im Panel wippt; ein Tippen auf die Insel löst eine Welle aus; bei „Erledigt“ sprühen kleine Funken; bei Musik läuft mit jedem Beat eine Welle über die Augen; beim Nachdenken springen drei Punkte hinter dem Text
+- Mit „weniger Bewegung“ bleibt alles ruhig
+
 ## 2.94.0 – 2026-11-04
 ### Neu
 - JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen

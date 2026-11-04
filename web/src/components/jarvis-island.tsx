@@ -101,6 +101,27 @@ function TimerRing({ progress }: { progress: number }) {
   );
 }
 
+
+/** Keeps something on screen for `ms` after it should go, so it can play its exit animation. */
+function useExit(show: boolean, ms: number) {
+  const [mounted, setMounted] = useState(show);
+  useEffect(() => {
+    if (show) { setMounted(true); return; }
+    const id = window.setTimeout(() => setMounted(false), ms);
+    return () => window.clearTimeout(id);
+  }, [show, ms]);
+  return mounted;
+}
+
+/** A burst of small sparks when JARVIS finishes something (pure CSS, one element per spark, gone after a second). */
+function Confetti() {
+  return (
+    <span className="isl-confetti" aria-hidden>
+      {Array.from({ length: 12 }, (_, i) => <i key={i} style={{ ["--a" as string]: `${i * 30 + (i % 2 ? 8 : -6)}deg`, ["--d" as string]: `${26 + (i % 3) * 9}px`, ["--s" as string]: `${i * 12}ms` } as CSSProperties} />)}
+    </span>
+  );
+}
+
 /** The island page (own window of the Windows companion; opened in a browser it shows the same at the top). */
 export function JarvisIsland() {
   const s = useIsland();
@@ -120,6 +141,8 @@ export function JarvisIsland() {
   const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
   const hostRef = useRef<HTMLDivElement>(null);
+  const panelMounted = useExit(open, 220);
+  const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const online = conn.auth === "ok" && conn.phase === "online";
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
   const size = islandSize({ open, ask: !!ask, hover, mood, notice: !!notice });
@@ -190,6 +213,8 @@ export function JarvisIsland() {
   const timerText = live ? `${tm.pomo ? t(POMO_LABEL[tm.pomo.phase]) : t("Fokus")} · ${clock(live.left)}` : null;
   const text = ask ? t("JARVIS fragt: {a}?", { a: ask.label }) : mood === "thinking" ? t("JARVIS denkt nach …") : mood === "listening" ? t("JARVIS hört zu …")
     : (mood === "happy" || mood === "error") && s.last ? s.last.text : notice ? notice.text : timerText ? timerText : mood === "dancing" && s.music ? t("Musik läuft") : game ? (gameTime ? `${game.name} · ${gameTime}` : game.name) : t("JARVIS – antippen für Widgets");
+  // A counting text (timer, play time) keeps one element so only real changes of the message animate.
+  const textKey = timerText && text === timerText ? "timer" : game && text.startsWith(game.name) ? `game:${game.name}` : text;
   // The eyes follow the mouse a little (a few pixels) while it is over the island.
   const follow = (e: React.MouseEvent) => {
     const el = hostRef.current; if (!el) return;
@@ -202,14 +227,21 @@ export function JarvisIsland() {
 
   return (
     <div ref={hostRef} className={`isl-host s-${size} h-${mood}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
+      {mood === "happy" && s.last && <Confetti key={s.last.at} />}
+      {mood === "dancing" && s.music && s.music.beatAt > 0 && <span className="isl-beat" key={s.music.beatAt} aria-hidden />}
       <div className={`isl m-${mood}`}>
-        <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} onClick={() => setOpen((o) => !o)}>
+        <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} onClick={(e) => {
+          const id = Date.now(), x = e.clientX - e.currentTarget.getBoundingClientRect().left;
+          setRipples((r) => [...r.slice(-3), { id, x }]); window.setTimeout(() => setRipples((r) => r.filter((q) => q.id !== id)), 600);
+          setOpen((o) => !o);
+        }}>
+          {ripples.map((r) => <span key={r.id} className="isl-ripple" style={{ left: r.x }} aria-hidden />)}
           <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); setNow(Date.now()); }} />
           {mood === "dancing" && s.music && <Bars level={s.music.level} />}
           {live && size === "notch" && <span className="isl-live"><TimerRing progress={live.progress} />{clock(live.left)}</span>}
           {size !== "notch" && live && !ask && <TimerRing progress={live.progress} />}
           {notice && size !== "notch" && !ask && <Bell size={15} className="isl-bell" aria-hidden />}
-          {size !== "notch" && <span className="isl-text" key={text}>{text}</span>}
+          {size !== "notch" && <span className="isl-text" key={textKey}>{text}{mood === "thinking" && <span className="isl-dots" aria-hidden><i /><i /><i /></span>}</span>}
         </button>
         {size !== "notch" && !ask && <span className="isl-time">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
         {ask && (
@@ -219,8 +251,8 @@ export function JarvisIsland() {
           </span>
         )}
       </div>
-      {open && (
-        <div className="isl-panel" role="dialog" aria-label={t("JARVIS-Insel")}>
+      {panelMounted && (
+        <div className={`isl-panel${open ? "" : " closing"}`} role="dialog" aria-label={t("JARVIS-Insel")}>
           <div className="isl-card isl-jarvis">
             <RobotHead mood={mood} />
             <div className="isl-main">

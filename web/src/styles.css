@@ -2237,3 +2237,52 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
   .isl-eyes { transform: none; transition: none; } .isl-card, .isl-pill { transition: none; }
 }
 [data-motion="reduce"] .isl-text, [data-motion="reduce"] .isl-panel, [data-motion="reduce"] .isl-panel > *, [data-motion="reduce"] .isl-grid > *, [data-motion="reduce"] .isl-host::after { animation: none !important; }
+
+/* ================================================================== JARVIS island: smoother, springier motion (2.95) */
+.isl-host { --spring: linear(0, 0.0384, 0.1365, 0.2704, 0.4207, 0.5718, 0.7125, 0.8354, 0.9364, 1.0142, 1.0696, 1.1045, 1.1223, 1.1262, 1.1198, 1.1064, 1.089, 1.0699, 1.0509, 1.0335, 1.0184, 1.0061, 0.9968, 0.9903, 0.9863, 0.9844, 0.9841, 0.9851, 0.9869, 0.9892, 0.9916, 0.994, 0.9961, 0.998, 0.9995, 1.0006, 1); --spring-soft: linear(0, 0.0172, 0.0622, 0.1262, 0.202, 0.2841, 0.3681, 0.4508, 0.5298, 0.6034, 0.6708, 0.7312, 0.7846, 0.831, 0.8707, 0.9043, 0.9322, 0.955, 0.9732, 0.9876, 0.9986, 1.0067, 1.0125, 1.0163, 1.0186, 1.0197, 1.0199, 1.0193, 1.0183, 1.0169, 1.0154, 1.0137, 1.0121, 1.0104, 1.0089, 1.0075, 1); }
+/* real spring curves instead of plain easing; transform and opacity only (cheap, no blur on big areas) */
+.isl-text { animation: isl-text-in .5s var(--spring-soft) both; }
+@keyframes isl-text-in { from { opacity: 0; transform: translateY(8px); } }
+.isl-ask { animation: isl-text-in .5s .08s var(--spring-soft) both; }
+.isl-ask .btn:nth-child(1) { animation: isl-pop-in .55s .1s var(--spring) both; } .isl-ask .btn:nth-child(2) { animation: isl-pop-in .55s .18s var(--spring) both; }
+@keyframes isl-pop-in { from { opacity: 0; transform: scale(.6); } }
+.isl-panel { animation: isl-panel-in .62s var(--spring-soft) both; will-change: transform, opacity; }
+@keyframes isl-panel-in { from { opacity: 0; transform: translateY(-14px) scale(.95); } }
+.isl-panel.closing { animation: isl-panel-out .2s ease-in both; pointer-events: none; }
+@keyframes isl-panel-out { to { opacity: 0; transform: translateY(-8px) scale(.97); } }
+.isl-panel > *, .isl-grid > * { animation-duration: .62s; animation-timing-function: var(--spring); }
+.isl-panel.closing > *, .isl-panel.closing .isl-grid > * { animation: none; }
+@keyframes isl-card-in { from { opacity: 0; transform: translateY(16px) scale(.92); } }
+.isl { transition: height .34s var(--spring-soft); }
+.isl-eyes i { transition: width .3s var(--spring), height .3s var(--spring), border-radius .25s ease, background-color .25s ease, box-shadow .25s ease, border-color .25s ease; }
+.isl-bars i { transition: transform .09s ease-out; }
+.isl-pill { position: relative; overflow: hidden; border-radius: 14px; }
+/* tap ripple on the island */
+.isl-ripple { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; background: rgba(255,255,255,0.28); pointer-events: none; animation: isl-tap .6s ease-out both; }
+@keyframes isl-tap { to { transform: scale(16); opacity: 0; } }
+/* alive when nothing happens: the eyes glance around now and then and breathe */
+.isl-host.h-idle .isl-eyes:not(.big) { animation: isl-saccade 9s ease-in-out infinite, isl-breathe-s 4.5s ease-in-out infinite; }
+@keyframes isl-saccade { 0%, 38%, 100% { translate: 0 0; } 42%, 50% { translate: -3px 0; } 54%, 62% { translate: 3px -1px; } 66% { translate: 0 0; } }
+@keyframes isl-breathe-s { 0%, 100% { scale: 1; } 50% { scale: 1.07; } }
+.isl-robot.m-idle .isl-head { animation: isl-bob 3.2s ease-in-out infinite; }
+@keyframes isl-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+/* thinking dots */
+.isl-dots { display: inline-flex; gap: 3px; margin-left: 6px; vertical-align: middle; }
+.isl-dots i { width: 4px; height: 4px; border-radius: 50%; background: currentColor; animation: isl-dot 1s ease-in-out infinite; }
+.isl-dots i:nth-child(2) { animation-delay: .15s; } .isl-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes isl-dot { 0%, 80%, 100% { transform: translateY(0); opacity: .4; } 40% { transform: translateY(-3px); opacity: 1; } }
+/* sparks when JARVIS is done, a ripple on every beat of the music */
+.isl-confetti { position: absolute; left: 26px; top: 20px; pointer-events: none; z-index: 2; }
+.s-notch .isl-confetti { left: 50%; }
+.isl-confetti i { position: absolute; width: 5px; height: 5px; margin: -2px; border-radius: 50%; background: var(--isl-ring, #6ee7a0); opacity: 0; animation: isl-spark .85s var(--s) cubic-bezier(.2,.7,.3,1) both; }
+@keyframes isl-spark { 0% { opacity: 1; transform: rotate(var(--a)) translateX(0) scale(1); } 100% { opacity: 0; transform: rotate(var(--a)) translateX(var(--d)) scale(.3); } }
+.isl-beat { position: absolute; left: 22px; top: 20px; width: 10px; height: 10px; margin: -5px; border-radius: 50%; border: 2px solid var(--isl-ring, #ff6b81); pointer-events: none; animation: isl-beat .55s ease-out both; }
+.s-notch .isl-beat { left: 50%; }
+@keyframes isl-beat { from { transform: scale(1); opacity: .8; } to { transform: scale(5); opacity: 0; } }
+.isl-card:active { transform: scale(.98); }
+@media (prefers-reduced-motion: reduce) {
+  .isl-ripple, .isl-confetti, .isl-beat, .isl-dots i, .isl-ask .btn, .isl-host .isl-eyes, .isl-robot .isl-head, .isl-panel.closing { animation: none !important; }
+  .isl, .isl-eyes i { transition: none; }
+  .isl-confetti, .isl-beat { display: none; }
+}
+[data-motion="reduce"] .isl-ripple, [data-motion="reduce"] .isl-confetti, [data-motion="reduce"] .isl-beat, [data-motion="reduce"] .isl-host.h-idle .isl-eyes { animation: none !important; }

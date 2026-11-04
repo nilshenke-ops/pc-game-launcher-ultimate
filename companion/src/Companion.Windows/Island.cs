@@ -101,11 +101,15 @@ sealed class IslandForm : Form
     // The window never "jumps" between sizes: it grows and shrinks like a drop. The window itself is first made large enough
     // for both sizes (cheap – no re-layout of the page per frame); only its visible shape (a rounded region anchored at the
     // top edge) is animated, and at the end the window gets exactly the target size.
-    readonly System.Windows.Forms.Timer _anim = new() { Interval = 12 };
+    readonly System.Windows.Forms.Timer _anim = new() { Interval = 8 };
     readonly System.Diagnostics.Stopwatch _clock = new();
-    const int AnimMs = 260;
+    long _lastTicks;
+    // A real spring (not a fixed curve): it starts fast, overshoots a little and settles – and it keeps its speed when the
+    // size is changed again in the middle of a movement, so quick hover in/out never looks jerky.
+    const double Stiffness = 520, Damping = 30, MaxMs = 1000;
+    double _p, _v;                  // progress 0 → 1 of the current movement and its speed
     int _curW, _curH;               // the visible shape right now (device pixels)
-    int _fromW, _fromH, _toW, _toH; // animation start / target
+    int _fromW, _fromH, _toW, _toH; // movement start / target
     int _toRadius;
     bool _animating;
 
@@ -138,12 +142,15 @@ sealed class IslandForm : Form
             SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
             return;
         }
-        // From what is visible now to the new size; the window covers both while it moves.
+        // From what is visible now to the new size; the window covers both (plus room for the overshoot) while it moves.
         _fromW = _curW; _fromH = _curH; _toW = w; _toH = h; _toRadius = r;
-        var uw = Math.Max(Math.Max(_fromW, _toW), 1); var uh = Math.Max(Math.Max(_fromH, _toH), 1);
+        var uw = Math.Max(_fromW, _toW) + (int)(Math.Abs(_toW - _fromW) * 0.22) + 4;
+        var uh = Math.Max(_fromH, _toH) + (int)(Math.Abs(_toH - _fromH) * 0.22) + 4;
         Bounds = new Rectangle(TargetX(uw, screen), screen.Top, uw, uh);
         SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
-        _clock.Restart(); _animating = true;
+        // A running movement keeps its speed: continue from the shape that is visible now (progress restarts at 0 with the same speed share).
+        _p = 0; _v = _animating ? _v * 0.6 : 0;
+        _clock.Restart(); _lastTicks = 0; _animating = true;
         _anim.Start();
     }
 
@@ -151,16 +158,20 @@ sealed class IslandForm : Form
     {
         try
         {
-            var t = Math.Min(1.0, _clock.ElapsedMilliseconds / (double)AnimMs);
-            // Ease-out with a tiny spring: fast start, soft landing (never beyond the covering window).
-            var k = 1 - Math.Pow(1 - t, 3);
-            var w = (int)Math.Round(_fromW + (_toW - _fromW) * k);
-            var h = (int)Math.Round(_fromH + (_toH - _fromH) * k);
-            _curW = Math.Max(1, w); _curH = Math.Max(1, h);
+            var now = _clock.ElapsedTicks;
+            var dt = Math.Clamp((now - _lastTicks) / (double)System.Diagnostics.Stopwatch.Frequency, 0.001, 0.05);
+            _lastTicks = now;
+            // Integrate the spring in small steps (stable at any frame rate).
+            var steps = Math.Max(1, (int)Math.Ceiling(dt / 0.004)); var h = dt / steps;
+            for (var i = 0; i < steps; i++) { var a = Stiffness * (1 - _p) - Damping * _v; _v += a * h; _p += _v * h; }
+            var w = (int)Math.Round(_fromW + (_toW - _fromW) * _p);
+            var hh = (int)Math.Round(_fromH + (_toH - _fromH) * _p);
+            _curW = Math.Max(1, Math.Min(w, Width)); _curH = Math.Max(1, Math.Min(hh, Height));
             Shape(_curW, _curH, _toRadius, Width);
-            if (t < 1.0) return;
+            var settled = Math.Abs(1 - _p) < 0.002 && Math.Abs(_v) < 0.02;
+            if (!settled && _clock.ElapsedMilliseconds < MaxMs) return;
             // Done: the window gets exactly the target size.
-            _anim.Stop(); _animating = false;
+            _anim.Stop(); _animating = false; _v = 0;
             Place(false);
         }
         catch (Exception ex) { _anim.Stop(); _animating = false; Log.Warn("island", "Animation abgebrochen: " + ex.Message); Place(false); }

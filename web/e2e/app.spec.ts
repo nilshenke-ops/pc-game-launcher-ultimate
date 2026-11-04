@@ -2144,6 +2144,7 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await panel.getByRole("button", { name: "Fragen" }).click();
   await expect(panel.locator(".isl-last")).toContainText("CPU");
   await panel.getByRole("button", { name: "Schließen" }).click();
+  await expect(panel).toHaveCount(0, { timeout: 3000 }); // it plays its exit animation first, then it is gone
   // The focus timer keeps running with the panel shut: the closed island shows the time with a progress ring.
   await expect(async () => { await leave(); await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/, { timeout: 600 }); }).toPass({ timeout: 10000 });
   await expect(bar.locator(".isl-live")).toContainText(/[45]:[0-5]\d/);
