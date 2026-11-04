@@ -1,33 +1,27 @@
 {
-  "version": "2.97.0",
+  "version": "2.98.0",
   "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.97.0/PCGameLauncherCompanion.exe",
-  "size": 88489358,
-  "sha256": "c3153d0fc88fab709a51808ad1c991eaea93613ea2e9bb1c3f88e5d467e6bd1a",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.98.0/PCGameLauncherCompanion.exe",
+  "size": 88490767,
+  "sha256": "014bfd951ec6a64115fc06e8eaf78c9ec181e64b3029f954fa4c8c091f693bc8",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.97.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.97.0/PCGameLauncherCompanion-2.97.0-win-x64.zip",
-    "size": 82985593,
-    "sha256": "89dc6847cb95836b5ee2aebded83aa26bd1d3066ed5eb80d3bad80b675912ff8"
+    "fileName": "PCGameLauncherCompanion-2.98.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.98.0/PCGameLauncherCompanion-2.98.0-win-x64.zip",
+    "size": 82986862,
+    "sha256": "e60e4077ab0197b52440fa8298ebad0aa5f1e4bb9274d3eeb829603db57ac22b"
   },
-  "notes": "Die JARVIS-Insel gibt es jetzt auch in der App selbst (Handy und Webseite): eine kleine schwebende Insel oben, Tippen öffnet JARVIS, Timer, Spiel und alle Widgets; abschaltbar unter JARVIS → „Insel auch in dieser App zeigen“ (nur auf diesem Gerät) · Die Begrüßung nimmt den Namen deines Kontos („Hallo Nils!“); ein Tipp auf den Namen öffnet „Wie soll JARVIS dich nennen?“ · Viel mehr Logos statt Buchstaben bei Programmen: u. a. Adobe Acrobat, Canva, Copilot, ChatGPT, Claude, CurseForge, Dolby, iCloud, Instagram, Intel, KeePass, HP, Microsoft Edge/Store/365/Teams/OneDrive/Outlook, Medal, Modrinth, Logitech, Docker, Figma, Python, VPN- und Passwort-Programme",
+  "notes": "Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“) · Die Insel in der App passt sich dem Design an (Glas in den Farben des gewählten Designs, Augen und Lichtkranz in der Akzentfarbe, auch im hellen Design lesbar) · Originale Logos: Xbox (Kugel) und Microsoft Store (Tasche) als echte Formen, auf der Startseite die Kachel „Game Pass“ mit dem Original-Logo (Kugel mit „GAME PASS“) statt eigener Zeichnungen; Logos auf Kacheln sind einfarbig – auf dunklem Glas weiß, im hellen Design dunkel (nichts Grünes mehr im grauen Design)",
   "changes": {
-    "neu": [
-      "Die JARVIS-Insel gibt es jetzt auch in der App selbst (Handy und Webseite): eine kleine schwebende Insel oben, Tippen öffnet JARVIS, Timer, Spiel und alle Widgets; abschaltbar unter JARVIS → „Insel auch in dieser App zeigen“ (nur auf diesem Gerät)",
-      "Die Begrüßung nimmt den Namen deines Kontos („Hallo Nils!“); ein Tipp auf den Namen öffnet „Wie soll JARVIS dich nennen?“",
-      "Viel mehr Logos statt Buchstaben bei Programmen: u. a. Adobe Acrobat, Canva, Copilot, ChatGPT, Claude, CurseForge, Dolby, iCloud, Instagram, Intel, KeePass, HP, Microsoft Edge/Store/365/Teams/OneDrive/Outlook, Medal, Modrinth, Logitech, Docker, Figma, Python, VPN- und Passwort-Programme",
-      "Begleiter: Ein Programm, dessen Icon nicht gelesen werden konnte, wird noch zweimal versucht (Startmenü-Einträge bekommen ihr Icon oft erst später)"
-    ],
+    "neu": [],
     "verbessert": [
-      "Programm-Kacheln und die Schnellstart-Kacheln im Glas-Look der Startseite (statt dunkler Kästen und bunter Flächen)",
-      "Startseite: Die Zeile mit Windows, Grafikkarte und Arbeitsspeicher ist weg"
+      "Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“)",
+      "Die Insel in der App passt sich dem Design an (Glas in den Farben des gewählten Designs, Augen und Lichtkranz in der Akzentfarbe, auch im hellen Design lesbar)",
+      "Originale Logos: Xbox (Kugel) und Microsoft Store (Tasche) als echte Formen, auf der Startseite die Kachel „Game Pass“ mit dem Original-Logo (Kugel mit „GAME PASS“) statt eigener Zeichnungen; Logos auf Kacheln sind einfarbig – auf dunklem Glas weiß, im hellen Design dunkel (nichts Grünes mehr im grauen Design)",
+      "Handy-Kopfleiste ohne Überlappung (bei 360 bis 430 Pixel Breite gemessen): runder Menü-Knopf, Punkt, Insel in der eigenen Lücke, rechts Suche, Anmeldung, Benachrichtigungen"
     ],
-    "behoben": [
-      "Handy-Startseite war verbuggt: Spiele-Kacheln wurden durch die 44-Pixel-Regel für Knöpfe plattgedrückt und die Seite war breiter als der Bildschirm („Alle anzeigen“ und Kacheln rechts abgeschnitten)",
-      "Browser-Test der Insel-Augenfarbe wartet auf die Einblendung"
-    ]
+    "behoben": []
   },
-  "signature": "pykd8Wszr/bgrOzbDtWJi/mIpOILIw8Xd2fRjq6sZhMND47fNupQPj4z3zUP404dJVrfG9Tk3h4pHyq6vRRbpQ=="
+  "signature": "1KidjSPvLH6H0mnbjrkw9obFLgw+i0/RK32LF1HXsFA0EVHogLacFX7NtlFGgUEMbZKqFenncxW/OavTji9AZA=="
 }
