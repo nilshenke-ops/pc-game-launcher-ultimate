@@ -107,10 +107,12 @@ Umgebungsvariablen (nur für Tests/eigene Server, nicht nötig im Normalbetrieb)
 - Mit echtem Claude-/Gemini-Schlüssel wurde in der Entwicklungsumgebung nicht getestet (keine Schlüssel vorhanden) – geprüft gegen Nachbildungen der offiziellen Schnittstellen und gegen die echte Fehlerantwort von Google.
 
 
-## 7. „Automatisch“ und die freie KI ohne PC (ab 3.1.0)
+## 7. KI-Verwaltung, „Automatisch“ und die freie KI ohne PC (ab 3.2.0)
 
-- **Modus „Automatisch“ (`smart`)**: Befehle und PC-Werte beantwortet der eingebaute Assistent selbst (sicher, sofort, kostenlos); alles andere geht der Reihe nach an Gemini → KI-Router → lokale KI (Ollama, nicht während eines Spiels, außer erlaubt) → eingebauter Assistent. Übersprungen wird bei Limit, Ausfall, Netzfehler, Zeitüberschreitung oder abgelehntem Schlüssel; Abbrechen wird nie übersprungen. Die Antwort nennt die KI und den Grund des Wechsels. Ein offener, fehlgeschlagener Gesprächsschritt bleibt nicht im Verlauf der KI hängen.
-- **Einrichtung**: der erste kostenlose Zugang (Gemini-Schlüssel, Router, lokale KI) stellt von „eingebaut“ auf „Automatisch“ um. `assistant.quickRouter` richtet OpenRouter (kostenlose Modelle, größter Kontext zuerst) oder Groq mit einem Schlüssel ein, höchstens drei Modelle; nur am PC.
-- **Kein ChatGPT**: OpenAI bietet keinen kostenlosen API-Zugang; angeboten werden nur Dienste mit kostenlosem Tarif (Gemini, OpenRouter-Gratismodelle, Groq, Ollama).
-- **Websuche**: bleibt wie in 2.82 (Claude-Websuche oder freie Quellen). Gemini wird ohne „Google-Suche“-Werkzeug benutzt, weil dessen kostenloses Kontingent nicht verlässlich zugesagt ist und Kosten entstehen könnten.
-- **Ohne PC**: `lib/free-ai.ts` – Pollinations (`text.pollinations.ai/openai`), nur nach „Ja“ je Gerät, nur Frage + letzte Nachrichten, 20 Fragen pro Stunde, Antworten ohne Markup/Links, Kennzeichnung „Freie KI ohne PC“. Ist die Frage eine App-Frage, antwortet weiter die eingebaute Hilfe.
+- **Reihenfolge**: OpenRouter → Groq → Pollinations → Ollama (in der KI-Verwaltung änderbar). Befehle und PC-Werte beantwortet der eingebaute Assistent selbst; nur allgemeine Fragen gehen an eine KI. „Automatisch zum nächsten wechseln“ aus: nur der erste aktive Anbieter wird gefragt.
+- **Kostenwächter** (`FreeAi.cs`, `CostGuard`): feste Adressen; OpenRouter nur `openrouter/free` und `:free`-Modelle, deren Preise alle 0 sind (Liste ≤ 5 Min alt, sonst neu geprüft; 30 Min nicht prüfbar = Anbieter nicht benutzt), zusätzlich `provider.max_price = 0` in jeder Anfrage; Groq nur mit Bestätigung „kostenloser Tarif“; Pollinations nur anonym ohne Schlüssel, nur mit Zustimmung, „Budget erreicht“-Meldungen sind Fehler. 429 → Pause (Retry-After, Tageslimit bis Mitternacht UTC) und nächster Anbieter.
+- **Schlüssel**: nur direkt am PC oder über die verschlüsselte Relay-Verbindung (RPC `ai.set`), Form wird geprüft, geschützt gespeichert (`freeai.json`), nie im Status. Nicht in der Offline-Warteschlange der Seite.
+- **Modelle** am PC: `ai.models`, Test: `ai.test` (echte Mini-Frage, zählt als eine Anfrage), Status: `ai.status`.
+- **Kein ChatGPT**: OpenAI bietet keinen kostenlosen API-Zugang. **Kein Gemini** mehr in „Automatisch“ (Google-Abhängigkeit); als eigene Auswahl bleibt es, wenn ein Schlüssel eingerichtet ist.
+- **Websuche**: bleibt wie in 2.82 (Claude-Websuche oder freie Quellen).
+- **Ohne PC**: `lib/free-ai.ts` – Pollinations im Browser, nur nach „Ja“ je Gerät, 20 Fragen pro Stunde, Budget-Meldungen werden erkannt und der Dienst pausiert 30 Minuten.

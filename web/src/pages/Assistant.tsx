@@ -5,7 +5,7 @@ import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, confirmDialog, PageHead, Switch } from "../components/ui";
-import { FreeAiSetup, hasFreeAi, type AiStatus } from "../components/free-ai-setup";
+import { AiManager } from "../components/ai-manager";
 import { CHAT_KEY, emptyChat, formatCost, jarvisChips, offlineExamples, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
 import { openJarvis, setJarvisEnabled, useJarvis } from "../lib/jarvis-session";
 import { speak, stopSpeaking } from "../lib/jarvis-voice";
@@ -135,7 +135,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
         {r.cites && <Sources cites={r.cites} info={r.research} />}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
         {!r.cancelled && !r.actions.some((a) => a.kind === "lookupChoice" || a.kind === "bingoChoice") && (
@@ -339,7 +339,7 @@ export default function Assistant() {
         text={jv.enabled ? t("Sag oder schreib mir, was ich tun soll – ich starte Spiele, stelle Profile ein, ordne deine Website und untersuche Ruckler. Nur Gaming, nur auf deinen Auftrag.") : s?.claudeReady ? t("Frag alles zu deinem PC, deinen Spielen und der App. Antworten kommen von Claude – Befehle erledigt der lokale Assistent kostenlos.") : s?.mode === "ollama" ? t("Frag alles zu deinem PC, deinen Spielen und der App. Alles läuft auf deinem PC – 0 €, ohne Konto.") : t("Frag alles zu deinem PC, deinen Spielen und der App. Der lokale Assistent läuft auf deinem PC – ohne Internet und kostenlos.")}
         actions={<>
           <span className={`badge ${jv.active ? "ok" : ""}`} title={t("Nur solange diese Seite offen ist und JARVIS an ist. Ohne Auftrag tut JARVIS nichts.")}>{jv.active ? t("JARVIS aktiv") : jv.enabled ? (online ? t("JARVIS verbindet …") : t("JARVIS ohne PC")) : t("JARVIS aus")}</span>
-          {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "ollama" ? t("Lokale KI · 0 €") : s.mode === "router" && s.router?.ready ? t("KI-Router · {m}", { m: s.router.models[0] }) : s.mode === "gemini" && s.gemini?.keySet ? t("Gemini · kostenlos") : t("Lokal · 0 €")}</span>}
+          {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "smart" ? t("Automatisch · 0 €") : s.mode === "ollama" ? t("Lokale KI · 0 €") : s.mode === "router" && s.router?.ready ? t("KI-Router · {m}", { m: s.router.models[0] }) : s.mode === "gemini" && s.gemini?.keySet ? t("Gemini · kostenlos") : t("Lokal · 0 €")}</span>}
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />
@@ -350,11 +350,9 @@ export default function Assistant() {
       </Card>
       {online && <IslandSettingsCard />}
       {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich richte die App für dich ein (Design, Leiste, Home, Sprache), beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät. Allgemeine Fragen beantwortet die freie KI ohne Konto – nur mit deinem Ja, dann geht deine Frage an Pollinations. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
-      {online && s && !hasFreeAi(s as unknown as AiStatus) && (
-        <Card title={t("Kostenlose KI einrichten – dann beantwortet JARVIS auch allgemeine Fragen")}>
-          <FreeAiSetup online={online} onChanged={() => st.reload()} />
-        </Card>
-      )}
+      <Card title={t("KI-Verwaltung – kostenlose KI")}>
+        <AiManager online={online} onChanged={() => st.reload()} />
+      </Card>
 
       <Card className="as-chat">
         <div className="as-log" aria-live="polite">

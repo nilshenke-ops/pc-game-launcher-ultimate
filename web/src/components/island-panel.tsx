@@ -21,7 +21,7 @@ import { consumeSpoken, markSpoken, useVoiceInput } from "../lib/island-voice";
 import { speak } from "../lib/jarvis-voice";
 import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { readJson, writeJson } from "../lib/rpc";
-import { FreeAiSetup, hasFreeAi, type AiStatus } from "./free-ai-setup";
+import { AiManager, hasReadyAi, type AiOverview } from "./ai-manager";
 import { MessageCompose } from "./message-compose";
 import { parseMessageCommand, type Messenger } from "../lib/messaging";
 import { mainGame } from "../lib/running";
@@ -100,7 +100,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   useEvent("notification", () => { if (current === "inbox") inbox.reload(); });
 
   // Which AI answers: "Automatisch" (commands at the PC, questions per free AI with a spare) is the default; the chips switch to one AI for this question.
-  const ai = useRpc<AiStatus>("assistant.status", {}, ["assistant"], online && current === "jarvis");
+  const ai = useRpc<{ engines?: { id: string; label: string }[] }>("assistant.status", {}, ["assistant"], online && current === "jarvis");
+  const aiv = useRpc<AiOverview>("ai.status", {}, ["assistant"], online && current === "jarvis");
   const ENGINE_KEY = "pgl.island.engine";
   const [engine, setEngineState] = useState<string>(() => { try { return readJson<string>(ENGINE_KEY) ?? "smart"; } catch { return "smart"; } });
   const setEngine = (id: string) => { setEngineState(id); try { writeJson(ENGINE_KEY, id); } catch { /* storage blocked */ } };
@@ -313,7 +314,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     </div>
   );
 
-  const ENGINE_LABEL: Record<string, string> = { smart: "Automatisch", gemini: "Gemini", router: "Router", ollama: "Lokale KI", local: "Eingebaut" };
+  const ENGINE_LABEL: Record<string, string> = { smart: "Automatisch", openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations", gemini: "Gemini", router: "Router", ollama: "Lokale KI", local: "Eingebaut" };
   const noAiHere = !online && consent === "no";
   const jarvisTab = (
     <div className="isl2-chat">
@@ -350,9 +351,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         <button type="submit" className="isl2-send" disabled={!q.trim() || noAiHere || voice.listening} aria-label={t("Fragen")}><Send size={16} /></button>
       </form>
       <p className="tiny muted isl2-tip">{online ? t("Befehle („Starte WhatsApp“) erledigt der PC, Fragen beantwortet eine kostenlose KI – fällt eine aus, springt die nächste ein. Gesprochene Fragen werden laut beantwortet.") : t("Ohne PC: allgemeine Fragen beantwortet die freie KI ohne Konto (nur mit deinem Ja).")}</p>
-      <details className="isl2-setup" open={online && !!ai.data && !hasFreeAi(ai.data)}>
-        <summary>{t("Kostenlose KI einrichten")}{hasFreeAi(ai.data) ? ` · ${t("eingerichtet")}` : ""}</summary>
-        <FreeAiSetup online={online} onChanged={ai.reload} />
+      <details className="isl2-setup" open={online && !!aiv.data && !hasReadyAi(aiv.data)}>
+        <summary>{t("KI-Verwaltung")}{hasReadyAi(aiv.data) ? ` · ${t("eingerichtet")}` : ""}</summary>
+        <AiManager online={online} onChanged={() => { ai.reload(); aiv.reload(); }} />
       </details>
     </div>
   );

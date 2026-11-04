@@ -2657,3 +2657,27 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .isl2-composeapps, .isl2-composego { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .isl2-composego a.isl2-chip { display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
 .isl2-composego a.isl2-chip.off { opacity: .4; pointer-events: none; }
+
+/* KI-Verwaltung (JARVIS-Seite und Insel) */
+.aim { display: grid; gap: 10px; min-width: 0; }
+.aim-top { display: grid; gap: 6px; }
+.aim-cost { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; font-size: .84rem; }
+.aim-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.aim-name { flex: 1 1 90px; min-width: 0; }
+.aim-no { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: .74rem; font-weight: 700; background: rgba(255,255,255,0.16); flex: none; }
+.aim-badge { font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: rgba(255,255,255,0.12); max-width: 100%; }
+.aim-badge.ready { background: rgba(80,200,140,0.3); } .aim-badge.cooldown { background: rgba(240,180,60,0.32); } .aim-badge.error { background: rgba(240,90,90,0.34); }
+.aim-moves { display: inline-flex; gap: 4px; }
+.aim-icon { width: 36px; height: 36px; border-radius: 11px; display: grid; place-items: center; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.1); color: inherit; cursor: pointer; }
+.aim-icon:disabled { opacity: .35; cursor: default; }
+.aim-switch { position: relative; width: 46px; height: 28px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.12); cursor: pointer; flex: none; transition: background .2s ease; }
+.aim-switch span { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .2s ease; }
+.aim-switch.on { background: rgba(80,200,140,0.7); } .aim-switch.on span { transform: translateX(18px); }
+.aim-switch:disabled { opacity: .4; cursor: default; }
+.aim-check { display: flex; gap: 8px; align-items: flex-start; margin: 6px 0; }
+.aim-check input { margin-top: 3px; width: 18px; height: 18px; flex: none; }
+.aim-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 6px; }
+.aim-models ul { max-height: 150px; overflow: auto; margin: 4px 0 0; padding-left: 18px; }
+.aim-card.cooldown { border-color: rgba(240,180,60,0.4); } .aim-card.error { border-color: rgba(240,90,90,0.45); }
+.aim details > summary { cursor: pointer; padding: 6px 0; font-size: .86rem; }
+@media (max-width: 520px) { .aim-name { flex-basis: 100%; } }

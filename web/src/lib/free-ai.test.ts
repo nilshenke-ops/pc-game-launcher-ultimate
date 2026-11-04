@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { askFreeAi, buildMessages, cleanAnswer, FREE_AI_PER_HOUR, FreeAiError, freeAiBudget, resetFreeAiBudget, setFreeAiConsent } from "./free-ai";
+import { askFreeAi, buildMessages, cleanAnswer, FREE_AI_PER_HOUR, FreeAiError, freeAiBudget, looksLikePaymentNotice, resetFreeAiBudget, resetFreeAiPause, setFreeAiConsent } from "./free-ai";
 
 const ok = (content: unknown, model = "gpt-oss-20b") => new Response(JSON.stringify({ choices: [{ message: { content } }], model }), { status: 200, headers: { "content-type": "application/json" } });
 
-beforeEach(() => { setFreeAiConsent("yes"); resetFreeAiBudget(); });
+beforeEach(() => { setFreeAiConsent("yes"); resetFreeAiBudget(); resetFreeAiPause(); });
 
 describe("Freie KI ohne PC", () => {
   it("sendet nur die Frage und die letzten Nachrichten – kein Schlüssel, keine Cookies, kein Referrer", async () => {
@@ -49,5 +49,21 @@ describe("Freie KI ohne PC", () => {
     for (let i = 0; i < before; i++) await askFreeAi("a", { fetcher: (async () => ok("ja")) as unknown as typeof fetch, now: t0 });
     await expect(askFreeAi("a", { fetcher: (async () => ok("ja")) as unknown as typeof fetch, now: t0 })).rejects.toThrow(new RegExp(`${FREE_AI_PER_HOUR} Fragen`));
     expect(freeAiBudget(t0 + 3_700_000)).toBe(FREE_AI_PER_HOUR);          // an hour later it is free again
+  });
+
+  it("die Budget-Meldung des anonymen Zugangs ist keine Antwort – und der Dienst wird danach eine Weile in Ruhe gelassen", async () => {
+    const notice = new Response(JSON.stringify({ model: "gpt-oss", choices: [{ message: { content: "The API key used for this request has reached its budget. Please [raise the key budget](https://enter.pollinations.ai/edit-key), then try again." } }], usage: { prompt_tokens: 0, completion_tokens: 0 } }), { status: 200 });
+    let calls = 0;
+    const fetcher = (async () => { calls++; return notice.clone(); }) as unknown as typeof fetch;
+    await expect(askFreeAi("Wie hoch ist der Mount Everest?", { fetcher, now: 1_000 })).rejects.toThrow(/aufgebraucht|Budget/);
+    await expect(askFreeAi("Und der K2?", { fetcher, now: 2_000 })).rejects.toThrow(/Weile/);
+    expect(calls).toBe(1);                                              // the second question did not even go out
+    await expect(askFreeAi("Und der K2?", { fetcher, now: 1_000 + 31 * 60_000 })).rejects.toThrow(FreeAiError);   // after the pause it is asked again (and gets the notice again)
+    expect(calls).toBe(2);
+  });
+  it("Zahlungswörter in einer echten, langen Antwort sind keine Meldung", () => {
+    expect(looksLikePaymentNotice("Please top up your credits.", 0)).toBe(true);
+    expect(looksLikePaymentNotice("Erwachsene brauchen etwa 7 bis 9 Stunden Schlaf.", 14)).toBe(false);
+    expect(looksLikePaymentNotice("Im Spiel kostet das Upgrade 500 Credits. ".repeat(20), 200)).toBe(false);
   });
 });

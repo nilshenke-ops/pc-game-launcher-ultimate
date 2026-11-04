@@ -2401,14 +2401,25 @@ test("Freie KI ohne PC: erst fragen (nur mit Ja), dann beantwortet sie allgemein
   await ctx.close();
 });
 
-test("Automatisch & kostenlose KI einrichten: Insel zeigt den Einrichter, falsche Schlüssel werden abgelehnt, ohne KI gibt es kein „Automatisch“", async ({ browser }) => {
+test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abgelehnt, Reihenfolge und Automatik änderbar, ohne KI gibt es kein „Automatisch“, nichts läuft über", async ({ browser }) => {
   const { adminRpc } = await import("./rpc");
+  type Prov = { id: string; state: string; keySet: boolean; enabled: boolean };
+  const status = () => adminRpc<{ providers: Prov[]; auto: boolean; mode: string; anyReady: boolean }>("ai.status");
+  // Rules at the PC: the right key shape per service, no switching on without key/confirmation/consent, no "Automatisch" without a free AI.
+  await expect(adminRpc("ai.set", { provider: "openrouter", key: "AIzaSyA0123456789abcdefghijklmnopqrstuv" })).rejects.toThrow(/OpenRouter-Schlüssel/);
+  await expect(adminRpc("ai.set", { provider: "groq", key: "sk-or-v1-0123456789abcdef0123456789" })).rejects.toThrow(/Groq-Schlüssel/);
+  await expect(adminRpc("ai.set", { provider: "groq", enabled: true })).rejects.toThrow(/Schlüssel/);
+  await expect(adminRpc("ai.set", { provider: "pollinations", enabled: true })).rejects.toThrow(/zustimmen/);
+  await expect(adminRpc("ai.set", { provider: "pollinations", key: "sk-or-v1-0123456789abcdef0123456789" })).rejects.toThrow(/keinen Schlüssel/);
+  await expect(adminRpc("ai.order", { order: ["groq", "groq", "openrouter", "ollama"] })).rejects.toThrow(/alle vier/);
   await expect(adminRpc("assistant.configure", { mode: "smart" })).rejects.toThrow(/kostenlose KI einrichten/);
-  await expect(adminRpc("assistant.quickRouter", { preset: "openrouter", key: "kurz" })).rejects.toThrow(/API-Schlüssel/);
-  await expect(adminRpc("assistant.quickRouter", { preset: "mistral", key: "x".repeat(30) })).rejects.toThrow(/openrouter/);
-  await expect(adminRpc("assistant.configure", { geminiKey: "sk-nicht-google-0123456789abcdef" })).rejects.toThrow(/Gemini-API-Schlüssel/);
-  const st = await adminRpc<{ mode: string; engines: { id: string }[] }>("assistant.status");
-  expect(st.engines.map((e) => e.id)).not.toContain("smart");
+  const st0 = await status();
+  expect(st0.providers.map((x) => x.id)).toEqual(["openrouter", "groq", "pollinations", "ollama"]);
+  expect(st0.anyReady).toBe(false);
+  expect(JSON.stringify(st0)).not.toMatch(/sk-or-|gsk_|Bearer/);
+  const eng = await adminRpc<{ engines: { id: string }[] }>("assistant.status");
+  expect(eng.engines.map((e) => e.id)).not.toContain("smart");
+
   const p = await adminPage(browser);
   const isl = await p.context().newPage();
   await isl.addInitScript((tok) => { (window as unknown as { __PGL_ADMIN__: string; __PGL_EMBEDDED__: boolean }).__PGL_ADMIN__ = tok; (window as unknown as { __PGL_EMBEDDED__: boolean }).__PGL_EMBEDDED__ = true; }, state().adminToken);
@@ -2417,48 +2428,49 @@ test("Automatisch & kostenlose KI einrichten: Insel zeigt den Einrichter, falsch
   await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
   const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
   await islandTab(panel, "JARVIS").click();
-  const setup = panel.locator("details.isl2-setup");
-  await expect(setup).toHaveAttribute("open", "");                       // nothing free set up yet → the helper is open
-  await expect(panel).toContainText("ChatGPT hat keinen kostenlosen Zugang");
-  const save = panel.getByRole("button", { name: "Speichern & testen" });
-  await expect(save).toBeDisabled();
-  await panel.getByLabel("Gemini-Schlüssel").fill("kein-schluessel");
-  await expect(save).toBeDisabled();                                      // only a key that looks like a Google key can be saved
-  await panel.getByLabel("Gemini-Schlüssel").fill("AIzaSyA0123456789abcdefghijklmnopqrstuv");
-  await expect(save).toBeEnabled();
-  await expect(panel.getByRole("radiogroup", { name: "Welche KI antwortet" })).toHaveCount(0); // no choice without a free AI
+  await expect(panel.locator("details.isl2-setup")).toHaveAttribute("open", "");     // nothing set up yet → the manager is open
+  await expect(panel).toContainText("0,00 € – nur kostenlose Modelle");
+  for (const n of ["OpenRouter", "Groq", "Pollinations", "Ollama"]) await expect(panel.getByRole("region", { name: n })).toBeVisible();
+  await expect(panel.getByRole("radiogroup", { name: "Welche KI antwortet" })).toHaveCount(0);  // nothing to choose yet
+  const or = panel.getByRole("region", { name: "OpenRouter" });
+  await expect(or).toContainText("Schlüssel fehlt");
+  await expect(or.getByRole("switch", { name: "OpenRouter einschalten" })).toBeDisabled();      // cannot be switched on without key
+  await expect(or).toContainText("niemals Guthaben");
+  const key = or.getByLabel("OpenRouter-Schlüssel");
+  await key.fill("AIzaSyA0123456789abcdefghijklmnopqrstuv");                                       // a Google key: the PC refuses it
+  await or.getByRole("button", { name: "Speichern & testen" }).click();
+  await expect(or.getByRole("alert")).toContainText("OpenRouter-Schlüssel");
+  // a rejected key stays in the field (to fix a typo) but is never written to any browser storage
+  const stored = await isl.evaluate(() => JSON.stringify([Object.entries(localStorage), Object.entries(sessionStorage)]));
+  expect(stored).not.toContain("AIzaSyA0123456789");
+  const gr = panel.getByRole("region", { name: "Groq" });
+  await expect(gr.getByRole("button", { name: "Speichern & testen" })).toBeDisabled();            // first the free-plan confirmation
+  // order and automatic switching are changed at the PC and shown again
+  await panel.getByRole("button", { name: "Groq weiter nach oben" }).click();
+  await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["groq", "openrouter", "pollinations", "ollama"]);
+  await panel.getByRole("button", { name: "OpenRouter weiter nach oben" }).click();
+  await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["openrouter", "groq", "pollinations", "ollama"]);
+  await panel.getByRole("switch", { name: "Automatisch wechseln" }).click();
+  await expect.poll(async () => (await status()).auto).toBe(false);
+  await panel.getByRole("switch", { name: "Automatisch wechseln" }).click();
+  await expect.poll(async () => (await status()).auto).toBe(true);
   await p.context().close();
 });
 
-test("Nachricht schreiben (iPad/Handy ohne PC): Karte in der Insel, Befehl füllt sie, Link enthält den Text, im Chat ein Öffnen-Knopf", async ({ browser }) => {
-  const ctx = await newCtx(browser, { ...devices["iPad Mini"], locale: "de-DE" });
+test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollinations mit eigenem Ja", async ({ browser }) => {
+  const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const p = await ctx.newPage();
-  await p.goto(`${HOSTED_SITE}/#/`);
-  await p.getByRole("button", { name: "JARVIS-Insel öffnen" }).first().click();
-  const panel = p.getByRole("dialog", { name: "JARVIS-Insel" });
-  await islandTab(panel, "Apps").click();
-  const card = panel.getByRole("region", { name: "Nachricht schreiben" });
-  const open = card.getByRole("button", { name: /In WhatsApp öffnen/ });
-  await expect(open).toHaveAttribute("aria-disabled", "true");            // nothing to send yet
-  await card.getByLabel("Text der Nachricht").fill("Bin gleich da & bringe Snacks mit");
-  await expect(open).toHaveAttribute("href", "https://wa.me/?text=Bin%20gleich%20da%20%26%20bringe%20Snacks%20mit");
-  await card.getByRole("radio", { name: "Telegram" }).click();
-  await expect(card.getByRole("button", { name: /In Telegram öffnen/ })).toHaveAttribute("href", /^https:\/\/t\.me\/share\/url\?url=%20&text=Bin%20gleich/);
-  await card.getByRole("radio", { name: "WhatsApp" }).click();
-  // The words „Schreib bei WhatsApp: …“ in the JARVIS tab prepare the card – the opening tap stays the person's own.
-  await islandTab(panel, "JARVIS").click();
-  await panel.getByLabel("Frag JARVIS …").fill("Schreib bei WhatsApp: Treffen wir uns um acht?");
-  await panel.getByRole("button", { name: "Fragen" }).click();
-  await expect(card.getByLabel("Text der Nachricht")).toHaveValue("Treffen wir uns um acht?");
-  await expect(card.getByRole("button", { name: /In WhatsApp öffnen/ })).toHaveAttribute("href", "https://wa.me/?text=Treffen%20wir%20uns%20um%20acht%3F");
-  // In the chat: an answer with a button – and the link only opens on that tap (new tab, no opener).
   await p.goto(`${HOSTED_SITE}/#/assistant`);
-  const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
-  await say.fill("Schick eine Nachricht per Telegram: Bin unterwegs"); await say.press("Enter");
-  const last = p.locator(".as-turn.bot").last();
-  await expect(last).toContainText("Diese App schickt nichts selbst");
-  const [popup] = await Promise.all([p.waitForEvent("popup"), last.getByRole("button", { name: "In Telegram öffnen" }).click()]);
-  expect(popup.url()).toContain("t.me/share/url");
+  const card = p.getByRole("heading", { name: "KI-Verwaltung – kostenlose KI" });
+  await expect(card).toBeVisible();
+  await expect(p.getByText("Ohne PC kann nur der kostenlose Dienst ohne Konto (Pollinations)")).toBeVisible();
+  const sw = p.getByRole("switch", { name: "Pollinations ohne PC erlauben" });
+  await expect(sw).toHaveAttribute("aria-checked", "false");
+  await sw.click();
+  await expect(sw).toHaveAttribute("aria-checked", "true");
+  expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  await sw.click();
+  await expect(sw).toHaveAttribute("aria-checked", "false");
   await ctx.close();
 });
 

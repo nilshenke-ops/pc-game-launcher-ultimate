@@ -8,7 +8,7 @@ import { formatCost } from "../lib/assistant";
 
 
 export interface Status {
-  mode: "local" | "ollama" | "claude" | "gemini" | "router"; model: string; free: boolean;
+  mode: "local" | "ollama" | "claude" | "gemini" | "router" | "smart"; model: string; free: boolean;
   ollama: { url: string; model?: string | null; whileGaming: boolean; recommended: { id: string; label: string; note: string }[] }; localFirst: boolean; monthlyLimitUsd: number; keySet: boolean; claudeReady: boolean;
   models: { id: string; label: string; input: number; output: number; cacheRead: number; note: string }[];
   usage: { month: string; requests: number; inputTokens: number; outputTokens: number; costUsd: number };

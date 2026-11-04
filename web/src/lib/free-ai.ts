@@ -43,8 +43,20 @@ export const resetFreeAiBudget = () => { stamps.length = 0; };
 export class FreeAiError extends Error {}
 
 /** One question to the free AI. Throws FreeAiError with a sentence a person can read. */
+/** After a "budget reached" notice the service is left alone for a while. */
+const PAUSE_MS = 30 * 60_000;
+let pausedUntil = 0;
+export const resetFreeAiPause = () => { pausedUntil = 0; };
+const NOTICE = /(budget|raise the key|top.?up|payment|insufficient|credits?\b|pollen|upgrade your|quota|billing|subscribe)/i;
+/** The same rule as at the PC: payment words with zero output tokens (or a very short text) are a notice, not an answer. */
+export function looksLikePaymentNotice(text: string, completionTokens: number): boolean {
+  if (!NOTICE.test(text)) return false;
+  return completionTokens === 0 || text.length < 400;
+}
+
 export async function askFreeAi(question: string, opts: { history?: Turn[]; fetcher?: typeof fetch; signal?: AbortSignal; timeoutMs?: number; now?: number } = {}): Promise<{ text: string; model: string }> {
   if (freeAiConsent() !== "yes") throw new FreeAiError("Die freie KI ohne PC ist auf diesem Gerät nicht erlaubt.");
+  if (pausedUntil > (opts.now ?? Date.now())) throw new FreeAiError("Der kostenlose Dienst ohne Konto ist gerade aufgebraucht – ich frage ihn eine Weile nicht mehr. Bitte später noch einmal oder den PC verbinden.");
   if (freeAiBudget(opts.now) <= 0) throw new FreeAiError(`Du hast in der letzten Stunde schon ${FREE_AI_PER_HOUR} Fragen an die freie KI gestellt – bitte später noch einmal oder den PC verbinden.`);
   const ctl = new AbortController();
   const timer = setTimeout(() => ctl.abort(), opts.timeoutMs ?? 40_000);
@@ -63,6 +75,9 @@ export async function askFreeAi(question: string, opts: { history?: Turn[]; fetc
   try { data = await res.json(); } catch { throw new FreeAiError("Unerwartete Antwort der freien KI."); }
   const content = data.choices?.[0]?.message?.content;
   const text = typeof content === "string" ? cleanAnswer(content) : "";
+  // "The API key has reached its budget – please top up" comes with status 200 when the anonymous access is used up: that is a payment request, never an answer.
+  const used = (data as { usage?: { completion_tokens?: unknown } }).usage?.completion_tokens;
+  if (looksLikePaymentNotice(text, typeof used === "number" ? used : -1)) { pausedUntil = (opts.now ?? Date.now()) + PAUSE_MS; throw new FreeAiError("Der kostenlose Dienst ohne Konto ist gerade aufgebraucht (er meldet „Budget erreicht“) – es wird nichts bezahlt. Bitte später noch einmal oder den PC verbinden."); }
   if (!text) throw new FreeAiError("Die freie KI hat eine leere Antwort geschickt – bitte noch einmal versuchen.");
   return { text, model: typeof data.model === "string" ? data.model.slice(0, 40) : "" };
 }

@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.2.0 – 2026-11-04
+### Neu
+- KI-Verwaltung (JARVIS-Seite und Insel, Reiter JARVIS): vier kostenlose Anbieter in einer festen Reihenfolge – OpenRouter → Groq → Pollinations → Ollama. Pro Anbieter: Schlüssel eintragen und „Speichern & testen“, Verbindung testen, ein-/ausschalten, Reihenfolge ändern, kostenlose Modelle ansehen, Tageslimit, letzter Fehler; dazu „Automatisch zum nächsten wechseln“ und die Anzeige, welche KI zuletzt geantwortet hat. Funktioniert auf iPad, iPhone und Windows
+- OpenRouter mit dem Gratis-Routing `openrouter/free` (erste Wahl) und den kostenlosen Modellen (`:free`) als Ausweichmodelle; Groq mit den aktuell angebotenen Chat-Modellen; Pollinations ohne Schlüssel; Ollama lokal. Die Antwort sagt immer, wer geantwortet hat („Beantwortet von Groq – kostenloses Modell (…)“) und warum ein anderer übersprungen wurde
+- Kostenwächter, der vor jeder Anfrage prüft: nur Modelle mit Preis 0 (jede Preiszeile 0, Kennzeichen `:free` oder genau `openrouter/free`; variable Preise wie `openrouter/auto` werden nie benutzt), Modellliste höchstens 5 Minuten alt (sonst neu geprüft; lässt sie sich 30 Minuten nicht prüfen, wird der Anbieter nicht benutzt), in jeder OpenRouter-Anfrage Höchstpreis 0, feste Adressen (ein Schlüssel geht nur an seinen eigenen Dienst), kein Aufladen, kein bezahlter Ausweich. Ist keine kostenlose KI erreichbar, sagt JARVIS „Momentan ist keine kostenlose externe KI erreichbar.“ und antwortet mit dem eingebauten Assistenten
+- Groq wird erst nach deiner Bestätigung „kostenloser Tarif, keine Zahlungsmethode“ benutzt; Pollinations erst nach deiner Zustimmung (Dritter, ohne Konto)
+- Schlüssel (OpenRouter, Groq) nimmt der PC nur direkt am PC oder über eine verschlüsselte Verbindung (Relay) an, speichert sie geschützt, prüft die Form (ein Google-Schlüssel wird abgelehnt) und zeigt sie nie wieder; die Seite speichert sie nicht
+- Weniger Daten nach außen: kurzer System-Text ohne Wissensbasis und ohne Gerätenamen
+### Geändert
+- Gemini ist nicht mehr Teil von „Automatisch“ (keine Google-Abhängigkeit); wer einen Gemini-Schlüssel eingerichtet hat, kann ihn weiter als eigene Auswahl benutzen. Ein früher eingerichteter OpenRouter-Router wird übernommen; bei OpenRouter sind im Router nur noch kostenlose Modelle wählbar
+- Der Einrichter von 3.1.0 (Gemini/„assistant.quickRouter“) ist durch die KI-Verwaltung ersetzt
+### Behoben
+- Der anonyme Pollinations-Zugang meldet manchmal mit Status 200 „Budget erreicht – bitte aufstocken“; das wurde als Antwort angezeigt. Jetzt wird es als Fehler erkannt, nichts wird bezahlt, und der Dienst wird danach eine Weile nicht mehr gefragt
+- Dieselbe Frage zweimal innerhalb weniger Sekunden wird nur einmal gesendet
+
 ## 3.1.1 – 2026-11-04
 ### Neu
 - Nachricht schreiben vom Handy und iPad: Karte „Nachricht schreiben“ in der Insel (Reiter Apps) – Text schreiben oder sagen, dann mit einem Tipp in WhatsApp, Telegram, Nachrichten (SMS) oder E-Mail öffnen, oder über das Teilen-Blatt senden. Die App öffnet sich mit dem fertigen Text; Empfänger wählst du dort, gesendet wird erst mit deinem Tipp. Es wird nichts automatisch gesendet und keine Kontaktliste gelesen

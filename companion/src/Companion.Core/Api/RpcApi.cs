@@ -274,7 +274,25 @@ public static class RpcApi
         rpc.Register("voice.voices", async ctx => new { voices = await s.Voice.VoicesAsync(default) });
         rpc.Register("voice.speak", async ctx => await s.Voice.SpeakAsync(ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("text", out var tx) && tx.ValueKind == JsonValueKind.String ? tx.GetString() : null, default));
         // One tap to a second free AI (OpenRouter or Groq with the person's own free key) – the PC picks the models.
-        rpc.Register("assistant.quickRouter", async ctx => await s.Assistant.QuickRouterAsync(ctx.Str("preset", 20), ctx.Str("key", 300), ctx.Session.IsLocalAdmin));
+        // KI-Verwaltung: the free AIs in one place. A key is only accepted at the PC itself or over an encrypted connection (relay / TLS) – never over plain http in the home network.
+        static bool Secure(RpcSession ss) => ss.IsLocalAdmin || ss.Channel.IsLoopback || ss.Channel.Transport == "relay";
+        rpc.Register("ai.status", async ctx => await s.Assistant.AiStatusAsync(ctx.Params.ValueKind == System.Text.Json.JsonValueKind.Object && ctx.Params.TryGetProperty("refresh", out var rf) && rf.ValueKind == System.Text.Json.JsonValueKind.True));
+        rpc.Register("ai.set", ctx =>
+        {
+            var p = ctx.Params;
+            bool? B(string n) => p.ValueKind == System.Text.Json.JsonValueKind.Object && p.TryGetProperty(n, out var v) && v.ValueKind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False ? v.GetBoolean() : null;
+            string? key = p.ValueKind == System.Text.Json.JsonValueKind.Object && p.TryGetProperty("key", out var kv) && kv.ValueKind == System.Text.Json.JsonValueKind.String ? kv.GetString() : null;
+            if (key is { Length: > 300 }) throw new RpcException("invalid-params", "Schlüssel zu lang.");
+            return s.Assistant.AiSet(ctx.Str("provider", 20), B("enabled"), key, B("attested"), B("consent"), Secure(ctx.Session));
+        });
+        rpc.Register("ai.order", ctx =>
+        {
+            var o = ctx.Params.TryGetProperty("order", out var ov) && ov.ValueKind == System.Text.Json.JsonValueKind.Array ? ov.EnumerateArray().Select(x => x.GetString() ?? "").Take(8).ToList() : throw new RpcException("invalid-params", "Reihenfolge fehlt.");
+            return s.Assistant.AiOrder(o);
+        });
+        rpc.Register("ai.auto", ctx => s.Assistant.AiAuto(ctx.Params.TryGetProperty("auto", out var av) && av.ValueKind == System.Text.Json.JsonValueKind.True));
+        rpc.Register("ai.test", async ctx => await s.Assistant.AiTestAsync(ctx.Str("provider", 20)));
+        rpc.Register("ai.models", async ctx => await s.Assistant.AiModelsAsync(ctx.Str("provider", 20)));
         rpc.Register("assistant.configure", ctx => s.Assistant.Configure(ctx.Bind<Assistant.AssistantService.Config>(), ctx.Session.IsLocalAdmin));
 
         // ------------------------------------------------------------ GameQuest
@@ -925,7 +943,7 @@ public static class RpcApi
         if (reply == null) return;
         var ask = reply.Actions.FirstOrDefault(a => a.Confirm && !a.Auto && !string.IsNullOrEmpty(a.Method));
         // Which AI answered (and why, when another one was skipped) – shown under the answer in the island.
-        var via = reply.Mode switch { "gemini" => "Gemini", "router" => $"KI-Router{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "ollama" => "lokale KI", "claude" => "Claude", _ => "eingebaut" };
+        var via = reply.Mode switch { "openrouter" => $"OpenRouter{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "groq" => $"Groq{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "pollinations" => "Pollinations", "gemini" => "Gemini", "router" => $"KI-Router{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "ollama" => "lokale KI", "claude" => "Claude", _ => "eingebaut" };
         var note = reply.Sources.FirstOrDefault(x => x.StartsWith("Automatisch:"));
         s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = !reply.Failed, via, note, text = reply.Text.Length > 280 ? reply.Text[..280] : reply.Text,
             ask = ask == null ? null : new { kind = ask.Kind, label = ask.Label, method = ask.Method, @params = ask.Params, confirm = true } }, Permissions.Local);
