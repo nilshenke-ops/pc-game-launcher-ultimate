@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ISLAND_STYLES, eyeColor, isIslandEye, isIslandEyeSize, isIslandStyle, ASK_TTL, clock, DANCE_MS, HAPPY_MS, islandPet, petCommand, islandAnswer, islandClearAsk, islandGaming, islandMusic, islandSize, islandState, islandTouch, MUSIC_FRESH, moodOf, SLEEP_AFTER, SURPRISE_MS } from "./island";
+import { NOTICE_MS, islandNotice, noticeFresh, ISLAND_STYLES, eyeColor, isIslandEye, isIslandEyeSize, isIslandStyle, ASK_TTL, clock, DANCE_MS, HAPPY_MS, islandPet, petCommand, islandAnswer, islandClearAsk, islandGaming, islandMusic, islandSize, islandState, islandTouch, MUSIC_FRESH, moodOf, SLEEP_AFTER, SURPRISE_MS } from "./island";
 
 const base = { busy: false, listening: false, last: null, ask: null, pokes: [] as number[], music: null as { level: number; beatAt: number; at: number } | null, gaming: false, gamingSince: 0, lastActive: 1_000_000 };
 const now = 1_000_000;
@@ -70,6 +70,7 @@ describe("JARVIS-Insel: Gesicht folgt dem echten Zustand", () => {
     expect(islandSize({ open: false, ask: false, hover: false, mood: "happy" })).toBe("bar");
     expect(islandSize({ open: false, ask: true, hover: false, mood: "asking" })).toBe("ask");
     expect(islandSize({ open: true, ask: true, hover: true, mood: "asking" })).toBe("panel");
+    expect(islandSize({ open: false, ask: false, hover: false, mood: "idle", notice: true })).toBe("bar");
     islandClearAsk(true);
     expect(islandState().last?.at).toBe(0); // declined: no "done" face
   });
@@ -122,5 +123,28 @@ describe("Augen der Insel", () => {
     expect(eyeColor("white")).toBe("#ffffff");
     expect(isIslandEyeSize("l")).toBe(true);
     expect(isIslandEyeSize("xl")).toBe(false);
+  });
+});
+
+describe("Insel: Benachrichtigungen des PCs", () => {
+  it("zeigt den Titel kurz, ordnet die Stärke zu und vergisst ihn wieder", () => {
+    islandNotice({ title: "Download fertig", severity: "info" }, 1000);
+    expect(islandState().notice).toEqual({ text: "Download fertig", severity: "info", at: 1000 });
+    expect(noticeFresh(islandState(), 1000 + NOTICE_MS - 1)).toBe(true);
+    expect(noticeFresh(islandState(), 1000 + NOTICE_MS)).toBe(false);
+    islandNotice({ title: "Speicher fast voll", severity: "warning" }, 2000);
+    expect(islandState().notice?.severity).toBe("warning");
+    islandNotice({ title: "Update fehlgeschlagen", severity: "error" }, 3000);
+    expect(islandState().notice?.severity).toBe("error");
+  });
+  it("ohne Titel passiert nichts; Steuerzeichen und Länge werden bereinigt", () => {
+    islandNotice({ title: "Bleibt", severity: "info" }, 4000);
+    islandNotice({ title: "   ", severity: "error" }, 5000);
+    islandNotice({ message: "nur Text" } as never, 5000);
+    expect(islandState().notice?.text).toBe("Bleibt");
+    islandNotice({ title: "A\u0007B" + "x".repeat(200), severity: "success" }, 6000);
+    expect(islandState().notice?.text.length).toBeLessThanOrEqual(90);
+    expect(islandState().notice?.text).not.toMatch(/\u0007/);
+    expect(islandState().notice?.severity).toBe("info");
   });
 });

@@ -4,16 +4,17 @@
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
-import { Check, Gamepad2, Pause, Play, SkipBack, SkipForward, Timer, X } from "lucide-react";
+import { Bell, Check, Gamepad2, Pause, Play, SkipBack, SkipForward, Timer, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { toast, useCan, useConn } from "../lib/hooks";
 import type { IslandWidgetId } from "../lib/island-widgets";
 import { useIslandLook } from "../lib/island-look";
-import { POMO_LABEL, POMO_START, pomoMs, pomoNext, type PomoState } from "../lib/pomodoro";
-import { IslandNet, IslandNote, IslandStats, IslandTemps, IslandVolume } from "./island-widgets";
-import { eyeColor, clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
+import { POMO_LABEL } from "../lib/pomodoro";
+import { advanceTimer, countdownView, playTime, startCountdown, startPomodoro, stopCountdown, timerLive, useTimer } from "../lib/island-timer";
+import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, IslandStats, IslandStopwatch, IslandTemps, IslandVolume } from "./island-widgets";
+import { eyeColor, clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, islandNotice, noticeFresh, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
@@ -66,39 +67,37 @@ function Bars({ level }: { level: number }) {
   return <span className="isl-bars" aria-hidden>{h.map((v, i) => <i key={i} style={{ transform: `scaleY(${v})` }} />)}</span>;
 }
 
-function FocusTimer({ sound }: { sound: boolean }) {
-  const [end, setEnd] = useState<number | null>(null);
-  const [pomo, setPomo] = useState<PomoState | null>(null); // set = Pomodoro mode (phases follow each other until "Stopp")
+/** The focus timer card: the clock itself lives in island-timer, so it keeps running (and shows in the closed island) when the panel is shut. */
+function FocusTimer() {
+  const tm = useTimer();
   const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    if (!end) return;
-    const id = window.setInterval(() => {
-      const n = Date.now(); setNow(n);
-      if (n < end) return;
-      if (pomo) {
-        const next = pomoNext(pomo);
-        islandAnswer(next.phase === "focus" ? t("Pause vorbei – weiter mit Fokus ({n} geschafft)", { n: next.done }) : t(next.phase === "long" ? "Vier Fokus-Runden geschafft – lange Pause!" : "Fokus geschafft – kurze Pause!"), true);
-        if (sound) chime(true);
-        setPomo(next); setEnd(n + pomoMs(next.phase));
-      } else { setEnd(null); islandAnswer(t("Fokuszeit vorbei – kurze Pause?"), true); if (sound) chime(true); }
-    }, 500);
-    return () => window.clearInterval(id);
-  }, [end, sound, pomo]);
-  const stop = () => { setEnd(null); setPomo(null); };
+  const view = countdownView(tm, now);
+  useEffect(() => { if (!timerLive(tm)) return; const id = window.setInterval(() => setNow(Date.now()), 500); return () => window.clearInterval(id); }, [tm.end]);
   return (
     <div className="isl-card">
       <span className="isl-ic"><Timer size={18} /></span>
       <div className="isl-main">
-        <b className="isl-big">{end ? clock(end - now) : t("Fokus")}{pomo && <span className="tiny muted"> {t(POMO_LABEL[pomo.phase])} · {pomo.done} ✓</span>}</b>
+        <b className="isl-big">{view ? clock(view.left) : t("Fokus")}{tm.pomo && <span className="tiny muted"> {t(POMO_LABEL[tm.pomo.phase])} · {tm.pomo.done} ✓</span>}</b>
         <div className="row isl-mini">
-          {end ? <button type="button" className="chip" onClick={stop}>{t("Stopp")}</button>
+          {view ? <button type="button" className="chip" onClick={stopCountdown}>{t("Stopp")}</button>
             : <>
-              {[5, 15, 25].map((m) => <button key={m} type="button" className="chip" onClick={() => { setNow(Date.now()); setEnd(Date.now() + m * 60_000); }}>{m} min</button>)}
-              <button type="button" className="chip" title={t("25 min Fokus, 5 min Pause, nach vier Runden 15 min")} onClick={() => { setNow(Date.now()); setPomo(POMO_START); setEnd(Date.now() + pomoMs("focus")); }}>{t("Pomodoro")}</button>
+              {[5, 15, 25].map((m) => <button key={m} type="button" className="chip" onClick={() => { setNow(Date.now()); startCountdown(m); }}>{m} min</button>)}
+              <button type="button" className="chip" title={t("25 min Fokus, 5 min Pause, nach vier Runden 15 min")} onClick={() => { setNow(Date.now()); startPomodoro(); }}>{t("Pomodoro")}</button>
             </>}
         </div>
       </div>
     </div>
+  );
+}
+
+/** Round progress of the running timer, shown in the closed island. */
+function TimerRing({ progress }: { progress: number }) {
+  const r = 8, c = 2 * Math.PI * r;
+  return (
+    <svg className="isl-ring" viewBox="0 0 20 20" width="20" height="20" aria-hidden>
+      <circle cx="10" cy="10" r={r} className="bg" />
+      <circle cx="10" cy="10" r={r} className="fg" style={{ strokeDasharray: c, strokeDashoffset: c * (1 - progress) }} />
+    </svg>
   );
 }
 
@@ -110,15 +109,20 @@ export function JarvisIsland() {
   const app = useAppState().state;
   const conn = useConn();
   const canMedia = useCan("launch");
+  const canSound = useCan("soundboard");
   const [hover, setHover] = useState(false);
   const [open, setOpen] = useState(false);
   const [now, setNow] = useState(Date.now());
   const [q, setQ] = useState("");
   const mood = moodOf(s, now);
+  const tm = useTimer();
+  const live = countdownView(tm, now);
+  const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
+  const hostRef = useRef<HTMLDivElement>(null);
   const online = conn.auth === "ok" && conn.phase === "online";
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
-  const size = islandSize({ open, ask: !!ask, hover, mood });
+  const size = islandSize({ open, ask: !!ask, hover, mood, notice: !!notice });
 
   // JARVIS' activity comes from the PC (whichever device asks him) – only to this PC's own windows.
   useEffect(() => client.on("jarvis.activity", (d) => {
@@ -128,17 +132,27 @@ export function JarvisIsland() {
   }), []);
   // The sound the PC plays (level and beat only – nothing is recorded) and the running game drive dancing and gaming.
   useEffect(() => client.on("island.audio", (d) => islandMusic(d as { playing?: boolean; level?: number; beat?: boolean })), []);
+  // Notifications of the PC (a download finished, a warning …) show for a moment in the bar.
+  useEffect(() => client.on("notification", (d) => islandNotice(d as { title?: unknown; severity?: unknown })), []);
   const gameName = app?.running?.[0]?.name ?? null;
   useEffect(() => { islandGaming(!!gameName); }, [gameName]);
   // The window grows and shrinks with the content (the companion accepts only these four sizes).
   useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size }); }, [size]);
   // Moods that end by time need a clock – every second while something short-lived shows, otherwise every 15 s (sleep).
   // (Only the yes/no matters: the music reports arrive ten times a second and must not restart the timer.)
-  const fast = !!(s.last || s.ask || s.pokes.length || s.music || open || hover || s.gaming || s.pet);
+  const fast = !!(s.last || s.ask || s.pokes.length || s.music || open || hover || s.gaming || s.pet || s.notice || timerLive(tm));
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), fast ? 1000 : 15000);
     return () => window.clearInterval(id);
   }, [fast]);
+  // The focus timer / Pomodoro runs here, so it also works with the panel closed.
+  useEffect(() => {
+    const ev = advanceTimer(now);
+    if (!ev) return;
+    if (ev.kind === "phase") islandAnswer(ev.pomo.phase === "focus" ? t("Pause vorbei – weiter mit Fokus ({n} geschafft)", { n: ev.pomo.done }) : t(ev.pomo.phase === "long" ? "Vier Fokus-Runden geschafft – lange Pause!" : "Fokus geschafft – kurze Pause!"), true);
+    else islandAnswer(t("Fokuszeit vorbei – kurze Pause?"), true);
+    if (prefs.sound) chime(true);
+  }, [now]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (s.ask && now - s.ask.at >= ASK_TTL) islandClearAsk(); }, [now, s.ask]);
   useEffect(() => {
     const was = prevMood.current; prevMood.current = mood;
@@ -172,16 +186,30 @@ export function JarvisIsland() {
     // The answer arrives as "jarvis.activity" like any other – the island shows it.
     try { await client.call("assistant.ask", { text: v }); } catch (err) { islandAnswer((err as Error).message, false); }
   };
+  const gameTime = game ? playTime(game.since, now) : null;
+  const timerText = live ? `${tm.pomo ? t(POMO_LABEL[tm.pomo.phase]) : t("Fokus")} · ${clock(live.left)}` : null;
   const text = ask ? t("JARVIS fragt: {a}?", { a: ask.label }) : mood === "thinking" ? t("JARVIS denkt nach …") : mood === "listening" ? t("JARVIS hört zu …")
-    : (mood === "happy" || mood === "error") && s.last ? s.last.text : game ? game.name : t("JARVIS – antippen für Widgets");
+    : (mood === "happy" || mood === "error") && s.last ? s.last.text : notice ? notice.text : timerText ? timerText : mood === "dancing" && s.music ? t("Musik läuft") : game ? (gameTime ? `${game.name} · ${gameTime}` : game.name) : t("JARVIS – antippen für Widgets");
+  // The eyes follow the mouse a little (a few pixels) while it is over the island.
+  const follow = (e: React.MouseEvent) => {
+    const el = hostRef.current; if (!el) return;
+    const r = el.getBoundingClientRect();
+    const dx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width / 2 || 1)));
+    const dy = Math.max(-1, Math.min(1, (e.clientY - (r.top + 18)) / 60));
+    el.style.setProperty("--ex", `${(dx * 3).toFixed(1)}px`); el.style.setProperty("--ey", `${(dy * 2).toFixed(1)}px`);
+  };
+  const unfollow = () => { const el = hostRef.current; if (el) { el.style.setProperty("--ex", "0px"); el.style.setProperty("--ey", "0px"); } };
 
   return (
-    <div className={`isl-host s-${size}`} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => setHover(false)}>
+    <div ref={hostRef} className={`isl-host s-${size} h-${mood}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
       <div className={`isl m-${mood}`}>
         <button type="button" className="isl-pill" aria-expanded={open} aria-label={t("JARVIS-Insel öffnen")} onClick={() => setOpen((o) => !o)}>
           <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); setNow(Date.now()); }} />
-          {size === "notch" && mood === "dancing" && s.music && <Bars level={s.music.level} />}
-          {size !== "notch" && <span className="isl-text">{text}</span>}
+          {mood === "dancing" && s.music && <Bars level={s.music.level} />}
+          {live && size === "notch" && <span className="isl-live"><TimerRing progress={live.progress} />{clock(live.left)}</span>}
+          {size !== "notch" && live && !ask && <TimerRing progress={live.progress} />}
+          {notice && size !== "notch" && !ask && <Bell size={15} className="isl-bell" aria-hidden />}
+          {size !== "notch" && <span className="isl-text" key={text}>{text}</span>}
         </button>
         {size !== "notch" && !ask && <span className="isl-time">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
         {ask && (
@@ -214,6 +242,7 @@ export function JarvisIsland() {
               </div>
             </div>
             )}
+            {has("start") && <IslandStart online={online} canLaunch={canMedia} />}
             {has("clock") && (
             <div className="isl-card">
               <div className="isl-main">
@@ -238,7 +267,10 @@ export function JarvisIsland() {
             {has("temp") && <IslandTemps online={online} />}
             {has("net") && <IslandNet online={online} />}
             {has("volume") && <IslandVolume enabled={online && canMedia} press={media} />}
-            {has("focus") && <FocusTimer sound={prefs.sound} />}
+            {has("focus") && <FocusTimer />}
+            {has("stopwatch") && <IslandStopwatch />}
+            {has("profile") && <IslandProfiles online={online} canLaunch={canMedia} />}
+            {has("sounds") && <IslandSounds online={online} canPlay={canSound} />}
             {has("note") && <IslandNote />}
           </div>
           <div className="row isl-foot">

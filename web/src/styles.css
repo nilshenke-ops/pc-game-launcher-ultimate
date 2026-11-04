@@ -2177,3 +2177,63 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
   :root[data-surface="glass"] .topbar .btn.icon, :root[data-surface="glass"] .topbar .priv-btn, :root[data-surface="glass"] .topbar .account-btn, :root[data-surface="glass"] .topbar .search-trigger { width: 44px; height: 44px; min-width: 44px; }
   :root[data-surface="glass"] .conn-pill { height: 44px; padding: 0 12px; }
 }
+
+/* ================================================================== JARVIS island: motion (2.94) */
+@property --isl-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.isl-host { position: relative; --ex: 0px; --ey: 0px; --isl-ring: #9ef0c8; }
+.isl-eyes { transform: translate(var(--ex), var(--ey)); transition: transform .2s ease-out; }
+.isl-text { animation: isl-text-in .3s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes isl-text-in { from { opacity: 0; transform: translateY(7px); filter: blur(4px); } }
+.isl-ask { animation: isl-text-in .32s .1s cubic-bezier(.2,.8,.2,1) both; }
+/* the open panel unfolds from the top edge, the cards follow one after the other */
+.isl-panel { transform-origin: 50% 0; animation: isl-panel-in .36s cubic-bezier(.2,.9,.25,1.12) both; }
+@keyframes isl-panel-in { from { opacity: 0; transform: translateY(-12px) scale(.96); filter: blur(6px); } }
+.isl-panel > *, .isl-grid > * { animation: isl-card-in .44s cubic-bezier(.2,.9,.25,1.1) both; }
+@keyframes isl-card-in { from { opacity: 0; transform: translateY(12px) scale(.94); } }
+.isl-panel > :nth-child(1) { animation-delay: .05s; } .isl-panel > :nth-child(2) { animation-delay: .1s; } .isl-panel > :nth-child(3) { animation-delay: .3s; }
+.isl-grid > :nth-child(1) { animation-delay: 0.16s; }
+.isl-grid > :nth-child(2) { animation-delay: 0.21s; }
+.isl-grid > :nth-child(3) { animation-delay: 0.26s; }
+.isl-grid > :nth-child(4) { animation-delay: 0.30s; }
+.isl-grid > :nth-child(5) { animation-delay: 0.34s; }
+.isl-grid > :nth-child(6) { animation-delay: 0.39s; }
+.isl-grid > :nth-child(7) { animation-delay: 0.43s; }
+.isl-grid > :nth-child(8) { animation-delay: 0.48s; }
+.isl-grid > :nth-child(9) { animation-delay: 0.52s; }
+.isl-grid > :nth-child(10) { animation-delay: 0.57s; }
+.isl-grid > :nth-child(11) { animation-delay: 0.61s; }
+.isl-grid > :nth-child(12) { animation-delay: 0.66s; }
+.isl-grid > :nth-child(13) { animation-delay: 0.70s; }
+.isl-grid > :nth-child(14) { animation-delay: 0.75s; }
+.isl-card { transition: transform .16s ease, background .2s ease; }
+.isl-card:hover { background: rgba(255,255,255,0.085); transform: translateY(-1px); }
+.isl-pill:active, .isl-panel .chip:active, .isl-panel .btn:active { transform: scale(.95); }
+.isl-pill, .isl-panel .chip, .isl-panel .btn { transition: transform .12s ease, background .2s ease; }
+/* the colour of the light around the island follows what JARVIS does */
+.isl-host.h-thinking, .isl-host.h-listening { --isl-ring: #8fd8ff; } .isl-host.h-asking { --isl-ring: #f5b544; } .isl-host.h-happy { --isl-ring: #6ee7a0; }
+.isl-host.h-error, .isl-host.n-error { --isl-ring: #f87171; } .isl-host.n-warning { --isl-ring: #f5b544; } .isl-host.n-info { --isl-ring: #8fd8ff; }
+.isl-host.h-dancing { --isl-ring: #ff6b81; } .isl-host.h-gaming { --isl-ring: #a78bfa; } .isl-host.h-surprised { --isl-ring: #7cf5ff; } .isl-host.timing { --isl-ring: #9ef0c8; }
+.isl-host::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; border-radius: 0 0 20px 20px; padding: 2px;
+  background: var(--isl-ring); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); }
+.isl-host.h-thinking::after, .isl-host.h-listening::after { opacity: 1; background: conic-gradient(from var(--isl-a), transparent 0 55%, var(--isl-ring) 88%, transparent 100%); animation: isl-run 1.8s linear infinite; }
+@keyframes isl-run { to { --isl-a: 360deg; } }
+.isl-host.h-asking::after { animation: isl-pulse-ring 1.3s ease-in-out infinite; }
+@keyframes isl-pulse-ring { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+.isl-host.h-happy::after, .isl-host.h-error::after, .isl-host[class*="n-"]::after { animation: isl-flash 1.3s ease-out both; }
+@keyframes isl-flash { 0% { opacity: 0; } 18% { opacity: 1; } 100% { opacity: 0; } }
+.isl-host.h-dancing::after, .isl-host.h-gaming::after { animation: isl-pulse-ring 2.4s ease-in-out infinite; }
+.isl-host.h-surprised::after { animation: isl-flash .9s ease-out both; }
+.isl-host.h-error .isl { animation: isl-shake .42s ease-in-out; }
+@keyframes isl-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+/* live display of a running timer */
+.isl-live { display: inline-flex; align-items: center; gap: 6px; margin-left: 6px; font-size: .78rem; font-variant-numeric: tabular-nums; animation: isl-text-in .3s both; }
+.isl-ring { flex: none; transform: rotate(-90deg); }
+.isl-ring circle { fill: none; stroke-width: 2.6; }
+.isl-ring .bg { stroke: rgba(255,255,255,0.16); } .isl-ring .fg { stroke: var(--isl-c, #9ef0c8); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.isl-bell { flex: none; color: var(--isl-ring); animation: isl-bell .9s ease-in-out; transform-origin: 50% 0; }
+@keyframes isl-bell { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-18deg); } 40% { transform: rotate(15deg); } 60% { transform: rotate(-9deg); } 80% { transform: rotate(6deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .isl-text, .isl-ask, .isl-panel, .isl-panel > *, .isl-grid > *, .isl-live, .isl-bell, .isl-host::after, .isl-host .isl { animation: none !important; }
+  .isl-eyes { transform: none; transition: none; } .isl-card, .isl-pill { transition: none; }
+}
+[data-motion="reduce"] .isl-text, [data-motion="reduce"] .isl-panel, [data-motion="reduce"] .isl-panel > *, [data-motion="reduce"] .isl-grid > *, [data-motion="reduce"] .isl-host::after { animation: none !important; }

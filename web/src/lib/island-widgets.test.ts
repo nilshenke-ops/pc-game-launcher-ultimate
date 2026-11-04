@@ -9,6 +9,10 @@ describe("Insel-Widgets: Auswahl", () => {
     expect(cleanWidgets(undefined)).toEqual(DEFAULT_WIDGETS);
     expect(cleanWidgets(["note", "game", "game", "unsinn", 5])).toEqual(["game", "note"]);
   });
+  it("neue Widgets sind bekannt, aber zunächst aus; feste Reihenfolge", () => {
+    expect(DEFAULT_WIDGETS).not.toContain("stopwatch");
+    expect(cleanWidgets(["sounds", "profile", "stopwatch", "start", "game"])).toEqual(["game", "start", "stopwatch", "profile", "sounds"]);
+  });
   it("ein- und ausschalten", () => {
     expect(toggleWidget(DEFAULT_WIDGETS, "net", true)).toContain("net");
     expect(toggleWidget(DEFAULT_WIDGETS, "game", false)).not.toContain("game");

@@ -1,16 +1,20 @@
 // Widgets der JARVIS-Insel: welche im geöffneten Fenster erscheinen und was sie zeigen. Nur echte Werte – nichts geschätzt.
 import type { MetricsSample } from "./types";
 
-export type IslandWidgetId = "game" | "clock" | "music" | "focus" | "stats" | "temp" | "net" | "volume" | "note";
+export type IslandWidgetId = "game" | "start" | "clock" | "music" | "focus" | "stopwatch" | "stats" | "temp" | "net" | "volume" | "profile" | "sounds" | "note";
 export const ISLAND_WIDGETS: { id: IslandWidgetId; label: string; hint: string }[] = [
   { id: "game", label: "Laufendes Spiel", hint: "Welches Spiel aus deiner Bibliothek läuft und seit wann" },
+  { id: "start", label: "Zuletzt gespielt starten", hint: "Dein zuletzt gestartetes Spiel oder Programm mit einem Tipp starten" },
   { id: "clock", label: "Uhr", hint: "Uhrzeit und Datum" },
   { id: "music", label: "Musik am PC", hint: "Zurück, Pause/Weiter, Weiter" },
   { id: "focus", label: "Fokus-Timer & Pomodoro", hint: "5/15/25 Minuten oder Pomodoro (25/5)" },
+  { id: "stopwatch", label: "Stoppuhr", hint: "Starten, anhalten, zurücksetzen – läuft auch bei geschlossener Insel weiter" },
   { id: "stats", label: "PC-Werte", hint: "CPU, RAM, GPU" },
   { id: "temp", label: "Temperatur & FPS", hint: "CPU-/GPU-Temperatur; FPS nur, wenn der PC sie messen kann" },
   { id: "net", label: "Netzwerk", hint: "Ping zu Router und Internet (nur solange das Fenster offen ist)" },
   { id: "volume", label: "Lautstärke", hint: "Leiser, Stumm, Lauter (Systemlautstärke per Tasten)" },
+  { id: "profile", label: "Profile", hint: "Ein Profil des PCs aktivieren – JARVIS fragt vorher nach" },
+  { id: "sounds", label: "Sounds", hint: "Die ersten Sounds deines Soundboards mit einem Tipp abspielen" },
   { id: "note", label: "Notiz", hint: "Ein kurzer Zettel, nur auf diesem PC gespeichert" },
 ];
 /** What was always in the panel (plus the PC values since 2.90.0) – the new ones are off until switched on. */

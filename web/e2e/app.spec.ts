@@ -2140,11 +2140,18 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await isl.screenshot({ path: "test-results/island-panel.png", animations: "disabled" });
   await panel.getByRole("button", { name: "5 min", exact: true }).click();
   await expect(panel).toContainText(/[45]:[0-5]\d/);
-  await panel.getByRole("button", { name: "Stopp" }).click();
   await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Wie geht es meinem PC?");
   await panel.getByRole("button", { name: "Fragen" }).click();
   await expect(panel.locator(".isl-last")).toContainText("CPU");
   await panel.getByRole("button", { name: "Schließen" }).click();
+  // The focus timer keeps running with the panel shut: the closed island shows the time with a progress ring.
+  await expect(async () => { await leave(); await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/, { timeout: 600 }); }).toPass({ timeout: 10000 });
+  await expect(bar.locator(".isl-live")).toContainText(/[45]:[0-5]\d/);
+  await expect(bar.locator(".isl-live .isl-ring")).toBeVisible();
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  await panel.getByRole("button", { name: "Stopp" }).click();
+  await panel.getByRole("button", { name: "Schließen" }).click();
+  await expect(bar.locator(".isl-live")).toHaveCount(0);
   // Music: the test companion plays a steady tone like the PC's sound. Switched on, the companion listens, the eyes dance,
   // and a bars equaliser shows next to them; switched off, it stops listening and the eyes calm down.
   const { adminRpc } = await import("./rpc");
@@ -2161,6 +2168,40 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   // Poking the eyes too often makes JARVIS dizzy (nothing else happens).
   for (let k = 0; k < 5; k++) await bar.locator(".isl-eyes").click();
   await expect(bar.getByRole("img", { name: "JARVIS: Schwindelig" })).toBeVisible();
+  await p.context().close();
+});
+
+test("JARVIS-Insel: neue Widgets (Stoppuhr, Zuletzt gespielt, Profile, Sounds) und Stoppuhr läuft bei geschlossenem Panel weiter", async ({ browser }) => {
+  const p = await adminPage(browser);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
+  const { adminRpc } = await import("./rpc");
+  const before = (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets;
+  await adminRpc("island.configure", { look: { widgets: ["game", "start", "focus", "stopwatch", "profile", "sounds"] } });
+  const isl = await p.context().newPage();
+  await isl.addInitScript((tok) => { (window as unknown as { __PGL_ADMIN__: string; __PGL_EMBEDDED__: boolean }).__PGL_ADMIN__ = tok; (window as unknown as { __PGL_EMBEDDED__: boolean }).__PGL_EMBEDDED__ = true; }, state().adminToken);
+  await isl.setViewportSize({ width: 580, height: 520 });
+  await isl.goto(`${COMPANION}/#/island`);
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
+  await expect(panel).toContainText(/Noch nichts gestartet|E2E Testspiel/);
+  await expect(panel.getByRole("button", { name: "Starten" })).toBeVisible();
+  await expect(panel.getByText("Profile", { exact: true })).toBeVisible();
+  await expect(panel.getByText("Sounds", { exact: true })).toBeVisible();
+  // Stopwatch: start, it counts, pause keeps the time, reset zeroes it.
+  const watch = panel.getByLabel("Stoppuhr", { exact: true });
+  await expect(watch).toHaveText("0:00");
+  await panel.getByRole("button", { name: "Start", exact: true }).click();
+  await expect(watch).not.toHaveText("0:00", { timeout: 5000 });
+  await panel.getByRole("button", { name: "Schließen" }).click(); // keeps running with the panel shut
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  await expect(panel.getByRole("button", { name: "Anhalten" })).toBeVisible();
+  await panel.getByRole("button", { name: "Anhalten" }).click();
+  const frozen = await watch.textContent();
+  await isl.waitForTimeout(1500);
+  await expect(watch).toHaveText(frozen ?? "");
+  await panel.getByRole("button", { name: "Zurücksetzen" }).click();
+  await expect(watch).toHaveText("0:00");
+  await adminRpc("island.configure", { look: { widgets: before } });
   await p.context().close();
 });
 

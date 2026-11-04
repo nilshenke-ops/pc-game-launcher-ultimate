@@ -43,6 +43,15 @@ public class IslandTests
         Assert.Equal(new[] { "game", "net", "note" }, n.IslandWidgets); // fixed order, no duplicates
     }
 
+    [Fact]
+    public void The_new_widgets_are_accepted_in_their_fixed_order()
+    {
+        using var dir = new TempDir();
+        var svc = NewSettings(dir);
+        svc.SetIslandLook(new SettingsService.IslandLookUpdate { Widgets = new() { "sounds", "profile", "stopwatch", "start", "game", "note" } });
+        Assert.Equal(new[] { "game", "start", "stopwatch", "profile", "sounds", "note" }, NewSettings(dir).Get().IslandWidgets);
+    }
+
     [Theory]
     [InlineData("style", "rot")] [InlineData("eye", "#ff0000")] [InlineData("size", "xl")] [InlineData("position", "top")] [InlineData("opacity", 10)] [InlineData("opacity", 101)] [InlineData("widgets", "kamera")]
     public void Unknown_look_values_are_refused_and_nothing_changes(string field, object value)

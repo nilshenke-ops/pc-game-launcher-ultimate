@@ -31,9 +31,11 @@ export interface IslandState {
   pet: { mood: "dancing" | "sleeping"; until: number } | null;
   /** Last time someone used the island (hover, tap) or JARVIS did something – for the sleep mode. */
   lastActive: number;
+  /** A notification of the PC (new warning, download done …) shown for a moment in the bar. */
+  notice: { text: string; severity: "info" | "warning" | "error"; at: number } | null;
 }
 
-let state: IslandState = { busy: false, listening: false, last: null, ask: null, pokes: [], music: null, gaming: false, gamingSince: 0, pet: null, lastActive: Date.now() };
+let state: IslandState = { busy: false, listening: false, last: null, ask: null, pokes: [], music: null, gaming: false, gamingSince: 0, pet: null, lastActive: Date.now(), notice: null };
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 const set = (p: Partial<IslandState>) => { state = { ...state, ...p }; emit(); };
@@ -57,6 +59,16 @@ export function islandMusic(d: { playing?: boolean; level?: number; beat?: boole
 export function islandGaming(on: boolean, now = Date.now()) { if (on !== state.gaming) set({ gaming: on, gamingSince: on ? now : 0, lastActive: now }); }
 /** Someone used the island – it wakes up (also from "geh schlafen"). */
 export function islandTouch(now = Date.now()) { if (state.pet?.mood === "sleeping") set({ pet: null, lastActive: now }); else if (now - state.lastActive > 1000) set({ lastActive: now }); }
+
+/** A notification the PC created (event "notification") – shown for NOTICE_MS in the bar, then it is gone. */
+export const NOTICE_MS = 7000;
+export function islandNotice(n: { title?: unknown; message?: unknown; severity?: unknown }, now = Date.now()) {
+  const title = typeof n.title === "string" ? n.title.replace(/[\u0000-\u001f]/g, " ").trim().slice(0, 90) : "";
+  if (!title) return;
+  const sev = n.severity === "error" || n.severity === "Error" || n.severity === 3 ? "error" : n.severity === "warning" || n.severity === "Warning" || n.severity === 2 ? "warning" : "info";
+  set({ notice: { text: title, severity: sev, at: now }, lastActive: now });
+}
+export const noticeFresh = (s: Pick<IslandState, "notice">, now = Date.now()) => !!s.notice && now - s.notice.at < NOTICE_MS;
 
 /** Spoken or typed commands for the pet itself (not for JARVIS' brain): dance for a while, go to sleep, wake up. */
 export type PetCommand = "dance" | "sleep" | "wake";
@@ -103,10 +115,10 @@ export function moodOf(s: Pick<IslandState, "busy" | "listening" | "last" | "ask
 }
 
 /** Collapsed to the eyes unless something is going on: open → widgets, question → bar with buttons, hover/activity → bar. */
-export function islandSize(x: { open: boolean; ask: boolean; hover: boolean; mood: Mood }): IslandSize {
+export function islandSize(x: { open: boolean; ask: boolean; hover: boolean; mood: Mood; notice?: boolean }): IslandSize {
   if (x.open) return "panel";
   if (x.ask) return "ask";
-  return x.hover || x.mood === "thinking" || x.mood === "listening" || x.mood === "happy" || x.mood === "error" ? "bar" : "notch";
+  return x.hover || x.notice || x.mood === "thinking" || x.mood === "listening" || x.mood === "happy" || x.mood === "error" ? "bar" : "notch";
 }
 
 export const MOOD_LABEL: Record<Mood, string> = {

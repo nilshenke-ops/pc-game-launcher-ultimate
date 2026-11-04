@@ -156,7 +156,7 @@ public sealed class SettingsService
         public static readonly string[] Styles = { "default", "neon", "minimal", "glass", "blue", "purple", "mono" };
         public static readonly string[] Eyes = { "auto", "cyan", "green", "pink", "orange", "white" };
         public static readonly string[] EyeSizes = { "s", "m", "l" };
-        public static readonly string[] Widgets = { "game", "clock", "music", "focus", "stats", "temp", "net", "volume", "note" };
+        public static readonly string[] Widgets = { "game", "start", "clock", "music", "focus", "stopwatch", "stats", "temp", "net", "volume", "profile", "sounds", "note" };
         public static readonly string[] Positions = { "center", "left", "right" };
         public static readonly string[] DefaultWidgets = { "game", "clock", "music", "focus", "stats" };
         public const int MinOpacity = 50, MaxOpacity = 100;

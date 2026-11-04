@@ -91,27 +91,79 @@ sealed class IslandForm : Form
         StartPosition = FormStartPosition.Manual;
         BackColor = Color.FromArgb(7, 9, 13);
         Controls.Add(_web);
+        _anim.Tick += OnAnimTick;
     }
 
     /// <summary>Not in Alt+Tab, never activated by showing or resizing (the game keeps the focus).</summary>
     protected override CreateParams CreateParams { get { var cp = base.CreateParams; cp.ExStyle |= WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE | WS_EX_TOPMOST; return cp; } }
     protected override bool ShowWithoutActivation => true;
 
-    void Place()
+    // The window never "jumps" between sizes: it grows and shrinks like a drop. The window itself is first made large enough
+    // for both sizes (cheap – no re-layout of the page per frame); only its visible shape (a rounded region anchored at the
+    // top edge) is animated, and at the end the window gets exactly the target size.
+    readonly System.Windows.Forms.Timer _anim = new() { Interval = 12 };
+    readonly System.Diagnostics.Stopwatch _clock = new();
+    const int AnimMs = 260;
+    int _curW, _curH;               // the visible shape right now (device pixels)
+    int _fromW, _fromH, _toW, _toH; // animation start / target
+    int _toRadius;
+    bool _animating;
+
+    int TargetX(int w, Rectangle screen) => _position == "left" ? screen.Left + LogicalToDeviceUnits(24) : _position == "right" ? screen.Right - w - LogicalToDeviceUnits(24) : screen.Left + (screen.Width - w) / 2;
+
+    /// <summary>A rounded shape of w × h anchored at the top edge of the window (square at the top, round at the bottom).</summary>
+    void Shape(int w, int h, int radius, int windowW)
+    {
+        var off = _position == "left" ? 0 : _position == "right" ? windowW - w : (windowW - w) / 2;
+        var rgn = CreateRoundRectRgn(off, -radius, off + w + 1, h + 1, radius * 2, radius * 2);
+        var old = Region;
+        Region = Region.FromHrgn(rgn);
+        old?.Dispose();
+        DeleteObject(rgn);
+    }
+
+    void Place(bool animate = false)
     {
         var screen = Screen.PrimaryScreen!.Bounds;
         var logical = Sizes[_size];
         var w = LogicalToDeviceUnits(logical.Width);
         var h = LogicalToDeviceUnits(logical.Height);
         var r = LogicalToDeviceUnits(_size == "panel" ? 22 : 18);
-        var margin = LogicalToDeviceUnits(24);
-        var x = _position == "left" ? screen.Left + margin : _position == "right" ? screen.Right - w - margin : screen.Left + (screen.Width - w) / 2;
-        Bounds = new Rectangle(x, screen.Top, w, h);
-        // Square at the top edge, round at the bottom – like a notch hanging from the screen edge.
-        var rgn = CreateRoundRectRgn(0, -r, w + 1, h + 1, r * 2, r * 2);
-        Region = Region.FromHrgn(rgn);
-        DeleteObject(rgn);
+        if (!animate || !Visible || _curW == 0)
+        {
+            _anim.Stop(); _animating = false;
+            Bounds = new Rectangle(TargetX(w, screen), screen.Top, w, h);
+            Shape(w, h, r, w);
+            _curW = w; _curH = h;
+            SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            return;
+        }
+        // From what is visible now to the new size; the window covers both while it moves.
+        _fromW = _curW; _fromH = _curH; _toW = w; _toH = h; _toRadius = r;
+        var uw = Math.Max(Math.Max(_fromW, _toW), 1); var uh = Math.Max(Math.Max(_fromH, _toH), 1);
+        Bounds = new Rectangle(TargetX(uw, screen), screen.Top, uw, uh);
         SetWindowPos(Handle, HWND_TOPMOST, Left, Top, Width, Height, SWP_NOACTIVATE | SWP_SHOWWINDOW);
+        _clock.Restart(); _animating = true;
+        _anim.Start();
+    }
+
+    void OnAnimTick(object? sender, EventArgs e)
+    {
+        try
+        {
+            var t = Math.Min(1.0, _clock.ElapsedMilliseconds / (double)AnimMs);
+            // Ease-out with a tiny spring: fast start, soft landing (never beyond the covering window).
+            var k = 1 - Math.Pow(1 - t, 3);
+            var w = (int)Math.Round(_fromW + (_toW - _fromW) * k);
+            var h = (int)Math.Round(_fromH + (_toH - _fromH) * k);
+            _curW = Math.Max(1, w); _curH = Math.Max(1, h);
+            Shape(_curW, _curH, _toRadius, Width);
+            if (t < 1.0) return;
+            // Done: the window gets exactly the target size.
+            _anim.Stop(); _animating = false;
+            Place(false);
+        }
+        catch (Exception ex) { _anim.Stop(); _animating = false; Log.Warn("island", "Animation abgebrochen: " + ex.Message); Place(false); }
     }
 
     /// <summary>Place at the top edge (center, left, right) and window opacity in percent.</summary>
@@ -120,7 +172,7 @@ sealed class IslandForm : Form
         Opacity = Math.Clamp(opacityPercent, 50, 100) / 100.0;
         if (_position == position) return;
         _position = position;
-        if (Visible) Place();
+        if (Visible) Place(false);
     }
 
     public async void ShowIsland()
@@ -165,7 +217,7 @@ sealed class IslandForm : Form
         catch (JsonException) { return; }
         if (size == null || !Sizes.ContainsKey(size) || size == _size) return;
         _size = size;
-        Place();
+        Place(true);
         // Typing a question needs the keyboard: only the open panel takes the focus – after a click into it.
         if (size == "panel") Activate();
     }
@@ -193,7 +245,7 @@ sealed class IslandForm : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) _web.Dispose();
+        if (disposing) { _anim.Dispose(); _web.Dispose(); }
         base.Dispose(disposing);
     }
 }
