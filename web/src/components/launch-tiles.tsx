@@ -8,7 +8,7 @@ import { toast } from "../lib/hooks";
 import { bumpUsage } from "../lib/prefs";
 import { gradientFor, initials } from "../lib/format";
 import type { LibraryItem } from "../lib/types";
-import { brandBg, brandFor } from "../lib/brands";
+import { brandFor } from "../lib/brands";
 import { BrandLogo } from "./brand-logo";
 import { showMemoryHint } from "./memory-hint";
 
@@ -30,7 +30,7 @@ export function useLaunch() {
   return { launch, launching };
 }
 
-const tileBg = (item: LibraryItem, coverAllowed: boolean) => { const b = tileArt(item, coverAllowed).brand; return b ? brandBg(b) : gradientFor(item.name); };
+const tileBg = (item: LibraryItem, _coverAllowed: boolean) => gradientFor(item.name);
 
 const onKey = (fn: () => void) => (e: KeyboardEvent) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fn(); } };
 
@@ -49,11 +49,11 @@ export function tileArt(item: LibraryItem, coverAllowed = true) {
 export function Art({ item, coverAllowed }: { item: LibraryItem; coverAllowed: boolean }) {
   const [broken, setBroken] = useState(false);
   const art = tileArt(item, coverAllowed);
-  if (art.brand) return <span className="tile-brand"><BrandLogo brand={art.brand} size="56%" /></span>;
+  if (art.brand) return <span className="tile-brand"><BrandLogo brand={art.brand} size="56%" color="#fff" /></span>;
   if (art.pic && !broken) return <img src={art.pic} alt="" loading="lazy" onError={() => setBroken(true)} />;
   // Picture not loadable: the logo if there is one, otherwise the initials.
   const b = broken ? brandFor(item) : undefined;
-  if (b) return <span className="tile-brand"><BrandLogo brand={b} size="56%" /></span>;
+  if (b) return <span className="tile-brand"><BrandLogo brand={b} size="56%" color="#fff" /></span>;
   return <span className="tile-initials">{initials(item.name)}</span>;
 }
 

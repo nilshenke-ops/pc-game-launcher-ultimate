@@ -72,7 +72,7 @@ async function pairByQr(page: Page, base = LAN) {
   await expect(page.locator("input.code-input")).toHaveValue(code);
   await page.getByRole("button", { name: "Koppeln" }).click();
   await confirmOnPc();
-  await expect(page.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(page.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   return code;
 }
 const pill = (p: Page) => p.locator(".conn-pill");
@@ -97,7 +97,7 @@ test.beforeAll(async ({ browser }) => {
   await ctx.addInitScript((hash) => localStorage.setItem("pgl.access", hash), ACCESS_HASH);
   pc = await ctx.newPage();
   await pc.goto(`${PC}/#admin=${readFileSync(join(work, "admin.txt"), "utf8").trim()}`);
-  await expect(pc.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
+  await expect(pc.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible();
   // A real executable that the tests start ("Programm freigeben" is PC-only).
   await pc.goto(`${PC}/#/games`);
   await pc.getByRole("button", { name: "Hinzufügen" }).first().click();
@@ -129,7 +129,7 @@ test("2 + 9 – iPhone öffnet die Website erneut und neu geladen: verbunden ohn
   const tab = await iphone.ctx.newPage(); // the website opened again (new tab, same device)
   await tab.goto(`${LAN}/`);
   await connected(tab);
-  await expect(tab.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
+  await expect(tab.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible();
   await tab.close();
 });
 
@@ -331,11 +331,11 @@ test("21 – PC am Kabel, Handy im WLAN: QR-Code mit der IP öffnet, danach zieh
   await phone.page.goto(`${LAN}/#/pair?code=${code}`);
   await phone.page.getByRole("button", { name: "Koppeln" }).click();
   await confirmOnPc();
-  await expect(phone.page.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(phone.page.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await expect(phone.page.getByText(`Feste Adresse gefunden: gaming-pc.fritz.box:${PORT}`)).toBeVisible({ timeout: 20000 });
   await phone.page.getByRole("button", { name: "Jetzt umziehen" }).click();
   await phone.page.waitForURL(new RegExp(`^http://gaming-pc\\.fritz\\.box:${PORT}/`), { timeout: 15000 });
-  await expect(phone.page.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(phone.page.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   // The new address has its own access (no new pairing): signed in and connected.
   await expect.poll(() => phone.page.evaluate(() => localStorage.getItem("pgl.cred") !== null), { timeout: 20000 }).toBe(true);
   await connected(phone.page, 45000);

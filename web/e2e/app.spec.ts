@@ -43,7 +43,7 @@ async function pair(device: Page, base: string) {
 
   await expect(pc.getByRole("dialog", { name: "Neue Kopplungsanfrage" })).toBeVisible();
   await pc.getByRole("button", { name: "Erlauben" }).click();
-  await expect(device.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(device.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
 }
 
 test("Zugangscode: einmal pro Gerät, falscher Code wird abgelehnt", async ({ browser }) => {
@@ -65,7 +65,7 @@ test("Zugangscode: einmal pro Gerät, falscher Code wird abgelehnt", async ({ br
 
 test("PC-Ansicht zeigt den echten Zustand", async ({ browser }) => {
   pc = await adminPage(browser);
-  await expect(pc.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
+  await expect(pc.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible();
   await expect(pc.getByText("E2E-Gaming-PC").first()).toBeVisible();
   // On the PC the window is connected to its own companion – that must not look like a connected phone.
   await expect(pc.getByText("Dieses Fenster läuft am PC")).toBeVisible();
@@ -95,7 +95,7 @@ test("Ungekoppeltes Handy: Bereiche zeigen „Offline“, Aktionen fragen nach d
 test("Kopplung im WLAN: Code, Bestätigung am PC, Sitzung bleibt nach Neuladen", async () => {
   await pair(phone, COMPANION);
   await phone.reload();
-  await expect(phone.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
+  await expect(phone.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible();
   await pc.goto(`${COMPANION}/#/devices`);
   await expect(pc.getByText("iPhone · Safari").first()).toBeVisible();
   await expect(pc.getByText("Online im WLAN")).toBeVisible();
@@ -1107,7 +1107,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   const tablet = await ctx.newPage();
   await tablet.goto(`${HOSTED_SITE}/`);
   await expect(tablet.getByText("Offline – kein PC verbunden").first()).toBeVisible();
-  await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible();
+  await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible();
   // Design works without a PC.
   await tablet.goto(`${HOSTED_SITE}/#/settings?s=design`);
   await tablet.getByRole("button", { name: "Chrom Dunkel" }).click();
@@ -1254,7 +1254,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await tablet.getByRole("button", { name: "PC verbinden" }).click();
   await expect(pc.getByRole("dialog", { name: "Neue Kopplungsanfrage" })).toBeVisible({ timeout: 15000 });
   await pc.getByRole("button", { name: "Erlauben" }).click();
-  await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(tablet.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await tablet.reload();
   await tablet.locator(".bottom-nav, .sidebar").getByRole("link", { name: "Spiele" }).first().click();
   await expect(tablet.getByText("E2E Testspiel").first()).toBeVisible({ timeout: 15000 });
@@ -1314,7 +1314,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   await phone2.getByRole("button", { name: "PC verbinden" }).click();
   await expect(pc.getByRole("dialog", { name: "Neue Kopplungsanfrage" })).toBeVisible({ timeout: 15000 });
   await pc.getByRole("button", { name: "Erlauben" }).click();
-  await expect(phone2.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(phone2.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
 });
 
 test("Sammlungen ohne PC: Journal und Wiki speichern im Browser, gleichen nach dem Koppeln mit dem PC ab", async ({ browser }) => {
@@ -1575,7 +1575,7 @@ test("Medien: Fotomuseum erkennt dasselbe Bild, Foto ins Erinnerungsbuch, Clip-M
 
 test("JARVIS Spielzeitanalyse: nichts erfunden, eigene Angaben mit Quelle, Spanne statt Zahl, Frist, sichtbar und löschbar", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   const last = () => p.locator(".as-turn.bot").last();
@@ -1615,7 +1615,7 @@ test("JARVIS Spielzeitanalyse: nichts erfunden, eigene Angaben mit Quelle, Spann
 
 test("JARVIS Gaming-Wissen: Sensitivität rechnen, Ratgeber mit Quelle, Ausgaben notieren und löschen", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   const last = () => p.locator(".as-turn.bot").last();
@@ -1652,7 +1652,7 @@ test("JARVIS Gaming-Wissen: Sensitivität rechnen, Ratgeber mit Quelle, Ausgaben
 
 test("JARVIS Quest-Coach: Stand merken, offene Nebenquest, Spoiler-Stufe, „Wo war ich?“ und „Was als Nächstes?“ aus dem Journal", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   const last = () => p.locator(".as-turn.bot").last();
@@ -1687,7 +1687,7 @@ test("JARVIS Quest-Coach: Stand merken, offene Nebenquest, Spoiler-Stufe, „Wo 
 
 test("Programme: installierte Apps automatisch anzeigen – Schalter, Prüfen, ehrlicher Hinweis ohne Windows", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/programs`);
   const sw = p.getByRole("switch", { name: /Installierte Apps automatisch anzeigen/ });
   await expect(sw).toBeChecked();
@@ -1703,7 +1703,7 @@ test("Programme: installierte Apps automatisch anzeigen – Schalter, Prüfen, e
 
 test("Automatisierungen: Vorlage „andere Spiele schließen“, Uhrzeit mit Wochentagen, Bedingungen und Quick Action als Schritt", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/automations`);
   await p.getByRole("button", { name: "Vorlagen" }).click();
   await p.getByRole("button", { name: "Spiel startet → alle anderen Spiele schließen" }).click();
@@ -1733,7 +1733,7 @@ test("Automatisierungen: Vorlage „andere Spiele schließen“, Uhrzeit mit Woc
 
 test("JARVIS: Gaming-Gedächtnis (Plan, heute, offene Projekte) und Challenge-Generator (Anzahl, schwieriger, geschafft)", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   const last = () => p.locator(".as-turn.bot").last();
@@ -1762,7 +1762,7 @@ test("JARVIS: Gaming-Gedächtnis (Plan, heute, offene Projekte) und Challenge-Ge
 
 test("KI-Design-Editor: Vorschau, Verwerfen, Übernehmen (bleibt nach Neuladen), Rückgängig, ursprüngliches Design", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   const last = () => p.locator(".as-turn.bot").last();
@@ -1796,7 +1796,7 @@ test("KI-Design-Editor: Vorschau, Verwerfen, Übernehmen (bleibt nach Neuladen),
 
 test("PC-Steuerung und Leistungsanalyse: echte Werte vom Begleiter, Messung auf Anfrage, JARVIS trennt Messung und Vermutung", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/control`);
   await expect(p.getByRole("heading", { name: "PC-Steuerung" })).toBeVisible();
   await expect(p.getByText("Verbunden", { exact: true })).toBeVisible();
@@ -1827,7 +1827,7 @@ test("JARVIS schlägt Unbekanntes nach: fragt vorher, Spiel-Wiki mit Quelle, mer
     return route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(body) });
   });
   await p.route("https://*.wikipedia.org/**", (route) => route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [] } }) }));
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   const last = () => p.locator(".as-turn.bot").last();
@@ -1889,7 +1889,7 @@ test("KI-Chat: Weiche vor jeder Antwort, Recherche mit Quellen und Datum, Abbrec
   // No free internet on the test machine: the open wikis answer "nothing found"; Mojang's feed is a local stand-in.
   const empty = (route: import("@playwright/test").Route) => route.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [] }, items: [] }) });
   await p.route(/api\.php|wikipedia\.org|api\.stackexchange\.com/, empty);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   const last = () => p.locator(".as-turn.bot").last();
@@ -1957,6 +1957,44 @@ test("KI-Chat ohne PC: nur offene Wikis, offen gesagt – keine vorgetäuschte W
 });
 
 
+test("JARVIS-Stimme (ElevenLabs): Schlüssel am PC, nur Standardstimmen, einschalten, Probe zählt Zeichen, Schlüssel entfernen", async () => {
+  await adminRpc("voice.configure", { key: "" });
+  await pc.goto(`${COMPANION}/#/assistant`);
+  await pc.locator("summary", { hasText: "Stimme & Ton" }).click();
+  const card = pc.getByRole("region", { name: "ElevenLabs-Stimme" });
+  await expect(card).toContainText("Noch kein Schlüssel");
+  // A wrong key is refused by the service, nothing is saved as working.
+  await card.getByLabel("ElevenLabs-Schlüssel").fill("falscher-schluessel-0123456789");
+  await card.getByRole("button", { name: "Schlüssel speichern" }).click();
+  await expect(card).toContainText("Schlüssel gespeichert, Stimme aus");
+  await card.getByRole("button", { name: "Standardstimmen laden" }).click();
+  await expect(pc.getByText("ElevenLabs lehnt den Schlüssel ab")).toBeVisible();
+  await card.getByRole("button", { name: "Schlüssel entfernen" }).click();
+  await expect(card).toContainText("Noch kein Schlüssel");
+  // The right key: only the stock voice is offered (not the cloned or community ones).
+  await card.getByLabel("ElevenLabs-Schlüssel").fill("e2e-eleven-key-0123456789");
+  await card.getByRole("button", { name: "Schlüssel speichern" }).click();
+  await card.getByRole("button", { name: "Standardstimmen laden" }).click();
+  const pick = card.getByLabel("Stimme von ElevenLabs");
+  await expect(pick.locator("option")).toHaveCount(2); // placeholder + Rachel
+  await expect(pick).not.toContainText("Mein Klon");
+  await pick.selectOption({ label: "Rachel · female · american" });
+  await expect(card.getByRole("switch", { name: /ElevenLabs-Stimme benutzen/ })).toBeEnabled();
+  await card.getByRole("switch", { name: /ElevenLabs-Stimme benutzen/ }).click();
+  await expect(card).toContainText("An – Stimme: Rachel");
+  expect((await adminRpc<{ used: number }>("voice.status")).used).toBe(0);
+  // "Probe hören" goes through the PC to the (test) service and is counted.
+  await pc.getByRole("button", { name: "Probe hören" }).click();
+  await expect.poll(async () => (await adminRpc<{ used: number }>("voice.status")).used, { timeout: 10000 }).toBeGreaterThan(0);
+  await expect(card).toContainText(/Diesen Monat [1-9]\d* von 20000 Zeichen/);
+  // Clean up: the key is gone and the voice is off again.
+  await card.getByRole("button", { name: "Schlüssel entfernen" }).click();
+  await expect(card).toContainText("Noch kein Schlüssel");
+  const st = await adminRpc<{ enabled: boolean; keySet: boolean }>("voice.status");
+  expect(st.enabled).toBe(false);
+  expect(st.keySet).toBe(false);
+});
+
 test("Seitenmenü: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet, JARVIS, Einstellungen und „Mehr“ mit allen weiteren Bereichen", async () => {
   await pc.goto(`${COMPANION}/#/`);
   const menu = pc.locator(".sidebar").getByRole("navigation", { name: "Hauptmenü" });
@@ -1986,7 +2024,7 @@ test("Seitenmenü: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet,
 
 test("Designs: fünf Designs (Lavendel-Glas ist Standard), jedes mit eigener Startseite, Oberfläche wählbar, 3D-Neigung, Zurücksetzen", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   const html = p.locator("html");
   // The standard design is the lavender glass one – with its own home screen made of real data.
   await expect(html).toHaveAttribute("data-surface", "glass");
@@ -2051,7 +2089,7 @@ test("Designs: fünf Designs (Lavendel-Glas ist Standard), jedes mit eigener Sta
 
 test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ablehnen, Widgets, nicht im Website-Kopf", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await expect(p.locator(".isl")).toHaveCount(0); // never in the website's top bar
   // The switches live in the PC software; this test companion is not the Windows one – it says so instead of pretending.
   await p.goto(`${COMPANION}/#/assistant`);
@@ -2128,7 +2166,7 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
 
 test("KI-Router: nur am PC einzurichten, kostenlose Modelle live, Reihenfolge, Ausweichmodell wird genannt", async ({ browser }) => {
   const p = await adminPage(browser);
-  await expect(p.getByRole("heading", { name: "Gaming-Zentrale" })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await p.goto(`${COMPANION}/#/assistant`);
   await p.getByRole("button", { name: "Einrichten", exact: true }).click();
   const dlg = p.getByRole("dialog", { name: "Assistent einrichten" });

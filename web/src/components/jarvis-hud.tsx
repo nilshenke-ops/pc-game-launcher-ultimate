@@ -11,6 +11,7 @@ import { useJournalVersion } from "../lib/journal";
 import { memoryCount } from "../lib/jarvis-memory";
 import { NATURAL_LABEL, naturalness, setVoice, setVoiceCfg, stopSpeaking, testVoice, useVoice, voiceCfg, voicesFor } from "../lib/jarvis-voice";
 import { setStyle, useStyle, type JarvisStyle } from "../lib/jarvis-style";
+import { ElevenSettings } from "./eleven-settings";
 
 /** Skills = small tools with one purpose each; the deck only fills in an example – nothing runs before sending. */
 const SKILLS = () => [
@@ -97,6 +98,7 @@ function VoiceSettings() {
           <span className="muted">{t("Ton")}:</span>
           {(["sachlich", "locker"] as JarvisStyle[]).map((s) => <button key={s} type="button" className={`chip ${style === s ? "on" : ""}`} aria-pressed={style === s} onClick={() => setStyle(s)}>{s === "sachlich" ? t("Sachlich") : t("Locker (mit Sprüchen)")}</button>)}
         </div>
+        <ElevenSettings />
         <WebLookupSetting />
         <span className="muted tiny">{t("„Locker“ hängt nach erledigten Aufträgen einen frechen Spruch an – Zahlen und Fakten bleiben gleich, bei Fehlern und Rückfragen gibt es keinen Spruch. JARVIS ahmt keine echte Person nach.")}</span>
       </div>

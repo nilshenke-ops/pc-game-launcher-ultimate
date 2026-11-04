@@ -263,6 +263,8 @@ export interface NavPrefs {
   hidden: string[];
   bottom: string[];
   colors: boolean;
+  /** Uniform symbol colour was applied once (from 2.93.0): older saved "farbig" settings become plain one time. */
+  uniform?: boolean;
   /** Folded categories in the sidebar (category ids). */
   collapsed: string[];
   /** The tidy default was applied once (from 2.61.0). */
@@ -274,7 +276,7 @@ export const TIDY_HIDDEN = [
   "/automations", "/layouts", "/hotkeys", "/input", "/peripherals", "/storage", "/move", "/network", "/start-times", "/inventory", "/crashes",
   "/history", "/overlay-settings", "/files", "/quests", "/room", "/trophies", "/deals",
 ];
-export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [...TIDY_HIDDEN], bottom: ["/", "/deck", "/games", "/soundboard"], colors: true, collapsed: [], tidied: true };
+export const DEFAULT_NAV: NavPrefs = { order: [], hidden: [...TIDY_HIDDEN], bottom: ["/", "/deck", "/games", "/soundboard"], colors: false, uniform: true, collapsed: [], tidied: true };
 /** The bar before 2.7.0 – untouched old defaults get the new bar (with the deck). */
 const OLD_DEFAULT_BOTTOM = "/,/games,/soundboard,/quick";
 
@@ -372,7 +374,7 @@ function sanitizeNav(n: unknown): NavPrefs {
   // Until 2.60 nothing was tucked away by default: an untouched bar gets the tidy one once (all sections stay reachable).
   const tidy = v.tidied !== true && hidden.length === 0;
   const collapsed = Array.isArray(v.collapsed) ? [...new Set(v.collapsed.filter((x): x is string => typeof x === "string" && /^[a-z]{2,12}$/.test(x)))].slice(0, 20) : [];
-  return { order: paths(v.order, 60), hidden: tidy ? [...TIDY_HIDDEN] : hidden, bottom: migrated.length ? migrated : [...DEFAULT_NAV.bottom], colors: v.colors !== false, collapsed, tidied: true };
+  return { order: paths(v.order, 60), hidden: tidy ? [...TIDY_HIDDEN] : hidden, bottom: migrated.length ? migrated : [...DEFAULT_NAV.bottom], colors: v.uniform === true ? v.colors === true : false, uniform: true, collapsed, tidied: true };
 }
 
 // ------------------------------------------------------------------ colours & theme application

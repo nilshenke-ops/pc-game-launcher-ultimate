@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.93.0 – 2026-11-04
+### Neu
+- Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme
+### Verbessert
+- Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation)
+- Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)
+### Behoben
+- Auf dem Handy lag die Kopfleiste bei Glas-Designs durchsichtig über dem Inhalt und überdeckte Texte; sie hat jetzt einen eigenen Glas-Hintergrund und kleinere runde Knöpfe
+
 ## 2.92.0 – 2026-11-03
 ### Neu
 - Fünf neue Designs, die das ganze Aussehen der App und die komplette Startseite bestimmen: **Lavendel-Glas** (Standard, jetzt aktiv), Controller Dunkel, Nacht-Blau, Chrom Dunkel und Chrom Hell – je mit eigener Hintergrund-Grafik, Glas-Oberfläche, schwebender Glas-Seitenleiste und eigenem Aufbau der Startseite

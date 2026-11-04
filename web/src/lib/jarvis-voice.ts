@@ -3,6 +3,7 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
+import { elevenReady, speakEleven, stopEleven } from "./voice-eleven";
 
 const KEY = "pgl.jarvis.voice";
 let on = readJson<boolean>(KEY) ?? true;
@@ -61,10 +62,26 @@ function voiceFor(lang: string): SpeechSynthesisVoice | null {
   return (want ? all.find((v) => v.voiceURI === want) : null) ?? voicesFor(lang, all)[0] ?? null;
 }
 
+let seq = 0; // a newer request (or "stop") cancels an older one that is still waiting for ElevenLabs
+
+/** Speaks with the ElevenLabs voice when it is switched on at the PC; anything that goes wrong falls back to the browser voice. */
 export function speak(text: string, lang = document.documentElement.lang === "en" ? "en-US" : "de-DE", force = false) {
-  if ((!on && !force) || !snap.supported) return;
+  if (!on && !force) return;
   const say = speakable(text);
   if (!say) return;
+  const mine = ++seq;
+  stopEleven();
+  if (snap.supported) window.speechSynthesis.cancel();
+  if (elevenReady()) {
+    void speakEleven(say, () => mine === seq, () => { speaking = true; publish(); }, () => { if (mine === seq) { speaking = false; publish(); } })
+      .then((ok) => { if (!ok && mine === seq) speakBrowser(say, lang); });
+    return;
+  }
+  speakBrowser(say, lang);
+}
+
+function speakBrowser(say: string, lang: string) {
+  if (!snap.supported) return;
   window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(say);
   u.lang = lang;
@@ -79,6 +96,8 @@ export function speak(text: string, lang = document.documentElement.lang === "en
 }
 
 export function stopSpeaking() {
+  seq++;
+  stopEleven();
   if (snap.supported) window.speechSynthesis.cancel();
   speaking = false;
   publish();

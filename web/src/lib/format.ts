@@ -47,8 +47,8 @@ export function initials(name: string) {
 }
 
 /** Deterministic gradient for items without cover art. */
-export function gradientFor(text: string) {
-  let h = 0;
-  for (const c of text) h = (h * 31 + c.charCodeAt(0)) % 360;
-  return `linear-gradient(135deg, hsl(${h} 70% 38%), hsl(${(h + 60) % 360} 70% 22%))`;
+/** The background behind a picture or initials: one calm gradient made from the design's own colour – the same for every
+ * game and area, so tiles never look like a patchwork. (The argument stays for callers; it no longer changes the colour.) */
+export function gradientFor(_text?: string) {
+  return "linear-gradient(135deg, color-mix(in srgb, var(--primary) 58%, #0c0a22), color-mix(in srgb, var(--primary) 24%, #06050f))";
 }
