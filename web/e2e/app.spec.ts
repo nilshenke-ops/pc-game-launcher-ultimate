@@ -1995,6 +1995,44 @@ test("JARVIS-Stimme (ElevenLabs): Schlüssel am PC, nur Standardstimmen, einscha
   expect(st.keySet).toBe(false);
 });
 
+test("Handy (Pixel 7, mit Daten des PCs): Startseite ohne Überlauf, Kacheln normal hoch, Mehr und Menü öffnen „Alle Bereiche“, Insel auffindbar, Name antippen", async ({ browser }) => {
+  const ctx = await newCtx(browser, { ...devices["Pixel 7"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  await p.goto(`${COMPANION}/#admin=${state().adminToken}`);
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
+  await expect(p.getByRole("region", { name: "Deine Spiele" })).toBeVisible();
+  // Nothing wider than the screen, game tiles at least 100 px high (the touch rule for buttons must not squash them).
+  expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  const tile = p.locator(".hs-tile").first();
+  await expect(tile).toBeVisible();
+  expect((await tile.boundingBox())!.height).toBeGreaterThanOrEqual(100);
+  // No hardware chips (Windows | GPU | RAM) on the home screen.
+  await expect(p.locator(".hs-chips")).toHaveCount(0);
+  // "Mehr" in the bottom bar and the menu button on top both open "Alle Bereiche".
+  await p.locator(".bottom-nav").getByRole("button", { name: "Mehr", exact: true }).click();
+  const sheet = p.getByRole("dialog", { name: "Alle Bereiche" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByRole("link", { name: "Backlog" })).toBeVisible();
+  await sheet.getByRole("button", { name: "Schließen" }).first().click().catch(async () => { await p.keyboard.press("Escape"); });
+  await expect(sheet).toHaveCount(0);
+  await p.getByRole("button", { name: "Alle Bereiche öffnen" }).click();
+  await expect(p.getByRole("dialog", { name: "Alle Bereiche" })).toBeVisible();
+  await p.keyboard.press("Escape");
+  // The island is there (small pill at the top) and opens into JARVIS and the widgets.
+  const isl = p.locator(".isl-float .isl-host");
+  await expect(isl).toBeVisible();
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  await expect(p.getByRole("dialog", { name: "JARVIS-Insel" })).toBeVisible();
+  await p.keyboard.press("Escape");
+  // The greeting name can be changed with a tap.
+  await p.locator(".hs-title .hs-name").click();
+  await p.getByRole("textbox", { name: "Dein Name auf der Startseite" }).fill("Nils");
+  await p.getByRole("button", { name: "Speichern" }).click();
+  await expect(p.getByRole("heading", { level: 1 })).toContainText("Hallo Nils!");
+  await p.evaluate(() => localStorage.removeItem("pgl.userName"));
+  await ctx.close();
+});
+
 test("Seitenmenü: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet, JARVIS, Einstellungen und „Mehr“ mit allen weiteren Bereichen", async () => {
   await pc.goto(`${COMPANION}/#/`);
   const menu = pc.locator(".sidebar").getByRole("navigation", { name: "Hauptmenü" });
@@ -2090,7 +2128,7 @@ test("Designs: fünf Designs (Lavendel-Glas ist Standard), jedes mit eigener Sta
 test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ablehnen, Widgets, nicht im Website-Kopf", async ({ browser }) => {
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
-  await expect(p.locator(".isl")).toHaveCount(0); // never in the website's top bar
+  await expect(p.locator(".topbar .isl")).toHaveCount(0); // never in the website's top bar
   // The switches live in the PC software; this test companion is not the Windows one – it says so instead of pretending.
   await p.goto(`${COMPANION}/#/assistant`);
   await expect(p.getByText("Insel oben auf dem PC-Bildschirm")).toBeVisible();

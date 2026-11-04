@@ -35,7 +35,7 @@ public class ProgramIconTests
     }
 
     [Fact]
-    public async Task Start_menu_and_store_apps_get_their_own_icon_once_and_removed_icons_stay_removed()
+    public async Task Start_menu_and_store_apps_get_their_own_icon_and_removed_icons_stay_removed()
     {
         using var dir = new TempDir();
         var file = new LibraryFile();
@@ -53,7 +53,10 @@ public class ProgramIconTests
         Assert.Equal("data:image/png;base64,AAAA", s.Library.Get("item_discord")!.IconData);
         Assert.Null(s.Library.Get("item_spotify")!.IconData);
 
-        // Each item is asked once – no reading in a loop for programs without an icon.
+        // A program without an icon is asked once more (start-menu entries often only get their icon after an update), then never again – no loop.
+        platform.Icons.Asked.Clear();
+        Assert.Equal(0, s.Library.FillMissingIcons());
+        Assert.Single(platform.Icons.Asked);
         platform.Icons.Asked.Clear();
         Assert.Equal(0, s.Library.FillMissingIcons());
         Assert.Empty(platform.Icons.Asked);

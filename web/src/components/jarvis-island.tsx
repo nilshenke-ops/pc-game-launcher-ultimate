@@ -123,7 +123,7 @@ function Confetti() {
 }
 
 /** The island page (own window of the Windows companion; opened in a browser it shows the same at the top). */
-export function JarvisIsland() {
+export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) {
   const s = useIsland();
   const prefs = useIslandPrefs();
   const { look } = useIslandLook();
@@ -226,7 +226,7 @@ export function JarvisIsland() {
   const unfollow = () => { const el = hostRef.current; if (el) { el.style.setProperty("--ex", "0px"); el.style.setProperty("--ey", "0px"); } };
 
   return (
-    <div ref={hostRef} className={`isl-host s-${size} h-${mood}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
+    <div ref={hostRef} className={`isl-host s-${size} h-${mood}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
       {mood === "happy" && s.last && <Confetti key={s.last.at} />}
       {mood === "dancing" && s.music && s.music.beatAt > 0 && <span className="isl-beat" key={s.music.beatAt} aria-hidden />}
       <div className={`isl m-${mood}`}>

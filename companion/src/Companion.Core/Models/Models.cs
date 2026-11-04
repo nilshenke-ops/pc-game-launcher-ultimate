@@ -35,6 +35,8 @@ public sealed class LibraryItem
     public string? IconData { get; set; }
     /// <summary>The PC already tried to read the program's own icon (or the user removed it) – not tried again.</summary>
     public bool IconChecked { get; set; }
+    /// <summary>How often reading the program's icon was tried (a program whose icon could not be read is tried again twice – start-menu entries often only get their icon after an update).</summary>
+    public int IconTries { get; set; }
     /// <summary>The icon was chosen by the user (e.g. icon workshop) – shown before the brand logo; false = icon of the program file.</summary>
     public bool IconCustom { get; set; }
     /// <summary>For Steam and Epic games: the PC already looked for the game's own icon in its install folder (from 2.13).</summary>

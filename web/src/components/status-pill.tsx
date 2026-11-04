@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Gamepad2, Wifi } from "lucide-react";
 import { client } from "../lib/rpc";
@@ -16,6 +16,8 @@ export function StatusPill() {
   const { state } = useAppState();
   const waiting = useOutbox();
   const [open, setOpen] = useState(false);
+  // The floating island sits below this pill (see .isl-float).
+  useEffect(() => { document.documentElement.toggleAttribute("data-status-pill", on && !client.demo); return () => document.documentElement.removeAttribute("data-status-pill"); }, [on]);
   if (!on || client.demo) return null;
   const view = connView(conn, { hasCredentials: !!client.credentials });
   const connected = view.key === "connected";

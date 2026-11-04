@@ -189,7 +189,7 @@ public sealed class LibraryService
     /// Runs in the background; reading happens outside the store lock.</summary>
     public int FillMissingIcons()
     {
-        static bool Due(LibraryItem i) => i.IconData == null && (i.Source is LaunchSource.Exe or LaunchSource.AppsFolder ? !i.IconChecked : i.Source is LaunchSource.Steam or LaunchSource.Epic && !i.GameIconTried);
+        static bool Due(LibraryItem i) => i.IconData == null && (i.Source is LaunchSource.Exe or LaunchSource.AppsFolder ? (!i.IconChecked || i.IconTries < 2) : i.Source is LaunchSource.Steam or LaunchSource.Epic && !i.GameIconTried);
         var todo = List().Where(Due).Take(50).ToList();
         if (todo.Count == 0) return 0;
         var found = todo.ToDictionary(i => i.Id, SafeIcon);
@@ -198,7 +198,7 @@ public sealed class LibraryService
         {
             foreach (var i in f.Items.Where(x => found.ContainsKey(x.Id) && Due(x)))
             {
-                i.IconChecked = i.GameIconTried = true;
+                i.IconChecked = i.GameIconTried = true; i.IconTries++;
                 if (i.IconData == null && found[i.Id] is { } ic && ic.Length <= 200_000) { i.IconData = ic; n++; }
             }
             return n;
@@ -467,7 +467,7 @@ public sealed class LibraryService
             if (u.Categories != null) i.Categories = u.Categories.Select(x => Security.DeviceStore.Sanitize(x, 30, "")).Where(x => x != "").Distinct().Take(10).ToList();
             if (u.Favorite != null) i.Favorite = u.Favorite.Value;
             if (u.CoverUrl != null) i.CoverUrl = u.CoverUrl == "" ? null : u.CoverUrl;
-            if (u.IconData != null) { i.IconData = u.IconData == "" ? null : u.IconData; i.IconCustom = i.IconData != null; i.IconChecked = i.GameIconTried = true; }
+            if (u.IconData != null) { i.IconData = u.IconData == "" ? null : u.IconData; i.IconCustom = i.IconData != null; i.IconChecked = i.GameIconTried = true; i.IconTries = 2; }
             if (u.ProfileId != null) i.ProfileId = u.ProfileId == "" ? null : u.ProfileId;
             if (u.ProcessNames != null) i.ProcessNames = u.ProcessNames.Select(p => Path.GetFileNameWithoutExtension(p.Trim())).Where(p => p.Length is > 0 and < 100).Distinct().Take(10).ToList();
             if (u.Notes != null) i.Notes = u.Notes.Length > 1000 ? u.Notes[..1000] : u.Notes;

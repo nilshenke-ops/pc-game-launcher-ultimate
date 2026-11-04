@@ -1,17 +1,19 @@
 // The home screen of the designs: greeting, PC status, "Deine Spiele", "Zuletzt verwendet", performance – everything from the
 // real data of the PC (library, history, live load). Each design has its own composition (see data-home / homeVariant).
-import { useState, useSyncExternalStore, type ReactNode } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, ChevronRight, Clock, Cpu, Gamepad2, Gpu, LayoutDashboard, Monitor, MemoryStick, MoreHorizontal, Pause, Play, Plus, Rocket, SkipBack, SkipForward, Zap } from "lucide-react";
+import { ArrowRight, ChevronRight, Clock, Gamepad2, LayoutDashboard, Monitor, MoreHorizontal, Pause, Play, Plus, Rocket, SkipBack, SkipForward, Zap } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client, readJson, writeJson } from "../lib/rpc";
 import { toast, useCan, useConn, useEvent, useLiveSubscription, useRpc } from "../lib/hooks";
 import { usePrefs, homeVariant } from "../lib/prefs";
 import { useAppState } from "../lib/state";
 import { connView } from "../lib/conn-state";
-import { addPoint, cleanName, homeGames, homeQuick, homeRecent, NAME_KEY, perfState, sparkPath, totalHours, type HistoryData } from "../lib/home-data";
+import { addPoint, cleanName, greetingName, homeGames, homeQuick, homeRecent, NAME_KEY, perfState, sparkPath, totalHours, type HistoryData } from "../lib/home-data";
 import type { LibraryItem, MetricsSample } from "../lib/types";
 import { gradientFor } from "../lib/format";
+import { session } from "../lib/design-account";
+import { Button, Modal } from "./ui";
 import { Art, useLaunch } from "./launch-tiles";
 import { BrandLogo } from "./brand-logo";
 import { brandById } from "../lib/brands";
@@ -74,6 +76,22 @@ function IconTile({ item, launch }: { item: LibraryItem; launch: (i: LibraryItem
   return <button type="button" className="hs-mini" onClick={() => launch(item)} aria-label={t("{name} starten", { name: item.name })} title={item.name}><span className="hs-mini-art" style={{ background: gradientFor(item.name) }}><Art item={item} coverAllowed /></span></button>;
 }
 
+function RenameDialog({ current, onClose }: { current: string; onClose: () => void }) {
+  const [v, setV] = useState(current);
+  const save = () => { setUserName(v); onClose(); };
+  return (
+    <Modal title={t("Wie soll JARVIS dich nennen?")} onClose={onClose} footer={<>
+      <Button onClick={onClose}>{t("Abbrechen")}</Button>
+      <Button variant="primary" onClick={save}>{t("Speichern")}</Button>
+    </>}>
+      <div className="stack">
+        <input className="input" autoFocus value={v} maxLength={24} placeholder={t("Gamer")} aria-label={t("Dein Name auf der Startseite")} onChange={(e) => setV(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter") save(); }} />
+        <p className="small muted">{t("Steht in der Begrüßung („Hallo …!“). Nur auf diesem Gerät gespeichert.")}</p>
+      </div>
+    </Modal>
+  );
+}
+
 export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
   const prefs = usePrefs();
   const variant = homeVariant(prefs.theme.preset);
@@ -99,10 +117,8 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
   const hours = totalHours(hist.data);
   const perf = perfState(online ? m?.cpuPercent : null);
   const first = games[0] ?? recent[0];
-  const greeting = userName || t("Gamer");
-  const gpu = m?.gpus?.[0]?.name;
-  const ram = m?.memTotalBytes ? `${Math.round(m.memTotalBytes / 1024 ** 3)} GB RAM` : null;
-  const platform = state?.platform ? (/win/i.test(state.platform) ? "Windows" : state.platform) : null;
+  const [renaming, setRenaming] = useState(false);
+  const greeting = greetingName(userName, session()?.user) || t("Gamer");
   const media = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
 
   const start = (
@@ -165,17 +181,12 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
   ) : (
     <div className="hs-hero">
       {(variant === "chrome" || variant === "chromelight") && <div className="hs-eyebrow line">{t("PC Game Launcher Ultimate")}</div>}
-      <h1 className="hs-title">{t("Hallo {n}!", { n: greeting })} <span className="hs-wave" aria-hidden>{variant === "chrome" || variant === "chromelight" ? "" : "👋"}</span></h1>
+      <h1 className="hs-title"><button type="button" className="hs-name" onClick={() => setRenaming(true)} title={t("Name ändern")}>{t("Hallo {n}!", { n: greeting })}</button> <span className="hs-wave" aria-hidden>{variant === "chrome" || variant === "chromelight" ? "" : "👋"}</span></h1>
       <p className="hs-sub">{variant === "chrome" || variant === "chromelight" ? t("Deine Gaming-Zentrale – einfach. schnell. modern.") : t("Deine Gaming-Zentrale – einfach. schnell. überall.")}</p>
       {variant !== "stats" && <div className="hs-actions">{start}<button type="button" className="hs-edit" onClick={onEdit} aria-label={t("Anpassen")}><LayoutDashboard size={16} /><span className="hs-edit-t">{t("Anpassen")}</span></button></div>}
     </div>
   );
 
-  const WinLogo = <svg viewBox="0 0 16 16" width="18" height="18" aria-hidden><path fill="currentColor" d="M0 2.3 6.5 1.4v6H0zM7.3 1.3 16 0v7.4H7.3zM0 8.6h6.5v6L0 13.7zM7.3 8.6H16V16l-8.7-1.2z" /></svg>;
-  const chips: [ReactNode, string][] = [];
-  if (online && platform) chips.push([/windows/i.test(platform) ? WinLogo : <Monitor size={18} />, platform]);
-  if (online && gpu) chips.push([<Gpu key="g" size={18} />, gpu.replace(/NVIDIA GeForce |AMD Radeon /i, "")]);
-  if (online && ram) chips.push([variant === "controller" ? <Cpu key="c" size={18} /> : <MemoryStick key="r" size={18} />, ram]);
   const statusCard = (
     <Link to="/diagnostics" className={`hs-status ${view.tone}${online ? " is-online" : ""}`} aria-label={t("Verbindungsstatus: {s}", { s: t(view.label) })}>
       <div className="hs-ring" aria-hidden><span><Monitor size={40} /></span></div>
@@ -183,7 +194,6 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
         <b className="hs-status-title">{online ? t("PC verbunden") : t(view.short)}</b>
         <span className="hs-status-sub"><i className={`dot ${view.tone}`} />{online ? t("Alles bereit!") : t(view.label)}</span>
       </div>
-      {chips.length > 0 && <div className="hs-chips">{chips.map(([ic, label]) => <span key={label}>{ic}{label}</span>)}</div>}
     </Link>
   );
 
@@ -197,6 +207,7 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
 
   return (
     <div className={`home-showcase v-${variant}`}>
+      {renaming && <RenameDialog current={userName || greetingName("", session()?.user)} onClose={() => setRenaming(false)} />}
       <h2 className="sr-only">{t("Gaming-Zentrale")}</h2>
       <div className="hs-top">
         {hero}

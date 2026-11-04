@@ -37,6 +37,21 @@ const BRANDS = [
   ["notion", "Notion", /^notion$/], ["obsidian", "Obsidian", /obsidian/], ["github", "Github", /github/],
   ["steamdeck", "Steamdeck", /steam deck/], ["osu", "Osu", /^osu!?$|\\osu!?\.exe/],
   ["thefinals", "Thefinals", /^the finals$/],
+  ["claude", "Claude", /^claude/], ["curseforge", "Curseforge", /curseforge/], ["dolby", "Dolby", /dolby/], ["icloud", "Icloud", /icloud/],
+  ["instagram", "Instagram", /instagram/], ["intel", "Intel", /\bintel\b/], ["keepass", "Keepassxc", /keepass/], ["hp", "Hp", /^hp\b|\bhp (smart|pc|support|wolf)/],
+  ["modrinth", "Modrinth", /modrinth/], ["python", "Python", /^python/], ["docker", "Docker", /docker/], ["figma", "Figma", /^figma/],
+  ["messenger", "Messenger", /^messenger/], ["reddit", "Reddit", /^reddit/], ["facebook", "Facebook", /^facebook/], ["pinterest", "Pinterest", /pinterest/],
+  ["snapchat", "Snapchat", /snapchat/], ["paypal", "Paypal", /paypal/], ["dropbox", "Dropbox", /dropbox/], ["googledrive", "Googledrive", /google drive/],
+  ["samsung", "Samsung", /samsung/], ["lenovo", "Lenovo", /lenovo|legion/], ["asus", "Asus", /^asus|myasus/], ["msi", "Msi", /^msi\b|msi center|dragon center/],
+  ["wacom", "Wacom", /wacom/], ["notepadpp", "Notepadplusplus", /notepad\+\+/], ["7zip", "7zip", /7-?zip/], ["todoist", "Todoist", /todoist/],
+  ["evernote", "Evernote", /evernote/], ["plex", "Plex", /^plex/], ["tidal", "Tidal", /^tidal/], ["soundcloud", "Soundcloud", /soundcloud/],
+  ["unity", "Unity", /^unity( hub)?$/], ["unreal", "Unrealengine", /unreal engine/], ["godot", "Godotengine", /godot/], ["git", "Git", /^git( bash| gui)?$/],
+  ["gitlab", "Gitlab", /gitlab/], ["postman", "Postman", /postman/], ["wireshark", "Wireshark", /wireshark/], ["virtualbox", "Virtualbox", /virtualbox/],
+  ["vmware", "Vmware", /vmware/], ["teamviewer", "Teamviewer", /teamviewer/], ["anydesk", "Anydesk", /anydesk/], ["nordvpn", "Nordvpn", /nordvpn/],
+  ["protonvpn", "Protonvpn", /proton ?vpn/], ["expressvpn", "Expressvpn", /expressvpn/], ["bitwarden", "Bitwarden", /bitwarden/], ["1password", "1password", /1password/],
+  ["lastpass", "Lastpass", /lastpass/], ["thunderbird", "Thunderbird", /thunderbird/], ["vivaldi", "Vivaldi", /vivaldi/], ["duckduckgo", "Duckduckgo", /duckduckgo/],
+  ["hyperx", "Hyperx", /hyperx/], ["rog", "Republicofgamers", /\brog\b|republic of gamers|armoury crate/], ["alienware", "Alienware", /alienware/],
+  ["ollama", "Ollama", /ollama/], ["perplexity", "Perplexity", /perplexity/], ["obsidianmd", "Obsidian", /obsidian/],
 ];
 
 // Games (and the Xbox app) from Arcticons: id, Arcticons name, display name, tile colour, match.
@@ -66,6 +81,26 @@ const GAMES = [
   ["xbox", "xbox", "Xbox", "#107c10", /^xbox( app)?$|gaming services/], ["gamepass", "xbox-gamepass", "Game Pass", "#107c10", /game pass/],
   ["nintendo", "nintendo", "Nintendo", "#e60012", /nintendo/],
 ];
+
+// Everyday apps without a simple-icons logo (Adobe, Microsoft, Canva …) from Arcticons: id, Arcticons name, display name, tile colour, match.
+const APPS = [
+  ["acrobat", "adobe-acrobat", "Adobe Acrobat", "#b30b00", /adobe acrobat|acrobat reader/], ["canva", "canva", "Canva", "#00c4cc", /canva/],
+  ["copilot", "microsoft-copilot", "Copilot", "#5b5fc7", /copilot/], ["chatgpt", "openai-chatgpt", "ChatGPT", "#10a37f", /chatgpt/],
+  ["edge", "edge", "Microsoft Edge", "#0f7dc2", /microsoft edge|^edge$/], ["m365", "microsoft-365", "Microsoft 365", "#d83b01", /microsoft 365|^office$|microsoft office/],
+  ["excel", "microsoft-excel", "Excel", "#107c41", /\bexcel\b/], ["powerpoint", "microsoft-powerpoint", "PowerPoint", "#c43e1c", /powerpoint/],
+  ["teams", "microsoft-teams", "Microsoft Teams", "#5059c9", /microsoft teams|^teams$/], ["onedrive", "microsoft-onedrive", "OneDrive", "#0364b8", /onedrive/],
+  ["onenote", "microsoft-onenote", "OneNote", "#7719aa", /onenote/], ["outlook", "microsoft-outlook", "Outlook", "#0078d4", /outlook/],
+  ["msstore", "microsoft", "Microsoft Store", "#0078d4", /microsoft store/], ["medal", "medal-tv", "Medal", "#d4a017", /^medal$/],
+  ["logitech", "logitech-g", "Logitech G", "#00b8fc", /logitech/], ["slack", "slack", "Slack", "#4a154b", /^slack/],
+  ["amazon", "amazon", "Amazon", "#ff9900", /^amazon\b/], ["primevideo", "amazon-prime-video", "Prime Video", "#00a8e1", /prime video/],
+  ["disney", "disney", "Disney+", "#113ccf", /disney/], ["voicemod", "voicemod-controller", "Voicemod", "#7d3cff", /voicemod/],
+  ["omen", "omen-gaming-hub", "OMEN", "#d71920", /\bomen\b/], ["skype", "skype", "Skype", "#00aff0", /^skype/],
+  ["calculator", "calculator", "Rechner", "#4a4a4a", /^rechner$|^calculator$/],
+  ["camera", "camera", "Kamera", "#4a4a4a", /^kamera$|^camera$/], ["clock", "clock", "Uhr", "#4a4a4a", /^uhr$|^clock$/],
+  ["mail", "mail", "Mail", "#3b6fd6", /^mail$|^e-?mail$/], ["feedback", "feedback", "Feedback-Hub", "#4a4a4a", /feedback-?hub/],
+  ["vscode", "visual-studio-code", "Visual Studio Code", "#007acc", /visual studio code|^vs ?code$/], ["quantum", "quantum", "JBL QuantumENGINE", "#ff6a00", /quantum ?engine/],
+  ["jbl", "jblheadphones", "JBL", "#ff6a00", /^jbl/],
+];
 const SAFE = /^(<(path|circle|ellipse|rect|line|polyline|polygon|g)\b(\s+(fill|stroke|stroke-linecap|stroke-linejoin|stroke-width|stroke-miterlimit|d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|points|transform)="[^"<>]*")*\s*\/?>|<\/(g)>)+$/;
 
 const out = [];
@@ -81,6 +116,12 @@ for (const [id, name, label, hex, rx] of GAMES) {
   if (!SAFE.test(icon.body)) throw new Error("unerwarteter SVG-Inhalt: " + name);
   out.push(`  { id: ${JSON.stringify(id)}, name: ${JSON.stringify(label)}, hex: "${hex}", match: ${rx}, body: ${JSON.stringify(icon.body)}, source: "arcticons" },`);
 }
+for (const [id, name, label, hex, rx] of APPS) {
+  const icon = arc.icons[name];
+  if (!icon) throw new Error("fehlt in Arcticons: " + name);
+  if (!SAFE.test(icon.body)) throw new Error("unerwarteter SVG-Inhalt: " + name);
+  out.push(`  { id: ${JSON.stringify(id)}, name: ${JSON.stringify(label)}, hex: "${hex}", match: ${rx}, body: ${JSON.stringify(icon.body)}, source: "arcticons" },`);
+}
 const file = `// GENERATED by scripts/gen-brand-icons.mjs – do not edit by hand.
 // simple-icons ${version} (CC0 1.0) and Arcticons ${arcVersion} (CC BY-SA 4.0, © Donnnno and contributors,
 // https://github.com/Arcticons-Team/Arcticons) – see docs/LIZENZEN.md. Logos identify the program or game the user
@@ -91,4 +132,4 @@ ${out.join("\n")}
 ];
 `;
 writeFileSync(new URL("../web/src/lib/brand-icons.ts", import.meta.url), file);
-console.log(BRANDS.length + " Logos (simple-icons) + " + GAMES.length + " (Arcticons) geschrieben");
+console.log(BRANDS.length + " Logos (simple-icons) + " + (GAMES.length + APPS.length) + " (Arcticons) geschrieben");

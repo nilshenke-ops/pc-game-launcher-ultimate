@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addPoint, cleanName, homeGames, homeQuick, homeRecent, perfState, sparkPath, totalHours } from "./home-data";
+import { addPoint, cleanName, greetingName, homeGames, homeQuick, homeRecent, perfState, sparkPath, totalHours } from "./home-data";
 import type { LibraryItem, MetricsSample } from "./types";
 
 const it_ = (id: string, name: string, kind: "game" | "program" = "game", extra: Partial<LibraryItem> = {}) => ({ id, name, kind, source: "exe", target: "", args: "", processNames: [], categories: [], favorite: false, addedAt: "2026-01-01T00:00:00Z", ...extra }) as LibraryItem;
@@ -22,4 +22,15 @@ describe("Startseite: echte Daten", () => {
     expect(sparkPath([0, 100], 100, 40)).toBe("M0.0 40.0 L100.0 0.0");
   });
   it("Name: Steuerzeichen und spitze Klammern raus, höchstens 24 Zeichen", () => { expect(cleanName("  <b>Nils\u0007henke</b> ")).toBe("bNilshenke/b"); expect(cleanName("x".repeat(40)).length).toBe(24); expect(cleanName(5)).toBe(""); });
+});
+
+describe("Begrüßung: Name", () => {
+  it("eigener Name geht vor, sonst Vorname aus dem Konto, sonst leer", () => {
+    expect(greetingName("Nils", "nilshenke")).toBe("Nils");
+    expect(greetingName("", "nils.henke@example.com")).toBe("Nils");
+    expect(greetingName("", "NILS_henke")).toBe("Nils");
+    expect(greetingName("", "nilshenke")).toBe("Nilshenke");
+    expect(greetingName("  ", null)).toBe("");
+    expect(greetingName("", "123")).toBe("");
+  });
 });

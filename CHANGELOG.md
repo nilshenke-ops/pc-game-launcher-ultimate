@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.97.0 – 2026-11-04
+### Neu
+- Die JARVIS-Insel gibt es jetzt auch in der App selbst (Handy und Webseite): eine kleine schwebende Insel oben, Tippen öffnet JARVIS, Timer, Spiel und alle Widgets; abschaltbar unter JARVIS → „Insel auch in dieser App zeigen“ (nur auf diesem Gerät)
+- Die Begrüßung nimmt den Namen deines Kontos („Hallo Nils!“); ein Tipp auf den Namen öffnet „Wie soll JARVIS dich nennen?“
+- Viel mehr Logos statt Buchstaben bei Programmen: u. a. Adobe Acrobat, Canva, Copilot, ChatGPT, Claude, CurseForge, Dolby, iCloud, Instagram, Intel, KeePass, HP, Microsoft Edge/Store/365/Teams/OneDrive/Outlook, Medal, Modrinth, Logitech, Docker, Figma, Python, VPN- und Passwort-Programme
+- Begleiter: Ein Programm, dessen Icon nicht gelesen werden konnte, wird noch zweimal versucht (Startmenü-Einträge bekommen ihr Icon oft erst später)
+### Verbessert
+- Programm-Kacheln und die Schnellstart-Kacheln im Glas-Look der Startseite (statt dunkler Kästen und bunter Flächen)
+- Startseite: Die Zeile mit Windows, Grafikkarte und Arbeitsspeicher ist weg
+### Behoben
+- Handy-Startseite war verbuggt: Spiele-Kacheln wurden durch die 44-Pixel-Regel für Knöpfe plattgedrückt und die Seite war breiter als der Bildschirm („Alle anzeigen“ und Kacheln rechts abgeschnitten)
+- Browser-Test der Insel-Augenfarbe wartet auf die Einblendung
+
 ## 2.96.0 – 2026-11-04
 ### Verbessert
 - Handy wie in den Vorlagen: Oben schwebt die Leiste ohne Hintergrund über der Seite (erst beim Scrollen bekommt sie ihr Glas) mit Menü-Knopf links (öffnet „Alle Bereiche“), dem Verbindungspunkt und dem Datenschutz-Knopf; rechts Suche, **JARVIS**, **Anmeldung** und Benachrichtigungen

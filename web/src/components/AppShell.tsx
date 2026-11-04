@@ -5,6 +5,8 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, Check, ChevronDown, Menu, Monitor, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Smartphone, Sparkles, Wifi } from "lucide-react";
 import { SheetNav } from "./sidebar-nav";
 import { MockNav } from "./mock-nav";
+import { JarvisIsland } from "./jarvis-island";
+import { useInAppIsland } from "../lib/island-inapp";
 import { client, exitDemo, HOSTED, lanPc } from "../lib/rpc";
 import { connView, isHomeNetworkHost } from "../lib/conn-state";
 import { DEMO_BUILD } from "../lib/demo-flag";
@@ -166,6 +168,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => { const on = () => setAppUpdated(true); window.addEventListener("pgl-app-updated", on); return () => window.removeEventListener("pgl-app-updated", on); }, []);
   const [showOutbox, setShowOutbox] = useState(false);
 
+  const inAppIsland = useInAppIsland();
   const preview = client.preview;
   const notifCount = preview ? 0 : state?.counts.notifications ?? 0;
 
@@ -178,6 +181,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="main">
+        {inAppIsland && <div className="isl-float" role="region" aria-label={t("JARVIS-Insel")}><JarvisIsland floating /></div>}
         <header className={`topbar${scrolled ? " scrolled" : ""}${loc.pathname === "/" ? " on-home" : ""}`}>
           <button type="button" className="topbar-menu" onClick={() => setMore(true)} aria-label={t("Alle Bereiche öffnen")} aria-haspopup="dialog"><Menu size={22} /></button>
           <span className="title">{current.label}</span>

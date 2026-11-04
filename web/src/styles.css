@@ -2341,3 +2341,44 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
   .hs-status, .hs-pillstatus { display: none; }
   .hs-tile-art.logo { width: 60px; height: 60px; top: 38%; }
 }
+
+/* ================================================================== 2.97: phone fixes (width, tile height) + name button */
+.hs-name { background: none; border: 0; padding: 0; margin: 0; color: inherit; font: inherit; letter-spacing: inherit; cursor: pointer; text-align: left; min-height: 0 !important; }
+.hs-name:hover { text-decoration: none; opacity: .92; }
+.home-showcase { grid-template-columns: minmax(0, 1fr); }
+.home-showcase > *, .hs-bottom > *, .hs-top > * { min-width: 0; }
+@media (max-width: 899px) {
+  /* buttons are at least 44 px on touch screens – that rule must not shrink the game tiles */
+  .home-showcase .hs-tile { min-height: 108px !important; }
+  .home-showcase .hs-mini { min-height: 58px !important; }
+  .hs-section, .hs-row { max-width: 100%; }
+  .hs-minis { max-width: 100%; }
+}
+
+/* ================================================================== 2.97: app tiles and quick-start tiles in the glass look of the home screen */
+:root:not([data-surface="soft"]) .app-icon { width: 72px; height: 72px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: linear-gradient(155deg, rgba(255,255,255,0.28), rgba(var(--primary-rgb), 0.24)) !important; box-shadow: 0 16px 30px -18px rgba(10,8,40,0.75), inset 0 1px 0 rgba(255,255,255,0.42); }
+:root:not([data-surface="soft"]) .app-icon::after { background: radial-gradient(120% 70% at 20% 0%, rgba(255,255,255,0.22), rgba(255,255,255,0) 60%); }
+:root:not([data-surface="soft"]) .tile-initials { color: var(--text); text-shadow: none; font-weight: 600; letter-spacing: 0.03em; font-size: 1.3rem; }
+:root:not([data-surface="soft"]) .app-icon img { border-radius: inherit; }
+.app-name { color: var(--text); opacity: 0.92; }
+:root:not([data-surface="soft"]) .home-tile { background: linear-gradient(155deg, rgba(255,255,255,0.24), rgba(var(--primary-rgb), 0.2)) !important; border: 1px solid rgba(255,255,255,0.28); color: var(--text); border-radius: 22px;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 16px 30px -20px rgba(10,8,40,0.7), inset 0 1px 0 rgba(255,255,255,0.4); }
+:root:not([data-surface="soft"]) .home-tile::after { background: radial-gradient(120% 70% at 20% 0%, rgba(255,255,255,0.16), transparent 60%); }
+:root:not([data-surface="soft"]) .home-tile-label { text-shadow: none; font-weight: 600; }
+:root:not([data-surface="soft"]) .home-tile-icon { background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.22); }
+:root[data-home="chromelight"] .home-tile, :root[data-home="chromelight"] .app-icon { color: #14151a; }
+
+/* ================================================================== 2.97: the JARVIS island inside the app (floating pill, opens into the widgets) */
+.isl-float { position: fixed; z-index: 70; top: 10px; left: 50%; transform: translateX(-50%); pointer-events: none; }
+.isl-float > * { pointer-events: auto; }
+.isl-host.floating { height: auto; max-height: min(78vh, 640px); width: 132px; border-radius: 22px; overflow: hidden; background: #07090d; box-shadow: 0 18px 40px -14px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.12);
+  transition: width .55s var(--spring), border-radius .4s ease, box-shadow .3s ease; }
+.isl-host.floating.s-bar { width: min(92vw, 460px); } .isl-host.floating.s-ask { width: min(94vw, 560px); } .isl-host.floating.s-panel { width: min(94vw, 580px); border-radius: 28px; }
+.isl-host.floating::after { border-radius: 22px; }
+.isl-host.floating .isl-panel { max-height: calc(min(78vh, 640px) - 44px); overflow-y: auto; overscroll-behavior: contain; }
+.isl-host.floating .isl { height: 38px; }
+@media (min-width: 900px) { .isl-float { left: calc((100vw + var(--sidebar-w) + 40px) / 2); } }
+@media (max-width: 899px) { .isl-float { top: calc(env(safe-area-inset-top) + 58px); } }
+@media (prefers-reduced-motion: reduce) { .isl-host.floating { transition: none; } }
+@media (max-width: 899px) { html[data-status-pill] .isl-float { top: calc(env(safe-area-inset-top) + 106px); } }

@@ -8,6 +8,7 @@ import { client } from "../lib/rpc";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, Field, Segmented, Switch } from "./ui";
 import { IslandEyes } from "./jarvis-island";
+import { setInAppIsland, useInAppIsland } from "../lib/island-inapp";
 import { ISLAND_WIDGETS, toggleWidget } from "../lib/island-widgets";
 import { ISLAND_EYES, ISLAND_EYE_SIZES, ISLAND_STYLES, eyeColor, type IslandEye, type IslandEyeSize, type IslandStyle } from "../lib/island";
 import { ISLAND_POSITIONS, MIN_OPACITY, useIslandLook, type IslandPosition } from "../lib/island-look";
@@ -23,9 +24,11 @@ function IslandSwitchesCard() {
   const save = (p: { desktop?: boolean; games?: boolean }) =>
     client.call<{ error?: string | null }>("island.configure", p).then((r) => { if (r.error) toast(r.error, "error"); st.reload(); }, (e: Error) => toast(e.message, "error"));
   const d = st.data;
+  const inApp = useInAppIsland();
   return (
     <Card title={t("Insel oben auf dem PC-Bildschirm")} icon={<Sparkles size={18} />} className="flat">
       <div className="stack-sm">
+        <Switch checked={inApp} onChange={setInAppIsland} label={t("Insel auch in dieser App zeigen")} hint={t("Eine kleine schwebende Insel oben in der App (auch am Handy): Tippen öffnet JARVIS, Timer, Spiel und Widgets. Nur auf diesem Gerät.")} />
         <p className="small muted">{t("Oben in der Mitte des Bildschirms sind nur JARVIS' Augen zu sehen. Fährst du mit der Maus darüber, zeigt er, was er tut; antippen öffnet Widgets (laufendes Spiel, Musiktasten, Uhr, Fokus-Timer, Frage an JARVIS). Fragt er nach (z. B. Spiel starten), bestätigst du direkt dort. Auf dem Windows-Sperrbildschirm darf kein Programm etwas anzeigen.")}</p>
         {!online ? <Banner kind="info">{t("Zum Einstellen muss der PC verbunden sein.")}</Banner>
           : d && !d.supported ? <Banner kind="info">{t("Die Insel gibt es nur im Windows-Begleiter.")}</Banner>

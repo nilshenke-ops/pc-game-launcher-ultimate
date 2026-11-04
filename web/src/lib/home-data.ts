@@ -55,3 +55,13 @@ export function sparkPath(points: number[], w = 160, h = 40): string | null {
 const NAME_KEY = "pgl.userName";
 export const cleanName = (v: unknown) => (typeof v === "string" ? v.replace(/[\u0000-\u001f<>]/g, "").trim().slice(0, 24) : "");
 export { NAME_KEY };
+
+/** The name for the greeting: the one typed in, else the first name part of the signed-in account ("nils.henke" → "Nils"), else nothing. */
+export function greetingName(typed: string, account?: string | null): string {
+  const own = cleanName(typed);
+  if (own) return own;
+  const base = String(account ?? "").split("@")[0];
+  const first = base.split(/[\s._-]+/).find((x) => /\p{L}{2,}/u.test(x)) ?? "";
+  const letters = first.replace(/[^\p{L}]/gu, "");
+  return letters ? letters.charAt(0).toUpperCase() + letters.slice(1).toLowerCase() : "";
+}

@@ -34,3 +34,15 @@ describe("logos", () => {
     expect(BRANDS.filter(isGameBrand).length).toBeGreaterThanOrEqual(50);
   });
 });
+
+describe("Logos für Alltags-Programme", () => {
+  it.each([
+    ["Adobe Acrobat", "acrobat"], ["Canva", "canva"], ["Copilot", "copilot"], ["CurseForge", "curseforge"], ["Dolby Access", "dolby"], ["iCloud", "icloud"],
+    ["Instagram", "instagram"], ["Intel® Graphics Software", "intel"], ["KeePass", "keepass"], ["HP Smart", "hp"], ["Microsoft Edge", "edge"],
+    ["Microsoft Store", "msstore"], ["Medal", "medal"], ["Modrinth App", "modrinth"], ["Netflix", "netflix"], ["NVIDIA App", "nvidia"], ["ChatGPT Classic", "chatgpt"],
+    ["Claude", "claude"], ["Firefox", "firefox"], ["GitHub Desktop", "github"], ["Discord", "discord"], ["Epic Games Launcher", "epic"],
+  ])("%s → %s", (name, id) => { expect(brandFor({ name })?.id).toBe(id); });
+  it("unbekannte Programme bekommen keinen falschen Treffer", () => {
+    for (const n of ["Alpine Client", "Luci", "Freebuff", "Lunar Client", "Goodnotes", "BlueStacks 5"]) expect(brandFor({ name: n })).toBeUndefined();
+  });
+});
