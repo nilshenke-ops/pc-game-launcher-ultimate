@@ -1,5 +1,42 @@
 [
   {
+    "version": "2.99.0",
+    "date": "2026-11-04",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.99.0/PCGameLauncherCompanion.exe",
+    "size": 94820970,
+    "sha256": "a22148d1e572a685d266935ebbda6171ca6fd867d1eecfeb96f1a264daea866e",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.99.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.99.0/PCGameLauncherCompanion-2.99.0-win-x64.zip",
+      "size": 89096355,
+      "sha256": "b73c0edd0efb8f2ad5c1f610504afdc125e7b46185b133d3d705664d5fbcb480"
+    },
+    "notes": "Wo die Insel erscheint (Einstellungen → Insel): nur in der App, auf dem Startbildschirm und in der App, in allen Programmen (z. B. Discord), nur in Spielen oder überall; der Begleiter erkennt dafür, welches Fenster vorne ist (nur die Art: Desktop, diese App oder ein Programm – kein Titel, nichts wird gespeichert) · Die Insel zeigt, was am PC läuft: Titel, Interpret und App (Spotify, Firefox, Chrome, Edge, VLC …) aus den Windows-Mediensitzungen; ohne Wiedergabe steht „Gerade läuft nichts“ · Neues Widget: 19 Vorlagen statt vier – Leistung (Balken und Ringe), Temperaturen, Speicher, Zahlen, Uhr, Spielzeit, Fokus-Timer, Stoppuhr, laufendes Spiel, Musik am PC (echter Titel), Lautstärke, Aufnahme, Overlay & Sounds, Schnellzugriff, Notiz; neue Messwerte „CPU-Temperatur“ und „Laufwerk (belegt)“ und das Element „Musik/Video am PC“",
+    "changes": {
+      "neu": [
+        "Wo die Insel erscheint (Einstellungen → Insel): nur in der App, auf dem Startbildschirm und in der App, in allen Programmen (z. B. Discord), nur in Spielen oder überall; der Begleiter erkennt dafür, welches Fenster vorne ist (nur die Art: Desktop, diese App oder ein Programm – kein Titel, nichts wird gespeichert)",
+        "Die Insel zeigt, was am PC läuft: Titel, Interpret und App (Spotify, Firefox, Chrome, Edge, VLC …) aus den Windows-Mediensitzungen; ohne Wiedergabe steht „Gerade läuft nichts“",
+        "Neues Widget: 19 Vorlagen statt vier – Leistung (Balken und Ringe), Temperaturen, Speicher, Zahlen, Uhr, Spielzeit, Fokus-Timer, Stoppuhr, laufendes Spiel, Musik am PC (echter Titel), Lautstärke, Aufnahme, Overlay & Sounds, Schnellzugriff, Notiz; neue Messwerte „CPU-Temperatur“ und „Laufwerk (belegt)“ und das Element „Musik/Video am PC“",
+        "Anpassen: Größe jedes Widgets frei einstellbar – Breite in Spalten (1–4) und Höhe in vier Stufen, bleibt gespeichert",
+        "Deck: Tasten tragen die Farben des gewählten Designs (Logos und Symbole einfarbig); mit dem Farbknopf lassen sich die eigenen Farben wieder zeigen"
+      ],
+      "verbessert": [
+        "„Mehr“ im Seitenmenü öffnet jetzt ein Fenster mit allen Bereichen (wie die Apps-Ansicht) statt die Leiste aufzuklappen",
+        "Die Glas-Kopfleiste bekommt beim Scrollen eine Scheibe – Inhalte scheinen nicht mehr durch das Suchfeld",
+        "Wallpaper Engine (und Lively, Rainmeter …) zählt nicht mehr als Spiel: es verdrängt weder die Insel noch Spiel-Anzeigen, solange ein echtes Spiel läuft oder nicht",
+        "Öffnen und Schließen der Insel als eine Bewegung: die Höhe wächst und schrumpft weich, die Karten kommen gestaffelt und gehen schnell, das Fenster springt beim Schließen nicht mehr; unter Windows federt die Form mit Überschwingen",
+        "Startseite aufgeräumt: „Schnellstart“ und „Erste Schritte“ sind im Standardmenü ausgeblendet (über „Startseite anpassen“ wieder einblendbar)"
+      ],
+      "behoben": [
+        "Das Symbol eines Programms wird bei einem Fehlversuch noch zweimal neu geholt",
+        "„Läuft gerade“ fragt still nach: ist der PC kurz nicht erreichbar, öffnet sich nicht mehr das Fenster „Erst PC verbinden“"
+      ]
+    },
+    "signature": "COhXFo5pTK+rFI4R9nZDaBp/45aYUhWkm80hBmgFia3XnBhlcBazk1jQkAS7UjnT/idIOHFg89j1B/u5+TtJ3w=="
+  },
+  {
     "version": "2.98.0",
     "date": "2026-11-04",
     "channel": "stable",
@@ -1429,41 +1466,5 @@
       "behoben": []
     },
     "signature": "vaVeH9BIWeeipx+q0bhJugEjxO3dGB3wb6zQ6ddCLk2Qaoc73QItLcTV6v3tXUtwvi0mdk1nKug20cBfFHbXxw=="
-  },
-  {
-    "version": "2.53.0",
-    "date": "2026-10-27",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion.exe",
-    "size": 88088602,
-    "sha256": "c6d6ec9ed80fe894de704890a124d90c1b8006b602ce9a1a7f60c3ecfe1eee71",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.53.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.53.0/PCGameLauncherCompanion-2.53.0-win-x64.zip",
-      "size": 82349246,
-      "sha256": "cd0528b8973cd69ff1a7f27b5714e26df5d8ba45eb5fbc3032f8cc3291100fce"
-    },
-    "notes": "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt · Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF · Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
-    "changes": {
-      "neu": [
-        "Neue Seite „Auswertungen“ (Spielbegleiter) mit Jahresrückblick, Spielstil und Leistungsarchiv – nur aus dem Spielverlauf des PCs und eigenen Einträgen, nichts wird geschätzt",
-        "Jahresrückblick: Spielzeit, Sitzungen, aktive Tage, längste Serie, Spielzeit je Monat, meistgespielte Spiele, längste Sitzung, Lieblingstag, neue Spiele und Vergleich mit dem Vorjahr; ehrlicher Hinweis, wenn die Aufzeichnung erst im Jahr begann; als Bild teilen (Spielnamen/Spielzeit abschaltbar) oder drucken/als PDF",
-        "Spielstil: Tageszeit, Wochentag, Sitzungslänge, Lieblings-Kategorien, Bewertungen, Favoriten und Backlog; Merkmale erst ab 10 Sitzungen, jede Aussage mit der Zahl dahinter",
-        "Leistungsarchiv: gemessene CPU/GPU/RAM-Last aus Sitzungen übernehmen oder Messungen selbst eintragen (FPS, 1 % Low, Frametime, Temperaturen), zwei Messungen vergleichen, Verlauf je Wert, Verknüpfung mit dem Grafikvergleich",
-        "Mehrere eigene Startseiten: anlegen, umbenennen, löschen und per Tipp wechseln (Handy und großer Bildschirm getrennt)",
-        "Startseite als Link oder Datei teilen – nur die Widget-Anordnung, mit Vorschau vor dem Hinzufügen als neue Seite",
-        "Datenzentrum (Einstellungen → Backup): Bereiche wählen, als JSON-Datei, Tabelle (CSV) oder PDF sichern; Import mit Vorschau und eigener Wahl bei Unterschieden (neuere behalten, meine, aus der Datei, beide behalten)",
-        "Suche (Strg+K) findet auch ohne PC deine Sammlungen samt Text (Wiki, Bingos, Notizen …) und deine Startseiten",
-        "Wiki: „Links ohne Ziel“ in der Übersicht mit „Anlegen“"
-      ],
-      "verbessert": [
-        "Wiki: Umbenennen einer Seite behält den alten Titel als „Auch bekannt als“, Links darauf funktionieren weiter"
-      ],
-      "behoben": [
-        "Einstellungen auf dem Handy: lange Inhalte (z. B. der Datenordner) machten die Seite breiter als den Bildschirm"
-      ]
-    },
-    "signature": "FjRL3BNLrnwUdZ7+rY4YeGnL0RKRMOdcm4IMomdv9Uqy9VEJYD230l/m87xrdWkCqFFDD+yeN0wa+VcYQFGkiQ=="
   }
 ]

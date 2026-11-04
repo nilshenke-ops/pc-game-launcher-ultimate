@@ -1,27 +1,37 @@
 {
-  "version": "2.98.0",
+  "version": "2.99.0",
   "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.98.0/PCGameLauncherCompanion.exe",
-  "size": 88490767,
-  "sha256": "014bfd951ec6a64115fc06e8eaf78c9ec181e64b3029f954fa4c8c091f693bc8",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.99.0/PCGameLauncherCompanion.exe",
+  "size": 94820970,
+  "sha256": "a22148d1e572a685d266935ebbda6171ca6fd867d1eecfeb96f1a264daea866e",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.98.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.98.0/PCGameLauncherCompanion-2.98.0-win-x64.zip",
-    "size": 82986862,
-    "sha256": "e60e4077ab0197b52440fa8298ebad0aa5f1e4bb9274d3eeb829603db57ac22b"
+    "fileName": "PCGameLauncherCompanion-2.99.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.99.0/PCGameLauncherCompanion-2.99.0-win-x64.zip",
+    "size": 89096355,
+    "sha256": "b73c0edd0efb8f2ad5c1f610504afdc125e7b46185b133d3d705664d5fbcb480"
   },
-  "notes": "Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“) · Die Insel in der App passt sich dem Design an (Glas in den Farben des gewählten Designs, Augen und Lichtkranz in der Akzentfarbe, auch im hellen Design lesbar) · Originale Logos: Xbox (Kugel) und Microsoft Store (Tasche) als echte Formen, auf der Startseite die Kachel „Game Pass“ mit dem Original-Logo (Kugel mit „GAME PASS“) statt eigener Zeichnungen; Logos auf Kacheln sind einfarbig – auf dunklem Glas weiß, im hellen Design dunkel (nichts Grünes mehr im grauen Design)",
+  "notes": "Wo die Insel erscheint (Einstellungen → Insel): nur in der App, auf dem Startbildschirm und in der App, in allen Programmen (z. B. Discord), nur in Spielen oder überall; der Begleiter erkennt dafür, welches Fenster vorne ist (nur die Art: Desktop, diese App oder ein Programm – kein Titel, nichts wird gespeichert) · Die Insel zeigt, was am PC läuft: Titel, Interpret und App (Spotify, Firefox, Chrome, Edge, VLC …) aus den Windows-Mediensitzungen; ohne Wiedergabe steht „Gerade läuft nichts“ · Neues Widget: 19 Vorlagen statt vier – Leistung (Balken und Ringe), Temperaturen, Speicher, Zahlen, Uhr, Spielzeit, Fokus-Timer, Stoppuhr, laufendes Spiel, Musik am PC (echter Titel), Lautstärke, Aufnahme, Overlay & Sounds, Schnellzugriff, Notiz; neue Messwerte „CPU-Temperatur“ und „Laufwerk (belegt)“ und das Element „Musik/Video am PC“",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“)",
-      "Die Insel in der App passt sich dem Design an (Glas in den Farben des gewählten Designs, Augen und Lichtkranz in der Akzentfarbe, auch im hellen Design lesbar)",
-      "Originale Logos: Xbox (Kugel) und Microsoft Store (Tasche) als echte Formen, auf der Startseite die Kachel „Game Pass“ mit dem Original-Logo (Kugel mit „GAME PASS“) statt eigener Zeichnungen; Logos auf Kacheln sind einfarbig – auf dunklem Glas weiß, im hellen Design dunkel (nichts Grünes mehr im grauen Design)",
-      "Handy-Kopfleiste ohne Überlappung (bei 360 bis 430 Pixel Breite gemessen): runder Menü-Knopf, Punkt, Insel in der eigenen Lücke, rechts Suche, Anmeldung, Benachrichtigungen"
+    "neu": [
+      "Wo die Insel erscheint (Einstellungen → Insel): nur in der App, auf dem Startbildschirm und in der App, in allen Programmen (z. B. Discord), nur in Spielen oder überall; der Begleiter erkennt dafür, welches Fenster vorne ist (nur die Art: Desktop, diese App oder ein Programm – kein Titel, nichts wird gespeichert)",
+      "Die Insel zeigt, was am PC läuft: Titel, Interpret und App (Spotify, Firefox, Chrome, Edge, VLC …) aus den Windows-Mediensitzungen; ohne Wiedergabe steht „Gerade läuft nichts“",
+      "Neues Widget: 19 Vorlagen statt vier – Leistung (Balken und Ringe), Temperaturen, Speicher, Zahlen, Uhr, Spielzeit, Fokus-Timer, Stoppuhr, laufendes Spiel, Musik am PC (echter Titel), Lautstärke, Aufnahme, Overlay & Sounds, Schnellzugriff, Notiz; neue Messwerte „CPU-Temperatur“ und „Laufwerk (belegt)“ und das Element „Musik/Video am PC“",
+      "Anpassen: Größe jedes Widgets frei einstellbar – Breite in Spalten (1–4) und Höhe in vier Stufen, bleibt gespeichert",
+      "Deck: Tasten tragen die Farben des gewählten Designs (Logos und Symbole einfarbig); mit dem Farbknopf lassen sich die eigenen Farben wieder zeigen"
     ],
-    "behoben": []
+    "verbessert": [
+      "„Mehr“ im Seitenmenü öffnet jetzt ein Fenster mit allen Bereichen (wie die Apps-Ansicht) statt die Leiste aufzuklappen",
+      "Die Glas-Kopfleiste bekommt beim Scrollen eine Scheibe – Inhalte scheinen nicht mehr durch das Suchfeld",
+      "Wallpaper Engine (und Lively, Rainmeter …) zählt nicht mehr als Spiel: es verdrängt weder die Insel noch Spiel-Anzeigen, solange ein echtes Spiel läuft oder nicht",
+      "Öffnen und Schließen der Insel als eine Bewegung: die Höhe wächst und schrumpft weich, die Karten kommen gestaffelt und gehen schnell, das Fenster springt beim Schließen nicht mehr; unter Windows federt die Form mit Überschwingen",
+      "Startseite aufgeräumt: „Schnellstart“ und „Erste Schritte“ sind im Standardmenü ausgeblendet (über „Startseite anpassen“ wieder einblendbar)"
+    ],
+    "behoben": [
+      "Das Symbol eines Programms wird bei einem Fehlversuch noch zweimal neu geholt",
+      "„Läuft gerade“ fragt still nach: ist der PC kurz nicht erreichbar, öffnet sich nicht mehr das Fenster „Erst PC verbinden“"
+    ]
   },
-  "signature": "1KidjSPvLH6H0mnbjrkw9obFLgw+i0/RK32LF1HXsFA0EVHogLacFX7NtlFGgUEMbZKqFenncxW/OavTji9AZA=="
+  "signature": "COhXFo5pTK+rFI4R9nZDaBp/45aYUhWkm80hBmgFia3XnBhlcBazk1jQkAS7UjnT/idIOHFg89j1B/u5+TtJ3w=="
 }
