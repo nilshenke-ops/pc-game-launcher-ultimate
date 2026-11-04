@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Check, Expand, Loader2, Move, Pencil, Plus, Settings2, Shrink, Sun, Trash2, Upload, Wand2 } from "lucide-react";
+import { ArrowLeft, Check, Expand, Loader2, Move, Palette, Pencil, Plus, Settings2, Shrink, Sun, Trash2, Upload, Wand2 } from "lucide-react";
 import { IconWorkshop } from "../components/icon-workshop";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
 import { navItems } from "../lib/nav";
-import { BG_SCENES } from "../lib/prefs";
+import { BG_SCENES, setPrefs, usePrefs } from "../lib/prefs";
 import { ACTION_TYPES, gridFor, keyImage, MEDIA_KEYS, POWER_KEYS, moveKey, newId, resize, slots, starterDeck, textOn, type Deck, type DeckAction, type DeckKey, type DeckPage } from "../lib/deck";
 import type { LibraryItem, Profile, QuickAction, SoundsFile } from "../lib/types";
 import { DECK_ICONS, DeckIcon, KeyFace } from "../components/deck-icons";
@@ -57,6 +57,7 @@ export default function DeckPage() {
   const { state } = useAppState();
   const playing = usePlaying();
   const conn = useConn();
+  const prefs = usePrefs();
   const canManage = useCan("manage");
   const navigate = useNavigate();
   const landscape = useLandscape();
@@ -184,6 +185,7 @@ export default function DeckPage() {
               {"wakeLock" in navigator && <Button size="sm" variant={wake ? "primary" : "ghost"} icon={<Sun size={17} />} aria-label={t("Bildschirm anlassen")} aria-pressed={!!wake} onClick={toggleWake} />}
               <Button size="sm" variant="ghost" icon={focus ? <Shrink size={17} /> : <Expand size={17} />} aria-label={focus ? t("Vollbild beenden") : t("Vollbild")} onClick={toggleFocus} />
               {canManage && <Button size="sm" variant={edit ? "primary" : "ghost"} icon={edit ? <Check size={17} /> : <Pencil size={17} />} aria-label={edit ? t("Bearbeiten beenden") : t("Bearbeiten")} onClick={() => { setEdit(!edit); setMoving(null); }} />}
+              <Button size="sm" variant={prefs.deckOwn ? "primary" : "ghost"} icon={<Palette size={17} />} aria-pressed={prefs.deckOwn === true} aria-label={prefs.deckOwn ? t("Eigene Tastenfarben – zurück zu den Farben des Designs") : t("Tasten in den Farben des Designs – eigene Farben zeigen")} title={prefs.deckOwn ? t("Eigene Farben") : t("Farben des Designs")} onClick={() => setPrefs((p) => ({ ...p, deckOwn: !p.deckOwn }))} />
               {canManage && edit && <Button size="sm" variant="ghost" icon={<Settings2 size={17} />} aria-label={t("Deck-Einstellungen")} onClick={() => setSettings(true)} />}
             </div>
             {edit && <div className="deck-hint small">{moving ? t("Tippe auf den neuen Platz.") : t("Taste antippen zum Ändern, leeren Platz antippen für eine neue Taste.")}</div>}

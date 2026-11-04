@@ -55,7 +55,7 @@ const REQUEST_TIMEOUT_MS = 20000;
 
 // Without a logged-in PC every section can be opened, but shows "Offline" instead of content (no example data).
 /** Requests that pages make by themselves (loading data); they fail quietly instead of opening the "PC verbinden" hint. */
-const QUIET = /\.(list|get|status|state|logs|subscribe|unsubscribe|diagnose|run|me|pending|getPrefs)$/;
+const QUIET = /\.(list|get|status|state|logs|subscribe|unsubscribe|diagnose|run|me|pending|getPrefs|now)$/;
 // Requests that work without login (connection setup and pairing) always go to the PC.
 const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim", "pairing.handoff"]);
 const HANDOFF_KEY = "pgl.handoff";

@@ -34,6 +34,10 @@ public interface IPlatform
     IOverlay Overlay => NullOverlay.Instance;
     /// <summary>The JARVIS island at the top of the screen (Windows companion only).</summary>
     IDesktopIsland Island => NullDesktopIsland.Instance;
+    /// <summary>Which window is in front (desktop, this app, another program) – decides where the island shows (Windows companion only).</summary>
+    IForegroundWatcher Foreground => NullForegroundWatcher.Instance;
+    /// <summary>What the PC plays right now (Spotify, Firefox, YouTube …: title and artist) from Windows' media sessions (Windows companion only).</summary>
+    INowPlaying NowPlaying => NullNowPlaying.Instance;
     /// <summary>Presses keyboard shortcuts of other programs (NVIDIA, Xbox Game Bar …). Windows companion only.</summary>
     IKeySender KeySender => NullKeySender.Instance;
     /// <summary>Makes the companion step back while a game runs (priority, efficiency mode, memory). No-op elsewhere.</summary>
@@ -168,6 +172,45 @@ public interface IDesktopIsland
     string? SetVisible(bool on);
     /// <summary>Place at the top edge ("center", "left", "right") and opacity in percent (50–100).</summary>
     void SetLook(string position, int opacityPercent);
+}
+
+/// <summary>Where the focus is: another program, the desktop (no program window in front) or the companion's own window.</summary>
+public enum ForegroundKind { Program, Desktop, App }
+
+public interface IForegroundWatcher
+{
+    bool Supported { get; }
+    ForegroundKind Kind { get; }
+    /// <summary>The front window changed its kind.</summary>
+    event Action? Changed;
+    /// <summary>Watching costs a little – only while the island's place depends on it.</summary>
+    void SetActive(bool on);
+}
+
+public sealed class NullForegroundWatcher : IForegroundWatcher
+{
+    public static readonly NullForegroundWatcher Instance = new();
+    public bool Supported => false;
+    public ForegroundKind Kind => ForegroundKind.Program;
+    public event Action? Changed { add { } remove { } }
+    public void SetActive(bool on) { }
+}
+
+/// <summary>A song or video the PC plays (or has paused): which program, title and artist/channel.</summary>
+public sealed record NowPlayingInfo(string App, string Title, string Artist, bool Playing);
+
+public interface INowPlaying
+{
+    bool Supported { get; }
+    /// <summary>The playing session first, otherwise the paused one; null when nothing has media.</summary>
+    NowPlayingInfo? Current();
+}
+
+public sealed class NullNowPlaying : INowPlaying
+{
+    public static readonly NullNowPlaying Instance = new();
+    public bool Supported => false;
+    public NowPlayingInfo? Current() => null;
 }
 
 public sealed class NullDesktopIsland : IDesktopIsland

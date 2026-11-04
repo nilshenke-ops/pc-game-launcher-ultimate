@@ -14,14 +14,23 @@ import { ISLAND_EYES, ISLAND_EYE_SIZES, ISLAND_STYLES, eyeColor, type IslandEye,
 import { ISLAND_POSITIONS, MIN_OPACITY, useIslandLook, type IslandPosition } from "../lib/island-look";
 import type { CSSProperties } from "react";
 
-interface IslandInfo { supported: boolean; visible: boolean; desktop: boolean; games: boolean; gameRunning: boolean }
+type IslandScope = "app" | "desktop" | "programs" | "games" | "all";
+interface IslandInfo { supported: boolean; visible: boolean; desktop: boolean; games: boolean; gameRunning: boolean; scope?: IslandScope; front?: "program" | "desktop" | "app"; foregroundSupported?: boolean }
+/** Where the island window shows (the island inside the app is switched on and off separately). */
+export const ISLAND_SCOPES: { id: IslandScope; label: string; hint: string }[] = [
+  { id: "app", label: "Nur in der App", hint: "Kein Fenster auf dem Bildschirm – die Insel gibt es nur in dieser App." },
+  { id: "desktop", label: "Auf dem Startbildschirm und in der App", hint: "Auf dem Desktop, solange kein Programm in vorne ist; sobald du Discord, einen Browser oder ein Spiel öffnest, verschwindet sie." },
+  { id: "programs", label: "In allen Programmen (z. B. Discord)", hint: "Über dem Desktop und allen Programmen – aber nicht, solange ein Spiel läuft." },
+  { id: "games", label: "Nur in Spielen, nicht in Programmen", hint: "Erscheint erst, wenn ein Spiel aus deiner Bibliothek läuft." },
+  { id: "all", label: "Überall", hint: "In allen Programmen und in Spielen. Spiele im exklusiven Vollbild verdecken sie ohnehin – das entscheidet Windows." },
+];
 
 function IslandSwitchesCard() {
   const conn = useConn();
   const online = conn.auth === "ok" && conn.phase === "online";
   const canManage = useCan("admin");
   const st = useRpc<IslandInfo>("island.get", {}, ["island", "session"], online);
-  const save = (p: { desktop?: boolean; games?: boolean }) =>
+  const save = (p: { desktop?: boolean; games?: boolean; scope?: IslandScope }) =>
     client.call<{ error?: string | null }>("island.configure", p).then((r) => { if (r.error) toast(r.error, "error"); st.reload(); }, (e: Error) => toast(e.message, "error"));
   const d = st.data;
   const inApp = useInAppIsland();
@@ -34,10 +43,19 @@ function IslandSwitchesCard() {
           : d && !d.supported ? <Banner kind="info">{t("Die Insel gibt es nur im Windows-Begleiter.")}</Banner>
           : d && (
             <>
-              <Switch checked={d.desktop} disabled={!canManage} onChange={(desktop) => void save({ desktop })} label={t("Auf dem Desktop und in Programmen anzeigen")} />
-              <Switch checked={d.games} disabled={!canManage || !d.desktop} onChange={(games) => void save({ games })} label={t("Auch in Spielen anzeigen")}
-                hint={t("Aus: Sobald ein Spiel aus deiner Bibliothek läuft, verschwindet die Insel ganz und kommt danach wieder. Spiele im exklusiven Vollbild verdecken sie ohnehin – das entscheidet Windows.")} />
-              <p className="tiny muted">{d.visible ? t("Gerade sichtbar.") : d.desktop && d.gameRunning && !d.games ? t("Gerade ausgeblendet, weil ein Spiel läuft.") : t("Gerade nicht sichtbar.")}</p>
+              <div role="radiogroup" aria-label={t("Wo die Insel erscheint")} className="stack-sm isl-scopes">
+                {ISLAND_SCOPES.map((o) => {
+                  const on = (d.scope ?? "app") === o.id;
+                  return (
+                    <label key={o.id} className={`isl-scope ${on ? "on" : ""}`}>
+                      <input type="radio" name="isl-scope" checked={on} disabled={!canManage} onChange={() => void save({ scope: o.id })} />
+                      <span><b>{t(o.label)}</b><small>{t(o.hint)}</small></span>
+                    </label>
+                  );
+                })}
+              </div>
+              <p className="tiny muted">{d.visible ? t("Gerade sichtbar.") : d.gameRunning && (d.scope === "programs" || d.scope === "desktop") ? t("Gerade ausgeblendet, weil ein Spiel läuft.") : d.scope === "app" ? t("Kein Fenster – nur die Insel in der App.") : t("Gerade nicht sichtbar (je nach Bereich und vorderem Fenster).")}</p>
+              {(d.scope === "desktop" || d.scope === "programs" || d.scope === "games") && d.foregroundSupported === false && <p className="tiny muted">{t("Dieser Begleiter erkennt das vordere Fenster nicht.")}</p>}
             </>
           )}
       </div>

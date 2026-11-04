@@ -12,6 +12,7 @@ import { money } from "../lib/quest-deal";
 import type { LibraryItem } from "../lib/types";
 import { Button, confirmDialog, Meter } from "./ui";
 import { useNetworkHistory } from "./MonitorExtras";
+import { mainGame } from "../lib/running";
 
 // ---------------------------------------------------------------- counter (deaths, tries, kills …) – this device only
 
@@ -51,7 +52,7 @@ export function BreakWidget() {
   const now = useNow(15000);
   const [cfg, setCfg] = useState<{ every: number; manualStart: number | null }>(() => readJson(BREAK_KEY) ?? { every: 60, manualStart: null });
   useEffect(() => writeJson(BREAK_KEY, cfg), [cfg]);
-  const game = state?.running?.[0];
+  const game = mainGame(state?.running) ?? undefined;
   const since = game ? Date.parse(game.since) : cfg.manualStart;
   const minutes = since ? Math.max(0, Math.floor((now - since) / 60000)) : null;
   const due = minutes != null && minutes >= cfg.every;

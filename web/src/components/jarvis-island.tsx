@@ -17,6 +17,8 @@ import { advanceTimer, countdownView, playTime, startCountdown, startPomodoro, s
 import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, IslandStats, IslandStopwatch, IslandTemps, IslandVolume } from "./island-widgets";
 import { eyeColor, clock, islandAnswer, islandBusy, islandClearAsk, islandGaming, islandMusic, islandPet, islandPoke, islandSize, petCommand, islandTouch, islandNotice, noticeFresh, moodOf, MOOD_LABEL, setIslandPrefs, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
+import { mainGame, playedGames } from "../lib/running";
+import { nowLine, nowSub, useNowPlaying } from "../lib/now-playing";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
 
@@ -138,11 +140,13 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const [q, setQ] = useState("");
   const mood = moodOf(s, now);
   const tm = useTimer();
+  const np = useNowPlaying();
+  const mediaLine = np?.active && np.playing ? nowLine(np) : "";
   const live = countdownView(tm, now);
   const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
   const hostRef = useRef<HTMLDivElement>(null);
-  const panelMounted = useExit(open, 220);
+  const panelMounted = useExit(open, 380);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const online = conn.auth === "ok" && conn.phase === "online";
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
@@ -158,10 +162,12 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   useEffect(() => client.on("island.audio", (d) => islandMusic(d as { playing?: boolean; level?: number; beat?: boolean })), []);
   // Notifications of the PC (a download finished, a warning …) show for a moment in the bar.
   useEffect(() => client.on("notification", (d) => islandNotice(d as { title?: unknown; severity?: unknown })), []);
-  const gameName = app?.running?.[0]?.name ?? null;
+  const gameName = playedGames(app?.running)[0]?.name ?? null; // a live wallpaper alone does not make the eyes "play along"
   useEffect(() => { islandGaming(!!gameName); }, [gameName]);
   // The window grows and shrinks with the content (the companion accepts only these four sizes).
-  useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size }); }, [size]);
+  // While the panel is still folding away the native window keeps the big size, so closing is one smooth motion and not a jump.
+  const nativeSize = panelMounted && !open ? islandSize({ open: true, ask: !!ask, hover, mood, notice: !!notice }) : size;
+  useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size: nativeSize }); }, [nativeSize]);
   // Moods that end by time need a clock – every second while something short-lived shows, otherwise every 15 s (sleep).
   // (Only the yes/no matters: the music reports arrive ten times a second and must not restart the timer.)
   const fast = !!(s.last || s.ask || s.pokes.length || s.music || open || hover || s.gaming || s.pet || s.notice || timerLive(tm));
@@ -191,7 +197,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     return () => window.removeEventListener("keydown", key);
   }, [open]);
 
-  const game = app?.running?.[0] ?? null;
+  const game = mainGame(app?.running);
   const has = (id: IslandWidgetId) => look.widgets.includes(id);
   const allow = async () => {
     if (!ask?.method) return;
@@ -213,7 +219,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const gameTime = game ? playTime(game.since, now) : null;
   const timerText = live ? `${tm.pomo ? t(POMO_LABEL[tm.pomo.phase]) : t("Fokus")} · ${clock(live.left)}` : null;
   const text = ask ? t("JARVIS fragt: {a}?", { a: ask.label }) : mood === "thinking" ? t("JARVIS denkt nach …") : mood === "listening" ? t("JARVIS hört zu …")
-    : (mood === "happy" || mood === "error") && s.last ? s.last.text : notice ? notice.text : timerText ? timerText : mood === "dancing" && s.music ? t("Musik läuft") : game ? (gameTime ? `${game.name} · ${gameTime}` : game.name) : t("JARVIS – antippen für Widgets");
+    : (mood === "happy" || mood === "error") && s.last ? s.last.text : notice ? notice.text : timerText ? timerText : mood === "dancing" && s.music && !mediaLine ? t("Musik läuft") : mediaLine ? `♪ ${mediaLine}` : game ? (gameTime ? `${game.name} · ${gameTime}` : game.name) : t("JARVIS – antippen für Widgets");
   // A counting text (timer, play time) keeps one element so only real changes of the message animate.
   const textKey = timerText && text === timerText ? "timer" : game && text.startsWith(game.name) ? `game:${game.name}` : text;
   // The eyes follow the mouse a little (a few pixels) while it is over the island.
@@ -238,7 +244,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
         }}>
           {ripples.map((r) => <span key={r.id} className="isl-ripple" style={{ left: r.x }} aria-hidden />)}
           <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); setNow(Date.now()); }} />
-          {mood === "dancing" && s.music && <Bars level={s.music.level} />}
+          {mood === "dancing" && s.music ? <Bars level={s.music.level} /> : mediaLine ? <Bars level={0.35} /> : null}
           {live && size === "notch" && <span className="isl-live"><TimerRing progress={live.progress} />{clock(live.left)}</span>}
           {size !== "notch" && live && !ask && <TimerRing progress={live.progress} />}
           {notice && size !== "notch" && !ask && <Bell size={15} className="isl-bell" aria-hidden />}
@@ -253,7 +259,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
         )}
       </div>
       {panelMounted && (
-        <div className={`isl-panel${open ? "" : " closing"}`} role="dialog" aria-label={t("JARVIS-Insel")}>
+        <div className={`isl-panel-wrap${open ? "" : " closing"}`}><div className={`isl-panel${open ? "" : " closing"}`} role="dialog" aria-label={t("JARVIS-Insel")}>
           <div className="isl-card isl-jarvis">
             <RobotHead mood={mood} />
             <div className="isl-main">
@@ -285,9 +291,14 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
             </div>
             )}
             {has("music") && (
-            <div className="isl-card">
+            <div className="isl-card isl-media">
               <div className="isl-main">
-                <b>{t("Musik am PC")}</b>
+                {np?.active ? (
+                  <>
+                    <b className="ellipsis" title={np.title}>{np.title}</b>
+                    <span className="tiny muted ellipsis">{nowSub(np)}{np.playing ? "" : ` · ${t("pausiert")}`}</span>
+                  </>
+                ) : <><b>{t("Musik am PC")}</b><span className="tiny muted">{online ? t("Gerade läuft nichts") : t("PC nicht verbunden")}</span></>}
                 <div className="row isl-mini">
                   <button type="button" className="btn icon sm" disabled={!online || !canMedia} onClick={() => media("prev")} aria-label={t("Vorheriger Titel")}><SkipBack size={16} /></button>
                   <button type="button" className="btn icon sm" disabled={!online || !canMedia} onClick={() => media("playpause")} aria-label={t("Wiedergabe/Pause")}><Play size={14} /><Pause size={14} /></button>
@@ -312,7 +323,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
             {floating && <Link to="/assistant" className="btn sm" onClick={() => setOpen(false)}>{t("JARVIS öffnen")}</Link>}
             <button type="button" className="btn sm ghost" onClick={() => setOpen(false)}>{t("Schließen")}</button>
           </div>
-        </div>
+        </div></div>
       )}
     </div>
   );

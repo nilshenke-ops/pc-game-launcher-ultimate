@@ -1,8 +1,8 @@
-import { lazy, Suspense, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState, type CSSProperties } from "react";
 import { StableAddressOffer } from "../components/keep-access";
 import { Link } from "react-router-dom";
 import {
-  Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Maximize2, Music, RotateCcw,
+  Activity, ArrowDown, ArrowUp, Bell, Check, Clock, Eye, EyeOff, Gamepad2, Headphones, LayoutDashboard, Minus, Music, Plus, RotateCcw,
   Grid3x3, LayoutGrid, ListTodo, Rocket, Timer, Smartphone, Square, Star, StickyNote, Swords, Wifi, Zap,
   Puzzle, Shapes, CalendarDays, CircleUser,
   Coffee, Dices, Gamepad, Hash, Hourglass, Tag, Target, Trophy,
@@ -15,7 +15,7 @@ import { client, HOSTED, lanPc } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useConnectingSoon, useEvent, useLiveSubscription, useMediaQuery, useRpc } from "../lib/hooks";
 import { useAppState, usePlaying } from "../lib/state";
-import { ALL_WIDGETS, DEFAULT_LAYOUT, setPrefs, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
+import { DEFAULT_LAYOUT, HEIGHT_LABEL, HEIGHT_STEPS, colsOf, rowsOf, setPrefs, sizeOfCols, usePrefs, type WidgetConf, type WidgetId, type WidgetSize } from "../lib/prefs";
 import { OFFLINE_WIDGETS, type BuiltinWidgetId } from "../lib/prefs-core";
 import { ActivityWidget, CalendarWidget, ClockWidget, MediaWidget, MiniDeckWidget, NextWidget, NotesWidget, ShortcutsWidget, StartWidget, TimerWidget } from "../components/home-widgets";
 import { parsePluginWidgetId, pluginWidgetId, type PluginList } from "../lib/plugins";
@@ -362,10 +362,11 @@ export default function Dashboard() {
     const a = ws.findIndex((w) => w.id === visible[i].id), b = ws.findIndex((w) => w.id === visible[j].id);
     const n = [...ws]; [n[a], n[b]] = [n[b], n[a]]; return n;
   });
-  const cycleSize = (id: WidgetId) => updateWidgets((ws) => ws.map((w) => {
+  // Free sizes: width in columns (1–4) and height in steps; the S/M/L size follows the width.
+  const resize = (id: WidgetId, dCols: number, dRows: number) => updateWidgets((ws) => ws.map((w) => {
     if (w.id !== id) return w;
-    const sizes = ALL_WIDGETS.find((x) => x.id === id)?.sizes ?? (["s", "m", "l"] as WidgetSize[]);
-    return { ...w, size: sizes[(sizes.indexOf(w.size) + 1) % sizes.length] as WidgetSize };
+    const cols = Math.min(4, Math.max(1, colsOf(w) + dCols)), rows = Math.min(4, Math.max(1, rowsOf(w) + dRows));
+    return { ...w, cols, rows: rows > 1 ? rows : undefined, size: sizeOfCols(cols) };
   }));
   const toggle = (id: WidgetId) => updateWidgets((ws) => ws.some((w) => w.id === id) ? ws.map((w) => (w.id === id ? { ...w, visible: !w.visible } : w)) : [...ws, { id, visible: true, size: id.startsWith("custom:") ? "s" : "m" }]);
 
@@ -373,6 +374,7 @@ export default function Dashboard() {
   const hidden = [...layout.widgets.filter((w) => !w.visible && !metaFor(w.id).missing),
     ...pluginWidgets.filter((x) => !layout.widgets.some((w) => w.id === x.id)).map((x) => ({ id: x.id, visible: false, size: "m" as WidgetSize })),
     ...customWidgets.map((x) => `${CUSTOM_PREFIX}${x.id}` as WidgetId).filter((id) => !layout.widgets.some((w) => w.id === id)).map((id) => ({ id, visible: false, size: "s" as WidgetSize }))];
+  const cell = (w: WidgetConf): CSSProperties => ({ position: "relative", ...(HEIGHT_STEPS[rowsOf(w)] ? { minHeight: HEIGHT_STEPS[rowsOf(w)] } : {}) });
   const greeting = useMemo(() => { const h = new Date().getHours(); return h < 11 ? t("Guten Morgen") : h < 18 ? t("Hallo") : t("Guten Abend"); }, []);
 
   // Without the PC only widgets that show something real; the others come back as soon as the PC is connected.
@@ -399,10 +401,10 @@ export default function Dashboard() {
       <div className="dash" style={{ marginTop: edit ? 16 : 0 }}>
         {shownWidgets.map((w, i) => {
           const meta = metaFor(w.id);
-          if (w.id === "download") return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><DownloadCard compact />{edit && <EditOverlay />}</div>;
-          if (meta.bare) return <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}><div style={{ maxWidth: 720, marginInline: "auto" }}>{meta.render()}</div>{edit && <EditOverlay />}</div>;
+          if (w.id === "download") return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><DownloadCard compact />{edit && <EditOverlay />}</div>;
+          if (meta.bare) return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><div style={{ maxWidth: 720, marginInline: "auto" }}>{meta.render()}</div>{edit && <EditOverlay />}</div>;
           return (
-            <div key={w.id} className={`w-${w.size}`} style={{ position: "relative" }}>
+            <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}>
               <Card title={meta.title()} icon={meta.icon} className={w.id === "status" ? "hero" : ""} style={{ height: "100%" }}
                 actions={meta.link && !edit ? <Link to={meta.link} className="btn ghost sm">{t("Alle")}</Link> : undefined}>
                 {meta.render()}
@@ -417,8 +419,15 @@ export default function Dashboard() {
                 <div className="row">
                   <Button size="sm" icon={<ArrowUp size={15} />} disabled={i === 0} onClick={() => move(w.id, -1)} aria-label={t("Nach vorne")} />
                   <Button size="sm" icon={<ArrowDown size={15} />} disabled={i === visible.length - 1} onClick={() => move(w.id, 1)} aria-label={t("Nach hinten")} />
-                  <Button size="sm" icon={<Maximize2 size={15} />} onClick={() => cycleSize(w.id)}>{w.size.toUpperCase()}</Button>
                   <Button size="sm" icon={<EyeOff size={15} />} onClick={() => toggle(w.id)} aria-label={t("Ausblenden")} />
+                </div>
+                <div className="row wsize" role="group" aria-label={t("Größe")}>
+                  <Button size="sm" icon={<Minus size={15} />} disabled={colsOf(w) <= 1} onClick={() => resize(w.id, -1, 0)} aria-label={t("Schmaler")} />
+                  <span className="tiny">{t("Breite")} {colsOf(w)}/4</span>
+                  <Button size="sm" icon={<Plus size={15} />} disabled={colsOf(w) >= 4} onClick={() => resize(w.id, 1, 0)} aria-label={t("Breiter")} />
+                  <Button size="sm" icon={<Minus size={15} />} disabled={rowsOf(w) <= 1} onClick={() => resize(w.id, 0, -1)} aria-label={t("Niedriger")} />
+                  <span className="tiny">{t("Höhe")}: {t(HEIGHT_LABEL[rowsOf(w)])}</span>
+                  <Button size="sm" icon={<Plus size={15} />} disabled={rowsOf(w) >= 4} onClick={() => resize(w.id, 0, 1)} aria-label={t("Höher")} />
                 </div>
               </div>
             );

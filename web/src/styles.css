@@ -2122,7 +2122,7 @@ html.island-mode .app-bg { display: none; }
 .mn-link .mn-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mn-link:hover { opacity: 1; background: rgba(255,255,255,0.1); text-decoration: none; }
 .mn-link.active { opacity: 1; background: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.14)); border-color: rgba(255,255,255,0.42); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 10px 26px -12px rgba(var(--primary-rgb), 0.95); }
-.mn-chev { transition: transform .2s; } .mn-chev.open { transform: rotate(180deg); }
+.mn-chev { opacity: .7; }
 .mn-more-panel { margin-top: 4px; padding: 10px 4px 4px; border-top: 1px solid rgba(255,255,255,0.2); }
 .mn-more-panel .side-nav-head.corner { position: static; justify-content: flex-end; padding: 0 4px 4px; }
 .mn-foot { display: flex; flex-direction: column; gap: 10px; }
@@ -2428,3 +2428,45 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
   .isl-host.floating { width: 104px; }
   .isl-host.floating.s-bar { width: min(92vw, 460px); } .isl-host.floating.s-ask { width: min(94vw, 560px); } .isl-host.floating.s-panel { width: min(94vw, 580px); }
 }
+
+/* island scope choice */
+.isl-scopes { gap: 8px; }
+.isl-scope { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border); cursor: pointer; transition: border-color .15s, background .15s; }
+.isl-scope input { margin-top: 3px; }
+.isl-scope span { display: grid; gap: 2px; } .isl-scope small { color: var(--muted); }
+.isl-scope.on { border-color: var(--primary); background: rgba(var(--primary-rgb), 0.1); }
+
+/* ================================================================== JARVIS island: open/close as one motion (2.99) */
+/* The panel sits in a grid whose row grows 0fr -> 1fr, so the island changes height smoothly instead of jumping; closing runs it backwards. */
+.isl-panel-wrap { display: grid; grid-template-rows: 1fr; min-height: 0; flex: 1 1 auto; transition: grid-template-rows .5s var(--spring-soft), opacity .3s ease; }
+.isl-panel-wrap > .isl-panel { min-height: 0; overflow-y: auto; }
+.isl-panel-wrap.closing { grid-template-rows: 0fr; opacity: 0; pointer-events: none; }
+@starting-style { .isl-panel-wrap { grid-template-rows: 0fr; opacity: 0; } }
+.isl-panel.closing { animation: isl-panel-out .34s cubic-bezier(.4,0,.6,1) both; }
+@keyframes isl-panel-out { to { opacity: 0; transform: translateY(-10px) scale(.96); } }
+/* cards leave quickly, last one first */
+.isl-panel.closing > *, .isl-panel.closing .isl-grid > * { animation: isl-card-out .22s ease-in both; }
+@keyframes isl-card-out { to { opacity: 0; transform: translateY(-8px) scale(.95); } }
+.isl-panel.closing .isl-grid > :nth-child(n+7) { animation-delay: 0s; } .isl-panel.closing .isl-grid > :nth-child(-n+6) { animation-delay: .05s; }
+@media (prefers-reduced-motion: reduce) { .isl-panel-wrap { transition: none; } .isl-panel.closing, .isl-panel.closing > *, .isl-panel.closing .isl-grid > * { animation: none !important; } }
+[data-motion="reduce"] .isl-panel-wrap { transition: none; }
+
+/* the glass top bar gets a pane once the page has scrolled under it – otherwise the content shines through the search field */
+:root[data-surface="glass"] .topbar { transition: background .25s ease, border-color .25s ease; }
+:root[data-surface="glass"] .topbar.scrolled { background: rgba(var(--surface-rgb), 0.7); backdrop-filter: blur(18px) saturate(1.4); -webkit-backdrop-filter: blur(18px) saturate(1.4); border-bottom: 1px solid rgba(255,255,255,0.12); }
+
+/* Deck: keys follow the colours of the design (one calm tint, logos and symbols in the text colour); "own colours" keeps the brand colours */
+html:not([data-deck-own]) .deck-key:not(.empty) { background: linear-gradient(145deg, rgba(var(--primary-rgb), .42), rgba(var(--surface-rgb), .55)) !important; color: var(--text) !important; border-color: rgba(255,255,255,0.24); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+html:not([data-deck-own]) .deck-key:not(.empty) .brand-logo { color: currentColor !important; }
+html:not([data-deck-own]) .deck-key:not(.empty) .brand-logo path { fill: currentColor !important; }
+html:not([data-deck-own]) .deck-key:not(.empty) .deck-label { text-shadow: none; }
+html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0 0 18px rgba(var(--primary-rgb), .55); }
+
+/* free widget sizes on the home grid: width in columns (c1–c4), height by min-height */
+.dash > .c1 { grid-column: span 1; } .dash > .c2 { grid-column: span 2; } .dash > .c3 { grid-column: span 3; } .dash > .c4 { grid-column: span 4; }
+@media (max-width: 1279px) { .dash > .c2, .dash > .c3, .dash > .c4 { grid-column: span 2; } }
+@media (max-width: 1023px) and (min-width: 700px) { .dash > .c2 { grid-column: span 1; } .dash > .c3, .dash > .c4 { grid-column: span 2; } }
+@media (max-width: 699px) { .dash > * { grid-column: span 1 !important; } }
+.dash > * > .card { min-height: inherit; }
+.widget-edit { overflow: auto; gap: 8px; }
+.widget-edit .wsize { gap: 6px; flex-wrap: wrap; align-items: center; }

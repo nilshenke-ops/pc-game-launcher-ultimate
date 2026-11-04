@@ -73,7 +73,7 @@ public class CustomWidgetTests
         await Bad(new { name = "x", elements = new[] { Element("e1", "script") } });
         await Bad(new { name = "x", elements = new[] { Element("E1!", "text") } });
         await Bad(new { name = "x", elements = new[] { Element("e1", "text"), Element("e1", "text") } });
-        await Bad(new { name = "x", elements = new[] { Element("e1", "metric", new { kind = "disk" }) } });
+        await Bad(new { name = "x", elements = new[] { Element("e1", "metric", new { kind = "fan" }) } });
         await Bad(new { name = "x", elements = new[] { Element("e1", "button", new { action = "shell" }) } });
         // Buttons only refer to ids of this PC – never to commands.
         await Bad(new { name = "x", elements = new[] { Element("e1", "button", new { action = "launch", @ref = "calc.exe /c del" }) } });
@@ -86,6 +86,19 @@ public class CustomWidgetTests
         await Bad(new { name = "x", elements = Enumerable.Range(0, 41).Select(i => Element("e" + i, "shape")).ToArray() });
         var ok = await admin.Ok("widgets.save", new { name = "x", image = "data:image/png;base64,iVBORw0KGgo=", elements = Array.Empty<object>() });
         Assert.StartsWith("cw_", ok.GetProperty("id").GetString());
+        Assert.Single(s.Widgets.List());
+    }
+
+    [Fact]
+    public async Task New_measured_values_and_the_music_element_are_accepted()
+    {
+        using var dir = new TempDir();
+        await using var s = Fixtures.Services(dir);
+        var admin = await Fixtures.Admin(s);
+        await admin.Ok("widgets.save", new { name = "Werte", elements = new[] {
+            Element("e1", "metric", new { kind = "cputemp", display = "number" }),
+            Element("e2", "metric", new { kind = "disk", display = "bar" }),
+            Element("e3", "music") } });
         Assert.Single(s.Widgets.List());
     }
 

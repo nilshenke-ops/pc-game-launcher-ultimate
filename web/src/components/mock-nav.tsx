@@ -1,18 +1,15 @@
 // The sidebar of the designs: logo, the few main entries of the mock-ups (Home, Spiele, Apps, Soundboard, Favoriten,
 // Zuletzt verwendet, Einstellungen), the PC state and the user – and "Mehr", which opens every other area (the full,
 // sortable navigation: categories, "Weitere Funktionen", edit mode). Each design shows its own variant of this menu.
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { AudioLines, ChevronDown, Clock, Gamepad2, Home, LayoutGrid, LayoutList, Music, Settings, Star, type LucideIcon } from "lucide-react";
+import { AudioLines, ChevronDown, ChevronRight, Clock, Gamepad2, Home, LayoutGrid, LayoutList, Music, Settings, Star, type LucideIcon } from "lucide-react";
 import { t } from "../lib/i18n";
-import { readJson, writeJson } from "../lib/rpc";
 import { homeVariant, usePrefs } from "../lib/prefs";
 import type { NavItem } from "../lib/nav";
-import { SidebarNav } from "./sidebar-nav";
 import { useUserName } from "./home-showcase";
 
 type Variant = ReturnType<typeof homeVariant>;
-const MORE_KEY = "pgl.nav.moreOpen";
 
 type Entry = { to: string; key: string; icon: LucideIcon; label: string; end?: boolean };
 const ENTRIES: Entry[] = [
@@ -53,14 +50,12 @@ export function BrandMark({ variant }: { variant: Variant }) {
   );
 }
 
-export function MockNav({ items, notifCount, status, onSheet }: { items: NavItem[]; notifCount: number; status: ReactNode; onSheet: () => void }) {
+export function MockNav({ status, onSheet, moreOpen = false }: { items?: NavItem[]; notifCount?: number; status: ReactNode; onSheet: () => void; moreOpen?: boolean }) {
   const prefs = usePrefs();
   const variant = homeVariant(prefs.theme.preset);
   const loc = useLocation();
   const userName = useUserName() || t("Gamer");
-  const [open, setOpenState] = useState(() => { try { return readJson<boolean>(MORE_KEY) ?? false; } catch { return false; } });
-  const setOpen = (v: boolean) => { setOpenState(v); try { writeJson(MORE_KEY, v); } catch { /* storage blocked */ } };
-  const iconOnly = variant === "controller"; // too narrow for the full list → "Mehr" opens the sheet
+  const iconOnly = variant === "controller";
   const fav = loc.pathname === "/games" && new URLSearchParams(loc.search).get("filter") === "fav";
   const active = (e: Entry) => e.key === "fav" ? fav : e.key === "jarvis" ? loc.pathname === "/assistant" || loc.pathname === "/jarvis" : e.key === "games" ? loc.pathname.startsWith("/games") && !fav : e.end ? loc.pathname === e.to : loc.pathname.startsWith(e.to);
   const list = SHOWN[variant].map((k) => ENTRIES.find((e) => e.key === k)!);
@@ -79,12 +74,12 @@ export function MockNav({ items, notifCount, status, onSheet }: { items: NavItem
               <e.icon size={22} /><span className="mn-t">{t(e.label)}</span>
             </Link>
           ))}
-          <button type="button" className={`mn-link mn-more-btn ${open && !iconOnly ? "active" : ""}`} aria-expanded={iconOnly ? undefined : open} aria-haspopup={iconOnly ? "dialog" : undefined}
-            title={t("Mehr")} onClick={() => (iconOnly ? onSheet() : setOpen(!open))}>
-            <LayoutList size={22} /><span className="mn-t">{t("Mehr")}</span>{!iconOnly && <ChevronDown size={15} className={`mn-chev ${open ? "open" : ""}`} />}
+          {/* "Mehr" opens a window with all other areas – like the Apps window, not a list that pushes the menu around */}
+          <button type="button" className={`mn-link mn-more-btn ${moreOpen ? "active" : ""}`} aria-haspopup="dialog" aria-expanded={moreOpen}
+            title={t("Mehr")} onClick={onSheet}>
+            <LayoutList size={22} /><span className="mn-t">{t("Mehr")}</span>{!iconOnly && <ChevronRight size={15} className="mn-chev" />}
           </button>
         </nav>
-        {open && !iconOnly && <div className="mn-more-panel"><SidebarNav items={items} notifCount={notifCount} /></div>}
       </div>
       <div className="mn-foot">
         {status}

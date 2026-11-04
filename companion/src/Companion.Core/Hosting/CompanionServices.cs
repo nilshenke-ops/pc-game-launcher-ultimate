@@ -249,7 +249,7 @@ public sealed class CompanionServices : IAsyncDisposable
                 ? $"{key} ist selbst als Hotkey belegt – das würde sich endlos selbst auslösen."
                 : await Platform.KeySender.SendAsync(key);
         Runner.IsRunning = id => Sessions.Running().Any(r => r.itemId == id);
-        Runner.AnyGameRunning = () => Sessions.Running().Any(r => Library.Get(r.itemId)?.Kind == ItemKind.Game);
+        Runner.AnyGameRunning = GameRunning;
         Runner.QuickAction = id => QuickActions.Get(id);
         if (Platform.ProcessControl.Supported)
         {
@@ -286,6 +286,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Runner.ObsReplaySave = () => Capture.Run("replay");
         Runner.ObsReplayBufferToggle = () => Capture.Run("buffer");
         Platform.Overlay.Changed += () => { Rpc.Changed("overlay"); UpdateGameMode(); };
+        Platform.Foreground.Changed += () => UpdateIsland();
         Widgets.Changed += () => Platform.DesktopWidgets.Sync(Widgets.DesktopWidgets());
         Platform.DesktopWidgets.Moved += Widgets.SetDesktopPosition;
         Platform.DesktopWidgets.Sync(Widgets.DesktopWidgets());
@@ -408,7 +409,7 @@ public sealed class CompanionServices : IAsyncDisposable
             }
         };
 
-        Notifications.IsGaming = Sessions.AnyGameRunning;
+        Notifications.IsGaming = GameRunning;
         Notifications.ProfileQuiet = () => Profiles.Active()?.QuietNotifications == true;
         Notifications.OnDesktop = n => { try { Platform.Desktop.ShowToast(n.Title, n.Message ?? ""); } catch { } };
 
@@ -624,27 +625,65 @@ public sealed class CompanionServices : IAsyncDisposable
     /// While a game runs: background work waits (GameActivity) and the companion steps back (lower priority, efficiency
     /// mode, smaller memory footprint). While the large overlay is open, the companion runs normally so it reacts at once.
     /// </summary>
-    /// <summary>The JARVIS island is shown when switched on – during a game only with "in Spielen" (see Settings).</summary>
-    public static bool IslandWanted(Settings set, bool gaming) => set.IslandDesktop && (!gaming || set.IslandInGames);
+    /// <summary>A game from the library runs – a live wallpaper (Wallpaper Engine …) does not count, it is running all day.</summary>
+    public bool GameRunning() => Sessions.Running().Any(r => Library.Get(r.itemId) is { Kind: ItemKind.Game } it && !AmbientApps.IsAmbient(it.Name));
 
+    /// <summary>
+    /// Where the island window shows. In front of the companion's own window it never shows (the island in the app is there):
+    /// app = nowhere else, desktop = only with no program in front, programs = desktop and every program (Discord …) but not
+    /// in games, games = only while a game runs, all = everywhere.
+    /// </summary>
+    public static bool IslandWanted(Settings set, bool gaming, ForegroundKind front = ForegroundKind.Program)
+    {
+        if (front == ForegroundKind.App) return false;
+        return SettingsService.ScopeOf(set) switch
+        {
+            "desktop" => front == ForegroundKind.Desktop && !gaming,
+            "programs" => !gaming,
+            "games" => gaming,
+            "all" => true,
+            _ => false,
+        };
+    }
+
+    readonly object _npGate = new();
+    NowPlayingInfo? _np; DateTime _npAt = DateTime.MinValue;
+    /// <summary>The current song/video, read from Windows at most every 1.5 seconds.</summary>
+    public NowPlayingInfo? NowPlayingCached()
+    {
+        lock (_npGate)
+        {
+            if (DateTime.UtcNow - _npAt < TimeSpan.FromMilliseconds(1500)) return _np;
+            try { _np = Platform.NowPlaying.Current(); } catch (Exception ex) { Log.Warn("media", ex.Message); _np = null; }
+            _npAt = DateTime.UtcNow;
+            return _np;
+        }
+    }
+
+    readonly object _islandGate = new();
     bool? _islandShown;
     public string? UpdateIsland()
     {
-        var set = Settings.Get();
-        Platform.Island.SetLook(set.IslandPosition, set.IslandOpacity); // place and opacity follow the settings at once (also while it stays shown)
-        var want = IslandWanted(set, Sessions.AnyGameRunning());
-        if (_islandShown == want) return null;
-        if (want) Music.Start(); else Music.Stop();
-        var err = Platform.Island.SetVisible(want);
-        _islandShown = err == null ? want : null;
-        if (err != null && want) Log.Warn("island", err);
-        Rpc.Changed("island");
-        return err;
+        lock (_islandGate)
+        {
+            var set = Settings.Get();
+            Platform.Island.SetLook(set.IslandPosition, set.IslandOpacity); // place and opacity follow the settings at once (also while it stays shown)
+            var scope = SettingsService.ScopeOf(set);
+            Platform.Foreground.SetActive(scope is "desktop" or "programs" or "games"); // "all" and "app" do not depend on the front window
+            var want = IslandWanted(set, GameRunning(), Platform.Foreground.Kind);
+            if (_islandShown == want) return null;
+            if (want) Music.Start(); else Music.Stop();
+            var err = Platform.Island.SetVisible(want);
+            _islandShown = err == null ? want : null;
+            if (err != null && want) Log.Warn("island", err);
+            Rpc.Changed("island");
+            return err;
+        }
     }
 
     void UpdateGameMode()
     {
-        var gaming = Sessions.AnyGameRunning();
+        var gaming = GameRunning();
         UpdateIsland();
         GameActivity.Set(gaming);
         Platform.DesktopWidgets.SetPaused(gaming);

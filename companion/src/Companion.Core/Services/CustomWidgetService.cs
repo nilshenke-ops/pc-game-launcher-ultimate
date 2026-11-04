@@ -50,7 +50,7 @@ public sealed class WidgetElement
     public string? Fill { get; set; }
     public string Align { get; set; } = "left";
     public bool Bold { get; set; }
-    /// <summary>metric: cpu, ram, gpu, gputemp; clock: time, date, both; playtime: today, week.</summary>
+    /// <summary>metric: cpu, ram, gpu, gputemp, cputemp, disk; clock: time, date, both; playtime: today, week.</summary>
     public string? Kind { get; set; }
     /// <summary>metric: number, bar, ring.</summary>
     public string? Display { get; set; }
@@ -67,8 +67,8 @@ public sealed class CustomWidgetService
 {
     static readonly Regex Color = new("^#[0-9a-fA-F]{6}$");
     static readonly Regex LocalId = new("^[a-z0-9_-]{1,40}$");
-    static readonly string[] Types = { "text", "clock", "metric", "button", "image", "playtime", "nowPlaying", "shape", "icon", "timer" };
-    static readonly string[] Metrics = { "cpu", "ram", "gpu", "gputemp" };
+    static readonly string[] Types = { "text", "clock", "metric", "button", "image", "playtime", "nowPlaying", "music", "shape", "icon", "timer" };
+    static readonly string[] Metrics = { "cpu", "ram", "gpu", "gputemp", "cputemp", "disk" };
     static readonly string[] Actions = { "quick", "launch", "sound", "profile", "overlay", "record", "replay", "stopSounds", "media", "open" };
     const int MaxWidgets = 30, MaxElements = 40, MaxImage = 200_000;
 
@@ -164,7 +164,7 @@ public sealed class CustomWidgetService
             switch (e.Type)
             {
                 case "metric":
-                    if (!Metrics.Contains(e.Kind ?? "")) throw Bad("Messwert muss cpu, ram, gpu oder gputemp sein.");
+                    if (!Metrics.Contains(e.Kind ?? "")) throw Bad("Messwert muss cpu, ram, gpu, gputemp, cputemp oder disk sein.");
                     e.Display = e.Display is "bar" or "ring" ? e.Display : "number";
                     break;
                 case "clock": e.Kind = e.Kind is "date" or "both" ? e.Kind : "time"; break;

@@ -136,6 +136,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const all = navItems();
   const current = all.find((i) => i.path !== "/" && loc.pathname.startsWith(i.path)) ?? all[0];
   useEffect(() => { document.documentElement.toggleAttribute("data-nav-plain", !prefs.nav.colors); }, [prefs.nav.colors]);
+  useEffect(() => { document.documentElement.toggleAttribute("data-deck-own", prefs.deckOwn === true); }, [prefs.deckOwn]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -176,7 +177,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="shell">
       <a href="#main" className="sr-only">{t("Zum Inhalt springen")}</a>
       <aside className="sidebar" aria-label={t("Hauptnavigation")}>
-        <MockNav items={all} notifCount={notifCount} onSheet={() => setMore(true)}
+        <MockNav moreOpen={more} onSheet={() => setMore(true)}
           status={<SideStatus preview={preview} name={state?.pcName ?? conn.hello?.info.pcName} version={state?.version} />} />
       </aside>
 

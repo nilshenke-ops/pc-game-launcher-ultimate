@@ -44,6 +44,8 @@ sealed class WindowsPlatform : IPlatform
     public IOverlay Overlay => OverlayWindows;
     public WindowsDesktopIsland IslandWindow { get; }
     public IDesktopIsland Island => IslandWindow;
+    public IForegroundWatcher Foreground { get; } = new WindowsForegroundWatcher();
+    public INowPlaying NowPlaying { get; } = new WindowsNowPlaying();
     public IKeySender KeySender { get; } = new WindowsKeySender();
     public IGameMode GameMode { get; } = new WindowsGameMode();
     public IProcessControl ProcessControl { get; } = new WindowsProcessControl();

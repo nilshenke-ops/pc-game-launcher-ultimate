@@ -300,7 +300,7 @@ function Layouts() {
             return (
               <div key={w.id} className="list-item">
                 <label className="checkbox grow"><input type="checkbox" checked={w.visible} onChange={(e) => update((l) => ({ ...l, widgets: l.widgets.map((x) => (x.id === w.id ? { ...x, visible: e.target.checked } : x)) }))} />{ALL_WIDGETS.some((x) => x.id === w.id) ? t(meta.label) : meta.label}</label>
-                <Segmented value={w.size} onChange={(size) => update((l) => ({ ...l, widgets: l.widgets.map((x) => (x.id === w.id ? { ...x, size } : x)) }))} options={meta.sizes.map((s) => ({ value: s, label: s === "s" ? t("Klein") : s === "m" ? t("Mittel") : t("Breit") }))} />
+                <Segmented value={w.size} onChange={(size) => update((l) => ({ ...l, widgets: l.widgets.map((x) => (x.id === w.id ? { ...x, size, cols: undefined } : x)) }))} options={meta.sizes.map((s) => ({ value: s, label: s === "s" ? t("Klein") : s === "m" ? t("Mittel") : t("Breit") }))} />
               </div>
             );
           })}

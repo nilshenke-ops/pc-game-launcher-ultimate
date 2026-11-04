@@ -71,7 +71,8 @@ test("PC-Ansicht zeigt den echten Zustand", async ({ browser }) => {
   await expect(pc.getByText("Dieses Fenster läuft am PC")).toBeVisible();
   await expect(pc.getByText("Lokal verbunden")).toHaveCount(0);
   await expect(pc.getByText("Noch kein Handy oder Tablet gekoppelt.")).toBeVisible();
-  await expect(pc.getByText("Handy koppeln (Geräte → Gerät koppeln, QR-Code scannen)")).toBeVisible();
+  // "Erste Schritte" is tidied away on the standard home screen (it can be switched on again under "Anpassen").
+  await expect(pc.getByText("Handy koppeln (Geräte → Gerät koppeln, QR-Code scannen)")).toHaveCount(0);
   await expect(pc.locator(".home-step.done", { hasText: "Handy koppeln" })).toHaveCount(0);
   await expect(pc.getByText("Relay: verbunden")).toBeVisible();
 });
@@ -102,7 +103,8 @@ test("Kopplung im WLAN: Code, Bestätigung am PC, Sitzung bleibt nach Neuladen",
   // The PC home now names the connected phone (from the real device list).
   await pc.goto(`${COMPANION}/#/`);
   await expect(pc.getByText(/Gerade verbunden: .*iPhone/)).toBeVisible();
-  await expect(pc.locator(".home-step.done", { hasText: "Handy koppeln" })).toBeVisible();
+  // "Erste Schritte" no longer shows by default (the connected phone above is the proof that pairing worked).
+  await expect(pc.locator(".home-step")).toHaveCount(0);
 });
 
 test("Programm am PC freigeben und vom Handy starten", async () => {
@@ -179,41 +181,35 @@ test("Backlog am Handy: Spiel aufnehmen, Status ändern, Zufallsauswahl, Export"
   expect(file).toMatchObject({ format: "nexus-backlog", entries: [{ name: "E2E Testspiel", status: "next", priority: 3 }] });
 });
 
-/** "Mehr" in the side menu holds all other areas – open it (stays open) before using the full navigation. */
+/** "Mehr" in the side menu opens a window with all other areas ("Alle Bereiche"). */
 async function openMore(p: Page) {
-  const b = p.locator(".sidebar .mn-more-btn");
-  if ((await b.getAttribute("aria-expanded")) !== "true") await b.click();
-  await expect(p.locator(".sidebar .side-nav")).toBeVisible();
+  await p.locator(".sidebar .mn-more-btn").click();
+  const sheet = p.getByRole("dialog", { name: /Alle Bereiche|Bereiche bearbeiten/ });
+  await expect(sheet).toBeVisible();
+  return sheet;
 }
 
 test("Leiste bearbeiten: Bereich entfernen → „Weitere Funktionen“, dort erreichbar, wieder hinzufügen, bleibt nach Neuladen", async () => {
   await pc.goto(`${COMPANION}/#/`);
-  await openMore(pc);
-  const bar = pc.locator(".sidebar .nav-group:not(.nav-folder)");
-  const folder = pc.locator(".sidebar .nav-folder");
-  await expect(bar.getByRole("link", { name: "Backlog" })).toBeVisible();
-  await pc.getByRole("button", { name: "Seitenleiste ordnen" }).click();
+  let sheet = await openMore(pc);
+  await expect(sheet.locator(".sheet-group:not(.sheet-folder)").getByRole("link", { name: "Backlog" })).toBeVisible();
+  await sheet.getByRole("button", { name: "Bearbeiten" }).click();
   await pc.getByRole("button", { name: "Backlog in „Weitere Funktionen“ verschieben" }).click();
   // Home, Einstellungen and PC verbinden cannot be removed.
   await expect(pc.getByRole("button", { name: "Home in „Weitere Funktionen“ verschieben" })).toHaveCount(0);
-  await pc.getByRole("button", { name: "Ordnen beenden" }).click();
-  await expect(bar.getByRole("link", { name: "Backlog" })).toHaveCount(0);
+  await pc.getByRole("button", { name: "Fertig" }).click();
+  await expect(sheet.locator(".sheet-group:not(.sheet-folder)").getByRole("link", { name: "Backlog" })).toHaveCount(0);
   // Still one tap away in the folder.
-  if (!(await folder.getByRole("link", { name: "Backlog" }).isVisible())) await folder.locator(".nav-group-head").click();
-  await folder.getByRole("link", { name: "Backlog" }).click();
+  await sheet.locator(".sheet-folder").getByRole("link", { name: "Backlog" }).click();
   await expect(pc.getByRole("heading", { name: "Backlog" }).first()).toBeVisible();
   await pc.reload();
-  await expect(bar.getByRole("link", { name: "Backlog" })).toHaveCount(0);
-  await pc.getByRole("button", { name: "Seitenleiste ordnen" }).click();
+  sheet = await openMore(pc);
+  await expect(sheet.locator(".sheet-group:not(.sheet-folder)").getByRole("link", { name: "Backlog" })).toHaveCount(0);
+  await sheet.getByRole("button", { name: "Bearbeiten" }).click();
   await pc.getByRole("button", { name: "Backlog wieder in die Leiste" }).click();
-  await pc.getByRole("button", { name: "Ordnen beenden" }).click();
-  await expect(bar.getByRole("link", { name: "Backlog" })).toBeVisible();
-  // Categories fold.
-  const sys = pc.locator(".sidebar .nav-group-head", { hasText: "System" });
-  await sys.click();
-  await expect(sys).toHaveAttribute("aria-expanded", "false");
-  await sys.click();
-  await expect(sys).toHaveAttribute("aria-expanded", "true");
+  await pc.getByRole("button", { name: "Fertig" }).click();
+  await expect(sheet.locator(".sheet-group:not(.sheet-folder)").getByRole("link", { name: "Backlog" })).toBeVisible();
+  await pc.keyboard.press("Escape");
 });
 
 test("Reiter einer Seite ordnen: in „Weitere“ verschieben, dort öffnen, zurückholen", async () => {
@@ -616,6 +612,59 @@ test("Overlay wie die Game Bar: Widgets hinzufügen, entfernen, verschieben – 
   await pc.goto(`${COMPANION}/#/`);
 });
 
+test("Neues Widget: viele Vorlagen mit echten Werten (nicht nur vier); Musik-, Temperatur- und Speicher-Vorlage lassen sich speichern", async () => {
+  await pc.goto(`${COMPANION}/#/widgets`);
+  for (const name of ["Musik am PC", "Temperaturen", "Speicher"]) {
+    await pc.getByRole("button", { name: "Neues Widget" }).first().click();
+    const list = pc.locator(".ws-template");
+    expect(await list.count()).toBeGreaterThanOrEqual(15);
+    for (const n of ["Leistung als Ringe", "Große Uhr", "Fokus-Timer (25 Minuten)", "Stoppuhr", "Lautstärke", "Overlay & Sounds", "Schnellzugriff", "Notiz", "Laufendes Spiel"]) await expect(list.locator("b", { hasText: n }).first()).toBeVisible();
+    await list.filter({ has: pc.locator("b", { hasText: new RegExp(`^${name}$`) }) }).click();
+    await pc.getByRole("textbox", { name: "Name des Widgets" }).fill(`E2E ${name}`);
+    await pc.getByRole("button", { name: "Speichern" }).click();
+    await expect(pc.getByText("Widget gespeichert")).toBeVisible();
+    await pc.goto(`${COMPANION}/#/widgets`);
+  }
+  await pc.goto(`${COMPANION}/#/`);
+});
+
+test("Anpassen: Größe jedes Widgets frei einstellbar (Breite in Spalten, Höhe in Stufen) und bleibt gespeichert", async () => {
+  await pc.goto(`${COMPANION}/#/`);
+  await pc.getByRole("button", { name: "Anpassen" }).first().click();
+  const card = pc.locator(".dash > div").filter({ hasText: "Verbindung & PC" }).first();
+  const wide = async () => (await card.boundingBox())!.width;
+  const w0 = await wide();
+  await card.getByRole("button", { name: "Breiter" }).click();
+  await expect.poll(wide).toBeGreaterThan(w0 + 40);
+  const w1 = await wide();
+  await card.getByRole("button", { name: "Schmaler" }).click();
+  await card.getByRole("button", { name: "Schmaler" }).click();
+  await expect.poll(wide).toBeLessThan(w1 - 40);
+  const h0 = (await card.boundingBox())!.height;
+  await card.getByRole("button", { name: "Höher" }).click();
+  await card.getByRole("button", { name: "Höher" }).click();
+  await expect(card.getByText("Höhe: Hoch")).toBeVisible();
+  await expect.poll(async () => (await card.boundingBox())!.height).toBeGreaterThanOrEqual(Math.max(h0, 370));
+  await pc.reload();
+  await pc.getByRole("button", { name: "Anpassen" }).first().click();
+  await expect(pc.locator(".dash > div").filter({ hasText: "Verbindung & PC" }).first().getByText("Höhe: Hoch")).toBeVisible();
+  // back to the standard
+  await pc.getByRole("button", { name: "Standard" }).click();
+  await pc.getByRole("button", { name: "Fertig" }).click();
+});
+
+test("Deck: Tasten tragen die Farben des Designs, „Eigene Farben“ zeigt wieder die Markenfarben", async () => {
+  await pc.goto(`${COMPANION}/#/deck`);
+  await expect(pc.locator(".deck-key:not(.empty)").first()).toBeVisible({ timeout: 15000 });
+  const bg = () => pc.locator(".deck-key:not(.empty)").first().evaluate((e) => getComputedStyle(e).backgroundImage);
+  expect(await bg()).toContain("gradient");
+  await pc.getByRole("button", { name: /Tasten in den Farben des Designs/ }).click();
+  await expect(pc.locator("html")).toHaveAttribute("data-deck-own", "");
+  await pc.getByRole("button", { name: /Eigene Tastenfarben/ }).click();
+  await expect(pc.locator("html")).not.toHaveAttribute("data-deck-own", "");
+  await pc.goto(`${COMPANION}/#/`);
+});
+
 test("Widget-Baukasten: eigenes Widget bauen, frei verschieben, auf Dashboard, Overlay und als Desktop-Fenster", async () => {
   await pc.goto(`${COMPANION}/#/widgets`);
   await pc.getByRole("button", { name: "Neues Widget" }).first().click();
@@ -830,17 +879,21 @@ test("Netzwerkdiagnose mit eigenem Ziel und anpassbare Navigation", async () => 
   await expect(pc.getByRole("button", { name: "Testserver entfernen" })).toHaveCount(0);
 
   // Navigation: categories like in the plan, hide a section, it is gone from the sidebar but still found by search.
-  const sidebar = pc.locator(".sidebar");
-  await openMore(pc);
-  for (const g of ["Dashboard", "Steuerung", "Audio", "System", "Verbindung", "Erweiterungen", "Verwaltung"]) await expect(sidebar.getByRole("navigation", { name: g })).toBeVisible();
+  let sheet = await openMore(pc);
+  for (const g of ["Dashboard", "Steuerung", "Audio", "System", "Verbindung", "Erweiterungen", "Verwaltung"]) await expect(sheet.getByRole("region", { name: g })).toBeVisible();
+  await pc.keyboard.press("Escape");
   await pc.goto(`${COMPANION}/#/settings?s=design`);
   await pc.getByRole("button", { name: "Programme ausblenden" }).click();
   // Gone from the categories – it waits in the folder "Weitere Funktionen".
-  await expect(sidebar.locator(".nav-group:not(.nav-folder)").getByRole("link", { name: "Programme" })).toHaveCount(0);
-  await expect(sidebar.locator(".nav-folder")).toContainText("Weitere Funktionen");
+  sheet = await openMore(pc);
+  await expect(sheet.locator(".sheet-group:not(.sheet-folder)").getByRole("link", { name: "Programme" })).toHaveCount(0);
+  await expect(sheet.locator(".sheet-folder")).toContainText("Weitere Funktionen");
+  await pc.keyboard.press("Escape");
   await expect(pc.getByRole("button", { name: "Einstellungen ausblenden" })).toBeDisabled();
   await pc.getByRole("button", { name: "Programme einblenden" }).click();
-  await expect(sidebar.locator(".nav-group:not(.nav-folder)").getByRole("link", { name: "Programme" })).toBeVisible();
+  sheet = await openMore(pc);
+  await expect(sheet.locator(".sheet-group:not(.sheet-folder)").getByRole("link", { name: "Programme" })).toBeVisible();
+  await pc.keyboard.press("Escape");
   await pc.goto(`${COMPANION}/#/`);
 });
 
@@ -1173,7 +1226,7 @@ test("Feste Webseite: PC verbinden per Code + PC-Adresse und per QR-Link", async
   // Own widget built on the tablet without the PC: placed on the dashboard and in the overlay at once.
   await tablet.goto(`${HOSTED_SITE}/#/widgets`);
   await tablet.getByRole("button", { name: "Neues Widget" }).first().click();
-  await tablet.locator(".ws-template", { hasText: "Leistung" }).click();
+  await tablet.locator(".ws-template").filter({ has: tablet.locator("b", { hasText: /^Leistung$/ }) }).click();
   await tablet.getByRole("textbox", { name: "Name des Widgets" }).fill("Tablet-Widget");
   await tablet.getByRole("button", { name: "Speichern" }).click();
   await expect(tablet.getByText("Gespeichert – wird beim Verbinden auf den PC übertragen")).toBeVisible();
@@ -2046,17 +2099,14 @@ test("Seitenmenü: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet,
   await expect(pc.getByRole("toolbar", { name: "Filter" }).getByRole("button", { name: "Alle", exact: true })).toHaveClass(/\bon\b/);
   await menu.getByRole("link", { name: "JARVIS", exact: true }).click();
   await expect(pc).toHaveURL(/#\/assistant/);
-  // "Mehr" opens the full navigation (categories, other functions) in the menu and closes it again.
-  const more = menu.getByRole("button", { name: "Mehr", exact: true });
-  if ((await more.getAttribute("aria-expanded")) === "true") await more.click();
-  await expect(pc.locator(".sidebar .side-nav")).toHaveCount(0);
-  await more.click();
-  await expect(more).toHaveAttribute("aria-expanded", "true");
-  await expect(pc.locator(".sidebar").getByRole("navigation", { name: "Audio" })).toBeVisible();
-  await pc.locator(".sidebar .side-nav").getByRole("link", { name: "Diagnose" }).first().click();
+  // "Mehr" opens a window with the full navigation (categories, other functions) and closes it again.
+  const sheet = await openMore(pc);
+  await expect(sheet.getByRole("region", { name: "Audio" })).toBeVisible();
+  await sheet.getByRole("link", { name: "Diagnose" }).first().click();
   await expect(pc).toHaveURL(/#\/diagnostics/);
-  await more.click();
-  await expect(pc.locator(".sidebar .side-nav")).toHaveCount(0);
+  await openMore(pc);
+  await pc.keyboard.press("Escape");
+  await expect(pc.getByRole("dialog", { name: "Alle Bereiche" })).toHaveCount(0);
   await pc.goto(`${COMPANION}/#/`);
 });
 

@@ -84,7 +84,7 @@ sealed class IslandForm : Form
     public IslandForm(CoreWebView2Environment env, string origin, string token)
     {
         _env = env; _origin = origin; _token = token;
-        Text = "Nexus Gaming Hub – JARVIS";
+        Text = WindowsForegroundWatcher.IslandTitle;
         FormBorderStyle = FormBorderStyle.None;
         ShowInTaskbar = false;
         TopMost = true;

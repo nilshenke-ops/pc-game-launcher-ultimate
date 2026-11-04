@@ -4,6 +4,23 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.99.0 – 2026-11-04
+### Neu
+- Wo die Insel erscheint (Einstellungen → Insel): nur in der App, auf dem Startbildschirm und in der App, in allen Programmen (z. B. Discord), nur in Spielen oder überall; der Begleiter erkennt dafür, welches Fenster vorne ist (nur die Art: Desktop, diese App oder ein Programm – kein Titel, nichts wird gespeichert)
+- Die Insel zeigt, was am PC läuft: Titel, Interpret und App (Spotify, Firefox, Chrome, Edge, VLC …) aus den Windows-Mediensitzungen; ohne Wiedergabe steht „Gerade läuft nichts“
+- Neues Widget: 19 Vorlagen statt vier – Leistung (Balken und Ringe), Temperaturen, Speicher, Zahlen, Uhr, Spielzeit, Fokus-Timer, Stoppuhr, laufendes Spiel, Musik am PC (echter Titel), Lautstärke, Aufnahme, Overlay & Sounds, Schnellzugriff, Notiz; neue Messwerte „CPU-Temperatur“ und „Laufwerk (belegt)“ und das Element „Musik/Video am PC“
+- Anpassen: Größe jedes Widgets frei einstellbar – Breite in Spalten (1–4) und Höhe in vier Stufen, bleibt gespeichert
+- Deck: Tasten tragen die Farben des gewählten Designs (Logos und Symbole einfarbig); mit dem Farbknopf lassen sich die eigenen Farben wieder zeigen
+### Verbessert
+- „Mehr“ im Seitenmenü öffnet jetzt ein Fenster mit allen Bereichen (wie die Apps-Ansicht) statt die Leiste aufzuklappen
+- Die Glas-Kopfleiste bekommt beim Scrollen eine Scheibe – Inhalte scheinen nicht mehr durch das Suchfeld
+- Wallpaper Engine (und Lively, Rainmeter …) zählt nicht mehr als Spiel: es verdrängt weder die Insel noch Spiel-Anzeigen, solange ein echtes Spiel läuft oder nicht
+- Öffnen und Schließen der Insel als eine Bewegung: die Höhe wächst und schrumpft weich, die Karten kommen gestaffelt und gehen schnell, das Fenster springt beim Schließen nicht mehr; unter Windows federt die Form mit Überschwingen
+- Startseite aufgeräumt: „Schnellstart“ und „Erste Schritte“ sind im Standardmenü ausgeblendet (über „Startseite anpassen“ wieder einblendbar)
+### Behoben
+- Das Symbol eines Programms wird bei einem Fehlversuch noch zweimal neu geholt
+- „Läuft gerade“ fragt still nach: ist der PC kurz nicht erreichbar, öffnet sich nicht mehr das Fenster „Erst PC verbinden“
+
 ## 2.98.0 – 2026-11-04
 ### Verbessert
 - Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“)

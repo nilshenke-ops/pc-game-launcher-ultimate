@@ -359,6 +359,15 @@ public static class RpcApi
         // ------------------------------------------------------------ activity status (only for the paired devices)
         rpc.Register("activity.get", ctx => s.Activity.View(ctx.Session.Has(Permissions.Manage), DateTime.UtcNow));
         rpc.Register("activity.set", ctx => { s.Activity.Set(ctx.Bind<ActivityFile>()); return s.Activity.View(true, DateTime.UtcNow); });
+        // What the PC plays right now (Spotify, a video in Firefox …) – read from Windows' media sessions; a short cache so many windows do not all ask Windows.
+        rpc.Register("media.now", _ =>
+        {
+            var np = s.Platform.NowPlaying;
+            if (!np.Supported) return new { supported = false };
+            var i = s.NowPlayingCached();
+            return i == null ? new { supported = true, active = false, playing = false, app = "", title = "", artist = "" }
+                             : new { supported = true, active = true, playing = i.Playing, app = i.App, title = i.Title, artist = i.Artist };
+        });
         rpc.Register("media.key", async ctx =>
         {
             var key = ctx.Str("key", 20);
@@ -677,7 +686,8 @@ public static class RpcApi
         {
             bool? Opt(string k) => ctx.Params.TryGetProperty(k, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
             var desktop = Opt("desktop"); var games = Opt("games");
-            s.Settings.SetIsland(desktop, games);
+            var scope = ctx.Params.TryGetProperty("scope", out var sc) && sc.ValueKind == JsonValueKind.String ? sc.GetString() : null;
+            s.Settings.SetIsland(desktop, games, scope);
             // The look (template, eyes, widgets, place, opacity) – changed from the PC or from a phone with the right to do so.
             if (ctx.Params.TryGetProperty("look", out var lk) && lk.ValueKind == JsonValueKind.Object)
             {
@@ -919,7 +929,7 @@ public static class RpcApi
         var set = s.Settings.Get();
         return new
         {
-            supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, gameRunning = s.Sessions.AnyGameRunning(),
+            supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, scope = SettingsService.ScopeOf(set), front = s.Platform.Foreground.Kind.ToString().ToLowerInvariant(), foregroundSupported = s.Platform.Foreground.Supported, gameRunning = s.GameRunning(),
             look = new { style = set.IslandStyle, eye = set.IslandEye, eyeSize = set.IslandEyeSize, widgets = set.IslandWidgets ?? SettingsService.IslandLook.DefaultWidgets.ToList(), position = set.IslandPosition, opacity = set.IslandOpacity },
         };
     }

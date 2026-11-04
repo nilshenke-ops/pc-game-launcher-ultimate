@@ -142,10 +142,27 @@ public sealed class SettingsService
         return r;
     }
 
-    /// <summary>JARVIS island: on the desktop/over programs, and separately during games.</summary>
-    public Settings SetIsland(bool? desktop, bool? games)
+    /// <summary>Where the island window shows (the island in the app itself is always possible):
+    /// app = only in the app, desktop = on the desktop, programs = over all programs (Discord …) but not in games, games = only in games, all = everywhere.</summary>
+    public static readonly string[] IslandScopes = { "app", "desktop", "programs", "games", "all" };
+    public static string ScopeOf(Settings s) => s.IslandScope is { } sc && IslandScopes.Contains(sc) ? sc : s.IslandDesktop ? (s.IslandInGames ? "all" : "programs") : (s.IslandInGames ? "games" : "app");
+
+    /// <summary>JARVIS island: the old two switches (desktop/over programs, during games) or the new scope.</summary>
+    public Settings SetIsland(bool? desktop, bool? games, string? scope = null)
     {
-        var r = _store.Update(s => { if (desktop != null) s.IslandDesktop = desktop.Value; if (games != null) s.IslandInGames = games.Value; return Json.Deserialize<Settings>(Json.Serialize(s))!; });
+        if (scope != null && !IslandScopes.Contains(scope)) throw new RpcException("invalid-params", "Unbekannter Bereich für die Insel.");
+        var r = _store.Update(s =>
+        {
+            if (desktop != null) { s.IslandDesktop = desktop.Value; s.IslandScope = null; }
+            if (games != null) { s.IslandInGames = games.Value; s.IslandScope = null; }
+            if (scope != null)
+            {
+                s.IslandScope = scope;
+                s.IslandDesktop = scope is "desktop" or "programs" or "all";
+                s.IslandInGames = scope is "games" or "all";
+            }
+            return Json.Deserialize<Settings>(Json.Serialize(s))!;
+        });
         _hub.Changed("island");
         return r;
     }

@@ -158,7 +158,15 @@ export type WidgetId = BuiltinWidgetId | `plugin:${string}` | `custom:${string}`
 export const PLUGIN_WIDGET = /^plugin:[a-z0-9.-]{3,64}:[a-z0-9-]{1,32}$/;
 export const CUSTOM_WIDGET = /^custom:cw_[A-Za-z0-9_-]{1,40}$/;
 export type WidgetSize = "s" | "m" | "l";
-export interface WidgetConf { id: WidgetId; visible: boolean; size: WidgetSize }
+/** cols = width in columns of the 4-column home grid (1–4), rows = height step (1 = as high as the content, 2–4 = taller). Without them the size S/M/L counts. */
+export interface WidgetConf { id: WidgetId; visible: boolean; size: WidgetSize; cols?: number; rows?: number }
+export const WIDGET_COLS: Record<WidgetSize, number> = { s: 1, m: 2, l: 4 };
+export const HEIGHT_STEPS = [0, 0, 240, 380, 520] as const; // index = rows; px of minimum height (0 = by content)
+export const HEIGHT_LABEL = ["", "Auto", "Mittel", "Hoch", "Sehr hoch"] as const;
+export const colsOf = (w: Pick<WidgetConf, "size" | "cols">): number => (Number.isInteger(w.cols) && w.cols! >= 1 && w.cols! <= 4 ? w.cols! : WIDGET_COLS[w.size] ?? 2);
+export const rowsOf = (w: Partial<WidgetConf>): number => (Number.isInteger(w.rows) && w.rows! >= 1 && w.rows! <= 4 ? w.rows! : 1);
+/** The S/M/L size that comes closest to a number of columns (kept in step so older places that only know S/M/L still fit). */
+export const sizeOfCols = (c: number): WidgetSize => (c <= 1 ? "s" : c <= 2 ? "m" : "l");
 export interface Layout { id: string; name: string; widgets: WidgetConf[] }
 
 export const ALL_WIDGETS: { id: BuiltinWidgetId; label: string; sizes: WidgetSize[] }[] = [
@@ -214,8 +222,8 @@ export const DEFAULT_LAYOUT: Layout = {
   name: "Standard",
   widgets: [
     { id: "status", visible: true, size: "m" },
-    { id: "shortcuts", visible: true, size: "m" },
-    { id: "start", visible: true, size: "m" },
+    { id: "shortcuts", visible: false, size: "m" },
+    { id: "start", visible: false, size: "m" },
     { id: "next", visible: true, size: "m" },
     { id: "activity", visible: true, size: "s" },
     { id: "calendar", visible: true, size: "m" },
@@ -252,6 +260,10 @@ export interface Prefs {
   homeShortcuts: string[];
   /** Start animation, moving background, page transitions. */
   fx: Fx;
+  /** "Schnellstart" and "Erste Schritte" were taken out of the standard home once (2.99.0); anyone can switch them on again. */
+  homeTidied?: boolean;
+  /** Deck keys keep their own colours (brand colours). Default: keys follow the colours of the design. */
+  deckOwn?: boolean;
   /** Tabs moved into "Weitere" per page (page id → tab ids), e.g. { friends: ["servers"] }. */
   tabs: Record<string, string[]>;
 }
@@ -327,12 +339,15 @@ export function sanitizePrefs(input: unknown): Prefs {
         const seen = new Set<string>();
         let plugins = 0, custom = 0;
         const known = (id: string) => ids.has(id as BuiltinWidgetId) || (PLUGIN_WIDGET.test(id) && ++plugins <= 60) || (CUSTOM_WIDGET.test(id) && ++custom <= 30);
-        const widgets: WidgetConf[] = l.widgets.filter((w) => typeof w?.id === "string" && known(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize }));
+        const widgets: WidgetConf[] = l.widgets.filter((w) => typeof w?.id === "string" && known(w.id) && !seen.has(w.id) && seen.add(w.id)).map((w) => ({ id: w.id, visible: !!w.visible, size: (["s", "m", "l"].includes(w.size) ? w.size : "m") as WidgetSize,
+          ...(Number.isInteger(w.cols) && w.cols! >= 1 && w.cols! <= 4 ? { cols: w.cols } : {}), ...(Number.isInteger(w.rows) && w.rows! >= 2 && w.rows! <= 4 ? { rows: w.rows } : {}) }));
         // Layouts from before 2.7.0 get the new home widgets "Schnellstart" and "Als Nächstes spielen" right after the first widget.
         for (const id of ["next", "shortcuts"] as BuiltinWidgetId[]) if (!seen.has(id)) { seen.add(id); widgets.splice(Math.min(1, widgets.length), 0, { id, visible: true, size: "m" }); }
         // Layouts from before 2.14.0 show "Mein Status" and "Termine" once (hidden by the user, they stay hidden).
         for (const [id, size] of [["calendar", "m"], ["activity", "s"]] as [BuiltinWidgetId, WidgetSize][]) if (!seen.has(id)) { seen.add(id); widgets.splice(Math.min(3, widgets.length), 0, { id, visible: true, size }); }
         for (const w of ALL_WIDGETS) if (!seen.has(w.id)) widgets.push({ id: w.id, visible: false, size: w.sizes[0] });
+        // 2.99.0: the standard layout loses "Schnellstart" and "Erste Schritte" once (own layouts and later choices stay).
+        if (l.id === "default" && p.homeTidied !== true) for (const w of widgets) if (w.id === "shortcuts" || w.id === "start") w.visible = false;
         return { id: l.id.slice(0, 40), name: String(l.name ?? "Layout").slice(0, 40), widgets };
       })
     : [];
@@ -350,6 +365,8 @@ export function sanitizePrefs(input: unknown): Prefs {
       mobile: has(p.activeLayout?.mobile) ? p.activeLayout!.mobile : layouts[0].id,
     },
     nav: sanitizeNav(p.nav),
+    homeTidied: true,
+    deckOwn: p.deckOwn === true,
     profileThemes: p.profileThemes !== false,
     homeShortcuts: Array.isArray(p.homeShortcuts) ? [...new Set(p.homeShortcuts.filter((x): x is string => typeof x === "string" && NAV_PATH.test(x)))].slice(0, 8) : [],
     fx: legacy ? sanitizeFx({ ...(p.fx as object), bg: { ...((p.fx as { bg?: object } | undefined)?.bg ?? {}), kind: "none" } }) : sanitizeFx(p.fx),

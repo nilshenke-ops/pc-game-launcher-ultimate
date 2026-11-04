@@ -10,13 +10,72 @@ namespace Pgl.Core.Tests;
 public class IslandTests
 {
     [Fact]
-    public void Island_shows_only_when_switched_on_and_hides_during_games_unless_wanted()
+    public void Island_window_follows_the_chosen_scope_and_the_front_window()
     {
-        Assert.False(CompanionServices.IslandWanted(new Settings(), gaming: false)); // off until switched on
-        Assert.True(CompanionServices.IslandWanted(new Settings { IslandDesktop = true }, gaming: false));
-        Assert.False(CompanionServices.IslandWanted(new Settings { IslandDesktop = true }, gaming: true)); // gone while a game runs
-        Assert.True(CompanionServices.IslandWanted(new Settings { IslandDesktop = true, IslandInGames = true }, gaming: true));
-        Assert.False(CompanionServices.IslandWanted(new Settings { IslandDesktop = false, IslandInGames = true }, gaming: true));
+        Settings S(string scope) => new() { IslandScope = scope };
+        const ForegroundKind App = ForegroundKind.App, Desk = ForegroundKind.Desktop, Prog = ForegroundKind.Program;
+        // "app": only the island inside the app – no window anywhere.
+        foreach (var fg in new[] { App, Desk, Prog }) foreach (var g in new[] { false, true }) Assert.False(CompanionServices.IslandWanted(S("app"), g, fg));
+        // "desktop": only with no program in front (and no game).
+        Assert.True(CompanionServices.IslandWanted(S("desktop"), false, Desk));
+        Assert.False(CompanionServices.IslandWanted(S("desktop"), false, Prog)); // Discord in front
+        Assert.False(CompanionServices.IslandWanted(S("desktop"), true, Desk));
+        // "programs": over every program (Discord, browser …), but not while a game runs.
+        Assert.True(CompanionServices.IslandWanted(S("programs"), false, Prog));
+        Assert.True(CompanionServices.IslandWanted(S("programs"), false, Desk));
+        Assert.False(CompanionServices.IslandWanted(S("programs"), true, Prog));
+        // "games": not in programs, only while a game runs.
+        Assert.False(CompanionServices.IslandWanted(S("games"), false, Prog));
+        Assert.True(CompanionServices.IslandWanted(S("games"), true, Prog));
+        // "all": everywhere.
+        Assert.True(CompanionServices.IslandWanted(S("all"), false, Prog));
+        Assert.True(CompanionServices.IslandWanted(S("all"), true, Prog));
+        // In front of the companion's own window the island window is never shown (the one in the app is there).
+        foreach (var sc in SettingsService.IslandScopes) foreach (var g in new[] { false, true }) Assert.False(CompanionServices.IslandWanted(S(sc), g, App));
+    }
+
+    [Fact]
+    public void Old_switches_become_the_matching_scope()
+    {
+        Assert.Equal("app", SettingsService.ScopeOf(new Settings()));
+        Assert.Equal("programs", SettingsService.ScopeOf(new Settings { IslandDesktop = true }));
+        Assert.Equal("all", SettingsService.ScopeOf(new Settings { IslandDesktop = true, IslandInGames = true }));
+        Assert.Equal("games", SettingsService.ScopeOf(new Settings { IslandInGames = true }));
+        Assert.Equal("desktop", SettingsService.ScopeOf(new Settings { IslandScope = "desktop", IslandDesktop = false }));
+        Assert.Equal("app", SettingsService.ScopeOf(new Settings { IslandScope = "unsinn" })); // unknown value → switches decide
+    }
+
+    [Fact]
+    public void The_scope_is_kept_validated_and_keeps_the_old_switches_in_step()
+    {
+        using var dir = new TempDir();
+        var svc = NewSettings(dir);
+        svc.SetIsland(null, null, "desktop");
+        var s = NewSettings(dir).Get();
+        Assert.Equal(("desktop", true, false), (s.IslandScope, s.IslandDesktop, s.IslandInGames));
+        svc.SetIsland(null, null, "games");
+        s = NewSettings(dir).Get();
+        Assert.Equal(("games", false, true), (s.IslandScope, s.IslandDesktop, s.IslandInGames));
+        var ex = Assert.Throws<RpcException>(() => svc.SetIsland(null, null, "überall-und-nirgends"));
+        Assert.Equal("invalid-params", ex.Code);
+        Assert.Equal("games", NewSettings(dir).Get().IslandScope); // nothing changed
+        svc.SetIsland(true, null); // an old client switches the old way (desktop on, games stays on): the scope is derived again
+        Assert.Equal("all", SettingsService.ScopeOf(NewSettings(dir).Get()));
+        svc.SetIsland(null, false);
+        Assert.Equal("programs", SettingsService.ScopeOf(NewSettings(dir).Get()));
+    }
+
+    [Theory]
+    [InlineData("Wallpaper Engine", true)] [InlineData("wallpaper engine", true)] [InlineData("Lively Wallpaper", true)] [InlineData("Rainmeter", true)]
+    [InlineData("Among Us", false)] [InlineData("Minecraft", false)] [InlineData("", false)] [InlineData(null, false)]
+    public void A_live_wallpaper_is_no_game_that_is_played(string? name, bool ambient) => Assert.Equal(ambient, AmbientApps.IsAmbient(name));
+
+    [Fact]
+    public void Without_a_Windows_companion_nothing_plays_and_the_front_window_is_a_program()
+    {
+        Assert.False(NullNowPlaying.Instance.Supported);
+        Assert.Null(NullNowPlaying.Instance.Current());
+        Assert.Equal(ForegroundKind.Program, NullForegroundWatcher.Instance.Kind);
     }
 
     [Fact]

@@ -123,6 +123,7 @@
     "captures.addFolder": "admin",
     "captures.removeFolder": "manage",
     "media.key": "launch",
+    "media.now": "view",
     "widgets.list": "view",
     "widgets.save": "manage",
     "widgets.remove": "manage",

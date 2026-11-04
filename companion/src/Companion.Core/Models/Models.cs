@@ -421,6 +421,8 @@ public sealed class Settings
     public bool IslandDesktop { get; set; }
     /// <summary>The island also while a game from the library runs (off: it hides during games).</summary>
     public bool IslandInGames { get; set; }
+    /// <summary>Where the island window shows: app, desktop, programs, games, all (null = derived from the two switches above).</summary>
+    public string? IslandScope { get; set; }
     /// <summary>Look of the island: template (default, neon, minimal, glass, blue, purple, mono), eye colour (auto, cyan, green, pink, orange, white) and size (s, m, l).</summary>
     public string IslandStyle { get; set; } = "default";
     public string IslandEye { get; set; } = "auto";

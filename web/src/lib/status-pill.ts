@@ -4,6 +4,7 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
+import { mainGame } from "./running";
 
 const KEY = "pgl.statusPill";
 let on = (() => { try { return readJson<boolean>(KEY) === true; } catch { return false; } })();
@@ -23,5 +24,5 @@ export function pillText(i: Pick<PillInfo, "short" | "game" | "waiting">): strin
 
 /** Only while really connected the pill may name a running game (the saved overview never lists one). */
 export function runningGame(running: { name: string }[] | undefined, connected: boolean): string | null {
-  return connected && running && running.length > 0 ? running[0].name : null;
+  return connected && running && running.length > 0 ? (mainGame(running)?.name ?? null) : null;
 }

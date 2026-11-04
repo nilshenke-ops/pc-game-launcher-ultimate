@@ -7,6 +7,9 @@ import { DeckIcon } from "./deck-icons";
 import { DESIGN_WIDTH, type CustomWidget, type WidgetElement } from "../lib/custom-widgets";
 import type { MetricsSample } from "../lib/types";
 import { runQuickAction } from "./run-quick";
+import { mainGame } from "../lib/running";
+import { MEDIA_KEYS } from "../lib/deck";
+import { nowLine, nowSub, useNowPlaying } from "../lib/now-playing";
 
 /** Font sizes are designed for a 360 px wide box and scale with the real width (container query units). */
 const fs = (px: number) => `calc(${px} * 100cqw / ${DESIGN_WIDTH})`;
@@ -39,6 +42,8 @@ function metricValue(m: MetricsSample | null, kind?: string | null): { pct: numb
     case "ram": { const p = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null; return { pct: p, text: p != null ? `${p.toFixed(0)} %` : na("ram") }; }
     case "gpu": return { pct: gpu?.utilPercent ?? null, text: gpu?.utilPercent != null ? `${gpu.utilPercent.toFixed(0)} %` : na("gpu") };
     case "gputemp": return { pct: gpu?.tempC ?? null, text: gpu?.tempC != null ? `${gpu.tempC.toFixed(0)} °C` : na("gpu") };
+    case "cputemp": return { pct: m.cpuTempC ?? null, text: m.cpuTempC != null ? `${m.cpuTempC.toFixed(0)} °C` : "n. v." };
+    case "disk": { const d = m.disks?.[0]; const p = d && d.totalBytes > 0 ? ((d.totalBytes - d.freeBytes) / d.totalBytes) * 100 : null; return { pct: p, text: p != null ? `${p.toFixed(0)} %` : m.off?.includes("disks") ? t("aus") : "n. v." }; }
     default: return { pct: null, text: "–" };
   }
 }
@@ -77,6 +82,18 @@ function Ring({ pct, color, size }: { pct: number | null; color: string; size: n
   );
 }
 
+/** The song or video the PC plays (Windows media sessions) – only asks the PC while a widget like this is on screen. */
+function MusicView({ style }: { style: CSSProperties }) {
+  const np = useNowPlaying();
+  const line = nowLine(np);
+  return (
+    <div style={{ ...style, flexDirection: "column", alignItems: style.justifyContent as string, justifyContent: "center", gap: "2%" }}>
+      <span className="ellipsis" style={{ maxWidth: "100%" }}>{line ? `${np?.playing ? "♪" : "❚❚"} ${np?.title}` : t("Gerade läuft nichts")}</span>
+      {line && <span className="ellipsis" style={{ maxWidth: "100%", fontSize: "0.72em", opacity: 0.75, fontWeight: 400 }}>{nowSub(np)}</span>}
+    </div>
+  );
+}
+
 function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e: WidgetElement; w: CustomWidget; metrics: MetricsSample | null; now: Date; minutes: { today: number; week: number } | null; playing: string | null; interactive: boolean }) {
   const color = e.color ?? w.textColor;
   const style: CSSProperties = {
@@ -108,7 +125,7 @@ function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e:
     case "button":
       return (
         <button type="button" className="cw-button" style={{ ...style, background: e.fill ?? "rgba(255,255,255,.12)", gap: "0.4em", borderRadius: Math.min(12, w.radius), cursor: interactive ? "pointer" : "default" }}
-          onClick={interactive ? () => runButton(e) : undefined} tabIndex={interactive ? 0 : -1} aria-label={e.text ?? e.action ?? ""}>
+          onClick={interactive ? () => runButton(e) : undefined} tabIndex={interactive ? 0 : -1} aria-label={e.text || (e.action === "media" ? t(MEDIA_KEYS.find((k) => k[0] === e.ref)?.[1] ?? "Medien & Lautstärke") : "") || e.action || ""}>
           {e.icon && <DeckIcon name={e.icon} size={18} />}{e.text}
         </button>
       );
@@ -118,6 +135,7 @@ function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e:
       return <div style={{ ...style, flexDirection: "column", alignItems: style.justifyContent as string, justifyContent: "center" }}>{e.text && <span style={{ fontSize: "0.6em", opacity: 0.8, fontWeight: 400 }}>{e.text}</span>}<span>{m == null ? "–" : fmtMin(m)}</span></div>;
     }
     case "nowPlaying": return <div style={style}><span className="ellipsis">{playing ? `▶ ${playing}` : t("Kein Spiel aktiv")}</span></div>;
+    case "music": return <MusicView style={style} />;
     case "shape": return <div style={{ ...style, background: e.fill ?? "#ffffff", borderRadius: 4 }} />;
     case "icon": return <div style={{ ...style, justifyContent: "center" }}><span style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}><DeckIcon name={e.icon ?? "zap"} size={64} /></span></div>;
     case "timer": return <TimerView e={e} style={style} interactive={interactive} />;
@@ -147,7 +165,7 @@ export function CustomWidgetView({ widget: w, interactive = true, height, overla
     }
     return { today, week };
   }, [hist.data]);
-  const playing = state?.running?.[0]?.name ?? null;
+  const playing = mainGame(state?.running)?.name ?? null;
   const bg = w.background2 ? `linear-gradient(135deg, ${w.background}, ${w.background2})` : w.background;
   const ref = useRef<HTMLDivElement>(null);
   return (

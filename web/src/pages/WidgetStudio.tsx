@@ -18,7 +18,7 @@ import { DECK_ICONS, DeckIcon } from "../components/deck-icons";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Modal, PageHead, Segmented, Switch } from "../components/ui";
 
-const TYPES: ElementType[] = ["text", "clock", "metric", "button", "icon", "timer", "image", "playtime", "nowPlaying", "shape"];
+const TYPES: ElementType[] = ["text", "clock", "metric", "button", "icon", "timer", "image", "playtime", "nowPlaying", "music", "shape"];
 const ACTIONS: { value: ButtonAction; label: () => string; needsRef?: "quick" | "launch" | "sound" | "profile" }[] = [
   { value: "record", label: () => t("Aufnahme starten/stoppen") },
   { value: "replay", label: () => t("Replay speichern") },
@@ -131,6 +131,7 @@ function ElementProps({ e, set }: { e: WidgetElement; set: (p: Partial<WidgetEle
             <select className="input" value={e.kind ?? "cpu"} onChange={(x) => set({ kind: x.target.value })}>
               <option value="cpu">{t("CPU-Auslastung")}</option><option value="ram">{t("Arbeitsspeicher (RAM)")}</option>
               <option value="gpu">{t("Grafikkarte (GPU)")}</option><option value="gputemp">{t("GPU-Temperatur")}</option>
+              <option value="cputemp">{t("CPU-Temperatur")}</option><option value="disk">{t("Laufwerk (belegt)")}</option>
             </select>
           </Field>
           <Segmented label={t("Darstellung")} value={e.display ?? "number"} onChange={(v) => set({ display: v })}
