@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 2.98.0 – 2026-11-04
+### Verbessert
+- Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“)
+- Die Insel in der App passt sich dem Design an (Glas in den Farben des gewählten Designs, Augen und Lichtkranz in der Akzentfarbe, auch im hellen Design lesbar)
+- Originale Logos: Xbox (Kugel) und Microsoft Store (Tasche) als echte Formen, auf der Startseite die Kachel „Game Pass“ mit dem Original-Logo (Kugel mit „GAME PASS“) statt eigener Zeichnungen; Logos auf Kacheln sind einfarbig – auf dunklem Glas weiß, im hellen Design dunkel (nichts Grünes mehr im grauen Design)
+- Handy-Kopfleiste ohne Überlappung (bei 360 bis 430 Pixel Breite gemessen): runder Menü-Knopf, Punkt, Insel in der eigenen Lücke, rechts Suche, Anmeldung, Benachrichtigungen
+
 ## 2.97.0 – 2026-11-04
 ### Neu
 - Die JARVIS-Insel gibt es jetzt auch in der App selbst (Handy und Webseite): eine kleine schwebende Insel oben, Tippen öffnet JARVIS, Timer, Spiel und alle Widgets; abschaltbar unter JARVIS → „Insel auch in dieser App zeigen“ (nur auf diesem Gerät)

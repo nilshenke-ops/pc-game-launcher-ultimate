@@ -10,6 +10,8 @@ jeweiligen Inhabern. Es besteht keine Verbindung zu diesen Unternehmen.
 |---|---|---|
 | [simple-icons](https://github.com/simple-icons/simple-icons) 16.35.0 | [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) | Programme, Launcher und einige Spiele (z. B. Discord, OBS, Steam, Valorant) |
 | [Arcticons](https://github.com/Arcticons-Team/Arcticons) 1.2.58 (über `@iconify-json/arcticons`), © Donnnno und die Arcticons-Mitwirkenden | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) | Spiele ohne Logo in simple-icons (z. B. Minecraft, Apex Legends, Call of Duty) |
+| [selfh.st/icons](https://github.com/selfhst/icons) (Microsoft-Store-Tasche, Xbox-Game-Pass-Symbol), über iconify | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) | Originale Logos von Microsoft Store und Xbox Game Pass |
+| Xbox-Logo (Wikimedia Commons „Xbox Logo“, einfache geometrische Formen) | gemeinfrei (nur Formen) – Marke von Microsoft | Xbox-Kachel und Programm „Xbox“ |
 
 Die Arcticons-Symbole werden unverändert übernommen (nur Farbe und Strichstärke werden beim Anzeigen per CSS gesetzt).
 Logos, die simple-icons auf Wunsch der Markeninhaber entfernt hat, werden nicht verwendet. Erzeugt wird die Liste mit

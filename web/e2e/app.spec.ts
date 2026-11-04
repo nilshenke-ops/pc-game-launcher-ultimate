@@ -2144,13 +2144,13 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   // The mouse leaves the window (like moving away from the top of the screen) → only the eyes.
   const leave = () => isl.locator(".isl-host").dispatchEvent("mouseout", { relatedTarget: null });
   await leave();
-  await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/);
+  await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/, { timeout: 12000 }); // a notification of the PC keeps the bar open for a few seconds
   await expect(bar.locator(".isl-text")).toHaveCount(0);
   await isl.locator(".isl-host").dispatchEvent("mouseover", { relatedTarget: null }); // the mouse comes in from the screen
   await expect(isl.locator(".isl-host")).toHaveClass(/s-bar/);
   await expect(bar).toContainText("JARVIS – antippen für Widgets");
   await leave();
-  await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/);
+  await expect(isl.locator(".isl-host")).toHaveClass(/s-notch/, { timeout: 12000 }); // a notification of the PC keeps the bar open for a few seconds
   // A launch asked in the chat (JARVIS off: it needs a yes) reaches the island from the PC; "Ablehnen" starts nothing.
   await p.evaluate(() => localStorage.setItem("pgl.jarvis", "false"));
   await p.reload();

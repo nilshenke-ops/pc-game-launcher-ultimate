@@ -17,6 +17,7 @@ import { Button, Modal } from "./ui";
 import { Art, useLaunch } from "./launch-tiles";
 import { BrandLogo } from "./brand-logo";
 import { brandById } from "../lib/brands";
+import { GAME_PASS_PATH } from "../lib/launcher-logos";
 
 // ------------------------------------------------------------------ the name on the greeting (this device only)
 let name = cleanName(readJson<string>(NAME_KEY)) || "";
@@ -45,16 +46,17 @@ function ControllerArt() {
 }
 
 
-/** Own simple marks for the launcher shortcuts (a ring with an X, a shopping bag with four panes) – plain shapes, white. */
+/** The real logos on the shortcut tiles: Xbox (white, as in the mock-up) and the Xbox Game Pass app icon as it is. */
 function XboxMark() {
-  return <svg viewBox="0 0 48 48" width="62%" height="62%" aria-hidden><defs><mask id="hs-x"><rect width="48" height="48" fill="#fff" /><path d="M15 15c5 5 13 13 18 18M33 15C28 20 20 28 15 33" stroke="#000" strokeWidth="4.6" strokeLinecap="round" fill="none" /></mask></defs><circle cx="24" cy="24" r="21" fill="#fff" mask="url(#hs-x)" /></svg>;
+  const b = brandById("xbox");
+  return b ? <BrandLogo brand={b} size="64%" color="currentColor" /> : <Gamepad2 size={34} />;
 }
-function BagMark() {
-  return <svg viewBox="0 0 48 48" width="62%" height="62%" aria-hidden><defs><mask id="hs-b"><rect width="48" height="48" fill="#fff" /><path d="M16 24h7v7h-7zM25 24h7v7h-7zM16 33h7v7h-7zM25 33h7v7h-7z" fill="#000" transform="translate(0,-4) scale(1)" /></mask></defs><path d="M17 17v-3a7 7 0 0114 0v3" fill="none" stroke="#fff" strokeWidth="3.2" strokeLinecap="round" /><rect x="8" y="17" width="32" height="25" rx="5" fill="#fff" mask="url(#hs-b)" /></svg>;
+function GamePassMark() {
+  return <svg viewBox="0 0 512 512" width="92%" height="92%" role="img" aria-label="Xbox Game Pass" className="brand-logo"><path d={GAME_PASS_PATH} fill="currentColor" fillRule="evenodd" /></svg>;
 }
 function SteamMark() {
   const b = brandById("steam");
-  return b ? <BrandLogo brand={b} size="62%" color="#fff" /> : <Gamepad2 size={34} />;
+  return b ? <BrandLogo brand={b} size="62%" color="currentColor" /> : <Gamepad2 size={34} />;
 }
 
 function Spark({ points }: { points: number[] }) {
@@ -132,7 +134,7 @@ export function HomeShowcase({ onEdit }: { onEdit: () => void }) {
       <div className="hs-head"><h2><Gamepad2 size={22} />{t("Deine Spiele")}</h2><Link to="/games" className="hs-all">{t("Alle anzeigen")} <ArrowRight size={14} /></Link></div>
       <div className="hs-tiles">
         {games.map((g) => <GameTile key={g.id} item={g} launch={launch} busy={launching.has(g.id)} />)}
-        {games.length === 0 && [["/steam", "Steam", <SteamMark key="s" />], ["/launchers", t("Xbox App"), <XboxMark key="x" />], ["/gamepass", "Game Pass", <BagMark key="g" />]].map(([to, label, mark]) => (
+        {games.length === 0 && [["/steam", "Steam", <SteamMark key="s" />], ["/launchers", t("Xbox App"), <XboxMark key="x" />], ["/gamepass", "Game Pass", <GamePassMark key="g" />]].map(([to, label, mark]) => (
           <Link key={to as string} to={to as string} className="hs-tile link"><span className="hs-tile-art logo" style={{ background: gradientFor(label as string) }}>{mark}</span><span className="hs-tile-name">{label}</span><span className="hs-tile-go"><ArrowRight size={16} /></span></Link>
         ))}
         <Link to="/games" className="hs-tile add" aria-label={t("Spiel hinzufügen")}><span className="hs-tile-art plain"><Plus size={40} /></span><span className="hs-tile-name">{t("Spiel hinzufügen")}</span></Link>

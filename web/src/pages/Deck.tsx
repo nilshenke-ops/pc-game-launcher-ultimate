@@ -354,7 +354,7 @@ function KeyEditor({ value, isNew, deck, page, items, libLoaded, quick, sounds, 
                   {apps.map(pick)}
                   {!shown.length && <div className="pick-head">{t("Kein Logo gefunden – für andere Spiele das Cover nehmen (Spiel als Aktion wählen).")}</div>}
                 </div>
-                <p className="tiny muted" style={{ margin: 0 }}>{t("Logos: simple-icons (CC0) und Arcticons (CC BY-SA 4.0). Marken gehören ihren Inhabern.")}</p>
+                <p className="tiny muted" style={{ margin: 0 }}>{t("Logos: simple-icons (CC0), Arcticons (CC BY-SA 4.0) und selfh.st/icons (CC BY 4.0). Marken gehören ihren Inhabern.")}</p>
               </div>
             );
           })()}

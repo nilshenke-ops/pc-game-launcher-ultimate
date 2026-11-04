@@ -78,7 +78,7 @@ const GAMES = [
   ["arknights", "arknights", "Arknights", "#2a2a2a", /^arknights/], ["halflife", "half-life", "Half-Life", "#d4741c", /half-life/],
   ["doom", "doom", "DOOM", "#9b1b1b", /^doom(?![a-z])/], ["runescape", "runescape", "RuneScape", "#7a5a2a", /runescape/], ["albion", "albion-online", "Albion Online", "#3b5a2a", /albion online/],
   ["newworld", "new-world", "New World", "#6a4a2a", /^new world/], ["vrchat", "vrchat", "VRChat", "#1f1f1f", /vrchat/], ["recroom", "rec-room", "Rec Room", "#e25b45", /rec room/],
-  ["xbox", "xbox", "Xbox", "#107c10", /^xbox( app)?$|gaming services/], ["gamepass", "xbox-gamepass", "Game Pass", "#107c10", /game pass/],
+  ["gamepass", "xbox-gamepass", "Game Pass", "#107c10", /game pass/],
   ["nintendo", "nintendo", "Nintendo", "#e60012", /nintendo/],
 ];
 
@@ -90,7 +90,7 @@ const APPS = [
   ["excel", "microsoft-excel", "Excel", "#107c41", /\bexcel\b/], ["powerpoint", "microsoft-powerpoint", "PowerPoint", "#c43e1c", /powerpoint/],
   ["teams", "microsoft-teams", "Microsoft Teams", "#5059c9", /microsoft teams|^teams$/], ["onedrive", "microsoft-onedrive", "OneDrive", "#0364b8", /onedrive/],
   ["onenote", "microsoft-onenote", "OneNote", "#7719aa", /onenote/], ["outlook", "microsoft-outlook", "Outlook", "#0078d4", /outlook/],
-  ["msstore", "microsoft", "Microsoft Store", "#0078d4", /microsoft store/], ["medal", "medal-tv", "Medal", "#d4a017", /^medal$/],
+  ["medal", "medal-tv", "Medal", "#d4a017", /^medal$/],
   ["logitech", "logitech-g", "Logitech G", "#00b8fc", /logitech/], ["slack", "slack", "Slack", "#4a154b", /^slack/],
   ["amazon", "amazon", "Amazon", "#ff9900", /^amazon\b/], ["primevideo", "amazon-prime-video", "Prime Video", "#00a8e1", /prime video/],
   ["disney", "disney", "Disney+", "#113ccf", /disney/], ["voicemod", "voicemod-controller", "Voicemod", "#7d3cff", /voicemod/],
@@ -101,6 +101,13 @@ const APPS = [
   ["vscode", "visual-studio-code", "Visual Studio Code", "#007acc", /visual studio code|^vs ?code$/], ["quantum", "quantum", "JBL QuantumENGINE", "#ff6a00", /quantum ?engine/],
   ["jbl", "jblheadphones", "JBL", "#ff6a00", /^jbl/],
 ];
+// Official logos taken as they are (single shapes): Xbox (Wikimedia Commons "Xbox Logo", simple shapes, 88 × 88) and the Microsoft Store bag
+// (selfh.st/icons, CC BY 4.0, 512 × 512, white version). id, display name, tile colour, match, viewBox size, path.
+const EXTRA = [
+  ["xbox", "Xbox", "#107c10", /^xbox( app)?$|gaming services/, 88, "M39.73 86.91c-6.628-.635-13.338-3.015-19.102-6.776-4.83-3.15-5.92-4.447-5.92-7.032 0-5.193 5.71-14.29 15.48-24.658 5.547-5.89 13.275-12.79 14.11-12.604 1.626.363 14.616 13.034 19.48 19 7.69 9.43 11.224 17.154 9.428 20.597-1.365 2.617-9.837 7.733-16.06 9.698-5.13 1.62-11.867 2.306-17.416 1.775zM8.184 67.703c-4.014-6.158-6.042-12.22-7.02-20.988-.324-2.895-.21-4.55.733-10.494 1.173-7.4 5.39-15.97 10.46-21.24 2.158-2.24 2.35-2.3 4.982-1.41 3.19 1.08 6.6 3.436 11.89 8.22l3.09 2.794-1.69 2.07c-7.828 9.61-16.09 23.24-19.2 31.67-1.69 4.58-2.37 9.18-1.64 11.095.49 1.294.04.812-1.61-1.714zm70.453 1.047c.397-1.936-.105-5.49-1.28-9.076-2.545-7.765-11.054-22.21-18.867-32.032l-2.46-3.092 2.662-2.443c3.474-3.19 5.886-5.1 8.49-6.723 2.053-1.28 4.988-2.413 6.25-2.413.777 0 3.516 2.85 5.726 5.95 3.424 4.8 5.942 10.63 7.218 16.69.825 3.92.894 12.3.133 16.21-.63 3.208-1.95 7.366-3.23 10.187-.97 2.113-3.36 6.218-4.41 7.554-.54.687-.54.686-.24-.796zM40.44 11.505C36.834 9.675 31.272 7.71 28.2 7.18c-1.076-.185-2.913-.29-4.08-.23-2.536.128-2.423-.004 1.643-1.925 3.38-1.597 6.2-2.536 10.03-3.34C40.098.78 48.193.77 52.43 1.663c4.575.965 9.964 2.97 13 4.84l.904.554-2.07-.104C60.148 6.745 54.15 8.408 47.71 11.54c-1.942.946-3.63 1.7-3.754 1.68-.123-.024-1.706-.795-3.52-1.715z"],
+  ["msstore", "Microsoft Store", "#0078d4", /microsoft store/, 512, "M405 42.7v53.4c0 11.8-9.6 21.4-21.4 21.4s-21.3-9.6-21.3-21.4V42.7H148.8v53.4c0 11.8-9.6 21.4-21.3 21.4c-11.8 0-21.4-9.6-21.4-21.4V42.7c0-23.6 19.1-42.7 42.7-42.7h213.5C385.8 0 405 19.1 405 42.7M396.6 512H105.3s-94.4-6-94.4-95.4V92.1S10.9 74 42 74h53.6v22.1c0 17.6 14.3 31.9 31.9 31.9s31.8-14.3 31.8-31.9V74h192.5v22.1c0 17.6 14.3 31.9 31.8 31.9c17.6 0 31.9-14.3 31.9-31.9V74H480s21.1-5 21.1 23.1v325.5s4 89.4-104.5 89.4M244.8 298.9h-96.1V395h96.1zm0-117.4h-96.1v96.1h96.1zm117.5 117.4h-96.1V395h96.1zm0-117.4h-96.1v96.1h96.1z"],
+];
+
 const SAFE = /^(<(path|circle|ellipse|rect|line|polyline|polygon|g)\b(\s+(fill|stroke|stroke-linecap|stroke-linejoin|stroke-width|stroke-miterlimit|d|cx|cy|r|rx|ry|x|y|x1|y1|x2|y2|width|height|points|transform)="[^"<>]*")*\s*\/?>|<\/(g)>)+$/;
 
 const out = [];
@@ -122,11 +129,12 @@ for (const [id, name, label, hex, rx] of APPS) {
   if (!SAFE.test(icon.body)) throw new Error("unerwarteter SVG-Inhalt: " + name);
   out.push(`  { id: ${JSON.stringify(id)}, name: ${JSON.stringify(label)}, hex: "${hex}", match: ${rx}, body: ${JSON.stringify(icon.body)}, source: "arcticons" },`);
 }
+for (const [id, label, hex, rx, vb, d] of EXTRA) out.push(`  { id: ${JSON.stringify(id)}, name: ${JSON.stringify(label)}, hex: "${hex}", match: ${rx}, path: ${JSON.stringify(d)}, vb: ${vb} },`);
 const file = `// GENERATED by scripts/gen-brand-icons.mjs – do not edit by hand.
-// simple-icons ${version} (CC0 1.0) and Arcticons ${arcVersion} (CC BY-SA 4.0, © Donnnno and contributors,
+// simple-icons ${version} (CC0 1.0), the Xbox logo (Wikimedia Commons), the Microsoft Store bag (selfh.st/icons, CC BY 4.0) and Arcticons ${arcVersion} (CC BY-SA 4.0, © Donnnno and contributors,
 // https://github.com/Arcticons-Team/Arcticons) – see docs/LIZENZEN.md. Logos identify the program or game the user
 // installed; trademarks belong to their owners.
-export interface Brand { id: string; name: string; hex: string; match: RegExp; path?: string; body?: string; source?: "arcticons" }
+export interface Brand { id: string; name: string; hex: string; match: RegExp; path?: string; body?: string; source?: "arcticons"; /** Size of the square the path is drawn in (24 unless given). */ vb?: number }
 export const BRANDS: Brand[] = [
 ${out.join("\n")}
 ];

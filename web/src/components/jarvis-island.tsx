@@ -4,6 +4,7 @@
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import { Bell, Check, Gamepad2, Pause, Play, SkipBack, SkipForward, Timer, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
@@ -308,6 +309,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
           <div className="row isl-foot">
             <label className="row tiny"><input type="checkbox" checked={prefs.sound} onChange={(e) => setIslandPrefs({ sound: e.target.checked })} /> {t("Ton bei „fertig“ und Rückfragen")}</label>
             <span className="spacer" />
+            {floating && <Link to="/assistant" className="btn sm" onClick={() => setOpen(false)}>{t("JARVIS öffnen")}</Link>}
             <button type="button" className="btn sm ghost" onClick={() => setOpen(false)}>{t("Schließen")}</button>
           </div>
         </div>

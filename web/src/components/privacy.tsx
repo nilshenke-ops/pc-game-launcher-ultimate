@@ -60,6 +60,8 @@ export function PrivacyButton() {
   const q = useRpc<PrivacyStatus>("privacy.status", {}, ["privacy"]);
   const local = useLocalHide();
   const [open, setOpen] = useState(false);
+  // On the phone the shield is not in the top bar: "Alle Bereiche" opens this panel by event.
+  useEffect(() => { const on = () => setOpen(true); window.addEventListener("pgl-open-privacy", on); return () => window.removeEventListener("pgl-open-privacy", on); }, []);
   const pcActive = isOnline && !q.stale && !!q.data?.active;
   const hide = local || (pcActive && !!q.data?.hideSensitive);
   useEffect(() => {

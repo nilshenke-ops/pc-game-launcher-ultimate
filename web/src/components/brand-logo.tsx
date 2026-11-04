@@ -9,7 +9,7 @@ export function BrandLogo({ brand, size, color }: { brand: Brand; size?: number 
     return <svg viewBox="0 0 48 48" width={size} height={size} role="img" aria-label={brand.name} className="brand-logo line" style={{ color: c }} dangerouslySetInnerHTML={{ __html: brand.body }} />;
   }
   return (
-    <svg viewBox="0 0 24 24" width={size} height={size} role="img" aria-label={brand.name} className="brand-logo">
+    <svg viewBox={`0 0 ${brand.vb ?? 24} ${brand.vb ?? 24}`} width={size} height={size} role="img" aria-label={brand.name} className="brand-logo">
       <path d={brand.path} fill={c} />
     </svg>
   );

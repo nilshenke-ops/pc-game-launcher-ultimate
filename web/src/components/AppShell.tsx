@@ -2,7 +2,7 @@ import { PrivacyButton } from "./privacy";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { Bell, Check, ChevronDown, Menu, Monitor, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Smartphone, Sparkles, Wifi } from "lucide-react";
+import { Bell, Check, ChevronDown, Menu, Monitor, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Shield, Smartphone, Wifi } from "lucide-react";
 import { SheetNav } from "./sidebar-nav";
 import { MockNav } from "./mock-nav";
 import { JarvisIsland } from "./jarvis-island";
@@ -196,7 +196,6 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
           <PrivacyButton />
           <ConnPill />
-          <NavLink to="/assistant" className="btn ghost icon jarvis-btn" aria-label="JARVIS" title="JARVIS"><Sparkles size={19} /></NavLink>
           <AccountButton />
           <NavLink to="/notifications" className="btn ghost icon bell-btn" aria-label={t("Benachrichtigungen")} style={{ position: "relative" }}>
             <Bell size={19} />
@@ -234,6 +233,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Modal title={sheetEdit ? t("Bereiche bearbeiten") : t("Alle Bereiche")} onClose={() => { setMore(false); setSheetEdit(false); }}
           footer={<>
             <Button icon={sheetEdit ? <Check size={16} /> : <Pencil size={16} />} variant={sheetEdit ? "primary" : undefined} onClick={() => setSheetEdit(!sheetEdit)}>{sheetEdit ? t("Fertig") : t("Bearbeiten")}</Button>
+            <Button icon={<Shield size={16} />} onClick={() => { setMore(false); setSheetEdit(false); window.dispatchEvent(new Event("pgl-open-privacy")); }}>{t("Datenschutz-Knopf")}</Button>
             <Button icon={<PanelBottom size={16} />} onClick={() => { setMore(false); setSheetEdit(false); setBarEdit(true); }}>{t("Leiste anpassen")}</Button>
           </>}>
           <SheetNav items={all} edit={sheetEdit} />

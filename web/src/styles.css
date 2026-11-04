@@ -2288,16 +2288,8 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
 [data-motion="reduce"] .isl-ripple, [data-motion="reduce"] .isl-confetti, [data-motion="reduce"] .isl-beat, [data-motion="reduce"] .isl-host.h-idle .isl-eyes { animation: none !important; }
 
 /* ================================================================== phone layout like the mock-ups (2.96): floating top bar, compact home */
-.topbar-menu, .jarvis-btn { display: none; }
+.topbar-menu { display: none; }
 @media (max-width: 899px) {
-  .topbar-menu { display: grid; place-items: center; order: 0; width: 56px; height: 44px; border-radius: 22px; color: var(--text); cursor: pointer; font: inherit; padding: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.07)); border: 1px solid rgba(255,255,255,0.26); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
-  .jarvis-btn { display: inline-grid; }
-  .topbar .conn-pill { order: 1; } .topbar .privacy-btn { order: 2; } .topbar .title { order: 3; } .topbar .spacer { order: 4; }
-  .topbar .search-trigger { order: 5; } .topbar .jarvis-btn { order: 6; } .topbar .account-btn { order: 7; } .topbar .bell-btn { order: 8; }
-  /* the connection state is a small dot, the words are in the status card and in the diagnosis */
-  .topbar .conn-pill { width: 44px; min-width: 44px; height: 44px; padding: 0; justify-content: center; border-radius: 50%; }
-  .topbar .conn-pill .label, .topbar .conn-pill .conn-wifi { display: none; }
   .topbar.on-home .title { display: none; }
   /* floating over the page; the glass appears only once something scrolls under it */
   :root[data-surface="glass"] .topbar { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; border-bottom: 1px solid transparent; transition: background .25s ease, border-color .25s ease; }
@@ -2379,6 +2371,60 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
 .isl-host.floating .isl-panel { max-height: calc(min(78vh, 640px) - 44px); overflow-y: auto; overscroll-behavior: contain; }
 .isl-host.floating .isl { height: 38px; }
 @media (min-width: 900px) { .isl-float { left: calc((100vw + var(--sidebar-w) + 40px) / 2); } }
-@media (max-width: 899px) { .isl-float { top: calc(env(safe-area-inset-top) + 58px); } }
 @media (prefers-reduced-motion: reduce) { .isl-host.floating { transition: none; } }
-@media (max-width: 899px) { html[data-status-pill] .isl-float { top: calc(env(safe-area-inset-top) + 106px); } }
+
+/* ================================================================== 2.98: tidy phone top bar, island in the colours of the design */
+@media (max-width: 899px) {
+  /* menu + connection dot on the left, the island in the middle, search / account / bell on the right; the shield is in "Alle Bereiche" */
+}
+.isl-host.floating, .isl-host.floating[data-isl-style] {
+  color: var(--text); border: 1px solid rgba(255,255,255,0.3);
+  background: linear-gradient(155deg, rgba(255,255,255,0.22), rgba(var(--primary-rgb), 0.46)), rgba(var(--surface-rgb), 0.55);
+  backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  box-shadow: 0 18px 40px -18px rgba(10,8,40,0.65), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+.isl-host.floating { --isl-ring: color-mix(in srgb, var(--accent) 70%, #fff); }
+.isl-host.floating .isl.m-idle { --isl-c: color-mix(in srgb, var(--accent) 70%, #fff); }
+.isl-host.floating .isl-eyes i { box-shadow: 0 0 8px color-mix(in srgb, var(--isl-c) 70%, transparent); }
+.isl-host.floating .isl-panel .muted, .isl-host.floating .isl-last { color: color-mix(in srgb, var(--text) 66%, transparent); }
+.isl-host.floating .isl-card { background: rgba(255,255,255,0.13); border-color: rgba(255,255,255,0.2); }
+.isl-host.floating .isl-card:hover { background: rgba(255,255,255,0.19); }
+.isl-host.floating .isl-ic { background: rgba(255,255,255,0.16); }
+.isl-host.floating .isl-panel .input { background: rgba(255,255,255,0.16); color: var(--text); border-color: rgba(255,255,255,0.25); }
+.isl-host.floating .isl-panel .input::placeholder { color: color-mix(in srgb, var(--text) 50%, transparent); }
+.isl-host.floating .isl-panel .badge { background: rgba(255,255,255,0.18); color: var(--text); }
+.isl-host.floating .isl-stat i { background: var(--isl-c, var(--accent)); }
+
+/* logos on tiles are white on dark glass and dark on the light design */
+.tile-brand, .hs-tile-art.logo { color: #fff; }
+:root[data-home="chromelight"] .tile-brand, :root[data-home="chromelight"] .hs-tile-art.logo { color: #1b1c21; }
+:root[data-home="chromelight"] .isl-host.floating .isl.m-idle { --isl-c: #3a3c42; }
+@media (max-width: 899px) {
+  /* the notch sits in the free gap of the top bar; opened, it centres under the bar */
+  .isl-host.floating.s-bar { width: min(92vw, 460px); } .isl-host.floating.s-ask { width: min(94vw, 560px); } .isl-host.floating.s-panel { width: min(94vw, 580px); }
+}
+
+/* 2.98b: round menu button; the notch has its own gap between the left group (menu, dot) and the right group (search, account, bell) */
+@media (max-width: 899px) {
+}
+
+/* ================================================================== phone top bar (final): clean row of round buttons, the island in its own gap
+   ☰ (menu, the connection state is the small badge on it) · island · search · account · bell. The shield is in "Alle Bereiche". */
+@media (max-width: 899px) {
+  :root[data-surface] .topbar { gap: 6px; padding-inline: 14px; }
+  :root[data-surface] .topbar .topbar-menu { display: grid; place-items: center; order: 0; flex: none; width: 44px; height: 44px; min-height: 44px; padding: 0; border-radius: 50%; color: var(--text); cursor: pointer;
+    background: linear-gradient(135deg, rgba(255,255,255,0.22), rgba(255,255,255,0.08)); border: 1px solid rgba(255,255,255,0.3); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+  :root[data-surface] .topbar .conn-pill { position: absolute; z-index: 2; left: 46px; top: calc(env(safe-area-inset-top) + 7px); order: 0; width: 16px; min-width: 16px; height: 16px; min-height: 16px !important; padding: 0 !important; justify-content: center; gap: 0; border-radius: 50%;
+    background: rgba(var(--surface-rgb), 0.9); border: 1.5px solid rgba(255,255,255,0.55); backdrop-filter: none; box-shadow: 0 2px 6px rgba(0,0,0,0.35); }
+  :root[data-surface] .topbar .conn-pill::before { content: ""; position: absolute; inset: -4px; }
+  :root[data-surface] .topbar .conn-pill .dot { margin: 0; width: 8px; height: 8px; }
+  .topbar .conn-pill .label, .topbar .conn-pill .conn-wifi { display: none; }
+  .topbar .privacy-btn { display: none; }
+  .topbar .title { order: 3; } .topbar .spacer { order: 4; }
+  .topbar .search-trigger { order: 5; } .topbar .account-btn { order: 6; } .topbar .bell-btn { order: 7; }
+  /* the island sits in the gap between the menu button (ends at 58 px) and the three right buttons (144 px + margin); centred there, wider when it opens */
+  .isl-float { top: calc(env(safe-area-inset-top) + (var(--topbar-h) - 38px) / 2); left: calc(50% - 50px); transition: left .45s ease; }
+  .isl-float:has(.s-bar, .s-ask, .s-panel) { left: 50%; }
+  .isl-host.floating { width: 104px; }
+  .isl-host.floating.s-bar { width: min(92vw, 460px); } .isl-host.floating.s-ask { width: min(94vw, 560px); } .isl-host.floating.s-panel { width: min(94vw, 580px); }
+}
