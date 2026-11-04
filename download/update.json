@@ -1,30 +1,28 @@
 {
-  "version": "2.94.0",
+  "version": "2.95.0",
   "date": "2026-11-04",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion.exe",
-  "size": 88450955,
-  "sha256": "a75a8fb10241cf71acf64b606a0ea8898f52db59b1804150015176858957d929",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.95.0/PCGameLauncherCompanion.exe",
+  "size": 88453102,
+  "sha256": "6c7bbbadeb3e692961d44ec64c20a0a20ab97ba217ae128dadca0cf1dab870f4",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-2.94.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion-2.94.0-win-x64.zip",
-    "size": 82947049,
-    "sha256": "094d2d039914a5a1c5f152d65acfb738821400ecda88d1012856df5f1d1c0608"
+    "fileName": "PCGameLauncherCompanion-2.95.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.95.0/PCGameLauncherCompanion-2.95.0-win-x64.zip",
+    "size": 82949301,
+    "sha256": "64927ac29c1cf65d0ad9127ac8efa97ed4a8019729d7d70a7825068f29bdf2bc"
   },
-  "notes": "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen · Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer · Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
+  "notes": "Mehr Leben: Die Augen schauen im Leerlauf gelegentlich umher und „atmen“, der Roboter im Panel wippt; ein Tippen auf die Insel löst eine Welle aus; bei „Erledigt“ sprühen kleine Funken; bei Musik läuft mit jedem Beat eine Welle über die Augen; beim Nachdenken springen drei Punkte hinter dem Text · Mit „weniger Bewegung“ bleibt alles ruhig · JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln",
   "changes": {
     "neu": [
-      "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen",
-      "Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer",
-      "Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
-      "Vier neue Widgets (einzeln einschaltbar): Stoppuhr, Zuletzt gespielt starten, Profile (JARVIS fragt vor dem Wechsel nach) und Sounds (die ersten Sounds des Soundboards)",
-      "Mehr Bewegung: ein Licht läuft beim Nachdenken und Zuhören um die Insel, ein Lichtkranz pulsiert bei Rückfragen und blitzt bei „Erledigt“ und Fehlern, das Panel klappt auf und die Karten folgen nacheinander, der Text wechselt weich, die Augen folgen der Maus ein Stück; mit „weniger Bewegung“ (Windows/Browser) bleibt alles ruhig"
+      "Mehr Leben: Die Augen schauen im Leerlauf gelegentlich umher und „atmen“, der Roboter im Panel wippt; ein Tippen auf die Insel löst eine Welle aus; bei „Erledigt“ sprühen kleine Funken; bei Musik läuft mit jedem Beat eine Welle über die Augen; beim Nachdenken springen drei Punkte hinter dem Text",
+      "Mit „weniger Bewegung“ bleibt alles ruhig"
     ],
-    "verbessert": [],
-    "behoben": [
-      "Der Fokus-Timer ging verloren, wenn man das Panel schloss; er läuft jetzt weiter"
-    ]
+    "verbessert": [
+      "JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln",
+      "Das Panel klappt beim Schließen weich zu (statt zu verschwinden); die Augen wechseln die Form zwischen Stimmungen fließend"
+    ],
+    "behoben": []
   },
-  "signature": "k35xVSNpoj6PenMkp1mwmHaSc+ZFlp7vUg86Cok65aw5BXSS+sWQNGPxEbgZUQWiVc0lyk1yllG5IzQkj9A+OQ=="
+  "signature": "6Z8Wj7pkBnbuoy03Y/xQKCJwC0cQtjTexyi2tASdQnMfaTAuEeySe7reb/IuDNG161thfGOJvUcn0xf3b14uDg=="
 }

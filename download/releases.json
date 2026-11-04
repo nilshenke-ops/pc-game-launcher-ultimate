@@ -1,5 +1,33 @@
 [
   {
+    "version": "2.95.0",
+    "date": "2026-11-04",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.95.0/PCGameLauncherCompanion.exe",
+    "size": 88453102,
+    "sha256": "6c7bbbadeb3e692961d44ec64c20a0a20ab97ba217ae128dadca0cf1dab870f4",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-2.95.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.95.0/PCGameLauncherCompanion-2.95.0-win-x64.zip",
+      "size": 82949301,
+      "sha256": "64927ac29c1cf65d0ad9127ac8efa97ed4a8019729d7d70a7825068f29bdf2bc"
+    },
+    "notes": "Mehr Leben: Die Augen schauen im Leerlauf gelegentlich umher und „atmen“, der Roboter im Panel wippt; ein Tippen auf die Insel löst eine Welle aus; bei „Erledigt“ sprühen kleine Funken; bei Musik läuft mit jedem Beat eine Welle über die Augen; beim Nachdenken springen drei Punkte hinter dem Text · Mit „weniger Bewegung“ bleibt alles ruhig · JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln",
+    "changes": {
+      "neu": [
+        "Mehr Leben: Die Augen schauen im Leerlauf gelegentlich umher und „atmen“, der Roboter im Panel wippt; ein Tippen auf die Insel löst eine Welle aus; bei „Erledigt“ sprühen kleine Funken; bei Musik läuft mit jedem Beat eine Welle über die Augen; beim Nachdenken springen drei Punkte hinter dem Text",
+        "Mit „weniger Bewegung“ bleibt alles ruhig"
+      ],
+      "verbessert": [
+        "JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln",
+        "Das Panel klappt beim Schließen weich zu (statt zu verschwinden); die Augen wechseln die Form zwischen Stimmungen fließend"
+      ],
+      "behoben": []
+    },
+    "signature": "6Z8Wj7pkBnbuoy03Y/xQKCJwC0cQtjTexyi2tASdQnMfaTAuEeySe7reb/IuDNG161thfGOJvUcn0xf3b14uDg=="
+  },
+  {
     "version": "2.94.0",
     "date": "2026-11-04",
     "channel": "stable",
@@ -1452,39 +1480,5 @@
       "behoben": []
     },
     "signature": "aPUBQu6QWIPb7nRd9u9zHEAhRuLHnPLG7z5yZbsKl+OOzdHqGM8eof7MsN9eIDACrCEcyh29PJNTcSueKgwhgQ=="
-  },
-  {
-    "version": "2.49.0",
-    "date": "2026-10-26",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.49.0/PCGameLauncherCompanion.exe",
-    "size": 87980229,
-    "sha256": "01cda57711da4501a8b9c7e4f13862a54269f7f46b8213883c30799b789780f3",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.49.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.49.0/PCGameLauncherCompanion-2.49.0-win-x64.zip",
-      "size": 82241527,
-      "sha256": "d3b937e87e99a3a6b6cef7543bb95bbe90a49c83e5c5f09a134508ec0347a3fa"
-    },
-    "notes": "Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert · Geräte & Verbindungen: der PC selbst als eigene Zeile (online, Version), Gerätetyp, „x von 20 Geräten“, „Online über VPN (Tailscale)“, „Offline · zuletzt verbunden …“, Knopf „Neu verbinden“ · Sitzungen werden alle 12 Stunden automatisch mit dem Geräteschlüssel erneuert – ohne neue Kopplung; widerrufene Geräte bekommen keine neue Sitzung",
-    "changes": {
-      "neu": [
-        "Diagnose: „Verbindungs-Check“ mit 10 Prüfungen (Website, Backend, Relay, WebSocket, Begleiter, Anmeldung, Gerät autorisiert, PC online, Herzschlag, Programme) – mit Ursache, Uhrzeit, Lösung und sicheren Reparatur-Knöpfen; erkennt ein VPN, das das Heimnetz blockiert",
-        "Geräte & Verbindungen: der PC selbst als eigene Zeile (online, Version), Gerätetyp, „x von 20 Geräten“, „Online über VPN (Tailscale)“, „Offline · zuletzt verbunden …“, Knopf „Neu verbinden“",
-        "Sitzungen werden alle 12 Stunden automatisch mit dem Geräteschlüssel erneuert – ohne neue Kopplung; widerrufene Geräte bekommen keine neue Sitzung",
-        "Jeder Befehl hat eine eigene ID: kommt er doppelt an, wird er nur einmal ausgeführt"
-      ],
-      "verbessert": [
-        "Statusanzeige oben zeigt den echten Zustand: Verbunden, Wiederverbinden …, Nicht angemeldet, Nicht autorisiert, PC offline (vorher „Lokal“, sobald irgendeine Verbindung offen war)",
-        "Klare Fehlermeldungen: Programm nicht installiert, Aktion nicht erlaubt, Gerät nicht autorisiert, Aktion fehlgeschlagen",
-        "Wiederverbinden bei langem Ausfall sparsamer (nach 10 s alle 2 s, nach 2 min alle 5 s); Begleiter → Relay mit Zufallsabweichung",
-        "Höchstens 20 gekoppelte Geräte, mit verständlicher Meldung"
-      ],
-      "behoben": [
-        "Beim Beenden des Begleiters blieben offene Verbindungen bis zu 30 s bestehen – Handys hielten den PC noch für erreichbar. Jetzt werden sie sofort geschlossen"
-      ]
-    },
-    "signature": "E6swP91XzL4/O5B/M2x2uhBtbbyL1Mo9KW/zZels3hCOjKnu1L7ky8sKiPwiTSmD9MgXCIJJbNs59w1JDDpLtw=="
   }
 ]
