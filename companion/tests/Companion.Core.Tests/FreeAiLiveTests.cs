@@ -42,7 +42,7 @@ public class FreeAiLiveTests(ITestOutputHelper log)
         hub.Set("pollinations", true, null, null, null);
         try
         {
-            var a = await hub.AskAsync("pollinations", "Antworte kurz.", new[] { new GeminiClient.Turn("user", "Wie hoch ist der Mount Everest?") });
+            var a = await hub.AskAsync("pollinations", "Antworte kurz.", new[] { new ChatTurn("user", "Wie hoch ist der Mount Everest?") });
             log.WriteLine($"Pollinations antwortet ({a.Model}): {a.Text}");
             Assert.False(string.IsNullOrWhiteSpace(a.Text));
             Assert.False(CostGuard.LooksLikePaymentNotice(a.Text, a.OutputTokens));

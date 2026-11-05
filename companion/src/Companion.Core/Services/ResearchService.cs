@@ -13,7 +13,7 @@ namespace Pgl.Core.Services;
 /// <list type="bullet">
 /// <item>Claude's web search (Anthropic, needs the Claude key; real web search with citations, at most 3 searches per question),</item>
 /// <item>free official sources without a key: Mojang's Minecraft patch notes, Steam announcements of the game, and the
-/// open wikis the app searched in the browser – then summarised by the AI chosen at the PC (Claude/Ollama/Gemini/DeepSeek),
+/// open wikis the app searched in the browser – then summarised by the AI chosen at the PC (Claude/Ollama/free AIs/DeepSeek),
 /// or shown as passages when there is none.</item>
 /// </list>
 /// Progress ("search", "sources", "writing" + text) goes only to the asking connection. Everything found is data, never an

@@ -12,7 +12,6 @@ export interface RosterRow { id: string; name: string; state: RosterState; text:
 export interface AssistantLite {
   keySet?: boolean; mode?: string;
   ollama?: { model?: string | null };
-  gemini?: { keySet?: boolean; model?: string | null };
   router?: { baseUrl?: string | null; keySet?: boolean; models?: string[]; ready?: boolean };
   deepSeek?: { keySet?: boolean };
 }
@@ -76,7 +75,6 @@ export function buildRoster(ai: AiOverview | null | undefined, st: AssistantLite
   // Further engines the PC knows
   if (st) {
     if (!ai && st.ollama?.model) rows.push({ id: "ollama", name: names.ollama, kind: "free", state: "works", text: t("Eingestellt: {m}", { m: st.ollama.model }) });
-    rows.push(st.gemini?.keySet ? { id: "gemini", name: t("Gemini"), kind: "free", state: "works", text: t("Schlüssel eingetragen{m} – kostenloser Tarif, ohne Live-Daten vom PC", { m: st.gemini.model ? ` (${st.gemini.model})` : "" }) } : { id: "gemini", name: t("Gemini"), kind: "free", state: "none", text: t("Nicht eingerichtet (optional)") });
     const rt = st.router;
     rows.push(rt?.ready ? { id: "router", name: t("KI-Router"), kind: "free", state: "works", text: `Bereit – ${rt.models?.[0] ?? t("Modell gewählt")}` }
       : rt && (rt.baseUrl || rt.keySet || (rt.models?.length ?? 0) > 0) ? { id: "router", name: t("KI-Router"), kind: "free", state: "begun", text: !rt.baseUrl ? t("Adresse fehlt") : !rt.keySet ? t("Adresse eingetragen, Schlüssel fehlt") : !(rt.models?.length) ? t("Noch kein Modell gewählt") : t("Angefangen"), next: t("Am PC fertig einrichten") }

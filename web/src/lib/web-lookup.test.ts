@@ -192,11 +192,11 @@ describe("Kostenlose KI ohne Quelle", () => {
   it("nur auf Tipp, klar markiert, nicht als Wissen gemerkt", async () => {
     const i = lookupIntent("Was ist ein Blorbfisch?")!;
     const a = await aiAnswer(i, { call: async <T,>(m: string, p?: unknown): Promise<T> => { expect(m).toBe("assistant.freeAnswer"); expect(p).toEqual({ question: "Was ist ein Blorbfisch?" }); return { answer: "Das kenne ich nicht.", sure: false, provider: "Gemini", model: "gemini-3.5-flash-lite" } as T; } });
-    expect(a.text).toMatch(/^⚠ KI-Antwort von Gemini \(kostenlos\) – ohne Quelle, nicht nachgeprüft/);
+    expect(a.text).toMatch(/^⚠ KI-Antwort von .*? – ohne Quelle, nicht nachgeprüft/);
     expect(a.text).toContain("Die KI ist sich selbst nicht sicher");
     expect(learnedAll()).toHaveLength(0);
     const none = await aiAnswer(i, { call: async () => { throw Object.assign(new Error("x"), { code: "assistant-local" }); } });
-    expect(none.text).toContain("Gemini-Schlüssel");
+    expect(none.text).toContain("OpenRouter oder Groq");
   });
 });
 

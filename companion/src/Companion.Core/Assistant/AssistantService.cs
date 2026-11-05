@@ -15,12 +15,12 @@ public sealed class AssistantUsageMonth
     public long CacheReadTokens { get; set; }
     public long CacheWriteTokens { get; set; }
     public double CostUsd { get; set; }
+    /// <summary>Web searches (Tavily) this month – counted against the person's own cap.</summary>
+    public int SearchRequests { get; set; }
     /// <summary>DeepSeek (bingo tasks): counted, the price is billed by DeepSeek directly.</summary>
     public int DeepSeekRequests { get; set; }
     public long DeepSeekInputTokens { get; set; }
     public long DeepSeekOutputTokens { get; set; }
-    /// <summary>Gemini (free tier with the user's own key): counted against the user's own monthly cap.</summary>
-    public int GeminiRequests { get; set; }
     /// <summary>KI-Router (OpenRouter, Groq, MixRoute, OmniRoute/LiteLLM): counted against the user's own monthly cap.</summary>
     public int RouterRequests { get; set; }
 }
@@ -42,16 +42,15 @@ public sealed class AssistantFile
     public List<AssistantUsageMonth> Usage { get; set; } = new();
     /// <summary>Which AI writes bingo tasks: "assistant" = the assistant's own mode (Claude/Ollama), "deepseek" = DeepSeek.</summary>
     public string BingoAi { get; set; } = "assistant";
+    /// <summary>Web search key (Tavily, free plan), protected like the other keys. Never returned, never in a backup.</summary>
+    public string? SearchKeyProtected { get; set; }
+    /// <summary>At most this many web searches per month (the free plan has 1,000; this stays below it).</summary>
+    public int SearchMonthlyRequests { get; set; } = WebSearchClient.DefaultMonthly;
     /// <summary>DeepSeek API key, protected like the Anthropic key. Never returned, never in a backup.</summary>
     public string? DeepSeekKeyProtected { get; set; }
     public string DeepSeekModel { get; set; } = DeepSeekClient.DefaultModel;
     /// <summary>At most this many DeepSeek requests per month (protects against unexpected cost).</summary>
     public int DeepSeekMonthlyRequests { get; set; } = 200;
-    /// <summary>Google Gemini API key (free tier from Google AI Studio), protected like the other keys. Never returned, never in a backup.</summary>
-    public string? GeminiKeyProtected { get; set; }
-    public string GeminiModel { get; set; } = GeminiClient.DefaultModel;
-    /// <summary>At most this many Gemini requests per month (Google also limits the free tier per minute and day).</summary>
-    public int GeminiMonthlyRequests { get; set; } = 1000;
     /// <summary>OpenAI-compatible router: base address (https, or http only in the home network), key (protected), up to 3 models in priority order.</summary>
     public string? RouterBase { get; set; }
     public string? RouterKeyProtected { get; set; }
@@ -71,17 +70,17 @@ public sealed class AssistantService
     public ClaudeAssistant Claude { get; }
     public OllamaAssistant Ollama { get; }
     public DeepSeekClient DeepSeek { get; }
-    public GeminiClient Gemini { get; }
+    public WebSearchClient Search { get; }
     public OpenAiCompatClient Router { get; }
     /// <summary>The free AI services in one fixed order with the cost guard (OpenRouter, Groq, Pollinations, Ollama).</summary>
     public FreeAiHub FreeAi { get; }
     readonly SemaphoreSlim _bingoBusy = new(1, 1);
 
-    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public List<GeminiClient.Turn> Gemini = new(); public List<GeminiClient.Turn> Router = new(); public string? SmartText; public string? SmartOnly; public DateTime SmartAt; public string? SmartJson; public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
+    sealed class Conv { public required string Owner; public ClaudeAssistant.Conversation Claude = new(); public OllamaAssistant.Conversation Ollama = new(); public List<ChatTurn> Router = new(); public string? SmartText; public string? SmartOnly; public DateTime SmartAt; public string? SmartJson; public DateTime LastUsed; public int Turns; public readonly SemaphoreSlim Lock = new(1, 1); }
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, GeminiClient? gemini = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, WebSearchClient? search = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
@@ -89,7 +88,7 @@ public sealed class AssistantService
         Claude = claude ?? new ClaudeAssistant(data);
         Ollama = ollama ?? new OllamaAssistant(data);
         DeepSeek = deepSeek ?? new DeepSeekClient();
-        Gemini = gemini ?? new GeminiClient();
+        Search = search ?? new WebSearchClient();
         Router = router ?? new OpenAiCompatClient();
         FreeAi = freeAi ?? new FreeAiHub(paths, secrets);
         var f0 = _store.Snapshot();
@@ -115,7 +114,7 @@ public sealed class AssistantService
             bingoAi = f.BingoAi,
             deepSeek = new { keySet = f.DeepSeekKeyProtected != null, model = f.DeepSeekModel, monthlyRequests = f.DeepSeekMonthlyRequests, used = month.DeepSeekRequests, inputTokens = month.DeepSeekInputTokens, outputTokens = month.DeepSeekOutputTokens },
             bingoProvider = BingoProviderName(f),
-            gemini = new { keySet = f.GeminiKeyProtected != null, model = f.GeminiModel, monthlyRequests = f.GeminiMonthlyRequests, used = month.GeminiRequests },
+            search = new { keySet = f.SearchKeyProtected != null, monthlyRequests = f.SearchMonthlyRequests, used = month.SearchRequests },
             router = new { baseUrl = f.RouterBase, keySet = f.RouterKeyProtected != null, models = f.RouterModels, monthlyRequests = f.RouterMonthlyRequests, used = month.RouterRequests, ready = RouterReady(f) },
             researchAi = ResearchProvider(f)?.label,
             engines = Engines(),
@@ -127,8 +126,9 @@ public sealed class AssistantService
     {
         public string? Mode { get; set; } public string? Model { get; set; } public bool? LocalFirst { get; set; } public double? MonthlyLimitUsd { get; set; } public string? ApiKey { get; set; }
         public string? OllamaUrl { get; set; } public string? OllamaModel { get; set; } public bool? OllamaWhileGaming { get; set; }
+        public string? SearchKey { get; set; } public int? SearchMonthlyRequests { get; set; }
         public string? BingoAi { get; set; } public string? DeepSeekKey { get; set; } public string? DeepSeekModel { get; set; } public int? DeepSeekMonthlyRequests { get; set; }
-        public string? GeminiKey { get; set; } public string? GeminiModel { get; set; } public int? GeminiMonthlyRequests { get; set; }
+       
         public string? RouterBase { get; set; } public string? RouterKey { get; set; } public List<string>? RouterModels { get; set; } public int? RouterMonthlyRequests { get; set; }
     }
 
@@ -170,12 +170,13 @@ public sealed class AssistantService
     /// <param name="atPc">The key may only be set or removed at the PC itself (it costs money and leaves the home network).</param>
     public object Configure(Config c, bool atPc)
     {
-        if ((c.ApiKey != null || c.DeepSeekKey != null || c.GeminiKey != null || c.RouterKey != null || c.RouterBase != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
+        if ((c.ApiKey != null || c.DeepSeekKey != null || c.SearchKey != null || c.RouterKey != null || c.RouterBase != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
+        var searchKey = c.SearchKey?.Trim();
+        if (!string.IsNullOrEmpty(searchKey) && !WebSearchClient.LooksLikeKey(searchKey)) throw new RpcException("invalid-params", "Das sieht nicht nach einem Tavily-Schlüssel aus (tavily.com → API Keys, er beginnt mit „tvly-“).");
+        if (c.SearchMonthlyRequests is < 0 or > 1000) throw new RpcException("invalid-params", "Websuchen pro Monat: 0–1000 (der kostenlose Tarif hat 1000).");
         if (c.BingoAi is not (null or "assistant" or "deepseek")) throw new RpcException("invalid-params", "Bingo-KI muss „assistant“ oder „deepseek“ sein.");
         if (c.DeepSeekModel != null && !Regex.IsMatch(c.DeepSeekModel, @"^[A-Za-z0-9._:-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger DeepSeek-Modellname.");
         if (c.DeepSeekMonthlyRequests is < 0 or > 5000) throw new RpcException("invalid-params", "DeepSeek-Anfragen pro Monat: 0–5000.");
-        if (c.GeminiModel != null && !Regex.IsMatch(c.GeminiModel, @"^[a-z0-9.-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger Gemini-Modellname (z. B. gemini-3.5-flash-lite).");
-        if (c.GeminiMonthlyRequests is < 0 or > 50000) throw new RpcException("invalid-params", "Gemini-Anfragen pro Monat: 0–50000.");
         var rBase = c.RouterBase == null ? null : c.RouterBase.Trim().Length == 0 ? "" : CheckRouterUrl(c.RouterBase);
         // At OpenRouter only free models can be chosen – the router can never be pointed at a paid one.
         {
@@ -188,13 +189,11 @@ public sealed class AssistantService
         if (!string.IsNullOrEmpty(rKey) && (rKey.Length is < 8 or > 300 || rKey.Any(char.IsWhiteSpace))) throw new RpcException("invalid-params", "Das sieht nicht wie ein API-Schlüssel aus.");
         if (c.RouterModels != null && (c.RouterModels.Count > 3 || c.RouterModels.Any(m => !Regex.IsMatch(m ?? "", @"^[A-Za-z0-9._:/@~-]{2,120}$")))) throw new RpcException("invalid-params", "Höchstens 3 Modelle mit gültigem Namen.");
         if (c.RouterMonthlyRequests is < 0 or > 100000) throw new RpcException("invalid-params", "Router-Anfragen pro Monat: 0–100000.");
-        var gmKey = c.GeminiKey?.Trim();
-        if (!string.IsNullOrEmpty(gmKey) && !GeminiClient.LooksLikeKey(gmKey)) throw new RpcException("invalid-params", "Das sieht nicht wie ein Gemini-API-Schlüssel aus (aus Google AI Studio, beginnt mit „AIza“).");
         var dsKey = c.DeepSeekKey?.Trim();
         if (!string.IsNullOrEmpty(dsKey) && (dsKey.Length is < 20 or > 200 || dsKey.Any(char.IsWhiteSpace) || !dsKey.StartsWith("sk-") || dsKey.StartsWith("sk-ant-")))
             throw new RpcException("invalid-params", "Das sieht nicht wie ein DeepSeek-API-Schlüssel aus (beginnt mit „sk-“).");
         if (c.OllamaUrl != null && !atPc) throw new RpcException("forbidden", "Die Ollama-Adresse kannst du nur direkt am PC ändern.");
-        if (c.Mode is not (null or "local" or "ollama" or "claude" or "gemini" or "router" or "smart")) throw new RpcException("invalid-params", "Modus muss „local“, „ollama“, „claude“, „gemini“, „router“ oder „smart“ sein.");
+        if (c.Mode is not (null or "local" or "ollama" or "claude" or "router" or "smart")) throw new RpcException("invalid-params", "Modus muss „local“, „ollama“, „claude“, „router“ oder „smart“ sein.");
         var ollamaUrl = c.OllamaUrl == null ? null : CheckOllamaUrl(c.OllamaUrl);
         if (c.OllamaModel is { Length: > 100 } || (c.OllamaModel != null && !Regex.IsMatch(c.OllamaModel, @"^[A-Za-z0-9._:/-]*$"))) throw new RpcException("invalid-params", "Ungültiger Modellname.");
         if (c.Model != null && ClaudeAssistant.Models.All(m => m.Id != c.Model)) throw new RpcException("invalid-params", "Unbekanntes Modell.");
@@ -207,7 +206,6 @@ public sealed class AssistantService
             if (c.Mode != null)
             {
                 if (c.Mode == "claude" && f.KeyProtected == null && string.IsNullOrEmpty(key)) throw new RpcException("assistant-key", "Für Claude zuerst am PC einen API-Schlüssel eintragen.");
-                if (c.Mode == "gemini" && !(gmKey != null ? gmKey.Length > 0 : f.GeminiKeyProtected != null)) throw new RpcException("assistant-key", "Für Gemini als Standard zuerst am PC einen kostenlosen Gemini-Schlüssel eintragen.");
                 if (c.Mode == "smart")
                 {
                     var ok = HasFreeAi(f) || !string.IsNullOrEmpty(c.OllamaModel ?? f.OllamaModel);
@@ -233,11 +231,10 @@ public sealed class AssistantService
                 if (c.BingoAi == "deepseek" && f.DeepSeekKeyProtected == null && string.IsNullOrEmpty(dsKey)) throw new RpcException("assistant-key", "Für DeepSeek zuerst am PC einen API-Schlüssel eintragen.");
                 f.BingoAi = c.BingoAi;
             }
+            if (c.SearchMonthlyRequests != null) f.SearchMonthlyRequests = c.SearchMonthlyRequests.Value;
+            if (searchKey != null) f.SearchKeyProtected = searchKey.Length == 0 ? null : _secrets.Protect(searchKey);
             if (c.DeepSeekModel != null) f.DeepSeekModel = c.DeepSeekModel;
             if (c.DeepSeekMonthlyRequests != null) f.DeepSeekMonthlyRequests = c.DeepSeekMonthlyRequests.Value;
-            if (c.GeminiModel != null) f.GeminiModel = c.GeminiModel;
-            if (c.GeminiMonthlyRequests != null) f.GeminiMonthlyRequests = c.GeminiMonthlyRequests.Value;
-            if (gmKey != null) f.GeminiKeyProtected = gmKey.Length == 0 ? null : _secrets.Protect(gmKey);
             if (rBase != null)
             {
                 // Another address: the old key must not go there – it is removed unless a new one comes along.
@@ -249,7 +246,7 @@ public sealed class AssistantService
             if (c.RouterModels != null) f.RouterModels = c.RouterModels.Distinct().ToList();
             if (c.RouterMonthlyRequests != null) f.RouterMonthlyRequests = c.RouterMonthlyRequests.Value;
             if (f.Mode == "router" && !RouterReady(f)) f.Mode = "local";
-            if (f.Mode == "gemini" && f.GeminiKeyProtected == null) f.Mode = "local";
+            if (f.Mode == "gemini") f.Mode = "smart";   // Gemini was removed: an old setting becomes the automatic free AI
             // The first free AI that is set up switches the assistant to "Automatisch" by itself (commands stay at the PC, questions go to the free AI);
             // without any free AI left it falls back to the built-in assistant.
             if (f.Mode == "local" && c.Mode == null && !string.IsNullOrEmpty(c.OllamaModel)) f.Mode = "smart";
@@ -267,7 +264,6 @@ public sealed class AssistantService
         });
         if (key != null) Log.Info("assistant", key.Length == 0 ? "Claude-Schlüssel entfernt." : "Claude-Schlüssel gespeichert (geschützt)."); // never the key itself
         if (dsKey != null) Log.Info("assistant", dsKey.Length == 0 ? "DeepSeek-Schlüssel entfernt." : "DeepSeek-Schlüssel gespeichert (geschützt).");
-        if (gmKey != null) Log.Info("assistant", gmKey.Length == 0 ? "Gemini-Schlüssel entfernt." : "Gemini-Schlüssel gespeichert (geschützt).");
         if (rKey != null) Log.Info("assistant", rKey.Length == 0 ? "Router-Schlüssel entfernt." : "Router-Schlüssel gespeichert (geschützt).");
         _hub.Changed("assistant");
         return Status();
@@ -335,7 +331,6 @@ public sealed class AssistantService
             var (mode, claudeModel) = ResolveEngine(f, engine);
             var useClaude = mode == "claude";
             var useOllama = mode == "ollama";
-            var useGemini = mode == "gemini";
             var useRouter = mode == "router";
             if (mode == "smart")
             {
@@ -359,7 +354,7 @@ public sealed class AssistantService
             var simple = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length <= 8 && !Regex.IsMatch(" " + text.ToLowerInvariant() + " ", @" (und|and|dann|then|aber|but|oder|or) ");
             // Local model: the exact local assistant always goes first – small models invent numbers (measured with
             // qwen2.5:1.5b) – so commands, live values and help answers never come from the model. Claude: only short single requests.
-            if ((useOllama && f.LocalFirst) || ((useClaude || useGemini || useRouter) && f.LocalFirst && simple))
+            if ((useOllama && f.LocalFirst) || ((useClaude || useRouter) && f.LocalFirst && simple))
             {
                 var local = await Local.AnswerAsync(text);
                 // Only commands and live-data answers count; help-text guesses go to Claude, which explains better.
@@ -376,7 +371,6 @@ public sealed class AssistantService
                 var o = await Ollama.AskAsync(f.OllamaUrl, f.OllamaModel ?? "", conv.Ollama, text, $"[Kontext – nicht vom Nutzer: Zeit {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]", ct);
                 return Done(conversationId, o.Reply, note);
             }
-            if (useGemini) return Done(conversationId, await GeminiChatAsync(f, conv.Gemini, text, who, ct), note);
             if (useRouter) return Done(conversationId, await RouterChatAsync(f, conv.Router, text, who, ct), note);
             if (!useClaude)
             {
@@ -408,13 +402,12 @@ public sealed class AssistantService
     (string mode, string claudeModel) ResolveEngine(AssistantFile f, string? engine)
     {
         engine = string.IsNullOrWhiteSpace(engine) ? "auto" : engine.Trim();
-        if (engine == "auto") return (f.Mode switch { "claude" when f.KeyProtected == null => "local", "gemini" when f.GeminiKeyProtected == null => "local", "router" when !RouterReady(f) => "local", "smart" when !HasFreeAi(f) => "local", _ => f.Mode }, f.Model);
+        if (engine == "auto") return (f.Mode switch { "claude" when f.KeyProtected == null => "local", "router" when !RouterReady(f) => "local", "smart" when !HasFreeAi(f) => "local", _ => f.Mode }, f.Model);
         if (engine == "smart") return HasFreeAi(f) ? ("smart", f.Model) : throw new RpcException("assistant-key", "Für „Automatisch“ zuerst eine kostenlose KI einrichten (OpenRouter, Groq, Pollinations oder lokale KI).");
         if (engine is "openrouter" or "groq" or "pollinations") return FreeAi.Configured(engine) ? (engine, f.Model) : throw new RpcException("assistant-key", $"{FreeAiHub.Name(engine)} ist noch nicht eingerichtet (KI-Verwaltung in JARVIS).");
         if (engine == "router") return RouterReady(f) ? ("router", f.Model) : throw new RpcException("assistant-key", "Der KI-Router ist am PC noch nicht eingerichtet (Adresse, Schlüssel, Modell).");
         if (engine == "local") return ("local", f.Model);
         if (engine == "ollama") return string.IsNullOrEmpty(f.OllamaModel) ? throw new RpcException("assistant-key", "Die lokale KI (Ollama) ist am PC noch nicht eingerichtet.") : ("ollama", f.Model);
-        if (engine == "gemini") return f.GeminiKeyProtected == null ? throw new RpcException("assistant-key", "Für Gemini zuerst am PC einen kostenlosen Gemini-Schlüssel eintragen.") : ("gemini", f.Model);
         if (engine.StartsWith("claude"))
         {
             if (f.KeyProtected == null) throw new RpcException("assistant-key", "Für Claude zuerst am PC einen API-Schlüssel eintragen.");
@@ -435,7 +428,6 @@ public sealed class AssistantService
         foreach (var pid in new[] { "openrouter", "groq", "pollinations" }) if (FreeAi.Configured(pid)) list.Add(new { id = pid, label = $"{FreeAiHub.Name(pid)} (kostenlos)", free = true });
         list.Add(new { id = "local", label = "Eingebaut (ohne KI, 0 €)", free = true });
         if (OllamaOn(f)) list.Add(new { id = "ollama", label = $"Lokale KI: {f.OllamaModel} (0 €)", free = true });
-        if (f.GeminiKeyProtected != null) list.Add(new { id = "gemini", label = $"Gemini {f.GeminiModel} (kostenlos)", free = true });
         if (RouterReady(f)) list.Add(new { id = "router", label = $"KI-Router: {f.RouterModels[0]}{(f.RouterModels.All(m => m.EndsWith(":free")) ? " (kostenlos)" : "")}", free = f.RouterModels.All(m => m.EndsWith(":free")) });
         if (f.KeyProtected != null) foreach (var m in ClaudeAssistant.Models) list.Add(new { id = "claude:" + m.Id, label = $"{m.Label} (kostenpflichtig, Websuche)", free = false });
         return list;
@@ -445,21 +437,20 @@ public sealed class AssistantService
     {
         "claude" when f.KeyProtected != null => ClaudeAssistant.PriceOf(f.Model).Label,
         "ollama" when !string.IsNullOrEmpty(f.OllamaModel) => $"lokale KI {f.OllamaModel}",
-        "gemini" when f.GeminiKeyProtected != null => $"Gemini {f.GeminiModel}",
         "router" when RouterReady(f) => $"KI-Router {f.RouterModels[0]}",
         "smart" when HasFreeAi(f) => "Automatisch: Befehle am PC, Fragen per freier KI",
         _ => "eingebaut",
     };
 
-    /// <summary>The KI-Router as chat brain: same rules as Gemini – no tools, no live data, says so instead of guessing.</summary>
-    async Task<AssistantReply> RouterChatAsync(AssistantFile f, List<GeminiClient.Turn> history, string text, string who, CancellationToken ct)
+    /// <summary>The KI-Router as chat brain: no tools, no live data, says so instead of guessing.</summary>
+    async Task<AssistantReply> RouterChatAsync(AssistantFile f, List<ChatTurn> history, string text, string who, CancellationToken ct)
     {
         var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
         if ((month?.RouterRequests ?? 0) >= f.RouterMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.RouterMonthlyRequests} Router-Anfragen ist erreicht.");
-        history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]\n{text}"));
+        history.Add(new ChatTurn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]\n{text}"));
         if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
         var res = await Router.ChatAsync(f.RouterBase!, RouterKey(f), f.RouterModels, ChatSystem(), history, json: false, ct);
-        history.Add(new GeminiClient.Turn("model", res.Text));
+        history.Add(new ChatTurn("model", res.Text));
         CountMonth(m => m.RouterRequests++);
         var fallback = res.Model != f.RouterModels[0] && !res.Model.StartsWith(f.RouterModels[0].Split(':')[0]);
         return new AssistantReply { Text = res.Text.Trim(), Mode = "router", Model = res.Model, CostUsd = 0, Sources = { fallback ? $"KI-Router – Ausweichmodell {res.Model} (das erste war nicht verfügbar)" : "KI-Router – ohne Live-Daten vom PC" } };
@@ -515,6 +506,22 @@ public sealed class AssistantService
     async Task<AssistantReply> SmartChatAsync(AssistantFile f, Conv conv, string text, string who, CancellationToken ct, string? only = null)
     {
         var failed = new List<string>();
+        // Questions that need current facts (schedules, news, weather, prices): searched on the web first (own Tavily key, monthly cap), the AI answers from the results.
+        string? webBlock = null, webSources = null; var needsWeb = WebSearchClient.Wanted(text);
+        if (needsWeb && f.SearchKeyProtected != null)
+        {
+            var used = f.Usage.FirstOrDefault(u => u.Month == MonthKey)?.SearchRequests ?? 0;
+            if (used >= f.SearchMonthlyRequests) failed.Add("Websuche: Monatslimit erreicht");
+            else
+                try
+                {
+                    var key = _secrets.Unprotect(f.SearchKeyProtected) ?? throw new RpcException("assistant-key", "Der Websuche-Schlüssel lässt sich nicht entschlüsseln.");
+                    var hits = await Search.SearchAsync(key, text, 5, ct);
+                    CountMonth(m => m.SearchRequests++);
+                    if (hits.Count > 0) { webBlock = WebSearchClient.Block(hits, TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local)); webSources = WebSearchClient.Domains(hits); }
+                }
+                catch (RpcException e) when (e.Code is "assistant-limit" or "assistant-offline" or "assistant-unavailable" or "assistant-key") { failed.Add("Websuche: " + e.Message); }
+        }
         var active = FreeAi.ActiveOrder().Where(id => id != "ollama" || OllamaOn(f)).ToList();
         var strategy = only != null ? "single" : FreeAi.Strategy;
         List<string> order;
@@ -526,13 +533,15 @@ public sealed class AssistantService
         void EnsureTurn()
         {
             if (openTurn) return;
-            history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}]\n{text}"));
+            history.Add(new ChatTurn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}]\n{(webBlock != null ? webBlock + "\n\nFrage: " : "")}{text}"));
             if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
             openTurn = true;
         }
         AssistantReply Tag(AssistantReply r, string label)
         {
             r.Sources.Insert(0, label);
+            if (webSources != null) r.Sources.Add($"Websuche: {webSources}");
+            else if (needsWeb && f.SearchKeyProtected == null) r.Text += "\n\n(Tipp: Für aktuelle Infos wie Spielpläne oder Nachrichten richte am PC unter KI-Assistent die kostenlose Websuche ein.)";
             if (failed.Count > 0) r.Sources.Insert(1, $"Automatisch: {string.Join("; ", failed)} – deshalb antwortet {label.Replace("Beantwortet von ", "")}");
             return r;
         }
@@ -558,7 +567,7 @@ public sealed class AssistantService
             foreach (var p in pending) _ = p.ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);   // the slower ones were cancelled – nobody waits for them
             if (win != null)
             {
-                history.Add(new GeminiClient.Turn("model", win.Text));
+                history.Add(new ChatTurn("model", win.Text));
                 openTurn = false;
                 var raced = new AssistantReply { Text = win.Text, Mode = winner, Model = win.Model, CostUsd = 0 };
                 raced.Sources.Add("ohne Live-Daten vom PC");
@@ -590,7 +599,7 @@ public sealed class AssistantService
             {
                 // Not the last one in line: give up after 20 s and ask the next; the last one may take 45 s and wait out a short rate limit.
                 var a = await FreeAi.AskAsync(id, FreeSystem(), history, ct, last ? TimeSpan.FromSeconds(45) : TimeSpan.FromSeconds(20), last ? TimeSpan.FromSeconds(30) : TimeSpan.Zero);
-                history.Add(new GeminiClient.Turn("model", a.Text));
+                history.Add(new ChatTurn("model", a.Text));
                 openTurn = false;
                 var reply = new AssistantReply { Text = a.Text, Mode = id, Model = a.Model, CostUsd = 0 };
                 reply.Sources.Add("ohne Live-Daten vom PC");
@@ -677,21 +686,6 @@ public sealed class AssistantService
         if (provider == "ollama") { var f = _store.Snapshot(); var m = await Ollama.ModelsAsync(f.OllamaUrl, ct); return new { models = m.Select(x => new { id = x.name, context = 0L }) }; }
         try { var list = await FreeAi.RefreshModelsAsync(provider, ct); return new { models = list.Select(x => new { id = x.Id, context = x.Context }) }; }
         catch (ProviderException e) { throw new RpcException(e.Kind == "key" ? "assistant-key" : "assistant-unavailable", e.Message); }
-    }
-
-    /// <summary>Gemini as chat brain (free tier, own key): no tools and no live data – it says so instead of guessing.</summary>
-    async Task<AssistantReply> GeminiChatAsync(AssistantFile f, List<GeminiClient.Turn> history, string text, string who, CancellationToken ct)
-    {
-        var month = f.Usage.FirstOrDefault(u => u.Month == MonthKey);
-        if ((month?.GeminiRequests ?? 0) >= f.GeminiMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.GeminiMonthlyRequests} Gemini-Anfragen ist erreicht.");
-        var key = _secrets.Unprotect(f.GeminiKeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Gemini-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
-        var system = ChatSystem();
-        history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}, Gerät: {who}]\n{text}"));
-        if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
-        var res = await Gemini.ChatAsync(key, f.GeminiModel, system, history, ct);
-        history.Add(new GeminiClient.Turn("model", res.Text));
-        CountMonth(m => m.GeminiRequests++);
-        return new AssistantReply { Text = res.Text.Trim(), Mode = "gemini", Model = res.Model, CostUsd = 0, Sources = { "Gemini (kostenlos) – ohne Live-Daten vom PC" } };
     }
 
     readonly AsyncLocal<(string text, bool jarvis, bool direct)> _ask = new();
@@ -833,14 +827,14 @@ public sealed class AssistantService
 
     /// <summary>
     /// Which AI writes JARVIS research answers: Claude or the local AI (Ollama) when that is the assistant mode, otherwise
-    /// Gemini (free tier) when its key is set, otherwise DeepSeek. Never switched silently – the answer names the provider.
+    /// the free AIs (OpenRouter, Groq, Pollinations, Ollama in the order set up) when one is ready, otherwise DeepSeek. Never switched silently – the answer names the provider.
     /// </summary>
-    static (string id, string label)? ResearchProvider(AssistantFile f) =>
+    (string id, string label)? ResearchProvider(AssistantFile f) =>
         f.Mode == "claude" && f.KeyProtected != null ? ("claude", "Claude")
         : f.Mode == "ollama" && !string.IsNullOrEmpty(f.OllamaModel) ? ("ollama", $"Ollama ({f.OllamaModel})")
         : f.Mode == "router" && RouterReady(f) ? ("router", $"KI-Router ({f.RouterModels[0]})")
-        : f.GeminiKeyProtected != null ? ("gemini", $"Gemini ({f.GeminiModel}, kostenlos)")
         : RouterReady(f) ? ("router", $"KI-Router ({f.RouterModels[0]})")
+        : FreeAi.ActiveOrder().Count > 0 ? ("free", "Kostenlose KI (" + string.Join(" → ", FreeAi.ActiveOrder().Select(FreeAiHub.Name)) + ")")
         : f.DeepSeekKeyProtected != null ? ("deepseek", $"DeepSeek ({f.DeepSeekModel})") : null;
 
     async Task<(string text, string provider, string? model, double cost)> ResearchCompleteAsync(string system, string prompt, CancellationToken ct)
@@ -863,18 +857,27 @@ public sealed class AssistantService
                 var res = await Ollama.CompleteAsync(f.OllamaUrl, f.OllamaModel ?? "", system, prompt, ct, json: true);
                 return (res.Text, "Ollama", f.OllamaModel, 0);
             }
-            case "gemini":
+            case "free":
             {
-                if ((month?.GeminiRequests ?? 0) >= f.GeminiMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.GeminiMonthlyRequests} Gemini-Anfragen ist erreicht (änderbar am PC unter KI-Assistent → Gemini).");
-                var key = _secrets.Unprotect(f.GeminiKeyProtected!) ?? throw new RpcException("assistant-key", "Der gespeicherte Gemini-Schlüssel lässt sich nicht entschlüsseln. Bitte am PC neu eintragen.");
-                var res = await Gemini.CompleteJsonAsync(key, f.GeminiModel, system, prompt, ct);
-                CountMonth(m => m.GeminiRequests++);
-                return (res.Text, "Gemini", res.Model, 0);
+                // The free AIs in the order set up at the PC; the first one that answers writes the text (named in the answer).
+                var hist = new[] { new ChatTurn("user", prompt) };
+                ProviderException? last = null;
+                foreach (var id in FreeAi.ActiveOrder())
+                {
+                    try
+                    {
+                        if (id == "ollama") { var o = await Ollama.CompleteAsync(f.OllamaUrl, f.OllamaModel ?? "", system, prompt, ct, json: true); return (o.Text, "Ollama", f.OllamaModel, 0); }
+                        var a = await FreeAi.AskAsync(id, system, hist, ct); return (a.Text, FreeAiHub.Name(id), a.Model, 0);
+                    }
+                    catch (ProviderException e) { last = e; }
+                    catch (RpcException e) when (id == "ollama") { last = new ProviderException("down", e.Message); }
+                }
+                throw new RpcException("assistant-local", last?.Message ?? "Gerade ist keine kostenlose KI erreichbar.");
             }
             case "router":
             {
                 if ((month?.RouterRequests ?? 0) >= f.RouterMonthlyRequests) throw new RpcException("assistant-limit", $"Dein Monatslimit von {f.RouterMonthlyRequests} Router-Anfragen ist erreicht.");
-                var res = await Router.ChatAsync(f.RouterBase!, RouterKey(f), f.RouterModels, system, new[] { new GeminiClient.Turn("user", prompt) }, json: true, ct);
+                var res = await Router.ChatAsync(f.RouterBase!, RouterKey(f), f.RouterModels, system, new[] { new ChatTurn("user", prompt) }, json: true, ct);
                 CountMonth(m => m.RouterRequests++);
                 return (res.Text, "KI-Router", res.Model, 0);
             }
@@ -886,7 +889,7 @@ public sealed class AssistantService
                 CountMonth(m => { m.DeepSeekRequests++; m.DeepSeekInputTokens += res.PromptTokens; m.DeepSeekOutputTokens += res.OutputTokens; });
                 return (res.Text, "DeepSeek", res.Model, 0);
             }
-            default: throw new RpcException("assistant-local", "Keine KI eingerichtet – JARVIS zeigt dann die beste Fundstelle wörtlich. Kostenlos: am PC unter KI-Assistent einen Gemini-Schlüssel eintragen oder Ollama einrichten.");
+            default: throw new RpcException("assistant-local", "Keine KI eingerichtet – JARVIS zeigt dann die beste Fundstelle wörtlich. Kostenlos: unter KI-Verwaltung OpenRouter, Groq oder Pollinations einrichten – oder Ollama am PC.");
         }
     }
 
@@ -942,6 +945,48 @@ public sealed class AssistantService
         var f = _store.Snapshot();
         var models = await Ollama.ModelsAsync(f.OllamaUrl, ct);
         return new { url = f.OllamaUrl, models = models.Select(m => new { m.name, sizeGb = Math.Round(m.size / 1e9, 1) }) };
+    }
+
+    // ---------------------------------------------------------------- loading a model into Ollama (from the UI, with progress)
+
+    public sealed record PullInfo(string Model, string Status, int Percent, bool Done, string? Error);
+    PullInfo? _pull;
+    readonly object _pullLock = new();
+    static readonly System.Text.RegularExpressions.Regex ModelName = new(@"^[a-z0-9][a-z0-9._-]{0,60}(/[a-z0-9][a-z0-9._-]{0,60})?(:[a-zA-Z0-9._-]{1,40})?$");
+
+    public object OllamaPullStatus()
+    {
+        var p = _pull;
+        return p == null ? new { active = false, model = (string?)null, status = "", percent = 0, done = false, error = (string?)null }
+            : new { active = !p.Done && p.Error == null, model = (string?)p.Model, status = p.Status, percent = p.Percent, done = p.Done, error = p.Error };
+    }
+
+    /// <summary>Starts loading a model (only from Ollama's own library, one at a time). Returns at once; <see cref="OllamaPullStatus"/> shows the progress.</summary>
+    public object OllamaPullStart(string model)
+    {
+        model = model.Trim().ToLowerInvariant();
+        if (!ModelName.IsMatch(model)) throw new RpcException("invalid-params", "Modellname z. B. qwen2.5:7b (nur Buchstaben, Zahlen, . _ - : /).");
+        lock (_pullLock)
+        {
+            if (_pull is { Done: false, Error: null }) throw new RpcException("busy", $"Es wird gerade schon „{_pull.Model}“ geladen – bitte warten.");
+            _pull = new PullInfo(model, "Starte …", 0, false, null);
+        }
+        var url = _store.Snapshot().OllamaUrl;
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Ollama.PullAsync(url, model, (status, total, done) =>
+                {
+                    var pct = total > 0 ? (int)Math.Min(99, done * 100 / total) : _pull?.Percent ?? 0;
+                    _pull = new PullInfo(model, status, pct, false, null);
+                });
+                _pull = new PullInfo(model, "Fertig", 100, true, null);
+                Log.Info("assistant", $"Ollama-Modell {model} geladen");
+            }
+            catch (Exception ex) { _pull = new PullInfo(model, "", _pull?.Percent ?? 0, false, ex is RpcException r ? r.Message : "Laden fehlgeschlagen: " + ex.Message); Log.Warn("assistant", "Ollama-Pull: " + ex.Message); }
+        });
+        return OllamaPullStatus();
     }
 
     internal AssistantFile Export() => _store.Snapshot();

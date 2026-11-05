@@ -67,6 +67,8 @@
     "voice.voices": "admin",
     "voice.speak": "view",
     "assistant.ollamaModels": "admin",
+    "assistant.ollamaPull": "admin",
+    "assistant.ollamaPullStatus": "admin",
     "assistant.routerModels": "admin",
     "quests.get": "view",
     "quests.saveGoal": "manage",

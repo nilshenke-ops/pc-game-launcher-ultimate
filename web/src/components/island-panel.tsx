@@ -149,7 +149,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     // The source is told only when asked for ("Woher weißt du das?", "Quelle?") – otherwise the island shows just the answer.
     if (asksForSource(v)) {
       const l = islandState().last;
-      islandAnswer(l?.via ? t("Das hat {n} geantwortet.{x}", { n: l.via, x: l.note && l.note.includes("deshalb") ? ` ${l.note.replace(/^Automatisch:\s*/, "")}` : "" }) : t("Die letzte Antwort kam aus der eingebauten Hilfe oder vom PC – ohne externe KI."), true);
+      islandAnswer(l?.via ? t("Das hat {n} geantwortet.{x}", { n: l.via, x: l.note && (l.note.includes("deshalb") || l.note.includes("Websuche:")) ? ` ${l.note.replace(/^Automatisch:\s*/, "")}` : "" }) : t("Die letzte Antwort kam aus der eingebauten Hilfe oder vom PC – ohne externe KI."), true);
       return;
     }
     if (!online) { await askWithoutPc(v); return; }
@@ -364,7 +364,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     </div>
   );
 
-  const ENGINE_LABEL: Record<string, string> = { smart: "Automatisch", openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations", gemini: "Gemini", router: "Router", ollama: "Lokale KI", local: "Eingebaut" };
+  const ENGINE_LABEL: Record<string, string> = { smart: "Automatisch", openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations", router: "Router", ollama: "Lokale KI", local: "Eingebaut" };
   const noAiHere = !online && consent === "no";
   const jarvisTab = (
     <div className="isl2-chat">

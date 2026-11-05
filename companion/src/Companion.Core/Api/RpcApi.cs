@@ -268,6 +268,8 @@ public static class RpcApi
         rpc.Register("assistant.reset", ctx => { s.Assistant.Reset(ctx.Session.PrefsKey, ctx.OptStr("conversationId", 64)); return true; });
         rpc.Register("assistant.routerModels", async ctx => await s.Assistant.RouterModelsAsync());
         rpc.Register("assistant.ollamaModels", async ctx => await s.Assistant.OllamaModelsAsync());
+        rpc.Register("assistant.ollamaPull", ctx => s.Assistant.OllamaPullStart(ctx.Str("model", 80)));
+        rpc.Register("assistant.ollamaPullStatus", ctx => s.Assistant.OllamaPullStatus());
         // JARVIS' voice (ElevenLabs): settings (the key only at the PC itself), the stock voices, and text → audio.
         rpc.Register("voice.status", _ => s.Voice.Status());
         rpc.Register("voice.configure", ctx => { var r = s.Voice.Configure(ctx.Bind<Assistant.VoiceService.Config>(), ctx.Session.IsLocalAdmin); s.Rpc.Changed("voice"); return r; });
@@ -955,8 +957,9 @@ public static class RpcApi
         if (reply == null) return;
         var ask = reply.Actions.FirstOrDefault(a => a.Confirm && !a.Auto && !string.IsNullOrEmpty(a.Method));
         // Which AI answered (and why, when another one was skipped) – shown under the answer in the island.
-        var via = reply.Mode switch { "openrouter" => $"OpenRouter{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "groq" => $"Groq{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "pollinations" => "Pollinations", "gemini" => "Gemini", "router" => $"KI-Router{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "ollama" => "lokale KI", "claude" => "Claude", _ => "eingebaut" };
-        var note = reply.Sources.FirstOrDefault(x => x.StartsWith("Automatisch:"));
+        var via = reply.Mode switch { "openrouter" => $"OpenRouter{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "groq" => $"Groq{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "pollinations" => "Pollinations", "router" => $"KI-Router{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "ollama" => "lokale KI", "claude" => "Claude", _ => "eingebaut" };
+        var note = string.Join(" · ", reply.Sources.Where(x => x.StartsWith("Automatisch:") || x.StartsWith("Websuche:")));
+        if (note.Length == 0) note = null;
         // Something that runs right away is shown as what is being done ("Among Us starten"), not as a question.
         var runNow = reply.Actions.Where(a => a.Auto && a.Kind != "navigate" && !string.IsNullOrEmpty(a.Method)).Select(a => a.Label).ToList();
         var shown = runNow.Count > 0 ? string.Join(", ", runNow) + " …" : reply.Text;

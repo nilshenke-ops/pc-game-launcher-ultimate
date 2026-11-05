@@ -29,7 +29,7 @@ public sealed class OpenAiCompatClient
 
     static bool IsOpenRouter(string baseUrl) => Uri.TryCreate(baseUrl, UriKind.Absolute, out var u) && u.Host.EndsWith("openrouter.ai", StringComparison.OrdinalIgnoreCase);
 
-    public async Task<Result> ChatAsync(string baseUrl, string? apiKey, IReadOnlyList<string> models, string system, IReadOnlyList<GeminiClient.Turn> history, bool json, CancellationToken ct = default)
+    public async Task<Result> ChatAsync(string baseUrl, string? apiKey, IReadOnlyList<string> models, string system, IReadOnlyList<ChatTurn> history, bool json, CancellationToken ct = default)
     {
         if (models.Count == 0) throw new RpcException("assistant-model", "Für den KI-Router ist noch kein Modell gewählt (am PC unter KI-Assistent → KI-Router).");
         var messages = new JsonArray { new JsonObject { ["role"] = "system", ["content"] = system } };

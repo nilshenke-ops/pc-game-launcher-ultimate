@@ -13,15 +13,15 @@ describe("Meine KIs", () => {
       P({ id: "groq", name: "Groq", state: "setup", keySet: true, attested: false, stateText: "Bitte bestätigen: kostenloser Tarif" }),
       P({ id: "pollinations", name: "Pollinations", state: "setup" }),
       P({ id: "ollama", name: "Ollama", state: "setup", needsKey: false }),
-    ]), { keySet: false, gemini: { keySet: true, model: "gemini-flash" }, router: { baseUrl: "https://openrouter.ai/api/v1", keySet: false, models: [] } }, dev(), "no", () => "vor 5 Min");
+    ]), { keySet: false, router: { baseUrl: "https://openrouter.ai/api/v1", keySet: false, models: [] } }, dev(), "no", () => "vor 5 Min");
     const by = Object.fromEntries(rows.map((r) => [r.id, r]));
     expect(by.openrouter).toMatchObject({ state: "works" }); expect(by.openrouter.text).toContain("vor 5 Min"); expect(by.openrouter.text).toContain("x/y:free");
     expect(by.groq).toMatchObject({ state: "begun", next: "Kostenlosen Tarif bestätigen" });
     expect(by.pollinations.state).toBe("none"); expect(by.ollama.state).toBe("none");
-    expect(by.gemini.state).toBe("works"); expect(by.router).toMatchObject({ state: "begun", text: "Adresse eingetragen, Schlüssel fehlt" }); expect(by.claude.state).toBe("none");
+    expect(by.gemini).toBeUndefined(); expect(by.router).toMatchObject({ state: "begun", text: "Adresse eingetragen, Schlüssel fehlt" }); expect(by.claude.state).toBe("none");
     expect(by.local.state).toBe("works");
     const order = rows.map((r) => r.state); expect(order).toEqual([...order].sort((a, b) => ["works", "limit", "problem", "begun", "none"].indexOf(a) - ["works", "limit", "problem", "begun", "none"].indexOf(b)));
-    expect(rosterSummary(rows)).toEqual({ works: 3, begun: 2, none: 3, problems: 0 });
+    expect(rosterSummary(rows)).toEqual({ works: 2, begun: 2, none: 3, problems: 0 });
   });
   it("Limit und abgelehnter Schlüssel sind eigene Zustände; ausgeschaltet zählt als angefangen", () => {
     const rows = buildRoster(ov([

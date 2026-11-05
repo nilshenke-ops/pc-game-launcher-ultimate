@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.9.0 – 2026-11-05
+### Neu
+- Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum
+- Live-Daten für JARVIS: Fragen, die aktuelle Fakten brauchen („Wann spielt der FC Bayern als Nächstes?“, Wetter, Preise, Patchnotes von heute), sucht JARVIS erst im Internet (Tavily, kostenlos: 1000 Suchen im Monat, kein Zahlungsmittel; Schlüssel nur am PC) und antwortet dann aus den Ergebnissen; die Quelle nennt er auf Nachfrage. Ohne Schlüssel steht ein kurzer Tipp zur Einrichtung unter der Antwort
+### Verbessert
+- Gemini ist entfernt (Karte, Modus, Auswahl und Anzeige). Zusammenfassungen und „KI fragen“ der Recherche übernehmen die kostenlosen KIs aus der KI-Verwaltung in deiner Reihenfolge; ein alter Gemini-Modus wird zu „Automatisch“
+
 ## 3.8.0 – 2026-11-05
 ### Neu
 - „So antwortet JARVIS gerade“ in der KI-Verwaltung und im JARVIS-Menü der Insel: Betriebsart (Ersatz-Reihenfolge, Schnellster gewinnt, Nur eine KI), die Reihenfolge der KIs mit dem Modell, mit dem jede startet, was in der Insel für die nächste Frage ausgewählt ist, wer zuletzt geantwortet hat und dass Befehle und PC-Werte die eingebaute Hilfe ohne KI beantwortet

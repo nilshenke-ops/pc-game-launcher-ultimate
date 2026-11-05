@@ -73,7 +73,7 @@ function Sources({ cites, info }: { cites: Cite[]; info?: AssistantReply["resear
   );
 }
 
-const AI_MODES = new Set(["claude", "ollama", "gemini", "router", "openrouter", "groq", "pollinations", "free"]);
+const AI_MODES = new Set(["claude", "ollama", "router", "openrouter", "groq", "pollinations", "free"]);
 
 function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void; /** Only on the last answer. */ onRegenerate?: () => void; onContinue?: () => void }) {
   const nav = useNavigate();
@@ -137,12 +137,12 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
         {AI_MODES.has(r.mode) ? (
           // An AI answer shows only the answer – who answered and the sources are one tap away.
           <details className="tiny muted as-meta"><summary>{t("Woher kommt die Antwort?")}</summary>
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
           </details>
         ) : (
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
         )}
@@ -302,7 +302,7 @@ export default function Assistant() {
     }
   };
 
-  /** Stops the running answer: the PC cancels the request (Claude/Gemini/search), a late answer is dropped. */
+  /** Stops the running answer: the PC cancels the request (Claude/free AI/search), a late answer is dropped. */
   const cancel = () => {
     const id = running.current;
     if (!id) return;
@@ -342,7 +342,7 @@ export default function Assistant() {
         text={jv.enabled ? t("Sag oder schreib mir, was ich tun soll – ich starte Spiele, stelle Profile ein, ordne deine Website und untersuche Ruckler. Nur Gaming, nur auf deinen Auftrag.") : s?.claudeReady ? t("Frag alles zu deinem PC, deinen Spielen und der App. Antworten kommen von Claude – Befehle erledigt der lokale Assistent kostenlos.") : s?.mode === "ollama" ? t("Frag alles zu deinem PC, deinen Spielen und der App. Alles läuft auf deinem PC – 0 €, ohne Konto.") : t("Frag alles zu deinem PC, deinen Spielen und der App. Der lokale Assistent läuft auf deinem PC – ohne Internet und kostenlos.")}
         actions={<>
           <span className={`badge ${jv.active ? "ok" : ""}`} title={t("Nur solange diese Seite offen ist und JARVIS an ist. Ohne Auftrag tut JARVIS nichts.")}>{jv.active ? t("JARVIS aktiv") : jv.enabled ? (online ? t("JARVIS verbindet …") : t("JARVIS ohne PC")) : t("JARVIS aus")}</span>
-          {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "smart" ? t("Automatisch · 0 €") : s.mode === "ollama" ? t("Lokale KI · 0 €") : s.mode === "router" && s.router?.ready ? t("KI-Router · {m}", { m: s.router.models[0] }) : s.mode === "gemini" && s.gemini?.keySet ? t("Gemini · kostenlos") : t("Lokal · 0 €")}</span>}
+          {s && <span className={`badge ${s.claudeReady ? "accent" : "ok"}`}>{s.claudeReady ? s.models.find((m) => m.id === s.model)?.label ?? "Claude" : s.mode === "smart" ? t("Automatisch · 0 €") : s.mode === "ollama" ? t("Lokale KI · 0 €") : s.mode === "router" && s.router?.ready ? t("KI-Router · {m}", { m: s.router.models[0] }) : t("Lokal · 0 €")}</span>}
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />

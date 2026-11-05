@@ -388,7 +388,7 @@ public sealed class FreeAiHub
     // ---------------------------------------------------------------- the request
 
     /// <summary>Asks one provider (up to three of its models, best first). Throws a <see cref="ProviderException"/> if it cannot answer.</summary>
-    public async Task<FreeAnswer> AskAsync(string id, string system, IReadOnlyList<GeminiClient.Turn> history, CancellationToken ct = default, TimeSpan? timeout = null, TimeSpan? maxWait = null)
+    public async Task<FreeAnswer> AskAsync(string id, string system, IReadOnlyList<ChatTurn> history, CancellationToken ct = default, TimeSpan? timeout = null, TimeSpan? maxWait = null)
     {
         if (id is not ("openrouter" or "groq" or "pollinations")) throw new ProviderException("blocked", "Dieser Anbieter wird hier nicht angefragt.");
         if (!Configured(id)) throw new ProviderException("blocked", $"{Name(id)} ist nicht eingerichtet oder ausgeschaltet.");
@@ -644,9 +644,9 @@ public sealed class FreeAiHub
         if (!was && id != "pollinations") _store.Update(x => { if (x.Providers.TryGetValue(id, out var p)) p.Enabled = true; });
         try
         {
-            var hist = new List<GeminiClient.Turn>();
+            var hist = new List<ChatTurn>();
             var user = messages[1]!["content"]!.GetValue<string>();
-            hist.Add(new GeminiClient.Turn("user", user));
+            hist.Add(new ChatTurn("user", user));
             return await AskAsync(id, messages[0]!["content"]!.GetValue<string>(), hist, ct);
         }
         finally { if (!was && id != "pollinations") _store.Update(x => { if (x.Providers.TryGetValue(id, out var p)) p.Enabled = false; }); }

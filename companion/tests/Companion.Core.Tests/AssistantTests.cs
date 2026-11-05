@@ -305,6 +305,32 @@ public class AssistantTests
     }
 
     [Fact]
+    public async Task Gemini_is_gone_the_mode_is_refused_and_the_status_has_no_Gemini()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        var a = WithFake(s, dir, fake);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => a.Configure(new AssistantService.Config { Mode = "gemini" }, atPc: true)).Code);
+        var st = JsonSerializer.SerializeToElement(a.Status(), Json.Options);
+        Assert.False(st.TryGetProperty("gemini", out _));
+        var ids = st.GetProperty("engines").EnumerateArray().Select(e => e.GetProperty("id").GetString()).ToList();
+        Assert.DoesNotContain("gemini", ids);
+    }
+
+    [Fact]
+    public void Loading_an_Ollama_model_accepts_only_library_names_one_at_a_time()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        var a = s.Assistant;
+        foreach (var bad in new[] { "", "Qwen 2.5", "../etc/passwd", "http://evil/x", "a b", new string('a', 90) }) Assert.Throws<RpcException>(() => a.OllamaPullStart(bad));
+        // Ollama is not running in the test: the start is accepted, then the failure is reported through the status (never an exception to the caller).
+        var st = JsonSerializer.SerializeToElement(a.OllamaPullStart("qwen2.5:7b"), Json.Options);
+        Assert.Equal("qwen2.5:7b", st.GetProperty("model").GetString());
+    }
+
+    [Fact]
     public async Task Direct_commands_from_the_island_run_what_was_named_without_asking_again()
     {
         using var dir = new TempDir();

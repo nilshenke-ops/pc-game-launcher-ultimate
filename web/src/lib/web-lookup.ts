@@ -281,7 +281,7 @@ type Summary = { answered: boolean; answer: string; best: number; provider: stri
 export function fromMemory(i: LookupIntent): Learned | undefined { return findLearned(learnedKey(i.topic, i.game)); }
 
 export function askPermission(i: LookupIntent, mode: AnswerMode = "sources"): LookupReply {
-  if (mode === "ai") return { text: `Dazu habe ich nichts eingespeichert. Darf ich die KI an deinem PC fragen (z. B. das kostenlose Gemini)? Gesendet wird nur deine Frage „${i.raw}“. Die Antwort kommt dann ohne Quelle – ich markiere sie so.`, ok: null, links: [], ask: true };
+  if (mode === "ai") return { text: `Dazu habe ich nichts eingespeichert. Darf ich die KI an deinem PC fragen (deine kostenlosen KIs wie OpenRouter oder Groq)? Gesendet wird nur deine Frage „${i.raw}“. Die Antwort kommt dann ohne Quelle – ich markiere sie so.`, ok: null, links: [], ask: true };
   return { text: `Dazu habe ich nichts eingespeichert. Darf ich im Internet nachsehen? Ich frage mehrere offene Wissensquellen gleichzeitig (${sourcesFor(i.topic, i.game, i.raw).join(", ")}) und nehme die beste – keine Suchmaschine, gesendet wird nur der Suchbegriff „${i.topic}${i.game ? ` ${i.game}` : ""}“. Mit verbundenem PC kommen passende YouTube-Videos dazu (nur mit deinem eigenen Schlüssel); TikTok, Instagram und Reddit öffne ich dir nur als Suche.`, ok: null, links: [], ask: true };
 }
 
@@ -343,7 +343,7 @@ export async function lookupAnswer(i: LookupIntent, f: Fetch = fetch, pc?: PcHel
   return { text, ok: true, links: [...links, ...videoLinks, ...social], source: sourceLabel(best) };
 }
 
-const providerLabel = (p: string) => ({ claude: "Claude", ollama: "deiner lokalen KI", gemini: "Gemini (kostenlos)", deepseek: "DeepSeek" } as Record<string, string>)[p.toLowerCase()] ?? p;
+const providerLabel = (p: string) => ({ claude: "Claude", ollama: "deiner lokalen KI", deepseek: "DeepSeek" } as Record<string, string>)[p.toLowerCase()] ?? p;
 
 /** "KI fragen (ohne Quelle)": the AI at the PC answers from its own knowledge – shown as unchecked, never saved as knowledge. */
 export async function aiAnswer(i: LookupIntent, pc: PcHelp): Promise<LookupReply> {
@@ -352,7 +352,7 @@ export async function aiAnswer(i: LookupIntent, pc: PcHelp): Promise<LookupReply
     return { text: `⚠ KI-Antwort von ${providerLabel(r.provider)} – ohne Quelle, nicht nachgeprüft, kann falsch sein:\n${r.answer}${r.sure ? "" : "\n\n(Die KI ist sich selbst nicht sicher.)"}\n\nDas merke ich mir nicht als Wissen – dafür brauche ich eine Quelle.`, ok: null, links: [], source: providerLabel(r.provider), aiAnswered: true };
   } catch (e) {
     const code = (e as { code?: string }).code;
-    return { text: code === "assistant-local" ? "Am PC ist noch keine KI eingerichtet. Kostenlos geht es mit einem Gemini-Schlüssel (KI-Assistent → „Kostenlose KI für JARVIS-Recherche“) oder mit Ollama auf dem PC." : `Die KI konnte nicht antworten: ${(e as Error).message}`, ok: code === "assistant-local" ? null : false, links: [] };
+    return { text: code === "assistant-local" ? "Am PC ist noch keine KI eingerichtet. Kostenlos geht es mit OpenRouter oder Groq (KI-Verwaltung → „Einrichten“) oder mit Ollama auf dem PC." : `Die KI konnte nicht antworten: ${(e as Error).message}`, ok: code === "assistant-local" ? null : false, links: [] };
   }
 }
 

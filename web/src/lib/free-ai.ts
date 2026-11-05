@@ -1,7 +1,7 @@
 // A free AI for questions when the PC is not connected (phone, iPad, a browser on its own): the free text service of Pollinations
 // (https://text.pollinations.ai, no account, no key, open to browsers). Only the question and the last few turns of this chat are
 // sent – nothing else, no key, no file, no data of the PC – and only after this device was told "yes" once. The answer may be wrong
-// and is marked as such. With the PC connected the PC's own AIs (Gemini, router, local) are used instead – never this one.
+// and is marked as such. With the PC connected the PC's own AIs (OpenRouter, Groq, router, local) are used instead – never this one.
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";

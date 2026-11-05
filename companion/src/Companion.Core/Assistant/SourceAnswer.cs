@@ -60,7 +60,7 @@ public static class SourceAnswer
         $"Frage: {r.Question}\n\n" + string.Join("\n\n", r.Passages.Select((p, i) => $"[{i + 1}] {p.Title} ({p.Source}{(p.Date != null ? ", " + p.Date : "")})\n{p.Text}"));
 
     /// <summary>
-    /// "Gemini fragen (ohne Quelle)": only when the user taps it after no source matched. The answer comes from the AI's own
+    /// "KI fragen (ohne Quelle)": only when the user taps it after no source matched. The answer comes from the AI's own
     /// knowledge and is shown marked as unchecked; the AI has to say when it is not sure instead of guessing.
     /// </summary>
     public const string FreeSystem =

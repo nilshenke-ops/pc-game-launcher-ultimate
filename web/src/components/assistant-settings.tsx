@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Cpu, Grid3x3, KeyRound, RefreshCw, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Cpu, Download, Grid3x3, KeyRound, RefreshCw, Sparkles } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
@@ -8,7 +8,7 @@ import { formatCost } from "../lib/assistant";
 
 
 export interface Status {
-  mode: "local" | "ollama" | "claude" | "gemini" | "router" | "smart"; model: string; free: boolean;
+  mode: "local" | "ollama" | "claude" | "router" | "smart"; model: string; free: boolean;
   ollama: { url: string; model?: string | null; whileGaming: boolean; recommended: { id: string; label: string; note: string }[] }; localFirst: boolean; monthlyLimitUsd: number; keySet: boolean; claudeReady: boolean;
   models: { id: string; label: string; input: number; output: number; cacheRead: number; note: string }[];
   usage: { month: string; requests: number; inputTokens: number; outputTokens: number; costUsd: number };
@@ -16,7 +16,7 @@ export interface Status {
   bingoAi?: "assistant" | "deepseek"; bingoProvider?: string | null;
   deepSeek?: { keySet: boolean; model: string; monthlyRequests: number; used: number; inputTokens: number; outputTokens: number };
   engines?: { id: string; label: string; free: boolean }[]; webSearch?: boolean;
-  gemini?: { keySet: boolean; model: string; monthlyRequests: number; used: number }; researchAi?: string | null;
+  researchAi?: string | null; search?: { keySet: boolean; monthlyRequests: number; used: number };
   router?: { baseUrl?: string | null; keySet: boolean; models: string[]; monthlyRequests: number; used: number; ready: boolean };
 }
 
@@ -107,34 +107,13 @@ function RouterCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: R
   );
 }
 
-/** Free AI for JARVIS research: Gemini with an own key from Google AI Studio (free tier, only entered at the PC). */
-function ResearchAiCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
-  const gm = st.gemini;
-  const [key, setKey] = useState("");
-  const [model, setModel] = useState(gm?.model ?? "gemini-3.5-flash-lite");
-  const [cap, setCap] = useState(String(gm?.monthlyRequests ?? 1000));
-  if (!gm) return null;
+/** The AI that writes JARVIS research answers: the free AIs set up under "KI-Verwaltung" (no extra key here). */
+function ResearchAiCard({ st }: { st: Status; atPc?: boolean; save?: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
   return (
-    <Card title={t("Kostenlose KI für JARVIS-Recherche (Gemini)")} icon={<Sparkles size={18} />} className="flat">
+    <Card title={t("KI für JARVIS-Recherche")} icon={<Sparkles size={18} />} className="flat">
       <div className="stack-sm">
-        <p className="small muted">{t("Fasst die Quellen, die JARVIS findet, auf Deutsch zusammen (mit Quellennummern) und beantwortet auf deinen Tipp „Gemini fragen“ Fragen, zu denen keine Quelle passt – dann deutlich als „ohne Quelle“ markiert. Gerade aktiv: {p}.", { p: st.researchAi ?? t("keine KI – JARVIS zeigt die beste Fundstelle") })}</p>
-        <p className="small muted">{t("Ist als Modus oben Claude oder die lokale KI (Ollama) gewählt, schreibt diese – Gemini springt nie heimlich ein.")}</p>
-        {atPc ? (
-          <form className="row" onSubmit={(e) => { e.preventDefault(); if (key.trim()) void save({ geminiKey: key.trim() }, t("Schlüssel gespeichert")).then(() => setKey("")); }}>
-            <Field label={gm.keySet ? t("Gemini-Schlüssel (gespeichert – neu eintragen zum Ersetzen)") : t("Gemini-API-Schlüssel")} hint={t("Kostenlos auf aistudio.google.com → „Get API key“ (Google-Konto nötig, keine Zahlungsdaten). Wird nur auf diesem PC verschlüsselt gespeichert, nie angezeigt und nie ins Backup geschrieben.")}>
-              <input className="input mono" type="password" autoComplete="off" value={key} placeholder="AIza…" onChange={(e) => setKey(e.target.value)} />
-            </Field>
-            <Button type="submit" icon={<KeyRound size={16} />} disabled={!key.trim()}>{t("Speichern")}</Button>
-            {gm.keySet && <Button variant="danger" onClick={() => void save({ geminiKey: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
-          </form>
-        ) : <p className="small muted">{gm.keySet ? t("Ein Gemini-Schlüssel ist auf dem PC gespeichert.") : t("Den Gemini-Schlüssel trägst du direkt am PC ein – er verlässt den PC nie.")}</p>}
-        <form className="row" onSubmit={(e) => { e.preventDefault(); void save({ geminiModel: model.trim(), geminiMonthlyRequests: Number(cap) || 0 }); }}>
-          <Field label={t("Modell")} hint={t("„gemini-3.5-flash-lite“ ist laut Google das schnellste kostenlose Modell. Es wird genau dieses Modell angefragt – nie heimlich ein anderes.")}><input className="input mono" value={model} maxLength={60} onChange={(e) => setModel(e.target.value)} /></Field>
-          <Field label={t("Höchstens Anfragen pro Monat")}><input className="input" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} /></Field>
-          <Button type="submit">{t("Übernehmen")}</Button>
-        </form>
-        <p className="small">{t("Diesen Monat: {n} von {m} Gemini-Anfragen.", { n: gm.used, m: gm.monthlyRequests })}</p>
-        <p className="tiny muted">{t("Gut zu wissen: Im kostenlosen Tarif darf Google die gesendeten Texte laut eigener Preisseite zur Verbesserung seiner Produkte nutzen. Gesendet werden nur deine Frage und die gefundenen Textstellen aus öffentlichen Wikis – keine Daten von deinem PC. Die Google-Suche über Gemini ist nicht kostenlos und wird nicht genutzt. ChatGPT hat keinen kostenlosen Zugang für Apps; die kostenlose ChatGPT-Webseite automatisch zu bedienen erlauben die OpenAI-Bedingungen nicht.")}</p>
+        <p className="small muted">{t("Fasst die Quellen, die JARVIS findet, auf Deutsch zusammen (mit Quellennummern) und beantwortet auf deinen Tipp „KI fragen“ Fragen, zu denen keine Quelle passt – dann deutlich als „ohne Quelle“ markiert. Gerade aktiv: {p}.", { p: st.researchAi ?? t("keine KI eingerichtet") })}</p>
+        <p className="small muted">{t("Das übernehmen die kostenlosen KIs aus der KI-Verwaltung (OpenRouter, Groq, Pollinations, Ollama) in deiner Reihenfolge. Ist als Modus oben Claude oder die lokale KI gewählt, schreibt diese.")}</p>
       </div>
     </Card>
   );
@@ -174,6 +153,41 @@ function BingoAiCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: 
   );
 }
 
+/** Live facts for questions the AIs cannot know (schedules, news, weather, prices): own Tavily key (free plan, no card), entered at the PC only. */
+function WebSearchCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
+  const ws = st.search;
+  const [key, setKey] = useState("");
+  const [cap, setCap] = useState(String(ws?.monthlyRequests ?? 800));
+  if (!ws) return null;
+  return (
+    <Card title={t("Websuche für aktuelle Fragen (kostenlos)")} icon={<Sparkles size={18} />} className="flat">
+      <div className="stack-sm">
+        <p className="small muted">{t("Fragen wie „Wann spielt der FC Bayern als Nächstes?“ oder „Was ist neu im Patch?“ kann keine KI allein wissen. Mit der Websuche sucht JARVIS erst im Internet und antwortet dann aus den Ergebnissen. Gesendet wird nur deine Frage – an Tavily (tavily.com).")}</p>
+        <ol className="tiny">
+          <li>{t("Auf tavily.com kostenlos anmelden (kein Zahlungsmittel nötig, 1000 Suchen im Monat gratis, danach ist Schluss – es wird nichts abgebucht).")}</li>
+          <li>{t("Unter „API Keys“ den Schlüssel kopieren (beginnt mit „tvly-“) und hier einfügen.")}</li>
+        </ol>
+        {atPc ? (
+          <form className="row" onSubmit={(e) => { e.preventDefault(); if (key.trim()) void save({ searchKey: key.trim() }, t("Schlüssel gespeichert")).then(() => setKey("")); }}>
+            <Field label={ws.keySet ? t("Websuche-Schlüssel (gespeichert – neu eintragen zum Ersetzen)") : t("Websuche-Schlüssel (Tavily)")}>
+              <input className="input mono" type="password" autoComplete="off" value={key} placeholder="tvly-…" onChange={(e) => setKey(e.target.value)} />
+            </Field>
+            <Button type="submit" icon={<KeyRound size={16} />} disabled={!key.trim()}>{t("Speichern")}</Button>
+            {ws.keySet && <Button variant="danger" onClick={() => void save({ searchKey: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
+          </form>
+        ) : <p className="small muted">{ws.keySet ? t("Ein Websuche-Schlüssel ist auf dem PC gespeichert.") : t("Den Websuche-Schlüssel trägst du direkt am PC ein – er verlässt den PC nie.")}</p>}
+        {atPc && (
+          <form className="row" onSubmit={(e) => { e.preventDefault(); void save({ searchMonthlyRequests: Number(cap) || 0 }); }}>
+            <Field label={t("Höchstens Suchen pro Monat")} hint={t("Bleibt unter dem kostenlosen Kontingent von 1000.")}><input className="input" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} /></Field>
+            <Button type="submit">{t("Übernehmen")}</Button>
+          </form>
+        )}
+        <p className="small">{t("Diesen Monat: {n} von {m} Suchen.", { n: ws.used, m: ws.monthlyRequests })}</p>
+      </div>
+    </Card>
+  );
+}
+
 function OllamaCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
   const [models, setModels] = useState<{ name: string; sizeGb: number }[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -181,6 +195,25 @@ function OllamaCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: R
   const load = () => { setErr(null); client.call<{ models: { name: string; sizeGb: number }[] }>("assistant.ollamaModels").then((r) => setModels(r.models), (e: Error) => { setModels(null); setErr(e.message); }); };
   useEffect(load, []); // eslint-disable-line react-hooks/exhaustive-deps
   const installed = new Set((models ?? []).map((m) => m.name));
+  // Loading a model from Ollama's library straight from here (with progress) – no terminal needed.
+  const [pull, setPull] = useState<{ active: boolean; model: string | null; status: string; percent: number; done: boolean; error: string | null } | null>(null);
+  const [custom, setCustom] = useState("");
+  const poll = () => client.call<NonNullable<typeof pull>>("assistant.ollamaPullStatus").then(setPull).catch(() => {});
+  useEffect(() => { void poll(); }, []);                                           // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (!pull?.active) return;
+    const id = setInterval(() => { void poll(); }, 1500);
+    return () => clearInterval(id);
+  }, [pull?.active]);                                                              // eslint-disable-line react-hooks/exhaustive-deps
+  const seen = useRef<string | null>(null);
+  useEffect(() => {                                                                // finished: refresh the list and choose it if nothing was chosen yet
+    if (pull?.done && pull.model && seen.current !== pull.model) {
+      seen.current = pull.model; load();
+      if (!st.ollama.model) void save({ ollamaModel: pull.model }, t("Modell geladen und ausgewählt"));
+      else toast(t("Modell {m} geladen.", { m: pull.model }), "success");
+    }
+  }, [pull?.done, pull?.model]);                                                   // eslint-disable-line react-hooks/exhaustive-deps
+  const startPull = (model: string) => client.call<NonNullable<typeof pull>>("assistant.ollamaPull", { model }).then(setPull, (e: Error) => toast(e.message, "error"));
   return (
     <Card title={t("Lokale KI (Ollama) – kostenlos")} icon={<Cpu size={18} />} className="flat">
       <div className="stack-sm">
@@ -196,15 +229,28 @@ function OllamaCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: R
               <option value="">{t("– Modell wählen –")}</option>
               {models.map((m) => <option key={m.name} value={m.name}>{m.name} · {m.sizeGb.toLocaleString()} GB</option>)}
             </select>
+            {models.length === 0 && <p className="small" role="status">{t("Noch kein Modell installiert – darum ist die Liste leer. Tippe unten bei einem empfohlenen Modell auf „Installieren“; danach erscheint es hier und wird ausgewählt.")}</p>}
           </Field>
         )}
         {models != null && (
           <ul className="plain-list small">
             {st.ollama.recommended.map((r) => (
               <li key={r.id} className="row between"><span><b>{r.label}</b> <span className="muted">{r.note}</span></span>
-                {installed.has(r.id) ? <span className="badge ok">{t("installiert")}</span> : <code className="tiny">ollama pull {r.id}</code>}</li>
+                {installed.has(r.id) ? <span className="badge ok">{t("installiert")}</span>
+                  : pull?.active && pull.model === r.id ? <span className="tiny">{pull.status || t("lädt")} {pull.percent}%</span>
+                  : <Button size="sm" icon={<Download size={14} />} disabled={!!pull?.active} onClick={() => void startPull(r.id)}>{t("Installieren")}</Button>}</li>
             ))}
           </ul>
+        )}
+        {pull?.active && <div className="progress-bar" role="progressbar" aria-label={t("Modell wird geladen")} aria-valuenow={pull.percent}><i style={{ width: `${pull.percent}%` }} /></div>}
+        {pull?.error && <Banner kind="error">{pull.error}</Banner>}
+        {models != null && (
+          <form className="row" onSubmit={(e) => { e.preventDefault(); if (custom.trim()) void startPull(custom.trim()).then(() => setCustom("")); }}>
+            <Field label={t("Anderes Modell aus der Ollama-Bibliothek laden")} hint={t("Name wie auf ollama.com/library, z. B. mistral:7b oder gemma2:9b. Wichtig: Es muss Werkzeuge unterstützen („tools“).")}>
+              <input className="input mono" value={custom} placeholder="qwen2.5:7b" onChange={(e) => setCustom(e.target.value)} aria-label={t("Modellname")} />
+            </Field>
+            <Button type="submit" icon={<Download size={16} />} disabled={!custom.trim() || !!pull?.active}>{t("Laden")}</Button>
+          </form>
         )}
         <Switch checked={st.ollama.whileGaming} onChange={(ollamaWhileGaming) => save({ ollamaWhileGaming })} label={t("Auch während eines Spiels benutzen")}
           hint={t("Aus (empfohlen): Läuft ein Spiel, antwortet der einfache lokale Assistent – das Modell würde Grafikkarte und Speicher belasten und FPS kosten. Das Modell wird 2 Minuten nach der letzten Frage aus dem Speicher entfernt.")} />
@@ -227,21 +273,22 @@ export function SettingsDialog({ st, onClose }: { st: Status; onClose: () => voi
   // Which option is shown: Claude can be opened before a key exists (the key is entered there).
   const [view, setView] = useState(st.mode);
   useEffect(() => setView(st.mode), [st.mode]);
-  const ready = (m: Status["mode"]) => m === "claude" ? st.keySet : m === "gemini" ? !!st.gemini?.keySet : m === "router" ? !!st.router?.ready : true;
+  const ready = (m: Status["mode"]) => m === "claude" ? st.keySet : m === "router" ? !!st.router?.ready : true;
   const choose = (m: Status["mode"]) => { setView(m); if (ready(m)) void save({ mode: m }); };
   const save = (p: Record<string, unknown>, ok = t("Gespeichert")) => client.call("assistant.configure", p).then(() => toast(ok, "success"), (e: Error) => toast(e.message, "error")) as Promise<void>;
   const model = st.models.find((m) => m.id === st.model);
   return (
     <Modal title={t("Assistent einrichten")} onClose={onClose} wide footer={<Button onClick={onClose}>{t("Fertig")}</Button>}>
       <div className="stack">
-        <Field label={t("Wer antwortet?")} hint={view === "local" ? t("Lokal: läuft auf deinem PC, ohne Internet, kostenlos. Versteht Befehle und Fragen zur App.") : view === "ollama" ? t("Lokale KI: zusätzlich ein freies Sprachmodell auf deinem PC für freie Fragen – ebenfalls 0 €.") : view === "gemini" ? t("Gemini: freie Fragen mit deinem kostenlosen Google-Schlüssel. Befehle erledigt weiter der lokale Assistent.") : view === "router" ? t("KI-Router: freie Fragen über OpenRouter, Groq & Co. – mit kostenlosen Modellen 0 €, bei Ausfall springt dein nächstes Modell ein.") : t("Claude: freie Fragen und Gespräche. Kostet pro Anfrage (dein Anthropic-Konto).")}>
+        <Field label={t("Wer antwortet?")} hint={view === "local" ? t("Lokal: läuft auf deinem PC, ohne Internet, kostenlos. Versteht Befehle und Fragen zur App.") : view === "ollama" ? t("Lokale KI: zusätzlich ein freies Sprachmodell auf deinem PC für freie Fragen – ebenfalls 0 €.") : view === "router" ? t("KI-Router: freie Fragen über OpenRouter, Groq & Co. – mit kostenlosen Modellen 0 €, bei Ausfall springt dein nächstes Modell ein.") : t("Claude: freie Fragen und Gespräche. Kostet pro Anfrage (dein Anthropic-Konto).")}>
           <Segmented value={view} onChange={choose} label={t("Wer antwortet?")}
-            options={[{ value: "local", label: t("Lokal (0 €)") }, { value: "ollama", label: t("Lokale KI (0 €)") }, { value: "gemini", label: t("Gemini (kostenlos)") }, { value: "router", label: t("KI-Router") }, { value: "claude", label: t("Claude (kostenpflichtig)") }]} />
+            options={[{ value: "local", label: t("Lokal (0 €)") }, { value: "ollama", label: t("Lokale KI (0 €)") }, { value: "router", label: t("KI-Router") }, { value: "claude", label: t("Claude (kostenpflichtig)") }]} />
         </Field>
-        {view !== st.mode && !ready(view) && <Banner kind="info">{view === "router" ? t("Trag unten Router-Adresse, Schlüssel und mindestens ein Modell ein – dann wähle „KI-Router“ noch einmal.") : view === "gemini" ? t("Trag unten zuerst den Gemini-Schlüssel ein – dann wähle „Gemini“ noch einmal.") : t("Trag zuerst den API-Schlüssel ein.")}</Banner>}
+        {view !== st.mode && !ready(view) && <Banner kind="info">{view === "router" ? t("Trag unten Router-Adresse, Schlüssel und mindestens ein Modell ein – dann wähle „KI-Router“ noch einmal.") : t("Trag zuerst den API-Schlüssel ein.")}</Banner>}
         {view === "ollama" && <OllamaCard st={st} atPc={atPc} save={save} />}
         <RouterCard st={st} atPc={atPc} save={save} />
         <ResearchAiCard st={st} atPc={atPc} save={save} />
+        <WebSearchCard st={st} atPc={atPc} save={save} />
         <BingoAiCard st={st} atPc={atPc} save={save} />
         {view === "claude" && !st.keySet && <Banner kind="info">{t("Claude kostet pro Anfrage Geld (dein Anthropic-Konto). Für 0 € nimm „Lokal“ oder „Lokale KI“.")}</Banner>}
         {view === "claude" && <Card title={t("Claude")} icon={<Sparkles size={18} />} className="flat">

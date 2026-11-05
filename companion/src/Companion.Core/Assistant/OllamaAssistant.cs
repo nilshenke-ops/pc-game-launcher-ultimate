@@ -68,6 +68,30 @@ public sealed class OllamaAssistant
         catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw NotRunning(); }
     }
 
+    /// <summary>Downloads a model from Ollama's own library (POST /api/pull, streamed). Progress as (status, total bytes, done bytes).</summary>
+    public async Task PullAsync(string url, string model, Action<string, long, long> progress, CancellationToken ct = default)
+    {
+        try
+        {
+            using var req = new HttpRequestMessage(HttpMethod.Post, url.TrimEnd('/') + "/api/pull") { Content = JsonContent.Create(new { model, name = model, stream = true }) };
+            using var resp = await _http.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (!resp.IsSuccessStatusCode) throw new RpcException("assistant-ollama", "Ollama konnte das Modell nicht laden: " + (TryError(await resp.Content.ReadAsStringAsync(ct)) ?? $"HTTP {(int)resp.StatusCode}"));
+            await using var stream = await resp.Content.ReadAsStreamAsync(ct);
+            using var reader = new StreamReader(stream);
+            string? line;
+            while ((line = await reader.ReadLineAsync(ct)) != null)
+            {
+                if (line.Length == 0) continue;
+                using var d = JsonDocument.Parse(line);
+                var r = d.RootElement;
+                if (r.TryGetProperty("error", out var e) && e.ValueKind == JsonValueKind.String) throw new RpcException("assistant-ollama", "Ollama: " + e.GetString());
+                var status = r.TryGetProperty("status", out var st) ? st.GetString() ?? "" : "";
+                progress(status, r.TryGetProperty("total", out var t) && t.TryGetInt64(out var tv) ? tv : 0, r.TryGetProperty("completed", out var c) && c.TryGetInt64(out var cv) ? cv : 0);
+            }
+        }
+        catch (HttpRequestException) { throw NotRunning(); }
+    }
+
     static RpcException NotRunning() => new("assistant-ollama", "Ollama läuft nicht auf diesem PC. Kostenlos installieren von ollama.com, dann ein Modell laden (z. B. „ollama pull qwen2.5:7b“).");
 
     public async Task<Result> AskAsync(string url, string model, Conversation conv, string text, string context, CancellationToken ct = default)

@@ -62,7 +62,7 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
   let undo: Prefs | undefined;
   let navigate: string | undefined;
   let conversationId = ctx.conversationId;
-  // Which AI really answered (router fallback model, Gemini, Claude …) – shown under the answer, never hidden.
+  // Which AI really answered (router fallback model, OpenRouter, Claude …) – shown under the answer, never hidden.
   let answeredBy: Pick<AssistantReply, "mode" | "model" | "costUsd"> | null = null;
   let costSum = 0;
   let bingoId: string | undefined;

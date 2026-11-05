@@ -481,7 +481,7 @@ public class FreeAiTests
         hub.Set("pollinations", null, null, null, true);
         hub.Set("pollinations", true, null, null, null);
         var sw = System.Diagnostics.Stopwatch.StartNew();
-        var e = await Assert.ThrowsAsync<ProviderException>(() => hub.AskAsync("pollinations", "x", new[] { new GeminiClient.Turn("user", "Frage?") }, default, timeout: TimeSpan.FromMilliseconds(300)));
+        var e = await Assert.ThrowsAsync<ProviderException>(() => hub.AskAsync("pollinations", "x", new[] { new ChatTurn("user", "Frage?") }, default, timeout: TimeSpan.FromMilliseconds(300)));
         hold.SetResult();
         Assert.Equal("busy", e.Kind);
         Assert.True(sw.ElapsedMilliseconds < 3000);
