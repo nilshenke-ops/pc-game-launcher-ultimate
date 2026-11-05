@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.10.0",
+    "date": "2026-11-05",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.10.0/PCGameLauncherCompanion.exe",
+    "size": 94911288,
+    "sha256": "e2d09e8a0764a0b21b67fd139b3daef7165520e5ceb4867112b0516c2ed26671",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.10.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.10.0/PCGameLauncherCompanion-3.10.0-win-x64.zip",
+      "size": 89185589,
+      "sha256": "f213d12aeaf1bd39395fc5c8e7c4b2402ec4cb396deac392c732f5c213a8d61d"
+    },
+    "notes": "Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt · Der Koppel-Link im QR-Code enthält jetzt auch die WLAN-Adresse des PCs: Klappt die Verbindung über die Website nicht (z. B. weil Tailscale auf dem iPad nicht läuft), erscheint „Im WLAN beim PC koppeln“ – ein Tipp öffnet die PC-Seite im selben WLAN, dort gelingt das Koppeln · Die WLAN-Adresse des PCs wird auf dem Gerät gemerkt, damit die Startseite „Zur PC-App (WLAN)“ anbietet; die Kopplung bleibt auf der PC-Seite gespeichert (kein erneutes Anmelden)",
+    "changes": {
+      "neu": [
+        "Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt",
+        "Der Koppel-Link im QR-Code enthält jetzt auch die WLAN-Adresse des PCs: Klappt die Verbindung über die Website nicht (z. B. weil Tailscale auf dem iPad nicht läuft), erscheint „Im WLAN beim PC koppeln“ – ein Tipp öffnet die PC-Seite im selben WLAN, dort gelingt das Koppeln"
+      ],
+      "verbessert": [
+        "Die WLAN-Adresse des PCs wird auf dem Gerät gemerkt, damit die Startseite „Zur PC-App (WLAN)“ anbietet; die Kopplung bleibt auf der PC-Seite gespeichert (kein erneutes Anmelden)"
+      ],
+      "behoben": []
+    },
+    "signature": "9E6Ri5ArWm69KgutloMsNWn0+v2pGURGm6P7nzvA76iL3ppJC720DmOpKj6nhKhCDw/MSWcnrHzjBro/DwVB7w=="
+  },
+  {
     "version": "3.9.1",
     "date": "2026-11-05",
     "channel": "stable",
@@ -1403,35 +1430,5 @@
       "behoben": []
     },
     "signature": "WvsfphPx68ArDgg+kqEthw6XspNbeML9Vgw0mYYqvJhwKjW+oBnkyHSIKiO6V1zuRz/XuK0whp2PExiFtzNtZw=="
-  },
-  {
-    "version": "2.68.1",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion.exe",
-    "size": 88269471,
-    "sha256": "3612480804f9084f22438c0b2200ca5c0acd9bb0e879591f6c44658e574ce0ee",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.68.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.1/PCGameLauncherCompanion-2.68.1-win-x64.zip",
-      "size": 82532514,
-      "sha256": "2dac025e4b3684dfb015c5159525f252fdc13186a9f90ca824ecbeb648c9cbe8"
-    },
-    "notes": "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst · Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt) · Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Einstellungen → Verbindung: Adressen beschriftet („WLAN – zu Hause“ / „Tailscale – unterwegs“), WLAN zuerst",
-        "Hinweis beim Umzug auf den festen Namen: mit VPN/Tailscale/„Privates DNS“ am Handy lieber bei der IP bleiben (die IP-Seite bleibt gekoppelt)",
-        "Fehlermeldung bei nicht erreichbarer …ts.net-Adresse nennt die Ursache (Tailscale-App am Handy aus)"
-      ],
-      "behoben": [
-        "Handy koppeln mit eingeschaltetem Tailscale-HTTPS: Der QR-Code führte zur Website mit dem Tailscale-Namen (…ts.net) – den findet ein Handy ohne laufendes Tailscale nicht („ERR_NAME_NOT_RESOLVED“). Jetzt öffnet der QR-Code zuerst die WLAN-IP (funktioniert immer im selben WLAN); der Tailscale-Link bleibt für unterwegs auswählbar",
-        "„Beim PC öffnen und koppeln“ sprang bei einer …ts.net-Adresse auf http://…ts.net (falsch) – solche Namen werden jetzt direkt über https verbunden",
-        "Als „PC-Adresse“ wird ohne https-Adresse die WLAN-IP angeboten statt gaming.fritz.box – Router-Namen findet Android mit „Privates DNS“ oder einem VPN oft nicht"
-      ]
-    },
-    "signature": "L54XtWLiKZzKxbfck70i6A/9RVsTCr9MSwfPayEfiioEXN9Vp/KDCITUbOV6gxothPJLnaqWKpbgoNroR0fLnA=="
   }
 ]

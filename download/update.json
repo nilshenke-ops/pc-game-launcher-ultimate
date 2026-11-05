@@ -1,27 +1,27 @@
 {
-  "version": "3.9.1",
+  "version": "3.10.0",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion.exe",
-  "size": 94910829,
-  "sha256": "7379254e0cde58542937ad8d43c9739509a349e55d9b4afdfd959fc733eb0960",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.10.0/PCGameLauncherCompanion.exe",
+  "size": 94911288,
+  "sha256": "e2d09e8a0764a0b21b67fd139b3daef7165520e5ceb4867112b0516c2ed26671",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.9.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion-3.9.1-win-x64.zip",
-    "size": 89185011,
-    "sha256": "9ef0de5bfc898b6ba2b581a683aab42e91bc453490c58791b5827ce99819f921"
+    "fileName": "PCGameLauncherCompanion-3.10.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.10.0/PCGameLauncherCompanion-3.10.0-win-x64.zip",
+    "size": 89185589,
+    "sha256": "f213d12aeaf1bd39395fc5c8e7c4b2402ec4cb396deac392c732f5c213a8d61d"
   },
-  "notes": "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü · Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)",
+  "notes": "Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt · Der Koppel-Link im QR-Code enthält jetzt auch die WLAN-Adresse des PCs: Klappt die Verbindung über die Website nicht (z. B. weil Tailscale auf dem iPad nicht läuft), erscheint „Im WLAN beim PC koppeln“ – ein Tipp öffnet die PC-Seite im selben WLAN, dort gelingt das Koppeln · Die WLAN-Adresse des PCs wird auf dem Gerät gemerkt, damit die Startseite „Zur PC-App (WLAN)“ anbietet; die Kopplung bleibt auf der PC-Seite gespeichert (kein erneutes Anmelden)",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü",
-      "Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)"
+    "neu": [
+      "Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt",
+      "Der Koppel-Link im QR-Code enthält jetzt auch die WLAN-Adresse des PCs: Klappt die Verbindung über die Website nicht (z. B. weil Tailscale auf dem iPad nicht läuft), erscheint „Im WLAN beim PC koppeln“ – ein Tipp öffnet die PC-Seite im selben WLAN, dort gelingt das Koppeln"
     ],
-    "behoben": [
-      "Der zusätzliche Menü-Knopf links oben neben der Suche erscheint nicht mehr, wenn die Seitenleiste sichtbar ist (iPad, PC); auf dem Handy bleibt er"
-    ]
+    "verbessert": [
+      "Die WLAN-Adresse des PCs wird auf dem Gerät gemerkt, damit die Startseite „Zur PC-App (WLAN)“ anbietet; die Kopplung bleibt auf der PC-Seite gespeichert (kein erneutes Anmelden)"
+    ],
+    "behoben": []
   },
-  "signature": "We3urXLD0+w7zPs/K4NC5PFEni/ol63HtUseewcYm7TrwOheQEzyI0g5TOxrQqViNuGftLB/MoqiLjxwF2gVBQ=="
+  "signature": "9E6Ri5ArWm69KgutloMsNWn0+v2pGURGm6P7nzvA76iL3ppJC720DmOpKj6nhKhCDw/MSWcnrHzjBro/DwVB7w=="
 }
