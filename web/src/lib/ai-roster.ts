@@ -6,7 +6,7 @@ import type { LocalSnap } from "./free-ai-local";
 import { t } from "./i18n";
 
 export type RosterState = "works" | "limit" | "problem" | "begun" | "none";
-export interface RosterRow { id: string; name: string; state: RosterState; text: string; next?: string; kind: "free" | "paid" | "builtin"; device?: boolean }
+export interface RosterRow { id: string; name: string; state: RosterState; text: string; next?: string; kind: "free" | "paid" | "builtin"; device?: boolean; /** The model that answers first, and up to two more it can fall back to. */ model?: string; more?: string[] }
 
 /** The parts of "assistant.status" that matter here. */
 export interface AssistantLite {
@@ -15,6 +15,30 @@ export interface AssistantLite {
   gemini?: { keySet?: boolean; model?: string | null };
   router?: { baseUrl?: string | null; keySet?: boolean; models?: string[]; ready?: boolean };
   deepSeek?: { keySet?: boolean };
+}
+
+/** Which models an AI will use, best first. OpenRouter: the free router comes first; Pollinations has a fixed fast model; Ollama is the model set at the PC. */
+function chosenModels(id: string, listed: string[], st?: AssistantLite | null): string[] {
+  if (id === "pollinations") return ["openai-fast"];
+  if (id === "ollama") return st?.ollama?.model ? [st.ollama.model] : listed.slice(0, 1);
+  return listed;
+}
+
+export interface Plan { how: string; steps: { id: string; name: string; model: string | null }[]; commands: string; last?: { name: string; model?: string | null; at?: string | null } }
+
+/** "So antwortet JARVIS gerade": mode, order and the model each AI starts with – from the PC's own settings, nothing guessed. */
+export function buildPlan(ai: AiOverview | null | undefined, rows: RosterRow[]): Plan | null {
+  if (!ai) return null;
+  const strategy = ai.strategy ?? (ai.auto ? "fallback" : "single");
+  const usable = ai.providers.filter((p) => p.state === "ready" || p.state === "cooldown");
+  const by = (id: string) => rows.find((r) => r.id === id);
+  const step = (p: { id: string; name: string }) => ({ id: p.id, name: p.name, model: by(p.id)?.model ?? null });
+  const names = (id: string) => ai.providers.find((p) => p.id === id)?.name ?? id;
+  let steps = usable.map(step);
+  let how = t("Eine nach der anderen: ist die erste voll oder gestört, fragt JARVIS die nächste");
+  if (strategy === "race") { steps = usable.filter((p) => p.id === "openrouter" || p.id === "groq").map(step); how = t("Schnellster gewinnt: OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt"); if (!steps.length) steps = usable.map(step); }
+  if (strategy === "single") { const one = usable.find((p) => p.id === ai.single) ?? usable[0]; steps = one ? [step(one)] : []; how = t("Nur eine KI: {n} – keine andere springt ein", { n: one ? names(one.id) : t("keine eingerichtet") }); }
+  return { how, steps, commands: t("Befehle und PC-Werte beantwortet die eingebaute Hilfe am PC – ohne KI, sofort"), last: ai.last ? { name: ai.last.name, model: ai.last.model, at: ai.last.at } : undefined };
 }
 
 const ORDER: Record<RosterState, number> = { works: 0, limit: 1, problem: 2, begun: 3, none: 4 };
@@ -44,6 +68,8 @@ export function buildRoster(ai: AiOverview | null | undefined, st: AssistantLite
     if (onDevice === "ready" && r.state !== "works") r = { ...r, state: "works", text: t("Auf diesem Gerät bereit – antwortet auch ohne PC"), device: true, next: undefined };
     else if (onDevice === "ready") r = { ...r, text: t("{x} · auch auf diesem Gerät", { x: r.text }), device: true };
     else if (onDevice === "locked" && r.state !== "works") r = { ...r, state: "begun", text: t("Schlüssel auf diesem Gerät gespeichert, aber gesperrt"), next: t("Mit dem Passwort entsperren"), device: true };
+    const pm = p ? chosenModels(id, p.models?.map((m) => m.id) ?? [], st) : [];
+    if (pm.length && r.state !== "none") r = { ...r, model: pm[0], more: pm.slice(1, 3) };
     rows.push(r);
   }
 

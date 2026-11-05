@@ -47,6 +47,12 @@ Seit 3.2.1 zeigt die Seite vom PC einen Hinweis mit beiden Versionsnummern, wenn
 
 **Seit 3.7.0 geht es von selbst:** Am PC unter „Updates“ (oder im Dialog „Update verfügbar“) „Updates automatisch installieren“ einschalten. Danach installiert der Begleiter signierte Updates nach der täglichen Prüfung selbst (nicht während eines Spiels, mit Wiederherstellungspunkt, nur am PC einstellbar, standardmäßig aus) – und die Seite, die dein PC dem Handy zeigt, ist wieder aktuell, ohne dass du etwas tippen musst.
 
+## Welche KI antwortet gerade – und mit welchem Modell?
+
+KI-Verwaltung (oder JARVIS-Menü der Insel → „Meine KIs“) zeigt: „So antwortet JARVIS gerade“ (Betriebsart, Reihenfolge, Modell je KI, zuletzt geantwortet) und darunter jede KI mit Zustand (Funktioniert, Am Limit, Problem, Angefangen, Nicht eingerichtet).
+
+**DuckDuckGo AI Chat (duck.ai) ist bewusst nicht eingebaut:** Es gibt keine offizielle Schnittstelle, und die Nutzungsbedingungen verbieten automatisierte Abfragen. Eine inoffizielle Anbindung wäre unzuverlässig und könnte jederzeit gesperrt werden.
+
 ## Ohne PC (iPad im Café)
 
 Ab 3.5.0 geht auch OpenRouter (und Groq) ohne PC – direkt aus dem Browser:

@@ -2263,7 +2263,13 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Wie geht es meinem PC?");
   await panel.getByRole("button", { name: "Fragen" }).click();
   await expect(panel.locator(".isl-last")).toContainText("CPU");
-  await expect(panel.locator(".isl2-answer")).not.toContainText("Antwort von");     // only the answer – no source line
+  await expect(panel.locator(".isl2-answer")).not.toContainText("Antwort von");
+  // "Meine KIs" in the island: which mode, which order, which model each AI starts with – and what is chosen for the next question.
+  const mine = panel.getByRole("region", { name: "Meine KIs" });
+  await mine.locator("summary").click();
+  await expect(mine.getByLabel("So antwortet JARVIS gerade")).toContainText(/Ausgewählt für die nächste Frage: (Automatisch|Standard)/);
+  await expect(mine.getByLabel("So antwortet JARVIS gerade")).toContainText("Befehle und PC-Werte beantwortet die eingebaute Hilfe");
+  await expect(mine.getByLabel("So antwortet JARVIS gerade")).toContainText(/Noch keine KI bereit|Eine nach der anderen|Schnellster gewinnt|Nur eine KI/);     // only the answer – no source line
   await expect(panel.locator(".isl2-via")).toHaveCount(0);
   // The source is told when asked for.
   await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Woher weißt du das?");

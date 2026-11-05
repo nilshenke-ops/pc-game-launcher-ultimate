@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.8.0 – 2026-11-05
+### Neu
+- „So antwortet JARVIS gerade“ in der KI-Verwaltung und im JARVIS-Menü der Insel: Betriebsart (Ersatz-Reihenfolge, Schnellster gewinnt, Nur eine KI), die Reihenfolge der KIs mit dem Modell, mit dem jede startet, was in der Insel für die nächste Frage ausgewählt ist, wer zuletzt geantwortet hat und dass Befehle und PC-Werte die eingebaute Hilfe ohne KI beantwortet
+### Verbessert
+- „Meine KIs“ nennt bei jeder eingerichteten KI das gewählte Modell und die Ersatzmodelle (OpenRouter: der kostenlose Router zuerst; Pollinations: festes schnelles Modell; Ollama: das am PC gewählte Modell)
+
 ## 3.7.0 – 2026-11-05
 ### Neu
 - Updates automatisch installieren (nur am PC einschaltbar, standardmäßig aus): Nach der täglichen Prüfung lädt der Begleiter ein neues, signiertes Update der offiziellen Quelle, prüft es erneut, legt einen Wiederherstellungspunkt an, installiert es (nicht während eines Spiels) und startet neu; pro Version nur ein Versuch, der Update-Wächter setzt eine abstürzende Version zurück. So bleibt auch die Seite aktuell, die dein PC dem Handy zeigt. Schalter unter Updates und im Dialog „Update verfügbar“ („Künftig automatisch aktualisieren“)
