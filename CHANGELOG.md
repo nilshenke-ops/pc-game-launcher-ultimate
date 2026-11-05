@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.13.0 – 2026-11-05
+### Neu
+- Websuche für JARVIS mit mehreren kostenlosen Suchdiensten: zusätzlich zu Tavily jetzt Serper (Google-Ergebnisse, 2500 Gratis-Suchen) und Exa (monatliches Gratis-Guthaben) – alle mit eigenem Schlüssel ohne Zahlungsmittel. Ist ein Dienst leer, abgelehnt oder gestört, fragt JARVIS automatisch den nächsten (Tavily → Serper → Exa); jeder hat sein eigenes Monatslimit und stoppt am Gratis-Kontingent, es wird nie etwas bezahlt
+### Verbessert
+- Jeder Suchschlüssel wird nur in seiner Form angenommen und nur an den eigenen Dienst geschickt; bei Fehlern steht der Name des Dienstes in der Meldung
+
 ## 3.12.0 – 2026-11-05
 ### Neu
 - Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät)

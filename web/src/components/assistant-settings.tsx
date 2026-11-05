@@ -16,7 +16,7 @@ export interface Status {
   bingoAi?: "assistant" | "deepseek"; bingoProvider?: string | null;
   deepSeek?: { keySet: boolean; model: string; monthlyRequests: number; used: number; inputTokens: number; outputTokens: number };
   engines?: { id: string; label: string; free: boolean }[]; webSearch?: boolean;
-  researchAi?: string | null; search?: { keySet: boolean; monthlyRequests: number; used: number };
+  researchAi?: string | null; search?: { keySet: boolean; monthlyRequests: number; used: number; providers?: { id: string; name: string; keySet: boolean; used: number }[] };
   router?: { baseUrl?: string | null; keySet: boolean; models: string[]; monthlyRequests: number; used: number; ready: boolean };
 }
 
@@ -153,36 +153,49 @@ function BingoAiCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: 
   );
 }
 
-/** Live facts for questions the AIs cannot know (schedules, news, weather, prices): own Tavily key (free plan, no card), entered at the PC only. */
+/** Live facts for questions the AIs cannot know (schedules, news, weather, prices): own key of one or more search services with a free plan and no card, entered at the PC only. */
+const SEARCH_GUIDE: Record<string, { url: string; label: string; hint: string; field: string; keyProp: string; step: string }> = {
+  tavily: { url: "https://tavily.com", label: "tavily.com", hint: "tvly-…", field: "searchKey", keyProp: "searchKey", step: "Tavily: kostenlos anmelden, 1000 Suchen im Monat gratis, kein Zahlungsmittel. Unter „API Keys“ den Schlüssel kopieren (beginnt mit „tvly-“)." },
+  serper: { url: "https://serper.dev", label: "serper.dev", hint: t("40 Zeichen"), field: "serperKey", keyProp: "serperKey", step: "Serper (Google-Ergebnisse): kostenlos anmelden, 2500 Suchen gratis einmalig, kein Zahlungsmittel. Unter „API Key“ den Schlüssel kopieren." },
+  exa: { url: "https://dashboard.exa.ai", label: "dashboard.exa.ai", hint: "01234567-89ab-…", field: "exaKey", keyProp: "exaKey", step: "Exa: kostenlos anmelden, ein monatliches Gratis-Guthaben, kein Zahlungsmittel nötig. Unter „API Keys“ den Schlüssel kopieren (eine lange Kennung mit Bindestrichen)." },
+};
 function WebSearchCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
   const ws = st.search;
-  const [key, setKey] = useState("");
+  const [keys, setKeys] = useState<Record<string, string>>({});
   const [cap, setCap] = useState(String(ws?.monthlyRequests ?? 800));
   if (!ws) return null;
+  const provs = ws.providers ?? [{ id: "tavily", name: "Tavily", keySet: ws.keySet, used: ws.used }];
   return (
     <Card title={t("Websuche für aktuelle Fragen (kostenlos)")} icon={<Sparkles size={18} />} className="flat">
       <div className="stack-sm">
-        <p className="small muted">{t("Fragen wie „Wann spielt der FC Bayern als Nächstes?“ oder „Was ist neu im Patch?“ kann keine KI allein wissen. Mit der Websuche sucht JARVIS erst im Internet und antwortet dann aus den Ergebnissen. Gesendet wird nur deine Frage – an Tavily (tavily.com).")}</p>
-        <ol className="tiny">
-          <li>{t("Auf tavily.com kostenlos anmelden (kein Zahlungsmittel nötig, 1000 Suchen im Monat gratis, danach ist Schluss – es wird nichts abgebucht).")}</li>
-          <li>{t("Unter „API Keys“ den Schlüssel kopieren (beginnt mit „tvly-“) und hier einfügen.")}</li>
-        </ol>
-        {atPc ? (
-          <form className="row" onSubmit={(e) => { e.preventDefault(); if (key.trim()) void save({ searchKey: key.trim() }, t("Schlüssel gespeichert")).then(() => setKey("")); }}>
-            <Field label={ws.keySet ? t("Websuche-Schlüssel (gespeichert – neu eintragen zum Ersetzen)") : t("Websuche-Schlüssel (Tavily)")}>
-              <input className="input mono" type="password" autoComplete="off" value={key} placeholder="tvly-…" onChange={(e) => setKey(e.target.value)} />
-            </Field>
-            <Button type="submit" icon={<KeyRound size={16} />} disabled={!key.trim()}>{t("Speichern")}</Button>
-            {ws.keySet && <Button variant="danger" onClick={() => void save({ searchKey: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
-          </form>
-        ) : <p className="small muted">{ws.keySet ? t("Ein Websuche-Schlüssel ist auf dem PC gespeichert.") : t("Den Websuche-Schlüssel trägst du direkt am PC ein – er verlässt den PC nie.")}</p>}
+        <p className="small muted">{t("Fragen wie „Wann spielt der FC Bayern als Nächstes?“ oder „Was ist neu im Patch?“ kann keine KI allein wissen. Mit der Websuche sucht JARVIS erst im Internet und antwortet dann aus den Ergebnissen. Gesendet wird nur deine Frage – an den Suchdienst, den du einrichtest. Mehrere sind möglich: ist einer leer oder gestört, fragt JARVIS den nächsten (Reihenfolge Tavily → Serper → Exa).")}</p>
+        {provs.map((p) => {
+          const g = SEARCH_GUIDE[p.id];
+          if (!g) return null;
+          const v = keys[p.id] ?? "";
+          return (
+            <div key={p.id} className="stack-sm" role="group" aria-label={`${t("Websuche")} ${p.name}`}>
+              <div className="row between"><b>{p.name}</b><span className="tiny muted">{p.keySet ? t("eingerichtet · diesen Monat {n} Suchen", { n: p.used }) : t("nicht eingerichtet")}</span></div>
+              <p className="tiny muted">{t(g.step)} <a href={g.url} target="_blank" rel="noopener noreferrer">{g.label}</a></p>
+              {atPc ? (
+                <form className="row" onSubmit={(e) => { e.preventDefault(); if (v.trim()) void save({ [g.keyProp]: v.trim() }, t("Schlüssel gespeichert")).then(() => setKeys((k) => ({ ...k, [p.id]: "" }))); }}>
+                  <Field label={p.keySet ? `${t("Schlüssel")} ${p.name} (${t("gespeichert – neu eintragen zum Ersetzen")})` : `${t("Schlüssel")} ${p.name}`}>
+                    <input className="input mono" type="password" autoComplete="off" value={v} placeholder={g.hint} onChange={(e) => setKeys((k) => ({ ...k, [p.id]: e.target.value }))} />
+                  </Field>
+                  <Button type="submit" icon={<KeyRound size={16} />} disabled={!v.trim()}>{t("Speichern")}</Button>
+                  {p.keySet && <Button variant="danger" onClick={() => void save({ [g.keyProp]: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
+                </form>
+              ) : <p className="small muted">{p.keySet ? t("Ein Websuche-Schlüssel ist auf dem PC gespeichert.") : t("Den Websuche-Schlüssel trägst du direkt am PC ein – er verlässt den PC nie.")}</p>}
+            </div>
+          );
+        })}
         {atPc && (
           <form className="row" onSubmit={(e) => { e.preventDefault(); void save({ searchMonthlyRequests: Number(cap) || 0 }); }}>
-            <Field label={t("Höchstens Suchen pro Monat")} hint={t("Bleibt unter dem kostenlosen Kontingent von 1000.")}><input className="input" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} /></Field>
+            <Field label={t("Höchstens Suchen pro Monat")} hint={t("Gilt je Suchdienst und bleibt unter dem kostenlosen Kontingent von 1000.")}><input className="input" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value.replace(/\D/g, ""))} /></Field>
             <Button type="submit">{t("Übernehmen")}</Button>
           </form>
         )}
-        <p className="small">{t("Diesen Monat: {n} von {m} Suchen.", { n: ws.used, m: ws.monthlyRequests })}</p>
+        <p className="small">{t("Diesen Monat: {n} von {m} Suchen.", { n: provs.reduce((a, p) => a + p.used, 0), m: ws.monthlyRequests })}</p>
       </div>
     </Card>
   );

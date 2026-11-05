@@ -78,4 +78,60 @@ public class WebSearchTests
         Assert.True(st.GetProperty("search").GetProperty("keySet").GetBoolean());
         Assert.DoesNotContain("tvly-", st.GetRawText());                        // never shown again
     }
+
+    const string SerperKey = "0123456789abcdef0123456789abcdef01234567";
+    const string ExaKey = "01234567-89ab-cdef-0123-456789abcdef";
+
+    [Fact]
+    public void Every_provider_accepts_only_its_own_key_shape()
+    {
+        Assert.True(WebSearchClient.LooksLikeKey("serper", SerperKey)); Assert.False(WebSearchClient.LooksLikeKey("serper", ExaKey)); Assert.False(WebSearchClient.LooksLikeKey("serper", "tvly-dev-0123456789abcdefABCDEF"));
+        Assert.True(WebSearchClient.LooksLikeKey("exa", ExaKey)); Assert.False(WebSearchClient.LooksLikeKey("exa", SerperKey)); Assert.False(WebSearchClient.LooksLikeKey("exa", "sk-or-v1-0123456789abcdef0123456789"));
+        Assert.True(WebSearchClient.LooksLikeKey("tavily", "tvly-dev-0123456789abcdefABCDEF"));
+        Assert.False(WebSearchClient.LooksLikeKey("unbekannt", SerperKey));
+    }
+
+    [Fact]
+    public async Task Serper_and_Exa_are_asked_in_their_own_format_and_read_into_the_same_hits()
+    {
+        var serper = new Fake(HttpStatusCode.OK, "{\"organic\":[{\"title\":\"FC Bayern – Spielplan\",\"link\":\"https://www.kicker.de/fc-bayern/spielplan\",\"snippet\":\"Samstag 15:30 Uhr gegen Dortmund.\"},{\"title\":\"unsicher\",\"link\":\"http://evil.example/x\",\"snippet\":\"x\"}]}");
+        var hits = await new WebSearchClient(serper, "http://search.test/s").SearchAsync("serper", SerperKey, "Wann spielt der FC Bayern?", 5);
+        Assert.Single(hits); Assert.Equal("kicker.de", WebSearchClient.Domains(hits)); Assert.Contains("Samstag 15:30", hits[0].Content);
+        Assert.Equal(SerperKey, serper.Seen!.Headers.GetValues("X-API-KEY").Single()); Assert.Null(serper.Seen.Headers.Authorization);
+        Assert.Contains("\"q\":\"Wann spielt der FC Bayern?\"", serper.Sent);
+
+        var exa = new Fake(HttpStatusCode.OK, "{\"results\":[{\"title\":\"Bundesliga\",\"url\":\"https://www.bundesliga.com/de/bundesliga\",\"text\":\"Spieltag 11 am Wochenende.\"}]}");
+        var hits2 = await new WebSearchClient(exa, "http://search.test/s").SearchAsync("exa", ExaKey, "Wann ist Spieltag?", 5);
+        Assert.Equal("bundesliga.com", WebSearchClient.Domains(hits2)); Assert.Contains("Spieltag 11", hits2[0].Content);
+        Assert.Equal(ExaKey, exa.Seen!.Headers.GetValues("x-api-key").Single());
+        Assert.Contains("\"query\":\"Wann ist Spieltag?\"", exa.Sent);
+    }
+
+    [Theory]
+    [InlineData(429, "assistant-limit")]
+    [InlineData(402, "assistant-limit")]
+    [InlineData(401, "assistant-key")]
+    [InlineData(500, "assistant-unavailable")]
+    public async Task Serper_and_Exa_failures_name_the_provider_and_never_pay(int status, string kind)
+    {
+        var e = await Assert.ThrowsAsync<RpcException>(() => new WebSearchClient(new Fake((HttpStatusCode)status, "{}"), "http://search.test/s").SearchAsync("serper", SerperKey, "frage", 5));
+        Assert.Equal(kind, e.Code); Assert.StartsWith("Serper:", e.Message);
+    }
+
+    [Fact]
+    public void Serper_and_Exa_keys_are_checked_stored_protected_and_never_shown()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        Assert.Equal("forbidden", Assert.Throws<RpcException>(() => s.Assistant.Configure(new AssistantService.Config { SerperKey = SerperKey }, atPc: false)).Code);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => s.Assistant.Configure(new AssistantService.Config { SerperKey = ExaKey }, atPc: true)).Code);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => s.Assistant.Configure(new AssistantService.Config { ExaKey = SerperKey }, atPc: true)).Code);
+        s.Assistant.Configure(new AssistantService.Config { SerperKey = SerperKey, ExaKey = ExaKey }, atPc: true);
+        var st = System.Text.Json.JsonSerializer.SerializeToElement(s.Assistant.Status(), Json.Options);
+        var provs = st.GetProperty("search").GetProperty("providers").EnumerateArray().ToDictionary(p => p.GetProperty("id").GetString()!, p => p.GetProperty("keySet").GetBoolean());
+        Assert.Equal(new Dictionary<string, bool> { ["tavily"] = false, ["serper"] = true, ["exa"] = true }, provs);
+        Assert.DoesNotContain(SerperKey, st.GetRawText()); Assert.DoesNotContain(ExaKey, st.GetRawText());
+        s.Assistant.Configure(new AssistantService.Config { SerperKey = "" }, atPc: true);                                            // removing works
+        Assert.False(System.Text.Json.JsonSerializer.SerializeToElement(s.Assistant.Status(), Json.Options).GetProperty("search").GetProperty("providers").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "serper").GetProperty("keySet").GetBoolean());
+    }
 }
