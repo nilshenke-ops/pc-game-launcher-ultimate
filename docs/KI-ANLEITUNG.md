@@ -31,6 +31,12 @@ Dasselbe geht in der Dynamic Island: Reiter **JARVIS** → ganz unten „KI-Verw
 
 Genauso: Website öffnen (am PC mit dem Begleiter) → JARVIS → KI-Verwaltung. Der Schlüssel wird mit dem Windows-Benutzerkonto verschlüsselt gespeichert (DPAPI) und steht in keiner Datei im Klartext, nie im Browser, nie in GitHub.
 
+## Mit JARVIS sprechen
+
+- **Mikrofon-Knopf** in der Insel und im Chat: einmal tippen, einen Satz sagen. „Hey Jarvis, ähm, starte bitte Rocket League“ wird wie „Starte bitte Rocket League“ behandelt. Die Antwort auf eine gesprochene Frage wird vorgelesen.
+- **Gespräch** (Knopf mit den zwei Sprechblasen neben dem Mikrofon in der Insel): JARVIS hört nach jeder Antwort von selbst wieder zu. „Stopp“ macht die Stimme still, „Danke“ oder „Ende“ beendet das Gespräch, ebenso ein Tipp auf das Mikrofon oder zweimal Stille.
+- Die Spracherkennung macht der **Browser** (Chrome, Edge, Safari); eine Home-Bildschirm-App auf dem iPhone kann das oft nicht – dann die Seite in Safari öffnen. Der Selbsttest sagt, was bei dir geht und ob das Mikrofon erlaubt ist.
+
 ## Warum sieht die Seite nach dem Koppeln anders (älter) aus?
 
 Es gibt zwei Arten, die Seite zu öffnen:

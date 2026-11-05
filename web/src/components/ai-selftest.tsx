@@ -7,20 +7,11 @@ import { AlertTriangle, Check, CircleDashed, Loader2, PlugZap, X } from "lucide-
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import type { AiProvider } from "./ai-manager";
-import { voiceInputSupported } from "../lib/island-voice";
+import { micPermission, voiceInputSupported } from "../lib/island-voice";
+import { friendlyError as plainError } from "../lib/friendly-error";
 
 type State = "wait" | "run" | "ok" | "warn" | "fail";
 interface Step { id: string; label: string; state: State; text: string }
-
-/** Words a person understands for what went wrong (the PC's messages are German already). */
-export function plainError(e: unknown): string {
-  const m = (e as { message?: string; code?: string })?.message ?? "";
-  const c = (e as { code?: string })?.code ?? "";
-  if (c === "forbidden") return t("Dafür hat dieses Gerät keine Berechtigung.");
-  if (/timeout|zu lange/i.test(m)) return t("Es kam keine Antwort in angemessener Zeit.");
-  if (/not connected|offline|Verbindung/i.test(m) && !m) return t("Keine Verbindung zum PC.");
-  return m || t("Unbekannter Fehler.");
-}
 
 // The results live outside the card: while the connection is closed for the reconnection test the card briefly shows the offline view,
 // and the result must still be there when it is back.
@@ -79,9 +70,12 @@ export function AiSelfTest({ providers, online, canManage }: { providers: AiProv
         }
       } else if (online) push({ id: "ai", label: t("KI-Anbieter"), state: "warn", text: t("Zum Testen der KI-Anbieter fehlt diesem Gerät die Berechtigung „Verwalten“.") });
       // 5 · speaking to JARVIS
-      push({ id: "voice", label: t("Spracheingabe"), state: voiceInputSupported() ? "ok" : "warn",
-        text: voiceInputSupported() ? t("Dieser Browser kann Sprache erkennen. Beim ersten Mal fragt er nach dem Mikrofon – bitte erlauben.")
-          : t("Dieser Browser (oder diese Home-Bildschirm-App) kann keine Sprache erkennen. Öffne die Seite in Safari oder Chrome – oder tippe deine Frage.") });
+      const mic = voiceInputSupported() ? await micPermission() : "unknown";
+      push({ id: "voice", label: t("Spracheingabe"), state: !voiceInputSupported() ? "warn" : mic === "denied" ? "fail" : "ok",
+        text: !voiceInputSupported() ? t("Dieser Browser (oder diese Home-Bildschirm-App) kann keine Sprache erkennen. Öffne die Seite in Safari oder Chrome – oder tippe deine Frage.")
+          : mic === "denied" ? t("Der Browser kann Sprache erkennen, aber das Mikrofon ist für diese Seite gesperrt. In den Einstellungen des Browsers für diese Seite erlauben.")
+          : mic === "granted" ? t("Sprache wird erkannt und das Mikrofon ist erlaubt. Tipp: Mit „Gespräch“ in der Insel hört JARVIS nach jeder Antwort von selbst wieder zu.")
+          : t("Dieser Browser kann Sprache erkennen. Beim ersten Mal fragt er nach dem Mikrofon – bitte erlauben.") });
     } finally { setRunning(false); }
   };
 

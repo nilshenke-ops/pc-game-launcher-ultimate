@@ -11,6 +11,7 @@ import { relTime } from "../lib/format";
 import { toast, useCan, useRpc } from "../lib/hooks";
 import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
+import { friendlyError } from "../lib/friendly-error";
 
 export interface AiProvider {
   id: string; name: string; enabled: boolean; needsKey: boolean; keySet: boolean; attested: boolean; consent: boolean;
@@ -68,7 +69,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
   const run = async (id: string, fn: () => Promise<string | void>) => {
     setBusy(id); setMsg((m) => { const n = { ...m }; delete n[id]; return n; });
     try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); st.reload(); onChanged?.(); }
-    catch (e) { setMsg((m) => ({ ...m, [id]: { ok: false, text: (e as Error).message } })); st.reload(); }
+    catch (e) { setMsg((m) => ({ ...m, [id]: { ok: false, text: friendlyError(e) } })); st.reload(); }
     finally { setBusy(null); }
   };
   const test = async (id: string): Promise<string> => {

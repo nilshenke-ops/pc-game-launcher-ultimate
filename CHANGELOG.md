@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.4.0 – 2026-11-05
+### Neu
+- Gespräch mit JARVIS (Insel, Knopf neben dem Mikrofon): JARVIS hört nach jeder vorgelesenen Antwort von selbst wieder zu, bis du „Danke“ oder „Ende“ sagst, auf das Mikrofon tippst oder zweimal nacheinander nichts gesagt wird
+- Steuerwörter beim Sprechen: „Stopp“ (auch „Sei still“, „Abbrechen“, „Genug“) macht die Stimme still und wird nicht als Auftrag gesendet; „Danke“, „Das war’s“, „Tschüss“ beenden das Gespräch
+### Verbessert
+- Gesprochene Sätze werden wie getippte: „Hey Jarvis, ähm, starte bitte Rocket League.“ wird zu „Starte bitte Rocket League“ (Weckwort, Füllwörter, Schlusspunkt und „bitte“ am Ende fallen weg, der Inhalt bleibt)
+- Die Chat-Seite nutzt dieselbe Spracheingabe wie die Insel: Zwischentext beim Sprechen, verständliche Fehler, die Antwort auf eine gesprochene Frage wird vorgelesen
+- Das Mikrofon wird vorab geprüft: ist es für die Seite gesperrt, sagt JARVIS das und wie man es erlaubt (statt eines englischen Fehlercodes); der Selbsttest zeigt es ebenfalls
+- Fehlermeldungen sind verständlich: nackte Codes („forbidden“, „session-expired“, „timeout“, „unknown-method“ …) werden zu einem Satz mit nächstem Schritt (z. B. „Am PC unter Updates aktualisieren“); genaue Meldungen des PCs bleiben unverändert
+
 ## 3.3.0 – 2026-11-05
 ### Neu
 - KI leicht umschalten, auch vom Handy: Oben in der KI-Verwaltung wählst du mit einem Tipp, wie die KIs arbeiten – „Ersatz-Reihenfolge“ (eine nach der anderen, die nächste springt ein), „Schnellster gewinnt“ (OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt) oder „Nur eine KI“ (nur die gewählte antwortet, nichts springt ein). Darunter schaltest du OpenRouter und Groq mit je einem Tipp ein oder aus (oder gehst direkt zum Einrichten)

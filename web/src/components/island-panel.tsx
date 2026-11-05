@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, Mic, MicOff, Monitor, MoreHorizontal, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
+import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
@@ -17,8 +17,10 @@ import { POMO_LABEL } from "../lib/pomodoro";
 import { nowPosition, nowSub, songTime, useNowPlaying } from "../lib/now-playing";
 import { accentOfCover } from "../lib/cover-accent";
 import { clearIslandHistory, useIslandHistory, type HistoryEntry } from "../lib/island-activity";
-import { consumeSpoken, markSpoken, useVoiceInput } from "../lib/island-voice";
-import { speak } from "../lib/jarvis-voice";
+import { consumeSpoken, markSpoken, micPermission, setConversation, useConversation, useVoiceInput } from "../lib/island-voice";
+import { cleanSpoken, voiceControl } from "../lib/voice-text";
+import { friendlyError } from "../lib/friendly-error";
+import { speak, stopSpeaking, useVoice } from "../lib/jarvis-voice";
 import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { readJson, writeJson } from "../lib/rpc";
 import { AiManager, hasReadyAi, type AiOverview } from "./ai-manager";
@@ -121,7 +123,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       turns.current = [...turns.current, { role: "user" as const, text: v }, { role: "bot" as const, text: r.text }].slice(-8);
       islandAnswer(r.text, true, [], "jarvis", FREE_AI_NAME);
       if (consumeSpoken()) speak(r.text);
-    } catch (e) { islandAnswer((e as Error).message, false); }
+    } catch (e) { islandAnswer(friendlyError(e), false); }
     finally { islandBusy(false); }
   };
 
@@ -139,9 +141,37 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       return;
     }
     if (!online) { await askWithoutPc(v); return; }
-    try { await client.call("assistant.ask", { text: v, ...(engineNow === "auto" ? {} : { engine: engineNow }) }); } catch (err) { islandAnswer((err as Error).message, false); }
+    try { await client.call("assistant.ask", { text: v, ...(engineNow === "auto" ? {} : { engine: engineNow }) }); } catch (err) { islandAnswer(friendlyError(err), false); }
   };
-  const voice = useVoiceInput((said) => { markSpoken(); setTab("jarvis"); void send(said); }, (m) => toast(t(m), "error"));
+  // Speaking to JARVIS: the sentence is cleaned like a typed one, "Stopp" quietens the voice, "Danke" ends the conversation.
+  const convo = useConversation();
+  const vs = useVoice();
+  const convoRef = useRef(false); convoRef.current = convo;
+  const askedAt = useRef(0), idle = useRef(0);
+  const voice = useVoiceInput((said) => {
+    idle.current = 0;
+    const ctl = voiceControl(said);
+    if (ctl === "stop") { stopSpeaking(); return; }
+    if (ctl === "end") { stopSpeaking(); setConversation(false); toast(t("Gespräch beendet."), "success"); return; }
+    const cleaned = cleanSpoken(said);
+    if (!cleaned) return;
+    markSpoken(); askedAt.current = Date.now(); setTab("jarvis"); void send(cleaned);
+  }, (m) => { toast(t(m), "error"); setConversation(false); },
+  () => { if (convoRef.current && ++idle.current >= 2) { setConversation(false); toast(t("Gespräch beendet – ich habe nichts gehört."), "info"); } });
+  // In a conversation the microphone opens again by itself once the answer has been read aloud (a short pause so JARVIS does not hear itself).
+  const lastAt = s.last?.at ?? 0;
+  useEffect(() => {
+    if (!convo || !voice.supported || voice.listening || vs.speaking || s.busy) return;
+    const answered = askedAt.current === 0 || lastAt >= askedAt.current || Date.now() - askedAt.current > 45_000;
+    if (!answered) return;
+    const timer = setTimeout(() => voice.start(), vs.on ? 1500 : 500);
+    return () => clearTimeout(timer);
+  }, [convo, voice, vs.speaking, vs.on, s.busy, lastAt]);
+  const toggleConversation = async () => {
+    if (convo) { setConversation(false); voice.stop(); stopSpeaking(); return; }
+    if (await micPermission() === "denied") { toast(t("Das Mikrofon ist für diese Seite gesperrt. In den Browser-Einstellungen der Seite erlauben, dann noch einmal tippen."), "error"); return; }
+    idle.current = 0; askedAt.current = 0; setConversation(true);
+  };
   const submit = (e: FormEvent) => { e.preventDefault(); void send(q); };
 
   // Escape closes the "⋯" menu first, then the island.
@@ -341,15 +371,19 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         </div>
       )}
       <form className="isl2-ask" onSubmit={submit}>
-        <button type="button" className={`isl2-mic${voice.listening ? " on" : ""}`} disabled={!voice.supported || noAiHere} onClick={voice.toggle}
+        <button type="button" className={`isl2-mic${voice.listening ? " on" : ""}`} disabled={!voice.supported || noAiHere} onClick={() => { if (convo) setConversation(false); voice.toggle(); }}
           aria-pressed={voice.listening} aria-label={voice.listening ? t("Zuhören beenden") : t("Mit JARVIS sprechen")}
           title={voice.supported ? (voice.listening ? t("Zuhören beenden") : t("Mit JARVIS sprechen")) : t("In diesem Fenster gibt es keine Spracherkennung – schreib stattdessen, oder öffne JARVIS im Browser (Chrome, Edge).")}>
           {voice.listening ? <MicOff size={18} /> : <Mic size={18} />}
         </button>
+        <button type="button" className={`isl2-mic${convo ? " on" : ""}`} disabled={!voice.supported || noAiHere} onClick={() => void toggleConversation()}
+          aria-pressed={convo} aria-label={convo ? t("Gespräch beenden") : t("Gespräch starten")}
+          title={convo ? t("Gespräch beenden") : t("Gespräch: JARVIS hört nach jeder Antwort von selbst wieder zu")}><MessagesSquare size={18} /></button>
         <input className="input" value={voice.listening ? voice.interim : q} maxLength={300} readOnly={voice.listening}
           placeholder={voice.listening ? t("Ich höre zu …") : t("Frag JARVIS …")} onChange={(e) => setQ(e.target.value)} aria-label={t("Frag JARVIS …")} />
         <button type="submit" className="isl2-send" disabled={!q.trim() || noAiHere || voice.listening} aria-label={t("Fragen")}><Send size={16} /></button>
       </form>
+      {convo && <p className="tiny isl2-tip" role="status">{t("Gespräch läuft – sprich einfach weiter. Sag „Stopp“, damit JARVIS still ist, oder „Danke“, um zu beenden.")}</p>}
       <p className="tiny muted isl2-tip">{online ? t("Befehle („Starte WhatsApp“) erledigt der PC, Fragen beantwortet eine kostenlose KI – fällt eine aus, springt die nächste ein. Gesprochene Fragen werden laut beantwortet.") : t("Ohne PC: allgemeine Fragen beantwortet die freie KI ohne Konto (nur mit deinem Ja).")}</p>
       <details className="isl2-setup" open={online && !!aiv.data && !hasReadyAi(aiv.data)}>
         <summary>{t("KI-Verwaltung")}{hasReadyAi(aiv.data) ? ` · ${t("eingerichtet")}` : ""}</summary>

@@ -3,7 +3,7 @@
 // the audio of that one sentence is processed by the browser maker's service, nothing goes through this app. It runs only while the
 // microphone button is active; there is no wake word and no listening in the background.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 interface Recognition {
   lang: string; interimResults: boolean; continuous: boolean; maxAlternatives: number;
@@ -24,6 +24,20 @@ let spoken = false;
 export const markSpoken = () => { spoken = true; };
 export const consumeSpoken = () => { const s = spoken; spoken = false; return s; };
 
+/** "Gespräch": after the answer has been read aloud the microphone opens again by itself, until "Danke" / "Ende", the tap on the microphone, or two silences in a row. */
+let convo = false;
+const convoListeners = new Set<() => void>();
+export const setConversation = (v: boolean) => { if (convo !== v) { convo = v; convoListeners.forEach((l) => l()); } };
+export const useConversation = () => useSyncExternalStore((fn) => { convoListeners.add(fn); return () => { convoListeners.delete(fn); }; }, () => convo);
+
+/** Whether this page may use the microphone ("granted" / "denied" / "prompt"); "unknown" where the browser cannot tell (Safari, home-screen apps). */
+export async function micPermission(): Promise<"granted" | "denied" | "prompt" | "unknown"> {
+  try {
+    const p = await (navigator as unknown as { permissions?: { query: (d: { name: string }) => Promise<{ state: string }> } }).permissions?.query({ name: "microphone" });
+    return p?.state === "granted" || p?.state === "denied" || p?.state === "prompt" ? p.state : "unknown";
+  } catch { return "unknown"; }
+}
+
 /** Why the recognition stopped, in words for a person. */
 export function voiceErrorText(code: string): string | null {
   switch (code) {
@@ -35,10 +49,10 @@ export function voiceErrorText(code: string): string | null {
   }
 }
 
-export function useVoiceInput(onFinal: (text: string) => void, onProblem?: (text: string) => void) {
+export function useVoiceInput(onFinal: (text: string) => void, onProblem?: (text: string) => void, onEmpty?: () => void) {
   const rec = useRef<Recognition | null>(null);
-  const done = useRef(onFinal), problem = useRef(onProblem);
-  done.current = onFinal; problem.current = onProblem;
+  const done = useRef(onFinal), problem = useRef(onProblem), empty = useRef(onEmpty);
+  done.current = onFinal; problem.current = onProblem; empty.current = onEmpty;
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState("");
   const supported = voiceInputSupported();
@@ -60,7 +74,7 @@ export function useVoiceInput(onFinal: (text: string) => void, onProblem?: (text
     r.onend = () => {
       rec.current = null; setListening(false); setInterim("");
       const said = finalText.trim();
-      if (said) done.current(said);
+      if (said) done.current(said); else empty.current?.();
     };
     rec.current = r; setListening(true); setInterim("");
     try { r.start(); } catch { rec.current = null; setListening(false); }

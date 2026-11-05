@@ -9,6 +9,9 @@ import { AiManager } from "../components/ai-manager";
 import { CHAT_KEY, emptyChat, formatCost, jarvisChips, offlineExamples, QUICK_COMMAND, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
 import { openJarvis, setJarvisEnabled, useJarvis } from "../lib/jarvis-session";
 import { speak, stopSpeaking } from "../lib/jarvis-voice";
+import { consumeSpoken, markSpoken, useVoiceInput } from "../lib/island-voice";
+import { cleanSpoken, voiceControl } from "../lib/voice-text";
+import { friendlyError } from "../lib/friendly-error";
 import { JarvisHud } from "../components/jarvis-hud";
 import { IslandSettingsCard } from "../components/island-settings";
 import { SettingsDialog, type Status } from "../components/assistant-settings";
@@ -26,12 +29,6 @@ const doneText = (kind: string) => ({
   launch: t("Wird gestartet"), sound: t("Sound läuft"), stopSounds: t("Alle Sounds gestoppt"), profile: t("Profil aktiviert"), quick: t("Wird ausgeführt"),
   goal: t("Ziel angelegt"), wish: t("Auf die Wunschliste gesetzt"), match: t("Match eingetragen"),
 } as Record<string, string>)[kind] ?? t("Erledigt");
-
-// Web Speech API (Chrome, Edge, Safari) – optional, feature-detected.
-type Recognition = { lang: string; interimResults: boolean; start: () => void; stop: () => void; onresult: ((e: { results: { 0: { transcript: string } }[] }) => void) | null; onend: (() => void) | null; onerror: ((e: { error: string }) => void) | null };
-const SpeechCtor = (window as unknown as { SpeechRecognition?: new () => Recognition; webkitSpeechRecognition?: new () => Recognition }).SpeechRecognition
-  ?? (window as unknown as { webkitSpeechRecognition?: new () => Recognition }).webkitSpeechRecognition;
-
 
 const BingoBoardLazy = lazy(() => import("../components/bingo-board").then((m) => ({ default: m.BingoBoard })));
 
@@ -160,8 +157,6 @@ export default function Assistant() {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
   const [settings, setSettings] = useState(false);
-  const [listening, setListening] = useState(false);
-  const rec = useRef<Recognition | null>(null);
   const end = useRef<HTMLDivElement>(null);
   const [params, setParams] = useSearchParams();
   const jv = useJarvis();
@@ -197,6 +192,7 @@ export default function Assistant() {
     const add = (reply: AssistantReply, more: Partial<ChatState["turns"][number]> = {}, conversationId?: string | null) => {
       if (!side && running.current !== requestId) return false;
       setChat((c) => ({ conversationId: conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply, ...more }] }));
+      if (consumeSpoken()) speak(reply.text, undefined, true);       // a spoken question is answered aloud
       return true;
     };
     const eng = online ? engine : "auto";
@@ -289,7 +285,7 @@ export default function Assistant() {
       add(r.reply, {}, r.conversationId);
     } catch (e) {
       // The real error (key, limit, timeout, no connection) – never a made-up answer instead.
-      add({ text: (e as Error).message, actions: [], sources: [], suggestions: [], mode: "local" });
+      add({ text: friendlyError(e), actions: [], sources: [], suggestions: [], mode: "local" });
     } finally {
       if (!side && running.current === requestId) { running.current = null; setBusy(false); setPhase(null); setLive(""); }
     }
@@ -318,20 +314,15 @@ export default function Assistant() {
     setChat(emptyChat());
   };
 
-  const toggleMic = () => {
-    if (!SpeechCtor) return;
-    stopSpeaking();
-    if (listening) { rec.current?.stop(); return; }
-    const r = new SpeechCtor();
-    r.lang = document.documentElement.lang === "en" ? "en-US" : "de-DE";
-    r.interimResults = false;
-    r.onresult = (e) => { const said = e.results[0]?.[0]?.transcript ?? ""; if (said) void ask(said); };
-    r.onend = () => setListening(false);
-    r.onerror = (e) => { setListening(false); if (e.error !== "aborted") toast(t("Spracheingabe nicht möglich: {e}", { e: e.error }), "error"); };
-    rec.current = r;
-    setListening(true);
-    r.start();
-  };
+  // Speaking: the same recognition as in the island – the sentence is cleaned like a typed one, "Stopp" quietens the voice, the answer is read aloud.
+  const voice = useVoiceInput((said) => {
+    const ctl = voiceControl(said);
+    if (ctl) { stopSpeaking(); return; }
+    const cleaned = cleanSpoken(said);
+    if (cleaned) { markSpoken(); void ask(cleaned); }
+  }, (m) => toast(t(m), "error"));
+  const listening = voice.listening;
+  const toggleMic = () => { stopSpeaking(); voice.toggle(); };
 
   const s = st.data;
   return (
@@ -393,8 +384,8 @@ export default function Assistant() {
           <button type="button" className={`chip ${web ? "on" : ""}`} aria-pressed={web} title={s?.webSearch ? t("Claude-Websuche am PC (kostet pro Suche)") : online ? t("Offene Wikis + offizielle Patchnotes, zusammengefasst von der KI am PC") : t("Ohne PC: nur offene Wikis")} onClick={() => { setWeb(!web); setWebSwitch(!web); }}><Globe size={14} aria-hidden /> {t("Im Internet suchen")}</button>
         </div>
         <form className="as-input" onSubmit={(e) => { e.preventDefault(); void ask(text); }}>
-          <input className="input" value={text} maxLength={2000} placeholder={jv.enabled ? t("Dein Auftrag an JARVIS, z. B. „Starte Minecraft und aktiviere mein Minecraft-Profil“") : t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />
-          {SpeechCtor && <Button variant="ghost" icon={listening ? <MicOff size={18} /> : <Mic size={18} />} aria-label={listening ? t("Zuhören beenden") : t("Spracheingabe")} onClick={toggleMic} />}
+          <input className="input" value={voice.listening ? voice.interim : text} readOnly={voice.listening} maxLength={2000} placeholder={voice.listening ? t("Ich höre zu …") : jv.enabled ? t("Dein Auftrag an JARVIS, z. B. „Starte Minecraft und aktiviere mein Minecraft-Profil“") : t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />
+          {voice.supported && <Button variant="ghost" icon={listening ? <MicOff size={18} /> : <Mic size={18} />} aria-label={listening ? t("Zuhören beenden") : t("Spracheingabe")} aria-pressed={listening} onClick={toggleMic} />}
           <Button type="submit" variant="primary" icon={<Send size={16} />} disabled={!text.trim() || (busy && !QUICK_COMMAND.test(text.trim()))} aria-label={t("Senden")} />
         </form>
       </Card>

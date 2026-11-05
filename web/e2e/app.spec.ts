@@ -2467,6 +2467,58 @@ test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abg
   await p.context().close();
 });
 
+test("Sprechen mit JARVIS: Füllwörter fallen weg, „Stopp“ ist kein Auftrag, im Gespräch hört JARVIS von selbst wieder zu, „Danke“ und Stille beenden es", async ({ browser }) => {
+  const p = await adminPage(browser);
+  const isl = await p.context().newPage();
+  await isl.addInitScript((tok) => {
+    const w = window as unknown as Record<string, unknown>;
+    w.__PGL_ADMIN__ = tok; w.__PGL_EMBEDDED__ = true;
+    try { localStorage.setItem("pgl.jarvis.voice", "false"); } catch { /* ignore */ }
+    // A stand-in for the browser's speech recognition: every start() "hears" the next prepared sentence (an empty one = silence).
+    w.__SAY = []; w.__recs = 0;
+    class FakeRec {
+      lang = ""; interimResults = true; continuous = false; maxAlternatives = 1;
+      onresult: ((e: unknown) => void) | null = null; onend: (() => void) | null = null; onerror: ((e: { error: string }) => void) | null = null;
+      constructor() { (w.__recs as number)++; }
+      start() { const phrase = (w.__SAY as string[]).shift(); setTimeout(() => { if (phrase) this.onresult?.({ resultIndex: 0, results: [Object.assign([{ transcript: phrase }], { isFinal: true })] }); this.onend?.(); }, 60); }
+      stop() { /* nothing */ } abort() { /* nothing */ }
+    }
+    w.SpeechRecognition = FakeRec; w.webkitSpeechRecognition = FakeRec;
+  }, state().adminToken);
+  await isl.setViewportSize({ width: 620, height: 380 });
+  await isl.goto(`${COMPANION}/#/island`);
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+  const panel = isl.getByRole("dialog", { name: "JARVIS-Insel" });
+  await islandTab(panel, "JARVIS").click();
+  const say = (...x: string[]) => isl.evaluate((l) => { (window as unknown as { __SAY: string[] }).__SAY.push(...l); }, x);
+  const recs = () => isl.evaluate(() => (window as unknown as { __recs: number }).__recs);
+
+  // 1 · one sentence with wake word and filler: understood like a typed one, answered by the PC
+  await say("Hey Jarvis, ähm, wie geht es meinem PC bitte.");
+  await panel.getByRole("button", { name: "Mit JARVIS sprechen" }).click();
+  await expect(panel).toContainText(/CPU|RAM|Prozessor|Arbeitsspeicher/i, { timeout: 20000 });
+  // 2 · "Stopp" is a control word, not a question
+  const before = await panel.innerText();
+  await say("Stopp");
+  await panel.getByRole("button", { name: "Mit JARVIS sprechen" }).click();
+  await expect.poll(recs).toBe(2);
+  await isl.waitForTimeout(800);
+  expect((await panel.innerText()).includes("Stopp")).toBe(false);
+  expect(await panel.getByRole("button", { name: "Fragen" }).isDisabled()).toBe(true);        // nothing was typed or sent
+  void before;
+  // 3 · conversation: it listens by itself, answers, listens again – and "Danke" ends it
+  await say("Wie geht es meinem PC", "Danke");
+  const convo = panel.getByRole("button", { name: "Gespräch starten" });
+  await convo.click();
+  await expect.poll(recs, { timeout: 20000 }).toBeGreaterThanOrEqual(4);                      // two more listenings without a tap
+  await expect(panel.getByRole("button", { name: "Gespräch starten" })).toBeVisible({ timeout: 20000 });   // ended by "Danke"
+  // 4 · silence twice in a row ends the conversation, too
+  await say("", "");
+  await panel.getByRole("button", { name: "Gespräch starten" }).click();
+  await expect(panel.getByRole("button", { name: "Gespräch starten" })).toBeVisible({ timeout: 20000 });
+  await p.context().close();
+});
+
 test("Selbsttest in der KI-Verwaltung: PC, echter PC-Befehl, Internetsuche, Sprache – und die Wiederverbindung", async ({ browser }) => {
   const p = await adminPage(browser);
   // The open wikis are stand-ins here (no real internet in the test): one answer for the search test.
