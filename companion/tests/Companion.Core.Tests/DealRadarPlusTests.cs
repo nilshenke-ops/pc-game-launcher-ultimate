@@ -18,7 +18,8 @@ public class DealRadarPlusTests
             var u = r.RequestUri!.ToString();
             lock (Urls) Urls.Add(u);
             string body;
-            if (u.Contains("/IWishlistService/GetWishlist")) body = Wishlist.Count == 0 ? "{\"response\":{}}" : "{\"response\":{\"items\":[" + string.Join(",", Wishlist.Select(a => $"{{\"appid\":{a},\"priority\":1}}")) + "]}}";
+            if (u.Contains("community.test/id/")) body = u.Contains("/id/mein-name/") ? "<profile><steamID64>76561198000000042</steamID64></profile>" : "<response><error><![CDATA[The specified profile could not be found.]]></error></response>";
+            else if (u.Contains("/IWishlistService/GetWishlist")) body = Wishlist.Count == 0 ? "{\"response\":{}}" : "{\"response\":{\"items\":[" + string.Join(",", Wishlist.Select(a => $"{{\"appid\":{a},\"priority\":1}}")) + "]}}";
             else if (u.Contains("/IStoreBrowseService/GetItems")) body = "{\"response\":{\"store_items\":[{\"appid\":1245620,\"name\":\"ELDEN RING\",\"assets\":{\"header\":\"0123456789abcdef0123456789abcdef01234567/header.jpg\"}},{\"appid\":730,\"name\":\"Counter-Strike 2\"}]}}";
             else if (u.Contains("/api/storesearch") && u.ToLowerInvariant().Contains("minecraft")) body = "{\"total\":3,\"items\":[{\"type\":\"app\",\"name\":\"Minecraft Dungeons II\",\"id\":1912410},{\"type\":\"app\",\"name\":\"Minecraft Dungeons\",\"id\":1672970},{\"type\":\"app\",\"name\":\"Minecraft Legends\",\"id\":1928870}]}";
             else if (u.Contains("/api/storesearch")) body = u.ToLowerInvariant().Contains("forza") ? "{\"total\":2,\"items\":[{\"type\":\"app\",\"name\":\"Forza Horizon 4\",\"id\":1293830},{\"type\":\"app\",\"name\":\"Forza Horizon 5\",\"id\":1551360}]}" : "{\"total\":0,\"items\":[]}";
@@ -38,7 +39,7 @@ public class DealRadarPlusTests
     }
 
     static DealService Make(TempDir dir, Stores s, string? steamId = "76561198000000001") =>
-        new(new AppPaths(dir.Path), new NullHub(), s, timer: false) { StoreBase = "http://steam.test", ApiBase = "http://api.steam.test", MsBase = "http://ms.test", SteamId = () => steamId };
+        new(new AppPaths(dir.Path), new NullHub(), s, timer: false) { StoreBase = "http://steam.test", ApiBase = "http://api.steam.test", CommunityBase = "http://community.test", MsBase = "http://ms.test", SteamId = () => steamId };
 
     [Fact]
     public async Task Typing_only_the_name_finds_the_game_and_compares_with_the_microsoft_store()
@@ -97,6 +98,48 @@ public class DealRadarPlusTests
         stores.Wishlist = new();
         await d.SyncWishlistAsync();
         Assert.Contains("nicht öffentlich", d.Export().WishlistError);
+    }
+
+    [Theory]
+    [InlineData("76561198000000042")]
+    [InlineData("https://steamcommunity.com/profiles/76561198000000042/")]
+    [InlineData("https://steamcommunity.com/id/mein-name/")]
+    [InlineData("mein-name")]
+    public async Task A_typed_steam_profile_needs_no_api_key_and_fills_the_deal_radar_right_away(string typed)
+    {
+        using var dir = new TempDir();
+        var stores = new Stores();
+        using var d = Make(dir, stores, steamId: null); // no linked Steam account, no key
+        var r = await d.SetWishlistProfileAsync(typed);
+        Assert.Contains(stores.Urls, u => u.Contains("GetWishlist") && u.Contains("steamid=76561198000000042"));
+        Assert.Equal(new[] { "ELDEN RING", "Counter-Strike 2" }, d.Export().Items.Select(i => i.Title));
+        Assert.All(d.Export().Items, i => Assert.True(i.FromSteamWishlist));
+        var f = d.Export();
+        Assert.True(f.Enabled);              // the price check is on, so the games get prices
+        Assert.True(f.SyncSteamWishlist);
+        Assert.Equal("76561198000000042", f.WishlistSteamId);
+        // Later runs keep using it; removing the profile stops the sync but keeps the entries.
+        stores.Wishlist = new() { "1245620" };
+        await d.SyncWishlistAsync();
+        Assert.DoesNotContain(d.Export().Items, i => i.SteamAppId == "730");
+        await d.SetWishlistProfileAsync("");
+        Assert.Null(d.Export().WishlistSteamId);
+        Assert.Equal("not-configured", (await Assert.ThrowsAsync<RpcException>(() => d.SyncWishlistAsync())).Code);
+        Assert.Single(d.Export().Items);
+    }
+
+    [Theory]
+    [InlineData("nicht-vorhanden", "not-found")]
+    [InlineData("a", "invalid-params")]
+    [InlineData("https://evil.example/x y", "invalid-params")]
+    public async Task A_wrong_steam_profile_says_what_is_wrong_and_changes_nothing(string typed, string code)
+    {
+        using var dir = new TempDir();
+        using var d = Make(dir, new Stores(), steamId: null);
+        Assert.Equal(code, (await Assert.ThrowsAsync<RpcException>(() => d.SetWishlistProfileAsync(typed))).Code);
+        Assert.Null(d.Export().WishlistSteamId);
+        Assert.False(d.Export().Enabled);
+        Assert.Empty(d.Export().Items);
     }
 
     [Fact]

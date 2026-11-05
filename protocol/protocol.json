@@ -94,6 +94,7 @@
     "deals.save": "manage",
     "deals.addByName": "manage",
     "deals.syncWishlist": "manage",
+    "deals.setWishlistProfile": "manage",
     "deals.remove": "manage",
     "deals.refresh": "manage",
     "deals.ggKey": "admin",

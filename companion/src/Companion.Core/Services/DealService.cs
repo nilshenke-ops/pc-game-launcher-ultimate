@@ -82,6 +82,8 @@ public sealed class DealsFile
     public bool SyncSteamWishlist { get; set; } = true;
     public DateTime? WishlistSyncedAt { get; set; }
     public string? WishlistError { get; set; }
+    /// <summary>SteamID64 typed in here (profile link, name or ID) – needs no Web API key, only a public wish list.</summary>
+    public string? WishlistSteamId { get; set; }
     public List<WishItem> Items { get; set; } = new();
 }
 
@@ -116,6 +118,9 @@ public sealed class DealService : IDisposable
     public Func<string?>? GgDealsKey { get; set; }
     /// <summary>SteamID64 of the linked or signed-in Steam account (for the wish list), null if none.</summary>
     public Func<string?>? SteamId { get; set; }
+    public string CommunityBase { get; init; } = "https://steamcommunity.com";
+    /// <summary>The profile typed in for the wish list wins; otherwise the linked/signed-in Steam account.</summary>
+    string? EffectiveSteamId() => _store.Snapshot().WishlistSteamId ?? SteamId?.Invoke();
 
     public DealService(AppPaths paths, IHub hub, HttpMessageHandler? http = null, Func<DateTime>? now = null, bool timer = true)
     {
@@ -141,7 +146,7 @@ public sealed class DealService : IDisposable
         {
             enabled = f.Enabled, country = f.Country, lastRunAt = f.LastRunAt, source = Source, msSource = MsSource, intervalHours = Interval.TotalHours, items = f.Items,
             compareMicrosoft = f.CompareMicrosoft, syncSteamWishlist = f.SyncSteamWishlist, wishlistSyncedAt = f.WishlistSyncedAt, wishlistError = f.WishlistError,
-            steamAccount = SteamId?.Invoke() != null,
+            steamAccount = EffectiveSteamId() != null, wishlistProfile = f.WishlistSteamId,
             ggKeySet = GgDealsKey?.Invoke() != null, ggSource = GgSource,
         };
     }
@@ -298,13 +303,49 @@ public sealed class DealService : IDisposable
         _hub.Changed("deals");
     }
 
+    /// <summary>Steam profile link, vanity name or 17-digit ID → SteamID64. Names are looked up on the public community
+    /// page (?xml=1) – no API key needed.</summary>
+    public async Task<string> ResolveProfileAsync(string profile)
+    {
+        profile = profile.Trim();
+        if (Regex.IsMatch(profile, @"^7656\d{13}$")) return profile;
+        var m = Regex.Match(profile, @"steamcommunity\.com/(profiles|id)/([^/?#\s]+)", RegexOptions.IgnoreCase);
+        if (m.Success && m.Groups[1].Value.Equals("profiles", StringComparison.OrdinalIgnoreCase) && Regex.IsMatch(m.Groups[2].Value, @"^7656\d{13}$")) return m.Groups[2].Value;
+        var vanity = m.Success ? m.Groups[2].Value : profile;
+        if (!Regex.IsMatch(vanity, "^[A-Za-z0-9_-]{2,32}$"))
+            throw new RpcException("invalid-params", "Bitte deinen Steam-Profillink (steamcommunity.com/id/… oder /profiles/…), deinen Profilnamen oder die 17-stellige Steam-ID eintragen.");
+        string xml;
+        try { xml = await _http.GetStringAsync($"{CommunityBase}/id/{Uri.EscapeDataString(vanity)}/?xml=1"); }
+        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException) { throw new RpcException("unavailable", "Steam nicht erreichbar: " + ex.Message); }
+        var id = Regex.Match(xml, @"<steamID64>(7656\d{13})</steamID64>");
+        if (!id.Success) throw new RpcException("not-found", "Dieses Steam-Profil gibt es nicht (oder es ist nicht öffentlich). Prüfe den Link: steamcommunity.com/id/<Name>.");
+        return id.Groups[1].Value;
+    }
+
+    /// <summary>Sets (or, when empty, removes) the Steam profile for the wish list, switches the wish list sync and the
+    /// price check on and takes the wish list over right away; prices follow in the background.</summary>
+    public async Task<object> SetWishlistProfileAsync(string? profile)
+    {
+        if (string.IsNullOrWhiteSpace(profile))
+        {
+            _store.Update(x => { x.WishlistSteamId = null; x.WishlistError = null; });
+            _hub.Changed("deals");
+            return List();
+        }
+        var id = await ResolveProfileAsync(profile);
+        _store.Update(x => { x.WishlistSteamId = id; x.SyncSteamWishlist = true; x.Enabled = true; x.WishlistError = null; });
+        var r = await SyncWishlistAsync();
+        if (_timer != null) GameActivity.RunWhenIdle("deals", () => CheckAllAsync());
+        return r;
+    }
+
     /// <summary>Takes over the Steam wish list (public profiles only). Own entries are never removed; entries that came from
     /// Steam go again when they leave the Steam list, unless a target price or note was set here.</summary>
     public async Task<object> SyncWishlistAsync()
     {
         var f = _store.Snapshot();
-        var steamId = SteamId?.Invoke();
-        if (steamId == null) throw new RpcException("not-configured", "Kein Steam-Konto bekannt – unter Spiele → Steam die Bibliothek verbinden oder am PC bei Steam angemeldet sein.");
+        var steamId = EffectiveSteamId();
+        if (steamId == null) throw new RpcException("not-configured", "Kein Steam-Konto bekannt – trag oben deinen Steam-Profillink ein (die Wunschliste braucht keinen API-Schlüssel).");
         List<string> appIds;
         try
         {
@@ -446,7 +487,7 @@ public sealed class DealService : IDisposable
         if (!await _running.WaitAsync(0)) return List();
         try
         {
-            if (f0.SyncSteamWishlist && SteamId?.Invoke() != null)
+            if (f0.SyncSteamWishlist && EffectiveSteamId() != null)
                 try { await SyncWishlistAsync(); } catch (RpcException) { /* reason kept in WishlistError */ }
             // Entries added by name only (e.g. on the phone without the PC) get their Steam game now.
             foreach (var item in _store.Snapshot().Items.Where(i => i.SteamAppId == null).Take(20))
@@ -671,7 +712,7 @@ public sealed class DealService : IDisposable
             i.Error = null;
             if (i.History.Count > 120) i.History.RemoveRange(0, i.History.Count - 120);
         }
-        Import(new DealsFile { Enabled = cur.Enabled, Country = Country.IsMatch(f.Country) ? f.Country : cur.Country, LastRunAt = null, Items = items, CompareMicrosoft = cur.CompareMicrosoft, SyncSteamWishlist = cur.SyncSteamWishlist });
+        Import(new DealsFile { Enabled = cur.Enabled, Country = Country.IsMatch(f.Country) ? f.Country : cur.Country, LastRunAt = null, Items = items, CompareMicrosoft = cur.CompareMicrosoft, SyncSteamWishlist = cur.SyncSteamWishlist, WishlistSteamId = cur.WishlistSteamId });
     }
     public void Dispose() { _timer?.Dispose(); _http.Dispose(); }
 }

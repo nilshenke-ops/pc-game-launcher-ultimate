@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.11.0 – 2026-11-05
+### Neu
+- Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein)
+### Verbessert
+- Falsche Eingaben werden erklärt (Profil nicht gefunden, kein gültiger Link) und ändern nichts; „Verbindung lösen“ beendet den Abgleich, die übernommenen Spiele bleiben
+
 ## 3.10.0 – 2026-11-05
 ### Neu
 - Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt

@@ -25,7 +25,7 @@ interface Wish {
 }
 interface DealData {
   enabled: boolean; country: string; lastRunAt?: string | null; source: string; msSource?: string; intervalHours: number; items: Wish[];
-  compareMicrosoft?: boolean; syncSteamWishlist?: boolean; wishlistSyncedAt?: string | null; wishlistError?: string | null; steamAccount?: boolean;
+  compareMicrosoft?: boolean; syncSteamWishlist?: boolean; wishlistSyncedAt?: string | null; wishlistError?: string | null; steamAccount?: boolean; wishlistProfile?: string | null;
   ggKeySet?: boolean; ggSource?: string;
 }
 interface Hit { appId: string; name: string; finalCents?: number | null; initialCents?: number | null; currency?: string | null }
@@ -288,6 +288,47 @@ function DealDetail({ w, data, canManage, onEdit, onClose }: { w: Wish; data: De
   );
 }
 
+/** Steam wish list: one profile link is enough (no API key) – the PC takes the games over and adds them to the Deal Radar. */
+function SteamWishlistCard({ d, canManage, online }: { d: DealData; canManage: boolean; online: boolean }) {
+  const [profile, setProfile] = useState("");
+  const [editing, setEditing] = useState(false);
+  const connected = d.steamAccount === true && !editing;
+  const [save, saving] = useAction(async () => {
+    const r = await client.call<{ added?: number; total?: number }>("deals.setWishlistProfile", { profile: profile.trim() });
+    setEditing(false); setProfile("");
+    if (r?.total != null) toast(t("Steam-Wunschliste übernommen: {n} Spiele ({a} neu) – Preise folgen gleich", { n: r.total, a: r.added ?? 0 }), "success");
+  });
+  const [sync, syncing] = useAction(async () => { const r = await client.call<{ added: number; removed: number; total: number }>("deals.syncWishlist"); toast(t("Steam-Wunschliste: {a} neu, {r} entfernt ({n} Spiele)", { a: r.added, r: r.removed, n: r.total }), "success"); });
+  const [remove, removing] = useAction(async () => { await client.call("deals.setWishlistProfile", { profile: "" }); toast(t("Steam-Profil entfernt – die übernommenen Spiele bleiben in der Liste"), "success"); });
+  return (
+    <Card title={t("Steam-Wunschliste")} icon={brandById("steam") ? <BrandLogo brand={brandById("steam")!} size={18} /> : undefined} meta={connected ? <span className="badge"><span className="dot ok" />{t("verbunden")}</span> : undefined}>
+      <div className="stack-sm">
+        {connected ? (
+          <>
+            <span className="small muted">{d.wishlistProfile ? t("Profil {id}", { id: d.wishlistProfile }) : t("Mit dem Steam-Konto dieses PCs verbunden")} · {d.wishlistSyncedAt ? t("abgeglichen {d}", { d: relTime(d.wishlistSyncedAt) }) : t("noch nicht abgeglichen")}. {t("Neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu.")}</span>
+            <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>
+              <Button size="sm" icon={<RefreshCw size={15} />} busy={syncing} disabled={!canManage || !online} onClick={() => sync()}>{t("Jetzt abgleichen")}</Button>
+              <Button size="sm" disabled={!canManage || !online} onClick={() => { setProfile(d.wishlistProfile ?? ""); setEditing(true); }}>{t("Profil ändern")}</Button>
+              {d.wishlistProfile && <Button size="sm" variant="ghost" busy={removing} disabled={!canManage || !online} onClick={() => remove()}>{t("Verbindung lösen")}</Button>}
+            </div>
+          </>
+        ) : (
+          <>
+            <span className="small muted">{t("Trag deinen Steam-Profillink (oder Profilnamen) ein – deine Wunschlisten-Spiele landen automatisch im Deal Radar, mit Preisen. Dafür braucht es keinen API-Schlüssel; die Wunschliste muss öffentlich sein (Steam → Profil → Privatsphäre → Spieldetails).")}</span>
+            <form className="row nowrap" style={{ gap: 6 }} onSubmit={(e) => { e.preventDefault(); if (profile.trim()) void save(); }}>
+              <input className="input mono grow" aria-label={t("Steam-Profil")} placeholder="steamcommunity.com/id/dein-name" value={profile} onChange={(e) => setProfile(e.target.value)} autoCapitalize="off" autoCorrect="off" spellCheck={false} inputMode="url" disabled={!canManage || !online} />
+              <Button type="submit" variant="primary" busy={saving} disabled={!canManage || !online || !profile.trim()}>{t("Übernehmen")}</Button>
+              {editing && <Button type="button" variant="ghost" onClick={() => { setEditing(false); setProfile(""); }}>{t("Abbrechen")}</Button>}
+            </form>
+            {!online && <span className="tiny muted">{t("Der PC holt die Wunschliste von Steam – er muss dafür an und verbunden sein.")}</span>}
+            {!d.enabled && online && <span className="tiny muted">{t("Das schaltet auch die Preisabfrage ein (Steam sieht dabei die IP-Adresse des PCs).")}</span>}
+          </>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 function Settings({ d, canManage, online }: { d: DealData; canManage: boolean; online: boolean }) {
   const conn = useConn();
   const [refresh, refreshing] = useAction(() => client.call("deals.refresh"), { success: t("Preise geprüft") });
@@ -458,6 +499,7 @@ export default function Deals() {
       <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
         {d && (
           <div className="stack">
+            <SteamWishlistCard d={d} canManage={canManage} online={online} />
             <QuickAdd data={d} disabled={!canManage} onQueued={(id, title) => { if (msAllowed) void checkFromPhone([{ id, title }]); }} />
             {!online && msAllowed && d.items.length > 0 && (
               <div className="deal-phone">

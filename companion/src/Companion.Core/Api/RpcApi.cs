@@ -328,6 +328,7 @@ public static class RpcApi
         rpc.Register("deals.addByName", async ctx => await s.Deals.AddByNameAsync(ctx.Str("title", 80),
             ctx.Params.TryGetProperty("targetCents", out var tc) && tc.ValueKind == JsonValueKind.Number ? tc.GetInt32() : null));
         rpc.Register("deals.syncWishlist", async ctx => await s.Deals.SyncWishlistAsync());
+        rpc.Register("deals.setWishlistProfile", async ctx => await s.Deals.SetWishlistProfileAsync(ctx.OptStr("profile", 200)));
         rpc.Register("deals.search", async ctx => await s.Deals.SearchAsync(ctx.Str("term", 80)));
         rpc.Register("deals.save", ctx => s.Deals.Save(ctx.Bind<WishItem>()));
         rpc.Register("deals.remove", ctx => { s.Deals.Remove(ctx.Str("id", 64)); return true; });

@@ -955,6 +955,14 @@ test("Deal Radar: ohne Einschalten keine Anfrage, Eintrag von Hand, Zielpreis wi
   await pc.goto(`${COMPANION}/#/deals`);
   await expect(pc.getByRole("heading", { name: "Deal Radar" })).toBeVisible();
   await expect(pc.getByText("Die Preisabfrage ist aus – deshalb gibt es noch keine Preise.")).toBeVisible();
+  // Steam wish list: a profile link is enough (no API key); a wrong entry is explained and changes nothing.
+  const wl = pc.locator(".card", { has: pc.getByRole("heading", { name: "Steam-Wunschliste" }) });
+  await expect(wl.getByText(/braucht es keinen API-Schlüssel/)).toBeVisible();
+  await expect(wl.getByRole("button", { name: "Übernehmen" })).toBeDisabled();
+  await wl.getByRole("textbox", { name: "Steam-Profil" }).fill("a");
+  await wl.getByRole("button", { name: "Übernehmen" }).click();
+  await expect(pc.getByText(/Bitte deinen Steam-Profillink/).first()).toBeVisible();
+  await expect(pc.getByText("Die Preisabfrage ist aus – deshalb gibt es noch keine Preise.")).toBeVisible(); // still off
   await pc.locator(".deal-settings summary", { hasText: "Einstellungen" }).click();
   await expect(pc.getByRole("switch", { name: /Preise im Steam-Shop abfragen/ })).not.toBeChecked();
   await expect(pc.getByRole("button", { name: "Jetzt prüfen" })).toBeDisabled();
