@@ -1,29 +1,26 @@
 {
-  "version": "3.6.0",
+  "version": "3.7.0",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.6.0/PCGameLauncherCompanion.exe",
-  "size": 94900721,
-  "sha256": "21baeeff65d5ec598990023f6d9e57911defbc6ed3b125021e2c067f549b130c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.7.0/PCGameLauncherCompanion.exe",
+  "size": 94903253,
+  "sha256": "a2d36f906e0eddad0be2c47a0095ef4532463833412a1880d52442d61948b5c9",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.6.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.6.0/PCGameLauncherCompanion-3.6.0-win-x64.zip",
-    "size": 89176105,
-    "sha256": "b89caca83cb2e342a36d15da2e50e52a3453f4a1a08c4a4ac998c983d329acef"
+    "fileName": "PCGameLauncherCompanion-3.7.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.7.0/PCGameLauncherCompanion-3.7.0-win-x64.zip",
+    "size": 89178566,
+    "sha256": "ea97c44fea5b03adadc839fa8cfa30fb8abfd99830b405a5690e8cca27e7d5d6"
   },
-  "notes": "JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast · Quelle auf Nachfrage: Die Insel zeigt nur noch die Antwort. Fragst du „Quelle?“, „Woher weißt du das?“ oder „Welche KI hat geantwortet?“, sagt sie, wer geantwortet hat · „Meine KIs“: eine Liste aller KIs mit Zustand – Funktioniert (mit letzter Antwort), Am Limit, Problem, Angefangen (z. B. Schlüssel da, aber Bestätigung fehlt, oder ausgeschaltet) und Nicht eingerichtet; zeigt auch Schlüssel auf diesem Gerät (bereit/gesperrt), Gemini, KI-Router, Claude und DeepSeek; in der KI-Verwaltung und in der Insel (JARVIS-Tab) mit einer Zusammenfassung",
+  "notes": "Updates automatisch installieren (nur am PC einschaltbar, standardmäßig aus): Nach der täglichen Prüfung lädt der Begleiter ein neues, signiertes Update der offiziellen Quelle, prüft es erneut, legt einen Wiederherstellungspunkt an, installiert es (nicht während eines Spiels) und startet neu; pro Version nur ein Versuch, der Update-Wächter setzt eine abstürzende Version zurück. So bleibt auch die Seite aktuell, die dein PC dem Handy zeigt. Schalter unter Updates und im Dialog „Update verfügbar“ („Künftig automatisch aktualisieren“) · Im Chat der Webseite zeigen KI-Antworten nur noch die Antwort (ohne Markdown-Zeichen); „Woher kommt die Antwort?“ klappt KI, Modell und Quellen auf",
   "changes": {
     "neu": [
-      "JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast",
-      "Quelle auf Nachfrage: Die Insel zeigt nur noch die Antwort. Fragst du „Quelle?“, „Woher weißt du das?“ oder „Welche KI hat geantwortet?“, sagt sie, wer geantwortet hat",
-      "„Meine KIs“: eine Liste aller KIs mit Zustand – Funktioniert (mit letzter Antwort), Am Limit, Problem, Angefangen (z. B. Schlüssel da, aber Bestätigung fehlt, oder ausgeschaltet) und Nicht eingerichtet; zeigt auch Schlüssel auf diesem Gerät (bereit/gesperrt), Gemini, KI-Router, Claude und DeepSeek; in der KI-Verwaltung und in der Insel (JARVIS-Tab) mit einer Zusammenfassung"
+      "Updates automatisch installieren (nur am PC einschaltbar, standardmäßig aus): Nach der täglichen Prüfung lädt der Begleiter ein neues, signiertes Update der offiziellen Quelle, prüft es erneut, legt einen Wiederherstellungspunkt an, installiert es (nicht während eines Spiels) und startet neu; pro Version nur ein Versuch, der Update-Wächter setzt eine abstürzende Version zurück. So bleibt auch die Seite aktuell, die dein PC dem Handy zeigt. Schalter unter Updates und im Dialog „Update verfügbar“ („Künftig automatisch aktualisieren“)"
     ],
     "verbessert": [
-      "Antworten stehen ohne Markdown da (kein **fett**, keine Rauten oder Aufzählungszeichen, keine [1]-Nummern, keine „Quelle:“-Zeile); die KIs werden zusätzlich angewiesen, direkt und kurz zu antworten",
-      "Laufende Befehle zeigt die Insel als Tätigkeit („Among Us wird gestartet“) statt als Frage; Antworten werden auch ohne Markdown vorgelesen"
+      "Im Chat der Webseite zeigen KI-Antworten nur noch die Antwort (ohne Markdown-Zeichen); „Woher kommt die Antwort?“ klappt KI, Modell und Quellen auf"
     ],
     "behoben": []
   },
-  "signature": "2XRD2VffUSei5mm2QEdLxqkrt4QRhDUyZchBgrQc/g0wsIY+q4yD9r8dboAJF5Ng9OZTsTOBbS54Oo9k4bRMSA=="
+  "signature": "+4XiH7tvkf96le0IrtO7Yu4iUAaivcKxrv/sVNFzccXGubY4qVaD7CYccLEzyr6ByiXDMY68Q0MWoBb8KrQIXA=="
 }
