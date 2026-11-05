@@ -47,11 +47,21 @@ Seit 3.2.1 zeigt die Seite vom PC einen Hinweis mit beiden Versionsnummern, wenn
 
 ## Ohne PC (iPad im Café)
 
-Dann kann nur Pollinations antworten – und nur, wenn du es auf diesem Gerät erlaubt hast (KI-Verwaltung → „Pollinations ohne PC erlauben“). Ist der Dienst aufgebraucht, sagt JARVIS das, statt etwas zu erfinden.
+Ab 3.5.0 geht auch OpenRouter (und Groq) ohne PC – direkt aus dem Browser:
+
+1. Öffne die **Website im Internet** (https, nicht die WLAN-Seite deines PCs) → Assistent → „KI-Verwaltung“ → Karte **„OpenRouter und Groq ohne PC“**.
+2. OpenRouter-Schlüssel eintragen (openrouter.ai/keys, beginnt mit `sk-or-`), ein **Passwort** wählen (mindestens 6 Zeichen), „Speichern & testen“.
+3. Nach dem Neuladen ist der Schlüssel gesperrt: gleiche Karte → Passwort → „Entsperren“ (optional „bis ich den Tab schließe“).
+
+Was dabei gilt: nur kostenlose Modelle, Höchstpreis 0 in jeder Anfrage, kein Aufladen; der Schlüssel geht nur an openrouter.ai bzw. api.groq.com und liegt nur verschlüsselt auf dem Gerät. **Ehrlich zur Sicherheit:** am PC ist der Schlüssel besser geschützt (Windows-Schutz, nie im Browser). Im Browser schützt dich das Passwort – wähle ein gutes, und trag ihn nicht auf fremden Geräten ein.
+
+Ist der PC später verbunden, überträgt die KI-Verwaltung einen hier entsperrten Schlüssel automatisch (versiegelt) an den PC, wenn der dort noch keinen hat.
+
+Grenzen: Das Verschlüsseln braucht eine https-Seite – auf der WLAN-Seite deines PCs (http) ist die Karte nicht verfügbar; dort trägst du den Schlüssel direkt in der KI-Verwaltung am PC-Teil ein. Pollinations antwortet weiter nur mit deinem Ja (KI-Verwaltung → „Pollinations ohne PC erlauben“). Ist alles aufgebraucht oder nicht erreichbar, sagt JARVIS das, statt etwas zu erfinden.
 
 ## Noch zu tun (nur du kannst das)
 
 - OpenRouter-Konto und -Schlüssel erstellen und in der KI-Verwaltung eintragen (zum Testen mit einer echten Antwort).
 - Bei OpenRouter prüfen: kein Guthaben aufgeladen, „Auto Top-Up“ aus.
 - Optional Groq einrichten (kostenloser Tarif) und Ollama am PC installieren.
-- Den neuen Begleiter (3.2.0) auf dem Windows-PC installieren bzw. per Update holen – die Website allein reicht nicht, der PC muss die KI-Verwaltung kennen.
+- Den neuen Begleiter (ab 3.3.0 für den Schlüssel vom Handy) auf dem Windows-PC installieren bzw. per Update holen – die Website allein reicht nicht, der PC muss die KI-Verwaltung kennen.

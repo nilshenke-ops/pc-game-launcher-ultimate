@@ -3,7 +3,7 @@
 // automatic switching, models, errors and limits. The keys are sent to the PC (protected there) and are never kept in this browser.
 // Rule above all: it costs nothing – only free models, no paid fallback, no top-up. The PC enforces that; this screen only shows it.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, Check, Copy, KeyRound, PlugZap, ShieldCheck, Trash2 } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
@@ -12,6 +12,7 @@ import { toast, useCan, useRpc } from "../lib/hooks";
 import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
 import { friendlyError } from "../lib/friendly-error";
+import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
 export interface AiProvider {
   id: string; name: string; enabled: boolean; needsKey: boolean; keySet: boolean; attested: boolean; consent: boolean;
@@ -66,6 +67,21 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
   const o = st.data;
 
+  // Set up on this device first – the PC takes over as soon as it is connected: unlocked keys that the PC does not have yet travel sealed.
+  const local = useLocalAi();
+  const handed = useRef(new Set<string>());
+  useEffect(() => {
+    if (!online || !canManage || !o || (local.openrouter !== "ready" && local.groq !== "ready")) return;
+    void transferKeysToPc(o.providers, async (provider, key, attested) => {
+      const send = () => { const sealed = client.sealSecret("ai.key:" + provider, key); return client.call("ai.set", { provider, ...(sealed ? { sealed } : { key }), ...(provider === "groq" ? { attested } : {}) }); };
+      try { await send(); } catch (e) { if (/noch einmal absenden/.test((e as Error).message)) await send(); else throw e; }
+    }, handed.current).then(({ done, failed }) => {
+      if (done.length) { toast(t("{n} automatisch an den PC übertragen.", { n: done.map((p) => LOCAL_NAME[p]).join(" + ") }), "success"); st.reload(); onChanged?.(); }
+      for (const f of failed) setMsg((m) => ({ ...m, [f.provider]: { ok: false, text: friendlyError(new Error(f.message)) } }));
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [online, canManage, o, local.openrouter, local.groq]);
+
   const run = async (id: string, fn: () => Promise<string | void>) => {
     setBusy(id); setMsg((m) => { const n = { ...m }; delete n[id]; return n; });
     try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); st.reload(); onChanged?.(); }
@@ -94,13 +110,14 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
   if (!online) {
     return (
       <div className="aim" aria-live="polite">
-        <p className="tiny muted">{t("Ohne PC kann nur der kostenlose Dienst ohne Konto (Pollinations) Fragen beantworten – und nur mit deinem Ja. OpenRouter, Groq und Ollama brauchen den PC, weil die Schlüssel nur dort liegen.")}</p>
+        <p className="tiny muted">{t("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja) und – wenn du unten einen Schlüssel mit Passwort einrichtest – OpenRouter und Groq direkt von diesem Gerät. Ollama läuft nur auf dem PC.")}</p>
         <div className="aim-row">
           <span className="aim-name">Pollinations</span>
           <span className={`aim-badge ${consent === "yes" ? "ready" : "off"}`}>{consent === "yes" ? t("Erlaubt auf diesem Gerät") : t("Nicht erlaubt")}</span>
           <Switch on={consent === "yes"} label={t("Pollinations ohne PC erlauben")} onChange={(v) => setFreeAiConsent(v ? "yes" : "no")} />
         </div>
         <p className="tiny muted">{t("Gesendet wird nur die Frage mit den letzten Nachrichten – ohne Schlüssel, ohne Daten deines PCs. Der Dienst gehört einem Dritten und kann ausgelastet sein; dann sagt JARVIS das, statt etwas zu erfinden.")}</p>
+        <LocalAiSetup />
         <AiSelfTest providers={[]} online={false} canManage={false} />
       </div>
     );
@@ -217,8 +234,85 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
       })}
       {msg.order && !msg.order.ok && <p className="tiny fas-err" role="alert">{msg.order.text}</p>}
       {msg.auto && !msg.auto.ok && <p className="tiny fas-err" role="alert">{msg.auto.text}</p>}
+      {localAiSupported() && <LocalAiSetup online />}
       <AiSelfTest providers={o.providers} online canManage={canManage} />
       {o.costGuard && <details><summary className="tiny">{t("Wie wird sichergestellt, dass es nichts kostet?")}</summary><ul className="tiny">{o.costGuard.rules.map((r) => <li key={r}>{t(r)}</li>)}</ul></details>}
     </div>
+  );
+}
+
+/**
+ * OpenRouter and Groq WITHOUT the PC: the key is typed here, locked with a password and kept on this device (never sent anywhere but to its own service).
+ * With the PC connected, unlocked keys are handed over to it automatically (safer) – this is for the case that it is not there.
+ */
+function LocalAiSetup({ online = false }: { online?: boolean }) {
+  const snap = useLocalAi();
+  const [keys, setKeys] = useState<Record<LocalProvider, string>>({ openrouter: "", groq: "" });
+  const [pass, setPass] = useState("");
+  const [keep, setKeep] = useState(false);
+  const [attest, setAttest] = useState(false);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
+  const anyLocked = LOCAL_PROVIDERS.some((p) => snap[p] === "locked");
+  const anyReady = LOCAL_PROVIDERS.some((p) => snap[p] === "ready");
+  const run = async (id: string, fn: () => Promise<string | void>) => {
+    setBusy(id); setMsg((m) => { const n = { ...m }; delete n[id]; return n; });
+    try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); }
+    catch (e) { setMsg((m) => ({ ...m, [id]: { ok: false, text: friendlyError(e) } })); }
+    finally { setBusy(null); }
+  };
+  if (!localAiSupported()) {
+    return <p className="tiny muted">{t("OpenRouter und Groq ohne PC gehen nur auf der Website im Internet (https) – nicht auf der Seite, die dein PC im WLAN ausliefert.")}</p>;
+  }
+  return (
+    <section className="fas-card aim-card" id="aim-local" aria-label={t("OpenRouter und Groq ohne PC")}>
+      <b>{t("OpenRouter und Groq ohne PC")}</b>
+      <p className="tiny muted">{t("Dein Schlüssel wird auf diesem Gerät mit einem Passwort verschlüsselt gespeichert und nur an den eigenen Dienst geschickt – direkt aus dem Browser, ohne Umweg. Es gelten dieselben Kostenregeln wie am PC (nur kostenlose Modelle, Höchstpreis 0, kein Aufladen). Sicherer ist der PC: Ist er verbunden, benutzt JARVIS dessen Schlüssel.")}</p>
+      {online && <p className="tiny">{t("Hier eingerichtete und entsperrte Schlüssel übertragen sich automatisch (versiegelt) an den verbundenen PC, sobald er sie noch nicht hat.")}</p>}
+      {anyLocked && (
+        <div className="aim-unlock" role="group" aria-label={t("Schlüssel entsperren")}>
+          <label className="fas-field"><span className="tiny">{t("Passwort")}</span>
+            <input className="input" type="password" autoComplete="current-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort zum Entsperren")} /></label>
+          <label className="aim-check"><input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /><span className="tiny">{t("Entsperrt lassen, bis ich den Tab schließe")}</span></label>
+          <div className="aim-actions"><button type="button" className="btn sm primary" disabled={pass.length < 6 || busy !== null} onClick={() => void run("unlock", async () => { await unlockLocalAi(pass, keep); setPass(""); return t("Entsperrt – OpenRouter und Groq sind bereit."); })}>{t("Entsperren")}</button></div>
+        </div>
+      )}
+      {msg.unlock && <p className={`tiny ${msg.unlock.ok ? "" : "fas-err"}`} role={msg.unlock.ok ? "status" : "alert"}>{msg.unlock.text}</p>}
+      {anyReady && <div className="aim-actions"><button type="button" className="btn sm" onClick={() => lockLocalAi()}>{t("Wieder sperren")}</button></div>}
+      {LOCAL_PROVIDERS.map((p) => {
+        const guide = STEPS[p];
+        const st = snap[p];
+        return (
+          <div key={p} className={`aim-local aim-local-${st}`} role="group" aria-label={`${LOCAL_NAME[p]} ${t("auf diesem Gerät")}`}>
+            <div className="aim-row"><b className="aim-name">{LOCAL_NAME[p]}</b>
+              <span className={`aim-badge ${st === "ready" ? "ready" : st === "locked" ? "cooldown" : "off"}`}>{st === "ready" ? t("Bereit (auf diesem Gerät)") : st === "locked" ? t("Gesperrt") : t("Nicht eingerichtet")}</span></div>
+            {st === "none" && guide && (
+              <>
+                <ol className="tiny">{guide.steps.map((x) => <li key={x}>{t(x)}</li>)}</ol>
+                <p className="tiny"><a href={guide.url} target="_blank" rel="noopener noreferrer">{guide.urlLabel}</a></p>
+                {p === "groq" && <label className="aim-check"><input type="checkbox" checked={attest} onChange={(e) => setAttest(e.target.checked)} /><span className="tiny">{t("Ich bestätige: Mein Groq-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.")}</span></label>}
+                <Key label={p === "openrouter" ? t("OpenRouter-Schlüssel") : t("Groq-Schlüssel")} value={keys[p]} set={(v) => setKeys((k) => ({ ...k, [p]: v }))} hint={guide.hint} />
+                {!anyLocked && (
+                  <label className="fas-field"><span className="tiny">{t("Neues Passwort für die Schlüssel auf diesem Gerät (mindestens 6 Zeichen)")}</span>
+                    <input className="input" type="password" autoComplete="new-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort für die Schlüssel")} /></label>
+                )}
+                <div className="aim-actions">
+                  <button type="button" className="btn sm primary" disabled={keys[p].length < 20 || pass.length < 6 || busy !== null || (p === "groq" && !attest)}
+                    onClick={() => void run(p, async () => { await saveLocalKey(p, keys[p], pass, { attested: attest, remember: keep }); setKeys((k) => ({ ...k, [p]: "" })); setPass(""); const r = await testLocal(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
+                    <KeyRound size={14} /> {busy === p ? t("Teste …") : t("Speichern & testen")}</button>
+                </div>
+              </>
+            )}
+            {st !== "none" && (
+              <div className="aim-actions">
+                {st === "ready" && <button type="button" className="btn sm" disabled={busy !== null} onClick={() => void run(p, async () => { const r = await testLocal(p); if (!r.ok) throw new Error(r.message); return r.message; })}><PlugZap size={14} /> {busy === p ? t("Teste …") : t("Verbindung testen")}</button>}
+                <button type="button" className="btn sm" disabled={busy !== null} onClick={() => { removeLocalKey(p); setMsg((m) => ({ ...m, [p]: { ok: true, text: t("Schlüssel von diesem Gerät gelöscht.") } })); }}><Trash2 size={14} /> {t("Schlüssel von diesem Gerät löschen")}</button>
+              </div>
+            )}
+            {msg[p] && <p className={`tiny ${msg[p].ok ? "" : "fas-err"}`} role={msg[p].ok ? "status" : "alert"}>{msg[p].text}</p>}
+          </div>
+        );
+      })}
+    </section>
   );
 }

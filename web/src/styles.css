@@ -2701,3 +2701,6 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .aim-step.ok { background: rgba(80,200,140,0.16); } .aim-step.fail { background: rgba(240,90,90,0.2); } .aim-step.warn { background: rgba(240,180,60,0.18); }
 .aim-ok { color: #7ee2a8; } .aim-bad { color: #ff8a8a; } .aim-warn { color: #ffd37a; }
 @media (max-width: 640px) { .aim-modes { grid-template-columns: 1fr; } }
+
+.aim-local { display: grid; gap: 6px; padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,0.06); margin-top: 6px; }
+.aim-unlock { display: grid; gap: 6px; }

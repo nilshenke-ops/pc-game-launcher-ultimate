@@ -112,7 +112,8 @@ export async function research(question: string, opts: { pc: Pc | null; webSearc
   }
   // Without the PC and with this device's yes: the free AI answers (the wikis stay as sources); not asked yet and nothing found: the offer.
   const { freeAiConsent } = await import("./free-ai");
-  if (freeAiConsent() === "yes") {
+  const { readyProviders } = await import("./free-ai-local");
+  if (freeAiConsent() === "yes" || readyProviders().length > 0) {
     opts.onPhase?.("writing");
     const { freeAiAnswer } = await import("./free-ai-chat");
     const fb: ResearchReply = { text: "", actions: [], sources: [], suggestions: [], mode: "device", cites: [], research: { searched: false, provider: "", errors: [] } };

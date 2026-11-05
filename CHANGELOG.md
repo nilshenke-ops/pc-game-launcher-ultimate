@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.5.0 – 2026-11-05
+### Neu
+- OpenRouter und Groq ohne PC einrichten und benutzen: In der KI-Verwaltung der Website (https) trägst du den Schlüssel am Handy oder iPad ein und vergibst ein Passwort; der Schlüssel wird mit AES-GCM (Passwort → PBKDF2) verschlüsselt nur auf diesem Gerät gespeichert, nach dem Neuladen ist er gesperrt, bis du das Passwort eingibst. Dann antwortet JARVIS auch ohne PC direkt aus dem Browser – mit „Beantwortet von OpenRouter – kostenloses Modell“ und derselben Kette (OpenRouter → Groq → Pollinations mit deinem Ja)
+- Dieselben Kostenregeln wie am PC im Browser: nur Modelle mit Preis 0 (Liste höchstens 5 Minuten alt, vor jeder Anfrage neu geprüft), Höchstpreis 0 in jeder Anfrage, kein Aufladen, der Schlüssel geht ausschließlich an den eigenen Dienst; Groq nur nach der Bestätigung „kostenloser Tarif“
+- Automatisch an den PC übertragen: Hast du am Handy einen Schlüssel eingerichtet und entsperrt und ist der PC verbunden, schickt die KI-Verwaltung ihn versiegelt an den PC (nur wenn der PC noch keinen eigenen hat); danach arbeitet der PC damit
+### Verbessert
+- Der Selbsttest und die KI-Verwaltung ohne PC zeigen den Stand der Schlüssel auf dem Gerät (nicht eingerichtet, gesperrt, bereit) und sagen verständlich, was zu tun ist, wenn der Schlüssel gesperrt ist
+- Hinweistext der KI-Verwaltung ohne PC stimmt wieder: OpenRouter und Groq gehen jetzt auch dort, nur Ollama braucht den PC
+
 ## 3.4.0 – 2026-11-05
 ### Neu
 - Gespräch mit JARVIS (Insel, Knopf neben dem Mikrofon): JARVIS hört nach jeder vorgelesenen Antwort von selbst wieder zu, bis du „Danke“ oder „Ende“ sagst, auf das Mikrofon tippst oder zweimal nacheinander nichts gesagt wird

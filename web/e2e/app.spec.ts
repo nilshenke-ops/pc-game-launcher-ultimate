@@ -2430,9 +2430,9 @@ test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abg
   await islandTab(panel, "JARVIS").click();
   await expect(panel.locator("details.isl2-setup")).toHaveAttribute("open", "");     // nothing set up yet → the manager is open
   await expect(panel).toContainText("0,00 € – nur kostenlose Modelle");
-  for (const n of ["OpenRouter", "Groq", "Pollinations", "Ollama"]) await expect(panel.getByRole("region", { name: n })).toBeVisible();
+  for (const n of ["OpenRouter", "Groq", "Pollinations", "Ollama"]) await expect(panel.getByRole("region", { name: n, exact: true })).toBeVisible();
   await expect(panel.getByRole("radiogroup", { name: "Welche KI antwortet" })).toHaveCount(0);  // nothing to choose yet
-  const or = panel.getByRole("region", { name: "OpenRouter" });
+  const or = panel.getByRole("region", { name: "OpenRouter", exact: true });
   await expect(or).toContainText("Schlüssel fehlt");
   await expect(or.getByRole("switch", { name: "OpenRouter einschalten" })).toBeDisabled();      // cannot be switched on without key
   await expect(or).toContainText("niemals Guthaben");
@@ -2443,7 +2443,7 @@ test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abg
   // a rejected key stays in the field (to fix a typo) but is never written to any browser storage
   const stored = await isl.evaluate(() => JSON.stringify([Object.entries(localStorage), Object.entries(sessionStorage)]));
   expect(stored).not.toContain("AIzaSyA0123456789");
-  const gr = panel.getByRole("region", { name: "Groq" });
+  const gr = panel.getByRole("region", { name: "Groq", exact: true });
   await expect(gr.getByRole("button", { name: "Speichern & testen" })).toBeDisabled();            // first the free-plan confirmation
   // order and automatic switching are changed at the PC and shown again
   await panel.getByRole("button", { name: "Groq weiter nach oben" }).click();
@@ -2548,7 +2548,7 @@ test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollina
   await p.goto(`${HOSTED_SITE}/#/assistant`);
   const card = p.getByRole("heading", { name: "KI-Verwaltung – kostenlose KI" });
   await expect(card).toBeVisible();
-  await expect(p.getByText("Ohne PC kann nur der kostenlose Dienst ohne Konto (Pollinations)")).toBeVisible();
+  await expect(p.getByText("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja)")).toBeVisible();
   const sw = p.getByRole("switch", { name: "Pollinations ohne PC erlauben" });
   await expect(sw).toHaveAttribute("aria-checked", "false");
   await sw.click();
@@ -2557,6 +2557,89 @@ test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollina
   await sw.click();
   await expect(sw).toHaveAttribute("aria-checked", "false");
   await ctx.close();
+});
+
+test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, nur Gratis-Modelle, Antwort nennt die KI, nach Neuladen gesperrt", async ({ browser }) => {
+  const KEY = "sk-or-v1-e2e0123456789abcdef0123456789", PASS = "e2e-passwort-1";
+  const ctx = await newCtx(browser, { ...devices["iPad (gen 7)"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  const chats: { auth: string | null; body: Record<string, unknown> }[] = [];
+  const hosts = new Set<string>();
+  const cors = { "access-control-allow-origin": "*", "access-control-allow-headers": "*" };
+  await p.route(/https:\/\/(openrouter\.ai|api\.groq\.com|text\.pollinations\.ai)\//, async (r) => {
+    const req = r.request(), u = new URL(req.url());
+    hosts.add(u.host);
+    if (req.method() === "OPTIONS") return r.fulfill({ status: 204, headers: cors });
+    if (u.host !== "openrouter.ai") return r.fulfill({ status: 500, headers: cors, body: "{}" });
+    if (u.pathname.endsWith("/models")) {
+      const m = (id: string, price: string) => ({ id, context_length: 131072, pricing: { prompt: price, completion: price, request: "0", image: "0" }, architecture: { input_modalities: ["text"], output_modalities: ["text"] } });
+      return r.fulfill({ status: 200, headers: cors, contentType: "application/json", body: JSON.stringify({ data: [m("openrouter/free", "0"), m("meta/llama-3.3-70b:free", "0"), m("big/paid-model", "0.00003")] }) });
+    }
+    chats.push({ auth: req.headers()["authorization"] ?? null, body: JSON.parse(req.postData() ?? "{}") });
+    return r.fulfill({ status: 200, headers: cors, contentType: "application/json", body: JSON.stringify({ model: "meta/llama-3.3-70b:free", choices: [{ message: { role: "assistant", content: "Erwachsene brauchen meist sieben bis neun Stunden Schlaf." } }], usage: { completion_tokens: 12 } }) });
+  });
+  await p.goto(`${HOSTED_SITE}/#/assistant`);
+  const card = p.getByRole("region", { name: "OpenRouter und Groq ohne PC" });
+  await expect(card).toBeVisible();
+  const or = card.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });
+  await expect(or.getByText("Nicht eingerichtet")).toBeVisible();
+  // A wrong key shape is refused before anything leaves the device; the right one is locked with the password.
+  await or.getByLabel("OpenRouter-Schlüssel").fill("AIzaSyA0123456789abcdefghijklmnopqrstuv");
+  await or.getByLabel("Passwort für die Schlüssel").fill(PASS);
+  await or.getByRole("button", { name: "Speichern & testen" }).click();
+  await expect(or.getByRole("alert")).toContainText("OpenRouter-Schlüssel");
+  expect(hosts.size).toBe(0);
+  await or.getByLabel("OpenRouter-Schlüssel").fill(KEY);
+  await or.getByRole("button", { name: "Speichern & testen" }).click();
+  await expect(or.getByText("Bereit (auf diesem Gerät)")).toBeVisible({ timeout: 15000 });
+  // The key is not readable anywhere in the storage.
+  const stored = await p.evaluate(() => JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }));
+  expect(stored).not.toContain("sk-or-v1");
+  // Ask without a PC: free-only request, maximum price 0, the key only to openrouter.ai, and the answer names the AI.
+  await p.getByLabel("Nachricht an den Assistenten").fill("Suche wie lange man im durchschnitt schlafen muss");
+  await p.getByLabel("Nachricht an den Assistenten").press("Enter");
+  await expect(p.getByText("Erwachsene brauchen meist sieben bis neun Stunden Schlaf.")).toBeVisible({ timeout: 20000 });
+  await expect(p.getByText(/Beantwortet von OpenRouter – kostenloses Modell/)).toBeVisible();
+  expect(chats.length).toBeGreaterThan(0);
+  const last = chats.at(-1)!;
+  expect(last.auth).toBe(`Bearer ${KEY}`);
+  expect(last.body.model).toBe("openrouter/free");
+  expect(last.body.provider).toEqual({ max_price: { prompt: 0, completion: 0, request: 0, image: 0 } });
+  expect([...hosts]).toEqual(["openrouter.ai"]);
+  // After a reload the key is locked: no answer from OpenRouter until the password is entered again.
+  await p.reload();
+  await expect(card.getByText("Gesperrt").first()).toBeVisible();
+  await card.getByLabel("Passwort zum Entsperren").fill("falsches-pw-1");
+  await card.getByRole("button", { name: "Entsperren" }).click();
+  await expect(card.getByText(/Falsches Passwort/)).toBeVisible();
+  await card.getByLabel("Passwort zum Entsperren").fill(PASS);
+  await card.getByRole("button", { name: "Entsperren" }).click();
+  await expect(card.getByText("Entsperrt – OpenRouter und Groq sind bereit.")).toBeVisible();
+  expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  await ctx.close();
+});
+
+test("Am Gerät eingerichteter OpenRouter-Schlüssel wird, sobald der PC verbunden ist, automatisch an den PC übertragen", async ({ browser }) => {
+  const { adminRpc } = await import("./rpc");
+  type Prov = { id: string; state: string; keySet: boolean };
+  const status = () => adminRpc<{ providers: Prov[] }>("ai.status");
+  const KEY = "sk-or-v1-e2etransfer0123456789abcdef", PASS = "e2e-passwort-2";
+  await adminRpc("ai.set", { provider: "openrouter", key: "" }).catch(() => {});
+  expect((await status()).providers.find((x) => x.id === "openrouter")!.keySet).toBe(false);
+  const p = await adminPage(browser);                                  // the PC is connected
+  await p.route(/https:\/\/openrouter\.ai\//, (r) => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" }, body: JSON.stringify({ data: [{ id: "openrouter/free", context_length: 200000, pricing: { prompt: "0", completion: "0", request: "0", image: "0" }, architecture: { input_modalities: ["text"], output_modalities: ["text"] } }], model: "x:free", choices: [{ message: { role: "assistant", content: "Verbindung steht." } }] }) }));
+  await p.goto(`${COMPANION}/#/assistant`);
+  const local = p.getByRole("region", { name: "OpenRouter und Groq ohne PC" });
+  await expect(local.getByText(/übertragen sich automatisch/)).toBeVisible({ timeout: 15000 });
+  const or = local.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });
+  await or.getByLabel("OpenRouter-Schlüssel").fill(KEY);
+  await or.getByLabel("Passwort für die Schlüssel").fill(PASS);
+  await or.getByRole("button", { name: "Speichern & testen" }).click();
+  await expect(or.getByText("Bereit (auf diesem Gerät)")).toBeVisible({ timeout: 15000 });
+  await expect.poll(async () => (await status()).providers.find((x) => x.id === "openrouter")!.keySet, { timeout: 30000 }).toBe(true);
+  await expect(p.getByText(/OpenRouter automatisch an den PC übertragen/)).toBeVisible();
+  await adminRpc("ai.set", { provider: "openrouter", key: "" }).catch(() => {});
+  await p.context().close();
 });
 
 test("Seite vom PC ist älter als die Webseite: ehrlicher Hinweis statt „Neu laden“, das nichts ändert", async ({ browser }) => {

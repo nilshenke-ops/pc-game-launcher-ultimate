@@ -1,7 +1,8 @@
 // The free AI without the PC as a chat answer: asked once per device ("Darf ich?"), then it answers general questions.
 import { t } from "./i18n";
 import type { AssistantReply } from "./assistant";
-import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, freeAiConsent, FreeAiError, type Turn } from "./free-ai";
+import { FREE_AI_NAME, FREE_AI_NOTICE, freeAiConsent, FreeAiError, type Turn } from "./free-ai";
+import { askLocalChain, localAiSnapshot, readyProviders } from "./free-ai-local";
 
 const base = (text: string, more: Partial<AssistantReply> = {}): AssistantReply => ({ text, actions: [], sources: [], suggestions: [], mode: "device", ...more });
 
@@ -19,11 +20,15 @@ export function freeAiOffer(question: string, lead?: string): AssistantReply {
  */
 export async function freeAiAnswer(question: string, history: Turn[], fallback: AssistantReply, onWait?: (seconds: number) => void): Promise<AssistantReply> {
   const c = freeAiConsent();
-  if (c === "no") return fallback;
-  if (c === "ask") return freeAiOffer(question, fallback.text);
+  // The person's own keys on this device (OpenRouter, Groq – unlocked with the password) need no further yes; the anonymous service does.
+  const own = readyProviders().length > 0;
+  const snap = localAiSnapshot();
+  const locked = snap.openrouter === "locked" || snap.groq === "locked";
+  if (!own && c === "no") return locked ? base(`${fallback.text}\n\n${t("Dein Schlüssel auf diesem Gerät ist gesperrt – unten in der KI-Verwaltung entsperren, dann antwortet OpenRouter bzw. Groq.")}`, { mode: fallback.mode }) : fallback;
+  if (!own && c === "ask") return freeAiOffer(question, fallback.text);
   try {
-    const r = await askFreeAi(question, { history, onWait });
-    return base(r.text, { mode: "free", model: r.model || null, costUsd: 0, sources: [FREE_AI_NAME], research: undefined });
+    const r = await askLocalChain(question, history, { onWait });
+    return base(r.text, { mode: "free", model: r.model || null, costUsd: 0, sources: [r.provider === "pollinations" ? FREE_AI_NAME : r.label], research: undefined });
   } catch (e) {
     return base(`${e instanceof FreeAiError ? e.message : t("Die freie KI hat nicht geantwortet.")}\n\n${fallback.text}`, { failed: false });
   }

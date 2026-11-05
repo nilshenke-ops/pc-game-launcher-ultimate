@@ -21,6 +21,7 @@ import { consumeSpoken, markSpoken, micPermission, setConversation, useConversat
 import { cleanSpoken, voiceControl } from "../lib/voice-text";
 import { friendlyError } from "../lib/friendly-error";
 import { speak, stopSpeaking, useVoice } from "../lib/jarvis-voice";
+import { askLocalChain, LOCAL_NAME, readyProviders, useLocalAi } from "../lib/free-ai-local";
 import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { readJson, writeJson } from "../lib/rpc";
 import { AiManager, hasReadyAi, type AiOverview } from "./ai-manager";
@@ -110,18 +111,20 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const engineIds = (ai.data?.engines ?? []).map((e) => e.id);
   const engineNow = engineIds.includes(engine) ? engine : engineIds.includes("smart") ? "smart" : "auto";
   const consent = useFreeAiConsent();
+  const localSnap = useLocalAi();
   const [pendingFree, setPendingFree] = useState<string | null>(null);
   const turns = useRef<{ role: "user" | "bot"; text: string }[]>([]);
 
   /** Without the PC: general questions go to the free AI (once allowed on this device); nothing else leaves the device. */
   const askWithoutPc = async (v: string) => {
-    if (consent === "no") { islandAnswer(t("Ohne PC kann ich das hier nicht beantworten."), false); return; }
-    if (consent === "ask") { setPendingFree(v); return; }
+    const own = readyProviders().length > 0;                           // the person's own OpenRouter/Groq key, unlocked on this device
+    if (!own && consent === "no") { islandAnswer(localSnap.openrouter === "locked" || localSnap.groq === "locked" ? t("Dein Schlüssel auf diesem Gerät ist gesperrt – in der KI-Verwaltung entsperren.") : t("Ohne PC kann ich das hier nicht beantworten."), false); return; }
+    if (!own && consent === "ask") { setPendingFree(v); return; }
     islandBusy(true);
     try {
-      const r = await askFreeAi(v, { history: turns.current });
+      const r = await askLocalChain(v, turns.current);
       turns.current = [...turns.current, { role: "user" as const, text: v }, { role: "bot" as const, text: r.text }].slice(-8);
-      islandAnswer(r.text, true, [], "jarvis", FREE_AI_NAME);
+      islandAnswer(r.text, true, [], "jarvis", r.provider === "pollinations" ? FREE_AI_NAME : LOCAL_NAME[r.provider]);
       if (consumeSpoken()) speak(r.text);
     } catch (e) { islandAnswer(friendlyError(e), false); }
     finally { islandBusy(false); }
