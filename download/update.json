@@ -1,32 +1,28 @@
 {
-  "version": "3.2.0",
-  "date": "2026-11-04",
+  "version": "3.2.1",
+  "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.2.0/PCGameLauncherCompanion.exe",
-  "size": 94875547,
-  "sha256": "623e9dd96e70ccd01004cd1f9f125832deeda8d382bb467eeef56abb4825824c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.2.1/PCGameLauncherCompanion.exe",
+  "size": 94878148,
+  "sha256": "d676e7da09131ba64145e34f67363c6caa68723c2f2811150fbba3dae184974a",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.2.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.2.0/PCGameLauncherCompanion-3.2.0-win-x64.zip",
-    "size": 89150507,
-    "sha256": "80aa2e818d4903af1ea20647f47f187c33f4280217d3d841b0363d2a3e23c0d0"
+    "fileName": "PCGameLauncherCompanion-3.2.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.2.1/PCGameLauncherCompanion-3.2.1-win-x64.zip",
+    "size": 89153468,
+    "sha256": "a73e130e015666047a95767467678f548cecb37093b7083a43f2fe18530f9eda"
   },
-  "notes": "KI-Verwaltung (JARVIS-Seite und Insel, Reiter JARVIS): vier kostenlose Anbieter in einer festen Reihenfolge – OpenRouter → Groq → Pollinations → Ollama. Pro Anbieter: Schlüssel eintragen und „Speichern & testen“, Verbindung testen, ein-/ausschalten, Reihenfolge ändern, kostenlose Modelle ansehen, Tageslimit, letzter Fehler; dazu „Automatisch zum nächsten wechseln“ und die Anzeige, welche KI zuletzt geantwortet hat. Funktioniert auf iPad, iPhone und Windows · OpenRouter mit dem Gratis-Routing `openrouter/free` (erste Wahl) und den kostenlosen Modellen (`:free`) als Ausweichmodelle; Groq mit den aktuell angebotenen Chat-Modellen; Pollinations ohne Schlüssel; Ollama lokal. Die Antwort sagt immer, wer geantwortet hat („Beantwortet von Groq – kostenloses Modell (…)“) und warum ein anderer übersprungen wurde · Kostenwächter, der vor jeder Anfrage prüft: nur Modelle mit Preis 0 (jede Preiszeile 0, Kennzeichen `:free` oder genau `openrouter/free`; variable Preise wie `openrouter/auto` werden nie benutzt), Modellliste höchstens 5 Minuten alt (sonst neu geprüft; lässt sie sich 30 Minuten nicht prüfen, wird der Anbieter nicht benutzt), in jeder OpenRouter-Anfrage Höchstpreis 0, feste Adressen (ein Schlüssel geht nur an seinen eigenen Dienst), kein Aufladen, kein bezahlter Ausweich. Ist keine kostenlose KI erreichbar, sagt JARVIS „Momentan ist keine kostenlose externe KI erreichbar.“ und antwortet mit dem eingebauten Assistenten",
+  "notes": "Befehle („Starte …“, „Mach leiser“) und PC-Werte laufen sofort – auch wenn im selben Chat gerade eine langsame KI-Antwort aussteht. Im Chat lassen sich Befehle senden, während noch geantwortet wird · Pollinations: schnelleres Modell (`openai-fast`) mit wenig Nachdenken und kürzeren Antworten; die Verbindung wird nach deinem Ja schon vorab geöffnet. Das Tempolimit des Dienstes (HTTP 402 „FREE_LIMIT“: etwa eine Antwort alle 45 Sekunden je Internetadresse) wird erkannt – bis 30 Sekunden wird abgewartet und neu gefragt, wartet noch ein anderer Anbieter, wird sofort gewechselt. Bisher wurde das fälschlich als „verlangt Geld“ gewertet und der Anbieter gesperrt · Zeitlimit je Anbieter: 20 Sekunden, wenn danach noch ein weiterer folgt (der letzte darf 45 Sekunden brauchen)",
   "changes": {
-    "neu": [
-      "KI-Verwaltung (JARVIS-Seite und Insel, Reiter JARVIS): vier kostenlose Anbieter in einer festen Reihenfolge – OpenRouter → Groq → Pollinations → Ollama. Pro Anbieter: Schlüssel eintragen und „Speichern & testen“, Verbindung testen, ein-/ausschalten, Reihenfolge ändern, kostenlose Modelle ansehen, Tageslimit, letzter Fehler; dazu „Automatisch zum nächsten wechseln“ und die Anzeige, welche KI zuletzt geantwortet hat. Funktioniert auf iPad, iPhone und Windows",
-      "OpenRouter mit dem Gratis-Routing `openrouter/free` (erste Wahl) und den kostenlosen Modellen (`:free`) als Ausweichmodelle; Groq mit den aktuell angebotenen Chat-Modellen; Pollinations ohne Schlüssel; Ollama lokal. Die Antwort sagt immer, wer geantwortet hat („Beantwortet von Groq – kostenloses Modell (…)“) und warum ein anderer übersprungen wurde",
-      "Kostenwächter, der vor jeder Anfrage prüft: nur Modelle mit Preis 0 (jede Preiszeile 0, Kennzeichen `:free` oder genau `openrouter/free`; variable Preise wie `openrouter/auto` werden nie benutzt), Modellliste höchstens 5 Minuten alt (sonst neu geprüft; lässt sie sich 30 Minuten nicht prüfen, wird der Anbieter nicht benutzt), in jeder OpenRouter-Anfrage Höchstpreis 0, feste Adressen (ein Schlüssel geht nur an seinen eigenen Dienst), kein Aufladen, kein bezahlter Ausweich. Ist keine kostenlose KI erreichbar, sagt JARVIS „Momentan ist keine kostenlose externe KI erreichbar.“ und antwortet mit dem eingebauten Assistenten",
-      "Groq wird erst nach deiner Bestätigung „kostenloser Tarif, keine Zahlungsmethode“ benutzt; Pollinations erst nach deiner Zustimmung (Dritter, ohne Konto)",
-      "Schlüssel (OpenRouter, Groq) nimmt der PC nur direkt am PC oder über eine verschlüsselte Verbindung (Relay) an, speichert sie geschützt, prüft die Form (ein Google-Schlüssel wird abgelehnt) und zeigt sie nie wieder; die Seite speichert sie nicht",
-      "Weniger Daten nach außen: kurzer System-Text ohne Wissensbasis und ohne Gerätenamen"
+    "neu": [],
+    "verbessert": [
+      "Befehle („Starte …“, „Mach leiser“) und PC-Werte laufen sofort – auch wenn im selben Chat gerade eine langsame KI-Antwort aussteht. Im Chat lassen sich Befehle senden, während noch geantwortet wird",
+      "Pollinations: schnelleres Modell (`openai-fast`) mit wenig Nachdenken und kürzeren Antworten; die Verbindung wird nach deinem Ja schon vorab geöffnet. Das Tempolimit des Dienstes (HTTP 402 „FREE_LIMIT“: etwa eine Antwort alle 45 Sekunden je Internetadresse) wird erkannt – bis 30 Sekunden wird abgewartet und neu gefragt, wartet noch ein anderer Anbieter, wird sofort gewechselt. Bisher wurde das fälschlich als „verlangt Geld“ gewertet und der Anbieter gesperrt",
+      "Zeitlimit je Anbieter: 20 Sekunden, wenn danach noch ein weiterer folgt (der letzte darf 45 Sekunden brauchen)"
     ],
-    "verbessert": [],
     "behoben": [
-      "Der anonyme Pollinations-Zugang meldet manchmal mit Status 200 „Budget erreicht – bitte aufstocken“; das wurde als Antwort angezeigt. Jetzt wird es als Fehler erkannt, nichts wird bezahlt, und der Dienst wird danach eine Weile nicht mehr gefragt",
-      "Dieselbe Frage zweimal innerhalb weniger Sekunden wird nur einmal gesendet"
+      "Eine Seite, die dein PC selbst ausliefert (WLAN-Adresse, Lesezeichen auf dem Handy nach dem Koppeln), ist eine Kopie im Begleiter und wird nur neuer, wenn der Begleiter am PC aktualisiert wird – „Neu laden“ ändert daran nichts. Die Seite sagt das jetzt und führt zu „Updates“ (Version der Seite und die neueste werden genannt)"
     ]
   },
-  "signature": "HhdX/6zCnLluvn/p2XMb3RcZsS8qjk5mxFJV6OQrKoHrvSJbPci6fbKgoUBeKsqhL7PwQ8DKuQuEZZSDw5A/5w=="
+  "signature": "PdAEkSLtktAeRL5zCHJKLAfZnXDaYRJnBT9s2iAvpw+RjDCJiRuM+dh1a9N/YI/Emo8F9mQ6OpalyoRHgdmGTg=="
 }
