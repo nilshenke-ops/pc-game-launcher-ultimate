@@ -36,6 +36,16 @@ async function pair(device: Page, base: string) {
   await expect(pc.locator(".qr img")).toBeVisible();
   // The QR code is a vector graphic of a readable size, with a full-screen view for the camera.
   expect((await pc.locator(".qr img").boundingBox())!.width).toBeGreaterThan(200);
+  // It really renders (a broken image is also "visible"): decoded, with dark and light pixels.
+  await expect.poll(() => pc.locator(".qr img").evaluate((el) => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth > 0)).toBe(true);
+  const px = await pc.locator(".qr img").evaluate((el) => {
+    const i = el as HTMLImageElement, c = document.createElement("canvas"); c.width = c.height = 200;
+    const x = c.getContext("2d")!; x.drawImage(i, 0, 0, 200, 200);
+    const d = x.getImageData(0, 0, 200, 200).data; let dark = 0, light = 0;
+    for (let k = 0; k < d.length; k += 4) (d[k] < 80 ? dark++ : d[k] > 200 ? light++ : 0);
+    return { dark, light };
+  });
+  expect(px.dark).toBeGreaterThan(2000); expect(px.light).toBeGreaterThan(2000);
   await pc.getByRole("button", { name: "QR-Code größer anzeigen" }).click();
   await expect(pc.locator(".qr-big img")).toBeVisible();
   await pc.locator(".qr-big").click();

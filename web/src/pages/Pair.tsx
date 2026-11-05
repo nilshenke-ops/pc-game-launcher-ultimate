@@ -223,7 +223,7 @@ export function PairPage() {
     if (!url) { setQr(""); return; }
     // Vector graphic with the full quiet zone (4 modules): crisp at any size, no blurry or uneven squares that a phone camera cannot read.
     QRCode.toString(url, { type: "svg", margin: 4, errorCorrectionLevel: "M" })
-      .then((svg) => setQr("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.replace("<svg ", '<svg shape-rendering="crispEdges" '))))
+      .then((svg) => setQr("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg)))
       .catch(() => setQr(""));
   }, [url]);
 

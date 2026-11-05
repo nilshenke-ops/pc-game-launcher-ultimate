@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.5.2 – 2026-11-05
+### Behoben
+- Der QR-Code zum Koppeln blieb in 3.5.1 leer (die Grafik war wegen eines doppelten Attributs ungültig): er wird wieder angezeigt; der Test prüft jetzt, dass das Bild wirklich gezeichnet wird und dunkle und helle Punkte hat
+
 ## 3.5.1 – 2026-11-05
 ### Verbessert
 - Der QR-Code zum Koppeln ist jetzt eine scharfe Vektorgrafik mit vollem weißem Rand und deutlich größer (bis 300 Pixel statt 196); mit „QR-Code größer anzeigen“ füllt er den Bildschirm, damit die Handykamera ihn sicher erkennt
