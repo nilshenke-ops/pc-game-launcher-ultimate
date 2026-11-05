@@ -1,24 +1,24 @@
 {
-  "version": "3.5.1",
+  "version": "3.5.2",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.1/PCGameLauncherCompanion.exe",
-  "size": 94896609,
-  "sha256": "2dd238a865db61cf398cad4b492bf270b727674cf9f2e741ab2d83bfd75aa28e",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.2/PCGameLauncherCompanion.exe",
+  "size": 94896476,
+  "sha256": "56416a9cfc3b48227651d33f8640287ba89b45c91053c84c372077fd430ece74",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.5.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.1/PCGameLauncherCompanion-3.5.1-win-x64.zip",
-    "size": 89171764,
-    "sha256": "bd1217fb3b73f855813eee3b776d54f207ff77cd2ffb8a9bff49affdac9d5e26"
+    "fileName": "PCGameLauncherCompanion-3.5.2-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.2/PCGameLauncherCompanion-3.5.2-win-x64.zip",
+    "size": 89171592,
+    "sha256": "21b1f713a9629af209ffcb17f822e888e208141fd0df5516fbf206c3a4ed1e50"
   },
-  "notes": "Der QR-Code zum Koppeln ist jetzt eine scharfe Vektorgrafik mit vollem weißem Rand und deutlich größer (bis 300 Pixel statt 196); mit „QR-Code größer anzeigen“ füllt er den Bildschirm, damit die Handykamera ihn sicher erkennt",
+  "notes": "",
   "changes": {
     "neu": [],
-    "verbessert": [
-      "Der QR-Code zum Koppeln ist jetzt eine scharfe Vektorgrafik mit vollem weißem Rand und deutlich größer (bis 300 Pixel statt 196); mit „QR-Code größer anzeigen“ füllt er den Bildschirm, damit die Handykamera ihn sicher erkennt"
-    ],
-    "behoben": []
+    "verbessert": [],
+    "behoben": [
+      "Der QR-Code zum Koppeln blieb in 3.5.1 leer (die Grafik war wegen eines doppelten Attributs ungültig): er wird wieder angezeigt; der Test prüft jetzt, dass das Bild wirklich gezeichnet wird und dunkle und helle Punkte hat"
+    ]
   },
-  "signature": "uAbHCrRHFoEf1EugZUuyeNJG94JdT6toOiKgM/Jkjffl/34V6V0uShlDtzRPwPUjSBfzANuxov5gs7gr5jy2Rg=="
+  "signature": "rZkZCamzu5AGLbyBIG8l3S4vGNKHne9LvnbVNn3knrUpL4YzgT14XKbMxnKRSYW/IHg+RgWoaQcI7xRdHUoNpA=="
 }
