@@ -1,27 +1,27 @@
 {
-  "version": "3.9.0",
+  "version": "3.9.1",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.0/PCGameLauncherCompanion.exe",
-  "size": 94910438,
-  "sha256": "19082380112cffb7a23047f9b7e31940853cc412c5558877f2e0235a7e75d4a7",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion.exe",
+  "size": 94910829,
+  "sha256": "7379254e0cde58542937ad8d43c9739509a349e55d9b4afdfd959fc733eb0960",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.9.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.0/PCGameLauncherCompanion-3.9.0-win-x64.zip",
-    "size": 89184573,
-    "sha256": "09fce826ba6dc05e5650ffc998fd2dd6d8660ef6ca0641d35de8df1710069015"
+    "fileName": "PCGameLauncherCompanion-3.9.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion-3.9.1-win-x64.zip",
+    "size": 89185011,
+    "sha256": "9ef0de5bfc898b6ba2b581a683aab42e91bc453490c58791b5827ce99819f921"
   },
-  "notes": "Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum · Live-Daten für JARVIS: Fragen, die aktuelle Fakten brauchen („Wann spielt der FC Bayern als Nächstes?“, Wetter, Preise, Patchnotes von heute), sucht JARVIS erst im Internet (Tavily, kostenlos: 1000 Suchen im Monat, kein Zahlungsmittel; Schlüssel nur am PC) und antwortet dann aus den Ergebnissen; die Quelle nennt er auf Nachfrage. Ohne Schlüssel steht ein kurzer Tipp zur Einrichtung unter der Antwort · Gemini ist entfernt (Karte, Modus, Auswahl und Anzeige). Zusammenfassungen und „KI fragen“ der Recherche übernehmen die kostenlosen KIs aus der KI-Verwaltung in deiner Reihenfolge; ein alter Gemini-Modus wird zu „Automatisch“",
+  "notes": "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü · Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)",
   "changes": {
-    "neu": [
-      "Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum",
-      "Live-Daten für JARVIS: Fragen, die aktuelle Fakten brauchen („Wann spielt der FC Bayern als Nächstes?“, Wetter, Preise, Patchnotes von heute), sucht JARVIS erst im Internet (Tavily, kostenlos: 1000 Suchen im Monat, kein Zahlungsmittel; Schlüssel nur am PC) und antwortet dann aus den Ergebnissen; die Quelle nennt er auf Nachfrage. Ohne Schlüssel steht ein kurzer Tipp zur Einrichtung unter der Antwort"
-    ],
+    "neu": [],
     "verbessert": [
-      "Gemini ist entfernt (Karte, Modus, Auswahl und Anzeige). Zusammenfassungen und „KI fragen“ der Recherche übernehmen die kostenlosen KIs aus der KI-Verwaltung in deiner Reihenfolge; ein alter Gemini-Modus wird zu „Automatisch“"
+      "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü",
+      "Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)"
     ],
-    "behoben": []
+    "behoben": [
+      "Der zusätzliche Menü-Knopf links oben neben der Suche erscheint nicht mehr, wenn die Seitenleiste sichtbar ist (iPad, PC); auf dem Handy bleibt er"
+    ]
   },
-  "signature": "KperHsYiUpa8/QQ/piv1SYvyWY1OvKptPDKT3LycsmC/aJjJCXm6NlhhltDK//5DonO5gPqysMq2JpBULbQwiw=="
+  "signature": "We3urXLD0+w7zPs/K4NC5PFEni/ol63HtUseewcYm7TrwOheQEzyI0g5TOxrQqViNuGftLB/MoqiLjxwF2gVBQ=="
 }

@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.9.1",
+    "date": "2026-11-05",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion.exe",
+    "size": 94910829,
+    "sha256": "7379254e0cde58542937ad8d43c9739509a349e55d9b4afdfd959fc733eb0960",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.9.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion-3.9.1-win-x64.zip",
+      "size": 89185011,
+      "sha256": "9ef0de5bfc898b6ba2b581a683aab42e91bc453490c58791b5827ce99819f921"
+    },
+    "notes": "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü · Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü",
+        "Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)"
+      ],
+      "behoben": [
+        "Der zusätzliche Menü-Knopf links oben neben der Suche erscheint nicht mehr, wenn die Seitenleiste sichtbar ist (iPad, PC); auf dem Handy bleibt er"
+      ]
+    },
+    "signature": "We3urXLD0+w7zPs/K4NC5PFEni/ol63HtUseewcYm7TrwOheQEzyI0g5TOxrQqViNuGftLB/MoqiLjxwF2gVBQ=="
+  },
+  {
     "version": "3.9.0",
     "date": "2026-11-05",
     "channel": "stable",
@@ -1406,39 +1433,5 @@
       ]
     },
     "signature": "L54XtWLiKZzKxbfck70i6A/9RVsTCr9MSwfPayEfiioEXN9Vp/KDCITUbOV6gxothPJLnaqWKpbgoNroR0fLnA=="
-  },
-  {
-    "version": "2.68.0",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.0/PCGameLauncherCompanion.exe",
-    "size": 88268453,
-    "sha256": "d533619ce58533877e0d04089cfb9c2d5997513d89436e743486cf4aa8be99e4",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.68.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.68.0/PCGameLauncherCompanion-2.68.0-win-x64.zip",
-      "size": 82531808,
-      "sha256": "fecb8545ca53438bb630f8121780eebca8a8ce313e093f07ca6f1a7fd941d142"
-    },
-    "notes": "JARVIS Quest-Coach – nutzt dein Gaming-Gedächtnis (Spiele-Journal) statt jede Frage ohne Zusammenhang zu beantworten; nichts wird erfunden: · „Wo war ich (in Hogwarts Legacy) stehen geblieben?“ – letzte Notiz, Stelle, Plan fürs nächste Mal, Fortschritt, nächste Etappe deiner Zielpfade, offene Quests · „Was sollte ich in … als Nächstes machen?“ – dein eigener Plan, nächste Etappe, offene Aufgaben und die geschätzte Restzeit; ohne Einträge sagt JARVIS das statt etwas zu empfehlen",
-    "changes": {
-      "neu": [
-        "JARVIS Quest-Coach – nutzt dein Gaming-Gedächtnis (Spiele-Journal) statt jede Frage ohne Zusammenhang zu beantworten; nichts wird erfunden:",
-        "„Wo war ich (in Hogwarts Legacy) stehen geblieben?“ – letzte Notiz, Stelle, Plan fürs nächste Mal, Fortschritt, nächste Etappe deiner Zielpfade, offene Quests",
-        "„Was sollte ich in … als Nächstes machen?“ – dein eigener Plan, nächste Etappe, offene Aufgaben und die geschätzte Restzeit; ohne Einträge sagt JARVIS das statt etwas zu empfehlen",
-        "„Ich bin in … gerade bei …“, „Speichere diesen Hinweis für …: …“, „Erinnere mich daran, dass ich in … noch die Nebenquest … machen will“ – landet in „Wo war ich?“ bzw. als offener Eintrag in der Sammlung (ansehen, ändern, löschen)",
-        "Spoiler-Stufe je Spiel („Keine Spoiler für …“, „Nur Hinweise …“, „Ausführliche Lösung für …“) – gilt für „Wie komme ich in … weiter bei …?“: ohne bekannte Stelle fragt JARVIS nach, statt Späteres zu verraten; Links zu Tipps/Lösungen passend zur Stufe (mit YouTube-Schlüssel auch die Videos)",
-        "„Fasse die Story von … bis zu meinem Stand zusammen“ – nur aus deinen Story-Notizen, bis zu deinem Kapitel, Spoiler ausgeblendet",
-        "„Ich habe heute 20 Minuten“ / „Welches Spiel passt in 30 Minuten?“ – passende Spiele aus Bibliothek, Verlauf und Backlog (Zeit-Finder)",
-        "„Ich möchte … abschließen. Wie lange brauche ich noch, und was sollte ich als Nächstes machen?“ – beides in einer Antwort",
-        "Spielzeit-Reiter: Spoiler-Stufe, Plattform und bevorzugte Spielweise je Spiel"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "„Was sollte ich … als Nächstes machen?“ wurde an „als Nächstes“ in zwei Aufträge zerlegt"
-      ]
-    },
-    "signature": "YdxZ2YlRVqSEbVRncIPw1MvSfmqKDVpO2/UoOTw76wRAASPU0kDc4C8mcmojuvkIsjG/Dyh/9BbWTj+D04B6Aw=="
   }
 ]
