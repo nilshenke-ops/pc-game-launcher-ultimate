@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.11.0",
+    "date": "2026-11-05",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.11.0/PCGameLauncherCompanion.exe",
+    "size": 94913792,
+    "sha256": "9687319bfde7748651b4d7f8244749855fded50c2f7077e73b9cca32380b95c3",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.11.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.11.0/PCGameLauncherCompanion-3.11.0-win-x64.zip",
+      "size": 89188428,
+      "sha256": "330429bbcb3488524178e835fbe779066f597f5e60172e226ec83e7890fca388"
+    },
+    "notes": "Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein) · Falsche Eingaben werden erklärt (Profil nicht gefunden, kein gültiger Link) und ändern nichts; „Verbindung lösen“ beendet den Abgleich, die übernommenen Spiele bleiben",
+    "changes": {
+      "neu": [
+        "Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein)"
+      ],
+      "verbessert": [
+        "Falsche Eingaben werden erklärt (Profil nicht gefunden, kein gültiger Link) und ändern nichts; „Verbindung lösen“ beendet den Abgleich, die übernommenen Spiele bleiben"
+      ],
+      "behoben": []
+    },
+    "signature": "U33MrBkB5F/5fN5Cl2j+KrEhB2/hj+uqfY5Vh0RN+HHKcmYdFPxp9rCdtx/6HhX8AVOv23TFlJTCaEQC/JinzA=="
+  },
+  {
     "version": "3.10.0",
     "date": "2026-11-05",
     "channel": "stable",
@@ -1403,32 +1429,5 @@
       "behoben": []
     },
     "signature": "oU5PQXxdCN+NkadcTI2zn3NNOFCgmLrTKIwLjW87EHBGqEPVMPNS+iP4IByUZWmYwK0FJsCm2NVwGtLIR4dgrA=="
-  },
-  {
-    "version": "2.69.0",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.69.0/PCGameLauncherCompanion.exe",
-    "size": 88273474,
-    "sha256": "18a687a53116ea29f6c1289e940986dacc1709089ab59ad2e158d71ceaa04340",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.69.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.69.0/PCGameLauncherCompanion-2.69.0-win-x64.zip",
-      "size": 82536742,
-      "sha256": "dd32eea5ffa1a2fb491ae1171ee61418d64cce95843c796840c311d7b91ea4fd"
-    },
-    "notes": "JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“ · Ton „Locker (mit Sprüchen)“: nach erledigten Aufträgen ein frecher Spruch unter der Antwort (spät nachts mit Hinweis auf die Uhrzeit) – Zahlen und Fakten bleiben unverändert, bei Fehlern und Rückfragen kein Spruch; per Chat umschaltbar („Sei lockerer“ / „Sprich wieder sachlich“). JARVIS ahmt keine echte Person nach · Emojis werden nicht mehr vorgelesen",
-    "changes": {
-      "neu": [
-        "JARVIS → „Stimme & Ton“: Stimme wählen – die menschlichsten Stimmen des Geräts stehen oben und sind gekennzeichnet („Sehr natürlich“: Microsoft „… Online (Natural)“ in Edge, Apple „Premium/Erweitert“, sonst Google), dazu Tempo, Tonhöhe und „Probe hören“",
-        "Ton „Locker (mit Sprüchen)“: nach erledigten Aufträgen ein frecher Spruch unter der Antwort (spät nachts mit Hinweis auf die Uhrzeit) – Zahlen und Fakten bleiben unverändert, bei Fehlern und Rückfragen kein Spruch; per Chat umschaltbar („Sei lockerer“ / „Sprich wieder sachlich“). JARVIS ahmt keine echte Person nach"
-      ],
-      "verbessert": [
-        "Emojis werden nicht mehr vorgelesen"
-      ],
-      "behoben": []
-    },
-    "signature": "WvsfphPx68ArDgg+kqEthw6XspNbeML9Vgw0mYYqvJhwKjW+oBnkyHSIKiO6V1zuRz/XuK0whp2PExiFtzNtZw=="
   }
 ]
