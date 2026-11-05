@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle2, Download, History as HistoryIcon, Monitor, RefreshCw, RotateCcw, ShieldAlert, ShieldCheck, Smartphone, Undo2 } from "lucide-react";
-import { client } from "../lib/rpc";
+import { client, HOSTED } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useConn, useEvent, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
@@ -182,6 +182,30 @@ export function WebsiteVersion() {
       {newer ? <Banner kind="info" title={t("Neuere Webseite verfügbar (v{v})", { v: latest!.version })} actions={<Button size="sm" icon={<RotateCcw size={14} />} onClick={reload}>{t("Neu laden")}</Button>}>{t("Dein Gerät zeigt noch eine gespeicherte ältere Fassung.")}</Banner>
         : <p className="small muted">{t("Webseite und Begleiter nutzen dieselbe Versionsnummer. Die Webseite aktualisiert sich beim nächsten Öffnen von selbst.")}</p>}
     </Card>
+  );
+}
+
+/**
+ * A page that the PC itself serves (home-network address, bookmark on the phone) is a copy inside the companion: it can only become newer when the
+ * companion is updated at the PC – "Neu laden" gives the same old page. This says so, instead of leaving the person with a button that does nothing.
+ */
+export function PcPageOutdated() {
+  const conn = useConn();
+  const nav = useNavigate();
+  const { latest } = useLatestRelease();
+  const [hidden, setHidden] = useState(false);
+  const newer = !!latest && compareVersions(latest.version, WEB_VERSION) > 0;
+  const key = `pgl-pcpage-old-${latest?.version}`;
+  let dismissed = false;
+  try { dismissed = sessionStorage.getItem(key) === "1"; } catch { /* storage blocked */ }
+  const embedded = !!(window as unknown as { __PGL_EMBEDDED__?: boolean }).__PGL_EMBEDDED__;
+  if (HOSTED || embedded || client.demo || conn.me?.isLocal || !newer || hidden || dismissed) return null;
+  return (
+    <Banner kind="info" title={t("Diese Seite kommt von deinem PC und ist noch v{v} – neu ist v{n}", { v: WEB_VERSION, n: latest!.version })}
+      actions={<><Button size="sm" variant="primary" onClick={() => nav("/updates")}>{t("Zu den Updates")}</Button>
+        <Button size="sm" onClick={() => { try { sessionStorage.setItem(key, "1"); } catch { /* ignore */ } setHidden(true); }}>{t("Später")}</Button></>}>
+      {t("Eine Seite, die dein PC ausliefert, wird nur neuer, wenn der Begleiter am PC aktualisiert wird – „Neu laden“ ändert daran nichts. Dort unter „Updates“ auf „Jetzt aktualisieren“ tippen (das Herunterladen geht auch von hier). Danach siehst du hier die neueste Oberfläche.")}
+    </Banner>
   );
 }
 

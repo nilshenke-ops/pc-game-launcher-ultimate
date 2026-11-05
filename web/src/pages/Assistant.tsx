@@ -6,7 +6,7 @@ import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card, confirmDialog, PageHead, Switch } from "../components/ui";
 import { AiManager } from "../components/ai-manager";
-import { CHAT_KEY, emptyChat, formatCost, jarvisChips, offlineExamples, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
+import { CHAT_KEY, emptyChat, formatCost, jarvisChips, offlineExamples, QUICK_COMMAND, readChat, setupChips, type AssistantAction, type AssistantReply, type ChatState } from "../lib/assistant";
 import { openJarvis, setJarvisEnabled, useJarvis } from "../lib/jarvis-session";
 import { speak, stopSpeaking } from "../lib/jarvis-voice";
 import { JarvisHud } from "../components/jarvis-hud";
@@ -186,15 +186,16 @@ export default function Assistant() {
 
   const ask = async (q: string, extra: { bingoWeb?: boolean; lookup?: boolean; ai?: boolean; sources?: boolean; shown?: string; research?: boolean } = {}) => {
     const question = q.trim();
-    if (!question || busy) return;
+    // A command ("Starte …", "Mach leiser") is not held up by a slow AI answer that is still on its way: it runs next to it.
+    const side = busy && QUICK_COMMAND.test(question);
+    if (!question || (busy && !side)) return;
     setText("");
     setChat((c) => ({ ...c, turns: [...c.turns, { role: "user", text: extra.shown ?? question }] }));
-    setBusy(true);
     const requestId = "r" + Math.random().toString(36).slice(2, 12);
-    running.current = requestId; setPhase(null); setLive("");
+    if (!side) { setBusy(true); running.current = requestId; setPhase(null); setLive(""); }
     // A cancelled request may still answer later – that answer is dropped.
     const add = (reply: AssistantReply, more: Partial<ChatState["turns"][number]> = {}, conversationId?: string | null) => {
-      if (running.current !== requestId) return false;
+      if (!side && running.current !== requestId) return false;
       setChat((c) => ({ conversationId: conversationId ?? c.conversationId, turns: [...c.turns, { role: "bot", reply, ...more }] }));
       return true;
     };
@@ -280,7 +281,7 @@ export default function Assistant() {
         const [{ answerOffline }, lib] = await Promise.all([import("../lib/assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
         let r = answerOffline(question, { library: lib.items ?? [], paired: !!client.credentials });
         // Not a question about the app: a general question goes to the free AI (only with this device's yes – asked once).
-        if (r.unsure) { const { freeAiAnswer } = await import("../lib/free-ai-chat"); r = await freeAiAnswer(question, chat.turns.map((x) => ({ role: x.role, text: x.role === "user" ? x.text ?? "" : x.reply?.text ?? "" })).filter((x) => x.text), r); }
+        if (r.unsure) { const { freeAiAnswer } = await import("../lib/free-ai-chat"); r = await freeAiAnswer(question, chat.turns.map((x) => ({ role: x.role, text: x.role === "user" ? x.text ?? "" : x.reply?.text ?? "" })).filter((x) => x.text), r, (s) => setLive(t("Der kostenlose Dienst erlaubt nur etwa eine Antwort alle 45 Sekunden – ich warte {s} s …", { s }))); }
         setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: r }] }));
         return;
       }
@@ -290,7 +291,7 @@ export default function Assistant() {
       // The real error (key, limit, timeout, no connection) – never a made-up answer instead.
       add({ text: (e as Error).message, actions: [], sources: [], suggestions: [], mode: "local" });
     } finally {
-      if (running.current === requestId) { running.current = null; setBusy(false); setPhase(null); setLive(""); }
+      if (!side && running.current === requestId) { running.current = null; setBusy(false); setPhase(null); setLive(""); }
     }
   };
 
@@ -394,7 +395,7 @@ export default function Assistant() {
         <form className="as-input" onSubmit={(e) => { e.preventDefault(); void ask(text); }}>
           <input className="input" value={text} maxLength={2000} placeholder={jv.enabled ? t("Dein Auftrag an JARVIS, z. B. „Starte Minecraft und aktiviere mein Minecraft-Profil“") : t("Frag etwas oder gib einen Befehl, z. B. „Starte Rocket League“")} aria-label={t("Nachricht an den Assistenten")} onChange={(e) => setText(e.target.value)} />
           {SpeechCtor && <Button variant="ghost" icon={listening ? <MicOff size={18} /> : <Mic size={18} />} aria-label={listening ? t("Zuhören beenden") : t("Spracheingabe")} onClick={toggleMic} />}
-          <Button type="submit" variant="primary" icon={<Send size={16} />} busy={busy} disabled={!text.trim()} aria-label={t("Senden")} />
+          <Button type="submit" variant="primary" icon={<Send size={16} />} disabled={!text.trim() || (busy && !QUICK_COMMAND.test(text.trim()))} aria-label={t("Senden")} />
         </form>
       </Card>
       {settings && s && <SettingsDialog st={s} onClose={() => setSettings(false)} />}

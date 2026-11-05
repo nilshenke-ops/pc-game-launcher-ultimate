@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.2.1 – 2026-11-05
+### Schneller
+- Befehle („Starte …“, „Mach leiser“) und PC-Werte laufen sofort – auch wenn im selben Chat gerade eine langsame KI-Antwort aussteht. Im Chat lassen sich Befehle senden, während noch geantwortet wird
+- Pollinations: schnelleres Modell (`openai-fast`) mit wenig Nachdenken und kürzeren Antworten; die Verbindung wird nach deinem Ja schon vorab geöffnet. Das Tempolimit des Dienstes (HTTP 402 „FREE_LIMIT“: etwa eine Antwort alle 45 Sekunden je Internetadresse) wird erkannt – bis 30 Sekunden wird abgewartet und neu gefragt, wartet noch ein anderer Anbieter, wird sofort gewechselt. Bisher wurde das fälschlich als „verlangt Geld“ gewertet und der Anbieter gesperrt
+- Zeitlimit je Anbieter: 20 Sekunden, wenn danach noch ein weiterer folgt (der letzte darf 45 Sekunden brauchen)
+### Hinweis statt Sackgasse
+- Eine Seite, die dein PC selbst ausliefert (WLAN-Adresse, Lesezeichen auf dem Handy nach dem Koppeln), ist eine Kopie im Begleiter und wird nur neuer, wenn der Begleiter am PC aktualisiert wird – „Neu laden“ ändert daran nichts. Die Seite sagt das jetzt und führt zu „Updates“ (Version der Seite und die neueste werden genannt)
+
 ## 3.2.0 – 2026-11-04
 ### Neu
 - KI-Verwaltung (JARVIS-Seite und Insel, Reiter JARVIS): vier kostenlose Anbieter in einer festen Reihenfolge – OpenRouter → Groq → Pollinations → Ollama. Pro Anbieter: Schlüssel eintragen und „Speichern & testen“, Verbindung testen, ein-/ausschalten, Reihenfolge ändern, kostenlose Modelle ansehen, Tageslimit, letzter Fehler; dazu „Automatisch zum nächsten wechseln“ und die Anzeige, welche KI zuletzt geantwortet hat. Funktioniert auf iPad, iPhone und Windows

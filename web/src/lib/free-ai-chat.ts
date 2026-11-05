@@ -17,12 +17,12 @@ export function freeAiOffer(question: string, lead?: string): AssistantReply {
  * The answer for a general question without the PC. With this device's yes: the free AI answers (marked, with its name);
  * not asked yet: the offer; "no": the built-in answer stays as it is.
  */
-export async function freeAiAnswer(question: string, history: Turn[], fallback: AssistantReply): Promise<AssistantReply> {
+export async function freeAiAnswer(question: string, history: Turn[], fallback: AssistantReply, onWait?: (seconds: number) => void): Promise<AssistantReply> {
   const c = freeAiConsent();
   if (c === "no") return fallback;
   if (c === "ask") return freeAiOffer(question, fallback.text);
   try {
-    const r = await askFreeAi(question, { history });
+    const r = await askFreeAi(question, { history, onWait });
     return base(r.text, { mode: "free", model: r.model || null, costUsd: 0, sources: [FREE_AI_NAME], research: undefined });
   } catch (e) {
     return base(`${e instanceof FreeAiError ? e.message : t("Die freie KI hat nicht geantwortet.")}\n\n${fallback.text}`, { failed: false });

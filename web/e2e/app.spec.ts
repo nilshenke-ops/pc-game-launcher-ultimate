@@ -2474,6 +2474,19 @@ test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollina
   await ctx.close();
 });
 
+test("Seite vom PC ist älter als die Webseite: ehrlicher Hinweis statt „Neu laden“, das nichts ändert", async ({ browser }) => {
+  const newer = { version: "99.0.0", url: "https://example.com/Nexus.exe", sha256: "a".repeat(64), size: 1000, signature: null, date: "2099-01-01" };
+  const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
+  const p = await ctx.newPage();
+  await p.route("**/download/update.json*", (r) => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify(newer) }));
+  await p.goto(`${COMPANION}/#/`);                                  // the page the PC itself serves
+  await expect(p.getByText(/Diese Seite kommt von deinem PC und ist noch v.* – neu ist v99\.0\.0/)).toBeVisible({ timeout: 15000 });
+  await expect(p.getByText("„Neu laden“ ändert daran nichts")).toBeVisible();
+  await p.getByRole("button", { name: "Zu den Updates" }).click();
+  await expect(p).toHaveURL(/#\/updates/);
+  await ctx.close();
+});
+
 test("KI-Router: nur am PC einzurichten, kostenlose Modelle live, Reihenfolge, Ausweichmodell wird genannt", async ({ browser }) => {
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });

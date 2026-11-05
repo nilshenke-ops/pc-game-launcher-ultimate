@@ -28,4 +28,5 @@ if ("serviceWorker" in navigator && window.isSecureContext && !embedded && !DEMO
 }
 
 // English users wait for their texts (one small request) instead of seeing German first.
+void import("./lib/free-ai").then((m) => m.warmUpFreeAi());
 void languageReady().finally(() => createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>));

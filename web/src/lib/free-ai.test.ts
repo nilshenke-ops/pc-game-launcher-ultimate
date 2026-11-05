@@ -37,7 +37,7 @@ describe("Freie KI ohne PC", () => {
   });
   it("Fehler werden in Sätzen erklärt: ausgelastet, Serverfehler, leer, kein Netz", async () => {
     const f = (r: () => Response | Promise<Response>) => ({ fetcher: (async () => r()) as unknown as typeof fetch });
-    await expect(askFreeAi("a", f(() => new Response("", { status: 429 })))).rejects.toThrow(/ausgelastet/);
+    await expect(askFreeAi("a", f(() => new Response("", { status: 429, headers: { "retry-after": "60" } })))).rejects.toThrow(/alle 45 Sekunden.*60 Sekunden/);
     await expect(askFreeAi("a", f(() => new Response("", { status: 503 })))).rejects.toThrow(/Fehler 503/);
     await expect(askFreeAi("a", f(() => ok("   ")))).rejects.toThrow(/leere Antwort/);
     await expect(askFreeAi("a", f(() => ok(null)))).rejects.toBeInstanceOf(FreeAiError);
@@ -65,5 +65,24 @@ describe("Freie KI ohne PC", () => {
     expect(looksLikePaymentNotice("Please top up your credits.", 0)).toBe(true);
     expect(looksLikePaymentNotice("Erwachsene brauchen etwa 7 bis 9 Stunden Schlaf.", 14)).toBe(false);
     expect(looksLikePaymentNotice("Im Spiel kostet das Upgrade 500 Credits. ".repeat(20), 200)).toBe(false);
+  });
+
+  it("Tempolimit des Dienstes (402 FREE_LIMIT mit Retry-After): kurz abwarten, dann genau einmal neu fragen", async () => {
+    let calls = 0; const waits: number[] = [];
+    const fetcher = (async () => { calls++; return calls === 1 ? new Response("{\"error\":{\"code\":\"FREE_LIMIT\"}}", { status: 402, headers: { "retry-after": "1" } }) : ok("Etwa 8 848 Meter."); }) as unknown as typeof fetch;
+    const t0 = Date.now();
+    const r = await askFreeAi("Wie hoch ist der Mount Everest?", { fetcher, onWait: (s) => waits.push(s) });
+    expect(r.text).toContain("8 848");
+    expect(calls).toBe(2); expect(waits).toEqual([1]);
+    expect(Date.now() - t0).toBeGreaterThanOrEqual(1000);
+  });
+  it("schnelle Einstellungen: openai-fast, wenig Nachdenken, kurze Antwort – und wird die Einstellung abgelehnt (400), geht es ohne", async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const fetcher = (async (_u: string, init: RequestInit) => { const b = JSON.parse(String(init.body)); bodies.push(b); return "reasoning_effort" in b ? new Response("{}", { status: 400 }) : ok("Antwort."); }) as unknown as typeof fetch;
+    const r = await askFreeAi("Frage?", { fetcher });
+    expect(r.text).toBe("Antwort.");
+    expect(bodies[0]).toMatchObject({ model: "openai-fast", reasoning_effort: "low", max_tokens: 400 });
+    expect(bodies[1]).not.toHaveProperty("reasoning_effort");
+    expect(bodies).toHaveLength(2);
   });
 });

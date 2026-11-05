@@ -31,3 +31,6 @@ export function formatCost(usd: number): string {
   if (usd < 0.01) return "< 0,01 $";
   return `${usd.toFixed(2).replace(".", ",")} $`;
 }
+
+/** Words that start a command the PC carries out by itself – these are sent even while a slow answer is still being written. */
+export const QUICK_COMMAND = /^(?:jarvis,?\s*)?(?:bitte\s+)?(?:starte|start|öffne|oeffne|schließe|schliesse|beende|stoppe|stopp|pausiere|pause|mach|mache|stell|stelle|setze|schalte|aktiviere|wechsle|spiel|spiele|lauter|leiser|stumm|mute|zeig|zeige)\b/i;

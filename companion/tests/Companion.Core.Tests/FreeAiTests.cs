@@ -23,10 +23,13 @@ public class FreeAiTests
     {
         public readonly List<Rec> Calls = new();
         public Func<DateTime>? Clock;
+        /// <summary>While set, chat requests wait for it (a slow AI answer).</summary>
+        public Task? Hold;
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct)
         {
             var rec = new Rec(r.Method.Method, r.RequestUri!.ToString(), r.Headers.Authorization?.ToString(), r.Content == null ? "" : await r.Content.ReadAsStringAsync(ct));
             Calls.Add(rec);
+            if (Hold != null && rec.Method == "POST") await Hold.WaitAsync(ct);
             var (code, body, headers) = answer(rec);
             if (code == 0) throw new HttpRequestException("offline");
             var resp = new HttpResponseMessage(code) { Content = new StringContent(body) };
@@ -396,5 +399,91 @@ public class FreeAiTests
         var a1 = new AssistantService(paths, secrets, new NullHub(), new AssistantData(s), freeAi: new FreeAiHub(paths, secrets, new Fake(_ => Ok("{}"))));
         Assert.True(a1.FreeAi.Configured("openrouter"));                                                   // the key moved over, still protected
         Assert.False(a1.FreeAi.Configured("groq"));
+    }
+
+    // ------------------------------------------------------------------ speed: commands do not wait, the free limit of Pollinations is waited out
+
+    [Fact]
+    public async Task Ein_Befehl_wartet_nicht_auf_eine_langsame_KI_Antwort_im_selben_Gespraech()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        s.Library.AddSteam("252950", "Rocket League");
+        var hold = new TaskCompletionSource();
+        var fake = new Fake(r => r.Url.EndsWith("/models") ? Ok(OrList(("openrouter/free", "0", 200000))) : Ok(Chat("Spät, aber da.", "x/y:free")));
+        var (a, _) = Make(dir, s, fake);
+        a.AiSet("openrouter", null, OrKey, null, null, true);
+        var id = Js(await a.AskAsync("dev", "iPad", null, "Eine erste schnelle Frage zum Schlaf?")).GetProperty("conversationId").GetString();
+        fake.Hold = hold.Task;                                                  // from now on the AI answers slowly
+        var slow = a.AskAsync("dev", "iPad", id, "Eine zweite Frage, die lange dauert?");
+        await Task.Delay(300);
+        Assert.False(slow.IsCompleted);                                          // really waiting for the AI
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var cmd = Reply(await a.AskAsync("dev", "iPad", id, "Starte Rocket League"));   // same conversation
+        Assert.True(sw.ElapsedMilliseconds < 2000, $"der Befehl hat {sw.ElapsedMilliseconds} ms gewartet");
+        Assert.Equal("library.launch", cmd.GetProperty("actions")[0].GetProperty("method").GetString());
+        Assert.False(slow.IsCompleted);                                          // the slow answer is still pending
+        hold.SetResult();
+        Assert.Contains("Spät, aber da.", Reply(await slow).GetProperty("text").GetString());
+    }
+
+    [Fact]
+    public async Task Pollinations_Tempolimit_402_ist_keine_Bezahlforderung_und_wird_kurz_abgewartet()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var calls = 0;
+        var fake = new Fake(r =>
+        {
+            calls++;
+            return calls == 1
+                ? (HttpStatusCode.PaymentRequired, "{\"status\":402,\"success\":false,\"error\":{\"code\":\"FREE_LIMIT\",\"message\":\"Free limit reached: 1 reply every 45 seconds per IP\"}}", new Dictionary<string, string> { ["Retry-After"] = "1" })
+                : Ok(Chat("Nach kurzem Warten beantwortet.", "gpt-oss", 14));
+        });
+        var (a, _) = Make(dir, s, fake);
+        a.AiSet("pollinations", null, null, null, consent: true, true);
+        a.AiSet("pollinations", true, null, null, null, true);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var r = Reply(await a.AskAsync("dev", "iPad", null, Question));
+        Assert.Contains("Nach kurzem Warten beantwortet.", r.GetProperty("text").GetString());   // the only provider: waited out once, then answered
+        Assert.InRange(sw.ElapsedMilliseconds, 900, 8000);
+        Assert.Equal(2, fake.Calls.Count);
+        using var body = JsonDocument.Parse(fake.Calls[0].Body);
+        Assert.Equal("openai-fast", body.RootElement.GetProperty("model").GetString());
+        Assert.Equal("low", body.RootElement.GetProperty("reasoning_effort").GetString());          // fewer thinking tokens → quicker
+        Assert.True(body.RootElement.GetProperty("max_tokens").GetInt32() <= 500);
+    }
+
+    [Fact]
+    public async Task Pollinations_Tempolimit_bei_weiteren_Anbietern_wechselt_sofort_statt_zu_warten()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var fake = new Fake(r =>
+            r.Url.Contains("text.pollinations.ai") ? (HttpStatusCode.PaymentRequired, "{\"error\":{\"code\":\"FREE_LIMIT\"}}", new() { ["Retry-After"] = "20" })
+            : r.Url.EndsWith("/models") ? Ok(GrList("llama-3.3-70b-versatile")) : Ok(Chat("Von Groq.", "llama-3.3-70b-versatile")));
+        var (a, _) = Make(dir, s, fake);
+        a.AiSet("groq", null, GrKey, true, null, true);
+        a.AiSet("pollinations", null, null, null, consent: true, true);
+        a.AiSet("pollinations", true, null, null, null, true);
+        a.AiOrder(new[] { "pollinations", "groq", "openrouter", "ollama" });
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var r = Reply(await a.AskAsync("dev", "iPad", null, Question));
+        Assert.True(sw.ElapsedMilliseconds < 5000);                                                  // did not wait the 20 s
+        Assert.Equal("groq", r.GetProperty("mode").GetString());
+        Assert.Contains("Pollinations: Limit erreicht", AllSources(r));
+    }
+
+    [Fact]
+    public async Task Ein_zu_langsamer_Anbieter_wird_nach_dem_Zeitlimit_uebersprungen()
+    {
+        using var dir = new TempDir();
+        var hold = new TaskCompletionSource();
+        var fake = new Fake(_ => Ok(Chat("zu spät"))) { Hold = hold.Task };
+        var hub = new FreeAiHub(new AppPaths(Path.Combine(dir.Path, "d")), new GenericPlatform().Secrets, fake);
+        hub.Set("pollinations", null, null, null, true);
+        hub.Set("pollinations", true, null, null, null);
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        var e = await Assert.ThrowsAsync<ProviderException>(() => hub.AskAsync("pollinations", "x", new[] { new GeminiClient.Turn("user", "Frage?") }, default, timeout: TimeSpan.FromMilliseconds(300)));
+        hold.SetResult();
+        Assert.Equal("busy", e.Kind);
+        Assert.True(sw.ElapsedMilliseconds < 3000);
     }
 }

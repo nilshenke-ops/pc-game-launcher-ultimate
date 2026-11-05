@@ -22,7 +22,7 @@ import { useAppState } from "../lib/state";
 import { StatusPill } from "./status-pill";
 import { Banner, Button, Modal, Segmented } from "./ui";
 import { CommandPalette } from "./CommandPalette";
-import { UpdatePrompt } from "./UpdateCenter";
+import { PcPageOutdated, UpdatePrompt } from "./UpdateCenter";
 import { CONFIRM_METHODS, needsConfirm, outbox, useOutbox } from "../lib/outbox";
 import { startOutboxSync, syncMessage, syncOutbox } from "../lib/outbox-sync";
 import { startJournalSync } from "../lib/journal";
@@ -211,6 +211,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               {t("Alle Inhalte sind Beispiele, Aktionen werden nicht ausgeführt. Zum Steuern deines PCs den Companion starten und die Adresse aus „Gerät koppeln“ öffnen.")}
             </Banner>
           </div>
+        )}
+        {!DEMO_BUILD && (
+          <div style={{ padding: "0 clamp(16px,3vw,36px)" }}><PcPageOutdated /></div>
         )}
         {appUpdated && (
           <div style={{ padding: "12px clamp(16px,3vw,36px) 0" }}>

@@ -313,6 +313,19 @@ public sealed class AssistantService
             _convs[conversationId] = conv;
             note = "Das Gespräch war sehr lang – ich habe ein neues begonnen (das spart Kosten).";
         }
+        // Commands and PC values never wait: they are answered before the conversation lock, so a slow AI answer in the same chat
+        // (a free service can take 20 seconds or more) does not hold up "Starte …".
+        AssistantReply? preLocal = null;
+        if (ResolveEngine(_store.Snapshot(), engine).mode == "smart")
+        {
+            preLocal = await Local.AnswerAsync(text);
+            if (preLocal.Confident && (preLocal.Actions.Any(a => a.Kind != "navigate") || preLocal.Sources.Any(x => !x.Contains(':'))))
+            {
+                preLocal.Sources.Add("Automatisch: Befehl oder Wert vom PC – lokal beantwortet (kostenlos)");
+                conv.LastUsed = _now();
+                return Done(conversationId, preLocal, note);
+            }
+        }
         await conv.Lock.WaitAsync(ct);
         try
         {
@@ -327,7 +340,7 @@ public sealed class AssistantService
             if (mode == "smart")
             {
                 // Commands and live values of the PC are answered right here (a game that should start, PC values …) – instant, free, exact.
-                var cmd = await Local.AnswerAsync(text);
+                var cmd = preLocal ?? await Local.AnswerAsync(text);
                 if (cmd.Confident && (cmd.Actions.Any(a => a.Kind != "navigate") || cmd.Sources.Any(x => !x.Contains(':'))))
                 {
                     cmd.Sources.Add("Automatisch: Befehl oder Wert vom PC – lokal beantwortet (kostenlos)");
@@ -512,8 +525,10 @@ public sealed class AssistantService
             if (failed.Count > 0) r.Sources.Insert(1, $"Automatisch: {string.Join("; ", failed)} – deshalb antwortet {label.Replace("Beantwortet von ", "")}");
             return r;
         }
-        foreach (var id in order)
+        for (var oi = 0; oi < order.Count; oi++)
         {
+            var id = order[oi];
+            var last = oi == order.Count - 1;
             ct.ThrowIfCancellationRequested();
             if (id == "ollama")
             {
@@ -535,7 +550,8 @@ public sealed class AssistantService
             }
             try
             {
-                var a = await FreeAi.AskAsync(id, FreeSystem(), history, ct);
+                // Not the last one in line: give up after 20 s and ask the next; the last one may take 45 s and wait out a short rate limit.
+                var a = await FreeAi.AskAsync(id, FreeSystem(), history, ct, last ? TimeSpan.FromSeconds(45) : TimeSpan.FromSeconds(20), last ? TimeSpan.FromSeconds(30) : TimeSpan.Zero);
                 history.Add(new GeminiClient.Turn("model", a.Text));
                 openTurn = false;
                 var reply = new AssistantReply { Text = a.Text, Mode = id, Model = a.Model, CostUsd = 0 };

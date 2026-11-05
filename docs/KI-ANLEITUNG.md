@@ -25,6 +25,14 @@ Dasselbe geht in der Dynamic Island: Reiter **JARVIS** → ganz unten „KI-Verw
 
 Genauso: Website öffnen (am PC mit dem Begleiter) → JARVIS → KI-Verwaltung. Der Schlüssel wird mit dem Windows-Benutzerkonto verschlüsselt gespeichert (DPAPI) und steht in keiner Datei im Klartext, nie im Browser, nie in GitHub.
 
+## Warum sieht die Seite nach dem Koppeln anders (älter) aus?
+
+Es gibt zwei Arten, die Seite zu öffnen:
+- **Die Website im Internet** (nilshenke-ops.github.io/pc-game-launcher-ultimate): immer die neueste Version.
+- **Die Seite deines PCs** (WLAN-Adresse wie `192.168…:8787`, dorthin leitet dich die Website beim Koppeln im Heimnetz um, weil eine Internetseite nicht mit einer Heimnetz-Adresse sprechen darf): Das ist eine Kopie im installierten Begleiter. Sie wird nur neuer, wenn du den **Begleiter am PC aktualisierst** (am PC: Updates → „Jetzt aktualisieren“; Herunterladen geht auch vom Handy). „Neu laden“ ändert daran nichts.
+
+Seit 3.2.1 zeigt die Seite vom PC einen Hinweis mit beiden Versionsnummern, wenn sie älter ist als die Website.
+
 ## Ohne PC (iPad im Café)
 
 Dann kann nur Pollinations antworten – und nur, wenn du es auf diesem Gerät erlaubt hast (KI-Verwaltung → „Pollinations ohne PC erlauben“). Ist der Dienst aufgebraucht, sagt JARVIS das, statt etwas zu erfinden.

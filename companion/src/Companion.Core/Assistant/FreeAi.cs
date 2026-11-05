@@ -372,7 +372,7 @@ public sealed class FreeAiHub
     // ---------------------------------------------------------------- the request
 
     /// <summary>Asks one provider (up to three of its models, best first). Throws a <see cref="ProviderException"/> if it cannot answer.</summary>
-    public async Task<FreeAnswer> AskAsync(string id, string system, IReadOnlyList<GeminiClient.Turn> history, CancellationToken ct = default)
+    public async Task<FreeAnswer> AskAsync(string id, string system, IReadOnlyList<GeminiClient.Turn> history, CancellationToken ct = default, TimeSpan? timeout = null, TimeSpan? maxWait = null)
     {
         if (id is not ("openrouter" or "groq" or "pollinations")) throw new ProviderException("blocked", "Dieser Anbieter wird hier nicht angefragt.");
         if (!Configured(id)) throw new ProviderException("blocked", $"{Name(id)} ist nicht eingerichtet oder ausgeschaltet.");
@@ -386,8 +386,23 @@ public sealed class FreeAiHub
 
         if (id == "pollinations")
         {
-            var r = await ChatAsync(id, null, "openai", messages, ct);
-            return Done(id, r, "Beantwortet von Pollinations – kostenloser Dienst ohne Konto");
+            // The anonymous service allows about one reply every 45 seconds per address and says how long to wait: if that is short and nobody else
+            // is left to ask, wait it out once instead of failing – the answer then simply arrives a little later.
+            for (var attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    Reply r;
+                    try { r = await ChatAsync(id, null, "openai-fast", messages, ct, timeout, lowEffort: true); }
+                    catch (ProviderException e) when (e.Kind == "model") { r = await ChatAsync(id, null, "openai-fast", messages, ct, timeout, lowEffort: false); }   // the setting was refused: ask plainly
+                    return Done(id, r, "Beantwortet von Pollinations – kostenloser Dienst ohne Konto");
+                }
+                catch (ProviderException e) when (attempt == 0 && e.Kind == "limit" && e.RetryAfter is { } wait && maxWait is { } mw && wait <= mw)
+                {
+                    await Task.Delay(wait + TimeSpan.FromMilliseconds(300), ct);
+                    lock (_gate) s.CooldownUntil = null;
+                }
+            }
         }
         var models = (await VerifiedModelsAsync(id, ct)).Where(m => !(s.ModelCooldown.TryGetValue(m.Id, out var u) && u > _now())).Take(MaxModelTries).ToList();
         if (models.Count == 0) throw new ProviderException("model", id == "openrouter" ? "OpenRouter: gerade ist kein kostenloses Modell verfügbar." : "Groq: gerade ist kein Modell verfügbar.");
@@ -399,7 +414,7 @@ public sealed class FreeAiHub
             if (id == "openrouter" && !s.Models.Any(x => x.Id == m.Id && CostGuard.IsFreeId(x.Id))) continue;
             try
             {
-                var r = await ChatAsync(id, key, m.Id, messages, ct);
+                var r = await ChatAsync(id, key, m.Id, messages, ct, timeout);
                 return Done(id, r, $"Beantwortet von {Name(id)} – kostenloses Modell ({r.Model})");
             }
             catch (ProviderException e) when (e.Kind is "limit" or "model" or "empty" or "busy" or "down")
@@ -443,12 +458,13 @@ public sealed class FreeAiHub
 
     sealed record Reply(string Text, string Model, long PromptTokens, long OutputTokens);
 
-    async Task<Reply> ChatAsync(string id, string? key, string model, JsonArray messages, CancellationToken ct)
+    async Task<Reply> ChatAsync(string id, string? key, string model, JsonArray messages, CancellationToken ct, TimeSpan? timeout = null, bool lowEffort = false)
     {
         var url = CostGuard.Endpoint(id)!;
         var endpoint = id == "pollinations" ? url : url + "/chat/completions";
         if (!CostGuard.HostAllowed(id, endpoint)) throw new ProviderException("blocked", "Adresse nicht erlaubt.");
-        var body = new JsonObject { ["model"] = model, ["messages"] = messages.DeepClone(), ["max_tokens"] = 1200, ["stream"] = false };
+        var body = new JsonObject { ["model"] = model, ["messages"] = messages.DeepClone(), ["max_tokens"] = id == "pollinations" ? 500 : 1200, ["stream"] = false };
+        if (lowEffort) body["reasoning_effort"] = "low";       // fewer "thinking" tokens: short factual answers arrive sooner
         if (id == "openrouter")
         {
             if (!CostGuard.IsFreeId(model)) throw new ProviderException("blocked", "Nur kostenlose Modelle (:free oder openrouter/free) werden verwendet.");
@@ -459,7 +475,7 @@ public sealed class FreeAiHub
         if (id != "pollinations" && !string.IsNullOrEmpty(key)) req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", key);   // Pollinations never gets a key
         if (id == "openrouter") req.Headers.Add("X-Title", "Nexus Gaming Hub");
         Count(id);
-        using var resp = await SendAsync(req, ct);
+        using var resp = await SendAsync(req, ct, timeout);
         var raw = await resp.Content.ReadAsStringAsync(ct);
         if (id == "openrouter") ReadOpenRouterLimits(resp);
         if (!resp.IsSuccessStatusCode) throw Classify(id, resp, raw, "Anfrage");
@@ -507,9 +523,11 @@ public sealed class FreeAiHub
             lock (_gate) S("openrouter").CooldownUntil = _now() + TimeSpan.FromSeconds(20);
     }
 
-    async Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct)
+    async Task<HttpResponseMessage> SendAsync(HttpRequestMessage req, CancellationToken ct, TimeSpan? timeout = null)
     {
-        try { return await _http.SendAsync(req, ct); }
+        using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        if (timeout is { } t) cts.CancelAfter(t);
+        try { return await _http.SendAsync(req, cts.Token); }
         catch (HttpRequestException) { throw new ProviderException("offline", "nicht erreichbar (Internet prüfen)"); }
         catch (TaskCanceledException) when (!ct.IsCancellationRequested) { throw new ProviderException("busy", "hat zu lange gebraucht", TimeSpan.FromMinutes(1)); }
         catch (TaskCanceledException) { throw new RpcException("cancelled", "Abgebrochen."); }
@@ -533,6 +551,12 @@ public sealed class FreeAiHub
         var retry = RetryAfter(resp);
         var code = (int)resp.StatusCode;
         if (resp.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden) return Fail(id, new ProviderException("key", $"{n}: Der Schlüssel wird abgelehnt."));
+        if (id == "pollinations" && (resp.StatusCode == HttpStatusCode.PaymentRequired || resp.StatusCode == HttpStatusCode.TooManyRequests) && raw.Contains("FREE_LIMIT", StringComparison.Ordinal))
+        {
+            // "Free limit reached: 1 reply every 45 seconds per IP" – a speed limit of the free service (with Retry-After), not a request for money.
+            var wait = retry ?? TimeSpan.FromSeconds(45);
+            return Fail(id, new ProviderException("limit", $"{n}: der kostenlose Dienst erlaubt nur etwa eine Antwort alle 45 Sekunden – wieder in {Math.Ceiling(wait.TotalSeconds)} s.", wait));
+        }
         if (resp.StatusCode == HttpStatusCode.PaymentRequired) return Fail(id, new ProviderException("billing", $"{n}: verlangt Guthaben – diese Anfrage wird nicht bezahlt.", TimeSpan.FromHours(1)));
         if (resp.StatusCode == HttpStatusCode.TooManyRequests)
         {
