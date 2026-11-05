@@ -2263,6 +2263,18 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Wie geht es meinem PC?");
   await panel.getByRole("button", { name: "Fragen" }).click();
   await expect(panel.locator(".isl-last")).toContainText("CPU");
+  await expect(panel.locator(".isl2-answer")).not.toContainText("Antwort von");     // only the answer – no source line
+  await expect(panel.locator(".isl2-via")).toHaveCount(0);
+  // The source is told when asked for.
+  await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Woher weißt du das?");
+  await panel.getByRole("button", { name: "Fragen" }).click();
+  await expect(panel.locator(".isl-last")).toContainText(/eingebauten Hilfe|geantwortet/);
+  // A command typed in the island runs at once: no question, no "Erlauben".
+  await panel.getByRole("textbox", { name: "Frag JARVIS …" }).fill("Starte E2E Testspiel");
+  await panel.getByRole("button", { name: "Fragen" }).click();
+  await expect(panel.locator(".isl-last")).toContainText(/E2E Testspiel/, { timeout: 15000 });
+  await expect(panel.locator(".isl-last")).not.toContainText("starten?");
+  await expect(isl.locator(".isl-host")).not.toHaveClass(/s-ask/);
   await closeIsland(panel);
   await expect(panel).toHaveCount(0, { timeout: 3000 }); // it plays its exit animation first, then it is gone
   // The focus timer keeps running with the panel shut: the closed island shows the time with a progress ring.
@@ -2565,10 +2577,18 @@ test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollina
   const card = p.getByRole("heading", { name: "KI-Verwaltung – kostenlose KI" });
   await expect(card).toBeVisible();
   await expect(p.getByText("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja)")).toBeVisible();
+  // "Meine KIs": at a glance what works and what is not set up – without the PC only what is on this device.
+  const roster = p.getByRole("region", { name: "Meine KIs" });
+  await expect(roster).toContainText("Eingebaute Hilfe"); await expect(roster).toContainText("Funktioniert immer");
+  await expect(roster.locator(".aim-rrow", { hasText: "OpenRouter" })).toContainText("Nicht eingerichtet");
+  await expect(roster.locator(".aim-rrow", { hasText: "Pollinations" })).toContainText("Nicht erlaubt");
+  await expect(roster).toContainText("1 funktionieren · 0 angefangen · 3 nicht eingerichtet");
   const sw = p.getByRole("switch", { name: "Pollinations ohne PC erlauben" });
   await expect(sw).toHaveAttribute("aria-checked", "false");
   await sw.click();
   await expect(sw).toHaveAttribute("aria-checked", "true");
+  await expect(roster.locator(".aim-rrow", { hasText: "Pollinations" })).toContainText("antwortet auch ohne PC");   // the list follows at once
+  await expect(roster).toContainText("2 funktionieren");
   expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await sw.click();
   await expect(sw).toHaveAttribute("aria-checked", "false");

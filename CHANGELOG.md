@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.6.0 – 2026-11-05
+### Neu
+- JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast
+- Quelle auf Nachfrage: Die Insel zeigt nur noch die Antwort. Fragst du „Quelle?“, „Woher weißt du das?“ oder „Welche KI hat geantwortet?“, sagt sie, wer geantwortet hat
+- „Meine KIs“: eine Liste aller KIs mit Zustand – Funktioniert (mit letzter Antwort), Am Limit, Problem, Angefangen (z. B. Schlüssel da, aber Bestätigung fehlt, oder ausgeschaltet) und Nicht eingerichtet; zeigt auch Schlüssel auf diesem Gerät (bereit/gesperrt), Gemini, KI-Router, Claude und DeepSeek; in der KI-Verwaltung und in der Insel (JARVIS-Tab) mit einer Zusammenfassung
+### Verbessert
+- Antworten stehen ohne Markdown da (kein **fett**, keine Rauten oder Aufzählungszeichen, keine [1]-Nummern, keine „Quelle:“-Zeile); die KIs werden zusätzlich angewiesen, direkt und kurz zu antworten
+- Laufende Befehle zeigt die Insel als Tätigkeit („Among Us wird gestartet“) statt als Frage; Antworten werden auch ohne Markdown vorgelesen
+
 ## 3.5.2 – 2026-11-05
 ### Behoben
 - Der QR-Code zum Koppeln blieb in 3.5.1 leer (die Grafik war wegen eines doppelten Attributs ungültig): er wird wieder angezeigt; der Test prüft jetzt, dass das Bild wirklich gezeichnet wird und dunkle und helle Punkte hat

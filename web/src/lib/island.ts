@@ -9,6 +9,7 @@ import { t } from "./i18n";
 import type { AssistantAction } from "./assistant";
 import { cleanWidgets, type IslandWidgetId } from "./island-widgets";
 import { logIsland, type ActivityKind, type ActivityLevel } from "./island-activity";
+import { plainAnswer } from "./answer-text";
 
 export type Mood = "idle" | "thinking" | "listening" | "asking" | "happy" | "error" | "dizzy" | "dancing" | "gaming" | "sleeping" | "surprised";
 /** Window sizes the companion accepts: only the eyes, the bar, the bar with a question, the open widgets. */
@@ -48,8 +49,9 @@ export function islandBusy(busy: boolean, listening = false) { if (busy !== stat
 /** Only an action that needs a confirmation and runs a command becomes a question – never an automatic one or a link. */
 export function islandAnswer(text: string, ok: boolean | null, actions: AssistantAction[] = [], kind: ActivityKind = "jarvis", via?: string, note?: string) {
   const ask = actions.find((a) => a.confirm && a.method && !a.auto) ?? null;
-  set({ last: { text: text.slice(0, 280), ok, at: Date.now(), via: via?.slice(0, 60), note: note?.slice(0, 200) }, ask: ask ? { action: ask, at: Date.now() } : null });
-  logIsland(kind, ok === false ? "error" : ok ? "success" : "info", text); // stays in the history after the bar has moved on
+  const shown = plainAnswer(text);                                    // only the answer: no ** or # from the AI
+  set({ last: { text: shown.slice(0, 280), ok, at: Date.now(), via: via?.slice(0, 60), note: note?.slice(0, 200) }, ask: ask ? { action: ask, at: Date.now() } : null });
+  logIsland(kind, ok === false ? "error" : ok ? "success" : "info", shown); // stays in the history after the bar has moved on
 }
 /** declined: the question is dropped and nothing runs – the eyes go back to normal (no "done"). */
 export function islandClearAsk(declined = false) { if (state.ask || declined) set({ ask: null, ...(declined ? { last: { text: t("Abgelehnt – nichts ausgeführt."), ok: null, at: 0 } } : {}) }); }

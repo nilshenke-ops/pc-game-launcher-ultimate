@@ -305,6 +305,25 @@ public class AssistantTests
     }
 
     [Fact]
+    public async Task Direct_commands_from_the_island_run_what_was_named_without_asking_again()
+    {
+        using var dir = new TempDir();
+        await using var s = await Setup(dir);
+        using var fake = new FakeClaude();
+        var a = WithFake(s, dir, fake);
+        // Without "direct" (and without a JARVIS session) the action waits for a tap.
+        var plain = J(await a.AskAsync("local", "PC", null, "Spiel Sound Airhorn")).GetProperty("reply").GetProperty("actions").EnumerateArray().First();
+        Assert.False(plain.TryGetProperty("auto", out var pa) && pa.GetBoolean());
+        // The person typed it themselves in the island: what they named is marked to run at once.
+        var direct = J(await a.AskAsync("local", "PC", null, "Spiel Sound Airhorn", direct: true)).GetProperty("reply").GetProperty("actions").EnumerateArray().First();
+        Assert.True(direct.GetProperty("auto").GetBoolean());
+        Assert.Equal("sounds.play", direct.GetProperty("method").GetString());
+        // Something the person did not name is never started: no action is marked for a question.
+        var question = J(await a.AskAsync("local", "PC", null, "Wie funktioniert das Soundboard?", direct: true)).GetProperty("reply").GetProperty("actions").EnumerateArray();
+        Assert.DoesNotContain(question, x => x.TryGetProperty("auto", out var au) && au.GetBoolean());
+    }
+
+    [Fact]
     public async Task Commands_stay_local_and_the_monthly_limit_is_respected()
     {
         using var dir = new TempDir();

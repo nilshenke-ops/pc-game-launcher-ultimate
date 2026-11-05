@@ -246,7 +246,7 @@ public static class RpcApi
             var (cts, key) = s.Research.Begin(ctx.Session.PrefsKey, ctx.OptStr("requestId", 64));
             // The JARVIS island on the PC screen shows the same (local sessions only: answers never go to other devices).
             s.Rpc.Broadcast("jarvis.activity", new { phase = "busy" }, Permissions.Local);
-            try { var answer = await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), cts.Token, jarvis: jarvis, jarvisRequested: wants, engine: ctx.OptStr("engine", 40));
+            try { var answer = await s.Assistant.AskAsync(ctx.Session.PrefsKey, ctx.Session.Who, ctx.OptStr("conversationId", 64), ctx.Str("text", 2000), cts.Token, jarvis: jarvis, jarvisRequested: wants, engine: ctx.OptStr("engine", 40), direct: ctx.Params.TryGetProperty("direct", out var dr) && dr.ValueKind == JsonValueKind.True);
                 IslandAnswer(s, answer); return answer; }
             catch (OperationCanceledException) { s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = false, text = "Abgebrochen." }, Permissions.Local); throw new RpcException("cancelled", "Abgebrochen."); }
             catch (RpcException e) { s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = false, text = e.Message }, Permissions.Local); throw; }
@@ -957,7 +957,10 @@ public static class RpcApi
         // Which AI answered (and why, when another one was skipped) – shown under the answer in the island.
         var via = reply.Mode switch { "openrouter" => $"OpenRouter{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "groq" => $"Groq{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "pollinations" => "Pollinations", "gemini" => "Gemini", "router" => $"KI-Router{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "ollama" => "lokale KI", "claude" => "Claude", _ => "eingebaut" };
         var note = reply.Sources.FirstOrDefault(x => x.StartsWith("Automatisch:"));
-        s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = !reply.Failed, via, note, text = reply.Text.Length > 280 ? reply.Text[..280] : reply.Text,
+        // Something that runs right away is shown as what is being done ("Among Us starten"), not as a question.
+        var runNow = reply.Actions.Where(a => a.Auto && a.Kind != "navigate" && !string.IsNullOrEmpty(a.Method)).Select(a => a.Label).ToList();
+        var shown = runNow.Count > 0 ? string.Join(", ", runNow) + " …" : reply.Text;
+        s.Rpc.Broadcast("jarvis.activity", new { phase = "done", ok = !reply.Failed, via, note, text = shown.Length > 280 ? shown[..280] : shown,
             ask = ask == null ? null : new { kind = ask.Kind, label = ask.Label, method = ask.Method, @params = ask.Params, confirm = true } }, Permissions.Local);
     }
 

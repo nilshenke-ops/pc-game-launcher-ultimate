@@ -2706,3 +2706,11 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 
 .aim-local { display: grid; gap: 6px; padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,0.06); margin-top: 6px; }
 .aim-unlock { display: grid; gap: 6px; }
+
+.aim-roster { display: grid; gap: 6px; margin: 4px 0 12px; }
+.aim-rlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.aim-rrow { display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px; border-radius: 12px; background: rgba(255,255,255,0.05); }
+.aim-rrow.works .aim-ricon { color: #5ad19a; } .aim-rrow.limit .aim-ricon { color: #f0b43c; } .aim-rrow.problem .aim-ricon { color: #f05a5a; } .aim-rrow.begun .aim-ricon { color: #8fb4ff; } .aim-rrow.none { opacity: .75; }
+.aim-ricon { flex: 0 0 auto; margin-top: 2px; }
+.aim-rtext { display: grid; gap: 2px; min-width: 0; overflow-wrap: anywhere; }
+.aim-rtext .aim-badge { margin-left: 6px; }

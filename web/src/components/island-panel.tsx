@@ -11,7 +11,9 @@ import { useAppState } from "../lib/state";
 import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
 import { useIslandLook } from "../lib/island-look";
 import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
-import { clock, islandAnswer, islandBusy, islandPet, islandPoke, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
+import { clock, islandAnswer, islandState, islandBusy, islandPet, islandPoke, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
+import { asksForSource } from "../lib/answer-text";
+import type { AssistantAction } from "../lib/assistant";
 import { countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, useTimer } from "../lib/island-timer";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { nowPosition, nowSub, songTime, useNowPlaying } from "../lib/now-playing";
@@ -25,6 +27,7 @@ import { askLocalChain, LOCAL_NAME, readyProviders, useLocalAi } from "../lib/fr
 import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { readJson, writeJson } from "../lib/rpc";
 import { AiManager, hasReadyAi, type AiOverview } from "./ai-manager";
+import { AiRoster } from "./ai-roster";
 import { MessageCompose } from "./message-compose";
 import { parseMessageCommand, type Messenger } from "../lib/messaging";
 import { mainGame } from "../lib/running";
@@ -143,8 +146,22 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       islandAnswer(cmd.body ? t("Die Nachricht ist vorbereitet – tippe auf „Öffnen“, dann wählst du dort den Empfänger.") : t("Schreib den Text in die Karte und tippe auf „Öffnen“."), true);
       return;
     }
+    // The source is told only when asked for ("Woher weißt du das?", "Quelle?") – otherwise the island shows just the answer.
+    if (asksForSource(v)) {
+      const l = islandState().last;
+      islandAnswer(l?.via ? t("Das hat {n} geantwortet.{x}", { n: l.via, x: l.note && l.note.includes("deshalb") ? ` ${l.note.replace(/^Automatisch:\s*/, "")}` : "" }) : t("Die letzte Antwort kam aus der eingebauten Hilfe oder vom PC – ohne externe KI."), true);
+      return;
+    }
     if (!online) { await askWithoutPc(v); return; }
-    try { await client.call("assistant.ask", { text: v, ...(engineNow === "auto" ? {} : { engine: engineNow }) }); } catch (err) { islandAnswer(friendlyError(err), false); }
+    try {
+      // "direct": I said or typed this command myself – what I named ("Starte Among Us", "Öffne Discord") runs at once, without asking again.
+      const res = await client.call<{ reply?: { actions?: (AssistantAction & { auto?: boolean })[] } }>("assistant.ask", { text: v, direct: true, ...(engineNow === "auto" ? {} : { engine: engineNow }) });
+      const autos = (res?.reply?.actions ?? []).filter((a) => a.auto && a.method && a.kind !== "navigate");
+      for (const a of autos) {
+        try { await client.call(a.method!, a.params ?? {}); islandAnswer(a.kind === "launch" ? t("{n} wird gestartet", { n: a.label.replace(/ starten$/, "") }) : a.kind === "stopSounds" ? t("Sounds gestoppt") : t("✓ {n}", { n: a.label }), true); }
+        catch (e) { islandAnswer(friendlyError(e), false); break; }
+      }
+    } catch (err) { islandAnswer(friendlyError(err), false); }
   };
   // Speaking to JARVIS: the sentence is cleaned like a typed one, "Stopp" quietens the voice, "Danke" ends the conversation.
   const convo = useConversation();
@@ -354,7 +371,6 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       <div className="isl2-answer">
         <span className="badge">{t(MOOD_LABEL[mood])}</span>
         <p className="isl-last">{s.last ? s.last.text : t("Noch nichts gefragt.")}</p>
-        {s.last?.via && <span className="tiny isl2-via">{t("Antwort von {n}", { n: s.last.via })}{s.last.note && s.last.note.includes("deshalb") ? ` – ${s.last.note.replace(/^Automatisch:\s*/, "")}` : ""}</span>}
       </div>
       {pendingFree && (
         <div className="isl2-answer" role="group" aria-label={t("Freie KI erlauben")}>
@@ -388,9 +404,10 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       </form>
       {convo && <p className="tiny isl2-tip" role="status">{t("Gespräch läuft – sprich einfach weiter. Sag „Stopp“, damit JARVIS still ist, oder „Danke“, um zu beenden.")}</p>}
       <p className="tiny muted isl2-tip">{online ? t("Befehle („Starte WhatsApp“) erledigt der PC, Fragen beantwortet eine kostenlose KI – fällt eine aus, springt die nächste ein. Gesprochene Fragen werden laut beantwortet.") : t("Ohne PC: allgemeine Fragen beantwortet die freie KI ohne Konto (nur mit deinem Ja).")}</p>
+      <AiRoster online={online} ai={aiv.data} compact />
       <details className="isl2-setup" open={online && !!aiv.data && !hasReadyAi(aiv.data)}>
         <summary>{t("KI-Verwaltung")}{hasReadyAi(aiv.data) ? ` · ${t("eingerichtet")}` : ""}</summary>
-        <AiManager online={online} onChanged={() => { ai.reload(); aiv.reload(); }} />
+        <AiManager online={online} roster={false} onChanged={() => { ai.reload(); aiv.reload(); }} />
       </details>
     </div>
   );

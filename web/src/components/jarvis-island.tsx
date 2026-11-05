@@ -5,6 +5,7 @@
 // island and only gets told the shape of every frame, so the screen and the window cut-out can never drift apart.
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
+import { plainAnswer } from "../lib/answer-text";
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Bell, Check, Gamepad2, Music, Timer as TimerIcon, X } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -104,7 +105,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     if (x.phase === "busy") islandBusy(true);
     if (x.phase === "done") {
       islandBusy(false); islandAnswer(String(x.text ?? ""), x.ok === false ? false : true, x.ask ? [{ ...x.ask, confirm: true }] : [], "jarvis", x.via, x.note);
-      if (consumeSpoken() && x.text) speak(x.text); // only the answer to a question that was spoken
+      if (consumeSpoken() && x.text) speak(plainAnswer(x.text)); // only the answer to a question that was spoken
     }
   }), []);
   // The sound the PC plays (level and beat only – nothing is recorded) and the running game drive dancing and gaming.

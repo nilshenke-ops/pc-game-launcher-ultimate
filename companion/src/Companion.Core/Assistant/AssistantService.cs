@@ -287,11 +287,11 @@ public sealed class AssistantService
     /// <param name="owner">Device (or "local") – a conversation belongs to the device that started it.</param>
     /// <param name="jarvis">JARVIS session is active: actions the user named may be run directly (see <see cref="Jarvis"/>).</param>
     /// <param name="jarvisRequested">The website asked for JARVIS (even if the session ran out) – gaming-only rules apply.</param>
-    public async Task<object> AskAsync(string owner, string who, string? conversationId, string text, CancellationToken ct = default, bool jarvis = false, bool jarvisRequested = false, string? engine = null)
+    public async Task<object> AskAsync(string owner, string who, string? conversationId, string text, CancellationToken ct = default, bool jarvis = false, bool jarvisRequested = false, string? engine = null, bool direct = false)
     {
         text = text.Trim();
         if (text.Length is 0 or > 2000) throw new RpcException("invalid-params", "Frage mit 1–2000 Zeichen.");
-        _ask.Value = (text, jarvis);
+        _ask.Value = (text, jarvis, direct);
         if (jarvis || jarvisRequested)
         {
             // Answered without any AI call – fast, free, and the same on every mode.
@@ -476,7 +476,7 @@ public sealed class AssistantService
         return new { models = list.Select(m => new { id = m.Id, free = m.Free, context = m.Context }) };
     }
 
-    string ChatSystem() => "Du bist JARVIS, der Gaming-Assistent im „Nexus Gaming Hub“. Antworte in der Sprache des Nutzers (meist Deutsch), kurz und konkret. " +
+    string ChatSystem() => "Du bist JARVIS, der Gaming-Assistent im „Nexus Gaming Hub“. Antworte in der Sprache des Nutzers (meist Deutsch), kurz und konkret – gib direkt die Antwort, ohne Quellenangaben, ohne Markdown (keine Sternchen, Rauten oder Aufzählungszeichen). " +
             "Du hast in diesem Modus KEINE Werkzeuge und KEINE Live-Daten vom PC: Fragt der Nutzer nach Werten seines PCs, seinen Spielen oder Spielzeiten, sag ehrlich, dass du sie hier nicht siehst. Behaupte nie, etwas gestartet oder erledigt zu haben. " +
             "Erfinde nichts; bist du unsicher (neue Spiele, Patches, Zahlen), sag das und empfiehl „Im Internet suchen“. Keine Spoiler ohne Wunsch. Nur Gaming-Themen. Keine Hilfe bei Cheats oder Anti-Cheat-Umgehung.\n\n" +
             "Wissensbasis der App:\n" + Data.Knowledge.FullText;
@@ -500,7 +500,7 @@ public sealed class AssistantService
     }
 
     /// <summary>The short system text for the free services: no knowledge base (the built-in assistant answers app questions), no device name – less data leaves the PC and the free limits last longer.</summary>
-    string FreeSystem() => "Du bist JARVIS, der Gaming-Assistent im „Nexus Gaming Hub“. Antworte in der Sprache des Nutzers (meist Deutsch), kurz und konkret. " +
+    string FreeSystem() => "Du bist JARVIS, der Gaming-Assistent im „Nexus Gaming Hub“. Antworte in der Sprache des Nutzers (meist Deutsch), kurz und konkret – gib direkt die Antwort, ohne Quellenangaben, ohne Markdown (keine Sternchen, Rauten oder Aufzählungszeichen). " +
         "Du hast KEINE Werkzeuge und KEINE Live-Daten vom PC: Fragt der Nutzer nach Werten seines PCs, seinen Spielen oder Spielzeiten, sag ehrlich, dass du sie hier nicht siehst. Behaupte nie, etwas gestartet oder erledigt zu haben. " +
         "Erfinde nichts; bist du unsicher (neue Spiele, Patches, Zahlen), sag das. Keine Spoiler ohne Wunsch. Keine Hilfe bei Cheats oder Anti-Cheat-Umgehung.";
 
@@ -694,13 +694,14 @@ public sealed class AssistantService
         return new AssistantReply { Text = res.Text.Trim(), Mode = "gemini", Model = res.Model, CostUsd = 0, Sources = { "Gemini (kostenlos) – ohne Live-Daten vom PC" } };
     }
 
-    readonly AsyncLocal<(string text, bool jarvis)> _ask = new();
+    readonly AsyncLocal<(string text, bool jarvis, bool direct)> _ask = new();
 
     object Done(string conversationId, AssistantReply reply, string? note)
     {
         if (note != null) reply.Text = note + "\n\n" + reply.Text;
-        var (text, jarvis) = _ask.Value;
-        if (jarvis) Jarvis.MarkAuto(reply, text);
+        var (text, jarvis, direct) = _ask.Value;
+        // "direct": the person typed or said the command themselves (the island): what they named runs at once – no second question.
+        if (jarvis || direct) Jarvis.MarkAuto(reply, text);
         else foreach (var a in reply.Actions) a.Auto = false;
         return new { conversationId, reply, jarvis };
     }

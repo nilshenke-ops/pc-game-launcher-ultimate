@@ -11,6 +11,7 @@ import { relTime } from "../lib/format";
 import { toast, useCan, useRpc } from "../lib/hooks";
 import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
+import { AiRoster } from "./ai-roster";
 import { friendlyError } from "../lib/friendly-error";
 import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
@@ -57,7 +58,7 @@ function Switch({ on, label, onChange, disabled }: { on: boolean; label: string;
   return <button type="button" role="switch" aria-checked={on} aria-label={label} disabled={disabled} className={`aim-switch${on ? " on" : ""}`} onClick={() => onChange(!on)}><span /></button>;
 }
 
-export function AiManager({ online, onChanged }: { online: boolean; onChanged?: () => void }) {
+export function AiManager({ online, onChanged, roster = true }: { online: boolean; onChanged?: () => void; roster?: boolean }) {
   const canManage = useCan("admin");
   const st = useRpc<AiOverview>("ai.status", {}, ["assistant"], online);
   const consent = useFreeAiConsent();
@@ -110,6 +111,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
   if (!online) {
     return (
       <div className="aim" aria-live="polite">
+        {roster && <AiRoster online={false} />}
         <p className="tiny muted">{t("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja) und – wenn du unten einen Schlüssel mit Passwort einrichtest – OpenRouter und Groq direkt von diesem Gerät. Ollama läuft nur auf dem PC.")}</p>
         <div className="aim-row">
           <span className="aim-name">Pollinations</span>
@@ -130,6 +132,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
         <span className="aim-cost"><ShieldCheck size={14} aria-hidden /> {t("0,00 € – nur kostenlose Modelle, kein bezahlter Ausweich, kein Aufladen")}</span>
         <p className="tiny">{o.last ? t("Zuletzt geantwortet: {n}{m} · {w}", { n: o.last.name, m: o.last.model ? ` (${o.last.model})` : "", w: o.last.at ? relTime(o.last.at) : "" }) : t("Noch keine Antwort von einer freien KI.")}</p>
       </div>
+      {roster && <AiRoster online ai={o} />}
       <section className="aim-mode" aria-label={t("So arbeiten die KIs zusammen")}>
         <b className="aim-modetitle">{t("So arbeiten die KIs zusammen")}</b>
         <div className="aim-modes" role="radiogroup" aria-label={t("So arbeiten die KIs zusammen")}>
