@@ -1,5 +1,36 @@
 [
   {
+    "version": "3.3.0",
+    "date": "2026-11-05",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.3.0/PCGameLauncherCompanion.exe",
+    "size": 94887712,
+    "sha256": "ca6d6d6c0d7dc458fc7c34ea8d311e39cc4aef400964431a964c8b67c336c253",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.3.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.3.0/PCGameLauncherCompanion-3.3.0-win-x64.zip",
+      "size": 89162882,
+      "sha256": "31345e060dc021f8e5df2c6640ce261aea5d8d5194cd27ab30b762a805e59c48"
+    },
+    "notes": "KI leicht umschalten, auch vom Handy: Oben in der KI-Verwaltung wählst du mit einem Tipp, wie die KIs arbeiten – „Ersatz-Reihenfolge“ (eine nach der anderen, die nächste springt ein), „Schnellster gewinnt“ (OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt) oder „Nur eine KI“ (nur die gewählte antwortet, nichts springt ein). Darunter schaltest du OpenRouter und Groq mit je einem Tipp ein oder aus (oder gehst direkt zum Einrichten) · Schlüssel vom Handy oder iPad eintragen, auch im WLAN ohne https: Der Schlüssel wird im Browser mit dem Gerätegeheimnis versiegelt (nur für diese Sitzung und diesen Anbieter lesbar, nicht fälschbar) und erst am PC entschlüsselt, geprüft und geschützt gespeichert. Am PC selbst geht es wie bisher · Selbsttest in der KI-Verwaltung: prüft PC, einen echten PC-Befehl („Wie geht es meinem PC?“), die Internetsuche (offene Wikis), jede eingerichtete KI einzeln und die Spracheingabe – und sagt in einfachen Worten, was geklappt hat; ein eigener Knopf „Wiederverbindung prüfen“ trennt die Verbindung kurz und misst, wie schnell sie von selbst wieder steht",
+    "changes": {
+      "neu": [
+        "KI leicht umschalten, auch vom Handy: Oben in der KI-Verwaltung wählst du mit einem Tipp, wie die KIs arbeiten – „Ersatz-Reihenfolge“ (eine nach der anderen, die nächste springt ein), „Schnellster gewinnt“ (OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt) oder „Nur eine KI“ (nur die gewählte antwortet, nichts springt ein). Darunter schaltest du OpenRouter und Groq mit je einem Tipp ein oder aus (oder gehst direkt zum Einrichten)",
+        "Schlüssel vom Handy oder iPad eintragen, auch im WLAN ohne https: Der Schlüssel wird im Browser mit dem Gerätegeheimnis versiegelt (nur für diese Sitzung und diesen Anbieter lesbar, nicht fälschbar) und erst am PC entschlüsselt, geprüft und geschützt gespeichert. Am PC selbst geht es wie bisher",
+        "Selbsttest in der KI-Verwaltung: prüft PC, einen echten PC-Befehl („Wie geht es meinem PC?“), die Internetsuche (offene Wikis), jede eingerichtete KI einzeln und die Spracheingabe – und sagt in einfachen Worten, was geklappt hat; ein eigener Knopf „Wiederverbindung prüfen“ trennt die Verbindung kurz und misst, wie schnell sie von selbst wieder steht"
+      ],
+      "verbessert": [
+        "Die Betriebsart bleibt gespeichert; der frühere Schalter „Automatisch wechseln“ wird übernommen (aus = „Nur eine KI“)",
+        "Spracheingabe: der Selbsttest sagt klar, ob der Browser (oder die Home-Bildschirm-App) Sprache erkennen kann und was man tun kann, wenn nicht"
+      ],
+      "behoben": [
+        "Ein bei Groq gespeicherter Schlüssel ohne Bestätigung „kostenloser Tarif“ schaltete Groq nicht ein (Reihenfolge der Prüfung): behoben, auch beim Setzen von Schlüssel und Bestätigung in einem Schritt"
+      ]
+    },
+    "signature": "TLLuzQ5P+6Ou58S34BRDjOHSsFfI1hz+uR7XgYsT7AlXVoUiFOT0l/hAzaVuFACXuDy0WTHzLnCR2+ljpyI+OQ=="
+  },
+  {
     "version": "3.2.1",
     "date": "2026-11-05",
     "channel": "stable",
@@ -1431,36 +1462,5 @@
       "behoben": []
     },
     "signature": "qpH1zDw2zWXw73WS1Cro2tyMrG1gIUKMYxfUkeV4s8U8ixspduL+WTbR6+rldIZrLfitOqoIEv1i9ULCutM4CQ=="
-  },
-  {
-    "version": "2.59.0",
-    "date": "2026-10-27",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion.exe",
-    "size": 88143500,
-    "sha256": "cf9aae4470a25e3a58a22d376b06be1086038129983d3d7ee94677ed49fb78db",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.59.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.59.0/PCGameLauncherCompanion-2.59.0-win-x64.zip",
-      "size": 82404321,
-      "sha256": "3ba90d48000c44c1af66c554fa34961266ffc4b15bbb02cae17b6edabd7ab1a1"
-    },
-    "notes": "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia · Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen · Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung",
-    "changes": {
-      "neu": [
-        "Bingo für jedes Spiel von Steam und Xbox: Gibt es ein Spiel nicht auf Steam, schaut der PC im Microsoft Store (Xbox) nach, sonst bei Wikipedia",
-        "Mit einer KI am PC (DeepSeek, Claude oder Ollama): Die KI bekommt, was im Internet über das Spiel steht (Genre, Beschreibung, echte Erfolge), und schreibt daraus Aufgaben, die zu genau diesem Spiel passen",
-        "Auch für Spiele mit eigenen Aufgaben (z. B. Minecraft) fragt JARVIS, ob er zusätzlich im Internet nachsehen darf – für mehr Abwechslung"
-      ],
-      "verbessert": [
-        "Mehr Abwechslung bei gleicher Schwierigkeit: deutlich größere Aufgaben-Sets je Spielart, Aufgaben mit wechselnden Zahlen („Besiege 3 / 5 / 10 Gegner“), echte Erfolge, KI- und eingebaute Aufgaben werden gemischt; die letzte Karte wird nicht wiederholt",
-        "Die Karte sagt, woraus sie besteht (z. B. „6 echte Steam-Erfolge, 3 Aufgaben von der KI“)"
-      ],
-      "behoben": [
-        "„Minecraft“ wurde bei Steam als „Minecraft Dungeons“ gefunden (falsche Erfolge) – jetzt zählt nur dasselbe Spiel (Reihenname davor und Editionen wie „Special Edition“ sind erlaubt)"
-      ]
-    },
-    "signature": "5PMrIJYC0fNy5qnpjlJGZlIhsLeXi/5XP3R5X64nUzwsxH1z15Gyri/qaVZO7KNVMdTAptdl7VJQ2Gmz/ecsaA=="
   }
 ]
