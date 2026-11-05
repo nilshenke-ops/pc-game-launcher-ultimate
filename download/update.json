@@ -1,24 +1,29 @@
 {
-  "version": "3.5.2",
+  "version": "3.6.0",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.2/PCGameLauncherCompanion.exe",
-  "size": 94896476,
-  "sha256": "56416a9cfc3b48227651d33f8640287ba89b45c91053c84c372077fd430ece74",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.6.0/PCGameLauncherCompanion.exe",
+  "size": 94900721,
+  "sha256": "21baeeff65d5ec598990023f6d9e57911defbc6ed3b125021e2c067f549b130c",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.5.2-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.2/PCGameLauncherCompanion-3.5.2-win-x64.zip",
-    "size": 89171592,
-    "sha256": "21b1f713a9629af209ffcb17f822e888e208141fd0df5516fbf206c3a4ed1e50"
+    "fileName": "PCGameLauncherCompanion-3.6.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.6.0/PCGameLauncherCompanion-3.6.0-win-x64.zip",
+    "size": 89176105,
+    "sha256": "b89caca83cb2e342a36d15da2e50e52a3453f4a1a08c4a4ac998c983d329acef"
   },
-  "notes": "",
+  "notes": "JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast · Quelle auf Nachfrage: Die Insel zeigt nur noch die Antwort. Fragst du „Quelle?“, „Woher weißt du das?“ oder „Welche KI hat geantwortet?“, sagt sie, wer geantwortet hat · „Meine KIs“: eine Liste aller KIs mit Zustand – Funktioniert (mit letzter Antwort), Am Limit, Problem, Angefangen (z. B. Schlüssel da, aber Bestätigung fehlt, oder ausgeschaltet) und Nicht eingerichtet; zeigt auch Schlüssel auf diesem Gerät (bereit/gesperrt), Gemini, KI-Router, Claude und DeepSeek; in der KI-Verwaltung und in der Insel (JARVIS-Tab) mit einer Zusammenfassung",
   "changes": {
-    "neu": [],
-    "verbessert": [],
-    "behoben": [
-      "Der QR-Code zum Koppeln blieb in 3.5.1 leer (die Grafik war wegen eines doppelten Attributs ungültig): er wird wieder angezeigt; der Test prüft jetzt, dass das Bild wirklich gezeichnet wird und dunkle und helle Punkte hat"
-    ]
+    "neu": [
+      "JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast",
+      "Quelle auf Nachfrage: Die Insel zeigt nur noch die Antwort. Fragst du „Quelle?“, „Woher weißt du das?“ oder „Welche KI hat geantwortet?“, sagt sie, wer geantwortet hat",
+      "„Meine KIs“: eine Liste aller KIs mit Zustand – Funktioniert (mit letzter Antwort), Am Limit, Problem, Angefangen (z. B. Schlüssel da, aber Bestätigung fehlt, oder ausgeschaltet) und Nicht eingerichtet; zeigt auch Schlüssel auf diesem Gerät (bereit/gesperrt), Gemini, KI-Router, Claude und DeepSeek; in der KI-Verwaltung und in der Insel (JARVIS-Tab) mit einer Zusammenfassung"
+    ],
+    "verbessert": [
+      "Antworten stehen ohne Markdown da (kein **fett**, keine Rauten oder Aufzählungszeichen, keine [1]-Nummern, keine „Quelle:“-Zeile); die KIs werden zusätzlich angewiesen, direkt und kurz zu antworten",
+      "Laufende Befehle zeigt die Insel als Tätigkeit („Among Us wird gestartet“) statt als Frage; Antworten werden auch ohne Markdown vorgelesen"
+    ],
+    "behoben": []
   },
-  "signature": "rZkZCamzu5AGLbyBIG8l3S4vGNKHne9LvnbVNn3knrUpL4YzgT14XKbMxnKRSYW/IHg+RgWoaQcI7xRdHUoNpA=="
+  "signature": "2XRD2VffUSei5mm2QEdLxqkrt4QRhDUyZchBgrQc/g0wsIY+q4yD9r8dboAJF5Ng9OZTsTOBbS54Oo9k4bRMSA=="
 }

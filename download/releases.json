@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.6.0",
+    "date": "2026-11-05",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.6.0/PCGameLauncherCompanion.exe",
+    "size": 94900721,
+    "sha256": "21baeeff65d5ec598990023f6d9e57911defbc6ed3b125021e2c067f549b130c",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.6.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.6.0/PCGameLauncherCompanion-3.6.0-win-x64.zip",
+      "size": 89176105,
+      "sha256": "b89caca83cb2e342a36d15da2e50e52a3453f4a1a08c4a4ac998c983d329acef"
+    },
+    "notes": "JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast · Quelle auf Nachfrage: Die Insel zeigt nur noch die Antwort. Fragst du „Quelle?“, „Woher weißt du das?“ oder „Welche KI hat geantwortet?“, sagt sie, wer geantwortet hat · „Meine KIs“: eine Liste aller KIs mit Zustand – Funktioniert (mit letzter Antwort), Am Limit, Problem, Angefangen (z. B. Schlüssel da, aber Bestätigung fehlt, oder ausgeschaltet) und Nicht eingerichtet; zeigt auch Schlüssel auf diesem Gerät (bereit/gesperrt), Gemini, KI-Router, Claude und DeepSeek; in der KI-Verwaltung und in der Insel (JARVIS-Tab) mit einer Zusammenfassung",
+    "changes": {
+      "neu": [
+        "JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast",
+        "Quelle auf Nachfrage: Die Insel zeigt nur noch die Antwort. Fragst du „Quelle?“, „Woher weißt du das?“ oder „Welche KI hat geantwortet?“, sagt sie, wer geantwortet hat",
+        "„Meine KIs“: eine Liste aller KIs mit Zustand – Funktioniert (mit letzter Antwort), Am Limit, Problem, Angefangen (z. B. Schlüssel da, aber Bestätigung fehlt, oder ausgeschaltet) und Nicht eingerichtet; zeigt auch Schlüssel auf diesem Gerät (bereit/gesperrt), Gemini, KI-Router, Claude und DeepSeek; in der KI-Verwaltung und in der Insel (JARVIS-Tab) mit einer Zusammenfassung"
+      ],
+      "verbessert": [
+        "Antworten stehen ohne Markdown da (kein **fett**, keine Rauten oder Aufzählungszeichen, keine [1]-Nummern, keine „Quelle:“-Zeile); die KIs werden zusätzlich angewiesen, direkt und kurz zu antworten",
+        "Laufende Befehle zeigt die Insel als Tätigkeit („Among Us wird gestartet“) statt als Frage; Antworten werden auch ohne Markdown vorgelesen"
+      ],
+      "behoben": []
+    },
+    "signature": "2XRD2VffUSei5mm2QEdLxqkrt4QRhDUyZchBgrQc/g0wsIY+q4yD9r8dboAJF5Ng9OZTsTOBbS54Oo9k4bRMSA=="
+  },
+  {
     "version": "3.5.2",
     "date": "2026-11-05",
     "channel": "stable",
@@ -1423,38 +1452,5 @@
       "behoben": []
     },
     "signature": "mkzpMoIZSi/7F0d5s6f2pNWQz5JaxKTqSsA88ImnzUSrDpCVGE0OJpIbsPGUncKOuD56tgyT+WGGlVLVL8LoTw=="
-  },
-  {
-    "version": "2.64.0",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.64.0/PCGameLauncherCompanion.exe",
-    "size": 88230293,
-    "sha256": "6bac79cfbbb2ae618330a7fa01ae99214e81e6a2ca4ce1c77923f402f8a4a762",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.64.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.64.0/PCGameLauncherCompanion-2.64.0-win-x64.zip",
-      "size": 82493538,
-      "sha256": "54f7f347c13d622f5376d379e6ef68c24a57cb181909c218e1fdc783a9064824"
-    },
-    "notes": "JARVIS Spielzeitanalyse: „Wie lange brauche ich noch für …?“, „Wie lange dauert … insgesamt?“, „… für 100 %?“, „… bei 45 Minuten täglich?“, „Schaffe ich … bis Freitag?“ – mit Spanne statt exakter Zahl, Tagen beim eigenen Tagesbudget, Bedarf pro Tag bis zur Frist und Quellen · Gemessen, recherchiert und geschätzt sind getrennt gekennzeichnet: Spielzeit aus Steam (am PC aus Steams eigener Datei, sonst über das Steam-Konto) oder aus den vom Begleiter gemessenen Sitzungen; Durchschnittsdauern (Hauptstory, mit Nebenaufgaben, 100 %) aus der offiziellen IGDB-Schnittstelle „Time to Beat“ mit Anzahl der Spieler und Datum · Fortschritt sagen: „Ich bin bei 40 % in …“ – wird mit Datum gemerkt und für die Schätzung genutzt (eigenes Tempo und Durchschnitt)",
-    "changes": {
-      "neu": [
-        "JARVIS Spielzeitanalyse: „Wie lange brauche ich noch für …?“, „Wie lange dauert … insgesamt?“, „… für 100 %?“, „… bei 45 Minuten täglich?“, „Schaffe ich … bis Freitag?“ – mit Spanne statt exakter Zahl, Tagen beim eigenen Tagesbudget, Bedarf pro Tag bis zur Frist und Quellen",
-        "Gemessen, recherchiert und geschätzt sind getrennt gekennzeichnet: Spielzeit aus Steam (am PC aus Steams eigener Datei, sonst über das Steam-Konto) oder aus den vom Begleiter gemessenen Sitzungen; Durchschnittsdauern (Hauptstory, mit Nebenaufgaben, 100 %) aus der offiziellen IGDB-Schnittstelle „Time to Beat“ mit Anzahl der Spieler und Datum",
-        "Fortschritt sagen: „Ich bin bei 40 % in …“ – wird mit Datum gemerkt und für die Schätzung genutzt (eigenes Tempo und Durchschnitt)",
-        "Spiele-Journal → Spielzeit: alles sehen, ändern (Fortschritt, eigene Spielzeit z. B. von der Konsole, eigene Dauer) und löschen; wird über den PC zwischen Geräten abgeglichen",
-        "Am PC: IGDB-Zugang mit eigener kostenloser Twitch-Anwendung eintragen (Geheimnis verschlüsselt nur auf dem PC, wird nie angezeigt)"
-      ],
-      "verbessert": [
-        "Ohne PC zeigt JARVIS die gespeicherten Werte mit Datum; bricht die Verbindung während der Frage ab, sagt er das",
-        "Liegen eigenes Tempo und Durchschnitt weit auseinander, zählt dein Tempo und der Durchschnitt wird genannt (statt einer nutzlosen Riesen-Spanne)"
-      ],
-      "behoben": [
-        "„… bis morgen bei 2 Stunden pro Tag“ wurde als Design-Wunsch („Tag“ → helles Design) verstanden"
-      ]
-    },
-    "signature": "aNO9lTbeL4X56gw+3l1/I5AbTb0cMtjYqiqpdfhxPOQOFs1i0b7UyIVss4hXnmYCHRkWGECtBl5EEkPuD8qyUg=="
   }
 ]
