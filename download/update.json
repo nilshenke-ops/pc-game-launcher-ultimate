@@ -1,26 +1,27 @@
 {
-  "version": "3.8.0",
+  "version": "3.9.0",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.8.0/PCGameLauncherCompanion.exe",
-  "size": 94904700,
-  "sha256": "54342743abe5705d99f219cd6fb1437e8ca98d98306665ecd2b6a81cf314c8b6",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.0/PCGameLauncherCompanion.exe",
+  "size": 94910438,
+  "sha256": "19082380112cffb7a23047f9b7e31940853cc412c5558877f2e0235a7e75d4a7",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.8.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.8.0/PCGameLauncherCompanion-3.8.0-win-x64.zip",
-    "size": 89179858,
-    "sha256": "dc5fef347fc73c7f0a2c8f2810f0b3f11b400f2788b0d3e8407a1968dfe80301"
+    "fileName": "PCGameLauncherCompanion-3.9.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.0/PCGameLauncherCompanion-3.9.0-win-x64.zip",
+    "size": 89184573,
+    "sha256": "09fce826ba6dc05e5650ffc998fd2dd6d8660ef6ca0641d35de8df1710069015"
   },
-  "notes": "„So antwortet JARVIS gerade“ in der KI-Verwaltung und im JARVIS-Menü der Insel: Betriebsart (Ersatz-Reihenfolge, Schnellster gewinnt, Nur eine KI), die Reihenfolge der KIs mit dem Modell, mit dem jede startet, was in der Insel für die nächste Frage ausgewählt ist, wer zuletzt geantwortet hat und dass Befehle und PC-Werte die eingebaute Hilfe ohne KI beantwortet · „Meine KIs“ nennt bei jeder eingerichteten KI das gewählte Modell und die Ersatzmodelle (OpenRouter: der kostenlose Router zuerst; Pollinations: festes schnelles Modell; Ollama: das am PC gewählte Modell)",
+  "notes": "Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum · Live-Daten für JARVIS: Fragen, die aktuelle Fakten brauchen („Wann spielt der FC Bayern als Nächstes?“, Wetter, Preise, Patchnotes von heute), sucht JARVIS erst im Internet (Tavily, kostenlos: 1000 Suchen im Monat, kein Zahlungsmittel; Schlüssel nur am PC) und antwortet dann aus den Ergebnissen; die Quelle nennt er auf Nachfrage. Ohne Schlüssel steht ein kurzer Tipp zur Einrichtung unter der Antwort · Gemini ist entfernt (Karte, Modus, Auswahl und Anzeige). Zusammenfassungen und „KI fragen“ der Recherche übernehmen die kostenlosen KIs aus der KI-Verwaltung in deiner Reihenfolge; ein alter Gemini-Modus wird zu „Automatisch“",
   "changes": {
     "neu": [
-      "„So antwortet JARVIS gerade“ in der KI-Verwaltung und im JARVIS-Menü der Insel: Betriebsart (Ersatz-Reihenfolge, Schnellster gewinnt, Nur eine KI), die Reihenfolge der KIs mit dem Modell, mit dem jede startet, was in der Insel für die nächste Frage ausgewählt ist, wer zuletzt geantwortet hat und dass Befehle und PC-Werte die eingebaute Hilfe ohne KI beantwortet"
+      "Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum",
+      "Live-Daten für JARVIS: Fragen, die aktuelle Fakten brauchen („Wann spielt der FC Bayern als Nächstes?“, Wetter, Preise, Patchnotes von heute), sucht JARVIS erst im Internet (Tavily, kostenlos: 1000 Suchen im Monat, kein Zahlungsmittel; Schlüssel nur am PC) und antwortet dann aus den Ergebnissen; die Quelle nennt er auf Nachfrage. Ohne Schlüssel steht ein kurzer Tipp zur Einrichtung unter der Antwort"
     ],
     "verbessert": [
-      "„Meine KIs“ nennt bei jeder eingerichteten KI das gewählte Modell und die Ersatzmodelle (OpenRouter: der kostenlose Router zuerst; Pollinations: festes schnelles Modell; Ollama: das am PC gewählte Modell)"
+      "Gemini ist entfernt (Karte, Modus, Auswahl und Anzeige). Zusammenfassungen und „KI fragen“ der Recherche übernehmen die kostenlosen KIs aus der KI-Verwaltung in deiner Reihenfolge; ein alter Gemini-Modus wird zu „Automatisch“"
     ],
     "behoben": []
   },
-  "signature": "fOxHSsVJTAM3gGDBMF0NnRwqwFumuGvSYY17LFapeNxO3stAjkfSYwDKlP/BjSUBPnnlcusGV65YBh0QmC3qvQ=="
+  "signature": "KperHsYiUpa8/QQ/piv1SYvyWY1OvKptPDKT3LycsmC/aJjJCXm6NlhhltDK//5DonO5gPqysMq2JpBULbQwiw=="
 }
