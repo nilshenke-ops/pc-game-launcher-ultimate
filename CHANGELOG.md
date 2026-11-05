@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.7.0 – 2026-11-05
+### Neu
+- Updates automatisch installieren (nur am PC einschaltbar, standardmäßig aus): Nach der täglichen Prüfung lädt der Begleiter ein neues, signiertes Update der offiziellen Quelle, prüft es erneut, legt einen Wiederherstellungspunkt an, installiert es (nicht während eines Spiels) und startet neu; pro Version nur ein Versuch, der Update-Wächter setzt eine abstürzende Version zurück. So bleibt auch die Seite aktuell, die dein PC dem Handy zeigt. Schalter unter Updates und im Dialog „Update verfügbar“ („Künftig automatisch aktualisieren“)
+### Verbessert
+- Im Chat der Webseite zeigen KI-Antworten nur noch die Antwort (ohne Markdown-Zeichen); „Woher kommt die Antwort?“ klappt KI, Modell und Quellen auf
+
 ## 3.6.0 – 2026-11-05
 ### Neu
 - JARVIS-Insel: Ein Befehl, den du selbst in die Insel tippst oder sprichst („Starte Among Us“, „Öffne Discord“, „Mach die Sounds aus“), wird sofort ausgeführt – ohne die Rückfrage „… starten?“; es läuft nur, was du in diesem Satz genannt hast

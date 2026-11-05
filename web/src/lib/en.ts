@@ -6437,4 +6437,12 @@ export const en: Record<string, string> = {
   "Funktioniert": "Works",
   "Am Limit": "At the limit",
   "Problem": "Problem",
+  "Updates werden künftig automatisch installiert.": "Updates will be installed automatically from now on.",
+  "Updates werden nur noch nach deinem Tippen installiert.": "Updates will only be installed after you tap.",
+  "Updates automatisch installieren": "Install updates automatically",
+  "Nach der täglichen Prüfung lädt der Begleiter ein neues, signiertes Update, installiert es (nicht während eines Spiels) und startet neu. Mit Wiederherstellungspunkt; stürzt die neue Version ab, kehrt der Update-Wächter zur alten zurück. So ist auch die Seite, die dein PC dem Handy zeigt, immer aktuell.": "After the daily check the companion downloads a new signed update, installs it (not during a game) and restarts. With a restore point; if the new version crashes, the update guard goes back to the old one. This also keeps the page your PC shows the phone up to date.",
+  "Nur direkt am PC einstellbar (Sicherheit).": "Can only be set directly at the PC (security).",
+  "Künftig automatisch aktualisieren": "Update automatically from now on",
+  "Neue signierte Updates werden dann nachts bzw. wenn kein Spiel läuft von selbst installiert. Jederzeit unter Updates ausschaltbar.": "New signed updates are then installed on their own when no game is running. You can switch this off any time under Updates.",
+  "Woher kommt die Antwort?": "Where does the answer come from?",
 };

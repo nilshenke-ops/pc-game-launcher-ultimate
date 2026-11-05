@@ -7,7 +7,7 @@ import { useConn, useEvent, useRpc, toast } from "../lib/hooks";
 import { bytes, dateTime } from "../lib/format";
 import { compareVersions, isMobileDevice, loadHistory, loadLatest, verifySignature, WEB_VERSION, type Release, type ReleaseChanges } from "../lib/release";
 import type { UpdateStatus } from "../lib/types";
-import { Banner, Button, Card, confirmDialog, Loadable, Modal } from "./ui";
+import { Banner, Button, Card, confirmDialog, Loadable, Modal, Switch } from "./ui";
 
 const day = (d?: string) => (d ? new Date(d + "T12:00:00").toLocaleDateString() : "");
 
@@ -160,6 +160,11 @@ export function PcUpdates() {
                 {u.guard.failures > 0 && " " + t("Bisher {n} Absturz/Abstürze.", { n: u.guard.failures })}
               </p>
             )}
+            {u.canInstall && u.official && (
+              <Switch checked={!!u.autoInstall} disabled={!local} onChange={(v) => { client.call("settings.saveSecurity", { autoInstallUpdates: v }).then(() => { q.reload(); toast(v ? t("Updates werden künftig automatisch installiert.") : t("Updates werden nur noch nach deinem Tippen installiert."), "success"); }).catch((e) => toast((e as Error).message, "error")); }}
+                label={t("Updates automatisch installieren")}
+                hint={local ? t("Nach der täglichen Prüfung lädt der Begleiter ein neues, signiertes Update, installiert es (nicht während eines Spiels) und startet neu. Mit Wiederherstellungspunkt; stürzt die neue Version ab, kehrt der Update-Wächter zur alten zurück. So ist auch die Seite, die dein PC dem Handy zeigt, immer aktuell.") : t("Nur direkt am PC einstellbar (Sicherheit).")} />
+            )}
             {!local && <p className="tiny muted">{t("Installieren und Zurücksetzen nur direkt am PC (Sicherheit). Prüfen und Herunterladen geht auch von hier.")}</p>}
             {!u.canInstall && <p className="tiny muted">{t("Automatisches Installieren kann nur der Windows-Begleiter. Sonst: neue EXE herunterladen, Begleiter beenden, Datei ersetzen, neu starten – deine Daten liegen getrennt im Datenordner.")}</p>}
           </div>
@@ -232,6 +237,10 @@ export function UpdatePrompt() {
         <p>{t("Installiert: v{c} · Neu: v{a}", { c: q.data!.current, a: v })}</p>
         <ChangeList changes={q.data!.available!.changes} />
         <p className="tiny muted">{t("„Jetzt aktualisieren“ lädt die Datei herunter und prüft sie; danach bestätigst du die Installation. Nichts wird ohne deine Zustimmung installiert.")}</p>
+        {q.data!.canInstall && q.data!.official && (
+          <Switch checked={!!q.data!.autoInstall} onChange={(on) => { client.call("settings.saveSecurity", { autoInstallUpdates: on }).then(() => q.reload()).catch((e) => toast((e as Error).message, "error")); }}
+            label={t("Künftig automatisch aktualisieren")} hint={t("Neue signierte Updates werden dann nachts bzw. wenn kein Spiel läuft von selbst installiert. Jederzeit unter Updates ausschaltbar.")} />
+        )}
       </div>
     </Modal>
   );

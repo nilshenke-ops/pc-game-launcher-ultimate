@@ -379,6 +379,8 @@ public sealed class Settings
     public int ProcessScanSeconds { get; set; } = 5;
     /// <summary>Update manifest (version, download link, SHA-256). Default: the project's GitHub Pages site. Empty = no checks.</summary>
     public string? UpdateManifestUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/download/update.json";
+    /// <summary>Install signed updates of the official source on their own (when no game runs), after the daily check. Off unless switched on at the PC.</summary>
+    public bool AutoInstallUpdates { get; set; }
     /// <summary>Record CPU/RAM/GPU load during game sessions (one sample every 10 s, only while a game runs).</summary>
     public bool RecordSessionPerf { get; set; } = true;
     /// <summary>Plugin store: signed catalog of official/reviewed plugins. "" = no catalog (local plugin files still work).</summary>

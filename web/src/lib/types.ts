@@ -246,6 +246,7 @@ export interface UpdateStatus {
   downloaded: boolean;
   canInstall: boolean;
   canRollback?: boolean;
+  autoInstall?: boolean;
   guard?: { stable: boolean; lastStable?: string | null; failures: number } | null;
 }
 

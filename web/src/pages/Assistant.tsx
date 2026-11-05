@@ -11,6 +11,7 @@ import { openJarvis, setJarvisEnabled, useJarvis } from "../lib/jarvis-session";
 import { speak, stopSpeaking } from "../lib/jarvis-voice";
 import { consumeSpoken, markSpoken, useVoiceInput } from "../lib/island-voice";
 import { cleanSpoken, voiceControl } from "../lib/voice-text";
+import { plainAnswer } from "../lib/answer-text";
 import { friendlyError } from "../lib/friendly-error";
 import { JarvisHud } from "../components/jarvis-hud";
 import { IslandSettingsCard } from "../components/island-settings";
@@ -72,6 +73,8 @@ function Sources({ cites, info }: { cites: Cite[]; info?: AssistantReply["resear
   );
 }
 
+const AI_MODES = new Set(["claude", "ollama", "gemini", "router", "openrouter", "groq", "pollinations", "free"]);
+
 function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void; /** Only on the last answer. */ onRegenerate?: () => void; onContinue?: () => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
@@ -119,7 +122,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
     <div className="as-turn bot reply">
       <Bot size={18} aria-hidden />
       <div className="as-bubble">
-        <div className="as-text">{r.text}</div>
+        <div className="as-text">{AI_MODES.has(r.mode) ? plainAnswer(r.text) : r.text}</div>
         {turn.bingoId && <Suspense fallback={null}><ChatBingo id={turn.bingoId} /></Suspense>}
         {(r.actions.length > 0 || before) && (
           <div className="row as-actions">
@@ -131,10 +134,18 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
         )}
         {r.cites && <Sources cites={r.cites} info={r.research} />}
         {r.suggestions.length > 0 && <div className="chips as-sugg">{r.suggestions.map((s) => <button key={s} type="button" className="chip" onClick={() => onSuggest(s.replace(/^Mehr zu: /, ""))}>{s}</button>)}</div>}
+        {AI_MODES.has(r.mode) ? (
+          // An AI answer shows only the answer – who answered and the sources are one tap away.
+          <details className="tiny muted as-meta"><summary>{t("Woher kommt die Antwort?")}</summary>
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
+          </details>
+        ) : (
         <div className="tiny muted as-meta">
           {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "gemini" ? `${r.model ?? "Gemini"} · ${t("kostenlos")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
+        )}
         {!r.cancelled && !r.actions.some((a) => a.kind === "lookupChoice" || a.kind === "bingoChoice") && (
           <div className="row as-tools">
             <button type="button" className="as-tool" aria-label={t("Antwort kopieren")} title={t("Kopieren")} onClick={() => { void navigator.clipboard?.writeText(r.text).then(() => toast(t("Kopiert"), "success"), () => toast(t("Kopieren nicht möglich"), "error")); }}><Copy size={14} aria-hidden /> {t("Kopieren")}</button>

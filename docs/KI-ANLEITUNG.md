@@ -45,6 +45,8 @@ Es gibt zwei Arten, die Seite zu öffnen:
 
 Seit 3.2.1 zeigt die Seite vom PC einen Hinweis mit beiden Versionsnummern, wenn sie älter ist als die Website.
 
+**Seit 3.7.0 geht es von selbst:** Am PC unter „Updates“ (oder im Dialog „Update verfügbar“) „Updates automatisch installieren“ einschalten. Danach installiert der Begleiter signierte Updates nach der täglichen Prüfung selbst (nicht während eines Spiels, mit Wiederherstellungspunkt, nur am PC einstellbar, standardmäßig aus) – und die Seite, die dein PC dem Handy zeigt, ist wieder aktuell, ohne dass du etwas tippen musst.
+
 ## Ohne PC (iPad im Café)
 
 Ab 3.5.0 geht auch OpenRouter (und Groq) ohne PC – direkt aus dem Browser:

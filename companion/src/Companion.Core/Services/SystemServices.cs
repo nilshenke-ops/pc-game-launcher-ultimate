@@ -352,7 +352,27 @@ public sealed class UpdateService
             if (string.IsNullOrEmpty(_settings().UpdateManifestUrl) || _state is "downloading") return;
             await Check();
             if (_available is { } m && _announced != m.Version) { _announced = m.Version; Available?.Invoke(m); }
+            await AutoInstallAsync();
         }), null, TimeSpan.FromMinutes(2), TimeSpan.FromHours(24));
+    }
+
+    string TriedFile => Path.Combine(_paths.UpdatesDir, "auto-tried.txt");
+
+    /// <summary>
+    /// "Updates automatisch installieren" (switched on at the PC, official signed source only): after the daily check the new version is
+    /// downloaded, verified again and installed – with a restore point, and the update guard still takes it back if the new version does not start.
+    /// One attempt per version, so a rolled-back update is not installed again every day. Returns what happened (null = nothing to do).
+    /// </summary>
+    public async Task<string?> AutoInstallAsync()
+    {
+        if (!_settings().AutoInstallUpdates || !_installer.Supported || !Official || _available is not { Signed: true } m) return null;
+        try { if (File.Exists(TriedFile) && File.ReadAllText(TriedFile).Trim() == m.Version) return null; } catch { /* unreadable = try */ }
+        if (_downloaded == null) await Download();
+        if (_state != "ready" || _downloaded == null) return "download";
+        try { Directory.CreateDirectory(_paths.UpdatesDir); File.WriteAllText(TriedFile, m.Version); } catch { return "not-recorded"; }   // without the record it could repeat – so do not install
+        _hub.Broadcast("update.auto", new { version = m.Version });
+        Log.Info("updates", $"Installiere {m.Version} automatisch (am PC erlaubt)");
+        return Install() ?? "installing";
     }
 
     public void Dispose() => _timer?.Dispose();
@@ -369,6 +389,7 @@ public sealed class UpdateService
         downloaded = _downloaded != null,
         canInstall = _installer.Supported,
         canRollback = _installer.CanRollback,
+        autoInstall = _settings().AutoInstallUpdates,
         // Update guard (Windows): whether this version already ran stable and which one it would go back to.
         guard = _installer.Supported ? GuardInfo() : null,
     };

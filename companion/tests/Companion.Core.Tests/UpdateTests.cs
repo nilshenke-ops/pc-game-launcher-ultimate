@@ -76,6 +76,43 @@ public class UpdateTests
         Assert.True(st.GetProperty("downloaded").GetBoolean());
     }
 
+    sealed class RecordingInstaller : IUpdateInstaller { public bool Supported => true; public List<string> Installed = new(); public string? Install(string f) { Installed.Add(f); return null; } }
+
+    [Fact]
+    public async Task Automatic_install_is_off_by_default_only_for_signed_official_updates_and_tried_once_per_version()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        var inst = new RecordingInstaller();
+        var u = new UpdateService(new AppPaths(dir.Path), s.Settings.Get, inst, s.Rpc, new FakeSite("99.0.0", Exe("neue exe"))) { PublicKeyPem = PublicPem };
+        await u.Check();
+        // Off unless switched on at the PC: nothing is downloaded or installed.
+        Assert.Null(await u.AutoInstallAsync());
+        Assert.Empty(inst.Installed);
+        s.Settings.SaveSecurity(new SettingsService.SecurityUpdate { AutoInstallUpdates = true }, s.Platform.Secrets);
+        Assert.Equal("installing", await u.AutoInstallAsync());
+        Assert.Single(inst.Installed);
+        // One attempt per version (a rolled-back update must not be installed again every day).
+        Assert.Null(await u.AutoInstallAsync());
+        Assert.Single(inst.Installed);
+        // Switched off again at the PC: stays off.
+        s.Settings.SaveSecurity(new SettingsService.SecurityUpdate { AutoInstallUpdates = false }, s.Platform.Secrets);
+        Assert.False(s.Settings.Get().AutoInstallUpdates);
+    }
+
+    [Fact]
+    public async Task Automatic_install_refuses_an_own_unsigned_source()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        s.Settings.SaveSecurity(new SettingsService.SecurityUpdate { UpdateManifestUrl = "https://example.com/update.json", AutoInstallUpdates = true }, s.Platform.Secrets);
+        var inst = new RecordingInstaller();
+        var u = new UpdateService(new AppPaths(dir.Path), s.Settings.Get, inst, s.Rpc, new FakeSite("99.0.0", Exe("neue exe"), sign: false)) { PublicKeyPem = PublicPem };
+        await u.Check();
+        Assert.Null(await u.AutoInstallAsync());
+        Assert.Empty(inst.Installed);
+    }
+
     [Fact]
     public async Task Official_source_rejects_unsigned_and_forged_updates()
     {

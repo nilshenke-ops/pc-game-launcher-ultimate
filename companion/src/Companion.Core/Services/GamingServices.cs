@@ -316,6 +316,7 @@ public sealed class SettingsService
         public string? RelayCompanionId { get; set; }
         public string? RelaySecret { get; set; }
         public string? UpdateManifestUrl { get; set; }
+        public bool? AutoInstallUpdates { get; set; }
         public string? PluginCatalogUrl { get; set; }
     }
 
@@ -347,6 +348,7 @@ public sealed class SettingsService
             if (u.RelaySecret != null) s.RelaySecretProtected = u.RelaySecret == "" ? null : secrets.Protect(u.RelaySecret);
             if (u.UpdateManifestUrl != null) s.UpdateManifestUrl = u.UpdateManifestUrl.Trim(); // "" = switched off (null would fall back to the default)
             if (u.PluginCatalogUrl != null) s.PluginCatalogUrl = u.PluginCatalogUrl.Trim();
+            if (u.AutoInstallUpdates != null) s.AutoInstallUpdates = u.AutoInstallUpdates.Value;
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");
@@ -371,6 +373,7 @@ public sealed class SettingsService
         s.RelayUrl = keepSecurityFrom.RelayUrl;
         s.RelayCompanionId = keepSecurityFrom.RelayCompanionId;
         s.UpdateManifestUrl = keepSecurityFrom.UpdateManifestUrl; // where updates are downloaded from
+        s.AutoInstallUpdates = keepSecurityFrom.AutoInstallUpdates; // installing on its own is only decided at the PC, never by a backup file
         s.PluginCatalogUrl = keepSecurityFrom.PluginCatalogUrl;
         _store.Replace(s);
         _hub.Changed("settings");
