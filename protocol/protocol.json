@@ -59,6 +59,7 @@
     "ai.set": "admin",
     "ai.order": "admin",
     "ai.auto": "admin",
+    "ai.strategy": "admin",
     "ai.test": "admin",
     "ai.models": "admin",
     "voice.status": "view",

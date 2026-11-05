@@ -58,6 +58,15 @@ public sealed class DeviceStore
         return (device, token);
     }
 
+    /// <summary>Opens a secret that a paired device sealed with its key for this connection (see <see cref="SecretSeal"/>); null if it does not match.</summary>
+    public string? OpenSealed(string deviceId, byte[] nonce, string purpose, string ivHex, string ctHex, string tagHex)
+    {
+        var device = Get(deviceId);
+        var keyHex = device == null ? null : _secrets.Unprotect(device.KeyProtected);
+        if (keyHex == null) return null;
+        try { return SecretSeal.Open(Convert.FromHexString(keyHex), nonce, purpose, ivHex, ctHex, tagHex); } catch (FormatException) { return null; }
+    }
+
     public PairedDevice? VerifyLogin(string deviceId, string proofHex, byte[] nonce)
     {
         var device = Get(deviceId);

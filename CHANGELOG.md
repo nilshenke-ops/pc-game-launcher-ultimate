@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.3.0 – 2026-11-05
+### Neu
+- KI leicht umschalten, auch vom Handy: Oben in der KI-Verwaltung wählst du mit einem Tipp, wie die KIs arbeiten – „Ersatz-Reihenfolge“ (eine nach der anderen, die nächste springt ein), „Schnellster gewinnt“ (OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt) oder „Nur eine KI“ (nur die gewählte antwortet, nichts springt ein). Darunter schaltest du OpenRouter und Groq mit je einem Tipp ein oder aus (oder gehst direkt zum Einrichten)
+- Schlüssel vom Handy oder iPad eintragen, auch im WLAN ohne https: Der Schlüssel wird im Browser mit dem Gerätegeheimnis versiegelt (nur für diese Sitzung und diesen Anbieter lesbar, nicht fälschbar) und erst am PC entschlüsselt, geprüft und geschützt gespeichert. Am PC selbst geht es wie bisher
+- Selbsttest in der KI-Verwaltung: prüft PC, einen echten PC-Befehl („Wie geht es meinem PC?“), die Internetsuche (offene Wikis), jede eingerichtete KI einzeln und die Spracheingabe – und sagt in einfachen Worten, was geklappt hat; ein eigener Knopf „Wiederverbindung prüfen“ trennt die Verbindung kurz und misst, wie schnell sie von selbst wieder steht
+### Verbessert
+- Die Betriebsart bleibt gespeichert; der frühere Schalter „Automatisch wechseln“ wird übernommen (aus = „Nur eine KI“)
+- Spracheingabe: der Selbsttest sagt klar, ob der Browser (oder die Home-Bildschirm-App) Sprache erkennen kann und was man tun kann, wenn nicht
+### Behoben
+- Ein bei Groq gespeicherter Schlüssel ohne Bestätigung „kostenloser Tarif“ schaltete Groq nicht ein (Reihenfolge der Prüfung): behoben, auch beim Setzen von Schlüssel und Bestätigung in einem Schritt
+
 ## 3.2.1 – 2026-11-05
 ### Verbessert
 - Befehle („Starte …“, „Mach leiser“) und PC-Werte laufen sofort – auch wenn im selben Chat gerade eine langsame KI-Antwort aussteht. Im Chat lassen sich Befehle senden, während noch geantwortet wird

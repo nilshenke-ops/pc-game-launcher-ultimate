@@ -10,7 +10,7 @@ Dasselbe geht in der Dynamic Island: Reiter **JARVIS** → ganz unten „KI-Verw
 ## Auf dem iPad (oder iPhone)
 
 1. Der Windows-PC muss an sein, und die Website muss mit ihm verbunden sein (Verbinden-Seite, QR-Code). Die Schlüssel werden auf dem PC gespeichert – nie auf dem iPad.
-2. Schlüssel gibt der PC nur über eine **verschlüsselte Verbindung** an (Relay, also von außerhalb deines WLANs oder über den festen Namen) oder direkt am PC. Im Heimnetz ohne Verschlüsselung meldet die App das und bittet dich, den Schlüssel am PC einzutippen.
+2. Den Schlüssel kannst du auch im WLAN direkt vom Handy eintragen: Er wird im Browser mit dem Geheimnis deines gekoppelten Geräts versiegelt und erst am PC entschlüsselt – im Netz ist er nicht lesbar.
 3. **OpenRouter** (empfohlen, zuerst):
    - Öffne openrouter.ai/keys, melde dich an (kostenlos, keine Karte nötig), tippe „Create Key“ und kopiere den Schlüssel (beginnt mit `sk-or-`).
    - In JARVIS → KI-Verwaltung → OpenRouter → Schlüssel einfügen → „Speichern & testen“. Es erscheint „Verbindung steht – Antwort von …“.
@@ -20,6 +20,12 @@ Dasselbe geht in der Dynamic Island: Reiter **JARVIS** → ganz unten „KI-Verw
 5. **Pollinations** (dritte Wahl): nur wenn du den Haken bei „Ich stimme zu …“ setzt. Es braucht keinen Schlüssel, ist aber ein Dienst eines Dritten und kann ausgelastet sein.
 6. **Ollama** (vierte Wahl): läuft auf deinem Windows-PC. Installiere Ollama (ollama.com), wähle am PC unter „KI-Assistent“ ein Modell – dann erscheint es in der KI-Verwaltung.
 7. Mit den Pfeilen änderst du die Reihenfolge, mit dem Schalter schaltest du einen Anbieter ein oder aus, „Verbindung testen“ prüft ihn echt.
+8. **Wie sollen OpenRouter und Groq zusammenarbeiten?** Ganz oben in der KI-Verwaltung, ein Tipp genügt:
+   - **Ersatz-Reihenfolge** – eine nach der anderen; ist die erste voll oder gestört, fragt JARVIS die nächste.
+   - **Schnellster gewinnt** – OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt (verbraucht von beiden Gratis-Limits, ist aber oft am schnellsten).
+   - **Nur eine KI** – nur die gewählte antwortet, nichts springt ein.
+   Darunter schaltest du **OpenRouter** und **Groq** mit je einem Tipp ein oder aus.
+9. **Selbsttest** (unten in der KI-Verwaltung): „Alles testen“ prüft PC, einen echten PC-Befehl, die Internetsuche, jede KI einzeln und die Spracheingabe; „Wiederverbindung prüfen“ trennt kurz und misst, wie schnell die App von selbst wieder verbunden ist.
 
 ## Am Windows-PC
 

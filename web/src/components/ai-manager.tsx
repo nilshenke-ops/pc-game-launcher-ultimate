@@ -10,6 +10,7 @@ import { client } from "../lib/rpc";
 import { relTime } from "../lib/format";
 import { toast, useCan, useRpc } from "../lib/hooks";
 import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
+import { AiSelfTest } from "./ai-selftest";
 
 export interface AiProvider {
   id: string; name: string; enabled: boolean; needsKey: boolean; keySet: boolean; attested: boolean; consent: boolean;
@@ -19,7 +20,7 @@ export interface AiProvider {
   privacy: string; cost: string;
 }
 export interface AiOverview {
-  providers: AiProvider[]; auto: boolean; mode: string; smart: boolean; anyReady: boolean;
+  providers: AiProvider[]; auto: boolean; strategy?: "fallback" | "race" | "single"; single?: string | null; mode: string; smart: boolean; anyReady: boolean;
   last?: { provider: string; name: string; model?: string | null; at?: string | null } | null;
   costGuard?: { freeOnly: boolean; rules: string[] };
 }
@@ -60,6 +61,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
   const consent = useFreeAiConsent();
   const [keys, setKeys] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
   const o = st.data;
 
@@ -76,7 +78,9 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
   };
   const saveKey = (p: AiProvider, attested?: boolean) => run(p.id, async () => {
     const key = keys[p.id] ?? "";
-    await client.call("ai.set", { provider: p.id, key, ...(attested !== undefined ? { attested } : {}) });
+    // On a phone or tablet the key travels sealed with the device key (also in the home network without https); at the PC itself it goes as it is.
+    const send = () => { const sealed = client.sealSecret("ai.key:" + p.id, key); return client.call("ai.set", { provider: p.id, ...(sealed ? { sealed } : { key }), ...(attested !== undefined ? { attested } : {}) }); };
+    try { await send(); } catch (e) { if (/noch einmal absenden/.test((e as Error).message)) await send(); else throw e; }   // the session was renewed in between: seal anew
     setKeys((k) => ({ ...k, [p.id]: "" }));            // the key is not kept in this browser
     return await test(p.id);
   });
@@ -96,6 +100,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
           <Switch on={consent === "yes"} label={t("Pollinations ohne PC erlauben")} onChange={(v) => setFreeAiConsent(v ? "yes" : "no")} />
         </div>
         <p className="tiny muted">{t("Gesendet wird nur die Frage mit den letzten Nachrichten – ohne Schlüssel, ohne Daten deines PCs. Der Dienst gehört einem Dritten und kann ausgelastet sein; dann sagt JARVIS das, statt etwas zu erfinden.")}</p>
+        <AiSelfTest providers={[]} online={false} canManage={false} />
       </div>
     );
   }
@@ -106,12 +111,44 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
       <div className="aim-top">
         <span className="aim-cost"><ShieldCheck size={14} aria-hidden /> {t("0,00 € – nur kostenlose Modelle, kein bezahlter Ausweich, kein Aufladen")}</span>
         <p className="tiny">{o.last ? t("Zuletzt geantwortet: {n}{m} · {w}", { n: o.last.name, m: o.last.model ? ` (${o.last.model})` : "", w: o.last.at ? relTime(o.last.at) : "" }) : t("Noch keine Antwort von einer freien KI.")}</p>
-        <div className="aim-row">
-          <span>{t("Automatisch zum nächsten wechseln")}</span>
-          <Switch on={o.auto} label={t("Automatisch wechseln")} disabled={!canManage} onChange={(v) => void run("auto", async () => { await client.call("ai.auto", { auto: v }); })} />
-        </div>
-        <p className="tiny muted">{o.auto ? t("Ist ein Anbieter voll oder gestört, fragt JARVIS den nächsten – oder sagt offen, dass gerade keine kostenlose KI erreichbar ist.") : t("Aus: JARVIS fragt nur den ersten aktiven Anbieter und wechselt nicht.")}</p>
       </div>
+      <section className="aim-mode" aria-label={t("So arbeiten die KIs zusammen")}>
+        <b className="aim-modetitle">{t("So arbeiten die KIs zusammen")}</b>
+        <div className="aim-modes" role="radiogroup" aria-label={t("So arbeiten die KIs zusammen")}>
+          {([["fallback", t("Ersatz-Reihenfolge"), t("Eine nach der anderen: ist die erste voll oder gestört, fragt JARVIS die nächste.")],
+            ["race", t("Schnellster gewinnt"), t("OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt (verbraucht von beiden Gratis-Limits).")],
+            ["single", t("Nur eine KI"), t("Nur die gewählte KI antwortet, keine andere springt ein.")]] as const).map(([id, name, hint]) => (
+            <button key={id} type="button" role="radio" aria-checked={(o.strategy ?? (o.auto ? "fallback" : "single")) === id} disabled={!canManage || busy !== null}
+              className={`aim-mode-btn${(o.strategy ?? (o.auto ? "fallback" : "single")) === id ? " on" : ""}`}
+              onClick={() => void run("strategy", async () => { await client.call("ai.strategy", { strategy: id, ...(id === "single" ? { single: o.single ?? o.providers.find((p) => p.state === "ready")?.id ?? undefined } : {}) }); })}>
+              <b>{name}</b><span className="tiny">{hint}</span>
+            </button>
+          ))}
+        </div>
+        {(o.strategy ?? (o.auto ? "fallback" : "single")) === "single" && o.providers.every((p) => p.state === "setup") && <p className="tiny muted">{t("Noch keine KI eingerichtet – zuerst unten OpenRouter oder Groq einrichten.")}</p>}
+        {(o.strategy ?? (o.auto ? "fallback" : "single")) === "single" && o.providers.some((p) => p.state !== "setup") && (
+          <div className="aim-single" role="radiogroup" aria-label={t("Welche KI soll antworten")}>
+            {o.providers.filter((p) => p.state !== "setup").map((p) => (
+              <button key={p.id} type="button" role="radio" aria-checked={(o.single ?? o.providers.find((x) => x.state === "ready")?.id) === p.id} disabled={!canManage || busy !== null}
+                className={`isl2-chip${(o.single ?? o.providers.find((x) => x.state === "ready")?.id) === p.id ? " on" : ""}`}
+                onClick={() => void run("strategy", async () => { await client.call("ai.strategy", { strategy: "single", single: p.id }); })}>{p.name}</button>
+            ))}
+          </div>
+        )}
+        {msg.strategy && !msg.strategy.ok && <p className="tiny fas-err" role="alert">{msg.strategy.text}</p>}
+        <div className="aim-quick" role="group" aria-label={t("Schnell ein- und ausschalten")}>
+          {o.providers.filter((p) => p.id === "openrouter" || p.id === "groq").map((p) => (
+            <button key={p.id} type="button" disabled={!canManage || busy !== null} aria-pressed={p.enabled && p.state !== "setup"}
+              className={`aim-quickbtn${p.enabled && p.state !== "setup" ? " on" : ""}`}
+              onClick={() => {
+                if (p.state === "setup") { setOpenId(p.id); requestAnimationFrame(() => document.getElementById(`aim-${p.id}`)?.scrollIntoView({ block: "center", behavior: "smooth" })); return; }
+                void run(p.id, async () => { await client.call("ai.set", { provider: p.id, enabled: !p.enabled }); });
+              }}>
+              {p.name}: {p.state === "setup" ? t("einrichten") : p.enabled ? t("an") : t("aus")}
+            </button>
+          ))}
+        </div>
+      </section>
       {!canManage && <p className="tiny muted">{t("Dieses Gerät darf nichts ändern (Berechtigung „Verwalten“ fehlt) – du siehst nur den Stand.")}</p>}
 
       {o.providers.map((p, i) => {
@@ -120,7 +157,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
         const needSetup = p.state === "setup" || p.state === "error";
         const canSave = (keys[p.id] ?? "").length >= 20 && busy === null;
         return (
-          <section key={p.id} className={`fas-card aim-card ${p.state}`} aria-label={p.name}>
+          <section key={p.id} id={`aim-${p.id}`} className={`fas-card aim-card ${p.state}`} aria-label={p.name}>
             <div className="aim-row">
               <span className="aim-no" aria-hidden>{i + 1}</span>
               <b className="aim-name">{p.name}</b>
@@ -135,7 +172,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
             {p.today?.limit != null && p.today.remaining != null && <p className="tiny">{t("Heute noch frei: {r} von {l} Anfragen", { r: p.today.remaining, l: p.today.limit })}</p>}
             {p.lastError && p.state !== "ready" && <p className="tiny fas-err" role="status">{t("Letzter Fehler: {e}", { e: p.lastError })}{p.lastErrorAt ? ` · ${relTime(p.lastErrorAt)}` : ""}</p>}
 
-            <details open={needSetup}>
+            <details open={needSetup || openId === p.id}>
               <summary>{p.id === "ollama" ? t("Details") : p.keySet || p.consent ? t("Einstellungen & Test") : t("Einrichten")}</summary>
               {canManage && guide && (
                 <>
@@ -179,6 +216,7 @@ export function AiManager({ online, onChanged }: { online: boolean; onChanged?: 
       })}
       {msg.order && !msg.order.ok && <p className="tiny fas-err" role="alert">{msg.order.text}</p>}
       {msg.auto && !msg.auto.ok && <p className="tiny fas-err" role="alert">{msg.auto.text}</p>}
+      <AiSelfTest providers={o.providers} online canManage={canManage} />
       {o.costGuard && <details><summary className="tiny">{t("Wie wird sichergestellt, dass es nichts kostet?")}</summary><ul className="tiny">{o.costGuard.rules.map((r) => <li key={r}>{t(r)}</li>)}</ul></details>}
     </div>
   );

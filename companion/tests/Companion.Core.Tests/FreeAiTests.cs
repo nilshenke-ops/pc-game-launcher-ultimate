@@ -45,7 +45,7 @@ public class FreeAiTests
     static string GrList(params string[] ids) => JsonSerializer.Serialize(new { data = ids.Select(i => new { id = i, active = true, context_window = 131072 }) });
     static (HttpStatusCode, string, Dictionary<string, string>?) Limit(string retry = "30") => (HttpStatusCode.TooManyRequests, "{\"error\":{\"message\":\"rate limit\"}}", new() { ["Retry-After"] = retry });
 
-    static (AssistantService a, FreeAiHub hub) Make(TempDir dir, Pgl.Core.Services.CompanionServices s, Fake fake, Func<DateTime>? now = null)
+    static (AssistantService a, FreeAiHub hub) Make(TempDir dir, Pgl.Core.Services.CompanionServices s, HttpMessageHandler fake, Func<DateTime>? now = null)
     {
         var paths = new AppPaths(Path.Combine(dir.Path, "d"));
         var secrets = new GenericPlatform().Secrets;
@@ -485,5 +485,106 @@ public class FreeAiTests
         hold.SetResult();
         Assert.Equal("busy", e.Kind);
         Assert.True(sw.ElapsedMilliseconds < 3000);
+    }
+
+    // ------------------------------------------------------------------ how the AIs work together
+
+    static (HttpStatusCode, string, Dictionary<string, string>?) GroqOrOr(Rec r, string orText, string grText) =>
+        r.Url.Contains("openrouter.ai") ? (r.Url.EndsWith("/models") ? Ok(OrList(("openrouter/free", "0", 200000))) : Ok(Chat(orText, "x/y:free")))
+        : r.Url.EndsWith("/models") ? Ok(GrList("llama-3.3-70b-versatile")) : Ok(Chat(grText, "llama-3.3-70b-versatile"));
+
+    [Fact]
+    public async Task Schnellster_gewinnt_OpenRouter_und_Groq_werden_gleichzeitig_gefragt_und_die_schnellere_Antwort_zaehlt()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var slow = new TaskCompletionSource();
+        var fake = new Fake(r => GroqOrOr(r, "Langsam von OpenRouter.", "Schnell von Groq."));
+        // OpenRouter's chat answer is held back until released; Groq answers at once
+        var orHold = slow.Task;
+        var gated = new Gate(fake, orHold);
+        var (a, hub) = Make(dir, s, gated.Handler);
+        a.AiSet("openrouter", null, OrKey, null, null, true);
+        a.AiSet("groq", null, GrKey, true, null, true);
+        Assert.Equal("race", Js(a.AiStrategy("race", null)).GetProperty("strategy").GetString());
+        var r = Reply(await a.AskAsync("dev", "iPad", null, Question));
+        Assert.Equal("groq", r.GetProperty("mode").GetString());
+        Assert.Contains("Schnellster gewinnt: Groq antwortete zuerst", AllSources(r));
+        Assert.Equal(1, gated.Held);                                                    // both were asked: OpenRouter's request was sent (and is still waiting) …
+        Assert.Equal(1, fake.Chats("api.groq.com").Count());                            // … Groq answered
+        slow.SetResult();                                                               // … the slower one is simply let go
+    }
+
+    [Fact]
+    public async Task Schnellster_gewinnt_faellt_ein_Anbieter_aus_antwortet_der_andere_und_faellen_beide_aus_geht_es_der_Reihe_nach_weiter()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var fake = new Fake(r =>
+            r.Url.Contains("openrouter.ai") ? (r.Url.EndsWith("/models") ? Ok(OrList(("openrouter/free", "0", 200000))) : Limit())
+            : r.Url.Contains("api.groq.com") ? (r.Url.EndsWith("/models") ? Ok(GrList("llama-3.3-70b-versatile")) : (HttpStatusCode.BadGateway, "x", null))
+            : Ok(Chat("Zuletzt von Pollinations.", "gpt-oss", 14)));
+        var (a, _) = Make(dir, s, fake);
+        a.AiSet("openrouter", null, OrKey, null, null, true);
+        a.AiSet("groq", null, GrKey, true, null, true);
+        a.AiSet("pollinations", null, null, null, consent: true, true);
+        a.AiSet("pollinations", true, null, null, null, true);
+        a.AiStrategy("race", null);
+        var r = Reply(await a.AskAsync("dev", "iPad", null, Question));
+        Assert.Equal("pollinations", r.GetProperty("mode").GetString());              // the race failed, the rest of the order answered
+        Assert.Contains("OpenRouter: Limit erreicht", AllSources(r));
+        Assert.Contains("Groq:", AllSources(r));
+    }
+
+    [Fact]
+    public async Task Nur_eine_KI_fragt_nur_diese_und_wechselt_nie_zu_einer_anderen()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var fake = new Fake(r =>
+            r.Url.Contains("openrouter.ai") ? (r.Url.EndsWith("/models") ? Ok(OrList(("openrouter/free", "0", 200000))) : Ok(Chat("Von OpenRouter.", "x/y:free")))
+            : r.Url.EndsWith("/models") ? Ok(GrList("llama-3.3-70b-versatile")) : (HttpStatusCode.TooManyRequests, "{}", new() { ["Retry-After"] = "30" }));
+        var (a, _) = Make(dir, s, fake);
+        a.AiSet("openrouter", null, OrKey, null, null, true);
+        a.AiSet("groq", null, GrKey, true, null, true);
+        a.AiStrategy("single", "groq");
+        var st = Js(a.AiStatus());
+        Assert.Equal("single", st.GetProperty("strategy").GetString()); Assert.Equal("groq", st.GetProperty("single").GetString());
+        var r = Reply(await a.AskAsync("dev", "iPad", null, Question));
+        Assert.Empty(fake.Chats("openrouter.ai"));                                      // OpenRouter is ready but was not asked
+        Assert.Contains("Momentan ist keine kostenlose externe KI erreichbar.", r.GetProperty("text").GetString());
+        // switching the one AI is one call
+        a.AiStrategy("single", "openrouter");
+        var r2 = Reply(await a.AskAsync("dev", "iPad", null, "Und wie viel Schlaf brauchen Kinder denn so?"));
+        Assert.Equal("openrouter", r2.GetProperty("mode").GetString());
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => a.AiStrategy("mix", null)).Code);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => a.AiStrategy("single", "gemini")).Code);
+    }
+
+    [Fact]
+    public async Task Die_Betriebsart_bleibt_gespeichert_und_der_alte_Schalter_wird_uebernommen()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var paths = new AppPaths(Path.Combine(dir.Path, "d"));
+        var secrets = new GenericPlatform().Secrets;
+        var hub = new FreeAiHub(paths, secrets, new Fake(_ => Ok("{}")));
+        hub.SetStrategy("race", null);
+        Assert.Equal("race", new FreeAiHub(paths, secrets, new Fake(_ => Ok("{}"))).Strategy);                // survives a restart
+        File.WriteAllText(paths.File("freeai.json"), "{\"auto\": false}");                                      // file of an earlier version: automatic switching off
+        Assert.Equal("single", new FreeAiHub(paths, secrets, new Fake(_ => Ok("{}"))).Strategy);
+    }
+
+    /// <summary>Holds back the chat answer of one host (OpenRouter) until released.</summary>
+    sealed class Gate
+    {
+        public HttpMessageHandler Handler { get; }
+        public int Held => ((Inner)Handler).Held;
+        public Gate(Fake inner, Task hold) => Handler = new Inner(inner, hold);
+        sealed class Inner(HttpMessageHandler inner, Task hold) : DelegatingHandler(inner)
+        {
+            public int Held;
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage r, CancellationToken ct)
+            {
+                if (r.Method == HttpMethod.Post && r.RequestUri!.Host == "openrouter.ai") { Interlocked.Increment(ref Held); await hold.WaitAsync(ct); }
+                return await base.SendAsync(r, ct);
+            }
+        }
     }
 }

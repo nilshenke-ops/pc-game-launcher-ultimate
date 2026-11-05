@@ -283,13 +283,25 @@ public static class RpcApi
             bool? B(string n) => p.ValueKind == System.Text.Json.JsonValueKind.Object && p.TryGetProperty(n, out var v) && v.ValueKind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False ? v.GetBoolean() : null;
             string? key = p.ValueKind == System.Text.Json.JsonValueKind.Object && p.TryGetProperty("key", out var kv) && kv.ValueKind == System.Text.Json.JsonValueKind.String ? kv.GetString() : null;
             if (key is { Length: > 300 }) throw new RpcException("invalid-params", "Schlüssel zu lang.");
-            return s.Assistant.AiSet(ctx.Str("provider", 20), B("enabled"), key, B("attested"), B("consent"), Secure(ctx.Session));
+            var provider = ctx.Str("provider", 20);
+            var secure = Secure(ctx.Session);
+            // A key typed on a phone/tablet travels sealed with the device key (only opens in this session) – that is as good as an encrypted connection.
+            if (p.ValueKind == System.Text.Json.JsonValueKind.Object && p.TryGetProperty("sealed", out var sv) && sv.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                if (ctx.Session.Device == null) throw new RpcException("forbidden", "Verschlüsselte Schlüssel kann nur ein gekoppeltes Gerät senden.");
+                string F(string n) => sv.TryGetProperty(n, out var x) && x.ValueKind == System.Text.Json.JsonValueKind.String ? x.GetString() ?? "" : "";
+                key = s.Rpc.Devices.OpenSealed(ctx.Session.Device.Id, ctx.Session.Nonce, "ai.key:" + provider, F("iv"), F("ct"), F("tag"))
+                    ?? throw new RpcException("invalid-params", "Der Schlüssel ließ sich nicht entschlüsseln (die Sitzung wurde erneuert?) – bitte noch einmal absenden.");
+                secure = true;
+            }
+            return s.Assistant.AiSet(provider, B("enabled"), key, B("attested"), B("consent"), secure);
         });
         rpc.Register("ai.order", ctx =>
         {
             var o = ctx.Params.TryGetProperty("order", out var ov) && ov.ValueKind == System.Text.Json.JsonValueKind.Array ? ov.EnumerateArray().Select(x => x.GetString() ?? "").Take(8).ToList() : throw new RpcException("invalid-params", "Reihenfolge fehlt.");
             return s.Assistant.AiOrder(o);
         });
+        rpc.Register("ai.strategy", ctx => s.Assistant.AiStrategy(ctx.Str("strategy", 20), ctx.OptStr("single", 20)));
         rpc.Register("ai.auto", ctx => s.Assistant.AiAuto(ctx.Params.TryGetProperty("auto", out var av) && av.ValueKind == System.Text.Json.JsonValueKind.True));
         rpc.Register("ai.test", async ctx => await s.Assistant.AiTestAsync(ctx.Str("provider", 20)));
         rpc.Register("ai.models", async ctx => await s.Assistant.AiModelsAsync(ctx.Str("provider", 20)));

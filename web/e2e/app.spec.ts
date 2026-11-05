@@ -2450,10 +2450,43 @@ test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abg
   await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["groq", "openrouter", "pollinations", "ollama"]);
   await panel.getByRole("button", { name: "OpenRouter weiter nach oben" }).click();
   await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["openrouter", "groq", "pollinations", "ollama"]);
-  await panel.getByRole("switch", { name: "Automatisch wechseln" }).click();
-  await expect.poll(async () => (await status()).auto).toBe(false);
-  await panel.getByRole("switch", { name: "Automatisch wechseln" }).click();
-  await expect.poll(async () => (await status()).auto).toBe(true);
+  // How the AIs work together: three modes, one tap each – changed at the PC and shown again.
+  type Strat = { strategy: string; single: string | null };
+  const strat = async () => (await adminRpc<Strat>("ai.status"));
+  await expect(panel.getByRole("radio", { name: /Ersatz-Reihenfolge/ })).toHaveAttribute("aria-checked", "true");
+  await panel.getByRole("radio", { name: /Schnellster gewinnt/ }).click();
+  await expect.poll(async () => (await strat()).strategy).toBe("race");
+  await panel.getByRole("radio", { name: /Nur eine KI/ }).click();
+  await expect.poll(async () => (await strat()).strategy).toBe("single");
+  await expect(panel.getByText("Noch keine KI eingerichtet – zuerst unten")).toBeVisible();              // nothing to choose from yet
+  await expect(panel.getByRole("button", { name: "OpenRouter: einrichten" })).toBeVisible();            // quick row: nothing set up yet → "einrichten"
+  await panel.getByRole("radio", { name: /Ersatz-Reihenfolge/ }).click();
+  await expect.poll(async () => (await strat()).strategy).toBe("fallback");
+  await expect(adminRpc("ai.strategy", { strategy: "mix" })).rejects.toThrow(/Betriebsart/);
+  await expect(adminRpc("ai.strategy", { strategy: "single", single: "gemini" })).rejects.toThrow(/Unbekannter Anbieter/);
+  await p.context().close();
+});
+
+test("Selbsttest in der KI-Verwaltung: PC, echter PC-Befehl, Internetsuche, Sprache – und die Wiederverbindung", async ({ browser }) => {
+  const p = await adminPage(browser);
+  // The open wikis are stand-ins here (no real internet in the test): one answer for the search test.
+  await p.route(/api\.php|wikipedia\.org|api\.stackexchange\.com/, (r) => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [{ title: "Mount Everest", snippet: "Der Mount Everest ist <b>8849 m</b> hoch.", pageid: 1 }], pages: { "1": { title: "Mount Everest", extract: "Der Mount Everest ist mit 8849 Metern der höchste Berg der Erde." } } }, title: "Mount Everest", extract: "Der Mount Everest ist mit 8849 Metern der höchste Berg der Erde." }) }));
+  await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
+  await p.goto(`${COMPANION}/#/assistant`);
+  const card = p.getByRole("region", { name: "KI-Verwaltung – kostenlose KI" }).or(p.locator(".card", { hasText: "KI-Verwaltung – kostenlose KI" })).first();
+  await card.getByText("Selbsttest", { exact: true }).click();
+  await card.getByRole("button", { name: "Alles testen" }).click();
+  const steps = card.locator(".aim-step");
+  await expect(steps.filter({ hasText: "PC erreichbar" })).toContainText("antwortet in", { timeout: 20000 });
+  await expect(steps.filter({ hasText: "PC erreichbar" })).toHaveClass(/ok/);
+  await expect(steps.filter({ hasText: "PC-Befehl" })).toHaveClass(/ok|warn/, { timeout: 20000 });
+  await expect(steps.filter({ hasText: "Internetsuche" })).toHaveClass(/ok|fail/, { timeout: 20000 });
+  await expect(steps.filter({ hasText: "KI-Anbieter" })).toContainText("Noch keine KI eingerichtet");      // honest: nothing to test yet
+  await expect(steps.filter({ hasText: "Spracheingabe" })).toBeVisible();
+  // Reconnection: the connection is closed and must come back by itself.
+  await card.getByRole("button", { name: "Wiederverbindung prüfen" }).click();
+  await expect(card.getByText(/automatische Wiederverbindung funktioniert|noch nicht wieder verbunden/)).toBeVisible({ timeout: 30000 });
+  await expect(card.getByText(/automatische Wiederverbindung funktioniert/)).toBeVisible();
   await p.context().close();
 });
 

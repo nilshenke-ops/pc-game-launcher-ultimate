@@ -1,4 +1,5 @@
 import { loginProof } from "./sha256";
+import { sealSecret as seal, type Sealed } from "./seal";
 import { t } from "./i18n";
 import { clearCaches } from "./offline-cache";
 import { outdatedCompanionMessage } from "./conn-state";
@@ -244,6 +245,12 @@ class Client {
   }
 
   get credentials(): Credentials | null { return readJson<Credentials>(CRED_KEY); }
+  /** A secret typed on this device (an API key), sealed for the PC with the device key and this session (see lib/seal.ts); null on the PC itself or without a session. */
+  sealSecret(purpose: string, secret: string): Sealed | null {
+    const cred = this.credentials, nonce = this.status.hello?.nonce;
+    if (!cred || !nonce || this.status.me?.isLocal) return null;
+    return seal(cred.token, nonce, purpose, secret);
+  }
   /** This device can sign in by itself (paired, or the PC window with its session token). */
   get canSignIn() { return !!this.credentials || !!readJson<string>(ADMIN_KEY, "session"); }
   get hasAdminToken() { return !!readJson<string>(ADMIN_KEY, "session"); }

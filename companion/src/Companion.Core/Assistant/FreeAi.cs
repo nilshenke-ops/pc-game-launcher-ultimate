@@ -34,8 +34,12 @@ public sealed class FreeAiFile
 {
     public List<string> Order { get; set; } = new() { "openrouter", "groq", "pollinations", "ollama" };
     public Dictionary<string, FreeProviderCfg> Providers { get; set; } = new();
-    /// <summary>"Automatisch" may use these AIs in this order. Off: only the explicitly chosen AI answers.</summary>
-    public bool Auto { get; set; } = true;
+    /// <summary>Older versions: automatic switching on/off. Read once and turned into <see cref="Strategy"/>.</summary>
+    public bool? Auto { get; set; }
+    /// <summary>How the free AIs work together: "fallback" = in this order, the next one if one is full or down; "race" = OpenRouter and Groq are asked at the same
+    /// time and the faster answer counts; "single" = only one AI (<see cref="Single"/>, or the first active one), never another.</summary>
+    public string Strategy { get; set; } = "fallback";
+    public string? Single { get; set; }
     public string? LastProvider { get; set; }
     public string? LastModel { get; set; }
     public DateTime? LastAt { get; set; }
@@ -175,13 +179,17 @@ public sealed class FreeAiHub
         _http.Timeout = TimeSpan.FromSeconds(45);
         _now = now ?? (() => DateTime.UtcNow);
         foreach (var id in Ids) _state[id] = new State();
+        _store.Update(f => { if (f.Auto == false && f.Strategy == "fallback") f.Strategy = "single"; f.Auto = null; });
     }
 
     State S(string id) { lock (_gate) return _state[id]; }
     FreeProviderCfg Cfg(FreeAiFile f, string id) => f.Providers.TryGetValue(id, out var c) ? c : new FreeProviderCfg();
     string? KeyOf(string id) { var c = Cfg(_store.Snapshot(), id); return c.KeyProtected == null ? null : _secrets.Unprotect(c.KeyProtected); }
 
-    public bool Auto => _store.Get(f => f.Auto);
+    public string Strategy => _store.Get(f => f.Strategy);
+    public string? Single => _store.Get(f => f.Single);
+    /// <summary>Another AI may take over (fallback or race) – false only for "single".</summary>
+    public bool Auto => Strategy != "single";
     public (string? provider, string? model, DateTime? at) Last() => _store.Get(f => (f.LastProvider, f.LastModel, f.LastAt));
 
     /// <summary>Set up and allowed to be used (Ollama: only the switch – whether it is installed is checked by the caller).</summary>
@@ -242,7 +250,15 @@ public sealed class FreeAiHub
         _store.Update(f => f.Order = list);
     }
 
-    public void SetAuto(bool on) => _store.Update(f => f.Auto = on);
+    public void SetAuto(bool on) => SetStrategy(on ? "fallback" : "single", null);
+
+    /// <summary>"fallback" (in order), "race" (OpenRouter and Groq at the same time, the faster one counts) or "single" (only this one, or the first active one).</summary>
+    public void SetStrategy(string strategy, string? single)
+    {
+        if (strategy is not ("fallback" or "race" or "single")) throw new RpcException("invalid-params", "Betriebsart: fallback, race oder single.");
+        if (single != null && !Ids.Contains(single)) throw new RpcException("invalid-params", "Unbekannter Anbieter.");
+        _store.Update(f => { f.Strategy = strategy; f.Single = strategy == "single" ? single : null; f.Auto = null; });
+    }
 
     /// <summary>The local model (Ollama) answered / failed – shown in the status next to the online providers.</summary>
     public void NoteOllama(string model)

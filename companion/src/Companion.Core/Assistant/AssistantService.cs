@@ -515,15 +515,58 @@ public sealed class AssistantService
     async Task<AssistantReply> SmartChatAsync(AssistantFile f, Conv conv, string text, string who, CancellationToken ct, string? only = null)
     {
         var failed = new List<string>();
-        var order = only != null ? new List<string> { only } : FreeAi.ActiveOrder().Where(id => id != "ollama" || OllamaOn(f)).ToList();
-        if (only == null && !FreeAi.Auto && order.Count > 1) order = order.Take(1).ToList();     // automatic switching off: only the first one
+        var active = FreeAi.ActiveOrder().Where(id => id != "ollama" || OllamaOn(f)).ToList();
+        var strategy = only != null ? "single" : FreeAi.Strategy;
+        List<string> order;
+        if (only != null) order = new List<string> { only };
+        else if (strategy == "single") { var pick = FreeAi.Single is { } sg && active.Contains(sg) ? sg : active.FirstOrDefault(); order = pick == null ? new() : new List<string> { pick }; }
+        else order = active;
         var history = conv.Router;
         var openTurn = false;
+        void EnsureTurn()
+        {
+            if (openTurn) return;
+            history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}]\n{text}"));
+            if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
+            openTurn = true;
+        }
         AssistantReply Tag(AssistantReply r, string label)
         {
             r.Sources.Insert(0, label);
             if (failed.Count > 0) r.Sources.Insert(1, $"Automatisch: {string.Join("; ", failed)} – deshalb antwortet {label.Replace("Beantwortet von ", "")}");
             return r;
+        }
+        // "Schnellster gewinnt": OpenRouter and Groq are asked at the same time, the faster answer counts, the other request is cancelled.
+        // (Both free limits are used for one question – that is the price of the speed.) If both fail, the rest of the order is tried as usual.
+        var raceIds = strategy == "race" ? order.Where(id => id is "openrouter" or "groq").ToList() : new List<string>();
+        if (raceIds.Count >= 2)
+        {
+            EnsureTurn();
+            using var cts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+            var running = raceIds.Select(id => (id, task: FreeAi.AskAsync(id, FreeSystem(), history, cts.Token, TimeSpan.FromSeconds(25), TimeSpan.Zero))).ToList();
+            var pending = running.Select(r => r.task).ToList();
+            FreeAnswer? win = null; var winner = "";
+            while (pending.Count > 0 && win == null)
+            {
+                var done = await Task.WhenAny(pending);
+                pending.Remove(done);
+                var rid = running.First(r => r.task == done).id;
+                try { win = await done; winner = rid; }
+                catch (ProviderException e) { failed.Add($"{FreeAiHub.Name(rid)}: {Plain(e.Kind)}"); }
+            }
+            cts.Cancel();
+            foreach (var p in pending) _ = p.ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);   // the slower ones were cancelled – nobody waits for them
+            if (win != null)
+            {
+                history.Add(new GeminiClient.Turn("model", win.Text));
+                openTurn = false;
+                var raced = new AssistantReply { Text = win.Text, Mode = winner, Model = win.Model, CostUsd = 0 };
+                raced.Sources.Add("ohne Live-Daten vom PC");
+                var tagged = Tag(raced, win.Label);
+                tagged.Sources.Insert(1, $"Schnellster gewinnt: {FreeAiHub.Name(winner)} antwortete zuerst");
+                return tagged;
+            }
+            order = order.Where(id => !raceIds.Contains(id)).ToList();
         }
         for (var oi = 0; oi < order.Count; oi++)
         {
@@ -542,12 +585,7 @@ public sealed class AssistantService
                 }
                 catch (RpcException e) when (CanSkip(e)) { failed.Add($"Ollama: {e.Message}"); continue; }
             }
-            if (!openTurn)
-            {
-                history.Add(new GeminiClient.Turn("user", $"[Kontext – nicht vom Nutzer: {TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local):dddd, dd.MM.yyyy HH:mm}]\n{text}"));
-                if (history.Count > 20) history.RemoveRange(0, history.Count - 20);
-                openTurn = true;
-            }
+            EnsureTurn();
             try
             {
                 // Not the last one in line: give up after 20 s and ask the next; the last one may take 45 s and wait out a short rate limit.
@@ -583,7 +621,7 @@ public sealed class AssistantService
         var f = _store.Snapshot(); var last = FreeAi.Last();
         return new
         {
-            providers = FreeAi.Providers(f.OllamaModel), auto = FreeAi.Auto, mode = f.Mode, smart = f.Mode == "smart", anyReady = HasFreeAi(f),
+            providers = FreeAi.Providers(f.OllamaModel), auto = FreeAi.Auto, strategy = FreeAi.Strategy, single = FreeAi.Single, mode = f.Mode, smart = f.Mode == "smart", anyReady = HasFreeAi(f),
             last = last.provider == null ? null : new { provider = last.provider, name = FreeAiHub.Name(last.provider), model = last.model, at = last.at },
             costGuard = new { freeOnly = true, rules = new[] {
                 "Nur kostenlose Modelle: bei OpenRouter das Gratis-Routing openrouter/free und Modelle mit Preis 0 (:free) – vor jeder Anfrage erneut geprüft, dazu Höchstpreis 0 in der Anfrage.",
@@ -596,7 +634,7 @@ public sealed class AssistantService
     /// <summary>Switches a provider on/off, stores a key (protected), or records the confirmation (Groq: free plan) / consent (Pollinations).</summary>
     public object AiSet(string provider, bool? enabled, string? key, bool? attested, bool? consent, bool secureChannel)
     {
-        if (key != null && !secureChannel) throw new RpcException("forbidden", "Einen Schlüssel kannst du nur über eine verschlüsselte Verbindung oder direkt am PC eintragen. Im Heimnetz ohne Verschlüsselung bitte am PC eintippen – oder über die Relay-Verbindung (anderes Netz).");
+        if (!string.IsNullOrEmpty(key) && !secureChannel) throw new RpcException("forbidden", "Einen Schlüssel kannst du nur über eine verschlüsselte Verbindung oder direkt am PC eintragen. Im Heimnetz ohne Verschlüsselung bitte am PC eintippen – oder über die Relay-Verbindung (anderes Netz).");
         FreeAi.Set(provider, enabled, key, attested, consent);
         _store.Update(f =>
         {
@@ -609,6 +647,8 @@ public sealed class AssistantService
 
     public object AiOrder(IEnumerable<string> order) { FreeAi.SetOrder(order); _hub.Changed("assistant"); return AiStatus(); }
     public object AiAuto(bool on) { FreeAi.SetAuto(on); _hub.Changed("assistant"); return AiStatus(); }
+    /// <summary>How the free AIs work together: "fallback" (one after the other), "race" (OpenRouter and Groq at once, the faster counts) or "single" (only one).</summary>
+    public object AiStrategy(string strategy, string? single) { FreeAi.SetStrategy(strategy, single); _hub.Changed("assistant"); return AiStatus(); }
 
     /// <summary>A real connection test (key, models, one tiny question) – the answer says what worked or what did not, in plain words.</summary>
     public async Task<object> AiTestAsync(string provider, CancellationToken ct = default)
