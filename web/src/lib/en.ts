@@ -6392,4 +6392,6 @@ export const en: Record<string, string> = {
   "auf diesem Gerät": "on this device",
   "{n} automatisch an den PC übertragen.": "{n} transferred to the PC automatically.",
   "Hier eingerichtete und entsperrte Schlüssel übertragen sich automatisch (versiegelt) an den verbundenen PC, sobald er sie noch nicht hat.": "Keys set up and unlocked here are transferred automatically (sealed) to the connected PC as soon as it does not have them yet.",
+  "QR-Code größer anzeigen": "Show QR code larger",
+  "Handykamera darauf halten – zum Schließen tippen.": "Hold the phone camera to it – tap to close.",
 };

@@ -34,6 +34,12 @@ async function pair(device: Page, base: string) {
   const code = (await pc.locator(".code-display").textContent())!.trim();
   expect(code).toMatch(/^[A-Z2-9]{4}-[A-Z2-9]{4}$/);
   await expect(pc.locator(".qr img")).toBeVisible();
+  // The QR code is a vector graphic of a readable size, with a full-screen view for the camera.
+  expect((await pc.locator(".qr img").boundingBox())!.width).toBeGreaterThan(200);
+  await pc.getByRole("button", { name: "QR-Code größer anzeigen" }).click();
+  await expect(pc.locator(".qr-big img")).toBeVisible();
+  await pc.locator(".qr-big").click();
+  await expect(pc.locator(".qr-big")).toHaveCount(0);
 
   await device.goto(`${base}/#/pair?code=${code}`);
   await expect(device.getByRole("heading", { name: "Gerät koppeln" })).toBeVisible();

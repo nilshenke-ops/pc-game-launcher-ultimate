@@ -204,6 +204,7 @@ export function PairPage() {
   const [code, setCode] = useState<{ code: string; expiresAt: string; urls: string[]; pcAddress?: string; addresses?: { url: string; kind: string }[] } | null>(null);
   const [qr, setQr] = useState<string>("");
   const [urlIndex, setUrlIndex] = useState(0);
+  const [big, setBig] = useState(false);
   const isLocal = !!conn.me?.isLocal;
 
   const load = useCallback(() => {
@@ -220,7 +221,10 @@ export function PairPage() {
   const url = code?.urls[urlIndex] ?? code?.urls[0];
   useEffect(() => {
     if (!url) { setQr(""); return; }
-    QRCode.toDataURL(url, { margin: 1, width: 440, errorCorrectionLevel: "M" }).then(setQr).catch(() => setQr(""));
+    // Vector graphic with the full quiet zone (4 modules): crisp at any size, no blurry or uneven squares that a phone camera cannot read.
+    QRCode.toString(url, { type: "svg", margin: 4, errorCorrectionLevel: "M" })
+      .then((svg) => setQr("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg.replace("<svg ", '<svg shape-rendering="crispEdges" '))))
+      .catch(() => setQr(""));
   }, [url]);
 
   const create = async () => {
@@ -296,9 +300,16 @@ export function PairPage() {
           {code && !expired && url ? (
             <div className="stack">
               <div className="qr">{qr ? <img src={qr} alt={t("QR-Code zur Kopplung")} /> : null}</div>
+              {big && qr && (
+                <div className="qr-big" role="dialog" aria-label={t("QR-Code zur Kopplung")} onClick={() => setBig(false)}>
+                  <img src={qr} alt={t("QR-Code zur Kopplung")} />
+                  <p>{t("Handykamera darauf halten – zum Schließen tippen.")}</p>
+                </div>
+              )}
               {code.urls.length > 1 && (
                 <div className="chips">{code.urls.map((u, i) => <button key={u} className={`chip ${i === urlIndex ? "on" : ""}`} onClick={() => setUrlIndex(i)}>{new URL(u).host}</button>)}</div>
               )}
+              <div className="row" style={{ justifyContent: "center" }}><Button size="sm" onClick={() => setBig(true)}>{t("QR-Code größer anzeigen")}</Button></div>
               <code style={{ textAlign: "center" }}>{url.split("#")[0]}</code>
               <p className="tiny muted">{t("Der QR-Code enthält nur die Adresse und den einmaligen Code – keinen dauerhaften Zugang. Ohne deine Bestätigung passiert nichts.")}</p>
               <details className="small">
