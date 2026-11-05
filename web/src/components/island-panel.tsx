@@ -23,7 +23,7 @@ import { consumeSpoken, markSpoken, micPermission, setConversation, useConversat
 import { cleanSpoken, voiceControl } from "../lib/voice-text";
 import { friendlyError } from "../lib/friendly-error";
 import { speak, stopSpeaking, useVoice } from "../lib/jarvis-voice";
-import { askLocalChain, LOCAL_NAME, readyProviders, useLocalAi } from "../lib/free-ai-local";
+import { askLocalChain, LOCAL_NAME, LOCAL_PROVIDERS, readyProviders, useLocalAi } from "../lib/free-ai-local";
 import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { readJson, writeJson } from "../lib/rpc";
 import { AiManager, hasReadyAi, type AiOverview } from "./ai-manager";
@@ -121,7 +121,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   /** Without the PC: general questions go to the free AI (once allowed on this device); nothing else leaves the device. */
   const askWithoutPc = async (v: string) => {
     const own = readyProviders().length > 0;                           // the person's own OpenRouter/Groq key, unlocked on this device
-    if (!own && consent === "no") { islandAnswer(localSnap.openrouter === "locked" || localSnap.groq === "locked" ? t("Dein Schlüssel auf diesem Gerät ist gesperrt – in der KI-Verwaltung entsperren.") : t("Ohne PC kann ich das hier nicht beantworten."), false); return; }
+    if (!own && consent === "no") { islandAnswer(LOCAL_PROVIDERS.some((p) => localSnap[p] === "locked") ? t("Dein Schlüssel auf diesem Gerät ist gesperrt – in der KI-Verwaltung entsperren.") : t("Ohne PC kann ich das hier nicht beantworten."), false); return; }
     if (!own && consent === "ask") { setPendingFree(v); return; }
     islandBusy(true);
     try {
@@ -364,7 +364,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     </div>
   );
 
-  const ENGINE_LABEL: Record<string, string> = { smart: "Automatisch", openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations", router: "Router", ollama: "Lokale KI", local: "Eingebaut" };
+  const ENGINE_LABEL: Record<string, string> = { smart: "Automatisch", openrouter: "OpenRouter", groq: "Groq", cerebras: "Cerebras", mistral: "Mistral", pollinations: "Pollinations", router: "Router", ollama: "Lokale KI", local: "Eingebaut" };
   const noAiHere = !online && consent === "no";
   const jarvisTab = (
     <div className="isl2-chat">

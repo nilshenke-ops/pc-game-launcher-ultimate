@@ -274,7 +274,7 @@ public class FreeAiTests
         var r1 = Reply(await a.AskAsync("dev", "iPad", null, Question));
         Assert.Equal("groq", r1.GetProperty("mode").GetString());
         Assert.Empty(fake.Chats("openrouter.ai"));                                                         // Groq first, so OpenRouter was not even asked
-        Assert.Throws<RpcException>(() => a.AiOrder(new[] { "groq", "groq", "openrouter", "ollama" }));      // all four, once each
+        Assert.Throws<RpcException>(() => a.AiOrder(new[] { "groq", "irgendwas", "openrouter", "ollama" })); // unknown provider
         // automatic switching off: only the first one is tried
         a.AiOrder(new[] { "openrouter", "groq", "pollinations", "ollama" });
         a.AiAuto(false);
@@ -586,5 +586,90 @@ public class FreeAiTests
                 return await base.SendAsync(r, ct);
             }
         }
+    }
+
+    // ------------------------------------------------------------------ Cerebras and Mistral (3.12.0)
+
+    const string CsKey = "csk-0123456789abcdef0123456789abcdef";
+    const string MiKey = "AbCdEfGhIjKlMnOpQrStUvWxYz012345";
+
+    static string MiList() => JsonSerializer.Serialize(new { data = new object[]
+    {
+        new { id = "mistral-large-latest", capabilities = new { completion_chat = true }, max_context_length = 131072 },
+        new { id = "mistral-small-latest", capabilities = new { completion_chat = true }, max_context_length = 32768 },
+        new { id = "mistral-embed", capabilities = new { completion_chat = false }, max_context_length = 8192 },
+        new { id = "mistral-ocr-latest", capabilities = new { completion_chat = false }, max_context_length = 0 },
+        new { id = "voxtral-mini-latest", capabilities = new { completion_chat = true }, max_context_length = 32768 },
+    } });
+
+    [Fact]
+    public void Cerebras_und_Mistral_Schluessel_werden_nur_in_ihrer_Form_und_nur_an_den_eigenen_Host_akzeptiert()
+    {
+        Assert.True(CostGuard.KeyLooksRight("cerebras", CsKey)); Assert.False(CostGuard.KeyLooksRight("cerebras", GrKey)); Assert.False(CostGuard.KeyLooksRight("cerebras", OrKey));
+        Assert.True(CostGuard.KeyLooksRight("mistral", MiKey));
+        Assert.False(CostGuard.KeyLooksRight("mistral", GrKey)); Assert.False(CostGuard.KeyLooksRight("mistral", CsKey)); Assert.False(CostGuard.KeyLooksRight("mistral", OrKey));
+        Assert.False(CostGuard.KeyLooksRight("mistral", "AIzaSyA0123456789abcdefghijklmnopqrstuv")); // a Google key (39 characters)
+        Assert.True(CostGuard.HostAllowed("cerebras", "https://api.cerebras.ai/v1/chat/completions"));
+        Assert.True(CostGuard.HostAllowed("mistral", "https://api.mistral.ai/v1/chat/completions"));
+        Assert.False(CostGuard.HostAllowed("mistral", "https://api.cerebras.ai/v1/chat/completions"));
+        Assert.False(CostGuard.HostAllowed("cerebras", "http://api.cerebras.ai/v1/chat/completions"));
+        Assert.False(CostGuard.HostAllowed("mistral", "https://api.mistral.ai.evil.example/v1"));
+        Assert.True(CostGuard.Rank("mistral-large-latest", 0) > CostGuard.Rank("mistral-small-latest", 0));
+        Assert.False(CostGuard.IsChatModel("voxtral-mini-latest")); Assert.False(CostGuard.IsChatModel("mistral-ocr-latest")); Assert.False(CostGuard.IsChatModel("mistral-embed"));
+    }
+
+    [Theory]
+    [InlineData("cerebras", CsKey, "api.cerebras.ai", "llama-3.3-70b")]
+    [InlineData("mistral", MiKey, "api.mistral.ai", "mistral-large-latest")]
+    public async Task Cerebras_und_Mistral_gehen_erst_nach_der_Bestaetigung_Gratis_Tarif_und_antworten_dann_mit_Namen(string id, string key, string host, string model)
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var fake = new Fake(r => r.Url.Contains("openrouter.ai") ? Limit()
+            : r.Url.EndsWith("/models") ? Ok(id == "mistral" ? MiList() : GrList(model, "whisper-large-v3")) : Ok(Chat("Von " + id, model)));
+        var (a, _) = Make(dir, s, fake);
+        a.AiSet("openrouter", null, OrKey, null, null, true);
+        a.AiSet(id, null, key, null, null, true);                                                                     // key only: not switched on, nothing is sent
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => a.AiSet(id, true, null, null, null, true)).Code);
+        a.AiSet(id, null, null, true, null, true);
+        a.AiSet(id, true, null, null, null, true);
+        var r = Reply(await a.AskAsync("dev", "iPad", null, Question));
+        Assert.Equal(id, r.GetProperty("mode").GetString());
+        Assert.StartsWith($"Beantwortet von {FreeAiHub.Name(id)} – kostenloses Modell ({model})", Source0(r));
+        Assert.All(fake.Calls.Where(c => c.Url.Contains(host)), c => Assert.Equal("Bearer " + key, c.Auth));       // the key went to its own host …
+        Assert.DoesNotContain(fake.Calls, c => !c.Url.Contains(host) && c.Auth != null && c.Auth.Contains(key));   // … and nowhere else
+        Assert.DoesNotContain(fake.Calls, c => c.Body.Contains("whisper") || c.Body.Contains("voxtral") || c.Body.Contains("embed"));
+    }
+
+    [Fact]
+    public async Task Limit_bei_Cerebras_wechselt_zu_Mistral_und_der_Status_nennt_alle_sechs_Anbieter()
+    {
+        using var dir = new TempDir(); await using var s = Fixtures.Services(dir);
+        var fake = new Fake(r => r.Url.Contains("openrouter.ai") ? Limit()
+            : r.Url.Contains("api.cerebras.ai") ? (r.Url.EndsWith("/models") ? Ok(GrList("llama-3.3-70b")) : Limit("90"))
+            : r.Url.EndsWith("/models") ? Ok(MiList()) : Ok(Chat("Von Mistral.", "mistral-large-latest")));
+        var (a, _) = Make(dir, s, fake);
+        a.AiSet("cerebras", null, CsKey, true, null, true);
+        a.AiSet("mistral", null, MiKey, true, null, true);
+        var r = Reply(await a.AskAsync("dev", "iPad", null, Question));
+        Assert.Equal("mistral", r.GetProperty("mode").GetString());
+        Assert.Contains("deshalb antwortet Mistral", AllSources(r));
+        var st = Js(a.AiStatus()).GetProperty("providers").EnumerateArray().Select(p => p.GetProperty("id").GetString()).ToList();
+        Assert.Equal(new[] { "openrouter", "groq", "cerebras", "mistral", "pollinations", "ollama" }, st);
+        var cs = Js(a.AiStatus()).GetProperty("providers").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "cerebras");
+        Assert.Equal("cooldown", cs.GetProperty("state").GetString());
+        Assert.True(cs.GetProperty("needsKey").GetBoolean()); Assert.True(cs.GetProperty("needsAttest").GetBoolean());
+    }
+
+    [Fact]
+    public void Eine_gespeicherte_Reihenfolge_ohne_die_neuen_Anbieter_bekommt_sie_vor_Pollinations_und_eine_alte_Seite_kann_sie_nicht_loeschen()
+    {
+        using var dir = new TempDir();
+        var paths = new AppPaths(Path.Combine(dir.Path, "d"));
+        Directory.CreateDirectory(Path.GetDirectoryName(paths.File("freeai.json"))!);
+        File.WriteAllText(paths.File("freeai.json"), "{\"Order\":[\"groq\",\"openrouter\",\"pollinations\",\"ollama\"],\"Providers\":{},\"Strategy\":\"fallback\",\"Migrated\":true}");
+        var hub = new FreeAiHub(paths, new GenericPlatform().Secrets, new Fake(_ => Ok("{}")));
+        Assert.Equal(new[] { "groq", "openrouter", "cerebras", "mistral", "pollinations", "ollama" }, Js(hub.Providers("m")).EnumerateArray().Select(p => p.GetProperty("id").GetString()).ToArray());
+        hub.SetOrder(new[] { "ollama", "pollinations", "mistral", "cerebras" });                 // an older page that knows only four
+        Assert.Equal(new[] { "ollama", "pollinations", "mistral", "cerebras", "openrouter", "groq" }, Js(hub.Providers("m")).EnumerateArray().Select(p => p.GetProperty("id").GetString()).ToArray());
     }
 }

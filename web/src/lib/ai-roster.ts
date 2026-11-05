@@ -2,7 +2,7 @@
 // Built from what the PC reports (ai.status, assistant.status) and from the keys on this device. Pure, so it is tested without a browser.
 
 import type { AiOverview } from "../components/ai-manager";
-import type { LocalSnap } from "./free-ai-local";
+import { LOCAL_NAME, LOCAL_PROVIDERS, needsAttestation, type LocalProvider, type LocalSnap } from "./free-ai-local";
 import { t } from "./i18n";
 
 export type RosterState = "works" | "limit" | "problem" | "begun" | "none";
@@ -35,30 +35,32 @@ export function buildPlan(ai: AiOverview | null | undefined, rows: RosterRow[]):
   const names = (id: string) => ai.providers.find((p) => p.id === id)?.name ?? id;
   let steps = usable.map(step);
   let how = t("Eine nach der anderen: ist die erste voll oder gestört, fragt JARVIS die nächste");
-  if (strategy === "race") { steps = usable.filter((p) => p.id === "openrouter" || p.id === "groq").map(step); how = t("Schnellster gewinnt: OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt"); if (!steps.length) steps = usable.map(step); }
+  if (strategy === "race") { steps = usable.filter((p) => isLocalProvider(p.id)).map(step); if (!steps.length) steps = usable.map(step); how = t("Schnellster gewinnt: {n} werden gleichzeitig gefragt, die schnellere Antwort zählt", { n: steps.map((x) => x.name).join(", ") }); }
   if (strategy === "single") { const one = usable.find((p) => p.id === ai.single) ?? usable[0]; steps = one ? [step(one)] : []; how = t("Nur eine KI: {n} – keine andere springt ein", { n: one ? names(one.id) : t("keine eingerichtet") }); }
   return { how, steps, commands: t("Befehle und PC-Werte beantwortet die eingebaute Hilfe am PC – ohne KI, sofort"), last: ai.last ? { name: ai.last.name, model: ai.last.model, at: ai.last.at } : undefined };
 }
+
+const isLocalProvider = (id: string): id is LocalProvider => (LOCAL_PROVIDERS as readonly string[]).includes(id);
 
 const ORDER: Record<RosterState, number> = { works: 0, limit: 1, problem: 2, begun: 3, none: 4 };
 
 export function buildRoster(ai: AiOverview | null | undefined, st: AssistantLite | null | undefined, device: LocalSnap | null | undefined, consent: "yes" | "no" | "ask" = "no", when: (iso: string) => string = (x) => x): RosterRow[] {
   const rows: RosterRow[] = [{ id: "local", name: t("Eingebaute Hilfe"), kind: "builtin", state: "works", text: t("Funktioniert immer – kostenlos, auch ohne Internet (Befehle, Fragen zur App, deine Bibliothek)") }];
 
-  // OpenRouter, Groq, Pollinations, Ollama
-  const names: Record<string, string> = { openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations", ollama: "Lokale KI (Ollama)" };
-  const ids = ai ? ai.providers.map((p) => p.id) : ["openrouter", "groq", "pollinations"];
+  // OpenRouter, Groq, Cerebras, Mistral, Pollinations, Ollama
+  const names: Record<string, string> = { ...LOCAL_NAME, pollinations: "Pollinations", ollama: "Lokale KI (Ollama)" };
+  const ids = ai ? ai.providers.map((p) => p.id) : [...LOCAL_PROVIDERS, "pollinations"];
   for (const id of ids) {
     const p = ai?.providers.find((x) => x.id === id);
     const name = p?.name ?? names[id] ?? id;
-    const onDevice = id === "openrouter" || id === "groq" ? device?.[id] : undefined;
+    const onDevice = isLocalProvider(id) ? device?.[id] : undefined;
     let r: RosterRow;
     if (p) {
       if (p.state === "ready") r = { id, name, kind: "free", state: "works", text: p.lastOkAt ? t("Funktioniert – zuletzt geantwortet {w}{m}", { w: when(p.lastOkAt), m: p.lastModel ? ` (${p.lastModel})` : "" }) : t("Bereit – noch nicht benutzt (am besten „Verbindung testen“)") };
       else if (p.state === "cooldown") r = { id, name, kind: "free", state: "limit", text: p.stateText || t("Gerade am Limit – später wieder"), next: t("Wartet von selbst") };
       else if (p.state === "error") r = { id, name, kind: "free", state: "problem", text: p.lastError || p.stateText || t("Fehler"), next: t("Schlüssel prüfen und neu eintragen") };
       else if (p.state === "off") r = { id, name, kind: "free", state: "begun", text: t("Eingerichtet, aber ausgeschaltet"), next: t("Schalter einschalten") };
-      else if (p.keySet || p.consent || p.attested) r = { id, name, kind: "free", state: "begun", text: p.stateText || "Angefangen", next: id === "groq" && !p.attested ? t("Kostenlosen Tarif bestätigen") : t("Einrichtung abschließen") };
+      else if (p.keySet || p.consent || p.attested) r = { id, name, kind: "free", state: "begun", text: p.stateText || "Angefangen", next: isLocalProvider(id) && needsAttestation(id) && !p.attested ? t("Kostenlosen Tarif bestätigen") : t("Einrichtung abschließen") };
       else r = { id, name, kind: "free", state: "none", text: id === "ollama" ? t("Nicht eingerichtet – am PC Ollama installieren und ein Modell wählen") : t("Nicht eingerichtet"), next: id === "ollama" ? undefined : t("Einrichten") };
     } else if (id === "pollinations") {
       r = consent === "yes" ? { id, name, kind: "free", state: "works", text: t("Erlaubt auf diesem Gerät – antwortet auch ohne PC") } : { id, name, kind: "free", state: "none", text: t("Nicht erlaubt"), next: t("„Pollinations ohne PC erlauben“") };

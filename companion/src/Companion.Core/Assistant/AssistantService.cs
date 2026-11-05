@@ -134,7 +134,7 @@ public sealed class AssistantService
 
     /// <summary>At least one free AI is set up and switched on: OpenRouter, Groq, Pollinations or a local model (Ollama).</summary>
     bool OllamaOn(AssistantFile f) => !string.IsNullOrEmpty(f.OllamaModel) && FreeAi.Configured("ollama");
-    bool HasFreeAi(AssistantFile f) => FreeAi.Configured("openrouter") || FreeAi.Configured("groq") || FreeAi.Configured("pollinations") || OllamaOn(f);
+    bool HasFreeAi(AssistantFile f) => CostGuard.KeyProviders.Any(FreeAi.Configured) || FreeAi.Configured("pollinations") || OllamaOn(f);
     static bool RouterReady(AssistantFile f) => f.RouterBase != null && f.RouterModels.Count > 0 && (f.RouterKeyProtected != null || IsHomeNetwork(f.RouterBase));
     static bool IsHomeNetwork(string url) => Uri.TryCreate(url, UriKind.Absolute, out var u) && (u.IsLoopback || u.Host == "localhost" ||
         (System.Net.IPAddress.TryParse(u.Host, out var ip) && ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && ip.GetAddressBytes() is var b &&
@@ -209,7 +209,7 @@ public sealed class AssistantService
                 if (c.Mode == "smart")
                 {
                     var ok = HasFreeAi(f) || !string.IsNullOrEmpty(c.OllamaModel ?? f.OllamaModel);
-                    if (!ok) throw new RpcException("assistant-key", "Für „Automatisch“ zuerst eine kostenlose KI einrichten (OpenRouter, Groq, Pollinations oder lokale KI).");
+                    if (!ok) throw new RpcException("assistant-key", "Für „Automatisch“ zuerst eine kostenlose KI einrichten (OpenRouter, Groq, Cerebras, Mistral, Pollinations oder lokale KI).");
                 }
                 if (c.Mode == "router")
                 {
@@ -343,7 +343,7 @@ public sealed class AssistantService
                 }
                 return Done(conversationId, await SmartOnceAsync(f, conv, text, who, ct, null), note);
             }
-            if (mode is "openrouter" or "groq" or "pollinations") return Done(conversationId, await SmartOnceAsync(f, conv, text, who, ct, mode), note);
+            if (CostGuard.IsKeyProvider(mode) || mode == "pollinations") return Done(conversationId, await SmartOnceAsync(f, conv, text, who, ct, mode), note);
             if (useOllama && !f.OllamaWhileGaming && Data.GameRunning())
             {
                 reply = await Local.AnswerAsync(text);
@@ -403,8 +403,8 @@ public sealed class AssistantService
     {
         engine = string.IsNullOrWhiteSpace(engine) ? "auto" : engine.Trim();
         if (engine == "auto") return (f.Mode switch { "claude" when f.KeyProtected == null => "local", "router" when !RouterReady(f) => "local", "smart" when !HasFreeAi(f) => "local", _ => f.Mode }, f.Model);
-        if (engine == "smart") return HasFreeAi(f) ? ("smart", f.Model) : throw new RpcException("assistant-key", "Für „Automatisch“ zuerst eine kostenlose KI einrichten (OpenRouter, Groq, Pollinations oder lokale KI).");
-        if (engine is "openrouter" or "groq" or "pollinations") return FreeAi.Configured(engine) ? (engine, f.Model) : throw new RpcException("assistant-key", $"{FreeAiHub.Name(engine)} ist noch nicht eingerichtet (KI-Verwaltung in JARVIS).");
+        if (engine == "smart") return HasFreeAi(f) ? ("smart", f.Model) : throw new RpcException("assistant-key", "Für „Automatisch“ zuerst eine kostenlose KI einrichten (OpenRouter, Groq, Cerebras, Mistral, Pollinations oder lokale KI).");
+        if (CostGuard.IsKeyProvider(engine) || engine == "pollinations") return FreeAi.Configured(engine) ? (engine, f.Model) : throw new RpcException("assistant-key", $"{FreeAiHub.Name(engine)} ist noch nicht eingerichtet (KI-Verwaltung in JARVIS).");
         if (engine == "router") return RouterReady(f) ? ("router", f.Model) : throw new RpcException("assistant-key", "Der KI-Router ist am PC noch nicht eingerichtet (Adresse, Schlüssel, Modell).");
         if (engine == "local") return ("local", f.Model);
         if (engine == "ollama") return string.IsNullOrEmpty(f.OllamaModel) ? throw new RpcException("assistant-key", "Die lokale KI (Ollama) ist am PC noch nicht eingerichtet.") : ("ollama", f.Model);
@@ -425,7 +425,7 @@ public sealed class AssistantService
         var list = new List<object>();
         if (HasFreeAi(f)) list.Add(new { id = "smart", label = "Automatisch (empfohlen): Befehle am PC, Fragen per freier KI", free = true });
         list.Add(new { id = "auto", label = $"Standard des PCs ({ModeLabel(f)})", free = f.Mode != "claude" });
-        foreach (var pid in new[] { "openrouter", "groq", "pollinations" }) if (FreeAi.Configured(pid)) list.Add(new { id = pid, label = $"{FreeAiHub.Name(pid)} (kostenlos)", free = true });
+        foreach (var pid in new[] { "openrouter", "groq", "cerebras", "mistral", "pollinations" }) if (FreeAi.Configured(pid)) list.Add(new { id = pid, label = $"{FreeAiHub.Name(pid)} (kostenlos)", free = true });
         list.Add(new { id = "local", label = "Eingebaut (ohne KI, 0 €)", free = true });
         if (OllamaOn(f)) list.Add(new { id = "ollama", label = $"Lokale KI: {f.OllamaModel} (0 €)", free = true });
         if (RouterReady(f)) list.Add(new { id = "router", label = $"KI-Router: {f.RouterModels[0]}{(f.RouterModels.All(m => m.EndsWith(":free")) ? " (kostenlos)" : "")}", free = f.RouterModels.All(m => m.EndsWith(":free")) });
@@ -547,7 +547,7 @@ public sealed class AssistantService
         }
         // "Schnellster gewinnt": OpenRouter and Groq are asked at the same time, the faster answer counts, the other request is cancelled.
         // (Both free limits are used for one question – that is the price of the speed.) If both fail, the rest of the order is tried as usual.
-        var raceIds = strategy == "race" ? order.Where(id => id is "openrouter" or "groq").ToList() : new List<string>();
+        var raceIds = strategy == "race" ? order.Where(CostGuard.IsKeyProvider).ToList() : new List<string>();
         if (raceIds.Count >= 2)
         {
             EnsureTurn();
@@ -656,7 +656,7 @@ public sealed class AssistantService
 
     public object AiOrder(IEnumerable<string> order) { FreeAi.SetOrder(order); _hub.Changed("assistant"); return AiStatus(); }
     public object AiAuto(bool on) { FreeAi.SetAuto(on); _hub.Changed("assistant"); return AiStatus(); }
-    /// <summary>How the free AIs work together: "fallback" (one after the other), "race" (OpenRouter and Groq at once, the faster counts) or "single" (only one).</summary>
+    /// <summary>How the free AIs work together: "fallback" (one after the other), "race" (all AIs with a key at once, the faster counts) or "single" (only one).</summary>
     public object AiStrategy(string strategy, string? single) { FreeAi.SetStrategy(strategy, single); _hub.Changed("assistant"); return AiStatus(); }
 
     /// <summary>A real connection test (key, models, one tiny question) – the answer says what worked or what did not, in plain words.</summary>

@@ -13,10 +13,10 @@ import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
 import { AiRoster } from "./ai-roster";
 import { friendlyError } from "../lib/friendly-error";
-import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
+import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
 export interface AiProvider {
-  id: string; name: string; enabled: boolean; needsKey: boolean; keySet: boolean; attested: boolean; consent: boolean;
+  id: string; name: string; enabled: boolean; needsKey: boolean; needsAttest?: boolean; keySet: boolean; attested: boolean; consent: boolean;
   state: "ready" | "off" | "setup" | "cooldown" | "error"; stateText: string;
   lastError?: string | null; lastErrorAt?: string | null; lastOkAt?: string | null; lastModel?: string | null;
   models?: { id: string; context: number }[]; modelCount?: number; today?: { limit?: number | null; remaining?: number | null };
@@ -30,6 +30,12 @@ export interface AiOverview {
 export const hasReadyAi = (o?: AiOverview | null) => !!o?.anyReady;
 export const OPENROUTER_KEYS_URL = "https://openrouter.ai/keys";
 export const GROQ_KEYS_URL = "https://console.groq.com/keys";
+export const CEREBRAS_KEYS_URL = "https://cloud.cerebras.ai/platform";
+export const MISTRAL_KEYS_URL = "https://console.mistral.ai/api-keys";
+/** Groq, Cerebras and Mistral: the free plan is a plan of the account, so the person confirms it first (OpenRouter prices every model instead). */
+const needsAttest = (p: { id: string; needsAttest?: boolean }) => p.needsAttest ?? p.id === "groq";
+const keyLabel = (id: string) => id === "openrouter" ? t("OpenRouter-Schlüssel") : id === "groq" ? t("Groq-Schlüssel") : id === "cerebras" ? t("Cerebras-Schlüssel") : t("Mistral-Schlüssel");
+const attestText = (name: string) => t("Ich bestätige: Mein {n}-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.", { n: name });
 
 const STEPS: Record<string, { url?: string; urlLabel?: string; steps: string[]; hint?: string }> = {
   openrouter: { url: OPENROUTER_KEYS_URL, urlLabel: "openrouter.ai/keys", hint: "sk-or-…", steps: [
@@ -42,6 +48,16 @@ const STEPS: Record<string, { url?: string; urlLabel?: string; steps: string[]; 
     "Tippe auf „Create API Key“ und kopiere den Schlüssel (beginnt mit „gsk_“).",
     "Bestätige unten, dass dein Konto im kostenlosen Tarif ist, füge den Schlüssel ein und tippe auf „Speichern & testen“.",
     "Hinterlege bei Groq kein Zahlungsmittel und wechsle nicht auf einen bezahlten Tarif." ] },
+  cerebras: { url: CEREBRAS_KEYS_URL, urlLabel: "cloud.cerebras.ai", hint: "csk-…", steps: [
+    "Öffne cloud.cerebras.ai und melde dich an (kostenloser Tarif, schnelle Antworten).",
+    "Öffne links „API Keys“, tippe auf „Generate API Key“ und kopiere den Schlüssel (beginnt mit „csk-“).",
+    "Bestätige unten, dass dein Konto im kostenlosen Tarif ist, füge den Schlüssel ein und tippe auf „Speichern & testen“.",
+    "Hinterlege bei Cerebras kein Zahlungsmittel und wechsle nicht auf einen bezahlten Tarif." ] },
+  mistral: { url: MISTRAL_KEYS_URL, urlLabel: "console.mistral.ai/api-keys", hint: t("32 Zeichen"), steps: [
+    "Öffne console.mistral.ai, melde dich an und wähle den kostenlosen Tarif „Experiment“ (Bestätigung per Handynummer, keine Karte nötig).",
+    "Öffne „API Keys“, tippe auf „Create new key“ und kopiere den Schlüssel (32 Buchstaben und Ziffern).",
+    "Bestätige unten, dass dein Konto im kostenlosen Tarif ist, füge den Schlüssel ein und tippe auf „Speichern & testen“.",
+    "Hinterlege bei Mistral kein Zahlungsmittel und wechsle nicht auf einen bezahlten Tarif." ] },
 };
 
 function Key({ label, value, set, hint }: { label: string; value: string; set: (v: string) => void; hint?: string }) {
@@ -112,7 +128,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
     return (
       <div className="aim" aria-live="polite">
         {roster && <AiRoster online={false} />}
-        <p className="tiny muted">{t("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja) und – wenn du unten einen Schlüssel mit Passwort einrichtest – OpenRouter und Groq direkt von diesem Gerät. Ollama läuft nur auf dem PC.")}</p>
+        <p className="tiny muted">{t("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja) und – wenn du unten einen Schlüssel mit Passwort einrichtest – OpenRouter, Groq, Cerebras und Mistral direkt von diesem Gerät. Ollama läuft nur auf dem PC.")}</p>
         <div className="aim-row">
           <span className="aim-name">Pollinations</span>
           <span className={`aim-badge ${consent === "yes" ? "ready" : "off"}`}>{consent === "yes" ? t("Erlaubt auf diesem Gerät") : t("Nicht erlaubt")}</span>
@@ -137,7 +153,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
         <b className="aim-modetitle">{t("So arbeiten die KIs zusammen")}</b>
         <div className="aim-modes" role="radiogroup" aria-label={t("So arbeiten die KIs zusammen")}>
           {([["fallback", t("Ersatz-Reihenfolge"), t("Eine nach der anderen: ist die erste voll oder gestört, fragt JARVIS die nächste.")],
-            ["race", t("Schnellster gewinnt"), t("OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt (verbraucht von beiden Gratis-Limits).")],
+            ["race", t("Schnellster gewinnt"), t("Alle KIs mit Schlüssel werden gleichzeitig gefragt, die schnellere Antwort zählt (verbraucht von allen Gratis-Limits).")],
             ["single", t("Nur eine KI"), t("Nur die gewählte KI antwortet, keine andere springt ein.")]] as const).map(([id, name, hint]) => (
             <button key={id} type="button" role="radio" aria-checked={(o.strategy ?? (o.auto ? "fallback" : "single")) === id} disabled={!canManage || busy !== null}
               className={`aim-mode-btn${(o.strategy ?? (o.auto ? "fallback" : "single")) === id ? " on" : ""}`}
@@ -158,7 +174,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
         )}
         {msg.strategy && !msg.strategy.ok && <p className="tiny fas-err" role="alert">{msg.strategy.text}</p>}
         <div className="aim-quick" role="group" aria-label={t("Schnell ein- und ausschalten")}>
-          {o.providers.filter((p) => p.id === "openrouter" || p.id === "groq").map((p) => (
+          {o.providers.filter((p) => p.needsKey).map((p) => (
             <button key={p.id} type="button" disabled={!canManage || busy !== null} aria-pressed={p.enabled && p.state !== "setup"}
               className={`aim-quickbtn${p.enabled && p.state !== "setup" ? " on" : ""}`}
               onClick={() => {
@@ -202,13 +218,13 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
                   </ol>
                   <p className="tiny"><a href={guide.url} target="_blank" rel="noopener noreferrer">{guide.urlLabel}</a>{" "}
                     <button type="button" className="fas-copy" aria-label={t("Adresse kopieren")} onClick={() => void navigator.clipboard?.writeText(guide.url!).then(() => toast(t("Adresse kopiert"), "success")).catch(() => {})}><Copy size={12} /></button></p>
-                  {p.id === "groq" && (
-                    <label className="aim-check"><input type="checkbox" checked={p.attested} onChange={(e) => void run(p.id, async () => { await client.call("ai.set", { provider: "groq", attested: e.target.checked }); })} disabled={busy !== null} />
-                      <span className="tiny">{t("Ich bestätige: Mein Groq-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.")}</span></label>
+                  {needsAttest(p) && (
+                    <label className="aim-check"><input type="checkbox" checked={p.attested} onChange={(e) => void run(p.id, async () => { await client.call("ai.set", { provider: p.id, attested: e.target.checked }); })} disabled={busy !== null} />
+                      <span className="tiny">{attestText(p.name)}</span></label>
                   )}
-                  <Key label={p.id === "openrouter" ? t("OpenRouter-Schlüssel") : t("Groq-Schlüssel")} value={keys[p.id] ?? ""} set={(v) => setKeys((k) => ({ ...k, [p.id]: v }))} hint={guide.hint} />
+                  <Key label={keyLabel(p.id)} value={keys[p.id] ?? ""} set={(v) => setKeys((k) => ({ ...k, [p.id]: v }))} hint={guide.hint} />
                   <div className="aim-actions">
-                    <button type="button" className="btn sm primary" disabled={!canSave || (p.id === "groq" && !p.attested)} onClick={() => void saveKey(p)}><KeyRound size={14} /> {busy === p.id ? t("Teste …") : t("Speichern & testen")}</button>
+                    <button type="button" className="btn sm primary" disabled={!canSave || (needsAttest(p) && !p.attested)} onClick={() => void saveKey(p)}><KeyRound size={14} /> {busy === p.id ? t("Teste …") : t("Speichern & testen")}</button>
                     {p.keySet && <button type="button" className="btn sm" disabled={busy !== null} onClick={() => void run(p.id, async () => { await client.call("ai.set", { provider: p.id, key: "" }); return t("Schlüssel entfernt."); })}><Trash2 size={14} /> {t("Schlüssel entfernen")}</button>}
                   </div>
                 </>
@@ -250,10 +266,10 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
  */
 function LocalAiSetup({ online = false }: { online?: boolean }) {
   const snap = useLocalAi();
-  const [keys, setKeys] = useState<Record<LocalProvider, string>>({ openrouter: "", groq: "" });
+  const [keys, setKeys] = useState<Record<LocalProvider, string>>({ openrouter: "", groq: "", cerebras: "", mistral: "" });
   const [pass, setPass] = useState("");
   const [keep, setKeep] = useState(false);
-  const [attest, setAttest] = useState(false);
+  const [attest, setAttest] = useState<Record<LocalProvider, boolean>>({ openrouter: true, groq: false, cerebras: false, mistral: false });
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
   const anyLocked = LOCAL_PROVIDERS.some((p) => snap[p] === "locked");
@@ -265,11 +281,11 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
     finally { setBusy(null); }
   };
   if (!localAiSupported()) {
-    return <p className="tiny muted">{t("OpenRouter und Groq ohne PC gehen nur auf der Website im Internet (https) – nicht auf der Seite, die dein PC im WLAN ausliefert.")}</p>;
+    return <p className="tiny muted">{t("Schlüssel ohne PC gehen nur auf der Website im Internet (https) – nicht auf der Seite, die dein PC im WLAN ausliefert.")}</p>;
   }
   return (
-    <section className="fas-card aim-card" id="aim-local" aria-label={t("OpenRouter und Groq ohne PC")}>
-      <b>{t("OpenRouter und Groq ohne PC")}</b>
+    <section className="fas-card aim-card" id="aim-local" aria-label={t("Schlüssel ohne PC")}>
+      <b>{t("Schlüssel ohne PC")}</b>
       <p className="tiny muted">{t("Dein Schlüssel wird auf diesem Gerät mit einem Passwort verschlüsselt gespeichert und nur an den eigenen Dienst geschickt – direkt aus dem Browser, ohne Umweg. Es gelten dieselben Kostenregeln wie am PC (nur kostenlose Modelle, Höchstpreis 0, kein Aufladen). Sicherer ist der PC: Ist er verbunden, benutzt JARVIS dessen Schlüssel.")}</p>
       {online && <p className="tiny">{t("Hier eingerichtete und entsperrte Schlüssel übertragen sich automatisch (versiegelt) an den verbundenen PC, sobald er sie noch nicht hat.")}</p>}
       {anyLocked && (
@@ -277,7 +293,7 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
           <label className="fas-field"><span className="tiny">{t("Passwort")}</span>
             <input className="input" type="password" autoComplete="current-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort zum Entsperren")} /></label>
           <label className="aim-check"><input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /><span className="tiny">{t("Entsperrt lassen, bis ich den Tab schließe")}</span></label>
-          <div className="aim-actions"><button type="button" className="btn sm primary" disabled={pass.length < 6 || busy !== null} onClick={() => void run("unlock", async () => { await unlockLocalAi(pass, keep); setPass(""); return t("Entsperrt – OpenRouter und Groq sind bereit."); })}>{t("Entsperren")}</button></div>
+          <div className="aim-actions"><button type="button" className="btn sm primary" disabled={pass.length < 6 || busy !== null} onClick={() => void run("unlock", async () => { await unlockLocalAi(pass, keep); setPass(""); return t("Entsperrt – die Schlüssel sind bereit."); })}>{t("Entsperren")}</button></div>
         </div>
       )}
       {msg.unlock && <p className={`tiny ${msg.unlock.ok ? "" : "fas-err"}`} role={msg.unlock.ok ? "status" : "alert"}>{msg.unlock.text}</p>}
@@ -293,15 +309,15 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
               <>
                 <ol className="tiny">{guide.steps.map((x) => <li key={x}>{t(x)}</li>)}</ol>
                 <p className="tiny"><a href={guide.url} target="_blank" rel="noopener noreferrer">{guide.urlLabel}</a></p>
-                {p === "groq" && <label className="aim-check"><input type="checkbox" checked={attest} onChange={(e) => setAttest(e.target.checked)} /><span className="tiny">{t("Ich bestätige: Mein Groq-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.")}</span></label>}
-                <Key label={p === "openrouter" ? t("OpenRouter-Schlüssel") : t("Groq-Schlüssel")} value={keys[p]} set={(v) => setKeys((k) => ({ ...k, [p]: v }))} hint={guide.hint} />
+                {needsAttestation(p) && <label className="aim-check"><input type="checkbox" checked={attest[p]} onChange={(e) => setAttest((a) => ({ ...a, [p]: e.target.checked }))} /><span className="tiny">{attestText(LOCAL_NAME[p])}</span></label>}
+                <Key label={keyLabel(p)} value={keys[p]} set={(v) => setKeys((k) => ({ ...k, [p]: v }))} hint={guide.hint} />
                 {!anyLocked && (
                   <label className="fas-field"><span className="tiny">{t("Neues Passwort für die Schlüssel auf diesem Gerät (mindestens 6 Zeichen)")}</span>
                     <input className="input" type="password" autoComplete="new-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort für die Schlüssel")} /></label>
                 )}
                 <div className="aim-actions">
-                  <button type="button" className="btn sm primary" disabled={keys[p].length < 20 || pass.length < 6 || busy !== null || (p === "groq" && !attest)}
-                    onClick={() => void run(p, async () => { await saveLocalKey(p, keys[p], pass, { attested: attest, remember: keep }); setKeys((k) => ({ ...k, [p]: "" })); setPass(""); const r = await testLocal(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
+                  <button type="button" className="btn sm primary" disabled={keys[p].length < 20 || pass.length < 6 || busy !== null || (needsAttestation(p) && !attest[p])}
+                    onClick={() => void run(p, async () => { await saveLocalKey(p, keys[p], pass, { attested: attest[p], remember: keep }); setKeys((k) => ({ ...k, [p]: "" })); setPass(""); const r = await testLocal(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
                     <KeyRound size={14} /> {busy === p ? t("Teste …") : t("Speichern & testen")}</button>
                 </div>
               </>

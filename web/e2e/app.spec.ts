@@ -2446,7 +2446,7 @@ test("Freie KI ohne PC: erst fragen (nur mit Ja), dann beantwortet sie allgemein
   await ctx.close();
 });
 
-test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abgelehnt, Reihenfolge und Automatik änderbar, ohne KI gibt es kein „Automatisch“, nichts läuft über", async ({ browser }) => {
+test("KI-Verwaltung: sechs Anbieter in Reihenfolge, falsche Schlüssel werden abgelehnt, Reihenfolge und Automatik änderbar, ohne KI gibt es kein „Automatisch“, nichts läuft über", async ({ browser }) => {
   const { adminRpc } = await import("./rpc");
   type Prov = { id: string; state: string; keySet: boolean; enabled: boolean };
   const status = () => adminRpc<{ providers: Prov[]; auto: boolean; mode: string; anyReady: boolean }>("ai.status");
@@ -2456,10 +2456,10 @@ test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abg
   await expect(adminRpc("ai.set", { provider: "groq", enabled: true })).rejects.toThrow(/Schlüssel/);
   await expect(adminRpc("ai.set", { provider: "pollinations", enabled: true })).rejects.toThrow(/zustimmen/);
   await expect(adminRpc("ai.set", { provider: "pollinations", key: "sk-or-v1-0123456789abcdef0123456789" })).rejects.toThrow(/keinen Schlüssel/);
-  await expect(adminRpc("ai.order", { order: ["groq", "groq", "openrouter", "ollama"] })).rejects.toThrow(/alle vier/);
+  await expect(adminRpc("ai.order", { order: ["groq", "irgendwas", "openrouter", "ollama"] })).rejects.toThrow(/Unbekannter Anbieter/);
   await expect(adminRpc("assistant.configure", { mode: "smart" })).rejects.toThrow(/kostenlose KI einrichten/);
   const st0 = await status();
-  expect(st0.providers.map((x) => x.id)).toEqual(["openrouter", "groq", "pollinations", "ollama"]);
+  expect(st0.providers.map((x) => x.id)).toEqual(["openrouter", "groq", "cerebras", "mistral", "pollinations", "ollama"]);
   expect(st0.anyReady).toBe(false);
   expect(JSON.stringify(st0)).not.toMatch(/sk-or-|gsk_|Bearer/);
   const eng = await adminRpc<{ engines: { id: string }[] }>("assistant.status");
@@ -2475,7 +2475,7 @@ test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abg
   await islandTab(panel, "JARVIS").click();
   await expect(panel.locator("details.isl2-setup")).toHaveAttribute("open", "");     // nothing set up yet → the manager is open
   await expect(panel).toContainText("0,00 € – nur kostenlose Modelle");
-  for (const n of ["OpenRouter", "Groq", "Pollinations", "Ollama"]) await expect(panel.getByRole("region", { name: n, exact: true })).toBeVisible();
+  for (const n of ["OpenRouter", "Groq", "Cerebras", "Mistral", "Pollinations", "Ollama"]) await expect(panel.getByRole("region", { name: n, exact: true })).toBeVisible();
   await expect(panel.getByRole("radiogroup", { name: "Welche KI antwortet" })).toHaveCount(0);  // nothing to choose yet
   const or = panel.getByRole("region", { name: "OpenRouter", exact: true });
   await expect(or).toContainText("Schlüssel fehlt");
@@ -2492,9 +2492,9 @@ test("KI-Verwaltung: vier Anbieter in Reihenfolge, falsche Schlüssel werden abg
   await expect(gr.getByRole("button", { name: "Speichern & testen" })).toBeDisabled();            // first the free-plan confirmation
   // order and automatic switching are changed at the PC and shown again
   await panel.getByRole("button", { name: "Groq weiter nach oben" }).click();
-  await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["groq", "openrouter", "pollinations", "ollama"]);
+  await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["groq", "openrouter", "cerebras", "mistral", "pollinations", "ollama"]);
   await panel.getByRole("button", { name: "OpenRouter weiter nach oben" }).click();
-  await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["openrouter", "groq", "pollinations", "ollama"]);
+  await expect.poll(async () => (await status()).providers.map((x) => x.id)).toEqual(["openrouter", "groq", "cerebras", "mistral", "pollinations", "ollama"]);
   // How the AIs work together: three modes, one tap each – changed at the PC and shown again.
   type Strat = { strategy: string; single: string | null };
   const strat = async () => (await adminRpc<Strat>("ai.status"));
@@ -2599,7 +2599,7 @@ test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollina
   await expect(roster).toContainText("Eingebaute Hilfe"); await expect(roster).toContainText("Funktioniert immer");
   await expect(roster.locator(".aim-rrow", { hasText: "OpenRouter" })).toContainText("Nicht eingerichtet");
   await expect(roster.locator(".aim-rrow", { hasText: "Pollinations" })).toContainText("Nicht erlaubt");
-  await expect(roster).toContainText("1 funktionieren · 0 angefangen · 3 nicht eingerichtet");
+  await expect(roster).toContainText("1 funktionieren · 0 angefangen · 5 nicht eingerichtet");
   const sw = p.getByRole("switch", { name: "Pollinations ohne PC erlauben" });
   await expect(sw).toHaveAttribute("aria-checked", "false");
   await sw.click();
@@ -2632,7 +2632,7 @@ test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, n
     return r.fulfill({ status: 200, headers: cors, contentType: "application/json", body: JSON.stringify({ model: "meta/llama-3.3-70b:free", choices: [{ message: { role: "assistant", content: "Erwachsene brauchen meist sieben bis neun Stunden Schlaf." } }], usage: { completion_tokens: 12 } }) });
   });
   await p.goto(`${HOSTED_SITE}/#/assistant?tab=ai`);
-  const card = p.getByRole("region", { name: "OpenRouter und Groq ohne PC" });
+  const card = p.getByRole("region", { name: "Schlüssel ohne PC" });
   await expect(card).toBeVisible();
   const or = card.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });
   await expect(or.getByText("Nicht eingerichtet")).toBeVisible();
@@ -2669,7 +2669,7 @@ test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, n
   await expect(card.getByText(/Falsches Passwort/)).toBeVisible();
   await card.getByLabel("Passwort zum Entsperren").fill(PASS);
   await card.getByRole("button", { name: "Entsperren" }).click();
-  await expect(card.getByText("Entsperrt – OpenRouter und Groq sind bereit.")).toBeVisible();
+  await expect(card.getByText("Entsperrt – die Schlüssel sind bereit.")).toBeVisible();
   expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await ctx.close();
 });
@@ -2684,7 +2684,7 @@ test("Am Gerät eingerichteter OpenRouter-Schlüssel wird, sobald der PC verbund
   const p = await adminPage(browser);                                  // the PC is connected
   await p.route(/https:\/\/openrouter\.ai\//, (r) => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" }, body: JSON.stringify({ data: [{ id: "openrouter/free", context_length: 200000, pricing: { prompt: "0", completion: "0", request: "0", image: "0" }, architecture: { input_modalities: ["text"], output_modalities: ["text"] } }], model: "x:free", choices: [{ message: { role: "assistant", content: "Verbindung steht." } }] }) }));
   await p.goto(`${COMPANION}/#/assistant?tab=ai`);
-  const local = p.getByRole("region", { name: "OpenRouter und Groq ohne PC" });
+  const local = p.getByRole("region", { name: "Schlüssel ohne PC" });
   await expect(local.getByText(/übertragen sich automatisch/)).toBeVisible({ timeout: 15000 });
   const or = local.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });
   await or.getByLabel("OpenRouter-Schlüssel").fill(KEY);

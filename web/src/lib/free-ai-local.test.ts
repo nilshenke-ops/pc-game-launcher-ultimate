@@ -8,7 +8,7 @@ vi.stubGlobal("window", { localStorage: local, sessionStorage: session });
 import { askLocal, askLocalChain, isChatModel, isFreeOpenRouter, keyLooksRight, localAiSnapshot, lockLocalAi, lockSecret, rankModel, readyProviders, removeLocalKey, resetLocalAiState, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, unlockSecret } from "./free-ai-local";
 import { resetFreeAiBudget, resetFreeAiPause, setFreeAiConsent } from "./free-ai";
 
-const OR = "sk-or-v1-0123456789abcdef0123456789", GR = "gsk_0123456789abcdef0123456789ab", PASS = "geheim-123";
+const OR = "sk-or-v1-0123456789abcdef0123456789", GR = "gsk_0123456789abcdef0123456789ab", CS = "csk-0123456789abcdef0123456789abcdef", MI = "AbCdEfGhIjKlMnOpQrStUvWxYz012345", PASS = "geheim-123";
 const json = (o: unknown, status = 200, headers: Record<string, string> = {}) => new Response(JSON.stringify(o), { status, headers: { "content-type": "application/json", ...headers } });
 const orModels = (...m: [string, string, number][]) => ({ data: m.map(([id, price, context_length]) => ({ id, pricing: { prompt: price, completion: price, request: "0", image: "0" }, context_length, architecture: { input_modalities: ["text"], output_modalities: ["text"] } })) });
 const chatOk = (text: string, model = "x/y:free") => ({ model, choices: [{ message: { role: "assistant", content: text } }], usage: { completion_tokens: 12 } });
@@ -27,7 +27,7 @@ function fake(handler: (c: Call) => Response | Promise<Response>) {
 
 beforeEach(() => {
   local._m.clear(); session._m.clear();
-  lockLocalAi(); removeLocalKey("openrouter"); removeLocalKey("groq"); resetLocalAiState(); resetFreeAiBudget(); resetFreeAiPause(); setFreeAiConsent("no");
+  lockLocalAi(); removeLocalKey("openrouter"); removeLocalKey("groq"); removeLocalKey("cerebras"); removeLocalKey("mistral"); resetLocalAiState(); resetFreeAiBudget(); resetFreeAiPause(); setFreeAiConsent("no");
 });
 
 describe("Kostenregeln im Browser (wie im Begleiter)", () => {
@@ -191,5 +191,46 @@ describe("Vom Handy an den PC übertragen", () => {
     expect(calls).toBe(2);
     expect((await transferKeysToPc(pc, async () => { calls++; }, new Set())).done).toEqual([]);   // locked: nothing leaves
     expect(calls).toBe(2);
+  });
+});
+
+describe("Cerebras und Mistral ohne PC", () => {
+  it("Schlüsselformen: jeder Schlüssel passt nur in den eigenen Platz", () => {
+    expect(keyLooksRight("cerebras", CS)).toBe(true); expect(keyLooksRight("cerebras", GR)).toBe(false); expect(keyLooksRight("cerebras", OR)).toBe(false);
+    expect(keyLooksRight("mistral", MI)).toBe(true); expect(keyLooksRight("mistral", CS)).toBe(false); expect(keyLooksRight("mistral", GR)).toBe(false);
+    expect(keyLooksRight("mistral", "AIzaSyA0123456789abcdefghijklmnopqrstuv")).toBe(false);           // a Google key
+    expect(isChatModel("voxtral-mini-latest")).toBe(false); expect(isChatModel("mistral-ocr-latest")).toBe(false);
+    expect(rankModel("mistral-large-latest", 0)).toBeGreaterThan(rankModel("mistral-small-latest", 0));
+  });
+  it("ohne Bestätigung „kostenloser Tarif“ wird nichts gespeichert; danach gilt sie nur für den eigenen Dienst", async () => {
+    await expect(saveLocalKey("cerebras", CS, PASS)).rejects.toThrow(/Cerebras-Konto ist im kostenlosen Tarif/);
+    await expect(saveLocalKey("mistral", MI, PASS)).rejects.toThrow(/Mistral-Konto ist im kostenlosen Tarif/);
+    await saveLocalKey("cerebras", CS, PASS, { attested: true });
+    expect(localAiSnapshot().attested).toMatchObject({ cerebras: true, mistral: false, groq: false });
+    await expect(saveLocalKey("mistral", MI, PASS)).rejects.toThrow(/kostenlosen Tarif/);                 // Cerebras' yes is not Mistral's yes
+    removeLocalKey("cerebras");
+    expect(localAiSnapshot().attested.cerebras).toBe(false);
+  });
+  it("die Kette: Cerebras voll → Mistral antwortet mit Namen; jeder Schlüssel geht nur an den eigenen Host; Nicht-Chat-Modelle werden nie gefragt", async () => {
+    await saveLocalKey("cerebras", CS, PASS, { attested: true });
+    await saveLocalKey("mistral", MI, PASS, { attested: true });
+    expect(readyProviders()).toEqual(["cerebras", "mistral"]);
+    const f = fake((c) => {
+      if (c.url.includes("api.cerebras.ai")) return c.url.endsWith("/models") ? json({ data: [{ id: "llama-3.3-70b" }] }) : json({}, 429, { "retry-after": "30" });
+      return c.url.endsWith("/models")
+        ? json({ data: [{ id: "mistral-large-latest", capabilities: { completion_chat: true }, max_context_length: 131072 }, { id: "mistral-embed", capabilities: { completion_chat: false } }, { id: "voxtral-mini-latest", capabilities: { completion_chat: true } }] })
+        : json(chatOk("Von Mistral.", "mistral-large-latest"));
+    });
+    const a = await askLocalChain("Wie lange schlafen?", [], { fetcher: f.fetcher });
+    expect(a.provider).toBe("mistral"); expect(a.label).toBe("Beantwortet von Mistral – kostenloses Modell (mistral-large-latest)");
+    expect(f.calls.filter((c) => c.url.includes("api.cerebras.ai") && c.auth !== `Bearer ${CS}`)).toEqual([]);
+    expect(f.calls.filter((c) => c.url.includes("api.mistral.ai") && c.auth !== `Bearer ${MI}`)).toEqual([]);
+    expect(f.calls.some((c) => JSON.stringify(c.body).includes("embed") || JSON.stringify(c.body).includes("voxtral"))).toBe(false);
+  });
+  it("ein Schlüssel von früher (nur Groq bestätigt, altes Format) bleibt bestätigt", async () => {
+    local.setItem("pgl.localai", JSON.stringify({ groq: { v: 1, salt: "AA==", iv: "AA==", ct: "AA==" }, groqAttested: true }));
+    lockLocalAi(); resetLocalAiState();
+    await saveLocalKey("mistral", MI, PASS, { attested: true }).catch(() => {});                          // wrong password for the old key → refused, nothing changes
+    expect(JSON.parse(local.getItem("pgl.localai")!).groqAttested).toBe(true);
   });
 });

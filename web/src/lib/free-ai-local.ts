@@ -1,4 +1,4 @@
-// OpenRouter and Groq WITHOUT the PC: the key is typed on this device, locked with a password only the person knows (AES-GCM, key from
+// OpenRouter, Groq, Cerebras and Mistral WITHOUT the PC: the key is typed on this device, locked with a password only the person knows (AES-GCM, key from
 // PBKDF2) and only ever sent to its own service – straight from the browser (both allow that). The same cost rules as at the PC apply:
 // only free models (price 0 in every field, ":free" or exactly "openrouter/free"), checked again before every request, maximum price 0
 // in every OpenRouter request, fixed addresses, no top-up, no paid fallback. Without the password the key is unreadable; with the PC
@@ -9,11 +9,13 @@ import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
 import { askFreeAi, buildMessages, cleanAnswer, freeAiConsent, FreeAiError, looksLikePaymentNotice, type Turn } from "./free-ai";
 
-export type LocalProvider = "openrouter" | "groq";
-export const LOCAL_PROVIDERS: readonly LocalProvider[] = ["openrouter", "groq"];
-export const LOCAL_NAME: Record<LocalProvider, string> = { openrouter: "OpenRouter", groq: "Groq" };
-const BASE: Record<LocalProvider, string> = { openrouter: "https://openrouter.ai/api/v1", groq: "https://api.groq.com/openai/v1" };
-const HOST: Record<LocalProvider, string> = { openrouter: "openrouter.ai", groq: "api.groq.com" };
+export type LocalProvider = "openrouter" | "groq" | "cerebras" | "mistral";
+export const LOCAL_PROVIDERS: readonly LocalProvider[] = ["openrouter", "groq", "cerebras", "mistral"];
+export const LOCAL_NAME: Record<LocalProvider, string> = { openrouter: "OpenRouter", groq: "Groq", cerebras: "Cerebras", mistral: "Mistral" };
+const BASE: Record<LocalProvider, string> = { openrouter: "https://openrouter.ai/api/v1", groq: "https://api.groq.com/openai/v1", cerebras: "https://api.cerebras.ai/v1", mistral: "https://api.mistral.ai/v1" };
+const HOST: Record<LocalProvider, string> = { openrouter: "openrouter.ai", groq: "api.groq.com", cerebras: "api.cerebras.ai", mistral: "api.mistral.ai" };
+/** Their free plan is a plan of the account (not a price on the model): the person confirms "free plan, no payment method" first. */
+export const needsAttestation = (p: LocalProvider) => p !== "openrouter";
 
 // ------------------------------------------------------------------ the cost rules (the same as CostGuard in the companion)
 
@@ -36,22 +38,34 @@ export function isFreeOpenRouter(m: unknown): boolean {
   return prompt && completion;
 }
 
-const NOT_CHAT = /(safety|guard|embed|whisper|tts|rerank|moderat|orpheus|playai|image|audio|speech|transcri|\bvl\b|-vl\b|vision|ocr|diffusion|code|prompt-guard)/i;
+const NOT_CHAT = /(safety|guard|embed|whisper|tts|rerank|moderat|orpheus|playai|image|audio|speech|transcri|\bvl\b|-vl\b|vision|ocr|diffusion|code|prompt-guard|voxtral|pixtral)/i;
 export const isChatModel = (id: string) => id.length > 1 && id.length <= 120 && !NOT_CHAT.test(id);
 
 /** Quality guess from the name (parameter count capped at 120 B, bonus for known families, a little for context). The free router comes first. */
 export function rankModel(id: string, context: number): number {
   if (id === FREE_ROUTER) return 100000;
   const m = /(?<![\d.])(\d{1,3}(?:\.\d)?)b(?![a-z])/i.exec(id);
-  const size = m ? Math.min(Number(m[1]), 120) : 8;
+  const size = m ? Math.min(Number(m[1]), 120) : /large/i.test(id) ? 70 : /medium/i.test(id) ? 40 : 8;   // Mistral names its sizes in words
   const bonus = /gpt-oss|llama-3\.3|llama-3\.1|qwen|gemma|nemotron|mistral|deepseek/i.test(id) ? 10 : 0;
   return Math.floor(size * 10 + bonus + Math.min(Math.floor(context / 50000), 10));
 }
 
-/** Key shapes: OpenRouter "sk-or-…", Groq "gsk_…". Anything else is refused before it is stored or sent. */
+/** Key shapes: OpenRouter "sk-or-…", Groq "gsk_…", Cerebras "csk-…", Mistral 32 letters/digits. Anything else is refused before it is stored or sent. */
 export function keyLooksRight(p: LocalProvider, key: string): boolean {
-  return key.length >= 20 && key.length <= 200 && /^[A-Za-z0-9_-]+$/.test(key) && (p === "openrouter" ? key.startsWith("sk-or-") : key.startsWith("gsk_"));
+  if (key.length < 20 || key.length > 200 || !/^[A-Za-z0-9_-]+$/.test(key)) return false;
+  switch (p) {
+    case "openrouter": return key.startsWith("sk-or-");
+    case "groq": return key.startsWith("gsk_");
+    case "cerebras": return key.startsWith("csk-");
+    case "mistral": return /^[A-Za-z0-9]{32}$/.test(key);
+  }
 }
+const WRONG_KEY: Record<LocalProvider, string> = {
+  openrouter: "Das sieht nicht nach einem OpenRouter-Schlüssel aus (er beginnt mit „sk-or-“).",
+  groq: "Das sieht nicht nach einem Groq-Schlüssel aus (er beginnt mit „gsk_“).",
+  cerebras: "Das sieht nicht nach einem Cerebras-Schlüssel aus (er beginnt mit „csk-“).",
+  mistral: "Das sieht nicht nach einem Mistral-Schlüssel aus (32 Buchstaben und Ziffern, ohne Vorsilbe).",
+};
 
 // ------------------------------------------------------------------ the lock (password → AES-GCM key)
 
@@ -82,15 +96,17 @@ export async function unlockSecret(pass: string, purpose: string, l: Locked): Pr
 // ------------------------------------------------------------------ what is stored and what is unlocked right now
 
 const STORE = "pgl.localai", SESSION = "pgl.localai.session";
-interface Stored { openrouter?: Locked; groq?: Locked; groqAttested?: boolean }
+interface Stored { openrouter?: Locked; groq?: Locked; cerebras?: Locked; mistral?: Locked; attested?: Partial<Record<LocalProvider, boolean>>; groqAttested?: boolean }
+/** "Free plan" confirmations; older versions stored only the one for Groq. */
+const attestedOf = (s: Stored): Record<LocalProvider, boolean> => ({ openrouter: true, groq: !!(s.attested?.groq ?? s.groqAttested), cerebras: !!s.attested?.cerebras, mistral: !!s.attested?.mistral });
 const read = (): Stored => { try { return readJson<Stored>(STORE) ?? {}; } catch { return {}; } };
 const write = (s: Stored) => { try { writeJson(STORE, s); } catch { /* storage blocked – this visit only */ } };
 const unlocked: Partial<Record<LocalProvider, string>> = (() => { try { return readJson<Partial<Record<LocalProvider, string>>>(SESSION, "session") ?? {}; } catch { return {}; } })();
 
 export type LocalState = "none" | "locked" | "ready";
-export interface LocalSnap { openrouter: LocalState; groq: LocalState; groqAttested: boolean }
+export interface LocalSnap { openrouter: LocalState; groq: LocalState; cerebras: LocalState; mistral: LocalState; attested: Record<LocalProvider, boolean> }
 const listeners = new Set<() => void>();
-const compute = (): LocalSnap => { const s = read(); const st = (p: LocalProvider): LocalState => unlocked[p] && (p !== "groq" || s.groqAttested) ? "ready" : s[p] ? "locked" : "none"; return { openrouter: st("openrouter"), groq: st("groq"), groqAttested: !!s.groqAttested }; };
+const compute = (): LocalSnap => { const s = read(); const at = attestedOf(s); const st = (p: LocalProvider): LocalState => unlocked[p] && at[p] ? "ready" : s[p] ? "locked" : "none"; return { openrouter: st("openrouter"), groq: st("groq"), cerebras: st("cerebras"), mistral: st("mistral"), attested: at }; };
 let snap: LocalSnap = compute();
 const publish = () => { snap = compute(); listeners.forEach((l) => l()); };
 export const localAiSnapshot = () => snap;
@@ -100,7 +116,7 @@ export const readyProviders = (): LocalProvider[] => LOCAL_PROVIDERS.filter((p) 
 /** The keys that are unlocked right now (only for handing them over to the PC – never shown, never logged). */
 export const unlockedKeys = (): Partial<Record<LocalProvider, { key: string; attested: boolean }>> => {
   const out: Partial<Record<LocalProvider, { key: string; attested: boolean }>> = {};
-  for (const p of readyProviders()) out[p] = { key: unlocked[p]!, attested: p === "groq" ? snap.groqAttested : true };
+  for (const p of readyProviders()) out[p] = { key: unlocked[p]!, attested: snap.attested[p] };
   return out;
 };
 
@@ -130,14 +146,14 @@ function remember(on: boolean) { try { writeJson(SESSION, on ? unlocked : null, 
 export async function saveLocalKey(p: LocalProvider, key: string, pass: string, o: { attested?: boolean; remember?: boolean } = {}): Promise<void> {
   if (!localAiSupported()) throw new FreeAiError("Hier ist das Verschlüsseln nicht möglich (nur auf der Website im Internet, nicht auf der http-Seite im WLAN).");
   const k = key.trim();
-  if (!keyLooksRight(p, k)) throw new FreeAiError(p === "openrouter" ? "Das sieht nicht nach einem OpenRouter-Schlüssel aus (er beginnt mit „sk-or-“)." : "Das sieht nicht nach einem Groq-Schlüssel aus (er beginnt mit „gsk_“).");
+  if (!keyLooksRight(p, k)) throw new FreeAiError(WRONG_KEY[p]);
   if (pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
-  if (p === "groq" && !(o.attested ?? read().groqAttested)) throw new FreeAiError("Bitte zuerst bestätigen: Dein Groq-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.");
+  if (needsAttestation(p) && !(o.attested ?? attestedOf(read())[p])) throw new FreeAiError(`Bitte zuerst bestätigen: Dein ${LOCAL_NAME[p]}-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.`);
   const s = read();
   const other = LOCAL_PROVIDERS.find((x) => x !== p && s[x]);                  // one password for all keys of this device
   if (other && unlocked[other] === undefined && (await unlockSecret(pass, other, s[other]!)) === null) throw new FreeAiError("Das Passwort passt nicht zu dem schon gespeicherten Schlüssel (ein Passwort für alle).");
   s[p] = await lockSecret(pass, p, k);
-  if (p === "groq") s.groqAttested = true;
+  if (needsAttestation(p)) { s.attested = { ...s.attested, [p]: true }; if (p === "groq") s.groqAttested = true; }
   write(s); unlocked[p] = k;
   if (o.remember) remember(true);
   publish();
@@ -156,7 +172,7 @@ export async function unlockLocalAi(pass: string, keep = false): Promise<void> {
 }
 export function lockLocalAi() { for (const p of LOCAL_PROVIDERS) delete unlocked[p]; remember(false); publish(); }
 export function removeLocalKey(p: LocalProvider) {
-  const s = read(); delete s[p]; if (p === "groq") delete s.groqAttested; write(s);
+  const s = read(); delete s[p]; if (s.attested) delete s.attested[p]; if (p === "groq") delete s.groqAttested; write(s);
   const kept = !!readJson(SESSION, "session"); delete unlocked[p];
   remember(kept && Object.keys(unlocked).length > 0); publish();
 }
@@ -196,7 +212,7 @@ export async function freeModels(p: LocalProvider, o: { fetcher?: Fetcher; signa
   const now = o.now ?? Date.now(), c = cache[p];
   if (!o.force && c && now - c.at <= FRESH_MS && c.models.length) return c.models;
   const headers: Record<string, string> = {};
-  if (p === "groq") { if (!unlocked.groq) throw new LocalAiError("Groq: Schlüssel ist gesperrt.", "key"); headers.authorization = `Bearer ${unlocked.groq}`; }
+  if (p !== "openrouter") { const k = unlocked[p]; if (!k) throw new LocalAiError(`${LOCAL_NAME[p]}: Schlüssel ist gesperrt.`, "key"); headers.authorization = `Bearer ${k}`; }
   let res: Response;
   try { res = await call(p, "/models", { method: "GET", headers }, o); }
   catch (e) { if (c && now - c.at <= 30 * 60_000 && c.models.length) return c.models; throw e; }         // can be trusted for half an hour, then not used at all
@@ -214,7 +230,9 @@ export async function freeModels(p: LocalProvider, o: { fetcher?: Fetcher; signa
       if (ar?.output_modalities && !ar.output_modalities.includes("text")) continue;
       if (ar?.input_modalities && !ar.input_modalities.includes("text")) continue;
     } else if (m.active === false) continue;
-    const ctx = typeof m.context_length === "number" ? m.context_length : typeof m.context_window === "number" ? m.context_window : 0;
+    // Mistral says per model whether it can chat (its list also holds OCR, embedding, moderation and audio models)
+    if (p === "mistral" && (m.capabilities as { completion_chat?: unknown } | undefined)?.completion_chat === false) continue;
+    const ctx = typeof m.context_length === "number" ? m.context_length : typeof m.context_window === "number" ? m.context_window : typeof m.max_context_length === "number" ? m.max_context_length : 0;
     list.push({ id, context: ctx, rank: rankModel(id, ctx) });
   }
   list.sort((a, b) => b.rank - a.rank || a.id.localeCompare(b.id));
@@ -233,7 +251,7 @@ export async function askLocal(p: LocalProvider, question: string, history: Turn
   const now = o.now ?? Date.now();
   if ((cooldown[p] ?? 0) > now) throw new LocalAiError(`${LOCAL_NAME[p]}: Limit erreicht, bitte später noch einmal.`, "limit", (cooldown[p] ?? 0) - now);
   const models = (await freeModels(p, o)).slice(0, 3);
-  if (models.length === 0) throw new LocalAiError(p === "openrouter" ? "OpenRouter: gerade ist kein kostenloses Modell verfügbar." : "Groq: gerade ist kein Modell verfügbar.", "model");
+  if (models.length === 0) throw new LocalAiError(p === "openrouter" ? "OpenRouter: gerade ist kein kostenloses Modell verfügbar." : `${LOCAL_NAME[p]}: gerade ist kein Modell verfügbar.`, "model");
   const messages = buildMessages(question, history);
   let last: LocalAiError | null = null;
   for (const m of models) {
@@ -273,7 +291,7 @@ export async function testLocal(p: LocalProvider, o: Opts = {}): Promise<{ ok: b
 }
 
 /**
- * The chain for a question without the PC: OpenRouter, then Groq (those whose key is unlocked on this device), then – only with this device's yes – the
+ * The chain for a question without the PC: OpenRouter, Groq, Cerebras, Mistral (those whose key is unlocked on this device), then – only with this device's yes – the
  * anonymous Pollinations service. If none can answer, an honest error that lists why.
  */
 export async function askLocalChain(question: string, history: Turn[], o: Opts = {}): Promise<LocalAnswer> {

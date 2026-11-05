@@ -4,7 +4,7 @@ import type { AiOverview, AiProvider } from "../components/ai-manager";
 
 const P = (o: Partial<AiProvider> & { id: string }): AiProvider => ({ name: o.id, enabled: true, needsKey: true, keySet: false, attested: false, consent: false, state: "setup", stateText: "", privacy: "", cost: "", ...o });
 const ov = (providers: AiProvider[]): AiOverview => ({ providers, auto: true, mode: "smart", smart: true, anyReady: providers.some((p) => p.state === "ready") });
-const dev = (o: Partial<{ openrouter: "none" | "locked" | "ready"; groq: "none" | "locked" | "ready" }> = {}) => ({ openrouter: "none" as const, groq: "none" as const, groqAttested: false, ...o });
+const dev = (o: Partial<{ openrouter: "none" | "locked" | "ready"; groq: "none" | "locked" | "ready"; cerebras: "none" | "locked" | "ready"; mistral: "none" | "locked" | "ready" }> = {}) => ({ openrouter: "none" as const, groq: "none" as const, cerebras: "none" as const, mistral: "none" as const, attested: { openrouter: true, groq: false, cerebras: false, mistral: false }, ...o });
 
 describe("Meine KIs", () => {
   it("trennt Funktioniert, Angefangen und Nicht eingerichtet – und sortiert in dieser Reihenfolge", () => {

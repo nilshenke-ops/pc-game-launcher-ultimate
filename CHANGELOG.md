@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.12.0 – 2026-11-05
+### Neu
+- Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät)
+### Verbessert
+- Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt
+- Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)
+- „Schnellster gewinnt“ fragt alle KIs mit Schlüssel gleichzeitig; der Bereich „OpenRouter und Groq ohne PC“ heißt jetzt „Schlüssel ohne PC“
+
 ## 3.11.0 – 2026-11-05
 ### Neu
 - Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein)

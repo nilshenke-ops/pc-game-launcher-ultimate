@@ -73,7 +73,7 @@ function Sources({ cites, info }: { cites: Cite[]; info?: AssistantReply["resear
   );
 }
 
-const AI_MODES = new Set(["claude", "ollama", "router", "openrouter", "groq", "pollinations", "free"]);
+const AI_MODES = new Set(["claude", "ollama", "router", "openrouter", "groq", "cerebras", "mistral", "pollinations", "free"]);
 
 function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void; /** Only on the last answer. */ onRegenerate?: () => void; onContinue?: () => void }) {
   const nav = useNavigate();
@@ -137,12 +137,12 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
         {AI_MODES.has(r.mode) ? (
           // An AI answer shows only the answer – who answered and the sources are one tap away.
           <details className="tiny muted as-meta"><summary>{t("Woher kommt die Antwort?")}</summary>
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "cerebras" || r.mode === "mistral" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", cerebras: "Cerebras", mistral: "Mistral", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
           </details>
         ) : (
         <div className="tiny muted as-meta">
-          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
+          {r.mode === "claude" ? `${r.model ?? "Claude"}${r.costUsd != null ? " · " + formatCost(r.costUsd) : ""}` : r.mode === "ollama" ? `${r.model ?? "Ollama"} · ${t("0 €")}` : r.mode === "openrouter" || r.mode === "groq" || r.mode === "cerebras" || r.mode === "mistral" || r.mode === "pollinations" ? `${({ openrouter: "OpenRouter", groq: "Groq", cerebras: "Cerebras", mistral: "Mistral", pollinations: "Pollinations" } as const)[r.mode]}${r.model ? " · " + r.model : ""} · ${t("kostenlos")}` : r.mode === "router" ? `${r.model ?? t("KI-Router")}${r.model?.endsWith(":free") ? " · " + t("kostenlos") : ""}` : r.mode === "free" ? `${t("Freie KI ohne PC")}${r.model ? " · " + r.model : ""} · ${t("0 €")}` : r.mode === "offline" ? t("Ohne PC · 0 €") : r.mode === "device" ? t("Auf diesem Gerät · 0 €") : r.model ? `${r.model} · ${t("0 €")}` : t("Lokal · 0 €")}
           {r.sources.length > 0 && " · " + t("Quelle: {s}", { s: r.sources.join(", ") })}
         </div>
         )}
