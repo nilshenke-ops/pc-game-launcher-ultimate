@@ -808,7 +808,7 @@ test("Insel-Aussehen: Vorlage erst als Vorschau, „Übernehmen“ speichert auf
   type L = { look: { style: string; eye: string; eyeSize: string; position: string; opacity: number; widgets: string[] } };
   const look = async () => (await adminRpc<L>("island.get")).look;
   expect(await look()).toMatchObject({ style: "default", eye: "auto", eyeSize: "m", position: "center", opacity: 100 });
-  await pc.goto(`${COMPANION}/#/assistant`);
+  await pc.goto(`${COMPANION}/#/assistant?tab=ai`);
   const group = pc.getByRole("radiogroup", { name: "Vorlage" });
   await expect(group.getByRole("radio")).toHaveCount(7);
   await group.getByRole("radio", { name: /Neon Gaming/ }).click();
@@ -832,7 +832,7 @@ test("Insel-Aussehen: Vorlage erst als Vorschau, „Übernehmen“ speichert auf
   await expect(adminRpc("island.configure", { look: { opacity: 5 } })).rejects.toThrow(/Deckkraft/);
   await expect(adminRpc("island.configure", { look: { widgets: ["kamera"] } })).rejects.toThrow(/Widget/);
   expect(await look()).toMatchObject({ style: "blue", opacity: 70 });
-  await pc.goto(`${COMPANION}/#/assistant`);
+  await pc.goto(`${COMPANION}/#/assistant?tab=ai`);
   await pc.getByRole("button", { name: "Zurücksetzen" }).click();
   await expect.poll(look).toMatchObject({ style: "default", eye: "auto", eyeSize: "m", position: "center", opacity: 100 });
   await pc.goto(`${COMPANION}/#/island`);
@@ -842,7 +842,7 @@ test("Insel-Aussehen: Vorlage erst als Vorschau, „Übernehmen“ speichert auf
 
 test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, Lautstärke, Notiz bleibt, Pomodoro", async () => {
   const sw = (name: RegExp) => pc.getByRole("switch", { name });
-  await pc.goto(`${COMPANION}/#/assistant`);
+  await pc.goto(`${COMPANION}/#/assistant?tab=ai`);
   await expect(sw(/^Laufendes Spiel/)).toBeChecked();
   await expect(sw(/^PC-Werte/)).toBeChecked();
   for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) await expect(sw(n)).not.toBeChecked();
@@ -883,7 +883,7 @@ test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, 
   // Clean up: defaults again, note removed.
   await pc.getByRole("textbox", { name: "Notiz" }).fill("");
   await pc.waitForTimeout(700);
-  await pc.goto(`${COMPANION}/#/assistant`);
+  await pc.goto(`${COMPANION}/#/assistant?tab=ai`);
   for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) { await sw(n).click({ force: true }); await expect(sw(n)).not.toBeChecked(); }
   await expect(sw(/^Notiz/)).not.toBeChecked();
   await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).toEqual(["game", "clock", "music", "focus", "stats"]);
@@ -2208,7 +2208,7 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await expect(p.locator(".topbar .isl")).toHaveCount(0); // never in the website's top bar
   // The switches live in the PC software; this test companion is not the Windows one – it says so instead of pretending.
-  await p.goto(`${COMPANION}/#/assistant`);
+  await p.goto(`${COMPANION}/#/assistant?tab=ai`);
   await expect(p.getByText("Insel oben auf dem PC-Bildschirm")).toBeVisible();
   await expect(p.getByText("Die Insel gibt es nur im Windows-Begleiter.").first()).toBeVisible();
   // The island page as the Windows window shows it: only the eyes until something happens.
@@ -2232,6 +2232,7 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   // A launch asked in the chat (JARVIS off: it needs a yes) reaches the island from the PC; "Ablehnen" starts nothing.
   await p.evaluate(() => localStorage.setItem("pgl.jarvis", "false"));
   await p.reload();
+  await p.getByRole("tab", { name: "Gespräch" }).click();
   const say = p.getByRole("textbox", { name: "Nachricht an den Assistenten" });
   await say.fill("Starte E2E Testspiel"); await say.press("Enter");
   await expect(bar).toContainText("JARVIS fragt: E2E Testspiel starten?");
@@ -2560,7 +2561,7 @@ test("Selbsttest in der KI-Verwaltung: PC, echter PC-Befehl, Internetsuche, Spra
   // The open wikis are stand-ins here (no real internet in the test): one answer for the search test.
   await p.route(/api\.php|wikipedia\.org|api\.stackexchange\.com/, (r) => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*" }, body: JSON.stringify({ query: { search: [{ title: "Mount Everest", snippet: "Der Mount Everest ist <b>8849 m</b> hoch.", pageid: 1 }], pages: { "1": { title: "Mount Everest", extract: "Der Mount Everest ist mit 8849 Metern der höchste Berg der Erde." } } }, title: "Mount Everest", extract: "Der Mount Everest ist mit 8849 Metern der höchste Berg der Erde." }) }));
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
-  await p.goto(`${COMPANION}/#/assistant`);
+  await p.goto(`${COMPANION}/#/assistant?tab=ai`);
   const card = p.getByRole("region", { name: "KI-Verwaltung – kostenlose KI" }).or(p.locator(".card", { hasText: "KI-Verwaltung – kostenlose KI" })).first();
   await card.getByText("Selbsttest", { exact: true }).click();
   await card.getByRole("button", { name: "Alles testen" }).click();
@@ -2581,7 +2582,7 @@ test("Selbsttest in der KI-Verwaltung: PC, echter PC-Befehl, Internetsuche, Spra
 test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollinations mit eigenem Ja", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const p = await ctx.newPage();
-  await p.goto(`${HOSTED_SITE}/#/assistant`);
+  await p.goto(`${HOSTED_SITE}/#/assistant?tab=ai`);
   const card = p.getByRole("heading", { name: "KI-Verwaltung – kostenlose KI" });
   await expect(card).toBeVisible();
   await expect(p.getByText("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja)")).toBeVisible();
@@ -2622,7 +2623,7 @@ test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, n
     chats.push({ auth: req.headers()["authorization"] ?? null, body: JSON.parse(req.postData() ?? "{}") });
     return r.fulfill({ status: 200, headers: cors, contentType: "application/json", body: JSON.stringify({ model: "meta/llama-3.3-70b:free", choices: [{ message: { role: "assistant", content: "Erwachsene brauchen meist sieben bis neun Stunden Schlaf." } }], usage: { completion_tokens: 12 } }) });
   });
-  await p.goto(`${HOSTED_SITE}/#/assistant`);
+  await p.goto(`${HOSTED_SITE}/#/assistant?tab=ai`);
   const card = p.getByRole("region", { name: "OpenRouter und Groq ohne PC" });
   await expect(card).toBeVisible();
   const or = card.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });
@@ -2640,6 +2641,7 @@ test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, n
   const stored = await p.evaluate(() => JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }));
   expect(stored).not.toContain("sk-or-v1");
   // Ask without a PC: free-only request, maximum price 0, the key only to openrouter.ai, and the answer names the AI.
+  await p.getByRole("tab", { name: "Gespräch" }).click();
   await p.getByLabel("Nachricht an den Assistenten").fill("Suche wie lange man im durchschnitt schlafen muss");
   await p.getByLabel("Nachricht an den Assistenten").press("Enter");
   await expect(p.getByText("Erwachsene brauchen meist sieben bis neun Stunden Schlaf.")).toBeVisible({ timeout: 20000 });
@@ -2652,6 +2654,7 @@ test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, n
   expect([...hosts]).toEqual(["openrouter.ai"]);
   // After a reload the key is locked: no answer from OpenRouter until the password is entered again.
   await p.reload();
+  await p.getByRole("tab", { name: "KI & Einstellungen" }).click();
   await expect(card.getByText("Gesperrt").first()).toBeVisible();
   await card.getByLabel("Passwort zum Entsperren").fill("falsches-pw-1");
   await card.getByRole("button", { name: "Entsperren" }).click();
@@ -2672,7 +2675,7 @@ test("Am Gerät eingerichteter OpenRouter-Schlüssel wird, sobald der PC verbund
   expect((await status()).providers.find((x) => x.id === "openrouter")!.keySet).toBe(false);
   const p = await adminPage(browser);                                  // the PC is connected
   await p.route(/https:\/\/openrouter\.ai\//, (r) => r.fulfill({ status: 200, contentType: "application/json", headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" }, body: JSON.stringify({ data: [{ id: "openrouter/free", context_length: 200000, pricing: { prompt: "0", completion: "0", request: "0", image: "0" }, architecture: { input_modalities: ["text"], output_modalities: ["text"] } }], model: "x:free", choices: [{ message: { role: "assistant", content: "Verbindung steht." } }] }) }));
-  await p.goto(`${COMPANION}/#/assistant`);
+  await p.goto(`${COMPANION}/#/assistant?tab=ai`);
   const local = p.getByRole("region", { name: "OpenRouter und Groq ohne PC" });
   await expect(local.getByText(/übertragen sich automatisch/)).toBeVisible({ timeout: 15000 });
   const or = local.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });

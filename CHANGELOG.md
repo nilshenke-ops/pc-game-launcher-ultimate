@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.10.0 – 2026-11-05
+### Neu
+- Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt
+- Der Koppel-Link im QR-Code enthält jetzt auch die WLAN-Adresse des PCs: Klappt die Verbindung über die Website nicht (z. B. weil Tailscale auf dem iPad nicht läuft), erscheint „Im WLAN beim PC koppeln“ – ein Tipp öffnet die PC-Seite im selben WLAN, dort gelingt das Koppeln
+### Verbessert
+- Die WLAN-Adresse des PCs wird auf dem Gerät gemerkt, damit die Startseite „Zur PC-App (WLAN)“ anbietet; die Kopplung bleibt auf der PC-Seite gespeichert (kein erneutes Anmelden)
+
 ## 3.9.1 – 2026-11-05
 ### Verbessert
 - Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü

@@ -19,7 +19,7 @@ public class PairingAddressTests
         var urls = RpcApi.OrderPairingUrls(WithTailscaleHttps, "https://nilshenke-ops.github.io/pc-game-launcher-ultimate", "KKEP-9VMG");
         Assert.Equal("http://192.168.178.116:8787/#/pair?code=KKEP-9VMG", urls[0]); // the phone next to the PC, same Wi-Fi
         // The website link with the Tailscale address stays selectable, the router name comes after it.
-        Assert.Equal("https://nilshenke-ops.github.io/pc-game-launcher-ultimate/#/pair?code=KKEP-9VMG&pc=gaming.tail72a60b.ts.net", urls[1]);
+        Assert.Equal("https://nilshenke-ops.github.io/pc-game-launcher-ultimate/#/pair?code=KKEP-9VMG&pc=gaming.tail72a60b.ts.net&lan=http%3A%2F%2F192.168.178.116%3A8787", urls[1]);
         Assert.True(urls.IndexOf("http://gaming.fritz.box:8787/#/pair?code=KKEP-9VMG") > urls.IndexOf("https://gaming.tail72a60b.ts.net/#/pair?code=KKEP-9VMG"));
     }
 
@@ -27,7 +27,7 @@ public class PairingAddressTests
     public void An_own_public_address_works_everywhere_and_leads()
     {
         var urls = RpcApi.OrderPairingUrls(new[] { ("https://pc.example.org", "public"), ("http://192.168.178.116:8787", "lan") }, "https://site.example", "ABCD-EFGH");
-        Assert.Equal("https://site.example/#/pair?code=ABCD-EFGH&pc=pc.example.org", urls[0]);
+        Assert.Equal("https://site.example/#/pair?code=ABCD-EFGH&pc=pc.example.org&lan=http%3A%2F%2F192.168.178.116%3A8787", urls[0]);
     }
 
     [Fact]

@@ -1014,7 +1014,11 @@ public static class RpcApi
         // PC address (own address or Tailscale Serve): an https page cannot connect to plain http.
         var webIsHttps = webAppUrl?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
         var pcIsHttps = addresses.FirstOrDefault().url?.StartsWith("https://", StringComparison.OrdinalIgnoreCase) == true;
-        string? hosted = webAppUrl is { } web && PickPcAddress(addresses) is { } pc && (!webIsHttps || pcIsHttps) ? $"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}" : null;
+        // "lan" carries the home-network address along: a phone/iPad that cannot reach the https (Tailscale) name – e.g.
+        // because Tailscale is not running on it – is then offered the PC's own page in the Wi-Fi with one tap.
+        var lanUrl = addresses.Where(a => a.kind == "lan").Select(a => a.url).FirstOrDefault();
+        var lanPart = lanUrl != null ? $"&lan={Uri.EscapeDataString(lanUrl)}" : "";
+        string? hosted = webAppUrl is { } web && PickPcAddress(addresses) is { } pc && (!webIsHttps || pcIsHttps) ? $"{web}/#/pair?code={code}&pc={Uri.EscapeDataString(pc)}{lanPart}" : null;
         // A Tailscale https name only resolves on phones that run Tailscale themselves. The phone that scans the code
         // stands next to the PC – in the same Wi-Fi the plain IP always opens, so it comes first (the Tailscale link stays
         // selectable for "unterwegs"). Only an own public address (Funnel, domain) works from anywhere and may lead.

@@ -1318,6 +1318,9 @@ export const en: Record<string, string> = {
   "Berechtigung entzogen": "Permission revoked",
   "Berechtigung fehlt: {p}": "Missing permission: {p}",
   "Bereich": "Section",
+  "Klappt es hier nicht? Im WLAN direkt koppeln": "Not working here? Pair directly over Wi-Fi",
+  "Im WLAN beim PC koppeln": "Pair at the PC over Wi-Fi",
+  "Dafür muss das Gerät im selben WLAN wie der PC sein. Die Kopplung bleibt auf dieser PC-Seite gespeichert – du musst dich nicht erneut anmelden.": "The device must be on the same Wi-Fi as the PC. The pairing stays saved on that PC page – you don't have to sign in again.",
   "Bitte eine .pglplugin-Datei wählen.": "Please choose a .pglplugin file.",
   "Das Plugin benötigt keine Berechtigungen.": "The plugin needs no permissions.",
   "Das Plugin erhält: {l}. Du kannst einzelne Rechte später entziehen.": "The plugin gets: {l}. You can revoke individual rights later.",
@@ -6483,4 +6486,6 @@ export const en: Record<string, string> = {
   "Websuche-Schlüssel (gespeichert – neu eintragen zum Ersetzen)": "Web search key (saved – enter again to replace)",
   "JARVIS-Insel schließen": "Close JARVIS island",
   "Tippen zum Schließen": "Tap to close",
+  "Gespräch": "Conversation",
+  "KI & Einstellungen": "AI & settings",
 };

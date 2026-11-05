@@ -41,6 +41,8 @@ describe("PC-Adresse aus QR-Code oder Eingabe", () => {
 describe("Direkter Kopplungslink (QR → PC-Seite)", () => {
   it("WLAN-Adresse bekommt einen http-Link mit eingetragenem Code (nur erlaubte Zeichen, höchstens 9)", () => {
     expect(directPairUrl("192.168.1.5", "abcd-2345")).toBe("http://192.168.1.5:8787/#/pair?code=ABCD-2345");
+    // The "lan" parameter of the QR link (a full http origin, URL-decoded by the router) leads to the PC's own page.
+    expect(directPairUrl("http://192.168.178.116:8787", "KKEP-9VMG")).toBe("http://192.168.178.116:8787/#/pair?code=KKEP-9VMG");
     expect(directPairUrl("192.168.1.5", "ab<cd>-23456789")).toBe("http://192.168.1.5:8787/#/pair?code=ABCD-2345");
     expect(directPairUrl("192.168.1.5", "")).toBe("http://192.168.1.5:8787/#/pair");
   });

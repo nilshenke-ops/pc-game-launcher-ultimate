@@ -170,6 +170,9 @@ export default function Assistant() {
   const [settings, setSettings] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   const [params, setParams] = useSearchParams();
+  // Two areas: the conversation, and everything about the AIs (keys, order, models, island) – the chat stays uncluttered, the setup is one tap away.
+  const tab: "chat" | "ai" = params.get("tab") === "ai" ? "ai" : "chat";
+  const setTab = (v: "chat" | "ai") => { const n = new URLSearchParams(params); if (v === "ai") n.set("tab", "ai"); else n.delete("tab"); setParams(n, { replace: true }); };
   const jv = useJarvis();
   const navTo = useNavigate();
   // The AI chosen for this chat (only the ones set up at the PC are offered) and the switch "Im Internet suchen".
@@ -346,16 +349,17 @@ export default function Assistant() {
           <Button icon={<Plus size={16} />} onClick={reset} disabled={chat.turns.length === 0}>{t("Neues Gespräch")}</Button>
           {canAdmin && s && <Button icon={<Settings2 size={16} />} onClick={() => setSettings(true)}>{t("Einrichten")}</Button>}
         </>} />
+      <div className="as-tabs" role="tablist" aria-label={t("Bereich")}>
+        <button type="button" role="tab" aria-selected={tab === "chat"} className={`as-tab${tab === "chat" ? " on" : ""}`} onClick={() => setTab("chat")}>{t("Gespräch")}</button>
+        <button type="button" role="tab" aria-selected={tab === "ai"} className={`as-tab${tab === "ai" ? " on" : ""}`} onClick={() => setTab("ai")}>{t("KI & Einstellungen")}</button>
+      </div>
+      {tab === "chat" && (<>
       {jv.enabled && <JarvisHud busy={busy} listening={listening} active={jv.active} online={online} onPick={(x) => setText(x)} />}
       <Card className="jv-toggle">
         <Switch checked={jv.enabled} onChange={setJarvisEnabled} label={t("JARVIS führt Aufträge direkt aus")}
           hint={jv.enabled ? t("Was du ausdrücklich nennst, wird sofort erledigt und geprüft (Spiel starten, Profil, Sound, Website ordnen). Löschen, Energie und Unklares nur nach Rückfrage. Endet, wenn du ausschaltest oder die Website schließt – laufende Spiele bleiben offen.") : t("Aus: Ich schlage Aktionen nur als Knopf vor, ausgeführt wird erst nach deinem Tippen.")} />
       </Card>
-      {online && <IslandSettingsCard />}
       {!online && <Banner kind="info" title={t("Ohne PC: Hilfe-Modus")}>{t("Ich richte die App für dich ein (Design, Leiste, Home, Sprache), beantworte Fragen zur App, öffne Seiten und kenne deine zuletzt geladene Bibliothek und den Backlog – direkt auf diesem Gerät. Allgemeine Fragen beantwortet die freie KI ohne Konto – nur mit deinem Ja, dann geht deine Frage an Pollinations. Live-Werte und Starten gehen erst mit dem PC.")}</Banner>}
-      <Card title={t("KI-Verwaltung – kostenlose KI")}>
-        <AiManager online={online} onChanged={() => st.reload()} />
-      </Card>
 
       <Card className="as-chat">
         <div className="as-log" aria-live="polite">
@@ -400,6 +404,13 @@ export default function Assistant() {
           <Button type="submit" variant="primary" icon={<Send size={16} />} disabled={!text.trim() || (busy && !QUICK_COMMAND.test(text.trim()))} aria-label={t("Senden")} />
         </form>
       </Card>
+      </>)}
+      {tab === "ai" && (<>
+      {online && <IslandSettingsCard />}
+      <Card title={t("KI-Verwaltung – kostenlose KI")}>
+        <AiManager online={online} onChanged={() => st.reload()} />
+      </Card>
+      </>)}
       {settings && s && <SettingsDialog st={s} onClose={() => setSettings(false)} />}
     </div>
   );

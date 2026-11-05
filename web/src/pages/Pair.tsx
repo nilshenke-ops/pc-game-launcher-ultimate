@@ -38,6 +38,10 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
   const urlPc = params.get("pc");
   useEffect(() => { if (urlPc) setAddress(urlPc); }, [urlPc]);
   const [connecting, setConnecting] = useState(false);
+  // The QR link also carries the PC's home-network address ("lan"): when the https name cannot be reached (e.g. Tailscale
+  // is not running on this iPad), one tap leads to the PC's own page in the Wi-Fi, where pairing works and stays signed in.
+  const lanParam = params.get("lan");
+  useEffect(() => { if (HOSTED && lanParam) rememberLanPc(lanParam); }, [lanParam]);
 
   const navigate = useNavigate();
   const finish = useCallback(async (token: string, deviceId: string) => {
@@ -121,6 +125,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
   const pc = conn.hello?.info.pcName;
   // Website (https) + PC address in the home network (http): only the PC's own page can connect.
   const direct = HOSTED && location.protocol === "https:" ? directPairUrl(address, code) : null;
+  const lanDirect = HOSTED && location.protocol === "https:" && lanParam && !direct ? directPairUrl(lanParam, code) : null;
   return (
     <div className={embedded ? "" : "center-screen"}>
       <div className={embedded ? "stack fade-in connect-panel" : "center-card stack fade-in"}>
@@ -145,6 +150,12 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
                 <Field label={t("PC-Adresse")} hint={t("Steht im Nexus Gaming Hub unter dem QR-Code. Beim Scannen wird sie automatisch ausgefüllt.")}>
                   <input className="input mono" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="gaming-pc.tail1234.ts.net" inputMode="url" autoCapitalize="off" autoCorrect="off" spellCheck={false} required />
                 </Field>
+              )}
+              {lanDirect && (
+                <Banner kind={error?.code === "unreachable" ? "warn" : "info"} title={t("Klappt es hier nicht? Im WLAN direkt koppeln")}>
+                  <a className="btn primary block" href={lanDirect} onClick={() => rememberLanPc(lanDirect)} style={{ margin: "8px 0" }}>{t("Im WLAN beim PC koppeln")}</a>
+                  {t("Dafür muss das Gerät im selben WLAN wie der PC sein. Die Kopplung bleibt auf dieser PC-Seite gespeichert – du musst dich nicht erneut anmelden.")}
+                </Banner>
               )}
               {direct && (
                 <Banner kind="info" title={t("Im Heimnetz direkt beim PC koppeln")}>
