@@ -11,7 +11,7 @@ import { useAppState } from "../lib/state";
 import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
 import { useIslandLook } from "../lib/island-look";
 import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
-import { clock, islandAnswer, islandState, islandBusy, islandPet, islandPoke, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
+import { clock, islandAnswer, islandState, islandBusy, islandPet, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
 import { asksForSource } from "../lib/answer-text";
 import type { AssistantAction } from "../lib/assistant";
 import { countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, useTimer } from "../lib/island-timer";
@@ -488,9 +488,11 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   return (
     <div className="isl2" role="dialog" aria-label={t("JARVIS-Insel")}>
       <header className="isl2-head">
-        <IslandEyes mood={mood} onPoke={() => { islandPoke(); islandTouch(); }} />
-        <time className="isl2-date" dateTime={new Date(now).toISOString()}>{new Date(now).toLocaleString([], { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time>
-        <span className="isl2-grow" />
+        {/* Like the closed island opens with a tap on its top, the open one closes with a tap on its top (eyes and date) – no menu needed. */}
+        <button type="button" className="isl2-closeTap" aria-label={t("JARVIS-Insel schließen")} title={t("Tippen zum Schließen")} onClick={() => { islandTouch(); onClose(); }}>
+          <IslandEyes mood={mood} />
+          <time className="isl2-date" dateTime={new Date(now).toISOString()}>{new Date(now).toLocaleString([], { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time>
+        </button>
         {playing && <Bars level={0.4} />}
         <div className="isl2-moreWrap" ref={menuRef}>
           <button type="button" className="isl2-more" aria-haspopup="menu" aria-expanded={menu} aria-label={t("Mehr")} onClick={() => setMenu((m) => !m)}><MoreHorizontal size={18} /></button>

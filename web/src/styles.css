@@ -2716,3 +2716,6 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .aim-rtext .aim-badge { margin-left: 6px; }
 .aim-plan { display: grid; gap: 4px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.08); margin: 6px 0; }
 .aim-steps { margin: 0; padding-left: 18px; display: grid; gap: 2px; }
+.isl2-closeTap { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; height: 100%; background: none; border: 0; color: inherit; font: inherit; font-weight: 600; cursor: pointer; padding: 0; text-align: left; border-radius: 14px; }
+.isl2-closeTap:focus-visible { outline: 2px solid var(--isl-ring, #9ec5ff); outline-offset: 2px; }
+.isl2-closeTap:active { transform: scale(.985); }

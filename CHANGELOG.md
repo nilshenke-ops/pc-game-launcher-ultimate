@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.9.1 – 2026-11-05
+### Verbessert
+- Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü
+- Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)
+### Behoben
+- Der zusätzliche Menü-Knopf links oben neben der Suche erscheint nicht mehr, wenn die Seitenleiste sichtbar ist (iPad, PC); auf dem Handy bleibt er
+
 ## 3.9.0 – 2026-11-05
 ### Neu
 - Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum

@@ -6481,4 +6481,6 @@ export const en: Record<string, string> = {
   "Websuche für aktuelle Fragen (kostenlos)": "Web search for current questions (free)",
   "Websuche-Schlüssel (Tavily)": "Web search key (Tavily)",
   "Websuche-Schlüssel (gespeichert – neu eintragen zum Ersetzen)": "Web search key (saved – enter again to replace)",
+  "JARVIS-Insel schließen": "Close JARVIS island",
+  "Tippen zum Schließen": "Tap to close",
 };

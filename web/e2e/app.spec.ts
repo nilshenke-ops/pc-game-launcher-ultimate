@@ -2118,6 +2118,7 @@ test("Seitenmenü: Home, Spiele, Apps, Soundboard, Favoriten, Zuletzt verwendet,
   const menu = pc.locator(".sidebar").getByRole("navigation", { name: "Hauptmenü" });
   for (const n of ["Home", "Spiele", "Apps", "Soundboard", "Favoriten", "Zuletzt verwendet", "JARVIS", "Einstellungen", "Mehr"]) await expect(menu.getByRole(n === "Mehr" ? "button" : "link", { name: n, exact: true })).toBeVisible();
   await expect(menu.getByRole("link", { name: "Home", exact: true })).toHaveAttribute("aria-current", "page");
+  await expect(pc.getByRole("button", { name: "Alle Bereiche öffnen" })).toHaveCount(0);   // next to the sidebar no second menu button
   // Favoriten opens the games list with the favourites filter, Spiele shows all again.
   await menu.getByRole("link", { name: "Favoriten", exact: true }).click();
   await expect(pc).toHaveURL(/#\/games\?filter=fav/);
@@ -2305,12 +2306,13 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await adminRpc("island.configure", { desktop: false });
   await expect(bar.getByRole("img", { name: "JARVIS: Tanzt" })).toHaveCount(0, { timeout: 15000 });
   await expect(bar.locator(".isl-bars")).toHaveCount(0);
-  // A tap on the eyes of the closed island opens it (the middle of the small island is the eyes); poking the eyes in the open
-  // island's header too often makes JARVIS dizzy (nothing else happens).
+  // A tap on the top of the closed island opens it – and a tap on the top of the open island (eyes and date) closes it again, no menu needed.
   await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).dispatchEvent("click");
   await expect(panel).toBeVisible();
-  for (let k = 0; k < 5; k++) await panel.locator(".isl2-head .isl-eyes").dispatchEvent("click");
-  await expect(panel.getByRole("img", { name: "JARVIS: Schwindelig" })).toBeVisible();
+  await panel.getByRole("button", { name: "JARVIS-Insel schließen" }).click();
+  await expect(panel).toHaveCount(0, { timeout: 3000 });
+  await isl.getByRole("button", { name: "JARVIS-Insel öffnen" }).dispatchEvent("click");
+  await expect(panel).toBeVisible();
   await p.context().close();
 });
 

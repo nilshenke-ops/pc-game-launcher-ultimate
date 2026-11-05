@@ -124,6 +124,8 @@ function NeedsPc() {
 export function AppShell({ children }: { children: ReactNode }) {
   const [palette, setPalette] = useState(false);
   const [more, setMore] = useState(false);
+  const [wide, setWide] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
+  useEffect(() => { const on = () => setWide(window.innerWidth >= 1024); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
   const [sheetEdit, setSheetEdit] = useState(false);
   const [barEdit, setBarEdit] = useState(false);
   // Phone: the top bar floats over the page and only gets its glass once the page has scrolled under it.
@@ -184,7 +186,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="main">
         {inAppIsland && <div className="isl-float" role="region" aria-label={t("JARVIS-Insel")}><JarvisIsland floating /></div>}
         <header className={`topbar${scrolled ? " scrolled" : ""}${loc.pathname === "/" ? " on-home" : ""}`}>
-          <button type="button" className="topbar-menu" onClick={() => setMore(true)} aria-label={t("Alle Bereiche öffnen")} aria-haspopup="dialog"><Menu size={22} /></button>
+          {/* Only where the sidebar is hidden (phone, small tablet): next to the sidebar every area is already there, a second menu button would be clutter. */}
+          {!wide && <button type="button" className="topbar-menu" onClick={() => setMore(true)} aria-label={t("Alle Bereiche öffnen")} aria-haspopup="dialog"><Menu size={22} /></button>}
           <span className="title">{current.label}</span>
           <button className="search-trigger" onClick={() => setPalette(true)} aria-label={t("Suche öffnen")}>
             <Search size={17} /><span className="label">{t("Suche nach Spielen, Apps …")}</span><kbd>Ctrl K</kbd>

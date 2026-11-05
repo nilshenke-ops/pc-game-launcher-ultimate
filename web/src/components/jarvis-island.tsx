@@ -94,7 +94,10 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const panelMounted = useExit(open, 520);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
-  const size = islandSize({ open, ask: !!ask, hover, mood, notice: !!notice });
+  // In the app (phone, tablet, browser) the island stays the small face with the two eyes – the eyes show what JARVIS does; the wide bar with
+  // text would cover the buttons of the top bar. The wide bar is for the island window on the PC screen.
+  const wanted = islandSize({ open, ask: !!ask, hover, mood, notice: !!notice });
+  const size = floating && wanted === "bar" ? "notch" : wanted;
   const vw = useViewportW();
   const box = islandBox(size, vw, floating);
   const panelW = islandBox("panel", vw, floating).w;
