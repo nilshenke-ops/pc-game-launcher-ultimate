@@ -1,28 +1,26 @@
 {
-  "version": "3.12.0",
+  "version": "3.13.0",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion.exe",
-  "size": 94917152,
-  "sha256": "435718cbd5de7b1250b0f1fb876013ccdf7b295f98fd8e07f32781dbbbc69e47",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.13.0/PCGameLauncherCompanion.exe",
+  "size": 94920982,
+  "sha256": "05a3d385d95b74f51118f0ae7a0a53f5e3b7e0011b966ca6c28821a97885f1f1",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.12.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion-3.12.0-win-x64.zip",
-    "size": 89192027,
-    "sha256": "08b4d0d07027674a276b67996f249172430a4b170e176f2facd009d64623736e"
+    "fileName": "PCGameLauncherCompanion-3.13.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.13.0/PCGameLauncherCompanion-3.13.0-win-x64.zip",
+    "size": 89196169,
+    "sha256": "e20b80dbb42bfa7406dda649a78ef08cb9021c55ed21b69e5a4483511e3aeea2"
   },
-  "notes": "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät) · Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt · Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
+  "notes": "Websuche für JARVIS mit mehreren kostenlosen Suchdiensten: zusätzlich zu Tavily jetzt Serper (Google-Ergebnisse, 2500 Gratis-Suchen) und Exa (monatliches Gratis-Guthaben) – alle mit eigenem Schlüssel ohne Zahlungsmittel. Ist ein Dienst leer, abgelehnt oder gestört, fragt JARVIS automatisch den nächsten (Tavily → Serper → Exa); jeder hat sein eigenes Monatslimit und stoppt am Gratis-Kontingent, es wird nie etwas bezahlt · Jeder Suchschlüssel wird nur in seiner Form angenommen und nur an den eigenen Dienst geschickt; bei Fehlern steht der Name des Dienstes in der Meldung",
   "changes": {
     "neu": [
-      "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät)"
+      "Websuche für JARVIS mit mehreren kostenlosen Suchdiensten: zusätzlich zu Tavily jetzt Serper (Google-Ergebnisse, 2500 Gratis-Suchen) und Exa (monatliches Gratis-Guthaben) – alle mit eigenem Schlüssel ohne Zahlungsmittel. Ist ein Dienst leer, abgelehnt oder gestört, fragt JARVIS automatisch den nächsten (Tavily → Serper → Exa); jeder hat sein eigenes Monatslimit und stoppt am Gratis-Kontingent, es wird nie etwas bezahlt"
     ],
     "verbessert": [
-      "Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt",
-      "Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
-      "„Schnellster gewinnt“ fragt alle KIs mit Schlüssel gleichzeitig; der Bereich „OpenRouter und Groq ohne PC“ heißt jetzt „Schlüssel ohne PC“"
+      "Jeder Suchschlüssel wird nur in seiner Form angenommen und nur an den eigenen Dienst geschickt; bei Fehlern steht der Name des Dienstes in der Meldung"
     ],
     "behoben": []
   },
-  "signature": "j19cL05WQh614SRK8DjgbIKtVPunU44a5AA3E44//1DNPNeeqRFyPD9mXlJKdDupXTxCkCzDeUq0PaOZZDbKIQ=="
+  "signature": "aJDPsHR+z0SJdynqxaSlGxJquouo1kiCRV/hQyqW4qGuwNaZKQnf6Wfigc0piroS9W3ZjVYnWYxiEti8HJG8DQ=="
 }
