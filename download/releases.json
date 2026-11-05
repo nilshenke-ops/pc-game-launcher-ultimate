@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.5.0",
+    "date": "2026-11-05",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.0/PCGameLauncherCompanion.exe",
+    "size": 94896288,
+    "sha256": "91fd77ca00a797a3ace0154b147edaf042267f13a9dac7a59908062e9a6de140",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.5.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.0/PCGameLauncherCompanion-3.5.0-win-x64.zip",
+      "size": 89171521,
+      "sha256": "ae7932c2f644e1d43921530e0cc1765ed1ae55c741972dbb3f3e00507cedfec6"
+    },
+    "notes": "OpenRouter und Groq ohne PC einrichten und benutzen: In der KI-Verwaltung der Website (https) trägst du den Schlüssel am Handy oder iPad ein und vergibst ein Passwort; der Schlüssel wird mit AES-GCM (Passwort → PBKDF2) verschlüsselt nur auf diesem Gerät gespeichert, nach dem Neuladen ist er gesperrt, bis du das Passwort eingibst. Dann antwortet JARVIS auch ohne PC direkt aus dem Browser – mit „Beantwortet von OpenRouter – kostenloses Modell“ und derselben Kette (OpenRouter → Groq → Pollinations mit deinem Ja) · Dieselben Kostenregeln wie am PC im Browser: nur Modelle mit Preis 0 (Liste höchstens 5 Minuten alt, vor jeder Anfrage neu geprüft), Höchstpreis 0 in jeder Anfrage, kein Aufladen, der Schlüssel geht ausschließlich an den eigenen Dienst; Groq nur nach der Bestätigung „kostenloser Tarif“ · Automatisch an den PC übertragen: Hast du am Handy einen Schlüssel eingerichtet und entsperrt und ist der PC verbunden, schickt die KI-Verwaltung ihn versiegelt an den PC (nur wenn der PC noch keinen eigenen hat); danach arbeitet der PC damit",
+    "changes": {
+      "neu": [
+        "OpenRouter und Groq ohne PC einrichten und benutzen: In der KI-Verwaltung der Website (https) trägst du den Schlüssel am Handy oder iPad ein und vergibst ein Passwort; der Schlüssel wird mit AES-GCM (Passwort → PBKDF2) verschlüsselt nur auf diesem Gerät gespeichert, nach dem Neuladen ist er gesperrt, bis du das Passwort eingibst. Dann antwortet JARVIS auch ohne PC direkt aus dem Browser – mit „Beantwortet von OpenRouter – kostenloses Modell“ und derselben Kette (OpenRouter → Groq → Pollinations mit deinem Ja)",
+        "Dieselben Kostenregeln wie am PC im Browser: nur Modelle mit Preis 0 (Liste höchstens 5 Minuten alt, vor jeder Anfrage neu geprüft), Höchstpreis 0 in jeder Anfrage, kein Aufladen, der Schlüssel geht ausschließlich an den eigenen Dienst; Groq nur nach der Bestätigung „kostenloser Tarif“",
+        "Automatisch an den PC übertragen: Hast du am Handy einen Schlüssel eingerichtet und entsperrt und ist der PC verbunden, schickt die KI-Verwaltung ihn versiegelt an den PC (nur wenn der PC noch keinen eigenen hat); danach arbeitet der PC damit"
+      ],
+      "verbessert": [
+        "Der Selbsttest und die KI-Verwaltung ohne PC zeigen den Stand der Schlüssel auf dem Gerät (nicht eingerichtet, gesperrt, bereit) und sagen verständlich, was zu tun ist, wenn der Schlüssel gesperrt ist",
+        "Hinweistext der KI-Verwaltung ohne PC stimmt wieder: OpenRouter und Groq gehen jetzt auch dort, nur Ollama braucht den PC"
+      ],
+      "behoben": []
+    },
+    "signature": "SRUtuvHuzcCebGQTL6izVo2+VXVOe7f6kvH0LUQ5Z8OuTqQslb9SCdR9K28r3QZPpmN7CRsASjrezMgf5FO0Cw=="
+  },
+  {
     "version": "3.4.0",
     "date": "2026-11-05",
     "channel": "stable",
@@ -1434,33 +1463,5 @@
       "behoben": []
     },
     "signature": "SGygbhSpwLBMo7Q/P+KkmJ12qeh/1/DDBm/mc6BArfy225QZx14NXXypTh/rD0N6wTGwjeegJetiVuERDglSCg=="
-  },
-  {
-    "version": "2.61.0",
-    "date": "2026-10-27",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.61.0/PCGameLauncherCompanion.exe",
-    "size": 88159509,
-    "sha256": "276f3396d39e3cec607f769221c197beaf33745cab16038338fcfa48ac002462",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.61.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.61.0/PCGameLauncherCompanion-2.61.0-win-x64.zip",
-      "size": 82418726,
-      "sha256": "085b445ce95f78fb860120f3a5fa52ef1bd203a3a31df85891e98ef63c5a017c"
-    },
-    "notes": "Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar · Dasselbe am Handy unter „Mehr“ → „Bearbeiten“ · Kategorien in der Seitenleiste lassen sich einklappen (mit Anzahl), „Aufräumen (Vorschlag)“ und „Alle anzeigen“ mit einem Klick",
-    "changes": {
-      "neu": [
-        "Seitenleiste ordnen direkt in der Leiste (Stift oben neben dem Logo): mit „−“ kommt ein Bereich in den Ordner „Weitere Funktionen“ am Ende der Leiste, mit „+“ wieder zurück – gelöscht wird nichts, der Ordner bleibt aufklappbar und alles bleibt über die Suche erreichbar",
-        "Dasselbe am Handy unter „Mehr“ → „Bearbeiten“",
-        "Kategorien in der Seitenleiste lassen sich einklappen (mit Anzahl), „Aufräumen (Vorschlag)“ und „Alle anzeigen“ mit einem Klick"
-      ],
-      "verbessert": [
-        "Übersichtlicher Start: selten genutzte Bereiche liegen anfangs im Ordner „Weitere Funktionen“ (einmalig auch für bestehende Leisten, die nie angepasst wurden – eigene Einstellungen bleiben unverändert)"
-      ],
-      "behoben": []
-    },
-    "signature": "/hUyIOf9J4dKhkykq4bTl3il0/6xT6Lj03ND8LirUILeWxYXy0eQVzWolyB9++qoefKBFFfRpcCwM0NtEsAD3A=="
   }
 ]

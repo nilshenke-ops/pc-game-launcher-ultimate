@@ -1,30 +1,29 @@
 {
-  "version": "3.4.0",
+  "version": "3.5.0",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.4.0/PCGameLauncherCompanion.exe",
-  "size": 94890725,
-  "sha256": "769aad2b08079863754561dd53cccf0a3d56be70b27fec2cb7aea54e01bcecc8",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.0/PCGameLauncherCompanion.exe",
+  "size": 94896288,
+  "sha256": "91fd77ca00a797a3ace0154b147edaf042267f13a9dac7a59908062e9a6de140",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.4.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.4.0/PCGameLauncherCompanion-3.4.0-win-x64.zip",
-    "size": 89165891,
-    "sha256": "1c27cea7e1dedd0fcae5a34e98c61f61ddf2b30a6fdb57616c4aea1b201d5dfc"
+    "fileName": "PCGameLauncherCompanion-3.5.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.0/PCGameLauncherCompanion-3.5.0-win-x64.zip",
+    "size": 89171521,
+    "sha256": "ae7932c2f644e1d43921530e0cc1765ed1ae55c741972dbb3f3e00507cedfec6"
   },
-  "notes": "Gespräch mit JARVIS (Insel, Knopf neben dem Mikrofon): JARVIS hört nach jeder vorgelesenen Antwort von selbst wieder zu, bis du „Danke“ oder „Ende“ sagst, auf das Mikrofon tippst oder zweimal nacheinander nichts gesagt wird · Steuerwörter beim Sprechen: „Stopp“ (auch „Sei still“, „Abbrechen“, „Genug“) macht die Stimme still und wird nicht als Auftrag gesendet; „Danke“, „Das war’s“, „Tschüss“ beenden das Gespräch · Gesprochene Sätze werden wie getippte: „Hey Jarvis, ähm, starte bitte Rocket League.“ wird zu „Starte bitte Rocket League“ (Weckwort, Füllwörter, Schlusspunkt und „bitte“ am Ende fallen weg, der Inhalt bleibt)",
+  "notes": "OpenRouter und Groq ohne PC einrichten und benutzen: In der KI-Verwaltung der Website (https) trägst du den Schlüssel am Handy oder iPad ein und vergibst ein Passwort; der Schlüssel wird mit AES-GCM (Passwort → PBKDF2) verschlüsselt nur auf diesem Gerät gespeichert, nach dem Neuladen ist er gesperrt, bis du das Passwort eingibst. Dann antwortet JARVIS auch ohne PC direkt aus dem Browser – mit „Beantwortet von OpenRouter – kostenloses Modell“ und derselben Kette (OpenRouter → Groq → Pollinations mit deinem Ja) · Dieselben Kostenregeln wie am PC im Browser: nur Modelle mit Preis 0 (Liste höchstens 5 Minuten alt, vor jeder Anfrage neu geprüft), Höchstpreis 0 in jeder Anfrage, kein Aufladen, der Schlüssel geht ausschließlich an den eigenen Dienst; Groq nur nach der Bestätigung „kostenloser Tarif“ · Automatisch an den PC übertragen: Hast du am Handy einen Schlüssel eingerichtet und entsperrt und ist der PC verbunden, schickt die KI-Verwaltung ihn versiegelt an den PC (nur wenn der PC noch keinen eigenen hat); danach arbeitet der PC damit",
   "changes": {
     "neu": [
-      "Gespräch mit JARVIS (Insel, Knopf neben dem Mikrofon): JARVIS hört nach jeder vorgelesenen Antwort von selbst wieder zu, bis du „Danke“ oder „Ende“ sagst, auf das Mikrofon tippst oder zweimal nacheinander nichts gesagt wird",
-      "Steuerwörter beim Sprechen: „Stopp“ (auch „Sei still“, „Abbrechen“, „Genug“) macht die Stimme still und wird nicht als Auftrag gesendet; „Danke“, „Das war’s“, „Tschüss“ beenden das Gespräch"
+      "OpenRouter und Groq ohne PC einrichten und benutzen: In der KI-Verwaltung der Website (https) trägst du den Schlüssel am Handy oder iPad ein und vergibst ein Passwort; der Schlüssel wird mit AES-GCM (Passwort → PBKDF2) verschlüsselt nur auf diesem Gerät gespeichert, nach dem Neuladen ist er gesperrt, bis du das Passwort eingibst. Dann antwortet JARVIS auch ohne PC direkt aus dem Browser – mit „Beantwortet von OpenRouter – kostenloses Modell“ und derselben Kette (OpenRouter → Groq → Pollinations mit deinem Ja)",
+      "Dieselben Kostenregeln wie am PC im Browser: nur Modelle mit Preis 0 (Liste höchstens 5 Minuten alt, vor jeder Anfrage neu geprüft), Höchstpreis 0 in jeder Anfrage, kein Aufladen, der Schlüssel geht ausschließlich an den eigenen Dienst; Groq nur nach der Bestätigung „kostenloser Tarif“",
+      "Automatisch an den PC übertragen: Hast du am Handy einen Schlüssel eingerichtet und entsperrt und ist der PC verbunden, schickt die KI-Verwaltung ihn versiegelt an den PC (nur wenn der PC noch keinen eigenen hat); danach arbeitet der PC damit"
     ],
     "verbessert": [
-      "Gesprochene Sätze werden wie getippte: „Hey Jarvis, ähm, starte bitte Rocket League.“ wird zu „Starte bitte Rocket League“ (Weckwort, Füllwörter, Schlusspunkt und „bitte“ am Ende fallen weg, der Inhalt bleibt)",
-      "Die Chat-Seite nutzt dieselbe Spracheingabe wie die Insel: Zwischentext beim Sprechen, verständliche Fehler, die Antwort auf eine gesprochene Frage wird vorgelesen",
-      "Das Mikrofon wird vorab geprüft: ist es für die Seite gesperrt, sagt JARVIS das und wie man es erlaubt (statt eines englischen Fehlercodes); der Selbsttest zeigt es ebenfalls",
-      "Fehlermeldungen sind verständlich: nackte Codes („forbidden“, „session-expired“, „timeout“, „unknown-method“ …) werden zu einem Satz mit nächstem Schritt (z. B. „Am PC unter Updates aktualisieren“); genaue Meldungen des PCs bleiben unverändert"
+      "Der Selbsttest und die KI-Verwaltung ohne PC zeigen den Stand der Schlüssel auf dem Gerät (nicht eingerichtet, gesperrt, bereit) und sagen verständlich, was zu tun ist, wenn der Schlüssel gesperrt ist",
+      "Hinweistext der KI-Verwaltung ohne PC stimmt wieder: OpenRouter und Groq gehen jetzt auch dort, nur Ollama braucht den PC"
     ],
     "behoben": []
   },
-  "signature": "CY1ec3S8xc1hkaQsM4qfYOUhB8A+qNUwVs02jq8wL+azgXEPOVxqgOt70Xrp1mhn2y3xBUsJISuknQIGKoZntw=="
+  "signature": "SRUtuvHuzcCebGQTL6izVo2+VXVOe7f6kvH0LUQ5Z8OuTqQslb9SCdR9K28r3QZPpmN7CRsASjrezMgf5FO0Cw=="
 }
