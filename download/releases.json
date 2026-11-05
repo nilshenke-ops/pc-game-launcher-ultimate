@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.12.0",
+    "date": "2026-11-05",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion.exe",
+    "size": 94917152,
+    "sha256": "435718cbd5de7b1250b0f1fb876013ccdf7b295f98fd8e07f32781dbbbc69e47",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.12.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion-3.12.0-win-x64.zip",
+      "size": 89192027,
+      "sha256": "08b4d0d07027674a276b67996f249172430a4b170e176f2facd009d64623736e"
+    },
+    "notes": "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät) · Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt · Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
+    "changes": {
+      "neu": [
+        "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät)"
+      ],
+      "verbessert": [
+        "Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt",
+        "Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
+        "„Schnellster gewinnt“ fragt alle KIs mit Schlüssel gleichzeitig; der Bereich „OpenRouter und Groq ohne PC“ heißt jetzt „Schlüssel ohne PC“"
+      ],
+      "behoben": []
+    },
+    "signature": "j19cL05WQh614SRK8DjgbIKtVPunU44a5AA3E44//1DNPNeeqRFyPD9mXlJKdDupXTxCkCzDeUq0PaOZZDbKIQ=="
+  },
+  {
     "version": "3.11.0",
     "date": "2026-11-05",
     "channel": "stable",
@@ -1401,33 +1429,5 @@
       "behoben": []
     },
     "signature": "+Pvm8rDOwZFBjqLzBJI3f32pW/jhlDLsOo2Rsl5KrTY435cBYEnt0ImyHx4Pz3KyPiBOboFSSIWqyDEElfXz9w=="
-  },
-  {
-    "version": "2.70.0",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.70.0/PCGameLauncherCompanion.exe",
-    "size": 88276477,
-    "sha256": "0c32fbd791544d7998832a7483b6f271a795cbb0b1c814e04beed8e0732f5adc",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.70.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.70.0/PCGameLauncherCompanion-2.70.0-win-x64.zip",
-      "size": 82538920,
-      "sha256": "19c9aab0cf4abd7809eddea6d49fc1ee6f2d93d563f716aa29caebc4e3575e42"
-    },
-    "notes": "Programme: Alle installierten Apps erscheinen automatisch – ohne „Hinzufügen“. Der Begleiter liest das Windows-Startmenü (Desktop-Programme aus dem Web-Installer wie Discord, Apps aus dem Microsoft Store, Xbox-Apps) beim Start und danach alle 10 Minuten; jede App startet mit einem Tipp · Schalter „Installierte Apps automatisch anzeigen“ und „Jetzt prüfen“ oben unter Programme (Standard: an) · Deinstallierte Apps verschwinden wieder; selbst entfernte bleiben ausgeblendet, bis sie deinstalliert werden. Schon vorhandene Einträge (gleicher Name oder gleiches Ziel) kommen nicht doppelt. Nicht aufgenommen werden Deinstallationsprogramme, Liesmich-/Hilfe-/Web-Verknüpfungen und Windows-Systemwerkzeuge",
-    "changes": {
-      "neu": [
-        "Programme: Alle installierten Apps erscheinen automatisch – ohne „Hinzufügen“. Der Begleiter liest das Windows-Startmenü (Desktop-Programme aus dem Web-Installer wie Discord, Apps aus dem Microsoft Store, Xbox-Apps) beim Start und danach alle 10 Minuten; jede App startet mit einem Tipp",
-        "Schalter „Installierte Apps automatisch anzeigen“ und „Jetzt prüfen“ oben unter Programme (Standard: an)"
-      ],
-      "verbessert": [
-        "Deinstallierte Apps verschwinden wieder; selbst entfernte bleiben ausgeblendet, bis sie deinstalliert werden. Schon vorhandene Einträge (gleicher Name oder gleiches Ziel) kommen nicht doppelt. Nicht aufgenommen werden Deinstallationsprogramme, Liesmich-/Hilfe-/Web-Verknüpfungen und Windows-Systemwerkzeuge",
-        "Ein Xbox-/Store-Spiel, das zuerst als App auftauchte, wird beim Xbox-Abgleich zum Spiel"
-      ],
-      "behoben": []
-    },
-    "signature": "oU5PQXxdCN+NkadcTI2zn3NNOFCgmLrTKIwLjW87EHBGqEPVMPNS+iP4IByUZWmYwK0FJsCm2NVwGtLIR4dgrA=="
   }
 ]

@@ -1,26 +1,28 @@
 {
-  "version": "3.11.0",
+  "version": "3.12.0",
   "date": "2026-11-05",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.11.0/PCGameLauncherCompanion.exe",
-  "size": 94913792,
-  "sha256": "9687319bfde7748651b4d7f8244749855fded50c2f7077e73b9cca32380b95c3",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion.exe",
+  "size": 94917152,
+  "sha256": "435718cbd5de7b1250b0f1fb876013ccdf7b295f98fd8e07f32781dbbbc69e47",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.11.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.11.0/PCGameLauncherCompanion-3.11.0-win-x64.zip",
-    "size": 89188428,
-    "sha256": "330429bbcb3488524178e835fbe779066f597f5e60172e226ec83e7890fca388"
+    "fileName": "PCGameLauncherCompanion-3.12.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion-3.12.0-win-x64.zip",
+    "size": 89192027,
+    "sha256": "08b4d0d07027674a276b67996f249172430a4b170e176f2facd009d64623736e"
   },
-  "notes": "Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein) · Falsche Eingaben werden erklärt (Profil nicht gefunden, kein gültiger Link) und ändern nichts; „Verbindung lösen“ beendet den Abgleich, die übernommenen Spiele bleiben",
+  "notes": "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät) · Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt · Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
   "changes": {
     "neu": [
-      "Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein)"
+      "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät)"
     ],
     "verbessert": [
-      "Falsche Eingaben werden erklärt (Profil nicht gefunden, kein gültiger Link) und ändern nichts; „Verbindung lösen“ beendet den Abgleich, die übernommenen Spiele bleiben"
+      "Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt",
+      "Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
+      "„Schnellster gewinnt“ fragt alle KIs mit Schlüssel gleichzeitig; der Bereich „OpenRouter und Groq ohne PC“ heißt jetzt „Schlüssel ohne PC“"
     ],
     "behoben": []
   },
-  "signature": "U33MrBkB5F/5fN5Cl2j+KrEhB2/hj+uqfY5Vh0RN+HHKcmYdFPxp9rCdtx/6HhX8AVOv23TFlJTCaEQC/JinzA=="
+  "signature": "j19cL05WQh614SRK8DjgbIKtVPunU44a5AA3E44//1DNPNeeqRFyPD9mXlJKdDupXTxCkCzDeUq0PaOZZDbKIQ=="
 }
