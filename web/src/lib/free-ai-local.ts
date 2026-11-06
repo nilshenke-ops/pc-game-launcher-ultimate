@@ -7,6 +7,7 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
+import { sportsFor } from "./sports";
 import { askFreeAi, buildMessages, cleanAnswer, freeAiConsent, FreeAiError, looksLikePaymentNotice, type Turn } from "./free-ai";
 
 export type LocalProvider = "openrouter" | "groq" | "cerebras" | "mistral";
@@ -305,13 +306,17 @@ export async function testLocal(p: LocalProvider, o: Opts = {}): Promise<{ ok: b
  */
 export async function askLocalChain(question: string, history: Turn[], o: Opts = {}): Promise<LocalAnswer> {
   const failed: string[] = [];
-  // Questions about current facts (match schedules, scores, news, prices): searched first when a search key is unlocked on this device.
+  // Questions about current facts: football first from OpenLigaDB (no key, no search service needed), otherwise searched on the web when a search key is unlocked.
   let asked = question, via = "";
-  if (readySearch().length > 0 && wantsLiveData(question)) {
-    const w = await searchLive(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if (e instanceof FreeAiError && e.message === "Abgebrochen.") throw e; return null; });
-    if (w) { asked = `${w.block}\n\nFrage: ${question}`; via = w.domains; }
+  if (wantsLiveData(question)) {
+    const sp = await sportsFor(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if ((e as Error).message === "Abgebrochen.") throw new FreeAiError("Abgebrochen."); return null; });
+    if (sp) { asked = `${sp.block}\n\nFrage: ${question}`; via = "Sportdaten: OpenLigaDB"; }
+    else if (readySearch().length > 0) {
+      const w = await searchLive(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if (e instanceof FreeAiError && e.message === "Abgebrochen.") throw e; return null; });
+      if (w) { asked = `${w.block}\n\nFrage: ${question}`; via = `Websuche: ${w.domains}`; }
+    }
   }
-  const tag = (a: LocalAnswer): LocalAnswer => via ? { ...a, label: `${a.label} · Websuche: ${via}` } : a;
+  const tag = (a: LocalAnswer): LocalAnswer => via ? { ...a, label: `${a.label} · ${via}` } : a;
   for (const p of readyProviders()) {
     try { return tag(await askLocal(p, asked, history, o)); }
     catch (e) { if (e instanceof FreeAiError && e.message === "Abgebrochen.") throw e; failed.push((e as Error).message); }

@@ -181,7 +181,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
         )}
         {msg.strategy && !msg.strategy.ok && <p className="tiny fas-err" role="alert">{msg.strategy.text}</p>}
         <details className="tiny aim-can"><summary>{t("Welche KI soll ich nutzen?")}</summary>
-          <p>{t("Für den Anfang reichen zwei: eine schnelle (Groq oder Cerebras) und ein Allrounder (OpenRouter oder Mistral) – fällt eine aus, springt die nächste ein. Pollinations braucht kein Konto, ist aber langsam (etwa eine Antwort pro 45 Sekunden). Ollama läuft nur am PC, ohne Internet und privat. Für Sport und Nachrichten („Wer spielt gegen Bayern als Nächstes?“) brauchst du zusätzlich eine Websuche – siehe „Websuche für aktuelle Fragen“ in den Einstellungen.")}</p>
+          <p>{t("Für den Anfang reichen zwei: eine schnelle (Groq oder Cerebras) und ein Allrounder (OpenRouter oder Mistral) – fällt eine aus, springt die nächste ein. Pollinations braucht kein Konto, ist aber langsam (etwa eine Antwort pro 45 Sekunden). Ollama läuft nur am PC, ohne Internet und privat. Fußball-Fragen („Wer spielt gegen Bayern als Nächstes?“) beantwortet JARVIS kostenlos mit OpenLigaDB; für Wetter, Nachrichten und andere Sportarten brauchst du zusätzlich eine Websuche – siehe „Websuche für aktuelle Fragen“ in den Einstellungen.")}</p>
         </details>
         <div className="aim-quick" role="group" aria-label={t("Schnell ein- und ausschalten")}>
           {o.providers.filter((p) => p.needsKey).map((p) => (

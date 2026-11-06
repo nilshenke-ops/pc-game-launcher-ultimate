@@ -277,4 +277,18 @@ describe("Websuche ohne PC", () => {
     expect(b.label).not.toContain("Websuche");
     expect(await searchLive("x", { fetcher: g.fetcher })).toBeNull();
   });
+  it("Fußball kommt ohne Suchschlüssel von OpenLigaDB, und die Antwort nennt die Quelle", async () => {
+    await saveLocalKey("openrouter", OR, PASS);
+    expect(readySearch()).toEqual([]);
+    const f = fake((c) => {
+      if (c.url.includes("api.openligadb.de/getavailableteams")) return json([{ teamId: 40, teamName: "FC Bayern München", shortName: "Bayern" }]);
+      if (c.url.includes("api.openligadb.de/getmatchesbyteamid")) return json([{ matchDateTimeUTC: "2999-11-07T14:30:00Z", leagueShortcut: "bl1", leagueName: "1. Fußball-Bundesliga 2999/3000", matchIsFinished: false, team1: { teamId: 81, teamName: "1. FSV Mainz 05" }, team2: { teamId: 40, teamName: "FC Bayern München" }, matchResults: [], goals: [] }]);
+      return c.url.endsWith("/models") ? json(orModels(["openrouter/free", "0", 200000])) : json(chatOk("Bayern spielt in Mainz.", "openrouter/free"));
+    });
+    const a = await askLocalChain("Wer spielt gegen Bayern nächstes Spiel?", [], { fetcher: f.fetcher });
+    expect(a.label).toContain("Sportdaten: OpenLigaDB");
+    const chat = f.calls.find((c) => c.url.includes("openrouter.ai") && c.body?.messages)!;
+    expect(JSON.stringify(chat.body)).toContain("1. FSV Mainz 05 – FC Bayern München");
+    expect(f.calls.filter((c) => c.url.includes("openligadb") && c.auth !== null)).toEqual([]);          // no key, no login to the sports service
+  });
 });

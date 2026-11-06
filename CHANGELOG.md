@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.15.0 – 2026-11-06
+### Neu
+- Fußball-Ergebnisse ohne Schlüssel und ohne Suchdienst: „Wer spielt gegen Bayern als Nächstes?“, „Wie steht es gerade bei Bayern gegen Dortmund?“, „Wann spielt Leverkusen?“ beantwortet JARVIS mit Daten von OpenLigaDB (kostenlos, 1.–3. Bundesliga, DFB-Pokal, Champions League u. a.): laufendes Spiel mit Zwischenstand, nächste Spiele mit Datum und Uhrzeit, letztes Ergebnis. Das geht am PC und genauso ohne PC direkt im Browser (iPad, Handy); es genügt irgendeine der kostenlosen KIs, die Antwort nennt die Quelle („Sportdaten: OpenLigaDB“)
+### Verbessert
+- Nennt die Frage keine Mannschaft oder ist OpenLigaDB nicht erreichbar, läuft sie wie bisher über die Websuche; der Spielstand kann einige Minuten hinterherhinken (steht in der Antwort-Vorgabe an die KI und in den Einstellungen)
+
 ## 3.14.0 – 2026-11-06
 ### Neu
 - Websuche auch ohne PC: Mit einem eigenen kostenlosen Tavily- oder Serper-Schlüssel (Passwort-verschlüsselt auf dem Gerät, wie bei den KIs) sucht JARVIS bei Fragen zu Sport, Wetter, Nachrichten und Preisen direkt aus dem Browser und antwortet mit der KI aus den Ergebnissen; die Antwort nennt die Quellen (z. B. „Websuche: kicker.de“). Ein Entsperren öffnet KI- und Suchschlüssel zugleich

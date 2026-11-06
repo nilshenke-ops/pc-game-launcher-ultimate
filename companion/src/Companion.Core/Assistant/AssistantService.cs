@@ -83,6 +83,7 @@ public sealed class AssistantService
     public OllamaAssistant Ollama { get; }
     public DeepSeekClient DeepSeek { get; }
     public WebSearchClient Search { get; }
+    public SportsClient Sports { get; }
     public OpenAiCompatClient Router { get; }
     /// <summary>The free AI services in one fixed order with the cost guard (OpenRouter, Groq, Pollinations, Ollama).</summary>
     public FreeAiHub FreeAi { get; }
@@ -92,7 +93,7 @@ public sealed class AssistantService
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, WebSearchClient? search = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, WebSearchClient? search = null, SportsClient? sports = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
@@ -101,6 +102,7 @@ public sealed class AssistantService
         Ollama = ollama ?? new OllamaAssistant(data);
         DeepSeek = deepSeek ?? new DeepSeekClient();
         Search = search ?? new WebSearchClient();
+        Sports = sports ?? new SportsClient();
         Router = router ?? new OpenAiCompatClient();
         FreeAi = freeAi ?? new FreeAiHub(paths, secrets);
         var f0 = _store.Snapshot();
@@ -541,7 +543,18 @@ public sealed class AssistantService
         // Questions that need current facts (schedules, news, weather, prices): searched on the web first (own Tavily key, monthly cap), the AI answers from the results.
         string? webBlock = null, webSources = null; var needsWeb = WebSearchClient.Wanted(text);
         var anySearchKey = WebSearchClient.Providers.Any(id => SearchKeyOf(f, id) != null);
-        if (needsWeb && anySearchKey)
+        var webKind = "Websuche";
+        // Football (schedules, scores): from OpenLigaDB first – free, no key, no search service needed. Other live questions go to the web search.
+        if (needsWeb)
+        {
+            try
+            {
+                var sp = await Sports.AskAsync(text, _now(), ct);
+                if (sp != null) { webBlock = sp.Block; webSources = "OpenLigaDB"; webKind = "Sportdaten"; }
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
+        }
+        if (needsWeb && anySearchKey && webBlock == null)
         {
             // one search provider after the other (Tavily → Serper → Exa) until one delivers; each has its own monthly cap and stops by itself at its free limit
             foreach (var sid in WebSearchClient.Providers)
@@ -577,8 +590,8 @@ public sealed class AssistantService
         AssistantReply Tag(AssistantReply r, string label)
         {
             r.Sources.Insert(0, label);
-            if (webSources != null) r.Sources.Add($"Websuche: {webSources}");
-            else if (needsWeb && !anySearchKey) r.Text += "\n\n(Tipp: Für aktuelle Infos wie Spielpläne oder Nachrichten richte am PC unter KI-Assistent die kostenlose Websuche ein.)";
+            if (webSources != null) r.Sources.Add($"{webKind}: {webSources}");
+            else if (needsWeb && !anySearchKey && webKind == "Websuche") r.Text += "\n\n(Tipp: Für aktuelle Infos wie Spielpläne oder Nachrichten richte am PC unter KI-Assistent die kostenlose Websuche ein.)";
             if (failed.Count > 0) r.Sources.Insert(1, $"Automatisch: {string.Join("; ", failed)} – deshalb antwortet {label.Replace("Beantwortet von ", "")}");
             return r;
         }
