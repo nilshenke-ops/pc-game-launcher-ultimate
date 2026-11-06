@@ -516,7 +516,7 @@ class Client {
       const me = admin
         ? await this.call<Me>("auth.login", { adminToken: admin })
         : await this.call<Me>("auth.login", { deviceId: cred!.deviceId, proof: loginProof(cred!.token, hello.nonce) });
-      resetLoginFailures();
+      resetLoginFailures(); this.loginRetries = 0; if (this.loginRetryTimer) { clearTimeout(this.loginRetryTimer); this.loginRetryTimer = null; }
       this.set({ auth: "ok", me, authError: undefined, everAuthed: true });
       askPersistentStorage(); // the browser may then keep the saved state even when space gets short
       if (!admin) rememberPc(hello.info?.pcName);
@@ -530,7 +530,24 @@ class Client {
         else if (noteLoginFailure()) writeJson(CRED_KEY, null);          // one failed login (wrong PC behind the address, restart, relay hiccup) must not sign the device out for good
       }
       this.set({ auth: err.code === "auth-failed" ? "failed" : "none", authError: err.message, me: undefined });
+      // A saved pairing must never leave the device signed out by itself: whatever stopped this login (PC still starting, relay hiccup,
+      // "too many attempts", a wrong PC behind the address) – try again by itself with growing pauses until it works or the PC says
+      // for sure that the device is gone (3 refusals in a row clear the pairing above, "auth.revoked" clears it at once).
+      if (!admin && this.credentials) this.scheduleLoginRetry(err.code === "rate-limited" ? 30000 : undefined);
     }
+  }
+
+  private loginRetryTimer: number | null = null;
+  private loginRetries = 0;
+  private scheduleLoginRetry(minDelay = 0) {
+    if (this.loginRetryTimer) return;
+    const delay = Math.max(minDelay, Math.min(60000, 2000 * 2 ** Math.min(this.loginRetries, 5)));
+    this.loginRetries++;
+    this.loginRetryTimer = window.setTimeout(() => {
+      this.loginRetryTimer = null;
+      if (this.status.auth === "ok" || !this.credentials || this.status.auth === "revoked" || this.status.auth === "paused") return;
+      this.restart();                                   // a fresh connection = a fresh hello/nonce, then the saved pairing logs in again
+    }, delay);
   }
 
   private pausedTimer: number | null = null;

@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.21.2 – 2026-11-06
+### Behoben
+- Angemeldet bleiben: Ein gekoppeltes Gerät meldet sich jetzt immer selbst wieder an, sobald der PC-Begleiter wieder läuft. Scheiterte die Anmeldung kurz (PC startet noch, Relay-Aussetzer, „zu viele Versuche“, falscher PC hinter der Adresse), blieb das Gerät bisher abgemeldet, bis man die Seite neu geladen hat. Jetzt versucht es die Seite von selbst erneut, mit wachsenden Pausen (2 s bis 60 s)
+- Die Kopplung geht nur verloren, wenn der PC das Gerät ausdrücklich entfernt hat („Kopplung aufgehoben“) oder ihn dreimal hintereinander als unbekannt ablehnt
+
 ## 3.21.1 – 2026-11-06
 ### Behoben
 - Schlüssel ohne PC: „Speichern & testen“ war grau, ohne zu sagen warum. Sobald schon ein Schlüssel gespeichert war, fehlte das Passwortfeld ganz; jetzt ist es immer da, und unter dem Knopf steht, was noch fehlt (Schlüssel zu kurz, Passwort fehlt, Tarif nicht bestätigt)
