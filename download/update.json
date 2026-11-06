@@ -1,28 +1,26 @@
 {
-  "version": "3.14.0",
+  "version": "3.15.0",
   "date": "2026-11-06",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.14.0/PCGameLauncherCompanion.exe",
-  "size": 94928191,
-  "sha256": "63cb86db3ec7a374b86da35656008a543684c080b3ccde92e6c6dfef66c4ffa9",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.15.0/PCGameLauncherCompanion.exe",
+  "size": 94937521,
+  "sha256": "c765727bd8aba33db3920cfcf73e84793c49cb9d0ce397aa31a71863ffb3bc3b",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.14.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.14.0/PCGameLauncherCompanion-3.14.0-win-x64.zip",
-    "size": 89203651,
-    "sha256": "74d1b7d8805fad063446112a03e21f339d5ec9fc62691237a0987cbc42a1fc72"
+    "fileName": "PCGameLauncherCompanion-3.15.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.15.0/PCGameLauncherCompanion-3.15.0-win-x64.zip",
+    "size": 89212885,
+    "sha256": "8c57672212a778e5108ab39f150c4100b53db1d91dc67e869f87bfbe8ad2dcf8"
   },
-  "notes": "Websuche auch ohne PC: Mit einem eigenen kostenlosen Tavily- oder Serper-Schlüssel (Passwort-verschlüsselt auf dem Gerät, wie bei den KIs) sucht JARVIS bei Fragen zu Sport, Wetter, Nachrichten und Preisen direkt aus dem Browser und antwortet mit der KI aus den Ergebnissen; die Antwort nennt die Quellen (z. B. „Websuche: kicker.de“). Ein Entsperren öffnet KI- und Suchschlüssel zugleich · Brave Search als weiterer Suchdienst am PC – nur nach deiner ausdrücklichen Bestätigung, dass du ausschließlich die monatlichen Gratis-Credits (5 $ ≈ 1000 Suchen) nutzt und nichts auflädst; Brave verlangt dafür eine Karte zur Missbrauchs-Prüfung. Ohne Bestätigung bleibt der Schlüssel unbenutzt · SearXNG ohne Schlüssel: Adresse einer eigenen (oder vertrauenswürdigen) Instanz eintragen, die JSON-Ausgabe erlaubt – eine offizielle Suche ohne Schlüssel gibt es sonst nicht",
+  "notes": "Fußball-Ergebnisse ohne Schlüssel und ohne Suchdienst: „Wer spielt gegen Bayern als Nächstes?“, „Wie steht es gerade bei Bayern gegen Dortmund?“, „Wann spielt Leverkusen?“ beantwortet JARVIS mit Daten von OpenLigaDB (kostenlos, 1.–3. Bundesliga, DFB-Pokal, Champions League u. a.): laufendes Spiel mit Zwischenstand, nächste Spiele mit Datum und Uhrzeit, letztes Ergebnis. Das geht am PC und genauso ohne PC direkt im Browser (iPad, Handy); es genügt irgendeine der kostenlosen KIs, die Antwort nennt die Quelle („Sportdaten: OpenLigaDB“) · Nennt die Frage keine Mannschaft oder ist OpenLigaDB nicht erreichbar, läuft sie wie bisher über die Websuche; der Spielstand kann einige Minuten hinterherhinken (steht in der Antwort-Vorgabe an die KI und in den Einstellungen)",
   "changes": {
     "neu": [
-      "Websuche auch ohne PC: Mit einem eigenen kostenlosen Tavily- oder Serper-Schlüssel (Passwort-verschlüsselt auf dem Gerät, wie bei den KIs) sucht JARVIS bei Fragen zu Sport, Wetter, Nachrichten und Preisen direkt aus dem Browser und antwortet mit der KI aus den Ergebnissen; die Antwort nennt die Quellen (z. B. „Websuche: kicker.de“). Ein Entsperren öffnet KI- und Suchschlüssel zugleich",
-      "Brave Search als weiterer Suchdienst am PC – nur nach deiner ausdrücklichen Bestätigung, dass du ausschließlich die monatlichen Gratis-Credits (5 $ ≈ 1000 Suchen) nutzt und nichts auflädst; Brave verlangt dafür eine Karte zur Missbrauchs-Prüfung. Ohne Bestätigung bleibt der Schlüssel unbenutzt",
-      "SearXNG ohne Schlüssel: Adresse einer eigenen (oder vertrauenswürdigen) Instanz eintragen, die JSON-Ausgabe erlaubt – eine offizielle Suche ohne Schlüssel gibt es sonst nicht"
+      "Fußball-Ergebnisse ohne Schlüssel und ohne Suchdienst: „Wer spielt gegen Bayern als Nächstes?“, „Wie steht es gerade bei Bayern gegen Dortmund?“, „Wann spielt Leverkusen?“ beantwortet JARVIS mit Daten von OpenLigaDB (kostenlos, 1.–3. Bundesliga, DFB-Pokal, Champions League u. a.): laufendes Spiel mit Zwischenstand, nächste Spiele mit Datum und Uhrzeit, letztes Ergebnis. Das geht am PC und genauso ohne PC direkt im Browser (iPad, Handy); es genügt irgendeine der kostenlosen KIs, die Antwort nennt die Quelle („Sportdaten: OpenLigaDB“)"
     ],
     "verbessert": [
-      "Reihenfolge der Websuche: Tavily → Serper → Exa → Brave → SearXNG; Brave, Exa und SearXNG gehen nur über den PC (Brave erlaubt keine Aufrufe aus dem Browser)"
+      "Nennt die Frage keine Mannschaft oder ist OpenLigaDB nicht erreichbar, läuft sie wie bisher über die Websuche; der Spielstand kann einige Minuten hinterherhinken (steht in der Antwort-Vorgabe an die KI und in den Einstellungen)"
     ],
     "behoben": []
   },
-  "signature": "xohFZLTyjJVMH+9UBsU+I/5ovpbw26pMvFLnfSOuRVxX4eKhaKdEeyU7yi/R5ONPx5FsLXmdPCXqAjDaflflrA=="
+  "signature": "yx5lv6NYxjaB2cFoFTMDuMS4qXfp4gfykToqFp1aG+Y8+d/uIn45ZiRKOmMkKoqN6q09kbXedZmMiPtME3+0VQ=="
 }

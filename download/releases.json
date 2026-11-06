@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.15.0",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.15.0/PCGameLauncherCompanion.exe",
+    "size": 94937521,
+    "sha256": "c765727bd8aba33db3920cfcf73e84793c49cb9d0ce397aa31a71863ffb3bc3b",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.15.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.15.0/PCGameLauncherCompanion-3.15.0-win-x64.zip",
+      "size": 89212885,
+      "sha256": "8c57672212a778e5108ab39f150c4100b53db1d91dc67e869f87bfbe8ad2dcf8"
+    },
+    "notes": "Fußball-Ergebnisse ohne Schlüssel und ohne Suchdienst: „Wer spielt gegen Bayern als Nächstes?“, „Wie steht es gerade bei Bayern gegen Dortmund?“, „Wann spielt Leverkusen?“ beantwortet JARVIS mit Daten von OpenLigaDB (kostenlos, 1.–3. Bundesliga, DFB-Pokal, Champions League u. a.): laufendes Spiel mit Zwischenstand, nächste Spiele mit Datum und Uhrzeit, letztes Ergebnis. Das geht am PC und genauso ohne PC direkt im Browser (iPad, Handy); es genügt irgendeine der kostenlosen KIs, die Antwort nennt die Quelle („Sportdaten: OpenLigaDB“) · Nennt die Frage keine Mannschaft oder ist OpenLigaDB nicht erreichbar, läuft sie wie bisher über die Websuche; der Spielstand kann einige Minuten hinterherhinken (steht in der Antwort-Vorgabe an die KI und in den Einstellungen)",
+    "changes": {
+      "neu": [
+        "Fußball-Ergebnisse ohne Schlüssel und ohne Suchdienst: „Wer spielt gegen Bayern als Nächstes?“, „Wie steht es gerade bei Bayern gegen Dortmund?“, „Wann spielt Leverkusen?“ beantwortet JARVIS mit Daten von OpenLigaDB (kostenlos, 1.–3. Bundesliga, DFB-Pokal, Champions League u. a.): laufendes Spiel mit Zwischenstand, nächste Spiele mit Datum und Uhrzeit, letztes Ergebnis. Das geht am PC und genauso ohne PC direkt im Browser (iPad, Handy); es genügt irgendeine der kostenlosen KIs, die Antwort nennt die Quelle („Sportdaten: OpenLigaDB“)"
+      ],
+      "verbessert": [
+        "Nennt die Frage keine Mannschaft oder ist OpenLigaDB nicht erreichbar, läuft sie wie bisher über die Websuche; der Spielstand kann einige Minuten hinterherhinken (steht in der Antwort-Vorgabe an die KI und in den Einstellungen)"
+      ],
+      "behoben": []
+    },
+    "signature": "yx5lv6NYxjaB2cFoFTMDuMS4qXfp4gfykToqFp1aG+Y8+d/uIn45ZiRKOmMkKoqN6q09kbXedZmMiPtME3+0VQ=="
+  },
+  {
     "version": "3.14.0",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1392,35 +1418,5 @@
       ]
     },
     "signature": "17GiagpYCNaaQLrBObz2fYrUI0BOUCJrnMBP+FkXeb5vAW6uJRX3rzVVs7ihoedqu1A8+CUkt+PA0PQF964C/g=="
-  },
-  {
-    "version": "2.74.0",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.74.0/PCGameLauncherCompanion.exe",
-    "size": 88304337,
-    "sha256": "8f449d5f935658b3dd2956245ab711b3dc77dd42e4545c87a147cca38de228eb",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.74.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.74.0/PCGameLauncherCompanion-2.74.0-win-x64.zip",
-      "size": 82567797,
-      "sha256": "47d9bed5257de3c51f0247347a7c4d7ae742690dc66beb0199335a61d90f0d6f"
-    },
-    "notes": "KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten · Vorschau vor dem Speichern: Änderungen werden erst angezeigt („Design-Vorschau – noch nicht gespeichert“), dann „Übernehmen“ oder „Verwerfen“ (Leiste unten oder per Chat); „Letzte Designänderung rückgängig“ und „Ursprüngliches Design wiederherstellen“ (Chat und Einstellungen → Design) · Neue Themes: Minecraft, Purple Gaming, Blue Gaming (zusätzlich zu Neon, Minimal Dark, Cyberpunk, Schwarz-Weiß, Light Mode …)",
-    "changes": {
-      "neu": [
-        "KI-Design-Editor: JARVIS versteht Design-Wünsche in normaler Sprache und kombiniert sie – „Mach mein Dashboard etwas heller“, „Gestalte die Website im Cyberpunk-Stil“, „Minecraft-Theme mit grünen Akzenten“, „Mach das Design minimalistischer“, „dunkles Design mit lila Neon-Akzenten“, „Schaltflächen größer für mein iPad“, dazu runder/eckiger, mehr/weniger Abstand, Schatten, Rahmen, Schrift, Animationen, durchsichtigere/deckendere Karten",
-        "Vorschau vor dem Speichern: Änderungen werden erst angezeigt („Design-Vorschau – noch nicht gespeichert“), dann „Übernehmen“ oder „Verwerfen“ (Leiste unten oder per Chat); „Letzte Designänderung rückgängig“ und „Ursprüngliches Design wiederherstellen“ (Chat und Einstellungen → Design)",
-        "Neue Themes: Minecraft, Purple Gaming, Blue Gaming (zusätzlich zu Neon, Minimal Dark, Cyberpunk, Schwarz-Weiß, Light Mode …)",
-        "Einstellungen → Darstellung: Abstände (kompakt/normal/luftig), Schatten (keine/weich/kräftig), Rahmen (dezent/deutlich), große Schaltflächen für iPad/Touch"
-      ],
-      "verbessert": [
-        "Auch die bisherigen Design-Befehle („Mach das Design hell“, „Hintergrund Weltall“ …) zeigen jetzt zuerst eine Vorschau statt sofort zu speichern",
-        "Lesbarkeit geschützt: zu schwache Akzentfarben werden angepasst oder nicht übernommen (mit Hinweis); Menü, Widgets und Funktionen ändert der Design-Editor nie"
-      ],
-      "behoben": []
-    },
-    "signature": "kwbvZk3dA5oNK54ssX0qEG0ReyPN+Xajl7KruLnvXYpNoYTi2Rxwr1OBvyluQ+3ogfXRsNnkYcjkzHK3BsJL0w=="
   }
 ]
