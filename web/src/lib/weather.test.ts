@@ -1,5 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { asksWeather, describeWeather, placeFrom, weatherFor, weatherText } from "./weather";
+import { describe, expect, it, vi } from "vitest";
+const store = new Map<string, string>();
+vi.stubGlobal("localStorage", { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v), removeItem: (k: string) => void store.delete(k) });
+import { asksWeather, describeWeather, homeFrom, homePlace, setHomePlace, placeFrom, weatherFor, weatherText } from "./weather";
 
 describe("Wetter ohne Schlüssel (Open-Meteo)", () => {
   it("findet den Ort in der Frage und erkennt Wetterfragen", () => {
@@ -30,5 +32,15 @@ describe("Wetter ohne Schlüssel (Open-Meteo)", () => {
     expect(await weatherFor("Wetter in Nirgendwo", { fetcher })).toBeNull();
     expect(await weatherFor("Wann spielt Bayern in München?", { fetcher })).toBeNull();
     expect(await weatherFor("Wetter in Berlin", { fetcher: (async () => new Response("x", { status: 429 })) as unknown as typeof fetch })).toBeNull();
+  });
+  it("versteht „Ich wohne in …“ und nimmt ohne Ort in der Frage den gemerkten Wohnort", async () => {
+    expect(homeFrom("Ich wohne in Adendorf")).toBe("Adendorf"); expect(homeFrom("ich wohne in Bad Homburg.")).toBe("Bad Homburg");
+    expect(homeFrom("Merk dir, dass ich in Adendorf wohne")).toBe("Adendorf"); expect(homeFrom("Mein Wohnort ist Köln")).toBe("Köln");
+    expect(homeFrom("Wo wohnt Bayern München")).toBeNull(); expect(homeFrom("Ich wohne gern warm")).toBeNull();
+    const fetcher = (async (url: string) => new Response(JSON.stringify(url.includes("geocoding-api") ? { results: [{ name: "Adendorf", latitude: 53.2, longitude: 10.4 }] } : { current: { temperature_2m: 5, apparent_temperature: 3, weather_code: 61, wind_speed_10m: 9 }, daily: { time: ["2026-11-06"], weather_code: [61], temperature_2m_max: [6], temperature_2m_min: [2], precipitation_probability_max: [70] } }))) as unknown as typeof fetch;
+    const a = await weatherFor("Wie wird das Wetter morgen?", { fetcher, home: "Adendorf" });
+    expect(a?.fromQuestion).toBe(false); expect(a?.block).toContain("Jetzt in Adendorf");
+    expect(await weatherFor("Wie wird das Wetter morgen?", { fetcher, home: null })).toBeNull();
+    setHomePlace("Adendorf"); expect(homePlace()).toBe("Adendorf"); setHomePlace(null); expect(homePlace()).toBeNull();
   });
 });

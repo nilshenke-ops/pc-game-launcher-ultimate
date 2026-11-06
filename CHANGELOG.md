@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.19.0 – 2026-11-06
+### Neu
+- Gedächtnis für deinen Ort: „Ich wohne in Adendorf“ (oder „Mein Wohnort ist …“, „Merk dir, dass ich in … wohne“) merkt sich JARVIS; fragst du danach nach dem Wetter ohne Ort, bekommst du das Wetter von Adendorf. Fragst du zum ersten Mal nach dem Wetter in einem Ort und ist noch keiner gemerkt, übernimmt JARVIS ihn und sagt das dazu. „Wo wohne ich?“ beantwortet er auch. Am PC und ohne PC im Browser
+- „Was war meine letzte Spielzeit?“ / „Wie lange habe ich zuletzt gespielt?“ nennt jetzt die letzte Spielsitzung mit Spiel, Dauer und Startzeit (statt der Gesamtzeit)
+### Behoben
+- „Wie war das letzte Bayern-Spiel ausgegangen?“ zeigte deine eigene Spielzeit bzw. das zuletzt gespielte Spiel. Fragen zu den Spielen einer Fußballmannschaft und Wetterfragen gehen jetzt nie mehr an die PC-Antworten, sondern an OpenLigaDB bzw. Open-Meteo und die KI – „letztes Spiel“ mit Ergebnis, „nächstes Spiel“ mit Datum, laufendes Spiel mit Zwischenstand
+
 ## 3.18.0 – 2026-11-06
 ### Neu
 - Die JARVIS-Insel zeigt oben immer, welche KIs aktiv sind: je KI ein Punkt (grün = funktioniert, gelb = am Limit, rot = Problem, blau = angefangen, grau = nicht eingerichtet), darunter in welcher Reihenfolge sie antworten und was für die nächste Frage ausgewählt ist. Ist das Programm auf dem PC älter als die Seite und kennt Groq, Cerebras oder Mistral noch nicht, steht dort ein Hinweis zum Aktualisieren

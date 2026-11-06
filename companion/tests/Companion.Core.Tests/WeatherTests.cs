@@ -49,4 +49,28 @@ public class WeatherTests
         Assert.Null(await new WeatherClient(fake, "http://geo.test", "http://api.test").AskAsync("Wie wird das Wetter morgen?"));
         Assert.Null(await new WeatherClient(new Fake(_ => null), "http://geo.test", "http://api.test").AskAsync("Wetter in Berlin"));
     }
+
+    [Theory]
+    [InlineData("Ich wohne in Adendorf", "Adendorf")]
+    [InlineData("ich wohne in Bad Homburg.", "Bad Homburg")]
+    [InlineData("Merk dir, dass ich in Adendorf wohne", "Adendorf")]
+    [InlineData("Mein Wohnort ist Köln", "Köln")]
+    public void The_home_place_is_understood(string say, string place) => Assert.Equal(place, WeatherClient.HomeFrom(say));
+
+    [Theory]
+    [InlineData("Wo wohnt Bayern München")]
+    [InlineData("Ich wohne gern warm")]
+    public void Other_sentences_are_not_a_home_place(string say) => Assert.Null(WeatherClient.HomeFrom(say));
+
+    [Fact]
+    public async Task Without_a_place_in_the_question_the_home_place_is_used_and_a_named_place_wins()
+    {
+        var fake = new Fake(u => u.Contains("/v1/search") ? Geo : Forecast);
+        var w = new WeatherClient(fake, "http://geo.test", "http://api.test");
+        var a = await w.AskAsync("Wie wird das Wetter morgen?", "Berlin");
+        Assert.NotNull(a); Assert.False(a!.FromQuestion); Assert.Contains("name=Berlin", fake.Urls[0]);
+        var b = await w.AskAsync("Wie wird das Wetter morgen in Hamburg?", "Berlin");
+        Assert.True(b!.FromQuestion); Assert.Contains("name=Hamburg", fake.Urls[2]);
+        Assert.Null(await w.AskAsync("Wie wird das Wetter morgen?", null));
+    }
 }

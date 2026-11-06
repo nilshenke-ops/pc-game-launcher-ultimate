@@ -48,6 +48,8 @@ public sealed class AssistantFile
     public string BingoAi { get; set; } = "assistant";
     /// <summary>Web search key (Tavily, free plan), protected like the other keys. Never returned, never in a backup.</summary>
     public string? SearchKeyProtected { get; set; }
+    /// <summary>The person's home place: weather questions without a place use it ("Ich wohne in …" sets it; the first weather place asked is taken over, with a note).</summary>
+    public string? HomePlace { get; set; }
     /// <summary>Further web search providers (free plans, no payment method), tried in the order Tavily → Serper → Exa.</summary>
     public string? SerperKeyProtected { get; set; }
     public string? ExaKeyProtected { get; set; }
@@ -321,6 +323,14 @@ public sealed class AssistantService
         text = text.Trim();
         if (text.Length is 0 or > 2000) throw new RpcException("invalid-params", "Frage mit 1–2000 Zeichen.");
         _ask.Value = (text, jarvis, direct);
+        if (WeatherClient.HomeFrom(text) is { } home)
+        {
+            _store.Update(x => x.HomePlace = home);
+            _hub.Changed("assistant");
+            return Done(conversationId ?? Ids.New("conv"), new AssistantReply { Text = $"Alles klar, ich merke mir: Du wohnst in {home}. Fragst du nach dem Wetter ohne Ort, sage ich dir das Wetter von {home}.", Sources = { "Gedächtnis" } }, null);
+        }
+        if (Regex.IsMatch(text, @"^\s*wo\s+wohne\s+ich\b", RegexOptions.IgnoreCase))
+            return Done(conversationId ?? Ids.New("conv"), new AssistantReply { Text = _store.Snapshot().HomePlace is { } hp ? $"Du wohnst in {hp} – das habe ich mir gemerkt." : "Das weiß ich noch nicht. Sag einfach „Ich wohne in …“, dann merke ich es mir.", Sources = { "Gedächtnis" } }, null);
         if (jarvis || jarvisRequested)
         {
             // Answered without any AI call – fast, free, and the same on every mode.
@@ -345,7 +355,10 @@ public sealed class AssistantService
         // Commands and PC values never wait: they are answered before the conversation lock, so a slow AI answer in the same chat
         // (a free service can take 20 seconds or more) does not hold up "Starte …".
         AssistantReply? preLocal = null;
-        if (ResolveEngine(_store.Snapshot(), engine).mode == "smart")
+        // A question about a team's matches or about the weather is NOT a question about the PC: "Wie war das letzte Bayern-Spiel ausgegangen?" must not end up at
+        // the local answer for "last played game / play time". Those go to the live data (OpenLigaDB, Open-Meteo) and the AI.
+        var liveTopic = WeatherClient.AsksWeather(text) || (SportsClient.LooksSporty(text) && await Sports.NamesTeamAsync(text, _now(), ct));
+        if (!liveTopic && ResolveEngine(_store.Snapshot(), engine).mode == "smart")
         {
             preLocal = await Local.AnswerAsync(text);
             if (preLocal.Confident && (preLocal.Actions.Any(a => a.Kind != "navigate") || preLocal.Sources.Any(x => !x.Contains(':'))))
@@ -368,7 +381,7 @@ public sealed class AssistantService
             if (mode == "smart")
             {
                 // Commands and live values of the PC are answered right here (a game that should start, PC values …) – instant, free, exact.
-                var cmd = preLocal ?? await Local.AnswerAsync(text);
+                var cmd = liveTopic ? new AssistantReply() : preLocal ?? await Local.AnswerAsync(text);
                 if (cmd.Confident && (cmd.Actions.Any(a => a.Kind != "navigate") || cmd.Sources.Any(x => !x.Contains(':'))))
                 {
                     cmd.Sources.Add("Automatisch: Befehl oder Wert vom PC – lokal beantwortet (kostenlos)");
@@ -547,13 +560,18 @@ public sealed class AssistantService
         var anySearchKey = WebSearchClient.Providers.Any(id => SearchKeyOf(f, id) != null);
         var webKind = "Websuche";
         // Football (schedules, scores): from OpenLigaDB first – free, no key, no search service needed. Other live questions go to the web search.
-        if (needsWeb)
+        string? homeNote = null;
+        if (needsWeb || SportsClient.LooksSporty(text) || WeatherClient.AsksWeather(text))
         {
             try
             {
                 var sp = await Sports.AskAsync(text, _now(), ct);
-                if (sp != null) { webBlock = sp.Block; webSources = "OpenLigaDB"; webKind = "Sportdaten"; }
-                else if (await Weather.AskAsync(text, ct) is { } wx) { webBlock = wx.Block; webSources = "Open-Meteo"; webKind = "Wetterdaten"; }
+                if (sp != null) { webBlock = sp.Block; webSources = "OpenLigaDB"; webKind = "Sportdaten"; needsWeb = true; }
+                else if (await Weather.AskAsync(text, f.HomePlace, ct) is { } wx)
+                {
+                    webBlock = wx.Block; webSources = "Open-Meteo"; webKind = "Wetterdaten"; needsWeb = true;
+                    if (wx.FromQuestion && f.HomePlace == null) { _store.Update(x => x.HomePlace ??= wx.Place); homeNote = $"Ich merke mir {wx.Place} als deinen Ort – fragst du nach dem Wetter ohne Ort, sage ich es für {wx.Place}. („Ich wohne in …“ ändert das.)"; }
+                }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         }
@@ -594,6 +612,7 @@ public sealed class AssistantService
         {
             r.Sources.Insert(0, label);
             if (webSources != null) r.Sources.Add($"{webKind}: {webSources}");
+            if (homeNote != null) r.Sources.Add("Gedächtnis: " + homeNote);
             else if (needsWeb && !anySearchKey && webKind == "Websuche") r.Text += "\n\n(Tipp: Für aktuelle Infos wie Spielpläne oder Nachrichten richte am PC unter KI-Assistent die kostenlose Websuche ein.)";
             if (failed.Count > 0) r.Sources.Insert(1, $"Automatisch: {string.Join("; ", failed)} – deshalb antwortet {label.Replace("Beantwortet von ", "")}");
             return r;

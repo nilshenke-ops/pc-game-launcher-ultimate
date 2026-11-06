@@ -93,6 +93,9 @@ async function allTeams(f: Fetcher, now: Date, signal?: AbortSignal): Promise<Te
   return teams;
 }
 
+/** Words that make a question about a team a question about its matches. */
+export const looksSporty = (q: string) => /\b(spiel\w*|ergebnis\w*|ausgegangen|gewonnen|verloren|unentschieden|tabelle|spieltag|punkte|tore?|torsch[üu]tze|aufstellung|gegner|gegen|stand|steht|l[äa]uft|live|n[äa]chste\w*|letzte\w*|zuletzt|wann)\b/i.test(q);
+
 export interface SportsAnswer { block: string; teams: string[] }
 
 /** Facts for a question that names a team (null if it names none or OpenLigaDB cannot be reached). */

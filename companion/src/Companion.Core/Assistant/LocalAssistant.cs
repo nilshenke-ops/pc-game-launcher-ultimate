@@ -67,6 +67,14 @@ public sealed class LocalAssistant
         }
         if (Has(t, @" (welche|was fuer|meine|alle|which|my) (spiele|games|programme) ") || Has(t, @" (zeig|liste|list) (mir )?(meine |alle )?(spiele|games|bibliothek) "))
             return Library();
+        // "Was war meine letzte Spielzeit?" / "Wie lange habe ich zuletzt gespielt?" → the last session, with game and length.
+        if (Has(t, @" (letzte|letzten|letzter|letztes|zuletzt) (spielzeit|spielsitzung|sitzung|session|runde|zockrunde) ") || (Has(t, @" (wie lange|wie viel|wieviel) ") && Has(t, @" (zuletzt|letztes mal|letzte mal|letzten mal) ")))
+        {
+            var ls = _d.LastSession();
+            if (ls is not { } l) return new AssistantReply { Text = "Ich habe noch keine Spielsitzung aufgezeichnet. (Gezählt wird nur, was der PC als laufendes Spiel erkannt hat – und nur, wenn der Spielverlauf an ist.)", Actions = { _d.Navigate("/history") }, Sources = { "Gaming-Verlauf" } };
+            var when = TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(l.startUtc, DateTimeKind.Utc), TimeZoneInfo.Local).ToString("ddd, dd.MM., HH:mm", System.Globalization.CultureInfo.GetCultureInfo("de-DE"));
+            return new AssistantReply { Text = $"Deine letzte Spielsitzung: „{l.name}“ – {AssistantData.Duration(l.minutes)}{(l.running ? " (läuft noch)" : "")}, gestartet {when} Uhr.", Actions = { _d.Navigate("/history") }, Sources = { "Gaming-Verlauf" } };
+        }
         if ((Has(t, @" (spielzeit|gespielt|gezockt|played|playtime) ") || (Has(t, @" (wie lange|wie viel|wieviel|stunden) ") && Has(t, @" (spiel|spiele|spielen|zocken|zocke|game|games|play) "))) && !Has(t, @" (quest|ziel|level|xp) "))
             return PlayTime(t);
         if (Has(t, @" (level|xp|erfolg|erfolge|achievement|quest|quests|ziele|ziel) ") && !Has(t, @" (wie (lege|richte|erstelle)|anlegen|einrichten|vorschlagen|vorschlag|setzen|neues|neue|empfiehl|suggest) "))

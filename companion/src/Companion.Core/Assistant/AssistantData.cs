@@ -250,6 +250,15 @@ public sealed class AssistantData
     public AssistantAction LaunchAction(LibraryItem i, string? target = null) => new() { Kind = "launch", Label = $"{i.Name} starten", Method = "library.launch", Params = { ["id"] = i.Id }, Confirm = true, Target = target ?? i.Name };
 
     /// <summary>The game of the most recent recorded session that is still in the library.</summary>
+    /// <summary>The most recent play session (game, minutes, start; still running = true). Null without any recorded session.</summary>
+    public (string name, double minutes, DateTime startUtc, bool running)? LastSession()
+    {
+        var x = _s.History.Export().Sessions.OrderByDescending(v => v.StartedAt).FirstOrDefault();
+        if (x == null) return null;
+        var name = _s.Library.Get(x.ItemId)?.Name ?? x.Name;
+        return (name, ((x.EndedAt ?? _now()) - x.StartedAt).TotalMinutes, x.StartedAt, x.EndedAt == null);
+    }
+
     public LibraryItem? LastPlayed() => _s.History.LastPlayedIds().Select(id => _s.Library.Get(id)).FirstOrDefault(i => i is { Kind: Models.ItemKind.Game });
     public static AssistantAction SoundAction(Sound x) => new() { Kind = "sound", Label = $"„{x.Name}“ abspielen", Method = "sounds.play", Params = { ["id"] = x.Id }, Target = x.Name };
     public static AssistantAction StopSoundsAction() => new() { Kind = "stopSounds", Label = "Alle Sounds stoppen", Method = "sounds.stopAll" };

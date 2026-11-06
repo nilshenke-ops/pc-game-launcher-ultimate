@@ -127,7 +127,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     try {
       const r = await askLocalChain(v, turns.current);
       turns.current = [...turns.current, { role: "user" as const, text: v }, { role: "bot" as const, text: r.text }].slice(-8);
-      islandAnswer(r.text, true, [], "jarvis", r.provider === "pollinations" ? FREE_AI_NAME : LOCAL_NAME[r.provider]);
+      islandAnswer(r.text, true, [], "jarvis", r.provider === "pollinations" ? FREE_AI_NAME : r.provider === "local" ? "JARVIS" : LOCAL_NAME[r.provider]);
       if (consumeSpoken()) speak(r.text);
     } catch (e) { islandAnswer(friendlyError(e), false); }
     finally { islandBusy(false); }

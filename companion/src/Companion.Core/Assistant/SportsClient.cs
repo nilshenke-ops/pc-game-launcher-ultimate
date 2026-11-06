@@ -42,6 +42,17 @@ public sealed class SportsClient
         return words.Concat(Extra.TryGetValue(t.Name.ToLowerInvariant(), out var e) ? e : Array.Empty<string>()).Distinct().ToList();
     }
 
+    static readonly Regex Sporty = new(@"\b(spiel\w*|ergebnis\w*|ausgegangen|gewonnen|verloren|unentschieden|tabelle|spieltag|punkte|tore?|torsch[üu]tze|aufstellung|gegner|gegen|stand|steht|l[äa]uft|live|n[äa]chste\w*|letzte\w*|zuletzt|wann)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    /// <summary>Words that make a question about a team a question about its matches (the team itself is checked by <see cref="NamesTeamAsync"/>).</summary>
+    public static bool LooksSporty(string q) => Sporty.IsMatch(q);
+
+    /// <summary>Does the question name a team of the supported leagues? (Used to keep "Wie war das letzte Bayern-Spiel?" away from the local play-time answers.)</summary>
+    public async Task<bool> NamesTeamAsync(string question, DateTime? nowUtc = null, CancellationToken ct = default)
+    {
+        try { return TeamsInQuestion(question, await TeamsAsync(nowUtc ?? DateTime.UtcNow, ct)).Count > 0; }
+        catch (Exception e) when (e is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException or KeyNotFoundException) { return false; }
+    }
+
     /// <summary>Which teams does the question name, in the order they are named (at most two)?</summary>
     public static List<Team> TeamsInQuestion(string q, IEnumerable<Team> teams)
     {

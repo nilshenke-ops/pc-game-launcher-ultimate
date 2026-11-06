@@ -7,8 +7,8 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
-import { sportsFor } from "./sports";
-import { weatherFor } from "./weather";
+import { looksSporty, sportsFor } from "./sports";
+import { asksWeather, homeFrom, homePlace, setHomePlace, weatherFor } from "./weather";
 import { askFreeAi, buildMessages, cleanAnswer, freeAiConsent, FreeAiError, looksLikePaymentNotice, type Turn } from "./free-ai";
 
 export type LocalProvider = "openrouter" | "groq" | "cerebras" | "mistral";
@@ -252,7 +252,7 @@ export async function freeModels(p: LocalProvider, o: { fetcher?: Fetcher; signa
   return models;
 }
 
-export interface LocalAnswer { text: string; model: string; provider: LocalProvider | "pollinations"; label: string }
+export interface LocalAnswer { text: string; model: string; provider: LocalProvider | "pollinations" | "local"; label: string }
 interface Opts { fetcher?: Fetcher; signal?: AbortSignal; now?: number; onWait?: (s: number) => void }
 
 /** One question to one provider (up to three of its models, best first). */
@@ -307,14 +307,21 @@ export async function testLocal(p: LocalProvider, o: Opts = {}): Promise<{ ok: b
  */
 export async function askLocalChain(question: string, history: Turn[], o: Opts = {}): Promise<LocalAnswer> {
   const failed: string[] = [];
-  // Questions about current facts: football first from OpenLigaDB (no key, no search service needed), otherwise searched on the web when a search key is unlocked.
+  // "Ich wohne in Adendorf": remembered on this device, answered right here (no AI needed).
+  const home = homeFrom(question);
+  if (home) { setHomePlace(home); return { text: `Alles klar, ich merke mir: Du wohnst in ${home}. Fragst du nach dem Wetter ohne Ort, sage ich dir das Wetter von ${home}.`, model: "", provider: "local", label: "Gedächtnis auf diesem Gerät" }; }
+  // Questions about current facts: football first from OpenLigaDB, then the weather from Open-Meteo (both without a key), otherwise searched on the web when a search key is unlocked.
   let asked = question, via = "";
-  if (wantsLiveData(question)) {
-    const sp = await sportsFor(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if ((e as Error).message === "Abgebrochen.") throw new FreeAiError("Abgebrochen."); return null; });
-    const wx = sp ? null : await weatherFor(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if ((e as Error).message === "Abgebrochen.") throw new FreeAiError("Abgebrochen."); return null; });
+  if (wantsLiveData(question) || looksSporty(question) || asksWeather(question)) {
+    const gone = (e: unknown) => { if ((e as Error).message === "Abgebrochen.") throw new FreeAiError("Abgebrochen."); return null; };
+    const sp = await sportsFor(question, { fetcher: o.fetcher, signal: o.signal }).catch(gone);
+    const wx = sp ? null : await weatherFor(question, { fetcher: o.fetcher, signal: o.signal, home: homePlace() }).catch(gone);
     if (sp) { asked = `${sp.block}\n\nFrage: ${question}`; via = "Sportdaten: OpenLigaDB"; }
-    else if (wx) { asked = `${wx.block}\n\nFrage: ${question}`; via = "Wetterdaten: Open-Meteo"; }
-    else if (readySearch().length > 0) {
+    else if (wx) {
+      asked = `${wx.block}\n\nFrage: ${question}`; via = "Wetterdaten: Open-Meteo";
+      if (wx.fromQuestion && !homePlace()) { setHomePlace(wx.place); via += ` · Gedächtnis: ${wx.place} gemerkt als dein Ort („Ich wohne in …“ ändert das)`; }
+    }
+    else if (wantsLiveData(question) && readySearch().length > 0) {
       const w = await searchLive(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if (e instanceof FreeAiError && e.message === "Abgebrochen.") throw e; return null; });
       if (w) { asked = `${w.block}\n\nFrage: ${question}`; via = `Websuche: ${w.domains}`; }
     }
