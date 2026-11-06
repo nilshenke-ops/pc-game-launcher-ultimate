@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.18.0",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.18.0/PCGameLauncherCompanion.exe",
+    "size": 94945845,
+    "sha256": "0465d76637ecf63faabf0b966f205a4399dbc63b0cda3206e0f63a1f3982beb9",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.18.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.18.0/PCGameLauncherCompanion-3.18.0-win-x64.zip",
+      "size": 89220972,
+      "sha256": "062442a871620d8be66c722b0de201a094c0b15abac18212ebe3ada7487a4a25"
+    },
+    "notes": "Die JARVIS-Insel zeigt oben immer, welche KIs aktiv sind: je KI ein Punkt (grün = funktioniert, gelb = am Limit, rot = Problem, blau = angefangen, grau = nicht eingerichtet), darunter in welcher Reihenfolge sie antworten und was für die nächste Frage ausgewählt ist. Ist das Programm auf dem PC älter als die Seite und kennt Groq, Cerebras oder Mistral noch nicht, steht dort ein Hinweis zum Aktualisieren · JARVIS spricht natürlicher: Spielstände („2:1“ → „2 zu 1“), Grad, Prozent, km/h und Euro werden ausgesprochen, lange Antworten Satz für Satz mit kleinen Pausen (der Browser schneidet lange Texte sonst ab), etwas tiefere, ruhigere Standardstimme; die menschlichsten Stimmen des Geräts („Natural“, „Google“, „Premium“) werden weiterhin zuerst gewählt · Angemeldet bleiben: Ein einzelner fehlgeschlagener Login (anderer PC hinter der Adresse, Neustart, Relay-Aussetzer) löscht die Kopplung nicht mehr – erst der dritte in Folge. Ist ein Gerät gekoppelt, der PC aber nicht erreichbar (z. B. Tailscale aus), steht das jetzt klar da: „Du musst nicht neu koppeln“, statt nur „Offline“",
+    "changes": {
+      "neu": [
+        "Die JARVIS-Insel zeigt oben immer, welche KIs aktiv sind: je KI ein Punkt (grün = funktioniert, gelb = am Limit, rot = Problem, blau = angefangen, grau = nicht eingerichtet), darunter in welcher Reihenfolge sie antworten und was für die nächste Frage ausgewählt ist. Ist das Programm auf dem PC älter als die Seite und kennt Groq, Cerebras oder Mistral noch nicht, steht dort ein Hinweis zum Aktualisieren"
+      ],
+      "verbessert": [
+        "JARVIS spricht natürlicher: Spielstände („2:1“ → „2 zu 1“), Grad, Prozent, km/h und Euro werden ausgesprochen, lange Antworten Satz für Satz mit kleinen Pausen (der Browser schneidet lange Texte sonst ab), etwas tiefere, ruhigere Standardstimme; die menschlichsten Stimmen des Geräts („Natural“, „Google“, „Premium“) werden weiterhin zuerst gewählt",
+        "Angemeldet bleiben: Ein einzelner fehlgeschlagener Login (anderer PC hinter der Adresse, Neustart, Relay-Aussetzer) löscht die Kopplung nicht mehr – erst der dritte in Folge. Ist ein Gerät gekoppelt, der PC aber nicht erreichbar (z. B. Tailscale aus), steht das jetzt klar da: „Du musst nicht neu koppeln“, statt nur „Offline“"
+      ],
+      "behoben": []
+    },
+    "signature": "8OAjTbqDsP5XORxmUXJn7q5XLUEFYuGVnfRjXQDztm13zlpeTrGiNRvPrrVz/EIyY6Ir4rBjQp2GO3nMjlGp4Q=="
+  },
+  {
     "version": "3.17.0",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1377,34 +1404,5 @@
       ]
     },
     "signature": "Eq04V61cE6hkvV8EfG32d30VwY0JYBDZqwPftTcB/ygqoL6xcMZk0FUmlJvD0/S0VpQsKNjs44b9vN811go5rQ=="
-  },
-  {
-    "version": "2.77.0",
-    "date": "2026-10-29",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion.exe",
-    "size": 88325439,
-    "sha256": "7c667f8e6e2c8e26f003fcea4413c05196cd17203f58270c1887d91d6a3b6e53",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.77.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.77.0/PCGameLauncherCompanion-2.77.0-win-x64.zip",
-      "size": 82588353,
-      "sha256": "63988e62dc5ccdb2bbbd17b219e58381d32b91a141eb60e78d279ab9669fe305"
-    },
-    "notes": "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet · Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen · JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
-    "changes": {
-      "neu": [
-        "JARVIS schlägt nach, was ihm niemand beigebracht hat: Fragen wie „Was ist ein Creeper in Minecraft?“, „Wer ist Malenia in Elden Ring?“, „Such im Internet nach Moon Lord“ oder „Wikipedia: Hidetaka Miyazaki“ beantwortet er aus offenen Wissensquellen mit offizieller Schnittstelle – zuerst das Wiki des Spiels (Minecraft Wiki, Terraria Wiki, Stardew Valley Wiki, Elden Ring Wiki), dann Wikipedia (deutsch, dann englisch) – immer mit Quelle und Link; englische Texte werden als solche gekennzeichnet",
-        "Vorher fragen: beim ersten Mal „Darf ich im Internet nachsehen?“ mit „Ja, nachsehen“, „Ja, immer erlauben“, „Nein“; umstellbar in JARVIS → Stimme & Ton → „Unbekanntes nachschlagen“ (Vorher fragen / Immer / Nie). Gesendet wird nur der Suchbegriff, keine Suchmaschine wird ausgelesen",
-        "JARVIS lernt dazu: Nachgeschlagenes steht mit Quelle und Datum auf der Wiki-Seite „JARVIS-Wissen (nachgeschlagen)“ (änderbar, löschbar, über den PC auf alle Geräte) – bei der nächsten gleichen Frage antwortet er von dort, ohne erneut ins Internet zu gehen; „Was hast du nachgeschlagen?“",
-        "Ehrlich bei Lücken: Findet er nichts wirklich Passendes, sagt er das und notiert die Frage unter „JARVIS: offene Fragen“ – „Welche Fragen konntest du nicht beantworten?“"
-      ],
-      "verbessert": [
-        "Wissensfragen öffnen keine Seite mehr („Was ist ein Creeper in Minecraft?“ sprang zu „Welten & Bauen“) und starten nichts; passt die eingebaute App-Hilfe nicht zum Thema, schlägt JARVIS nach statt eine unpassende Antwort zu geben"
-      ],
-      "behoben": []
-    },
-    "signature": "Jk+ERij+a2IbXERClZu89YYQmJwbIFTkIQKXU8J2Du9P7uHo3tMCe5Vot6iJrJqMVMD1u2nVs7jD8Xnxb/vo1A=="
   }
 ]
