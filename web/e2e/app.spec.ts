@@ -633,12 +633,47 @@ test("Overlay wie die Game Bar: Widgets hinzufügen, entfernen, verschieben – 
   await pc.waitForTimeout(1200); // saved shortly after the last change
   await pc.reload();
   await expect(panel("Benachrichtigungen")).toBeVisible();
+  // the windows fly in (scale + move): measure only once the entrance has finished
+  await expect.poll(() => panel("Benachrichtigungen").evaluate((el) => el.getAnimations().length)).toBe(0);
+  await expect.poll(() => panel("PC-Auslastung").evaluate((el) => el.getAnimations().length)).toBe(0);
   await expect(panel("Quick Actions")).toHaveCount(0);
   const moved = (await panel("PC-Auslastung").boundingBox())!;
   expect(moved.x).toBeGreaterThan(600);
   expect(moved.y).toBeGreaterThan(350);
   expect(Math.abs((await panel("Benachrichtigungen").boundingBox())!.width - width)).toBeLessThan(3);
   await expect(pc.locator(".gb-error")).toHaveCount(0);
+  await pc.goto(`${COMPANION}/#/`);
+});
+
+test("Overlay: Aufnahme-Chip in der Leiste startet/stoppt OBS, Suche im Menü, Alle aus/ein, Einrasten", async () => {
+  await pc.goto(`${COMPANION}/#/overlay`);
+  const bar = pc.getByRole("toolbar");
+  await expect(bar.getByRole("button", { name: "Aufnahme starten" })).toBeVisible({ timeout: 15000 });
+  await bar.getByRole("button", { name: "Aufnahme starten" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(true);
+  await expect(bar.getByRole("button", { name: "Aufnahme stoppen" })).toBeVisible({ timeout: 15000 });
+  await bar.getByRole("button", { name: "Aufnahme stoppen" }).click();
+  await expect.poll(async () => (await obsState()).recording).toBe(false);
+  await expect(bar.getByRole("button", { name: "Aufnahme starten" })).toBeVisible({ timeout: 15000 });
+  // The widget menu: search narrows the list, "Alle ausblenden" / "Alle einblenden", snapping can be switched.
+  await pc.getByRole("button", { name: "Widgets" }).click();
+  const find = pc.getByRole("textbox", { name: "Widgets suchen" });
+  await find.fill("Benachricht");
+  await expect(pc.getByRole("checkbox", { name: "Benachrichtigungen" })).toBeVisible();
+  await expect(pc.getByRole("checkbox", { name: "PC-Auslastung" })).toHaveCount(0);
+  await find.fill("");
+  await expect(pc.getByRole("checkbox", { name: "PC-Auslastung" })).toBeVisible();
+  await pc.getByRole("button", { name: "Alle ausblenden" }).click();
+  await expect(pc.locator(".gb-panel-title")).toHaveCount(0);
+  await pc.getByRole("button", { name: "Alle einblenden" }).click();
+  await expect(pc.locator(".gb-panel-title").first()).toBeVisible();
+  const snapBtn = pc.getByRole("button", { name: "Einrasten" });
+  await expect(snapBtn).toHaveAttribute("aria-pressed", "true");
+  await snapBtn.click();
+  await expect(snapBtn).toHaveAttribute("aria-pressed", "false");
+  await snapBtn.click();
+  await expect(snapBtn).toHaveAttribute("aria-pressed", "true");
+  await pc.waitForTimeout(1200); // layout is saved shortly after a change
   await pc.goto(`${COMPANION}/#/`);
 });
 

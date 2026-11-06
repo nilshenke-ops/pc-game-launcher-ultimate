@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   Activity, AudioLines, Bell, Check, Coffee, Dices, Gamepad, Hash, Hourglass, Tag, Target, Trophy, Wifi, Clock, Gamepad2, Grid3x3, Headphones, LayoutGrid, ListTodo, Music, Music2, Puzzle, RotateCcw, Shapes, Star, StickyNote, Swords, Timer, Video, X, Zap,
-  AudioWaveform,
+  AudioWaveform, Eye, EyeOff, Magnet, Search as SearchIcon, LayoutTemplate,
 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -13,7 +13,7 @@ import {
   type OverlayBuiltin, type OverlayLayout, type OverlayWidgetPlace,
 } from "../lib/overlay-layout";
 import { PluginFrame } from "../components/PluginFrame";
-import { CaptureWidget, SoundboardWidget } from "../components/overlay-widgets";
+import { CaptureWidget, RecChip, SoundboardWidget } from "../components/overlay-widgets";
 import { META } from "./Dashboard";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
@@ -46,7 +46,18 @@ export default function Overlay() {
   const [view, setView] = useState({ w: window.innerWidth, h: window.innerHeight });
   const saveTimer = useRef<number | undefined>(undefined);
   const editing = useRef(false);
-  const hide = () => client.call("overlay.hide").catch(() => {});
+  const [leaving, setLeaving] = useState(false);
+  const [session, setSession] = useState(0);                 // a new number = the bar and the windows play their entrance again the next time the overlay opens
+  const [find, setFind] = useState("");
+  const [snap, setSnap] = useState(() => { try { return localStorage.getItem("pgl.gb.snap") !== "0"; } catch { return true; } });
+  const presets = useRpc<{ presets: { id: string; name: string; layout: OverlayLayout }[] }>("overlay.presets", {}, ["overlay"]);
+  const still = () => document.documentElement.dataset.motion === "reduce" || !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  // Closing plays a short exit (0.18 s) first, then the PC hides the window.
+  const hide = () => {
+    if (leaving) return;
+    setLeaving(true);
+    window.setTimeout(() => { client.call("overlay.hide").catch(() => {}).finally(() => { setLeaving(false); setMenu(false); setSession((n) => n + 1); }); }, still() ? 0 : 180);
+  };
 
   useEffect(() => {
     document.documentElement.classList.add("overlay-mode");
@@ -89,7 +100,7 @@ export default function Overlay() {
   const placed = l.widgets.filter((w) => entry(w.id));
 
   return (
-    <div className="gb-root" style={{ ["--gb-alpha" as string]: l.opacity }}
+    <div key={session} className={`gb-root${leaving ? " leaving" : ""}`} style={{ ["--gb-alpha" as string]: l.opacity }}
       onPointerDown={(e) => { if (e.target === e.currentTarget) { if (menu) setMenu(false); else hide(); } }}
       // Links inside widgets would turn the overlay into the full app – the overlay stays the overlay.
       onClickCapture={(e) => { if ((e.target as HTMLElement).closest('a[href^="#/"]')) e.preventDefault(); }}>
@@ -97,10 +108,11 @@ export default function Overlay() {
         <span className="gb-logo" aria-hidden><Gamepad2 size={18} /></span>
         <b className="gb-time">{now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</b>
         <span className="gb-sep" />
-        {placed.map((w) => {
+        <RecChip />
+        {placed.map((w, i) => {
           const e = entry(w.id)!;
           return (
-            <button key={w.id} className={`gb-icon ${w.visible ? "on" : ""}`} title={e.title} aria-label={e.title} aria-pressed={w.visible}
+            <button key={w.id} style={{ ["--i" as string]: i }} className={`gb-icon ${w.visible ? "on" : ""}`} title={e.title} aria-label={e.title} aria-pressed={w.visible}
               onClick={() => { editing.current = true; save(setVisible(l, w.id, !w.visible)); }}>{e.icon}</button>
           );
         })}
@@ -112,8 +124,10 @@ export default function Overlay() {
 
       {menu && (
         <div className="gb-menu" role="dialog" aria-label={t("Widgets")}>
+          <label className="gb-search"><SearchIcon size={14} aria-hidden />
+            <input value={find} onChange={(e) => setFind(e.target.value)} placeholder={t("Widgets suchen …")} aria-label={t("Widgets suchen")} /></label>
           <div className="gb-menu-title">{t("Widgets")}</div>
-          {catalog.map((c) => {
+          {catalog.filter((c) => !find.trim() || c.title.toLowerCase().includes(find.trim().toLowerCase())).map((c) => {
             const on = l.widgets.some((w) => w.id === c.id);
             return (
               <label key={c.id} className="gb-menu-item">
@@ -129,14 +143,34 @@ export default function Overlay() {
             <input type="range" min={50} max={100} step={5} value={Math.round(l.opacity * 100)} aria-label={t("Deckkraft")}
               onChange={(e) => { editing.current = true; save({ ...l, opacity: Number(e.target.value) / 100 }); }} />
           </label>
+          {(presets.data?.presets ?? []).length > 0 && (
+            <>
+              <div className="gb-menu-title">{t("Ansichten")}</div>
+              <div className="gb-chips">
+                {presets.data!.presets.map((p) => (
+                  <button key={p.id} className="gb-chip" title={t("„{n}“ anwenden", { n: p.name })}
+                    onClick={() => { editing.current = false; client.call<{ layout: OverlayLayout }>("overlay.applyPreset", { id: p.id }).then((r) => setLayout(layoutOrDefault(r.layout, overlayPluginWidgets(plugins.data!), view)), () => {}); }}>
+                    <LayoutTemplate size={12} /> {p.name}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+          <div className="gb-row">
+            <button className="gb-btn" onClick={() => { editing.current = true; const allOn = l.widgets.every((w) => w.visible); save({ ...l, widgets: l.widgets.map((w) => ({ ...w, visible: !allOn })) }); }}>
+              {l.widgets.every((w) => w.visible) ? <EyeOff size={14} /> : <Eye size={14} />} {l.widgets.every((w) => w.visible) ? t("Alle ausblenden") : t("Alle einblenden")}
+            </button>
+            <button className={`gb-btn gb-toggle${snap ? " on" : ""}`} aria-pressed={snap} title={t("Beim Verschieben an Raster und Rändern einrasten (Alt gedrückt halten: frei)")}
+              onClick={() => { const v = !snap; setSnap(v); try { localStorage.setItem("pgl.gb.snap", v ? "1" : "0"); } catch { /* ignore */ } }}><Magnet size={14} /> {t("Einrasten")}</button>
+          </div>
           <button className="gb-btn wide" onClick={() => { editing.current = true; save(null); }}><RotateCcw size={14} /> {t("Anordnung zurücksetzen")}</button>
           <p className="gb-muted">{t("Widgets am Titel verschieben, an der Ecke unten rechts die Größe ändern.")}</p>
         </div>
       )}
 
       {conn.auth !== "ok" && <div className="gb-panel gb-center">{t("Verbinde mit dem Begleiter …")}</div>}
-      {placed.filter((w) => w.visible).map((w) => (
-        <Panel key={w.id} place={w} view={view} entry={entry(w.id)!} z={10 + front.indexOf(w.id) + 1} onFocus={() => toFront(w.id)}
+      {placed.filter((w) => w.visible).map((w, i) => (
+        <Panel key={w.id} idx={i} snap={snap} place={w} view={view} entry={entry(w.id)!} z={10 + front.indexOf(w.id) + 1} onFocus={() => toFront(w.id)}
           onMove={(p) => { editing.current = true; save({ ...l, widgets: l.widgets.map((x) => (x.id === w.id ? p : x)) }); }}
           onClose={() => { editing.current = true; save(setVisible(l, w.id, false)); }} />
       ))}
@@ -148,10 +182,11 @@ export default function Overlay() {
 }
 
 /** A widget window: drag at the title bar, resize at the bottom-right corner. Position is kept as share of the screen. */
-function Panel({ place, view, entry, z, onFocus, onMove, onClose }: { place: OverlayWidgetPlace; view: { w: number; h: number }; entry: Entry; z: number; onFocus: () => void; onMove: (p: OverlayWidgetPlace) => void; onClose: () => void }) {
+function Panel({ idx, snap, place, view, entry, z, onFocus, onMove, onClose }: { idx: number; snap: boolean; place: OverlayWidgetPlace; view: { w: number; h: number }; entry: Entry; z: number; onFocus: () => void; onMove: (p: OverlayWidgetPlace) => void; onClose: () => void }) {
   const [live, setLive] = useState<OverlayWidgetPlace | null>(null);
+  const [dragging, setDragging] = useState(false);
   const p = live ?? place;
-  const left = Math.min(p.x * view.w, Math.max(0, view.w - 120));
+  const left = Math.max(0, Math.min(p.x * view.w, view.w - Math.min(p.w, view.w) - 8));   // always fully on the screen
   const top = Math.min(p.y * view.h, Math.max(0, view.h - 40));
 
   const drag = (mode: "move" | "size") => (e: React.PointerEvent) => {
@@ -162,10 +197,15 @@ function Panel({ place, view, entry, z, onFocus, onMove, onClose }: { place: Ove
     const panel = el.closest(".gb-panel") as HTMLElement;
     const start = { x: e.clientX, y: e.clientY, left, top, w: panel.offsetWidth, h: panel.offsetHeight };
     let last = p;
+    setDragging(true);
+    // Snap to an 8 px grid and to the screen edges (12 px pull); holding Alt moves freely.
+    const magnet = (v: number, max: number, on: boolean) => { if (!on) return v; const g = Math.round(v / 8) * 8; return g < 12 ? 0 : g > max - 12 ? max : g; };
     const onMovePtr = (ev: PointerEvent) => {
       const dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+      const on = snap && !ev.altKey;
+      const maxX = view.w - 80, maxY = view.h - 40;
       last = mode === "move"
-        ? { ...p, x: Math.max(0, Math.min(start.left + dx, view.w - 80)) / view.w, y: Math.max(0, Math.min(start.top + dy, view.h - 40)) / view.h }
+        ? { ...p, x: Math.max(0, Math.min(magnet(start.left + dx, maxX, on), maxX)) / view.w, y: Math.max(0, Math.min(magnet(start.top + dy, maxY, on), maxY)) / view.h }
         : { ...p, w: Math.round(Math.max(200, Math.min(start.w + dx, 1600))), h: Math.round(Math.max(100, Math.min(start.h + dy, 1200))) };
       setLive(last);
     };
@@ -173,7 +213,7 @@ function Panel({ place, view, entry, z, onFocus, onMove, onClose }: { place: Ove
       el.removeEventListener("pointermove", onMovePtr);
       el.removeEventListener("pointerup", onUp);
       el.removeEventListener("pointercancel", onUp);
-      setLive(null);
+      setLive(null); setDragging(false);
       onMove(last);
     };
     el.addEventListener("pointermove", onMovePtr);
@@ -182,14 +222,14 @@ function Panel({ place, view, entry, z, onFocus, onMove, onClose }: { place: Ove
   };
 
   return (
-    <section className="gb-panel" style={{ left, top, width: p.w, height: p.h || undefined, zIndex: z }} aria-label={entry.title} onPointerDownCapture={onFocus}>
+    <section className={`gb-panel${dragging ? " dragging" : ""}`} style={{ left, top, width: p.w, height: p.h || undefined, zIndex: z, ["--i" as string]: idx }} aria-label={entry.title} onPointerDownCapture={onFocus}>
       <header className="gb-panel-head" onPointerDown={drag("move")} title={t("Zum Verschieben ziehen")}>
         <span className="gb-panel-icon">{entry.icon}</span>
         <span className="gb-panel-title">{entry.title}</span>
         <button className="gb-icon sm" onPointerDown={(e) => e.stopPropagation()} onClick={onClose} aria-label={t("{w} ausblenden", { w: entry.title })}><X size={14} /></button>
       </header>
       <div className="gb-panel-body">{entry.render()}</div>
-      <span className="gb-resize" onPointerDown={drag("size")} aria-hidden title={t("Größe ändern")} />
+      <span className="gb-resize" onPointerDown={drag("size")} aria-hidden title={t("Größe ändern")}><svg width="10" height="10" viewBox="0 0 10 10"><path d="M9 3 3 9M9 6.5 6.5 9" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" fill="none" /></svg></span>
     </section>
   );
 }

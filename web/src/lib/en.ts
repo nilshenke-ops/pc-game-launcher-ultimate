@@ -6657,4 +6657,12 @@ export const en: Record<string, string> = {
   "Gesperrt heißt: der Schlüssel ist verschlüsselt, bis du dein Passwort eingibst. Passwort vergessen? Schlüssel löschen und neu eintragen.": "Locked means: the key stays encrypted until you enter your password. Forgot it? Delete the key and enter it again.",
   "Gib unten das Passwort ein, das du für die anderen Schlüssel auf diesem Gerät benutzt (mindestens 6 Zeichen).": "Enter the password below that you use for the other keys on this device (at least 6 characters).",
   "Passwort eingeben": "Enter password",
+  "Alle ausblenden": "Hide all",
+  "Alle einblenden": "Show all",
+  "Ansichten": "Views",
+  "Beim Verschieben an Raster und Rändern einrasten (Alt gedrückt halten: frei)": "Snap to the grid and screen edges while dragging (hold Alt to move freely)",
+  "Einrasten": "Snap",
+  "Widgets suchen": "Search widgets",
+  "Widgets suchen …": "Search widgets …",
+  "„{n}“ anwenden": "Apply “{n}”",
 };

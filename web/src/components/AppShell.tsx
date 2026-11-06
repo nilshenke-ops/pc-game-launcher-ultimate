@@ -132,6 +132,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => { const on = () => setScrolled(window.scrollY > 6); on(); window.addEventListener("scroll", on, { passive: true }); return () => window.removeEventListener("scroll", on); }, []);
   const loc = useLocation();
+  const [entering, setEntering] = useState(true);
+  useEffect(() => { setEntering(true); const id = window.setTimeout(() => setEntering(false), 900); return () => window.clearTimeout(id); }, [loc.pathname]);
   const conn = useConn();
   const { state } = useAppState();
   const prefs = usePrefs();
@@ -229,7 +231,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {showOutbox && <OutboxDialog onClose={() => setShowOutbox(false)} />}
         <StatusPill />
 
-        <main id="main" className={`content tx-${prefs.fx.transition.kind}`} style={{ ["--tx-ms" as string]: `${prefs.fx.transition.ms}ms` }} key={loc.pathname}>{children}</main>
+        <main id="main" className={`content tx-${prefs.fx.transition.kind}${entering ? " entering" : ""}`} style={{ ["--tx-ms" as string]: `${prefs.fx.transition.ms}ms` }} key={loc.pathname}>{children}</main>
       </div>
 
       <MemoryHint />

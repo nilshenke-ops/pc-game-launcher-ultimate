@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.23.0 – 2026-11-06
+### Neu
+- Game-Overlay im Stil der Webseite: schwebende Glas-Leiste mit runden Ecken, Farben und Schrift der App statt Game-Bar-Optik. Leiste und Fenster fahren mit Feder-Animation ein (gestaffelt), beim Schließen blenden sie kurz aus; ein Fenster hebt sich beim Verschieben leicht an. Weiterhin ohne Unschärfe und ohne Dauer-Animationen (läuft über einem Spiel) – nur der rote Aufnahmepunkt atmet, solange eine Aufnahme läuft
+- Aufnahme-Chip in der Leiste: roter Punkt und laufende Zeit, ein Tipp startet oder stoppt die Aufnahme – auch wenn das Aufnahme-Fenster ausgeblendet ist
+- Aufnahme-Fenster neu: großer Aufnahmeknopf, Zeit in großen Ziffern, Verbindungsstatus, Replay speichern und Replay-Puffer wie bisher
+- Widget-Menü: Suche, gespeicherte Ansichten (HUD-Layouts) mit einem Tipp anwenden, „Alle ausblenden/einblenden“, Schalter im App-Stil
+- Einrasten: Fenster rasten beim Verschieben an einem 8-Pixel-Raster und an den Bildschirmrändern ein (Alt gedrückt halten: frei), ein-/ausschaltbar
+### Verbessert
+- Fenster bleiben immer ganz auf dem Bildschirm (rechts abgeschnittene Fenster bei kleineren Auflösungen)
+
 ## 3.22.0 – 2026-11-06
 ### Neu
 - Neues Bewegungssystem für die ganze App: echte Federkurven mit 120 statt 37 Stützpunkten (auf 120-Hz-Bildschirmen sah man vorher die Stufen), einheitlich für Insel, Dialoge, Karten und Schalter. Nur Verschieben, Skalieren und Ausblenden – nichts, was das Layout neu berechnet
