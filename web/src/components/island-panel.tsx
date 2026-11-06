@@ -28,6 +28,7 @@ import { askFreeAi, FREE_AI_NAME, FREE_AI_NOTICE, setFreeAiConsent, useFreeAiCon
 import { readJson, writeJson } from "../lib/rpc";
 import { AiManager, hasReadyAi, type AiOverview } from "./ai-manager";
 import { AiRoster } from "./ai-roster";
+import { AiTiles } from "./ai-tiles";
 import { MessageCompose } from "./message-compose";
 import { parseMessageCommand, type Messenger } from "../lib/messaging";
 import { mainGame } from "../lib/running";
@@ -405,6 +406,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       {convo && <p className="tiny isl2-tip" role="status">{t("Gespräch läuft – sprich einfach weiter. Sag „Stopp“, damit JARVIS still ist, oder „Danke“, um zu beenden.")}</p>}
       <p className="tiny muted isl2-tip">{online ? t("Befehle („Starte WhatsApp“) erledigt der PC, Fragen beantwortet eine kostenlose KI – fällt eine aus, springt die nächste ein. Gesprochene Fragen werden laut beantwortet.") : t("Ohne PC: allgemeine Fragen beantwortet die freie KI ohne Konto (nur mit deinem Ja).")}</p>
       <AiRoster online={online} ai={aiv.data} compact selected={t(ENGINE_LABEL[engineNow] ?? "Standard")} />
+      <details className="isl2-tiles"><summary>{t("Wer ist wofür zuständig")}</summary><AiTiles online={online} ai={aiv.data} /></details>
       <details className="isl2-setup" open={online && !!aiv.data && !hasReadyAi(aiv.data)}>
         <summary>{t("KI-Verwaltung")}{hasReadyAi(aiv.data) ? ` · ${t("eingerichtet")}` : ""}</summary>
         <AiManager online={online} roster={false} onChanged={() => { ai.reload(); aiv.reload(); }} />

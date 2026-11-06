@@ -13,8 +13,8 @@ import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
 import { AiRoster } from "./ai-roster";
 import { friendlyError } from "../lib/friendly-error";
-import { setWhisperWanted, useWhisperWanted } from "../lib/island-voice";
-import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
+import { AiTiles } from "./ai-tiles";
+import { elevenKeyLooksRight, removeLocalElevenKey, saveLocalElevenKey, testLocalEleven, LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
 export interface AiProvider {
   id: string; name: string; enabled: boolean; needsKey: boolean; needsAttest?: boolean; keySet: boolean; attested: boolean; consent: boolean;
@@ -135,7 +135,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
   if (!online) {
     return (
       <div className="aim" aria-live="polite">
-        {roster && <AiRoster online={false} />}
+        {roster && <><AiTiles online={false} /><AiRoster online={false} /></>}
         <p className="tiny muted">{t("Ohne PC antworten Pollinations (ohne Konto, nur mit deinem Ja) und – wenn du unten einen Schlüssel mit Passwort einrichtest – OpenRouter, Groq, Cerebras und Mistral direkt von diesem Gerät. Ollama läuft nur auf dem PC.")}</p>
         <div className="aim-row">
           <span className="aim-name">Pollinations</span>
@@ -156,7 +156,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
         <span className="aim-cost"><ShieldCheck size={14} aria-hidden /> {t("0,00 € – nur kostenlose Modelle, kein bezahlter Ausweich, kein Aufladen")}</span>
         <p className="tiny">{o.last ? t("Zuletzt geantwortet: {n}{m} · {w}", { n: o.last.name, m: o.last.model ? ` (${o.last.model})` : "", w: o.last.at ? relTime(o.last.at) : "" }) : t("Noch keine Antwort von einer freien KI.")}</p>
       </div>
-      {roster && <AiRoster online ai={o} />}
+      {roster && <><AiTiles online ai={o} /><AiRoster online ai={o} /></>}
       <section className="aim-mode" aria-label={t("So arbeiten die KIs zusammen")}>
         <b className="aim-modetitle">{t("So arbeiten die KIs zusammen")}</b>
         <div className="aim-modes" role="radiogroup" aria-label={t("So arbeiten die KIs zusammen")}>
@@ -285,9 +285,9 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
   const [skeys, setSkeys] = useState<Record<string, string>>({});
-  const whisperOn = useWhisperWanted();
-  const anyLocked = LOCAL_PROVIDERS.some((p) => snap[p] === "locked") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "locked");
-  const anyReady = LOCAL_PROVIDERS.some((p) => snap[p] === "ready") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "ready");
+  const [ekey, setEkey] = useState("");
+  const anyLocked = snap.eleven === "locked" || LOCAL_PROVIDERS.some((p) => snap[p] === "locked") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "locked");
+  const anyReady = snap.eleven === "ready" || LOCAL_PROVIDERS.some((p) => snap[p] === "ready") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "ready");
   const run = async (id: string, fn: () => Promise<string | void>) => {
     setBusy(id); setMsg((m) => { const n = { ...m }; delete n[id]; return n; });
     try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); }
@@ -347,12 +347,30 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
           </div>
         );
       })}
-      {snap.groq === "ready" && (
-        <div className="aim-local" role="group" aria-label={t("Bessere Spracheingabe")}>
-          <Switch on={whisperOn} label={t("Bessere Spracherkennung (Whisper) mit meinem Groq-Schlüssel")} onChange={setWhisperWanted} />
-          <p className="tiny muted">{t("Statt der Browser-Erkennung nimmt JARVIS einen Satz auf und lässt ihn von Groq (Whisper, kostenloser Tarif) in Text umwandeln: genauer bei Eigennamen und Spielen und auch dort möglich, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Die Aufnahme dieses einen Satzes geht von diesem Gerät direkt an Groq (USA); gespeichert wird sie hier nicht. Nur aktiv, solange der Schlüssel entsperrt ist; die Aufnahme endet nach einer Sprechpause.")}</p>
-        </div>
-      )}
+      <div className="aim-local" role="group" aria-label={t("ElevenLabs auf diesem Gerät")}>
+        <div className="aim-row"><b className="aim-name">ElevenLabs</b>
+          <span className={`aim-badge ${snap.eleven === "ready" ? "ready" : snap.eleven === "locked" ? "cooldown" : "off"}`}>{snap.eleven === "ready" ? t("Bereit (auf diesem Gerät)") : snap.eleven === "locked" ? t("Gesperrt") : t("Nicht eingerichtet")}</span></div>
+        <p className="tiny aim-can"><b>{t("Wofür?")}</b> {t("Spracherkennung „Scribe“ (sehr genau, auch in Firefox und der iPad-App) und die natürlichste Stimme für JARVIS. Kostenlos anmelden auf elevenlabs.io (monatliches Gratis-Kontingent, kein Zahlungsmittel nötig), unter „API Keys“ einen Schlüssel erzeugen (beginnt mit „sk_“). Mit einem kostenpflichtigen Tarif kann ElevenLabs bei Überschreitung Kosten berechnen – JARVIS begrenzt deshalb die Stimme auf 15.000 Zeichen im Monat auf diesem Gerät.")}</p>
+        {(snap.eleven ?? "none") === "none" && (
+          <>
+            <Key label={t("ElevenLabs-Schlüssel")} value={ekey} set={setEkey} hint="sk_…" />
+            {!anyLocked && (
+              <label className="fas-field"><span className="tiny">{t("Neues Passwort für die Schlüssel auf diesem Gerät (mindestens 6 Zeichen)")}</span>
+                <input className="input" type="password" autoComplete="new-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort für die Schlüssel")} /></label>
+            )}
+            <div className="aim-actions"><button type="button" className="btn sm primary" disabled={!elevenKeyLooksRight(ekey.trim()) || pass.length < 6 || busy !== null}
+              onClick={() => void run("eleven", async () => { await saveLocalElevenKey(ekey, pass, { remember: keep }); setEkey(""); setPass(""); const r = await testLocalEleven(); if (!r.ok) throw new Error(r.message); return r.message; })}>
+              <KeyRound size={14} /> {busy === "eleven" ? t("Teste …") : t("Speichern & testen")}</button></div>
+          </>
+        )}
+        {snap.eleven && snap.eleven !== "none" && (
+          <div className="aim-actions">
+            {snap.eleven === "ready" && <button type="button" className="btn sm" disabled={busy !== null} onClick={() => void run("eleven", async () => { const r = await testLocalEleven(); if (!r.ok) throw new Error(r.message); return r.message; })}><PlugZap size={14} /> {busy === "eleven" ? t("Teste …") : t("Verbindung testen")}</button>}
+            <button type="button" className="btn sm" disabled={busy !== null} onClick={() => { removeLocalElevenKey(); setMsg((m) => ({ ...m, eleven: { ok: true, text: t("Schlüssel von diesem Gerät gelöscht.") } })); }}><Trash2 size={14} /> {t("Schlüssel von diesem Gerät löschen")}</button>
+          </div>
+        )}
+        {msg.eleven && <p className={`tiny ${msg.eleven.ok ? "" : "fas-err"}`} role={msg.eleven.ok ? "status" : "alert"}>{msg.eleven.text}</p>}
+      </div>
       <div className="aim-local" role="group" aria-label={t("Websuche ohne PC")}>
         <div className="aim-row"><b className="aim-name">{t("Websuche ohne PC")}</b></div>
         <p className="tiny muted">{t("Für Fragen zu Sport, Wetter oder Nachrichten („Wann spielt Bayern als Nächstes?“) sucht JARVIS auch ohne PC direkt aus dem Browser – mit deinem eigenen kostenlosen Schlüssel von Tavily oder Serper (Anleitung bei den Einstellungen am PC). Brave, Exa und SearXNG gehen nur über den PC.")}</p>

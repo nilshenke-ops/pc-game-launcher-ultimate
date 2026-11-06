@@ -98,19 +98,20 @@ export async function unlockSecret(pass: string, purpose: string, l: Locked): Pr
 // ------------------------------------------------------------------ what is stored and what is unlocked right now
 
 const STORE = "pgl.localai", SESSION = "pgl.localai.session";
-interface Stored { openrouter?: Locked; groq?: Locked; cerebras?: Locked; mistral?: Locked; attested?: Partial<Record<LocalProvider, boolean>>; groqAttested?: boolean; search?: Partial<Record<SearchProvider, Locked>> }
+interface Stored { openrouter?: Locked; groq?: Locked; cerebras?: Locked; mistral?: Locked; attested?: Partial<Record<LocalProvider, boolean>>; groqAttested?: boolean; search?: Partial<Record<SearchProvider, Locked>>; eleven?: Locked }
 /** "Free plan" confirmations; older versions stored only the one for Groq. */
 const attestedOf = (s: Stored): Record<LocalProvider, boolean> => ({ openrouter: true, groq: !!(s.attested?.groq ?? s.groqAttested), cerebras: !!s.attested?.cerebras, mistral: !!s.attested?.mistral });
 const read = (): Stored => { try { return readJson<Stored>(STORE) ?? {}; } catch { return {}; } };
 const write = (s: Stored) => { try { writeJson(STORE, s); } catch { /* storage blocked – this visit only */ } };
-const SESSION_S = "pgl.localsearch.session";
+const SESSION_S = "pgl.localsearch.session", SESSION_E = "pgl.localeleven.session";
+let unlockedEleven: string | null = (() => { try { return readJson<string>(SESSION_E, "session") ?? null; } catch { return null; } })();
 const unlockedSearch: Partial<Record<SearchProvider, string>> = (() => { try { return readJson<Partial<Record<SearchProvider, string>>>(SESSION_S, "session") ?? {}; } catch { return {}; } })();
 const unlocked: Partial<Record<LocalProvider, string>> = (() => { try { return readJson<Partial<Record<LocalProvider, string>>>(SESSION, "session") ?? {}; } catch { return {}; } })();
 
 export type LocalState = "none" | "locked" | "ready";
-export interface LocalSnap { openrouter: LocalState; groq: LocalState; cerebras: LocalState; mistral: LocalState; attested: Record<LocalProvider, boolean>; search?: Record<SearchProvider, LocalState> }
+export interface LocalSnap { openrouter: LocalState; groq: LocalState; cerebras: LocalState; mistral: LocalState; attested: Record<LocalProvider, boolean>; search?: Record<SearchProvider, LocalState>; eleven?: LocalState }
 const listeners = new Set<() => void>();
-const compute = (): LocalSnap => { const s = read(); const at = attestedOf(s); const st = (p: LocalProvider): LocalState => unlocked[p] && at[p] ? "ready" : s[p] ? "locked" : "none"; return { openrouter: st("openrouter"), groq: st("groq"), cerebras: st("cerebras"), mistral: st("mistral"), attested: at, search: { tavily: sst("tavily", s), serper: sst("serper", s) } }; };
+const compute = (): LocalSnap => { const s = read(); const at = attestedOf(s); const st = (p: LocalProvider): LocalState => unlocked[p] && at[p] ? "ready" : s[p] ? "locked" : "none"; return { openrouter: st("openrouter"), groq: st("groq"), cerebras: st("cerebras"), mistral: st("mistral"), attested: at, search: { tavily: sst("tavily", s), serper: sst("serper", s) }, eleven: unlockedEleven ? "ready" : s.eleven ? "locked" : "none" }; };
 const sst = (p: SearchProvider, s: Stored): LocalState => unlockedSearch[p] ? "ready" : s.search?.[p] ? "locked" : "none";
 let snap: LocalSnap = compute();
 const publish = () => { snap = compute(); listeners.forEach((l) => l()); };
@@ -146,7 +147,7 @@ export async function transferKeysToPc(
   return { done, failed };
 }
 
-function remember(on: boolean) { try { writeJson(SESSION, on ? unlocked : null, "session"); writeJson(SESSION_S, on ? unlockedSearch : null, "session"); } catch { /* ignore */ } }
+function remember(on: boolean) { try { writeJson(SESSION, on ? unlocked : null, "session"); writeJson(SESSION_S, on ? unlockedSearch : null, "session"); writeJson(SESSION_E, on ? unlockedEleven : null, "session"); } catch { /* ignore */ } }
 
 export async function saveLocalKey(p: LocalProvider, key: string, pass: string, o: { attested?: boolean; remember?: boolean } = {}): Promise<void> {
   if (!localAiSupported()) throw new FreeAiError("Hier ist das Verschlüsseln nicht möglich (nur auf der Website im Internet, nicht auf der http-Seite im WLAN).");
@@ -178,10 +179,15 @@ export async function unlockLocalAi(pass: string, keep = false): Promise<void> {
     if (v === null) throw new FreeAiError("Falsches Passwort.");
     unlockedSearch[sp] = v; any = true;
   }
+  if (s.eleven) {
+    const v = await unlockSecret(pass, "voice:elevenlabs", s.eleven);
+    if (v === null) throw new FreeAiError("Falsches Passwort.");
+    unlockedEleven = v; any = true;
+  }
   if (!any) throw new FreeAiError("Auf diesem Gerät ist noch kein Schlüssel gespeichert.");
   remember(keep); publish();
 }
-export function lockLocalAi() { for (const p of LOCAL_PROVIDERS) delete unlocked[p]; for (const p of SEARCH_PROVIDERS) delete unlockedSearch[p]; remember(false); publish(); }
+export function lockLocalAi() { for (const p of LOCAL_PROVIDERS) delete unlocked[p]; for (const p of SEARCH_PROVIDERS) delete unlockedSearch[p]; unlockedEleven = null; remember(false); publish(); }
 export function removeLocalKey(p: LocalProvider) {
   const s = read(); delete s[p]; if (s.attested) delete s.attested[p]; if (p === "groq") delete s.groqAttested; write(s);
   const kept = !!readJson(SESSION, "session"); delete unlocked[p];
@@ -457,4 +463,75 @@ export async function transcribeGroq(audio: Blob, lang: string, o: { fetcher?: F
   if (!res.ok) throw classify(g, res, raw);
   try { const d = JSON.parse(raw) as { text?: string; segments?: { no_speech_prob?: number }[] }; return cleanTranscript(d.text ?? "", d.segments ?? []); }
   catch { throw new LocalAiError("Groq: unerwartete Antwort der Spracherkennung.", "down"); }
+}
+
+// ------------------------------------------------------------------ ElevenLabs on this device (speech → text "Scribe" and the voice), key locked with the same password
+
+export const elevenKeyLooksRight = (key: string) => /^(sk_[a-f0-9]{30,80}|[a-f0-9]{32})$/.test(key);
+export const elevenDeviceReady = () => !!unlockedEleven;
+const ELEVEN = "https://api.elevenlabs.io";
+
+export async function saveLocalElevenKey(key: string, pass: string, o: { remember?: boolean } = {}): Promise<void> {
+  if (!localAiSupported()) throw new FreeAiError("Hier ist das Verschlüsseln nicht möglich (nur auf der Website im Internet, nicht auf der http-Seite im WLAN).");
+  const k = key.trim();
+  if (!elevenKeyLooksRight(k)) throw new FreeAiError("Das sieht nicht nach einem ElevenLabs-Schlüssel aus (er beginnt mit „sk_“).");
+  if (pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
+  const s = read();
+  const probe = LOCAL_PROVIDERS.find((x) => s[x] && unlocked[x] === undefined);
+  if (probe && (await unlockSecret(pass, probe, s[probe]!)) === null) throw new FreeAiError("Das Passwort passt nicht zu dem schon gespeicherten Schlüssel (ein Passwort für alle).");
+  s.eleven = await lockSecret(pass, "voice:elevenlabs", k);
+  write(s); unlockedEleven = k;
+  if (o.remember) remember(true);
+  publish();
+}
+export function removeLocalElevenKey() { const s = read(); delete s.eleven; write(s); unlockedEleven = null; publish(); }
+
+async function elevenCall(path: string, init: RequestInit, o: { fetcher?: Fetcher; signal?: AbortSignal; timeoutMs?: number }): Promise<Response> {
+  if (!unlockedEleven) throw new LocalAiError("ElevenLabs: Schlüssel ist gesperrt – in der KI-Verwaltung entsperren.", "key");
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), o.timeoutMs ?? 25_000);
+  o.signal?.addEventListener("abort", () => ctl.abort(), { once: true });
+  try {
+    const res = await (o.fetcher ?? fetch)(ELEVEN + path, { ...init, headers: { ...(init.headers as Record<string, string> | undefined), "xi-api-key": unlockedEleven }, signal: ctl.signal, referrerPolicy: "no-referrer", credentials: "omit" });
+    if (res.status === 401 || res.status === 403) throw new LocalAiError("ElevenLabs: Der Schlüssel wird abgelehnt.", "key");
+    if (res.status === 402 || res.status === 429) throw new LocalAiError("ElevenLabs: Das Kontingent oder die Anfragegrenze ist erreicht.", "limit", 60_000);
+    if (!res.ok) throw new LocalAiError(`ElevenLabs: Fehler ${res.status}.`, "down", 60_000);
+    return res;
+  } catch (e) {
+    if (e instanceof LocalAiError) throw e;
+    throw o.signal?.aborted ? new FreeAiError("Abgebrochen.") : new LocalAiError("ElevenLabs: nicht erreichbar (Internet prüfen).", "offline");
+  } finally { clearTimeout(timer); }
+}
+
+/** One recorded sentence → text (Scribe). Audio goes straight from this device to ElevenLabs. */
+export async function transcribeEleven(audio: Blob, lang: string, o: { fetcher?: Fetcher; signal?: AbortSignal } = {}): Promise<string> {
+  if (audio.size < 1500) return "";
+  if (audio.size > 3_000_000) throw new LocalAiError("ElevenLabs: Die Aufnahme ist zu lang.", "model");
+  const ext = /mp4|aac|m4a/.test(audio.type) ? "mp4" : /ogg/.test(audio.type) ? "ogg" : /wav/.test(audio.type) ? "wav" : "webm";
+  const form = new FormData();
+  form.append("model_id", "scribe_v1"); form.append("language_code", lang.startsWith("en") ? "eng" : "deu"); form.append("tag_audio_events", "false");
+  form.append("file", audio, `sprache.${ext}`);
+  const res = await elevenCall("/v1/speech-to-text", { method: "POST", body: form }, { ...o, timeoutMs: 30_000 });
+  try { const d = await res.json() as { text?: string }; return cleanTranscript(d.text ?? "", []); }
+  catch { throw new LocalAiError("ElevenLabs: unerwartete Antwort der Spracherkennung.", "down"); }
+}
+
+/** The voice from this device's key: text → MP3. Only ElevenLabs' stock voice "Adam" (deep, fits JARVIS); the text is short. */
+export const ELEVEN_DEFAULT_VOICE = "pNInz6obpgDQGcFmaJgB";
+export async function speakElevenDevice(text: string, o: { fetcher?: Fetcher; signal?: AbortSignal } = {}): Promise<Blob> {
+  const clean = text.trim().slice(0, 600);
+  if (!clean) throw new LocalAiError("Kein Text zum Vorlesen.", "model");
+  const res = await elevenCall(`/v1/text-to-speech/${ELEVEN_DEFAULT_VOICE}?output_format=mp3_44100_64`, { method: "POST", headers: { "content-type": "application/json", accept: "audio/mpeg" }, body: JSON.stringify({ text: clean, model_id: "eleven_multilingual_v2" }) }, o);
+  const b = await res.blob();
+  if (b.size < 200) throw new LocalAiError("ElevenLabs: keine brauchbare Sprachausgabe.", "empty");
+  return b;
+}
+
+/** A real test: the key is accepted (shows the account's subscription) – no characters are used. */
+export async function testLocalEleven(o: { fetcher?: Fetcher } = {}): Promise<{ ok: boolean; message: string }> {
+  try {
+    const res = await elevenCall("/v1/user/subscription", { method: "GET" }, o);
+    const d = await res.json().catch(() => ({})) as { tier?: string; character_count?: number; character_limit?: number };
+    const q = typeof d.character_limit === "number" ? ` – Kontingent: ${d.character_count ?? 0} von ${d.character_limit} Zeichen genutzt` : "";
+    return { ok: true, message: `Verbindung steht${d.tier ? ` (Tarif ${d.tier})` : ""}${q}.` };
+  } catch (e) { return { ok: false, message: (e as Error).message }; }
 }

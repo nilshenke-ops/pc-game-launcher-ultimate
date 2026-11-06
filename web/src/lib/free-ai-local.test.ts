@@ -5,7 +5,7 @@ const mem = () => { const m = new Map<string, string>(); return { getItem: (k: s
 const local = mem(), session = mem();
 vi.stubGlobal("window", { localStorage: local, sessionStorage: session });
 
-import { cleanTranscript, transcribeGroq, whisperKeyReady, removeLocalSearchKey, saveLocalSearchKey, searchKeyLooksRight, searchLive, readySearch, wantsLiveData, askLocal, askLocalChain, isChatModel, isFreeOpenRouter, keyLooksRight, localAiSnapshot, lockLocalAi, lockSecret, rankModel, readyProviders, removeLocalKey, resetLocalAiState, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, unlockSecret } from "./free-ai-local";
+import { elevenDeviceReady, elevenKeyLooksRight, removeLocalElevenKey, saveLocalElevenKey, speakElevenDevice, testLocalEleven, transcribeEleven, cleanTranscript, transcribeGroq, whisperKeyReady, removeLocalSearchKey, saveLocalSearchKey, searchKeyLooksRight, searchLive, readySearch, wantsLiveData, askLocal, askLocalChain, isChatModel, isFreeOpenRouter, keyLooksRight, localAiSnapshot, lockLocalAi, lockSecret, rankModel, readyProviders, removeLocalKey, resetLocalAiState, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, unlockSecret } from "./free-ai-local";
 import { resetFreeAiBudget, resetFreeAiPause, setFreeAiConsent } from "./free-ai";
 
 const OR = "sk-or-v1-0123456789abcdef0123456789", GR = "gsk_0123456789abcdef0123456789ab", CS = "csk-0123456789abcdef0123456789abcdef", MI = "AbCdEfGhIjKlMnOpQrStUvWxYz012345", PASS = "geheim-123";
@@ -27,7 +27,7 @@ function fake(handler: (c: Call) => Response | Promise<Response>) {
 
 beforeEach(() => {
   local._m.clear(); session._m.clear();
-  lockLocalAi(); removeLocalKey("openrouter"); removeLocalKey("groq"); removeLocalKey("cerebras"); removeLocalKey("mistral"); removeLocalSearchKey("tavily"); removeLocalSearchKey("serper"); resetLocalAiState(); resetFreeAiBudget(); resetFreeAiPause(); setFreeAiConsent("no");
+  lockLocalAi(); removeLocalKey("openrouter"); removeLocalKey("groq"); removeLocalKey("cerebras"); removeLocalKey("mistral"); removeLocalSearchKey("tavily"); removeLocalSearchKey("serper"); removeLocalElevenKey(); resetLocalAiState(); resetFreeAiBudget(); resetFreeAiPause(); setFreeAiConsent("no");
 });
 
 describe("Kostenregeln im Browser (wie im Begleiter)", () => {
@@ -317,5 +317,42 @@ describe("Whisper (Groq) für die Sprache", () => {
     expect(calls).toHaveLength(1);
     const limit = (async () => json({}, 429, { "retry-after": "20" })) as unknown as typeof fetch;
     await expect(transcribeGroq(new Blob([new Uint8Array(3000)], { type: "audio/webm" }), "de", { fetcher: limit })).rejects.toThrow(/Limit/);
+  });
+});
+
+describe("ElevenLabs auf dem Gerät", () => {
+  const EL = "sk_0123456789abcdef0123456789abcdef0123456789ab";
+  it("Schlüsselform, ein Passwort für alles, nur an den eigenen Host", async () => {
+    expect(elevenKeyLooksRight(EL)).toBe(true); expect(elevenKeyLooksRight(GR)).toBe(false); expect(elevenKeyLooksRight("0123456789abcdef0123456789abcdef")).toBe(true);
+    await expect(saveLocalElevenKey(GR, PASS)).rejects.toThrow(/ElevenLabs-Schlüssel/);
+    await saveLocalKey("openrouter", OR, PASS);
+    lockLocalAi();
+    await expect(saveLocalElevenKey(EL, "anderes-pw-1")).rejects.toThrow(/passt nicht/);
+    await saveLocalElevenKey(EL, PASS);
+    expect(elevenDeviceReady()).toBe(true);
+    lockLocalAi(); expect(elevenDeviceReady()).toBe(false);
+    await unlockLocalAi(PASS); expect(elevenDeviceReady()).toBe(true);                                       // one unlock opens all keys
+  });
+  it("Spracherkennung (Scribe) und Stimme gehen direkt an ElevenLabs, mit dem Schlüssel im Header und ohne Cookies", async () => {
+    await saveLocalElevenKey(EL, PASS);
+    const calls: { url: string; key: string | null; body: unknown; cred: unknown }[] = [];
+    const fetcher = (async (url: string, init?: RequestInit) => {
+      calls.push({ url, key: new Headers(init?.headers).get("xi-api-key"), body: init?.body, cred: init?.credentials });
+      if (url.includes("/speech-to-text")) return json({ text: " Starte  Among Us. " });
+      if (url.includes("/text-to-speech/")) return new Response(new Uint8Array(900), { headers: { "content-type": "audio/mpeg" } });
+      return json({ tier: "free", character_count: 120, character_limit: 10000 });
+    }) as unknown as typeof fetch;
+    expect(await transcribeEleven(new Blob([new Uint8Array(3000)], { type: "audio/webm" }), "de-DE", { fetcher })).toBe("Starte Among Us.");
+    expect((calls[0].body as FormData).get("model_id")).toBe("scribe_v1"); expect((calls[0].body as FormData).get("language_code")).toBe("deu");
+    expect(await transcribeEleven(new Blob([new Uint8Array(100)]), "de", { fetcher })).toBe("");               // too short: nothing sent
+    const b = await speakElevenDevice("Hallo Nils", { fetcher });
+    expect(b.size).toBe(900);
+    const t = await testLocalEleven({ fetcher });
+    expect(t.ok).toBe(true); expect(t.message).toContain("120 von 10000");
+    expect(calls.every((c) => c.url.startsWith("https://api.elevenlabs.io/") && c.key === EL && c.cred === "omit")).toBe(true);
+    const bad = (async () => json({}, 401)) as unknown as typeof fetch;
+    await expect(speakElevenDevice("Hallo", { fetcher: bad })).rejects.toThrow(/abgelehnt/);
+    const full = (async () => json({}, 429)) as unknown as typeof fetch;
+    await expect(transcribeEleven(new Blob([new Uint8Array(3000)], { type: "audio/webm" }), "de", { fetcher: full })).rejects.toThrow(/Kontingent/);
   });
 });

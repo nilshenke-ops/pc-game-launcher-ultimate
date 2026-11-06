@@ -2734,3 +2734,11 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .aim-chip.limit .aim-dot { background: #ffb020; opacity: 1; }
 .aim-chip.problem .aim-dot { background: #ff5a5a; opacity: 1; }
 .aim-chip.begun .aim-dot { background: #5aa9ff; opacity: 1; }
+
+.aim-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); gap: 10px; margin: 8px 0; }
+.aim-tile { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, currentColor 6%, transparent); border: 1px solid color-mix(in srgb, currentColor 14%, transparent); min-width: 0; }
+.aim-tile-head { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.aim-tile-head .aim-badge { margin-left: auto; }
+.aim-tile-parts { list-style: none; display: flex; flex-wrap: wrap; gap: 5px; margin: 0; padding: 0; }
+.aim-tile-parts .aim-chip.none { opacity: .6; }
+.aim-choice { display: flex; flex-wrap: wrap; gap: 6px; }

@@ -273,6 +273,7 @@ public static class RpcApi
         // JARVIS' voice (ElevenLabs): settings (the key only at the PC itself), the stock voices, and text → audio.
         rpc.Register("voice.status", _ => s.Voice.Status());
         rpc.Register("voice.configure", ctx => { var r = s.Voice.Configure(ctx.Bind<Assistant.VoiceService.Config>(), ctx.Session.IsLocalAdmin); s.Rpc.Changed("voice"); return r; });
+        rpc.Register("voice.transcribe", async ctx => new { text = await s.Voice.TranscribeAsync(ctx.OptStr("base64", 4_500_000), ctx.OptStr("mime", 60), ctx.OptStr("lang", 10), default) });
         rpc.Register("voice.voices", async ctx => new { voices = await s.Voice.VoicesAsync(default) });
         rpc.Register("voice.speak", async ctx => await s.Voice.SpeakAsync(ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty("text", out var tx) && tx.ValueKind == JsonValueKind.String ? tx.GetString() : null, default));
         // One tap to a second free AI (OpenRouter or Groq with the person's own free key) – the PC picks the models.

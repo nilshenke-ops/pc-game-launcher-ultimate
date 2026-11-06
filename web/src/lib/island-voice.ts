@@ -4,7 +4,9 @@
 // microphone button is active; there is no wake word and no listening in the background.
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { transcribeGroq, useLocalAi, whisperKeyReady } from "./free-ai-local";
+import { elevenDeviceReady, transcribeEleven, transcribeGroq, useLocalAi, whisperKeyReady } from "./free-ai-local";
+import { elevenPcKeySet } from "./voice-eleven";
+import { client } from "./rpc";
 
 interface Recognition {
   lang: string; interimResults: boolean; continuous: boolean; maxAlternatives: number;
@@ -20,14 +22,51 @@ const ctor = (): Ctor | null => {
 };
 export const voiceInputSupported = () => ctor() !== null;
 
-// ---- Whisper (Groq): better recognition than the browser's own, also where the browser has none (Safari home-screen apps). Optional: the audio of one
-// sentence goes from this device straight to Groq (USA) with the person's own free key – only after switching it on here.
-const WHISPER_KEY = "pgl.whisper";
+// ---- Speech → text, which engine listens. "browser" = the browser's own recognition (Chrome, Edge, Safari – not Firefox); the others record one sentence and
+// have a service turn it into text: "groq" (Whisper, own Groq key on this device), "eleven" (ElevenLabs Scribe: own key on this device, or the PC's key).
+// "auto" (default) = the browser's own where it exists, otherwise a recorded engine that is ready – so the microphone also works in Firefox and others.
+export type SttEngine = "auto" | "browser" | "groq" | "eleven";
+export type SttRoute = "browser" | "groq" | "eleven-device" | "eleven-pc";
+const STT_KEY = "pgl.sttEngine", WHISPER_KEY = "pgl.whisper";
 const wl = new Set<() => void>();
-export const whisperWanted = () => { try { return localStorage.getItem(WHISPER_KEY) === "1"; } catch { return false; } };
-export const setWhisperWanted = (on: boolean) => { try { localStorage.setItem(WHISPER_KEY, on ? "1" : "0"); } catch { /* blocked */ } wl.forEach((l) => l()); };
-export const useWhisperWanted = () => useSyncExternalStore((fn) => { wl.add(fn); return () => { wl.delete(fn); }; }, whisperWanted);
-export const whisperUsable = () => whisperWanted() && whisperKeyReady() && typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== "undefined";
+export function sttEngine(): SttEngine {
+  try {
+    const v = localStorage.getItem(STT_KEY);
+    if (v === "auto" || v === "browser" || v === "groq" || v === "eleven") return v;
+    if (localStorage.getItem(WHISPER_KEY) === "1") return "groq";            // the earlier on/off switch
+  } catch { /* blocked */ }
+  return "auto";
+}
+export const setSttEngine = (e: SttEngine) => { try { localStorage.setItem(STT_KEY, e); localStorage.removeItem(WHISPER_KEY); } catch { /* blocked */ } wl.forEach((l) => l()); };
+export const useSttEngine = () => useSyncExternalStore((fn) => { wl.add(fn); return () => { wl.delete(fn); }; }, sttEngine);
+const canRecord = () => typeof navigator !== "undefined" && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== "undefined";
+
+/** What is ready right now (for the tiles): the browser's recognition, Groq Whisper, ElevenLabs Scribe with this device's key or the PC's key. */
+export function sttReady(): { browser: boolean; groq: boolean; elevenDevice: boolean; elevenPc: boolean } {
+  const rec = canRecord();
+  return { browser: voiceInputSupported(), groq: rec && whisperKeyReady(), elevenDevice: rec && elevenDeviceReady(), elevenPc: rec && elevenPcKeySet() };
+}
+/** The way this device will really listen, or null if it cannot listen at all. */
+export function resolveStt(engine: SttEngine = sttEngine(), r = sttReady()): SttRoute | null {
+  const eleven = (): SttRoute | null => (r.elevenDevice ? "eleven-device" : r.elevenPc ? "eleven-pc" : null);
+  if (engine === "browser") return r.browser ? "browser" : null;
+  if (engine === "groq") return r.groq ? "groq" : r.browser ? "browser" : eleven();
+  if (engine === "eleven") return eleven() ?? (r.groq ? "groq" : r.browser ? "browser" : null);
+  return r.browser ? "browser" : eleven() ?? (r.groq ? "groq" : null);
+}
+export const whisperUsable = () => { const r = resolveStt(); return r !== null && r !== "browser"; };   // kept for older callers
+
+async function toBase64(b: Blob): Promise<string> {
+  const buf = new Uint8Array(await b.arrayBuffer()); let s = "";
+  for (let i = 0; i < buf.length; i += 0x8000) s += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+  return btoa(s);
+}
+async function transcribeVia(route: SttRoute, blob: Blob, lang: string): Promise<string> {
+  if (route === "groq") return transcribeGroq(blob, lang);
+  if (route === "eleven-device") return transcribeEleven(blob, lang);
+  const r = await client.call<{ text: string }>("voice.transcribe", { base64: await toBase64(blob), mime: blob.type, lang });
+  return r.text;
+}
 
 /** Voice activity: stops the recording after a pause once something was said, or when nothing is said at all. Pure, so it is tested. */
 export interface Vad { speaking: boolean; lastLoud: number; startedAt: number }
@@ -78,9 +117,10 @@ export function useVoiceInput(onFinal: (text: string) => void, onProblem?: (text
   done.current = onFinal; problem.current = onProblem; empty.current = onEmpty;
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState("");
-  useLocalAi(); useWhisperWanted();                                    // re-render when a key is (un)locked or the switch changes
-  const whisper = whisperUsable();
-  const supported = voiceInputSupported() || whisper;
+  useLocalAi(); useSttEngine();                                         // re-render when a key is (un)locked or the engine changes
+  const route = resolveStt();
+  const whisper = route !== null && route !== "browser";
+  const supported = route !== null;
 
   const startWhisper = useCallback(async () => {
     let stream: MediaStream;
@@ -106,7 +146,7 @@ export function useVoiceInput(onFinal: (text: string) => void, onProblem?: (text
       const spoke = vad.speaking; cleanup();
       if (aborted || !spoke) { if (!aborted) empty.current?.(); return; }
       try {
-        const text = await transcribeGroq(new Blob(chunks, { type: mr.mimeType || type || "audio/webm" }), document.documentElement.lang === "en" ? "en" : "de");
+        const text = await transcribeVia(resolveStt() as SttRoute, new Blob(chunks, { type: mr.mimeType || type || "audio/webm" }), document.documentElement.lang === "en" ? "en" : "de");
         if (text) done.current(text); else empty.current?.();
       } catch (e) { problem.current?.((e as Error).message || "Die Spracherkennung (Whisper) hat nicht geklappt."); }
     };
@@ -119,6 +159,7 @@ export function useVoiceInput(onFinal: (text: string) => void, onProblem?: (text
   const start = useCallback(() => {
     if (rec.current || wh.current) return;
     if (whisperUsable()) { void startWhisper(); return; }
+    if (resolveStt() === null) return;
     const C = ctor();
     if (!C) return;
     const r = new C();

@@ -29,6 +29,12 @@ export function refreshEleven(): Promise<void> {
 client.on("authenticated", () => { void refreshEleven(); });
 client.on("changed", (d) => { if ((d as { topic?: string }).topic === "voice") void refreshEleven(); });
 
+/** Is an ElevenLabs key at the PC (then the PC can also turn a recorded sentence into text for this device)? */
+export function elevenPcKeySet(): boolean {
+  if (!status) { void refreshEleven(); return false; }
+  return status.keySet && client.status.phase === "online" && client.status.auth === "ok";
+}
+
 /** Is the ElevenLabs voice switched on at the PC (and is there a PC to ask)? */
 export function elevenReady(): boolean {
   if (!status) { void refreshEleven(); return false; }
@@ -67,4 +73,17 @@ export async function speakEleven(text: string, isCurrent: () => boolean, onStar
     if (code === "voice-off") void refreshEleven();
     return false;
   }
+}
+
+/** Plays an MP3 that came from this device's own ElevenLabs key. */
+export async function playElevenBlob(blob: Blob, isCurrent: () => boolean, onStart: () => void, onEnd: () => void): Promise<boolean> {
+  if (!isCurrent()) return true;
+  stopEleven();
+  const url = URL.createObjectURL(blob);
+  const a = new Audio(url);
+  a.volume = 0.9;
+  audio = a;
+  const done = () => { if (audio === a) audio = null; URL.revokeObjectURL(url); onEnd(); };
+  a.onended = done; a.onerror = done;
+  try { await a.play(); onStart(); return true; } catch { done(); return false; }
 }

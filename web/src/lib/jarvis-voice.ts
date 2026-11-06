@@ -3,7 +3,8 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
-import { elevenReady, speakEleven, stopEleven } from "./voice-eleven";
+import { elevenReady, playElevenBlob, speakEleven, stopEleven } from "./voice-eleven";
+import { elevenDeviceReady, speakElevenDevice } from "./free-ai-local";
 
 const KEY = "pgl.jarvis.voice";
 let on = readJson<boolean>(KEY) ?? true;
@@ -63,6 +64,23 @@ function voiceFor(lang: string): SpeechSynthesisVoice | null {
   return (want ? all.find((v) => v.voiceURI === want) : null) ?? voicesFor(lang, all)[0] ?? null;
 }
 
+// ---- which voice speaks: "auto" = ElevenLabs when it is ready (at the PC, or with this device's own key), otherwise the browser voice; "browser" = never ElevenLabs.
+export type TtsEngine = "auto" | "browser" | "eleven";
+const TTS_KEY = "pgl.ttsEngine", TTS_USED = "pgl.ttsEleven";
+const TTS_MONTHLY_CHARS = 15000;                                   // this device's own cap for its own ElevenLabs key
+const tl = new Set<() => void>();
+export function ttsEngine(): TtsEngine { try { const v = localStorage.getItem(TTS_KEY); return v === "browser" || v === "eleven" ? v : "auto"; } catch { return "auto"; } }
+export const setTtsEngine = (e: TtsEngine) => { try { localStorage.setItem(TTS_KEY, e); } catch { /* blocked */ } tl.forEach((l) => l()); };
+export const useTtsEngine = () => useSyncExternalStore((fn) => { tl.add(fn); return () => { tl.delete(fn); }; }, ttsEngine);
+function deviceCharsLeft(): number {
+  const m = new Date().toISOString().slice(0, 7);
+  try { const u = JSON.parse(localStorage.getItem(TTS_USED) ?? "{}") as { m?: string; n?: number }; return TTS_MONTHLY_CHARS - (u.m === m ? u.n ?? 0 : 0); } catch { return TTS_MONTHLY_CHARS; }
+}
+function countDeviceChars(n: number) {
+  const m = new Date().toISOString().slice(0, 7);
+  try { const u = JSON.parse(localStorage.getItem(TTS_USED) ?? "{}") as { m?: string; n?: number }; localStorage.setItem(TTS_USED, JSON.stringify({ m, n: (u.m === m ? u.n ?? 0 : 0) + n })); } catch { /* blocked */ }
+}
+
 let seq = 0; // a newer request (or "stop") cancels an older one that is still waiting for ElevenLabs
 
 /** Speaks with the ElevenLabs voice when it is switched on at the PC; anything that goes wrong falls back to the browser voice. */
@@ -73,7 +91,14 @@ export function speak(text: string, lang = document.documentElement.lang === "en
   const mine = ++seq;
   stopEleven();
   if (snap.supported) window.speechSynthesis.cancel();
-  if (elevenReady()) {
+  const engine = ttsEngine();
+  if (engine !== "browser" && !elevenReady() && elevenDeviceReady() && deviceCharsLeft() >= say.length) {
+    // this device's own ElevenLabs key: text → MP3 straight from here; anything that goes wrong → the browser voice
+    void speakElevenDevice(say).then((b) => { countDeviceChars(say.length); return playElevenBlob(b, () => mine === seq, () => { speaking = true; publish(); }, () => { if (mine === seq) { speaking = false; publish(); } }); })
+      .then((ok) => { if (!ok && mine === seq) speakBrowser(say, lang); }, () => { if (mine === seq) speakBrowser(say, lang); });
+    return;
+  }
+  if (engine !== "browser" && elevenReady()) {
     void speakEleven(say, () => mine === seq, () => { speaking = true; publish(); }, () => { if (mine === seq) { speaking = false; publish(); } })
       .then((ok) => { if (!ok && mine === seq) speakBrowser(say, lang); });
     return;

@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.20.0 – 2026-11-06
+### Neu
+- Kacheln „Wer ist wofür zuständig“ in der KI-Verwaltung und im Insel-Menü: Antworten (Chat-KIs), Befehle & PC, Fußball & Wetter, Websuche, Sprache verstehen, Sprache sprechen – jede Kachel nennt, wofür sie zuständig ist, zeigt die Dienste dahinter mit Zustand (aktiv, am Limit, Problem, angefangen, nicht eingerichtet) und wie viele gerade aktiv sind
+- ElevenLabs-Schlüssel für JARVIS: am PC wie bisher (Stimme) und zusätzlich auf dem Gerät mit Passwort unter „Schlüssel ohne PC“ – dann geht die natürliche Stimme auch ohne PC (eigene Grenze: 15.000 Zeichen im Monat je Gerät, bei Fehlern spricht die Browser-Stimme), und ElevenLabs „Scribe“ versteht deine Sprache sehr genau
+- Spracherkennung klar wählbar (Kachel „Sprache verstehen“): Automatisch, Browser, Groq Whisper oder ElevenLabs Scribe – jeweils mit Anzeige, was bereit ist und was gerade wirklich zuhört. „Automatisch“ nimmt den Browser, wo es seine Erkennung gibt, und sonst Scribe/Whisper: so funktioniert das Mikrofon der Insel jetzt auch in Firefox, in Browsern ohne Spracherkennung und in der iPad-App vom Home-Bildschirm
+- Auch ohne eigenen Schlüssel am Gerät: Liegt der ElevenLabs-Schlüssel am PC, erkennt der PC die aufgenommene Sprache für Handy und iPad
+- Stimme wählbar (Kachel „Sprache sprechen“): Automatisch (ElevenLabs, wenn bereit), Browser-Stimme oder ElevenLabs
+### Verbessert
+- Der alte Schalter „Bessere Spracherkennung (Whisper)“ ist in die Kachel „Sprache verstehen“ gewandert (eine frühere Einstellung bleibt als „Groq Whisper“ erhalten)
+
 ## 3.19.0 – 2026-11-06
 ### Neu
 - Gedächtnis für deinen Ort: „Ich wohne in Adendorf“ (oder „Mein Wohnort ist …“, „Merk dir, dass ich in … wohne“) merkt sich JARVIS; fragst du danach nach dem Wetter ohne Ort, bekommst du das Wetter von Adendorf. Fragst du zum ersten Mal nach dem Wetter in einem Ort und ist noch keiner gemerkt, übernimmt JARVIS ihn und sagt das dazu. „Wo wohne ich?“ beantwortet er auch. Am PC und ohne PC im Browser

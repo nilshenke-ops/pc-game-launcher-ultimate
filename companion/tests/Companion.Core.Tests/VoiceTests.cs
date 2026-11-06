@@ -34,6 +34,8 @@ public class VoiceTests
                 } })) };
             if (r.RequestUri.AbsolutePath.StartsWith("/v1/text-to-speech/"))
                 return SpeakStatus == HttpStatusCode.OK ? new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(Mp3) } : new HttpResponseMessage(SpeakStatus) { Content = new StringContent("{}") };
+            if (r.RequestUri.AbsolutePath == "/v1/speech-to-text")
+                return new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("{\"text\":\" Starte  Among Us. \",\"language_code\":\"deu\"}") };
             return new HttpResponseMessage(HttpStatusCode.NotFound);
         }
     }
@@ -144,5 +146,22 @@ public class VoiceTests
         using var dir = new TempDir(); var v = Make(dir, new Fake());
         v.Configure(new VoiceService.Config { Key = "wrong-key-0123456789ab", VoiceId = Stock, Enabled = true }, atPc: true);
         Assert.Equal("voice-key", (await Assert.ThrowsAsync<RpcException>(() => v.VoicesAsync(default))).Code);
+    }
+
+    [Fact]
+    public async Task Speech_to_text_uses_the_key_at_the_PC_needs_no_voice_and_is_counted_and_capped()
+    {
+        using var dir = new TempDir(); var fake = new Fake(); var v = Make(dir, fake);
+        var audio = Convert.ToBase64String(new byte[4000]);
+        Assert.Equal("voice-key", (await Assert.ThrowsAsync<RpcException>(() => v.TranscribeAsync(audio, "audio/webm", "de", default))).Code);       // no key yet
+        v.Configure(new VoiceService.Config { Key = Key }, atPc: true);                                                                              // key only – no voice chosen, voice not switched on
+        Assert.Equal("Starte Among Us.", await v.TranscribeAsync(audio, "audio/webm;codecs=opus", "de-DE", default));
+        var req = fake.Requests.Single(r => r.url.EndsWith("/v1/speech-to-text"));
+        Assert.Equal(Key, req.key); Assert.Contains("scribe_v1", req.body); Assert.Contains("deu", req.body);
+        Assert.Equal("", await v.TranscribeAsync(Convert.ToBase64String(new byte[100]), "audio/webm", "de", default));                             // too short: nothing is sent
+        Assert.Single(fake.Requests, r => r.url.EndsWith("/v1/speech-to-text"));
+        Assert.Equal("invalid-params", (await Assert.ThrowsAsync<RpcException>(() => v.TranscribeAsync("###", "audio/webm", "de", default))).Code);
+        Assert.Equal("invalid-params", (await Assert.ThrowsAsync<RpcException>(() => v.TranscribeAsync(Convert.ToBase64String(new byte[VoiceService.MaxAudioInBytes + 10]), "audio/webm", "de", default))).Code);
+        Assert.Equal(1, JsonSerializer.SerializeToElement(v.Status()).GetProperty("sttUsed").GetInt32());
     }
 }

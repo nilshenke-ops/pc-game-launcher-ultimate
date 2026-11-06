@@ -8,7 +8,7 @@ using Pgl.Core.Rpc;
 
 namespace Pgl.Core.Assistant;
 
-public sealed class VoiceUsageMonth { public string Month { get; set; } = ""; public int Chars { get; set; } }
+public sealed class VoiceUsageMonth { public string Month { get; set; } = ""; public int Chars { get; set; } public int Transcriptions { get; set; } }
 
 public sealed class VoiceFile
 {
@@ -23,6 +23,8 @@ public sealed class VoiceFile
     /// <summary>At most this many characters per month are sent to ElevenLabs (protects the user's own quota).</summary>
     public int MonthlyChars { get; set; } = 20000;
     public List<VoiceUsageMonth> Usage { get; set; } = new();
+    /// <summary>At most this many spoken sentences per month are sent to ElevenLabs for speech → text (their free plan is limited).</summary>
+    public int MonthlyTranscriptions { get; set; } = 400;
 }
 
 /// <summary>
@@ -59,7 +61,7 @@ public sealed class VoiceService
     public object Status()
     {
         var f = _store.Snapshot();
-        return new { enabled = f.Enabled, keySet = f.KeyProtected != null, voiceId = f.VoiceId, voiceName = f.VoiceName, volume = f.Volume, monthlyChars = f.MonthlyChars, used = f.Usage.FirstOrDefault(u => u.Month == Month)?.Chars ?? 0 };
+        return new { enabled = f.Enabled, keySet = f.KeyProtected != null, voiceId = f.VoiceId, voiceName = f.VoiceName, volume = f.Volume, monthlyChars = f.MonthlyChars, used = f.Usage.FirstOrDefault(u => u.Month == Month)?.Chars ?? 0, sttUsed = f.Usage.FirstOrDefault(u => u.Month == Month)?.Transcriptions ?? 0, sttMonthly = f.MonthlyTranscriptions };
     }
 
     public sealed class Config { public string? Key { get; set; } public bool? Enabled { get; set; } public string? VoiceId { get; set; } public string? VoiceName { get; set; } public int? Volume { get; set; } public int? MonthlyChars { get; set; } }
@@ -166,5 +168,40 @@ public sealed class VoiceService
             u.Chars += clean.Length;
         });
         return new Speech(Convert.ToBase64String(bytes), "audio/mpeg", clean.Length, f.Volume);
+    }
+
+    public const int MaxAudioInBytes = 3_000_000;
+
+    /// <summary>Speech → text with ElevenLabs Scribe, with the key stored at the PC (so a phone or iPad without its own key can use it). One spoken sentence,
+    /// counted per month; needs only the key (the voice for speaking does not have to be chosen or switched on).</summary>
+    public async Task<string> TranscribeAsync(string? base64, string? mime, string? lang, CancellationToken ct)
+    {
+        var f = _store.Snapshot();
+        var key = Key(f);
+        if (string.IsNullOrEmpty(base64)) throw new RpcException("invalid-params", "Keine Aufnahme.");
+        byte[] audio;
+        try { audio = Convert.FromBase64String(base64); } catch (FormatException) { throw new RpcException("invalid-params", "Die Aufnahme ist beschädigt."); }
+        if (audio.Length < 1500) return "";
+        if (audio.Length > MaxAudioInBytes) throw new RpcException("invalid-params", "Die Aufnahme ist zu lang.");
+        var used = f.Usage.FirstOrDefault(u => u.Month == Month)?.Transcriptions ?? 0;
+        if (used >= f.MonthlyTranscriptions) throw new RpcException("voice-limit", $"Das Monatslimit von {f.MonthlyTranscriptions} Spracherkennungen ist erreicht.");
+        var ext = mime != null && mime.Contains("mp4") ? "mp4" : mime != null && mime.Contains("ogg") ? "ogg" : mime != null && mime.Contains("wav") ? "wav" : "webm";
+        var form = new MultipartFormDataContent
+        {
+            { new StringContent("scribe_v1"), "model_id" },
+            { new StringContent(lang != null && lang.StartsWith("en", StringComparison.OrdinalIgnoreCase) ? "eng" : "deu"), "language_code" },
+            { new StringContent("false"), "tag_audio_events" },
+            { new ByteArrayContent(audio), "file", $"sprache.{ext}" },
+        };
+        using var res = await SendAsync(HttpMethod.Post, "/v1/speech-to-text", key, form, ct);
+        using var doc = JsonDocument.Parse(await res.Content.ReadAsStringAsync(ct));
+        var text = doc.RootElement.TryGetProperty("text", out var t) && t.ValueKind == JsonValueKind.String ? t.GetString() ?? "" : "";
+        _store.Update(s =>
+        {
+            var u = s.Usage.FirstOrDefault(x => x.Month == Month);
+            if (u == null) { u = new VoiceUsageMonth { Month = Month }; s.Usage.Add(u); s.Usage = s.Usage.OrderByDescending(x => x.Month).Take(6).ToList(); }
+            u.Transcriptions++;
+        });
+        return Regex.Replace(text, @"\s+", " ").Trim()[..Math.Min(600, Regex.Replace(text, @"\s+", " ").Trim().Length)];
     }
 }

@@ -66,6 +66,7 @@
     "voice.configure": "admin",
     "voice.voices": "admin",
     "voice.speak": "view",
+    "voice.transcribe": "view",
     "assistant.ollamaModels": "admin",
     "assistant.ollamaPull": "admin",
     "assistant.ollamaPullStatus": "admin",
