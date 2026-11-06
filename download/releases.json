@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.21.1",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.1/PCGameLauncherCompanion.exe",
+    "size": 94989625,
+    "sha256": "865b85e81758990c5fa36cbb9564b63f1c666db6b52ba02b9f7cc2abeda8c635",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.21.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.1/PCGameLauncherCompanion-3.21.1-win-x64.zip",
+      "size": 89264304,
+      "sha256": "c83c233ab5cacbedbd0a4fb0782ee3d6b8c1cf7a3a7382b7c4512aea4ceebb44"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Schlüssel ohne PC: „Speichern & testen“ war grau, ohne zu sagen warum. Sobald schon ein Schlüssel gespeichert war, fehlte das Passwortfeld ganz; jetzt ist es immer da, und unter dem Knopf steht, was noch fehlt (Schlüssel zu kurz, Passwort fehlt, Tarif nicht bestätigt)",
+        "„Gesperrt“ bei einem Schlüssel (z. B. Tavily) erklärt sich jetzt selbst: Hinweis, wie man ihn mit dem Passwort entsperrt, und der Weg, ihn bei vergessenem Passwort zu löschen und neu einzutragen",
+        "ElevenLabs-Schlüssel: die Prüfung ist großzügiger, damit gültige Schlüssel nicht abgelehnt werden",
+        "Aufklappliste der KI-Auswahl war unlesbar (heller Text auf heller Liste) – Farben der Auswahllisten festgelegt",
+        "„Wer spielt morgen in der Premier League?“ wurde von einer kleinen KI mit „kein Zugriff“ beantwortet. Für Ligen und Sportarten ohne freie Datenquelle (Premier League, La Liga, Serie A, NBA, Formel 1 …) sagt JARVIS jetzt ehrlich, was fehlt und wie es geht (Websuche-Schlüssel), solange keine Websuche bereit ist",
+        "JARVIS-Insel erschien im Spiel, obwohl „Insel in Spielen“ aus war: Spiele, die nicht über den Launcher gestartet wurden (direkt aus Steam o. ä.), zählten nicht als Spiel. Jetzt gilt auch ein Vollbild-Fenster oder ein Programm aus einem Spiele-Ordner (Steam, Epic, Xbox, GOG) als Spiel; Browser und Videoplayer im Vollbild nicht"
+      ]
+    },
+    "signature": "hVoa2ddU7DIg8RapPPKgMqHaZP0kJ5sSsnpyEo+Za+3A/8Wm3M7MRGdD/65ZOUhbmnVfcumEdWoyM1c4WpwtDg=="
+  },
+  {
     "version": "3.21.0",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1378,31 +1407,5 @@
       ]
     },
     "signature": "1ThKNG+ixZSSptjlx+c8NwvhSvv0fG/mjfkEOLW3b+HYVsrfPV3sDDx1hERtXys0/jFFmyyoj/yGm+E6aTzeKg=="
-  },
-  {
-    "version": "2.81.0",
-    "date": "2026-10-29",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.81.0/PCGameLauncherCompanion.exe",
-    "size": 88348844,
-    "sha256": "f13d5fecc30667b0670e866ea66dd3ea6eb6da0e16d8c0f9f5e8b58a6c46ba31",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.81.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.81.0/PCGameLauncherCompanion-2.81.0-win-x64.zip",
-      "size": 82611491,
-      "sha256": "ee5c9b0d8c41d968964088591a6a3064435e3c24052ec86ce80ae43bdf475658"
-    },
-    "notes": "JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC · Einstellung „Antworten auf Wissensfragen“ (JARVIS → Stimme & Ton): „Aus Quellen“ (Standard; KI per Knopf), „Quellen, sonst KI“ (findet er nichts, fragt er sofort die KI am PC) und „Direkt von der KI“ (gleich die KI am PC, z. B. das kostenlose Gemini; mit Knopf „In Quellen nachsehen“) – KI-Antworten bleiben als „ohne Quelle“ markiert · Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach und sagt das",
-    "changes": {
-      "neu": [
-        "JARVIS gibt nicht mehr bei „Das weiß ich nicht“ auf: Kennt er etwas nicht – auch einen bloßen Begriff oder Spielnamen ohne Frageform („Ship or Burn“) –, schlägt er nach (Spiele-Wikis, Wikipedia, Arqade …) bzw. fragt die KI, statt nur auf die App-Hilfe zu verweisen; mit und ohne PC",
-        "Einstellung „Antworten auf Wissensfragen“ (JARVIS → Stimme & Ton): „Aus Quellen“ (Standard; KI per Knopf), „Quellen, sonst KI“ (findet er nichts, fragt er sofort die KI am PC) und „Direkt von der KI“ (gleich die KI am PC, z. B. das kostenlose Gemini; mit Knopf „In Quellen nachsehen“) – KI-Antworten bleiben als „ohne Quelle“ markiert",
-        "Ohne PC-Verbindung oder ohne eingerichtete KI sieht er in den Quellen nach und sagt das"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "M8Yrxwyq2VBlC3KfsnHpP+M5y3V7Tz6upEx5G4XUHMrhojS4kaC93jl/p/v1BTYM01l2DOQ6PDlZdYmvJj+GFw=="
   }
 ]

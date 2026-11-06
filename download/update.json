@@ -1,30 +1,29 @@
 {
-  "version": "3.21.0",
+  "version": "3.21.1",
   "date": "2026-11-06",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion.exe",
-  "size": 94986791,
-  "sha256": "e5f84ad431a077c476a9f7f6867133b200dbe18a491d526b506adf0996e2b24a",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.1/PCGameLauncherCompanion.exe",
+  "size": 94989625,
+  "sha256": "865b85e81758990c5fa36cbb9564b63f1c666db6b52ba02b9f7cc2abeda8c635",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.21.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion-3.21.0-win-x64.zip",
-    "size": 89261904,
-    "sha256": "c45c0c5b30d674c120e13a6a49053c706949194d87c0ec0bb77968d238f75167"
+    "fileName": "PCGameLauncherCompanion-3.21.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.1/PCGameLauncherCompanion-3.21.1-win-x64.zip",
+    "size": 89264304,
+    "sha256": "c83c233ab5cacbedbd0a4fb0782ee3d6b8c1cf7a3a7382b7c4512aea4ceebb44"
   },
-  "notes": "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt · „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht · Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
+  "notes": "",
   "changes": {
-    "neu": [
-      "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt",
-      "„Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht",
-      "Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
-      "Neue Seite „JARVIS MEMORY“: Verbindungsstatus, Notizzahl, zuletzt Gemerktes, Projekte, gespeicherte Informationen, Suche, Notizen anlegen, bearbeiten und löschen, Pflege-Hinweise (Doppelte, lange nicht angefasste Projekte, Lücken) im Glas-Design",
-      "Sicherheit: Der Vault wird nur über den PC-Begleiter und nur mit angemeldeter Verbindung erreicht (nie über GitHub Pages); Pfad-Tricks (.., absolute Pfade, Laufwerke, versteckte Ordner, Verknüpfungen) werden abgelehnt; Schreiben und Löschen sind einzeln abschaltbar; der Ordner wird nur am PC selbst gewählt; Löschen nie von selbst, nie endgültig (Papierkorb .trash); jede Änderung sichert die alte Fassung unter 00-System/Verlauf"
-    ],
-    "verbessert": [
-      "Ist der Vault nicht erreichbar (Laufwerk getrennt, Ordner gelöscht, PC aus), arbeitet JARVIS ohne Gedächtnis normal weiter; „Merk dir …“ und „Wo war ich …“ gehen bei eingeschaltetem Gedächtnis an den PC statt an das kleine Browser-Gedächtnis"
-    ],
-    "behoben": []
+    "neu": [],
+    "verbessert": [],
+    "behoben": [
+      "Schlüssel ohne PC: „Speichern & testen“ war grau, ohne zu sagen warum. Sobald schon ein Schlüssel gespeichert war, fehlte das Passwortfeld ganz; jetzt ist es immer da, und unter dem Knopf steht, was noch fehlt (Schlüssel zu kurz, Passwort fehlt, Tarif nicht bestätigt)",
+      "„Gesperrt“ bei einem Schlüssel (z. B. Tavily) erklärt sich jetzt selbst: Hinweis, wie man ihn mit dem Passwort entsperrt, und der Weg, ihn bei vergessenem Passwort zu löschen und neu einzutragen",
+      "ElevenLabs-Schlüssel: die Prüfung ist großzügiger, damit gültige Schlüssel nicht abgelehnt werden",
+      "Aufklappliste der KI-Auswahl war unlesbar (heller Text auf heller Liste) – Farben der Auswahllisten festgelegt",
+      "„Wer spielt morgen in der Premier League?“ wurde von einer kleinen KI mit „kein Zugriff“ beantwortet. Für Ligen und Sportarten ohne freie Datenquelle (Premier League, La Liga, Serie A, NBA, Formel 1 …) sagt JARVIS jetzt ehrlich, was fehlt und wie es geht (Websuche-Schlüssel), solange keine Websuche bereit ist",
+      "JARVIS-Insel erschien im Spiel, obwohl „Insel in Spielen“ aus war: Spiele, die nicht über den Launcher gestartet wurden (direkt aus Steam o. ä.), zählten nicht als Spiel. Jetzt gilt auch ein Vollbild-Fenster oder ein Programm aus einem Spiele-Ordner (Steam, Epic, Xbox, GOG) als Spiel; Browser und Videoplayer im Vollbild nicht"
+    ]
   },
-  "signature": "NBxQau6OZYZnb7xr5O2hHu0EttdBFoFc/WNifX/6+Z0k1IMb2mibCrd/DG1VqQdNrrEgwBR2N9RsnBu5+cl04w=="
+  "signature": "hVoa2ddU7DIg8RapPPKgMqHaZP0kJ5sSsnpyEo+Za+3A/8Wm3M7MRGdD/65ZOUhbmnVfcumEdWoyM1c4WpwtDg=="
 }
