@@ -5,7 +5,7 @@ const mem = () => { const m = new Map<string, string>(); return { getItem: (k: s
 const local = mem(), session = mem();
 vi.stubGlobal("window", { localStorage: local, sessionStorage: session });
 
-import { removeLocalSearchKey, saveLocalSearchKey, searchKeyLooksRight, searchLive, readySearch, wantsLiveData, askLocal, askLocalChain, isChatModel, isFreeOpenRouter, keyLooksRight, localAiSnapshot, lockLocalAi, lockSecret, rankModel, readyProviders, removeLocalKey, resetLocalAiState, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, unlockSecret } from "./free-ai-local";
+import { cleanTranscript, transcribeGroq, whisperKeyReady, removeLocalSearchKey, saveLocalSearchKey, searchKeyLooksRight, searchLive, readySearch, wantsLiveData, askLocal, askLocalChain, isChatModel, isFreeOpenRouter, keyLooksRight, localAiSnapshot, lockLocalAi, lockSecret, rankModel, readyProviders, removeLocalKey, resetLocalAiState, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, unlockSecret } from "./free-ai-local";
 import { resetFreeAiBudget, resetFreeAiPause, setFreeAiConsent } from "./free-ai";
 
 const OR = "sk-or-v1-0123456789abcdef0123456789", GR = "gsk_0123456789abcdef0123456789ab", CS = "csk-0123456789abcdef0123456789abcdef", MI = "AbCdEfGhIjKlMnOpQrStUvWxYz012345", PASS = "geheim-123";
@@ -290,5 +290,32 @@ describe("Websuche ohne PC", () => {
     const chat = f.calls.find((c) => c.url.includes("openrouter.ai") && c.body?.messages)!;
     expect(JSON.stringify(chat.body)).toContain("1. FSV Mainz 05 – FC Bayern München");
     expect(f.calls.filter((c) => c.url.includes("openligadb") && c.auth !== null)).toEqual([]);          // no key, no login to the sports service
+  });
+});
+
+describe("Whisper (Groq) für die Sprache", () => {
+  it("filtert erfundene Sätze bei Stille und kurzes Rauschen", () => {
+    expect(cleanTranscript("  Starte   Among Us ", [{ no_speech_prob: 0.01 }])).toBe("Starte Among Us");
+    expect(cleanTranscript("Untertitel der Amara.org-Community", [])).toBe("");
+    expect(cleanTranscript("Vielen Dank fürs Zuschauen!", [{ no_speech_prob: 0.2 }])).toBe("");
+    expect(cleanTranscript("Hallo", [{ no_speech_prob: 0.9 }, { no_speech_prob: 0.8 }])).toBe("");
+    expect(cleanTranscript("Hallo Welt", [{ no_speech_prob: 0.9 }, { no_speech_prob: 0.1 }])).toBe("Hallo Welt");
+  });
+  it("braucht den entsperrten, als kostenlos bestätigten Groq-Schlüssel und schickt ihn nur an Groq", async () => {
+    await expect(transcribeGroq(new Blob([new Uint8Array(3000)], { type: "audio/webm" }), "de")).rejects.toThrow(/gesperrt/);
+    expect(whisperKeyReady()).toBe(false);
+    await saveLocalKey("groq", GR, PASS, { attested: true });
+    expect(whisperKeyReady()).toBe(true);
+    const calls: { url: string; auth: string | null; form: FormData }[] = [];
+    const fetcher = (async (url: string, init?: RequestInit) => { calls.push({ url, auth: new Headers(init?.headers).get("authorization"), form: init!.body as FormData }); return json({ text: " Starte Among Us. ", segments: [{ no_speech_prob: 0.02 }] }); }) as unknown as typeof fetch;
+    const text = await transcribeGroq(new Blob([new Uint8Array(3000)], { type: "audio/webm;codecs=opus" }), "de-DE", { fetcher });
+    expect(text).toBe("Starte Among Us.");
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe("https://api.groq.com/openai/v1/audio/transcriptions"); expect(calls[0].auth).toBe(`Bearer ${GR}`);
+    expect(calls[0].form.get("model")).toBe("whisper-large-v3-turbo"); expect(calls[0].form.get("language")).toBe("de");
+    expect(await transcribeGroq(new Blob([new Uint8Array(100)]), "de", { fetcher })).toBe("");   // too short: nothing is sent
+    expect(calls).toHaveLength(1);
+    const limit = (async () => json({}, 429, { "retry-after": "20" })) as unknown as typeof fetch;
+    await expect(transcribeGroq(new Blob([new Uint8Array(3000)], { type: "audio/webm" }), "de", { fetcher: limit })).rejects.toThrow(/Limit/);
   });
 });

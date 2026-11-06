@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.16.0 – 2026-11-06
+### Neu
+- Bessere Spracheingabe für JARVIS (optional): Mit deinem Groq-Schlüssel auf dem Gerät (KI-Verwaltung → Schlüssel ohne PC → „Bessere Spracherkennung (Whisper)“) nimmt JARVIS einen Satz auf, die Aufnahme endet nach einer Sprechpause, und Groq (Whisper, kostenloser Tarif) macht Text daraus – genauer bei Eigennamen und Spielen und auch dort, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Der eine Satz geht direkt von deinem Gerät an Groq und wird nicht gespeichert; erfundene Sätze bei Stille („Untertitel der …“) werden verworfen. Ohne den Schalter bleibt alles wie bisher
+
 ## 3.15.0 – 2026-11-06
 ### Neu
 - Fußball-Ergebnisse ohne Schlüssel und ohne Suchdienst: „Wer spielt gegen Bayern als Nächstes?“, „Wie steht es gerade bei Bayern gegen Dortmund?“, „Wann spielt Leverkusen?“ beantwortet JARVIS mit Daten von OpenLigaDB (kostenlos, 1.–3. Bundesliga, DFB-Pokal, Champions League u. a.): laufendes Spiel mit Zwischenstand, nächste Spiele mit Datum und Uhrzeit, letztes Ergebnis. Das geht am PC und genauso ohne PC direkt im Browser (iPad, Handy); es genügt irgendeine der kostenlosen KIs, die Antwort nennt die Quelle („Sportdaten: OpenLigaDB“)

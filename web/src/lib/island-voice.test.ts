@@ -1,22 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { consumeSpoken, markSpoken, voiceErrorText, voiceInputSupported } from "./island-voice";
+import { vadStep, VAD, type Vad } from "./island-voice";
 
-describe("Sprechen mit JARVIS über die Insel", () => {
-  it("nur eine gesprochene Frage wird laut beantwortet, und nur einmal", () => {
-    expect(consumeSpoken()).toBe(false);
-    markSpoken();
-    expect(consumeSpoken()).toBe(true);
-    expect(consumeSpoken()).toBe(false);
+const run = (levels: [number, number][]) => {   // [rms, ms since start]
+  let s: Vad = { speaking: false, lastLoud: 0, startedAt: 0 };
+  for (const [rms, at] of levels) { const r = vadStep(s, rms, at); s = r.state; if (r.stop) return r.stop; }
+  return false;
+};
+
+describe("Aufnahme-Ende bei Sprechpause", () => {
+  it("hört erst nach Sprache und einer Pause auf", () => {
+    expect(run([[0.001, 200], [0.1, 600], [0.1, 1000], [0.001, 1500], [0.001, 2000]])).toBe(false);          // pause too short
+    expect(run([[0.001, 200], [0.1, 600], [0.1, 1000], [0.001, 1500], [0.001, 2000], [0.001, 2400]])).toBe("silence");
   });
-  it("Fehlertexte: Stille und Abbruch sind keine Fehler, der Rest ist verständlich", () => {
-    expect(voiceErrorText("no-speech")).toBeNull();
-    expect(voiceErrorText("aborted")).toBeNull();
-    expect(voiceErrorText("not-allowed")).toMatch(/Mikrofon/);
-    expect(voiceErrorText("audio-capture")).toMatch(/Mikrofon/);
-    expect(voiceErrorText("network")).toMatch(/nicht erreichbar/);
-    expect(voiceErrorText("xyz")).toMatch(/nicht geklappt/);
-  });
-  it("ohne Browser-Spracherkennung (Testumgebung) wird ehrlich „nicht unterstützt“ gemeldet", () => {
-    expect(voiceInputSupported()).toBe(false);
+  it("gibt auf, wenn nichts gesagt wird, und begrenzt die Länge", () => {
+    expect(run([[0.001, 1000], [0.001, 3000], [0.001, VAD.noSpeechMs + 10]])).toBe("nospeech");
+    expect(run([[0.1, 1000], [0.1, 8000], [0.1, VAD.maxMs + 10]])).toBe("max");
   });
 });

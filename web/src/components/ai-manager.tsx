@@ -13,6 +13,7 @@ import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
 import { AiRoster } from "./ai-roster";
 import { friendlyError } from "../lib/friendly-error";
+import { setWhisperWanted, useWhisperWanted } from "../lib/island-voice";
 import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
 export interface AiProvider {
@@ -284,6 +285,7 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
   const [skeys, setSkeys] = useState<Record<string, string>>({});
+  const whisperOn = useWhisperWanted();
   const anyLocked = LOCAL_PROVIDERS.some((p) => snap[p] === "locked") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "locked");
   const anyReady = LOCAL_PROVIDERS.some((p) => snap[p] === "ready") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "ready");
   const run = async (id: string, fn: () => Promise<string | void>) => {
@@ -345,6 +347,12 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
           </div>
         );
       })}
+      {snap.groq === "ready" && (
+        <div className="aim-local" role="group" aria-label={t("Bessere Spracheingabe")}>
+          <Switch on={whisperOn} label={t("Bessere Spracherkennung (Whisper) mit meinem Groq-Schlüssel")} onChange={setWhisperWanted} />
+          <p className="tiny muted">{t("Statt der Browser-Erkennung nimmt JARVIS einen Satz auf und lässt ihn von Groq (Whisper, kostenloser Tarif) in Text umwandeln: genauer bei Eigennamen und Spielen und auch dort möglich, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Die Aufnahme dieses einen Satzes geht von diesem Gerät direkt an Groq (USA); gespeichert wird sie hier nicht. Nur aktiv, solange der Schlüssel entsperrt ist; die Aufnahme endet nach einer Sprechpause.")}</p>
+        </div>
+      )}
       <div className="aim-local" role="group" aria-label={t("Websuche ohne PC")}>
         <div className="aim-row"><b className="aim-name">{t("Websuche ohne PC")}</b></div>
         <p className="tiny muted">{t("Für Fragen zu Sport, Wetter oder Nachrichten („Wann spielt Bayern als Nächstes?“) sucht JARVIS auch ohne PC direkt aus dem Browser – mit deinem eigenen kostenlosen Schlüssel von Tavily oder Serper (Anleitung bei den Einstellungen am PC). Brave, Exa und SearXNG gehen nur über den PC.")}</p>

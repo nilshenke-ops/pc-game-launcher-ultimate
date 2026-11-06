@@ -414,3 +414,37 @@ export async function testLocalSearch(p: SearchProvider, o: { fetcher?: Fetcher 
     return r ? { ok: true, message: `Verbindung steht – Suchergebnisse von ${r.domains}.` } : { ok: false, message: `${SEARCH_NAME[p]}: keine Ergebnisse (Schlüssel abgelehnt, Kontingent leer oder nicht erreichbar).` };
   } finally { Object.assign(unlockedSearch, saved); }
 }
+
+// ------------------------------------------------------------------ speech to text with Groq Whisper (optional, better than the browser's own recognition)
+
+const JUNK = /^(untertitel|untertitelung|vielen dank fürs zuschauen|danke fürs zuschauen|thank you for watching|thanks for watching|amara\.org|copyright)/i;
+/** Whisper invents sentences for silence ("Untertitel der Amara.org-Community"): drop a result when every segment is probably not speech or it is such a phrase. */
+export function cleanTranscript(text: string, segments: { no_speech_prob?: number }[] = []): string {
+  const t = text.replace(/\s+/g, " ").trim();
+  if (!t) return "";
+  if (segments.length > 0 && segments.every((x) => typeof x.no_speech_prob === "number" && x.no_speech_prob > 0.6)) return "";
+  if (t.length < 60 && JUNK.test(t)) return "";
+  return t.slice(0, 600);
+}
+/** Is an unlocked, confirmed-free Groq key on this device (the audio goes straight from here to Groq)? */
+export const whisperKeyReady = () => !!unlocked.groq && attestedOf(read()).groq;
+
+export async function transcribeGroq(audio: Blob, lang: string, o: { fetcher?: Fetcher; signal?: AbortSignal } = {}): Promise<string> {
+  const key = unlocked.groq;
+  if (!key || !attestedOf(read()).groq) throw new LocalAiError("Groq: Schlüssel ist gesperrt – in der KI-Verwaltung entsperren.", "key");
+  if (audio.size < 1500) return "";                                              // nothing but a click
+  if (audio.size > 4_000_000) throw new LocalAiError("Groq: Die Aufnahme ist zu lang.", "model");
+  const ext = /mp4|aac|m4a/.test(audio.type) ? "mp4" : /ogg/.test(audio.type) ? "ogg" : /wav/.test(audio.type) ? "wav" : "webm";
+  const form = new FormData();
+  form.append("file", audio, `sprache.${ext}`);
+  form.append("model", "whisper-large-v3-turbo");
+  form.append("language", lang.slice(0, 2));
+  form.append("response_format", "verbose_json");
+  form.append("temperature", "0");
+  const g: LocalProvider = "groq";
+  const res = await call(g, "/audio/transcriptions", { method: "POST", headers: { authorization: `Bearer ${key}` }, body: form }, { fetcher: o.fetcher, signal: o.signal, timeoutMs: 25_000 });
+  const raw = await res.text();
+  if (!res.ok) throw classify(g, res, raw);
+  try { const d = JSON.parse(raw) as { text?: string; segments?: { no_speech_prob?: number }[] }; return cleanTranscript(d.text ?? "", d.segments ?? []); }
+  catch { throw new LocalAiError("Groq: unerwartete Antwort der Spracherkennung.", "down"); }
+}
