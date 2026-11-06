@@ -37,6 +37,13 @@ const needsAttest = (p: { id: string; needsAttest?: boolean }) => p.needsAttest 
 const keyLabel = (id: string) => id === "openrouter" ? t("OpenRouter-Schlüssel") : id === "groq" ? t("Groq-Schlüssel") : id === "cerebras" ? t("Cerebras-Schlüssel") : t("Mistral-Schlüssel");
 const attestText = (name: string) => t("Ich bestätige: Mein {n}-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.", { n: name });
 
+/** What each AI is good for – shown at every key, short and honest. */
+export const CAN: Record<string, string> = {
+  openrouter: "Kann: Fragen, Erklärungen, Texte, Übersetzen, Rechnen – ein Router wählt selbst ein freies Modell, meist gute Qualität, aber mal langsam. Wählen als Allrounder. Weiß nichts Aktuelles (Sport, Nachrichten) ohne Websuche.",
+  groq: "Kann: Fragen, Erklärungen, Zusammenfassungen – sehr schnell, dazu große Modelle (Llama, GPT-OSS). Wählen, wenn du schnelle Antworten willst. Weiß nichts Aktuelles (Sport, Nachrichten) ohne Websuche.",
+  cerebras: "Kann: Fragen, Erklärungen, Kurztexte – die schnellste der Gratis-KIs, mit kleinerem Tageskontingent. Gut als zweite Wahl für schnelle Antworten. Weiß nichts Aktuelles (Sport, Nachrichten) ohne Websuche.",
+  mistral: "Kann: Fragen, Texte, Übersetzen – stark in Deutsch und Europa-Themen, das große Modell schreibt am besten. Wählen für längere, gut formulierte Antworten. Weiß nichts Aktuelles (Sport, Nachrichten) ohne Websuche.",
+};
 const STEPS: Record<string, { url?: string; urlLabel?: string; steps: string[]; hint?: string }> = {
   openrouter: { url: OPENROUTER_KEYS_URL, urlLabel: "openrouter.ai/keys", hint: "sk-or-…", steps: [
     "Öffne openrouter.ai/keys und melde dich an (kostenlos, kein Zahlungsmittel nötig).",
@@ -173,6 +180,9 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
           </div>
         )}
         {msg.strategy && !msg.strategy.ok && <p className="tiny fas-err" role="alert">{msg.strategy.text}</p>}
+        <details className="tiny aim-can"><summary>{t("Welche KI soll ich nutzen?")}</summary>
+          <p>{t("Für den Anfang reichen zwei: eine schnelle (Groq oder Cerebras) und ein Allrounder (OpenRouter oder Mistral) – fällt eine aus, springt die nächste ein. Pollinations braucht kein Konto, ist aber langsam (etwa eine Antwort pro 45 Sekunden). Ollama läuft nur am PC, ohne Internet und privat. Für Sport und Nachrichten („Wer spielt gegen Bayern als Nächstes?“) brauchst du zusätzlich eine Websuche – siehe „Websuche für aktuelle Fragen“ in den Einstellungen.")}</p>
+        </details>
         <div className="aim-quick" role="group" aria-label={t("Schnell ein- und ausschalten")}>
           {o.providers.filter((p) => p.needsKey).map((p) => (
             <button key={p.id} type="button" disabled={!canManage || busy !== null} aria-pressed={p.enabled && p.state !== "setup"}
@@ -213,6 +223,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
               <summary>{p.id === "ollama" ? t("Details") : p.keySet || p.consent ? t("Einstellungen & Test") : t("Einrichten")}</summary>
               {canManage && guide && (
                 <>
+                  {CAN[p.id] && <p className="tiny aim-can"><b>{t("Wofür?")}</b> {t(CAN[p.id])}</p>}
                   <ol className="tiny">
                     {guide.steps.map((s) => <li key={s}>{t(s)}</li>)}
                   </ol>
@@ -307,6 +318,7 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
               <span className={`aim-badge ${st === "ready" ? "ready" : st === "locked" ? "cooldown" : "off"}`}>{st === "ready" ? t("Bereit (auf diesem Gerät)") : st === "locked" ? t("Gesperrt") : t("Nicht eingerichtet")}</span></div>
             {st === "none" && guide && (
               <>
+                {CAN[p] && <p className="tiny aim-can"><b>{t("Wofür?")}</b> {t(CAN[p])}</p>}
                 <ol className="tiny">{guide.steps.map((x) => <li key={x}>{t(x)}</li>)}</ol>
                 <p className="tiny"><a href={guide.url} target="_blank" rel="noopener noreferrer">{guide.urlLabel}</a></p>
                 {needsAttestation(p) && <label className="aim-check"><input type="checkbox" checked={attest[p]} onChange={(e) => setAttest((a) => ({ ...a, [p]: e.target.checked }))} /><span className="tiny">{attestText(LOCAL_NAME[p])}</span></label>}

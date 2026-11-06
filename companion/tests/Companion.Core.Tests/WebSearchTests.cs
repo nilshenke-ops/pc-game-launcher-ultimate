@@ -20,6 +20,9 @@ public class WebSearchTests
 
     [Theory]
     [InlineData("Wann spielt der FC Bayern als nächstes?", true)]
+    [InlineData("Wer spielt gegen Bayern nächstes Spiel?", true)]
+    [InlineData("Wie steht es gerade bei Bayern gegen Dortmund?", true)]
+    [InlineData("Wie ist der Spielstand Bayern gegen Dortmund?", true)]
     [InlineData("Was kostet Elden Ring aktuell?", true)]
     [InlineData("Wie ist das Wetter morgen in Berlin", true)]
     [InlineData("Wann erscheint GTA 6?", true)]

@@ -48,7 +48,7 @@ public sealed class WebSearchClient
     };
 
     static readonly Regex Live = new(
-        @"\b(heute|morgen|gestern|aktuell\w*|neueste\w*|neuste\w*|derzeit|momentan|gerade|live|jetzt)\b|\bn[aä]chste[nrms]?\b|\bletzte[nrms]?\s+(spiel|ergebnis|match|update|patch|news)\w*|spielplan|\bergebnis\w*|\btabelle\b|\bwetter\b|\bnachrichten\b|\bnews\b|\bkurs\b|\bpreis\w*\b|\bwann\s+(spielt|kommt|erscheint|startet|ist|findet)\b|\bwer\s+(gewinnt|hat\s+gewonnen)\b|\b(20(2[5-9]|3\d))\b|\bpatch\s*notes?\b|\brelease\w*\b|\bturnier\w*\b",
+        @"\b(heute|morgen|gestern|aktuell\w*|neueste\w*|neuste\w*|derzeit|momentan|gerade|live|jetzt)\b|\bn[aä]chste[nrms]?\b|\bletzte[nrms]?\s+(spiel|ergebnis|match|update|patch|news)\w*|spielplan|spielstand|\bstand\s+(bei|von|zwischen)\b|\bwie\s+steht\s+es\b|\bwer\s+spielt\s+gegen\b|\bergebnis\w*|\btabelle\b|\bwetter\b|\bnachrichten\b|\bnews\b|\bkurs\b|\bpreis\w*\b|\bwann\s+(spielt|kommt|erscheint|startet|ist|findet)\b|\bwer\s+(gewinnt|hat\s+gewonnen)\b|\b(20(2[5-9]|3\d))\b|\bpatch\s*notes?\b|\brelease\w*\b|\bturnier\w*\b",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
 
     /// <summary>Does the question need current facts? (Not for opinions, how-tos or app questions: the AI answers those itself.)</summary>

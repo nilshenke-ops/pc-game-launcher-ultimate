@@ -154,10 +154,10 @@ function BingoAiCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: 
 }
 
 /** Live facts for questions the AIs cannot know (schedules, news, weather, prices): own key of one or more search services with a free plan and no card, entered at the PC only. */
-const SEARCH_GUIDE: Record<string, { url: string; label: string; hint: string; field: string; keyProp: string; step: string }> = {
-  tavily: { url: "https://tavily.com", label: "tavily.com", hint: "tvly-…", field: "searchKey", keyProp: "searchKey", step: "Tavily: kostenlos anmelden, 1000 Suchen im Monat gratis, kein Zahlungsmittel. Unter „API Keys“ den Schlüssel kopieren (beginnt mit „tvly-“)." },
-  serper: { url: "https://serper.dev", label: "serper.dev", hint: t("40 Zeichen"), field: "serperKey", keyProp: "serperKey", step: "Serper (Google-Ergebnisse): kostenlos anmelden, 2500 Suchen gratis einmalig, kein Zahlungsmittel. Unter „API Key“ den Schlüssel kopieren." },
-  exa: { url: "https://dashboard.exa.ai", label: "dashboard.exa.ai", hint: "01234567-89ab-…", field: "exaKey", keyProp: "exaKey", step: "Exa: kostenlos anmelden, ein monatliches Gratis-Guthaben, kein Zahlungsmittel nötig. Unter „API Keys“ den Schlüssel kopieren (eine lange Kennung mit Bindestrichen)." },
+const SEARCH_GUIDE: Record<string, { url: string; label: string; hint: string; field: string; keyProp: string; step: string; can: string }> = {
+  tavily: { url: "https://tavily.com", label: "tavily.com", hint: "tvly-…", field: "searchKey", keyProp: "searchKey", step: "Tavily: kostenlos anmelden, 1000 Suchen im Monat gratis, kein Zahlungsmittel. Unter „API Keys“ den Schlüssel kopieren (beginnt mit „tvly-“).", can: "Kann: liefert JARVIS kurze, saubere Textauszüge aus dem Netz – gebaut für KI-Antworten. Gut für „Wann spielt Bayern als Nächstes?“, Nachrichten, Preise, Patchnotes. Als Erste wählen." },
+  serper: { url: "https://serper.dev", label: "serper.dev", hint: t("40 Zeichen"), field: "serperKey", keyProp: "serperKey", step: "Serper (Google-Ergebnisse): kostenlos anmelden, 2500 Suchen gratis einmalig, kein Zahlungsmittel. Unter „API Key“ den Schlüssel kopieren.", can: "Kann: Google-Ergebnisse – gut für Ergebnisse und Tabellen („Wie steht es bei Bayern gegen Dortmund?“), Wetter, Preise. Als Zweite wählen, wenn Tavily leer ist. Einmalig 2500 Suchen." },
+  exa: { url: "https://dashboard.exa.ai", label: "dashboard.exa.ai", hint: "01234567-89ab-…", field: "exaKey", keyProp: "exaKey", step: "Exa: kostenlos anmelden, ein monatliches Gratis-Guthaben, kein Zahlungsmittel nötig. Unter „API Keys“ den Schlüssel kopieren (eine lange Kennung mit Bindestrichen).", can: "Kann: sucht nach Bedeutung – gut für Artikel, Erklärungen und Hintergründe („Was ist neu im Patch?“), schwächer bei Live-Ergebnissen. Als Dritte wählen." },
 };
 function WebSearchCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
   const ws = st.search;
@@ -169,6 +169,7 @@ function WebSearchCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p
     <Card title={t("Websuche für aktuelle Fragen (kostenlos)")} icon={<Sparkles size={18} />} className="flat">
       <div className="stack-sm">
         <p className="small muted">{t("Fragen wie „Wann spielt der FC Bayern als Nächstes?“ oder „Was ist neu im Patch?“ kann keine KI allein wissen. Mit der Websuche sucht JARVIS erst im Internet und antwortet dann aus den Ergebnissen. Gesendet wird nur deine Frage – an den Suchdienst, den du einrichtest. Mehrere sind möglich: ist einer leer oder gestört, fragt JARVIS den nächsten (Reihenfolge Tavily → Serper → Exa).")}</p>
+        <div className="tiny aim-can" role="note"><b>{t("Sport und Live-Fragen")}</b> {t("Wer Bayerns nächster Gegner ist oder wie es gerade gegen Dortmund steht, weiß keine KI von allein – dafür braucht JARVIS eine Websuche (Tavily oder Serper) und irgendeine der KIs, die daraus die Antwort formuliert. Der Spielstand ist so aktuell wie die Suchergebnisse (oft einige Minuten Verzögerung): für den exakten Live-Ticker bleibt eine Sport-App genauer.")}</div>
         {provs.map((p) => {
           const g = SEARCH_GUIDE[p.id];
           if (!g) return null;
@@ -176,6 +177,7 @@ function WebSearchCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p
           return (
             <div key={p.id} className="stack-sm" role="group" aria-label={`${t("Websuche")} ${p.name}`}>
               <div className="row between"><b>{p.name}</b><span className="tiny muted">{p.keySet ? t("eingerichtet · diesen Monat {n} Suchen", { n: p.used }) : t("nicht eingerichtet")}</span></div>
+              <p className="tiny aim-can"><b>{t("Wofür?")}</b> {t(g.can)}</p>
               <p className="tiny muted">{t(g.step)} <a href={g.url} target="_blank" rel="noopener noreferrer">{g.label}</a></p>
               {atPc ? (
                 <form className="row" onSubmit={(e) => { e.preventDefault(); if (v.trim()) void save({ [g.keyProp]: v.trim() }, t("Schlüssel gespeichert")).then(() => setKeys((k) => ({ ...k, [p.id]: "" }))); }}>

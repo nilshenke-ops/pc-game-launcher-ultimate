@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.13.1 – 2026-11-06
+### Verbessert
+- Bei jedem KI-Schlüssel und jedem Suchdienst steht jetzt kurz „Wofür?“: was die KI kann, wann man sie wählt und dass sie ohne Websuche nichts Aktuelles weiß; dazu „Welche KI soll ich nutzen?“ in der KI-Verwaltung (zwei reichen: eine schnelle und ein Allrounder) und ein Hinweis zu Sport: Wer als Nächstes gegen Bayern spielt oder wie es gerade gegen Dortmund steht, beantwortet JARVIS mit Websuche (Tavily oder Serper) plus einer beliebigen KI – der Stand ist so aktuell wie die Suchergebnisse
+### Behoben
+- Fragen wie „Wie ist der Spielstand Bayern gegen Dortmund?“, „Wie steht es bei …?“ und „Wer spielt gegen …?“ lösen jetzt die Websuche aus
+
 ## 3.13.0 – 2026-11-05
 ### Neu
 - Websuche für JARVIS mit mehreren kostenlosen Suchdiensten: zusätzlich zu Tavily jetzt Serper (Google-Ergebnisse, 2500 Gratis-Suchen) und Exa (monatliches Gratis-Guthaben) – alle mit eigenem Schlüssel ohne Zahlungsmittel. Ist ein Dienst leer, abgelehnt oder gestört, fragt JARVIS automatisch den nächsten (Tavily → Serper → Exa); jeder hat sein eigenes Monatslimit und stoppt am Gratis-Kontingent, es wird nie etwas bezahlt
