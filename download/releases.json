@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.22.0",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.22.0/PCGameLauncherCompanion.exe",
+    "size": 94992634,
+    "sha256": "f47d346dcdcc784aed80bda0c6b67a61155c264654d7e9527a49cc0303148449",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.22.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.22.0/PCGameLauncherCompanion-3.22.0-win-x64.zip",
+      "size": 89267293,
+      "sha256": "4ac6b70edd42a23ad1d4d6a973b4300e6feffad504f4681fceeae6e9ba529415"
+    },
+    "notes": "Neues Bewegungssystem für die ganze App: echte Federkurven mit 120 statt 37 Stützpunkten (auf 120-Hz-Bildschirmen sah man vorher die Stufen), einheitlich für Insel, Dialoge, Karten und Schalter. Nur Verschieben, Skalieren und Ausblenden – nichts, was das Layout neu berechnet · JARVIS-Insel: Das Panel wächst jetzt aus der Kerbe heraus und klappt beim Schließen in sie zurück. Kopfzeile, Tabs und Karten kommen nacheinander (30 ms Abstand), beim Schließen verschwindet erst der Inhalt, dann faltet sich die Insel zusammen. Öffnen mit lebendigem Überschwingen, Schließen ruhig ohne Überschwingen (die Insel geht nie unter die Kerbengröße) · Seitenwechsel und Karten: Überschrift und Karten gleiten gestaffelt ein; Knöpfe, Chips, Schalter, Segment-Auswahl und Seitenleiste reagieren mit Feder (Drücken, leichtes Anheben, Symbol wächst, Schalter-Knopf dehnt sich beim Drücken)",
+    "changes": {
+      "neu": [
+        "Neues Bewegungssystem für die ganze App: echte Federkurven mit 120 statt 37 Stützpunkten (auf 120-Hz-Bildschirmen sah man vorher die Stufen), einheitlich für Insel, Dialoge, Karten und Schalter. Nur Verschieben, Skalieren und Ausblenden – nichts, was das Layout neu berechnet",
+        "JARVIS-Insel: Das Panel wächst jetzt aus der Kerbe heraus und klappt beim Schließen in sie zurück. Kopfzeile, Tabs und Karten kommen nacheinander (30 ms Abstand), beim Schließen verschwindet erst der Inhalt, dann faltet sich die Insel zusammen. Öffnen mit lebendigem Überschwingen, Schließen ruhig ohne Überschwingen (die Insel geht nie unter die Kerbengröße)",
+        "Seitenwechsel und Karten: Überschrift und Karten gleiten gestaffelt ein; Knöpfe, Chips, Schalter, Segment-Auswahl und Seitenleiste reagieren mit Feder (Drücken, leichtes Anheben, Symbol wächst, Schalter-Knopf dehnt sich beim Drücken)",
+        "Dialoge: Hintergrund blendet ein, der Dialog federt hoch und fällt beim Schließen (Esc, Hintergrund, X) kurz weg; auf dem Handy fährt er von unten hoch. Hinweise (Toasts) und Banner kommen mit Feder"
+      ],
+      "verbessert": [
+        "Alles Neue hält sich an „Bewegung reduzieren“, die Systemeinstellung und die Leichte Darstellung (dann ohne jede Animation)"
+      ],
+      "behoben": []
+    },
+    "signature": "bdwWJTpIeLPKQGWxzrUaBdw2mrEnn6h/VRCADg49aC8ghkVoqb2w4DoSa4S6qF/yeKSFOVKhxnslNzyQcs0www=="
+  },
+  {
     "version": "3.21.2",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1383,30 +1412,5 @@
       ]
     },
     "signature": "hrnbnG9Yk7Mn/pPmZjI4XkK3OjsVcCxtuevpJv9/AEI7MjbovnpPH8aFSNtofEZX5OAhTbaATn9bON/zJpoGrw=="
-  },
-  {
-    "version": "2.83.0",
-    "date": "2026-10-29",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.0/PCGameLauncherCompanion.exe",
-    "size": 88395985,
-    "sha256": "5cbff30d3fc415e689a170a615bfcb698d4335ce20a2f57413c5595ba06c80f1",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.83.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.83.0/PCGameLauncherCompanion-2.83.0-win-x64.zip",
-      "size": 82658652,
-      "sha256": "abe8f58b009c687bd498f16ef59f879ff0f639ba0f1d236d22e4109ed9198f74"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Rückmeldungen wie „das macht keinen Sinn“ oder „ich bin Impostor“ wurden als Suchbegriff nachgeschlagen („Ohne PC habe ich nur offene Wikis durchsucht …“)",
-        "Mit JARVIS an stand unter KI-Antworten „Lokal · 0 €“ statt des Modells, das wirklich geantwortet hat – jetzt steht dort das echte Modell (auch ein Ausweichmodell des Routers)"
-      ]
-    },
-    "signature": "8qev3qm7wMOihvCX+5wQ1zC+XE7lyEhqbPZ0NE21wolZTMTLT6ztzw9+72H73YqMlNjVD9dx1lsG9aMtqWNkog=="
   }
 ]
