@@ -275,6 +275,8 @@ public interface ILauncher
     /// <summary>Platform specific validation (e.g. allowed file extensions). Return null if valid.</summary>
     string? ValidateExecutable(string path);
     string? ExtractIcon(string path);
+    /// <summary>Opens an http/https address in the default browser (the caller has checked the address). Null = done, else why not.</summary>
+    string? OpenUrl(string url) => "Links am PC öffnen geht nur im Windows-Begleiter.";
 }
 
 public sealed record ProcessInfo(int Pid, string Name, string? Path);

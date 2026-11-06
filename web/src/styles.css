@@ -3005,3 +3005,12 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
   transition: transform .35s var(--spr-snap), background-color .25s ease, border-color .25s ease; }
 .gb-mic.on { background: rgba(244, 63, 94, .18); border-color: rgba(244, 63, 94, .55); color: #fda4af; }
 .gb-mic:active { transform: scale(.92); } .gb-mic:disabled { opacity: .5; }
+
+/* An PC senden (3.25) */
+.inbox-text { min-height: 84px; resize: vertical; }
+.inbox-list { display: flex; flex-direction: column; gap: 8px; }
+.inbox-item { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border); background: rgba(var(--surface-rgb), .5); flex-wrap: wrap; }
+.inbox-icon { flex: none; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; background: rgba(var(--primary-rgb), .16); color: var(--primary); }
+.inbox-body { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 2px; }
+.inbox-main { overflow-wrap: anywhere; white-space: pre-wrap; }
+.inbox-actions { display: flex; gap: 6px; flex-wrap: wrap; }

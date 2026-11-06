@@ -418,6 +418,19 @@ public static class RpcApi
         rpc.Register("servers.query", async ctx => await s.Servers.QueryAsync(ctx.Str("protocol", 20), ctx.Str("host", 255), ctx.OptInt("port"), ctx.Session.Who));
 
         // ------------------------------------------------------------ activity status (only for the paired devices)
+        // "An PC senden": a link or text from a phone/tablet; links can be opened in the PC's browser right away.
+        rpc.Register("inbox.list", _ => new { items = s.Inbox.List() });
+        rpc.Register("inbox.send", ctx =>
+        {
+            var item = s.Inbox.Add(ctx.Str("text", InboxService.MaxText + 10), ctx.Session.Who);
+            string? opened = null;
+            if (ctx.OptBool("open") == true && item.Kind == "link") opened = s.Inbox.Open(item.Id);
+            if (!ctx.Session.IsLocalAdmin) try { s.Platform.Desktop.ShowToast("Vom Handy gesendet", item.Kind == "link" ? item.Text : (item.Text.Length > 80 ? item.Text[..80] + "…" : item.Text)); } catch { /* a missing desktop notification never stops the send */ }
+            return new { item, message = opened ?? "Gesendet" };
+        });
+        rpc.Register("inbox.open", ctx => new { message = s.Inbox.Open(ctx.Str("id", 40)) });
+        rpc.Register("inbox.remove", ctx => s.Inbox.Remove(ctx.Str("id", 40)));
+        rpc.Register("inbox.clear", _ => { s.Inbox.Clear(); return true; });
         rpc.Register("activity.get", ctx => s.Activity.View(ctx.Session.Has(Permissions.Manage), DateTime.UtcNow));
         rpc.Register("activity.set", ctx => { s.Activity.Set(ctx.Bind<ActivityFile>()); return s.Activity.View(true, DateTime.UtcNow); });
         // What the PC plays right now (Spotify, a video in Firefox …) – read from Windows' media sessions; a short cache so many windows do not all ask Windows.

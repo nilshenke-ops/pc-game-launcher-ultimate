@@ -105,6 +105,13 @@ public sealed class UiInvoker(Control control)
 
 sealed class WindowsLauncher : ILauncher
 {
+    public string? OpenUrl(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var u) || (u.Scheme != Uri.UriSchemeHttp && u.Scheme != Uri.UriSchemeHttps)) return "Nur http- und https-Links werden geöffnet.";
+        try { Process.Start(new ProcessStartInfo(u.AbsoluteUri) { UseShellExecute = true })?.Dispose(); return null; }
+        catch (Win32Exception e) { return "Der Browser lässt sich nicht öffnen: " + e.Message; }
+    }
+
     public LaunchResult Launch(LibraryItem item)
     {
         try

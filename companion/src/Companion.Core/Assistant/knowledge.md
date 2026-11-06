@@ -170,6 +170,11 @@ Seite: /memory
 Stichworte: gedächtnis memory merken merk dir erinnern erinnerung obsidian vault notizen markdown langzeitgedächtnis projekt stehen geblieben wo war ich vergessen löschen ordner
 Assistent → JARVIS MEMORY. Das Gedächtnis ist ein Ordner mit Markdown-Notizen auf dem PC (ein Obsidian-Vault; Obsidian muss nicht laufen). Den Ordner trägst du am PC selbst ein. „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie, „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen und sagt ehrlich, wenn nichts dazu steht. Die Seite zeigt Verbindung, Projekte, zuletzt Gemerktes, Suche und Pflege-Hinweise; Notizen lassen sich anlegen und bearbeiten. Löschen ist standardmäßig aus, geht nur in den Papierkorb des Vaults und nie von selbst. Ist der Ordner nicht erreichbar, arbeitet JARVIS normal weiter. Ohne PC-Verbindung ist das Gedächtnis nicht erreichbar.
 
+## An PC senden (Links und Text vom Handy)
+Seite: /inbox
+Stichworte: senden an pc link text handy tablet teilen zwischenablage kopieren öffnen browser eingang schicken weiterleiten
+Verbindung → An PC senden. Link oder Text einfügen und „An PC senden“: Ein Link öffnet sich auf Wunsch gleich im Standard-Browser des PCs (nur http und https – nie Dateien, Programme oder andere Adressen), Text bleibt in der Liste „Vom Handy gesendet“ und lässt sich dort kopieren. Die Einträge bleiben 30 Tage (höchstens 50) auf dem PC und sind auf allen Geräten sichtbar. Der PC zeigt beim Eintreffen einen Hinweis. Senden braucht den verbundenen PC und das Recht „Starten“. Auf Android lässt sich die installierte App auch im Teilen-Menü wählen; auf iPhone und iPad gibt es dieses Teilen-Ziel nicht – dort „Einfügen“ benutzen.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

@@ -9,6 +9,16 @@ import { languageReady } from "./lib/i18n";
 import App from "./App";
 import { trackVisibleHeight } from "./lib/visible-height";
 
+// "Teilen → Nexus" from the system share sheet (Android/Chrome installed app): the shared title/text/link goes to "An PC senden".
+try {
+  const sq = new URLSearchParams(location.search);
+  if (sq.get("share") === "1") {
+    const shared = [sq.get("title"), sq.get("text"), sq.get("url")].filter((x, i, a) => x && a.indexOf(x) === i).join(" ").trim();
+    if (shared) sessionStorage.setItem("pgl.share", shared.slice(0, 4000));
+    history.replaceState(null, "", location.pathname + "#/inbox");
+  }
+} catch { /* no storage: the page just opens empty */ }
+
 declare const __BUILD_ID__: string;
 
 trackVisibleHeight();

@@ -77,6 +77,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public Assistant.MemoryVault Memory { get; }
     public ServerQueryService Servers { get; } = new();
     public ActivityService Activity { get; }
+    public InboxService Inbox { get; }
     public BackupService Backup { get; }
     public QuestService Quests { get; }
     public DealService Deals { get; }
@@ -191,6 +192,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Decks = new DeckService(paths, Rpc);
         Calendar = new CalendarService(paths, Rpc, Notifications);
         Journal = new JournalService(paths, Rpc);
+        Inbox = new InboxService(paths, Rpc, platform.Launcher);
         Activity = new ActivityService(paths, Rpc, () => Sessions.Running().Select(r => (r.itemId, Library.Get(r.itemId)?.Name ?? "?", r.since)).ToList());
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };

@@ -2917,6 +2917,46 @@ test("JARVIS MEMORY: echter Ordner mit Markdown-Dateien – merken, nachfragen, 
   sess.close();
 });
 
+test("An PC senden: Text und Link vom Gerät, Liste, Link-Öffnen (Headless: ehrlicher Fehler), Löschen, Ungültiges abgelehnt", async ({ browser }) => {
+  const sess = await adminSession();
+  const call = sess.call;
+  type Item = { id: string; kind: string; text: string; opened?: boolean };
+  await call("inbox.clear");
+  try {
+    const t = (await call<{ item: Item }>("inbox.send", { text: "Notiz vom Handy: Controller laden" })).item;
+    expect(t.kind).toBe("text");
+    const l = (await call<{ item: Item }>("inbox.send", { text: "https://example.com/spiel" })).item;
+    expect(l.kind).toBe("link");
+    // The same text again within a minute is not a second entry.
+    await call("inbox.send", { text: "https://example.com/spiel" });
+    const list = await call<{ items: Item[] }>("inbox.list");
+    expect(list.items.filter((i) => i.text === "https://example.com/spiel")).toHaveLength(1);
+    expect(list.items).toHaveLength(2);
+    // Opening on the PC: the headless companion has no desktop → an honest answer, not a fake success.
+    const linkId = list.items.find((i) => i.kind === "link")!.id;
+    expect(linkId).not.toBe(l.id); // the repeated send replaced the first entry
+    await expect(call("inbox.open", { id: linkId })).rejects.toThrow(/Windows/);
+    await expect(call("inbox.open", { id: t.id })).rejects.toThrow();
+    // Nothing that is no real link can be opened by the "open" flag.
+    await expect(call("inbox.send", { text: "   " })).rejects.toThrow();
+
+    // The page shows the entries and can delete one.
+    const page = await adminPage(browser);
+    await page.goto(`${COMPANION}/#/inbox`);
+    await expect(page.getByText("Controller laden")).toBeVisible();
+    await expect(page.getByRole("link", { name: "https://example.com/spiel" })).toBeVisible();
+    await page.getByRole("textbox", { name: "Link oder Text" }).fill("Zweite Notiz per Seite");
+    await page.getByRole("button", { name: "An PC senden", exact: true }).click();
+    await expect(page.getByText("Zweite Notiz per Seite")).toBeVisible();
+    await page.locator(".inbox-item", { hasText: "Controller laden" }).getByRole("button", { name: "Eintrag löschen" }).click();
+    await expect(page.getByText("Controller laden")).toHaveCount(0);
+    await page.context().close();
+  } finally {
+    await call("inbox.clear");
+    sess.close();
+  }
+});
+
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {
   const ctx = await newCtx(browser, { ...devices["iPhone 13"], locale: "de-DE" });
   const ipad = await ctx.newPage();

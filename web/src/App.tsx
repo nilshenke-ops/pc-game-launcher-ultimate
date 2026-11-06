@@ -40,6 +40,7 @@ const Backlog = lazy(() => import("./pages/Backlog"));
 const CalendarPage = lazy(() => import("./pages/Calendar"));
 const StoragePage = lazy(() => import("./pages/Storage"));
 const FilesPage = lazy(() => import("./pages/Files"));
+const InboxPage = lazy(() => import("./pages/Inbox"));
 const CapturesPage = lazy(() => import("./pages/Captures"));
 const ModsPage = lazy(() => import("./pages/Mods"));
 const VaultPage = lazy(() => import("./pages/Vault"));
@@ -164,6 +165,7 @@ function Gate() {
           <Route path="/insights" element={<InsightsPage />} />
           <Route path="/storage" element={<StoragePage />} />
           <Route path="/files" element={<FilesPage />} />
+          <Route path="/inbox" element={<InboxPage />} />
           <Route path="/captures" element={<CapturesPage />} />
           <Route path="/mods" element={<ModsPage />} />
           <Route path="/vault" element={<VaultPage />} />

@@ -6,14 +6,21 @@
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
 import { plainAnswer } from "../lib/answer-text";
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Bell, Check, Gamepad2, Music, Timer as TimerIcon, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { useIslandLook } from "../lib/island-look";
 import { advanceTimer, countdownView, playTime, timerLive, useTimer } from "../lib/island-timer";
-import { IslandPanel } from "./island-panel";
+// The open panel (tabs, AI settings, widgets) is by far the biggest part of the island and is only needed after a tap: it loads in the
+// background right after the page has started (idle), so the first tap is still instant, but the start of the app does not wait for it.
+const loadPanel = () => import("./island-panel");
+const IslandPanel = lazy(() => loadPanel().then((m) => ({ default: m.IslandPanel })));
+if (typeof window !== "undefined") {
+  const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
+  if (idle) idle(() => { void loadPanel(); }, { timeout: 4000 }); else window.setTimeout(() => { void loadPanel(); }, 2500);
+}
 import { consumeSpoken } from "../lib/island-voice";
 import { speak } from "../lib/jarvis-voice";
 import { createBoxAnimator, islandBox, WINDOW_W, type Box } from "../lib/island-spring";
@@ -253,7 +260,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
         )}
       </div>
       {panelMounted && (
-        <div className={`isl2-wrap${open ? "" : " closing"}`}><IslandPanel mood={mood} now={now} floating={floating} onClose={() => setOpen(false)} /></div>
+        <div className={`isl2-wrap${open ? "" : " closing"}`}><Suspense fallback={null}><IslandPanel mood={mood} now={now} floating={floating} onClose={() => setOpen(false)} /></Suspense></div>
       )}
       </div>
     </div>
