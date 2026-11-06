@@ -8,6 +8,9 @@ export interface Box { w: number; h: number; r: number }
 /** Spring constants: damping ratio ≈ 0.67 → about 6 % overshoot, settled after roughly a third of a second. */
 export const STIFFNESS = 380;
 export const DAMPING = 26;
+/** Folding back into the notch is calm: critically damped (no swing past the target, so the island never "pops" shut). Slightly softer than opening. */
+export const CLOSE_STIFFNESS = 300;
+export const CLOSE_DAMPING = 2 * Math.sqrt(CLOSE_STIFFNESS) * 0.985;
 
 /** One step of a damped spring for several values at once (semi-implicit Euler in small, fixed sub-steps – stable at any frame rate). */
 export function stepSpring(x: number[], v: number[], target: number[], dt: number, k = STIFFNESS, c = DAMPING): void {
@@ -31,18 +34,20 @@ const browser: Scheduler = { request: (cb) => requestAnimationFrame(cb), cancel:
  */
 export function createBoxAnimator(apply: (b: Box) => void, start: Box, scheduler: Scheduler = browser) {
   const x = [start.w, start.h, start.r], v = [0, 0, 0];
-  let target = [...x], raf = 0, last = 0;
+  let target = [...x], raf = 0, last = 0, k = STIFFNESS, c = DAMPING;
   const emit = () => apply({ w: x[0], h: x[1], r: x[2] });
   const frame = (now: number) => {
     const dt = last ? Math.min(0.05, Math.max(0.001, (now - last) / 1000)) : 1 / 60;
     last = now;
-    stepSpring(x, v, target, dt);
+    stepSpring(x, v, target, dt, k, c);
     if (isSettled(x, v, target)) { x[0] = target[0]; x[1] = target[1]; x[2] = target[2]; v[0] = v[1] = v[2] = 0; raf = 0; last = 0; emit(); return; }
     emit();
     raf = scheduler.request(frame);
   };
   return {
     to(t: Box, instant = false) {
+      const closing = t.h < x[1] - 1 || t.w < x[0] - 1;   // getting smaller: calm; getting bigger: lively
+      k = closing ? CLOSE_STIFFNESS : STIFFNESS; c = closing ? CLOSE_DAMPING : DAMPING;
       target = [t.w, t.h, t.r];
       if (instant) { x[0] = t.w; x[1] = t.h; x[2] = t.r; v[0] = v[1] = v[2] = 0; if (raf) scheduler.cancel(raf); raf = 0; last = 0; emit(); return; }
       if (!raf) { last = 0; raf = scheduler.request(frame); }

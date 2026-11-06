@@ -24,6 +24,16 @@ describe("Feder der Insel", () => {
     expect(over / (ISLAND_DIMS.panel.h - ISLAND_DIMS.notch.h)).toBeLessThan(0.1); // … but never more than 10 % of the way
     expect(a.moving).toBe(false);
   });
+  it("beim Schließen läuft die Insel ruhig zusammen: kein Unterschwingen unter das Ziel und kommt zur Ruhe", () => {
+    const frames: Box[] = [], c = clock();
+    const a = createBoxAnimator((b) => frames.push(b), ISLAND_DIMS.panel, c.s);
+    a.to(ISLAND_DIMS.notch);
+    const n = run(c);
+    expect(frames[frames.length - 1]).toEqual(ISLAND_DIMS.notch);
+    expect(n).toBeLessThan(90);
+    expect(Math.min(...frames.map((f) => f.h))).toBeGreaterThanOrEqual(ISLAND_DIMS.notch.h - 0.5);   // never smaller than the notch
+    expect(Math.min(...frames.map((f) => f.w))).toBeGreaterThanOrEqual(ISLAND_DIMS.notch.w - 0.5);
+  });
   it("viele Zwischenbilder (flüssig, nicht ruckelnd) und keine Sprünge", () => {
     const frames: Box[] = [], c = clock();
     const a = createBoxAnimator((b) => frames.push(b), ISLAND_DIMS.notch, c.s);

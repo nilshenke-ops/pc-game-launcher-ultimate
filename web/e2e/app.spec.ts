@@ -17,6 +17,13 @@ let pc: Page;
 async function newCtx(browser: Browser, opts: Parameters<Browser["newContext"]>[0] = {}) {
   const ctx = await browser.newContext(opts);
   await ctx.addInitScript((hash) => { try { localStorage.setItem("pgl.access", hash); } catch { /* ignore */ } }, ACCESS_HASH);
+  // The page and card entrance animations move content by a few pixels for half a second; tests that click right after loading (some with
+  // force) would hit a moving target. Only those are switched off here – the island, dialogs and everything else run with their real animations.
+  await ctx.addInitScript(() => {
+    const css = ".content > *, .content .stack > *, .content .grid > * { animation: none !important; }";
+    const add = () => { const st = document.createElement("style"); st.textContent = css; (document.head ?? document.documentElement).appendChild(st); };
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", add, { once: true }); else add();
+  });
   return ctx;
 }
 let phone: Page;

@@ -2767,3 +2767,106 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 select.input { color-scheme: dark; }
 select.input option, select.input optgroup { background-color: var(--surface-2); color: var(--text); }
 :root[data-theme="light"] select.input { color-scheme: light; }
+
+
+/* ================================================================== Motion system (3.22)
+   One set of real spring curves for the whole app: each is a linear() easing of 120 samples (the old ones had 37 – on a 120 Hz screen the
+   steps showed). Springs are for things that move (size, position, pop); short ease-outs for things that only fade. Only transform and
+   opacity move – no layout. Everything below stands down with "Bewegung reduzieren" (data-motion="reduce"), the system setting and the light mode. */
+:root {
+  --spr-bounce: linear(0, 0.0046, 0.0168, 0.0359, 0.058, 0.0878, 0.1222, 0.1561, 0.1973, 0.2411, 0.2817, 0.3289, 0.377, 0.4203, 0.469, 0.5174, 0.5599, 0.6068, 0.6525, 0.6918, 0.7344, 0.7752, 0.8139, 0.8465, 0.8811, 0.9134, 0.9401, 0.9679, 0.9933, 1.014, 1.035, 1.0537, 1.0685, 1.0831, 1.0957, 1.1052, 1.1141, 1.1213, 1.1262, 1.1303, 1.133, 1.1343, 1.1344, 1.1336, 1.1317, 1.1292, 1.1258, 1.1216, 1.1174, 1.1122, 1.1065, 1.1012, 1.095, 1.0887, 1.0829, 1.0763, 1.0698, 1.064, 1.0576, 1.0513, 1.0459, 1.04, 1.0343, 1.0289, 1.0243, 1.0195, 1.0149, 1.0111, 1.0071, 1.0034, 1.0005, 0.9974, 0.9946, 0.9925, 0.9903, 0.9884, 0.9869, 0.9855, 0.9844, 0.9836, 0.9829, 0.9824, 0.9821, 0.9819, 0.9819, 0.9821, 0.9823, 0.9827, 0.9832, 0.9837, 0.9844, 0.9851, 0.9858, 0.9866, 0.9874, 0.9882, 0.9891, 0.99, 0.9907, 0.9916, 0.9925, 0.9933, 0.994, 0.9948, 0.9956, 0.9962, 0.9969, 0.9975, 0.9981, 0.9986, 0.9992, 0.9996, 1, 1.0004, 1.0008, 1.0011, 1.0014, 1.0016, 1.0018, 1.002, 1); --spr-bounce-t: 521ms;
+  --spr-soft: linear(0, 0.0032, 0.0105, 0.0216, 0.036, 0.0533, 0.0753, 0.0973, 0.121, 0.1461, 0.1724, 0.1996, 0.2306, 0.2589, 0.2875, 0.3163, 0.345, 0.3735, 0.4049, 0.4327, 0.46, 0.4868, 0.513, 0.5414, 0.5661, 0.5901, 0.6133, 0.6357, 0.6573, 0.6804, 0.7003, 0.7193, 0.7375, 0.755, 0.7716, 0.7891, 0.804, 0.8182, 0.8317, 0.8444, 0.8565, 0.8691, 0.8797, 0.8897, 0.8991, 0.908, 0.9171, 0.9248, 0.932, 0.9387, 0.9449, 0.9507, 0.9567, 0.9616, 0.9662, 0.9704, 0.9743, 0.9778, 0.9815, 0.9844, 0.9872, 0.9896, 0.9919, 0.9941, 0.9959, 0.9976, 0.999, 1.0003, 1.0015, 1.0026, 1.0035, 1.0043, 1.0049, 1.0055, 1.006, 1.0064, 1.0067, 1.007, 1.0072, 1.0073, 1.0074, 1.0074, 1.0074, 1.0074, 1.0073, 1.0072, 1.0071, 1.007, 1.0068, 1.0067, 1.0065, 1.0063, 1.0061, 1.0059, 1.0057, 1.0054, 1.0052, 1.005, 1.0048, 1.0046, 1.0044, 1.0042, 1.004, 1.0037, 1.0035, 1.0034, 1.0032, 1.003, 1.0028, 1.0026, 1.0025, 1.0023, 1.0022, 1.002, 1.0019, 1.0018, 1.0016, 1.0015, 1.0014, 1.0013, 1); --spr-soft-t: 550ms;
+  --spr-snap: linear(0, 0.0036, 0.0127, 0.0267, 0.0416, 0.0629, 0.0874, 0.1145, 0.1388, 0.1697, 0.202, 0.2354, 0.2639, 0.2984, 0.3333, 0.3681, 0.397, 0.4314, 0.4653, 0.493, 0.5255, 0.5572, 0.5879, 0.6127, 0.6414, 0.669, 0.6955, 0.7166, 0.7409, 0.7639, 0.7857, 0.803, 0.8226, 0.841, 0.8555, 0.8719, 0.8871, 0.9013, 0.9123, 0.9247, 0.936, 0.9465, 0.9545, 0.9634, 0.9715, 0.9788, 0.9844, 0.9905, 0.9959, 1, 1.0044, 1.0082, 1.0116, 1.014, 1.0166, 1.0187, 1.0205, 1.0218, 1.023, 1.024, 1.0246, 1.0251, 1.0253, 1.0255, 1.0254, 1.0252, 1.0249, 1.0245, 1.0241, 1.0235, 1.0228, 1.0221, 1.0215, 1.0206, 1.0198, 1.0189, 1.0182, 1.0173, 1.0164, 1.0157, 1.0148, 1.014, 1.0131, 1.0124, 1.0116, 1.0108, 1.01, 1.0094, 1.0087, 1.008, 1.0074, 1.0068, 1.0062, 1.0057, 1.0052, 1.0047, 1.0042, 1.0038, 1.0034, 1.003, 1.0027, 1.0023, 1.002, 1.0017, 1.0015, 1.0012, 1.001, 1.0008, 1.0006, 1.0005, 1.0003, 1.0002, 1, 0.9999, 0.9998, 0.9997, 0.9997, 0.9996, 0.9995, 0.9995, 1); --spr-snap-t: 344ms;
+  --spr-calm: linear(0, 0.0032, 0.0116, 0.0244, 0.0389, 0.0581, 0.0798, 0.1036, 0.1261, 0.1527, 0.1802, 0.2051, 0.2337, 0.2624, 0.2911, 0.3165, 0.3448, 0.3727, 0.4001, 0.4239, 0.4502, 0.4757, 0.4978, 0.5219, 0.5453, 0.5678, 0.5871, 0.6081, 0.6282, 0.6475, 0.664, 0.6818, 0.6988, 0.7133, 0.7289, 0.7437, 0.7579, 0.7699, 0.7827, 0.795, 0.8053, 0.8164, 0.8269, 0.8369, 0.8453, 0.8543, 0.8628, 0.8709, 0.8777, 0.8849, 0.8918, 0.8975, 0.9037, 0.9095, 0.9149, 0.9195, 0.9244, 0.929, 0.9334, 0.937, 0.9409, 0.9445, 0.9476, 0.9508, 0.9539, 0.9568, 0.9592, 0.9617, 0.9641, 0.9664, 0.9683, 0.9703, 0.9722, 0.9737, 0.9754, 0.977, 0.9784, 0.9797, 0.981, 0.9822, 0.9832, 0.9843, 0.9853, 0.9862, 0.987, 0.9879, 0.9886, 0.9894, 0.99, 0.9906, 0.9913, 0.9918, 0.9923, 0.9928, 0.9933, 0.9937, 0.9941, 0.9945, 0.9948, 0.9951, 0.9955, 0.9958, 0.996, 0.9963, 0.9965, 0.9967, 0.9969, 0.9971, 0.9973, 0.9975, 0.9977, 0.9978, 0.998, 0.9981, 0.9982, 0.9983, 0.9984, 0.9985, 0.9986, 0.9987, 1); --spr-calm-t: 523ms;
+  --out-expo: cubic-bezier(0.16, 1, 0.3, 1); --in-quart: cubic-bezier(0.5, 0, 0.75, 0);
+}
+.isl-host { --spring: var(--spr-bounce); --spring-soft: var(--spr-soft); }
+
+/* ---- JARVIS island: the panel grows out of the notch and folds back into it */
+.isl2-wrap { transform-origin: 50% 0; animation: isl2-in var(--spr-soft-t) var(--spr-soft) .02s backwards;}
+@keyframes isl2-in { from { opacity: 0; transform: translateY(-14px) scale(.9, .72); } 30% { opacity: 1; } }
+.isl2-wrap.closing { animation: isl2-out .3s var(--in-quart) both; pointer-events: none; }
+@keyframes isl2-out { 0% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-10px) scale(.92, .78); } }
+/* content: header, tabs and cards come one after the other (30 ms apart), a touch of blur that clears while they settle */
+.isl2-wrap .isl2 > * { animation: isl2-part var(--spr-bounce-t) var(--spr-bounce) backwards; }
+.isl2-wrap .isl2 > :nth-child(1) { animation-delay: .06s; } .isl2-wrap .isl2 > :nth-child(2) { animation-delay: .09s; }
+.isl2-wrap .isl2 > :nth-child(3) { animation-delay: .12s; } .isl2-wrap .isl2 > :nth-child(4) { animation-delay: .15s; }
+.isl2-wrap .isl2 > :nth-child(5) { animation-delay: .18s; }
+@keyframes isl2-part { from { opacity: 0; transform: translateY(10px) scale(.96); } 40% { opacity: 1; } }
+.isl2-card { animation: isl2-card var(--spr-bounce-t) var(--spr-bounce) backwards; }
+.isl2-card:nth-child(1) { animation-delay: .1s; } .isl2-card:nth-child(2) { animation-delay: .14s; } .isl2-card:nth-child(3) { animation-delay: .18s; }
+@keyframes isl2-card { from { opacity: 0; transform: translateY(16px) scale(.9); } 35% { opacity: 1; } }
+.isl2-wrap.closing .isl2 > *, .isl2-wrap.closing .isl2-card { animation: isl2-part-out .16s var(--in-quart) both; }
+@keyframes isl2-part-out { to { opacity: 0; transform: translateY(-6px) scale(.97); } }
+.isl2-tab, .isl2-round, .isl2-more { transition: transform .35s var(--spr-snap), background-color .2s ease, color .2s ease; }
+.isl2-tab:active, .isl2-round:active, .isl2-more:active { transform: scale(.92); }
+@media (hover: hover) { .isl2-card { transition: transform .4s var(--spr-soft), box-shadow .3s ease; } .isl2-card:hover { transform: translateY(-2px) scale(1.012); } }
+.isl2-card:active { transform: scale(.975); transition-duration: .12s; }
+
+/* ---- app shell: pages, cards, lists */
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content > * { animation: m-rise .5s var(--out-expo) backwards; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content > .page-head { animation-name: m-rise-soft; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .stack > .card,
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .stack > .banner,
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .grid > :nth-child(-n+12) { animation: m-rise .55s var(--out-expo) backwards; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .stack > :nth-child(2), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .grid > :nth-child(2) { animation-delay: .05s; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .stack > :nth-child(3), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .grid > :nth-child(3) { animation-delay: .09s; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .stack > :nth-child(4), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .grid > :nth-child(4) { animation-delay: .13s; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .stack > :nth-child(5), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .grid > :nth-child(5) { animation-delay: .17s; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .stack > :nth-child(n+6), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content .grid > :nth-child(n+6) { animation-delay: .21s; }
+}
+@keyframes m-rise { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+@keyframes m-rise-soft { from { opacity: 0; transform: translateY(8px); } }
+/* skeleton → content: the real content fades in instead of jumping */
+.m-in { animation: m-rise .45s var(--out-expo) backwards; }
+
+/* ---- buttons, chips, switches, segmented: feedback you can feel */
+.btn { transition: transform .35s var(--spr-snap), background-color .2s ease, border-color .2s ease, box-shadow .25s ease, opacity .2s ease; }
+@media (hover: hover) { .btn:not(:disabled):hover { transform: translateY(-1px); } }
+.btn:not(:disabled):active { transform: scale(.96); transition-duration: .1s; }
+.chip { transition: transform .35s var(--spr-snap), background-color .2s ease, border-color .2s ease, color .2s ease; }
+.chip:active { transform: scale(.94); transition-duration: .1s; }
+.switch .track { transition: background-color .25s ease, border-color .25s ease; }
+.switch .track::after { transition: transform .45s var(--spr-bounce); }
+.switch:active .track::after { width: 24px; }
+.switch input:checked:active + .track::after { transform: translateX(14px); }
+.segmented button { transition: background-color .25s ease, color .2s ease, box-shadow .25s ease, transform .3s var(--spr-snap); }
+.segmented button:active { transform: scale(.95); }
+.nav-link { transition: background-color .2s ease, color .2s ease, transform .35s var(--spr-snap); }
+.nav-link svg { transition: transform .4s var(--spr-bounce), color .2s ease; }
+@media (hover: hover) { .nav-link:hover svg { transform: scale(1.12); } .nav-link:hover { transform: translateX(2px); } }
+.nav-link:active { transform: scale(.97); transition-duration: .1s; }
+.nav-link.active::before { animation: m-bar .5s var(--spr-bounce) backwards; transform-origin: 50% 50%; }
+@keyframes m-bar { from { transform: scaleY(.2); opacity: 0; } }
+.card { transition: transform .4s var(--spr-soft), box-shadow .3s ease, border-color .25s ease, background-color .25s ease; }
+.badge { transition: background-color .25s ease, color .2s ease; }
+.input, select.input, textarea.input { transition: border-color .2s ease, box-shadow .25s ease, background-color .2s ease; }
+
+/* ---- dialogs: backdrop fades, the dialog springs up; it leaves with a quick fall-away */
+.modal-backdrop { animation: m-fade .22s ease backwards; }
+.modal { animation: m-modal var(--spr-bounce-t) var(--spr-bounce) backwards; transform-origin: 50% 40%; }
+@keyframes m-fade { from { opacity: 0; } }
+@keyframes m-modal { from { opacity: 0; transform: translateY(22px) scale(.94); } 30% { opacity: 1; } }
+.modal-backdrop.leaving { animation: m-fade-out .18s ease both; pointer-events: none; }
+.modal-backdrop.leaving .modal { animation: m-modal-out .18s var(--in-quart) both; }
+@keyframes m-fade-out { to { opacity: 0; } }
+@keyframes m-modal-out { to { opacity: 0; transform: translateY(10px) scale(.97); } }
+@media (max-width: 640px) { @keyframes m-modal { from { opacity: 1; transform: translateY(60px); } } }
+
+/* ---- things that appear: toasts, banners, menus */
+.toast, .toasts > * { animation: m-toast var(--spr-bounce-t) var(--spr-bounce) backwards; }
+@keyframes m-toast { from { opacity: 0; transform: translateY(16px) scale(.94); } 30% { opacity: 1; } }
+.banner { animation: m-rise .45s var(--out-expo) backwards; }
+
+/* ---- stand down: reduced motion, light mode (the older rules for data-motion="reduce" and data-lite already zero every duration) */
+@media (prefers-reduced-motion: reduce) {
+  .isl2-wrap, .isl2-wrap *, .modal, .modal-backdrop, .toast, .toasts > *, .banner, .m-in, .nav-link.active::before { animation: none !important; }
+  .btn, .chip, .card, .nav-link, .nav-link svg, .switch .track::after, .segmented button, .isl2-card, .isl2-tab { transition: none !important; transform: none !important; }
+}
+:root[data-motion="reduce"] .isl2-wrap, :root[data-motion="reduce"] .isl2-wrap *, :root[data-motion="reduce"] .modal, :root[data-motion="reduce"] .modal-backdrop,
+:root[data-motion="reduce"] .toast, :root[data-motion="reduce"] .banner, :root[data-motion="reduce"] .m-in { animation: none !important; }
+@media (pointer: coarse) { .nav-link:hover, .btn:hover, .isl2-card:hover { transform: none; } }
+
+/* Pages and cards that hold a plugin window (iframe) stand still: a tap on a moving frame can miss, and the frame must not shift while it loads. */
+:root .content > :has(iframe), :root .content :has(> iframe), :root .content .card:has(iframe), :root .content .grid > :has(iframe) { animation: none !important; }

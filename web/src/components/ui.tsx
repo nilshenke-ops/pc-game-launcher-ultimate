@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, useEffect, useId, useRef, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useRef, useState, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, MonitorSmartphone, RefreshCw, WifiOff, X, XCircle } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
@@ -169,13 +169,24 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
   // Callers pass a new onClose on every render: kept in a ref, so a re-render (live values, a reload) does not run the
   // effect again – that used to put the focus back into the first field while typing.
   const close = useRef(onClose); close.current = onClose;
+  // Closing by Esc, the backdrop or the X first lets the dialog fall away (0.18 s), then the page removes it. Footer buttons that close
+  // it themselves still remove it at once. With reduced motion everything is immediate.
+  const [leaving, setLeaving] = useState(false);
+  const leavingRef = useRef(false);
+  const requestClose = useRef(() => {
+    if (leavingRef.current) return;
+    const still = document.documentElement.dataset.motion === "reduce" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (still) { close.current(); return; }
+    leavingRef.current = true; setLeaving(true);
+    window.setTimeout(() => close.current(), 170);
+  });
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     const onKey = (e: KeyboardEvent) => {
       // Only the dialog on top reacts (e.g. a confirmation opened from an editor).
       const open = document.querySelectorAll(".modal");
       if (open[open.length - 1] !== ref.current) return;
-      if (e.key === "Escape") { close.current(); return; }
+      if (e.key === "Escape") { requestClose.current(); return; }
       // Tab stays inside the dialog (focus trap); the page behind is inert for keyboard users too.
       if (e.key !== "Tab" || !ref.current) return;
       const items = [...ref.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])')]
@@ -194,11 +205,11 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
   // Always drawn straight into <body>: inside a card or the page area an animation or transform of a parent would
   // otherwise make the dialog part of that box (seen in 2.32: "Speichern" ended up under the bottom bar).
   return createPortal(
-    <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+    <div className={`modal-backdrop${leaving ? " leaving" : ""}`} onMouseDown={(e) => { if (e.target === e.currentTarget) requestClose.current(); }}>
       <div ref={ref} className={`modal ${wide ? "wide" : ""} ${className}`} role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined}>
         <div className="modal-head">
           <h2>{title}</h2>
-          <Button variant="ghost" className="modal-close" size="sm" icon={<X size={18} />} onClick={onClose} aria-label={t("Schließen")} />
+          <Button variant="ghost" className="modal-close" size="sm" icon={<X size={18} />} onClick={() => requestClose.current()} aria-label={t("Schließen")} />
         </div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-foot">{footer}</div>}
