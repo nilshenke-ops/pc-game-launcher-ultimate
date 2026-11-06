@@ -959,7 +959,7 @@ public static class RpcApi
         var ask = reply.Actions.FirstOrDefault(a => a.Confirm && !a.Auto && !string.IsNullOrEmpty(a.Method));
         // Which AI answered (and why, when another one was skipped) – shown under the answer in the island.
         var via = reply.Mode switch { "openrouter" => $"OpenRouter{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "groq" => $"Groq{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "cerebras" => $"Cerebras{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "mistral" => $"Mistral{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "pollinations" => "Pollinations", "router" => $"KI-Router{(string.IsNullOrEmpty(reply.Model) ? "" : " · " + reply.Model)}", "ollama" => "lokale KI", "claude" => "Claude", _ => "eingebaut" };
-        var note = string.Join(" · ", reply.Sources.Where(x => x.StartsWith("Automatisch:") || x.StartsWith("Websuche:") || x.StartsWith("Sportdaten:")));
+        var note = string.Join(" · ", reply.Sources.Where(x => x.StartsWith("Automatisch:") || x.StartsWith("Websuche:") || x.StartsWith("Sportdaten:") || x.StartsWith("Wetterdaten:")));
         if (note.Length == 0) note = null;
         // Something that runs right away is shown as what is being done ("Among Us starten"), not as a question.
         var runNow = reply.Actions.Where(a => a.Auto && a.Kind != "navigate" && !string.IsNullOrEmpty(a.Method)).Select(a => a.Label).ToList();

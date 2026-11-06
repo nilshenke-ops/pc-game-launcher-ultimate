@@ -8,6 +8,7 @@
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
 import { sportsFor } from "./sports";
+import { weatherFor } from "./weather";
 import { askFreeAi, buildMessages, cleanAnswer, freeAiConsent, FreeAiError, looksLikePaymentNotice, type Turn } from "./free-ai";
 
 export type LocalProvider = "openrouter" | "groq" | "cerebras" | "mistral";
@@ -310,7 +311,9 @@ export async function askLocalChain(question: string, history: Turn[], o: Opts =
   let asked = question, via = "";
   if (wantsLiveData(question)) {
     const sp = await sportsFor(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if ((e as Error).message === "Abgebrochen.") throw new FreeAiError("Abgebrochen."); return null; });
+    const wx = sp ? null : await weatherFor(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if ((e as Error).message === "Abgebrochen.") throw new FreeAiError("Abgebrochen."); return null; });
     if (sp) { asked = `${sp.block}\n\nFrage: ${question}`; via = "Sportdaten: OpenLigaDB"; }
+    else if (wx) { asked = `${wx.block}\n\nFrage: ${question}`; via = "Wetterdaten: Open-Meteo"; }
     else if (readySearch().length > 0) {
       const w = await searchLive(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if (e instanceof FreeAiError && e.message === "Abgebrochen.") throw e; return null; });
       if (w) { asked = `${w.block}\n\nFrage: ${question}`; via = `Websuche: ${w.domains}`; }

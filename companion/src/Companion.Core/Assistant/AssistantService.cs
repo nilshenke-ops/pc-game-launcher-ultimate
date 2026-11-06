@@ -84,6 +84,7 @@ public sealed class AssistantService
     public DeepSeekClient DeepSeek { get; }
     public WebSearchClient Search { get; }
     public SportsClient Sports { get; }
+    public WeatherClient Weather { get; }
     public OpenAiCompatClient Router { get; }
     /// <summary>The free AI services in one fixed order with the cost guard (OpenRouter, Groq, Pollinations, Ollama).</summary>
     public FreeAiHub FreeAi { get; }
@@ -93,7 +94,7 @@ public sealed class AssistantService
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, WebSearchClient? search = null, SportsClient? sports = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, WebSearchClient? search = null, SportsClient? sports = null, WeatherClient? weather = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
@@ -103,6 +104,7 @@ public sealed class AssistantService
         DeepSeek = deepSeek ?? new DeepSeekClient();
         Search = search ?? new WebSearchClient();
         Sports = sports ?? new SportsClient();
+        Weather = weather ?? new WeatherClient();
         Router = router ?? new OpenAiCompatClient();
         FreeAi = freeAi ?? new FreeAiHub(paths, secrets);
         var f0 = _store.Snapshot();
@@ -551,6 +553,7 @@ public sealed class AssistantService
             {
                 var sp = await Sports.AskAsync(text, _now(), ct);
                 if (sp != null) { webBlock = sp.Block; webSources = "OpenLigaDB"; webKind = "Sportdaten"; }
+                else if (await Weather.AskAsync(text, ct) is { } wx) { webBlock = wx.Block; webSources = "Open-Meteo"; webKind = "Wetterdaten"; }
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         }

@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.17.0 – 2026-11-06
+### Neu
+- Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche
+
 ## 3.16.0 – 2026-11-06
 ### Neu
 - Bessere Spracheingabe für JARVIS (optional): Mit deinem Groq-Schlüssel auf dem Gerät (KI-Verwaltung → Schlüssel ohne PC → „Bessere Spracherkennung (Whisper)“) nimmt JARVIS einen Satz auf, die Aufnahme endet nach einer Sprechpause, und Groq (Whisper, kostenloser Tarif) macht Text daraus – genauer bei Eigennamen und Spielen und auch dort, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Der eine Satz geht direkt von deinem Gerät an Groq und wird nicht gespeichert; erfundene Sätze bei Stille („Untertitel der …“) werden verworfen. Ohne den Schalter bleibt alles wie bisher
