@@ -1,5 +1,35 @@
 [
   {
+    "version": "3.21.0",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion.exe",
+    "size": 94986791,
+    "sha256": "e5f84ad431a077c476a9f7f6867133b200dbe18a491d526b506adf0996e2b24a",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.21.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion-3.21.0-win-x64.zip",
+      "size": 89261904,
+      "sha256": "c45c0c5b30d674c120e13a6a49053c706949194d87c0ec0bb77968d238f75167"
+    },
+    "notes": "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt · „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht · Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
+    "changes": {
+      "neu": [
+        "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt",
+        "„Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht",
+        "Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
+        "Neue Seite „JARVIS MEMORY“: Verbindungsstatus, Notizzahl, zuletzt Gemerktes, Projekte, gespeicherte Informationen, Suche, Notizen anlegen, bearbeiten und löschen, Pflege-Hinweise (Doppelte, lange nicht angefasste Projekte, Lücken) im Glas-Design",
+        "Sicherheit: Der Vault wird nur über den PC-Begleiter und nur mit angemeldeter Verbindung erreicht (nie über GitHub Pages); Pfad-Tricks (.., absolute Pfade, Laufwerke, versteckte Ordner, Verknüpfungen) werden abgelehnt; Schreiben und Löschen sind einzeln abschaltbar; der Ordner wird nur am PC selbst gewählt; Löschen nie von selbst, nie endgültig (Papierkorb .trash); jede Änderung sichert die alte Fassung unter 00-System/Verlauf"
+      ],
+      "verbessert": [
+        "Ist der Vault nicht erreichbar (Laufwerk getrennt, Ordner gelöscht, PC aus), arbeitet JARVIS ohne Gedächtnis normal weiter; „Merk dir …“ und „Wo war ich …“ gehen bei eingeschaltetem Gedächtnis an den PC statt an das kleine Browser-Gedächtnis"
+      ],
+      "behoben": []
+    },
+    "signature": "NBxQau6OZYZnb7xr5O2hHu0EttdBFoFc/WNifX/6+Z0k1IMb2mibCrd/DG1VqQdNrrEgwBR2N9RsnBu5+cl04w=="
+  },
+  {
     "version": "3.20.0",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1374,32 +1404,5 @@
       "behoben": []
     },
     "signature": "M8Yrxwyq2VBlC3KfsnHpP+M5y3V7Tz6upEx5G4XUHMrhojS4kaC93jl/p/v1BTYM01l2DOQ6PDlZdYmvJj+GFw=="
-  },
-  {
-    "version": "2.80.0",
-    "date": "2026-10-29",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion.exe",
-    "size": 88347370,
-    "sha256": "fa36e483d5d7d60fd9f3ee08fac0e1cd6fa46e95b78468a6b04effea903d155c",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.80.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.80.0/PCGameLauncherCompanion-2.80.0-win-x64.zip",
-      "size": 82610084,
-      "sha256": "965967deac3e4360215d9ed80428b836944493250c12554201f48c450d1e5a95"
-    },
-    "notes": "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit) · Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat) · „KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
-    "changes": {
-      "neu": [
-        "Kostenlose KI für JARVIS: Gemini von Google mit deinem eigenen, kostenlosen Schlüssel aus Google AI Studio (am PC unter KI-Assistent → „Kostenlose KI für JARVIS-Recherche (Gemini)“, verschlüsselt gespeichert, nie angezeigt, nie im Backup; Modell gemini-3.5-flash-lite, eigenes Monatslimit)",
-        "Gemini fasst die gefundenen Quellen auf Deutsch mit Quellennummern zusammen, wenn kein Claude/keine lokale KI als Modus gewählt ist (Reihenfolge: Claude/Ollama nach Modus → Gemini → DeepSeek; die Antwort nennt immer, welche KI geschrieben hat)",
-        "„KI fragen (ohne Quelle)“: findet JARVIS keine Quelle, kann er auf deinen Tipp die KI am PC aus ihrem eigenen Wissen antworten lassen – deutlich als ungeprüft markiert, mit „nicht sicher“-Hinweis der KI, und nicht als Wissen gespeichert (neuer Befehl `assistant.freeAnswer`)",
-        "Verständliche Fehlermeldungen für Gemini: falscher Schlüssel, unbekanntes Modell, kostenloses Kontingent aufgebraucht, Region nicht verfügbar"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "zTFPiPpATZcYp+ayL7N/iSS6OsEBOgfJ+zwZKHkKg0/K6Y1C1ldN7KVJmMK22DRnltELWkHQR5D7Oexaqlvawg=="
   }
 ]

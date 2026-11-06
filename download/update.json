@@ -1,30 +1,30 @@
 {
-  "version": "3.20.0",
+  "version": "3.21.0",
   "date": "2026-11-06",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.20.0/PCGameLauncherCompanion.exe",
-  "size": 94953736,
-  "sha256": "b02ca3a1a7ea24275b2f0ad5b1b8fdf9c2a4aacf3f2db3ce0dfc6f00134d6279",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion.exe",
+  "size": 94986791,
+  "sha256": "e5f84ad431a077c476a9f7f6867133b200dbe18a491d526b506adf0996e2b24a",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.20.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.20.0/PCGameLauncherCompanion-3.20.0-win-x64.zip",
-    "size": 89228754,
-    "sha256": "11e62e532fd5dda9fb91d5690aa7b87081c2e10a6d86432db3f927622d1d69d3"
+    "fileName": "PCGameLauncherCompanion-3.21.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion-3.21.0-win-x64.zip",
+    "size": 89261904,
+    "sha256": "c45c0c5b30d674c120e13a6a49053c706949194d87c0ec0bb77968d238f75167"
   },
-  "notes": "Kacheln „Wer ist wofür zuständig“ in der KI-Verwaltung und im Insel-Menü: Antworten (Chat-KIs), Befehle & PC, Fußball & Wetter, Websuche, Sprache verstehen, Sprache sprechen – jede Kachel nennt, wofür sie zuständig ist, zeigt die Dienste dahinter mit Zustand (aktiv, am Limit, Problem, angefangen, nicht eingerichtet) und wie viele gerade aktiv sind · ElevenLabs-Schlüssel für JARVIS: am PC wie bisher (Stimme) und zusätzlich auf dem Gerät mit Passwort unter „Schlüssel ohne PC“ – dann geht die natürliche Stimme auch ohne PC (eigene Grenze: 15.000 Zeichen im Monat je Gerät, bei Fehlern spricht die Browser-Stimme), und ElevenLabs „Scribe“ versteht deine Sprache sehr genau · Spracherkennung klar wählbar (Kachel „Sprache verstehen“): Automatisch, Browser, Groq Whisper oder ElevenLabs Scribe – jeweils mit Anzeige, was bereit ist und was gerade wirklich zuhört. „Automatisch“ nimmt den Browser, wo es seine Erkennung gibt, und sonst Scribe/Whisper: so funktioniert das Mikrofon der Insel jetzt auch in Firefox, in Browsern ohne Spracherkennung und in der iPad-App vom Home-Bildschirm",
+  "notes": "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt · „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht · Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
   "changes": {
     "neu": [
-      "Kacheln „Wer ist wofür zuständig“ in der KI-Verwaltung und im Insel-Menü: Antworten (Chat-KIs), Befehle & PC, Fußball & Wetter, Websuche, Sprache verstehen, Sprache sprechen – jede Kachel nennt, wofür sie zuständig ist, zeigt die Dienste dahinter mit Zustand (aktiv, am Limit, Problem, angefangen, nicht eingerichtet) und wie viele gerade aktiv sind",
-      "ElevenLabs-Schlüssel für JARVIS: am PC wie bisher (Stimme) und zusätzlich auf dem Gerät mit Passwort unter „Schlüssel ohne PC“ – dann geht die natürliche Stimme auch ohne PC (eigene Grenze: 15.000 Zeichen im Monat je Gerät, bei Fehlern spricht die Browser-Stimme), und ElevenLabs „Scribe“ versteht deine Sprache sehr genau",
-      "Spracherkennung klar wählbar (Kachel „Sprache verstehen“): Automatisch, Browser, Groq Whisper oder ElevenLabs Scribe – jeweils mit Anzeige, was bereit ist und was gerade wirklich zuhört. „Automatisch“ nimmt den Browser, wo es seine Erkennung gibt, und sonst Scribe/Whisper: so funktioniert das Mikrofon der Insel jetzt auch in Firefox, in Browsern ohne Spracherkennung und in der iPad-App vom Home-Bildschirm",
-      "Auch ohne eigenen Schlüssel am Gerät: Liegt der ElevenLabs-Schlüssel am PC, erkennt der PC die aufgenommene Sprache für Handy und iPad",
-      "Stimme wählbar (Kachel „Sprache sprechen“): Automatisch (ElevenLabs, wenn bereit), Browser-Stimme oder ElevenLabs"
+      "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt",
+      "„Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht",
+      "Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
+      "Neue Seite „JARVIS MEMORY“: Verbindungsstatus, Notizzahl, zuletzt Gemerktes, Projekte, gespeicherte Informationen, Suche, Notizen anlegen, bearbeiten und löschen, Pflege-Hinweise (Doppelte, lange nicht angefasste Projekte, Lücken) im Glas-Design",
+      "Sicherheit: Der Vault wird nur über den PC-Begleiter und nur mit angemeldeter Verbindung erreicht (nie über GitHub Pages); Pfad-Tricks (.., absolute Pfade, Laufwerke, versteckte Ordner, Verknüpfungen) werden abgelehnt; Schreiben und Löschen sind einzeln abschaltbar; der Ordner wird nur am PC selbst gewählt; Löschen nie von selbst, nie endgültig (Papierkorb .trash); jede Änderung sichert die alte Fassung unter 00-System/Verlauf"
     ],
     "verbessert": [
-      "Der alte Schalter „Bessere Spracherkennung (Whisper)“ ist in die Kachel „Sprache verstehen“ gewandert (eine frühere Einstellung bleibt als „Groq Whisper“ erhalten)"
+      "Ist der Vault nicht erreichbar (Laufwerk getrennt, Ordner gelöscht, PC aus), arbeitet JARVIS ohne Gedächtnis normal weiter; „Merk dir …“ und „Wo war ich …“ gehen bei eingeschaltetem Gedächtnis an den PC statt an das kleine Browser-Gedächtnis"
     ],
     "behoben": []
   },
-  "signature": "kuQGzefRligrGH5wUcmasaInxKObfEpPUfpsHdTc9iGUwv68CiNCiG5GjvWRvBJxbIZqRzB3PfwHBG2cGCcjKg=="
+  "signature": "NBxQau6OZYZnb7xr5O2hHu0EttdBFoFc/WNifX/6+Z0k1IMb2mibCrd/DG1VqQdNrrEgwBR2N9RsnBu5+cl04w=="
 }
