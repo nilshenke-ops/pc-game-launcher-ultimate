@@ -271,6 +271,31 @@ public static class RpcApi
         rpc.Register("assistant.ollamaPull", ctx => s.Assistant.OllamaPullStart(ctx.Str("model", 80)));
         rpc.Register("assistant.ollamaPullStatus", ctx => s.Assistant.OllamaPullStatus());
         // JARVIS' voice (ElevenLabs): settings (the key only at the PC itself), the stock voices, and text → audio.
+        // ------------------------------------------------------------ JARVIS MEMORY (the Markdown vault = long-term memory)
+        rpc.Register("memory.status", _ => s.Memory.Status());
+        rpc.Register("memory.configure", ctx =>
+        {
+            bool? B(string n) => ctx.Params.ValueKind == JsonValueKind.Object && ctx.Params.TryGetProperty(n, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
+            return s.Memory.Configure(ctx.OptStr("path", 260), B("enabled"), B("writeEnabled"), B("deleteEnabled"), ctx.OptStr("auto", 10), ctx.Session.IsLocalAdmin);
+        });
+        rpc.Register("memory.list", ctx => new { notes = s.Memory.List(ctx.OptStr("folder", 60)) });
+        rpc.Register("memory.recent", ctx => new { notes = s.Memory.Recent(8) });
+        rpc.Register("memory.projects", _ => new { projects = s.Memory.Projects() });
+        rpc.Register("memory.health", _ => new { items = s.Memory.Health() });
+        rpc.Register("memory.search", ctx => new { hits = s.Memory.Search(ctx.Str("query", 200), 12) });
+        rpc.Register("memory.read", ctx =>
+        {
+            var (path, text, updated) = s.Memory.Read(ctx.Str("path", 160));
+            var (links, back) = s.Memory.Related(path);
+            return new { path, text, updated, links, backlinks = back };
+        });
+        rpc.Register("memory.write", ctx =>
+        {
+            var expected = ctx.OptStr("updated", 40);
+            return s.Memory.Write(ctx.Str("path", 160), ctx.Str("content", Assistant.MemoryVault.MaxWriteChars + 10, required: false), DateTime.TryParse(expected, null, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var e) ? e : null, ctx.OptBool("createOnly") == true);
+        });
+        rpc.Register("memory.remember", ctx => s.Memory.Remember(ctx.Str("text", 700), s.Library.List().Where(i => i.Kind == ItemKind.Game).Select(i => i.Name)));
+        rpc.Register("memory.delete", ctx => { s.Memory.Delete(ctx.Str("path", 160), ctx.OptBool("confirm") == true); return true; });
         rpc.Register("voice.status", _ => s.Voice.Status());
         rpc.Register("voice.configure", ctx => { var r = s.Voice.Configure(ctx.Bind<Assistant.VoiceService.Config>(), ctx.Session.IsLocalAdmin); s.Rpc.Changed("voice"); return r; });
         rpc.Register("voice.transcribe", async ctx => new { text = await s.Voice.TranscribeAsync(ctx.OptStr("base64", 4_500_000), ctx.OptStr("mime", 60), ctx.OptStr("lang", 10), default) });

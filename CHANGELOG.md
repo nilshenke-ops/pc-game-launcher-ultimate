@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.21.0 – 2026-11-06
+### Neu
+- JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt
+- „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht
+- Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault
+- Neue Seite „JARVIS MEMORY“: Verbindungsstatus, Notizzahl, zuletzt Gemerktes, Projekte, gespeicherte Informationen, Suche, Notizen anlegen, bearbeiten und löschen, Pflege-Hinweise (Doppelte, lange nicht angefasste Projekte, Lücken) im Glas-Design
+- Sicherheit: Der Vault wird nur über den PC-Begleiter und nur mit angemeldeter Verbindung erreicht (nie über GitHub Pages); Pfad-Tricks (.., absolute Pfade, Laufwerke, versteckte Ordner, Verknüpfungen) werden abgelehnt; Schreiben und Löschen sind einzeln abschaltbar; der Ordner wird nur am PC selbst gewählt; Löschen nie von selbst, nie endgültig (Papierkorb .trash); jede Änderung sichert die alte Fassung unter 00-System/Verlauf
+### Verbessert
+- Ist der Vault nicht erreichbar (Laufwerk getrennt, Ordner gelöscht, PC aus), arbeitet JARVIS ohne Gedächtnis normal weiter; „Merk dir …“ und „Wo war ich …“ gehen bei eingeschaltetem Gedächtnis an den PC statt an das kleine Browser-Gedächtnis
+
 ## 3.20.0 – 2026-11-06
 ### Neu
 - Kacheln „Wer ist wofür zuständig“ in der KI-Verwaltung und im Insel-Menü: Antworten (Chat-KIs), Befehle & PC, Fußball & Wetter, Websuche, Sprache verstehen, Sprache sprechen – jede Kachel nennt, wofür sie zuständig ist, zeigt die Dienste dahinter mit Zustand (aktiv, am Limit, Problem, angefangen, nicht eingerichtet) und wie viele gerade aktiv sind

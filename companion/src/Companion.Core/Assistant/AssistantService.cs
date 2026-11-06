@@ -86,6 +86,7 @@ public sealed class AssistantService
     public DeepSeekClient DeepSeek { get; }
     public WebSearchClient Search { get; }
     public SportsClient Sports { get; }
+    public MemoryVault Memory { get; }
     public WeatherClient Weather { get; }
     public OpenAiCompatClient Router { get; }
     /// <summary>The free AI services in one fixed order with the cost guard (OpenRouter, Groq, Pollinations, Ollama).</summary>
@@ -96,7 +97,7 @@ public sealed class AssistantService
     readonly ConcurrentDictionary<string, Conv> _convs = new();
     const int MaxTurns = 30;
 
-    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, WebSearchClient? search = null, SportsClient? sports = null, WeatherClient? weather = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null)
+    public AssistantService(AppPaths paths, ISecretProtector secrets, IHub hub, AssistantData data, ClaudeAssistant? claude = null, Func<DateTime>? now = null, OllamaAssistant? ollama = null, DeepSeekClient? deepSeek = null, WebSearchClient? search = null, SportsClient? sports = null, WeatherClient? weather = null, OpenAiCompatClient? router = null, FreeAiHub? freeAi = null, MemoryVault? memory = null)
     {
         _store = new JsonStore<AssistantFile>(paths.File("assistant.json"));
         _secrets = secrets; _hub = hub; Data = data; _now = now ?? (() => DateTime.UtcNow);
@@ -106,6 +107,7 @@ public sealed class AssistantService
         DeepSeek = deepSeek ?? new DeepSeekClient();
         Search = search ?? new WebSearchClient();
         Sports = sports ?? new SportsClient();
+        Memory = memory ?? new MemoryVault(paths, hub);
         Weather = weather ?? new WeatherClient();
         Router = router ?? new OpenAiCompatClient();
         FreeAi = freeAi ?? new FreeAiHub(paths, secrets);
@@ -329,6 +331,7 @@ public sealed class AssistantService
             _hub.Changed("assistant");
             return Done(conversationId ?? Ids.New("conv"), new AssistantReply { Text = $"Alles klar, ich merke mir: Du wohnst in {home}. Fragst du nach dem Wetter ohne Ort, sage ich dir das Wetter von {home}.", Sources = { "Gedächtnis" } }, null);
         }
+        if (await MemoryReplyAsync(owner, text, conversationId) is { } memReply) return memReply;
         if (Regex.IsMatch(text, @"^\s*wo\s+wohne\s+ich\b", RegexOptions.IgnoreCase))
             return Done(conversationId ?? Ids.New("conv"), new AssistantReply { Text = _store.Snapshot().HomePlace is { } hp ? $"Du wohnst in {hp} – das habe ich mir gemerkt." : "Das weiß ich noch nicht. Sag einfach „Ich wohne in …“, dann merke ich es mir.", Sources = { "Gedächtnis" } }, null);
         if (jarvis || jarvisRequested)
@@ -559,6 +562,8 @@ public sealed class AssistantService
         string? webBlock = null, webSources = null; var needsWeb = WebSearchClient.Wanted(text);
         var anySearchKey = WebSearchClient.Providers.Any(id => SearchKeyOf(f, id) != null);
         var webKind = "Websuche";
+        // Long-term memory (RAG): only the few best notes for THIS question go to the AI – never the whole vault; nothing is attached when nothing fits.
+        if (!needsWeb && Memory.Enabled && Memory.ContextFor(text) is { } mem) { webBlock = mem.Block; webSources = string.Join(", ", mem.Paths); webKind = "Gedächtnis"; }
         // Football (schedules, scores): from OpenLigaDB first – free, no key, no search service needed. Other live questions go to the web search.
         string? homeNote = null;
         if (needsWeb || SportsClient.LooksSporty(text) || WeatherClient.AsksWeather(text))
@@ -761,12 +766,62 @@ public sealed class AssistantService
     }
 
     readonly AsyncLocal<(string text, bool jarvis, bool direct)> _ask = new();
+    readonly Dictionary<string, string> _lastUser = new();
+
+    /// <summary>"Merk dir …" / "Wo war ich bei … stehen geblieben?" – answered from the vault itself (no AI needed, nothing invented). Null = not a memory request (or no memory).</summary>
+    Task<object?> MemoryReplyAsync(string owner, string text, string? conversationId)
+    {
+        object? Reply(string t, string? src, bool failed = false)
+        {
+            var r = new AssistantReply { Text = t, Failed = failed };
+            r.Sources.Add(src ?? "Gedächtnis");
+            return Done(conversationId ?? Ids.New("conv"), r, null);
+        }
+        var remember = MemoryIntents.RememberText(text);
+        var topic = remember == null ? MemoryIntents.RecallTopic(text) : null;
+        var isDelete = remember == null && topic == null && MemoryIntents.IsDeleteRequest(text);
+        if (!Memory.Enabled)
+        {
+            // memory is not connected: the older behaviour stays (the browser's own "Gaming-Gedächtnis"); only say why when someone asked it to be the long-term memory
+            return Task.FromResult<object?>(null);
+        }
+        if (isDelete) return Task.FromResult(Reply("Löschen mache ich nie von allein. Öffne „JARVIS MEMORY“, wähle die Notiz und lösche sie dort (das musst du in den Einstellungen erst erlauben) – gelöschte Notizen landen im Papierkorb des Vaults, nicht endgültig weg.", "Gedächtnis"));
+        if (remember != null)
+        {
+            var payload = remember;
+            if (payload.Length == 0) _lastUser.TryGetValue(owner, out payload);
+            if (string.IsNullOrWhiteSpace(payload)) return Task.FromResult(Reply("Was soll ich mir merken? Sag zum Beispiel: „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist.“", null));
+            try
+            {
+                var games = Data.Library().Where(i => i.Kind == Models.ItemKind.Game).Select(i => i.Name).ToList();
+                var res = Memory.Remember(payload, games);
+                return Task.FromResult(Reply(res.Message, "Gedächtnis: " + res.Path));
+            }
+            catch (RpcException e) { return Task.FromResult(Reply(e.Message, "Gedächtnis", failed: true)); }
+        }
+        if (topic != null)
+        {
+            var found = Memory.Recall(topic);
+            return Task.FromResult(found != null ? Reply(found, "Gedächtnis") : Reply($"Zu „{topic}“ steht nichts in meinem Gedächtnis – ich sage dir also nichts, was ich nicht weiß. Wenn du magst: „Merk dir, dass …“, dann speichere ich es.", "Gedächtnis"));
+        }
+        _lastUser[owner] = text;
+        return Task.FromResult<object?>(null);
+    }
 
     object Done(string conversationId, AssistantReply reply, string? note)
     {
         if (note != null) reply.Text = note + "\n\n" + reply.Text;
         var (text, jarvis, direct) = _ask.Value;
         // "direct": the person typed or said the command themselves (the island): what they named runs at once – no second question.
+        if (Memory.Enabled && Memory.Config.Auto != "off" && Memory.Config.WriteEnabled && !reply.Failed && MemoryIntents.LooksWorthKeeping(text) && !reply.Sources.Any(x => x.StartsWith("Gedächtnis")))
+        {
+            if (Memory.Config.Auto == "auto")
+            {
+                try { var res = Memory.Remember(text, Data.Library().Where(i => i.Kind == Models.ItemKind.Game).Select(i => i.Name).ToList()); reply.Sources.Add("Gedächtnis: " + res.Message); }
+                catch (RpcException) { /* not saved – nothing to say */ }
+            }
+            else if (!reply.Suggestions.Contains("Merk dir das")) reply.Suggestions.Add("Merk dir das");
+        }
         if (jarvis || direct) Jarvis.MarkAuto(reply, text);
         else foreach (var a in reply.Actions) a.Auto = false;
         return new { conversationId, reply, jarvis };

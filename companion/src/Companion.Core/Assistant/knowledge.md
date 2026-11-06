@@ -165,6 +165,11 @@ Seite: /vault
 Stichworte: savegame spielstand spielstände sichern sicherung backup wiederherstellen zurückholen tresor konfiguration config ini cfg json vergleichen version verlauf steam cloud prüfen integrität
 Spiele → Savegame-Tresor. „Ort hinzufügen“ → Spiel wählen: der PC schlägt nur sichere Orte vor (Steam-Cloud-Ordner des Spiels, Ordner mit genau dem Namen des Spiels in Gespeicherte Spiele, Dokumente\My Games oder AppData) – nichts wird automatisch eingetragen; eigene Ordner und Konfigurationsdateien nur direkt am PC. Regeln: automatisch nach dem Spielen oder täglich (nur wenn sich etwas geändert hat), wie viele Sicherungen behalten. „Jetzt sichern“, „Prüfen“ (SHA-256 aller Dateien), „Zurückholen …“ zeigt vorher, was ersetzt, zurückkommt oder entfernt wird; der jetzige Stand wird vorher gesichert, solange das Spiel läuft passiert nichts. Konfigurationsdateien: „Mit jetzt vergleichen“ zeigt geänderte, neue und entfernte Einstellungen. Ohne PC lassen sich nur die Regeln ändern.
 
+## JARVIS MEMORY (Langzeitgedächtnis)
+Seite: /memory
+Stichworte: gedächtnis memory merken merk dir erinnern erinnerung obsidian vault notizen markdown langzeitgedächtnis projekt stehen geblieben wo war ich vergessen löschen ordner
+Assistent → JARVIS MEMORY. Das Gedächtnis ist ein Ordner mit Markdown-Notizen auf dem PC (ein Obsidian-Vault; Obsidian muss nicht laufen). Den Ordner trägst du am PC selbst ein. „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie, „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen und sagt ehrlich, wenn nichts dazu steht. Die Seite zeigt Verbindung, Projekte, zuletzt Gemerktes, Suche und Pflege-Hinweise; Notizen lassen sich anlegen und bearbeiten. Löschen ist standardmäßig aus, geht nur in den Papierkorb des Vaults und nie von selbst. Ist der Ordner nicht erreichbar, arbeitet JARVIS normal weiter. Ohne PC-Verbindung ist das Gedächtnis nicht erreichbar.
+
 ## Mods
 Seite: /mods
 Stichworte: mod mods modding bepinex plugins zip installieren aktivieren deaktivieren entfernen sicherung backup zurück

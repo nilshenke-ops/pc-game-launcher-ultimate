@@ -74,6 +74,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public DeckService Decks { get; }
     public CalendarService Calendar { get; }
     public JournalService Journal { get; }
+    public Assistant.MemoryVault Memory { get; }
     public ServerQueryService Servers { get; } = new();
     public ActivityService Activity { get; }
     public BackupService Backup { get; }
@@ -209,7 +210,8 @@ public sealed class CompanionServices : IAsyncDisposable
         // Games from the library are never closed by the game mode (process names and the started EXE).
         GameModePrograms = new GameModePrograms(paths, platform.Processes, platform.ProcessControl, Rpc, () => Library.List().Where(i => i.Kind == ItemKind.Game)
             .SelectMany(i => i.ProcessNames.Concat(i.Source == LaunchSource.Exe ? new[] { Path.GetFileNameWithoutExtension(i.Target) } : Array.Empty<string>())));
-        Assistant = new Assistant.AssistantService(paths, platform.Secrets, Rpc, new Assistant.AssistantData(this));
+        Memory = new Assistant.MemoryVault(paths, Rpc);
+        Assistant = new Assistant.AssistantService(paths, platform.Secrets, Rpc, new Assistant.AssistantData(this), memory: Memory);
         // Tests may point the voice at a stand-in server (loopback); the real address is fixed in the code.
         Voice = new Assistant.VoiceService(paths, platform.Secrets, baseUrl: Environment.GetEnvironmentVariable("PGL_TEST_ELEVENLABS_BASE") is { Length: > 0 } vb && Uri.TryCreate(vb, UriKind.Absolute, out var vu) && vu.IsLoopback ? vb : null);
         Research = new ResearchService(Assistant, News, SteamAchievements, Rpc) { MojangBase = Environment.GetEnvironmentVariable("PGL_MOJANG_BASE") is { Length: > 0 } mb ? mb : "https://launchercontent.mojang.com" };

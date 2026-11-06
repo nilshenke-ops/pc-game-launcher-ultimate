@@ -24,6 +24,15 @@ const opens = (s: string) => /\b(oeffne|öffne|offne|zeig|zeige|geh|gehe|wechsel
 
 export interface JarvisCtx { online: boolean; conversationId: string | null; previousBingo: string | null; bingoProvider: string | null; /** Answer to "im Internet nachsehen?" for a bingo. */ bingoWeb?: boolean; /** Answer to "Darf ich nachsehen?" for a question (true = yes this time). */ lookup?: boolean; /** Tapped "In Quellen nachsehen" after an AI answer. */ sources?: boolean; /** Tapped "Gemini fragen (ohne Quelle)". */ ai?: boolean; /** AI chosen in the chat ("auto" = mode at the PC). */ engine?: string; /** For "Abbrechen". */ requestId?: string; /** The game talked about last in this chat (follow-up questions). */ contextGame?: string | null }
 
+let vaultSeen: { at: number; on: boolean } | null = null;
+/** True while the PC's JARVIS MEMORY is connected (asked at most every 20 s; any failure counts as "off", so the chat keeps working). */
+async function vaultActive(): Promise<boolean> {
+  if (vaultSeen && Date.now() - vaultSeen.at < 20_000) return vaultSeen.on;
+  try { const { client } = await import("./rpc"); const r = await client.call<{ enabled: boolean; state: string }>("memory.status", {}); vaultSeen = { at: Date.now(), on: r.enabled && r.state === "ok" }; }
+  catch { vaultSeen = { at: Date.now(), on: false }; }
+  return vaultSeen.on;
+}
+
 export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<JarvisTurn> {
   const reply = (text: string, actions: AssistantAction[] = [], sources: string[] = ["JARVIS"]): AssistantReply => ({ text, actions, sources, suggestions: [], mode: ctx.online ? "local" : "device" });
   if (offTopic(question)) return { reply: reply(OFF_TOPIC()), steps: [] };
@@ -50,7 +59,9 @@ export async function jarvisAsk(question: string, ctx: JarvisCtx): Promise<Jarvi
   }
   // "Merk dir einen Hinweis für Elden Ring: …" belongs to that game's journal, not to the general memory.
   const { coachIntent: coach } = await import("./game-coach");
-  const mem = coach(question) ? null : memoryIntent(question);
+  // With the PC's memory vault switched on, "Merk dir …" / "Wo war ich …" are answered there (real notes), not by the small browser memory.
+  const vault = ctx.online && !coach(question) && /merk|notier|speicher|vergiss|wo war ich|weißt du|weisst du|gedächtnis|gedaechtnis/i.test(question) ? await vaultActive() : false;
+  const mem = coach(question) || (vault && !/protokoll|gemacht|erledigt/i.test(question)) ? null : memoryIntent(question);
   if (mem) return { reply: memoryReply(mem, reply), steps: [] };
 
   // "Was sollte ich in X als Nächstes machen?" is one question, not two steps around "als Nächstes".

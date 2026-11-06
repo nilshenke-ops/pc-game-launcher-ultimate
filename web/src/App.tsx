@@ -43,6 +43,7 @@ const FilesPage = lazy(() => import("./pages/Files"));
 const CapturesPage = lazy(() => import("./pages/Captures"));
 const ModsPage = lazy(() => import("./pages/Mods"));
 const VaultPage = lazy(() => import("./pages/Vault"));
+const MemoryPage = lazy(() => import("./pages/Memory"));
 const InventoryPage = lazy(() => import("./pages/Inventory"));
 const CrashesPage = lazy(() => import("./pages/Crashes"));
 const GameStatePage = lazy(() => import("./pages/GameState"));
@@ -166,6 +167,7 @@ function Gate() {
           <Route path="/captures" element={<CapturesPage />} />
           <Route path="/mods" element={<ModsPage />} />
           <Route path="/vault" element={<VaultPage />} />
+          <Route path="/memory" element={<MemoryPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/crashes" element={<CrashesPage />} />
           <Route path="/gamestate" element={<GameStatePage />} />

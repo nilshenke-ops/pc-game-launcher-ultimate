@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { COMPANION, HOSTED_SITE, OBS_PASSWORD, OBS_PORT, OBS_URL, RELAY, ROUTER_PORT, state } from "./env";
 import { ACCESS_HASH } from "../src/lib/access";
 import { NEW_WIDGET_PLUGINS } from "./plugins-list";
-import { adminRpc } from "./rpc";
+import { adminRpc, adminSession } from "./rpc";
 
 const ROOT_DIR = new URL("../..", import.meta.url).pathname;
 
@@ -2761,6 +2761,91 @@ test("KI-Router: nur am PC einzurichten, kostenlose Modelle live, Reihenfolge, A
   await dlg.getByRole("button", { name: "Fertig" }).click();
   await expect(p.locator(".page-head .badge").last()).toHaveText("Lokal · 0 €");
   await p.context().close();
+});
+
+test("JARVIS MEMORY: echter Ordner mit Markdown-Dateien – merken, nachfragen, Seite, Pfad-Angriffe, nur mit Recht löschen", async ({ browser }) => {
+  const vault = join(state().workDir, "JARVIS-MEMORY");
+  const sess = await adminSession();
+  const adminRpc = sess.call;
+  type Ask = { reply: { text: string } };
+  // Not set up yet: JARVIS works, the memory is simply off.
+  const off = await adminRpc<{ state: string }>("memory.status");
+  expect(["off", "no-folder"]).toContain(off.state);
+  const st = await adminRpc<{ state: string; notes: number }>("memory.configure", { path: vault, enabled: true });
+  expect(st.state).toBe("ok");
+  expect(existsSync(join(vault, "02-Projekte", "Minecraft.md"))).toBe(true);
+  expect(existsSync(join(vault, "00-System", "Gedächtnis-Regeln.md"))).toBe(true);
+
+  // Say it → a real file changes on disk, no duplicate on repeating.
+  const a1 = await adminRpc<Ask>("assistant.ask", { text: "Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist" });
+  expect(a1.reply.text).toMatch(/Minecraft/);
+  const file = join(vault, "02-Projekte", "Minecraft.md");
+  expect(readFileSync(file, "utf8")).toMatch(/noch nicht fertig/);
+  const before = readFileSync(file, "utf8");
+  await adminRpc<Ask>("assistant.ask", { text: "Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist" });
+  expect(readFileSync(file, "utf8")).toBe(before);
+  // Ask it → the answer comes from the note.
+  const a2 = await adminRpc<Ask>("assistant.ask", { text: "Wo war ich bei meinem Minecraft-Projekt stehen geblieben?" });
+  expect(a2.reply.text).toMatch(/nicht fertig/);
+  expect(a2.reply.text).toMatch(/Minecraft/);
+  // Something that is nowhere in the memory is not invented.
+  const a3 = await adminRpc<Ask>("assistant.ask", { text: "Wo war ich bei meinem Raumschiff-Projekt stehen geblieben?" });
+  expect(a3.reply.text).not.toMatch(/nicht fertig/);
+  // Status change → the note is updated, the old status stays in the text.
+  await adminRpc<Ask>("assistant.ask", { text: "Merk dir, dass mein Minecraft-Projekt jetzt fertig ist" });
+  expect(readFileSync(file, "utf8")).toMatch(/\*\*Status:\*\* fertig/);
+  expect(readFileSync(file, "utf8")).toMatch(/Status geändert von/);
+
+  // Attacks on the path never leave the vault.
+  for (const bad of ["../escape.md", "..\\..\\escape.md", "/etc/passwd", "C:\\Windows\\win.ini", ".obsidian/x.md"]) {
+    await expect(adminRpc("memory.write", { path: bad, content: "x" })).rejects.toThrow();
+    await expect(adminRpc("memory.read", { path: bad })).rejects.toThrow();
+  }
+  expect(existsSync(join(vault, "..", "escape.md"))).toBe(false);
+
+  // Delete is off by default; JARVIS never deletes by himself ("vergiss …" is refused with an explanation).
+  await adminRpc("memory.write", { path: "05-Wissen/Wegwerf.md", content: "# Wegwerf\nweg damit\n", createOnly: true });
+  await expect(adminRpc("memory.delete", { path: "05-Wissen/Wegwerf.md", confirm: true })).rejects.toThrow(/Löschen|erlaubt/);
+  const f = await adminRpc<Ask>("assistant.ask", { text: "Vergiss alles über Wegwerf" });
+  expect(f.reply.text).toMatch(/lösch|Löschen|nicht von selbst|erlaub/i);
+  expect(existsSync(join(vault, "05-Wissen", "Wegwerf.md"))).toBe(true);
+
+  // The page: status, project, search, editing a note on disk.
+  const page = await adminPage(browser);
+  await page.goto(`${COMPANION}/#/memory`);
+  await expect(page.getByRole("heading", { name: "JARVIS MEMORY" })).toBeVisible();
+  await expect(page.getByText("Verbunden", { exact: true }).first()).toBeVisible();
+  await expect(page.locator(".mem-stats")).toContainText("Notizen");
+  await expect(page.getByRole("button", { name: /Minecraft/ }).first()).toBeVisible();
+  await page.getByPlaceholder(/Minecraft-Projekt/).fill("Minecraft Projekt");
+  await expect(page.locator(".mem-row", { hasText: "Minecraft" }).first()).toBeVisible();
+  await page.getByRole("button", { name: "Neue Notiz" }).click();
+  await page.getByLabel("Titel").fill("Redstone Tipps");
+  await page.getByLabel("Inhalt").fill("Repeater verlängern das Signal.");
+  await page.getByRole("button", { name: "Anlegen" }).click();
+  await expect.poll(() => existsSync(join(vault, "05-Wissen", "Redstone Tipps.md"))).toBe(true);
+  expect(readFileSync(join(vault, "05-Wissen", "Redstone Tipps.md"), "utf8")).toContain("Repeater verlängern");
+  await expect(page.getByRole("dialog", { name: "Neue Notiz" })).toBeHidden();
+  await page.locator("textarea[aria-label='Notiz']").fill("# Redstone Tipps\nComparatoren messen Füllstände.\n");
+  await page.getByRole("button", { name: "Speichern" }).click();
+  await expect.poll(() => readFileSync(join(vault, "05-Wissen", "Redstone Tipps.md"), "utf8")).toContain("Comparatoren");
+  await page.keyboard.press("Escape");
+
+  // A phone sees the same memory over its own login; the Obsidian app does not have to run (it is only files).
+  const hits = await adminRpc<{ hits: { path: string }[] }>("memory.search", { query: "Comparatoren" });
+  expect(hits.hits[0].path).toBe("05-Wissen/Redstone Tipps.md");
+
+  // Folder gone (drive removed): the status says so, JARVIS keeps answering, nothing crashes; coming back = works again.
+  const moved = vault + "-weg";
+  const { renameSync } = await import("node:fs");
+  renameSync(vault, moved);
+  expect((await adminRpc<{ state: string }>("memory.status")).state).toBe("missing");
+  const alive = await adminRpc<Ask>("assistant.ask", { text: "Hallo" });
+  expect(alive.reply.text.length).toBeGreaterThan(0);
+  renameSync(moved, vault);
+  expect((await adminRpc<{ state: string; notes: number }>("memory.status")).state).toBe("ok");
+  await page.context().close();
+  sess.close();
 });
 
 test("PC aus: App öffnet trotzdem, Design änderbar, verbindet sich automatisch wieder", async ({ browser }) => {

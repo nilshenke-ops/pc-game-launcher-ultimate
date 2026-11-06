@@ -2742,3 +2742,23 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .aim-tile-parts { list-style: none; display: flex; flex-wrap: wrap; gap: 5px; margin: 0; padding: 0; }
 .aim-tile-parts .aim-chip.none { opacity: .6; }
 .aim-choice { display: flex; flex-wrap: wrap; gap: 6px; }
+
+/* JARVIS MEMORY – calm glass cards, grey line icons, a little depth */
+.mem-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px; }
+.mem-stats > div { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface, #fff) 55%, transparent); backdrop-filter: blur(12px); box-shadow: 0 1px 0 rgb(255 255 255 / 0.06) inset, 0 6px 18px -10px rgb(0 0 0 / 0.5); }
+.mem-stats b { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.mem-stats span { font-size: 12px; color: var(--muted, #8a8f98); }
+.mem-path { display: flex; align-items: center; gap: 6px; color: var(--muted, #8a8f98); font-size: 13px; overflow-wrap: anywhere; }
+.mem-path svg, .mem-row svg { color: var(--muted, #8a8f98); flex: none; }
+.mem-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+.mem-list { display: flex; flex-direction: column; gap: 6px; }
+.mem-row { display: flex; gap: 10px; align-items: flex-start; text-align: left; width: 100%; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--border); background: color-mix(in srgb, var(--surface, #fff) 45%, transparent); color: inherit; cursor: pointer; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; min-height: 44px; }
+.mem-row:hover { transform: translateY(-1px); box-shadow: 0 8px 20px -12px rgb(0 0 0 / 0.55); }
+.mem-row > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.mem-row b { font-weight: 600; overflow-wrap: anywhere; }
+.mem-row small { color: var(--muted, #8a8f98); }
+.mem-row em { font-style: normal; color: var(--muted, #8a8f98); font-size: 13px; overflow-wrap: anywhere; }
+.mem-folder > summary { cursor: pointer; padding: 6px 2px; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+.mem-editor { min-height: 260px; width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; resize: vertical; }
+.mem-links { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted, #8a8f98); }
+@media (prefers-reduced-motion: reduce) { .mem-row { transition: none; } .mem-row:hover { transform: none; } }
