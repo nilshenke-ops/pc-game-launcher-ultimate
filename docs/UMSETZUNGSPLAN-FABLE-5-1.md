@@ -19,7 +19,7 @@ Dies ist die **Arbeitsliste**. Die Begründungen und belegten Funde stehen in `d
 | 12 | **erledigt**: Link-Prüfung, alter 1.x-Bericht als historisch markiert | `scripts/check-links.mjs` |
 
 ### Block 2 (braucht deinen Windows-PC / echte Handys) – **nicht erledigt**
-AP 20–26 sind unverändert offen. Hier gibt es keinen Windows-PC und kein Handy, deshalb habe ich dazu nichts „getestet“. Seit 2.90.0 sind in der Insel nur das Fenster etwas höher (520 statt 470 px) und neue Karten dazugekommen – beides am echten PC ungeprüft.
+AP 20–26 sind unverändert offen. **Seit 3.19:** Die Checkliste zum Abhaken steht in `docs/TESTPROTOKOLL-BLOCK2.md` (je Punkt Erwartung + Ergebnisfeld, inkl. der neuen Funktionen Sport/Wetter/Wohnort, Whisper-Sprache und Tailscale-Kopplung). Hier gibt es keinen Windows-PC und kein Handy, deshalb habe ich dazu nichts „getestet“. Seit 2.90.0 sind in der Insel nur das Fenster etwas höher (520 statt 470 px) und neue Karten dazugekommen – beides am echten PC ungeprüft.
 
 ### Block 3 – Stand (2.91.0)
 | AP | Ergebnis | Beleg |
