@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.17.0",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.17.0/PCGameLauncherCompanion.exe",
+    "size": 94944599,
+    "sha256": "f491ea17ba9272afadbbeb9babceff33920fc446ab7e7cf408c20ee8443e7a2a",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.17.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.17.0/PCGameLauncherCompanion-3.17.0-win-x64.zip",
+      "size": 89219524,
+      "sha256": "8c7aa8524b4a69e46e6a84c3d5a7dd9747f1384f665669b43b226173dce4a50a"
+    },
+    "notes": "Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche",
+    "changes": {
+      "neu": [
+        "Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "mGzY9DYZaohp/J7JGB+Tf6Bx/ntF+8tTCGQyh+p6JOYKELslrkrCiPlnFlx8mrynpXR16/SMyBIpobQfryetAw=="
+  },
+  {
     "version": "3.16.0",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1382,33 +1406,5 @@
       "behoben": []
     },
     "signature": "Jk+ERij+a2IbXERClZu89YYQmJwbIFTkIQKXU8J2Du9P7uHo3tMCe5Vot6iJrJqMVMD1u2nVs7jD8Xnxb/vo1A=="
-  },
-  {
-    "version": "2.76.0",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.76.0/PCGameLauncherCompanion.exe",
-    "size": 88320476,
-    "sha256": "dd2d8954f24728e77cc10fb8ad120cd59570ad3c8389f78a98529c01f6951151",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.76.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.76.0/PCGameLauncherCompanion-2.76.0-win-x64.zip",
-      "size": 82582910,
-      "sha256": "0137241d65126bc6b09133ca188c6d7575d7b6041c986606a200ce50563c98e4"
-    },
-    "notes": "Soundboard: Icon (Emoji) je Sound-Kachel, „Zufallssound“ (aus der aktuellen Auswahl), Vorschläge für Soundboard-Profile beim Anlegen einer Sammlung (Minecraft, Elden Ring, Discord, Horror-Gaming, Lustige Sounds, Eigene Sammlung) · Audio Center → Discord einrichten: Discord-Check mit fünf Schritten live aus deiner Auswahl (Kabel installiert, Soundboard aufs Kabel, Mikrofon im Kabel, selbst mithören, Discord-Eingabegerät) – der letzte Schritt ehrlich als „kann keine App prüfen“; „Testton ins Kabel“ · Abschlussbericht des Ausbaus in docs/AUSBAU-SECHS-FUNKTIONEN.md",
-    "changes": {
-      "neu": [
-        "Soundboard: Icon (Emoji) je Sound-Kachel, „Zufallssound“ (aus der aktuellen Auswahl), Vorschläge für Soundboard-Profile beim Anlegen einer Sammlung (Minecraft, Elden Ring, Discord, Horror-Gaming, Lustige Sounds, Eigene Sammlung)",
-        "Audio Center → Discord einrichten: Discord-Check mit fünf Schritten live aus deiner Auswahl (Kabel installiert, Soundboard aufs Kabel, Mikrofon im Kabel, selbst mithören, Discord-Eingabegerät) – der letzte Schritt ehrlich als „kann keine App prüfen“; „Testton ins Kabel“",
-        "Abschlussbericht des Ausbaus in docs/AUSBAU-SECHS-FUNKTIONEN.md"
-      ],
-      "verbessert": [
-        "Das Kabel selbst als Mikrofon gewählt wird erkannt und erklärt"
-      ],
-      "behoben": []
-    },
-    "signature": "1wg65praMfag2OS6Ph92Lv09Hm6r1kJsG8eQFpbDjpXsjz8FR/babExoRUZhRpydEvU+08lz/uSFmRXeEROwlQ=="
   }
 ]

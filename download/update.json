@@ -1,24 +1,24 @@
 {
-  "version": "3.16.0",
+  "version": "3.17.0",
   "date": "2026-11-06",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.16.0/PCGameLauncherCompanion.exe",
-  "size": 94940080,
-  "sha256": "e0746b52dc6640f3486ad7a8f2fbaaea3aec3fc7ba3b77e3e9f1261ef33deb47",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.17.0/PCGameLauncherCompanion.exe",
+  "size": 94944599,
+  "sha256": "f491ea17ba9272afadbbeb9babceff33920fc446ab7e7cf408c20ee8443e7a2a",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.16.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.16.0/PCGameLauncherCompanion-3.16.0-win-x64.zip",
-    "size": 89215444,
-    "sha256": "3f2cb52e40796b30ed56d6984b98c2eebde8962af997b127b9c38052839571be"
+    "fileName": "PCGameLauncherCompanion-3.17.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.17.0/PCGameLauncherCompanion-3.17.0-win-x64.zip",
+    "size": 89219524,
+    "sha256": "8c7aa8524b4a69e46e6a84c3d5a7dd9747f1384f665669b43b226173dce4a50a"
   },
-  "notes": "Bessere Spracheingabe für JARVIS (optional): Mit deinem Groq-Schlüssel auf dem Gerät (KI-Verwaltung → Schlüssel ohne PC → „Bessere Spracherkennung (Whisper)“) nimmt JARVIS einen Satz auf, die Aufnahme endet nach einer Sprechpause, und Groq (Whisper, kostenloser Tarif) macht Text daraus – genauer bei Eigennamen und Spielen und auch dort, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Der eine Satz geht direkt von deinem Gerät an Groq und wird nicht gespeichert; erfundene Sätze bei Stille („Untertitel der …“) werden verworfen. Ohne den Schalter bleibt alles wie bisher",
+  "notes": "Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche",
   "changes": {
     "neu": [
-      "Bessere Spracheingabe für JARVIS (optional): Mit deinem Groq-Schlüssel auf dem Gerät (KI-Verwaltung → Schlüssel ohne PC → „Bessere Spracherkennung (Whisper)“) nimmt JARVIS einen Satz auf, die Aufnahme endet nach einer Sprechpause, und Groq (Whisper, kostenloser Tarif) macht Text daraus – genauer bei Eigennamen und Spielen und auch dort, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Der eine Satz geht direkt von deinem Gerät an Groq und wird nicht gespeichert; erfundene Sätze bei Stille („Untertitel der …“) werden verworfen. Ohne den Schalter bleibt alles wie bisher"
+      "Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche"
     ],
     "verbessert": [],
     "behoben": []
   },
-  "signature": "5bHqtPSi5sqRZgxJ7ZHZoi+wI4HPRAgcQsv5sFW3LRInxqLNWUKKcoHK+WPhMe9f07+5IIJP+Kxp0EDWMLyxhA=="
+  "signature": "mGzY9DYZaohp/J7JGB+Tf6Bx/ntF+8tTCGQyh+p6JOYKELslrkrCiPlnFlx8mrynpXR16/SMyBIpobQfryetAw=="
 }
