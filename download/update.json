@@ -1,30 +1,29 @@
 {
-  "version": "3.23.0",
+  "version": "3.24.0",
   "date": "2026-11-06",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.23.0/PCGameLauncherCompanion.exe",
-  "size": 94996257,
-  "sha256": "6c9011d22b659d15c023e8848cc8151344f638fea4a2e528bffaf8f647ade27c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.24.0/PCGameLauncherCompanion.exe",
+  "size": 95001326,
+  "sha256": "f0d52a6603ed57b4cbb75272bd5104a2314fd18e42c46331283e420adb67bfe4",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.23.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.23.0/PCGameLauncherCompanion-3.23.0-win-x64.zip",
-    "size": 89270983,
-    "sha256": "a7cd664e405031e52d4dcd1f7ea2a1db430625b37d61863c34e4130c0064a01c"
+    "fileName": "PCGameLauncherCompanion-3.24.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.24.0/PCGameLauncherCompanion-3.24.0-win-x64.zip",
+    "size": 89276345,
+    "sha256": "88c1c683e614008be59a16553ee5253d42d7d7d1d7009159aa01bc550dc94074"
   },
-  "notes": "Game-Overlay im Stil der Webseite: schwebende Glas-Leiste mit runden Ecken, Farben und Schrift der App statt Game-Bar-Optik. Leiste und Fenster fahren mit Feder-Animation ein (gestaffelt), beim Schließen blenden sie kurz aus; ein Fenster hebt sich beim Verschieben leicht an. Weiterhin ohne Unschärfe und ohne Dauer-Animationen (läuft über einem Spiel) – nur der rote Aufnahmepunkt atmet, solange eine Aufnahme läuft · Aufnahme-Chip in der Leiste: roter Punkt und laufende Zeit, ein Tipp startet oder stoppt die Aufnahme – auch wenn das Aufnahme-Fenster ausgeblendet ist · Aufnahme-Fenster neu: großer Aufnahmeknopf, Zeit in großen Ziffern, Verbindungsstatus, Replay speichern und Replay-Puffer wie bisher",
+  "notes": "OBS-Szenen im Overlay: Das Aufnahme-Fenster zeigt die Szenen von OBS als Auswahl, ein Tipp schaltet die Szene um (der Begleiter nimmt nur Szenen an, die OBS wirklich hat) · Mikrofon und Desktop-Ton von OBS stummschalten: Knöpfe im Aufnahme-Fenster und ein Mikrofon-Knopf in der Overlay-Leiste (rot, solange stumm) – ohne das Spiel zu verlassen. Nur sichtbar, wenn OBS verbunden ist und ein Mikrofon bzw. Desktop-Audio eingerichtet hat · JARVIS MEMORY fragt bei Widersprüchen nach: Sagst du das Gegenteil von dem, was in der Notiz steht („Mein Lieblingsspiel ist Hollow Knight“ nach „… Celeste“, „Ich wohne in Hamburg“ nach „… Adendorf“, dasselbe mit und ohne „nicht“), wird nichts still gespeichert. JARVIS zeigt die alte Aussage und fragt „ersetzen oder beides behalten?“. „Ersetze es“ streicht die alte Zeile durch (sie bleibt im Verlauf nachlesbar), „Behalte beides“ speichert beides, „Nein“ ändert nichts",
   "changes": {
     "neu": [
-      "Game-Overlay im Stil der Webseite: schwebende Glas-Leiste mit runden Ecken, Farben und Schrift der App statt Game-Bar-Optik. Leiste und Fenster fahren mit Feder-Animation ein (gestaffelt), beim Schließen blenden sie kurz aus; ein Fenster hebt sich beim Verschieben leicht an. Weiterhin ohne Unschärfe und ohne Dauer-Animationen (läuft über einem Spiel) – nur der rote Aufnahmepunkt atmet, solange eine Aufnahme läuft",
-      "Aufnahme-Chip in der Leiste: roter Punkt und laufende Zeit, ein Tipp startet oder stoppt die Aufnahme – auch wenn das Aufnahme-Fenster ausgeblendet ist",
-      "Aufnahme-Fenster neu: großer Aufnahmeknopf, Zeit in großen Ziffern, Verbindungsstatus, Replay speichern und Replay-Puffer wie bisher",
-      "Widget-Menü: Suche, gespeicherte Ansichten (HUD-Layouts) mit einem Tipp anwenden, „Alle ausblenden/einblenden“, Schalter im App-Stil",
-      "Einrasten: Fenster rasten beim Verschieben an einem 8-Pixel-Raster und an den Bildschirmrändern ein (Alt gedrückt halten: frei), ein-/ausschaltbar"
+      "OBS-Szenen im Overlay: Das Aufnahme-Fenster zeigt die Szenen von OBS als Auswahl, ein Tipp schaltet die Szene um (der Begleiter nimmt nur Szenen an, die OBS wirklich hat)",
+      "Mikrofon und Desktop-Ton von OBS stummschalten: Knöpfe im Aufnahme-Fenster und ein Mikrofon-Knopf in der Overlay-Leiste (rot, solange stumm) – ohne das Spiel zu verlassen. Nur sichtbar, wenn OBS verbunden ist und ein Mikrofon bzw. Desktop-Audio eingerichtet hat",
+      "JARVIS MEMORY fragt bei Widersprüchen nach: Sagst du das Gegenteil von dem, was in der Notiz steht („Mein Lieblingsspiel ist Hollow Knight“ nach „… Celeste“, „Ich wohne in Hamburg“ nach „… Adendorf“, dasselbe mit und ohne „nicht“), wird nichts still gespeichert. JARVIS zeigt die alte Aussage und fragt „ersetzen oder beides behalten?“. „Ersetze es“ streicht die alte Zeile durch (sie bleibt im Verlauf nachlesbar), „Behalte beides“ speichert beides, „Nein“ ändert nichts"
     ],
-    "verbessert": [
-      "Fenster bleiben immer ganz auf dem Bildschirm (rechts abgeschnittene Fenster bei kleineren Auflösungen)"
-    ],
-    "behoben": []
+    "verbessert": [],
+    "behoben": [
+      "Gedächtnis: „X“ und „nicht X“ zählten als dieselbe Zeile (das Wort „nicht“ wurde beim Vergleich ignoriert) und wurden als Doppeltes verworfen. Jetzt sind sie verschieden",
+      "„Merk dir, dass mein Lieblingsspiel Celeste ist“ wird mit dem Verb an zweiter Stelle gespeichert („… ist Celeste“) und lässt sich dadurch mit anderen Notizen vergleichen"
+    ]
   },
-  "signature": "ogM1PH7aQKDEQhD8KwOZoD9266aa63rd2pweKLxs7XQtOcSeZus/rxheFOuRZDjAb1wq5L+XJakfM4vLKdtGcQ=="
+  "signature": "RtF59yKeuQYsC6nyPOPDhaRxtTb+iJJCqbh//b7jE/EFOLcIF70X0Lz51j5iMEM1H/4dwhDLp9aa09opdRPfOQ=="
 }
