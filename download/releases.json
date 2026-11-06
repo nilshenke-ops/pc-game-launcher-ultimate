@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.14.0",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.14.0/PCGameLauncherCompanion.exe",
+    "size": 94928191,
+    "sha256": "63cb86db3ec7a374b86da35656008a543684c080b3ccde92e6c6dfef66c4ffa9",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.14.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.14.0/PCGameLauncherCompanion-3.14.0-win-x64.zip",
+      "size": 89203651,
+      "sha256": "74d1b7d8805fad063446112a03e21f339d5ec9fc62691237a0987cbc42a1fc72"
+    },
+    "notes": "Websuche auch ohne PC: Mit einem eigenen kostenlosen Tavily- oder Serper-Schlüssel (Passwort-verschlüsselt auf dem Gerät, wie bei den KIs) sucht JARVIS bei Fragen zu Sport, Wetter, Nachrichten und Preisen direkt aus dem Browser und antwortet mit der KI aus den Ergebnissen; die Antwort nennt die Quellen (z. B. „Websuche: kicker.de“). Ein Entsperren öffnet KI- und Suchschlüssel zugleich · Brave Search als weiterer Suchdienst am PC – nur nach deiner ausdrücklichen Bestätigung, dass du ausschließlich die monatlichen Gratis-Credits (5 $ ≈ 1000 Suchen) nutzt und nichts auflädst; Brave verlangt dafür eine Karte zur Missbrauchs-Prüfung. Ohne Bestätigung bleibt der Schlüssel unbenutzt · SearXNG ohne Schlüssel: Adresse einer eigenen (oder vertrauenswürdigen) Instanz eintragen, die JSON-Ausgabe erlaubt – eine offizielle Suche ohne Schlüssel gibt es sonst nicht",
+    "changes": {
+      "neu": [
+        "Websuche auch ohne PC: Mit einem eigenen kostenlosen Tavily- oder Serper-Schlüssel (Passwort-verschlüsselt auf dem Gerät, wie bei den KIs) sucht JARVIS bei Fragen zu Sport, Wetter, Nachrichten und Preisen direkt aus dem Browser und antwortet mit der KI aus den Ergebnissen; die Antwort nennt die Quellen (z. B. „Websuche: kicker.de“). Ein Entsperren öffnet KI- und Suchschlüssel zugleich",
+        "Brave Search als weiterer Suchdienst am PC – nur nach deiner ausdrücklichen Bestätigung, dass du ausschließlich die monatlichen Gratis-Credits (5 $ ≈ 1000 Suchen) nutzt und nichts auflädst; Brave verlangt dafür eine Karte zur Missbrauchs-Prüfung. Ohne Bestätigung bleibt der Schlüssel unbenutzt",
+        "SearXNG ohne Schlüssel: Adresse einer eigenen (oder vertrauenswürdigen) Instanz eintragen, die JSON-Ausgabe erlaubt – eine offizielle Suche ohne Schlüssel gibt es sonst nicht"
+      ],
+      "verbessert": [
+        "Reihenfolge der Websuche: Tavily → Serper → Exa → Brave → SearXNG; Brave, Exa und SearXNG gehen nur über den PC (Brave erlaubt keine Aufrufe aus dem Browser)"
+      ],
+      "behoben": []
+    },
+    "signature": "xohFZLTyjJVMH+9UBsU+I/5ovpbw26pMvFLnfSOuRVxX4eKhaKdEeyU7yi/R5ONPx5FsLXmdPCXqAjDaflflrA=="
+  },
+  {
     "version": "3.13.1",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1394,34 +1422,5 @@
       "behoben": []
     },
     "signature": "kwbvZk3dA5oNK54ssX0qEG0ReyPN+Xajl7KruLnvXYpNoYTi2Rxwr1OBvyluQ+3ogfXRsNnkYcjkzHK3BsJL0w=="
-  },
-  {
-    "version": "2.73.0",
-    "date": "2026-10-28",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.73.0/PCGameLauncherCompanion.exe",
-    "size": 88297749,
-    "sha256": "04c8ff36f8a8d83ab510eccab6fb40b335023356a44520b4e8fa017ba68f2470",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.73.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.73.0/PCGameLauncherCompanion-2.73.0-win-x64.zip",
-      "size": 82561037,
-      "sha256": "363a041a65de9edf75e10292d910cd66a18e4c3f120c86a33ed4596229e98636"
-    },
-    "notes": "JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt · Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo (nichts Erfundenes); neu im Katalog: GTA V/Online, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires. Gespeicherte und geschaffte Challenges werden nicht wiederholt · Gaming-Gedächtnis: „Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte“ wird dem Spiel zugeordnet; „Wo war ich zuletzt in Minecraft?“, „Was sollte ich heute in Elden Ring machen?“ (mit Plan, Zielpfaden, offenen Funden, Bauprojekten, offenen Challenges und der letzten Spielsitzung vom PC), „Zeig mir alle offenen Projekte in meinen Spielen“, „Was weißt du über mich als Gamer?“, „Was spiele ich am meisten?“, „Was habe ich zuletzt gespielt?“",
-    "changes": {
-      "neu": [
-        "JARVIS Challenge-Generator im Chat: „Erstelle fünf mittelschwere Minecraft-Challenges“, „Ich habe nur 20 Minuten – gib mir eine Herausforderung“, „sehr schwere Elden-Ring-Challenge ohne Story-Spoiler“, „drei lustige für einen Gaming-Abend mit Freunden“, „Horror-Challenge“, „Mach die aktuelle Challenge schwieriger/leichter“, „noch eine“, „Challenge geschafft“, „Bewerte die Challenge mit 4 Sternen“, „Meine offenen Challenges“ – Schwierigkeit (leicht bis sehr schwer, gemischt), Kategorie, Zeit und Mitspieler werden erkannt",
-        "Die Aufgaben kommen aus demselben geprüften Katalog wie das Gaming-Bingo (nichts Erfundenes); neu im Katalog: GTA V/Online, Roblox, Palworld, Cyberpunk 2077, Lords of the Fallen, Age of Empires. Gespeicherte und geschaffte Challenges werden nicht wiederholt",
-        "Gaming-Gedächtnis: „Merke dir, dass ich als Nächstes mein Minecraft-Haus fertigbauen möchte“ wird dem Spiel zugeordnet; „Wo war ich zuletzt in Minecraft?“, „Was sollte ich heute in Elden Ring machen?“ (mit Plan, Zielpfaden, offenen Funden, Bauprojekten, offenen Challenges und der letzten Spielsitzung vom PC), „Zeig mir alle offenen Projekte in meinen Spielen“, „Was weißt du über mich als Gamer?“, „Was spiele ich am meisten?“, „Was habe ich zuletzt gespielt?“",
-        "Meine Challenges: Stufe und Herkunft sichtbar, Sterne-Bewertung, geschaffte Challenges optional als erledigtes Ziel im Gedächtnis des Spiels"
-      ],
-      "verbessert": [
-        "JARVIS kennzeichnet die Herkunft: [vom PC gemessen], [deine Angabe], [Schätzung] – und sagt ausdrücklich, dass er keinen Spielstand ausliest"
-      ],
-      "behoben": []
-    },
-    "signature": "+l4msIpLNUYnbrKDQuVgb78ETILIhVVkj2Lv9WjI7TLCCk19Omps0ZeWnvj4s3mlomkhApc4kddD5XMLF/iXLQ=="
   }
 ]
