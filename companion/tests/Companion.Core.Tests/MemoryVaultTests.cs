@@ -82,7 +82,7 @@ public class MemoryVaultTests
     {
         using var dir = new TempDir(); var v = Make(dir, VaultDir(dir), configure: false);
         Assert.Equal("forbidden", Assert.Throws<RpcException>(() => v.Configure(VaultDir(dir), true, null, null, null, atPc: false)).Code);
-        foreach (var bad in new[] { "C:\\", "/", "C:\\Windows\\System32\\x", "relativ/pfad", "\\\\server\\freigabe\\x" })
+        foreach (var bad in new[] { "C:\\", "/", "C:\\Windows\\System32\\x", "C:\\Program Files\\x", "C:\\ProgramData\\x", "relativ/pfad", "\\\\server\\freigabe\\x" })
             Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => v.Configure(bad, true, null, null, null, atPc: true)).Code);
         Assert.False(v.Enabled);
     }

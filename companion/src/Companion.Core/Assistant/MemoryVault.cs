@@ -91,7 +91,7 @@ public sealed class MemoryVault
         var full = Path.GetFullPath(path).TrimEnd('\\', '/');
         if (full.Length <= 3 || Path.GetPathRoot(full)!.TrimEnd('\\', '/') == full) throw new RpcException("invalid-params", "Ein ganzes Laufwerk ist als Gedächtnis-Ordner nicht erlaubt – nimm einen eigenen Ordner.");
         var l = full.ToLowerInvariant().Replace('/', '\\');
-        foreach (var bad in new[] { "\\windows", "\\program files", "\\programdata", "\\system32", "\\appdata\\local\\temp" })
+        foreach (var bad in new[] { "\\windows", "\\program files", "\\programdata", "\\system32" })
             if (l.Contains(bad + "\\") || l.EndsWith(bad)) throw new RpcException("invalid-params", "Dieser Ordner gehört zu Windows oder zu Programmen und ist als Gedächtnis nicht erlaubt.");
         if (l.StartsWith("\\\\")) throw new RpcException("invalid-params", "Netzwerkpfade sind als Gedächtnis-Ordner nicht erlaubt.");
         return full;
