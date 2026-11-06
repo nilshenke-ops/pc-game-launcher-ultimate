@@ -24,7 +24,7 @@ const SYSTEM = "Du bist JARVIS, der Gaming-Assistent einer Spiele-Launcher-App. 
 
 export function buildMessages(question: string, history: Turn[] = []): { role: "system" | "user" | "assistant"; content: string }[] {
   const past = history.slice(-6).map((h) => ({ role: h.role === "user" ? ("user" as const) : ("assistant" as const), content: h.text.slice(0, 500) }));
-  return [{ role: "system", content: SYSTEM }, ...past, { role: "user", content: question.trim().slice(0, 1000) }];
+  return [{ role: "system", content: SYSTEM }, ...past, { role: "user", content: question.trim().slice(0, 3000) }];
 }
 
 /** Answers are text only: no markup, no links (they are removed, the words stay), not endless. */

@@ -16,7 +16,7 @@ export interface Status {
   bingoAi?: "assistant" | "deepseek"; bingoProvider?: string | null;
   deepSeek?: { keySet: boolean; model: string; monthlyRequests: number; used: number; inputTokens: number; outputTokens: number };
   engines?: { id: string; label: string; free: boolean }[]; webSearch?: boolean;
-  researchAi?: string | null; search?: { keySet: boolean; monthlyRequests: number; used: number; providers?: { id: string; name: string; keySet: boolean; used: number }[] };
+  researchAi?: string | null; search?: { keySet: boolean; monthlyRequests: number; used: number; providers?: { id: string; name: string; keySet: boolean; used: number; acknowledged?: boolean | null; url?: string | null }[] };
   router?: { baseUrl?: string | null; keySet: boolean; models: string[]; monthlyRequests: number; used: number; ready: boolean };
 }
 
@@ -159,16 +159,19 @@ const SEARCH_GUIDE: Record<string, { url: string; label: string; hint: string; f
   serper: { url: "https://serper.dev", label: "serper.dev", hint: t("40 Zeichen"), field: "serperKey", keyProp: "serperKey", step: "Serper (Google-Ergebnisse): kostenlos anmelden, 2500 Suchen gratis einmalig, kein Zahlungsmittel. Unter „API Key“ den Schlüssel kopieren.", can: "Kann: Google-Ergebnisse – gut für Ergebnisse und Tabellen („Wie steht es bei Bayern gegen Dortmund?“), Wetter, Preise. Als Zweite wählen, wenn Tavily leer ist. Einmalig 2500 Suchen." },
   exa: { url: "https://dashboard.exa.ai", label: "dashboard.exa.ai", hint: "01234567-89ab-…", field: "exaKey", keyProp: "exaKey", step: "Exa: kostenlos anmelden, ein monatliches Gratis-Guthaben, kein Zahlungsmittel nötig. Unter „API Keys“ den Schlüssel kopieren (eine lange Kennung mit Bindestrichen).", can: "Kann: sucht nach Bedeutung – gut für Artikel, Erklärungen und Hintergründe („Was ist neu im Patch?“), schwächer bei Live-Ergebnissen. Als Dritte wählen." },
 };
+SEARCH_GUIDE.brave = { url: "https://api-dashboard.search.brave.com", label: "api-dashboard.search.brave.com", hint: "BSA…", field: "braveKey", keyProp: "braveKey", step: "Brave: Konto anlegen, API-Schlüssel erzeugen (beginnt mit „BSA“). Brave gibt jeden Monat 5 $ Gratis-Guthaben (≈ 1000 Suchen) und kann dafür eine Karte zur Missbrauchs-Prüfung verlangen.", can: "Kann: eigener, unabhängiger Suchindex – gut für Nachrichten, Ergebnisse und Tabellen. Nur nutzen, wenn du ohnehin ein Brave-Konto mit Karte hast. Geht nur über den PC." };
+SEARCH_GUIDE.searxng = { url: "https://docs.searxng.org", label: "docs.searxng.org", hint: "https://suche.example.org", field: "searxUrl", keyProp: "searxUrl", step: "SearXNG: eine eigene oder vertrauenswürdige Instanz (ohne Schlüssel, ohne Kosten). Adresse eintragen; die Instanz muss JSON-Ausgabe erlauben (settings.yml → search.formats → json).", can: "Kann: bündelt mehrere Suchmaschinen, ganz ohne Schlüssel – dafür brauchst du einen eigenen Server oder eine Instanz, die JSON erlaubt (die meisten öffentlichen sperren das). Geht nur über den PC." };
 function WebSearchCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p: Record<string, unknown>, ok?: string) => Promise<void> }) {
   const ws = st.search;
   const [keys, setKeys] = useState<Record<string, string>>({});
   const [cap, setCap] = useState(String(ws?.monthlyRequests ?? 800));
+  const [ack, setAck] = useState(false);
   if (!ws) return null;
   const provs = ws.providers ?? [{ id: "tavily", name: "Tavily", keySet: ws.keySet, used: ws.used }];
   return (
     <Card title={t("Websuche für aktuelle Fragen (kostenlos)")} icon={<Sparkles size={18} />} className="flat">
       <div className="stack-sm">
-        <p className="small muted">{t("Fragen wie „Wann spielt der FC Bayern als Nächstes?“ oder „Was ist neu im Patch?“ kann keine KI allein wissen. Mit der Websuche sucht JARVIS erst im Internet und antwortet dann aus den Ergebnissen. Gesendet wird nur deine Frage – an den Suchdienst, den du einrichtest. Mehrere sind möglich: ist einer leer oder gestört, fragt JARVIS den nächsten (Reihenfolge Tavily → Serper → Exa).")}</p>
+        <p className="small muted">{t("Fragen wie „Wann spielt der FC Bayern als Nächstes?“ oder „Was ist neu im Patch?“ kann keine KI allein wissen. Mit der Websuche sucht JARVIS erst im Internet und antwortet dann aus den Ergebnissen. Gesendet wird nur deine Frage – an den Suchdienst, den du einrichtest. Mehrere sind möglich: ist einer leer oder gestört, fragt JARVIS den nächsten (Reihenfolge Tavily → Serper → Exa → Brave → SearXNG).")}</p>
         <div className="tiny aim-can" role="note"><b>{t("Sport und Live-Fragen")}</b> {t("Wer Bayerns nächster Gegner ist oder wie es gerade gegen Dortmund steht, weiß keine KI von allein – dafür braucht JARVIS eine Websuche (Tavily oder Serper) und irgendeine der KIs, die daraus die Antwort formuliert. Der Spielstand ist so aktuell wie die Suchergebnisse (oft einige Minuten Verzögerung): für den exakten Live-Ticker bleibt eine Sport-App genauer.")}</div>
         {provs.map((p) => {
           const g = SEARCH_GUIDE[p.id];
@@ -180,11 +183,15 @@ function WebSearchCard({ st, atPc, save }: { st: Status; atPc: boolean; save: (p
               <p className="tiny aim-can"><b>{t("Wofür?")}</b> {t(g.can)}</p>
               <p className="tiny muted">{t(g.step)} <a href={g.url} target="_blank" rel="noopener noreferrer">{g.label}</a></p>
               {atPc ? (
-                <form className="row" onSubmit={(e) => { e.preventDefault(); if (v.trim()) void save({ [g.keyProp]: v.trim() }, t("Schlüssel gespeichert")).then(() => setKeys((k) => ({ ...k, [p.id]: "" }))); }}>
-                  <Field label={p.keySet ? `${t("Schlüssel")} ${p.name} (${t("gespeichert – neu eintragen zum Ersetzen")})` : `${t("Schlüssel")} ${p.name}`}>
-                    <input className="input mono" type="password" autoComplete="off" value={v} placeholder={g.hint} onChange={(e) => setKeys((k) => ({ ...k, [p.id]: e.target.value }))} />
+                <form className="row" onSubmit={(e) => { e.preventDefault(); if (v.trim()) void save({ [g.keyProp]: v.trim(), ...(p.id === "brave" ? { braveAcknowledged: true } : {}) }, t("Schlüssel gespeichert")).then(() => setKeys((k) => ({ ...k, [p.id]: "" }))); }}>
+                  {p.id === "brave" && (
+                    <label className="aim-check"><input type="checkbox" checked={!!ack || !!p.acknowledged} onChange={(e) => { setAck(e.target.checked); if (!e.target.checked && p.acknowledged) void save({ braveAcknowledged: false }, t("Brave ausgeschaltet")); }} />
+                      <span className="tiny">{t("Ich bestätige: Ich nutze bei Brave nur die monatlichen Gratis-Credits und lade nichts auf (kein Auto-Aufladen).")}</span></label>
+                  )}
+                  <Field label={p.id === "searxng" ? t("Adresse der SearXNG-Instanz") : p.keySet ? `${t("Schlüssel")} ${p.name} (${t("gespeichert – neu eintragen zum Ersetzen")})` : `${t("Schlüssel")} ${p.name}`}>
+                    <input className="input mono" type={p.id === "searxng" ? "url" : "password"} autoComplete="off" value={v} placeholder={p.id === "searxng" && p.url ? p.url : g.hint} onChange={(e) => setKeys((k) => ({ ...k, [p.id]: e.target.value }))} />
                   </Field>
-                  <Button type="submit" icon={<KeyRound size={16} />} disabled={!v.trim()}>{t("Speichern")}</Button>
+                  <Button type="submit" icon={<KeyRound size={16} />} disabled={!v.trim() || (p.id === "brave" && !ack && !p.acknowledged)}>{t("Speichern")}</Button>
                   {p.keySet && <Button variant="danger" onClick={() => void save({ [g.keyProp]: "" }, t("Schlüssel entfernt"))}>{t("Schlüssel löschen")}</Button>}
                 </form>
               ) : <p className="small muted">{p.keySet ? t("Ein Websuche-Schlüssel ist auf dem PC gespeichert.") : t("Den Websuche-Schlüssel trägst du direkt am PC ein – er verlässt den PC nie.")}</p>}

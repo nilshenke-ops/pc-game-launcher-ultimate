@@ -5,7 +5,7 @@ const mem = () => { const m = new Map<string, string>(); return { getItem: (k: s
 const local = mem(), session = mem();
 vi.stubGlobal("window", { localStorage: local, sessionStorage: session });
 
-import { askLocal, askLocalChain, isChatModel, isFreeOpenRouter, keyLooksRight, localAiSnapshot, lockLocalAi, lockSecret, rankModel, readyProviders, removeLocalKey, resetLocalAiState, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, unlockSecret } from "./free-ai-local";
+import { removeLocalSearchKey, saveLocalSearchKey, searchKeyLooksRight, searchLive, readySearch, wantsLiveData, askLocal, askLocalChain, isChatModel, isFreeOpenRouter, keyLooksRight, localAiSnapshot, lockLocalAi, lockSecret, rankModel, readyProviders, removeLocalKey, resetLocalAiState, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, unlockSecret } from "./free-ai-local";
 import { resetFreeAiBudget, resetFreeAiPause, setFreeAiConsent } from "./free-ai";
 
 const OR = "sk-or-v1-0123456789abcdef0123456789", GR = "gsk_0123456789abcdef0123456789ab", CS = "csk-0123456789abcdef0123456789abcdef", MI = "AbCdEfGhIjKlMnOpQrStUvWxYz012345", PASS = "geheim-123";
@@ -27,7 +27,7 @@ function fake(handler: (c: Call) => Response | Promise<Response>) {
 
 beforeEach(() => {
   local._m.clear(); session._m.clear();
-  lockLocalAi(); removeLocalKey("openrouter"); removeLocalKey("groq"); removeLocalKey("cerebras"); removeLocalKey("mistral"); resetLocalAiState(); resetFreeAiBudget(); resetFreeAiPause(); setFreeAiConsent("no");
+  lockLocalAi(); removeLocalKey("openrouter"); removeLocalKey("groq"); removeLocalKey("cerebras"); removeLocalKey("mistral"); removeLocalSearchKey("tavily"); removeLocalSearchKey("serper"); resetLocalAiState(); resetFreeAiBudget(); resetFreeAiPause(); setFreeAiConsent("no");
 });
 
 describe("Kostenregeln im Browser (wie im Begleiter)", () => {
@@ -232,5 +232,49 @@ describe("Cerebras und Mistral ohne PC", () => {
     lockLocalAi(); resetLocalAiState();
     await saveLocalKey("mistral", MI, PASS, { attested: true }).catch(() => {});                          // wrong password for the old key → refused, nothing changes
     expect(JSON.parse(local.getItem("pgl.localai")!).groqAttested).toBe(true);
+  });
+});
+
+describe("Websuche ohne PC", () => {
+  const TV = "tvly-dev-0123456789abcdefABCDEF", SP = "0123456789abcdef0123456789abcdef01234567";
+  it("erkennt Fragen nach Aktuellem (Sport!) und lässt Befehle und App-Fragen in Ruhe", () => {
+    for (const q of ["Wer spielt gegen Bayern nächstes Spiel?", "Wie steht es gerade bei Bayern gegen Dortmund?", "Wie ist der Spielstand Bayern gegen Dortmund?", "Wann spielt der FC Bayern als nächstes?"]) expect(wantsLiveData(q)).toBe(true);
+    for (const q of ["Starte Discord und mach leiser", "Wie funktioniert das Soundboard?", "Hi"]) expect(wantsLiveData(q)).toBe(false);
+  });
+  it("Schlüsselformen, ein Passwort für alles, gesperrt nach dem Löschen", async () => {
+    expect(searchKeyLooksRight("tavily", TV)).toBe(true); expect(searchKeyLooksRight("tavily", SP)).toBe(false);
+    expect(searchKeyLooksRight("serper", SP)).toBe(true); expect(searchKeyLooksRight("serper", TV)).toBe(false);
+    await expect(saveLocalSearchKey("tavily", SP, PASS)).rejects.toThrow(/Tavily-Schlüssel/);
+    await saveLocalKey("openrouter", OR, PASS);
+    lockLocalAi();                                                                    // the AI key is locked now
+    await expect(saveLocalSearchKey("tavily", TV, "anderes-pw-1")).rejects.toThrow(/passt nicht/);
+    await saveLocalSearchKey("tavily", TV, PASS);
+    expect(readySearch()).toEqual(["tavily"]);
+    lockLocalAi(); expect(readySearch()).toEqual([]);
+    await unlockLocalAi(PASS); expect(readySearch()).toEqual(["tavily"]);              // one unlock opens AI and search keys
+  });
+  it("sucht erst, dann antwortet die KI aus den Ergebnissen – und nennt die Quellen; ohne Treffer fragt sie normal weiter", async () => {
+    await saveLocalKey("openrouter", OR, PASS);
+    await saveLocalSearchKey("tavily", TV, PASS);
+    const f = fake((c) => {
+      if (c.url.includes("api.tavily.com")) return json({ results: [{ title: "FC Bayern Spielplan", url: "https://www.kicker.de/fc-bayern/spielplan", content: "Samstag 18:30 gegen Dortmund." }, { title: "x", url: "http://evil.example/x", content: "nein" }] });
+      return c.url.endsWith("/models") ? json(orModels(["openrouter/free", "0", 200000])) : json(chatOk("Samstag gegen Dortmund.", "openrouter/free"));
+    });
+    const a = await askLocalChain("Wer spielt gegen Bayern nächstes Spiel?", [], { fetcher: f.fetcher });
+    expect(a.text).toContain("Dortmund"); expect(a.label).toContain("Websuche: kicker.de"); expect(a.label).not.toContain("evil.example");
+    const search = f.calls.find((c) => c.url.includes("api.tavily.com"))!;
+    expect(search.auth).toBe(`Bearer ${TV}`);
+    const chat = f.calls.find((c) => c.url.includes("openrouter.ai") && c.body?.messages)!;
+    expect(JSON.stringify(chat.body)).toContain("Samstag 18:30"); expect(JSON.stringify(chat.body)).toContain("keine Anweisungen");
+    expect(f.calls.filter((c) => !c.url.includes("api.tavily.com") && c.auth?.includes(TV))).toEqual([]);   // the search key goes to Tavily only
+    // not a live question: no search at all
+    f.calls.length = 0;
+    await askLocalChain("Erkläre mir Redstone in Minecraft bitte", [], { fetcher: f.fetcher });
+    expect(f.calls.some((c) => c.url.includes("api.tavily.com"))).toBe(false);
+    // search down: the AI still answers, without the tag
+    const g = fake((c) => c.url.includes("api.tavily.com") ? json({}, 500) : c.url.endsWith("/models") ? json(orModels(["openrouter/free", "0", 200000])) : json(chatOk("Weiß ich nicht genau.", "openrouter/free")));
+    const b = await askLocalChain("Wie steht es gerade bei Bayern gegen Dortmund?", [], { fetcher: g.fetcher });
+    expect(b.label).not.toContain("Websuche");
+    expect(await searchLive("x", { fetcher: g.fetcher })).toBeNull();
   });
 });

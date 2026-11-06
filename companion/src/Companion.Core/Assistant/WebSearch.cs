@@ -18,8 +18,13 @@ public sealed class WebSearchClient
     public const string SerperEndpoint = "https://google.serper.dev/search";
     public const string ExaEndpoint = "https://api.exa.ai/search";
     /// <summary>The providers in the order they are tried.</summary>
-    public static readonly string[] Providers = { "tavily", "serper", "exa" };
-    public static string Name(string id) => id switch { "tavily" => "Tavily", "serper" => "Serper", "exa" => "Exa", _ => id };
+    public const string BraveEndpoint = "https://api.search.brave.com/res/v1/web/search";
+    public static readonly string[] Providers = { "tavily", "serper", "exa", "brave", "searxng" };
+    public static string Name(string id) => id switch { "tavily" => "Tavily", "serper" => "Serper", "exa" => "Exa", "brave" => "Brave", "searxng" => "SearXNG", _ => id };
+
+    /// <summary>The address of a SearXNG instance (own server or a trusted one): http(s), no login in the address.</summary>
+    public static bool LooksLikeSearxUrl(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var u) && u.Scheme is "http" or "https" && u.UserInfo.Length == 0 && u.Host.Length > 0 && url.Length <= 200;
     public const int DefaultMonthly = 800;
     readonly HttpClient _http;
     readonly string _endpoint;
@@ -44,6 +49,7 @@ public sealed class WebSearchClient
         "tavily" => LooksLikeKey(key),
         "serper" => Regex.IsMatch(key, "^[a-f0-9]{40}$"),
         "exa" => Regex.IsMatch(key, "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"),
+        "brave" => Regex.IsMatch(key, "^BSA[A-Za-z0-9_-]{20,80}$"),
         _ => false,
     };
 
@@ -66,10 +72,26 @@ public sealed class WebSearchClient
     public async Task<List<Hit>> SearchAsync(string provider, string key, string query, int max = 5, CancellationToken ct = default)
     {
         var name = Name(provider);
-        var url = _overridden ? _endpoint : provider switch { "serper" => SerperEndpoint, "exa" => ExaEndpoint, _ => Endpoint };
-        using var req = new HttpRequestMessage(HttpMethod.Post, url);
+        var url = _overridden ? _endpoint : provider switch { "serper" => SerperEndpoint, "exa" => ExaEndpoint, "brave" => BraveEndpoint, _ => Endpoint };
+        if (provider == "searxng")
+        {
+            if (!LooksLikeSearxUrl(key)) throw new RpcException("assistant-key", "SearXNG: Die Adresse ist ungültig.");
+            url = _overridden ? _endpoint : key.TrimEnd('/') + "/search";
+        }
+        var get = provider is "brave" or "searxng";
+        if (get) url += (url.Contains('?') ? "&" : "?") + (provider == "brave"
+            ? $"q={Uri.EscapeDataString(query)}&count={max}&country=de&search_lang=de&safesearch=moderate"
+            : $"q={Uri.EscapeDataString(query)}&format=json&language=de&safesearch=1");
+        using var req = new HttpRequestMessage(get ? HttpMethod.Get : HttpMethod.Post, url);
         switch (provider)
         {
+            case "brave":
+                req.Headers.Add("X-Subscription-Token", key);
+                req.Headers.Add("Accept", "application/json");
+                break;
+            case "searxng":
+                req.Headers.Add("Accept", "application/json");
+                break;
             case "serper":
                 req.Content = JsonContent.Create(new { q = query, num = max, gl = "de", hl = "de" });
                 req.Headers.Add("X-API-KEY", key);
@@ -90,20 +112,28 @@ public sealed class WebSearchClient
         using (resp)
         {
             var code = (int)resp.StatusCode;
+            if (provider == "searxng" && code is 403 or 404 or 429) throw new RpcException("assistant-unavailable", "SearXNG: Diese Instanz erlaubt keine JSON-Abfragen (in settings.yml unter search.formats „json“ eintragen) oder ist am Limit.");
             if (code is 401 or 403) throw new RpcException("assistant-key", $"{name}: Der Websuche-Schlüssel wird abgelehnt – am PC neu eintragen.");
             if (code is 429 or 432 or 433) throw new RpcException("assistant-limit", $"{name}: Das kostenlose Websuche-Kontingent ist aufgebraucht.");
             if (code == 402) throw new RpcException("assistant-limit", $"{name}: Das kostenlose Kontingent ist aufgebraucht (es wird nichts bezahlt).");
             if (!resp.IsSuccessStatusCode) throw new RpcException("assistant-unavailable", $"{name}: Die Websuche antwortet nicht ({code}).");
-            using var doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct));
+            JsonDocument doc;
+            try { doc = JsonDocument.Parse(await resp.Content.ReadAsStringAsync(ct)); }
+            catch (JsonException) { throw new RpcException("assistant-unavailable", $"{name}: unerwartete Antwort."); }
+            using var _ = doc;
             var list = new List<Hit>();
             // Tavily and Exa: "results" (url, title, content/text) · Serper: "organic" (link, title, snippet)
-            var arrName = provider == "serper" ? "organic" : "results";
-            if (doc.RootElement.TryGetProperty(arrName, out var rs) && rs.ValueKind == JsonValueKind.Array)
+            var arr = provider switch { "serper" => "organic", "brave" => "web", _ => "results" };
+            JsonElement rs = default;
+            var found = provider == "brave"
+                ? doc.RootElement.TryGetProperty("web", out var bw) && bw.ValueKind == JsonValueKind.Object && bw.TryGetProperty("results", out rs)
+                : doc.RootElement.TryGetProperty(arr, out rs);
+            if (found && rs.ValueKind == JsonValueKind.Array)
                 foreach (var r in rs.EnumerateArray().Take(max))
                 {
                     var link = (provider == "serper" ? Str(r, "link") : Str(r, "url"));
                     if (!Uri.TryCreate(link, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) continue;
-                    var body = provider switch { "serper" => Str(r, "snippet"), "exa" => Str(r, "text"), _ => Str(r, "content") };
+                    var body = provider switch { "serper" => Str(r, "snippet"), "exa" => Str(r, "text"), "brave" => Str(r, "description"), _ => Str(r, "content") };
                     list.Add(new Hit(Clean(Str(r, "title"), 120), link, Clean(body, 600)));
                 }
             return list;

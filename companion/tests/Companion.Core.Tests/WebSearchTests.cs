@@ -132,9 +132,47 @@ public class WebSearchTests
         s.Assistant.Configure(new AssistantService.Config { SerperKey = SerperKey, ExaKey = ExaKey }, atPc: true);
         var st = System.Text.Json.JsonSerializer.SerializeToElement(s.Assistant.Status(), Json.Options);
         var provs = st.GetProperty("search").GetProperty("providers").EnumerateArray().ToDictionary(p => p.GetProperty("id").GetString()!, p => p.GetProperty("keySet").GetBoolean());
-        Assert.Equal(new Dictionary<string, bool> { ["tavily"] = false, ["serper"] = true, ["exa"] = true }, provs);
+        Assert.Equal(new Dictionary<string, bool> { ["tavily"] = false, ["serper"] = true, ["exa"] = true, ["brave"] = false, ["searxng"] = false }, provs);
         Assert.DoesNotContain(SerperKey, st.GetRawText()); Assert.DoesNotContain(ExaKey, st.GetRawText());
         s.Assistant.Configure(new AssistantService.Config { SerperKey = "" }, atPc: true);                                            // removing works
         Assert.False(System.Text.Json.JsonSerializer.SerializeToElement(s.Assistant.Status(), Json.Options).GetProperty("search").GetProperty("providers").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "serper").GetProperty("keySet").GetBoolean());
+    }
+
+    const string BraveKey = "BSAabcdefghijklmnopqrstuvwxyz0123456";
+
+    [Fact]
+    public async Task Brave_is_asked_with_GET_and_its_token_header_and_SearXNG_needs_no_key()
+    {
+        var brave = new Fake(HttpStatusCode.OK, "{\"web\":{\"results\":[{\"title\":\"Bayern\",\"url\":\"https://www.fcbayern.com/de/spielplan\",\"description\":\"Nächstes Spiel: Samstag.\"}]}}");
+        var hits = await new WebSearchClient(brave, "http://search.test/b").SearchAsync("brave", BraveKey, "Wann spielt Bayern?", 5);
+        Assert.Equal(HttpMethod.Get, brave.Seen!.Method); Assert.Equal(BraveKey, brave.Seen.Headers.GetValues("X-Subscription-Token").Single());
+        Assert.Contains("q=Wann%20spielt%20Bayern%3F", brave.Seen.RequestUri!.AbsoluteUri);
+        Assert.Equal("fcbayern.com", WebSearchClient.Domains(hits));
+
+        var sx = new Fake(HttpStatusCode.OK, "{\"results\":[{\"title\":\"Kicker\",\"url\":\"https://www.kicker.de/x\",\"content\":\"Bayern gegen Dortmund 2:1\"}]}");
+        var hits2 = await new WebSearchClient(sx).SearchAsync("searxng", "https://search.example.org/", "Stand Bayern Dortmund", 5);
+        Assert.Equal("https://search.example.org/search?q=Stand%20Bayern%20Dortmund&format=json&language=de&safesearch=1", sx.Seen!.RequestUri!.AbsoluteUri);
+        Assert.Null(sx.Seen.Headers.Authorization); Assert.Contains("2:1", hits2[0].Content);
+        var off = await Assert.ThrowsAsync<RpcException>(() => new WebSearchClient(new Fake(HttpStatusCode.Forbidden, "x")).SearchAsync("searxng", "https://search.example.org", "frage", 5));
+        Assert.Contains("JSON", off.Message);
+        var html = await Assert.ThrowsAsync<RpcException>(() => new WebSearchClient(new Fake(HttpStatusCode.OK, "<html>")).SearchAsync("searxng", "https://search.example.org", "frage", 5));
+        Assert.Equal("assistant-unavailable", html.Code);
+    }
+
+    [Fact]
+    public void Brave_only_after_the_written_confirmation_and_SearXNG_only_with_a_valid_address()
+    {
+        using var dir = new TempDir();
+        var s = Fixtures.Services(dir);
+        Assert.False(WebSearchClient.LooksLikeKey("brave", SerperKey)); Assert.True(WebSearchClient.LooksLikeKey("brave", BraveKey));
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => s.Assistant.Configure(new AssistantService.Config { BraveKey = BraveKey }, atPc: true)).Code);        // no confirmation
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => s.Assistant.Configure(new AssistantService.Config { BraveKey = "nope", BraveAcknowledged = true }, atPc: true)).Code);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => s.Assistant.Configure(new AssistantService.Config { SearxUrl = "ftp://x.example" }, atPc: true)).Code);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => s.Assistant.Configure(new AssistantService.Config { SearxUrl = "https://user:pw@x.example" }, atPc: true)).Code);
+        s.Assistant.Configure(new AssistantService.Config { BraveKey = BraveKey, BraveAcknowledged = true, SearxUrl = "https://search.example.org/" }, atPc: true);
+        var provs = System.Text.Json.JsonSerializer.SerializeToElement(s.Assistant.Status(), Json.Options).GetProperty("search").GetProperty("providers").EnumerateArray().ToDictionary(p => p.GetProperty("id").GetString()!, p => p.GetProperty("keySet").GetBoolean());
+        Assert.True(provs["brave"]); Assert.True(provs["searxng"]);
+        s.Assistant.Configure(new AssistantService.Config { BraveAcknowledged = false }, atPc: true);                                    // taking the confirmation back switches Brave off
+        Assert.False(System.Text.Json.JsonSerializer.SerializeToElement(s.Assistant.Status(), Json.Options).GetProperty("search").GetProperty("providers").EnumerateArray().Single(p => p.GetProperty("id").GetString() == "brave").GetProperty("keySet").GetBoolean());
     }
 }

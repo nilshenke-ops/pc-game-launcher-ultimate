@@ -19,6 +19,8 @@ public sealed class AssistantUsageMonth
     public int SearchRequests { get; set; }
     public int SerperRequests { get; set; }
     public int ExaRequests { get; set; }
+    public int BraveRequests { get; set; }
+    public int SearxRequests { get; set; }
     /// <summary>DeepSeek (bingo tasks): counted, the price is billed by DeepSeek directly.</summary>
     public int DeepSeekRequests { get; set; }
     public long DeepSeekInputTokens { get; set; }
@@ -49,6 +51,11 @@ public sealed class AssistantFile
     /// <summary>Further web search providers (free plans, no payment method), tried in the order Tavily → Serper → Exa.</summary>
     public string? SerperKeyProtected { get; set; }
     public string? ExaKeyProtected { get; set; }
+    /// <summary>Brave Search API: its "free" part is $5 of credit every month and Brave asks for a card to prevent abuse – so only after a written confirmation (<see cref="BraveAcknowledged"/>).</summary>
+    public string? BraveKeyProtected { get; set; }
+    public bool BraveAcknowledged { get; set; }
+    /// <summary>A SearXNG instance (own server or a trusted one) – no key; the address itself.</summary>
+    public string? SearxUrl { get; set; }
     /// <summary>At most this many web searches per month (the free plan has 1,000; this stays below it).</summary>
     public int SearchMonthlyRequests { get; set; } = WebSearchClient.DefaultMonthly;
     /// <summary>DeepSeek API key, protected like the Anthropic key. Never returned, never in a backup.</summary>
@@ -121,8 +128,8 @@ public sealed class AssistantService
             bingoProvider = BingoProviderName(f),
             search = new
             {
-                keySet = f.SearchKeyProtected != null || f.SerperKeyProtected != null || f.ExaKeyProtected != null, monthlyRequests = f.SearchMonthlyRequests, used = month.SearchRequests,
-                providers = WebSearchClient.Providers.Select(id => new { id, name = WebSearchClient.Name(id), keySet = SearchKeyOf(f, id) != null, used = SearchUsed(month, id) }).ToList(),
+                keySet = WebSearchClient.Providers.Any(i => SearchKeyOf(f, i) != null), monthlyRequests = f.SearchMonthlyRequests, used = month.SearchRequests,
+                providers = WebSearchClient.Providers.Select(id => new { id, name = WebSearchClient.Name(id), keySet = SearchKeyOf(f, id) != null, used = SearchUsed(month, id), acknowledged = id == "brave" ? f.BraveAcknowledged : (bool?)null, url = id == "searxng" ? f.SearxUrl : null }).ToList(),
             },
             router = new { baseUrl = f.RouterBase, keySet = f.RouterKeyProtected != null, models = f.RouterModels, monthlyRequests = f.RouterMonthlyRequests, used = month.RouterRequests, ready = RouterReady(f) },
             researchAi = ResearchProvider(f)?.label,
@@ -135,7 +142,7 @@ public sealed class AssistantService
     {
         public string? Mode { get; set; } public string? Model { get; set; } public bool? LocalFirst { get; set; } public double? MonthlyLimitUsd { get; set; } public string? ApiKey { get; set; }
         public string? OllamaUrl { get; set; } public string? OllamaModel { get; set; } public bool? OllamaWhileGaming { get; set; }
-        public string? SearchKey { get; set; } public string? SerperKey { get; set; } public string? ExaKey { get; set; } public int? SearchMonthlyRequests { get; set; }
+        public string? SearchKey { get; set; } public string? SerperKey { get; set; } public string? ExaKey { get; set; } public string? BraveKey { get; set; } public bool? BraveAcknowledged { get; set; } public string? SearxUrl { get; set; } public int? SearchMonthlyRequests { get; set; }
         public string? BingoAi { get; set; } public string? DeepSeekKey { get; set; } public string? DeepSeekModel { get; set; } public int? DeepSeekMonthlyRequests { get; set; }
        
         public string? RouterBase { get; set; } public string? RouterKey { get; set; } public List<string>? RouterModels { get; set; } public int? RouterMonthlyRequests { get; set; }
@@ -179,12 +186,16 @@ public sealed class AssistantService
     /// <param name="atPc">The key may only be set or removed at the PC itself (it costs money and leaves the home network).</param>
     public object Configure(Config c, bool atPc)
     {
-        if ((c.ApiKey != null || c.DeepSeekKey != null || c.SearchKey != null || c.SerperKey != null || c.ExaKey != null || c.RouterKey != null || c.RouterBase != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
+        if ((c.ApiKey != null || c.DeepSeekKey != null || c.SearchKey != null || c.SerperKey != null || c.ExaKey != null || c.BraveKey != null || c.SearxUrl != null || c.RouterKey != null || c.RouterBase != null) && !atPc) throw new RpcException("forbidden", "Den API-Schlüssel kannst du nur direkt am PC eintragen oder löschen.");
         var searchKey = c.SearchKey?.Trim();
         if (!string.IsNullOrEmpty(searchKey) && !WebSearchClient.LooksLikeKey(searchKey)) throw new RpcException("invalid-params", "Das sieht nicht nach einem Tavily-Schlüssel aus (tavily.com → API Keys, er beginnt mit „tvly-“).");
         var serperKey = c.SerperKey?.Trim(); var exaKey = c.ExaKey?.Trim();
         if (!string.IsNullOrEmpty(serperKey) && !WebSearchClient.LooksLikeKey("serper", serperKey)) throw new RpcException("invalid-params", "Das sieht nicht nach einem Serper-Schlüssel aus (serper.dev → API Key, 40 Zeichen aus Ziffern und Kleinbuchstaben a–f).");
         if (!string.IsNullOrEmpty(exaKey) && !WebSearchClient.LooksLikeKey("exa", exaKey)) throw new RpcException("invalid-params", "Das sieht nicht nach einem Exa-Schlüssel aus (dashboard.exa.ai → API Keys, er ist eine UUID wie 01234567-89ab-cdef-0123-456789abcdef).");
+        var braveKey = c.BraveKey?.Trim(); var searxUrl = c.SearxUrl?.Trim();
+        if (!string.IsNullOrEmpty(braveKey) && !WebSearchClient.LooksLikeKey("brave", braveKey)) throw new RpcException("invalid-params", "Das sieht nicht nach einem Brave-Schlüssel aus (api-dashboard.search.brave.com → API Keys, er beginnt mit „BSA“).");
+        if (!string.IsNullOrEmpty(braveKey) && c.BraveAcknowledged != true && !_store.Snapshot().BraveAcknowledged) throw new RpcException("invalid-params", "Bitte zuerst bestätigen: Du nutzt bei Brave nur die monatlichen Gratis-Credits (5 $ ≈ 1000 Suchen) und lädst nichts auf.");
+        if (!string.IsNullOrEmpty(searxUrl) && !WebSearchClient.LooksLikeSearxUrl(searxUrl)) throw new RpcException("invalid-params", "Die SearXNG-Adresse muss mit http:// oder https:// beginnen, z. B. https://search.example.org");
         if (c.SearchMonthlyRequests is < 0 or > 1000) throw new RpcException("invalid-params", "Websuchen pro Monat: 0–1000 (der kostenlose Tarif hat 1000).");
         if (c.BingoAi is not (null or "assistant" or "deepseek")) throw new RpcException("invalid-params", "Bingo-KI muss „assistant“ oder „deepseek“ sein.");
         if (c.DeepSeekModel != null && !Regex.IsMatch(c.DeepSeekModel, @"^[A-Za-z0-9._:-]{2,60}$")) throw new RpcException("invalid-params", "Ungültiger DeepSeek-Modellname.");
@@ -247,6 +258,10 @@ public sealed class AssistantService
             if (searchKey != null) f.SearchKeyProtected = searchKey.Length == 0 ? null : _secrets.Protect(searchKey);
             if (serperKey != null) f.SerperKeyProtected = serperKey.Length == 0 ? null : _secrets.Protect(serperKey);
             if (exaKey != null) f.ExaKeyProtected = exaKey.Length == 0 ? null : _secrets.Protect(exaKey);
+            if (c.BraveAcknowledged != null) f.BraveAcknowledged = c.BraveAcknowledged.Value;
+            if (braveKey != null) { f.BraveKeyProtected = braveKey.Length == 0 ? null : _secrets.Protect(braveKey); if (braveKey.Length > 0) f.BraveAcknowledged = true; }
+            if (!f.BraveAcknowledged) f.BraveKeyProtected = null;
+            if (searxUrl != null) f.SearxUrl = searxUrl.Length == 0 ? null : searxUrl.TrimEnd('/');
             if (c.DeepSeekModel != null) f.DeepSeekModel = c.DeepSeekModel;
             if (c.DeepSeekMonthlyRequests != null) f.DeepSeekMonthlyRequests = c.DeepSeekMonthlyRequests.Value;
             if (rBase != null)
@@ -517,8 +532,8 @@ public sealed class AssistantService
     /// Nothing is ever bought: the cost guard in <see cref="FreeAiHub"/> stands in front of every request. If none can answer,
     /// the built-in assistant does and says so. <paramref name="only"/> = one chosen provider, no fallback.
     /// </summary>
-    static string? SearchKeyOf(AssistantFile f, string id) => id switch { "serper" => f.SerperKeyProtected, "exa" => f.ExaKeyProtected, _ => f.SearchKeyProtected };
-    static int SearchUsed(AssistantUsageMonth? m, string id) => m == null ? 0 : id switch { "serper" => m.SerperRequests, "exa" => m.ExaRequests, _ => m.SearchRequests };
+    static string? SearchKeyOf(AssistantFile f, string id) => id switch { "serper" => f.SerperKeyProtected, "exa" => f.ExaKeyProtected, "brave" => f.BraveAcknowledged ? f.BraveKeyProtected : null, "searxng" => f.SearxUrl, _ => f.SearchKeyProtected };
+    static int SearchUsed(AssistantUsageMonth? m, string id) => m == null ? 0 : id switch { "serper" => m.SerperRequests, "exa" => m.ExaRequests, "brave" => m.BraveRequests, "searxng" => m.SearxRequests, _ => m.SearchRequests };
 
     async Task<AssistantReply> SmartChatAsync(AssistantFile f, Conv conv, string text, string who, CancellationToken ct, string? only = null)
     {
@@ -536,9 +551,9 @@ public sealed class AssistantService
                 if (used >= f.SearchMonthlyRequests) { failed.Add($"{WebSearchClient.Name(sid)}: Monatslimit erreicht"); continue; }
                 try
                 {
-                    var key = _secrets.Unprotect(prot) ?? throw new RpcException("assistant-key", $"{WebSearchClient.Name(sid)}: Der Websuche-Schlüssel lässt sich nicht entschlüsseln.");
+                    var key = (sid == "searxng" ? prot : _secrets.Unprotect(prot)) ?? throw new RpcException("assistant-key", $"{WebSearchClient.Name(sid)}: Der Websuche-Schlüssel lässt sich nicht entschlüsseln.");
                     var hits = await Search.SearchAsync(sid, key, text, 5, ct);
-                    CountMonth(m => { switch (sid) { case "serper": m.SerperRequests++; break; case "exa": m.ExaRequests++; break; default: m.SearchRequests++; break; } });
+                    CountMonth(m => { switch (sid) { case "serper": m.SerperRequests++; break; case "exa": m.ExaRequests++; break; case "brave": m.BraveRequests++; break; case "searxng": m.SearxRequests++; break; default: m.SearchRequests++; break; } });
                     if (hits.Count > 0) { webBlock = WebSearchClient.Block(hits, TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local)); webSources = WebSearchClient.Domains(hits); break; }
                 }
                 catch (RpcException e) when (e.Code is "assistant-limit" or "assistant-offline" or "assistant-unavailable" or "assistant-key") { failed.Add("Websuche: " + e.Message); }

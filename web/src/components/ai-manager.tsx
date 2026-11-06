@@ -13,7 +13,7 @@ import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
 import { AiRoster } from "./ai-roster";
 import { friendlyError } from "../lib/friendly-error";
-import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
+import { LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
 export interface AiProvider {
   id: string; name: string; enabled: boolean; needsKey: boolean; needsAttest?: boolean; keySet: boolean; attested: boolean; consent: boolean;
@@ -283,8 +283,9 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
   const [attest, setAttest] = useState<Record<LocalProvider, boolean>>({ openrouter: true, groq: false, cerebras: false, mistral: false });
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
-  const anyLocked = LOCAL_PROVIDERS.some((p) => snap[p] === "locked");
-  const anyReady = LOCAL_PROVIDERS.some((p) => snap[p] === "ready");
+  const [skeys, setSkeys] = useState<Record<string, string>>({});
+  const anyLocked = LOCAL_PROVIDERS.some((p) => snap[p] === "locked") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "locked");
+  const anyReady = LOCAL_PROVIDERS.some((p) => snap[p] === "ready") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "ready");
   const run = async (id: string, fn: () => Promise<string | void>) => {
     setBusy(id); setMsg((m) => { const n = { ...m }; delete n[id]; return n; });
     try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); }
@@ -344,6 +345,41 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
           </div>
         );
       })}
+      <div className="aim-local" role="group" aria-label={t("Websuche ohne PC")}>
+        <div className="aim-row"><b className="aim-name">{t("Websuche ohne PC")}</b></div>
+        <p className="tiny muted">{t("Für Fragen zu Sport, Wetter oder Nachrichten („Wann spielt Bayern als Nächstes?“) sucht JARVIS auch ohne PC direkt aus dem Browser – mit deinem eigenen kostenlosen Schlüssel von Tavily oder Serper (Anleitung bei den Einstellungen am PC). Brave, Exa und SearXNG gehen nur über den PC.")}</p>
+        {SEARCH_PROVIDERS.map((p) => {
+          const st = snap.search?.[p] ?? "none";
+          const k = skeys[p] ?? "";
+          return (
+            <div key={p} className={`aim-local aim-local-${st}`} role="group" aria-label={`${SEARCH_NAME[p]} ${t("Websuche")}`}>
+              <div className="aim-row"><b className="aim-name">{SEARCH_NAME[p]}</b>
+                <span className={`aim-badge ${st === "ready" ? "ready" : st === "locked" ? "cooldown" : "off"}`}>{st === "ready" ? t("Bereit (auf diesem Gerät)") : st === "locked" ? t("Gesperrt") : t("Nicht eingerichtet")}</span></div>
+              {st === "none" && (
+                <>
+                  <Key label={`${t("Schlüssel")} ${SEARCH_NAME[p]}`} value={k} set={(v) => setSkeys((m) => ({ ...m, [p]: v }))} hint={p === "tavily" ? "tvly-…" : t("40 Zeichen")} />
+                  {!anyLocked && (
+                    <label className="fas-field"><span className="tiny">{t("Neues Passwort für die Schlüssel auf diesem Gerät (mindestens 6 Zeichen)")}</span>
+                      <input className="input" type="password" autoComplete="new-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort für die Schlüssel")} /></label>
+                  )}
+                  <div className="aim-actions">
+                    <button type="button" className="btn sm primary" disabled={k.length < 20 || pass.length < 6 || busy !== null}
+                      onClick={() => void run("s-" + p, async () => { await saveLocalSearchKey(p, k, pass, { remember: keep }); setSkeys((m) => ({ ...m, [p]: "" })); setPass(""); const r = await testLocalSearch(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
+                      <KeyRound size={14} /> {busy === "s-" + p ? t("Teste …") : t("Speichern & testen")}</button>
+                  </div>
+                </>
+              )}
+              {st !== "none" && (
+                <div className="aim-actions">
+                  {st === "ready" && <button type="button" className="btn sm" disabled={busy !== null} onClick={() => void run("s-" + p, async () => { const r = await testLocalSearch(p); if (!r.ok) throw new Error(r.message); return r.message; })}><PlugZap size={14} /> {busy === "s-" + p ? t("Teste …") : t("Verbindung testen")}</button>}
+                  <button type="button" className="btn sm" disabled={busy !== null} onClick={() => { removeLocalSearchKey(p); setMsg((m) => ({ ...m, ["s-" + p]: { ok: true, text: t("Schlüssel von diesem Gerät gelöscht.") } })); }}><Trash2 size={14} /> {t("Schlüssel von diesem Gerät löschen")}</button>
+                </div>
+              )}
+              {msg["s-" + p] && <p className={`tiny ${msg["s-" + p].ok ? "" : "fas-err"}`} role={msg["s-" + p].ok ? "status" : "alert"}>{msg["s-" + p].text}</p>}
+            </div>
+          );
+        })}
+      </div>
     </section>
   );
 }

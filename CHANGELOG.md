@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.14.0 – 2026-11-06
+### Neu
+- Websuche auch ohne PC: Mit einem eigenen kostenlosen Tavily- oder Serper-Schlüssel (Passwort-verschlüsselt auf dem Gerät, wie bei den KIs) sucht JARVIS bei Fragen zu Sport, Wetter, Nachrichten und Preisen direkt aus dem Browser und antwortet mit der KI aus den Ergebnissen; die Antwort nennt die Quellen (z. B. „Websuche: kicker.de“). Ein Entsperren öffnet KI- und Suchschlüssel zugleich
+- Brave Search als weiterer Suchdienst am PC – nur nach deiner ausdrücklichen Bestätigung, dass du ausschließlich die monatlichen Gratis-Credits (5 $ ≈ 1000 Suchen) nutzt und nichts auflädst; Brave verlangt dafür eine Karte zur Missbrauchs-Prüfung. Ohne Bestätigung bleibt der Schlüssel unbenutzt
+- SearXNG ohne Schlüssel: Adresse einer eigenen (oder vertrauenswürdigen) Instanz eintragen, die JSON-Ausgabe erlaubt – eine offizielle Suche ohne Schlüssel gibt es sonst nicht
+### Verbessert
+- Reihenfolge der Websuche: Tavily → Serper → Exa → Brave → SearXNG; Brave, Exa und SearXNG gehen nur über den PC (Brave erlaubt keine Aufrufe aus dem Browser)
+
 ## 3.13.1 – 2026-11-06
 ### Verbessert
 - Bei jedem KI-Schlüssel und jedem Suchdienst steht jetzt kurz „Wofür?“: was die KI kann, wann man sie wählt und dass sie ohne Websuche nichts Aktuelles weiß; dazu „Welche KI soll ich nutzen?“ in der KI-Verwaltung (zwei reichen: eine schnelle und ein Allrounder) und ein Hinweis zu Sport: Wer als Nächstes gegen Bayern spielt oder wie es gerade gegen Dortmund steht, beantwortet JARVIS mit Websuche (Tavily oder Serper) plus einer beliebigen KI – der Stand ist so aktuell wie die Suchergebnisse
