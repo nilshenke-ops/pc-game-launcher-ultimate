@@ -24,6 +24,10 @@ public sealed class FakeObs : IDisposable
     public bool Recording { get; private set; }
     public bool ReplayBuffer { get; set; }
     public bool ReplayBufferEnabledInObs { get; set; } = true;
+    public string Scene { get; private set; } = "Spiel";
+    public bool MicMuted { get; private set; }
+    public bool DesktopMuted { get; private set; }
+    public bool HasMic { get; set; } = true;
     public List<string> Requests { get; } = new();
 
     public FakeObs(string? password = null)
@@ -90,6 +94,16 @@ public sealed class FakeObs : IDisposable
                 case "SaveReplayBuffer":
                     if (!ReplayBuffer) { status = (false, 501, "Replay buffer is not active."); break; }
                     await Send(ws, 5, new JsonObject { ["eventType"] = "ReplayBufferSaved", ["eventData"] = new JsonObject { ["savedReplayPath"] = "C:/Videos/Replay 2026-10-18.mkv" } });
+                    break;
+                case "GetSceneList":   // OBS lists the scenes bottom-up
+                    data = new() { ["currentProgramSceneName"] = Scene, ["scenes"] = new JsonArray(new[] { "Pause", "Chat", "Spiel" }.Select((n, i) => (JsonNode)new JsonObject { ["sceneName"] = n, ["sceneIndex"] = i }).ToArray()) }; break;
+                case "SetCurrentProgramScene":
+                    if (d["requestData"]?["sceneName"]?.GetValue<string>() is { } sn && new[] { "Spiel", "Chat", "Pause" }.Contains(sn)) Scene = sn; else status = (false, 600, "No scene was found by that name."); break;
+                case "GetSpecialInputs": data = new() { ["desktop1"] = "Desktop-Audio", ["mic1"] = HasMic ? "Mikrofon" : null }; break;
+                case "GetInputMute": data = new() { ["inputMuted"] = d["requestData"]!["inputName"]!.GetValue<string>() == "Mikrofon" ? MicMuted : DesktopMuted }; break;
+                case "ToggleInputMute":
+                    if (d["requestData"]!["inputName"]!.GetValue<string>() == "Mikrofon") { MicMuted = !MicMuted; data = new() { ["inputMuted"] = MicMuted }; }
+                    else { DesktopMuted = !DesktopMuted; data = new() { ["inputMuted"] = DesktopMuted }; }
                     break;
                 default: status = (false, 204, "Unknown request type."); break;
             }
@@ -275,5 +289,49 @@ public class ObsTests
         // An empty password removes it.
         await admin.Ok("obs.configure", new { password = "" });
         Assert.Null(s.Settings.Get().ObsPasswordProtected);
+    }
+
+    [Fact]
+    public async Task Scenes_and_the_mute_state_of_microphone_and_desktop_audio_are_part_of_the_status()
+    {
+        using var fake = new FakeObs();
+        var (obs, _) = Make(fake.Url, null);
+        var st = System.Text.Json.JsonSerializer.SerializeToElement(await obs.Status());
+        Assert.Equal(new[] { "Spiel", "Chat", "Pause" }, st.GetProperty("scenes").EnumerateArray().Select(x => x.GetString()));   // in the order OBS shows them
+        Assert.Equal("Spiel", st.GetProperty("currentScene").GetString());
+        Assert.Equal("Mikrofon", st.GetProperty("mic").GetProperty("name").GetString());
+        Assert.False(st.GetProperty("mic").GetProperty("muted").GetBoolean());
+        Assert.Equal("Desktop-Audio", st.GetProperty("desktop").GetProperty("name").GetString());
+        await obs.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task Switching_the_scene_works_and_a_name_OBS_does_not_have_is_refused_before_anything_is_sent()
+    {
+        using var fake = new FakeObs();
+        var (obs, _) = Make(fake.Url, null);
+        Assert.Equal("Szene: Chat", await obs.SetScene("Chat"));
+        Assert.Equal("Chat", fake.Scene);
+        var e = await Assert.ThrowsAsync<RpcException>(() => obs.SetScene("Gibt es nicht"));
+        Assert.Equal("invalid-params", e.Code);
+        Assert.Equal("Chat", fake.Scene);
+        lock (fake.Requests) Assert.Equal(1, fake.Requests.Count(r => r == "SetCurrentProgramScene"));
+        await obs.DisposeAsync();
+    }
+
+    [Fact]
+    public async Task Mute_toggles_the_microphone_or_the_desktop_audio_and_says_so_when_there_is_none()
+    {
+        using var fake = new FakeObs();
+        var (obs, _) = Make(fake.Url, null);
+        Assert.Equal("Mikrofon stumm", await obs.MuteToggle("mic"));
+        Assert.True(fake.MicMuted); Assert.False(fake.DesktopMuted);
+        Assert.Equal("Mikrofon an", await obs.MuteToggle("mic"));
+        Assert.Equal("Desktop-Ton stumm", await obs.MuteToggle("desktop"));
+        Assert.True(fake.DesktopMuted);
+        Assert.Equal("invalid-params", (await Assert.ThrowsAsync<RpcException>(() => obs.MuteToggle("alles"))).Code);
+        fake.HasMic = false;
+        Assert.Equal("obs-unavailable", (await Assert.ThrowsAsync<RpcException>(() => obs.MuteToggle("mic"))).Code);
+        await obs.DisposeAsync();
     }
 }

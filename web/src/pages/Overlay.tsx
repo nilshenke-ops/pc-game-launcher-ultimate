@@ -13,7 +13,7 @@ import {
   type OverlayBuiltin, type OverlayLayout, type OverlayWidgetPlace,
 } from "../lib/overlay-layout";
 import { PluginFrame } from "../components/PluginFrame";
-import { CaptureWidget, RecChip, SoundboardWidget } from "../components/overlay-widgets";
+import { CaptureWidget, MicChip, RecChip, SoundboardWidget } from "../components/overlay-widgets";
 import { META } from "./Dashboard";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
@@ -108,7 +108,7 @@ export default function Overlay() {
         <span className="gb-logo" aria-hidden><Gamepad2 size={18} /></span>
         <b className="gb-time">{now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</b>
         <span className="gb-sep" />
-        <RecChip />
+        <RecChip /><MicChip />
         {placed.map((w, i) => {
           const e = entry(w.id)!;
           return (

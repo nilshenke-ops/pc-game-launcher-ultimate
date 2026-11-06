@@ -4,7 +4,8 @@ import { createServer } from "node:http";
 import { createHash } from "node:crypto";
 
 const [port, password] = [Number(process.argv[2]), process.argv[3]];
-const state = { recording: false, replayBuffer: false, savedReplays: 0, requests: [] };
+const state = { recording: false, replayBuffer: false, savedReplays: 0, requests: [], scene: "Spiel", micMuted: false, desktopMuted: false };
+const SCENES = ["Spiel", "Chat", "Pause"];   // as OBS lists them: bottom-up (the last scene in the dock is the first in the answer)
 const sha = (s) => createHash("sha256").update(s).digest("base64");
 const SALT = "c2FsdA==", CHALLENGE = "Y2hhbGxlbmdl";
 
@@ -73,6 +74,17 @@ server.on("upgrade", (req, sock) => {
       else if (type === "SaveReplayBuffer") {
         if (!state.replayBuffer) status = { result: false, code: 501, comment: "Replay buffer is not active." };
         else { state.savedReplays++; send(5, { eventType: "ReplayBufferSaved", eventData: { savedReplayPath: "C:/Videos/Replay e2e.mkv" } }); }
+      }
+      else if (type === "GetSceneList") data = { currentProgramSceneName: state.scene, scenes: [...SCENES].reverse().map((sceneName, sceneIndex) => ({ sceneName, sceneIndex })) };
+      else if (type === "SetCurrentProgramScene") {
+        if (!SCENES.includes(msg.d.requestData?.sceneName)) status = { result: false, code: 600, comment: "No scene was found by that name." };
+        else state.scene = msg.d.requestData.sceneName;
+      }
+      else if (type === "GetSpecialInputs") data = { desktop1: "Desktop-Audio", mic1: "Mikrofon", mic2: null };
+      else if (type === "GetInputMute") data = { inputMuted: msg.d.requestData?.inputName === "Mikrofon" ? state.micMuted : state.desktopMuted };
+      else if (type === "ToggleInputMute") {
+        if (msg.d.requestData?.inputName === "Mikrofon") { state.micMuted = !state.micMuted; data = { inputMuted: state.micMuted }; }
+        else { state.desktopMuted = !state.desktopMuted; data = { inputMuted: state.desktopMuted }; }
       }
       else status = { result: false, code: 204, comment: "Unknown request type." };
       send(7, { requestType: type, requestId, requestStatus: status, ...(data ? { responseData: data } : {}) });

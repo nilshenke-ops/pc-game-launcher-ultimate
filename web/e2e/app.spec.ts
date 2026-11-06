@@ -655,6 +655,23 @@ test("Overlay: Aufnahme-Chip in der Leiste startet/stoppt OBS, Suche im Menü, A
   await bar.getByRole("button", { name: "Aufnahme stoppen" }).click();
   await expect.poll(async () => (await obsState()).recording).toBe(false);
   await expect(bar.getByRole("button", { name: "Aufnahme starten" })).toBeVisible({ timeout: 15000 });
+  // OBS scenes and the mute buttons (the bar's microphone chip and the recording window's buttons) act on OBS itself.
+  const obsFull = async () => (await (await fetch(`http://127.0.0.1:${OBS_PORT}/state`)).json()) as { scene: string; micMuted: boolean; desktopMuted: boolean };
+  await expect(pc.locator(".gb-scenes").getByRole("button", { name: "Chat" })).toBeVisible({ timeout: 15000 });
+  await pc.locator(".gb-scenes").getByRole("button", { name: "Chat" }).click();
+  await expect.poll(async () => (await obsFull()).scene).toBe("Chat");
+  await expect(pc.locator(".gb-scenes").getByRole("button", { name: "Chat" })).toHaveAttribute("aria-pressed", "true", { timeout: 15000 });
+  await pc.locator(".gb-scenes").getByRole("button", { name: "Spiel" }).click();
+  await expect.poll(async () => (await obsFull()).scene).toBe("Spiel");
+  await bar.getByRole("button", { name: "Mikrofon stummschalten" }).click();
+  await expect.poll(async () => (await obsFull()).micMuted).toBe(true);
+  await expect(bar.getByRole("button", { name: "Mikrofon einschalten" })).toBeVisible({ timeout: 15000 });
+  await bar.getByRole("button", { name: "Mikrofon einschalten" }).click();
+  await expect.poll(async () => (await obsFull()).micMuted).toBe(false);
+  await pc.getByRole("button", { name: "Desktop-Ton an" }).click();
+  await expect.poll(async () => (await obsFull()).desktopMuted).toBe(true);
+  await pc.getByRole("button", { name: "Desktop-Ton stumm" }).click();
+  await expect.poll(async () => (await obsFull()).desktopMuted).toBe(false);
   // The widget menu: search narrows the list, "Alle ausblenden" / "Alle einblenden", snapping can be switched.
   await pc.getByRole("button", { name: "Widgets" }).click();
   const find = pc.getByRole("textbox", { name: "Widgets suchen" });
@@ -2838,6 +2855,16 @@ test("JARVIS MEMORY: echter Ordner mit Markdown-Dateien – merken, nachfragen, 
   expect(readFileSync(file, "utf8")).toMatch(/\*\*Status:\*\* fertig/);
   expect(readFileSync(file, "utf8")).toMatch(/Status geändert von/);
 
+  // A contradiction is asked about, not written quietly: replace → the old line is struck through, the answer "Behalte beides" keeps both.
+  const profile = join(vault, "01-Personen", "Nutzerprofil.md");
+  await adminRpc<Ask>("assistant.ask", { text: "Merk dir, dass mein Lieblingsspiel Celeste ist" });
+  expect(readFileSync(profile, "utf8")).toContain("mein Lieblingsspiel ist Celeste");           // "dass …" – the verb moved to second place
+  const q1 = await adminRpc<Ask>("assistant.ask", { text: "Merk dir, dass mein Lieblingsspiel Hollow Knight ist" });
+  expect(q1.reply.text).toMatch(/widerspricht/); expect(q1.reply.text).toMatch(/Celeste/);
+  expect(readFileSync(profile, "utf8")).not.toContain("Hollow Knight");                        // nothing saved before the answer
+  const q2 = await adminRpc<Ask>("assistant.ask", { text: "Ersetze es" });
+  expect(q2.reply.text).toMatch(/Ersetzt/);
+  expect(readFileSync(profile, "utf8")).toMatch(/~~mein Lieblingsspiel ist Celeste~~/); expect(readFileSync(profile, "utf8")).toContain("mein Lieblingsspiel ist Hollow Knight");
   // Attacks on the path never leave the vault.
   for (const bad of ["../escape.md", "..\\..\\escape.md", "/etc/passwd", "C:\\Windows\\win.ini", ".obsidian/x.md"]) {
     await expect(adminRpc("memory.write", { path: bad, content: "x" })).rejects.toThrow();

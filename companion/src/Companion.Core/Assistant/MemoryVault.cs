@@ -441,7 +441,7 @@ public sealed class MemoryVault
     static readonly Regex StatusRx = new(@"\b(nicht (?:ganz )?fertig|noch nicht fertig|unfertig|fertig|abgeschlossen|pausiert|in arbeit|angefangen|gestartet|aufgegeben|geplant)\b", RegexOptions.IgnoreCase);
 
     /// <summary>Saves a statement: into the right note, without duplicates; a changed status of a project updates the "Status" line and keeps the old one in the history.</summary>
-    public RememberResult Remember(string text, IEnumerable<string>? gameNames = null)
+    public RememberResult Remember(string text, IEnumerable<string>? gameNames = null, string? resolve = null)
     {
         RequireWrite();
         var clean = Regex.Replace(text.Trim(), @"\s+", " ").TrimEnd();
@@ -457,10 +457,19 @@ public sealed class MemoryVault
             else body = $"---\ntitle: {target.Title}\ntype: {target.Kind}\ncreated: {_now():yyyy-MM-dd}\nupdated: {_now():yyyy-MM-dd}\n---\n\n# {target.Title}\n\n" + (target.Kind == "projekt" ? "## Verlauf\n" : "");
             // duplicate: the same or nearly the same line is already there
             foreach (var line in body.Split('\n'))
-                if (line.Length > 10 && !line.StartsWith('#') && !line.StartsWith("---") && Jaccard(StripDate(line), clean) >= 0.8)
+                if (line.Length > 10 && !line.StartsWith('#') && !line.StartsWith("---") && NegRx.IsMatch(line) == NegRx.IsMatch(clean) && Jaccard(StripDate(line), clean) >= 0.8)   // "nicht" is a stop word: without this check "X" and "nicht X" counted as the same line
                     return new RememberResult("duplicate", Rel(full), $"Das steht schon in „{target.Title}“ – ich habe nichts doppelt gespeichert.");
             string? previous = null;
             var stamp = _now().ToString("yyyy-MM-dd HH:mm");
+            var isStatus = target.Kind == "projekt" && StatusRx.Match(clean).Success;
+            // A statement that contradicts one already in the note is not written quietly: JARVIS asks (replace / keep both).
+            // A project's status change is no contradiction – it has its own rule below.
+            if (!isStatus && target.Kind != "aufgabe" && existed && FindConflict(body, clean) is { } cf)
+            {
+                if (resolve == "replace") body = body.Replace(cf.raw, $"- ~~{cf.text}~~ _(ersetzt am {stamp[..10]})_");
+                else if (resolve != "both")
+                    return new RememberResult("conflict", Rel(full), $"Das widerspricht dem, was in „{target.Title}“ steht: „{cf.text}“. Soll ich es ersetzen oder beides behalten? Sag „Ersetze es“ oder „Behalte beides“ – ich ändere nichts, bevor du antwortest.", cf.text);
+            }
             if (target.Kind == "projekt" && StatusRx.Match(clean) is { Success: true } sm)
             {
                 var status = sm.Value.ToLowerInvariant();
@@ -489,6 +498,35 @@ public sealed class MemoryVault
                 : existed ? $"Gemerkt – ergänzt in „{target.Title}“ ({Rel(full)})." : $"Gemerkt – neue Notiz „{target.Title}“ angelegt ({Rel(full)}).";
             return new RememberResult(previous != null ? "updated" : existed ? "added" : "created", Rel(full), msg, previous);
         }
+    }
+
+    static readonly Regex NegRx = new(@"\b(nicht|kein|keine|keinen|keinem|keiner|nie|niemals)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    static readonly Regex ValueRx = new(@"^(?<subj>.+?)\s+(?<verb>ist|sind|wohne in|heiße|heisse)\s+(?<val>.+)$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    static double JaccardSets(HashSet<string> a, HashSet<string> b) => a.Count == 0 || b.Count == 0 ? 0 : (double)a.Intersect(b).Count() / a.Union(b).Count();
+
+    /// <summary>A line of the note that says the opposite of the new statement: the same thing with and without "nicht/kein" ("Ich spiele nur auf dem PC" / "… nicht nur …"), or the same "X ist / wohne in / heiße" with another value ("Mein Lieblingsspiel ist Celeste" / "… Hollow Knight"). Careful on purpose: when unsure, nothing is flagged.</summary>
+    static (string raw, string text)? FindConflict(string body, string clean)
+    {
+        var cNeg = NegRx.IsMatch(clean);
+        var cTok = Tokenize(NegRx.Replace(clean, " ")).ToHashSet();
+        var cv = ValueRx.Match(clean);
+        foreach (var raw in body.Split('\n'))
+        {
+            if (raw.StartsWith('#') || raw.StartsWith("---") || raw.Contains("**Status:**") || raw.Contains("~~")) continue;
+            var line = StripDate(raw).Trim();
+            if (line.Length < 8) continue;
+            var lTok = Tokenize(NegRx.Replace(line, " ")).ToHashSet();
+            if (NegRx.IsMatch(line) != cNeg && JaccardSets(lTok, cTok) >= 0.6) return (raw, line);
+            if (cv.Success && ValueRx.Match(line) is { Success: true } lv && lv.Groups["verb"].Value.Equals(cv.Groups["verb"].Value, StringComparison.OrdinalIgnoreCase))
+            {
+                var cs = Tokenize(cv.Groups["subj"].Value).ToHashSet(); var ls = Tokenize(lv.Groups["subj"].Value).ToHashSet();
+                var verb = cv.Groups["verb"].Value.ToLowerInvariant();
+                var sameSubject = verb is "wohne in" or "heiße" or "heisse" ? true : cs.Count > 0 && JaccardSets(cs, ls) >= 0.7;     // "Ich wohne …" has no subject word: the verb alone says what it is about
+                var cvv = Tokenize(cv.Groups["val"].Value).ToHashSet(); var lvv = Tokenize(lv.Groups["val"].Value).ToHashSet();
+                if (sameSubject && cvv.Count > 0 && lvv.Count > 0 && JaccardSets(cvv, lvv) < 0.3) return (raw, line);
+            }
+        }
+        return null;
     }
 
     static string StripDate(string l) => Regex.Replace(l, @"^[-*\s\[\]x]*(\d{4}-\d{2}-\d{2}( \d{2}:\d{2})?:?)?", "");

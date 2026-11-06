@@ -6665,4 +6665,11 @@ export const en: Record<string, string> = {
   "Widgets suchen": "Search widgets",
   "Widgets suchen …": "Search widgets …",
   "„{n}“ anwenden": "Apply “{n}”",
+  "Desktop-Ton an": "Desktop audio on",
+  "Desktop-Ton stumm": "Desktop audio muted",
+  "Mikrofon an": "Microphone on",
+  "Mikrofon einschalten": "Unmute microphone",
+  "Mikrofon stumm": "Microphone muted",
+  "Mikrofon stummschalten": "Mute microphone",
+  "Szene wechseln": "Switch scene",
 };

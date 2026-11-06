@@ -313,6 +313,8 @@
     "obs.recordToggle": "launch",
     "obs.replaySave": "launch",
     "obs.replayToggle": "launch",
+    "obs.setScene": "launch",
+    "obs.muteToggle": "launch",
     "inventory.get": "view",
     "crash.list": "view",
     "crash.create": "manage",

@@ -210,6 +210,8 @@ export type OverlayCorner = "top-left" | "top-right" | "bottom-left" | "bottom-r
 export interface ObsStatus {
   url?: string | null; passwordSet: boolean; replayWhilePlaying: boolean; connected: boolean; version?: string | null;
   recording?: boolean | null; recordTimecode?: string | null; replayBuffer?: boolean | null; error?: string | null;
+  /** Scenes in the order OBS shows them, the one on air, and the first microphone / desktop audio (null = none set up in OBS). */
+  scenes?: string[]; currentScene?: string | null; mic?: { name: string; muted: boolean } | null; desktop?: { name: string; muted: boolean } | null;
 }
 export interface OverlayStatus { supported: boolean; visible?: "full" | "mini" | null; reason?: string | null }
 

@@ -213,4 +213,50 @@ public class MemoryVaultTests
     [InlineData("Starte Discord", false)]
     [InlineData("Ich habe Hunger", false)]
     public void Only_lasting_statements_are_worth_keeping(string say, bool worth) => Assert.Equal(worth, MemoryIntents.LooksWorthKeeping(say));
+
+    [Fact]
+    public void A_statement_that_contradicts_a_note_is_not_saved_quietly_but_asked_about()
+    {
+        using var dir = new TempDir(); var v = Make(dir, VaultDir(dir));
+        v.Remember("Mein Lieblingsspiel ist Celeste");
+        var file = Path.Combine(VaultDir(dir), "01-Personen", "Nutzerprofil.md");
+        var before = File.ReadAllText(file);
+        var r = v.Remember("Mein Lieblingsspiel ist Hollow Knight");
+        Assert.Equal("conflict", r.Status); Assert.Contains("Celeste", r.Previous); Assert.Contains("ersetzen oder beides behalten", r.Message);
+        Assert.Equal(before, File.ReadAllText(file));                                                        // nothing was changed before the answer
+        var rep = v.Remember("Mein Lieblingsspiel ist Hollow Knight", null, "replace");
+        Assert.NotEqual("conflict", rep.Status);
+        var text = File.ReadAllText(file);
+        Assert.Contains("~~Mein Lieblingsspiel ist Celeste~~", text); Assert.Contains("ersetzt am", text); Assert.Contains("Mein Lieblingsspiel ist Hollow Knight", text);
+        Assert.Contains("Celeste", File.ReadAllText(Directory.GetFiles(Path.Combine(VaultDir(dir), "00-System", "Verlauf"))[0]));   // the old version is in the history
+        Assert.Equal("added", v.Remember("Mein Lieblingsspiel ist Celeste", null, "both").Status.Replace("created", "added"));   // "keep both" writes it without asking again
+    }
+
+    [Fact]
+    public void The_same_thing_with_and_without_a_negation_is_a_contradiction_but_unrelated_statements_and_status_changes_are_not()
+    {
+        using var dir = new TempDir(); var v = Make(dir, VaultDir(dir));
+        v.Remember("Ich spiele am liebsten mit der Maus");
+        Assert.Equal("conflict", v.Remember("Ich spiele am liebsten nicht mit der Maus").Status);
+        Assert.NotEqual("conflict", v.Remember("Ich spiele abends mit Freunden").Status);                       // something else
+        v.Remember("Ich wohne in Adendorf");
+        Assert.Equal("conflict", v.Remember("Ich wohne in Hamburg").Status);
+        v.Remember("Mein Minecraft-Projekt ist noch nicht fertig");
+        Assert.Equal("updated", v.Remember("Mein Minecraft-Projekt ist fertig").Status);                         // "fertig" is not the same line as "noch nicht fertig": the status changes                  // a status change is handled by its own rule
+        v.Remember("Ich muss noch den Treiber aktualisieren");
+        Assert.NotEqual("conflict", v.Remember("Ich muss noch den Treiber nicht vergessen zu aktualisieren").Status);   // tasks are never "contradictions"
+    }
+
+    [Theory]
+    [InlineData("Ersetze es", "replace")] [InlineData("ja, ersetze das", "replace")] [InlineData("Nimm das Neue", "replace")]
+    [InlineData("Behalte beides", "both")] [InlineData("beides behalten", "both")]
+    [InlineData("Nein", "cancel")] [InlineData("lass es", "cancel")] [InlineData("das alte gilt", "cancel")]
+    [InlineData("Wie spät ist es", null)] [InlineData("Starte Discord", null)]
+    public void The_answer_to_the_contradiction_question_is_understood(string say, string? answer) => Assert.Equal(answer, MemoryIntents.ConflictAnswer(say));
+
+    [Theory]
+    [InlineData("mein Lieblingsspiel Celeste ist", "mein Lieblingsspiel ist Celeste")]
+    [InlineData("ich in Adendorf wohne", "ich wohne in Adendorf")]
+    [InlineData("Hollow Knight gut ist", "Hollow Knight gut ist")]
+    public void After_dass_the_verb_moves_to_second_place_only_when_it_is_safe(string from, string to) => Assert.Equal(to, MemoryIntents.MainClause(from));
 }

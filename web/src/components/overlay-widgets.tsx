@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Circle, Clapperboard, Square, Timer } from "lucide-react";
+import { Circle, Clapperboard, Mic, MicOff, Square, Timer, Volume2, VolumeX } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { useRpc } from "../lib/hooks";
@@ -20,9 +20,9 @@ export function useCapture() {
     return !!p && p.actions.includes(a) && (fp[a] === "obs" ? !!obs?.connected : !!p.effective?.[a]);
   };
   const recording = !!fp && fp.record === "obs" && !!obs?.recording;
-  const run = async (method: string) => {
+  const run = async (method: string, params?: Record<string, unknown>) => {
     setBusy(method);
-    try { const r = await client.call<{ message?: string }>(method); setMsg({ text: t(r?.message ?? "OK") }); cap.reload(); }
+    try { const r = await client.call<{ message?: string }>(method, params); setMsg({ text: t(r?.message ?? "OK") }); cap.reload(); }
     catch (e) { setMsg({ text: (e as Error).message, error: true }); }
     setBusy(null);
   };
@@ -38,6 +38,19 @@ export function RecChip() {
     <button className={`gb-rec${k.recording ? " on" : ""}`} disabled={k.busy !== null} onClick={() => void k.run("capture.recordToggle")}
       aria-label={k.recording ? t("Aufnahme stoppen") : t("Aufnahme starten")} title={k.recording ? t("Aufnahme stoppen") : t("Aufnahme starten")}>
       <i aria-hidden />{k.recording && tc ? <span>{tc}</span> : null}
+    </button>
+  );
+}
+
+/** Mute button for OBS's microphone in the bar – so you can mute without leaving the game. Only shown when OBS is connected and has a microphone. */
+export function MicChip() {
+  const k = useCapture();
+  const mic = k.obs?.mic;
+  if (k.loading || !k.obs?.connected || !mic) return null;
+  return (
+    <button className={`gb-mic${mic.muted ? " on" : ""}`} disabled={k.busy !== null} onClick={() => void k.run("obs.muteToggle", { kind: "mic" })}
+      aria-label={mic.muted ? t("Mikrofon einschalten") : t("Mikrofon stummschalten")} title={mic.muted ? t("Mikrofon einschalten") : t("Mikrofon stummschalten")} aria-pressed={mic.muted}>
+      {mic.muted ? <MicOff size={16} /> : <Mic size={16} />}
     </button>
   );
 }
@@ -76,6 +89,28 @@ export function CaptureWidget() {
           <Timer size={14} /> {fp.buffer === "obs" && obs?.replayBuffer ? t("Replay-Puffer stoppen") : t("Replay-Puffer starten")}
         </button>
       </div>
+      {connected && (obs?.scenes ?? []).length > 0 && (
+        <div className="gb-scenes" role="group" aria-label={t("Szene wechseln")}>
+          {obs!.scenes!.map((n) => (
+            <button key={n} className={`gb-chip${obs!.currentScene === n ? " on" : ""}`} aria-pressed={obs!.currentScene === n} disabled={busy !== null}
+              onClick={() => void run("obs.setScene", { scene: n })}>{n}</button>
+          ))}
+        </div>
+      )}
+      {connected && (obs?.mic || obs?.desktop) && (
+        <div className="gb-row gb-mutes">
+          {obs?.mic && (
+            <button className={`gb-btn gb-toggle${obs.mic.muted ? " muted" : ""}`} aria-pressed={obs.mic.muted} disabled={busy !== null} onClick={() => void run("obs.muteToggle", { kind: "mic" })}>
+              {obs.mic.muted ? <MicOff size={14} /> : <Mic size={14} />} {obs.mic.muted ? t("Mikrofon stumm") : t("Mikrofon an")}
+            </button>
+          )}
+          {obs?.desktop && (
+            <button className={`gb-btn gb-toggle${obs.desktop.muted ? " muted" : ""}`} aria-pressed={obs.desktop.muted} disabled={busy !== null} onClick={() => void run("obs.muteToggle", { kind: "desktop" })}>
+              {obs.desktop.muted ? <VolumeX size={14} /> : <Volume2 size={14} />} {obs.desktop.muted ? t("Desktop-Ton stumm") : t("Desktop-Ton an")}
+            </button>
+          )}
+        </div>
+      )}
       {msg && <div className={`gb-msg ${msg.error ? "error" : ""}`} role={msg.error ? "alert" : "status"}>{msg.text}</div>}
     </div>
   );

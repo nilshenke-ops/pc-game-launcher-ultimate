@@ -2993,3 +2993,15 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 .gb-resize { background: none !important; }
 .gb-cap-state { display: flex; align-items: center; gap: 8px; color: var(--gb-dim); font-size: 12px; }
 .gb-cap-sub { margin: 0; font-size: 12px; color: var(--gb-dim); line-height: 1.45; overflow-wrap: anywhere; }
+
+/* OBS scenes and mute buttons in the overlay (3.24) */
+.gb-scenes { display: flex; flex-wrap: wrap; gap: 6px; }
+.gb-chip { cursor: pointer; }
+.gb-chip.on { background: rgba(var(--primary-rgb), .24); border-color: rgba(var(--primary-rgb), .65); color: var(--gb-text); }
+.gb-chip:disabled { opacity: .5; }
+.gb-btn.gb-toggle.muted { background: rgba(244, 63, 94, .18); border-color: rgba(244, 63, 94, .55); }
+.gb-mutes { padding: 0; }
+.gb-mic { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--gb-line); background: rgba(255, 255, 255, .05); color: var(--gb-text); cursor: pointer;
+  transition: transform .35s var(--spr-snap), background-color .25s ease, border-color .25s ease; }
+.gb-mic.on { background: rgba(244, 63, 94, .18); border-color: rgba(244, 63, 94, .55); color: #fda4af; }
+.gb-mic:active { transform: scale(.92); } .gb-mic:disabled { opacity: .5; }

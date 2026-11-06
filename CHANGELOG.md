@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.24.0 – 2026-11-06
+### Neu
+- OBS-Szenen im Overlay: Das Aufnahme-Fenster zeigt die Szenen von OBS als Auswahl, ein Tipp schaltet die Szene um (der Begleiter nimmt nur Szenen an, die OBS wirklich hat)
+- Mikrofon und Desktop-Ton von OBS stummschalten: Knöpfe im Aufnahme-Fenster und ein Mikrofon-Knopf in der Overlay-Leiste (rot, solange stumm) – ohne das Spiel zu verlassen. Nur sichtbar, wenn OBS verbunden ist und ein Mikrofon bzw. Desktop-Audio eingerichtet hat
+- JARVIS MEMORY fragt bei Widersprüchen nach: Sagst du das Gegenteil von dem, was in der Notiz steht („Mein Lieblingsspiel ist Hollow Knight“ nach „… Celeste“, „Ich wohne in Hamburg“ nach „… Adendorf“, dasselbe mit und ohne „nicht“), wird nichts still gespeichert. JARVIS zeigt die alte Aussage und fragt „ersetzen oder beides behalten?“. „Ersetze es“ streicht die alte Zeile durch (sie bleibt im Verlauf nachlesbar), „Behalte beides“ speichert beides, „Nein“ ändert nichts
+### Behoben
+- Gedächtnis: „X“ und „nicht X“ zählten als dieselbe Zeile (das Wort „nicht“ wurde beim Vergleich ignoriert) und wurden als Doppeltes verworfen. Jetzt sind sie verschieden
+- „Merk dir, dass mein Lieblingsspiel Celeste ist“ wird mit dem Verb an zweiter Stelle gespeichert („… ist Celeste“) und lässt sich dadurch mit anderen Notizen vergleichen
+
 ## 3.23.0 – 2026-11-06
 ### Neu
 - Game-Overlay im Stil der Webseite: schwebende Glas-Leiste mit runden Ecken, Farben und Schrift der App statt Game-Bar-Optik. Leiste und Fenster fahren mit Feder-Animation ein (gestaffelt), beim Schließen blenden sie kurz aus; ein Fenster hebt sich beim Verschieben leicht an. Weiterhin ohne Unschärfe und ohne Dauer-Animationen (läuft über einem Spiel) – nur der rote Aufnahmepunkt atmet, solange eine Aufnahme läuft

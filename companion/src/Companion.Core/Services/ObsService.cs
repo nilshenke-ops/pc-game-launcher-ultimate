@@ -50,7 +50,9 @@ public sealed class ObsService : IAsyncDisposable
     {
         var s = _settings();
         bool? recording = null, replay = null;
-        string? timecode = null;
+        string? timecode = null, currentScene = null;
+        List<string> scenes = new();
+        object? mic = null, desktop = null;
         if (!string.IsNullOrEmpty(s.ObsUrl))
         {
             try
@@ -60,6 +62,13 @@ public sealed class ObsService : IAsyncDisposable
                 timecode = rec.TryGetProperty("outputTimecode", out var tc) ? tc.GetString() : null;
                 try { replay = (await Request("GetReplayBufferStatus")).GetProperty("outputActive").GetBoolean(); }
                 catch (RpcException) { replay = null; } // replay buffer switched off in OBS (reported by "replayError")
+                try { (scenes, currentScene) = await SceneList(); } catch (RpcException) { /* an older OBS without scenes: the lists stay empty */ }
+                try
+                {
+                    var special = await Request("GetSpecialInputs");
+                    mic = await InputMute(special, "mic1"); desktop = await InputMute(special, "desktop1");
+                }
+                catch (RpcException) { /* no audio inputs set up in OBS */ }
             }
             catch (RpcException) { /* _lastError says why */ }
         }
@@ -73,6 +82,7 @@ public sealed class ObsService : IAsyncDisposable
             recording,
             recordTimecode = recording == true ? timecode : null,
             replayBuffer = replay,
+            scenes, currentScene, mic, desktop,
             error = Connected ? null : _lastError ?? (string.IsNullOrEmpty(s.ObsUrl) ? "Keine OBS-Adresse eingetragen." : null),
         };
     }
@@ -95,6 +105,46 @@ public sealed class ObsService : IAsyncDisposable
     {
         await Request("SaveReplayBuffer");
         return "Replay gespeichert";
+    }
+
+    /// <summary>The scenes of OBS in the order OBS shows them (the protocol lists them bottom-up) and the one on air.</summary>
+    async Task<(List<string> scenes, string? current)> SceneList()
+    {
+        var r = await Request("GetSceneList");
+        var names = r.GetProperty("scenes").EnumerateArray().Select(x => x.GetProperty("sceneName").GetString() ?? "").Where(n => n.Length > 0).Reverse().ToList();
+        return (names, r.TryGetProperty("currentProgramSceneName", out var c) ? c.GetString() : null);
+    }
+
+    /// <summary>Name and mute state of one of OBS's standard inputs ("mic1" = the first microphone, "desktop1" = desktop audio); null when none is set up.</summary>
+    async Task<object?> InputMute(JsonElement special, string key)
+    {
+        if (!special.TryGetProperty(key, out var n) || n.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(n.GetString())) return null;
+        var name = n.GetString()!;
+        var muted = (await Request("GetInputMute", new JsonObject { ["inputName"] = name })).GetProperty("inputMuted").GetBoolean();
+        return new { name, muted };
+    }
+
+    /// <summary>Switches the scene on air. Only a scene OBS really has is accepted (the name comes from a phone).</summary>
+    public async Task<string> SetScene(string scene)
+    {
+        var (scenes, _) = await SceneList();
+        if (!scenes.Contains(scene)) throw new RpcException("invalid-params", "Diese Szene gibt es in OBS nicht (mehr).");
+        await Request("SetCurrentProgramScene", new JsonObject { ["sceneName"] = scene });
+        _hub.Changed("obs");
+        return "Szene: " + scene;
+    }
+
+    /// <summary>Mutes or unmutes the microphone or the desktop audio of OBS.</summary>
+    public async Task<string> MuteToggle(string kind)
+    {
+        if (kind is not ("mic" or "desktop")) throw new RpcException("invalid-params", "Unbekannter Ton.");
+        var special = await Request("GetSpecialInputs");
+        var key = kind == "mic" ? "mic1" : "desktop1";
+        if (!special.TryGetProperty(key, out var n) || n.ValueKind != JsonValueKind.String || string.IsNullOrEmpty(n.GetString()))
+            throw new RpcException("obs-unavailable", kind == "mic" ? "In OBS ist kein Mikrofon eingerichtet." : "In OBS ist kein Desktop-Audio eingerichtet.");
+        var muted = (await Request("ToggleInputMute", new JsonObject { ["inputName"] = n.GetString()! })).GetProperty("inputMuted").GetBoolean();
+        _hub.Changed("obs");
+        return (kind == "mic" ? "Mikrofon" : "Desktop-Ton") + (muted ? " stumm" : " an");
     }
 
     /// <summary>Starts or stops the replay buffer (used while a game runs). Already in that state = nothing happens.</summary>

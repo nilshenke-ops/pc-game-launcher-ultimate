@@ -21,6 +21,32 @@ public static class MemoryIntents
         return Pronoun.IsMatch(t) ? "" : t;
     }
 
+    static readonly Regex Replace = new(@"^\s*(?:ja[,.!]?\s*)?(?:bitte\s+)?(?:ersetz\w*|ersetze\s+(?:es|das|die\s+alte\w*)|überschreib\w*|ueberschreib\w*|nimm\s+(?:das\s+)?neue\w*|das\s+neue\s+gilt|stimmt\s+jetzt)\b.*$", O);
+    static readonly Regex Both = new(@"^\s*(?:ja[,.!]?\s*)?(?:bitte\s+)?(?:behalt\w*\s+beide\w*|beide\w*\s+behalten|beides(?:\s+behalten)?|beides\s+(?:stimmt|gilt))\b.*$", O);
+    static readonly Regex Cancel = new(@"^\s*(?:nein|lass\s+(?:es|das)|vergiss\s+(?:es|das)|doch\s+nicht|abbrechen|stopp?|egal|nicht\s+merken|das\s+alte\s+gilt|alt(?:es)?\s+behalten)\b.*$", O);
+
+    /// <summary>The answer to "Soll ich es ersetzen oder beides behalten?": "replace", "both", "cancel" – or null when the text is something else.</summary>
+    public static string? ConflictAnswer(string text)
+    {
+        var t = text.Trim();
+        if (t.Length > 60) return null;
+        if (Both.IsMatch(t)) return "both";
+        if (Replace.IsMatch(t)) return "replace";
+        if (Cancel.IsMatch(t)) return "cancel";
+        return null;
+    }
+
+    /// <summary>After "dass" the verb stands last ("mein Lieblingsspiel Celeste ist"); stored it reads better – and can be compared with other notes – with the verb in second place ("mein Lieblingsspiel ist Celeste").</summary>
+    public static string MainClause(string s)
+    {
+        var w = s.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (w.Length < 3) return s;
+        var subj = Regex.IsMatch(w[0], "^(ich|wir|er|sie|es|du)$", O) ? 1 : Regex.IsMatch(w[0], "^(mein|meine|meinen|dein|deine|unser|unsere)$", O) && w.Length > 3 ? 2 : 0;
+        var verb = w[^1];
+        if (subj == 0 || w.Length < subj + 2 || !Regex.IsMatch(verb, @"^[a-zäöüß]+$") || !Regex.IsMatch(verb, @"^(ist|sind|war|waren|hat|haben|wird|werden|kann|können|heißt|heisst|bin|bist|gibt|läuft|spiele|wohne|mag|habe|will|möchte)$", O)) return s;
+        return string.Join(' ', w.Take(subj).Concat(new[] { verb }).Concat(w.Skip(subj).Take(w.Length - subj - 1)));
+    }
+
     static readonly Regex[] Recalls =
     {
         new(@"wo\s+war\s+ich\s+(?:bei|in|mit|an)\s+(?:meinem|meiner|meinen|dem|der|den)?\s*(.+?)\s*(?:stehen\s+geblieben|stehengeblieben)?\s*\??$", O),

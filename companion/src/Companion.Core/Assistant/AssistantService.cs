@@ -772,6 +772,8 @@ public sealed class AssistantService
     readonly Dictionary<string, string> _lastUser = new();
 
     /// <summary>"Merk dir …" / "Wo war ich bei … stehen geblieben?" – answered from the vault itself (no AI needed, nothing invented). Null = not a memory request (or no memory).</summary>
+    readonly System.Collections.Concurrent.ConcurrentDictionary<string, (string text, DateTime at)> _pendingConflict = new();
+
     Task<object?> MemoryReplyAsync(string owner, string text, string? conversationId)
     {
         object? Reply(string t, string? src, bool failed = false)
@@ -779,6 +781,23 @@ public sealed class AssistantService
             var r = new AssistantReply { Text = t, Failed = failed };
             r.Sources.Add(src ?? "Gedächtnis");
             return Done(conversationId ?? Ids.New("conv"), r, null);
+        }
+        // The answer to JARVIS' "replace it or keep both?" (asked in the last 10 minutes): nothing was saved before this.
+        if (Memory.Enabled && _pendingConflict.TryGetValue(owner, out var pend))
+        {
+            if (_now() - pend.at > TimeSpan.FromMinutes(10)) _pendingConflict.TryRemove(owner, out _);
+            else if (MemoryIntents.ConflictAnswer(text) is { } ans)
+            {
+                _pendingConflict.TryRemove(owner, out _);
+                if (ans == "cancel") return Task.FromResult(Reply("Gut, ich habe nichts geändert – das Alte gilt weiter.", null));
+                try
+                {
+                    var games0 = Data.Library().Where(i => i.Kind == Models.ItemKind.Game).Select(i => i.Name).ToList();
+                    var res0 = Memory.Remember(pend.text, games0, ans);
+                    return Task.FromResult(Reply((ans == "replace" ? "Ersetzt – das Alte ist durchgestrichen und bleibt im Verlauf nachlesbar. " : "Beides steht jetzt drin. ") + res0.Message, "Gedächtnis: " + res0.Path));
+                }
+                catch (RpcException e) { return Task.FromResult(Reply(e.Message, "Gedächtnis", failed: true)); }
+            }
         }
         var remember = MemoryIntents.RememberText(text);
         var topic = remember == null ? MemoryIntents.RecallTopic(text) : null;
@@ -793,11 +812,13 @@ public sealed class AssistantService
         {
             var payload = remember;
             if (payload.Length == 0) _lastUser.TryGetValue(owner, out payload);
+            else if (Regex.IsMatch(text, @"\bdass\b", RegexOptions.IgnoreCase)) payload = MemoryIntents.MainClause(payload);   // "dass mein Lieblingsspiel Celeste ist" → "mein Lieblingsspiel ist Celeste"
             if (string.IsNullOrWhiteSpace(payload)) return Task.FromResult(Reply("Was soll ich mir merken? Sag zum Beispiel: „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist.“", null));
             try
             {
                 var games = Data.Library().Where(i => i.Kind == Models.ItemKind.Game).Select(i => i.Name).ToList();
                 var res = Memory.Remember(payload, games);
+                if (res.Status == "conflict") _pendingConflict[owner] = (payload, _now());
                 return Task.FromResult(Reply(res.Message, "Gedächtnis: " + res.Path));
             }
             catch (RpcException e) { return Task.FromResult(Reply(e.Message, "Gedächtnis", failed: true)); }

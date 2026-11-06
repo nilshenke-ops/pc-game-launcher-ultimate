@@ -1,4 +1,4 @@
-import { cloneElement, isValidElement, useEffect, useId, useRef, useState, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
+import { cloneElement, isValidElement, useEffect, useId, useRef, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, MonitorSmartphone, RefreshCw, WifiOff, X, XCircle } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Link, useNavigate } from "react-router-dom";
@@ -169,16 +169,20 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
   // Callers pass a new onClose on every render: kept in a ref, so a re-render (live values, a reload) does not run the
   // effect again – that used to put the focus back into the first field while typing.
   const close = useRef(onClose); close.current = onClose;
-  // Closing by Esc, the backdrop or the X first lets the dialog fall away (0.18 s), then the page removes it. Footer buttons that close
-  // it themselves still remove it at once. With reduced motion everything is immediate.
-  const [leaving, setLeaving] = useState(false);
-  const leavingRef = useRef(false);
+  // Closing by Esc, the backdrop or the X: the page removes the dialog at once (so a quick "close, then open another" can never
+  // close the new one), and a see-through copy of it falls away for 0.18 s in its place. With reduced motion there is no copy.
+  const backdropRef = useRef<HTMLDivElement>(null);
   const requestClose = useRef(() => {
-    if (leavingRef.current) return;
+    const bd = backdropRef.current;
     const still = document.documentElement.dataset.motion === "reduce" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (still) { close.current(); return; }
-    leavingRef.current = true; setLeaving(true);
-    window.setTimeout(() => close.current(), 170);
+    if (bd && !still) {
+      const ghost = bd.cloneNode(true) as HTMLElement;
+      ghost.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));
+      ghost.classList.add("leaving"); ghost.setAttribute("aria-hidden", "true"); ghost.setAttribute("inert", "");
+      document.body.appendChild(ghost);
+      window.setTimeout(() => ghost.remove(), 240);
+    }
+    close.current();
   });
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
@@ -205,7 +209,7 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
   // Always drawn straight into <body>: inside a card or the page area an animation or transform of a parent would
   // otherwise make the dialog part of that box (seen in 2.32: "Speichern" ended up under the bottom bar).
   return createPortal(
-    <div className={`modal-backdrop${leaving ? " leaving" : ""}`} onMouseDown={(e) => { if (e.target === e.currentTarget) requestClose.current(); }}>
+    <div ref={backdropRef} className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) requestClose.current(); }}>
       <div ref={ref} className={`modal ${wide ? "wide" : ""} ${className}`} role="dialog" aria-modal="true" aria-label={typeof title === "string" ? title : undefined}>
         <div className="modal-head">
           <h2>{title}</h2>

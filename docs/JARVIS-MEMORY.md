@@ -49,11 +49,11 @@ Beim Testen gefundene und behobene Fehler: absolute Pfade wurden nur entschärft
 * **Echtes Handy/iPad**: nicht auf Geräten getestet, nur im Browser mit demselben Berechtigungsweg.
 * **Obsidian-App**: nicht installiert in der Sandbox; dass die Dateien dort sichtbar sind, folgt aus dem Format (Markdown, `[[Links]]`), wurde aber nicht in Obsidian selbst gesehen.
 * **Gleichzeitiges Bearbeiten in Obsidian und durch JARVIS** wird nur durch den Änderungsstand-Abgleich abgefangen (kein Live-Zusammenführen).
-* **Widersprüche**: Statuswechsel bei Projekten werden erkannt und nachvollziehbar eingetragen; allgemeine Widersprüche zwischen freien Aussagen erkennt JARVIS noch nicht – er fragt nicht automatisch nach.
+* **Widersprüche** (seit 3.24.0): Das Gegenteil einer Aussage in derselben Notiz („nicht“ ja/nein; „X ist/wohne in/heiße“ mit anderem Wert) wird nicht still gespeichert, JARVIS fragt „ersetzen oder beides behalten?“. Die Erkennung ist absichtlich vorsichtig (im Zweifel wird nichts gemeldet) und vergleicht nur innerhalb derselben Notiz; Aufgaben und Projektstatus sind ausgenommen. Wer mit eigenen Worten das Gleiche anders ausdrückt, wird nicht erkannt.
 * Die Web-KI-Antworten mit Gedächtnis-Auszug ließen sich ohne echten KI-Schlüssel nicht live prüfen; geprüft ist, welche Ausschnitte mitgegeben werden.
 
 ## Später
-Embedding-Suche (optional, lokal), Zusammenfassen alter Gespräche in 04-Gespräche, Vorschläge zur Verknüpfung, Obsidian-Synchronisierung über mehrere PCs, Widerspruchsabfrage bei freien Aussagen.
+Embedding-Suche (optional, lokal), Zusammenfassen alter Gespräche in 04-Gespräche, Vorschläge zur Verknüpfung, Obsidian-Synchronisierung über mehrere PCs, Widerspruchsabfrage über mehrere Notizen hinweg.
 
 ## Geänderte Dateien
 Companion: `Assistant/MemoryVault.cs`, `Assistant/MemoryIntents.cs`, `Assistant/AssistantService.cs`, `Hosting/CompanionServices.cs`, `Api/RpcApi.cs`, `protocol/protocol.json`. Web: `pages/Memory.tsx`, `App.tsx`, `lib/nav.tsx`, `lib/jarvis-chat.ts`, `lib/en.ts`, `styles.css`. Tests: `MemoryVaultTests.cs`, `e2e/app.spec.ts`.

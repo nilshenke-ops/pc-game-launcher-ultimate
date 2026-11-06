@@ -294,7 +294,7 @@ public static class RpcApi
             var expected = ctx.OptStr("updated", 40);
             return s.Memory.Write(ctx.Str("path", 160), ctx.Str("content", Assistant.MemoryVault.MaxWriteChars + 10, required: false), DateTime.TryParse(expected, null, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var e) ? e : null, ctx.OptBool("createOnly") == true);
         });
-        rpc.Register("memory.remember", ctx => s.Memory.Remember(ctx.Str("text", 700), s.Library.List().Where(i => i.Kind == ItemKind.Game).Select(i => i.Name)));
+        rpc.Register("memory.remember", ctx => s.Memory.Remember(ctx.Str("text", 700), s.Library.List().Where(i => i.Kind == ItemKind.Game).Select(i => i.Name), ctx.OptStr("resolve", 10) is "replace" or "both" ? ctx.OptStr("resolve", 10) : null));
         rpc.Register("memory.delete", ctx => { s.Memory.Delete(ctx.Str("path", 160), ctx.OptBool("confirm") == true); return true; });
         rpc.Register("voice.status", _ => s.Voice.Status());
         rpc.Register("voice.configure", ctx => { var r = s.Voice.Configure(ctx.Bind<Assistant.VoiceService.Config>(), ctx.Session.IsLocalAdmin); s.Rpc.Changed("voice"); return r; });
@@ -805,6 +805,9 @@ public static class RpcApi
         rpc.Register("obs.recordToggle", async _ => (object)new { message = await s.Capture.Run("record") });
         rpc.Register("obs.replaySave", async _ => (object)new { message = await s.Capture.Run("replay") });
         rpc.Register("obs.replayToggle", async _ => (object)new { message = await s.Capture.Run("buffer") });
+        // OBS only: scene on air and the mute buttons of microphone / desktop audio (the overlay and the phone use them).
+        rpc.Register("obs.setScene", async ctx => (object)new { message = await s.Obs.SetScene(ctx.Str("scene", 200)) });
+        rpc.Register("obs.muteToggle", async ctx => (object)new { message = await s.Obs.MuteToggle(ctx.Str("kind", 10)) });
 
         // ------------------------------------------------------------ inventory, error reports, plugin test lab
         rpc.Register("inventory.get", async _ => await Task.Run(() => s.Inventory.Get()));
