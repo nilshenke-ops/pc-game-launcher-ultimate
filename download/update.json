@@ -1,29 +1,27 @@
 {
-  "version": "3.24.0",
+  "version": "3.25.0",
   "date": "2026-11-06",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.24.0/PCGameLauncherCompanion.exe",
-  "size": 95001326,
-  "sha256": "f0d52a6603ed57b4cbb75272bd5104a2314fd18e42c46331283e420adb67bfe4",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion.exe",
+  "size": 95013796,
+  "sha256": "ef976aca8616008a8a83ca6e53c553124e62a125dacd6783788492d0e4151e8a",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.24.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.24.0/PCGameLauncherCompanion-3.24.0-win-x64.zip",
-    "size": 89276345,
-    "sha256": "88c1c683e614008be59a16553ee5253d42d7d7d1d7009159aa01bc550dc94074"
+    "fileName": "PCGameLauncherCompanion-3.25.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion-3.25.0-win-x64.zip",
+    "size": 89288372,
+    "sha256": "3f65e9364541ea65aa8222e60f85f43c64f8079a9c283dc6b85a8433eebc5809"
   },
-  "notes": "OBS-Szenen im Overlay: Das Aufnahme-Fenster zeigt die Szenen von OBS als Auswahl, ein Tipp schaltet die Szene um (der Begleiter nimmt nur Szenen an, die OBS wirklich hat) · Mikrofon und Desktop-Ton von OBS stummschalten: Knöpfe im Aufnahme-Fenster und ein Mikrofon-Knopf in der Overlay-Leiste (rot, solange stumm) – ohne das Spiel zu verlassen. Nur sichtbar, wenn OBS verbunden ist und ein Mikrofon bzw. Desktop-Audio eingerichtet hat · JARVIS MEMORY fragt bei Widersprüchen nach: Sagst du das Gegenteil von dem, was in der Notiz steht („Mein Lieblingsspiel ist Hollow Knight“ nach „… Celeste“, „Ich wohne in Hamburg“ nach „… Adendorf“, dasselbe mit und ohne „nicht“), wird nichts still gespeichert. JARVIS zeigt die alte Aussage und fragt „ersetzen oder beides behalten?“. „Ersetze es“ streicht die alte Zeile durch (sie bleibt im Verlauf nachlesbar), „Behalte beides“ speichert beides, „Nein“ ändert nichts",
+  "notes": "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text · Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen · Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort",
   "changes": {
     "neu": [
-      "OBS-Szenen im Overlay: Das Aufnahme-Fenster zeigt die Szenen von OBS als Auswahl, ein Tipp schaltet die Szene um (der Begleiter nimmt nur Szenen an, die OBS wirklich hat)",
-      "Mikrofon und Desktop-Ton von OBS stummschalten: Knöpfe im Aufnahme-Fenster und ein Mikrofon-Knopf in der Overlay-Leiste (rot, solange stumm) – ohne das Spiel zu verlassen. Nur sichtbar, wenn OBS verbunden ist und ein Mikrofon bzw. Desktop-Audio eingerichtet hat",
-      "JARVIS MEMORY fragt bei Widersprüchen nach: Sagst du das Gegenteil von dem, was in der Notiz steht („Mein Lieblingsspiel ist Hollow Knight“ nach „… Celeste“, „Ich wohne in Hamburg“ nach „… Adendorf“, dasselbe mit und ohne „nicht“), wird nichts still gespeichert. JARVIS zeigt die alte Aussage und fragt „ersetzen oder beides behalten?“. „Ersetze es“ streicht die alte Zeile durch (sie bleibt im Verlauf nachlesbar), „Behalte beides“ speichert beides, „Nein“ ändert nichts"
+      "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text",
+      "Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen"
     ],
-    "verbessert": [],
-    "behoben": [
-      "Gedächtnis: „X“ und „nicht X“ zählten als dieselbe Zeile (das Wort „nicht“ wurde beim Vergleich ignoriert) und wurden als Doppeltes verworfen. Jetzt sind sie verschieden",
-      "„Merk dir, dass mein Lieblingsspiel Celeste ist“ wird mit dem Verb an zweiter Stelle gespeichert („… ist Celeste“) und lässt sich dadurch mit anderen Notizen vergleichen"
-    ]
+    "verbessert": [
+      "Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort"
+    ],
+    "behoben": []
   },
-  "signature": "RtF59yKeuQYsC6nyPOPDhaRxtTb+iJJCqbh//b7jE/EFOLcIF70X0Lz51j5iMEM1H/4dwhDLp9aa09opdRPfOQ=="
+  "signature": "/C7Hsugm+Ayopo8pGt7PuLFsEe7Fyzhza2i9WpayloB02ip1AgyT8ngS+Gp0/UE6y1+V4nNfJA9SqUT+oTwRLA=="
 }

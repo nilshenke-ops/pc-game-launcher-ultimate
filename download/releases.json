@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.25.0",
+    "date": "2026-11-06",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion.exe",
+    "size": 95013796,
+    "sha256": "ef976aca8616008a8a83ca6e53c553124e62a125dacd6783788492d0e4151e8a",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.25.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion-3.25.0-win-x64.zip",
+      "size": 89288372,
+      "sha256": "3f65e9364541ea65aa8222e60f85f43c64f8079a9c283dc6b85a8433eebc5809"
+    },
+    "notes": "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text · Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen · Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort",
+    "changes": {
+      "neu": [
+        "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text",
+        "Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen"
+      ],
+      "verbessert": [
+        "Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort"
+      ],
+      "behoben": []
+    },
+    "signature": "/C7Hsugm+Ayopo8pGt7PuLFsEe7Fyzhza2i9WpayloB02ip1AgyT8ngS+Gp0/UE6y1+V4nNfJA9SqUT+oTwRLA=="
+  },
+  {
     "version": "3.24.0",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1383,36 +1410,5 @@
       "behoben": []
     },
     "signature": "mzZaUbfZ3KEXkeK4Zoa6DfUSIU/pbd/wm76jtfO5b80Fwp14Q+DR/WiivUeBEt0ULs6574i538bVkE2NnXNRgw=="
-  },
-  {
-    "version": "2.85.0",
-    "date": "2026-11-02",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.85.0/PCGameLauncherCompanion.exe",
-    "size": 88408790,
-    "sha256": "6d438f586142c98f7f185c7c6eceab45e7e67bb715a129466551f6f7c2c3b207",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.85.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.85.0/PCGameLauncherCompanion-2.85.0-win-x64.zip",
-      "size": 82905010,
-      "sha256": "98672955f0e898d1cb4b61a0e1dbadba779a86a8083711e545c33aea20e59e55"
-    },
-    "notes": "JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig · Tanzen zur echten Musik: der Begleiter hört auf den Ton des PCs (nur Lautstärke und Takt, nichts wird aufgenommen, gespeichert oder weitergeschickt außer der Pegel an die Fenster dieses PCs); die Augen hüpfen, daneben zeigt ein kleiner Equalizer den Pegel; bei Musikpause hört das Tanzen nach 3 Sekunden auf · Läuft ein Spiel aus der Bibliothek, ist der Roboter kurz überrascht und schaut dann konzentriert („Zockt mit“); nach 10 Minuten Ruhe schläft er (Berühren weckt ihn)",
-    "changes": {
-      "neu": [
-        "JARVIS-Insel wird zum Haustier: neue Stimmungen „Tanzt“, „Zockt mit“, „Schläft“ und „Überrascht“ zusätzlich zu bereit, denkt nach, hört zu, fragt, erledigt, Fehler und schwindelig",
-        "Tanzen zur echten Musik: der Begleiter hört auf den Ton des PCs (nur Lautstärke und Takt, nichts wird aufgenommen, gespeichert oder weitergeschickt außer der Pegel an die Fenster dieses PCs); die Augen hüpfen, daneben zeigt ein kleiner Equalizer den Pegel; bei Musikpause hört das Tanzen nach 3 Sekunden auf",
-        "Läuft ein Spiel aus der Bibliothek, ist der Roboter kurz überrascht und schaut dann konzentriert („Zockt mit“); nach 10 Minuten Ruhe schläft er (Berühren weckt ihn)",
-        "Im geöffneten Feld sitzt der Roboter mit weißem Kopf, schwarzem Display und Antenne – er nickt zur Musik, hüpft bei „erledigt“ und neigt den Kopf beim Schlafen"
-      ],
-      "verbessert": [
-        "Der Begleiter lauscht nur, solange die Insel eingeschaltet und sichtbar ist (bei „in Spielen aus“ also auch nicht während eines Spiels)",
-        "Die Insel-Anzeige hing nach vielen Meldungen hintereinander auf einer alten Zeit fest – behoben",
-        "Release-Automatik: legt das Release ohne lesbaren Signaturschlüssel unsigniert an (Website erst nach dem Signieren), EXE-Pfad und Prüfschritt korrigiert"
-      ],
-      "behoben": []
-    },
-    "signature": "/0XRTiVvUu9aK8rVauz/eicWLfbnui4RRUW6BxUgygIrdzR0A+esgpW97tHGyKldXYvHe/NaPLQFIx8ikIilcQ=="
   }
 ]
