@@ -59,4 +59,14 @@ public class SportsTests
         Assert.Null(await new SportsClient(new Fake(u => u.Contains("/getavailableteams/") ? Teams : "[]"), "http://liga.test").AskAsync("Wie wird das Wetter morgen?", now));
         Assert.Null(await new SportsClient(new Fake(_ => null), "http://liga.test").AskAsync("Wer spielt gegen Bayern nächstes Spiel?", now));
     }
+
+    [Theory]
+    [InlineData("wer spielt morgenn in der premier league", "Premier League")]
+    [InlineData("Wie steht es in der La Liga?", "La Liga")]
+    [InlineData("Wann spielt Bayern als Nächstes?", null)]
+    public void Leagues_without_a_free_data_source_are_named_honestly(string text, string? league)
+    {
+        Assert.Equal(league, SportsClient.UncoveredLeague(text));
+        if (league != null) Assert.Contains("keine freie Datenquelle", SportsClient.UncoveredAnswer(league));
+    }
 }

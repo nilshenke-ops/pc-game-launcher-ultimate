@@ -6648,4 +6648,13 @@ export const en: Record<string, string> = {
   "Der Ordner ist gerade nicht erreichbar (Laufwerk getrennt oder gelöscht) – JARVIS arbeitet ohne Gedächtnis weiter.": "The folder is not reachable right now (drive disconnected or deleted) – JARVIS keeps working without memory.",
   "Verbunden – Obsidian-Vault erkannt.": "Connected – Obsidian vault detected.",
   "Verbunden – normaler Ordner mit Markdown-Dateien (in Obsidian über „Ordner als Vault öffnen“ ansehen).": "Connected – a normal folder of Markdown files (view it in Obsidian via “Open folder as vault”).",
+  "Bestätige oben, dass dein Konto im kostenlosen Tarif ist.": "Confirm above that your account is on the free plan.",
+  "Das sieht noch nicht nach einem ElevenLabs-Schlüssel aus – er beginnt mit „sk_“ und hat danach viele Zeichen. Bitte vollständig einfügen.": "That does not look like an ElevenLabs key yet – it starts with “sk_” followed by many characters. Please paste it completely.",
+  "Dein Passwort für die Schlüssel auf diesem Gerät (dasselbe wie bei den anderen – mindestens 6 Zeichen)": "Your password for the keys on this device (the same as for the others – at least 6 characters)",
+  "Denk dir ein Passwort aus (mindestens 6 Zeichen) – es verschlüsselt den Schlüssel auf diesem Gerät.": "Think of a password (at least 6 characters) – it encrypts the key on this device.",
+  "Füge oben den ElevenLabs-Schlüssel ein (beginnt mit „sk_“).": "Paste the ElevenLabs key above (starts with “sk_”).",
+  "Füge oben den Schlüssel ein (er ist noch zu kurz).": "Paste the key above (it is still too short).",
+  "Gesperrt heißt: der Schlüssel ist verschlüsselt, bis du dein Passwort eingibst. Passwort vergessen? Schlüssel löschen und neu eintragen.": "Locked means: the key stays encrypted until you enter your password. Forgot it? Delete the key and enter it again.",
+  "Gib unten das Passwort ein, das du für die anderen Schlüssel auf diesem Gerät benutzt (mindestens 6 Zeichen).": "Enter the password below that you use for the other keys on this device (at least 6 characters).",
+  "Passwort eingeben": "Enter password",
 };

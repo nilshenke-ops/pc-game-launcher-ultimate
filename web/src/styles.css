@@ -2762,3 +2762,8 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .mem-editor { min-height: 260px; width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; resize: vertical; }
 .mem-links { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted, #8a8f98); }
 @media (prefers-reduced-motion: reduce) { .mem-row { transition: none; } .mem-row:hover { transform: none; } }
+
+/* Open drop-down lists: the browser draws them itself – without own colors light text landed on a light list (unreadable). */
+select.input { color-scheme: dark; }
+select.input option, select.input optgroup { background-color: var(--surface-2); color: var(--text); }
+:root[data-theme="light"] select.input { color-scheme: light; }

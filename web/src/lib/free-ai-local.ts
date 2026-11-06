@@ -7,7 +7,7 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
-import { looksSporty, sportsFor } from "./sports";
+import { looksSporty, sportsFor, uncoveredAnswer, uncoveredLeague } from "./sports";
 import { asksWeather, homeFrom, homePlace, setHomePlace, weatherFor } from "./weather";
 import { askFreeAi, buildMessages, cleanAnswer, freeAiConsent, FreeAiError, looksLikePaymentNotice, type Turn } from "./free-ai";
 
@@ -332,6 +332,7 @@ export async function askLocalChain(question: string, history: Turn[], o: Opts =
       if (w) { asked = `${w.block}\n\nFrage: ${question}`; via = `Websuche: ${w.domains}`; }
     }
   }
+  { const league = !via ? uncoveredLeague(question) : null; if (league && readySearch().length === 0) return { text: uncoveredAnswer(league), model: "", provider: "local", label: "JARVIS – ohne Datenquelle" }; }
   const tag = (a: LocalAnswer): LocalAnswer => via ? { ...a, label: `${a.label} · ${via}` } : a;
   for (const p of readyProviders()) {
     try { return tag(await askLocal(p, asked, history, o)); }
@@ -467,7 +468,7 @@ export async function transcribeGroq(audio: Blob, lang: string, o: { fetcher?: F
 
 // ------------------------------------------------------------------ ElevenLabs on this device (speech → text "Scribe" and the voice), key locked with the same password
 
-export const elevenKeyLooksRight = (key: string) => /^(sk_[a-f0-9]{30,80}|[a-f0-9]{32})$/.test(key);
+export const elevenKeyLooksRight = (key: string) => /^(sk_[A-Za-z0-9_-]{24,120}|[a-f0-9]{32})$/.test(key);
 export const elevenDeviceReady = () => !!unlockedEleven;
 const ELEVEN = "https://api.elevenlabs.io";
 

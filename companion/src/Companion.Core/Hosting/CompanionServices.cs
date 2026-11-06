@@ -672,7 +672,7 @@ public sealed class CompanionServices : IAsyncDisposable
             Platform.Island.SetLook(set.IslandPosition, set.IslandOpacity); // place and opacity follow the settings at once (also while it stays shown)
             var scope = SettingsService.ScopeOf(set);
             Platform.Foreground.SetActive(scope is "desktop" or "programs" or "games"); // "all" and "app" do not depend on the front window
-            var want = IslandWanted(set, GameRunning(), Platform.Foreground.Kind);
+            var want = IslandWanted(set, GameRunning() || Platform.Foreground.GameInFront, Platform.Foreground.Kind);
             if (_islandShown == want) return null;
             if (want) Music.Start(); else Music.Stop();
             var err = Platform.Island.SetVisible(want);

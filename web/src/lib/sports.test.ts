@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { aliasesOf, describeTeam, resetSportsCache, sportsFor, teamsInQuestion, type Team } from "./sports";
+import { aliasesOf, describeTeam, resetSportsCache, sportsFor, teamsInQuestion, uncoveredAnswer, uncoveredLeague, type Team } from "./sports";
 
 const BAY: Team = { id: 40, name: "FC Bayern München", short: "Bayern" };
 const BVB: Team = { id: 7, name: "Borussia Dortmund", short: "Dortmund" };
@@ -64,5 +64,14 @@ describe("Fußball-Ergebnisse ohne Schlüssel (OpenLigaDB)", () => {
     resetSportsCache();
     const down = (async () => new Response("x", { status: 500 })) as unknown as typeof fetch;
     expect(await sportsFor("Wer spielt gegen Bayern nächstes Spiel?", { fetcher: down, now: NOW })).toBeNull();
+  });
+});
+
+describe("Ligen ohne freie Datenquelle", () => {
+  it("nennt die Liga ehrlich statt zu raten", () => {
+    expect(uncoveredLeague("wer spielt morgenn in der premier league")).toBe("Premier League");
+    expect(uncoveredLeague("Wie steht es in der La Liga?")).toBe("La Liga");
+    expect(uncoveredLeague("Wann spielt Bayern als Nächstes?")).toBeNull();
+    expect(uncoveredAnswer("Premier League")).toContain("keine freie Datenquelle");
   });
 });

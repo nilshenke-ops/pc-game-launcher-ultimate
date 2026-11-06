@@ -598,6 +598,9 @@ public sealed class AssistantService
                 catch (RpcException e) when (e.Code is "assistant-limit" or "assistant-offline" or "assistant-unavailable" or "assistant-key") { failed.Add("Websuche: " + e.Message); }
             }
         }
+        // A league/sport with no free data source and no web search set up: say so honestly instead of letting a small AI claim "no access".
+        if (webBlock == null && !anySearchKey && SportsClient.UncoveredLeague(text) is { } league)
+            return new AssistantReply { Text = SportsClient.UncoveredAnswer(league), Sources = { "JARVIS" } };
         var active = FreeAi.ActiveOrder().Where(id => id != "ollama" || OllamaOn(f)).ToList();
         var strategy = only != null ? "single" : FreeAi.Strategy;
         List<string> order;

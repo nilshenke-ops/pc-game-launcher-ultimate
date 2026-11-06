@@ -158,4 +158,9 @@ public sealed class SportsClient
         }
         catch (Exception e) when (e is HttpRequestException or JsonException or TaskCanceledException or InvalidOperationException or KeyNotFoundException) { return null; }
     }
+
+    static readonly System.Text.RegularExpressions.Regex OtherLeagueRx = new(@"\b(premier league|la liga|laliga|serie a|ligue 1|eredivisie|primeira liga|s[üu]per lig|mls|nba|nfl|nhl|formel 1|formula 1|tennis|europa league|conference league)\b", System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
+    /// <summary>A league or sport OpenLigaDB does not cover ("Premier League"): without a web search nothing live exists for it – the honest answer says so instead of letting an AI guess.</summary>
+    public static string? UncoveredLeague(string text) => OtherLeagueRx.Match(text) is { Success: true } m ? System.Globalization.CultureInfo.InvariantCulture.TextInfo.ToTitleCase(m.Value.ToLowerInvariant()) : null;
+    public static string UncoveredAnswer(string league) => $"Für {league} habe ich keine freie Datenquelle – ohne Websuche kenne ich nur Bundesliga, 2. und 3. Liga, DFB-Pokal und Champions League. Mit einem kostenlosen Websuche-Schlüssel (zum Beispiel Tavily) kann ich auch das nachsehen: KI-Verwaltung → Websuche. Ist der Schlüssel schon eingetragen, aber „Gesperrt“, gib dort dein Passwort ein.";
 }

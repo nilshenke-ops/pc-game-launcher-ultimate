@@ -181,6 +181,8 @@ public interface IForegroundWatcher
 {
     bool Supported { get; }
     ForegroundKind Kind { get; }
+    /// <summary>The program in front is a game even though the launcher did not start it: a full-screen window, or a program from a game store folder (Steam, Epic, Xbox, GOG).</summary>
+    bool GameInFront { get; }
     /// <summary>The front window changed its kind.</summary>
     event Action? Changed;
     /// <summary>Watching costs a little – only while the island's place depends on it.</summary>
@@ -192,6 +194,7 @@ public sealed class NullForegroundWatcher : IForegroundWatcher
     public static readonly NullForegroundWatcher Instance = new();
     public bool Supported => false;
     public ForegroundKind Kind => ForegroundKind.Program;
+    public bool GameInFront => false;
     public event Action? Changed { add { } remove { } }
     public void SetActive(bool on) { }
 }

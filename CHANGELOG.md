@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.21.1 – 2026-11-06
+### Behoben
+- Schlüssel ohne PC: „Speichern & testen“ war grau, ohne zu sagen warum. Sobald schon ein Schlüssel gespeichert war, fehlte das Passwortfeld ganz; jetzt ist es immer da, und unter dem Knopf steht, was noch fehlt (Schlüssel zu kurz, Passwort fehlt, Tarif nicht bestätigt)
+- „Gesperrt“ bei einem Schlüssel (z. B. Tavily) erklärt sich jetzt selbst: Hinweis, wie man ihn mit dem Passwort entsperrt, und der Weg, ihn bei vergessenem Passwort zu löschen und neu einzutragen
+- ElevenLabs-Schlüssel: die Prüfung ist großzügiger, damit gültige Schlüssel nicht abgelehnt werden
+- Aufklappliste der KI-Auswahl war unlesbar (heller Text auf heller Liste) – Farben der Auswahllisten festgelegt
+- „Wer spielt morgen in der Premier League?“ wurde von einer kleinen KI mit „kein Zugriff“ beantwortet. Für Ligen und Sportarten ohne freie Datenquelle (Premier League, La Liga, Serie A, NBA, Formel 1 …) sagt JARVIS jetzt ehrlich, was fehlt und wie es geht (Websuche-Schlüssel), solange keine Websuche bereit ist
+- JARVIS-Insel erschien im Spiel, obwohl „Insel in Spielen“ aus war: Spiele, die nicht über den Launcher gestartet wurden (direkt aus Steam o. ä.), zählten nicht als Spiel. Jetzt gilt auch ein Vollbild-Fenster oder ein Programm aus einem Spiele-Ordner (Steam, Epic, Xbox, GOG) als Spiel; Browser und Videoplayer im Vollbild nicht
+
 ## 3.21.0 – 2026-11-06
 ### Neu
 - JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt
