@@ -6,7 +6,7 @@ vi.stubGlobal("localStorage", ls);
 vi.stubGlobal("window", { localStorage: ls, sessionStorage: ls });
 
 const { withStyle, setStyle, styleOf } = await import("./jarvis-style");
-const { naturalness, voicesFor, speakable } = await import("./jarvis-voice");
+const { naturalness, voicesFor, speakable, sentences } = await import("./jarvis-voice");
 
 describe("Stimme: die menschlichsten zuerst", () => {
   it("erkennt neuronale Stimmen am Namen", () => {
@@ -49,5 +49,11 @@ describe("Ton „Locker“", () => {
     expect(withStyle("✓ Erledigt", true, "locker", new Date(2026, 9, 28, 1, 30))).toContain("Es ist 01:30");
     setStyle("locker");
     expect(styleOf()).toBe("locker");
+  });
+  it("liest Spielstände, Grad, Prozent und Preise wie ein Mensch und spricht Satz für Satz", () => {
+    expect(speakable("Bayern – Dortmund 2:1, Anpfiff 18:30 Uhr.")).toBe("Bayern – Dortmund 2 zu 1, Anpfiff 18:30 Uhr.");
+    expect(speakable("Heute 7 °C, Regenwahrscheinlichkeit 80 %, Wind 14 km/h, Preis 19,99 €.")).toBe("Heute 7 Grad Celsius, Regenwahrscheinlichkeit 80 Prozent, Wind 14 Kilometer pro Stunde, Preis 19,99 Euro.");
+    expect(sentences("Ja. Das Wetter morgen in Berlin ist bedeckt bei 7 Grad. Es regnet nicht!")).toEqual(["Ja. Das Wetter morgen in Berlin ist bedeckt bei 7 Grad.", "Es regnet nicht!"]);
+    expect(sentences("Kurz")).toEqual(["Kurz"]);
   });
 });

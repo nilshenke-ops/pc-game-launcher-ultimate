@@ -53,6 +53,7 @@ function StatusWidget() {
           </div>
           <span className="badge"><span className="dot error" />{t("Offline")}</span>
         </div>
+        {client.credentials && <div className="small" role="status">{t("Dieses Gerät ist schon mit {pc} gekoppelt – du musst nicht neu koppeln. Der PC ist nur gerade nicht erreichbar: ist er an, und läuft auf diesem Gerät Tailscale (VPN-Schalter an)? Sobald er erreichbar ist, bist du automatisch wieder drin.", { pc: client.credentials.pcName || t("deinem PC") })}</div>}
         {lanHome && <div className="small muted">{t("Im WLAN läuft die App direkt vom PC unter {u} – diese Website (https) darf den PC dort nicht erreichen.", { u: lanHome.replace(/^http:\/\//, "") })}</div>}
         <div className="row">
           {lanHome && <a href={`${lanHome}/#/`} className="btn primary sm">{t("Zur PC-App (WLAN)")}</a>}

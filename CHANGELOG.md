@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.18.0 – 2026-11-06
+### Neu
+- Die JARVIS-Insel zeigt oben immer, welche KIs aktiv sind: je KI ein Punkt (grün = funktioniert, gelb = am Limit, rot = Problem, blau = angefangen, grau = nicht eingerichtet), darunter in welcher Reihenfolge sie antworten und was für die nächste Frage ausgewählt ist. Ist das Programm auf dem PC älter als die Seite und kennt Groq, Cerebras oder Mistral noch nicht, steht dort ein Hinweis zum Aktualisieren
+### Verbessert
+- JARVIS spricht natürlicher: Spielstände („2:1“ → „2 zu 1“), Grad, Prozent, km/h und Euro werden ausgesprochen, lange Antworten Satz für Satz mit kleinen Pausen (der Browser schneidet lange Texte sonst ab), etwas tiefere, ruhigere Standardstimme; die menschlichsten Stimmen des Geräts („Natural“, „Google“, „Premium“) werden weiterhin zuerst gewählt
+- Angemeldet bleiben: Ein einzelner fehlgeschlagener Login (anderer PC hinter der Adresse, Neustart, Relay-Aussetzer) löscht die Kopplung nicht mehr – erst der dritte in Folge. Ist ein Gerät gekoppelt, der PC aber nicht erreichbar (z. B. Tailscale aus), steht das jetzt klar da: „Du musst nicht neu koppeln“, statt nur „Offline“
+
 ## 3.17.0 – 2026-11-06
 ### Neu
 - Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche

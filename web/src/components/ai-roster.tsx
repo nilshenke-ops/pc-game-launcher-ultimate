@@ -53,8 +53,26 @@ export function AiRoster({ online, ai, compact = false, selected }: { online: bo
       })}
     </ul>
   );
+  const free = rows.filter((r) => r.kind === "free");
+  const oldPc = online && !!ai && ["groq", "cerebras", "mistral"].some((id) => !ai.providers.some((p) => p.id === id));
+  // Always visible (also in the island): which AIs are active right now, which are only started, which are not set up – and which one is chosen.
+  const strip = (
+    <div className="aim-strip" role="group" aria-label={t("Aktive KIs")}>
+      <div className="aim-chips">
+        {free.map((r) => (
+          <span key={r.id} className={`aim-chip ${r.state}`} title={`${t(r.name)}: ${t(r.text)}`}>
+            <i aria-hidden className="aim-dot" />{t(r.name)}<span className="tiny"> · {t(LABEL[r.state])}</span>
+          </span>
+        ))}
+      </div>
+      {plan && plan.steps.length > 0 && <span className="tiny">{t("Antwortet: {n}", { n: plan.steps.map((x) => x.name).join(" → ") })} · {plan.how}</span>}
+      {selected && <span className="tiny">{t("Ausgewählt für die nächste Frage: {s}", { s: selected })}</span>}
+      {oldPc && <span className="tiny fas-err" role="alert">{t("Das Programm auf deinem PC ist älter als diese Seite und kennt manche KIs noch nicht (Groq, Cerebras, Mistral). Am PC unter „Updates“ aktualisieren – dann erscheinen sie hier.")}</span>}
+    </div>
+  );
   return (
     <section className="aim-roster" aria-label={t("Meine KIs")}>
+      {compact && strip}
       {compact
         ? <details><summary><b className="aim-modetitle">{t("Meine KIs")}</b> <span className="tiny" role="status">{summary}</span></summary>{planBlock}{list}</details>
         : <><b className="aim-modetitle">{t("Meine KIs")}</b><p className="tiny" role="status">{summary}</p>{planBlock}{list}</>}

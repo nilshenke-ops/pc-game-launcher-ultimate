@@ -19,7 +19,8 @@ export const useVoice = () => useSyncExternalStore((fn) => { listeners.add(fn); 
 export function speakable(text: string, max = 420): string {
   const s = text
     .replace(/[✓✗•→★▶]/g, " ").replace(/\p{Extended_Pictographic}/gu, " ").replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_, a, b) => b ?? a)
-    .replace(/https?:\/\/\S+/g, " ").replace(/\b(\d+)\.\s/g, "$1: ").replace(/\s*\n+\s*/g, ". ").replace(/\.\s*\./g, ".").replace(/\s{2,}/g, " ").trim();
+    .replace(/https?:\/\/\S+/g, " ").replace(/\b(\d):(\d)\b/g, "$1 zu $2")           // a score (single digits): "2:1" → "2 zu 1"; times have two-digit minutes ("18:30 Uhr")
+    .replace(/(\d)\s*°\s*C\b/g, "$1 Grad Celsius").replace(/(\d)\s*°/g, "$1 Grad").replace(/(\d)\s*%/g, "$1 Prozent").replace(/(\d)\s*km\/h\b/gi, "$1 Kilometer pro Stunde").replace(/(\d)\s*€/g, "$1 Euro").replace(/\b(\d+)\.\s/g, "$1: ").replace(/\s*\n+\s*/g, ". ").replace(/\.\s*\./g, ".").replace(/\s{2,}/g, " ").trim();
   if (s.length <= max) return s;
   const cut = s.slice(0, max);
   const end = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf("! "), cut.lastIndexOf("? "));
@@ -29,7 +30,7 @@ export function speakable(text: string, max = 420): string {
 // ------------------------------------------------------------------------------------------ which voice
 export interface VoiceCfg { voiceURI: string | null; rate: number; pitch: number }
 const CFG_KEY = "pgl.jarvis.voiceCfg";
-export const DEFAULT_VOICE: VoiceCfg = { voiceURI: null, rate: 1.05, pitch: 1 };
+export const DEFAULT_VOICE: VoiceCfg = { voiceURI: null, rate: 1, pitch: 0.95 };
 export function voiceCfg(): VoiceCfg {
   const c = readJson<Partial<VoiceCfg>>(CFG_KEY) ?? {};
   const clamp = (v: unknown, lo: number, hi: number, d: number) => (typeof v === "number" && isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d);
@@ -80,19 +81,30 @@ export function speak(text: string, lang = document.documentElement.lang === "en
   speakBrowser(say, lang);
 }
 
+/** Sentences, each spoken on its own: the browser cuts long utterances off (Chrome after ~15 s) and a short pause between sentences sounds like a person. */
+export function sentences(text: string): string[] {
+  const parts = text.split(/(?<=[.!?…])\s+/).map((x) => x.trim()).filter(Boolean);
+  const out: string[] = [];
+  for (const p of parts) { if (out.length && out[out.length - 1].length < 28) out[out.length - 1] += " " + p; else out.push(p); }   // no one-word utterances
+  return out;
+}
+
 function speakBrowser(say: string, lang: string) {
   if (!snap.supported) return;
   window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(say);
-  u.lang = lang;
   const v = voiceFor(lang);
-  if (v) u.voice = v;
   const cfg = voiceCfg();
-  u.rate = cfg.rate;
-  u.pitch = cfg.pitch;
-  u.onstart = () => { speaking = true; publish(); };
-  u.onend = u.onerror = () => { speaking = false; publish(); };
-  window.speechSynthesis.speak(u);
+  const parts = sentences(say);
+  parts.forEach((part, i) => {
+    const u = new SpeechSynthesisUtterance(part);
+    u.lang = lang;
+    if (v) u.voice = v;
+    u.rate = cfg.rate;
+    u.pitch = cfg.pitch;
+    if (i === 0) u.onstart = () => { speaking = true; publish(); };
+    u.onend = u.onerror = () => { if (i === parts.length - 1) { speaking = false; publish(); } };
+    window.speechSynthesis.speak(u);
+  });
 }
 
 export function stopSpeaking() {

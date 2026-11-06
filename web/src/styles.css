@@ -2725,3 +2725,12 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .as-tab:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .aim-can { margin: 6px 0; padding: 6px 8px; border-left: 3px solid var(--accent, currentColor); background: color-mix(in srgb, currentColor 6%, transparent); border-radius: 6px; }
 .aim-can summary { cursor: pointer; font-weight: 600; }
+
+.aim-strip { display: flex; flex-direction: column; gap: 4px; margin: 6px 0; }
+.aim-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.aim-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; font-size: .8rem; background: color-mix(in srgb, currentColor 8%, transparent); border: 1px solid color-mix(in srgb, currentColor 18%, transparent); }
+.aim-chip .aim-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: .45; }
+.aim-chip.works .aim-dot { background: #34c759; opacity: 1; box-shadow: 0 0 6px #34c759; }
+.aim-chip.limit .aim-dot { background: #ffb020; opacity: 1; }
+.aim-chip.problem .aim-dot { background: #ff5a5a; opacity: 1; }
+.aim-chip.begun .aim-dot { background: #5aa9ff; opacity: 1; }

@@ -148,6 +148,15 @@ export function captureHandoff() {
 }
 
 /** Asks the browser not to clear this site's storage on its own (the pairing lives there). Harmless if refused. */
+const FAIL_KEY = "pgl.loginFails";
+/** Counts a failed login; true only from the third one in a row – then the saved pairing is really gone (the PC no longer knows this device). */
+export function noteLoginFailure(): boolean {
+  const n = (readJson<number>(FAIL_KEY) ?? 0) + 1;
+  writeJson(FAIL_KEY, n);
+  return n >= 3;
+}
+export function resetLoginFailures() { if ((readJson<number>(FAIL_KEY) ?? 0) !== 0) writeJson(FAIL_KEY, 0); }
+
 function askPersistentStorage() { try { void navigator.storage?.persist?.().catch(() => {}); } catch { /* not supported */ } }
 
 function opId() {
@@ -507,6 +516,7 @@ class Client {
       const me = admin
         ? await this.call<Me>("auth.login", { adminToken: admin })
         : await this.call<Me>("auth.login", { deviceId: cred!.deviceId, proof: loginProof(cred!.token, hello.nonce) });
+      resetLoginFailures();
       this.set({ auth: "ok", me, authError: undefined, everAuthed: true });
       askPersistentStorage(); // the browser may then keep the saved state even when space gets short
       if (!admin) rememberPc(hello.info?.pcName);
@@ -517,7 +527,7 @@ class Client {
       if (err.code === "paused") { this.set({ auth: "paused", authError: err.message, me: undefined }); this.retryPaused(); return; }
       if (err.code === "auth-failed") {
         if (admin) writeJson(ADMIN_KEY, null, "session");
-        else writeJson(CRED_KEY, null);
+        else if (noteLoginFailure()) writeJson(CRED_KEY, null);          // one failed login (wrong PC behind the address, restart, relay hiccup) must not sign the device out for good
       }
       this.set({ auth: err.code === "auth-failed" ? "failed" : "none", authError: err.message, me: undefined });
     }
