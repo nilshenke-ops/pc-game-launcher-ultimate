@@ -352,6 +352,11 @@ describe("ElevenLabs auf dem Gerät", () => {
     expect(calls.every((c) => c.url.startsWith("https://api.elevenlabs.io/") && c.key === EL && c.cred === "omit")).toBe(true);
     const bad = (async () => json({}, 401)) as unknown as typeof fetch;
     await expect(speakElevenDevice("Hallo", { fetcher: bad })).rejects.toThrow(/abgelehnt/);
+    // A key limited to some rights: valid, but the account/quota call is not allowed – the test still says "ok" and the other calls say which right is missing.
+    const limited = (async () => json({ detail: { status: "missing_permissions", message: "The API key you used is missing the permission user_read to execute this operation." } }, 401)) as unknown as typeof fetch;
+    const lt = await testLocalEleven({ fetcher: limited });
+    expect(lt.ok).toBe(true); expect(lt.message).toContain("user_read");
+    await expect(speakElevenDevice("Hallo", { fetcher: limited })).rejects.toThrow(/gültig.*user_read/);
     const full = (async () => json({}, 429)) as unknown as typeof fetch;
     await expect(transcribeEleven(new Blob([new Uint8Array(3000)], { type: "audio/webm" }), "de", { fetcher: full })).rejects.toThrow(/Kontingent/);
   });

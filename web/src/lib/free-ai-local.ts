@@ -493,7 +493,14 @@ async function elevenCall(path: string, init: RequestInit, o: { fetcher?: Fetche
   o.signal?.addEventListener("abort", () => ctl.abort(), { once: true });
   try {
     const res = await (o.fetcher ?? fetch)(ELEVEN + path, { ...init, headers: { ...(init.headers as Record<string, string> | undefined), "xi-api-key": unlockedEleven }, signal: ctl.signal, referrerPolicy: "no-referrer", credentials: "omit" });
-    if (res.status === 401 || res.status === 403) throw new LocalAiError("ElevenLabs: Der Schlüssel wird abgelehnt.", "key");
+    if (res.status === 401 || res.status === 403) {
+      // A key that was limited to some rights in ElevenLabs is valid, but 401s on everything else ("missing_permissions") – say which right is missing instead of "rejected".
+      const body = await res.clone().json().catch(() => null) as { detail?: { status?: string; message?: string } | string } | null;
+      const d = body && typeof body.detail === "object" ? body.detail : undefined;
+      const perm = /missing the permission\s+([a-z_]+)/i.exec(d?.message ?? "")?.[1];
+      if (d?.status === "missing_permissions" || perm) throw new LocalAiError(`ElevenLabs: Der Schlüssel ist gültig, darf das aber nicht${perm ? ` (es fehlt das Recht „${perm}“)` : ""}. Erlaube es in ElevenLabs unter „API Keys“ beim Schlüssel oder erzeuge einen mit vollem Zugriff.`, "blocked", 60_000);
+      throw new LocalAiError("ElevenLabs: Der Schlüssel wird abgelehnt.", "key");
+    }
     if (res.status === 402 || res.status === 429) throw new LocalAiError("ElevenLabs: Das Kontingent oder die Anfragegrenze ist erreicht.", "limit", 60_000);
     if (!res.ok) throw new LocalAiError(`ElevenLabs: Fehler ${res.status}.`, "down", 60_000);
     return res;
@@ -534,5 +541,9 @@ export async function testLocalEleven(o: { fetcher?: Fetcher } = {}): Promise<{ 
     const d = await res.json().catch(() => ({})) as { tier?: string; character_count?: number; character_limit?: number };
     const q = typeof d.character_limit === "number" ? ` – Kontingent: ${d.character_count ?? 0} von ${d.character_limit} Zeichen genutzt` : "";
     return { ok: true, message: `Verbindung steht${d.tier ? ` (Tarif ${d.tier})` : ""}${q}.` };
-  } catch (e) { return { ok: false, message: (e as Error).message }; }
+  } catch (e) {
+    // Valid key without the right to read the account: the key works, only the quota display is not allowed.
+    if (e instanceof LocalAiError && e.kind === "blocked") return { ok: true, message: "Der Schlüssel wird angenommen. Das Kontingent lässt sich mit ihm nicht anzeigen (Recht „user_read“ fehlt) – das betrifft nur die Anzeige. Für die Stimme braucht er „text_to_speech“, für die Spracherkennung „speech_to_text“." };
+    return { ok: false, message: (e as Error).message };
+  }
 }
