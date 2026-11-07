@@ -704,7 +704,13 @@ public static class RpcApi
         rpc.Register("updates.status", ctx => s.Updates.Status());
         rpc.Register("updates.check", async ctx => await s.Updates.Check());
         rpc.Register("updates.download", async ctx => await s.Updates.Download());
-        rpc.Register("updates.install", ctx => s.Updates.Install() is { } err ? throw new RpcException("update", err) : true);
+        rpc.Register("updates.install", ctx =>
+        {
+            // A paired device with the admin right may start the install (the file is signed and SHA-256 checked again right before replacing) –
+            // but never while a game runs: the PC restarts the companion and the update must not interrupt a session.
+            if (!ctx.Session.IsLocalAdmin && GameActivity.Running) throw new RpcException("update", "Gerade läuft ein Spiel – installiere das Update nach dem Spielen (oder direkt am PC).");
+            return s.Updates.Install() is { } err ? throw new RpcException("update", err) : true;
+        });
         rpc.Register("updates.rollback", ctx => s.Updates.Rollback() is { } err ? throw new RpcException("update", err) : true);
 
         // ------------------------------------------------------------ network, storage, power, notes

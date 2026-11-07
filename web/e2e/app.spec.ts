@@ -624,6 +624,8 @@ test("Overlay wie die Game Bar: Widgets hinzufügen, entfernen, verschieben – 
   await pc.mouse.move(head!.x + 60, head!.y + 15); await pc.mouse.down(); await pc.mouse.move(760, 420, { steps: 10 }); await pc.mouse.up();
   const grip = await panel("Benachrichtigungen").locator(".gb-resize").boundingBox();
   await pc.mouse.move(grip!.x + 8, grip!.y + 8); await pc.mouse.down(); await pc.mouse.move(grip!.x + 108, grip!.y + 58, { steps: 6 }); await pc.mouse.up();
+  // the window is lifted (scaled) while dragged and settles back after letting go: measure when it is still
+  await expect.poll(async () => { const a = (await panel("Benachrichtigungen").boundingBox())!.width; await pc.waitForTimeout(250); return Math.abs((await panel("Benachrichtigungen").boundingBox())!.width - a) < 0.5; }).toBe(true);
   const width = (await panel("Benachrichtigungen").boundingBox())!.width;
   // Hide with ✕, show again via the bar.
   await panel("Aufnahme").getByRole("button", { name: "Aufnahme ausblenden" }).click();

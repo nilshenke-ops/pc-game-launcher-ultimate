@@ -281,7 +281,7 @@
     "updates.status": "view",
     "updates.check": "admin",
     "updates.download": "admin",
-    "updates.install": "local",
+    "updates.install": "admin",
     "updates.rollback": "local",
 
     "network.subscribe": "view",

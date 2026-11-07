@@ -106,6 +106,8 @@ export function PcUpdates() {
   const [busy, setBusy] = useState<string | null>(null);
   useEvent<{ done: number; total?: number }>("update.progress", setProgress);
   const local = !!conn.me?.isLocal;
+  // Installing needs the admin right (at the PC itself or on a paired device); switching auto-install on/off and rolling back stay at the PC.
+  const canInstall = local || !!conn.me?.permissions.includes("admin");
   const act = async (m: string, label: string) => {
     setBusy(m);
     try {
@@ -149,7 +151,7 @@ export function PcUpdates() {
             <div className="row">
               <Button icon={<RefreshCw size={16} />} busy={busy === "updates.check"} onClick={() => act("updates.check", t("Prüfung abgeschlossen"))}>{t("Nach Updates suchen")}</Button>
               <Button icon={<Download size={16} />} disabled={!u.available || u.downloaded} busy={busy === "updates.download"} onClick={() => act("updates.download", t("Download abgeschlossen und geprüft"))}>{u.downloaded ? t("Heruntergeladen und geprüft") : t("Herunterladen")}</Button>
-              <Button variant="primary" icon={<CheckCircle2 size={16} />} disabled={!u.downloaded || !u.canInstall || !local} onClick={install}>{t("Jetzt aktualisieren")}</Button>
+              <Button variant="primary" icon={<CheckCircle2 size={16} />} disabled={!u.downloaded || !u.canInstall || !canInstall} onClick={install}>{t("Jetzt aktualisieren")}</Button>
               {u.canRollback && <Button variant="ghost" icon={<Undo2 size={16} />} disabled={!local} onClick={rollback}>{t("Vorherige Version")}</Button>}
             </div>
             {u.guard && (
@@ -165,7 +167,7 @@ export function PcUpdates() {
                 label={t("Updates automatisch installieren")}
                 hint={local ? t("Nach der täglichen Prüfung lädt der Begleiter ein neues, signiertes Update, installiert es (nicht während eines Spiels) und startet neu. Mit Wiederherstellungspunkt; stürzt die neue Version ab, kehrt der Update-Wächter zur alten zurück. So ist auch die Seite, die dein PC dem Handy zeigt, immer aktuell.") : t("Nur direkt am PC einstellbar (Sicherheit).")} />
             )}
-            {!local && <p className="tiny muted">{t("Installieren und Zurücksetzen nur direkt am PC (Sicherheit). Prüfen und Herunterladen geht auch von hier.")}</p>}
+            {!local && <p className="tiny muted">{canInstall ? t("Prüfen, Herunterladen und Installieren geht auch von hier (nicht während eines Spiels). Zurücksetzen und „automatisch installieren“ nur direkt am PC (Sicherheit).") : t("Dieses Gerät darf nur prüfen und herunterladen. Installieren braucht das Recht „Admin“ oder den PC selbst.")}</p>}
             {!u.canInstall && <p className="tiny muted">{t("Automatisches Installieren kann nur der Windows-Begleiter. Sonst: neue EXE herunterladen, Begleiter beenden, Datei ersetzen, neu starten – deine Daten liegen getrennt im Datenordner.")}</p>}
           </div>
         )}
