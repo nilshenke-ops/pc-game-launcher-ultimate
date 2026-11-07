@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.25.1",
+    "date": "2026-11-07",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion.exe",
+    "size": 95014050,
+    "sha256": "099109dbd53e9da56155862457630493802d5a1439f395e04898e9f729a01c40",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.25.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion-3.25.1-win-x64.zip",
+      "size": 89288677,
+      "sha256": "ed2e27cf0dd389ddf4a08c1b45f009be863e7a744cbc8d38a4e093df09d28767"
+    },
+    "notes": "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC"
+      ],
+      "behoben": [
+        "Der Hinweis auf der Update-Seite sagte „nur direkt am PC“, obwohl das Handy nach „Herunterladen“ nichts weiter tun konnte; er erklärt jetzt, was dieses Gerät darf"
+      ]
+    },
+    "signature": "oD8rqvCPITQsGuYDWDxiEcjUR3FNl+K/uuIYUVW+U7uwncaKNiXVVoP/SJAFPgTHtz2X02QNDiXmxufsDdaXYA=="
+  },
+  {
     "version": "3.25.0",
     "date": "2026-11-06",
     "channel": "stable",
@@ -1379,36 +1405,5 @@
       "behoben": []
     },
     "signature": "JshVilvytNU4uqRrfbV8HO4FY/3OSUrSrD15A6mXKAj0tSeDZwA7/awGV1JCFRG8MLsZIuERz7ZtNPWfqO4i+w=="
-  },
-  {
-    "version": "2.86.0",
-    "date": "2026-11-02",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.86.0/PCGameLauncherCompanion.exe",
-    "size": 88414913,
-    "sha256": "0feef8c5c3c710021add792afa08aa506195ac257a83a0f67df9dc2e16fccb0d",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.86.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.86.0/PCGameLauncherCompanion-2.86.0-win-x64.zip",
-      "size": 82910693,
-      "sha256": "13953d46c53272fc45d162431af582c43a2c1b81598fd3de4c65aca4d66e4b01"
-    },
-    "notes": "16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit · Neue Einstellung „Oberfläche“: Flach (wie bisher), Glas (durchsichtig mit Unschärfe und Lichtkante), Weich 3D (Karten und Knöpfe wie aus Ton, Felder eingedrückt) und Erhaben 3D (Karten mit Tiefe, heller Oberkante und langem Schatten) – unabhängig vom Theme wählbar · Neue Oberfläche „Klar-Glas“: fast ganz durchsichtig wie Apples „Liquid Glass“ oder Nothing OS (Lichtkante, starke Unschärfe, kräftige Farben); die „Deckkraft der Karten“ regelt, wie klar – dazu die Designs Apple Glas, Apple Glas hell, Nothing OS und Nothing OS hell (runde Ecken)",
-    "changes": {
-      "neu": [
-        "16 schlichte, moderne Designs unter Einstellungen → Design & Layout → Themes: Clean Light, Soft Dark, Mint, Sand, Nothing Rot, Graphit, Petrol, Liquid Glass, Milchglas hell, Mitternacht Glas, Chrom, Sanftes Grau, Apple Glas, Nothing OS (dazu weiterhin alle bisherigen) – jedes bringt seine passende Oberfläche mit",
-        "Neue Einstellung „Oberfläche“: Flach (wie bisher), Glas (durchsichtig mit Unschärfe und Lichtkante), Weich 3D (Karten und Knöpfe wie aus Ton, Felder eingedrückt) und Erhaben 3D (Karten mit Tiefe, heller Oberkante und langem Schatten) – unabhängig vom Theme wählbar",
-        "Neue Oberfläche „Klar-Glas“: fast ganz durchsichtig wie Apples „Liquid Glass“ oder Nothing OS (Lichtkante, starke Unschärfe, kräftige Farben); die „Deckkraft der Karten“ regelt, wie klar – dazu die Designs Apple Glas, Apple Glas hell, Nothing OS und Nothing OS hell (runde Ecken)",
-        "Glas-Unschärfe als Regler (4–40 px); Glas bleibt immer lesbar (Mindest-Deckkraft)",
-        "3D-Neigung: Karten neigen sich leicht zur Maus – nur mit Maus, nur ohne „Animationen reduzieren“ und ohne „Leichte Darstellung“; auf Handy und iPad bleibt alles ruhig",
-        "6 neue eigene Hintergründe (Chrom-Streifen, Petrol-Welle, Sonnenuntergang am Meer, Milchglas hell, Sanftes Grau, Mitternacht) – gezeichnet, keine Fotos; ein Design mit Hintergrund bringt ihn mit und nimmt ihn beim Wechsel wieder weg"
-      ],
-      "verbessert": [
-        "Alle bisherigen Designs bleiben unverändert (Oberfläche „Flach“); beim Wechsel zu ihnen wird die Oberfläche wieder flach"
-      ],
-      "behoben": []
-    },
-    "signature": "mzZaUbfZ3KEXkeK4Zoa6DfUSIU/pbd/wm76jtfO5b80Fwp14Q+DR/WiivUeBEt0ULs6574i538bVkE2NnXNRgw=="
   }
 ]

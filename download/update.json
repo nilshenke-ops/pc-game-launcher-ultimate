@@ -1,27 +1,26 @@
 {
-  "version": "3.25.0",
-  "date": "2026-11-06",
+  "version": "3.25.1",
+  "date": "2026-11-07",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion.exe",
-  "size": 95013796,
-  "sha256": "ef976aca8616008a8a83ca6e53c553124e62a125dacd6783788492d0e4151e8a",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion.exe",
+  "size": 95014050,
+  "sha256": "099109dbd53e9da56155862457630493802d5a1439f395e04898e9f729a01c40",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.25.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion-3.25.0-win-x64.zip",
-    "size": 89288372,
-    "sha256": "3f65e9364541ea65aa8222e60f85f43c64f8079a9c283dc6b85a8433eebc5809"
+    "fileName": "PCGameLauncherCompanion-3.25.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion-3.25.1-win-x64.zip",
+    "size": 89288677,
+    "sha256": "ed2e27cf0dd389ddf4a08c1b45f009be863e7a744cbc8d38a4e093df09d28767"
   },
-  "notes": "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text · Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen · Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort",
+  "notes": "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC",
   "changes": {
-    "neu": [
-      "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text",
-      "Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen"
-    ],
+    "neu": [],
     "verbessert": [
-      "Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort"
+      "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC"
     ],
-    "behoben": []
+    "behoben": [
+      "Der Hinweis auf der Update-Seite sagte „nur direkt am PC“, obwohl das Handy nach „Herunterladen“ nichts weiter tun konnte; er erklärt jetzt, was dieses Gerät darf"
+    ]
   },
-  "signature": "/C7Hsugm+Ayopo8pGt7PuLFsEe7Fyzhza2i9WpayloB02ip1AgyT8ngS+Gp0/UE6y1+V4nNfJA9SqUT+oTwRLA=="
+  "signature": "oD8rqvCPITQsGuYDWDxiEcjUR3FNl+K/uuIYUVW+U7uwncaKNiXVVoP/SJAFPgTHtz2X02QNDiXmxufsDdaXYA=="
 }
