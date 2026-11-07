@@ -1,26 +1,24 @@
 {
-  "version": "3.25.1",
+  "version": "3.25.2",
   "date": "2026-11-07",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion.exe",
-  "size": 95014050,
-  "sha256": "099109dbd53e9da56155862457630493802d5a1439f395e04898e9f729a01c40",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion.exe",
+  "size": 95014780,
+  "sha256": "9458c301d6a0ae94faf37851415de74dd96da6c2c0ff06376713953bf53dca30",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.25.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion-3.25.1-win-x64.zip",
-    "size": 89288677,
-    "sha256": "ed2e27cf0dd389ddf4a08c1b45f009be863e7a744cbc8d38a4e093df09d28767"
+    "fileName": "PCGameLauncherCompanion-3.25.2-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion-3.25.2-win-x64.zip",
+    "size": 89289509,
+    "sha256": "58866a20b671937596f3e5c18c4d5469b319c7cce48d2bba96b17cc2480de10d"
   },
-  "notes": "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC",
+  "notes": "",
   "changes": {
     "neu": [],
-    "verbessert": [
-      "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC"
-    ],
+    "verbessert": [],
     "behoben": [
-      "Der Hinweis auf der Update-Seite sagte „nur direkt am PC“, obwohl das Handy nach „Herunterladen“ nichts weiter tun konnte; er erklärt jetzt, was dieses Gerät darf"
+      "ElevenLabs: „Der Schlüssel wird abgelehnt“ bei einem richtigen Schlüssel. Der Verbindungstest fragt das Kontingent ab, und das braucht bei ElevenLabs das Recht „user_read“; ein auf einzelne Rechte beschränkter Schlüssel bekommt dort ein 401, obwohl er gültig ist. Jetzt gilt der Test als bestanden und sagt, dass nur die Kontingent-Anzeige fehlt. Fehlt für die Stimme oder die Spracherkennung ein Recht, nennt die Meldung es („text_to_speech“ bzw. „speech_to_text“) statt „abgelehnt“. Wirklich ungültige Schlüssel werden weiter abgelehnt"
     ]
   },
-  "signature": "oD8rqvCPITQsGuYDWDxiEcjUR3FNl+K/uuIYUVW+U7uwncaKNiXVVoP/SJAFPgTHtz2X02QNDiXmxufsDdaXYA=="
+  "signature": "2//BtlrqLMZxdXVT9H5qoZ8m95fgfgUuD5beJUjw0th8LRhAPguYQYJZg2WIo6qpPgv5WE8x+GnGPlur4J9Wqw=="
 }

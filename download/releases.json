@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.25.2",
+    "date": "2026-11-07",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion.exe",
+    "size": 95014780,
+    "sha256": "9458c301d6a0ae94faf37851415de74dd96da6c2c0ff06376713953bf53dca30",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.25.2-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion-3.25.2-win-x64.zip",
+      "size": 89289509,
+      "sha256": "58866a20b671937596f3e5c18c4d5469b319c7cce48d2bba96b17cc2480de10d"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "ElevenLabs: „Der Schlüssel wird abgelehnt“ bei einem richtigen Schlüssel. Der Verbindungstest fragt das Kontingent ab, und das braucht bei ElevenLabs das Recht „user_read“; ein auf einzelne Rechte beschränkter Schlüssel bekommt dort ein 401, obwohl er gültig ist. Jetzt gilt der Test als bestanden und sagt, dass nur die Kontingent-Anzeige fehlt. Fehlt für die Stimme oder die Spracherkennung ein Recht, nennt die Meldung es („text_to_speech“ bzw. „speech_to_text“) statt „abgelehnt“. Wirklich ungültige Schlüssel werden weiter abgelehnt"
+      ]
+    },
+    "signature": "2//BtlrqLMZxdXVT9H5qoZ8m95fgfgUuD5beJUjw0th8LRhAPguYQYJZg2WIo6qpPgv5WE8x+GnGPlur4J9Wqw=="
+  },
+  {
     "version": "3.25.1",
     "date": "2026-11-07",
     "channel": "stable",
@@ -1378,32 +1402,5 @@
       "behoben": []
     },
     "signature": "mnW0r94Sn/mW/xZTotsPBsXP+06xU/DTbUBbKdrL0OKc6VQPlfg8svtZuyKVJpN5Wz4SZ1LQCqCESbw79fZYTg=="
-  },
-  {
-    "version": "2.87.0",
-    "date": "2026-11-02",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.0/PCGameLauncherCompanion.exe",
-    "size": 88415440,
-    "sha256": "ab943660f19c06ebbc66f331cdfe9f955208a76b165e78a8bf3db59cee9f0487",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.87.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.87.0/PCGameLauncherCompanion-2.87.0-win-x64.zip",
-      "size": 82911234,
-      "sha256": "0a31142f8f094e2fcf28c35093d6ac1797cef16f8a7ee4ad61560050b3b932d0"
-    },
-    "notes": "Der letzte Stand bleibt auf dem Handy: Nach dem ersten Koppeln bleibt die Anmeldung bestehen, und auch bei ausgeschaltetem PC siehst du PC-Name, aktives Profil, Zähler, Spiele, Steam-Bibliothek, Game Pass, Deck und deine Listen – mit „Stand …“-Datum · Was gerade läuft oder spielt wird offline nie als aktuell gezeigt; gestartet wird nichts ohne PC (Änderungen werden wie bisher vorgemerkt) · Abmelden oder Gerät entfernen löscht den gespeicherten Stand vom Handy vollständig",
-    "changes": {
-      "neu": [
-        "Der letzte Stand bleibt auf dem Handy: Nach dem ersten Koppeln bleibt die Anmeldung bestehen, und auch bei ausgeschaltetem PC siehst du PC-Name, aktives Profil, Zähler, Spiele, Steam-Bibliothek, Game Pass, Deck und deine Listen – mit „Stand …“-Datum"
-      ],
-      "verbessert": [
-        "Was gerade läuft oder spielt wird offline nie als aktuell gezeigt; gestartet wird nichts ohne PC (Änderungen werden wie bisher vorgemerkt)",
-        "Abmelden oder Gerät entfernen löscht den gespeicherten Stand vom Handy vollständig"
-      ],
-      "behoben": []
-    },
-    "signature": "JshVilvytNU4uqRrfbV8HO4FY/3OSUrSrD15A6mXKAj0tSeDZwA7/awGV1JCFRG8MLsZIuERz7ZtNPWfqO4i+w=="
   }
 ]
