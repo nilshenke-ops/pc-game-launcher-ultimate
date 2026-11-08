@@ -6747,7 +6747,7 @@ export const en: Record<string, string> = {
   "Konten auf diesem Gerät": "Accounts on this device",
   "Konto am PC": "account on the PC",
   "Konto gewechselt: {u}": "Switched account: {u}",
-  "Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeder Benutzername ist nur einmal vergeben; ein zweites Konto mit demselben Namen lehnt der Dienst ab.": "Switching needs no password any more – the keys are stored encrypted on this device. Every user name exists only once; the service refuses a second account with the same name.",
+  "Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeden Benutzernamen gibt es nur einmal – ein zweites Konto mit demselben Namen lehnt der Dienst ab.": "Switching needs no password any more – the keys are stored encrypted on this device. Every user name exists only once – a second account with the same name is refused by the service.",
   "Weiteres Konto hinzufügen": "Add another account",
   "Dazu kommen der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl – also welcher Anbieter zuerst antwortet. Auf dem Handy ist damit alles schon eingerichtet, bevor der PC verbunden ist. KI-Schlüssel und API-Schlüssel liegen nie im Konto.": "On top of that come the folder and rules for JARVIS MEMORY, your weather location and the AI choice – meaning which provider answers first. On the phone everything is therefore already set up before the PC is connected. AI keys and API keys are never in the account.",
   "Dieses Konto ist auf diesem Gerät nicht gespeichert – bitte einmal mit Passwort anmelden.": "This account is not stored on this device – please sign in once with the password.",

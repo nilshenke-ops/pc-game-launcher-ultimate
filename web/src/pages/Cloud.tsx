@@ -86,7 +86,7 @@ export default function CloudPage() {
                 <Button size="sm" disabled={s?.user === a.user} busy={switching === a.user} onClick={() => void switchTo(a.user)}>{t("Wechseln")}</Button>
               </div>
             ))}
-            <p className="tiny muted" style={{ margin: 0 }}>{t("Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeder Benutzername ist nur einmal vergeben; ein zweites Konto mit demselben Namen lehnt der Dienst ab.")}</p>
+            <p className="tiny muted" style={{ margin: 0 }}>{t("Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeden Benutzernamen gibt es nur einmal – ein zweites Konto mit demselben Namen lehnt der Dienst ab.")}</p>
           </div>
         </Card>
       )}
