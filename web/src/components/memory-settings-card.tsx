@@ -1,6 +1,6 @@
 // The folder of JARVIS MEMORY and its rules – set up in the account, so it can already be chosen on a phone without the
 // PC and is handed to the PC as soon as it is connected. The notes themselves stay on the PC.
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Brain, Save } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -17,6 +17,13 @@ export function MemorySettingsCard({ pcPath, online, isPc, canAdmin, onChanged }
   const [cfg, setCfg] = useState<MemorySettings>(() => memorySettings());
   const [path, setPath] = useState(() => memorySettings().path);
   const [busy, setBusy] = useState(false);
+  // The settings are put on the PC by themselves when it connects – the card then shows the new state.
+  const changed = useRef(onChanged); changed.current = onChanged;
+  useEffect(() => {
+    const sync = () => { const m = memorySettings(); setCfg(m); setPath(m.path); changed.current(); };
+    window.addEventListener("pgl-memory", sync);
+    return () => window.removeEventListener("pgl-memory", sync);
+  }, []);
   const onPc = online && isPc && canAdmin;
   const different = !!cfg.path && cfg.path !== pcPath;
 
@@ -45,7 +52,7 @@ export function MemorySettingsCard({ pcPath, online, isPc, canAdmin, onChanged }
     <Card title={t("Gedächtnis im Konto")} icon={<Brain size={18} />}
       meta={<span className={`badge${cfg.path ? " ok" : ""}`}>{cfg.path ? t("Im Konto gespeichert") : t("Noch nicht eingerichtet")}</span>}>
       <div className="stack-sm">
-        <p className="muted" style={{ margin: 0 }}>{t("Der Ordner und die Regeln reisen im Konto mit – du kannst sie hier auch ohne PC einstellen. Die Notizen selbst bleiben auf dem PC und werden übernommen, sobald er verbunden ist.")}</p>
+        <p className="muted" style={{ margin: 0 }}>{t("Der Ordner und die Regeln reisen im Konto mit – du kannst sie hier auch ohne PC einstellen. Die Notizen selbst bleiben auf dem PC und werden automatisch übernommen, sobald er verbunden ist.")}</p>
         <Field label={t("Ordner des Gedächtnisses")}
           hint={isPc ? t("Zum Beispiel C:\\Users\\Name\\Documents\\JARVIS-MEMORY – der Ordner wird angelegt, falls es ihn nicht gibt. Ein vorhandener Obsidian-Vault geht auch.") : t("Der Ordner gilt für alle Geräte deines Kontos. Angelegt wird er auf dem PC, sobald er verbunden ist.")}>
           <div className="row" style={{ gap: 8 }}>

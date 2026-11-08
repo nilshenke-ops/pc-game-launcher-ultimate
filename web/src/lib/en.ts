@@ -6754,10 +6754,11 @@ export const en: Record<string, string> = {
   "Gedächtnis im Konto": "Memory in the account",
   "Im Konto gespeichert": "Saved in the account",
   "Noch nicht eingerichtet": "Not set up yet",
-  "Der Ordner und die Regeln reisen im Konto mit – du kannst sie hier auch ohne PC einstellen. Die Notizen selbst bleiben auf dem PC und werden übernommen, sobald er verbunden ist.": "The folder and the rules travel with the account – you can set them here without the PC too. The notes themselves stay on the PC and are handed over as soon as it is connected.",
+  "Der Ordner und die Regeln reisen im Konto mit – du kannst sie hier auch ohne PC einstellen. Die Notizen selbst bleiben auf dem PC und werden automatisch übernommen, sobald er verbunden ist.": "The folder and the rules travel with the account – you can set them here without the PC too. The notes themselves stay on the PC and are applied by themselves as soon as it is connected.",
   "Ordner des Gedächtnisses": "Memory folder",
   "Der Ordner gilt für alle Geräte deines Kontos. Angelegt wird er auf dem PC, sobald er verbunden ist.": "The folder applies to every device of your account. It is created on the PC as soon as it is connected.",
   "Auf diesen PC übernehmen": "Apply on this PC",
   "Auf dem PC übernommen": "Applied on the PC",
+  "Gedächtnis auf dem PC eingerichtet": "Memory set up on the PC",
   "Ohne PC ist hier nur das Einrichten möglich – gemerkt und nachgeschlagen wird erst, wenn der PC verbunden ist.": "Without the PC you can only set this up here – noting and looking up starts once the PC is connected.",
 };
