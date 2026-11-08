@@ -6,7 +6,8 @@ import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
 import { dateTime, relTime } from "../lib/format";
-import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Switch } from "../components/ui";
+import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead } from "../components/ui";
+import { MemorySettingsCard } from "../components/memory-settings-card";
 
 interface MemStatus { enabled: boolean; path?: string | null; state: "off" | "no-folder" | "missing" | "ok"; notes: number; folders: number; writeEnabled: boolean; deleteEnabled: boolean; auto: "off" | "suggest" | "auto"; obsidianVault: boolean; lastNote?: string | null; lastWrite?: string | null; message: string }
 interface Note { path: string; title: string; folder: string; updated: string; size: number; type?: string | null }
@@ -15,7 +16,6 @@ interface Project { path: string; title: string; status?: string | null; updated
 interface Health { kind: string; path: string; text: string }
 interface Opened { path: string; text: string; updated: string; links: Note[]; backlinks: Note[] }
 
-const AUTO = [{ value: "off", label: "Nur was ich sage" }, { value: "suggest", label: "JARVIS fragt („Merk dir das“)" }, { value: "auto", label: "Klares gleich speichern" }] as const;
 const FOLDER_NAME = (f: string) => f.replace(/^\d+-/, "");
 
 export default function MemoryPage() {
@@ -52,6 +52,7 @@ export default function MemoryPage() {
         text={t("Das Langzeitgedächtnis von JARVIS: ein Ordner mit normalen Markdown-Notizen auf deinem PC (ein Obsidian-Vault). Nichts davon liegt im Netz – die Seite fragt den PC nur über die gesicherte Verbindung.")}
         actions={canManage && ready && s?.writeEnabled && <Button variant="primary" icon={<FilePlus2 size={16} />} onClick={() => setCreating(true)}>{t("Neue Notiz")}</Button>} />
       {!online && <div style={{ marginBottom: 14 }}><Banner kind="info">{t("Ohne PC-Verbindung ist das Gedächtnis nicht erreichbar. JARVIS antwortet trotzdem normal – nur ohne Erinnerungen.")}</Banner></div>}
+      <div style={{ marginBottom: 14 }}><MemorySettingsCard pcPath={s?.path ?? null} online={online} isPc={!!conn.me?.isLocal} canAdmin={canAdmin} onChanged={reload} /></div>
       <Loadable loading={st.loading && !s} error={st.error} onRetry={st.reload}>
         {s && (
           <div className="stack">
@@ -66,7 +67,6 @@ export default function MemoryPage() {
                 </div>
                 {s.path && <div className="mem-path"><FolderOpen size={14} /> <code>{s.path}</code></div>}
               </div>
-              <Settings s={s} online={online} canAdmin={canAdmin} isPc={!!conn.me?.isLocal} onChanged={reload} />
             </Card>
 
             {ready && (
@@ -123,31 +123,6 @@ export default function MemoryPage() {
       {open && s && <NoteEditor path={open} canWrite={canManage && s.writeEnabled} canDelete={canAdmin && s.deleteEnabled} onOpen={setOpen} onClose={() => { setOpen(null); reload(); }} />}
       {creating && <NewNote onClose={(p) => { setCreating(false); reload(); if (p) setOpen(p); }} />}
     </>
-  );
-}
-
-function Settings({ s, online, canAdmin, isPc, onChanged }: { s: MemStatus; online: boolean; canAdmin: boolean; isPc: boolean; onChanged: () => void }) {
-  const [path, setPath] = useState(s.path ?? "");
-  useEffect(() => setPath(s.path ?? ""), [s.path]);
-  const save = (p: Record<string, unknown>) => client.call("memory.configure", p).then(() => { toast(t("Gespeichert"), "success"); onChanged(); }, (e: Error) => toast(e.message, "error"));
-  if (!canAdmin) return <p className="muted" style={{ marginBottom: 0 }}>{t("Einstellungen ändert nur ein Gerät mit Verwaltungs-Recht.")}</p>;
-  return (
-    <div className="stack-sm" style={{ marginTop: 12 }}>
-      <Field label={t("Ordner des Gedächtnisses (auf dem PC)")} hint={isPc ? t("Zum Beispiel C:\\Users\\Name\\Documents\\JARVIS-MEMORY – der Ordner wird angelegt, falls es ihn nicht gibt. Ein vorhandener Obsidian-Vault geht auch.") : t("Den Ordner wählst du am PC selbst (aus Sicherheitsgründen nicht vom Handy). Hier siehst du ihn nur.")}>
-        <div className="row" style={{ gap: 8 }}>
-          <input className="input" value={path} disabled={!isPc || !online} onChange={(e) => setPath(e.target.value)} placeholder="C:\Users\…\JARVIS-MEMORY" />
-          {isPc && <Button variant="primary" disabled={!online || !path.trim() || path.trim() === s.path} onClick={() => save({ path: path.trim(), enabled: true })}>{t("Übernehmen")}</Button>}
-        </div>
-      </Field>
-      <Switch checked={s.enabled} disabled={!online || !s.path} onChange={(v) => save({ enabled: v })} label={t("Gedächtnis benutzen")} hint={t("Aus: JARVIS antwortet wie vorher, ohne zu merken oder nachzuschlagen.")} />
-      <Switch checked={s.writeEnabled} disabled={!online} onChange={(v) => save({ writeEnabled: v })} label={t("JARVIS darf Notizen schreiben")} hint={t("Aus: nur Lesen und Suchen.")} />
-      <Switch checked={s.deleteEnabled} disabled={!online} onChange={(v) => save({ deleteEnabled: v })} label={t("Löschen erlauben")} hint={t("Gelöscht wird nie von selbst und nie endgültig: Notizen kommen in den Papierkorb des Vaults (.trash).")} />
-      <Field label={t("Automatisch merken")}>
-        <select className="input" value={s.auto} disabled={!online} onChange={(e) => save({ auto: e.target.value })}>
-          {AUTO.map((a) => <option key={a.value} value={a.value}>{t(a.label)}</option>)}
-        </select>
-      </Field>
-    </div>
   );
 }
 

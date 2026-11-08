@@ -62,6 +62,12 @@ Für GitHub Actions: Secret `VITE_CLOUD_API`. Ohne diesen Wert zeigt die App das
 
 Ein Umzug ist ein Wechsel des Speicherorts, kein automatischer Abgleich: Konten im alten Dienst bleiben dort.
 
+## Mehrere Konten und was mitreist
+
+Auf einem Gerät lassen sich mehrere Konten speichern (`pgl.designAccounts`, höchstens sechs). Die Schlüssel jedes Kontos liegen verschlüsselt dort, deshalb wechselt „Cloud → Konten auf diesem Gerät → Wechseln“ ohne Passwort; die Daten des Zielkontos werden vorher geladen, sonst bleibt alles beim alten. Ein Benutzername ist serverseitig eindeutig: `register` antwortet bei einem vergebenen Namen mit `conflict` („Diesen Benutzernamen gibt es schon“).
+
+Mit dem Konto reisen Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung, Raum-Einstellung, Wetter-Ort sowie Ordner und Regeln von JARVIS MEMORY (`pgl.memory`). KI- und API-Schlüssel gehören bewusst nicht dazu: sie liegen verschlüsselt auf dem Gerät (`pgl.localai`) und werden nur beim Verbinden an den PC übergeben.
+
 ## In der App
 
 Navigation → Verbindung → **Cloud** (oder über die Suche „cloud“): dort stehen Konto anlegen/anmelden/abmelden, die Adresse des Dienstes, der Status samt wartender Änderung, „Jetzt synchronisieren“ und eine ehrliche Liste, was in der Cloud liegt und was am PC bleibt. Konto löschen geht ebenfalls dort.

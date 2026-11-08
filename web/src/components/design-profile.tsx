@@ -13,7 +13,7 @@ export function DesignProfileCard() {
 }
 
 /** Sign in / register – also in the account sheet behind the person icon at the top. */
-export function AccountPanel({ onDone }: { onDone?: () => void }) {
+export function AccountPanel({ onDone, forceForm }: { onDone?: () => void; /** Show the form even while an account is signed in (adding a second account). */ forceForm?: boolean }) {
   const conn = useConn();
   const online = conn.phase === "online" && conn.auth === "ok";
   const cloud = cloudMode();
@@ -43,7 +43,7 @@ export function AccountPanel({ onDone }: { onDone?: () => void }) {
           ? t("Dein Konto liegt in der Cloud – nicht auf deinem PC. Deshalb kannst du dich auch anmelden, wenn der PC aus ist. Mitkommen Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung; alles wird schon im Browser verschlüsselt, Passwort und Schlüssel bleiben auf dem Gerät. Spiele, Deck, Wunschliste und Kalender brauchen weiterhin den PC.")
           : t("Optional – ohne E-Mail: Mit Benutzername und Passwort nimmst du deine Daten in einen anderen Browser mit: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung. Alles wird schon im Browser verschlüsselt und auf deinem PC gespeichert – der PC kann es nicht lesen, das Passwort verlässt dein Gerät nie. Spiele, Deck, Wunschliste und Kalender liegen ohnehin auf dem PC.")}</p>
         {!cryptoAvailable() ? <Banner kind="info">{t("Dieser Browser erlaubt die Verschlüsselung nur auf https-Seiten. Öffne die Website-Adresse (https) oder die PC-Ansicht am PC selbst.")}</Banner>
-          : s ? (
+          : s && !forceForm ? (
             <div className="stack-sm">
               <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
                 <span><b>{s.user}</b> <span className="tiny muted">{s.savedAt ? t("· gespeichert {d}", { d: relTime(s.savedAt) }) : ""}</span></span>

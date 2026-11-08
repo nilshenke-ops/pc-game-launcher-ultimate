@@ -10,6 +10,7 @@ import {
 } from "./cloud-account";
 import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
+import { t } from "./i18n";
 
 const ITERATIONS = 250_000;
 const KEY = "pgl.designAccount";
@@ -39,8 +40,11 @@ export function designOf(p: Prefs): Prefs {
   return d;
 }
 
-/** Data of this browser that goes with the account besides the design (small, never device keys or PC access). */
-export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room"] as const;
+/**
+ * Data of this browser that goes with the account besides the design (small, never device keys or PC access).
+ * AI keys are deliberately NOT here: they stay sealed on this device and are only handed to the PC when it connects.
+ */
+export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room", "pgl.memory", "pgl.homePlace"] as const;
 
 export interface AccountData { prefs: Prefs; local: Record<string, unknown> }
 
@@ -68,7 +72,30 @@ export async function decryptDesign(enc: string, blob: string): Promise<AccountD
 }
 
 export const session = () => readJson<DesignSession>(KEY);
-const store = (s: DesignSession | null) => writeJson(KEY, s);
+const store = (s: DesignSession | null) => { writeJson(KEY, s); if (s) remember(s); };
+
+// Several accounts on one device: the login and encryption keys of each are kept (sealed by the password), so switching
+// needs no password again. The names themselves are unique – the cloud refuses a second account with the same name.
+const LIST_KEY = "pgl.designAccounts";
+export const MAX_ACCOUNTS = 6;
+
+/** The accounts remembered on this device, oldest first. */
+export function listAccounts(): DesignSession[] {
+  const all = readJson<DesignSession[]>(LIST_KEY);
+  if (!Array.isArray(all)) return [];
+  return all.filter((a) => a && typeof a.user === "string" && !!a.auth && !!a.enc).slice(-MAX_ACCOUNTS);
+}
+
+function remember(s: DesignSession) {
+  writeJson(LIST_KEY, [...listAccounts().filter((a) => a.user !== s.user), { ...s }].slice(-MAX_ACCOUNTS));
+}
+function forget(user: string) { writeJson(LIST_KEY, listAccounts().filter((a) => a.user !== user)); }
+
+/** Removes everything that belongs to an account from this device (before another account is put on it). */
+function clearAccountData() {
+  for (const key of ACCOUNT_KEYS) writeJson(key, null);
+  setPendingBlob(null);
+}
 
 /** Tells the UI (cloud page, status lines) that the session or its saved state changed – e.g. a waiting change was sent. */
 function notifyAccount() {
@@ -79,7 +106,8 @@ function notifyAccount() {
 export const cloudMode = () => cloudAccountConfigured();
 
 /** Puts the decrypted data on this device. Called only after every step that can fail has succeeded. */
-function applyData(data: AccountData) {
+function applyData(data: AccountData, reset = false) {
+  if (reset) clearAccountData();
   replacePrefs({ ...data.prefs, theme: { ...data.prefs.theme, bgImage: data.prefs.theme.bgImage ?? getPrefs().theme.bgImage } });
   for (const key of ACCOUNT_KEYS) if (key in data.local) writeJson(key, data.local[key]);
   reloadRoom();
@@ -108,7 +136,7 @@ export async function signIn(userIn: string, password: string) {
     try {
       const remote = await cloudLoad(user, k.auth);         // wrong name/key ends here
       const data = remote ? await decryptDesign(k.enc, remote.blob) : null; // a wrong key ends here as well
-      if (data) applyData(data);
+      if (data) applyData(data, true);                     // nothing of the account before stays on this device
       store({ user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
       if (!data) await saveNow();                          // new cloud account: take the design of this device along
       await flushPending().catch(() => { /* next change tries again */ });
@@ -120,12 +148,35 @@ export async function signIn(userIn: string, password: string) {
   }
   const k = await deriveKeys(user, password);
   const r = await client.call<{ blob: string; updatedAt: string }>("design.load", { user, key: k.auth });
-  const { prefs: design, local } = await decryptDesign(k.enc, r.blob);
-  // Keep the background picture of this browser if the stored design had to leave it out.
-  replacePrefs({ ...design, theme: { ...design.theme, bgImage: design.theme.bgImage ?? getPrefs().theme.bgImage } });
-  for (const key of ACCOUNT_KEYS) if (key in local) writeJson(key, local[key]);
-  reloadRoom();
+  const data = await decryptDesign(k.enc, r.blob);
+  applyData(data, true);
   store({ user, ...k, savedAt: Date.now() });
+  notifyAccount();
+}
+
+/**
+ * Switches to another account that is already remembered on this device – no password needed, because the login and
+ * encryption keys of that account are stored here. Nothing changes when the data cannot be loaded.
+ */
+export async function switchAccount(userIn: string) {
+  const user = userIn.trim().toLowerCase();
+  if (session()?.user === user) return;
+  const target = listAccounts().find((a) => a.user === user);
+  if (!target) throw new Error(t("Dieses Konto ist auf diesem Gerät nicht gespeichert – bitte einmal mit Passwort anmelden."));
+  if (target.cloud) {
+    const remote = await cloudLoad(user, target.auth);        // wrong name/key or no connection ends here – nothing changed
+    const data = remote ? await decryptDesign(target.enc, remote.blob) : null;
+    if (data) applyData(data, true); else clearAccountData();
+    store({ user, auth: target.auth, enc: target.enc, savedAt: Date.now(), cloud: true });
+    await flushPending().catch(() => { /* next change tries again */ });
+    notifyAccount();
+    return;
+  }
+  const r = await client.call<{ blob: string; updatedAt: string }>("design.load", { user, key: target.auth });
+  const data = await decryptDesign(target.enc, r.blob);
+  applyData(data, true);
+  store({ user, auth: target.auth, enc: target.enc, savedAt: Date.now() });
+  notifyAccount();
 }
 
 export async function saveNow() {
@@ -163,10 +214,11 @@ export async function deleteProfile() {
       // Already gone in the cloud: then only forget it here.
       if (!/falsch|abgelehnt|nicht eingerichtet/i.test((e as Error).message)) throw e;
     }
-    setPendingBlob(null); store(null); notifyAccount(); return;
+    setPendingBlob(null); store(null); forget(s.user); notifyAccount(); return;
   }
   await client.call("design.delete", { user: s.user, key: s.auth });
   store(null);
+  forget(s.user);
   notifyAccount();
 }
 
@@ -174,6 +226,7 @@ export const signOut = () => {
   const s = session();
   if (s?.cloud) cloudSignOut();
   store(null);
+  if (s) forget(s.user);
   notifyAccount();
 };
 

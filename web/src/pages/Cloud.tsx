@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { Cloud, CloudOff, HardDrive, RefreshCw, ShieldCheck } from "lucide-react";
+import { Cloud, CloudOff, HardDrive, RefreshCw, ShieldCheck, Users } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { Banner, Button, Card } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
 import { cloudAccountConfigured, cloudApi, pendingBlob } from "../lib/cloud-account";
-import { flushPending, saveNow, session } from "../lib/design-account";
+import { flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
 
 /**
  * Everything about the cloud account in one place: sign in, the address of the service, whether a change is still
@@ -21,8 +21,10 @@ export default function CloudPage() {
   const [s, setS] = useState(session);
   const [waiting, setWaiting] = useState(() => !!pendingBlob());
   const [busy, setBusy] = useState(false);
+  const [accounts, setAccounts] = useState(listAccounts);
+  const [switching, setSwitching] = useState<string | null>(null);
   useEffect(() => {
-    const refresh = () => { setS(session()); setWaiting(!!pendingBlob()); };
+    const refresh = () => { setS(session()); setWaiting(!!pendingBlob()); setAccounts(listAccounts()); };
     window.addEventListener("pgl-account", refresh);
     window.addEventListener("storage", refresh);
     return () => { window.removeEventListener("pgl-account", refresh); window.removeEventListener("storage", refresh); };
@@ -36,7 +38,16 @@ export default function CloudPage() {
       toast(t("Alles ist gespeichert."), "success");
     } catch (e) {
       toast((e as Error).message, "error");
-    } finally { setBusy(false); setS(session()); setWaiting(!!pendingBlob()); }
+    } finally { setBusy(false); setS(session()); setWaiting(!!pendingBlob()); setAccounts(listAccounts()); }
+  };
+
+  const switchTo = async (user: string) => {
+    setSwitching(user);
+    try {
+      await switchAccount(user);
+      toast(t("Konto gewechselt: {u}", { u: user }), "success");
+    } catch (e) { toast((e as Error).message, "error"); }
+    finally { setSwitching(null); setS(session()); setWaiting(!!pendingBlob()); setAccounts(listAccounts()); }
   };
 
   return (
@@ -63,12 +74,34 @@ export default function CloudPage() {
         {!s?.cloud && <p className="tiny muted" style={{ margin: 0 }}>{t("Anmelden geht auch bei ausgeschaltetem PC. Ohne Anmeldung bleibt alles auf diesem Gerät und am PC.")}</p>}
       </div>
 
+      {accounts.length > 0 && (
+        <Card title={t("Konten auf diesem Gerät")} icon={<Users size={18} />} meta={<span className="badge">{accounts.length}</span>}>
+          <div className="stack-sm">
+            {accounts.map((a) => (
+              <div key={a.user} className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+                <span className="small">
+                  <b>{a.user}</b>{s?.user === a.user && <> <span className="badge ok">{t("aktiv")}</span></>}
+                  {!a.cloud && <span className="tiny muted"> · {t("Konto am PC")}</span>}
+                </span>
+                <Button size="sm" disabled={s?.user === a.user} busy={switching === a.user} onClick={() => void switchTo(a.user)}>{t("Wechseln")}</Button>
+              </div>
+            ))}
+            <p className="tiny muted" style={{ margin: 0 }}>{t("Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeder Benutzername ist nur einmal vergeben; ein zweites Konto mit demselben Namen lehnt der Dienst ab.")}</p>
+          </div>
+        </Card>
+      )}
+
       <Card title={t("Konto")} icon={<ShieldCheck size={18} />}>
         <AccountPanel />
+        <details style={{ marginTop: 10 }}>
+          <summary className="small">{t("Weiteres Konto hinzufügen")}</summary>
+          <div style={{ marginTop: 8 }}><AccountPanel forceForm /></div>
+        </details>
       </Card>
 
       <Card title={t("Was in der Cloud liegt")} icon={<Cloud size={18} />}>
         <p className="small" style={{ margin: 0 }}>{t("Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung und die Raum-Einstellung – schon im Browser verschlüsselt. Passwort und Schlüssel bleiben auf dem Gerät, der Dienst kann die Daten nicht lesen.")}</p>
+        <p className="small" style={{ margin: "8px 0 0" }}>{t("Dazu kommen der Ordner und die Regeln für JARVIS MEMORY sowie dein Wetter-Ort – so ist beides auf dem Handy schon eingerichtet, bevor der PC verbunden ist. KI-Schlüssel und API-Schlüssel liegen nie im Konto.")}</p>
       </Card>
 
       <Card title={t("Was am PC bleibt")} icon={<HardDrive size={18} />}>
