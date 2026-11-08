@@ -62,6 +62,10 @@ Für GitHub Actions: Secret `VITE_CLOUD_API`. Ohne diesen Wert zeigt die App das
 
 Ein Umzug ist ein Wechsel des Speicherorts, kein automatischer Abgleich: Konten im alten Dienst bleiben dort.
 
+## In der App
+
+Navigation → Verbindung → **Cloud** (oder über die Suche „cloud“): dort stehen Konto anlegen/anmelden/abmelden, die Adresse des Dienstes, der Status samt wartender Änderung, „Jetzt synchronisieren“ und eine ehrliche Liste, was in der Cloud liegt und was am PC bleibt. Konto löschen geht ebenfalls dort.
+
 ## Grenzen
 
 - Bestehende Konten auf dem PC wandern **nicht** automatisch in die Cloud. Nach der Einrichtung einmal mit der Cloud registrieren/anmelden und das Design neu speichern (es liegt lokal weiter vor).
