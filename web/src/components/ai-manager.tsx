@@ -14,7 +14,7 @@ import { AiSelfTest } from "./ai-selftest";
 import { AiRoster } from "./ai-roster";
 import { friendlyError } from "../lib/friendly-error";
 import { rememberAiChoice } from "../lib/ai-choice-sync";
-import { saveNow } from "../lib/design-account";
+import { saveNow, session } from "../lib/design-account";
 import { AiTiles } from "./ai-tiles";
 import { elevenKeyLooksRight, removeLocalElevenKey, saveLocalElevenKey, testLocalEleven, LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
@@ -158,6 +158,9 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
         <span className="aim-cost"><ShieldCheck size={14} aria-hidden /> {t("0,00 € – nur kostenlose Modelle, kein bezahlter Ausweich, kein Aufladen")}</span>
         <p className="tiny">{o.last ? t("Zuletzt geantwortet: {n}{m} · {w}", { n: o.last.name, m: o.last.model ? ` (${o.last.model})` : "", w: o.last.at ? relTime(o.last.at) : "" }) : t("Noch keine Antwort von einer freien KI.")}</p>
       </div>
+      <p className="tiny muted">{session()
+        ? t("Reihenfolge und Betriebsart reisen im Konto mit und werden auf dem PC beim Verbinden gesetzt. KI-Schlüssel bleiben auf dem Gerät.")
+        : t("Reihenfolge und Betriebsart reisen mit, sobald du im Konto angemeldet bist. KI-Schlüssel bleiben auf dem Gerät.")}</p>
       {roster && <><AiTiles online ai={o} /><AiRoster online ai={o} /></>}
       <section className="aim-mode" aria-label={t("So arbeiten die KIs zusammen")}>
         <b className="aim-modetitle">{t("So arbeiten die KIs zusammen")}</b>

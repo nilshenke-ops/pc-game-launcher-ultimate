@@ -6762,6 +6762,8 @@ export const en: Record<string, string> = {
   "Gedächtnis auf dem PC eingerichtet": "Memory set up on the PC",
   "Wetter-Ort auf dem PC eingerichtet": "Weather location set on the PC",
   "KI-Auswahl auf dem PC übernommen": "AI selection applied on the PC",
+  "Reihenfolge und Betriebsart reisen im Konto mit und werden auf dem PC beim Verbinden gesetzt. KI-Schlüssel bleiben auf dem Gerät.": "The order and the mode travel with the account and are set on the PC when it connects. AI keys stay on the device.",
+  "Reihenfolge und Betriebsart reisen mit, sobald du im Konto angemeldet bist. KI-Schlüssel bleiben auf dem Gerät.": "The order and the mode travel along as soon as you are signed in to the account. AI keys stay on the device.",
   "Ordner und Regeln": "Folder and rules",
   "Der PC hat sie beim letzten Verbinden übernommen: {w} ({t}).": "The PC took them over at the last connection: {w} ({t}).",
   "Beim letzten Verbinden hat der PC nicht geantwortet – der nächste Verbindungsaufbau versucht es erneut.": "The PC did not answer at the last connection – the next connection tries again.",
