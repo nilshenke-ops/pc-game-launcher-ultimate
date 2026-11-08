@@ -13,6 +13,8 @@ import { setFreeAiConsent, useFreeAiConsent } from "../lib/free-ai";
 import { AiSelfTest } from "./ai-selftest";
 import { AiRoster } from "./ai-roster";
 import { friendlyError } from "../lib/friendly-error";
+import { rememberAiChoice } from "../lib/ai-choice-sync";
+import { saveNow } from "../lib/design-account";
 import { AiTiles } from "./ai-tiles";
 import { elevenKeyLooksRight, removeLocalElevenKey, saveLocalElevenKey, testLocalEleven, LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
@@ -109,7 +111,7 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
 
   const run = async (id: string, fn: () => Promise<string | void>) => {
     setBusy(id); setMsg((m) => { const n = { ...m }; delete n[id]; return n; });
-    try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); st.reload(); onChanged?.(); }
+    try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); st.reload(); onChanged?.(); if (id === "order" || id === "strategy") void rememberAiChoice().then(() => saveNow()).catch(() => { /* the next change tries again */ }); }
     catch (e) { setMsg((m) => ({ ...m, [id]: { ok: false, text: friendlyError(e) } })); st.reload(); }
     finally { setBusy(null); }
   };

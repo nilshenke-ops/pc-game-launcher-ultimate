@@ -44,7 +44,7 @@ export function designOf(p: Prefs): Prefs {
  * Data of this browser that goes with the account besides the design (small, never device keys or PC access).
  * AI keys are deliberately NOT here: they stay sealed on this device and are only handed to the PC when it connects.
  */
-export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room", "pgl.memory", "pgl.homePlace"] as const;
+export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room", "pgl.memory", "pgl.homePlace", "pgl.aiChoice"] as const;
 
 export interface AccountData { prefs: Prefs; local: Record<string, unknown> }
 
