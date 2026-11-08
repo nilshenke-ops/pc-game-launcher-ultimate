@@ -334,6 +334,8 @@ public static class RpcApi
         rpc.Register("ai.test", async ctx => await s.Assistant.AiTestAsync(ctx.Str("provider", 20)));
         rpc.Register("ai.models", async ctx => await s.Assistant.AiModelsAsync(ctx.Str("provider", 20)));
         rpc.Register("assistant.configure", ctx => s.Assistant.Configure(ctx.Bind<Assistant.AssistantService.Config>(), ctx.Session.IsLocalAdmin));
+        // The home place from the account (the PC's own copy for weather questions) – set on the PC itself, without a dialog.
+        rpc.Register("assistant.homePlace", ctx => s.Assistant.SetHomePlace(ctx.OptStr("place", 80)));
 
         // ------------------------------------------------------------ GameQuest
         rpc.Register("quests.get", _ => s.Quests.Get());

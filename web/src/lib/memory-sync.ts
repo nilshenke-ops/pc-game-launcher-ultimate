@@ -10,12 +10,15 @@ import { toast } from "./hooks";
 export interface PcMemory { path?: string | null; enabled: boolean; writeEnabled: boolean; deleteEnabled: boolean; auto: MemorySettings["auto"] }
 
 /** The part of the connection this needs, so it can be tested without a PC. */
-export interface MemoryRpc {
+export interface AccountRpc {
   demo?: boolean;
   status: { phase: string; auth: string; me?: { isLocal?: boolean } | null };
   can(permission: string): boolean;
   call<T = unknown>(method: string, params?: unknown): Promise<T>;
 }
+
+/** Old name, kept so existing code and tests read the same. */
+export type MemoryRpc = AccountRpc;
 
 export type MemoryField = keyof MemorySettings;
 
@@ -80,16 +83,3 @@ export async function applyMemoryToPc(rpc: MemoryRpc = client, opts: ApplyMemory
   } finally { running = false; }
 }
 
-/** Runs once at start and then after every new sign-in to the PC and every account switch. */
-export function startMemoryAutoApply() {
-  const run = () => { void applyMemoryToPc(); };
-  if (client.status.auth === "ok") run();
-  const off = client.on("authenticated", run);
-  window.addEventListener("online", run);
-  window.addEventListener("pgl-account", run);
-  return () => {
-    off();
-    window.removeEventListener("online", run);
-    window.removeEventListener("pgl-account", run);
-  };
-}

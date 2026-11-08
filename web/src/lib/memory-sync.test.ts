@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import type { MemorySettings } from "./memory-config";
 import { applyMemoryToPc, memoryMismatch, resetMemorySync, sameMemoryPath, type MemoryRpc, type PcMemory } from "./memory-sync";
 
@@ -111,24 +111,5 @@ describe("automatisch auf den PC", () => {
     const [a, b] = await Promise.all([applyMemoryToPc(rpc, { quiet: true }, want()), applyMemoryToPc(rpc, { quiet: true }, want())]);
     expect([a, b].filter(Boolean)).toHaveLength(1);
     expect(calls.filter((c) => c.method === "memory.configure")).toHaveLength(1);
-  });
-});
-
-describe("startMemoryAutoApply", () => {
-  it("hängt sich an Anmeldung, online und Kontowechsel und räumt wieder auf", async () => {
-    const handlers: string[] = [];
-    const remove = vi.fn();
-    vi.stubGlobal("window", {
-      addEventListener: (e: string) => handlers.push(e),
-      removeEventListener: remove,
-      dispatchEvent: vi.fn(),
-    });
-    const { startMemoryAutoApply } = await import("./memory-sync");
-    const off = startMemoryAutoApply();
-    expect(handlers).toEqual(["online", "pgl-account"]);
-    off();
-    expect(remove).toHaveBeenCalledWith("online", expect.any(Function));
-    expect(remove).toHaveBeenCalledWith("pgl-account", expect.any(Function));
-    vi.unstubAllGlobals();
   });
 });

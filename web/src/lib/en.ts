@@ -6760,5 +6760,6 @@ export const en: Record<string, string> = {
   "Auf diesen PC übernehmen": "Apply on this PC",
   "Auf dem PC übernommen": "Applied on the PC",
   "Gedächtnis auf dem PC eingerichtet": "Memory set up on the PC",
+  "Wetter-Ort auf dem PC eingerichtet": "Weather location set on the PC",
   "Ohne PC ist hier nur das Einrichten möglich – gemerkt und nachgeschlagen wird erst, wenn der PC verbunden ist.": "Without the PC you can only set this up here – noting and looking up starts once the PC is connected.",
 };

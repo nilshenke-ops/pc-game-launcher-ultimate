@@ -132,6 +132,8 @@ public sealed class AssistantService
             examples = LocalAssistant.Examples,
             knowledgeSections = Data.Knowledge.Sections.Count,
             bingoAi = f.BingoAi,
+            // "" instead of null: the website tells by this field whether this companion knows the call at all.
+            homePlace = f.HomePlace ?? "",
             deepSeek = new { keySet = f.DeepSeekKeyProtected != null, model = f.DeepSeekModel, monthlyRequests = f.DeepSeekMonthlyRequests, used = month.DeepSeekRequests, inputTokens = month.DeepSeekInputTokens, outputTokens = month.DeepSeekOutputTokens },
             bingoProvider = BingoProviderName(f),
             search = new
@@ -144,6 +146,21 @@ public sealed class AssistantService
             engines = Engines(),
             webSearch = f.Mode == "claude" && f.KeyProtected != null,
         };
+    }
+
+    /// <summary>
+    /// The person's home place, as carried by the account: weather questions without a place use it. Set on the PC
+    /// itself when the website of the PC connects, so it does not have to be said again there.
+    /// </summary>
+    public object SetHomePlace(string? place)
+    {
+        var clean = place?.Trim();
+        if (clean is { Length: > 80 }) throw new RpcException("invalid-params", "Der Ort ist zu lang (höchstens 80 Zeichen).");
+        if (clean is { Length: 0 }) clean = null;
+        if (clean != null && clean.Any(char.IsControl)) throw new RpcException("invalid-params", "Ungültiger Ort.");
+        _store.Update(x => x.HomePlace = clean);
+        _hub.Changed("assistant");
+        return new { homePlace = clean ?? "" };
     }
 
     public sealed class Config

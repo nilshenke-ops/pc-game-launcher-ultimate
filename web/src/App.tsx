@@ -2,7 +2,7 @@ import { DesignPreviewBar } from "./components/design-preview-bar";
 import { Component, lazy, Suspense, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { getRoom, subscribeRoom } from "./lib/room";
 import { startDesignAutoSave } from "./lib/design-account";
-import { startMemoryAutoApply } from "./lib/memory-sync";
+import { startAccountAutoApply } from "./lib/account-auto";
 import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { DEMO_BUILD } from "./lib/demo-flag";
 import { AppShell } from "./components/AppShell";
@@ -104,7 +104,7 @@ function Gate() {
 
   // Also when the login already happened before this view existed (fast connection, texts still loading).
   useEffect(() => startDesignAutoSave(), []);
-  useEffect(() => startMemoryAutoApply(), []);
+  useEffect(() => startAccountAutoApply(), []);
   useEffect(() => { if (client.status.auth === "ok") void loadRemotePrefs(); return client.on("authenticated", () => { loadRemotePrefs(); }); }, []);
 
   // Without a logged-in PC the whole app is shown as a preview: example content, design and layout work locally,

@@ -55,6 +55,7 @@
     "assistant.bingoPlan": "view",
     "assistant.reset": "view",
     "assistant.configure": "admin",
+    "assistant.homePlace": "admin",
     "ai.status": "view",
     "ai.set": "admin",
     "ai.order": "admin",
