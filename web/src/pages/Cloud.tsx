@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Cloud, CloudOff, HardDrive, RefreshCw, ShieldCheck } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
@@ -17,9 +17,16 @@ export default function CloudPage() {
   const online = conn.phase === "online";
   const configured = cloudAccountConfigured();
   const endpoint = cloudApi();
-  const s = session();
-  const waiting = !!pendingBlob();
+  // The account panel below changes the session, so read it again whenever it reports a change.
+  const [s, setS] = useState(session);
+  const [waiting, setWaiting] = useState(() => !!pendingBlob());
   const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const refresh = () => { setS(session()); setWaiting(!!pendingBlob()); };
+    window.addEventListener("pgl-account", refresh);
+    window.addEventListener("storage", refresh);
+    return () => { window.removeEventListener("pgl-account", refresh); window.removeEventListener("storage", refresh); };
+  }, []);
 
   const sync = async () => {
     setBusy(true);
@@ -29,7 +36,7 @@ export default function CloudPage() {
       toast(t("Alles ist gespeichert."), "success");
     } catch (e) {
       toast((e as Error).message, "error");
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setS(session()); setWaiting(!!pendingBlob()); }
   };
 
   return (
