@@ -6761,5 +6761,9 @@ export const en: Record<string, string> = {
   "Auf dem PC übernommen": "Applied on the PC",
   "Gedächtnis auf dem PC eingerichtet": "Memory set up on the PC",
   "Wetter-Ort auf dem PC eingerichtet": "Weather location set on the PC",
+  "Ordner und Regeln": "Folder and rules",
+  "Beim letzten Verbinden hat der PC nicht geantwortet – der nächste Verbindungsaufbau versucht es erneut.": "The PC did not answer at the last connection – the next connection tries again.",
+  "Beim letzten Verbinden war auf dem PC schon alles gleich – nichts zu übernehmen.": "At the last connection the PC already had everything the same – nothing to take over.",
+  "Beim letzten Verbinden automatisch aus dem Konto übernommen: {w} ({t}).": "Taken over from the account automatically at the last connection: {w} ({t}).",
   "Ohne PC ist hier nur das Einrichten möglich – gemerkt und nachgeschlagen wird erst, wenn der PC verbunden ist.": "Without the PC you can only set this up here – noting and looking up starts once the PC is connected.",
 };

@@ -43,12 +43,23 @@ const tag = (m: MemorySettings) => [m.path, m.enabled, m.writeEnabled, m.deleteE
 let applied = "";   // what was already put on the PC in this session
 let running = false;
 
+/** What the last connection did with the account's memory settings (null = not tried yet). */
+export interface MemoryApplyResult { at: number; state: "applied" | "same" | "failed"; fields: MemoryField[] }
+let last: MemoryApplyResult | null = null;
+export const lastMemoryApply = () => last;
+
 /** Forgets what was applied (tests). */
-export function resetMemorySync() { applied = ""; running = false; }
+export function resetMemorySync() { applied = ""; running = false; last = null; }
 
 function announce() {
   if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
   window.dispatchEvent(new Event("pgl-memory"));
+}
+
+/** Keeps the outcome for the card ("what did the last connection take over?") and tells the views about it. */
+function record(state: MemoryApplyResult["state"], fields: MemoryField[] = []) {
+  last = { at: Date.now(), state, fields };
+  announce();
 }
 
 export interface ApplyMemoryOptions {
@@ -72,13 +83,15 @@ export async function applyMemoryToPc(rpc: MemoryRpc = client, opts: ApplyMemory
   running = true;
   try {
     const pc = await rpc.call<PcMemory>("memory.status");
-    if (!opts.force && memoryMismatch(want, pc).length === 0) { applied = now; return false; }
+    const missing = memoryMismatch(want, pc);
+    if (!opts.force && missing.length === 0) { applied = now; record("same"); return false; }
     await rpc.call("memory.configure", { path: want.path, enabled: want.enabled, writeEnabled: want.writeEnabled, deleteEnabled: want.deleteEnabled, auto: want.auto });
     applied = now;
-    announce();
+    record("applied", missing);
     if (!opts.quiet) toast(t("Gedächtnis auf dem PC eingerichtet"), "success");
     return true;
   } catch {
+    record("failed");
     return false;                                                  // PC not ready – the next connection tries again
   } finally { running = false; }
 }

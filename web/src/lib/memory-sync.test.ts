@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import type { MemorySettings } from "./memory-config";
-import { applyMemoryToPc, memoryMismatch, resetMemorySync, sameMemoryPath, type MemoryRpc, type PcMemory } from "./memory-sync";
+import { applyMemoryToPc, lastMemoryApply, memoryMismatch, resetMemorySync, sameMemoryPath, type AccountRpc, type PcMemory } from "./memory-sync";
 
 const PATH = "C:\\Users\\Test\\JARVIS-MEMORY";
 const want = (o: Partial<MemorySettings> = {}): MemorySettings => ({ path: PATH, enabled: true, writeEnabled: true, deleteEnabled: false, auto: "suggest", ...o });
@@ -10,7 +10,7 @@ interface Call { method: string; params?: unknown }
 
 function fake(pc: PcMemory | Error, opts: { local?: boolean; admin?: boolean; online?: boolean; failConfigure?: boolean } = {}) {
   const calls: Call[] = [];
-  const rpc: MemoryRpc = {
+  const rpc: AccountRpc = {
     status: { phase: opts.online === false ? "offline" : "online", auth: "ok", me: { isLocal: opts.local !== false } },
     can: () => opts.admin !== false,
     call: async (method: string, params?: unknown) => {
@@ -30,6 +30,17 @@ function fake(pc: PcMemory | Error, opts: { local?: boolean; admin?: boolean; on
 }
 
 beforeEach(() => resetMemorySync());
+
+describe("was der letzte Verbindungsaufbau gemeldet hat", () => {
+  it("ist am Anfang leer und wird beim Zurücksetzen wieder leer", async () => {
+    expect(lastMemoryApply()).toBeNull();
+    const { rpc } = fake(pcState({ path: "D:\\Vault" }));
+    await applyMemoryToPc(rpc, { quiet: true }, want());
+    expect(lastMemoryApply()?.state).toBe("applied");
+    resetMemorySync();
+    expect(lastMemoryApply()).toBeNull();
+  });
+});
 
 describe("was der PC noch nicht hat", () => {
   it("nichts, wenn alles gleich ist", () => {
@@ -59,12 +70,14 @@ describe("automatisch auf den PC", () => {
     expect(await applyMemoryToPc(rpc, { quiet: true }, want())).toBe(true);
     expect(calls.map((c) => c.method)).toEqual(["memory.status", "memory.configure"]);
     expect(calls[1].params).toEqual({ path: PATH, enabled: true, writeEnabled: true, deleteEnabled: false, auto: "suggest" });
+    expect(lastMemoryApply()).toMatchObject({ state: "applied", fields: ["path", "enabled"] });
   });
 
   it("lässt den PC in Ruhe, wenn schon alles stimmt", async () => {
     const { rpc, calls } = fake(pcState());
     expect(await applyMemoryToPc(rpc, { quiet: true }, want())).toBe(false);
     expect(calls.map((c) => c.method)).toEqual(["memory.status"]);
+    expect(lastMemoryApply()).toMatchObject({ state: "same", fields: [] });
   });
 
   it("macht nichts, solange im Konto kein Ordner steht", async () => {
@@ -88,6 +101,7 @@ describe("automatisch auf den PC", () => {
   it("versucht es beim nächsten Verbinden erneut, wenn der PC nicht antwortet", async () => {
     const broken = fake(new Error("keine Verbindung"));
     expect(await applyMemoryToPc(broken.rpc, { quiet: true }, want())).toBe(false);
+    expect(lastMemoryApply()?.state).toBe("failed");
     const ok = fake(pcState({ path: "D:\\Vault" }));
     expect(await applyMemoryToPc(ok.rpc, { quiet: true }, want())).toBe(true);
   });
