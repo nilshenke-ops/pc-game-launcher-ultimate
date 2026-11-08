@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Copy, KeyRound, LogIn, LogOut, Save, Trash2, UserPlus } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -25,6 +25,12 @@ export function AccountPanel({ onDone, forceForm }: { onDone?: () => void; /** S
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState("");
   const refresh = () => setS(session());
+  // Switching the account elsewhere (cloud page) must show up here as well.
+  useEffect(() => {
+    window.addEventListener("pgl-account", refresh);
+    window.addEventListener("storage", refresh);
+    return () => { window.removeEventListener("pgl-account", refresh); window.removeEventListener("storage", refresh); };
+  }, []);
   const u = user.trim().toLowerCase();
   const valid = USER_RX.test(u) && pw.length >= 8 && (mode === "login" || pw === pw2);
   // In cloud mode the PC may stay off; the account on the PC still needs the connection.
