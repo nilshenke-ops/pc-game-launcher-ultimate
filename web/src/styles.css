@@ -3014,3 +3014,96 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 .inbox-body { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 2px; }
 .inbox-main { overflow-wrap: anywhere; white-space: pre-wrap; }
 .inbox-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+/* ------------------------------------------------------------------ motion layer: the whole page breathes (2.9x)
+   Everything here only moves with transform, opacity, colour and shadow – the page never re-lays itself out.
+   "Weniger Bewegung" (data-motion="reduce") and prefers-reduced-motion switch all of it off globally above. */
+
+@keyframes m-rise { from { opacity: 0; transform: translateY(14px) scale(0.99); } }
+@keyframes m-rise-sm { from { opacity: 0; transform: translateY(8px); } }
+@keyframes m-slide-left { from { opacity: 0; transform: translateX(-18px); } }
+@keyframes m-pop-in { from { opacity: 0; transform: scale(0.94); } }
+@keyframes m-soft-glow { 0%, 100% { box-shadow: 0 0 0 rgba(var(--primary-rgb), 0); } 50% { box-shadow: 0 0 30px -8px rgba(var(--primary-rgb), 0.55); } }
+@keyframes m-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+@keyframes m-halo { from { opacity: 0.55; transform: scale(0.9); } to { opacity: 0; transform: scale(1.7); } }
+@keyframes m-blink-dot { 0%, 100% { transform: scale(1); opacity: 0.75; } 50% { transform: scale(1.4); opacity: 1; } }
+@keyframes m-breathe { 0%, 100% { opacity: 0.85; } 50% { opacity: 1; } }
+@keyframes m-sheen { from { transform: translateX(-130%) skewX(-18deg); } to { transform: translateX(240%) skewX(-18deg); } }
+@keyframes m-tilt-in { from { opacity: 0; transform: perspective(800px) rotateX(6deg) translateY(12px); } }
+@keyframes m-border-run { to { background-position: 200% 0; } }
+
+/* Every page fades its sections in, one after the other (main is remounted per route, so this runs on every page). */
+.content > * { animation: m-rise 0.45s var(--ease) both; }
+.content > *:nth-child(2) { animation-delay: 0.05s; }
+.content > *:nth-child(3) { animation-delay: 0.1s; }
+.content > *:nth-child(4) { animation-delay: 0.15s; }
+.content > *:nth-child(5) { animation-delay: 0.2s; }
+.content > *:nth-child(6) { animation-delay: 0.24s; }
+.content > *:nth-child(7) { animation-delay: 0.28s; }
+.content > *:nth-child(n + 8) { animation-delay: 0.3s; }
+.content > *:nth-child(n + 12) { animation-delay: 0.34s; }
+
+/* Lists, tiles and widgets come in a touch after the card that holds them. */
+.grid > *, .dash > *, .qa-grid > *, .lib-grid > *, .swatches > *, .prog-grid > *, .icon-pick > * { animation: m-rise-sm 0.4s var(--ease) both; }
+.grid > *:nth-child(2), .dash > *:nth-child(2), .qa-grid > *:nth-child(2), .lib-grid > *:nth-child(2) { animation-delay: 0.05s; }
+.grid > *:nth-child(3), .dash > *:nth-child(3), .qa-grid > *:nth-child(3), .lib-grid > *:nth-child(3) { animation-delay: 0.09s; }
+.grid > *:nth-child(4), .dash > *:nth-child(4), .qa-grid > *:nth-child(4), .lib-grid > *:nth-child(4) { animation-delay: 0.13s; }
+.grid > *:nth-child(5), .dash > *:nth-child(5), .qa-grid > *:nth-child(5), .lib-grid > *:nth-child(5) { animation-delay: 0.17s; }
+.grid > *:nth-child(n + 6), .dash > *:nth-child(n + 6), .qa-grid > *:nth-child(n + 6), .lib-grid > *:nth-child(n + 6) { animation-delay: 0.2s; }
+
+/* Cards lift under the pointer instead of just changing colour. */
+.card { transition: transform 0.22s var(--ease), box-shadow 0.3s var(--ease), border-color 0.25s var(--ease); }
+@media (hover: hover) {
+  .card:hover { transform: translateY(-2px); box-shadow: 0 20px 46px -24px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(var(--primary-rgb), 0.16); }
+  .qa-tile:hover, .game-card:hover, .pad:hover { transform: translateY(-4px) scale(1.01); }
+  .nav-link:hover { transform: translateX(2px); }
+  .chip:not(:disabled):hover { transform: translateY(-1px); }
+  .badge.ok { animation: m-breathe 3.6s ease-in-out infinite; }
+}
+.nav-link { transition: transform 0.18s var(--ease), background 0.18s var(--ease), color 0.18s var(--ease); }
+
+/* Buttons answer the press. */
+.btn { transition: transform 0.12s var(--ease), box-shadow 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease); }
+.btn:active:not(:disabled) { transform: translateY(1px) scale(0.985); }
+@media (hover: hover) { .btn:not(:disabled):hover { box-shadow: 0 10px 26px -16px rgba(var(--primary-rgb), 0.8); } }
+
+/* Soft glow on things that are alive: live badges, playing pads, the JARVIS orb. */
+.pad.playing, .pill.live, .conn-pill.ok { animation: m-soft-glow 3.2s ease-in-out infinite; }
+.state-icon { animation: m-pop-in 0.4s var(--ease) both, m-soft-glow 4.4s ease-in-out 0.4s infinite; }
+.meter > i { background-size: 220% 100%; }
+
+/* Rows of a table/list ease in and slide a little when hovered. */
+.log div, .check-row, .settings-nav button, .palette-item { transition: background 0.18s var(--ease), transform 0.18s var(--ease), color 0.18s var(--ease); }
+@media (hover: hover) { .palette-item:hover { transform: translateX(2px); } }
+
+/* ---------------------------------------------------------------- island: more life
+   The island keeps its own colours per mood; these add breathing, glow, panel entry and a hover response. */
+.isl-pill { transition: transform 0.2s var(--ease), filter 0.25s var(--ease); }
+@media (hover: hover) { .isl:hover .isl-pill { transform: translateY(-0.5px); } .isl-eyes i { transition: transform 0.18s var(--ease); } .isl-eyes:hover i { transform: scale(1.12); } }
+.isl.m-happy { animation: isl-glow 1s var(--ease); }
+.isl.m-asking { animation: isl-glow-amber 1.6s ease-in-out infinite; }
+.isl.m-thinking .isl-eyes i, .isl.m-listening .isl-eyes i { filter: drop-shadow(0 0 10px var(--isl-c, #8fd8ff)); }
+.isl-robot { animation: m-float 7s ease-in-out infinite; }
+.isl-panel > * { animation: m-rise-sm 0.36s var(--ease) both; }
+.isl-panel > *:nth-child(2) { animation-delay: 0.06s; }
+.isl-panel > *:nth-child(3) { animation-delay: 0.11s; }
+.isl-panel > *:nth-child(4) { animation-delay: 0.16s; }
+.isl-panel > *:nth-child(n + 5) { animation-delay: 0.2s; }
+.isl-card { transition: transform 0.2s var(--ease), background 0.2s var(--ease), border-color 0.2s var(--ease); }
+@media (hover: hover) { .isl-card:hover { transform: translateY(-1.5px); background: rgba(255, 255, 255, 0.07); } }
+.isl-bars i { animation: m-blink-dot 1.4s ease-in-out infinite; }
+.isl-bars i:nth-child(2) { animation-delay: 0.12s; }
+.isl-bars i:nth-child(3) { animation-delay: 0.24s; }
+.isl-bars i:nth-child(4) { animation-delay: 0.36s; }
+.isl-bars i:nth-child(5) { animation-delay: 0.48s; }
+.isl-confetti i { animation: isl-confetti 0.9s ease-out forwards; }
+@keyframes isl-glow { 0% { box-shadow: inset 0 0 0 rgba(110, 231, 160, 0); } 40% { box-shadow: inset 0 0 40px -12px rgba(110, 231, 160, 0.55); } 100% { box-shadow: inset 0 0 0 rgba(110, 231, 160, 0); } }
+@keyframes isl-glow-amber { 0%, 100% { box-shadow: inset 0 0 0 rgba(245, 181, 68, 0); } 50% { box-shadow: inset 0 0 30px -12px rgba(245, 181, 68, 0.5); } }
+@keyframes isl-confetti { from { opacity: 1; transform: rotate(var(--a, 0deg)) translateY(0) scale(1); } to { opacity: 0; transform: rotate(var(--a, 0deg)) translateY(var(--d, 30px)) scale(0.4); } }
+
+/* Small screens: fewer, shorter moves – a phone should feel quick, not busy. */
+@media (max-width: 640px) {
+  .content > * { animation-duration: 0.34s; }
+  .content > *:nth-child(n + 4) { animation-delay: 0.12s; }
+  .grid > *, .dash > *, .qa-grid > *, .lib-grid > * { animation-duration: 0.3s; }
+}
