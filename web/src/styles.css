@@ -3107,3 +3107,33 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
   .content > *:nth-child(n + 4) { animation-delay: 0.12s; }
   .grid > *, .dash > *, .qa-grid > *, .lib-grid > * { animation-duration: 0.3s; }
 }
+
+/* ================================================================== 3.0: the island never sits on text
+   On phones the pill floats in the middle of the title bar. The page title used to run underneath it (\"JARV…\"),
+   so it now gives the pill that space; every other place in the bar stays untouched. */
+@media (max-width: 899px) {
+  .main:has(> .isl-float) .topbar .title { display: none; }
+  .main:has(> .isl-float) .topbar .spacer { min-width: 0; }
+}
+
+/* Scrolled page text must not shine through the title bar. The glass designs made it nearly transparent on phones,
+   which looked like two texts on top of each other. */
+@media (max-width: 899px) {
+  :root[data-surface] .topbar,
+  :root[data-surface] .topbar.scrolled,
+  :root[data-surface="glass"] .topbar,
+  :root[data-surface="glass"] .topbar.scrolled,
+  :root[data-surface="clear"] .topbar,
+  :root[data-surface="clear"] .topbar.scrolled,
+  :root[data-surface="soft"] .topbar { background: color-mix(in srgb, var(--bg) 88%, rgb(var(--surface-rgb))); }
+}
+
+/* Wide screens: the search field stops before the middle so the island always has its free slot. */
+@media (min-width: 900px) {
+  .topbar .search-trigger { max-width: min(460px, calc(50% - 150px)); }
+}
+
+/* The floating island itself: keep its own text inside the pill, never over the neighbours. */
+.isl-float { max-width: calc(100vw - 24px); }
+.isl-float .isl-host.floating { max-width: 100%; }
+.isl-float .isl-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
