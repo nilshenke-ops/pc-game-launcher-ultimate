@@ -5,7 +5,6 @@ import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { applyDesignCode, cloudMode, createProfile, cryptoAvailable, deleteProfile, designCode, saveNow, session, signIn, signOut, USER_RX } from "../lib/design-account";
-import { CLOUD_EMAIL_RX, cloudEmail } from "../lib/cloud-account";
 import { Banner, Button, Card, confirmDialog, Field, Segmented } from "./ui";
 
 /** Account (cloud, or the PC when no cloud is configured) and the design code – to take the own data elsewhere. */
@@ -26,9 +25,8 @@ export function AccountPanel({ onDone }: { onDone?: () => void }) {
   const [busy, setBusy] = useState(false);
   const [code, setCode] = useState("");
   const refresh = () => setS(session());
-  const u = cloud ? cloudEmail(user) : user.trim().toLowerCase();
-  const nameValid = cloud ? CLOUD_EMAIL_RX.test(u) : USER_RX.test(u);
-  const valid = nameValid && pw.length >= 8 && (mode === "login" || pw === pw2);
+  const u = user.trim().toLowerCase();
+  const valid = USER_RX.test(u) && pw.length >= 8 && (mode === "login" || pw === pw2);
   // In cloud mode the PC may stay off; the account on the PC still needs the connection.
   const allowed = cloud || online;
 
@@ -48,7 +46,7 @@ export function AccountPanel({ onDone }: { onDone?: () => void }) {
           : s ? (
             <div className="stack-sm">
               <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-                <span><b>{s.email ?? s.user}</b> <span className="tiny muted">{s.savedAt ? t("· gespeichert {d}", { d: relTime(s.savedAt) }) : ""}</span></span>
+                <span><b>{s.user}</b> <span className="tiny muted">{s.savedAt ? t("· gespeichert {d}", { d: relTime(s.savedAt) }) : ""}</span></span>
                 <div className="row" style={{ gap: 6 }}>
                   <Button size="sm" icon={<Save size={14} />} busy={busy} disabled={!s.cloud && !online} onClick={() => void run(saveNow, t("Daten im Konto gespeichert"))}>{t("Jetzt speichern")}</Button>
                   <Button size="sm" variant="ghost" icon={<LogOut size={14} />} onClick={() => { signOut(); refresh(); window.dispatchEvent(new Event("pgl-account")); }}>{t("Abmelden")}</Button>
@@ -57,13 +55,13 @@ export function AccountPanel({ onDone }: { onDone?: () => void }) {
               <p className="tiny muted" style={{ margin: 0 }}>{s.cloud
                 ? t("Änderungen werden automatisch in der Cloud gespeichert – auch wenn dein PC aus ist.")
                 : t("Änderungen werden automatisch ins Konto gespeichert, sobald der PC verbunden ist.")}</p>
-              <Button size="sm" variant="danger" icon={<Trash2 size={14} />} disabled={!s.cloud && !online} onClick={async () => { if (await confirmDialog(t("Konto löschen?"), s.cloud ? t("Das Konto „{u}“ wird aus der Cloud gelöscht. Die Daten auf diesem Gerät bleiben.", { u: s.email ?? s.user }) : t("Das Konto „{u}“ wird vom PC gelöscht. Die Daten auf diesem Gerät bleiben.", { u: s.user }), { danger: true, ok: t("Löschen") })) void run(deleteProfile, t("Konto gelöscht")); }}>{t("Konto löschen")}</Button>
+              <Button size="sm" variant="danger" icon={<Trash2 size={14} />} disabled={!s.cloud && !online} onClick={async () => { if (await confirmDialog(t("Konto löschen?"), s.cloud ? t("Das Konto „{u}“ wird aus der Cloud gelöscht. Die Daten auf diesem Gerät bleiben.", { u: s.user }) : t("Das Konto „{u}“ wird vom PC gelöscht. Die Daten auf diesem Gerät bleiben.", { u: s.user }), { danger: true, ok: t("Löschen") })) void run(deleteProfile, t("Konto gelöscht")); }}>{t("Konto löschen")}</Button>
             </div>
           ) : (
             <form className="stack-sm" onSubmit={(e) => { e.preventDefault(); if (!valid || !allowed) return; void run(() => (mode === "login" ? signIn(u, pw) : createProfile(u, pw)), mode === "login" ? t("Angemeldet – deine Daten sind geladen") : t("Konto angelegt – deine Daten sind gespeichert")); }}>
               <Segmented value={mode} onChange={setMode} label={t("Konto")} options={[{ value: "login", label: t("Anmelden") }, { value: "create", label: t("Registrieren") }]} />
-              <Field label={cloud ? t("E-Mail") : t("Benutzername")} hint={cloud ? t("Mit dieser E-Mail meldest du dich auf jedem Gerät an.") : t("3–24 Zeichen: a–z, Ziffern, Punkt, Minus, Unterstrich")} error={user && !nameValid ? (cloud ? t("Ungültige E-Mail-Adresse") : t("Ungültiger Benutzername")) : undefined}>
-                <input className="input" value={user} maxLength={cloud ? 120 : 24} type={cloud ? "email" : "text"} autoComplete={cloud ? "email" : "username"} autoCapitalize="none" spellCheck={false} onChange={(e) => setUser(e.target.value)} />
+              <Field label={t("Benutzername")} hint={cloud ? t("Mit diesem Namen meldest du dich auf jedem Gerät an.") : t("3–24 Zeichen: a–z, Ziffern, Punkt, Minus, Unterstrich")} error={user && !USER_RX.test(u) ? t("Ungültiger Benutzername") : undefined}>
+                <input className="input" value={user} maxLength={24} autoComplete="username" autoCapitalize="none" spellCheck={false} onChange={(e) => setUser(e.target.value)} />
               </Field>
               <Field label={t("Passwort")} hint={t("Mindestens 8 Zeichen. Vergessen = Design nicht wiederherstellbar (es ist verschlüsselt).")}>
                 <input className="input" type="password" value={pw} autoComplete={mode === "login" ? "current-password" : "new-password"} onChange={(e) => setPw(e.target.value)} />
@@ -74,7 +72,6 @@ export function AccountPanel({ onDone }: { onDone?: () => void }) {
               <Button type="submit" variant="primary" icon={mode === "login" ? <LogIn size={15} /> : <UserPlus size={15} />} busy={busy} disabled={!valid || !allowed}>{mode === "login" ? t("Anmelden") : t("Konto anlegen")}</Button>
               {!cloud && <Banner kind="info">{t("Cloud-Speicherung ist in dieser App-Version nicht eingerichtet. Deshalb liegt das Konto auf deinem PC.")}</Banner>}
               {!cloud && !online && <Banner kind="info">{t("Dein Konto liegt verschlüsselt auf deinem PC – es gibt keinen fremden Server. Verbinde diesen Browser deshalb einmal mit deinem PC, dann kannst du dich registrieren oder anmelden. Ganz ohne PC: Design-Code unten.")} <Link to="/connect" onClick={() => onDone?.()}>{t("PC verbinden")}</Link></Banner>}
-              {cloud && <p className="tiny muted" style={{ margin: 0 }}>{t("Bei der Registrierung kann eine Bestätigung per E-Mail nötig sein – danach meldest du dich hier an.")}</p>}
             </form>
           )}
         <details>

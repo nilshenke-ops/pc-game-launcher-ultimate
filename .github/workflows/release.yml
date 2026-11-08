@@ -49,9 +49,8 @@ jobs:
       - name: Web-Tests und Builds
         working-directory: web
         env:
-          # Public Supabase values only (anon key) – without them the build keeps the account on the PC.
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          # Address of the cloud account service – without it the build keeps the account on the PC.
+          VITE_CLOUD_API: ${{ secrets.VITE_CLOUD_API }}
         run: |
           npm ci
           npm test
@@ -80,8 +79,7 @@ jobs:
       - name: Web-App in Companion einbetten
         working-directory: web
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_CLOUD_API: ${{ secrets.VITE_CLOUD_API }}
         run: |
           npm ci
           npm run build

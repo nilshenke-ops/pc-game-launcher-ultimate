@@ -1,11 +1,11 @@
-// Account: e-mail + password carry the own data to another browser/device. Two variants:
-//  • Cloud (configured build): Supabase Auth signs in even when the user's PC is off; the encrypted data lives in the cloud.
+// Account: user name + password carry the own data to another browser/device. Two variants:
+//  • Cloud (configured build): our own API on Cloudflare Workers + D1 answers even when the user's PC is off.
 //  • PC (no cloud configured): the companion keeps the account – that needs the PC, said plainly in the UI.
 // In both cases the browser derives two keys from the password (PBKDF2): one to sign in, one to encrypt (AES-GCM).
 // The password itself never leaves the device, and neither the PC nor the cloud can read the stored data.
 import { client, readJson, writeJson } from "./rpc";
 import {
-  cloudAccountConfigured, cloudDelete, cloudEmail, cloudLoad, cloudSave, cloudSignIn, cloudSignOut, cloudSignUp,
+  cloudAccountConfigured, cloudDelete, cloudLoad, cloudRegister, cloudSave, cloudSignOut,
   pendingBlob, setPendingBlob,
 } from "./cloud-account";
 import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
@@ -15,7 +15,7 @@ const ITERATIONS = 250_000;
 const KEY = "pgl.designAccount";
 export const USER_RX = /^[a-z0-9._-]{3,24}$/;
 
-export interface DesignSession { user: string; auth: string; enc: string; savedAt?: number; /** Cloud account: the e-mail it was created with. */ email?: string; cloud?: boolean }
+export interface DesignSession { user: string; auth: string; enc: string; savedAt?: number; /** Stored in the cloud instead of on the PC. */ cloud?: boolean }
 
 const b64 = (b: ArrayBuffer | Uint8Array) => { const u = b instanceof Uint8Array ? b : new Uint8Array(b); let s = ""; for (const x of u) s += String.fromCharCode(x); return btoa(s); };
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
@@ -73,11 +73,6 @@ const store = (s: DesignSession | null) => writeJson(KEY, s);
 /** True when this build has a cloud backend: signing in no longer needs the PC. */
 export const cloudMode = () => cloudAccountConfigured();
 
-/** Part of the e-mail before the @ – shown as the name on the home screen. */
-function displayName(email: string) {
-  return email.split("@")[0].replace(/[^a-z0-9._-]/gi, "").slice(0, 24) || "konto";
-}
-
 /** Puts the decrypted data on this device. Called only after every step that can fail has succeeded. */
 function applyData(data: AccountData) {
   replacePrefs({ ...data.prefs, theme: { ...data.prefs.theme, bgImage: data.prefs.theme.bgImage ?? getPrefs().theme.bgImage } });
@@ -86,18 +81,15 @@ function applyData(data: AccountData) {
 }
 
 export async function createProfile(userIn: string, password: string) {
+  const user = userIn.trim().toLowerCase();
   if (cloudAccountConfigured()) {
-    const email = cloudEmail(userIn);
-    const k = await deriveKeys(email, password);
-    const acc = await cloudSignUp(email, password);
-    store({ user: displayName(acc.email), email: acc.email, auth: "", enc: k.enc, savedAt: Date.now(), cloud: true });
-    // The account exists now; a failed first save stays as a local pending copy instead of losing the design.
+    const k = await deriveKeys(user, password);
     const blob = await encryptDesign(k.enc, getPrefs());
-    try { await cloudSave(blob); setPendingBlob(null); }
-    catch (e) { setPendingBlob(blob); throw e; }
+    await cloudRegister(user, k.auth, blob);               // taken name ends here – nothing local changes
+    setPendingBlob(null);
+    store({ user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
     return;
   }
-  const user = userIn.trim().toLowerCase();
   const k = await deriveKeys(user, password);
   await client.call("design.create", { user, key: k.auth, blob: await encryptDesign(k.enc, getPrefs()) });
   store({ user, ...k, savedAt: Date.now() });
@@ -105,19 +97,22 @@ export async function createProfile(userIn: string, password: string) {
 
 /** Signs in and puts the stored data on this browser. A failure leaves the data here untouched. */
 export async function signIn(userIn: string, password: string) {
-  if (cloudAccountConfigured()) {
-    const email = cloudEmail(userIn);
-    await cloudSignIn(email, password);                     // wrong password ends here
-    const remote = await cloudLoad();
-    const k = await deriveKeys(email, password);
-    const data = remote ? await decryptDesign(k.enc, remote.blob) : null; // a wrong key ends here as well
-    if (data) applyData(data);
-    store({ user: displayName(email), email, auth: "", enc: k.enc, savedAt: Date.now(), cloud: true });
-    if (!data) await saveNow();                             // new cloud account: take the design of this device along
-    await flushPending().catch(() => { /* next change tries again */ });
-    return;
-  }
   const user = userIn.trim().toLowerCase();
+  if (cloudAccountConfigured()) {
+    const k = await deriveKeys(user, password);
+    try {
+      const remote = await cloudLoad(user, k.auth);         // wrong name/key ends here
+      const data = remote ? await decryptDesign(k.enc, remote.blob) : null; // a wrong key ends here as well
+      if (data) applyData(data);
+      store({ user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
+      if (!data) await saveNow();                          // new cloud account: take the design of this device along
+      await flushPending().catch(() => { /* next change tries again */ });
+      return;
+    } catch (e) {
+      // Accounts made before the cloud still live on the PC: an unknown name there is tried on the connected PC once.
+      if (!/falsch/i.test((e as Error).message) || client.status.auth !== "ok") throw e;
+    }
+  }
   const k = await deriveKeys(user, password);
   const r = await client.call<{ blob: string; updatedAt: string }>("design.load", { user, key: k.auth });
   const { prefs: design, local } = await decryptDesign(k.enc, r.blob);
@@ -133,7 +128,7 @@ export async function saveNow() {
   if (!s) return;
   const blob = await encryptDesign(s.enc, getPrefs());
   if (s.cloud) {
-    try { await cloudSave(blob); setPendingBlob(null); }
+    try { await cloudSave(s.user, s.auth, blob); setPendingBlob(null); }
     catch (e) { setPendingBlob(blob); throw e; }            // kept on this device, sent at the next opportunity
     store({ ...s, savedAt: Date.now() });
     return;
@@ -142,12 +137,12 @@ export async function saveNow() {
   store({ ...s, savedAt: Date.now() });
 }
 
-/** Sends a change that was made while the cloud was unreachable – only after a verified sign-in. */
+/** Sends a change that was made while the cloud was unreachable. */
 export async function flushPending() {
   const s = session();
   const blob = pendingBlob();
   if (!s?.cloud || !blob) return;
-  await cloudSave(blob);
+  await cloudSave(s.user, s.auth, blob);
   setPendingBlob(null);
   store({ ...s, savedAt: Date.now() });
 }
@@ -155,7 +150,13 @@ export async function flushPending() {
 export async function deleteProfile() {
   const s = session();
   if (!s) return;
-  if (s.cloud) { await cloudDelete(); setPendingBlob(null); store(null); return; }
+  if (s.cloud) {
+    try { await cloudDelete(s.user, s.auth); } catch (e) {
+      // Already gone in the cloud: then only forget it here.
+      if (!/falsch|abgelehnt|nicht eingerichtet/i.test((e as Error).message)) throw e;
+    }
+    setPendingBlob(null); store(null); return;
+  }
   await client.call("design.delete", { user: s.user, key: s.auth });
   store(null);
 }

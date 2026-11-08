@@ -85,7 +85,7 @@ Unter Windows ohne Bash: `powershell -ExecutionPolicy Bypass -File scripts\publi
 - **GameQuest:** eigene Ziele, XP, Level und Erfolge aus der erkannten Spielzeit; Siege und Matches trägst du selbst ein (die App liest keine Spielstatistiken aus).
 - **KI-Assistent:** kennt die ganze App und deinen PC; lokal ohne Internet für 0 €, optional mit einem freien Sprachmodell auf dem PC (Ollama, 0 €) oder mit Claude (eigener Schlüssel, kostenpflichtig). Aktionen nur als Knopf zum Antippen.
 - **Deal Radar:** Wunschliste mit Zielpreis; Preise aus dem Steam-Shop, nur wenn eingeschaltet, mit Benachrichtigung bei Erreichen.
-- **Konto & Cloud:** optional mit E-Mail und Passwort – Design, Startseite, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung liegen verschlüsselt in der Cloud (Supabase), damit Anmelden und Synchronisieren auch bei ausgeschaltetem PC funktionieren. Spiele, PC-Steuerung und Kalender bleiben am PC; die Cloud-Anmeldung gibt keine Rechte am PC. Einrichtung: [INSTALLATION.md](INSTALLATION.md), Abschnitt 5.
+- **Konto & Cloud:** optional mit Benutzername und Passwort – Design, Startseite, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung liegen verschlüsselt in einem eigenen Cloudflare-Dienst (Worker + D1), damit Anmelden und Synchronisieren auch bei ausgeschaltetem PC funktionieren. Spiele, PC-Steuerung und Kalender bleiben am PC; die Cloud-Anmeldung gibt keine Rechte am PC. Details: [docs/CLOUD-KONTO.md](docs/CLOUD-KONTO.md).
 - **Navigation** in Kategorien, anpassbar (Reihenfolge, Ausblenden, Handy-Leiste).
 - **Plugins** (Widgets, Aktionen, Themes) aus einem signierten Katalog, ohne Code auf dem PC.
 

@@ -57,7 +57,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 | Ausgaben für Spiele (Betrag, Spiel, Datum – nur deine Angaben, keine Shop-Konten) | `journal.json` (Art „spend“) und im Browser des Geräts | Spiele-Journal → Ausgaben → Löschen |
 | Gamer-Pass: Name und Symbol | nur im Browser des Geräts (`localStorage`, `pgl.gamerpass`) | Feld leeren oder Browserdaten löschen |
 | Konten auf dem PC: Benutzername, Hash des Anmelde-Schlüssels, **verschlüsseltes** Design samt Gamer-Pass/Zähler/Pausen-Erinnerung (der PC kann es nicht lesen; das Passwort wird nie übertragen) | `design-accounts.json` | Einstellungen → Design → Profil löschen, oder Datei löschen |
-| Konto in der Cloud (optional): E-Mail-Adresse und **verschlüsseltes** Design samt Gamer-Pass/Zähler/Pausen-Erinnerung; der Anbieter kann es nicht lesen, das Passwort wird nie übertragen | Supabase-Projekt (siehe [CLOUD-KONTO.md](CLOUD-KONTO.md)) | Konto in der App löschen, oder Zeile/Projekt im Supabase-Dashboard löschen |
+| Konto in der Cloud (optional): Benutzername, Hash des Anmelde-Schlüssels und **verschlüsseltes** Design samt Gamer-Pass/Zähler/Pausen-Erinnerung (der Dienst kann es nicht lesen; das Passwort wird nie übertragen); zusätzlich Fehlversuche je Name und IP für 15 Minuten | Cloudflare D1 des eigenen Cloud-Kontos (siehe [CLOUD-KONTO.md](CLOUD-KONTO.md)) | Konto in der App löschen, oder das Sites-Projekt „Nexus Cloud-Konto“ entfernen |
 | Widgets Zähler/Pausen-Erinnerung, vom Handy geprüfte Xbox-Preise | nur im Browser des Geräts (`pgl.widget.*`, `pgl.deals.ms`) | Browserdaten löschen |
 | OpenRGB-Verbindung (Adresse, Port) | `rgb.json` | Datei löschen |
 | Plugins | `plugins\` | Plugin Center → Entfernen |
@@ -70,7 +70,7 @@ Die Daten liegen im Datenordner `%APPDATA%\PCGameLauncherUltimate`. Der Name ist
 
 - **Gerätekennung und Geräteschlüssel** (Browser-Speicher). Wer das Gerät entsperrt benutzt, kann damit den PC steuern. Ein verlorenes Gerät deshalb am PC unter „Geräte“ entfernen.
 - **Design, Layouts, Navigation, Sprache.** Diese Daten liegen zusätzlich auf dem PC, damit sie mit dem Gerät mitwandern.
-- **Cloud-Konto (optional):** Anmelde-Sitzung (Refresh-Token) und Datenschlüssel im Browser-Speicher, damit du angemeldet bleibst; das Passwort wird nicht gespeichert. „Abmelden“ entfernt beides.
+- **Cloud-Konto (optional):** Benutzername, Anmelde-Schlüssel und Datenschlüssel im Browser-Speicher, damit du angemeldet bleibst; das Passwort wird nicht gespeichert. „Abmelden“ entfernt sie.
 - **Zugangscode der Webseite:** nur als gesalzener Hash. Er ist eine Sichtsperre, kein Schutz des PCs.
 - **Zwischenspeicher für den Offline-Betrieb:** Listen (Bibliothek, Sounds, Profile …), wartende Änderungen, noch nicht übertragene Sounds und Plugin-Dateien.
   - Ein OBS-Passwort, das offline eingegeben wurde, wartet hier **unverschlüsselt**, bis der PC es übernimmt.

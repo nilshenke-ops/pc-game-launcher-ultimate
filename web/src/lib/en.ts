@@ -6722,4 +6722,11 @@ export const en: Record<string, string> = {
   "Zu viele Versuche – bitte kurz warten und erneut probieren.": "Too many attempts – please wait a moment and try again.",
   "unbekannter Fehler": "unknown error",
   "Änderungen werden automatisch in der Cloud gespeichert – auch wenn dein PC aus ist.": "Changes are saved to the cloud automatically – even when your PC is off.",
+  "Benutzername oder Passwort falsch.": "User name or password is wrong.",
+  "Diesen Benutzernamen gibt es schon – bitte anmelden.": "This user name already exists – please sign in.",
+  "Zu viele Versuche – bitte in 15 Minuten wieder probieren.": "Too many attempts – please try again in 15 minutes.",
+  "Die Cloud hat die Anfrage abgelehnt.": "The cloud rejected the request.",
+  "Die Cloud hat die Anfrage abgelehnt: {m}": "The cloud rejected the request: {m}",
+  "Der Cloud-Dienst hatte einen Fehler – bitte später erneut probieren.": "The cloud service had an error – please try again later.",
+  "Mit diesem Namen meldest du dich auf jedem Gerät an.": "You sign in with this name on every device.",
 };
