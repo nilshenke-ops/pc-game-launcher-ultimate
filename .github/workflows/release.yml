@@ -48,6 +48,10 @@ jobs:
           cache-dependency-path: web/package-lock.json
       - name: Web-Tests und Builds
         working-directory: web
+        env:
+          # Public Supabase values only (anon key) – without them the build keeps the account on the PC.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           npm ci
           npm test
@@ -75,6 +79,9 @@ jobs:
           dotnet-version: 8.0.x
       - name: Web-App in Companion einbetten
         working-directory: web
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
           npm ci
           npm run build

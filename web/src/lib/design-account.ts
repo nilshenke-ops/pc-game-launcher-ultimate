@@ -1,7 +1,13 @@
-// Design profile: user name + password carry the own design (colors, background, home layouts, bottom bar …) to another
-// browser. End-to-end encrypted: the browser derives two keys from the password (PBKDF2) – one to sign in, one to
-// encrypt the design (AES-GCM). The PC only stores a hash of the first and the encrypted design.
+// Account: e-mail + password carry the own data to another browser/device. Two variants:
+//  • Cloud (configured build): Supabase Auth signs in even when the user's PC is off; the encrypted data lives in the cloud.
+//  • PC (no cloud configured): the companion keeps the account – that needs the PC, said plainly in the UI.
+// In both cases the browser derives two keys from the password (PBKDF2): one to sign in, one to encrypt (AES-GCM).
+// The password itself never leaves the device, and neither the PC nor the cloud can read the stored data.
 import { client, readJson, writeJson } from "./rpc";
+import {
+  cloudAccountConfigured, cloudDelete, cloudEmail, cloudLoad, cloudSave, cloudSignIn, cloudSignOut, cloudSignUp,
+  pendingBlob, setPendingBlob,
+} from "./cloud-account";
 import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
 
@@ -9,7 +15,7 @@ const ITERATIONS = 250_000;
 const KEY = "pgl.designAccount";
 export const USER_RX = /^[a-z0-9._-]{3,24}$/;
 
-export interface DesignSession { user: string; auth: string; enc: string; savedAt?: number }
+export interface DesignSession { user: string; auth: string; enc: string; savedAt?: number; /** Cloud account: the e-mail it was created with. */ email?: string; cloud?: boolean }
 
 const b64 = (b: ArrayBuffer | Uint8Array) => { const u = b instanceof Uint8Array ? b : new Uint8Array(b); let s = ""; for (const x of u) s += String.fromCharCode(x); return btoa(s); };
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
@@ -17,7 +23,7 @@ const hex = (b: Uint8Array) => [...b].map((x) => x.toString(16).padStart(2, "0")
 
 export const cryptoAvailable = () => typeof crypto !== "undefined" && !!crypto.subtle;
 
-/** Login key (hex, sent to the PC) and encryption key (stays here) from user name + password. */
+/** Login key (hex) and encryption key (stays here) from the account name + password. */
 export async function deriveKeys(user: string, password: string): Promise<{ auth: string; enc: string }> {
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
   const bits = new Uint8Array(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: new TextEncoder().encode("nexus-design-v1:" + user.toLowerCase()), iterations: ITERATIONS }, base, 512));
@@ -64,15 +70,53 @@ export async function decryptDesign(enc: string, blob: string): Promise<AccountD
 export const session = () => readJson<DesignSession>(KEY);
 const store = (s: DesignSession | null) => writeJson(KEY, s);
 
+/** True when this build has a cloud backend: signing in no longer needs the PC. */
+export const cloudMode = () => cloudAccountConfigured();
+
+/** Part of the e-mail before the @ – shown as the name on the home screen. */
+function displayName(email: string) {
+  return email.split("@")[0].replace(/[^a-z0-9._-]/gi, "").slice(0, 24) || "konto";
+}
+
+/** Puts the decrypted data on this device. Called only after every step that can fail has succeeded. */
+function applyData(data: AccountData) {
+  replacePrefs({ ...data.prefs, theme: { ...data.prefs.theme, bgImage: data.prefs.theme.bgImage ?? getPrefs().theme.bgImage } });
+  for (const key of ACCOUNT_KEYS) if (key in data.local) writeJson(key, data.local[key]);
+  reloadRoom();
+}
+
 export async function createProfile(userIn: string, password: string) {
+  if (cloudAccountConfigured()) {
+    const email = cloudEmail(userIn);
+    const k = await deriveKeys(email, password);
+    const acc = await cloudSignUp(email, password);
+    store({ user: displayName(acc.email), email: acc.email, auth: "", enc: k.enc, savedAt: Date.now(), cloud: true });
+    // The account exists now; a failed first save stays as a local pending copy instead of losing the design.
+    const blob = await encryptDesign(k.enc, getPrefs());
+    try { await cloudSave(blob); setPendingBlob(null); }
+    catch (e) { setPendingBlob(blob); throw e; }
+    return;
+  }
   const user = userIn.trim().toLowerCase();
   const k = await deriveKeys(user, password);
   await client.call("design.create", { user, key: k.auth, blob: await encryptDesign(k.enc, getPrefs()) });
   store({ user, ...k, savedAt: Date.now() });
 }
 
-/** Signs in and puts the stored design on this browser. */
+/** Signs in and puts the stored data on this browser. A failure leaves the data here untouched. */
 export async function signIn(userIn: string, password: string) {
+  if (cloudAccountConfigured()) {
+    const email = cloudEmail(userIn);
+    await cloudSignIn(email, password);                     // wrong password ends here
+    const remote = await cloudLoad();
+    const k = await deriveKeys(email, password);
+    const data = remote ? await decryptDesign(k.enc, remote.blob) : null; // a wrong key ends here as well
+    if (data) applyData(data);
+    store({ user: displayName(email), email, auth: "", enc: k.enc, savedAt: Date.now(), cloud: true });
+    if (!data) await saveNow();                             // new cloud account: take the design of this device along
+    await flushPending().catch(() => { /* next change tries again */ });
+    return;
+  }
   const user = userIn.trim().toLowerCase();
   const k = await deriveKeys(user, password);
   const r = await client.call<{ blob: string; updatedAt: string }>("design.load", { user, key: k.auth });
@@ -87,32 +131,60 @@ export async function signIn(userIn: string, password: string) {
 export async function saveNow() {
   const s = session();
   if (!s) return;
-  await client.call("design.save", { user: s.user, key: s.auth, blob: await encryptDesign(s.enc, getPrefs()) });
+  const blob = await encryptDesign(s.enc, getPrefs());
+  if (s.cloud) {
+    try { await cloudSave(blob); setPendingBlob(null); }
+    catch (e) { setPendingBlob(blob); throw e; }            // kept on this device, sent at the next opportunity
+    store({ ...s, savedAt: Date.now() });
+    return;
+  }
+  await client.call("design.save", { user: s.user, key: s.auth, blob });
+  store({ ...s, savedAt: Date.now() });
+}
+
+/** Sends a change that was made while the cloud was unreachable – only after a verified sign-in. */
+export async function flushPending() {
+  const s = session();
+  const blob = pendingBlob();
+  if (!s?.cloud || !blob) return;
+  await cloudSave(blob);
+  setPendingBlob(null);
   store({ ...s, savedAt: Date.now() });
 }
 
 export async function deleteProfile() {
   const s = session();
   if (!s) return;
+  if (s.cloud) { await cloudDelete(); setPendingBlob(null); store(null); return; }
   await client.call("design.delete", { user: s.user, key: s.auth });
   store(null);
 }
 
-export const signOut = () => store(null);
+export const signOut = () => {
+  const s = session();
+  if (s?.cloud) cloudSignOut();
+  store(null);
+};
 
 let timer: number | undefined;
-/** While signed in, every design change is saved to the profile a few seconds later (when the PC is reachable). */
+/** While signed in, every change is saved a few seconds later – to the cloud (no PC needed) or to the PC. */
 export function startDesignAutoSave() {
+  const reachable = () => cloudAccountConfigured() || client.status.auth === "ok";
   const later = () => {
     if (!session()) return;
     window.clearTimeout(timer);
-    timer = window.setTimeout(() => { if (client.status.auth === "ok") saveNow().catch(() => { /* next change tries again */ }); }, 3000);
+    timer = window.setTimeout(() => { if (reachable()) saveNow().catch(() => { /* next change tries again */ }); }, 3000);
   };
   const off = onPrefsChange(later);
-  // Counters, Gamer-Pass … change without a design change: saved when the page is left or hidden.
-  const onHide = () => { if (document.visibilityState === "hidden" && session() && client.status.auth === "ok") saveNow().catch(() => {}); };
-  document.addEventListener("visibilitychange", onHide);
-  return () => { off(); document.removeEventListener("visibilitychange", onHide); };
+  const onVisible = () => {
+    if (!session()) return;
+    if (document.visibilityState === "hidden") { if (reachable()) saveNow().catch(() => {}); }
+    else void flushPending().catch(() => {});              // back on screen: send what waited
+  };
+  document.addEventListener("visibilitychange", onVisible);
+  const onOnline = () => void flushPending().catch(() => {});
+  window.addEventListener("online", onOnline);
+  return () => { off(); document.removeEventListener("visibilitychange", onVisible); window.removeEventListener("online", onOnline); };
 }
 
 // ------------------------------------------------------------------ design code (works without any PC)

@@ -65,6 +65,24 @@ npm start                      # lauscht auf Port 8788
 ```
 Davor einen Reverse-Proxy mit TLS (z. B. Caddy/nginx) setzen, `trustProxy: true` aktivieren. Im Companion unter **Einstellungen → Verbindung**: Relay-Adresse `wss://relay.deinedomain.de`, Companion-ID und Schlüssel eintragen, „Mit eigenem Relay verbinden“ einschalten. Die Web-App ist dann unter `https://relay.deinedomain.de/` erreichbar; das Relay liefert auch `Begleiter herunterladen` aus (Datei aus `relay/downloads`, erzeugt von `scripts/publish-companion.sh`).
 
+## 5. Cloud-Konto (optional, für Anmelden ohne PC)
+
+Ohne Cloud liegt das Konto (Design, Gamer-Pass, Zähler …) verschlüsselt auf dem PC – anmelden geht dann nur bei laufendem PC. Mit einem eigenen Supabase-Projekt liegt derselbe verschlüsselte Datensatz in der Cloud: Anmelden und Synchronisieren funktionieren auch bei ausgeschaltetem PC. Spiele, PC-Steuerung und Kalender bleiben am PC; die Cloud-Anmeldung gibt **keine** Rechte am PC. Details und Grenzen: [docs/CLOUD-KONTO.md](docs/CLOUD-KONTO.md).
+
+1. Kostenloses Projekt auf https://supabase.com anlegen (Region z. B. Frankfurt).
+2. Im Projekt **SQL Editor** den Inhalt von `supabase/migrations/20261108000000_account_blobs.sql` ausführen – legt `public.account_blobs` mit Row Level Security an (jeder Nutzer sieht nur seine eigene Zeile).
+3. **Authentication → Providers → Email** eingeschaltet lassen. Ist „Confirm email“ aktiv, muss nach der Registrierung erst der Link in der E-Mail bestätigt werden (die App sagt das).
+4. **Project Settings → API**: `Project URL` und den `anon public`-Schlüssel kopieren (`service_role` **nie** verwenden).
+5. Beim Bauen setzen:
+
+   ```bash
+   cd web
+   VITE_SUPABASE_URL="https://<projekt>.supabase.co" VITE_SUPABASE_ANON_KEY="<anon-key>" npm run build:hosted
+   ```
+
+   Für die im Companion eingebettete Oberfläche genauso mit `npm run build`. Ohne diese Werte zeigt die App das Konto wie bisher auf dem PC.
+6. Für die automatische Website-Veröffentlichung die beiden Werte als GitHub-Secrets `VITE_SUPABASE_URL` und `VITE_SUPABASE_ANON_KEY` hinterlegen; der Workflow gibt sie an beide Builds weiter.
+
 ## Updates
 
 - Der Begleiter prüft 2 Minuten nach dem Start und danach täglich die offizielle Quelle (`download/update.json` auf der Webseite). Bei einer neuen Version erscheint im Begleiter-Fenster „Update verfügbar“ mit „Jetzt aktualisieren“, „Später“ und „Details anzeigen“; zusätzlich eine Benachrichtigung.
