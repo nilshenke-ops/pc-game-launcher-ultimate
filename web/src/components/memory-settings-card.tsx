@@ -9,6 +9,7 @@ import { Button, Card, Field, Switch } from "./ui";
 import { memorySettings, setMemorySettings, type MemorySettings } from "../lib/memory-config";
 import { lastMemoryApply, type MemoryApplyResult, type MemoryField } from "../lib/memory-sync";
 import { relTime } from "../lib/format";
+import { saveNow } from "../lib/design-account";
 
 const AUTO = [{ value: "off", label: "Nur was ich sage" }, { value: "suggest", label: "JARVIS fragt („Merk dir das“)" }, { value: "auto", label: "Klares gleich speichern" }] as const;
 
@@ -31,16 +32,22 @@ export function MemorySettingsCard({ pcPath, online, isPc, canAdmin, onChanged }
     const rules = fields.some((f) => f !== "path"), folder = fields.includes("path");
     return folder && rules ? t("Ordner und Regeln") : folder ? t("Ordner") : rules ? t("Regeln") : t("Einstellungen");
   };
-  const resultLine = !result ? null
-    : result.state === "applied"
+  // On a phone the session result does not exist (the PC did the work); the account remembers when and what.
+  const fromAccount = !result && cfg.appliedAt ? { at: cfg.appliedAt, fields: cfg.appliedFields ?? [] } : null;
+  const resultLine = result
+    ? result.state === "applied"
       ? t("Beim letzten Verbinden automatisch aus dem Konto übernommen: {w} ({t}).", { w: what(result.fields), t: relTime(new Date(result.at).toISOString()) })
       : result.state === "same"
         ? t("Beim letzten Verbinden war auf dem PC schon alles gleich – nichts zu übernehmen.")
-        : t("Beim letzten Verbinden hat der PC nicht geantwortet – der nächste Verbindungsaufbau versucht es erneut.");
+        : t("Beim letzten Verbinden hat der PC nicht geantwortet – der nächste Verbindungsaufbau versucht es erneut.")
+    : fromAccount
+      ? t("Der PC hat sie beim letzten Verbinden übernommen: {w} ({t}).", { w: what(fromAccount.fields), t: relTime(new Date(fromAccount.at).toISOString()) })
+      : null;
   const onPc = online && isPc && canAdmin;
   const different = !!cfg.path && cfg.path !== pcPath;
 
-  const store = (patch: Partial<MemorySettings>) => { const next = setMemorySettings(patch); setCfg(next); return next; };
+  // Saved in the account straight away, so the values are there on the next device without waiting for a design change.
+  const store = (patch: Partial<MemorySettings>) => { const next = setMemorySettings(patch); setCfg(next); void saveNow().catch(() => { /* the next change tries again */ }); return next; };
   const push = async (next: MemorySettings) => {
     setBusy(true);
     try {

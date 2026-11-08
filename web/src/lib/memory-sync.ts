@@ -1,7 +1,7 @@
 // The memory folder and its rules belong to the account. As soon as the PC is connected they are put on it by
 // themselves – no button needed. Only the PC itself may do that (the folder is accepted nowhere else) and only with
 // admin rights; everything else simply waits for the next connection.
-import { memorySettings, type MemorySettings } from "./memory-config";
+import { memorySettings, setMemorySettings, type MemorySettingField, type MemorySettings } from "./memory-config";
 import { client } from "./rpc";
 import { t } from "./i18n";
 import { toast } from "./hooks";
@@ -20,7 +20,7 @@ export interface AccountRpc {
 /** Old name, kept so existing code and tests read the same. */
 export type MemoryRpc = AccountRpc;
 
-export type MemoryField = keyof MemorySettings;
+export type MemoryField = MemorySettingField;
 
 const norm = (p: string) => p.trim().replace(/\//g, "\\").replace(/[\\\s]+$/, "").toLowerCase();
 
@@ -87,6 +87,8 @@ export async function applyMemoryToPc(rpc: MemoryRpc = client, opts: ApplyMemory
     if (!opts.force && missing.length === 0) { applied = now; record("same"); return false; }
     await rpc.call("memory.configure", { path: want.path, enabled: want.enabled, writeEnabled: want.writeEnabled, deleteEnabled: want.deleteEnabled, auto: want.auto });
     applied = now;
+    // Into the account as well: on the phone the card can then say what the PC took over.
+    if (missing.length) setMemorySettings({ appliedAt: Date.now(), appliedFields: missing });
     record("applied", missing);
     if (!opts.quiet) toast(t("Gedächtnis auf dem PC eingerichtet"), "success");
     return true;
