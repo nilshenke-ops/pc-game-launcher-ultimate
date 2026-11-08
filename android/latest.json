@@ -1,8 +1,8 @@
 {
-  "versionCode": 2,
-  "versionName": "1.0.1",
+  "versionCode": 3,
+  "versionName": "1.0.2",
   "apkUrl": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/android-latest/jarvis-android.apk",
-  "sha256": "4b0ea44bab6ade81817ea9759dc9b8f9f1a316625fa4781eb4e3efaafacde299",
-  "size": 1629053,
-  "publishedAt": "2026-11-08T18:18:42Z"
+  "sha256": "ad754561ce97bb5ecc98cc21fbdf97f78680befbcaad656a082da21cc5499b49",
+  "size": 1633201,
+  "publishedAt": "2026-11-08T19:10:47Z"
 }
