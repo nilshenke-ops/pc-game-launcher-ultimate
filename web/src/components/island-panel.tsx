@@ -2,7 +2,7 @@
 // tabs underneath – music, JARVIS (write or speak), focus timer and stopwatch, notifications, apps (WhatsApp, last started), the PC
 // values and a note. Own design in the layout of "island" apps. Everything shown is real state of the PC; what the PC cannot tell stays "n. v.".
 
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -100,6 +100,32 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const hist = useIslandHistory();
   const current: IslandTab = tabs.includes(tab) ? tab : "home";
   const media = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
+  // Swipe: to the right one area further (the one to the right in the bar), to the left one back. The new body slides in from the side
+  // the hand moved away from, so the content travels with the finger. Only touch and pen, and never over a field or a button.
+  const swipe = useRef<{ x: number; y: number; id: number } | null>(null);
+  const swipedAt = useRef(0); // a swipe must not also count as a tap on the card under the finger
+  const [slide, setSlide] = useState<"next" | "prev" | null>(null);
+  const stepTab = (d: 1 | -1) => {
+    const i = tabs.indexOf(current), to = Math.min(tabs.length - 1, Math.max(0, i + d));
+    if (to === i) return;
+    setSlide(d > 0 ? "next" : "prev");
+    setTab(tabs[to]);
+    navigator.vibrate?.(8);
+  };
+  const swipeDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const t = e.target as HTMLElement;
+    if (e.pointerType === "mouse" || t.closest("input, textarea, select, button, a, [contenteditable='true']")) { swipe.current = null; return; }
+    swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+    e.currentTarget.setPointerCapture?.(e.pointerId); // the finger may leave the body while swiping
+  };
+  const swipeUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const s = swipe.current; swipe.current = null;
+    if (!s || s.id !== e.pointerId) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (Math.abs(dx) < 44 || Math.abs(dx) < Math.abs(dy) * 1.4) return; // too short, or meant as scrolling
+    swipedAt.current = Date.now();
+    stepTab(dx > 0 ? 1 : -1);
+  };
 
   const lib = useRpc<{ items: LibraryItem[] }>("library.list", {}, ["library"], online && current === "apps");
   const recentHist = useRpc<HistoryData>("history.get", {}, ["history"], online && current === "apps");
@@ -509,13 +535,15 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           )}
         </div>
       </header>
-      <div className="isl2-body" role="tabpanel" id="isl2-panel" aria-labelledby={`isl2-tab-${current}`} key={current}>{body[current]}</div>
+      <div className={`isl2-body${slide ? ` swipe-${slide}` : ""}`} role="tabpanel" id="isl2-panel" aria-labelledby={`isl2-tab-${current}`} key={current}
+        onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipe.current = null; }}
+        onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
       <nav className="isl2-tabs" role="tablist" aria-label={t("Bereiche der Insel")}>
         {tabs.map((id) => {
           const m = TAB_META[id], on = id === current;
           return (
             <button key={id} type="button" role="tab" id={`isl2-tab-${id}`} aria-selected={on} aria-controls="isl2-panel" aria-label={t(m.label)} title={t(m.label)}
-              className={`isl2-tab${on ? " on" : ""}`} onClick={() => setTab(id)}><m.icon size={17} />{on && <span>{t(m.label)}</span>}</button>
+              className={`isl2-tab${on ? " on" : ""}`} onClick={() => { setSlide(null); setTab(id); }}><m.icon size={17} />{on && <span>{t(m.label)}</span>}</button>
           );
         })}
         <span className="isl2-grow" />

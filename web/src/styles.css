@@ -1093,30 +1093,41 @@ html[data-nav-plain] .sheet-grid .nav-tile { background: var(--surface-2); box-s
 
 /* ------------------------------------------------------------------ 2.27 effects: moving background, page transitions, start animation */
 .bg-anim { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.content.tx-fade { animation: fade var(--tx-ms, 220ms) ease-out backwards; }
-.content.tx-slide { animation: tx-slide var(--tx-ms, 220ms) cubic-bezier(.2,.7,.2,1) backwards; }
-.content.tx-zoom { animation: tx-zoom var(--tx-ms, 220ms) cubic-bezier(.2,.7,.2,1) backwards; }
-.content.tx-blur { animation: tx-blur var(--tx-ms, 220ms) ease-out backwards; }
-@keyframes tx-slide { from { opacity: 0; transform: translateX(18px); } }
-@keyframes tx-zoom { from { opacity: 0; transform: scale(0.97); } }
-@keyframes tx-blur { from { opacity: 0; filter: blur(6px); } }
+/* A bigger step, the same clean landing: the page starts further away and settles on one curve (--out-expo) – no bounce on the text
+   itself, that only smears. Only transform, opacity and blur move, so a phone keeps its frames. */
+.content.tx-fade { animation: fade var(--tx-ms, 220ms) var(--out-expo) backwards; }
+.content.tx-slide { animation: tx-slide var(--tx-ms, 220ms) var(--out-expo) backwards; }
+.content.tx-zoom { animation: tx-zoom var(--tx-ms, 220ms) var(--out-expo) backwards; }
+.content.tx-blur { animation: tx-blur var(--tx-ms, 220ms) var(--out-expo) backwards; }
+@keyframes tx-slide { from { opacity: 0; transform: translate3d(30px, 6px, 0) scale(0.992); } }
+@keyframes tx-zoom { from { opacity: 0; transform: scale(0.955); } }
+@keyframes tx-blur { from { opacity: 0; filter: blur(12px); transform: scale(1.012); } }
 :root[data-lite="1"] .content.tx-blur { animation-name: fade; }
+/* "Bewegung reduzieren" and the system setting: a plain fade, never a moving page. */
+@media (prefers-reduced-motion: reduce) { .content[class*="tx-"] { animation-name: fade; } }
+:root[data-motion="reduce"] .content[class*="tx-"] { animation-name: fade; }
 
 .lc { position: fixed; inset: 0; z-index: 900; display: grid; place-items: center; overflow: hidden; cursor: pointer; color: #fff;
   background: radial-gradient(120% 90% at 50% 40%, rgba(var(--primary-rgb), 0.22), transparent 70%), #020208; animation: fade 160ms ease-out both; }
 .lc-fx, .lc-fx i { position: absolute; inset: 0; pointer-events: none; }
-.lc-center { position: relative; display: grid; justify-items: center; gap: 10px; padding: 24px; max-width: min(560px, 92vw); text-align: center; }
-.lc-cover { width: clamp(96px, 26vw, 168px); aspect-ratio: 1; border-radius: 22px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255,255,255,.18), 0 0 60px rgba(var(--primary-rgb), .55); animation: lc-in 600ms cubic-bezier(.2,.8,.2,1) both; background: #0b0b18; }
+/* The start reads as one movement: everything rises into place, the cover turns a touch while it sharpens, the title pulls focus.
+   Then it stands still – this screen reports what the PC does, it is not a show that keeps moving. */
+.lc-center { position: relative; display: grid; justify-items: center; gap: 10px; padding: 24px; max-width: min(560px, 92vw); text-align: center; animation: lc-rise 720ms var(--out-expo) both; }
+.lc-cover { width: clamp(96px, 26vw, 168px); aspect-ratio: 1; border-radius: 22px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255,255,255,.18), 0 0 60px rgba(var(--primary-rgb), .55); animation: lc-cover 900ms var(--spr-soft) both; background: #0b0b18; }
 .lc-initials { display: grid; place-items: center; font-size: 44px; font-weight: 800; background: linear-gradient(135deg, var(--primary), var(--accent)); color: #04121a; }
-.lc-title { margin: 6px 0 0; font-size: clamp(22px, 5vw, 38px); letter-spacing: .02em; text-shadow: 0 0 24px rgba(var(--primary-rgb), .8); animation: lc-in 700ms 80ms cubic-bezier(.2,.8,.2,1) both; overflow-wrap: anywhere; }
-.lc-tag { margin: 0; opacity: .85; font-size: 15px; }
-.lc-status { margin: 0; font-size: 14px; opacity: .9; min-height: 1.4em; }
+.lc-title { margin: 6px 0 0; font-size: clamp(22px, 5vw, 38px); letter-spacing: .02em; text-shadow: 0 0 24px rgba(var(--primary-rgb), .8); animation: lc-title 900ms 110ms var(--out-expo) both; overflow-wrap: anywhere; }
+.lc-tag { margin: 0; opacity: .85; font-size: 15px; animation: lc-part 700ms 250ms var(--out-expo) both; }
+.lc-status { margin: 0; font-size: 14px; opacity: .9; min-height: 1.4em; animation: lc-part 700ms 320ms var(--out-expo) both; }
 .lc.running .lc-status { color: #4ade80; font-weight: 700; }
 .lc.failed .lc-status { color: #fca5a5; font-weight: 600; }
-.lc-bar { width: min(320px, 70vw); height: 4px; border-radius: 4px; background: rgba(255,255,255,.14); overflow: hidden; }
-.lc-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); animation: progress var(--lc-dur, 3s) linear both; }
+.lc-bar { width: min(320px, 70vw); height: 4px; border-radius: 4px; background: rgba(255,255,255,.14); overflow: hidden; animation: lc-part 700ms 390ms var(--out-expo) both; }
+.lc-bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); box-shadow: 0 0 14px rgba(var(--primary-rgb), .55); animation: progress var(--lc-dur, 3s) linear both; }
 .lc-skip { position: absolute; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom)); color: #fff; border-color: rgba(255,255,255,.3); background: rgba(0,0,0,.35); }
 @keyframes lc-in { from { opacity: 0; transform: scale(.85); filter: blur(4px); } }
+@keyframes lc-rise { from { opacity: 0; transform: translateY(16px) scale(.99); filter: blur(5px); } }
+@keyframes lc-cover { from { opacity: 0; transform: scale(.86) rotate(-1.5deg); filter: blur(10px) brightness(.7); } }
+@keyframes lc-title { from { opacity: 0; transform: translateY(12px); letter-spacing: .18em; filter: blur(3px); } }
+@keyframes lc-part { from { opacity: 0; transform: translateY(9px); } }
 @keyframes lc-spin { to { transform: rotate(360deg); } }
 @keyframes lc-pulse { 50% { opacity: .35; transform: scale(1.08); } }
 @keyframes lc-zoom { from { transform: scale(.4); opacity: 0; } 30% { opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
@@ -2501,7 +2512,13 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .isl2-mi { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 10px; border-radius: 10px; font-size: .82rem; font-weight: 500; color: inherit; text-decoration: none; text-align: left; background: none; border: 0; cursor: pointer; }
 .isl2-mi:hover { background: rgba(255,255,255,0.1); }
 
-.isl2-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; animation: isl2-tab .26s cubic-bezier(.2,.8,.2,1) both; }
+.isl2-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; animation: isl2-tab .26s cubic-bezier(.2,.8,.2,1) both; }
+/* Swiping moves the body the way the hand goes: the next area comes in from the left (the content travels right), the previous one from
+   the right. Vertical scrolling is untouched (touch-action: pan-y). */
+.isl2-body.swipe-next { animation: isl2-swipe-next .34s var(--spr-snap) both; }
+.isl2-body.swipe-prev { animation: isl2-swipe-prev .34s var(--spr-snap) both; }
+@keyframes isl2-swipe-next { from { opacity: 0; transform: translate3d(-28px, 0, 0) scale(.985); filter: blur(3px); } }
+@keyframes isl2-swipe-prev { from { opacity: 0; transform: translate3d(28px, 0, 0) scale(.985); filter: blur(3px); } }
 @keyframes isl2-tab { from { opacity: 0; transform: translateY(6px); } }
 .isl2-tabs { display: flex; align-items: center; gap: 2px; flex: none; padding: 5px; border-radius: 18px; background: rgba(255,255,255,0.07); }
 .isl2-tab { height: 32px; min-width: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 8px; border-radius: 13px; background: none; border: 0; color: inherit; opacity: .62; cursor: pointer; font-size: .8rem; font-weight: 600; transition: background .2s ease, opacity .2s ease, padding .25s cubic-bezier(.2,.8,.2,1); }
@@ -2806,18 +2823,18 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 /* ---- app shell: pages, cards, lists */
 /* Only while a page has just opened (class "entering", ~0.9 s after navigation): parts that mount later (a list that reloads) must not fly in again. */
 @media (prefers-reduced-motion: no-preference) {
-  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering > * { animation: m-rise .5s var(--out-expo) backwards; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering > * { animation: m-rise .58s var(--spr-soft) backwards; }
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering > .page-head { animation-name: m-rise-soft; }
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .stack > .card,
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .stack > .banner,
-  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .grid > :nth-child(-n+12) { animation: m-rise .55s var(--out-expo) backwards; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .grid > :nth-child(-n+12) { animation: m-rise var(--spr-snap-t) var(--spr-snap) backwards; }
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .stack > :nth-child(2), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .grid > :nth-child(2) { animation-delay: .05s; }
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .stack > :nth-child(3), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .grid > :nth-child(3) { animation-delay: .09s; }
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .stack > :nth-child(4), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .grid > :nth-child(4) { animation-delay: .13s; }
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .stack > :nth-child(5), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .grid > :nth-child(5) { animation-delay: .17s; }
   :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .stack > :nth-child(n+6), :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering .grid > :nth-child(n+6) { animation-delay: .21s; }
 }
-@keyframes m-rise { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+@keyframes m-rise { from { opacity: 0; transform: translateY(22px) scale(0.975); } }
 @keyframes m-rise-soft { from { opacity: 0; transform: translateY(8px); } }
 /* skeleton → content: the real content fades in instead of jumping */
 .m-in { animation: m-rise .45s var(--out-expo) backwards; }
@@ -3019,8 +3036,8 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
    Everything here only moves with transform, opacity, colour and shadow – the page never re-lays itself out.
    "Weniger Bewegung" (data-motion="reduce") and prefers-reduced-motion switch all of it off globally above. */
 
-@keyframes m-rise { from { opacity: 0; transform: translateY(14px) scale(0.99); } }
-@keyframes m-rise-sm { from { opacity: 0; transform: translateY(8px); } }
+@keyframes m-rise { from { opacity: 0; transform: translateY(22px) scale(0.975); } }
+@keyframes m-rise-sm { from { opacity: 0; transform: translateY(11px) scale(0.985); } }
 @keyframes m-slide-left { from { opacity: 0; transform: translateX(-18px); } }
 @keyframes m-pop-in { from { opacity: 0; transform: scale(0.94); } }
 @keyframes m-soft-glow { 0%, 100% { box-shadow: 0 0 0 rgba(var(--primary-rgb), 0); } 50% { box-shadow: 0 0 30px -8px rgba(var(--primary-rgb), 0.55); } }
@@ -3033,7 +3050,7 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 @keyframes m-border-run { to { background-position: 200% 0; } }
 
 /* Every page fades its sections in, one after the other (main is remounted per route, so this runs on every page). */
-.content > * { animation: m-rise 0.45s var(--ease) both; }
+.content > * { animation: m-rise 0.58s var(--spr-soft) both; }
 .content > *:nth-child(2) { animation-delay: 0.05s; }
 .content > *:nth-child(3) { animation-delay: 0.1s; }
 .content > *:nth-child(4) { animation-delay: 0.15s; }
@@ -3044,7 +3061,7 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 .content > *:nth-child(n + 12) { animation-delay: 0.34s; }
 
 /* Lists, tiles and widgets come in a touch after the card that holds them. */
-.grid > *, .dash > *, .qa-grid > *, .lib-grid > *, .swatches > *, .prog-grid > *, .icon-pick > * { animation: m-rise-sm 0.4s var(--ease) both; }
+.grid > *, .dash > *, .qa-grid > *, .lib-grid > *, .swatches > *, .prog-grid > *, .icon-pick > * { animation: m-rise-sm var(--spr-snap-t) var(--spr-snap) both; }
 .grid > *:nth-child(2), .dash > *:nth-child(2), .qa-grid > *:nth-child(2), .lib-grid > *:nth-child(2) { animation-delay: 0.05s; }
 .grid > *:nth-child(3), .dash > *:nth-child(3), .qa-grid > *:nth-child(3), .lib-grid > *:nth-child(3) { animation-delay: 0.09s; }
 .grid > *:nth-child(4), .dash > *:nth-child(4), .qa-grid > *:nth-child(4), .lib-grid > *:nth-child(4) { animation-delay: 0.13s; }
@@ -3103,7 +3120,7 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 
 /* Small screens: fewer, shorter moves – a phone should feel quick, not busy. */
 @media (max-width: 640px) {
-  .content > * { animation-duration: 0.34s; }
+  .content > * { animation-duration: 0.4s; }
   .content > *:nth-child(n + 4) { animation-delay: 0.12s; }
   .grid > *, .dash > *, .qa-grid > *, .lib-grid > * { animation-duration: 0.3s; }
 }
