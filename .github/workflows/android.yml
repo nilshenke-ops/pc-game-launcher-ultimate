@@ -59,24 +59,26 @@ jobs:
               --notes "Immer die neueste APK der Android-App. Automatisch gebaut aus dem Ordner android/." --latest=false
           gh release upload android-latest jarvis-android.apk --clobber
       - name: android/latest.json auf gh-pages veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          NAME: ${{ steps.v.outputs.name }}
+          CODE: ${{ steps.v.outputs.code }}
         run: |
           cat > latest.json <<JSON
           {
-            "versionCode": ${{ steps.v.outputs.code }},
-            "versionName": "${{ steps.v.outputs.name }}",
-            "apkUrl": "https://github.com/${{ github.repository }}/releases/download/android-latest/jarvis-android.apk",
+            "versionCode": $CODE,
+            "versionName": "$NAME",
+            "apkUrl": "https://github.com/$REPO/releases/download/android-latest/jarvis-android.apk",
             "sha256": "$SHA",
             "size": $SIZE,
             "publishedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           }
           JSON
-          python3 -c "import json,sys; json.load(open('latest.json'))"
-          git fetch origin gh-pages:gh-pages
-          git worktree add ../site gh-pages
-          mkdir -p ../site/android
-          cp latest.json ../site/android/latest.json
-          cd ../site
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add android/latest.json
-          if ! git diff --cached --quiet; then git commit -m "Android-App ${{ steps.v.outputs.name }}"; git push; fi
+          python3 -c "import json; json.load(open('latest.json'))"
+          # Write the file straight onto gh-pages through the contents API – no worktree, no push races.
+          SHA_EXISTING="$(gh api "repos/$REPO/contents/android/latest.json?ref=gh-pages" --jq .sha 2>/dev/null || true)"
+          ARGS=(--method PUT "repos/$REPO/contents/android/latest.json" -f message="Android-App $NAME" -f branch=gh-pages -f content="$(base64 -w0 latest.json)")
+          if [ -n "$SHA_EXISTING" ]; then ARGS+=(-f sha="$SHA_EXISTING"); fi
+          gh api "${ARGS[@]}" >/dev/null
+          echo "android/latest.json geschrieben (versionCode $CODE)"
