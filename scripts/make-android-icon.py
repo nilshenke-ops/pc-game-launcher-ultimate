@@ -41,7 +41,7 @@ def icon(size, round_shape=False):
     img.paste(gradient(s), (0, 0), mask)
     inset = int(s * (0.2 if round_shape else 0.14))
     ImageDraw.Draw(img).rounded_rectangle([inset, inset, s - inset, s - inset], radius=int(s * 0.16), fill=(10, 14, 26, 235))
-    cx, cy, r = s * 0.53, s * 0.5, s * (0.17 if round_shape else 0.2)
+    cx, cy, r = s * 0.53, s * 0.5, s * (0.2 if round_shape else 0.24)
     glow = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     triangle(ImageDraw.Draw(glow), cx, cy, r, (34, 211, 238, 200))
     img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(s * 0.03)))
@@ -55,7 +55,7 @@ def foreground(size):
     img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     plate = [int(s * 0.26), int(s * 0.26), int(s * 0.74), int(s * 0.74)]
     ImageDraw.Draw(img).rounded_rectangle(plate, radius=int(s * 0.1), fill=(10, 14, 26, 240))
-    cx, cy, r = s * 0.52, s * 0.5, s * 0.13
+    cx, cy, r = s * 0.52, s * 0.5, s * 0.155
     glow = Image.new("RGBA", (s, s), (0, 0, 0, 0))
     triangle(ImageDraw.Draw(glow), cx, cy, r, (34, 211, 238, 180))
     img.alpha_composite(glow.filter(ImageFilter.GaussianBlur(s * 0.02)))
