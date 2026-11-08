@@ -5,6 +5,7 @@ import { toast, useConn } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { Banner, Button, Card } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
+import { AndroidAppCard } from "../components/android-app-card";
 import { cloudAccountConfigured, cloudApi, pendingBlob } from "../lib/cloud-account";
 import { flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
 
@@ -103,6 +104,8 @@ export default function CloudPage() {
         <p className="small" style={{ margin: 0 }}>{t("Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung und die Raum-Einstellung – schon im Browser verschlüsselt. Passwort und Schlüssel bleiben auf dem Gerät, der Dienst kann die Daten nicht lesen.")}</p>
         <p className="small" style={{ margin: "8px 0 0" }}>{t("Dazu kommen der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl – also welcher Anbieter zuerst antwortet. Auf dem Handy ist damit alles schon eingerichtet, bevor der PC verbunden ist. KI-Schlüssel und API-Schlüssel liegen nie im Konto.")}</p>
       </Card>
+
+      <AndroidAppCard />
 
       <Card title={t("Was am PC bleibt")} icon={<HardDrive size={18} />}>
         <p className="small" style={{ margin: 0 }}>{t("Spiele, Programme, Profile, Kalender, Dateien und die PC-Steuerung. Dafür muss der PC an sein – die Cloud-Anmeldung gibt keine Rechte am PC.")}</p>

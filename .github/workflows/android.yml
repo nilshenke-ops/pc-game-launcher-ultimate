@@ -1,0 +1,79 @@
+# Builds the Android app (WebView shell around the website) and publishes the APK plus android/latest.json so the
+# installed app can find its own updates. Run by changes under android/ or by hand.
+name: Android-App bauen
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "android/**"
+      - ".github/workflows/android.yml"
+permissions:
+  contents: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: android-actions/setup-android@v3
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.7"
+      - name: Version lesen
+        id: v
+        run: |
+          code="$(grep -E '^versionCode=' android/version.properties | cut -d= -f2 | tr -d '[:space:]')"
+          name="$(grep -E '^versionName=' android/version.properties | cut -d= -f2 | tr -d '[:space:]')"
+          [[ "$code" =~ ^[0-9]+$ ]] || { echo "::error::versionCode fehlt oder ist keine Zahl"; exit 1; }
+          [[ -n "$name" ]] || { echo "::error::versionName fehlt"; exit 1; }
+          echo "code=$code" >> "$GITHUB_OUTPUT"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+      - name: APK bauen
+        working-directory: android
+        run: gradle --no-daemon --stacktrace assembleRelease
+      - name: APK prüfen und benennen
+        run: |
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          test -f "$APK" || { echo "::error::APK wurde nicht gebaut"; exit 1; }
+          cp "$APK" jarvis-android.apk
+          sha256sum jarvis-android.apk | cut -d' ' -f1 > apk.sha256
+          echo "SIZE=$(stat -c %s jarvis-android.apk)" >> "$GITHUB_ENV"
+          echo "SHA=$(cat apk.sha256)" >> "$GITHUB_ENV"
+          ls -l jarvis-android.apk
+      - name: Release android-latest aktualisieren
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view android-latest >/dev/null 2>&1 || \
+            gh release create android-latest --target "$GITHUB_SHA" --title "Android-App" \
+              --notes "Immer die neueste APK der Android-App. Automatisch gebaut aus dem Ordner android/." --latest=false
+          gh release upload android-latest jarvis-android.apk --clobber
+      - name: android/latest.json auf gh-pages veröffentlichen
+        run: |
+          cat > latest.json <<JSON
+          {
+            "versionCode": ${{ steps.v.outputs.code }},
+            "versionName": "${{ steps.v.outputs.name }}",
+            "apkUrl": "https://github.com/${{ github.repository }}/releases/download/android-latest/jarvis-android.apk",
+            "sha256": "$SHA",
+            "size": $SIZE,
+            "publishedAt": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          }
+          JSON
+          python3 -c "import json,sys; json.load(open('latest.json'))"
+          git fetch origin gh-pages:gh-pages
+          git worktree add ../site gh-pages
+          mkdir -p ../site/android
+          cp latest.json ../site/android/latest.json
+          cd ../site
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add android/latest.json
+          if ! git diff --cached --quiet; then git commit -m "Android-App ${{ steps.v.outputs.name }}"; git push; fi

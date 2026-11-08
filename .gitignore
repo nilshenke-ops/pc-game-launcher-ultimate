@@ -15,3 +15,9 @@ deliverables/
 dist-demo/
 dist-hosted/
 secrets/
+
+# Android build output (the APK is published as a release, never committed)
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
