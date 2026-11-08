@@ -70,6 +70,11 @@ export async function decryptDesign(enc: string, blob: string): Promise<AccountD
 export const session = () => readJson<DesignSession>(KEY);
 const store = (s: DesignSession | null) => writeJson(KEY, s);
 
+/** Tells the UI (cloud page, status lines) that the session or its saved state changed – e.g. a waiting change was sent. */
+function notifyAccount() {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event("pgl-account"));
+}
+
 /** True when this build has a cloud backend: signing in no longer needs the PC. */
 export const cloudMode = () => cloudAccountConfigured();
 
@@ -131,10 +136,12 @@ export async function saveNow() {
     try { await cloudSave(s.user, s.auth, blob); setPendingBlob(null); }
     catch (e) { setPendingBlob(blob); throw e; }            // kept on this device, sent at the next opportunity
     store({ ...s, savedAt: Date.now() });
+    notifyAccount();
     return;
   }
   await client.call("design.save", { user: s.user, key: s.auth, blob });
   store({ ...s, savedAt: Date.now() });
+  notifyAccount();
 }
 
 /** Sends a change that was made while the cloud was unreachable. */
@@ -145,6 +152,7 @@ export async function flushPending() {
   await cloudSave(s.user, s.auth, blob);
   setPendingBlob(null);
   store({ ...s, savedAt: Date.now() });
+  notifyAccount();
 }
 
 export async function deleteProfile() {
@@ -155,16 +163,18 @@ export async function deleteProfile() {
       // Already gone in the cloud: then only forget it here.
       if (!/falsch|abgelehnt|nicht eingerichtet/i.test((e as Error).message)) throw e;
     }
-    setPendingBlob(null); store(null); return;
+    setPendingBlob(null); store(null); notifyAccount(); return;
   }
   await client.call("design.delete", { user: s.user, key: s.auth });
   store(null);
+  notifyAccount();
 }
 
 export const signOut = () => {
   const s = session();
   if (s?.cloud) cloudSignOut();
   store(null);
+  notifyAccount();
 };
 
 let timer: number | undefined;
