@@ -2517,8 +2517,8 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
    the right. Vertical scrolling is untouched (touch-action: pan-y). */
 .isl2-body.swipe-next { animation: isl2-swipe-next .34s var(--spr-snap) both; }
 .isl2-body.swipe-prev { animation: isl2-swipe-prev .34s var(--spr-snap) both; }
-@keyframes isl2-swipe-next { from { opacity: 0; transform: translate3d(-28px, 0, 0) scale(.985); filter: blur(3px); } }
-@keyframes isl2-swipe-prev { from { opacity: 0; transform: translate3d(28px, 0, 0) scale(.985); filter: blur(3px); } }
+@keyframes isl2-swipe-next { from { opacity: 0; transform: translate3d(28px, 0, 0) scale(.985); filter: blur(3px); } }
+@keyframes isl2-swipe-prev { from { opacity: 0; transform: translate3d(-28px, 0, 0) scale(.985); filter: blur(3px); } }
 @keyframes isl2-tab { from { opacity: 0; transform: translateY(6px); } }
 .isl2-tabs { display: flex; align-items: center; gap: 2px; flex: none; padding: 5px; border-radius: 18px; background: rgba(255,255,255,0.07); }
 .isl2-tab { height: 32px; min-width: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 8px; border-radius: 13px; background: none; border: 0; color: inherit; opacity: .62; cursor: pointer; font-size: .8rem; font-weight: 600; transition: background .2s ease, opacity .2s ease, padding .25s cubic-bezier(.2,.8,.2,1); }

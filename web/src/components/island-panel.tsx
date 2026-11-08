@@ -100,8 +100,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const hist = useIslandHistory();
   const current: IslandTab = tabs.includes(tab) ? tab : "home";
   const media = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
-  // Swipe: to the right one area further (the one to the right in the bar), to the left one back. The new body slides in from the side
-  // the hand moved away from, so the content travels with the finger. Only touch and pen, and never over a field or a button.
+  // Swipe: to the right one area back (the one to the left in the bar), to the left one further. The new body slides in from the side
+  // the finger came from, so the pages travel with the hand like a deck of cards. Only touch and pen, and never over a field or a button.
   const swipe = useRef<{ x: number; y: number; id: number } | null>(null);
   const swipedAt = useRef(0); // a swipe must not also count as a tap on the card under the finger
   const [slide, setSlide] = useState<"next" | "prev" | null>(null);
@@ -124,7 +124,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     const dx = e.clientX - s.x, dy = e.clientY - s.y;
     if (Math.abs(dx) < 44 || Math.abs(dx) < Math.abs(dy) * 1.4) return; // too short, or meant as scrolling
     swipedAt.current = Date.now();
-    stepTab(dx > 0 ? 1 : -1);
+    stepTab(dx > 0 ? -1 : 1);
   };
 
   const lib = useRpc<{ items: LibraryItem[] }>("library.list", {}, ["library"], online && current === "apps");
