@@ -4,6 +4,19 @@ Eine schlanke Hülle um die Web-App: Sie öffnet `https://nilshenke-ops.github.i
 einem eigenen Fenster (eigener Speicher, bleibt angemeldet) und bringt den Update-Weg mit, den auch die
 PC-Software hat.
 
+## Symbol und Name
+
+Der Startbildschirm zeigt **Nexus** (kurz, passt unter das Symbol) – derselbe Kurzname wie bei der
+installierten Webseite. Im System (App-Info, Installer, Berechtigungen) steht weiter „Nexus Gaming Hub“.
+
+Das Symbol ist im Marken-Look der Seite: Verlauf von Cyan nach Violett, dunkle Platte, Play-Zeichen. Es liegt
+als adaptives Symbol (Android 8+, `mipmap-anydpi-v26`) für runde, eckige und themenfarbige Symbole vor, dazu
+PNG-Varianten für alle Dichten. Erzeugt wird alles aus Code:
+
+```bash
+python3 scripts/make-android-icon.py   # braucht Pillow
+```
+
 ## Updates
 
 1. **Automatisch:** Beim Start und danach alle 6 Stunden fragt die App

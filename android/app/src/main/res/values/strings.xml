@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Full name in the system (app info, installer, permissions). -->
     <string name="app_name">Nexus Gaming Hub</string>
+    <!-- Short name under the icon on the home screen – same short name as the installed website. -->
+    <string name="launcher_name">Nexus</string>
 </resources>
