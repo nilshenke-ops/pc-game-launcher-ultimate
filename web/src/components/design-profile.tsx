@@ -46,7 +46,7 @@ export function AccountPanel({ onDone, forceForm }: { onDone?: () => void; /** S
   return (
       <div className="stack">
         <p className="small muted" style={{ margin: 0 }}>{cloud
-          ? t("Dein Konto liegt in der Cloud – nicht auf deinem PC. Deshalb kannst du dich auch anmelden, wenn der PC aus ist. Mitkommen Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung; alles wird schon im Browser verschlüsselt, Passwort und Schlüssel bleiben auf dem Gerät. Spiele, Deck, Wunschliste und Kalender brauchen weiterhin den PC.")
+          ? t("Dein Konto liegt in der Cloud – nicht auf deinem PC. Deshalb kannst du dich auch anmelden, wenn der PC aus ist. Es kommt mit: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung, der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl. Alles wird schon im Browser verschlüsselt, Passwort und Schlüssel bleiben auf dem Gerät. Spiele, Deck, Wunschliste und Kalender brauchen weiterhin den PC.")
           : t("Optional – ohne E-Mail: Mit Benutzername und Passwort nimmst du deine Daten in einen anderen Browser mit: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler und Pausen-Erinnerung. Alles wird schon im Browser verschlüsselt und auf deinem PC gespeichert – der PC kann es nicht lesen, das Passwort verlässt dein Gerät nie. Spiele, Deck, Wunschliste und Kalender liegen ohnehin auf dem PC.")}</p>
         {!cryptoAvailable() ? <Banner kind="info">{t("Dieser Browser erlaubt die Verschlüsselung nur auf https-Seiten. Öffne die Website-Adresse (https) oder die PC-Ansicht am PC selbst.")}</Banner>
           : s && !forceForm ? (
@@ -66,10 +66,10 @@ export function AccountPanel({ onDone, forceForm }: { onDone?: () => void; /** S
           ) : (
             <form className="stack-sm" onSubmit={(e) => { e.preventDefault(); if (!valid || !allowed) return; void run(() => (mode === "login" ? signIn(u, pw) : createProfile(u, pw)), mode === "login" ? t("Angemeldet – deine Daten sind geladen") : t("Konto angelegt – deine Daten sind gespeichert")); }}>
               <Segmented value={mode} onChange={setMode} label={t("Konto")} options={[{ value: "login", label: t("Anmelden") }, { value: "create", label: t("Registrieren") }]} />
-              <Field label={t("Benutzername")} hint={cloud ? t("Mit diesem Namen meldest du dich auf jedem Gerät an.") : t("3–24 Zeichen: a–z, Ziffern, Punkt, Minus, Unterstrich")} error={user && !USER_RX.test(u) ? t("Ungültiger Benutzername") : undefined}>
+              <Field label={t("Benutzername")} hint={cloud ? t("Mit diesem Namen meldest du dich auf jedem Gerät an – jeden Namen gibt es nur einmal.") : t("3–24 Zeichen: a–z, Ziffern, Punkt, Minus, Unterstrich")} error={user && !USER_RX.test(u) ? t("Ungültiger Benutzername") : undefined}>
                 <input className="input" value={user} maxLength={24} autoComplete="username" autoCapitalize="none" spellCheck={false} onChange={(e) => setUser(e.target.value)} />
               </Field>
-              <Field label={t("Passwort")} hint={t("Mindestens 8 Zeichen. Vergessen = Design nicht wiederherstellbar (es ist verschlüsselt).")}>
+              <Field label={t("Passwort")} hint={t("Mindestens 8 Zeichen. Ohne Passwort sind die Kontodaten nicht wiederherstellbar (sie sind verschlüsselt).")}>
                 <input className="input" type="password" value={pw} autoComplete={mode === "login" ? "current-password" : "new-password"} onChange={(e) => setPw(e.target.value)} />
               </Field>
               {mode === "create" && <Field label={t("Passwort wiederholen")} error={pw2 && pw !== pw2 ? t("Passwörter sind verschieden") : undefined}>

@@ -159,7 +159,7 @@ function QuickConnect() {
       <label className="field"><span className="label">{t("Kopplungscode")}</span>
         <input className="input code-input" name="code" placeholder="XXXX-XXXX" maxLength={9} autoCapitalize="characters" spellCheck={false} /></label>
       <Button type="submit" variant="primary" block icon={<MonitorSmartphone size={16} />}>{t("PC verbinden")}</Button>
-      <span className="tiny muted">{t("Beides steht am PC unter „Gerät koppeln“. Im WLAN öffnet sich dafür die Seite deines PCs – die danach zum Startbildschirm hinzufügen, dann bleibt das Handy dauerhaft gekoppelt.")}</span>
+      <span className="tiny muted">{t("Beides steht am PC unter „Gerät koppeln“. Im WLAN kannst du die Seite deines PCs öffnen und sie zum Startbildschirm hinzufügen – dann bleibt das Handy dauerhaft gekoppelt.")}</span>
     </form>
   );
 }
