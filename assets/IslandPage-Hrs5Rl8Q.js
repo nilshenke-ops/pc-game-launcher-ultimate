@@ -1,0 +1,1 @@
+import{j as e,fa as s}from"./index-CI8ggff4.js";import{b as t}from"./react-2SIwwJO3.js";function o(){return t.useEffect(()=>(document.documentElement.classList.add("island-mode"),()=>document.documentElement.classList.remove("island-mode")),[]),e.jsx(s,{})}export{o as default};
