@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.29.1",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.1/PCGameLauncherCompanion.exe",
+    "size": 95037681,
+    "sha256": "762e5f02c6c921154d1630e6f52977c194111321622cb7ba1933ca9885c21f44",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.29.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.1/PCGameLauncherCompanion-3.29.1-win-x64.zip",
+      "size": 89312046,
+      "sha256": "bbff7cdf39168c7e69cd0e107ab9a8808db4ebbb066331097a7a939ac6f9803f"
+    },
+    "notes": "Gibt jedem Website-Widget die Optik des In-Game-Overlays.",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Gibt jedem Website-Widget die Optik des In-Game-Overlays."
+      ],
+      "behoben": []
+    },
+    "signature": "/Hsd2LL9NzLQQy7joym/SdA5kVMHEkNULcmNQDE2EraDShS+hzgPMpn26hJ5e30Py6kuwBrHG+xxnb9zfmednQ=="
+  },
+  {
     "version": "3.29.0",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1378,36 +1402,5 @@
       "behoben": []
     },
     "signature": "N/50G7c82dzoDMcSw5efh/jeoUD7PJi5/ozAexWzeGolfGPe+ipRJ9Z8UXoz4xtU8IUg5onZtSS/rnpfQ8UrDA=="
-  },
-  {
-    "version": "2.91.0",
-    "date": "2026-11-03",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.91.0/PCGameLauncherCompanion.exe",
-    "size": 88429037,
-    "sha256": "95f7c2060acdebda93ed68ebfbb4fcc627ac89420b339e2d5ff8b8cf37deccd2",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.91.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.91.0/PCGameLauncherCompanion-2.91.0-win-x64.zip",
-      "size": 82924719,
-      "sha256": "06a2857e64d409fece3db1e145c4cadb93f70c97ba5ab29533539ae7b6725102"
-    },
-    "notes": "Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert) · Pomodoro im Fokus-Timer der Insel: 25 Minuten Fokus, 5 Minuten Pause, nach vier Runden 15 Minuten; mit Zähler und Rückmeldung am Ende jeder Phase · Aussehen und Widgets der Insel stehen jetzt in den Einstellungen des PCs: Sie lassen sich auch vom Handy ändern (mit Administrator-Recht), und die Insel übernimmt jede Änderung sofort; dazu Position (links, Mitte, rechts) und Deckkraft (50–100 %) des Insel-Fensters",
-    "changes": {
-      "neu": [
-        "Neue Widgets in der geöffneten JARVIS-Insel (je einzeln ein- und ausschaltbar, die neuen sind zunächst aus): „Temperatur & FPS“ (CPU-/GPU-Temperatur; FPS nur mit echtem Messwert, sonst „n. v.“), „Netzwerk“ (Ping zu Router und Internet), „Lautstärke am PC“ (leiser, stumm, lauter), „Notiz“ (nur am PC gespeichert)",
-        "Pomodoro im Fokus-Timer der Insel: 25 Minuten Fokus, 5 Minuten Pause, nach vier Runden 15 Minuten; mit Zähler und Rückmeldung am Ende jeder Phase",
-        "Aussehen und Widgets der Insel stehen jetzt in den Einstellungen des PCs: Sie lassen sich auch vom Handy ändern (mit Administrator-Recht), und die Insel übernimmt jede Änderung sofort; dazu Position (links, Mitte, rechts) und Deckkraft (50–100 %) des Insel-Fensters"
-      ],
-      "verbessert": [
-        "Ungültige Werte für Vorlage, Augenfarbe, Position, Deckkraft und Widgets lehnt der Begleiter ab und ändert dann nichts",
-        "Das geöffnete Insel-Fenster zeigt nur die gewählten Widgets"
-      ],
-      "behoben": [
-        "Der Browser-Test „Insel-Aussehen“ war versehentlich gelöscht worden und läuft wieder (jetzt gegen die Einstellungen des PCs)"
-      ]
-    },
-    "signature": "fSGXko+QOP85jup8hDFWek/3MT1HQ0JD6R1x1t49qDr4Jf1OJO3veHgQX3Z+n3jO9UfugQ465gh4gwBVywgb9g=="
   }
 ]

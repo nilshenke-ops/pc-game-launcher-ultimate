@@ -1,26 +1,24 @@
 {
-  "version": "3.29.0",
+  "version": "3.29.1",
   "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion.exe",
-  "size": 95036952,
-  "sha256": "2c355f7d39867db884d6697c7248712da45707d43c41fbe0d717d5675f82d4ed",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.1/PCGameLauncherCompanion.exe",
+  "size": 95037681,
+  "sha256": "762e5f02c6c921154d1630e6f52977c194111321622cb7ba1933ca9885c21f44",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.29.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion-3.29.0-win-x64.zip",
-    "size": 89311261,
-    "sha256": "f20d82a6ad05eccf4df6ffbf9d9f3e23deb22c761c8f39af4d49bddec567b5ea"
+    "fileName": "PCGameLauncherCompanion-3.29.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.1/PCGameLauncherCompanion-3.29.1-win-x64.zip",
+    "size": 89312046,
+    "sha256": "bbff7cdf39168c7e69cd0e107ab9a8808db4ebbb066331097a7a939ac6f9803f"
   },
-  "notes": "",
+  "notes": "Gibt jedem Website-Widget die Optik des In-Game-Overlays.",
   "changes": {
     "neu": [],
-    "verbessert": [],
-    "behoben": [
-      "Nexus-Cloud: Der Worker liefert jetzt die gebaute Website (statt der ungebuildeten `index.html` mit `/src/main.tsx`, die nur eine leere Seite ergab) und beantwortet alle `/api/account/*`-Routen",
-      "Fehlerantworten tragen CORS-Header; dadurch erscheint der echte Grund statt „Der Cloud-Dienst antwortet nicht“",
-      "Health-Check prüft die D1-Datenbank mit und nennt eine fehlende Bindung ausdrücklich"
-    ]
+    "verbessert": [
+      "Gibt jedem Website-Widget die Optik des In-Game-Overlays."
+    ],
+    "behoben": []
   },
-  "signature": "MI5PpLCq1SUsTSs/EvaU72IavVIv4dxFN90/6ZsU2LDh039H00HMJTRS8DuXCMIFDMl+cWhQPxEAAEd+f8PMnQ=="
+  "signature": "/Hsd2LL9NzLQQy7joym/SdA5kVMHEkNULcmNQDE2EraDShS+hzgPMpn26hJ5e30Py6kuwBrHG+xxnb9zfmednQ=="
 }
