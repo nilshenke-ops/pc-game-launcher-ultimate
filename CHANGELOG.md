@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.33.1 – 2026-11-09
+### Verbessert
+- Macht Widgets wieder zu klarem Glas und zieht den Baukasten mit.
+
 ## 3.33.0 – 2026-11-09
 ### Neu
 - Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt
