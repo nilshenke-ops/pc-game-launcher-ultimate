@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState, type CSSProperties } from "react";
+import { lazy, Suspense, useMemo, useRef, useState, type CSSProperties } from "react";
 import { StableAddressOffer } from "../components/keep-access";
 import { Link } from "react-router-dom";
 import {
@@ -330,6 +330,35 @@ export default function Dashboard() {
   const layoutId = fromProfile ?? (mobile ? prefs.activeLayout.mobile : prefs.activeLayout.desktop);
   const layout = prefs.layouts.find((l) => l.id === layoutId) ?? prefs.layouts[0];
 
+  // Swipe left/right on the widget grid: the next home page slides in from the side. Mouse drags are ignored,
+  // as are gestures that start on a control (a tap there must stay a tap) or that are mostly vertical (scrolling).
+  const [slide, setSlide] = useState<"next" | "prev" | null>(null);
+  const swipeStart = useRef<{ x: number; y: number; id: number } | null>(null);
+  const swipedAt = useRef(0);
+  const goPage = (dir: 1 | -1) => {
+    if (prefs.layouts.length < 2) return;
+    const i = prefs.layouts.findIndex((l) => l.id === layout.id);
+    const next = prefs.layouts[(i + dir + prefs.layouts.length) % prefs.layouts.length];
+    if (!next || next.id === layout.id) return;
+    setSlide(dir > 0 ? "next" : "prev");
+    setPrefs((p) => ({ ...p, activeLayout: { ...p.activeLayout, [mobile ? "mobile" : "desktop"]: next.id } }));
+    window.setTimeout(() => setSlide(null), 460);
+  };
+  const swipeDown = (e: React.PointerEvent) => {
+    if (edit || e.pointerType === "mouse") return;
+    if ((e.target as HTMLElement).closest("input, textarea, select, button, a, [contenteditable='true'], .widget-edit")) return;
+    swipeStart.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
+  };
+  const swipeUp = (e: React.PointerEvent) => {
+    const s = swipeStart.current;
+    swipeStart.current = null;
+    if (!s || s.id !== e.pointerId) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (Math.abs(dx) < 64 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+    swipedAt.current = Date.now();
+    goPage(dx < 0 ? 1 : -1);
+  };
+
   // Plugin widgets: only from enabled plugins that run in the web app.
   const pl = useRpc<PluginList>("plugins.list", {}, ["plugins"]);
   const pluginWidgets = (pl.data?.plugins ?? []).filter((p) => p.enabled && p.manifest?.platforms.includes("web"))
@@ -399,7 +428,9 @@ export default function Dashboard() {
       <HomePages layout={layout} mobile={mobile} edit={edit} pluginWidgets={pluginWidgets.map((x) => x.id)} />
       {state && !edit && <div style={{ marginBottom: 12 }}><StableAddressOffer /></div>}
       {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}
-      <div className="dash" style={{ marginTop: edit ? 16 : 0 }}>
+      <div className="dash-swipe" onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipeStart.current = null; }}
+        onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>
+      <div key={layout.id} className={`dash${slide ? ` swipe-${slide}` : ""}`} style={{ marginTop: edit ? 16 : 0 }}>
         {shownWidgets.map((w, i) => {
           const meta = metaFor(w.id);
           if (w.id === "download") return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><DownloadCard compact />{edit && <EditOverlay />}</div>;
@@ -434,6 +465,7 @@ export default function Dashboard() {
             );
           }
         })}
+      </div>
       </div>
       {waitingForPc > 0 && <p className="tiny muted" style={{ marginTop: 12, textAlign: "center" }}>{t("{n} weitere Widgets erscheinen, sobald der PC verbunden ist.", { n: waitingForPc })}</p>}
       {edit && hidden.length > 0 && (

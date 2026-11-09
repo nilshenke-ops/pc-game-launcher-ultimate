@@ -1,7 +1,7 @@
 // Home widgets that are useful without a PC: shortcuts, clock, notes, "play next" (cached backlog) and first steps.
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { Check, Circle, Dices, Play } from "lucide-react";
+import { Check, Circle, Dices, Music2, Play } from "lucide-react";
 import { client, readJson, writeJson } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useCan, useConn, useNow, useRpc } from "../lib/hooks";
@@ -140,11 +140,24 @@ export function StartWidget() {
 /** Play/pause, tracks and volume on the PC – like the media keys of the keyboard (Windows companion). */
 export function MediaWidget() {
   const press = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
-  const keys: [string, string, string][] = [["prev", "skip-back", t("Vorheriger Titel")], ["playpause", "play", t("Play/Pause")], ["next", "skip-forward", t("Nächster Titel")],
-    ["voldown", "volume-1", t("Leiser")], ["mute", "volume-x", t("Ton aus/an")], ["volup", "volume-2", t("Lauter")]];
+  const small: [string, string, string][] = [
+    ["prev", "skip-back", t("Vorheriger Titel")], ["next", "skip-forward", t("Nächster Titel")],
+    ["voldown", "volume-1", t("Leiser")], ["mute", "volume-x", t("Ton aus/an")], ["volup", "volume-2", t("Lauter")],
+  ];
   return (
-    <div className="media-pad">
-      {keys.map(([k, icon, label]) => <button key={k} type="button" className="media-key" aria-label={label} title={label} onClick={() => press(k)}><DeckIcon name={icon} size={22} /></button>)}
+    <div className="media-widget">
+      <div className="media-now">
+        <span className="media-now-art" aria-hidden><Music2 size={20} /></span>
+        <span className="media-now-txt"><b>{t("Musik am PC")}</b><span>{t("Steuerung über die Medientasten")}</span></span>
+        <button type="button" className="media-play" onClick={() => press("playpause")} aria-label={t("Play/Pause")} title={t("Play/Pause")}><DeckIcon name="play" size={20} /></button>
+      </div>
+      <div className="media-row">
+        {small.map(([k, icon, label]) => (
+          <button key={k} type="button" className="media-btn" aria-label={label} title={label} onClick={() => press(k)}>
+            <DeckIcon name={icon} size={19} /><span>{label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -141,9 +141,9 @@ function TrackCard({ e }: { e: Entry<Data> }) {
 function TrackTools({ e }: { e: Entry<Data> }) {
   const links = trackLinks(e);
   return (
-    <div className="stack-sm">
-      {!!e.data.cover && <div className="m-cover big"><JImage id={String(e.data.cover)} /></div>}
-      {links.length ? <div className="row" style={{ gap: 6 }}>{links.map((u, i) => <a key={i} className="btn sm" href={u} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} /> {t("Bei {s} öffnen", { s: musicService(u) ?? new URL(u).hostname })}</a>)}</div>
+    <div className="stack-sm m-track">
+      {!!e.data.cover && <div className="m-cover big m-track-cover"><JImage id={String(e.data.cover)} /></div>}
+      {links.length ? <div className="m-track-links">{links.map((u, i) => <a key={i} className="btn sm" href={u} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} /> {t("Bei {s} öffnen", { s: musicService(u) ?? new URL(u).hostname })}</a>)}</div>
         : <Banner kind="info">{t("Noch kein Link. Füge einen offiziellen Link hinzu (Spotify, Apple Music, YouTube, Bandcamp …), um das Stück dort zu hören.")}</Banner>}
       <span className="tiny muted">{t("Kein eingebauter Player: Nexus spielt nichts selbst ab und speichert keine Musik.")}</span>
     </div>

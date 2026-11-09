@@ -3245,3 +3245,41 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 .gb-menu-hint { margin: 6px 10px 2px; line-height: 1.5; }
 .gb-panel:hover { border-color: rgba(var(--primary-rgb), .22); }
 @media (prefers-reduced-motion: reduce) { .gbr-dot { animation: none !important; } }
+
+/* ================================================================== Swipe between home pages (3.31)
+   The next page slides in from the side the swipe came from; vertical scrolling stays untouched (touch-action: pan-y). */
+.dash-swipe { touch-action: pan-y; }
+.dash.swipe-next { animation: dash-swipe-next .36s var(--spr-soft) both; }
+.dash.swipe-prev { animation: dash-swipe-prev .36s var(--spr-soft) both; }
+@keyframes dash-swipe-next { from { opacity: 0; transform: translate3d(46px, 0, 0) scale(.992); } }
+@keyframes dash-swipe-prev { from { opacity: 0; transform: translate3d(-46px, 0, 0) scale(.992); } }
+@media (prefers-reduced-motion: reduce) { .dash.swipe-next, .dash.swipe-prev { animation: none; } }
+:root[data-motion="reduce"] .dash.swipe-next, :root[data-motion="reduce"] .dash.swipe-prev { animation: none; }
+
+/* ================================================================== Music: clearer transport widget (3.31)
+   One row that says what it is and a large play button, then labelled keys – also readable on a phone. */
+.media-widget { display: flex; flex-direction: column; gap: 10px; }
+.media-now { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 14px; border: 1px solid var(--border); background: rgba(var(--surface-rgb), .5); }
+.media-now-art { flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(var(--primary-rgb), .18); color: var(--primary); }
+.media-now-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+.media-now-txt b { font-size: .9rem; }
+.media-now-txt span { font-size: .75rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-play { flex: none; width: 44px; height: 44px; border-radius: 50%; border: 0; display: grid; place-items: center; background: var(--primary); color: var(--on-primary, #0b0b0f); cursor: pointer;
+  box-shadow: 0 8px 20px -10px rgba(var(--primary-rgb), .9); transition: transform .3s var(--spr-snap), filter .2s ease; }
+@media (hover: hover) { .media-play:hover { filter: brightness(1.07); } }
+.media-play:active { transform: scale(.94); }
+.media-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.media-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 52px; padding: 6px 3px; border-radius: 12px;
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text); cursor: pointer; min-width: 0; }
+.media-btn span { max-width: 100%; font-size: .64rem; line-height: 1.1; text-align: center; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.media-btn:active { transform: scale(.96); background: rgba(var(--primary-rgb), .18); }
+@media (max-width: 380px) { .media-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Soundtracks: covers keep their square shape on every screen instead of being stretched */
+.m-track { gap: 10px; }
+.m-track-links { display: flex; flex-wrap: wrap; gap: 6px; }
+.m-cover { aspect-ratio: 1 / 1; }
+.m-cover.big { width: min(160px, 42vw); height: auto; }
+.m-track-cover { width: min(160px, 42vw); aspect-ratio: 1 / 1; height: auto; }
+.m-track-cover .j-img { width: 100%; height: 100%; object-fit: cover; }
+@media (max-width: 520px) { .m-cover.big, .m-track-cover { width: 100%; max-width: 220px; } }

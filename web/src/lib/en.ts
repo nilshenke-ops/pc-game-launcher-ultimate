@@ -6359,6 +6359,7 @@ export const en: Record<string, string> = {
   "JARVIS-Insel öffnen": "Open JARVIS island",
   "JARVIS: {m}": "JARVIS: {m}",
   "Laut deinem PC": "According to your PC",
+  "Steuerung über die Medientasten": "Control via the media keys",
   "Musik am PC": "Music on the PC",
   "Noch nichts gefragt in diesem Tab.": "Nothing asked in this tab yet.",
   "Tanzen: Visualizer mit Ton starten": "To dance: start the visualizer with sound",
