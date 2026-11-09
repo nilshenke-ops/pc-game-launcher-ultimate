@@ -349,8 +349,11 @@ button.list-item:active { transform: translateX(1px) scale(0.998); }
   --surface-2: #191c2b;
 }
 
-/* Das Fenster ------------------------------------------------------------- */
-.dash > * > .card {
+/* Das Fenster -------------------------------------------------------------
+   Die Theme-Ebenen (data-surface "glass"/"clear"/"soft"/"raised") setzen Kartenfläche, Rahmen und
+   Schein mit :root[data-surface…] .card. Damit das Widget wirklich wie ein Overlay-Fenster aussieht,
+   liegen die Fenster-Regeln hier eine Stufe höher (:root[data-mode] …) und schalten den Theme-Schein ab. */
+:root[data-mode] .dash > * > .card {
   padding: 0 14px 16px;
   border-radius: 22px;
   border: 1px solid var(--gb-line);
@@ -363,11 +366,13 @@ button.list-item:active { transform: translateX(1px) scale(0.998); }
   -webkit-backdrop-filter: blur(10px);
   isolation: isolate;
 }
-.dash > * > .card:not(:has(> .card-head)) { padding-top: 16px; }
-.dash > * > .card.hero { border-color: rgba(var(--primary-rgb), .28); }
-.dash .card::after { content: none; } /* kein Lichtschein wie auf normalen Seitenkarten */
+:root[data-mode] .dash > * > .card:not(:has(> .card-head)) { padding-top: 16px; }
+:root[data-mode] .dash > * > .card.hero { border-color: rgba(var(--primary-rgb), .28); }
+/* Kein Lichtschein der Theme-Karten (glass/clear nutzen ::before, die Seite ::after). */
+:root[data-mode] .dash > * > .card::before,
+:root[data-mode] .dash > * > .card::after { content: none; }
 @media (hover: hover) {
-  .dash > * > .card:hover {
+  :root[data-mode] .dash > * > .card:hover {
     transform: translateY(-2px);
     border-color: rgba(var(--primary-rgb), .22);
     box-shadow: 0 30px 66px -24px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 0 1px rgba(var(--primary-rgb), .1);
@@ -375,7 +380,7 @@ button.list-item:active { transform: translateX(1px) scale(0.998); }
 }
 
 /* Kopfzeile wie .gb-panel-head ------------------------------------------- */
-.dash > * > .card > .card-head {
+:root[data-mode] .dash > * > .card > .card-head {
   margin: 0 -14px 12px;
   padding: 0 12px 0 14px;
   min-height: 42px;
