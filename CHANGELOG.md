@@ -4,6 +4,24 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.26.0 – 2026-11-09
+### Neu
+- Cloud-Konto auf Cloudflare statt Supabase: Anmelden und Synchronisieren geht auch bei ausgeschaltetem PC, damit Design, Gedächtnis-Einstellungen, Wetter-Ort und KI-Auswahl auf PC, Handy und Tablet gleich sind
+- Mehrere Konten auf einem Gerät speichern und ohne neues Passwort wechseln; JARVIS-Memory-Ordner und -Regeln lassen sich ohne PC im Konto einstellen und reisen verschlüsselt mit – KI- und API-Schlüssel bleiben bewusst auf dem Gerät
+- Cloud-Seite mit Dienststatus und sichtbarer Garantie für KI-Schlüssel sowie „Backup als JSON“: der Kontostand lässt sich als lesbare Datei herunterladen, ohne Schlüssel darin
+- Android-App mit eigenem Fenster (bleibt angemeldet), eigenem Update-Weg über android/latest.json, SHA-256-Prüfung vor der Installation, Marken-Symbol und Startbildschirm-Namen „Nexus“ (Version 1.0.2)
+- Deal Radar prüft Preise schon beim Hinzufügen ohne PC – Xbox im Microsoft Store, Steam über die Preisliste der Website – und prüft die Steam-Preise der ganzen Wunschliste nach
+### Verbessert
+- Beim Verbinden übernimmt der PC Gedächtnis-Ordner und -Regeln, Wetter-Ort sowie KI-Reihenfolge und Betriebsart jetzt von selbst aus dem Konto (nur am PC selbst und nur mit Verwaltungsrecht); die Memory-Seite zeigt auch auf Handy und iPad, was zuletzt übernommen wurde
+- Bewegung für die ganze Seite: Seiten und Karten blenden gestaffelt ein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Live-Punkte atmen; die JARVIS-Insel leuchtet je nach Stimmung und hat einen schwebenden Roboter – „Weniger Bewegung“ schaltet alles komplett ab
+- Insel lässt sich wischen (nach rechts einen Bereich vor, nach links einen zurück), überdeckt keine Titelzeile mehr; Seitenwechsel und Spielstart sind deutlicher, und die Dauer-Regler in den Design-Einstellungen zeigen ihre Wirkung in einer kleinen Vorschau
+- Cloud-Bereich in Suche und Navigation; Konto-Panel und Cloud-Seite aktualisieren sich sofort nach An- und Abmeldung oder Kontowechsel; „Cloud speichern“ führt zur Cloudflare-Seite, unter „Updates & Versionen“ führt ein Knopf zur aktuellen Android-APK
+### Behoben
+- Nach dem Nachsenden einer wartenden Cloud-Änderung blieb „Eine Änderung wartet noch“ mit altem Zeitstempel stehen
+- Das Konto-Panel zeigte nach einem Kontowechsel noch das Formular des alten Kontos
+- Der Satz zur Einmaligkeit des Benutzernamens war grammatisch falsch; die deutschen Texte der Konto- und Memory-Karten sind klarer gefasst
+- Das Play-Zeichen im App-Symbol war zu zierlich und ist jetzt in allen Varianten größer und kräftiger
+
 ## 3.25.2 – 2026-11-07
 ### Behoben
 - ElevenLabs: „Der Schlüssel wird abgelehnt“ bei einem richtigen Schlüssel. Der Verbindungstest fragt das Kontingent ab, und das braucht bei ElevenLabs das Recht „user_read“; ein auf einzelne Rechte beschränkter Schlüssel bekommt dort ein 401, obwohl er gültig ist. Jetzt gilt der Test als bestanden und sagt, dass nur die Kontingent-Anzeige fehlt. Fehlt für die Stimme oder die Spracherkennung ein Recht, nennt die Meldung es („text_to_speech“ bzw. „speech_to_text“) statt „abgelehnt“. Wirklich ungültige Schlüssel werden weiter abgelehnt
