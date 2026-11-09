@@ -1,24 +1,38 @@
 {
-  "version": "3.25.2",
-  "date": "2026-11-07",
+  "version": "3.26.0",
+  "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion.exe",
-  "size": 95014780,
-  "sha256": "9458c301d6a0ae94faf37851415de74dd96da6c2c0ff06376713953bf53dca30",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.26.0/PCGameLauncherCompanion.exe",
+  "size": 95032127,
+  "sha256": "498f4d338731455083e0b08eb1dfc1702be5fd95f9b9c5aa8ca22cd34ef1c35a",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.25.2-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion-3.25.2-win-x64.zip",
-    "size": 89289509,
-    "sha256": "58866a20b671937596f3e5c18c4d5469b319c7cce48d2bba96b17cc2480de10d"
+    "fileName": "PCGameLauncherCompanion-3.26.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.26.0/PCGameLauncherCompanion-3.26.0-win-x64.zip",
+    "size": 89306610,
+    "sha256": "d5fe0577399f7382fb3398c3f1a20eb81dfb4b64e7be17008ca96787664d622b"
   },
-  "notes": "",
+  "notes": "Cloud-Konto auf Cloudflare statt Supabase: Anmelden und Synchronisieren geht auch bei ausgeschaltetem PC, damit Design, Gedächtnis-Einstellungen, Wetter-Ort und KI-Auswahl auf PC, Handy und Tablet gleich sind · Mehrere Konten auf einem Gerät speichern und ohne neues Passwort wechseln; JARVIS-Memory-Ordner und -Regeln lassen sich ohne PC im Konto einstellen und reisen verschlüsselt mit – KI- und API-Schlüssel bleiben bewusst auf dem Gerät · Cloud-Seite mit Dienststatus und sichtbarer Garantie für KI-Schlüssel sowie „Backup als JSON“: der Kontostand lässt sich als lesbare Datei herunterladen, ohne Schlüssel darin",
   "changes": {
-    "neu": [],
-    "verbessert": [],
+    "neu": [
+      "Cloud-Konto auf Cloudflare statt Supabase: Anmelden und Synchronisieren geht auch bei ausgeschaltetem PC, damit Design, Gedächtnis-Einstellungen, Wetter-Ort und KI-Auswahl auf PC, Handy und Tablet gleich sind",
+      "Mehrere Konten auf einem Gerät speichern und ohne neues Passwort wechseln; JARVIS-Memory-Ordner und -Regeln lassen sich ohne PC im Konto einstellen und reisen verschlüsselt mit – KI- und API-Schlüssel bleiben bewusst auf dem Gerät",
+      "Cloud-Seite mit Dienststatus und sichtbarer Garantie für KI-Schlüssel sowie „Backup als JSON“: der Kontostand lässt sich als lesbare Datei herunterladen, ohne Schlüssel darin",
+      "Android-App mit eigenem Fenster (bleibt angemeldet), eigenem Update-Weg über android/latest.json, SHA-256-Prüfung vor der Installation, Marken-Symbol und Startbildschirm-Namen „Nexus“ (Version 1.0.2)",
+      "Deal Radar prüft Preise schon beim Hinzufügen ohne PC – Xbox im Microsoft Store, Steam über die Preisliste der Website – und prüft die Steam-Preise der ganzen Wunschliste nach"
+    ],
+    "verbessert": [
+      "Beim Verbinden übernimmt der PC Gedächtnis-Ordner und -Regeln, Wetter-Ort sowie KI-Reihenfolge und Betriebsart jetzt von selbst aus dem Konto (nur am PC selbst und nur mit Verwaltungsrecht); die Memory-Seite zeigt auch auf Handy und iPad, was zuletzt übernommen wurde",
+      "Bewegung für die ganze Seite: Seiten und Karten blenden gestaffelt ein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Live-Punkte atmen; die JARVIS-Insel leuchtet je nach Stimmung und hat einen schwebenden Roboter – „Weniger Bewegung“ schaltet alles komplett ab",
+      "Insel lässt sich wischen (nach rechts einen Bereich vor, nach links einen zurück), überdeckt keine Titelzeile mehr; Seitenwechsel und Spielstart sind deutlicher, und die Dauer-Regler in den Design-Einstellungen zeigen ihre Wirkung in einer kleinen Vorschau",
+      "Cloud-Bereich in Suche und Navigation; Konto-Panel und Cloud-Seite aktualisieren sich sofort nach An- und Abmeldung oder Kontowechsel; „Cloud speichern“ führt zur Cloudflare-Seite, unter „Updates & Versionen“ führt ein Knopf zur aktuellen Android-APK"
+    ],
     "behoben": [
-      "ElevenLabs: „Der Schlüssel wird abgelehnt“ bei einem richtigen Schlüssel. Der Verbindungstest fragt das Kontingent ab, und das braucht bei ElevenLabs das Recht „user_read“; ein auf einzelne Rechte beschränkter Schlüssel bekommt dort ein 401, obwohl er gültig ist. Jetzt gilt der Test als bestanden und sagt, dass nur die Kontingent-Anzeige fehlt. Fehlt für die Stimme oder die Spracherkennung ein Recht, nennt die Meldung es („text_to_speech“ bzw. „speech_to_text“) statt „abgelehnt“. Wirklich ungültige Schlüssel werden weiter abgelehnt"
+      "Nach dem Nachsenden einer wartenden Cloud-Änderung blieb „Eine Änderung wartet noch“ mit altem Zeitstempel stehen",
+      "Das Konto-Panel zeigte nach einem Kontowechsel noch das Formular des alten Kontos",
+      "Der Satz zur Einmaligkeit des Benutzernamens war grammatisch falsch; die deutschen Texte der Konto- und Memory-Karten sind klarer gefasst",
+      "Das Play-Zeichen im App-Symbol war zu zierlich und ist jetzt in allen Varianten größer und kräftiger"
     ]
   },
-  "signature": "2//BtlrqLMZxdXVT9H5qoZ8m95fgfgUuD5beJUjw0th8LRhAPguYQYJZg2WIo6qpPgv5WE8x+GnGPlur4J9Wqw=="
+  "signature": "69h9t8NsNVLvgFFY92HrHQo5c5lw75rPApn6OmkrUVgw72QhuOGFwObzaKj/2FaVcb9Iw959Ewpu47LY/tDWRw=="
 }
