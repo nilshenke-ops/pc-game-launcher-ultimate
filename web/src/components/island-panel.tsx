@@ -358,6 +358,15 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           <button type="button" className="isl2-round" onClick={timerBtn} aria-label={view ? (view.paused ? t("Fortsetzen") : t("Pausieren")) : t("Fokus starten")}>{view && !view.paused ? <Pause size={16} /> : <Play size={16} />}</button>
         </div>
       )}
+      {/* three cards leave one empty place in the grid: the PC state fills it (and is useful on its own) */}
+      {1 + (game ? 1 : 0) + (has("music") ? 1 : 0) + (has("focus") ? 1 : 0) === 3 && (
+        <div className={`isl2-card pc ${online ? "on" : "off"}`}>
+          <button type="button" className="isl2-ctitle" onClick={() => setTab("pc")}>{t("PC")}</button>
+          <span className="isl2-art" aria-hidden><Monitor size={22} /></span>
+          <b className="isl2-big">{online ? t("Verbunden") : t("Offline")}</b>
+          <span className="isl2-sub ellipsis">{online ? t("PC bereit") : t("PC nicht erreichbar")}</span>
+        </div>
+      )}
     </div>
   );
 

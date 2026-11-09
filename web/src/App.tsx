@@ -74,7 +74,7 @@ const Deals = lazy(() => import("./pages/Deals"));
 const DesktopWidget = lazy(() => import("./pages/DesktopWidget"));
 const IslandPage = lazy(() => import("./pages/IslandPage"));
 const Connect = lazy(() => import("./pages/Connect"));
-const CloudPage = lazy(() => import("./pages/Cloud"));const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
+const ProfilePage = lazy(() => import("./pages/Profile"));const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
 function Loading() {
   return <div className="stack" aria-busy><div className="skeleton" style={{ height: 28, width: "30%" }} /><div className="skeleton" style={{ height: 160 }} /></div>;
@@ -143,7 +143,8 @@ function Gate() {
           <Route path="/devices" element={<Devices />} />
           <Route path="/pair" element={pcLoggedIn ? <PairAdmin /> : <Connect />} />
           <Route path="/connect" element={<Connect />} />
-          <Route path="/cloud" element={<CloudPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/cloud" element={<Navigate to="/profile" replace />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/diagnostics" element={<Diagnostics />} />

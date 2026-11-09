@@ -2134,7 +2134,7 @@ html.island-mode .app-bg { display: none; }
 .mn-link svg { flex: none; }
 .mn-link .mn-t { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mn-link:hover { opacity: 1; background: rgba(255,255,255,0.1); text-decoration: none; }
-.mn-link.active { opacity: 1; background: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.14)); border-color: rgba(255,255,255,0.42); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 10px 26px -12px rgba(var(--primary-rgb), 0.95); }
+.mn-link.active, .mn-pill { opacity: 1; background: linear-gradient(135deg, rgba(255,255,255,0.38), rgba(255,255,255,0.14)); border-color: rgba(255,255,255,0.42); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 10px 26px -12px rgba(var(--primary-rgb), 0.95); }
 .mn-chev { opacity: .7; }
 .mn-more-panel { margin-top: 4px; padding: 10px 4px 4px; border-top: 1px solid rgba(255,255,255,0.2); }
 .mn-more-panel .side-nav-head.corner { position: static; justify-content: flex-end; padding: 0 4px 4px; }
@@ -2152,15 +2152,15 @@ html.island-mode .app-bg { display: none; }
   :root[data-home="chromelight"] { --sidebar-w: 190px; }
   :root[data-home="controller"] { --sidebar-w: 112px; }
 }
-:root[data-home="stats"] .mn-link.active { background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.95), rgba(77,163,255,0.55)); border-color: rgba(255,255,255,0.18); }
-:root[data-home="chrome"] .mn-link.active, :root[data-home="chromelight"] .mn-link.active { background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.3)); color: #15161a; box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 10px 24px -14px rgba(0,0,0,0.6); }
+:root[data-home="stats"] .mn-link.active, :root[data-home="stats"] .mn-pill { background: linear-gradient(135deg, rgba(var(--primary-rgb), 0.95), rgba(77,163,255,0.55)); border-color: rgba(255,255,255,0.18); }
+:root[data-home="chrome"] .mn-link.active, :root[data-home="chromelight"] .mn-link.active, :root[data-home="chrome"] .mn-pill, :root[data-home="chromelight"] .mn-pill { background: linear-gradient(135deg, rgba(255,255,255,0.7), rgba(255,255,255,0.3)); color: #15161a; box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 10px 24px -14px rgba(0,0,0,0.6); }
 :root[data-home="chrome"] .mn-link, :root[data-home="chromelight"] .mn-link { gap: 12px; font-size: 0.82rem; padding: 10px 14px; }
 :root[data-home="chromelight"] .mn-mark.dots { color: #15161a; }
 :root[data-home="controller"] .mn-brand { padding-bottom: 28px; }
 :root[data-home="controller"] .mn-link { flex-direction: column; justify-content: center; gap: 6px; padding: 14px 6px; font-size: 0.8rem; text-align: center; }
 :root[data-home="controller"] .mn-link .mn-t { flex: none; display: none; }
 :root[data-home="controller"] .mn-link.active .mn-t { display: block; }
-:root[data-home="controller"] .mn-link.active { background: linear-gradient(160deg, rgba(var(--primary-rgb), 0.9), rgba(var(--primary-rgb), 0.45)); }
+:root[data-home="controller"] .mn-link.active, :root[data-home="controller"] .mn-pill { background: linear-gradient(160deg, rgba(var(--primary-rgb), 0.9), rgba(var(--primary-rgb), 0.45)); }
 :root[data-home="controller"] .side-status { flex-direction: column; text-align: center; padding: 10px 6px; gap: 6px; }
 :root[data-home="controller"] .side-status-txt small { white-space: normal; }
 /* top bar: search pill, state pill, round icon buttons */
@@ -3335,3 +3335,44 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 @media (prefers-reduced-motion: reduce) { .isl2-card .isl2-fill { animation: none; } }
 :root[data-motion="reduce"] .isl2-card .isl2-fill { animation: none; }
 .isl2-card.fo.ph-break { --tint: color-mix(in srgb, #2fb59a 52%, transparent); } .isl2-card.fo.ph-long { --tint: color-mix(in srgb, #4a8fe8 52%, transparent); }
+
+/* ================================================================== Seitenleiste & Öffnen (3.34)
+   Der Hinweis auf den aktiven Bereich ist EIN Element, das mit einer Feder zum neuen Eintrag gleitet (wie bei den Reitern der Insel);
+   Gruppen klappen weich zu und auf; Fenster und Seiten wachsen dort auf, wo getippt wurde. Alles nur transform/opacity (und Zeilenhöhe der
+   Gruppe), und alles steht still bei „Bewegung reduzieren“. */
+/* a dialog opens from the spot that was tapped (set in Modal), a page the same when it was opened from inside a page */
+@keyframes m-modal-from { from { opacity: 0; transform: scale(.82); } 35% { opacity: 1; } }
+.modal.from-tap { animation: m-modal-from var(--spr-soft-t) var(--spr-soft) backwards; }
+@keyframes m-open-from { from { opacity: 0; transform: scale(.965); } }
+@media (prefers-reduced-motion: no-preference) {
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) .content.entering.from-tap { transform-origin: var(--ox, 50%) var(--oy, 30%); animation: m-open-from .5s var(--spr-soft) backwards; }
+  /* unfolding sections (details/summary) open softly instead of snapping */
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) details[open] > :not(summary) { animation: m-details .42s var(--spr-soft) backwards; }
+  :root:not([data-motion="reduce"]):not([data-lite="1"]) details > summary svg.chev, :root:not([data-lite="1"]) details > summary::marker { transition: transform .35s var(--spr-snap); }
+}
+@keyframes m-details { from { opacity: 0; transform: translateY(-8px); } }
+/* pressing anything that opens something */
+a.card:active, .card[role="button"]:active, button.card:active, .game-card:active, .tile:active { transform: scale(.975); transition-duration: .1s; }
+
+/* profile page + quick account switch */
+.profile-head { display: flex; align-items: center; gap: 14px; }
+.profile-avatar { width: 52px; height: 52px; border-radius: 18px; display: grid; place-items: center; font-weight: 800; font-size: 1.3rem; color: #fff; background: linear-gradient(145deg, rgba(var(--primary-rgb), .9), rgba(var(--primary-rgb), .45)); box-shadow: 0 10px 26px -10px rgba(var(--primary-rgb), .9); flex: none; }
+.profile-who { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.profile-who b { font-size: 1.15rem; }
+.profile-sec { margin: 10px 0 -4px; }
+.quick-switch { display: grid; gap: 8px; }
+.qs-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border-radius: 16px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text); cursor: pointer; text-align: left; transition: transform .35s var(--spr-snap), background-color .2s ease, border-color .2s ease; }
+.qs-item:not(:disabled):active { transform: scale(.97); transition-duration: .1s; }
+.qs-item.on { border-color: rgba(var(--primary-rgb), .6); background: rgba(var(--primary-rgb), .14); }
+.qs-av { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; background: rgba(var(--primary-rgb), .3); flex: none; }
+.qs-name { flex: 1; font-weight: 600; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.qs-state { color: var(--muted); }
+.isl2-card.pc.on { --tint: color-mix(in srgb, #3fbf7f 50%, transparent); } .isl2-card.pc.off { --tint: color-mix(in srgb, #e5575a 46%, transparent); } .isl2-card:nth-child(4) { animation-delay: .18s; }
+
+/* the highlight of the menu is ONE element that glides with a spring to the entry that was opened */
+.mn-list { position: relative; }
+.mn-pill { position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; opacity: 0; will-change: transform; width: 0; height: 0; margin: 0; border: 1px solid transparent; box-sizing: border-box; }
+.mn-pill.ready { transition: transform .55s var(--spr-soft), width .45s var(--spr-soft), height .45s var(--spr-soft), opacity .2s ease; }
+.mn-list.has-pill .mn-link { z-index: 1; }
+.mn-list.has-pill .mn-link.active { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
+.mn-list.has-pill .mn-link.active::before { display: none !important; }

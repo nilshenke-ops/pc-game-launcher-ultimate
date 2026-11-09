@@ -12,6 +12,7 @@ import { ACCOUNT_KEYS, buildAccountBackup, type AccountBackup } from "./account-
 import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
 import { t } from "./i18n";
+import { exportKeyBundle, importKeyBundle, rescopeLocalAi, whenLocalAiReady, wipeLocalAi } from "./free-ai-local";
 export { ACCOUNT_KEYS } from "./account-backup";
 
 const ITERATIONS = 250_000;
@@ -44,7 +45,8 @@ export function designOf(p: Prefs): Prefs {
 
 /** Data of this browser that goes with the account and into a backup – see account-backup.ts (never AI keys). */
 
-export interface AccountData { prefs: Prefs; local: Record<string, unknown> }
+/** keys: the AI keys of this account (only inside the encrypted blob – never in a backup file, never readable by the cloud). */
+export interface AccountData { prefs: Prefs; local: Record<string, unknown>; keys?: unknown }
 
 function localData(): Record<string, unknown> {
   const out: Record<string, unknown> = {};
@@ -54,7 +56,8 @@ function localData(): Record<string, unknown> {
 
 export async function encryptDesign(enc: string, p: Prefs): Promise<string> {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const payload = { v: 2, prefs: designOf(p), local: localData() };
+  const keys = exportKeyBundle();
+  const payload = { v: 3, prefs: designOf(p), local: localData(), ...(keys ? { keys } : {}) };
   const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await aes(enc), new TextEncoder().encode(JSON.stringify(payload))));
   const out = new Uint8Array(12 + ct.length); out.set(iv); out.set(ct, 12);
   return b64(out);
@@ -65,7 +68,7 @@ export async function decryptDesign(enc: string, blob: string): Promise<AccountD
   const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: all.slice(0, 12) }, await aes(enc), all.slice(12));
   const data = JSON.parse(new TextDecoder().decode(plain));
   // Profiles from 2.23 hold only the design.
-  if (data && data.v === 2) return { prefs: sanitizePrefs(data.prefs), local: typeof data.local === "object" && data.local ? data.local : {} };
+  if (data && (data.v === 2 || data.v === 3)) return { prefs: sanitizePrefs(data.prefs), local: typeof data.local === "object" && data.local ? data.local : {}, keys: data.v === 3 ? data.keys : undefined };
   return { prefs: sanitizePrefs(data), local: {} };
 }
 
@@ -108,6 +111,12 @@ function notifyAccount() {
   if (typeof window !== "undefined") window.dispatchEvent(new Event("pgl-account"));
 }
 
+/** After the session changed: the keys of this account are opened (and those of the account's blob put on this device). */
+async function adoptKeys(keys?: unknown) {
+  await rescopeLocalAi();
+  await importKeyBundle(keys);
+}
+
 /** True when this build has a cloud backend: signing in no longer needs the PC. */
 export const cloudMode = () => cloudAccountConfigured();
 
@@ -127,11 +136,15 @@ export async function createProfile(userIn: string, password: string) {
     await cloudRegister(user, k.auth, blob);               // taken name ends here – nothing local changes
     setPendingBlob(null);
     store({ user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
+    await adoptKeys();                                      // keys typed before take the new account – then they travel with it
+    void saveNow().catch(() => { /* next change tries again */ });
     return;
   }
   const k = await deriveKeys(user, password);
   await client.call("design.create", { user, key: k.auth, blob: await encryptDesign(k.enc, getPrefs()) });
   store({ user, ...k, savedAt: Date.now() });
+  await adoptKeys();
+  void saveNow().catch(() => { /* next change tries again */ });
 }
 
 /** Signs in and puts the stored data on this browser. A failure leaves the data here untouched. */
@@ -144,6 +157,7 @@ export async function signIn(userIn: string, password: string) {
       const data = remote ? await decryptDesign(k.enc, remote.blob) : null; // a wrong key ends here as well
       if (data) applyData(data, true);                     // nothing of the account before stays on this device
       store({ user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
+      await adoptKeys(data?.keys);                         // the keys of this account, and only these
       if (!data) await saveNow();                          // new cloud account: take the design of this device along
       await flushPending().catch(() => { /* next change tries again */ });
       return;
@@ -157,6 +171,7 @@ export async function signIn(userIn: string, password: string) {
   const data = await decryptDesign(k.enc, r.blob);
   applyData(data, true);
   store({ user, ...k, savedAt: Date.now() });
+  await adoptKeys(data.keys);
   notifyAccount();
 }
 
@@ -174,6 +189,7 @@ export async function switchAccount(userIn: string) {
     const data = remote ? await decryptDesign(target.enc, remote.blob) : null;
     if (data) applyData(data, true); else clearAccountData();
     store({ user, auth: target.auth, enc: target.enc, savedAt: Date.now(), cloud: true });
+    await adoptKeys(data?.keys);
     await flushPending().catch(() => { /* next change tries again */ });
     notifyAccount();
     return;
@@ -182,12 +198,14 @@ export async function switchAccount(userIn: string) {
   const data = await decryptDesign(target.enc, r.blob);
   applyData(data, true);
   store({ user, auth: target.auth, enc: target.enc, savedAt: Date.now() });
+  await adoptKeys(data.keys);
   notifyAccount();
 }
 
 export async function saveNow() {
   const s = session();
   if (!s) return;
+  await whenLocalAiReady();                                  // a save never leaves out keys that are still being opened
   const blob = await encryptDesign(s.enc, getPrefs());
   if (s.cloud) {
     try { await cloudSave(s.user, s.auth, blob); setPendingBlob(null); }
@@ -220,11 +238,12 @@ export async function deleteProfile() {
       // Already gone in the cloud: then only forget it here.
       if (!/falsch|abgelehnt|nicht eingerichtet/i.test((e as Error).message)) throw e;
     }
-    setPendingBlob(null); store(null); forget(s.user); notifyAccount(); return;
+    setPendingBlob(null); store(null); forget(s.user); wipeLocalAi(s.user); void rescopeLocalAi(); notifyAccount(); return;
   }
   await client.call("design.delete", { user: s.user, key: s.auth });
   store(null);
   forget(s.user);
+  wipeLocalAi(s.user); void rescopeLocalAi();
   notifyAccount();
 }
 
@@ -233,6 +252,7 @@ export const signOut = () => {
   if (s?.cloud) cloudSignOut();
   store(null);
   if (s) forget(s.user);
+  void rescopeLocalAi();                                     // signed out: the keys of the account are no longer open here
   notifyAccount();
 };
 
@@ -245,7 +265,9 @@ export function startDesignAutoSave() {
     window.clearTimeout(timer);
     timer = window.setTimeout(() => { if (reachable()) saveNow().catch(() => { /* next change tries again */ }); }, 3000);
   };
-  const off = onPrefsChange(later);
+  const off0 = onPrefsChange(later);
+  window.addEventListener("pgl-keys", later);
+  const off = () => { off0(); window.removeEventListener("pgl-keys", later); };
   const onVisible = () => {
     if (!session()) return;
     if (document.visibilityState === "hidden") { if (reachable()) saveNow().catch(() => {}); }

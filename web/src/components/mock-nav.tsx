@@ -1,7 +1,8 @@
 // The sidebar of the designs: logo, the few main entries of the mock-ups (Home, Spiele, Apps, Soundboard, Favoriten,
 // Zuletzt verwendet, Einstellungen), the PC state and the user – and "Mehr", which opens every other area (the full,
 // sortable navigation: categories, "Weitere Funktionen", edit mode). Each design shows its own variant of this menu.
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
+import { useGlidePill } from "./glide-pill";
 import { Link, useLocation } from "react-router-dom";
 import { AudioLines, ChevronDown, ChevronRight, Clock, Gamepad2, Home, LayoutGrid, LayoutList, Music, Settings, Star, type LucideIcon } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -60,6 +61,8 @@ export function MockNav({ status, onSheet, moreOpen = false }: { items?: NavItem
   const active = (e: Entry) => e.key === "fav" ? fav : e.key === "jarvis" ? loc.pathname === "/assistant" || loc.pathname === "/jarvis" : e.key === "games" ? loc.pathname.startsWith("/games") && !fav : e.end ? loc.pathname === e.to : loc.pathname.startsWith(e.to);
   const list = SHOWN[variant].map((k) => ENTRIES.find((e) => e.key === k)!);
   const named = variant === "glass" || variant === "stats";
+  const listRef = useRef<HTMLElement>(null), pillRef = useRef<HTMLSpanElement>(null);
+  useGlidePill(listRef, pillRef, ".mn-link.active", [loc.pathname, loc.search, moreOpen, variant]);
 
   return (
     <div className={`mn v-${variant}`}>
@@ -68,7 +71,8 @@ export function MockNav({ status, onSheet, moreOpen = false }: { items?: NavItem
         {named && <span><b>PC Game Launcher</b><small>Ultimate</small></span>}
       </Link>
       <div className="mn-scroll">
-        <nav className="mn-list" aria-label={t("Hauptmenü")}>
+        <nav className="mn-list has-pill" aria-label={t("Hauptmenü")} ref={listRef}>
+          <span className="mn-pill" ref={pillRef} aria-hidden="true" />
           {list.map((e) => (
             <Link key={e.key} to={e.to} className={`mn-link ${active(e) ? "active" : ""}`} aria-current={active(e) ? "page" : undefined} title={t(e.label)}>
               <e.icon size={22} /><span className="mn-t">{t(e.label)}</span>
