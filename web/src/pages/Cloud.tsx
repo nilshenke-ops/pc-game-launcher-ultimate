@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Cloud, CloudOff, HardDrive, KeyRound, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { Cloud, CloudOff, Download, HardDrive, KeyRound, RefreshCw, ShieldCheck, Users } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
 import { relTime } from "../lib/format";
@@ -8,7 +8,7 @@ import { Banner, Button, Card } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
 import { AndroidAppCard } from "../components/android-app-card";
 import { cloudAccountConfigured, cloudApi, cloudHealth, pendingBlob, type CloudHealth } from "../lib/cloud-account";
-import { flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
+import { accountBackup, flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
 import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi } from "../lib/free-ai-local";
 
 /**
@@ -75,6 +75,21 @@ export default function CloudPage() {
       toast(t("Konto gewechselt: {u}", { u: user }), "success");
     } catch (e) { toast((e as Error).message, "error"); }
     finally { setSwitching(null); setS(session()); setWaiting(!!pendingBlob()); setAccounts(listAccounts()); }
+  };
+
+  const downloadBackup = () => {
+    const backup = accountBackup();
+    if (!backup) { toast(t("Zum Sichern bitte erst anmelden."), "error"); return; }
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `nexus-konto-${backup.user}-${backup.exportedAt.slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast(t("Backup heruntergeladen."), "success");
   };
 
   return (
@@ -158,6 +173,19 @@ export default function CloudPage() {
         <div className="row" style={{ marginTop: 10 }}>
           <Link to="/assistant" className="btn sm">{t("Zur KI-Verwaltung")}</Link>
         </div>
+      </Card>
+
+      <Card title={t("Backup der Kontodaten")} icon={<Download size={18} />}>
+        <p className="small" style={{ margin: 0 }}>{t("Sichert den Stand dieses Kontos auf diesem Gerät als lesbare JSON-Datei: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung, Raum-Einstellung, JARVIS-MEMORY-Ordner und -Regeln, Wetter-Ort und KI-Auswahl. KI- und API-Schlüssel sind nicht enthalten – sie bleiben verschlüsselt auf dem Gerät.")}</p>
+        {s ? (
+          <div className="row" style={{ gap: 10, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <Button size="sm" icon={<Download size={14} />} onClick={downloadBackup}>{t("Backup herunterladen")}</Button>
+            <span className="tiny muted">{t("Konto: {u}", { u: s.user })}</span>
+          </div>
+        ) : (
+          <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Zum Sichern bitte erst anmelden – ohne Konto gibt es keine Kontodaten.")}</p>
+        )}
+        <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Die Datei ist nicht verschlüsselt – bitte sicher aufbewahren.")}</p>
       </Card>
 
       <AndroidAppCard />

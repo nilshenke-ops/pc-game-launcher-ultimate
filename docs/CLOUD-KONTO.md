@@ -74,6 +74,8 @@ Navigation → Verbindung → **Cloud** (oder über die Suche „cloud“): dort
 
 Die Seite prüft außerdem, ob der Dienst gerade erreichbar ist (öffentliche Health-Route, unabhängig von der Anmeldung) – so lässt sich „Dienst ist down“ von „Passwort falsch“ unterscheiden. Eine eigene Karte zeigt, welche KI- und API-Schlüssel auf diesem Gerät liegen (bereit oder gesperrt) und stellt klar: Anmelden, Abmelden, Kontowechsel und Konto löschen fassen sie nicht an. Ins Konto reist nur die KI-Auswahl, nie ein Schlüssel.
 
+Ein Backup-Knopf lädt den Stand des Kontos auf diesem Gerät als lesbare JSON-Datei herunter (Design, Einstellungen, JARVIS-MEMORY, Wetter-Ort, KI-Auswahl). KI- und API-Schlüssel sind auch hier nicht enthalten; die Datei ist nicht verschlüsselt und sollte sicher aufbewahrt werden.
+
 ## Grenzen
 
 - Bestehende Konten auf dem PC wandern **nicht** automatisch in die Cloud. Nach der Einrichtung einmal mit der Cloud registrieren/anmelden und das Design neu speichern (es liegt lokal weiter vor).

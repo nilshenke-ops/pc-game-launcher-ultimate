@@ -8,9 +8,11 @@ import {
   cloudAccountConfigured, cloudDelete, cloudLoad, cloudRegister, cloudSave, cloudSignOut,
   pendingBlob, setPendingBlob,
 } from "./cloud-account";
+import { ACCOUNT_KEYS, buildAccountBackup, type AccountBackup } from "./account-backup";
 import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
 import { t } from "./i18n";
+export { ACCOUNT_KEYS } from "./account-backup";
 
 const ITERATIONS = 250_000;
 const KEY = "pgl.designAccount";
@@ -40,11 +42,7 @@ export function designOf(p: Prefs): Prefs {
   return d;
 }
 
-/**
- * Data of this browser that goes with the account besides the design (small, never device keys or PC access).
- * AI keys are deliberately NOT here: they stay sealed on this device and are only handed to the PC when it connects.
- */
-export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room", "pgl.memory", "pgl.homePlace", "pgl.aiChoice"] as const;
+/** Data of this browser that goes with the account and into a backup – see account-backup.ts (never AI keys). */
 
 export interface AccountData { prefs: Prefs; local: Record<string, unknown> }
 
@@ -72,6 +70,14 @@ export async function decryptDesign(enc: string, blob: string): Promise<AccountD
 }
 
 export const session = () => readJson<DesignSession>(KEY);
+
+/** A readable backup of the account data of this device – the same whitelist as the account, never AI keys. */
+export function accountBackup(): AccountBackup | null {
+  const s = session();
+  if (!s) return null;
+  return buildAccountBackup(s.user, designOf(getPrefs()), localData(), { savedAt: s.savedAt });
+}
+
 const store = (s: DesignSession | null) => { writeJson(KEY, s); if (s) remember(s); };
 
 // Several accounts on one device: the login and encryption keys of each are kept (sealed by the password), so switching
