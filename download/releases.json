@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.27.0",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion.exe",
+    "size": 95034142,
+    "sha256": "c26f4af107bc56a222bc8c93865e86cdb3505896b17b29702ed65815d4e03f89",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.27.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion-3.27.0-win-x64.zip",
+      "size": 89308589,
+      "sha256": "ad536f9e64f85519149fe6b3da0da511f22caae5b2e7640bd2b747e190de165b"
+    },
+    "notes": "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante · Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig · Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
+    "changes": {
+      "neu": [
+        "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante",
+        "Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig"
+      ],
+      "verbessert": [
+        "Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
+        "„Weniger Bewegung“, „Leichte Darstellung“, die Systemeinstellung und alle Theme-Farben gelten unverändert weiter – die neuen Dauerläufer und Scheine schalten sich dort vollständig ab"
+      ],
+      "behoben": []
+    },
+    "signature": "9KUG7Xo8yQn6Yylqin/rzOEr7V/e9UhbQoOazHtO2D7WJSGtwYUQc8pja6ZJ1QMk07ruwiwWjUqYh2tuK8CpwA=="
+  },
+  {
     "version": "3.26.0",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1389,31 +1417,5 @@
       "behoben": []
     },
     "signature": "PsYXZOoOeSn19FPPv3E3qG6hMwBz8LPaV1JumOCBFPkpqrITYjsJ7bicI9veRdCy5ymtZpl/rBDzywRciO8MwQ=="
-  },
-  {
-    "version": "2.88.0",
-    "date": "2026-11-03",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.0/PCGameLauncherCompanion.exe",
-    "size": 88416704,
-    "sha256": "5099f5211bb967a45a55d412267567314450c73c36a479754f48dfa5d17c1da4",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.88.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.0/PCGameLauncherCompanion-2.88.0-win-x64.zip",
-      "size": 82912440,
-      "sha256": "40e34424d68488ca3f292e150c4602d779ac4ba41fcd14beb8d213f7f05fdc07"
-    },
-    "notes": "JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts · Tests für alle Adress- und QR-Varianten (WLAN, Tailscale, Relay, Adresswechsel, Direktlink)",
-    "changes": {
-      "neu": [
-        "JARVIS-Pet reagiert auf Befehle in der Insel: „tanz“ (30 Sekunden tanzen), „geh schlafen“ / „gute Nacht“ (schläft, bis man es antippt) und „wach auf“ – auch mit „Jarvis“ davor; normale Fragen gehen weiter an JARVIS und starten nichts"
-      ],
-      "verbessert": [
-        "Tests für alle Adress- und QR-Varianten (WLAN, Tailscale, Relay, Adresswechsel, Direktlink)"
-      ],
-      "behoben": []
-    },
-    "signature": "IXSN+4OCU4mObDWtGjGn0Es0gkguf+d0ix5ZOYHESItWRqHXzniZ7amzPVdosHrLPV8YCOhGtm+gv9EKcgUNzw=="
   }
 ]

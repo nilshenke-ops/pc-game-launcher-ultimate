@@ -1,38 +1,28 @@
 {
-  "version": "3.26.0",
+  "version": "3.27.0",
   "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.26.0/PCGameLauncherCompanion.exe",
-  "size": 95032127,
-  "sha256": "498f4d338731455083e0b08eb1dfc1702be5fd95f9b9c5aa8ca22cd34ef1c35a",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion.exe",
+  "size": 95034142,
+  "sha256": "c26f4af107bc56a222bc8c93865e86cdb3505896b17b29702ed65815d4e03f89",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.26.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.26.0/PCGameLauncherCompanion-3.26.0-win-x64.zip",
-    "size": 89306610,
-    "sha256": "d5fe0577399f7382fb3398c3f1a20eb81dfb4b64e7be17008ca96787664d622b"
+    "fileName": "PCGameLauncherCompanion-3.27.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion-3.27.0-win-x64.zip",
+    "size": 89308589,
+    "sha256": "ad536f9e64f85519149fe6b3da0da511f22caae5b2e7640bd2b747e190de165b"
   },
-  "notes": "Cloud-Konto auf Cloudflare statt Supabase: Anmelden und Synchronisieren geht auch bei ausgeschaltetem PC, damit Design, Gedächtnis-Einstellungen, Wetter-Ort und KI-Auswahl auf PC, Handy und Tablet gleich sind · Mehrere Konten auf einem Gerät speichern und ohne neues Passwort wechseln; JARVIS-Memory-Ordner und -Regeln lassen sich ohne PC im Konto einstellen und reisen verschlüsselt mit – KI- und API-Schlüssel bleiben bewusst auf dem Gerät · Cloud-Seite mit Dienststatus und sichtbarer Garantie für KI-Schlüssel sowie „Backup als JSON“: der Kontostand lässt sich als lesbare Datei herunterladen, ohne Schlüssel darin",
+  "notes": "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante · Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig · Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
   "changes": {
     "neu": [
-      "Cloud-Konto auf Cloudflare statt Supabase: Anmelden und Synchronisieren geht auch bei ausgeschaltetem PC, damit Design, Gedächtnis-Einstellungen, Wetter-Ort und KI-Auswahl auf PC, Handy und Tablet gleich sind",
-      "Mehrere Konten auf einem Gerät speichern und ohne neues Passwort wechseln; JARVIS-Memory-Ordner und -Regeln lassen sich ohne PC im Konto einstellen und reisen verschlüsselt mit – KI- und API-Schlüssel bleiben bewusst auf dem Gerät",
-      "Cloud-Seite mit Dienststatus und sichtbarer Garantie für KI-Schlüssel sowie „Backup als JSON“: der Kontostand lässt sich als lesbare Datei herunterladen, ohne Schlüssel darin",
-      "Android-App mit eigenem Fenster (bleibt angemeldet), eigenem Update-Weg über android/latest.json, SHA-256-Prüfung vor der Installation, Marken-Symbol und Startbildschirm-Namen „Nexus“ (Version 1.0.2)",
-      "Deal Radar prüft Preise schon beim Hinzufügen ohne PC – Xbox im Microsoft Store, Steam über die Preisliste der Website – und prüft die Steam-Preise der ganzen Wunschliste nach"
+      "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante",
+      "Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig"
     ],
     "verbessert": [
-      "Beim Verbinden übernimmt der PC Gedächtnis-Ordner und -Regeln, Wetter-Ort sowie KI-Reihenfolge und Betriebsart jetzt von selbst aus dem Konto (nur am PC selbst und nur mit Verwaltungsrecht); die Memory-Seite zeigt auch auf Handy und iPad, was zuletzt übernommen wurde",
-      "Bewegung für die ganze Seite: Seiten und Karten blenden gestaffelt ein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Live-Punkte atmen; die JARVIS-Insel leuchtet je nach Stimmung und hat einen schwebenden Roboter – „Weniger Bewegung“ schaltet alles komplett ab",
-      "Insel lässt sich wischen (nach rechts einen Bereich vor, nach links einen zurück), überdeckt keine Titelzeile mehr; Seitenwechsel und Spielstart sind deutlicher, und die Dauer-Regler in den Design-Einstellungen zeigen ihre Wirkung in einer kleinen Vorschau",
-      "Cloud-Bereich in Suche und Navigation; Konto-Panel und Cloud-Seite aktualisieren sich sofort nach An- und Abmeldung oder Kontowechsel; „Cloud speichern“ führt zur Cloudflare-Seite, unter „Updates & Versionen“ führt ein Knopf zur aktuellen Android-APK"
+      "Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
+      "„Weniger Bewegung“, „Leichte Darstellung“, die Systemeinstellung und alle Theme-Farben gelten unverändert weiter – die neuen Dauerläufer und Scheine schalten sich dort vollständig ab"
     ],
-    "behoben": [
-      "Nach dem Nachsenden einer wartenden Cloud-Änderung blieb „Eine Änderung wartet noch“ mit altem Zeitstempel stehen",
-      "Das Konto-Panel zeigte nach einem Kontowechsel noch das Formular des alten Kontos",
-      "Der Satz zur Einmaligkeit des Benutzernamens war grammatisch falsch; die deutschen Texte der Konto- und Memory-Karten sind klarer gefasst",
-      "Das Play-Zeichen im App-Symbol war zu zierlich und ist jetzt in allen Varianten größer und kräftiger"
-    ]
+    "behoben": []
   },
-  "signature": "69h9t8NsNVLvgFFY92HrHQo5c5lw75rPApn6OmkrUVgw72QhuOGFwObzaKj/2FaVcb9Iw959Ewpu47LY/tDWRw=="
+  "signature": "9KUG7Xo8yQn6Yylqin/rzOEr7V/e9UhbQoOazHtO2D7WJSGtwYUQc8pja6ZJ1QMk07ruwiwWjUqYh2tuK8CpwA=="
 }
