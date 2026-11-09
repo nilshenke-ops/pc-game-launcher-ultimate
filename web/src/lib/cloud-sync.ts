@@ -197,7 +197,8 @@ export async function linkPcNow(force = false): Promise<"linked" | "already" | "
   const s = currentSession();
   if (!s || linking) return "skipped";
   if (client.status.phase !== "online" || client.status.auth !== "ok") return "skipped";
-  const me = client.status.me, local = !!me?.isLocal;
+  // The rights may have just been given at the PC (the connection's cached copy is then old): ask the PC once more.
+  const me = await client.call<{ isLocal: boolean; permissions: string[] }>("devices.me").catch(() => client.status.me), local = !!me?.isLocal;
   if (!local && !me?.permissions.includes("admin")) return "skipped";
   if (!force && readJson<string>(NOAUTO_KEY) === s.user) return "skipped";
   linking = true;
@@ -239,6 +240,8 @@ export function startCloudSync() {
   window.addEventListener("online", () => soon());
   window.addEventListener("pgl-account", () => soon(100));
   client.on("authenticated", () => { soon(500); });
+  // Rights given or taken at the PC: try to hand the PC the account right away instead of at the next round.
+  client.on("changed", (d) => { if ((d as { topic?: string }).topic === "devices") void linkPcNow(); });
   soon(800);
 }
 

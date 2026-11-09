@@ -82,7 +82,7 @@ async function startPc() {
   const dll = join(ROOT, "companion/src/Companion.Headless/bin/Debug/net8.0/pgl-companion-headless.dll");
   const dotnet = process.env.DOTNET ?? (existsSync("/opt/dotnet/dotnet") ? "/opt/dotnet/dotnet" : "dotnet");
   mkdirSync(dataDir, { recursive: true });
-  if (!existsSync(join(dataDir, "settings.json"))) writeFileSync(join(dataDir, "settings.json"), JSON.stringify({ port: PC_PORT, lanAccess: false, pcName: "CLOUD-TEST-PC", pluginCatalogUrl: "", updateManifestUrl: "" }));
+  if (!existsSync(join(dataDir, "settings.json"))) writeFileSync(join(dataDir, "settings.json"), JSON.stringify({ port: PC_PORT, lanAccess: false, pcName: "CLOUD-TEST-PC", webAppUrl: HOSTED_SITE, pluginCatalogUrl: "", updateManifestUrl: "" }));
   pc = spawn(dotnet, [dll, "--data", dataDir], { env: { ...process.env, PGL_WEB_DIR: join(ROOT, "web/dist"), PGL_ADMIN_TOKEN_FILE: join(work, "admin.txt") }, stdio: "ignore", detached: true });
   await waitFor(`${PC}/healthz`);
 }
@@ -158,6 +158,31 @@ test("1–3 PC läuft, Änderungen am PC, Übertragung in die Cloud – verschl�
   const alpha = items.find((i) => i.name === "Cloud Testspiel")!;
   await rpc("library.update", { id: alpha.id, favorite: true, categories: ["Indie"], rating: 4 });
   await expect.poll(async () => (await libraryOf())?.find((i) => i.name === "Cloud Testspiel"), { timeout: 20_000 }).toMatchObject({ favorite: true, categories: ["Indie"], rating: 4 });
+});
+
+test("Handy mit Admin-Recht verbindet den PC mit dem Konto (versiegelt) – ohne Admin-Recht passiert nichts", async ({ browser }) => {
+  // The PC forgets the account; the phone (signed in with the account, paired with this PC) hands it over again.
+  await rpc("cloud.unlink");
+  expect((await rpc("cloud.status")).linked).toBe(false);
+  const phone = await ipad(browser);
+  const { code } = await rpc("pairing.create");
+  await phone.goto(`${HOSTED_SITE}/#/pair?code=${code}&pc=127.0.0.1:${PC_PORT}`);
+  await phone.getByRole("button", { name: "PC verbinden", exact: true }).last().click();
+  await expect.poll(async () => (await rpc("pairing.pending")).pending.length, { timeout: 15_000 }).toBeGreaterThan(0);
+  const req = (await rpc("pairing.pending")).pending[0];
+  await rpc("pairing.decide", { requestId: req.requestId, approve: true, permissions: ["view", "launch"] });
+  await expect(phone.getByText("Gaming-Zentrale").first()).toBeVisible({ timeout: 20_000 });
+  const dev = (await rpc("devices.list")).devices[0];
+  // Without the admin right the PC is NOT connected (the account keys would travel to it).
+  await rpc("devices.setPermissions", { id: dev.id, permissions: ["view", "launch"] });
+  await phone.waitForTimeout(4000);
+  expect((await rpc("cloud.status")).linked).toBe(false);
+  // With it, the phone seals the keys for the PC and the PC takes the account over by itself.
+  await rpc("devices.setPermissions", { id: dev.id, permissions: ["view", "launch", "manage", "admin"] });
+  await expect.poll(async () => (await rpc("cloud.status")).linked, { timeout: 40_000 }).toBe(true);
+  expect((await rpc("cloud.status")).user).toBe(USER);
+  await expect.poll(async () => (await pullAll()).pcAt, { timeout: 30_000 }).not.toBeNull();
+  await phone.context().close();
 });
 
 test("4–5 Dasselbe Konto am iPad (nie mit dem PC gekoppelt): alles ist aktuell da, ohne dass der PC erreichbar sein muss", async ({ browser }) => {

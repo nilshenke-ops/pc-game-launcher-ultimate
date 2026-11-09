@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.32.0 – 2026-11-09
+### Neu
+- Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt
+### Verbessert
+- Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf
+
 ## 3.31.0 – 2026-11-09
 ### Neu
 - Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext

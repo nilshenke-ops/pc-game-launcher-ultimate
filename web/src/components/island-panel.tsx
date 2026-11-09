@@ -2,6 +2,7 @@
 // tabs underneath – music, JARVIS (write or speak), focus timer and stopwatch, notifications, apps (WhatsApp, last started), the PC
 // values and a note. Own design in the layout of "island" apps. Everything shown is real state of the PC; what the PC cannot tell stays "n. v.".
 
+import { directionOf, dragOffset, exitMs, shouldCommit, swipeIntent, velocity } from "../lib/island-swipe";
 import { useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
@@ -100,32 +101,75 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const hist = useIslandHistory();
   const current: IslandTab = tabs.includes(tab) ? tab : "home";
   const media = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
-  // Swipe: to the right one area back (the one to the left in the bar), to the left one further. The new body slides in from the side
-  // the finger came from, so the pages travel with the hand like a deck of cards. Only touch and pen, and never over a field or a button.
-  const swipe = useRef<{ x: number; y: number; id: number } | null>(null);
+  // Swipe: the area follows the finger (a soft rubber band at the first and last one); on release it either carries on out of the way and the next
+  // one springs in from the other side, or it springs back. Touch and pen only, never over a field or a button. A tap on a tab slides the same way.
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const swipe = useRef<{ x: number; y: number; id: number; locked: boolean; samples: { x: number; t: number }[]; dx: number } | null>(null);
   const swipedAt = useRef(0); // a swipe must not also count as a tap on the card under the finger
+  const busyMoving = useRef(false);
   const [slide, setSlide] = useState<"next" | "prev" | null>(null);
-  const stepTab = (d: 1 | -1) => {
-    const i = tabs.indexOf(current), to = Math.min(tabs.length - 1, Math.max(0, i + d));
-    if (to === i) return;
-    setSlide(d > 0 ? "next" : "prev");
-    setTab(tabs[to]);
-    navigator.vibrate?.(8);
+  const reduced = () => document.documentElement.dataset.motion === "reduce" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const easing = (name: string, fallback: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+  const idx = () => tabs.indexOf(current);
+  /** Moves on to another area: the old one leaves first (from where the finger left it), then the new one springs in from the opposite side. */
+  const goTab = async (to: IslandTab, from = 0, vx = 0) => {
+    const el = bodyRef.current, i = idx(), j = tabs.indexOf(to);
+    if (j < 0 || j === i || busyMoving.current) return;
+    const dir = j > i ? 1 : -1;
+    busyMoving.current = true;
+    try {
+      if (el && !reduced() && el.animate) {
+        const w = el.clientWidth || 400, target = -dir * Math.min(w * 0.45, 180);
+        const a = el.animate([{ transform: `translate3d(${from}px,0,0)`, opacity: 1 - Math.min(Math.abs(from) / w, 0.5) }, { transform: `translate3d(${target}px,0,0)`, opacity: 0 }],
+          { duration: exitMs(Math.abs(target - from), vx), easing: "cubic-bezier(.4,0,.9,.6)", fill: "forwards" });
+        await a.finished.catch(() => undefined);
+        el.style.transform = ""; el.style.opacity = "0";   // the new body mounts at once; it starts invisible and springs in
+      }
+      setSlide(dir > 0 ? "next" : "prev");
+      setTab(to);
+      navigator.vibrate?.(8);
+    } finally { window.setTimeout(() => { busyMoving.current = false; }, 60); }
+  };
+  const stepTab = (d: 1 | -1, from = 0, vx = 0) => { const to = tabs[idx() + d]; if (to) void goTab(to, from, vx); };
+  const springBack = (el: HTMLElement, from: number) => {
+    if (reduced() || !el.animate) { el.style.transform = ""; el.style.opacity = ""; return; }
+    const a = el.animate([{ transform: `translate3d(${from}px,0,0)`, opacity: parseFloat(el.style.opacity || "1") }, { transform: "translate3d(0,0,0)", opacity: 1 }],
+      { duration: 380, easing: easing("--spr-soft", "cubic-bezier(.2,.8,.2,1)") });
+    el.style.transform = ""; el.style.opacity = "";
+    void a.finished.catch(() => undefined);
   };
   const swipeDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const t = e.target as HTMLElement;
-    if (e.pointerType === "mouse" || t.closest("input, textarea, select, button, a, [contenteditable='true']")) { swipe.current = null; return; }
-    swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId };
-    e.currentTarget.setPointerCapture?.(e.pointerId); // the finger may leave the body while swiping
+    if (busyMoving.current || e.pointerType === "mouse" || t.closest("input, textarea, select, button, a, [contenteditable='true']")) { swipe.current = null; return; }
+    swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId, locked: false, samples: [{ x: e.clientX, t: e.timeStamp }], dx: 0 };
+  };
+  const swipeMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const s = swipe.current;
+    if (!s || s.id !== e.pointerId) return;
+    const dx = e.clientX - s.x, dy = e.clientY - s.y;
+    if (!s.locked) {
+      const intent = swipeIntent(dx, dy);
+      if (intent === "vertical") { swipe.current = null; return; }          // scrolling: leave it to the browser
+      if (intent === "undecided") return;
+      s.locked = true;
+      try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* not a live pointer */ }   // the finger may leave the body while swiping
+    }
+    s.samples.push({ x: e.clientX, t: e.timeStamp }); if (s.samples.length > 12) s.samples.shift();
+    const to = tabs[idx() + directionOf(dx)];
+    s.dx = dragOffset(dx, !!to);
+    const el = e.currentTarget, w = el.clientWidth || 400;
+    el.style.transform = `translate3d(${s.dx}px,0,0)`;
+    el.style.opacity = String(1 - Math.min(Math.abs(s.dx) / w, 0.5));
   };
   const swipeUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     const s = swipe.current; swipe.current = null;
-    if (!s || s.id !== e.pointerId) return;
-    const dx = e.clientX - s.x, dy = e.clientY - s.y;
-    if (Math.abs(dx) < 44 || Math.abs(dx) < Math.abs(dy) * 1.4) return; // too short, or meant as scrolling
+    if (!s || s.id !== e.pointerId || !s.locked) return;
     swipedAt.current = Date.now();
-    stepTab(dx > 0 ? -1 : 1);
+    const el = e.currentTarget, w = el.clientWidth || 400, dx = e.clientX - s.x, vx = velocity(s.samples);
+    const d = directionOf(dx), has = !!tabs[idx() + d];
+    if (shouldCommit(dx, vx, w, has)) stepTab(d, s.dx, vx); else springBack(el, s.dx);
   };
+  const swipeCancel = (e: ReactPointerEvent<HTMLDivElement>) => { const s = swipe.current; swipe.current = null; if (s?.locked) springBack(e.currentTarget, s.dx); };
 
   const lib = useRpc<{ items: LibraryItem[] }>("library.list", {}, ["library"], online && current === "apps");
   const recentHist = useRpc<HistoryData>("history.get", {}, ["history"], online && current === "apps");
@@ -535,15 +579,15 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           )}
         </div>
       </header>
-      <div className={`isl2-body${slide ? ` swipe-${slide}` : ""}`} role="tabpanel" id="isl2-panel" aria-labelledby={`isl2-tab-${current}`} key={current}
-        onPointerDown={swipeDown} onPointerUp={swipeUp} onPointerCancel={() => { swipe.current = null; }}
+      <div className={`isl2-body${slide ? ` swipe-${slide}` : ""}`} role="tabpanel" id="isl2-panel" aria-labelledby={`isl2-tab-${current}`} key={current} ref={bodyRef}
+        onPointerDown={swipeDown} onPointerMove={swipeMove} onPointerUp={swipeUp} onPointerCancel={swipeCancel}
         onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
       <nav className="isl2-tabs" role="tablist" aria-label={t("Bereiche der Insel")}>
         {tabs.map((id) => {
           const m = TAB_META[id], on = id === current;
           return (
             <button key={id} type="button" role="tab" id={`isl2-tab-${id}`} aria-selected={on} aria-controls="isl2-panel" aria-label={t(m.label)} title={t(m.label)}
-              className={`isl2-tab${on ? " on" : ""}`} onClick={() => { setSlide(null); setTab(id); }}><m.icon size={17} />{on && <span>{t(m.label)}</span>}</button>
+              className={`isl2-tab${on ? " on" : ""}`} onClick={() => { if (id !== current) void goTab(id); }}><m.icon size={17} />{on && <span>{t(m.label)}</span>}</button>
           );
         })}
         <span className="isl2-grow" />
