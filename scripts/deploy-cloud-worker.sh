@@ -62,7 +62,8 @@ DB_NAME="$DB_NAME" DB_ID="$ID" ACCOUNT_ID="$CLOUDFLARE_ACCOUNT_ID" CONFIG="$CONF
 grep -qxF 'wrangler.deploy.json' .gitignore 2>/dev/null || printf '\n# generated Worker config (contains the D1 database id)\nwrangler.deploy.json\n.wrangler/\n' >> .gitignore
 
 echo "4/5 Migrationen anwenden und Worker veröffentlichen …"
-npx --yes wrangler@4 d1 migrations apply "$DB_NAME" --remote --config "$CONFIG" -y
+# No -y: Wrangler 4 rejects it and skips the confirmation automatically in CI.
+npx --yes wrangler@4 d1 migrations apply "$DB_NAME" --remote --config "$CONFIG"
 npx --yes wrangler@4 deploy --config "$CONFIG"
 
 echo "5/5 Health-Check …"
