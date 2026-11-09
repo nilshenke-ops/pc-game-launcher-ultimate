@@ -1,28 +1,24 @@
 {
-  "version": "3.33.0",
+  "version": "3.33.1",
   "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion.exe",
-  "size": 95069216,
-  "sha256": "26db28f685f5879d66375fd0918329aec47f5a5d3316966277e7dd25ad2e6f77",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.1/PCGameLauncherCompanion.exe",
+  "size": 95069633,
+  "sha256": "dd0ebf69d0c170ed6b2ef5a370fb8c7e31a351defb122c08c3674a16e7a1ca39",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.33.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion-3.33.0-win-x64.zip",
-    "size": 89342779,
-    "sha256": "4337bc2ce303d11bf49da19e129418b2dee0d7cbb109bc0b94b38ebb181d5374"
+    "fileName": "PCGameLauncherCompanion-3.33.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.1/PCGameLauncherCompanion-3.33.1-win-x64.zip",
+    "size": 89343141,
+    "sha256": "9204e9931eb81823327d0be33c4ca4374f4d6398ed17872e998bca7d55dc554f"
   },
-  "notes": "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt · Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol · Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)",
+  "notes": "Macht Widgets wieder zu klarem Glas und zieht den Baukasten mit.",
   "changes": {
-    "neu": [
-      "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt",
-      "Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol",
-      "Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)"
-    ],
+    "neu": [],
     "verbessert": [
-      "Insel: Die Farben der Karten passen sich an – Musik und Spiel nehmen die Farbe des Covers bzw. Logos, der Fokus-Timer färbt sich je nach Phase (Fokus, Pause, lange Pause)"
+      "Macht Widgets wieder zu klarem Glas und zieht den Baukasten mit."
     ],
     "behoben": []
   },
-  "signature": "OKqB0EPNcRPrT998DxLKiCpsEidI/eGsFGEK0fCna3/L9LgLGEuGNrzWVwl0kAJJyvUriNGjDyqlhfgMhf7IMA=="
+  "signature": "ruk1FHjcvLEiiczR5WQtIbDK+5/7J93KeQErYgKMXY6wZp+3KEOlgxNJnl9KY2nPmiV/sHC4VIEuqZOjROACAw=="
 }
