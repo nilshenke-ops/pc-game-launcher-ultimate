@@ -1,0 +1,39 @@
+# Veröffentlicht den Windows-Begleiter selbstständig, wenn sich Web- oder Begleiter-Code geändert hat, ohne dass
+# jemand die Version in VERSION erhöht hat. Das Skript erhöht die Patch-Version, schreibt den Eintrag in CHANGELOG.md,
+# pusht nach main und startet den bestehenden Release-Workflow (Push mit dem CI-Token löst selbst keine Workflows aus).
+name: Automatische PC-Veröffentlichung
+on:
+  schedule:
+    # Stündlich; mehrere Commits zwischen zwei Läufen ergeben ein gemeinsames Release.
+    - cron: "17 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Nur prüfen, nichts veröffentlichen"
+        type: boolean
+        default: false
+permissions:
+  contents: write
+  actions: write
+# Dieselbe Gruppe wie der Release-Workflow: nie gleichzeitig mit einer Veröffentlichung arbeiten.
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Unveröffentlichte Änderungen prüfen und Version erhöhen
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            bash scripts/auto-release.sh --dry-run
+          else
+            bash scripts/auto-release.sh
+          fi

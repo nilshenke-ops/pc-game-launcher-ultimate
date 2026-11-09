@@ -177,6 +177,17 @@ jobs:
         if: env.RELEASE != 'true' || env.SIGNED == '1'
         working-directory: site
         run: |
+          # Ein Lauf für einen älteren Stand kann nach einem neueren Release fertig werden. Dann bleibt die neuere
+          # Webseite stehen, statt auf die alte Version zurückzuspringen.
+          git fetch --quiet origin gh-pages
+          git reset --hard --quiet FETCH_HEAD
+          if [ -f download/update.json ]; then
+            PUBLISHED="$(jq -r .version download/update.json)"
+            if [ "$PUBLISHED" != "$V" ] && [ "$(printf '%s\n%s\n' "$PUBLISHED" "$V" | sort -V | tail -1)" = "$PUBLISHED" ]; then
+              echo "gh-pages zeigt bereits v$PUBLISHED; v$V ist älter – die Webseite bleibt unverändert."
+              exit 0
+            fi
+          fi
           git rm -rq --ignore-unmatch assets icons index.html manifest.webmanifest offline-files.json sw.js
           cp -r ../main/web/dist-hosted/. .
           if [ "$RELEASE" = "true" ]; then
