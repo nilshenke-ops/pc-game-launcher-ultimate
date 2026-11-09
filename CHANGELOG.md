@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.30.1 – 2026-11-09
+### Verbessert
+- Macht Aufnahme und Widget-Menü im Overlay übersichtlich.
+- Wischen wechselt Startseiten und das Musik-Widget wird klarer.
+- Kürzt die Beschriftungen der Musik-Tasten, damit sie auf dem Handy nicht abschneiden.
+
 ## 3.30.0 – 2026-11-09
 ### Neu
 - Handy oder iPad ohne Tailscale verbinden: In Einstellungen → Verbindung gibt es am PC jetzt „Für Handys ohne Tailscale einschalten“ (Tailscale Funnel, ein Klick, kein PowerShell). Dann ist die https-Adresse des PCs auch ohne Tailscale erreichbar – von überall, auch über Mobilfunk – und der QR-Code mit der github.io-Adresse verbindet sich. Der Zugang ist öffentlich erreichbar, aber ohne einen Kopplungscode, den du am PC erzeugst und bestätigst, kommt niemand hinein. Jederzeit wieder ausschaltbar. Beim ersten Mal muss Funnel einmalig im Tailscale-Konto freigegeben werden (der Link steht in der Meldung)
