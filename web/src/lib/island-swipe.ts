@@ -46,3 +46,9 @@ export function exitMs(remaining: number, vx: number): number {
   const sp = Math.max(Math.abs(vx), 0.35);
   return Math.round(Math.min(220, Math.max(110, remaining / sp)));
 }
+
+/** How long the carousel takes to carry one area out and the next one in: the faster the hand, the shorter – but always smooth. */
+export function carouselMs(remaining: number, vx: number): number {
+  const sp = Math.max(Math.abs(vx), 0.5);
+  return Math.round(Math.min(420, Math.max(260, remaining / sp)));
+}

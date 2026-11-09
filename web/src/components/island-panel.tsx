@@ -2,8 +2,9 @@
 // tabs underneath – music, JARVIS (write or speak), focus timer and stopwatch, notifications, apps (WhatsApp, last started), the PC
 // values and a note. Own design in the layout of "island" apps. Everything shown is real state of the PC; what the PC cannot tell stays "n. v.".
 
-import { directionOf, dragOffset, exitMs, shouldCommit, swipeIntent, velocity } from "../lib/island-swipe";
-import { useEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocity } from "../lib/island-swipe";
+import { flushSync } from "react-dom";
+import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -35,7 +36,7 @@ import { parseMessageCommand, type Messenger } from "../lib/messaging";
 import { mainGame } from "../lib/running";
 import { homeRecent, type HistoryData } from "../lib/home-data";
 import { relTime } from "../lib/format";
-import { brandFor } from "../lib/brands";
+import { brandBg, brandFor } from "../lib/brands";
 import type { LibraryItem, Notification } from "../lib/types";
 import { BrandLogo } from "./brand-logo";
 import { Bars, IslandEyes } from "./island-bits";
@@ -87,7 +88,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const game = mainGame(app?.running);
   const tabs = visibleTabs(look.widgets, !!game);
   const has = (id: IslandWidgetId) => look.widgets.includes(id);
-  const [tab, setTab] = useState<IslandTab>("home");
+  const [tab, setTabRaw] = useState<IslandTab>("home");
+  // Any other change of area (voice, buttons, links) fades the new area in; only the swipe carousel hands over without a second animation.
+  const setTab = (to: IslandTab) => { setSlide(null); setTabRaw(to); };
   const [msg, setMsg] = useState<{ text: string; app: Messenger; phone: string | null }>(() => ({ text: "", app: ((): Messenger => { const v = readJson<string>("pgl.island.msgapp"); return v === "telegram" || v === "sms" || v === "mail" ? v : "whatsapp"; })(), phone: null }));
   const [menu, setMenu] = useState(false);
   const [edit, setEdit] = useState(false);
@@ -101,47 +104,56 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const hist = useIslandHistory();
   const current: IslandTab = tabs.includes(tab) ? tab : "home";
   const media = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
-  // Swipe: the area follows the finger (a soft rubber band at the first and last one); on release it either carries on out of the way and the next
-  // one springs in from the other side, or it springs back. Touch and pen only, never over a field or a button. A tap on a tab slides the same way.
+  // Swipe: like a deck of cards – the area follows the finger and the NEXT one is already there beside it, moving along. On release both carry on
+  // (the next one comes to rest in the middle), or both spring back. Touch and pen only, never over a field or a button. A tap on a tab does the same.
   const bodyRef = useRef<HTMLDivElement | null>(null);
-  const swipe = useRef<{ x: number; y: number; id: number; locked: boolean; samples: { x: number; t: number }[]; dx: number } | null>(null);
+  const peekRef = useRef<HTMLDivElement | null>(null);
+  const swipe = useRef<{ x: number; y: number; id: number; locked: boolean; samples: { x: number; t: number }[]; dx: number; d: 1 | -1 } | null>(null);
   const swipedAt = useRef(0); // a swipe must not also count as a tap on the card under the finger
   const busyMoving = useRef(false);
-  const [slide, setSlide] = useState<"next" | "prev" | null>(null);
+  const [slide, setSlide] = useState<"none" | null>(null);
+  const [peek, setPeek] = useState<IslandTab | null>(null);
   const reduced = () => document.documentElement.dataset.motion === "reduce" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-  const easing = (name: string, fallback: string) => getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
   const idx = () => tabs.indexOf(current);
-  /** Moves on to another area: the old one leaves first (from where the finger left it), then the new one springs in from the opposite side. */
+  const spot = (dx: number, d: 1 | -1) => { const w = bodyRef.current?.clientWidth || 400; if (peekRef.current) peekRef.current.style.transform = `translate3d(${dx + d * w}px,0,0)`; };
+  // The neighbour is mounted a moment after the drag starts: put it where the finger says as soon as it exists.
+  useLayoutEffect(() => { const s = swipe.current; if (peek && s) spot(s.dx, s.d); });
+  /** Carries the current area out and the next one in (from where the finger left them), then hands over to the real next area without a flicker. */
   const goTab = async (to: IslandTab, from = 0, vx = 0) => {
     const el = bodyRef.current, i = idx(), j = tabs.indexOf(to);
     if (j < 0 || j === i || busyMoving.current) return;
-    const dir = j > i ? 1 : -1;
+    const d: 1 | -1 = j > i ? 1 : -1;
     busyMoving.current = true;
     try {
       if (el && !reduced() && el.animate) {
-        const w = el.clientWidth || 400, target = -dir * Math.min(w * 0.45, 180);
-        const a = el.animate([{ transform: `translate3d(${from}px,0,0)`, opacity: 1 - Math.min(Math.abs(from) / w, 0.5) }, { transform: `translate3d(${target}px,0,0)`, opacity: 0 }],
-          { duration: exitMs(Math.abs(target - from), vx), easing: "cubic-bezier(.4,0,.9,.6)", fill: "forwards" });
-        await a.finished.catch(() => undefined);
-        el.style.transform = ""; el.style.opacity = "0";   // the new body mounts at once; it starts invisible and springs in
+        const w = el.clientWidth || 400;
+        flushSync(() => setPeek(to));
+        const pe = peekRef.current;
+        if (pe) {
+          const ms = carouselMs(Math.abs(-d * w - from), vx), ease = "cubic-bezier(.22,.9,.28,1)";
+          const a1 = el.animate([{ transform: `translate3d(${from}px,0,0)` }, { transform: `translate3d(${-d * w}px,0,0)` }], { duration: ms, easing: ease, fill: "forwards" });
+          const a2 = pe.animate([{ transform: `translate3d(${from + d * w}px,0,0)` }, { transform: "translate3d(0,0,0)" }], { duration: ms, easing: ease, fill: "forwards" });
+          await Promise.all([a1.finished, a2.finished]).catch(() => undefined);
+        }
       }
-      setSlide(dir > 0 ? "next" : "prev");
-      setTab(to);
+      setSlide("none"); setTabRaw(to); setPeek(null);   // the real area appears exactly where the neighbour stopped
       navigator.vibrate?.(8);
     } finally { window.setTimeout(() => { busyMoving.current = false; }, 60); }
   };
   const stepTab = (d: 1 | -1, from = 0, vx = 0) => { const to = tabs[idx() + d]; if (to) void goTab(to, from, vx); };
-  const springBack = (el: HTMLElement, from: number) => {
-    if (reduced() || !el.animate) { el.style.transform = ""; el.style.opacity = ""; return; }
-    const a = el.animate([{ transform: `translate3d(${from}px,0,0)`, opacity: parseFloat(el.style.opacity || "1") }, { transform: "translate3d(0,0,0)", opacity: 1 }],
-      { duration: 380, easing: easing("--spr-soft", "cubic-bezier(.2,.8,.2,1)") });
-    el.style.transform = ""; el.style.opacity = "";
-    void a.finished.catch(() => undefined);
+  const springBack = (el: HTMLElement, from: number, d: 1 | -1) => {
+    const pe = peekRef.current, w = el.clientWidth || 400;
+    if (reduced() || !el.animate) { el.style.transform = ""; setPeek(null); return; }
+    const ease = getComputedStyle(document.documentElement).getPropertyValue("--spr-soft").trim() || "cubic-bezier(.2,.8,.2,1)";
+    el.animate([{ transform: `translate3d(${from}px,0,0)` }, { transform: "translate3d(0,0,0)" }], { duration: 400, easing: ease });
+    el.style.transform = "";
+    const a = pe?.animate([{ transform: `translate3d(${from + d * w}px,0,0)` }, { transform: `translate3d(${d * w}px,0,0)` }], { duration: 400, easing: ease, fill: "forwards" });
+    if (a) void a.finished.then(() => setPeek(null), () => setPeek(null)); else setPeek(null);
   };
   const swipeDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const t = e.target as HTMLElement;
     if (busyMoving.current || e.pointerType === "mouse" || t.closest("input, textarea, select, button, a, [contenteditable='true']")) { swipe.current = null; return; }
-    swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId, locked: false, samples: [{ x: e.clientX, t: e.timeStamp }], dx: 0 };
+    swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId, locked: false, samples: [{ x: e.clientX, t: e.timeStamp }], dx: 0, d: 1 };
   };
   const swipeMove = (e: ReactPointerEvent<HTMLDivElement>) => {
     const s = swipe.current;
@@ -155,11 +167,12 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       try { e.currentTarget.setPointerCapture?.(e.pointerId); } catch { /* not a live pointer */ }   // the finger may leave the body while swiping
     }
     s.samples.push({ x: e.clientX, t: e.timeStamp }); if (s.samples.length > 12) s.samples.shift();
-    const to = tabs[idx() + directionOf(dx)];
+    s.d = directionOf(dx);
+    const to = tabs[idx() + s.d] ?? null;
     s.dx = dragOffset(dx, !!to);
-    const el = e.currentTarget, w = el.clientWidth || 400;
-    el.style.transform = `translate3d(${s.dx}px,0,0)`;
-    el.style.opacity = String(1 - Math.min(Math.abs(s.dx) / w, 0.5));
+    e.currentTarget.style.transform = `translate3d(${s.dx}px,0,0)`;
+    if (peek !== to) setPeek(to);                                            // the neighbour on the side the finger pulls towards
+    if (to) spot(s.dx, s.d);
   };
   const swipeUp = (e: ReactPointerEvent<HTMLDivElement>) => {
     const s = swipe.current; swipe.current = null;
@@ -167,9 +180,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     swipedAt.current = Date.now();
     const el = e.currentTarget, w = el.clientWidth || 400, dx = e.clientX - s.x, vx = velocity(s.samples);
     const d = directionOf(dx), has = !!tabs[idx() + d];
-    if (shouldCommit(dx, vx, w, has)) stepTab(d, s.dx, vx); else springBack(el, s.dx);
+    if (shouldCommit(dx, vx, w, has)) stepTab(d, s.dx, vx); else springBack(el, s.dx, d);
   };
-  const swipeCancel = (e: ReactPointerEvent<HTMLDivElement>) => { const s = swipe.current; swipe.current = null; if (s?.locked) springBack(e.currentTarget, s.dx); };
+  const swipeCancel = (e: ReactPointerEvent<HTMLDivElement>) => { const s = swipe.current; swipe.current = null; if (s?.locked) springBack(e.currentTarget, s.dx, s.d); };
 
   const lib = useRpc<{ items: LibraryItem[] }>("library.list", {}, ["library"], online && current === "apps");
   const recentHist = useRpc<HistoryData>("history.get", {}, ["history"], online && current === "apps");
@@ -290,6 +303,16 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const cover = np?.cover ? <img className="isl2-cover" src={np.cover} alt="" /> : <Music size={22} />;
   const accentStyle = accent ? ({ "--tint": `color-mix(in srgb, ${accent} 62%, transparent)` } as React.CSSProperties) : undefined;
   const gameSince = game ? new Date(game.since).getTime() : 0;
+  // The running game's own picture fills its card: its cover if there is one, else its logo/icon on a soft blurred copy of itself – never stretched.
+  const gameLib = useRpc<{ items: LibraryItem[]; coversFromCdn?: boolean }>("library.list", {}, ["library"], online && !!game);
+  const gItem = game ? gameLib.data?.items.find((i) => i.id === game.itemId) : undefined;
+  const gCover = gItem?.coverUrl && (gameLib.data?.coversFromCdn || !gItem.coverUrl.includes("steamstatic")) ? gItem.coverUrl : undefined;
+  const gBrand = gItem ? brandFor(gItem) : undefined;
+  const gPic = gCover ?? gItem?.iconData ?? null;
+  const [gAccent, setGAccent] = useState<string | null>(null);
+  useEffect(() => { let on = true; void accentOfCover(gPic).then((c) => { if (on) setGAccent(c); }); return () => { on = false; }; }, [gPic]);
+  const gStyle = gAccent ? ({ "--tint": `color-mix(in srgb, ${gAccent} 62%, transparent)` } as React.CSSProperties) : gBrand ? ({ "--tint": `color-mix(in srgb, ${brandBg(gBrand)} 70%, transparent)` } as React.CSSProperties) : undefined;
+  const musicFilled = !!np?.cover;
 
   const homeCards = (
     <div className="isl2-cards" onPointerDown={(e) => { if (!(e.target as HTMLElement).closest("button")) holdStart(); }} onPointerUp={holdEnd} onPointerLeave={holdEnd} onPointerCancel={holdEnd}>
@@ -300,17 +323,25 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         <span className="isl2-sub ellipsis">{s.last ? s.last.text : t("Tippen zum Fragen")}</span>
       </div>
       {game && (
-        <div className="isl2-card gm">
+        <div className={`isl2-card gm${gCover || gItem ? " filled" : ""}`} style={gStyle}>
+          {gCover ? <img className="isl2-fill" src={gCover} alt="" />
+            : gItem && (gBrand || gItem.iconData) ? (
+              <span className="isl2-fill logo" aria-hidden>
+                {gItem.iconData && <img className="isl2-fill-blur" src={gItem.iconData} alt="" />}
+                <span className="isl2-fill-logo">{gBrand ? <BrandLogo brand={gBrand} size={72} color="#fff" /> : <img src={gItem.iconData!} alt="" />}</span>
+              </span>
+            ) : null}
           <button type="button" className="isl2-ctitle" onClick={() => setTab("game")}>{t("Spiel")}</button>
-          <span className="isl2-art" aria-hidden><Gamepad2 size={22} /></span>
+          {!(gCover || (gItem && (gBrand || gItem.iconData))) && <span className="isl2-art" aria-hidden><Gamepad2 size={22} /></span>}
           <b className="isl2-big ellipsis" title={game.name}>{game.name}</b>
           <span className="isl2-sub ellipsis">{playTime(gameSince, now) ?? t("läuft")}</span>
         </div>
       )}
       {has("music") && (
-        <div className="isl2-card mu" style={accentStyle}>
+        <div className={`isl2-card mu${musicFilled ? " filled" : ""}`} style={accentStyle}>
+          {musicFilled && <img className="isl2-fill" src={np!.cover!} alt="" key={np!.cover} />}
           <button type="button" className="isl2-ctitle" onClick={() => setTab("music")}>{t("Musik")}</button>
-          <span className="isl2-art" aria-hidden>{cover}</span>
+          {!musicFilled && <span className="isl2-art" aria-hidden>{cover}</span>}
           {playing && <Bars level={0.4} />}
           <b className="isl2-big ellipsis" title={np?.title}>{np?.active ? np.title : t("Nichts")}</b>
           <span className="isl2-sub ellipsis">{np?.active ? nowSub(np) : online ? t("Gerade läuft nichts") : t("PC nicht verbunden")}</span>
@@ -319,7 +350,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         </div>
       )}
       {has("focus") && (
-        <div className="isl2-card fo">
+        <div className={`isl2-card fo${tm.pomo ? ` ph-${tm.pomo.phase}` : ""}`}>
           <button type="button" className="isl2-ctitle" onClick={() => setTab("focus")}>{t("Fokus")}</button>
           <b className="isl2-big isl2-time">{view ? clock(view.left) : "25:00"}</b>
           <span className="isl2-sub">{timerSub}</span>
@@ -579,9 +610,12 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           )}
         </div>
       </header>
-      <div className={`isl2-body${slide ? ` swipe-${slide}` : ""}`} role="tabpanel" id="isl2-panel" aria-labelledby={`isl2-tab-${current}`} key={current} ref={bodyRef}
-        onPointerDown={swipeDown} onPointerMove={swipeMove} onPointerUp={swipeUp} onPointerCancel={swipeCancel}
-        onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
+      <div className="isl2-stage">
+        <div className={`isl2-body${slide ? " swipe-none" : ""}`} role="tabpanel" id="isl2-panel" aria-labelledby={`isl2-tab-${current}`} key={current} ref={bodyRef}
+          onPointerDown={swipeDown} onPointerMove={swipeMove} onPointerUp={swipeUp} onPointerCancel={swipeCancel}
+          onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
+        {peek && <div className="isl2-body isl2-peek" aria-hidden ref={peekRef} {...({ inert: "" } as object)}>{body[peek]}</div>}
+      </div>
       <nav className="isl2-tabs" role="tablist" aria-label={t("Bereiche der Insel")}>
         {tabs.map((id) => {
           const m = TAB_META[id], on = id === current;

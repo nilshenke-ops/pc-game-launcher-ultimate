@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { directionOf, dragOffset, exitMs, shouldCommit, swipeIntent, velocity } from "./island-swipe";
+import { carouselMs, directionOf, dragOffset, exitMs, shouldCommit, swipeIntent, velocity } from "./island-swipe";
 
 describe("Insel: Wischen zwischen den Bereichen", () => {
   it("erkennt erst nach ein paar Pixeln, ob gewischt oder gescrollt wird", () => {
@@ -32,5 +32,8 @@ describe("Insel: Wischen zwischen den Bereichen", () => {
     expect(exitMs(300, 3)).toBe(110);
     expect(exitMs(300, 0.1)).toBe(220);
     expect(exitMs(200, 1)).toBe(200);
+  });
+  it("Karussell-Dauer bleibt immer weich (260–420 ms)", () => {
+    expect(carouselMs(400, 5)).toBe(260); expect(carouselMs(400, 0.1)).toBe(420); expect(carouselMs(300, 1)).toBe(300);
   });
 });

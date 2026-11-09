@@ -31,65 +31,70 @@ test.beforeAll(async ({ browser }) => {
 
 test("Wischen: der Bereich folgt dem Finger, fährt weiter und der nächste federt von der anderen Seite herein", async () => {
   const panel = page.getByRole("dialog", { name: "JARVIS-Insel" });
-  const body = panel.locator(".isl2-body");
+  const body = panel.locator(".isl2-body:not(.isl2-peek)");
   const first = (await tabOn(panel).getAttribute("id"))!;
   // Mid-drag: the body is moved by the finger and fades a little – no jump, no CSS class animation.
   await swipe(body, [{ dx: -10 }, { dx: -40 }, { dx: -90 }], "touch", false);
   const mid = await body.evaluate((el) => ({ t: el.style.transform, o: Number(el.style.opacity) }));
-  expect(mid.t).toContain("-90px"); expect(mid.o).toBeLessThan(1); expect(mid.o).toBeGreaterThan(0.5);
+  expect(mid.t).toContain("-90px");
+  // The NEXT area is already there beside it and travels along (one panel width to the right of the current one, minus the drag).
+  const peek = panel.locator(".isl2-peek");
+  await expect(peek).toHaveCount(1);
+  const gap = await page.evaluate(() => { const b = document.querySelector(".isl2-body:not(.isl2-peek)")!.getBoundingClientRect(), p = document.querySelector(".isl2-peek")!.getBoundingClientRect(); return { dx: p.left - b.left, w: b.width, po: Number(getComputedStyle(document.querySelector(".isl2-peek")!).opacity) }; });
+  expect(Math.abs(gap.dx - gap.w)).toBeLessThan(3); expect(gap.po).toBe(1);
   // Release far enough: on to the next area, the body starts fresh (no leftover transform), and it really is another tab.
   await body.evaluate((el) => el.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, pointerId: 7, pointerType: "touch", clientX: el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2 - 170, clientY: el.getBoundingClientRect().top + 30 })));
   await body.evaluate((el) => el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 7, pointerType: "touch", clientX: el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2 - 170, clientY: el.getBoundingClientRect().top + 30 })));
   await expect.poll(async () => tabOn(panel).getAttribute("id")).not.toBe(first);
   const next = (await tabOn(panel).getAttribute("id"))!;
-  await expect(panel.locator(".isl2-body.swipe-next")).toHaveCount(1);          // the new area springs in from the right
-  await expect.poll(() => panel.locator(".isl2-body").evaluate((el) => el.getAnimations().length), { timeout: 3000 }).toBe(0);   // and comes to rest
-  expect(await panel.locator(".isl2-body").evaluate((el) => [el.style.transform, getComputedStyle(el).opacity])).toEqual(["", "1"]);
+  await expect(panel.locator(".isl2-peek")).toHaveCount(0);                      // handed over: the neighbour is the real area now
+  await expect.poll(() => panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => el.getAnimations().length), { timeout: 3000 }).toBe(0);   // and comes to rest
+  expect(await panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => [el.style.transform, getComputedStyle(el).opacity])).toEqual(["", "1"]);
   // Back to the right: the previous area.
-  await swipe(panel.locator(".isl2-body"), [{ dx: 30 }, { dx: 90 }, { dx: 190 }]);
+  await swipe(panel.locator(".isl2-body:not(.isl2-peek)"), [{ dx: 30 }, { dx: 90 }, { dx: 190 }]);
   await expect.poll(async () => tabOn(panel).getAttribute("id")).toBe(first);
-  await expect(panel.locator(".isl2-body.swipe-prev")).toHaveCount(1);
   expect(next).not.toBe(first);
 });
 
 test("kurzer Wisch federt zurück; Maus und senkrechtes Ziehen tun nichts; am Rand mit Gummiband", async () => {
   const panel = page.getByRole("dialog", { name: "JARVIS-Insel" });
-  await expect.poll(() => panel.locator(".isl2-body").evaluate((el) => el.getAnimations().length), { timeout: 3000 }).toBe(0);
+  await expect.poll(() => panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => el.getAnimations().length), { timeout: 3000 }).toBe(0);
   const at = (await tabOn(panel).getAttribute("id"))!;
-  await swipe(panel.locator(".isl2-body"), [{ dx: -14 }, { dx: -30 }], "touch", true, 160);        // short and slow: back (a quick flick would go on)
-  await expect.poll(() => panel.locator(".isl2-body").evaluate((el) => [el.style.transform, el.getAnimations().length]), { timeout: 3000 }).toEqual(["", 0]);
+  await swipe(panel.locator(".isl2-body:not(.isl2-peek)"), [{ dx: -14 }, { dx: -30 }], "touch", true, 160);        // short and slow: back (a quick flick would go on)
+  await expect.poll(() => panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => [el.style.transform, el.getAnimations().length]), { timeout: 3000 }).toEqual(["", 0]);
   expect(await tabOn(panel).getAttribute("id")).toBe(at);
-  await swipe(panel.locator(".isl2-body"), [{ dx: -60 }, { dx: -200 }], "mouse");              // a mouse never swipes
-  await swipe(panel.locator(".isl2-body"), [{ dx: -4, dy: 30 }, { dx: -10, dy: 120 }]);         // vertical = scrolling
+  await swipe(panel.locator(".isl2-body:not(.isl2-peek)"), [{ dx: -60 }, { dx: -200 }], "mouse");              // a mouse never swipes
+  await swipe(panel.locator(".isl2-body:not(.isl2-peek)"), [{ dx: -4, dy: 30 }, { dx: -10, dy: 120 }]);         // vertical = scrolling
   expect(await tabOn(panel).getAttribute("id")).toBe(at);
   // At the first area there is nothing to the right: the body is pulled only a little (rubber band) and returns.
-  await swipe(panel.locator(".isl2-body"), [{ dx: 40 }, { dx: 120 }, { dx: 300 }], "touch", false);
-  const pulled = await panel.locator(".isl2-body").evaluate((el) => Number(/translate3d\((-?[\d.]+)px/.exec(el.style.transform)?.[1] ?? "0"));
+  await swipe(panel.locator(".isl2-body:not(.isl2-peek)"), [{ dx: 40 }, { dx: 120 }, { dx: 300 }], "touch", false);
+  const pulled = await panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => Number(/translate3d\((-?[\d.]+)px/.exec(el.style.transform)?.[1] ?? "0"));
   expect(pulled).toBeGreaterThan(0); expect(pulled).toBeLessThanOrEqual(56);
-  await panel.locator(".isl2-body").evaluate((el) => el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 7, pointerType: "touch", clientX: el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2 + 300, clientY: el.getBoundingClientRect().top + 30 })));
-  await expect.poll(() => panel.locator(".isl2-body").evaluate((el) => el.style.transform), { timeout: 3000 }).toBe("");
+  await expect(panel.locator(".isl2-peek")).toHaveCount(0);                      // nothing beyond the first area to show
+  await panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 7, pointerType: "touch", clientX: el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2 + 300, clientY: el.getBoundingClientRect().top + 30 })));
+  await expect.poll(() => panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => el.style.transform), { timeout: 3000 }).toBe("");
   expect(await tabOn(panel).getAttribute("id")).toBe(at);
 });
 
 test("Tipp auf einen Reiter: der alte Bereich fährt hinaus, der neue federt herein", async () => {
   const panel = page.getByRole("dialog", { name: "JARVIS-Insel" });
   await panel.getByRole("tab", { name: "PC", exact: true }).click();
-  await expect(panel.locator('[role="tab"][aria-selected="true"]')).toHaveAttribute("aria-label", /PC|^$/).catch(() => undefined);
-  await expect(panel.locator(".isl2-body.swipe-next")).toHaveCount(1);
+  await expect(panel.getByRole("tab", { name: "PC", exact: true })).toHaveAttribute("aria-selected", "true", { timeout: 3000 });
   await panel.getByRole("tab", { name: "Home", exact: true }).click();
-  await expect(panel.locator(".isl2-body.swipe-prev")).toHaveCount(1);
+  await expect(panel.getByRole("tab", { name: "Home", exact: true })).toHaveAttribute("aria-selected", "true", { timeout: 3000 });
+  await expect(panel.locator(".isl2-peek")).toHaveCount(0, { timeout: 3000 });
 });
 
 test("Übergang ist flüssig: viele Zwischenbilder, ohne Sprünge und ohne Flackern", async () => {
   const panel = page.getByRole("dialog", { name: "JARVIS-Insel" });
-  await expect.poll(() => panel.locator(".isl2-body").evaluate((el) => el.getAnimations().length), { timeout: 3000 }).toBe(0);
+  await expect.poll(() => panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => el.getAnimations().length), { timeout: 3000 }).toBe(0);
   // Record the position and opacity of the body in every frame while a swipe is carried out.
   const frames = await page.evaluate(async () => {
     const out: { x: number; o: number }[] = [];
     let alive = true;
-    const loop = () => { const el = document.querySelector(".isl2-body"); if (el) out.push({ x: el.getBoundingClientRect().left, o: Number(getComputedStyle(el).opacity) }); if (alive) requestAnimationFrame(loop); };
+    const loop = () => { const cur = document.querySelector(".isl2-body:not(.isl2-peek)"), pk = document.querySelector(".isl2-peek"); const el = pk ?? cur; if (el && cur) { out.push({ x: (pk ?? cur).getBoundingClientRect().left, o: Math.min(Number(getComputedStyle(cur).opacity), Number(getComputedStyle(el).opacity)) }); } if (alive) requestAnimationFrame(loop); };
     requestAnimationFrame(loop);
-    const el = document.querySelector(".isl2-body")!;
+    const el = document.querySelector(".isl2-body:not(.isl2-peek)")!;
     const r = el.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top + 30;
     const fire = (type: string, x: number) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerId: 9, pointerType: "touch", clientX: x, clientY: y0, isPrimary: true }));
     fire("pointerdown", x0);
@@ -102,9 +107,9 @@ test("Übergang ist flüssig: viele Zwischenbilder, ohne Sprünge und ohne Flack
   const xs = frames.map((f) => Math.round(f.x * 10) / 10);
   const distinct = new Set(xs).size;
   expect(distinct).toBeGreaterThan(25);                                           // many different positions, not one or two jumps
-  // Between the old area leaving and the new one arriving there is a moment of full transparency (hand-over) – a jump there cannot be seen.
-  // Every pair of frames that is visible at both ends must move smoothly.
-  const visible = frames.slice(1).map((f, i) => (f.o > 0.05 && frames[i].o > 0.05 ? Math.abs(f.x - frames[i].x) : 0));
-  expect(Math.max(...visible)).toBeLessThan(70);                                 // no visible frame jumps across the panel
+  // The old and the new area move together with no gap of transparency: no frame may jump far (the hand-over lands exactly where the neighbour stopped).
+  const jumps = frames.slice(1).map((f, i) => Math.abs(f.x - frames[i].x));
+  expect(Math.max(...jumps)).toBeLessThan(120);
+  expect(Math.min(...frames.map((f) => f.o))).toBe(1);                           // and it never fades out or flickers
   expect(frames.at(-1)!.o).toBe(1);                                              // and it ends fully visible
 });
