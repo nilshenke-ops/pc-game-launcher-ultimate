@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.27.0 – 2026-11-09
+### Neu
+- Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante
+- Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig
+### Verbessert
+- Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora
+- „Weniger Bewegung“, „Leichte Darstellung“, die Systemeinstellung und alle Theme-Farben gelten unverändert weiter – die neuen Dauerläufer und Scheine schalten sich dort vollständig ab
+
 ## 3.26.0 – 2026-11-09
 ### Neu
 - Cloud-Konto auf Cloudflare statt Supabase: Anmelden und Synchronisieren geht auch bei ausgeschaltetem PC, damit Design, Gedächtnis-Einstellungen, Wetter-Ort und KI-Auswahl auf PC, Handy und Tablet gleich sind

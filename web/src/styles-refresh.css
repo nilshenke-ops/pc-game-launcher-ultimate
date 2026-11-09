@@ -1,0 +1,329 @@
+/* ==========================================================================
+   Nexus 4.0 – „Clean Desktop“-Ebene (liegt über styles.css)
+   --------------------------------------------------------------------------
+   Ziele:
+   · ruhigere, klarere Flächen: weniger harte Rahmen, weichere Schatten,
+     gleichmäßige Abstände und eine eindeutige Hierarchie
+   · mehr Leben: Seiten/Karten gestaffelt, Karten-Schein beim Überfahren,
+     Navigation mit Indikator, Knöpfe mit Druckantwort, Dialoge mit Feder,
+     wanderndes Licht im Hintergrund und in der Titelzeile
+   · alles nur mit transform/opacity/Farbe/Schatten – kein Layout-Flackern
+   Die Schalter „Weniger Bewegung“, „Leichte Darstellung“, das System-Reduzieren
+   und alle Theme-Variablen (CSS-Variablen des Theme-Editors) gelten weiter.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- Grundton */
+@media (min-width: 900px) {
+  :root {
+    --radius: 18px;
+    --radius-sm: 12px;
+    --topbar-h: 62px;
+    --shadow: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 22px 44px -34px rgba(0, 0, 0, 0.9);
+  }
+}
+
+body { line-height: 1.5; }
+
+h1 { font-size: clamp(1.55rem, 1.25rem + 0.55vw, 1.95rem); font-weight: 750; letter-spacing: -0.028em; }
+h2 { letter-spacing: -0.02em; }
+h3 { letter-spacing: -0.012em; }
+
+.content { padding: 34px clamp(18px, 3vw, 44px) 76px; max-width: 1480px; }
+@media (min-width: 1280px) { .content { padding-top: 42px; } }
+
+.page-head { margin-bottom: 26px; gap: 16px; }
+.page-head p { margin-top: 8px; color: color-mix(in srgb, var(--muted) 86%, var(--text)); }
+.page-head .actions { gap: 10px; }
+
+/* Ein kleiner lebender Punkt vor dem Über-Begriff – ruhig, aber nicht tot. */
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 0.67rem; letter-spacing: 0.2em; margin-bottom: 8px;
+}
+.eyebrow::before {
+  content: ""; width: 6px; height: 6px; border-radius: 50%; flex: none;
+  background: var(--primary); box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.85);
+  animation: nx-breathe 3.4s ease-in-out infinite;
+}
+
+/* ---------------------------------------------------------------- Hintergrund
+   Die Aurora zieht langsam – dieselbe Fläche wie bisher, nur lebendig. */
+.app-bg::before { animation: nx-aurora 46s ease-in-out infinite alternate; }
+@keyframes nx-aurora {
+  0% { transform: translate3d(-1.6%, -1.2%, 0) scale(1); }
+  50% { transform: translate3d(2.2%, 1.6%, 0) scale(1.07); }
+  100% { transform: translate3d(-1%, 2.2%, 0) scale(1.02); }
+}
+
+/* ---------------------------------------------------------------- Seitenleiste */
+.sidebar {
+  padding: 22px 14px 16px;
+  gap: 8px;
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(var(--primary-rgb), 0.09), transparent 68%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg) 52%, rgb(var(--surface-rgb))) 0%, color-mix(in srgb, var(--bg) 82%, rgb(var(--surface-rgb))) 100%);
+  border-right-color: color-mix(in srgb, var(--border) 70%, transparent);
+}
+:root[data-surface="soft"] .sidebar { border-right-color: transparent; }
+
+.mn { gap: 14px; }
+.mn-brand { padding: 2px 6px 14px; }
+.mn-mark { width: 44px; height: 44px; filter: drop-shadow(0 10px 26px rgba(var(--primary-rgb), 0.4)); }
+.mn-brand b { font-weight: 600; letter-spacing: -0.015em; }
+.mn-brand small { opacity: 0.55; }
+.mn-scroll { gap: 10px; padding: 2px 0; }
+.mn-list { gap: 4px; }
+
+.mn-link {
+  position: relative;
+  padding: 11px 13px;
+  gap: 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 550;
+  opacity: 0.72;
+  transition: background-color 0.2s ease, color 0.2s ease, opacity 0.2s ease, transform 0.4s var(--spr-snap), border-color 0.2s ease;
+}
+.mn-link svg { color: var(--muted); transition: color 0.2s ease, transform 0.45s var(--spr-bounce); }
+.mn-link:hover { opacity: 1; background: rgba(255, 255, 255, 0.055); transform: translateX(2px); }
+.mn-link:hover svg { color: var(--text); transform: scale(1.09); }
+.mn-link:active { transform: scale(0.975); transition-duration: 0.1s; }
+
+/* Aktiv: eine ruhige, getönte Fläche statt eines hellen Glanzverlaufs. */
+.mn-link.active {
+  opacity: 1;
+  background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.17), rgba(var(--primary-rgb), 0.045));
+  border-color: rgba(var(--primary-rgb), 0.24);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 10px 24px -18px rgba(var(--primary-rgb), 0.9);
+}
+.mn-link.active svg { color: var(--primary); }
+.mn-link.active::before {
+  content: ""; position: absolute; left: 4px; top: 50%; width: 3px; height: 18px; margin-top: -9px;
+  border-radius: 99px; background: var(--primary); box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.85);
+  animation: nx-nav-bar 0.5s var(--spr-bounce) backwards;
+}
+@keyframes nx-nav-bar { from { transform: scaleY(0.15); opacity: 0; } }
+
+/* Die Einträge gleiten beim Start einmal kurz von links herein. */
+.mn-list .mn-link { animation: nx-nav-in 0.5s var(--spr-soft) backwards; }
+.mn-list .mn-link:nth-child(1) { animation-delay: 0.03s; }
+.mn-list .mn-link:nth-child(2) { animation-delay: 0.07s; }
+.mn-list .mn-link:nth-child(3) { animation-delay: 0.11s; }
+.mn-list .mn-link:nth-child(4) { animation-delay: 0.15s; }
+.mn-list .mn-link:nth-child(5) { animation-delay: 0.19s; }
+.mn-list .mn-link:nth-child(6) { animation-delay: 0.23s; }
+.mn-list .mn-link:nth-child(7) { animation-delay: 0.27s; }
+.mn-list .mn-link:nth-child(n + 8) { animation-delay: 0.31s; }
+@keyframes nx-nav-in { from { opacity: 0; transform: translateX(-12px); } }
+
+.mn-foot { gap: 8px; padding-top: 10px; border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent); }
+.mn-foot .side-status { margin-top: 0; }
+.mn-user { border-top: 0; border-radius: 12px; padding: 8px 10px; transition: background-color 0.2s ease, transform 0.35s var(--spr-snap); }
+.mn-user:hover { transform: translateY(-1px); }
+.mn-av { box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.12); }
+
+/* ---------------------------------------------------------------- Titelzeile */
+.topbar {
+  gap: 10px;
+  padding: 0 clamp(18px, 2.4vw, 32px);
+  background: color-mix(in srgb, var(--bg) 72%, rgb(var(--surface-rgb)));
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  border-bottom-color: color-mix(in srgb, var(--border) 65%, transparent);
+  box-shadow: 0 16px 34px -30px rgba(0, 0, 0, 0.95);
+}
+/* Ein schmaler Lichtstreifen läuft langsam über die Unterkante. */
+.topbar::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(var(--primary-rgb), 0.55), rgba(var(--accent-rgb), 0.45), transparent);
+  background-size: 220% 100%; opacity: 0.45;
+  animation: nx-topbar-line 18s linear infinite;
+}
+@keyframes nx-topbar-line { from { background-position: -20% 0; } to { background-position: 220% 0; } }
+
+.search-trigger {
+  height: 38px;
+  border-radius: 11px;
+  background: rgba(var(--surface-rgb), 0.48);
+  border-color: color-mix(in srgb, var(--border) 85%, transparent);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.25s ease, color 0.2s ease;
+}
+.search-trigger svg { transition: color 0.2s ease, transform 0.45s var(--spr-bounce); }
+@media (hover: hover) {
+  .search-trigger:hover { background: rgba(var(--surface-rgb), 0.72); border-color: rgba(var(--primary-rgb), 0.32); box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.07); }
+  .search-trigger:hover svg { color: var(--primary); transform: scale(1.08); }
+}
+.topbar .btn.icon { border-radius: 11px; }
+.topbar .badge { letter-spacing: 0.01em; }
+
+/* ---------------------------------------------------------------- Karten */
+.card {
+  padding: 20px;
+  border-color: color-mix(in srgb, var(--border) 88%, transparent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0) 44%),
+    rgba(var(--surface-rgb), var(--surface-alpha));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 22px 44px -34px rgba(0, 0, 0, 0.92);
+}
+/* Ein weiches Licht wandert beim Überfahren einmal über die Karte. */
+.card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.055) 48%, transparent 58%);
+  opacity: 0; transform: translateX(-70%);
+  transition: transform 0.9s var(--out-expo), opacity 0.3s ease;
+}
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(var(--primary-rgb), 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 30px 56px -34px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(var(--primary-rgb), 0.1);
+  }
+  .card:hover::after { opacity: 1; transform: translateX(70%); }
+}
+.card:active { transform: translateY(-1px); }
+.card.flat::after, .card.glow::after { content: none; }
+
+.card-head { margin-bottom: 16px; }
+.card-head h2 svg, .card-head h3 svg { filter: drop-shadow(0 0 10px rgba(var(--primary-rgb), 0.35)); }
+
+/* ---------------------------------------------------------------- Knöpfe, Chips, Felder */
+.btn {
+  border-radius: 11px;
+  font-weight: 600;
+  letter-spacing: 0.005em;
+  transition: transform 0.4s var(--spr-snap), background-color 0.2s ease, background-position 0.55s var(--ease), border-color 0.2s ease, box-shadow 0.25s ease, opacity 0.2s ease;
+}
+@media (hover: hover) { .btn:not(:disabled):hover { transform: translateY(-1px); } }
+.btn:not(:disabled):active { transform: translateY(1px) scale(0.975); transition-duration: 0.1s; }
+
+.btn.primary {
+  background-image: linear-gradient(120deg, var(--primary), color-mix(in srgb, var(--primary) 62%, var(--accent)), var(--primary));
+  background-size: 180% 100%; background-position: 0% 50%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 10px 26px -14px rgba(var(--primary-rgb), 0.8);
+}
+@media (hover: hover) { .btn.primary:hover { background-position: 100% 50%; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34), 0 16px 32px -16px rgba(var(--primary-rgb), 0.9); } }
+
+.btn.ghost { border-radius: 10px; }
+.chip {
+  border-radius: 10px;
+  border-color: color-mix(in srgb, var(--border-strong) 82%, transparent);
+  background: rgba(var(--surface-rgb), 0.5);
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.4s var(--spr-snap);
+}
+.chip.on { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+@media (hover: hover) { .chip:not(:disabled):hover { border-color: rgba(var(--primary-rgb), 0.35); transform: translateY(-1px); } }
+
+.input, select.input, textarea.input {
+  border-radius: 11px;
+  background: rgba(var(--surface-rgb), 0.45);
+  transition: border-color 0.2s ease, box-shadow 0.25s ease, background-color 0.2s ease;
+}
+.input:focus, select.input:focus, textarea.input:focus {
+  border-color: rgba(var(--primary-rgb), 0.5);
+  box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.09);
+}
+:focus-visible { outline-offset: 3px; }
+
+/* ---------------------------------------------------------------- Listen und Zeilen */
+button.list-item { transition: background-color 0.18s ease, transform 0.35s var(--spr-snap); }
+@media (hover: hover) { button.list-item:hover { transform: translateX(2px); } }
+button.list-item:active { transform: translateX(1px) scale(0.998); }
+.list-item .thumb { border-radius: 12px; box-shadow: 0 8px 18px -12px rgba(0, 0, 0, 0.8); }
+
+/* Erste Zeilen kommen mit der Karte an, danach steht die Liste still. */
+.content.entering .list > button.list-item:nth-child(-n + 8) {
+  animation: nx-row-in 0.45s var(--out-expo) backwards;
+}
+.content.entering .list > button.list-item:nth-child(2) { animation-delay: 0.04s; }
+.content.entering .list > button.list-item:nth-child(3) { animation-delay: 0.07s; }
+.content.entering .list > button.list-item:nth-child(4) { animation-delay: 0.1s; }
+.content.entering .list > button.list-item:nth-child(5) { animation-delay: 0.13s; }
+.content.entering .list > button.list-item:nth-child(6) { animation-delay: 0.16s; }
+.content.entering .list > button.list-item:nth-child(7) { animation-delay: 0.19s; }
+.content.entering .list > button.list-item:nth-child(n + 8) { animation-delay: 0.22s; }
+@keyframes nx-row-in { from { opacity: 0; transform: translateY(8px); } }
+
+/* ---------------------------------------------------------------- Messbalken */
+.meter, .progress-bar {
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+.meter > i, .progress-bar > i { position: relative; overflow: hidden; }
+.meter > i::after, .progress-bar > i::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(100deg, transparent 28%, rgba(255, 255, 255, 0.34) 50%, transparent 72%);
+  transform: translateX(-100%);
+  animation: nx-bar-sheen 3.2s ease-in-out infinite;
+}
+@keyframes nx-bar-sheen {
+  0%, 42% { transform: translateX(-100%); }
+  82%, 100% { transform: translateX(100%); }
+}
+
+/* ---------------------------------------------------------------- Dialoge und Hinweise */
+.modal {
+  border-radius: calc(var(--radius) + 6px);
+  background: color-mix(in srgb, var(--bg) 62%, rgb(var(--surface-rgb)));
+  border-color: color-mix(in srgb, var(--border-strong) 80%, transparent);
+  box-shadow: 0 44px 110px -38px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.modal-head { padding: 18px 22px; }
+.modal-body { padding: 22px; }
+.modal-foot { padding: 16px 22px; }
+.modal-backdrop { background: radial-gradient(80% 60% at 50% 35%, rgba(var(--primary-rgb), 0.08), transparent 70%), rgba(2, 6, 16, 0.62); }
+
+.banner { border-radius: 14px; }
+
+/* Status-Punkt im Kopf atmet mit einem weichen Ring. */
+.conn-pill { transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.35s var(--spr-snap); }
+@media (hover: hover) { .conn-pill:hover { transform: translateY(-1px); border-color: rgba(var(--primary-rgb), 0.3); } }
+.conn-pill .dot.ok { position: relative; }
+.conn-pill .dot.ok::after {
+  content: ""; position: absolute; inset: -3px; border-radius: 50%;
+  border: 1px solid currentColor; color: var(--success); opacity: 0;
+  animation: nx-ring 2.6s ease-out infinite;
+}
+@keyframes nx-ring {
+  0% { transform: scale(0.7); opacity: 0.7; }
+  70%, 100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* ---------------------------------------------------------------- Feinschliff Grossbildschirm */
+@media (min-width: 1024px) {
+  .grid { gap: 18px; }
+  .stack { gap: 14px; }
+  .card { padding: 22px; }
+
+  /* schmale, ruhige Bildlaufleisten wie in einer Desktop-App */
+  .sidebar, .mn-scroll, .modal { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.16) transparent; }
+  *::-webkit-scrollbar { width: 10px; height: 10px; }
+  *::-webkit-scrollbar-track { background: transparent; }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.14); border-radius: 99px;
+    border: 3px solid transparent; background-clip: content-box;
+  }
+  *::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.26); background-clip: content-box; }
+}
+
+/* ---------------------------------------------------------------- Abschalten
+   Die globalen Regeln in styles.css nehmen schon fast alles zurück; hier stehen
+   nur die neuen Dauerläufer, damit auch sie wirklich stillstehen. */
+@media (prefers-reduced-motion: reduce) {
+  .app-bg::before, .topbar::after, .eyebrow::before, .meter > i::after, .progress-bar > i::after,
+  .conn-pill .dot.ok::after, .content.entering .list > button.list-item { animation: none !important; }
+  .card::after { content: none; }
+}
+:root[data-motion="reduce"] .app-bg::before,
+:root[data-motion="reduce"] .topbar::after,
+:root[data-motion="reduce"] .eyebrow::before,
+:root[data-motion="reduce"] .meter > i::after,
+:root[data-motion="reduce"] .progress-bar > i::after,
+:root[data-motion="reduce"] .conn-pill .dot.ok::after { animation: none !important; }
+:root[data-motion="reduce"] .card:hover,
+:root[data-motion="reduce"] .mn-link:hover,
+:root[data-motion="reduce"] .btn:hover { transform: none !important; }
+:root[data-motion="reduce"] .card::after { content: none; }
+
+/* Leichte Darstellung: keine Dauerläufer, keine Scheine. */
+:root[data-lite="1"] .card::after { content: none; }
+:root[data-lite="1"] .eyebrow::before { box-shadow: none; }
