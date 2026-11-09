@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.30.1",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.30.1/PCGameLauncherCompanion.exe",
+    "size": 95043659,
+    "sha256": "0d0bd81f9dc660289bcf15f8748f5088f9c30d23133b3acc96c71263bda2f4be",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.30.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.30.1/PCGameLauncherCompanion-3.30.1-win-x64.zip",
+      "size": 89318071,
+      "sha256": "81d71bda62e73287eacf29de8a37d768b7e22503a6ad306931ea974a3e87ff2f"
+    },
+    "notes": "Macht Aufnahme und Widget-Menü im Overlay übersichtlich. · Wischen wechselt Startseiten und das Musik-Widget wird klarer. · Kürzt die Beschriftungen der Musik-Tasten, damit sie auf dem Handy nicht abschneiden.",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Macht Aufnahme und Widget-Menü im Overlay übersichtlich.",
+        "Wischen wechselt Startseiten und das Musik-Widget wird klarer.",
+        "Kürzt die Beschriftungen der Musik-Tasten, damit sie auf dem Handy nicht abschneiden."
+      ],
+      "behoben": []
+    },
+    "signature": "3m2HZ2Do53c2sdaQtlrJD3Stnar5R2EMKWRwzHFXgsnYx1RLVw8hemyIo2EWeHE/nvWhF4b8RPL76zwbJW8YWg=="
+  },
+  {
     "version": "3.30.0",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1366,34 +1392,5 @@
       ]
     },
     "signature": "k35xVSNpoj6PenMkp1mwmHaSc+ZFlp7vUg86Cok65aw5BXSS+sWQNGPxEbgZUQWiVc0lyk1yllG5IzQkj9A+OQ=="
-  },
-  {
-    "version": "2.93.0",
-    "date": "2026-11-04",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion.exe",
-    "size": 88446747,
-    "sha256": "1e6d81151f42af3f37dffff35295f077f7c5af3b682decabbedbb65b2d4a1e6f",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.93.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.93.0/PCGameLauncherCompanion-2.93.0-win-x64.zip",
-      "size": 82942563,
-      "sha256": "6180f1ecd98a1e01d2fb5599c8f90de9a8f38c3684d28637dd95997f114b4441"
-    },
-    "notes": "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme · Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation) · Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)",
-    "changes": {
-      "neu": [
-        "Optionale ElevenLabs-Stimme für JARVIS (Einstellungen von JARVIS → „Stimme & Ton“): Schlüssel nur am PC eingeben, nur Standardstimmen, Lautstärke und Monatslimit einstellbar, aus bis du sie einschaltest; der Text geht über deinen PC an ElevenLabs. Klappt etwas nicht (Schlüssel, Limit, Netz), spricht JARVIS mit der Browser-Stimme"
-      ],
-      "verbessert": [
-        "Alles gleichfarbig: Symbole in Menü, unterer Leiste und „Alle Bereiche“ sowie die Kacheln für Spiele, Programme und Schnellstart nutzen jetzt die Farbe des gewählten Designs statt vieler bunter Farben; Logos auf Kacheln sind einfarbig weiß; bisher gespeicherte „farbige Symbole“ werden einmal auf schlicht gestellt (wieder einschaltbar unter Navigation)",
-        "Der Ring der PC-Statuskarte auf der Startseite nimmt die Farben des Designs (bei Chrom grau statt bunt)"
-      ],
-      "behoben": [
-        "Auf dem Handy lag die Kopfleiste bei Glas-Designs durchsichtig über dem Inhalt und überdeckte Texte; sie hat jetzt einen eigenen Glas-Hintergrund und kleinere runde Knöpfe"
-      ]
-    },
-    "signature": "1nvHBji2D8eIxTUm78pWMoWA5g1lN6KBylryapSXUab5G53SjQCENEZLZ26ntbIAK7D+GaXiwIo9y09CPzQj5g=="
   }
 ]
