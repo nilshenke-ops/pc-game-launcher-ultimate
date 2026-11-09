@@ -2512,13 +2512,12 @@ html:not([data-deck-own]) .deck-key.on { box-shadow: 0 0 0 2px var(--primary), 0
 .isl2-mi { display: flex; align-items: center; gap: 8px; width: 100%; padding: 9px 10px; border-radius: 10px; font-size: .82rem; font-weight: 500; color: inherit; text-decoration: none; text-align: left; background: none; border: 0; cursor: pointer; }
 .isl2-mi:hover { background: rgba(255,255,255,0.1); }
 
-.isl2-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; animation: isl2-tab .26s cubic-bezier(.2,.8,.2,1) both; }
-/* Swiping moves the body the way the hand goes: the next area comes in from the left (the content travels right), the previous one from
-   the right. Vertical scrolling is untouched (touch-action: pan-y). */
-.isl2-body.swipe-next { animation: isl2-swipe-next .34s var(--spr-snap) both; }
-.isl2-body.swipe-prev { animation: isl2-swipe-prev .34s var(--spr-snap) both; }
-@keyframes isl2-swipe-next { from { opacity: 0; transform: translate3d(28px, 0, 0) scale(.985); filter: blur(3px); } }
-@keyframes isl2-swipe-prev { from { opacity: 0; transform: translate3d(-28px, 0, 0) scale(.985); filter: blur(3px); } }
+.isl2-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; will-change: transform; animation: isl2-tab .26s cubic-bezier(.2,.8,.2,1) both; }
+/* Swiping: a deck of cards. The stage clips what slides out; the neighbour area (.isl2-peek) travels beside the current one; after the carousel
+   the real next area takes over without playing its own entrance (.swipe-none). Vertical scrolling is untouched (touch-action: pan-y). */
+.isl2-stage { flex: 1; min-height: 0; position: relative; display: flex; flex-direction: column; overflow: hidden; }
+.isl2-peek { position: absolute; inset: 0; animation: none !important; pointer-events: none; overflow: hidden; will-change: transform; }
+.isl2-body.swipe-none { animation: none; }
 @keyframes isl2-tab { from { opacity: 0; transform: translateY(6px); } }
 .isl2-tabs { display: flex; align-items: center; gap: 2px; flex: none; padding: 5px; border-radius: 18px; background: rgba(255,255,255,0.07); }
 .isl2-tab { height: 32px; min-width: 34px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 8px; border-radius: 13px; background: none; border: 0; color: inherit; opacity: .62; cursor: pointer; font-size: .8rem; font-weight: 600; transition: background .2s ease, opacity .2s ease, padding .25s cubic-bezier(.2,.8,.2,1); }
@@ -3314,3 +3313,25 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 @media (max-width: 350px) { .card-art-grid { grid-template-columns: 1fr; } }
 .st-art-ini { font-size: clamp(1.6rem, 14cqw, 2.6rem); font-weight: 800; letter-spacing: .05em; color: rgba(255, 255, 255, .92); text-shadow: 0 2px 10px rgba(0, 0, 0, .35); }
 .st-art { container-type: inline-size; }
+
+
+/* Home cards: what is playing / running fills its card (cover cropped to the card, never stretched) and tints the card; text stays readable on a scrim. */
+.isl2-card .isl2-fill { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; animation: isl2-fill-in .7s var(--out-expo, cubic-bezier(.16,1,.3,1)) both; }
+.isl2-card.filled::after { content: ""; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(6,8,14,.82) 0%, rgba(6,8,14,.38) 40%, rgba(6,8,14,0) 68%), linear-gradient(to bottom, rgba(6,8,14,.38), rgba(6,8,14,0) 26%); }
+.isl2-card.filled > * { z-index: 1; }
+.isl2-card.filled > .isl2-fill { z-index: 0; }
+.isl2-card.filled .isl2-big, .isl2-card.filled .isl2-sub { position: relative; text-shadow: 0 1px 8px rgba(0,0,0,.45); }
+.isl2-card.filled .isl2-ctitle { text-shadow: 0 1px 6px rgba(0,0,0,.5); }
+.isl2-fill.logo { display: grid; place-items: center; overflow: hidden; background: var(--tint, rgba(255,255,255,.08)); }
+.isl2-fill-blur { position: absolute; inset: -18%; width: 136%; height: 136%; object-fit: cover; filter: blur(22px) saturate(1.5); opacity: .6; }
+.isl2-fill-logo { position: relative; width: 44%; aspect-ratio: 1; display: grid; place-items: center; margin-bottom: 24%; filter: drop-shadow(0 6px 18px rgba(0,0,0,.4)); }
+.isl2-fill-logo > img { width: 100%; height: 100%; object-fit: contain; border-radius: 22%; }
+.isl2-fill-logo > svg { width: 100%; height: 100%; }
+@keyframes isl2-fill-in { from { opacity: 0; transform: scale(1.08); } }
+/* The other cards take their colour from where they are: JARVIS from the island's accent, the timer from its phase. */
+.isl2-card.jv { --tint: color-mix(in srgb, var(--isl-c, #d68454) 46%, transparent); }
+.isl2-card.fo { --tint: color-mix(in srgb, #9454e2 52%, transparent); }
+@media (prefers-reduced-motion: reduce) { .isl2-card .isl2-fill { animation: none; } }
+:root[data-motion="reduce"] .isl2-card .isl2-fill { animation: none; }
+.isl2-card.fo.ph-break { --tint: color-mix(in srgb, #2fb59a 52%, transparent); } .isl2-card.fo.ph-long { --tint: color-mix(in srgb, #4a8fe8 52%, transparent); }

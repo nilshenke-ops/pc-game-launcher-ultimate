@@ -78,6 +78,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public ServerQueryService Servers { get; } = new();
     public ActivityService Activity { get; }
     public InboxService Inbox { get; }
+    public CloudSyncService CloudSync { get; }
     public BackupService Backup { get; }
     public QuestService Quests { get; }
     public DealService Deals { get; }
@@ -193,6 +194,16 @@ public sealed class CompanionServices : IAsyncDisposable
         Calendar = new CalendarService(paths, Rpc, Notifications);
         Journal = new JournalService(paths, Rpc);
         Inbox = new InboxService(paths, Rpc, platform.Launcher);
+        // The cloud copy of this PC's data: read with the rights of a paired device (never "local"), so whatever is only allowed at the PC
+        // itself stays at the PC – also for changes that come from the cloud.
+        var cloudSession = new RpcSession
+        {
+            Channel = new InternalChannel("internal-cloud", "cloud"),
+            Device = new PairedDevice { Id = "cloud", Name = "Cloud-Konto" },
+            Permissions = new HashSet<string> { Security.Permissions.View, Security.Permissions.Launch, Security.Permissions.Manage },
+        };
+        CloudSync = new CloudSyncService(paths, platform.Secrets, (m, p) => Rpc.InvokeInternalAsync(m, cloudSession, p), () => Settings.Get().PcName ?? Environment.MachineName, Rpc);
+        Rpc.TopicChanged += CloudSync.Changed;
         Activity = new ActivityService(paths, Rpc, () => Sessions.Running().Select(r => (r.itemId, Library.Get(r.itemId)?.Name ?? "?", r.since)).ToList());
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
@@ -577,6 +588,7 @@ public sealed class CompanionServices : IAsyncDisposable
         }, null, TimeSpan.FromSeconds(3), TimeSpan.FromMinutes(1));
         GamePass.Start();
         Updates.StartAutoCheck();
+        CloudSync.Start();
         Covers.Start();
         Calendar.Start();
         Plugins.Start();
@@ -725,6 +737,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Mdns.Dispose();
         GamePass.Dispose();
         Updates.Dispose();
+        CloudSync.Dispose();
         Covers.Dispose();
         Plugins.Dispose();
         Perf.Dispose();

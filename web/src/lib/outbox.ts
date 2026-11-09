@@ -145,7 +145,10 @@ export function enqueue(method: string, params: Params, extra: Partial<OutboxEnt
     p = Object.fromEntries(Object.entries(p).filter(([k, v]) => JSON.stringify(v) !== JSON.stringify(before[k])));
     if (Object.keys(p).length === 0) return params;
   }
+  // What the fields were before this change – the cloud hands it to the PC, which only overwrites a field that still has this value.
+  const base = baseOf(method, p);
   const result = applyLocally(method, p);
+  if (method === "library.update" || method === "settings.save") opQueuedHook?.(method, p, base);
   if (method === "deck.save" || method === "calendar.save") entries = entries.filter((e) => !(e.method === method && e.params.id === p.id && !e.confirmed));
   if (method === "activity.set") entries = entries.filter((e) => !(e.method === method && !e.confirmed)); // only the latest status counts
   entries = [...entries, { id: Math.random().toString(36).slice(2), method, params: p, label: QUEUEABLE[method]?.(p) ?? method, at: Date.now(), pc: currentPc(), ...extra }];
@@ -204,6 +207,24 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   "plugins.list": { appVersion: WEB_VERSION, apiVersion: 1, permissions: PERMISSION_LABELS, plugins: [],
     categories: ["launcher", "audio", "discord", "performance", "design", "automation", "device", "information", "productivity", "community"] },
 };
+
+/** The cloud sync (lib/cloud-sync.ts) registers here: it also sends queued data changes through the cloud. Kept as a hook so the two files do not import each other. */
+let opQueuedHook: ((method: string, params: Params, base?: Params) => void) | null = null;
+export const setOpQueuedHook = (fn: typeof opQueuedHook) => { opQueuedHook = fn; };
+
+function baseOf(method: string, p: Params): Params | undefined {
+  try {
+    if (method === "library.update") {
+      const item = readCache<{ items: (WithId & Params)[] }>("library.list")?.data.items.find((i) => i.id === p.id);
+      return item ? Object.fromEntries(Object.keys(p).filter((k) => k !== "id").map((k) => [k, item[k]])) : undefined;
+    }
+    if (method === "settings.save") {
+      const cur = readCache<{ settings: Params }>("settings.get")?.data.settings;
+      return cur ? Object.fromEntries(Object.keys(p).map((k) => [k, cur[k]])) : undefined;
+    }
+  } catch { /* no base: the PC then takes the change as it is */ }
+  return undefined;
+}
 
 function patch<T>(method: string, fn: (d: T) => T, params = "{}") {
   const cur = readCache<T>(method, params)?.data ?? (OFFLINE_DEFAULTS[method] as T | undefined);

@@ -16,7 +16,7 @@ import { friendlyError } from "../lib/friendly-error";
 import { rememberAiChoice } from "../lib/ai-choice-sync";
 import { saveNow, session } from "../lib/design-account";
 import { AiTiles } from "./ai-tiles";
-import { elevenKeyLooksRight, removeLocalElevenKey, saveLocalElevenKey, testLocalEleven, LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, lockLocalAi, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
+import { elevenKeyLooksRight, removeLocalElevenKey, saveLocalElevenKey, testLocalEleven, LOCAL_NAME, LOCAL_PROVIDERS, localAiSupported, deviceKeysSupported, lockKindOf, removeLocalKey, needsAttestation, saveLocalKey, saveLocalSearchKey, removeLocalSearchKey, testLocalSearch, SEARCH_NAME, SEARCH_PROVIDERS, testLocal, transferKeysToPc, unlockLocalAi, useLocalAi, type LocalProvider } from "../lib/free-ai-local";
 
 export interface AiProvider {
   id: string; name: string; enabled: boolean; needsKey: boolean; needsAttest?: boolean; keySet: boolean; attested: boolean; consent: boolean;
@@ -285,28 +285,33 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
   const snap = useLocalAi();
   const [keys, setKeys] = useState<Record<LocalProvider, string>>({ openrouter: "", groq: "", cerebras: "", mistral: "" });
   const [pass, setPass] = useState("");
-  const [keep, setKeep] = useState(false);
+  const keep = false;   // keys sealed with the device key need no "keep unlocked in this tab"
   const [attest, setAttest] = useState<Record<LocalProvider, boolean>>({ openrouter: true, groq: false, cerebras: false, mistral: false });
   const [busy, setBusy] = useState<string | null>(null);
   const [msg, setMsg] = useState<Record<string, { ok: boolean; text: string }>>({});
   const [skeys, setSkeys] = useState<Record<string, string>>({});
   const [ekey, setEkey] = useState("");
-  const anyLocked = snap.eleven === "locked" || LOCAL_PROVIDERS.some((p) => snap[p] === "locked") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "locked");
+  // Keys are sealed with this device's own key: typed once, ready on every visit. A password is only needed where the browser cannot keep that key
+  // (some private windows) – and once for keys from older versions, which then move to the device key.
+  const needPw = !deviceKeysSupported();
+  const anyLocked = !!snap.pw;
   const anyReady0 = anyLocked || snap.eleven === "ready" || LOCAL_PROVIDERS.some((p) => snap[p] === "ready") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "ready");
   const passLabel = anyReady0 ? t("Dein Passwort für die Schlüssel auf diesem Gerät (dasselbe wie bei den anderen – mindestens 6 Zeichen)") : t("Neues Passwort für die Schlüssel auf diesem Gerät (mindestens 6 Zeichen)");
   /** Why "Speichern & testen" is still grey – never a silent disabled button. */
   const why = (keyOk: boolean, keyMsg: string, extra?: string | null) => {
-    const m = !keyOk ? keyMsg : pass.length < 6 ? (anyReady0 ? t("Gib unten das Passwort ein, das du für die anderen Schlüssel auf diesem Gerät benutzt (mindestens 6 Zeichen).") : t("Denk dir ein Passwort aus (mindestens 6 Zeichen) – es verschlüsselt den Schlüssel auf diesem Gerät.")) : extra ?? null;
+    const m = !keyOk ? keyMsg : needPw && pass.length < 6 ? (anyReady0 ? t("Gib unten das Passwort ein, das du für die anderen Schlüssel auf diesem Gerät benutzt (mindestens 6 Zeichen).") : t("Denk dir ein Passwort aus (mindestens 6 Zeichen) – es verschlüsselt den Schlüssel auf diesem Gerät.")) : extra ?? null;
     return m ? <p className="tiny muted aim-why" role="status">{m}</p> : null;
   };
-  /** A locked key can only be opened with the password – this points to the one unlock field. */
-  const lockedHint = (
+  /** Still closed: an old password key (asked for once), a device key that is opening right now, or one whose device key is gone. */
+  const lockedHint = (slot: string) => lockKindOf(slot) === "password" ? (
     <div className="aim-actions">
-      <p className="tiny muted" style={{ margin: 0 }}>{t("Gesperrt heißt: der Schlüssel ist verschlüsselt, bis du dein Passwort eingibst. Passwort vergessen? Schlüssel löschen und neu eintragen.")}</p>
+      <p className="tiny muted" style={{ margin: 0 }}>{t("Dieser Schlüssel stammt aus einer älteren Version und ist noch mit deinem Passwort verschlüsselt. Gib es oben einmal ein – danach ist er auf diesem Gerät für immer ohne Passwort bereit. Passwort vergessen? Schlüssel löschen und neu eintragen.")}</p>
       <button type="button" className="btn sm" onClick={() => { const el = document.querySelector<HTMLInputElement>("#aim-unlock input"); el?.scrollIntoView({ block: "center" }); el?.focus(); }}><KeyRound size={14} /> {t("Passwort eingeben")}</button>
     </div>
+  ) : snap.loading ? null : (
+    <p className="tiny muted" style={{ margin: 0 }}>{t("Dieser Schlüssel lässt sich auf diesem Gerät nicht mehr öffnen (die Website-Daten des Browsers wurden gelöscht). Bitte löschen und neu eintragen.")}</p>
   );
-  const anyReady = snap.eleven === "ready" || LOCAL_PROVIDERS.some((p) => snap[p] === "ready") || SEARCH_PROVIDERS.some((p) => snap.search?.[p] === "ready");
+  const badge = (st: string | undefined, slot: string) => st === "ready" ? t("Bereit (auf diesem Gerät)") : st === "locked" ? (lockKindOf(slot) === "password" ? t("Einmal Passwort nötig") : snap.loading ? t("Wird geöffnet …") : t("Neu eintragen")) : t("Nicht eingerichtet");
   const run = async (id: string, fn: () => Promise<string | void>) => {
     setBusy(id); setMsg((m) => { const n = { ...m }; delete n[id]; return n; });
     try { const text = await fn(); if (text) setMsg((m) => ({ ...m, [id]: { ok: true, text } })); }
@@ -319,25 +324,24 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
   return (
     <section className="fas-card aim-card" id="aim-local" aria-label={t("Schlüssel ohne PC")}>
       <b>{t("Schlüssel ohne PC")}</b>
-      <p className="tiny muted">{t("Dein Schlüssel wird auf diesem Gerät mit einem Passwort verschlüsselt gespeichert und nur an den eigenen Dienst geschickt – direkt aus dem Browser, ohne Umweg. Es gelten dieselben Kostenregeln wie am PC (nur kostenlose Modelle, Höchstpreis 0, kein Aufladen). Sicherer ist der PC: Ist er verbunden, benutzt JARVIS dessen Schlüssel.")}</p>
+      <p className="tiny muted">{t("Dein Schlüssel wird einmal eingegeben und danach auf diesem Gerät verschlüsselt gespeichert – mit einem Schlüssel, der fest an dieses Gerät gebunden ist. Kein Passwort, kein „Gesperrt“: Er ist bei jedem Öffnen sofort bereit und wird nur an den eigenen Dienst geschickt. Es gelten dieselben Kostenregeln wie am PC (nur kostenlose Modelle, Höchstpreis 0, kein Aufladen). Sicherer ist der PC: Ist er verbunden, benutzt JARVIS dessen Schlüssel.")}</p>
       {online && <p className="tiny">{t("Hier eingerichtete und entsperrte Schlüssel übertragen sich automatisch (versiegelt) an den verbundenen PC, sobald er sie noch nicht hat.")}</p>}
       {anyLocked && (
         <div id="aim-unlock" className="aim-unlock" role="group" aria-label={t("Schlüssel entsperren")}>
           <label className="fas-field"><span className="tiny">{t("Passwort")}</span>
             <input className="input" type="password" autoComplete="current-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort zum Entsperren")} /></label>
-          <label className="aim-check"><input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /><span className="tiny">{t("Entsperrt lassen, bis ich den Tab schließe")}</span></label>
-          <div className="aim-actions"><button type="button" className="btn sm primary" disabled={pass.length < 6 || busy !== null} onClick={() => void run("unlock", async () => { await unlockLocalAi(pass, keep); setPass(""); return t("Entsperrt – die Schlüssel sind bereit."); })}>{t("Entsperren")}</button></div>
+          <p className="tiny muted" style={{ margin: 0 }}>{t("Nur noch dieses eine Mal: Danach sind deine Schlüssel auf diesem Gerät dauerhaft ohne Passwort bereit.")}</p>
+          <div className="aim-actions"><button type="button" className="btn sm primary" disabled={pass.length < 6 || busy !== null} onClick={() => void run("unlock", async () => { await unlockLocalAi(pass, keep); setPass(""); return t("Fertig – die Schlüssel sind ab jetzt auf diesem Gerät immer bereit."); })}>{t("Einmal entsperren")}</button></div>
         </div>
       )}
       {msg.unlock && <p className={`tiny ${msg.unlock.ok ? "" : "fas-err"}`} role={msg.unlock.ok ? "status" : "alert"}>{msg.unlock.text}</p>}
-      {anyReady && <div className="aim-actions"><button type="button" className="btn sm" onClick={() => lockLocalAi()}>{t("Wieder sperren")}</button></div>}
       {LOCAL_PROVIDERS.map((p) => {
         const guide = STEPS[p];
         const st = snap[p];
         return (
           <div key={p} className={`aim-local aim-local-${st}`} role="group" aria-label={`${LOCAL_NAME[p]} ${t("auf diesem Gerät")}`}>
             <div className="aim-row"><b className="aim-name">{LOCAL_NAME[p]}</b>
-              <span className={`aim-badge ${st === "ready" ? "ready" : st === "locked" ? "cooldown" : "off"}`}>{st === "ready" ? t("Bereit (auf diesem Gerät)") : st === "locked" ? t("Gesperrt") : t("Nicht eingerichtet")}</span></div>
+              <span className={`aim-badge ${st === "ready" ? "ready" : st === "locked" ? "cooldown" : "off"}`}>{badge(st, p)}</span></div>
             {st === "none" && guide && (
               <>
                 {CAN[p] && <p className="tiny aim-can"><b>{t("Wofür?")}</b> {t(CAN[p])}</p>}
@@ -345,19 +349,19 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
                 <p className="tiny"><a href={guide.url} target="_blank" rel="noopener noreferrer">{guide.urlLabel}</a></p>
                 {needsAttestation(p) && <label className="aim-check"><input type="checkbox" checked={attest[p]} onChange={(e) => setAttest((a) => ({ ...a, [p]: e.target.checked }))} /><span className="tiny">{attestText(LOCAL_NAME[p])}</span></label>}
                 <Key label={keyLabel(p)} value={keys[p]} set={(v) => setKeys((k) => ({ ...k, [p]: v }))} hint={guide.hint} />
-                {(
+                {needPw && (
                   <label className="fas-field"><span className="tiny">{passLabel}</span>
                     <input className="input" type="password" autoComplete="new-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort für die Schlüssel")} /></label>
                 )}
                 <div className="aim-actions">
-                  <button type="button" className="btn sm primary" disabled={keys[p].length < 20 || pass.length < 6 || busy !== null || (needsAttestation(p) && !attest[p])}
-                    onClick={() => void run(p, async () => { await saveLocalKey(p, keys[p], pass, { attested: attest[p], remember: keep }); setKeys((k) => ({ ...k, [p]: "" })); setPass(""); const r = await testLocal(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
+                  <button type="button" className="btn sm primary" disabled={keys[p].length < 20 || (needPw && pass.length < 6) || busy !== null || (needsAttestation(p) && !attest[p])}
+                    onClick={() => void run(p, async () => { await saveLocalKey(p, keys[p], needPw ? pass : "", { attested: attest[p], remember: keep }); setKeys((k) => ({ ...k, [p]: "" })); setPass(""); const r = await testLocal(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
                     <KeyRound size={14} /> {busy === p ? t("Teste …") : t("Speichern & testen")}</button>
                 </div>
                 {why(keys[p].length >= 20, t("Füge oben den Schlüssel ein (er ist noch zu kurz)."), needsAttestation(p) && !attest[p] ? t("Bestätige oben, dass dein Konto im kostenlosen Tarif ist.") : null)}
               </>
             )}
-            {st === "locked" && lockedHint}
+            {st === "locked" && lockedHint(p)}
             {st !== "none" && (
               <div className="aim-actions">
                 {st === "ready" && <button type="button" className="btn sm" disabled={busy !== null} onClick={() => void run(p, async () => { const r = await testLocal(p); if (!r.ok) throw new Error(r.message); return r.message; })}><PlugZap size={14} /> {busy === p ? t("Teste …") : t("Verbindung testen")}</button>}
@@ -370,22 +374,22 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
       })}
       <div className="aim-local" role="group" aria-label={t("ElevenLabs auf diesem Gerät")}>
         <div className="aim-row"><b className="aim-name">ElevenLabs</b>
-          <span className={`aim-badge ${snap.eleven === "ready" ? "ready" : snap.eleven === "locked" ? "cooldown" : "off"}`}>{snap.eleven === "ready" ? t("Bereit (auf diesem Gerät)") : snap.eleven === "locked" ? t("Gesperrt") : t("Nicht eingerichtet")}</span></div>
+          <span className={`aim-badge ${snap.eleven === "ready" ? "ready" : snap.eleven === "locked" ? "cooldown" : "off"}`}>{badge(snap.eleven, "eleven")}</span></div>
         <p className="tiny aim-can"><b>{t("Wofür?")}</b> {t("Spracherkennung „Scribe“ (sehr genau, auch in Firefox und der iPad-App) und die natürlichste Stimme für JARVIS. Kostenlos anmelden auf elevenlabs.io (monatliches Gratis-Kontingent, kein Zahlungsmittel nötig), unter „API Keys“ einen Schlüssel erzeugen (beginnt mit „sk_“). Mit einem kostenpflichtigen Tarif kann ElevenLabs bei Überschreitung Kosten berechnen – JARVIS begrenzt deshalb die Stimme auf 15.000 Zeichen im Monat auf diesem Gerät.")}</p>
         {(snap.eleven ?? "none") === "none" && (
           <>
             <Key label={t("ElevenLabs-Schlüssel")} value={ekey} set={setEkey} hint="sk_…" />
-            {(
+            {needPw && (
               <label className="fas-field"><span className="tiny">{passLabel}</span>
                 <input className="input" type="password" autoComplete="new-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort für die Schlüssel")} /></label>
             )}
-            <div className="aim-actions"><button type="button" className="btn sm primary" disabled={!elevenKeyLooksRight(ekey.trim()) || pass.length < 6 || busy !== null}
-              onClick={() => void run("eleven", async () => { await saveLocalElevenKey(ekey, pass, { remember: keep }); setEkey(""); setPass(""); const r = await testLocalEleven(); if (!r.ok) throw new Error(r.message); return r.message; })}>
+            <div className="aim-actions"><button type="button" className="btn sm primary" disabled={!elevenKeyLooksRight(ekey.trim()) || (needPw && pass.length < 6) || busy !== null}
+              onClick={() => void run("eleven", async () => { await saveLocalElevenKey(ekey, needPw ? pass : "", { remember: keep }); setEkey(""); setPass(""); const r = await testLocalEleven(); if (!r.ok) throw new Error(r.message); return r.message; })}>
               <KeyRound size={14} /> {busy === "eleven" ? t("Teste …") : t("Speichern & testen")}</button></div>
             {why(elevenKeyLooksRight(ekey.trim()), ekey.trim() ? t("Das sieht noch nicht nach einem ElevenLabs-Schlüssel aus – er beginnt mit „sk_“ und hat danach viele Zeichen. Bitte vollständig einfügen.") : t("Füge oben den ElevenLabs-Schlüssel ein (beginnt mit „sk_“)."))}
           </>
         )}
-        {snap.eleven === "locked" && lockedHint}
+        {snap.eleven === "locked" && lockedHint("eleven")}
         {snap.eleven && snap.eleven !== "none" && (
           <div className="aim-actions">
             {snap.eleven === "ready" && <button type="button" className="btn sm" disabled={busy !== null} onClick={() => void run("eleven", async () => { const r = await testLocalEleven(); if (!r.ok) throw new Error(r.message); return r.message; })}><PlugZap size={14} /> {busy === "eleven" ? t("Teste …") : t("Verbindung testen")}</button>}
@@ -403,23 +407,23 @@ function LocalAiSetup({ online = false }: { online?: boolean }) {
           return (
             <div key={p} className={`aim-local aim-local-${st}`} role="group" aria-label={`${SEARCH_NAME[p]} ${t("Websuche")}`}>
               <div className="aim-row"><b className="aim-name">{SEARCH_NAME[p]}</b>
-                <span className={`aim-badge ${st === "ready" ? "ready" : st === "locked" ? "cooldown" : "off"}`}>{st === "ready" ? t("Bereit (auf diesem Gerät)") : st === "locked" ? t("Gesperrt") : t("Nicht eingerichtet")}</span></div>
+                <span className={`aim-badge ${st === "ready" ? "ready" : st === "locked" ? "cooldown" : "off"}`}>{badge(st, "search:" + p)}</span></div>
               {st === "none" && (
                 <>
                   <Key label={`${t("Schlüssel")} ${SEARCH_NAME[p]}`} value={k} set={(v) => setSkeys((m) => ({ ...m, [p]: v }))} hint={p === "tavily" ? "tvly-…" : t("40 Zeichen")} />
-                  {(
+                  {needPw && (
                     <label className="fas-field"><span className="tiny">{passLabel}</span>
                       <input className="input" type="password" autoComplete="new-password" value={pass} maxLength={100} onChange={(e) => setPass(e.target.value)} aria-label={t("Passwort für die Schlüssel")} /></label>
                   )}
                   <div className="aim-actions">
-                    <button type="button" className="btn sm primary" disabled={k.length < 20 || pass.length < 6 || busy !== null}
-                      onClick={() => void run("s-" + p, async () => { await saveLocalSearchKey(p, k, pass, { remember: keep }); setSkeys((m) => ({ ...m, [p]: "" })); setPass(""); const r = await testLocalSearch(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
+                    <button type="button" className="btn sm primary" disabled={k.length < 20 || (needPw && pass.length < 6) || busy !== null}
+                      onClick={() => void run("s-" + p, async () => { await saveLocalSearchKey(p, k, needPw ? pass : "", { remember: keep }); setSkeys((m) => ({ ...m, [p]: "" })); setPass(""); const r = await testLocalSearch(p); if (!r.ok) throw new Error(r.message); return r.message; })}>
                       <KeyRound size={14} /> {busy === "s-" + p ? t("Teste …") : t("Speichern & testen")}</button>
                   </div>
                   {why(k.length >= 20, t("Füge oben den Schlüssel ein (er ist noch zu kurz)."))}
                 </>
               )}
-              {st === "locked" && lockedHint}
+              {st === "locked" && lockedHint("search:" + p)}
               {st !== "none" && (
                 <div className="aim-actions">
                   {st === "ready" && <button type="button" className="btn sm" disabled={busy !== null} onClick={() => void run("s-" + p, async () => { const r = await testLocalSearch(p); if (!r.ok) throw new Error(r.message); return r.message; })}><PlugZap size={14} /> {busy === "s-" + p ? t("Teste …") : t("Verbindung testen")}</button>}

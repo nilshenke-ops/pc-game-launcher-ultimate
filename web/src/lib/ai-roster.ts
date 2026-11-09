@@ -68,7 +68,7 @@ export function buildRoster(ai: AiOverview | null | undefined, st: AssistantLite
     // Keys kept on this device (without the PC)
     if (onDevice === "ready" && r.state !== "works") r = { ...r, state: "works", text: t("Auf diesem Gerät bereit – antwortet auch ohne PC"), device: true, next: undefined };
     else if (onDevice === "ready") r = { ...r, text: t("{x} · auch auf diesem Gerät", { x: r.text }), device: true };
-    else if (onDevice === "locked" && r.state !== "works") r = { ...r, state: "begun", text: t("Schlüssel auf diesem Gerät gespeichert, aber gesperrt"), next: t("Mit dem Passwort entsperren"), device: true };
+    else if (onDevice === "locked" && r.state !== "works") r = { ...r, state: "begun", text: t("Schlüssel auf diesem Gerät gespeichert – wird geöffnet"), next: t("Falls das nicht von selbst klappt: einmal das alte Passwort eingeben (danach nie wieder)"), device: true };
     const pm = p ? chosenModels(id, p.models?.map((m) => m.id) ?? [], st) : [];
     if (pm.length && r.state !== "none") r = { ...r, model: pm[0], more: pm.slice(1, 3) };
     rows.push(r);

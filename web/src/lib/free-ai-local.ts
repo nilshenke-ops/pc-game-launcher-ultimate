@@ -71,7 +71,8 @@ const WRONG_KEY: Record<LocalProvider, string> = {
 
 // ------------------------------------------------------------------ the lock (password → AES-GCM key)
 
-export interface Locked { v: 1; salt: string; iv: string; ct: string }
+/** v1: locked with a password (older versions). v2: locked with this device's own key – no password, opens by itself on every visit. */
+export type Locked = { v: 1; salt: string; iv: string; ct: string } | { v: 2; iv: string; ct: string };
 const b64 = (b: Uint8Array) => btoa(String.fromCharCode(...b));
 const unb64 = (s: string) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
 export const localAiSupported = () => typeof crypto !== "undefined" && !!crypto.subtle;
@@ -89,11 +90,71 @@ export async function lockSecret(pass: string, purpose: string, secret: string):
 }
 /** The secret, or null for a wrong password / changed data. */
 export async function unlockSecret(pass: string, purpose: string, l: Locked): Promise<string | null> {
+  if (l.v !== 1) return null;
   try {
     const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(l.iv) as BufferSource, additionalData: new TextEncoder().encode(purpose) }, await aesKey(pass, unb64(l.salt)), unb64(l.ct) as BufferSource);
     return new TextDecoder().decode(pt);
   } catch { return null; }
 }
+
+// ------------------------------------------------------------------ the device key (no password)
+// A random AES-GCM key made once on this device and kept in its browser storage as a NON-EXTRACTABLE key: the page can use it, but no script can
+// read it out or copy it to another device. Keys typed here are sealed with it, so they are entered once and are ready on every later visit – no
+// password, no "Gesperrt". Honest limit (as before, when a key was unlocked): code running in this page could ask the browser to decrypt. Clearing
+// the website data of this browser deletes the device key – the sealed keys then have to be typed in again.
+
+const DEVICE_DB = "pgl-device-key", DEVICE_STORE = "k", DEVICE_ID = "device";
+let deviceKeyP: Promise<CryptoKey> | null = null;
+let testDeviceKey: CryptoKey | null = null;
+/** Tests have no browser storage: they hand in a key. */
+export function setDeviceKeyForTests(k: CryptoKey | null) { testDeviceKey = k; deviceKeyP = null; }
+/** Can this browser keep a device key at all (not in every private window)? Without it, saving falls back to a password. */
+export const deviceKeysSupported = () => testDeviceKey !== null || (localAiSupported() && typeof indexedDB !== "undefined");
+
+function openDeviceDb(): Promise<IDBDatabase> {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open(DEVICE_DB, 1);
+    r.onupgradeneeded = () => { if (!r.result.objectStoreNames.contains(DEVICE_STORE)) r.result.createObjectStore(DEVICE_STORE); };
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error ?? new Error("IndexedDB"));
+    r.onblocked = () => rej(new Error("IndexedDB blockiert"));
+  });
+}
+async function loadOrCreateDeviceKey(): Promise<CryptoKey> {
+  // Made first, stored only if there is none yet – in ONE transaction, so two open tabs never end up with two different keys.
+  const fresh = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  const db = await openDeviceDb();
+  try {
+    return await new Promise<CryptoKey>((res, rej) => {
+      const tx = db.transaction(DEVICE_STORE, "readwrite"), st = tx.objectStore(DEVICE_STORE);
+      let key: CryptoKey = fresh;
+      const g = st.get(DEVICE_ID);
+      g.onsuccess = () => { if (g.result instanceof CryptoKey) key = g.result; else st.put(fresh, DEVICE_ID); };
+      tx.oncomplete = () => res(key);
+      tx.onerror = () => rej(tx.error ?? new Error("IndexedDB"));
+      tx.onabort = () => rej(tx.error ?? new Error("IndexedDB"));
+    });
+  } finally { db.close(); }
+}
+function deviceKey(): Promise<CryptoKey> {
+  if (testDeviceKey) return Promise.resolve(testDeviceKey);
+  if (!deviceKeysSupported()) return Promise.reject(new FreeAiError("Dieser Browser kann hier keinen Geräteschlüssel speichern (privates Fenster?)."));
+  return (deviceKeyP ??= loadOrCreateDeviceKey().catch((e) => { deviceKeyP = null; throw new FreeAiError("Der Geräteschlüssel ließ sich nicht anlegen: " + ((e as Error).message || "Speicher blockiert") + "."); }));
+}
+async function lockDevice(purpose: string, secret: string): Promise<Locked> {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv, additionalData: new TextEncoder().encode(purpose) }, await deviceKey(), new TextEncoder().encode(secret)));
+  return { v: 2, iv: b64(iv), ct: b64(ct) };
+}
+async function unlockDevice(purpose: string, l: Locked): Promise<string | null> {
+  if (l.v !== 2) return null;
+  try {
+    const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(l.iv) as BufferSource, additionalData: new TextEncoder().encode(purpose) }, await deviceKey(), unb64(l.ct) as BufferSource);
+    return new TextDecoder().decode(pt);
+  } catch { return null; }
+}
+/** With a password: the old way (only where the browser cannot keep a device key). Without: sealed with the device key. */
+const seal = (pass: string, purpose: string, secret: string) => pass ? lockSecret(pass, purpose, secret) : lockDevice(purpose, secret);
 
 // ------------------------------------------------------------------ what is stored and what is unlocked right now
 
@@ -109,9 +170,24 @@ const unlockedSearch: Partial<Record<SearchProvider, string>> = (() => { try { r
 const unlocked: Partial<Record<LocalProvider, string>> = (() => { try { return readJson<Partial<Record<LocalProvider, string>>>(SESSION, "session") ?? {}; } catch { return {}; } })();
 
 export type LocalState = "none" | "locked" | "ready";
-export interface LocalSnap { openrouter: LocalState; groq: LocalState; cerebras: LocalState; mistral: LocalState; attested: Record<LocalProvider, boolean>; search?: Record<SearchProvider, LocalState>; eleven?: LocalState }
+export interface LocalSnap { openrouter: LocalState; groq: LocalState; cerebras: LocalState; mistral: LocalState; attested: Record<LocalProvider, boolean>; search?: Record<SearchProvider, LocalState>; eleven?: LocalState;
+  /** An old key locked with a password is still closed (asked for once, then it moves to the device key). */ pw?: boolean;
+  /** The device-sealed keys are being opened right now (a moment after the page starts). */ loading?: boolean }
 const listeners = new Set<() => void>();
-const compute = (): LocalSnap => { const s = read(); const at = attestedOf(s); const st = (p: LocalProvider): LocalState => unlocked[p] && at[p] ? "ready" : s[p] ? "locked" : "none"; return { openrouter: st("openrouter"), groq: st("groq"), cerebras: st("cerebras"), mistral: st("mistral"), attested: at, search: { tavily: sst("tavily", s), serper: sst("serper", s) }, eleven: unlockedEleven ? "ready" : s.eleven ? "locked" : "none" }; };
+let deviceLoading = true;
+/** Which kind of lock a stored slot has: "password" (old, needs the password once), "device" (opens by itself) – null if nothing is stored. */
+export function lockKindOf(slot: string): "password" | "device" | null {
+  const s = read();
+  const l: Locked | undefined = slot === "eleven" ? s.eleven : slot.startsWith("search:") ? s.search?.[slot.slice(7) as SearchProvider] : s[slot as LocalProvider];
+  return l ? (l.v === 1 ? "password" : "device") : null;
+}
+const computeBase = (): LocalSnap => { const s = read(); const at = attestedOf(s); const st = (p: LocalProvider): LocalState => unlocked[p] && at[p] ? "ready" : s[p] ? "locked" : "none"; return { openrouter: st("openrouter"), groq: st("groq"), cerebras: st("cerebras"), mistral: st("mistral"), attested: at, search: { tavily: sst("tavily", s), serper: sst("serper", s) }, eleven: unlockedEleven ? "ready" : s.eleven ? "locked" : "none" }; };
+const compute = (): LocalSnap => {
+  const base = computeBase(), s = read();
+  const closed = (l: Locked | undefined, open: boolean) => !!l && l.v === 1 && !open;
+  const pw = LOCAL_PROVIDERS.some((p) => closed(s[p], !!unlocked[p])) || (["tavily", "serper"] as SearchProvider[]).some((p) => closed(s.search?.[p], !!unlockedSearch[p])) || closed(s.eleven, !!unlockedEleven);   // literal list: this runs before SEARCH_PROVIDERS is defined
+  return { ...base, pw, loading: deviceLoading };
+};
 const sst = (p: SearchProvider, s: Stored): LocalState => unlockedSearch[p] ? "ready" : s.search?.[p] ? "locked" : "none";
 let snap: LocalSnap = compute();
 const publish = () => { snap = compute(); listeners.forEach((l) => l()); };
@@ -149,44 +225,73 @@ export async function transferKeysToPc(
 
 function remember(on: boolean) { try { writeJson(SESSION, on ? unlocked : null, "session"); writeJson(SESSION_S, on ? unlockedSearch : null, "session"); writeJson(SESSION_E, on ? unlockedEleven : null, "session"); } catch { /* ignore */ } }
 
-export async function saveLocalKey(p: LocalProvider, key: string, pass: string, o: { attested?: boolean; remember?: boolean } = {}): Promise<void> {
+export async function saveLocalKey(p: LocalProvider, key: string, pass = "", o: { attested?: boolean; remember?: boolean } = {}): Promise<void> {
   if (!localAiSupported()) throw new FreeAiError("Hier ist das Verschlüsseln nicht möglich (nur auf der Website im Internet, nicht auf der http-Seite im WLAN).");
   const k = key.trim();
   if (!keyLooksRight(p, k)) throw new FreeAiError(WRONG_KEY[p]);
-  if (pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
+  if (pass && pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
+  if (!pass && !deviceKeysSupported()) throw new FreeAiError("Dieser Browser kann hier keinen Geräteschlüssel speichern (privates Fenster?) – bitte ein Passwort vergeben.");
   if (needsAttestation(p) && !(o.attested ?? attestedOf(read())[p])) throw new FreeAiError(`Bitte zuerst bestätigen: Dein ${LOCAL_NAME[p]}-Konto ist im kostenlosen Tarif und hat keine Zahlungsmethode.`);
   const s = read();
-  const other = LOCAL_PROVIDERS.find((x) => x !== p && s[x]);                  // one password for all keys of this device
+  const other = pass ? LOCAL_PROVIDERS.find((x) => x !== p && s[x]?.v === 1) : undefined;   // one password for all password-locked keys of this device
   if (other && unlocked[other] === undefined && (await unlockSecret(pass, other, s[other]!)) === null) throw new FreeAiError("Das Passwort passt nicht zu dem schon gespeicherten Schlüssel (ein Passwort für alle).");
-  s[p] = await lockSecret(pass, p, k);
+  s[p] = await seal(pass, p, k);
   if (needsAttestation(p)) { s.attested = { ...s.attested, [p]: true }; if (p === "groq") s.groqAttested = true; }
   write(s); unlocked[p] = k;
   if (o.remember) remember(true);
   publish();
 }
 
+/**
+ * The old way, once: opens the keys that are still locked with a password – and at once seals them again with this device's key, so the
+ * password is never asked for again on this device. Keys already sealed with the device key are not touched.
+ */
 export async function unlockLocalAi(pass: string, keep = false): Promise<void> {
   const s = read(); let any = false;
   for (const p of LOCAL_PROVIDERS) {
-    if (!s[p]) continue;
-    const v = await unlockSecret(pass, p, s[p]!);
+    const l = s[p]; if (!l || l.v !== 1) continue;
+    const v = await unlockSecret(pass, p, l);
     if (v === null) throw new FreeAiError("Falsches Passwort.");
     unlocked[p] = v; any = true;
   }
   for (const sp of SEARCH_PROVIDERS) {
-    const l = s.search?.[sp]; if (!l) continue;
+    const l = s.search?.[sp]; if (!l || l.v !== 1) continue;
     const v = await unlockSecret(pass, "search:" + sp, l);
     if (v === null) throw new FreeAiError("Falsches Passwort.");
     unlockedSearch[sp] = v; any = true;
   }
-  if (s.eleven) {
+  if (s.eleven && s.eleven.v === 1) {
     const v = await unlockSecret(pass, "voice:elevenlabs", s.eleven);
     if (v === null) throw new FreeAiError("Falsches Passwort.");
     unlockedEleven = v; any = true;
   }
-  if (!any) throw new FreeAiError("Auf diesem Gerät ist noch kein Schlüssel gespeichert.");
+  if (!any) throw new FreeAiError("Auf diesem Gerät ist kein Schlüssel mit Passwort gespeichert.");
+  if (deviceKeysSupported()) {
+    try {
+      const n = read();
+      for (const p of LOCAL_PROVIDERS) if (n[p]?.v === 1 && unlocked[p]) n[p] = await lockDevice(p, unlocked[p]!);
+      for (const sp of SEARCH_PROVIDERS) if (n.search?.[sp]?.v === 1 && unlockedSearch[sp]) n.search[sp] = await lockDevice("search:" + sp, unlockedSearch[sp]!);
+      if (n.eleven?.v === 1 && unlockedEleven) n.eleven = await lockDevice("voice:elevenlabs", unlockedEleven);
+      write(n); keep = false;   // nothing to keep in the tab any more: the device key opens them on every visit
+    } catch { /* no device key here – stays password-locked, open for this tab */ }
+  }
   remember(keep); publish();
 }
+
+/** Opens every key sealed with this device's key – runs by itself when the page starts. Keys that cannot be opened stay "locked" (the device key is gone). */
+export async function loadDeviceKeys(): Promise<void> {
+  try {
+    const s = read();
+    if (!deviceKeysSupported()) return;
+    const has = LOCAL_PROVIDERS.some((p) => s[p]?.v === 2) || SEARCH_PROVIDERS.some((p) => s.search?.[p]?.v === 2) || s.eleven?.v === 2;
+    if (!has) return;
+    for (const p of LOCAL_PROVIDERS) { const l = s[p]; if (l?.v === 2 && !unlocked[p]) { const v = await unlockDevice(p, l); if (v !== null) unlocked[p] = v; } }
+    for (const sp of SEARCH_PROVIDERS) { const l = s.search?.[sp]; if (l?.v === 2 && !unlockedSearch[sp]) { const v = await unlockDevice("search:" + sp, l); if (v !== null) unlockedSearch[sp] = v; } }
+    if (s.eleven?.v === 2 && !unlockedEleven) { const v = await unlockDevice("voice:elevenlabs", s.eleven); if (v !== null) unlockedEleven = v; }
+  } finally { deviceLoading = false; publish(); }
+}
+void loadDeviceKeys();
+
 export function lockLocalAi() { for (const p of LOCAL_PROVIDERS) delete unlocked[p]; for (const p of SEARCH_PROVIDERS) delete unlockedSearch[p]; unlockedEleven = null; remember(false); publish(); }
 export function removeLocalKey(p: LocalProvider) {
   const s = read(); delete s[p]; if (s.attested) delete s.attested[p]; if (p === "groq") delete s.groqAttested; write(s);
@@ -364,18 +469,19 @@ export function wantsLiveData(text: string): boolean {
   return LIVE.test(t);
 }
 
-export async function saveLocalSearchKey(p: SearchProvider, key: string, pass: string, o: { remember?: boolean } = {}): Promise<void> {
+export async function saveLocalSearchKey(p: SearchProvider, key: string, pass = "", o: { remember?: boolean } = {}): Promise<void> {
   if (!localAiSupported()) throw new FreeAiError("Hier ist das Verschlüsseln nicht möglich (nur auf der Website im Internet, nicht auf der http-Seite im WLAN).");
   const k = key.trim();
   if (!searchKeyLooksRight(p, k)) throw new FreeAiError(p === "tavily" ? "Das sieht nicht nach einem Tavily-Schlüssel aus (er beginnt mit „tvly-“)." : "Das sieht nicht nach einem Serper-Schlüssel aus (40 Zeichen aus Ziffern und Kleinbuchstaben a–f).");
-  if (pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
+  if (pass && pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
+  if (!pass && !deviceKeysSupported()) throw new FreeAiError("Dieser Browser kann hier keinen Geräteschlüssel speichern (privates Fenster?) – bitte ein Passwort vergeben.");
   const s = read();
-  // one password for everything on this device
-  const probe = LOCAL_PROVIDERS.find((x) => s[x] && unlocked[x] === undefined) ;
+  // one password for everything on this device that is still password-locked
+  const probe = pass ? LOCAL_PROVIDERS.find((x) => s[x]?.v === 1 && unlocked[x] === undefined) : undefined;
   if (probe && (await unlockSecret(pass, probe, s[probe]!)) === null) throw new FreeAiError("Das Passwort passt nicht zu dem schon gespeicherten Schlüssel (ein Passwort für alle).");
-  const probeS = SEARCH_PROVIDERS.find((x) => x !== p && s.search?.[x] && unlockedSearch[x] === undefined);
+  const probeS = pass ? SEARCH_PROVIDERS.find((x) => x !== p && s.search?.[x]?.v === 1 && unlockedSearch[x] === undefined) : undefined;
   if (probeS && (await unlockSecret(pass, "search:" + probeS, s.search![probeS]!)) === null) throw new FreeAiError("Das Passwort passt nicht zu dem schon gespeicherten Schlüssel (ein Passwort für alle).");
-  s.search = { ...s.search, [p]: await lockSecret(pass, "search:" + p, k) };
+  s.search = { ...s.search, [p]: await seal(pass, "search:" + p, k) };
   write(s); unlockedSearch[p] = k;
   if (o.remember) remember(true);
   publish();
@@ -472,15 +578,16 @@ export const elevenKeyLooksRight = (key: string) => /^(sk_[A-Za-z0-9_-]{24,120}|
 export const elevenDeviceReady = () => !!unlockedEleven;
 const ELEVEN = "https://api.elevenlabs.io";
 
-export async function saveLocalElevenKey(key: string, pass: string, o: { remember?: boolean } = {}): Promise<void> {
+export async function saveLocalElevenKey(key: string, pass = "", o: { remember?: boolean } = {}): Promise<void> {
   if (!localAiSupported()) throw new FreeAiError("Hier ist das Verschlüsseln nicht möglich (nur auf der Website im Internet, nicht auf der http-Seite im WLAN).");
   const k = key.trim();
   if (!elevenKeyLooksRight(k)) throw new FreeAiError("Das sieht nicht nach einem ElevenLabs-Schlüssel aus (er beginnt mit „sk_“).");
-  if (pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
+  if (pass && pass.length < 6) throw new FreeAiError("Das Passwort braucht mindestens 6 Zeichen.");
+  if (!pass && !deviceKeysSupported()) throw new FreeAiError("Dieser Browser kann hier keinen Geräteschlüssel speichern (privates Fenster?) – bitte ein Passwort vergeben.");
   const s = read();
-  const probe = LOCAL_PROVIDERS.find((x) => s[x] && unlocked[x] === undefined);
+  const probe = pass ? LOCAL_PROVIDERS.find((x) => s[x]?.v === 1 && unlocked[x] === undefined) : undefined;
   if (probe && (await unlockSecret(pass, probe, s[probe]!)) === null) throw new FreeAiError("Das Passwort passt nicht zu dem schon gespeicherten Schlüssel (ein Passwort für alle).");
-  s.eleven = await lockSecret(pass, "voice:elevenlabs", k);
+  s.eleven = await seal(pass, "voice:elevenlabs", k);
   write(s); unlockedEleven = k;
   if (o.remember) remember(true);
   publish();

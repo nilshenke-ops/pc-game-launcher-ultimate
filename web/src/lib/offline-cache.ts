@@ -31,6 +31,12 @@ const cacheListeners = new Set<() => void>();
 export const cacheIsFull = () => cacheFull;
 export const onCacheFull = (fn: () => void) => { cacheListeners.add(fn); return () => cacheListeners.delete(fn); };
 
+/** Raised when a copy came from the cloud (not from a live answer), so open pages show it – see lib/cloud-sync.ts. */
+let cacheVer = 0;
+const cacheVerListeners = new Set<() => void>();
+export const bumpCache = () => { cacheVer++; cacheVerListeners.forEach((l) => l()); };
+export const cacheStore = { subscribe: (fn: () => void) => { cacheVerListeners.add(fn); return () => cacheVerListeners.delete(fn); }, version: () => cacheVer };
+
 export function readCache<T>(method: string, params?: string): { at: number; data: T } | null {
   if (!CACHED_METHODS.has(method)) return null;
   try { const v = localStorage.getItem(key(method, params)); return v ? JSON.parse(v) : null; } catch { return null; }

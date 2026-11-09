@@ -26,6 +26,12 @@ async function newCtx(browser: Browser, opts: Parameters<Browser["newContext"]>[
   });
   return ctx;
 }
+/** The launch cinema (full-screen, closes by itself or with a tap) covers the page for a moment after a start – skip it like a person would. */
+async function skipCinema(page: Page) {
+  const cinema = page.locator(".lc");
+  await page.waitForTimeout(300);                       // it opens right after the start command
+  if (await cinema.count()) { await page.keyboard.press("Escape"); await expect(cinema).toHaveCount(0); }
+}
 let phone: Page;
 
 async function adminPage(browser: Browser) {
@@ -415,6 +421,7 @@ test("Weitere Beispiel-Plugins laufen mit echten Daten vom PC", async () => {
   await fav.getByRole("button", { name: /E2E Testspiel/ }).click({ timeout: 15000 });
   await expect.poll(() => existsSync(join(work, "game-started.txt")), { timeout: 10000 }).toBe(true);
   await expect(fav.locator("#err")).toHaveText("");
+  await skipCinema(pc);
 
   const top = frame("Top-Spiele der Woche", "Top-Spiele");
   await expect(top.locator("#range")).toHaveText("Letzte 7 Tage", { timeout: 15000 });
@@ -462,6 +469,7 @@ test("Neue Plugins (2.11): jedes Widget installiert, aktiviert und zeigt echte D
   rmSync(join(work, "game-started.txt"), { force: true });
   await f("zufallsspiel").getByRole("button", { name: "Starten" }).click();
   await expect(f("zufallsspiel").locator("#err")).toHaveText("");
+  await skipCinema(pc);
   await show("weiterspielen"); await expect(f("weiterspielen").locator("#list li, #info:not(:empty)").first()).toBeVisible(T);
   await show("tageslimit"); await expect(f("tageslimit").locator("#sub")).toHaveText(/^heute .* von 2 h 0 min$/, T);
   await show("spiel-serie"); await expect(f("spiel-serie").locator("#best")).toHaveText(/^\d+ Tage$/, T);
@@ -659,11 +667,11 @@ test("Overlay: Aufnahme-Chip in der Leiste startet/stoppt OBS, Suche im Menü, A
   await expect(bar.getByRole("button", { name: "Aufnahme starten" })).toBeVisible({ timeout: 15000 });
   // OBS scenes and the mute buttons (the bar's microphone chip and the recording window's buttons) act on OBS itself.
   const obsFull = async () => (await (await fetch(`http://127.0.0.1:${OBS_PORT}/state`)).json()) as { scene: string; micMuted: boolean; desktopMuted: boolean };
-  await expect(pc.locator(".gb-scenes").getByRole("button", { name: "Chat" })).toBeVisible({ timeout: 15000 });
-  await pc.locator(".gb-scenes").getByRole("button", { name: "Chat" }).click();
+  await expect(pc.locator(".gbr-scenes").getByRole("button", { name: "Chat" })).toBeVisible({ timeout: 15000 });
+  await pc.locator(".gbr-scenes").getByRole("button", { name: "Chat" }).click();
   await expect.poll(async () => (await obsFull()).scene).toBe("Chat");
-  await expect(pc.locator(".gb-scenes").getByRole("button", { name: "Chat" })).toHaveAttribute("aria-pressed", "true", { timeout: 15000 });
-  await pc.locator(".gb-scenes").getByRole("button", { name: "Spiel" }).click();
+  await expect(pc.locator(".gbr-scenes").getByRole("button", { name: "Chat" })).toHaveAttribute("aria-pressed", "true", { timeout: 15000 });
+  await pc.locator(".gbr-scenes").getByRole("button", { name: "Spiel" }).click();
   await expect.poll(async () => (await obsFull()).scene).toBe("Spiel");
   await bar.getByRole("button", { name: "Mikrofon stummschalten" }).click();
   await expect.poll(async () => (await obsFull()).micMuted).toBe(true);
@@ -2673,8 +2681,8 @@ test("KI-Verwaltung auf dem Handy: passt auf den Bildschirm, ohne PC nur Pollina
   await ctx.close();
 });
 
-test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, nur Gratis-Modelle, Antwort nennt die KI, nach Neuladen gesperrt", async ({ browser }) => {
-  const KEY = "sk-or-v1-e2e0123456789abcdef0123456789", PASS = "e2e-passwort-1";
+test("OpenRouter ohne PC einrichten: Schlüssel einmal eingeben (ohne Passwort), nur Gratis-Modelle, Antwort nennt die KI, nach Neuladen sofort wieder bereit", async ({ browser }) => {
+  const KEY = "sk-or-v1-e2e0123456789abcdef0123456789";
   const ctx = await newCtx(browser, { ...devices["iPad (gen 7)"], locale: "de-DE" });
   const p = await ctx.newPage();
   const chats: { auth: string | null; body: Record<string, unknown> }[] = [];
@@ -2697,18 +2705,20 @@ test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, n
   await expect(card).toBeVisible();
   const or = card.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });
   await expect(or.getByText("Nicht eingerichtet")).toBeVisible();
-  // A wrong key shape is refused before anything leaves the device; the right one is locked with the password.
+  // A wrong key shape is refused before anything leaves the device; the right one is sealed with this device's key – no password field at all.
+  await expect(or.getByLabel("Passwort für die Schlüssel")).toHaveCount(0);
   await or.getByLabel("OpenRouter-Schlüssel").fill("AIzaSyA0123456789abcdefghijklmnopqrstuv");
-  await or.getByLabel("Passwort für die Schlüssel").fill(PASS);
   await or.getByRole("button", { name: "Speichern & testen" }).click();
   await expect(or.getByRole("alert")).toContainText("OpenRouter-Schlüssel");
   expect(hosts.size).toBe(0);
   await or.getByLabel("OpenRouter-Schlüssel").fill(KEY);
   await or.getByRole("button", { name: "Speichern & testen" }).click();
   await expect(or.getByText("Bereit (auf diesem Gerät)")).toBeVisible({ timeout: 15000 });
-  // The key is not readable anywhere in the storage.
+  // The key is not readable anywhere in the storage, and the device key itself cannot be read out of the browser.
   const stored = await p.evaluate(() => JSON.stringify({ ...localStorage }) + JSON.stringify({ ...sessionStorage }));
   expect(stored).not.toContain("sk-or-v1");
+  const extractable = await p.evaluate(() => new Promise<boolean | null>((res) => { const r = indexedDB.open("pgl-device-key"); r.onsuccess = () => { const g = r.result.transaction("k").objectStore("k").get("device"); g.onsuccess = () => res(g.result ? (g.result as CryptoKey).extractable : null); g.onerror = () => res(null); }; r.onerror = () => res(null); }));
+  expect(extractable).toBe(false);
   // Ask without a PC: free-only request, maximum price 0, the key only to openrouter.ai, and the answer names the AI.
   await p.getByRole("tab", { name: "Gespräch" }).click();
   await p.getByLabel("Nachricht an den Assistenten").fill("Suche wie lange man im durchschnitt schlafen muss");
@@ -2721,16 +2731,12 @@ test("OpenRouter ohne PC einrichten: Schlüssel verschlüsselt auf dem Gerät, n
   expect(last.body.model).toBe("openrouter/free");
   expect(last.body.provider).toEqual({ max_price: { prompt: 0, completion: 0, request: 0, image: 0 } });
   expect([...hosts]).toEqual(["openrouter.ai"]);
-  // After a reload the key is locked: no answer from OpenRouter until the password is entered again.
+  // After a reload the key is ready again by itself – no password, nothing "gesperrt".
   await p.reload();
   await p.getByRole("tab", { name: "KI & Einstellungen" }).click();
-  await expect(card.getByText("Gesperrt").first()).toBeVisible();
-  await card.getByLabel("Passwort zum Entsperren").fill("falsches-pw-1");
-  await card.getByRole("button", { name: "Entsperren" }).click();
-  await expect(card.getByText(/Falsches Passwort/)).toBeVisible();
-  await card.getByLabel("Passwort zum Entsperren").fill(PASS);
-  await card.getByRole("button", { name: "Entsperren" }).click();
-  await expect(card.getByText("Entsperrt – die Schlüssel sind bereit.")).toBeVisible();
+  await expect(or.getByText("Bereit (auf diesem Gerät)")).toBeVisible({ timeout: 10000 });
+  await expect(card.locator(".aim-badge", { hasText: /Gesperrt|Einmal Passwort nötig|Neu eintragen/ })).toHaveCount(0);
+  await expect(card.getByLabel("Passwort zum Entsperren")).toHaveCount(0);
   expect(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   await ctx.close();
 });
@@ -2739,7 +2745,7 @@ test("Am Gerät eingerichteter OpenRouter-Schlüssel wird, sobald der PC verbund
   const { adminRpc } = await import("./rpc");
   type Prov = { id: string; state: string; keySet: boolean };
   const status = () => adminRpc<{ providers: Prov[] }>("ai.status");
-  const KEY = "sk-or-v1-e2etransfer0123456789abcdef", PASS = "e2e-passwort-2";
+  const KEY = "sk-or-v1-e2etransfer0123456789abcdef";
   await adminRpc("ai.set", { provider: "openrouter", key: "" }).catch(() => {});
   expect((await status()).providers.find((x) => x.id === "openrouter")!.keySet).toBe(false);
   const p = await adminPage(browser);                                  // the PC is connected
@@ -2749,7 +2755,6 @@ test("Am Gerät eingerichteter OpenRouter-Schlüssel wird, sobald der PC verbund
   await expect(local.getByText(/übertragen sich automatisch/)).toBeVisible({ timeout: 15000 });
   const or = local.getByRole("group", { name: /OpenRouter auf diesem Gerät/ });
   await or.getByLabel("OpenRouter-Schlüssel").fill(KEY);
-  await or.getByLabel("Passwort für die Schlüssel").fill(PASS);
   await or.getByRole("button", { name: "Speichern & testen" }).click();
   await expect(or.getByText("Bereit (auf diesem Gerät)")).toBeVisible({ timeout: 15000 });
   await expect.poll(async () => (await status()).providers.find((x) => x.id === "openrouter")!.keySet, { timeout: 30000 }).toBe(true);
@@ -2898,7 +2903,7 @@ test("JARVIS MEMORY: echter Ordner mit Markdown-Dateien – merken, nachfragen, 
   expect(readFileSync(join(vault, "05-Wissen", "Redstone Tipps.md"), "utf8")).toContain("Repeater verlängern");
   await expect(page.getByRole("dialog", { name: "Neue Notiz" })).toBeHidden();
   await page.locator("textarea[aria-label='Notiz']").fill("# Redstone Tipps\nComparatoren messen Füllstände.\n");
-  await page.getByRole("button", { name: "Speichern" }).click();
+  await page.getByRole("dialog").getByRole("button", { name: "Speichern" }).click();   // the note editor's button – the settings card has its own
   await expect.poll(() => readFileSync(join(vault, "05-Wissen", "Redstone Tipps.md"), "utf8")).toContain("Comparatoren");
   await page.keyboard.press("Escape");
 

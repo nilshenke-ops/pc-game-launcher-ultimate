@@ -1,7 +1,8 @@
 import { useSyncExternalStore } from "react";
 import { client } from "./rpc";
 import { setProfileTheme } from "./prefs";
-import { readCache, saveCache, savedOverview } from "./offline-cache";
+import { readCache, saveCache, savedOverview, cacheStore } from "./offline-cache";
+import { cloudSyncStatus } from "./cloud-sync";
 import type { AppState, Notification, PlayingState } from "./types";
 
 // Shared overview state (one request for all widgets), refreshed on relevant events with a short debounce.
@@ -43,7 +44,7 @@ client.on("authenticated", () => refreshState(0));
 // while the PC is unreachable. Names, profile and counts of the last connection stay, marked as old ("Stand …").
 function showSaved() {
   const saved = readCache<AppState>("state.get");
-  if (saved && client.credentials) { state = savedOverview(saved.data); error = null; updatedAt = saved.at; stale = true; } else { state = null; error = null; updatedAt = null; stale = false; }
+  if (saved && (client.credentials || cloudSyncStatus().active)) { state = savedOverview(saved.data); error = null; updatedAt = saved.at; stale = true; } else { state = null; error = null; updatedAt = null; stale = false; }
   publish();
 }
 client.subscribe(() => {
@@ -53,6 +54,8 @@ client.subscribe(() => {
   if (!stale) showSaved();
 });
 showSaved();
+// A newer copy from the cloud (PC off): the overview shows it, marked as "Stand …".
+cacheStore.subscribe(() => { if (client.status.phase !== "online" || client.status.auth !== "ok") showSaved(); });
 client.on("changed", (d) => { if (TOPICS.has((d as { topic: string }).topic)) refreshState(); });
 client.on("session", () => refreshState());
 client.on("profile.active", () => refreshState());

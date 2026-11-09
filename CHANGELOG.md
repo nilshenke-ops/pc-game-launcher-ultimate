@@ -4,6 +4,32 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.33.0 – 2026-11-09
+### Neu
+- Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt
+- Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol
+- Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)
+### Verbessert
+- Insel: Die Farben der Karten passen sich an – Musik und Spiel nehmen die Farbe des Covers bzw. Logos, der Fokus-Timer färbt sich je nach Phase (Fokus, Pause, lange Pause)
+
+## 3.32.0 – 2026-11-09
+### Neu
+- Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt
+### Verbessert
+- Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf
+
+## 3.31.0 – 2026-11-09
+### Neu
+- Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext
+- Alle Geräte desselben Kontos holen sich den neuesten Stand von selbst (alle 10 Sekunden bei geöffneter App, sofort beim Zurückkehren in die App oder wenn das Netz wieder da ist) – auch ein iPad, das nie mit dem PC gekoppelt war. Bei ausgeschaltetem PC bleibt alles sichtbar und bearbeitbar: Spiele und Apps, Favoriten, Kategorien, Einstellungen. Nur Aktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung), brauchen weiter eine PC-Verbindung
+- Änderungen ohne PC: Favorit, Kategorien, Bewertung, Name und Einstellungen, die du am iPad oder Handy bei ausgeschaltetem PC machst, werden sofort angezeigt und als kleine, verschlüsselte „Änderungen“ in die Cloud gelegt. Der PC übernimmt sie beim nächsten Start – jede Änderung genau einmal (eigene ID), und was am PC inzwischen geändert wurde, gilt weiter (Konflikte werden je Feld entschieden und unter „Cloud“ aufgelistet)
+- Kein Datenverlust bei Netzausfall: Was nicht gesendet werden konnte, bleibt auf dem Gerät bzw. am PC vorgemerkt und wird automatisch nachgeholt, sobald die Cloud wieder antwortet (mit wachsenden Pausen)
+- Neue Karte „Automatische Synchronisierung“ auf der Cloud-Seite: Cloud verbunden / nicht erreichbar, PC verbunden / nicht verbunden, Synchronisierung läuft / abgeschlossen, ausstehende Änderungen, wann der PC zuletzt übertragen hat. Der PC verbindet sich beim Anmelden von selbst mit dem Konto; „PC mit diesem Konto verbinden / trennen“ und „Jetzt abgleichen“ gibt es zusätzlich
+- Schlüssel ohne Passwort: KI-, Such- und ElevenLabs-Schlüssel werden einmal eingegeben und danach mit einem Schlüssel verschlüsselt, der fest an dieses Gerät gebunden ist (nicht auslesbar, nicht kopierbar). Kein Passwort, kein „Gesperrt“ mehr – die Schlüssel sind bei jedem Öffnen sofort bereit. Alte, mit Passwort gesperrte Schlüssel werden einmal mit dem Passwort geöffnet und wechseln dabei dauerhaft auf den Geräteschlüssel
+### Verbessert
+- Statt „Gesperrt“ steht bei einem Schlüssel, der noch beim Öffnen ist oder aus einer alten Version stammt, ein klarer Hinweis, was zu tun ist
+### Behoben
+- Teststabilität: Das Kino beim Spielstart verdeckte im Test kurz die Seite; Overlay-Breite wird erst nach dem Loslassen gemessen
 ## 3.30.1 – 2026-11-09
 ### Verbessert
 - Macht Aufnahme und Widget-Menü im Overlay übersichtlich.

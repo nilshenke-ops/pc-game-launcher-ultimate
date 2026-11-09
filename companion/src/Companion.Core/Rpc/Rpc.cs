@@ -389,7 +389,28 @@ public sealed class RpcServer : IHub
     public void SendTo(RpcSession session, string ev, object? data) =>
         _ = SafeSend(session, Json.Serialize(new { v = ProtocolVersion, ev, d = data }));
 
-    public void Changed(string topic) => Broadcast("changed", new { topic });
+    public void Changed(string topic) { Broadcast("changed", new { topic }); TopicChanged?.Invoke(topic); }
+
+    /// <summary>Every "changed" topic, also for listeners inside the companion (the cloud sync sends what changed).</summary>
+    public event Action<string>? TopicChanged;
+
+    /// <summary>
+    /// Runs a method for the companion itself (the cloud sync reads the same answers the website gets, and applies changes from the cloud).
+    /// The caller decides which methods – nothing from outside reaches this.
+    /// </summary>
+    public Task<object?> InvokeInternalAsync(string method, RpcSession session, JsonElement p) =>
+        _methods.TryGetValue(method, out var entry) ? entry.handler(new RpcContext { Session = session, Params = p }) : throw new RpcException("unknown-method", $"Unbekannte Aktion: {method}");
+}
+
+/// <summary>The "connection" of the companion's own calls (cloud sync) – never sends anything anywhere.</summary>
+public sealed class InternalChannel(string id, string transport) : IClientChannel
+{
+    public string Id { get; } = id;
+    public string RemoteIp => transport;
+    public bool IsLoopback => false;
+    public string Transport { get; } = transport;
+    public Task SendAsync(string text) => Task.CompletedTask;
+    public Task CloseAsync(string reason) => Task.CompletedTask;
 }
 
 /// <summary>Hub without connections (command-line tools such as the release check).</summary>

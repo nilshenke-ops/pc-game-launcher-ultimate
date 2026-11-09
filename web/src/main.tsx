@@ -5,6 +5,7 @@ import "./styles-refresh.css";
 import "./lib/prefs";
 import "./lib/state";
 import { captureAdminToken, captureHandoff, client, demoRequested } from "./lib/rpc";
+import { startCloudSync } from "./lib/cloud-sync";
 import { DEMO_BUILD } from "./lib/demo-flag";
 import { languageReady } from "./lib/i18n";
 import App from "./App";
@@ -40,4 +41,5 @@ if ("serviceWorker" in navigator && window.isSecureContext && !embedded && !DEMO
 
 // English users wait for their texts (one small request) instead of seeing German first.
 void import("./lib/free-ai").then((m) => m.warmUpFreeAi());
+startCloudSync();
 void languageReady().finally(() => createRoot(document.getElementById("root")!).render(<StrictMode><App /></StrictMode>));

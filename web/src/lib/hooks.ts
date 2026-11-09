@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { client, needsPcMessage, RpcError, type ConnStatus } from "./rpc";
 import { t } from "./i18n";
-import { readCache, saveCache } from "./offline-cache";
+import { cacheStore, readCache, saveCache } from "./offline-cache";
 import { OFFLINE_DEFAULTS, outbox } from "./outbox";
 
 /** Whether this device may do something (offline: rights of its last login; never connected: everything except PC-only). */
@@ -85,6 +85,7 @@ export interface Query<T> { data: T | undefined; error: RpcError | null; loading
 export function useRpc<T>(method: string, params?: unknown, topics: string[] = [], enabled = true): Query<T> {
   const conn = useConn();
   useSyncExternalStore(outbox.subscribe, outbox.version); // offline changes update the shown copy right away
+  useSyncExternalStore(cacheStore.subscribe, cacheStore.version); // a newer copy from the cloud too
   const [state, setState] = useState<{ data?: T; error: RpcError | null; loading: boolean; updatedAt: number | null }>({ error: null, loading: true, updatedAt: null });
   const paramKey = JSON.stringify(params ?? {});
   const seq = useRef(0);

@@ -361,3 +361,53 @@ describe("ElevenLabs auf dem Gerät", () => {
     await expect(transcribeEleven(new Blob([new Uint8Array(3000)], { type: "audio/webm" }), "de", { fetcher: full })).rejects.toThrow(/Kontingent/);
   });
 });
+
+import { loadDeviceKeys, setDeviceKeyForTests, localAiSnapshot as snapNow, lockKindOf, saveLocalKey as saveKey2, unlockLocalAi as unlockOnce, lockLocalAi as forgetInMemory, saveLocalElevenKey as saveEleven2, elevenDeviceReady as elevenReady2 } from "./free-ai-local";
+
+describe("Schlüssel ohne Passwort (Geräteschlüssel)", () => {
+  const deviceKey = () => crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]) as Promise<CryptoKey>;
+  it("einmal eingeben, nach dem Neuladen von selbst bereit – ohne Passwort, nie „gesperrt“", async () => {
+    setDeviceKeyForTests(await deviceKey());
+    try {
+      await saveKey2("openrouter", OR);                          // no password
+      await saveEleven2("sk_" + "a".repeat(40));
+      expect(lockKindOf("openrouter")).toBe("device"); expect(lockKindOf("eleven")).toBe("device");
+      const stored = local._m.get("pgl.localai") ?? "";
+      expect(stored).not.toContain(OR);                          // never in plain text in the storage
+      expect(stored).not.toContain("salt");                      // no password involved
+      forgetInMemory();                                          // = the page is opened again: nothing open in memory
+      expect(snapNow().openrouter).toBe("locked");
+      await loadDeviceKeys();                                    // runs by itself when the page starts
+      expect(snapNow().openrouter).toBe("ready"); expect(elevenReady2()).toBe(true);
+      expect(snapNow().pw).toBe(false);
+    } finally { setDeviceKeyForTests(null); }
+  });
+  it("alter Schlüssel mit Passwort: einmal entsperren, danach dauerhaft ohne Passwort", async () => {
+    await saveKey2("openrouter", OR, PASS);                      // as stored by older versions
+    expect(lockKindOf("openrouter")).toBe("password");
+    forgetInMemory();
+    expect(snapNow().pw).toBe(true);
+    setDeviceKeyForTests(await deviceKey());
+    try {
+      await expect(unlockOnce("falsch-123")).rejects.toThrow(/Falsches Passwort/);
+      await unlockOnce(PASS);
+      expect(lockKindOf("openrouter")).toBe("device");          // moved to the device key
+      forgetInMemory();
+      await loadDeviceKeys();
+      expect(snapNow().openrouter).toBe("ready"); expect(snapNow().pw).toBe(false);
+    } finally { setDeviceKeyForTests(null); }
+  });
+  it("ein anderes Gerät (anderer Geräteschlüssel) kann den gespeicherten Schlüssel nicht öffnen", async () => {
+    setDeviceKeyForTests(await deviceKey());
+    await saveKey2("openrouter", OR);
+    forgetInMemory();
+    setDeviceKeyForTests(await deviceKey());                     // e.g. the storage copied to another browser
+    try { await loadDeviceKeys(); expect(snapNow().openrouter).toBe("locked"); }
+    finally { setDeviceKeyForTests(null); }
+  });
+  it("ohne Geräteschlüssel (privates Fenster) geht es weiterhin nur mit Passwort", async () => {
+    await expect(saveKey2("openrouter", OR)).rejects.toThrow(/Passwort vergeben/);
+    await saveKey2("openrouter", OR, PASS);
+    expect(snapNow().openrouter).toBe("ready");
+  });
+});
