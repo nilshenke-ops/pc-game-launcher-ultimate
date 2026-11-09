@@ -1,28 +1,27 @@
 {
-  "version": "3.27.0",
+  "version": "3.28.0",
   "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion.exe",
-  "size": 95034142,
-  "sha256": "c26f4af107bc56a222bc8c93865e86cdb3505896b17b29702ed65815d4e03f89",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.0/PCGameLauncherCompanion.exe",
+  "size": 95036440,
+  "sha256": "40eed2f92f2fb3b48a68be361efdc7f8cab5680fb8fc56b4b3e7bedf0330f4ad",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.27.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion-3.27.0-win-x64.zip",
-    "size": 89308589,
-    "sha256": "ad536f9e64f85519149fe6b3da0da511f22caae5b2e7640bd2b747e190de165b"
+    "fileName": "PCGameLauncherCompanion-3.28.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.0/PCGameLauncherCompanion-3.28.0-win-x64.zip",
+    "size": 89310837,
+    "sha256": "d0c82e8ed56c1972ddac2bce4d2c56449d72c77959bd537cf3b8573ca5455d02"
   },
-  "notes": "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante · Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig · Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
+  "notes": "Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC · Die Adresse wird vor dem Speichern geprüft; die Einrichtung des mitgelieferten Workers steht direkt im Feld. Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht – der API-Schlüssel bleibt deshalb im Worker und wird nie an die App geschickt · Die Cloud-Seite zeigt jetzt, wo die Kontodaten liegen, und führt mit einem Knopf zurück zum Standard-Dienst. Ein Wechsel ist erst nach dem Abmelden möglich, damit keine Daten im falschen Speicher landen",
   "changes": {
     "neu": [
-      "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante",
-      "Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig"
+      "Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC",
+      "Die Adresse wird vor dem Speichern geprüft; die Einrichtung des mitgelieferten Workers steht direkt im Feld. Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht – der API-Schlüssel bleibt deshalb im Worker und wird nie an die App geschickt"
     ],
     "verbessert": [
-      "Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
-      "„Weniger Bewegung“, „Leichte Darstellung“, die Systemeinstellung und alle Theme-Farben gelten unverändert weiter – die neuen Dauerläufer und Scheine schalten sich dort vollständig ab"
+      "Die Cloud-Seite zeigt jetzt, wo die Kontodaten liegen, und führt mit einem Knopf zurück zum Standard-Dienst. Ein Wechsel ist erst nach dem Abmelden möglich, damit keine Daten im falschen Speicher landen"
     ],
     "behoben": []
   },
-  "signature": "9KUG7Xo8yQn6Yylqin/rzOEr7V/e9UhbQoOazHtO2D7WJSGtwYUQc8pja6ZJ1QMk07ruwiwWjUqYh2tuK8CpwA=="
+  "signature": "sR8gCruicQSlHBDJoFUJ6mulp5gtPRwAx8FmUYbSO6B05hDR/NO0svGDGdcFCPmOXASpQai8tBe6dOnY86aRSg=="
 }

@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.28.0",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.0/PCGameLauncherCompanion.exe",
+    "size": 95036440,
+    "sha256": "40eed2f92f2fb3b48a68be361efdc7f8cab5680fb8fc56b4b3e7bedf0330f4ad",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.28.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.0/PCGameLauncherCompanion-3.28.0-win-x64.zip",
+      "size": 89310837,
+      "sha256": "d0c82e8ed56c1972ddac2bce4d2c56449d72c77959bd537cf3b8573ca5455d02"
+    },
+    "notes": "Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC · Die Adresse wird vor dem Speichern geprüft; die Einrichtung des mitgelieferten Workers steht direkt im Feld. Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht – der API-Schlüssel bleibt deshalb im Worker und wird nie an die App geschickt · Die Cloud-Seite zeigt jetzt, wo die Kontodaten liegen, und führt mit einem Knopf zurück zum Standard-Dienst. Ein Wechsel ist erst nach dem Abmelden möglich, damit keine Daten im falschen Speicher landen",
+    "changes": {
+      "neu": [
+        "Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC",
+        "Die Adresse wird vor dem Speichern geprüft; die Einrichtung des mitgelieferten Workers steht direkt im Feld. Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht – der API-Schlüssel bleibt deshalb im Worker und wird nie an die App geschickt"
+      ],
+      "verbessert": [
+        "Die Cloud-Seite zeigt jetzt, wo die Kontodaten liegen, und führt mit einem Knopf zurück zum Standard-Dienst. Ein Wechsel ist erst nach dem Abmelden möglich, damit keine Daten im falschen Speicher landen"
+      ],
+      "behoben": []
+    },
+    "signature": "sR8gCruicQSlHBDJoFUJ6mulp5gtPRwAx8FmUYbSO6B05hDR/NO0svGDGdcFCPmOXASpQai8tBe6dOnY86aRSg=="
+  },
+  {
     "version": "3.27.0",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1393,29 +1420,5 @@
       ]
     },
     "signature": "cgtuH0oc4xm3UE/q2/beLsF/K7QRoNx049IqBJNAm0IU9v6qGSqSs7dIOJLOeW9q2oa/GwunNv0Gf2paxdkoqg=="
-  },
-  {
-    "version": "2.88.1",
-    "date": "2026-11-03",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion.exe",
-    "size": 88415961,
-    "sha256": "8cee77c92d0bfb293e0ad13e5ae169762557b1ed3ad7feb0df6742dc86ab7dc5",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.88.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.88.1/PCGameLauncherCompanion-2.88.1-win-x64.zip",
-      "size": 82911782,
-      "sha256": "abb37f587428f54ff35f638f94dce242525907189cc7078321a874a2c94f15ee"
-    },
-    "notes": "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Neuer Browser-Test für die Auswertungen (Jahresrückblick, Spielstil, Leistungsarchiv) und das Datenzentrum: lädt ohne Fehler, keine „NaN“-Werte"
-      ],
-      "behoben": []
-    },
-    "signature": "PsYXZOoOeSn19FPPv3E3qG6hMwBz8LPaV1JumOCBFPkpqrITYjsJ7bicI9veRdCy5ymtZpl/rBDzywRciO8MwQ=="
   }
 ]
