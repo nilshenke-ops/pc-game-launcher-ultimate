@@ -23,9 +23,8 @@ function set(key: string, value: string | null) {
   try { if (value === null) s.removeItem(key); else s.setItem(key, value); } catch { /* quota / private mode */ }
 }
 
-/** Address of the cloud API of this build; null when this build has no cloud (then the account lives on the PC). */
 /** Public address of the cloud service this project ships with (not a secret); `VITE_CLOUD_API` overrides it. */
-const DEFAULT_API = import.meta.env.PROD ? "https://site-76a134eb24cf4cf69195c678bc381d2b.freebuff.page" : "";
+const DEFAULT_API = import.meta.env.PROD ? "https://pc-game-launcher-ultimate.nilshenke.workers.dev" : "";
 
 /** Public Cloudflare-hosted web app for the cloud page; the API endpoint itself is cloudApi(). */
 export const CLOUD_WEB = "https://site-cdc5204c9fe2498682e17155d0a01ac5.freebuff.page/#/cloud";
@@ -87,7 +86,12 @@ export async function cloudHealth(): Promise<CloudHealth> {
     const text = await res.text().catch(() => "");
     let data: Answer = {};
     if (text) { try { data = JSON.parse(text) as Answer; } catch { data = {}; } }
-    if (!res.ok) return { ok: false, message: t("Der Cloud-Dienst meldet einen Fehler – bitte später erneut prüfen."), checkedAt };
+    if (!res.ok) {
+      const message = data.error === "database-unavailable"
+        ? t("Die Cloud-Datenbank ist nicht verbunden – im Worker die D1-Bindung DB eintragen.")
+        : t("Der Cloud-Dienst meldet einen Fehler – bitte später erneut prüfen.");
+      return { ok: false, message, checkedAt };
+    }
     return data.ok === true
       ? { ok: true, message: t("Der Cloud-Dienst ist erreichbar."), checkedAt }
       : { ok: false, message: t("Der Cloud-Dienst antwortet unerwartet – bitte später erneut prüfen."), checkedAt };

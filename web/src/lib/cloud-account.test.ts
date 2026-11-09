@@ -179,6 +179,13 @@ describe("service health", () => {
     expect((await cloudHealth()).ok).toBe(false);
   });
 
+  it("names a missing database instead of a generic outage", async () => {
+    stub(json({ ok: false, error: "database-unavailable", database: "unavailable" }, 503));
+    const h = await cloudHealth();
+    expect(h.ok).toBe(false);
+    expect(h.message).toMatch(/Datenbank/);
+  });
+
   it("does not pretend a build without cloud has a reachable service", async () => {
     vi.stubEnv("VITE_CLOUD_API", "");
     const h = await cloudHealth();

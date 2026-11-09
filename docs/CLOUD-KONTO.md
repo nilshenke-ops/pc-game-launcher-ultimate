@@ -45,22 +45,33 @@ Bei Cloudflare liegt also nur der verschlüsselte Datensatz. Weder Cloudflare no
 
 ## Bauen und veröffentlichen
 
+Ein einziger Worker liefert die gehostete Website **und** die API aus. Auch die GitHub-Pages-Seite nutzt denselben Worker als API; `ALLOWED_ORIGINS` ist deshalb auf `*` gesetzt (jeder Aufruf braucht ohnehin den Kontoschlüssel).
+
 ```bash
-cd web
-VITE_CLOUD_API="https://<dienst>.freebuff.page" npm run build:hosted   # Website
-VITE_CLOUD_API="https://<dienst>.freebuff.page" npm run build          # im Companion eingebettet
+# Website bauen
+cd web && npm ci && npm run build:hosted
+
+# D1 anlegen/migrieren, Worker veröffentlichen, Health prüfen
+CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… npm run deploy:cloud
 ```
 
-Für GitHub Actions: Secret `VITE_CLOUD_API`. Ohne diesen Wert zeigt die App das Konto wie bisher auf dem PC – die Oberfläche sagt das offen.
+`scripts/deploy-cloud-worker.sh` legt die Datenbank `nexus-accounts` nur an, wenn sie fehlt, wendet `cloud-account-worker/migrations/*.sql` an und schreibt die Datenbank-ID ausschließlich in die nicht versionierte `.wrangler/cloud-worker.json`. Token und Datenbank-ID gehören nie ins Repository.
 
-## Auf ein eigenes Cloudflare-Konto umziehen (optional)
+### Cloudflare-Dashboard (bestehendes Git-Deployment)
 
-1. `npm i -D wrangler` (oder `npx wrangler`).
-2. D1 anlegen: `npx wrangler d1 create nexus-accounts`, die `database_id` in eine `wrangler.toml` mit `binding = "DB"` eintragen.
-3. `ALLOWED_ORIGINS` als Variable setzen (siehe Tabelle oben).
-4. `npx wrangler deploy cloud-account-worker/src/index.js` (bzw. eigener Einstiegspunkt) und die neue Adresse als `VITE_CLOUD_API` verwenden.
+| Einstellung | Wert |
+|---|---|
+| Build-Befehl | `npm run build:cloud` |
+| Deploy-Befehl | `npx wrangler deploy` |
+| D1-Bindung | Variable `DB` → Datenbank `nexus-accounts` |
+| Variable | `ALLOWED_ORIGINS` = `*` (oder die genauen Adressen von GitHub Pages und Worker) |
+| Konfiguration | `wrangler.json` – Assets aus `web/dist-hosted`, API unter `/api/*` |
 
-Ein Umzug ist ein Wechsel des Speicherorts, kein automatischer Abgleich: Konten im alten Dienst bleiben dort.
+`GET /api/account/health` antwortet mit `{ "ok": true, "database": "ok", ... }`. Fehlt die D1-Bindung, kommt `503` mit `database: "unavailable"` und einem klaren Satz; die Cloud-Seite zeigt genau diesen Hinweis statt „Dienst antwortet nicht“.
+
+### Automatisch über GitHub
+
+`.github/workflows/cloud-worker.yml` veröffentlicht den Worker bei Änderungen an Worker, Cloud-Seite oder Konfiguration. Dafür die Repository-Secrets `CLOUDFLARE_API_TOKEN` und `CLOUDFLARE_ACCOUNT_ID` setzen (optional `CLOUDFLARE_D1_DATABASE_ID`). Ohne Token überspringt sich der Lauf mit einem Hinweis, statt rot zu werden.
 
 ## Mehrere Konten und was mitreist
 

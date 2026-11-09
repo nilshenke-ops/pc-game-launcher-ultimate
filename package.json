@@ -6,6 +6,8 @@
   "scripts": {
     "install:all": "cd web && npm ci && cd ../relay && npm ci",
     "build:web": "cd web && npm run build",
+    "build:cloud": "cd web && npm ci && npm run build:hosted",
+    "deploy:cloud": "bash scripts/deploy-cloud-worker.sh",
     "build:relay": "cd relay && npm run build",
     "build:companion": "bash scripts/publish-companion.sh",
     "test": "bash scripts/test-all.sh",

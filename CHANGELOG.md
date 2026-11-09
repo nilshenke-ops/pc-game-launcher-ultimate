@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.29.0 – 2026-11-09
+### Behoben
+- Nexus-Cloud: Der Worker liefert jetzt die gebaute Website (statt der ungebuildeten `index.html` mit `/src/main.tsx`, die nur eine leere Seite ergab) und beantwortet alle `/api/account/*`-Routen
+- Fehlerantworten tragen CORS-Header; dadurch erscheint der echte Grund statt „Der Cloud-Dienst antwortet nicht“
+- Health-Check prüft die D1-Datenbank mit und nennt eine fehlende Bindung ausdrücklich
+### Hinzugefügt
+- Ein Worker für Website und API; auch die GitHub-Pages-Seite nutzt denselben Dienst als API (CORS freigegeben, die Anmeldung bleibt schlüsselbasiert)
+- D1-Migration `cloud-account-worker/migrations/0001_init.sql`, reproduzierbares Deployment über `npm run deploy:cloud` (D1 anlegen, migrieren, veröffentlichen, Health prüfen) und GitHub-Workflow `cloud-worker.yml`
+- `wrangler.json` mit Assets aus `web/dist-hosted` und API-Routing; `ALLOWED_ORIGINS` ist dokumentiert
+- Protokollzeilen für jede API-Anfrage (Route, Status, Dauer) und Fehlerlogs ohne interne Details
+
 ## 3.28.1 – 2026-11-09
 ### Behoben
 - Die Anleitung für den eigenen Cloudflare-Dienst nennt jetzt die richtige Datenbank-Bindung „DB“ und den nötigen Eintrag „ALLOWED_ORIGINS“, damit der Worker die Adresse der App durchlässt

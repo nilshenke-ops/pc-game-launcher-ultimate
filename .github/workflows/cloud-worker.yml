@@ -1,0 +1,49 @@
+# Deploys the one Worker that serves the hosted website and /api/account (D1).
+# Needs the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID; optional CLOUDFLARE_D1_DATABASE_ID.
+name: Cloud-Worker veröffentlichen
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "cloud-account-worker/**"
+      - "web/src/lib/cloud-account.ts"
+      - "web/src/pages/Cloud.tsx"
+      - "wrangler.json"
+      - "scripts/deploy-cloud-worker.sh"
+      - ".github/workflows/cloud-worker.yml"
+permissions:
+  contents: read
+concurrency:
+  group: cloud-worker
+  cancel-in-progress: true
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Zugangsdaten prüfen
+        id: gate
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then
+            echo "::notice::CLOUDFLARE_API_TOKEN fehlt – Worker-Deployment übersprungen. Token unter Settings → Secrets and variables → Actions hinterlegen."
+            echo "ready=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=1" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.gate.outputs.ready == '1'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - if: steps.gate.outputs.ready == '1'
+        name: Bauen, migrieren, veröffentlichen
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
+        run: bash scripts/deploy-cloud-worker.sh
