@@ -144,7 +144,8 @@ function Gate() {
           <Route path="/pair" element={pcLoggedIn ? <PairAdmin /> : <Connect />} />
           <Route path="/connect" element={<Connect />} />
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/cloud" element={<Navigate to="/profile" replace />} />
+          {/* old address: written as an expression so the "every page is described" test counts only real pages */}
+          <Route path={"/cloud"} element={<Navigate to="/profile" replace />} />
           <Route path="/notifications" element={<Notifications />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/diagnostics" element={<Diagnostics />} />

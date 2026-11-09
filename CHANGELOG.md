@@ -11,6 +11,7 @@ für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 - Seitenleiste: Die Markierung des aktiven Eintrags gleitet mit einer Feder zum neuen Eintrag, statt zu springen (wie die Reiter der Insel)
 - Öffnen mit Animation: Fenster wachsen dort auf, wo getippt wurde; eine Seite, die aus einer Seite heraus geöffnet wird, wächst ebenfalls von der Tippstelle; aufklappbare Bereiche öffnen sich weich
 ### Verbessert
+- Überall wieder runde Formen: Suchleisten, Eingabefelder, Knöpfe, Chips, Reiter, Hinweise und Fenster sind rund statt eckig (Pillen bzw. weiche Ecken)
 - Insel: Der leere Platz neben der Fokus-Karte ist gefüllt – eine PC-Karte zeigt, ob der PC verbunden ist
 - Android-App (APK, Version, Update-Prüfung) liegt jetzt bei „Updates & Versionen“ statt bei der Cloud
 - Jedes Konto speichert seine Daten getrennt unter seinem Namen; beim Wechsel wird nichts vom vorherigen Konto auf dem Gerät mitgenommen. Schlüssel, die vor dem ersten Konto auf dem Gerät eingegeben wurden, gehen nur an das erste Konto, das sich anmeldet
