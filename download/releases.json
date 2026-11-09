@@ -1,5 +1,38 @@
 [
   {
+    "version": "3.31.0",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.31.0/PCGameLauncherCompanion.exe",
+    "size": 95067276,
+    "sha256": "33dd0df446a0c3a2b7476d62d4c257b3684c72fc29286932ff0e0f83ec4ae2a5",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.31.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.31.0/PCGameLauncherCompanion-3.31.0-win-x64.zip",
+      "size": 89340915,
+      "sha256": "86399a81b75aa80ad7f758e6748f2357391d414ce5bfbe3c7ab6cf43918d1cb1"
+    },
+    "notes": "Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext · Alle Geräte desselben Kontos holen sich den neuesten Stand von selbst (alle 10 Sekunden bei geöffneter App, sofort beim Zurückkehren in die App oder wenn das Netz wieder da ist) – auch ein iPad, das nie mit dem PC gekoppelt war. Bei ausgeschaltetem PC bleibt alles sichtbar und bearbeitbar: Spiele und Apps, Favoriten, Kategorien, Einstellungen. Nur Aktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung), brauchen weiter eine PC-Verbindung · Änderungen ohne PC: Favorit, Kategorien, Bewertung, Name und Einstellungen, die du am iPad oder Handy bei ausgeschaltetem PC machst, werden sofort angezeigt und als kleine, verschlüsselte „Änderungen“ in die Cloud gelegt. Der PC übernimmt sie beim nächsten Start – jede Änderung genau einmal (eigene ID), und was am PC inzwischen geändert wurde, gilt weiter (Konflikte werden je Feld entschieden und unter „Cloud“ aufgelistet)",
+    "changes": {
+      "neu": [
+        "Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext",
+        "Alle Geräte desselben Kontos holen sich den neuesten Stand von selbst (alle 10 Sekunden bei geöffneter App, sofort beim Zurückkehren in die App oder wenn das Netz wieder da ist) – auch ein iPad, das nie mit dem PC gekoppelt war. Bei ausgeschaltetem PC bleibt alles sichtbar und bearbeitbar: Spiele und Apps, Favoriten, Kategorien, Einstellungen. Nur Aktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung), brauchen weiter eine PC-Verbindung",
+        "Änderungen ohne PC: Favorit, Kategorien, Bewertung, Name und Einstellungen, die du am iPad oder Handy bei ausgeschaltetem PC machst, werden sofort angezeigt und als kleine, verschlüsselte „Änderungen“ in die Cloud gelegt. Der PC übernimmt sie beim nächsten Start – jede Änderung genau einmal (eigene ID), und was am PC inzwischen geändert wurde, gilt weiter (Konflikte werden je Feld entschieden und unter „Cloud“ aufgelistet)",
+        "Kein Datenverlust bei Netzausfall: Was nicht gesendet werden konnte, bleibt auf dem Gerät bzw. am PC vorgemerkt und wird automatisch nachgeholt, sobald die Cloud wieder antwortet (mit wachsenden Pausen)",
+        "Neue Karte „Automatische Synchronisierung“ auf der Cloud-Seite: Cloud verbunden / nicht erreichbar, PC verbunden / nicht verbunden, Synchronisierung läuft / abgeschlossen, ausstehende Änderungen, wann der PC zuletzt übertragen hat. Der PC verbindet sich beim Anmelden von selbst mit dem Konto; „PC mit diesem Konto verbinden / trennen“ und „Jetzt abgleichen“ gibt es zusätzlich",
+        "Schlüssel ohne Passwort: KI-, Such- und ElevenLabs-Schlüssel werden einmal eingegeben und danach mit einem Schlüssel verschlüsselt, der fest an dieses Gerät gebunden ist (nicht auslesbar, nicht kopierbar). Kein Passwort, kein „Gesperrt“ mehr – die Schlüssel sind bei jedem Öffnen sofort bereit. Alte, mit Passwort gesperrte Schlüssel werden einmal mit dem Passwort geöffnet und wechseln dabei dauerhaft auf den Geräteschlüssel"
+      ],
+      "verbessert": [
+        "Statt „Gesperrt“ steht bei einem Schlüssel, der noch beim Öffnen ist oder aus einer alten Version stammt, ein klarer Hinweis, was zu tun ist"
+      ],
+      "behoben": [
+        "Teststabilität: Das Kino beim Spielstart verdeckte im Test kurz die Seite; Overlay-Breite wird erst nach dem Loslassen gemessen"
+      ]
+    },
+    "signature": "Zwbo7TovK6LfG6fZwi10q4vbCSgGU9QaX8lRs59YIlNzIjm0FVsaPS3LNYi3CD9Hx1392ISSF5OG+cM+FuJt8A=="
+  },
+  {
     "version": "3.30.1",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1362,35 +1395,5 @@
       "behoben": []
     },
     "signature": "6Z8Wj7pkBnbuoy03Y/xQKCJwC0cQtjTexyi2tASdQnMfaTAuEeySe7reb/IuDNG161thfGOJvUcn0xf3b14uDg=="
-  },
-  {
-    "version": "2.94.0",
-    "date": "2026-11-04",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion.exe",
-    "size": 88450955,
-    "sha256": "a75a8fb10241cf71acf64b606a0ea8898f52db59b1804150015176858957d929",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.94.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.94.0/PCGameLauncherCompanion-2.94.0-win-x64.zip",
-      "size": 82947049,
-      "sha256": "094d2d039914a5a1c5f152d65acfb738821400ecda88d1012856df5f1d1c0608"
-    },
-    "notes": "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen · Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer · Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
-    "changes": {
-      "neu": [
-        "JARVIS-Insel: Das Fenster wächst und schrumpft jetzt weich wie ein Tropfen (aus der kleinen Insel zur Leiste, zur Rückfrage und zum Panel) statt zu springen",
-        "Live-Anzeigen in der geschlossenen Insel: Der Fokus-Timer, Pomodoro und die Stoppuhr laufen auch bei geschlossenem Panel weiter; der Timer zeigt Restzeit und Fortschrittsring, ein Spiel zeigt seine Laufzeit, Musik zeigt den Equalizer",
-        "Meldungen des PCs (neue Warnung, fertiger Download …) erscheinen für einen Moment in der Leiste, mit wackelnder Glocke und farbigem Lichtkranz",
-        "Vier neue Widgets (einzeln einschaltbar): Stoppuhr, Zuletzt gespielt starten, Profile (JARVIS fragt vor dem Wechsel nach) und Sounds (die ersten Sounds des Soundboards)",
-        "Mehr Bewegung: ein Licht läuft beim Nachdenken und Zuhören um die Insel, ein Lichtkranz pulsiert bei Rückfragen und blitzt bei „Erledigt“ und Fehlern, das Panel klappt auf und die Karten folgen nacheinander, der Text wechselt weich, die Augen folgen der Maus ein Stück; mit „weniger Bewegung“ (Windows/Browser) bleibt alles ruhig"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "Der Fokus-Timer ging verloren, wenn man das Panel schloss; er läuft jetzt weiter"
-      ]
-    },
-    "signature": "k35xVSNpoj6PenMkp1mwmHaSc+ZFlp7vUg86Cok65aw5BXSS+sWQNGPxEbgZUQWiVc0lyk1yllG5IzQkj9A+OQ=="
   }
 ]
