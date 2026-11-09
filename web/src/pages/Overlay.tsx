@@ -27,6 +27,14 @@ const ICONS: Record<OverlayBuiltin, ReactNode> = {
   level: <Trophy size={18} />, deals: <Tag size={18} />, controller: <Gamepad size={18} />, random: <Dices size={18} />, visualizer: <AudioWaveform size={18} />, bingo: <Grid3x3 size={18} />,
 };
 
+/** Widget menu in sections – 28 entries in one list were hard to scan. */
+const WIDGET_GROUPS: { title: string; ids: OverlayBuiltin[] }[] = [
+  { title: "Spiel & System", ids: ["session", "system", "quick", "favorites", "recent", "profile", "controller", "ping", "today"] },
+  { title: "Aufnahme & Ton", ids: ["capture", "soundboard", "audio", "playing", "media", "visualizer"] },
+  { title: "Zeit & Notizen", ids: ["clock", "timer", "notes", "next", "counter", "break"] },
+  { title: "Fortschritt & Sammlung", ids: ["goals", "level", "deals", "random", "bingo", "notifications"] },
+];
+
 interface Entry { id: string; title: string; icon: ReactNode; render: () => ReactNode }
 
 /**
@@ -61,7 +69,15 @@ export default function Overlay() {
 
   useEffect(() => {
     document.documentElement.classList.add("overlay-mode");
-    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") { if (menu) setMenu(false); else hide(); } };
+    // Esc closes; Alt+R starts/stops the recording and Alt+C saves a replay – even while the recording widget is hidden.
+    // Not while typing in a widget (notes) and not while the widget menu has focus.
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") { if (menu) setMenu(false); else hide(); return; }
+      const typing = e.target instanceof HTMLElement && !!e.target.closest("input, textarea, select, [contenteditable='true']");
+      if (typing || menu || !e.altKey || e.ctrlKey || e.metaKey) return;
+      if (e.code === "KeyR") { e.preventDefault(); client.call("capture.recordToggle").catch(() => {}); }
+      if (e.code === "KeyC") { e.preventDefault(); client.call("capture.replaySave").catch(() => {}); }
+    };
     const onResize = () => setView({ w: window.innerWidth, h: window.innerHeight });
     window.addEventListener("keydown", onKey);
     window.addEventListener("resize", onResize);
@@ -98,6 +114,13 @@ export default function Overlay() {
   const entry = (id: string) => catalog.find((c) => c.id === id);
   const l = layout ?? DEFAULT_OVERLAY_LAYOUT;
   const placed = l.widgets.filter((w) => entry(w.id));
+  const q = find.trim().toLowerCase();
+  const found = catalog.filter((c) => !q || c.title.toLowerCase().includes(q));
+  const groups = WIDGET_GROUPS
+    .map((g) => ({ title: g.title, items: found.filter((c) => (g.ids as string[]).includes(c.id)) }))
+    .filter((g) => g.items.length > 0);
+  const rest = found.filter((c) => !WIDGET_GROUPS.some((g) => (g.ids as string[]).includes(c.id)));
+  if (rest.length) groups.push({ title: "Eigene & Plugins", items: rest });
 
   return (
     <div key={session} className={`gb-root${leaving ? " leaving" : ""}`} style={{ ["--gb-alpha" as string]: l.opacity }}
@@ -127,15 +150,24 @@ export default function Overlay() {
           <label className="gb-search"><SearchIcon size={14} aria-hidden />
             <input value={find} onChange={(e) => setFind(e.target.value)} placeholder={t("Widgets suchen …")} aria-label={t("Widgets suchen")} /></label>
           <div className="gb-menu-title">{t("Widgets")}</div>
-          {catalog.filter((c) => !find.trim() || c.title.toLowerCase().includes(find.trim().toLowerCase())).map((c) => {
-            const on = l.widgets.some((w) => w.id === c.id);
+          {groups.length === 0 && <p className="gb-menu-empty">{t("Keine Widgets gefunden.")}</p>}
+          {groups.map((g) => {
+            const active = g.items.filter((c) => l.widgets.some((w) => w.id === c.id)).length;
             return (
-              <label key={c.id} className="gb-menu-item">
-                <span className="gb-menu-icon">{c.icon}</span>
-                <span className="grow">{c.title}</span>
-                <input type="checkbox" checked={on} aria-label={c.title}
-                  onChange={() => { editing.current = true; save(on ? removeWidget(l, c.id) : addWidget(l, c.id, view)); }} />
-              </label>
+              <div key={g.title} className="gb-menu-section">
+                <div className="gb-menu-title">{t(g.title)}<span className="gb-menu-count" aria-hidden>{active}/{g.items.length}</span></div>
+                {g.items.map((c) => {
+                  const on = l.widgets.some((w) => w.id === c.id);
+                  return (
+                    <label key={c.id} className="gb-menu-item">
+                      <span className="gb-menu-icon">{c.icon}</span>
+                      <span className="grow">{c.title}</span>
+                      <input type="checkbox" checked={on} aria-label={c.title}
+                        onChange={() => { editing.current = true; save(on ? removeWidget(l, c.id) : addWidget(l, c.id, view)); }} />
+                    </label>
+                  );
+                })}
+              </div>
             );
           })}
           <label className="gb-menu-item">
@@ -164,7 +196,7 @@ export default function Overlay() {
               onClick={() => { const v = !snap; setSnap(v); try { localStorage.setItem("pgl.gb.snap", v ? "1" : "0"); } catch { /* ignore */ } }}><Magnet size={14} /> {t("Einrasten")}</button>
           </div>
           <button className="gb-btn wide" onClick={() => { editing.current = true; save(null); }}><RotateCcw size={14} /> {t("Anordnung zurücksetzen")}</button>
-          <p className="gb-muted">{t("Widgets am Titel verschieben, an der Ecke unten rechts die Größe ändern.")}</p>
+          <p className="gb-muted gb-menu-hint">{t("Widgets am Titel verschieben, an der Ecke unten rechts die Größe ändern.")}<br />{t("Tasten: Alt+R Aufnahme · Alt+C Replay · Esc schließen.")}</p>
         </div>
       )}
 

@@ -58,60 +58,81 @@ export function MicChip() {
 /** Recording with the program(s) chosen under "Overlay & Aufnahme" – OBS with live state, others by their shortcuts. */
 export function CaptureWidget() {
   const k = useCapture();
-  if (k.loading || !k.fp || !k.c) return <div className="skeleton" style={{ height: 90 }} />;
+  if (k.loading || !k.fp || !k.c) return <div className="skeleton" style={{ height: 120 }} />;
   const { fp, obs, can, recording, run, msg, busy } = k;
   const name = (id: string) => CAPTURE_PROVIDERS.find((p) => p.id === id)?.name.split(" ")[0] ?? id;
-  const tc = obs?.recordTimecode?.slice(0, 8);
+  const tc = obs?.recordTimecode?.slice(0, 8) ?? "00:00:00";
   const connected = fp.record === "obs" && !!obs?.connected;
+  const bufferOn = fp.buffer === "obs" && !!obs?.replayBuffer;
+  const sameRecorder = fp.record === fp.replay;
+  const state = recording ? "rec" : connected ? "ready" : "idle";
   return (
-    <div className="gb-stack gb-cap">
-      <div className="gb-cap-top">
-        <button className={`gb-recbtn${recording ? " on" : ""}`} disabled={!can("record") || busy !== null} onClick={() => void run("capture.recordToggle")}
-          aria-label={recording ? t("Stoppen") : t("Aufnehmen")}>
-          {recording ? <Square size={20} fill="currentColor" /> : <Circle size={22} fill="currentColor" />}
-        </button>
-        <div className="gb-cap-info">
-          <b className="gb-cap-time">{recording && tc ? tc : "00:00:00"}</b>
-          <span className="gb-cap-state"><span className={`gb-dot ${recording ? "rec" : connected ? "ok" : ""}`} />{recording ? t("Aufnahme läuft") : connected ? t("Bereit") : t("Nicht verbunden")}</span>
+    <div className="gbr">
+      <div className={`gbr-status is-${state}`}>
+        <span className="gbr-dot" aria-hidden />
+        <div className="gbr-text">
+          <b>{recording ? t("Aufnahme läuft") : connected ? t("Bereit") : t("Nicht verbunden")}</b>
+          <span>{connected && obs?.error ? obs.error
+            : sameRecorder ? t("Aufnahme & Replay über {p}", { p: name(fp.record) })
+            : t("Aufnahme: {a} · Replay: {b}", { a: name(fp.record), b: name(fp.replay) })}</span>
         </div>
+        <span className="gbr-clock">{recording ? tc : "--:--:--"}</span>
       </div>
-      <p className="gb-cap-sub">
-        {recording ? t("Aufnahme: {a} · Replay: {b}", { a: name(fp.record), b: name(fp.replay) })
-          : fp.record === "obs" && !obs?.connected ? (obs?.error ?? t("OBS nicht verbunden"))
-          : t("Aufnahme: {a} · Replay: {b}", { a: name(fp.record), b: name(fp.replay) })}
-      </p>
-      <div className="gb-buttons">
-        <button className={`gb-btn ${recording ? "danger" : "accent"}`} disabled={!can("record") || busy !== null} onClick={() => void run("capture.recordToggle")}>
-          {recording ? <Square size={14} /> : <Circle size={14} fill="currentColor" />} {recording ? t("Stoppen") : t("Aufnehmen")}
+
+      <div className="gbr-actions">
+        <button className={`gbr-main${recording ? " stop" : ""}`} disabled={!can("record") || busy !== null} onClick={() => void run("capture.recordToggle")}
+          aria-label={recording ? t("Aufnahme stoppen") : t("Aufnahme starten")}>
+          {recording ? <Square size={15} fill="currentColor" /> : <Circle size={15} fill="currentColor" />}
+          {recording ? t("Stoppen") : t("Aufnehmen")}
         </button>
-        <button className="gb-btn" disabled={!can("replay") || busy !== null} onClick={() => void run("capture.replaySave")}><Clapperboard size={14} /> {t("Replay")}</button>
-        <button className={`gb-btn wide gb-toggle${fp.buffer === "obs" && obs?.replayBuffer ? " on" : ""}`} disabled={!can("buffer") || busy !== null} onClick={() => void run("capture.replayToggle")}>
-          <Timer size={14} /> {fp.buffer === "obs" && obs?.replayBuffer ? t("Replay-Puffer stoppen") : t("Replay-Puffer starten")}
+        <button className="gbr-side" disabled={!can("replay") || busy !== null} onClick={() => void run("capture.replaySave")}>
+          <Clapperboard size={15} /> {t("Replay speichern")}
         </button>
       </div>
+
+      <button className={`gbr-buffer${bufferOn ? " on" : ""}`} disabled={!can("buffer") || busy !== null}
+        aria-pressed={bufferOn} onClick={() => void run("capture.replayToggle")}>
+        <Timer size={15} />
+        <span className="gbr-grow">{t("Replay-Puffer")}</span>
+        <span className="gbr-pill">{bufferOn ? t("An") : t("Aus")}</span>
+      </button>
+
       {connected && (obs?.scenes ?? []).length > 0 && (
-        <div className="gb-scenes" role="group" aria-label={t("Szene wechseln")}>
-          {obs!.scenes!.map((n) => (
-            <button key={n} className={`gb-chip${obs!.currentScene === n ? " on" : ""}`} aria-pressed={obs!.currentScene === n} disabled={busy !== null}
-              onClick={() => void run("obs.setScene", { scene: n })}>{n}</button>
-          ))}
+        <div className="gbr-group">
+          <span className="gbr-label">{t("Szene")}</span>
+          <div className="gbr-scenes" role="group" aria-label={t("Szene wechseln")}>
+            {obs!.scenes!.map((n) => (
+              <button key={n} className={`gbr-scene${obs!.currentScene === n ? " on" : ""}`} aria-pressed={obs!.currentScene === n} disabled={busy !== null}
+                onClick={() => void run("obs.setScene", { scene: n })}>{n}</button>
+            ))}
+          </div>
         </div>
       )}
+
       {connected && (obs?.mic || obs?.desktop) && (
-        <div className="gb-row gb-mutes">
-          {obs?.mic && (
-            <button className={`gb-btn gb-toggle${obs.mic.muted ? " muted" : ""}`} aria-pressed={obs.mic.muted} disabled={busy !== null} onClick={() => void run("obs.muteToggle", { kind: "mic" })}>
-              {obs.mic.muted ? <MicOff size={14} /> : <Mic size={14} />} {obs.mic.muted ? t("Mikrofon stumm") : t("Mikrofon an")}
-            </button>
-          )}
-          {obs?.desktop && (
-            <button className={`gb-btn gb-toggle${obs.desktop.muted ? " muted" : ""}`} aria-pressed={obs.desktop.muted} disabled={busy !== null} onClick={() => void run("obs.muteToggle", { kind: "desktop" })}>
-              {obs.desktop.muted ? <VolumeX size={14} /> : <Volume2 size={14} />} {obs.desktop.muted ? t("Desktop-Ton stumm") : t("Desktop-Ton an")}
-            </button>
-          )}
+        <div className="gbr-group">
+          <span className="gbr-label">{t("Ton")}</span>
+          <div className="gbr-toggles">
+            {obs?.mic && (
+              <button className={`gbr-toggle ${obs.mic.muted ? "off" : "on"}`} aria-pressed={!obs.mic.muted} disabled={busy !== null} onClick={() => void run("obs.muteToggle", { kind: "mic" })}>
+                {obs.mic.muted ? <MicOff size={14} /> : <Mic size={14} />}
+                <span className="gbr-grow">{t("Mikrofon")}</span>
+                <span className="gbr-pill">{obs.mic.muted ? t("Stumm") : t("An")}</span>
+              </button>
+            )}
+            {obs?.desktop && (
+              <button className={`gbr-toggle ${obs.desktop.muted ? "off" : "on"}`} aria-pressed={!obs.desktop.muted} disabled={busy !== null} onClick={() => void run("obs.muteToggle", { kind: "desktop" })}>
+                {obs.desktop.muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                <span className="gbr-grow">{t("Desktop-Ton")}</span>
+                <span className="gbr-pill">{obs.desktop.muted ? t("Stumm") : t("An")}</span>
+              </button>
+            )}
+          </div>
         </div>
       )}
-      {msg && <div className={`gb-msg ${msg.error ? "error" : ""}`} role={msg.error ? "alert" : "status"}>{msg.text}</div>}
+
+      {msg && <div className={`gbr-msg${msg.error ? " error" : ""}`} role={msg.error ? "alert" : "status"}>{msg.text}</div>}
+      {!connected && fp.record !== "obs" && <p className="gbr-hint">{t("Start und Stopp laufen über die Tastenkürzel von {p}.", { p: name(fp.record) })}</p>}
     </div>
   );
 }
