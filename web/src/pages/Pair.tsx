@@ -118,7 +118,7 @@ export function DevicePairScreen({ embedded = false }: { embedded?: boolean }) {
     else if (conn.phase === "offline" && conn.lastError) {
       setConnecting(false);
       setState({ step: "form" });
-      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der Nexus Gaming Hub? Bei einer …ts.net-Adresse: Ist die Tailscale-App am Handy an und mit demselben Konto angemeldet (sonst findet das Handy den Namen nicht – Fehler „ERR_NAME_NOT_RESOLVED“)? Stimmt die Adresse mit der im Nexus Gaming Hub unter „Gerät koppeln“ überein? Im selben WLAN geht es auch ohne Tailscale: QR-Code am PC scannen.") });
+      setError({ code: "unreachable", message: t("Der PC ist unter dieser Adresse nicht erreichbar. Prüfe: Ist der PC an und läuft der Nexus Gaming Hub? Bei einer …ts.net-Adresse: Ist die Tailscale-App am Handy an und mit demselben Konto angemeldet (sonst findet das Handy den Namen nicht – Fehler „ERR_NAME_NOT_RESOLVED“)? Stimmt die Adresse mit der im Nexus Gaming Hub unter „Gerät koppeln“ überein? Ohne Tailscale am Handy: am PC unter Einstellungen → Verbindung „Für Handys ohne Tailscale einschalten“ (Funnel) – oder im selben WLAN den QR-Code am PC scannen.") });
     }
   }, [connecting, conn.phase, conn.hello, conn.lastError, request]);
 
@@ -331,6 +331,7 @@ export function PairPage() {
                   <li>{t("VPN am Handy kurz ausschalten – viele VPNs sperren das Heimnetz.")}</li>
                   <li>{t("Oben auf dieser Seite muss „Windows-Firewall: … dürfen diesen PC erreichen“ stehen – sonst „Für Handys im Heimnetz freigeben“ antippen.")}</li>
                   <li>{t("Unter dem QR-Code eine andere Adresse wählen (z. B. die Nummer statt des Namens) und erneut scannen.")}</li>
+                  <li>{t("Ohne Tailscale am Handy oder iPad und wenn das WLAN nicht klappt: Einstellungen → Verbindung → „Für Handys ohne Tailscale einschalten“ (Funnel). Dann geht der QR-Code mit github.io von überall.")}</li>
                 </ul>
               </details>
             </div>

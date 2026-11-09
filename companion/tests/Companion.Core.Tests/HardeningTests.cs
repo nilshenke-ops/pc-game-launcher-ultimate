@@ -17,6 +17,10 @@ public class HardeningTests
         Assert.Equal(("192.168.1.50", false), RequestOrigin.Client(IPAddress.Parse("::ffff:192.168.1.50"), H(("CF-Connecting-IP", "9.9.9.9"))));
         // A tunnel/proxy on this PC forwards the real address – and such a request is never "this PC".
         Assert.Equal(("1.2.3.4", false), RequestOrigin.Client(IPAddress.Loopback, H(("X-Forwarded-For", "1.2.3.4, 10.0.0.1"))));
+        // Tailscale Funnel/Serve forward from this PC's loopback: even without a forwarded address they are never "at this PC".
+        Assert.Equal(("proxy", false), RequestOrigin.Client(IPAddress.Loopback, H(("Tailscale-Funnel-Request", "?1"))));
+        Assert.Equal(("proxy", false), RequestOrigin.Client(IPAddress.Loopback, H(("X-Forwarded-Proto", "https"))));
+        Assert.Equal(("127.0.0.1", true), RequestOrigin.Client(IPAddress.Loopback, H()));
         Assert.Equal(("proxy", false), RequestOrigin.Client(IPAddress.Loopback, H(("X-Forwarded-For", "not-an-ip"))));
         Assert.Equal(("127.0.0.1", true), RequestOrigin.Client(IPAddress.Loopback, H()));
     }

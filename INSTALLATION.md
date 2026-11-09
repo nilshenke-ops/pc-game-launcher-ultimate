@@ -27,6 +27,8 @@ Der Code gilt 5 Minuten, ist einmalig verwendbar und wird nach 5 Fehlversuchen g
 Standardmäßig ist der PC **nur im Heimnetz** erreichbar; es werden keine Router-Ports geöffnet. Zwei sichere Wege für unterwegs:
 
 ### a) Tailscale Funnel (empfohlen: kostenlos, ohne Domain, fester https-Link)
+
+> Ab 3.26.0 geht das mit einem Klick am PC: **Einstellungen → Verbindung → „Für Handys ohne Tailscale einschalten“**. Beim ersten Mal zeigt Tailscale einen Freischalt-Link (Funnel einmalig im Tailscale-Konto erlauben); danach den Knopf noch einmal drücken. Die Handbefehle unten sind der gleiche Weg von Hand.
 1. Tailscale für Windows installieren (https://tailscale.com/download/windows) und anmelden.
 2. PowerShell: `tailscale funnel --bg 8787` – beim ersten Mal den angezeigten Freischalt-Link öffnen und Funnel erlauben, dann den Befehl wiederholen.
 3. Der angezeigte Link (`https://<pc-name>.<tailnet>.ts.net`) bleibt dauerhaft gleich. Im Companion unter **Einstellungen → Verbindung → Öffentliche Adresse** eintragen.

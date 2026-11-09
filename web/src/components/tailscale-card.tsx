@@ -9,7 +9,7 @@ import { client } from "../lib/rpc";
 import { toast, useConn, useRpc } from "../lib/hooks";
 import { Banner, Button, Card } from "./ui";
 
-interface Info { installed: boolean; running: boolean; name: string | null; https: boolean; url: string | null }
+interface Info { installed: boolean; running: boolean; name: string | null; https: boolean; url: string | null; funnel?: boolean }
 
 export function TailscaleCard() {
   const conn = useConn();
@@ -22,6 +22,15 @@ export function TailscaleCard() {
     try {
       const r = await client.call<{ ok: boolean; output: string; info: Info }>("tailscale.serve", { on });
       if (r.ok) toast(on ? t("Tailscale-HTTPS ist an") : t("Tailscale-HTTPS ist aus"), "success");
+      else setOut(r.output || t("Tailscale hat den Befehl abgelehnt."));
+      q.reload();
+    } catch (e) { toast((e as Error).message, "error"); } finally { setBusy(false); }
+  };
+  const funnel = async (on: boolean) => {
+    setBusy(true); setOut(null);
+    try {
+      const r = await client.call<{ ok: boolean; output: string; info: Info }>("tailscale.funnel", { on });
+      if (r.ok) toast(on ? t("Handys ohne Tailscale können sich jetzt verbinden") : t("Öffentlicher Zugang ist aus"), "success");
       else setOut(r.output || t("Tailscale hat den Befehl abgelehnt."));
       q.reload();
     } catch (e) { toast((e as Error).message, "error"); } finally { setBusy(false); }
@@ -42,6 +51,17 @@ export function TailscaleCard() {
           </div>
         )}
         {out && <Banner kind="warn" title={t("Tailscale meldet")}><pre className="small" style={{ whiteSpace: "pre-wrap", margin: 0 }}>{out}</pre>{t("Meist fehlt die einmalige Freigabe in der Tailscale-Verwaltung: DNS → MagicDNS an und „Enable HTTPS“. Schritt für Schritt unter Hilfe.")}</Banner>}
+        {isLocal && d?.running && (
+          <div className="stack-sm" style={{ borderTop: "1px solid var(--border, rgba(255,255,255,.12))", paddingTop: 12 }}>
+            <b className="small">{t("Auch ohne Tailscale am Handy oder iPad")}</b>
+            <p className="small muted" style={{ margin: 0 }}>{t("Mit „Funnel“ ist dieselbe https-Adresse auch ohne Tailscale erreichbar – von überall, auch über Mobilfunk, und die Webseite (github.io) kann sich verbinden. Die Adresse ist dann öffentlich, aber ohne Kopplungscode, den du hier am PC erzeugst und bestätigst, kommt niemand hinein. Jederzeit ausschaltbar.")}</p>
+            <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+              {!d.funnel ? <Button variant="primary" busy={busy} onClick={() => void funnel(true)}>{t("Für Handys ohne Tailscale einschalten")}</Button>
+                : <Button busy={busy} onClick={() => void funnel(false)}>{t("Öffentlichen Zugang ausschalten")}</Button>}
+            </div>
+            {d.funnel && <Banner kind="ok">{t("An: Am Handy oder iPad den QR-Code unter „Gerät koppeln“ scannen (Adresse mit github.io) – Tailscale wird dort nicht gebraucht.")}</Banner>}
+          </div>
+        )}
         {d?.https && <Banner kind="ok">{t("Fertig: Der QR-Code unter „Gerät koppeln“ nutzt jetzt diese https-Adresse – damit funktioniert auch die Website von unterwegs, sobald Tailscale am Handy an ist.")}</Banner>}
         <Link to="/settings?s=help#tailscale" className="small">{t("Wie funktioniert das? → Hilfe")}</Link>
       </div>

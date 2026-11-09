@@ -52,6 +52,13 @@ public class FixedNameTests
     {
         Assert.Equal(new[] { "serve", "--bg", "8787" }, TailscaleCli.Args(TailscaleCli.Command.ServeOn, 8787));
         Assert.Equal(new[] { "serve", "--https=443", "off" }, TailscaleCli.Args(TailscaleCli.Command.ServeOff, 8787));
+        Assert.Equal(new[] { "funnel", "--bg", "8787" }, TailscaleCli.Args(TailscaleCli.Command.FunnelOn, 8787));
+        Assert.Equal(new[] { "funnel", "--https=443", "off" }, TailscaleCli.Args(TailscaleCli.Command.FunnelOff, 8787));
+        Assert.Equal(new[] { "funnel", "status" }, TailscaleCli.Args(TailscaleCli.Command.FunnelStatus, 8787));
+        Assert.True(TailscaleCli.FunnelIsOn("# Funnel on:\n#     - https://gaming.tail1.ts.net"));
+        Assert.True(TailscaleCli.FunnelIsOn("https://gaming.tail1.ts.net (Funnel on)\n|-- / proxy http://127.0.0.1:8787"));
+        Assert.False(TailscaleCli.FunnelIsOn("https://gaming.tail1.ts.net (tailnet only)"));
+        Assert.False(TailscaleCli.FunnelIsOn("No serve config")); Assert.False(TailscaleCli.FunnelIsOn(null));
         using var dir = new TempDir();
         await using var s = Fixtures.Services(dir);
         var calls = new List<string>();

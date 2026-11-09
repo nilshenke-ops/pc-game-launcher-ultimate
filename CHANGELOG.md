@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.30.0 – 2026-11-09
+### Neu
+- Handy oder iPad ohne Tailscale verbinden: In Einstellungen → Verbindung gibt es am PC jetzt „Für Handys ohne Tailscale einschalten“ (Tailscale Funnel, ein Klick, kein PowerShell). Dann ist die https-Adresse des PCs auch ohne Tailscale erreichbar – von überall, auch über Mobilfunk – und der QR-Code mit der github.io-Adresse verbindet sich. Der Zugang ist öffentlich erreichbar, aber ohne einen Kopplungscode, den du am PC erzeugst und bestätigst, kommt niemand hinein. Jederzeit wieder ausschaltbar. Beim ersten Mal muss Funnel einmalig im Tailscale-Konto freigegeben werden (der Link steht in der Meldung)
+### Verbessert
+- Die Fehlermeldung „PC nicht erreichbar“ und die Hilfe unter dem QR-Code nennen diesen Weg jetzt
+- Sicherheit: Anfragen, die Tailscale (Serve/Funnel) von diesem PC weiterleitet, gelten nie als „direkt am PC“, auch wenn die weitergeleitete Adresse fehlt
 ## 3.29.1 – 2026-11-09
 ### Verbessert
 - Gibt jedem Website-Widget die Optik des In-Game-Overlays.

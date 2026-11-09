@@ -335,7 +335,9 @@ public sealed class WebHost : IAsyncDisposable
 /// <summary>Who is asking and under which address – kept apart so it can be tested without a server.</summary>
 public static class RequestOrigin
 {
-    static readonly string[] ProxyHeaders = { "CF-Connecting-IP", "X-Forwarded-For", "Forwarded", "X-Real-IP" };
+    // Any of these on a request from this PC's own loopback address means "a proxy/tunnel forwarded it" – never "someone at this PC". The Tailscale ones
+    // (Serve/Funnel) are listed too, so a public Funnel request can never look local even if the forwarded address were missing.
+    static readonly string[] ProxyHeaders = { "CF-Connecting-IP", "X-Forwarded-For", "Forwarded", "X-Real-IP", "X-Forwarded-Host", "X-Forwarded-Proto", "Tailscale-Funnel-Request", "Tailscale-User-Login" };
 
     /// <summary>
     /// Client address. Proxy headers are only believed from a proxy on this PC itself (e.g. a tunnel); any other device
