@@ -1,5 +1,37 @@
 [
   {
+    "version": "3.34.0",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.34.0/PCGameLauncherCompanion.exe",
+    "size": 95072634,
+    "sha256": "5bc3fd3ed1b78ebbdecffedfcfa3f40bd304e73f335cd911702577044200c935",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.34.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.34.0/PCGameLauncherCompanion-3.34.0-win-x64.zip",
+      "size": 89346226,
+      "sha256": "8445bf1ffd1d991a21beba5b16e20d79e3341413a56ee14a26752d94b58a3ad3"
+    },
+    "notes": "Profil: Tippen auf das „N“ öffnet jetzt eine Konto-Übersicht mit den schon verbundenen Konten – ein Tipp wechselt zwischen ihnen, ohne Passwort. Die Seite „Konto & Cloud“ heißt jetzt „Profil“ und ist neu geordnet: oben Konto, Kontowechsel, KI-Schlüssel und Backup, darunter alles zur Cloud (Dienst, Synchronisierung, was in der Cloud liegt, was am PC bleibt) · KI-Schlüssel gehören zum Konto: Sie sind auf jedem Gerät da, auf dem du angemeldet bist, und ein anderes Konto auf demselben Gerät sieht sie nie. Sie reisen nur verschlüsselt (schon im Browser) im Konto, die Cloud kann sie nicht lesen, und sie sind nicht in der Backup-Datei · Seitenleiste: Die Markierung des aktiven Eintrags gleitet mit einer Feder zum neuen Eintrag, statt zu springen (wie die Reiter der Insel)",
+    "changes": {
+      "neu": [
+        "Profil: Tippen auf das „N“ öffnet jetzt eine Konto-Übersicht mit den schon verbundenen Konten – ein Tipp wechselt zwischen ihnen, ohne Passwort. Die Seite „Konto & Cloud“ heißt jetzt „Profil“ und ist neu geordnet: oben Konto, Kontowechsel, KI-Schlüssel und Backup, darunter alles zur Cloud (Dienst, Synchronisierung, was in der Cloud liegt, was am PC bleibt)",
+        "KI-Schlüssel gehören zum Konto: Sie sind auf jedem Gerät da, auf dem du angemeldet bist, und ein anderes Konto auf demselben Gerät sieht sie nie. Sie reisen nur verschlüsselt (schon im Browser) im Konto, die Cloud kann sie nicht lesen, und sie sind nicht in der Backup-Datei",
+        "Seitenleiste: Die Markierung des aktiven Eintrags gleitet mit einer Feder zum neuen Eintrag, statt zu springen (wie die Reiter der Insel)",
+        "Öffnen mit Animation: Fenster wachsen dort auf, wo getippt wurde; eine Seite, die aus einer Seite heraus geöffnet wird, wächst ebenfalls von der Tippstelle; aufklappbare Bereiche öffnen sich weich"
+      ],
+      "verbessert": [
+        "Überall wieder runde Formen: Suchleisten, Eingabefelder, Knöpfe, Chips, Reiter, Hinweise und Fenster sind rund statt eckig (Pillen bzw. weiche Ecken)",
+        "Insel: Der leere Platz neben der Fokus-Karte ist gefüllt – eine PC-Karte zeigt, ob der PC verbunden ist",
+        "Android-App (APK, Version, Update-Prüfung) liegt jetzt bei „Updates & Versionen“ statt bei der Cloud",
+        "Jedes Konto speichert seine Daten getrennt unter seinem Namen; beim Wechsel wird nichts vom vorherigen Konto auf dem Gerät mitgenommen. Schlüssel, die vor dem ersten Konto auf dem Gerät eingegeben wurden, gehen nur an das erste Konto, das sich anmeldet"
+      ],
+      "behoben": []
+    },
+    "signature": "thsNhC8xomZ5WUv9NSaLaNy16IMdeLDQvS1VR4Fj4jNTHdYFf+16ixFKOE8wM7W8wq2xbw7282S2Re2tyPnxCg=="
+  },
+  {
     "version": "3.33.1",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1357,32 +1389,5 @@
       ]
     },
     "signature": "COhXFo5pTK+rFI4R9nZDaBp/45aYUhWkm80hBmgFia3XnBhlcBazk1jQkAS7UjnT/idIOHFg89j1B/u5+TtJ3w=="
-  },
-  {
-    "version": "2.98.0",
-    "date": "2026-11-04",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.98.0/PCGameLauncherCompanion.exe",
-    "size": 88490767,
-    "sha256": "014bfd951ec6a64115fc06e8eaf78c9ec181e64b3029f954fa4c8c091f693bc8",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.98.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.98.0/PCGameLauncherCompanion-2.98.0-win-x64.zip",
-      "size": 82986862,
-      "sha256": "e60e4077ab0197b52440fa8298ebad0aa5f1e4bb9274d3eeb829603db57ac22b"
-    },
-    "notes": "Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“) · Die Insel in der App passt sich dem Design an (Glas in den Farben des gewählten Designs, Augen und Lichtkranz in der Akzentfarbe, auch im hellen Design lesbar) · Originale Logos: Xbox (Kugel) und Microsoft Store (Tasche) als echte Formen, auf der Startseite die Kachel „Game Pass“ mit dem Original-Logo (Kugel mit „GAME PASS“) statt eigener Zeichnungen; Logos auf Kacheln sind einfarbig – auf dunklem Glas weiß, im hellen Design dunkel (nichts Grünes mehr im grauen Design)",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Handy, oben aufgeräumt: links Menü und Verbindungspunkt, in der Mitte die JARVIS-Insel, rechts Suche, Anmeldung und Benachrichtigungen; der Datenschutz-Knopf ist jetzt in „Alle Bereiche“ (der JARVIS-Knopf entfällt, die Insel öffnet JARVIS und hat „JARVIS öffnen“)",
-        "Die Insel in der App passt sich dem Design an (Glas in den Farben des gewählten Designs, Augen und Lichtkranz in der Akzentfarbe, auch im hellen Design lesbar)",
-        "Originale Logos: Xbox (Kugel) und Microsoft Store (Tasche) als echte Formen, auf der Startseite die Kachel „Game Pass“ mit dem Original-Logo (Kugel mit „GAME PASS“) statt eigener Zeichnungen; Logos auf Kacheln sind einfarbig – auf dunklem Glas weiß, im hellen Design dunkel (nichts Grünes mehr im grauen Design)",
-        "Handy-Kopfleiste ohne Überlappung (bei 360 bis 430 Pixel Breite gemessen): runder Menü-Knopf, Punkt, Insel in der eigenen Lücke, rechts Suche, Anmeldung, Benachrichtigungen"
-      ],
-      "behoben": []
-    },
-    "signature": "1KidjSPvLH6H0mnbjrkw9obFLgw+i0/RK32LF1HXsFA0EVHogLacFX7NtlFGgUEMbZKqFenncxW/OavTji9AZA=="
   }
 ]
