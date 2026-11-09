@@ -30,15 +30,44 @@ const DEFAULT_API = import.meta.env.PROD ? "https://site-76a134eb24cf4cf69195c67
 /** Public Cloudflare-hosted web app for the cloud page; the API endpoint itself is cloudApi(). */
 export const CLOUD_WEB = "https://site-cdc5204c9fe2498682e17155d0a01ac5.freebuff.page/#/cloud";
 
-export function cloudApi(): string | null {
-  const raw = (String(import.meta.env.VITE_CLOUD_API ?? "").trim() || DEFAULT_API).replace(/\/+$/, "");
-  if (!raw) return null;
+/** The compatible service in this repository (Cloudflare Worker + D1) – for data in the user's own Cloudflare account. */
+export const CLOUD_WORKER_GUIDE = "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/tree/main/cloud-account-worker";
+
+/** Own service address entered on this device (the phone needs the same address once); never part of the account. */
+const ENDPOINT_KEY = "pgl.cloud.endpoint";
+
+/** Only https (plain http just for a local development stack); keeps a path prefix and drops trailing slashes. */
+function normalizeBase(raw: string): string | null {
+  const trimmed = raw.trim();
+  if (!trimmed) return null;
   let url: URL;
-  try { url = new URL(raw); } catch { return null; }
+  try { url = new URL(trimmed); } catch { return null; }
   const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
   // Encrypted data only over https – plain http only for a local development stack.
   if (url.protocol !== "https:" && !(url.protocol === "http:" && loopback)) return null;
   return url.origin + (url.pathname === "/" ? "" : url.pathname.replace(/\/+$/, ""));
+}
+
+/** The own service address, or null while the service this build ships with is used. */
+export function customCloudApi(): string | null {
+  const raw = get(ENDPOINT_KEY);
+  return raw ? normalizeBase(raw) : null;
+}
+
+/** Saves the own service address; null or "" restores the built-in service. Throws for an unusable address. */
+export function setCustomCloudApi(raw: string | null): string | null {
+  if (raw === null || !raw.trim()) { set(ENDPOINT_KEY, null); return null; }
+  const normalized = normalizeBase(raw);
+  if (!normalized) throw new Error(t("Diese Adresse ist nicht erlaubt – nur https (http nur für localhost)."));
+  set(ENDPOINT_KEY, normalized);
+  return normalized;
+}
+
+/** Where the account lives right now: the service this build ships with, or the user's own. */
+export const cloudProvider = (): "nexus" | "own" => (customCloudApi() ? "own" : "nexus");
+
+export function cloudApi(): string | null {
+  return customCloudApi() ?? normalizeBase(String(import.meta.env.VITE_CLOUD_API ?? "") || DEFAULT_API);
 }
 
 export const cloudAccountConfigured = () => cloudApi() !== null;

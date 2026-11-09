@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.28.0 – 2026-11-09
+### Neu
+- Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC
+- Die Adresse wird vor dem Speichern geprüft; die Einrichtung des mitgelieferten Workers steht direkt im Feld. Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht – der API-Schlüssel bleibt deshalb im Worker und wird nie an die App geschickt
+### Verbessert
+- Die Cloud-Seite zeigt jetzt, wo die Kontodaten liegen, und führt mit einem Knopf zurück zum Standard-Dienst. Ein Wechsel ist erst nach dem Abmelden möglich, damit keine Daten im falschen Speicher landen
+
 ## 3.27.0 – 2026-11-09
 ### Neu
 - Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante

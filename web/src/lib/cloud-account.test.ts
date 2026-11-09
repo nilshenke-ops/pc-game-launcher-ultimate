@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cloudAccountConfigured, cloudApi, cloudDelete, cloudHealth, cloudLoad, cloudLogin, cloudRegister, cloudSave, pendingBlob, setPendingBlob } from "./cloud-account";
+import { cloudAccountConfigured, cloudApi, cloudDelete, cloudHealth, cloudLoad, cloudLogin, cloudRegister, cloudSave, customCloudApi, pendingBlob, setCustomCloudApi, setPendingBlob } from "./cloud-account";
 
 const BASE = "https://cloud.example.workers.dev";
 const KEY = "aa".repeat(32);
@@ -26,6 +26,7 @@ function stub(...answers: (Response | Error)[]) {
 
 beforeEach(() => {
   calls = [];
+  setCustomCloudApi(null);
   setPendingBlob(null);
   vi.stubEnv("VITE_CLOUD_API", BASE);
 });
@@ -33,6 +34,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
+  setCustomCloudApi(null);
   setPendingBlob(null);
 });
 
@@ -122,6 +124,45 @@ describe("account requests", () => {
     expect(pendingBlob()).toBe("QUJD");
     setPendingBlob(null);
     expect(pendingBlob()).toBeNull();
+  });
+});
+
+describe("own cloud service", () => {
+  it("uses the own address instead of the built-in one", () => {
+    expect(customCloudApi()).toBeNull();
+    expect(cloudApi()).toBe(BASE);
+    setCustomCloudApi("https://my-cloud.example.com/");
+    expect(customCloudApi()).toBe("https://my-cloud.example.com");
+    expect(cloudApi()).toBe("https://my-cloud.example.com");
+    expect(cloudAccountConfigured()).toBe(true);
+  });
+
+  it("keeps a path prefix and allows plain http only for localhost", () => {
+    setCustomCloudApi("https://example.com/nexus/");
+    expect(cloudApi()).toBe("https://example.com/nexus");
+    setCustomCloudApi("http://127.0.0.1:8787");
+    expect(cloudApi()).toBe("http://127.0.0.1:8787");
+  });
+
+  it("rejects an unusable address and keeps the previous one", () => {
+    setCustomCloudApi("https://my-cloud.example.com");
+    expect(() => setCustomCloudApi("http://my-cloud.example.com")).toThrow(/https/);
+    expect(() => setCustomCloudApi("not a url")).toThrow(/https/);
+    expect(cloudApi()).toBe("https://my-cloud.example.com");
+  });
+
+  it("returns to the built-in service", () => {
+    setCustomCloudApi("https://my-cloud.example.com");
+    setCustomCloudApi(null);
+    expect(customCloudApi()).toBeNull();
+    expect(cloudApi()).toBe(BASE);
+  });
+
+  it("checks the health of the own service", async () => {
+    setCustomCloudApi("https://my-cloud.example.com");
+    stub(json({ ok: true, service: "nexus-cloud-account" }));
+    expect((await cloudHealth()).ok).toBe(true);
+    expect(calls[0].url).toBe("https://my-cloud.example.com/api/account/health");
   });
 });
 

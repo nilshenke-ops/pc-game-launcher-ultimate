@@ -4,10 +4,10 @@ import { Cloud, CloudOff, Download, HardDrive, KeyRound, RefreshCw, ShieldCheck,
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
 import { relTime } from "../lib/format";
-import { Banner, Button, Card } from "../components/ui";
+import { Banner, Button, Card, Segmented } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
 import { AndroidAppCard } from "../components/android-app-card";
-import { CLOUD_WEB, cloudAccountConfigured, cloudApi, cloudHealth, pendingBlob, type CloudHealth } from "../lib/cloud-account";
+import { CLOUD_WEB, CLOUD_WORKER_GUIDE, cloudApi, cloudHealth, customCloudApi, pendingBlob, setCustomCloudApi, type CloudHealth } from "../lib/cloud-account";
 import { accountBackup, flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
 import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi } from "../lib/free-ai-local";
 
@@ -18,8 +18,13 @@ import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi 
 export default function CloudPage() {
   const conn = useConn();
   const online = conn.phase === "online";
-  const configured = cloudAccountConfigured();
-  const endpoint = cloudApi();
+  const [endpoint, setEndpoint] = useState<string | null>(() => cloudApi());
+  const configured = !!endpoint;
+  // Own service: the address is entered once per device and is not part of the account.
+  const [ownMode, setOwnMode] = useState(() => !!customCloudApi());
+  const [ownUrl, setOwnUrl] = useState(() => customCloudApi() ?? "");
+  const [ownBusy, setOwnBusy] = useState(false);
+  const [ownProbe, setOwnProbe] = useState<CloudHealth | null>(null);
   // The account panel below changes the session, so read it again whenever it reports a change.
   const [s, setS] = useState(session);
   const [waiting, setWaiting] = useState(() => !!pendingBlob());
@@ -43,11 +48,43 @@ export default function CloudPage() {
     setChecking(true);
     void cloudHealth().then((h) => { if (alive) setHealth(h); }).finally(() => { if (alive) setChecking(false); });
     return () => { alive = false; };
-  }, [configured]);
+  }, [configured, endpoint]);
 
   const checkHealth = async () => {
     setChecking(true);
     try { setHealth(await cloudHealth()); } finally { setChecking(false); }
+  };
+
+  // The account lives in exactly one service; switching while signed in would point the session at a store without that account.
+  const switchProvider = (next: "nexus" | "own") => {
+    if (next === "own") { setOwnMode(true); return; }
+    if (!customCloudApi()) { setOwnMode(false); return; }
+    if (s?.cloud) { toast(t("Zum Wechseln bitte erst abmelden."), "warning"); return; }
+    setCustomCloudApi(null);
+    setOwnMode(false); setOwnUrl(""); setOwnProbe(null); setHealth(null);
+    setEndpoint(cloudApi());
+    toast(t("Cloud-Dienst auf den Standard zurückgesetzt."), "success");
+  };
+
+  const saveOwn = async () => {
+    if (s?.cloud) { toast(t("Zum Wechseln bitte erst abmelden."), "warning"); return; }
+    setOwnBusy(true);
+    try {
+      if (!ownUrl.trim()) throw new Error(t("Bitte eine Adresse wie https://… eingeben."));
+      setCustomCloudApi(ownUrl);
+      const next = cloudApi();
+      if (!next) throw new Error(t("Bitte eine Adresse wie https://… eingeben."));
+      setEndpoint(next);
+      setOwnUrl(customCloudApi() ?? next);
+      setHealth(null); setChecking(true);
+      const h = await cloudHealth();
+      setHealth(h); setOwnProbe(h);
+      toast(h.ok
+        ? t("Eigener Cloud-Dienst gespeichert und erreichbar.")
+        : t("Gespeichert – der Dienst antwortet nicht. Bitte Adresse und Worker prüfen."), h.ok ? "success" : "warning");
+    } catch (e) {
+      toast((e as Error).message, "error");
+    } finally { setOwnBusy(false); setChecking(false); }
   };
 
   // The keys themselves are deliberately not part of the account; this only shows which ones stay here.
@@ -99,14 +136,52 @@ export default function CloudPage() {
         {s?.cloud && <Button size="sm" icon={<RefreshCw size={14} />} busy={busy} onClick={() => void sync()}>{t("Jetzt synchronisieren")}</Button>}
       </div>
 
+      <Card title={t("Wo die Daten liegen")} icon={<HardDrive size={18} />}>
+        <p className="small" style={{ margin: 0 }}>{t("Standardmäßig liegen die Kontodaten im Nexus-Cloud-Dienst. Du kannst stattdessen deinen eigenen Cloudflare-Dienst betreiben: Dann liegen die Daten in deiner D1-Datenbank, und Handy wie PC melden sich dort an, ohne dass der PC laufen muss.")}</p>
+        <div style={{ marginTop: 10 }}>
+          <Segmented<"nexus" | "own"> label={t("Cloud-Dienst")} value={ownMode ? "own" : "nexus"} onChange={switchProvider}
+            options={[{ value: "nexus", label: t("Nexus-Cloud") }, { value: "own", label: t("Eigener Dienst") }]} />
+        </div>
+        {ownMode ? (
+          <div className="stack-sm" style={{ marginTop: 10 }}>
+            <div className="field">
+              <label htmlFor="cloud-own-url">{t("Adresse des Dienstes")}</label>
+              <input id="cloud-own-url" className="input" value={ownUrl} onChange={(e) => setOwnUrl(e.target.value)}
+                placeholder="https://nexus-cloud.dein-name.workers.dev" spellCheck={false} autoComplete="off" inputMode="url" />
+              <span className="hint">{t("Zum Beispiel https://nexus-cloud.dein-name.workers.dev – ohne Schrägstrich am Ende.")}</span>
+            </div>
+            <div className="row">
+              <Button variant="primary" busy={ownBusy} onClick={() => void saveOwn()}>{t("Prüfen & speichern")}</Button>
+              {customCloudApi() && <Button onClick={() => switchProvider("nexus")}>{t("Standard wiederherstellen")}</Button>}
+            </div>
+            {ownProbe && <p className={`small ${ownProbe.ok ? "ok-text" : "text-warn"}`} style={{ margin: 0 }}>{ownProbe.message}</p>}
+            <details>
+              <summary className="small">{t("Eigenen Cloudflare-Dienst einrichten")}</summary>
+              <div className="stack-sm" style={{ marginTop: 8 }}>
+                <p className="tiny muted" style={{ margin: 0 }}>{t("1. Im Cloudflare-Dashboard eine D1-Datenbank anlegen.")}</p>
+                <p className="tiny muted" style={{ margin: 0 }}>{t("2. Den Ordner cloud-account-worker als Worker veröffentlichen und die Datenbank als Bindung CLOUD_DB eintragen.")}</p>
+                <p className="tiny muted" style={{ margin: 0 }}>{t("3. Die Adresse des Workers hier eintragen, speichern und auf Handy und PC mit demselben Konto anmelden.")}</p>
+                <p className="tiny muted" style={{ margin: 0 }}>{t("Der API-Schlüssel bleibt im Worker – Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht. Dein Schlüssel wird nie an diese App geschickt.")}</p>
+                <a className="small" href={CLOUD_WORKER_GUIDE} target="_blank" rel="noreferrer">{t("Worker-Code auf GitHub")}</a>
+              </div>
+            </details>
+            {s?.cloud && <p className="tiny text-warn" style={{ margin: 0 }}>{t("Zum Wechseln bitte erst abmelden – deine lokalen Daten bleiben dabei erhalten.")}</p>}
+          </div>
+        ) : (
+          <p className="tiny muted" style={{ margin: "10px 0 0" }}>{t("Der mitgelieferte Dienst ist voreingestellt. Ein eigener Dienst lohnt sich, wenn deine Daten in deinem Cloudflare-Konto liegen sollen.")}</p>
+        )}
+      </Card>
+
       <div className="card stack-sm">
         <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
           <span className="small muted">{t("Cloud-Dienst")}</span>
           <span className="mono tiny" title={endpoint ?? undefined}>{configured ? endpoint : t("Nicht eingerichtet")}</span>
         </div>
         <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-          <span className="small muted">Cloudflare</span>
-          <a className="small" href={CLOUD_WEB} target="_blank" rel="noreferrer">{t("Cloud speichern")}</a>
+          <span className="small muted">{t("Speicherort")}</span>
+          {customCloudApi()
+            ? <span className="small">{t("Eigener Cloudflare-Dienst")}</span>
+            : <a className="small" href={CLOUD_WEB} target="_blank" rel="noreferrer">{t("Cloud speichern")}</a>}
         </div>
         <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
           <span className="small muted">{t("Status")}</span>
