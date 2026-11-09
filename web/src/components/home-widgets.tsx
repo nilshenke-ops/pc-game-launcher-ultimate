@@ -140,9 +140,10 @@ export function StartWidget() {
 /** Play/pause, tracks and volume on the PC – like the media keys of the keyboard (Windows companion). */
 export function MediaWidget() {
   const press = (key: string) => client.call("media.key", { key }).catch((e: Error) => toast(e.message, "error"));
-  const small: [string, string, string][] = [
-    ["prev", "skip-back", t("Vorheriger Titel")], ["next", "skip-forward", t("Nächster Titel")],
-    ["voldown", "volume-1", t("Leiser")], ["mute", "volume-x", t("Ton aus/an")], ["volup", "volume-2", t("Lauter")],
+  // Short visible labels (they must fit under the icon on a phone), full text for screen readers.
+  const small: [string, string, string, string][] = [
+    ["prev", "skip-back", t("Vorheriger Titel"), t("Zurück")], ["next", "skip-forward", t("Nächster Titel"), t("Weiter")],
+    ["voldown", "volume-1", t("Leiser"), t("Leiser")], ["mute", "volume-x", t("Ton aus/an"), t("Stumm")], ["volup", "volume-2", t("Lauter"), t("Lauter")],
   ];
   return (
     <div className="media-widget">
@@ -152,9 +153,9 @@ export function MediaWidget() {
         <button type="button" className="media-play" onClick={() => press("playpause")} aria-label={t("Play/Pause")} title={t("Play/Pause")}><DeckIcon name="play" size={20} /></button>
       </div>
       <div className="media-row">
-        {small.map(([k, icon, label]) => (
+        {small.map(([k, icon, label, short]) => (
           <button key={k} type="button" className="media-btn" aria-label={label} title={label} onClick={() => press(k)}>
-            <DeckIcon name={icon} size={19} /><span>{label}</span>
+            <DeckIcon name={icon} size={19} /><span>{short}</span>
           </button>
         ))}
       </div>
