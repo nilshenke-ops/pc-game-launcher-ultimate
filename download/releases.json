@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.32.0",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion.exe",
+    "size": 95068511,
+    "sha256": "54a11834f774a7e26ddd5e72e06c61b9c27d02af4d2a1b208fbd2fd0067f95cc",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.32.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion-3.32.0-win-x64.zip",
+      "size": 89342265,
+      "sha256": "b7e5fa1746c95679b9d829d628a426fdc3db88131daff0eb9b74daad9e2daae8"
+    },
+    "notes": "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt · Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf",
+    "changes": {
+      "neu": [
+        "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt"
+      ],
+      "verbessert": [
+        "Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf"
+      ],
+      "behoben": []
+    },
+    "signature": "LpNViIJ8nIsW2ozsbcxvCa0eN7UfAyEPKZt6jbZdwToWzsSFOqwKUA3xisrJ7om//qQmKsWyC/WPKOaIoK9yOA=="
+  },
+  {
     "version": "3.31.0",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1367,33 +1393,5 @@
       ]
     },
     "signature": "kw1KGX8Aso9uVucYDe6mb+BJ7FfO4e0iim7zqawAG6hGE8ADLFUQkqMYfAuDY9++DM6UfJMuRyWCQpZb/owG/w=="
-  },
-  {
-    "version": "2.95.0",
-    "date": "2026-11-04",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.95.0/PCGameLauncherCompanion.exe",
-    "size": 88453102,
-    "sha256": "6c7bbbadeb3e692961d44ec64c20a0a20ab97ba217ae128dadca0cf1dab870f4",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.95.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.95.0/PCGameLauncherCompanion-2.95.0-win-x64.zip",
-      "size": 82949301,
-      "sha256": "64927ac29c1cf65d0ad9127ac8efa97ed4a8019729d7d70a7825068f29bdf2bc"
-    },
-    "notes": "Mehr Leben: Die Augen schauen im Leerlauf gelegentlich umher und „atmen“, der Roboter im Panel wippt; ein Tippen auf die Insel löst eine Welle aus; bei „Erledigt“ sprühen kleine Funken; bei Musik läuft mit jedem Beat eine Welle über die Augen; beim Nachdenken springen drei Punkte hinter dem Text · Mit „weniger Bewegung“ bleibt alles ruhig · JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln",
-    "changes": {
-      "neu": [
-        "Mehr Leben: Die Augen schauen im Leerlauf gelegentlich umher und „atmen“, der Roboter im Panel wippt; ein Tippen auf die Insel löst eine Welle aus; bei „Erledigt“ sprühen kleine Funken; bei Musik läuft mit jedem Beat eine Welle über die Augen; beim Nachdenken springen drei Punkte hinter dem Text",
-        "Mit „weniger Bewegung“ bleibt alles ruhig"
-      ],
-      "verbessert": [
-        "JARVIS-Insel, flüssiger: Das Fenster bewegt sich jetzt mit einer echten Feder (schneller Start, kleines Überschwingen, weiches Ankommen) und behält sein Tempo, wenn man die Maus schnell hinein- und hinausbewegt; die Bewegungen im Inneren (Panel, Karten, Texte, Rückfrage-Knöpfe) nutzen ebenfalls Federkurven statt einfacher Verläufe und kommen ohne Weichzeichner aus, damit sie nicht ruckeln",
-        "Das Panel klappt beim Schließen weich zu (statt zu verschwinden); die Augen wechseln die Form zwischen Stimmungen fließend"
-      ],
-      "behoben": []
-    },
-    "signature": "6Z8Wj7pkBnbuoy03Y/xQKCJwC0cQtjTexyi2tASdQnMfaTAuEeySe7reb/IuDNG161thfGOJvUcn0xf3b14uDg=="
   }
 ]

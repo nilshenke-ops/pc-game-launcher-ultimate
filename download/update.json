@@ -1,33 +1,26 @@
 {
-  "version": "3.31.0",
+  "version": "3.32.0",
   "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.31.0/PCGameLauncherCompanion.exe",
-  "size": 95067276,
-  "sha256": "33dd0df446a0c3a2b7476d62d4c257b3684c72fc29286932ff0e0f83ec4ae2a5",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion.exe",
+  "size": 95068511,
+  "sha256": "54a11834f774a7e26ddd5e72e06c61b9c27d02af4d2a1b208fbd2fd0067f95cc",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.31.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.31.0/PCGameLauncherCompanion-3.31.0-win-x64.zip",
-    "size": 89340915,
-    "sha256": "86399a81b75aa80ad7f758e6748f2357391d414ce5bfbe3c7ab6cf43918d1cb1"
+    "fileName": "PCGameLauncherCompanion-3.32.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion-3.32.0-win-x64.zip",
+    "size": 89342265,
+    "sha256": "b7e5fa1746c95679b9d829d628a426fdc3db88131daff0eb9b74daad9e2daae8"
   },
-  "notes": "Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext · Alle Geräte desselben Kontos holen sich den neuesten Stand von selbst (alle 10 Sekunden bei geöffneter App, sofort beim Zurückkehren in die App oder wenn das Netz wieder da ist) – auch ein iPad, das nie mit dem PC gekoppelt war. Bei ausgeschaltetem PC bleibt alles sichtbar und bearbeitbar: Spiele und Apps, Favoriten, Kategorien, Einstellungen. Nur Aktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung), brauchen weiter eine PC-Verbindung · Änderungen ohne PC: Favorit, Kategorien, Bewertung, Name und Einstellungen, die du am iPad oder Handy bei ausgeschaltetem PC machst, werden sofort angezeigt und als kleine, verschlüsselte „Änderungen“ in die Cloud gelegt. Der PC übernimmt sie beim nächsten Start – jede Änderung genau einmal (eigene ID), und was am PC inzwischen geändert wurde, gilt weiter (Konflikte werden je Feld entschieden und unter „Cloud“ aufgelistet)",
+  "notes": "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt · Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf",
   "changes": {
     "neu": [
-      "Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext",
-      "Alle Geräte desselben Kontos holen sich den neuesten Stand von selbst (alle 10 Sekunden bei geöffneter App, sofort beim Zurückkehren in die App oder wenn das Netz wieder da ist) – auch ein iPad, das nie mit dem PC gekoppelt war. Bei ausgeschaltetem PC bleibt alles sichtbar und bearbeitbar: Spiele und Apps, Favoriten, Kategorien, Einstellungen. Nur Aktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung), brauchen weiter eine PC-Verbindung",
-      "Änderungen ohne PC: Favorit, Kategorien, Bewertung, Name und Einstellungen, die du am iPad oder Handy bei ausgeschaltetem PC machst, werden sofort angezeigt und als kleine, verschlüsselte „Änderungen“ in die Cloud gelegt. Der PC übernimmt sie beim nächsten Start – jede Änderung genau einmal (eigene ID), und was am PC inzwischen geändert wurde, gilt weiter (Konflikte werden je Feld entschieden und unter „Cloud“ aufgelistet)",
-      "Kein Datenverlust bei Netzausfall: Was nicht gesendet werden konnte, bleibt auf dem Gerät bzw. am PC vorgemerkt und wird automatisch nachgeholt, sobald die Cloud wieder antwortet (mit wachsenden Pausen)",
-      "Neue Karte „Automatische Synchronisierung“ auf der Cloud-Seite: Cloud verbunden / nicht erreichbar, PC verbunden / nicht verbunden, Synchronisierung läuft / abgeschlossen, ausstehende Änderungen, wann der PC zuletzt übertragen hat. Der PC verbindet sich beim Anmelden von selbst mit dem Konto; „PC mit diesem Konto verbinden / trennen“ und „Jetzt abgleichen“ gibt es zusätzlich",
-      "Schlüssel ohne Passwort: KI-, Such- und ElevenLabs-Schlüssel werden einmal eingegeben und danach mit einem Schlüssel verschlüsselt, der fest an dieses Gerät gebunden ist (nicht auslesbar, nicht kopierbar). Kein Passwort, kein „Gesperrt“ mehr – die Schlüssel sind bei jedem Öffnen sofort bereit. Alte, mit Passwort gesperrte Schlüssel werden einmal mit dem Passwort geöffnet und wechseln dabei dauerhaft auf den Geräteschlüssel"
+      "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt"
     ],
     "verbessert": [
-      "Statt „Gesperrt“ steht bei einem Schlüssel, der noch beim Öffnen ist oder aus einer alten Version stammt, ein klarer Hinweis, was zu tun ist"
+      "Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf"
     ],
-    "behoben": [
-      "Teststabilität: Das Kino beim Spielstart verdeckte im Test kurz die Seite; Overlay-Breite wird erst nach dem Loslassen gemessen"
-    ]
+    "behoben": []
   },
-  "signature": "Zwbo7TovK6LfG6fZwi10q4vbCSgGU9QaX8lRs59YIlNzIjm0FVsaPS3LNYi3CD9Hx1392ISSF5OG+cM+FuJt8A=="
+  "signature": "LpNViIJ8nIsW2ozsbcxvCa0eN7UfAyEPKZt6jbZdwToWzsSFOqwKUA3xisrJ7om//qQmKsWyC/WPKOaIoK9yOA=="
 }
