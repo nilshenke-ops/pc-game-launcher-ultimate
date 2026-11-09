@@ -13,6 +13,7 @@
     "test": "bash scripts/test-all.sh",
     "dev": "bash scripts/dev.sh",
     "start:relay": "bash scripts/start-relay.sh",
-    "start:headless": "bash scripts/start-headless.sh"
+    "start:headless": "bash scripts/start-headless.sh",
+    "test:cloud": "bash scripts/test-cloud-sync.sh"
   }
 }

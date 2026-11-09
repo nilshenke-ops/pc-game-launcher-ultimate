@@ -436,6 +436,31 @@ public static class RpcApi
 
         // ------------------------------------------------------------ activity status (only for the paired devices)
         // "An PC senden": a link or text from a phone/tablet; links can be opened in the PC's browser right away.
+        // Cloud sync: this PC keeps the account's cloud copy of its data up to date (see CloudSyncService).
+        rpc.Register("cloud.status", _ => s.CloudSync.Status());
+        rpc.Register("cloud.link", async ctx =>
+        {
+            var p = ctx.Params;
+            string? auth = ctx.OptStr("auth", 80), enc = ctx.OptStr("enc", 80);
+            // From a phone/tablet the keys travel sealed with the device key (only open in this session) – plain only from the PC itself.
+            if (p.ValueKind == System.Text.Json.JsonValueKind.Object && p.TryGetProperty("sealed", out var sv) && sv.ValueKind == System.Text.Json.JsonValueKind.Object)
+            {
+                if (ctx.Session.Device == null) throw new RpcException("forbidden", "Versiegelte Schlüssel kann nur ein gekoppeltes Gerät senden.");
+                string? Open(string name, string purpose)
+                {
+                    if (!sv.TryGetProperty(name, out var x) || x.ValueKind != System.Text.Json.JsonValueKind.Object) return null;
+                    string F(string n) => x.TryGetProperty(n, out var y) && y.ValueKind == System.Text.Json.JsonValueKind.String ? y.GetString() ?? "" : "";
+                    return s.Rpc.Devices.OpenSealed(ctx.Session.Device.Id, ctx.Session.Nonce, purpose, F("iv"), F("ct"), F("tag"));
+                }
+                auth = Open("auth", "cloud.auth"); enc = Open("enc", "cloud.enc");
+                if (auth == null || enc == null) throw new RpcException("invalid-params", "Die Schlüssel ließen sich nicht entschlüsseln (Sitzung erneuert?) – bitte noch einmal versuchen.");
+            }
+            else if (!ctx.Session.IsLocalAdmin) throw new RpcException("forbidden", "Vom Handy aus nur versiegelt.");
+            if (auth == null || enc == null) throw new RpcException("invalid-params", "Schlüssel fehlen.");
+            return await s.CloudSync.LinkAsync(ctx.OptStr("api", 300), ctx.Str("user", 30), auth, enc);
+        });
+        rpc.Register("cloud.unlink", async _ => await s.CloudSync.UnlinkAsync());
+        rpc.Register("cloud.syncNow", async _ => { await s.CloudSync.SyncAsync(force: true); return s.CloudSync.Status(); });
         rpc.Register("inbox.list", _ => new { items = s.Inbox.List() });
         rpc.Register("inbox.send", ctx =>
         {

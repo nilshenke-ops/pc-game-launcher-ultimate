@@ -35,7 +35,7 @@ describe("Meine KIs", () => {
   it("ohne PC: Schlüssel auf dem Gerät – bereit, gesperrt oder nichts; Pollinations nach Zustimmung", () => {
     const ready = buildRoster(null, null, dev({ openrouter: "ready", groq: "locked" }), "yes");
     const by = Object.fromEntries(ready.map((r) => [r.id, r]));
-    expect(by.openrouter).toMatchObject({ state: "works", device: true }); expect(by.groq).toMatchObject({ state: "begun", device: true, next: "Mit dem Passwort entsperren" });
+    expect(by.openrouter).toMatchObject({ state: "works", device: true }); expect(by.groq).toMatchObject({ state: "begun", device: true, next: "Falls das nicht von selbst klappt: einmal das alte Passwort eingeben (danach nie wieder)" });
     expect(by.pollinations.state).toBe("works");
     expect(buildRoster(null, null, dev(), "no").find((r) => r.id === "pollinations")!.state).toBe("none");
   });

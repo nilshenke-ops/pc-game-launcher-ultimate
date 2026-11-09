@@ -91,3 +91,23 @@ Ein Backup-Knopf lädt den Stand des Kontos auf diesem Gerät als lesbare JSON-D
 
 - Bestehende Konten auf dem PC wandern **nicht** automatisch in die Cloud. Nach der Einrichtung einmal mit der Cloud registrieren/anmelden und das Design neu speichern (es liegt lokal weiter vor).
 - Der Dienst speichert nur Kontodaten. Alles, was den PC braucht (Spiele starten, Dateien, Fernsteuerung, Kalender), funktioniert weiterhin nur bei erreichbarem PC.
+
+
+## Automatische Synchronisierung (PC → Cloud → alle Geräte)
+
+Zusätzlich zum Konto-Datensatz hält die Cloud den letzten Stand des PCs bereit, damit jedes Gerät desselben Kontos ihn auch bei ausgeschaltetem PC sieht (Code: [`cloud-account-worker/src/sync.js`](../cloud-account-worker/src/sync.js), [`CloudSyncService.cs`](../companion/src/Companion.Core/Services/CloudSyncService.cs), [`web/src/lib/cloud-sync.ts`](../web/src/lib/cloud-sync.ts)).
+
+| Aufruf (`POST /api/sync/…`) | Wer | Zweck |
+|---|---|---|
+| `token` | PC, Gerät | Kontoschlüssel einmal prüfen (wie `login`, mit Fehlversuch-Sperre) → langer zufälliger Geräte-Token (in D1 nur dessen SHA-256) |
+| `push` | PC | Stand einzelner Teile (`library.list`, `settings.get` …) – mehrteilig in einer Transaktion, nie halb sichtbar |
+| `pull` | Geräte, PC | geänderte Teile und offene Änderungen; mit der letzten Änderungsnummer antwortet er in einer Abfrage „nichts Neues“ |
+| `op` | Geräte | verschlüsselte Änderung (nur `library.update`, `settings.save`), je ID genau einmal gespeichert |
+| `ack` | PC | Änderung übernommen → aus der Cloud entfernt |
+| `revoke` | PC, Gerät | Token zurückziehen |
+
+**Sicherheit:** Alles Inhaltliche ist mit dem AES-GCM-Schlüssel des Kontos versiegelt (gzip + AES-256-GCM, Format `g1.` + Base64), die Cloud sieht nur Chiffretext, Teilenamen und Zeiten. Der PC bekommt Anmelde- und Datenschlüssel vom Browser (am Handy versiegelt mit dem Gerätekey der PC-Kopplung, nur Admin-Geräte) und speichert sie mit dem Betriebssystem-Schutz (DPAPI). Der PC liest seine Daten mit den Rechten eines gekoppelten Geräts (nie „nur am PC“) und übernimmt aus der Cloud nur `library.update` und `settings.save` – nie Starten, Beenden oder PC-Steuerung.
+
+**Konflikte:** Jede Änderung trägt den Wert, den das Feld vorher hatte. Der PC setzt ein Feld nur, wenn es noch diesen Wert hat; was am PC inzwischen anders geändert wurde, bleibt (Hinweis unter „Cloud“).
+
+**Test:** `npm run test:cloud` startet den echten Worker (workerd, D1 auf Platte), einen zweiten Begleiter und zwei Browser und prüft: Upload verschlüsselt, zweites Gerät ohne PC-Kopplung sieht alles, PC aus, Änderungen ohne PC, Cloud-Ausfall und Rückkehr, PC übernimmt genau einmal.

@@ -6,12 +6,16 @@
 //   POST /api/account/load     { user, key } -> { blob, updatedAt }
 //   POST /api/account/save     { user, key, blob }
 //   POST /api/account/delete   { user, key }
+//   POST /api/sync/…                       -> automatic sync PC ↔ cloud ↔ devices (see sync.js)
 //
 // Everything outside /api is the built hosted app (env.ASSETS, see wrangler.json). The browser sends only a derived
 // login key (never the password) and an AES-GCM ciphertext it alone can open; the server keeps a PBKDF2 hash of
 // that login key. `accounts` and `login_fails` are created by the migration and (defensively) on first use.
 
+import { deleteSyncData, handleSync } from "./sync.js";
+
 const API_PREFIX = "/api/account/";
+const SYNC_PREFIX = "/api/sync/";
 const ACTIONS = new Set(["register", "login", "load", "save", "delete"]);
 const USER_RX = /^[a-z0-9._-]{3,24}$/;
 const KEY_RX = /^[0-9a-f]{64}$/;
@@ -68,6 +72,9 @@ async function route(request, env, url, cors) {
     return healthResponse(env, cors);
   }
   if (!env.DB) return fail("database-unavailable", MSG_DB_MISSING, 503, cors);
+  if (url.pathname.startsWith(SYNC_PREFIX)) {
+    return handleSync(request, env, url.pathname.slice(SYNC_PREFIX.length), cors, { json, fail, ensureSchema, checkAccountKey });
+  }
 
   const action = url.pathname.startsWith(API_PREFIX) ? url.pathname.slice(API_PREFIX.length) : "";
   if (!ACTIONS.has(action)) return fail("not-found", "Unbekannte Aktion.", 404, cors);
@@ -123,7 +130,21 @@ async function route(request, env, url, cors) {
   }
   await env.DB.prepare("DELETE FROM accounts WHERE user = ?1").bind(user).run();
   await env.DB.prepare("DELETE FROM login_fails WHERE user = ?1").bind(user).run();
+  await deleteSyncData(env, user);
   return json({ ok: true, user }, 200, cors);
+}
+
+/** The same password check as "login" (rate limit, equal timing for unknown names). null = accepted, else the error answer. */
+async function checkAccountKey(env, user, key, ip, cors) {
+  if (await tooManyFails(env, user, ip)) return fail("rate-limited", "Zu viele Versuche – bitte in 15 Minuten wieder probieren.", 429, cors);
+  const acc = await env.DB.prepare("SELECT auth_salt, auth_hash FROM accounts WHERE user = ?1").bind(user).first();
+  const computed = await hashKey(key, acc?.auth_salt ?? "AAAAAAAAAAAAAAAAAAAAAA==");
+  if (!acc || !sameBytes(computed, String(acc.auth_hash))) {
+    await noteFail(env, user, ip);
+    return fail("unauthorized", "Benutzername oder Passwort falsch.", 401, cors);
+  }
+  await clearFails(env, user, ip);
+  return null;
 }
 
 /** Reachability without login – also proves that D1 answers, so a broken binding is not reported as "server down". */

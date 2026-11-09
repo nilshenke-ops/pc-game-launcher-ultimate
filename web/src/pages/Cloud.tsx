@@ -7,6 +7,7 @@ import { relTime } from "../lib/format";
 import { Banner, Button, Card, Segmented } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
 import { AndroidAppCard } from "../components/android-app-card";
+import { CloudSyncCard } from "../components/cloud-sync-card";
 import { CLOUD_WEB, CLOUD_WORKER_GUIDE, cloudApi, cloudHealth, customCloudApi, pendingBlob, setCustomCloudApi, type CloudHealth } from "../lib/cloud-account";
 import { accountBackup, flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
 import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi } from "../lib/free-ai-local";
@@ -230,6 +231,8 @@ export default function CloudPage() {
         </details>
       </Card>
 
+      <CloudSyncCard />
+
       <Card title={t("Was in der Cloud liegt")} icon={<Cloud size={18} />}>
         <p className="small" style={{ margin: 0 }}>{t("Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung und die Raum-Einstellung – schon im Browser verschlüsselt. Passwort und Schlüssel bleiben auf dem Gerät, der Dienst kann die Daten nicht lesen.")}</p>
         <p className="small" style={{ margin: "8px 0 0" }}>{t("Dazu kommen der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl – also welcher Anbieter zuerst antwortet. Auf dem Handy ist damit alles schon eingerichtet, bevor der PC verbunden ist. KI-Schlüssel und API-Schlüssel liegen nie im Konto.")}</p>
@@ -242,7 +245,7 @@ export default function CloudPage() {
             {localKeys.map((k) => (
               <div key={k.id} className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
                 <span className="small">{k.name}</span>
-                <span className={`badge ${k.state === "ready" ? "ok" : "warn"}`}>{k.state === "ready" ? t("Bereit") : t("Gesperrt")}</span>
+                <span className={`badge ${k.state === "ready" ? "ok" : "warn"}`}>{k.state === "ready" ? t("Bereit") : t("Einmal entsperren nötig")}</span>
               </div>
             ))}
           </div>
