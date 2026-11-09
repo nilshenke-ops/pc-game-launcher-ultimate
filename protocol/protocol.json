@@ -23,6 +23,7 @@
     "devices.handoff": "any",
     "tailscale.get": "local",
     "tailscale.serve": "local",
+    "tailscale.funnel": "local",
     "devices.rename": "admin",
     "devices.revoke": "admin",
     "devices.setPermissions": "local",

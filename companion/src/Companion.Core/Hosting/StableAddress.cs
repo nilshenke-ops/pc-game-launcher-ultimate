@@ -133,12 +133,13 @@ public sealed class StableAddress
 }
 
 /// <summary>
-/// The Tailscale command line with exactly three fixed commands – nothing else can be passed in:
-/// status (read), "serve on" (https in the own tailnet → this companion) and "serve off". No shell, no user text.
+/// The Tailscale command line with a few fixed commands – nothing else can be passed in:
+/// status (read), "serve on/off" (https in the own tailnet → this companion) and "funnel on/off/status" (the same https address reachable
+/// from the internet, for phones without Tailscale). No shell, no user text.
 /// </summary>
 public static class TailscaleCli
 {
-    public enum Command { Status, ServeOn, ServeOff }
+    public enum Command { Status, ServeOn, ServeOff, FunnelOn, FunnelOff, FunnelStatus }
 
     /// <summary>Tests replace the program call.</summary>
     public static Func<string[], Task<(int exitCode, string output)?>>? Runner { get; set; }
@@ -151,8 +152,14 @@ public static class TailscaleCli
     {
         Command.Status => new[] { "status", "--json" },
         Command.ServeOn => new[] { "serve", "--bg", port.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+        Command.FunnelOn => new[] { "funnel", "--bg", port.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+        Command.FunnelOff => new[] { "funnel", "--https=443", "off" },
+        Command.FunnelStatus => new[] { "funnel", "status" },
         _ => new[] { "serve", "--https=443", "off" },
     };
+
+    /// <summary>"tailscale funnel status" lists "(Funnel on)" for a public address; "No serve config" or "(tailnet only)" otherwise.</summary>
+    public static bool FunnelIsOn(string? statusOutput) => statusOutput != null && statusOutput.Contains("Funnel on", StringComparison.OrdinalIgnoreCase);
 
     public static async Task<(int exitCode, string output)?> RunAsync(Command c, int port = 8787)
     {
@@ -164,7 +171,7 @@ public static class TailscaleCli
         foreach (var a in args) psi.ArgumentList.Add(a);
         using var p = Process.Start(psi);
         if (p == null) return null;
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(c == Command.Status ? 4 : 25));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(c is Command.Status or Command.FunnelStatus ? 4 : 25));
         var output = p.StandardOutput.ReadToEndAsync(cts.Token);
         var error = p.StandardError.ReadToEndAsync(cts.Token);
         try { await p.WaitForExitAsync(cts.Token); } catch (OperationCanceledException) { try { p.Kill(); } catch { } return (-1, "Tailscale hat nicht rechtzeitig geantwortet."); }

@@ -97,7 +97,22 @@ public static class RpcApi
         rpc.Register("tailscale.get", async ctx =>
         {
             if (s.Stable.CheckedAt is not { } at || DateTime.UtcNow - at > TimeSpan.FromSeconds(30)) await s.Stable.RefreshAsync();
-            return TailscaleInfo(s);
+            var fs = await TailscaleCli.RunAsync(TailscaleCli.Command.FunnelStatus, s.Web.Port);
+            return TailscaleInfo(s, TailscaleCli.FunnelIsOn(fs?.output));
+        });
+        // "Funnel": the same https address, reachable from the internet – for phones/iPads without Tailscale. Only at the PC, only on purpose (it is public);
+        // the companion still needs a pairing code that is created at the PC and confirmed there, so the address alone gives no access.
+        rpc.Register("tailscale.funnel", async ctx =>
+        {
+            var on = ctx.Bool("on");
+            var r = await TailscaleCli.RunAsync(on ? TailscaleCli.Command.FunnelOn : TailscaleCli.Command.FunnelOff, s.Web.Port)
+                ?? throw new RpcException("not-installed", "Tailscale ist auf diesem PC nicht installiert.");
+            Log.Info("web", $"Tailscale Funnel {(on ? "ein" : "aus")}: Ergebnis {r.exitCode}");
+            for (int i = 0; i < 5; i++) { await s.Stable.RefreshAsync(); if (!on || r.exitCode != 0 || s.Stable.TailscaleHttps) break; await Task.Delay(2000); }
+            var fs = await TailscaleCli.RunAsync(TailscaleCli.Command.FunnelStatus, s.Web.Port);
+            var isOn = TailscaleCli.FunnelIsOn(fs?.output);
+            var output = r.output.Length > 1500 ? r.output[..1500] : r.output;
+            return new { ok = r.exitCode == 0 && (on ? isOn : !isOn), exitCode = r.exitCode, output, info = TailscaleInfo(s, isOn) };
         });
         rpc.Register("tailscale.serve", async ctx =>
         {
@@ -1028,13 +1043,14 @@ public static class RpcApi
         };
     }
 
-    static object TailscaleInfo(CompanionServices s) => new
+    static object TailscaleInfo(CompanionServices s, bool funnel = false) => new
     {
         installed = TailscaleCli.Runner != null || TailscaleCli.Exe() != null,
         running = s.Stable.TailscaleName != null,
         name = s.Stable.TailscaleName,
         https = s.Stable.TailscaleHttps,
         url = s.Stable.TailscaleHttps ? $"https://{s.Stable.TailscaleName}" : null,
+        funnel,
     };
 
     static object DeviceAddresses(CompanionServices s) => Addresses(s).Select(a => new { a.url, a.kind });
