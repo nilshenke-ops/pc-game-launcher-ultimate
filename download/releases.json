@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.28.1",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.1/PCGameLauncherCompanion.exe",
+    "size": 95036397,
+    "sha256": "52301c2d3ebad22775f7fd148f9348463a452fb764ea16a03da40243d4bc078f",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.28.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.1/PCGameLauncherCompanion-3.28.1-win-x64.zip",
+      "size": 89310733,
+      "sha256": "d14fb63ef0c62009fca9ec00c8b5a4a9efe47d87bb8a51a2a462b142881bad06"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Die Anleitung für den eigenen Cloudflare-Dienst nennt jetzt die richtige Datenbank-Bindung „DB“ und den nötigen Eintrag „ALLOWED_ORIGINS“, damit der Worker die Adresse der App durchlässt"
+      ]
+    },
+    "signature": "q54xlVb6yzxnk96Ax/xDxoWPkeTxGc2rcdJGW68LBkJdbPZkEmMeJUQWHglVZvoCDngkOGCk1rGx+LTOy46d7g=="
+  },
+  {
     "version": "3.28.0",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1390,35 +1414,5 @@
       "behoben": []
     },
     "signature": "BAqJFSPGqFfF+5VAzk4FSyTP/YwRZvomYmZKejWwIoU5rnOAPKrmNKoFIRFaa4hQ1L7+deX7dEOunFWD5XzE4w=="
-  },
-  {
-    "version": "2.89.0",
-    "date": "2026-11-03",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.89.0/PCGameLauncherCompanion.exe",
-    "size": 88417463,
-    "sha256": "6cd701919164ec82f4993b86b7a372b56fb555e693601c44ef156e588ea65f70",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.89.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.89.0/PCGameLauncherCompanion-2.89.0-win-x64.zip",
-      "size": 82913492,
-      "sha256": "0b218acbb8ec2426922541e27b3624480ad3688d4649939bdcdc2690bd19e877"
-    },
-    "notes": "Verbindungsstatus: Nach vielen fehlgeschlagenen Versuchen steht „PC nicht erreichbar – die App versucht es weiter (Versuch n)“ statt endlos „Wiederverbindung läuft“ · Ist der Companion auf dem PC älter als die Webseite, sagt die App klar „Der Companion auf deinem PC (vX) kennt diese Funktion noch nicht – bitte unter Einstellungen → Updates aktualisieren“ statt einer bloßen Fehlermeldung · Auf Touch-Geräten sind alle Knöpfe, Reiter, Eingabefelder, Schieberegler und Menüpunkte mindestens 44 × 44 px groß (vorher teils 28–36 px); gemessen auf allen Seiten im Hoch- und Querformat (iPhone SE/13, Pixel 5, iPad)",
-    "changes": {
-      "neu": [
-        "Verbindungsstatus: Nach vielen fehlgeschlagenen Versuchen steht „PC nicht erreichbar – die App versucht es weiter (Versuch n)“ statt endlos „Wiederverbindung läuft“",
-        "Ist der Companion auf dem PC älter als die Webseite, sagt die App klar „Der Companion auf deinem PC (vX) kennt diese Funktion noch nicht – bitte unter Einstellungen → Updates aktualisieren“ statt einer bloßen Fehlermeldung"
-      ],
-      "verbessert": [
-        "Auf Touch-Geräten sind alle Knöpfe, Reiter, Eingabefelder, Schieberegler und Menüpunkte mindestens 44 × 44 px groß (vorher teils 28–36 px); gemessen auf allen Seiten im Hoch- und Querformat (iPhone SE/13, Pixel 5, iPad)",
-        "Tests: Kontrast aller eingebauten Designs, Animationen ohne Layout-Eigenschaften und „Weniger Bewegung“, alle Verbindungszustände, Favorit und Sortierung nach dem Neuladen"
-      ],
-      "behoben": [
-        "Obere Leiste auf schmalen Handys: Titel und Symbole schnitten rechts die Glocke ab (lange Titel wie „Einstellungen“); der Titel kürzt sich jetzt"
-      ]
-    },
-    "signature": "cgtuH0oc4xm3UE/q2/beLsF/K7QRoNx049IqBJNAm0IU9v6qGSqSs7dIOJLOeW9q2oa/GwunNv0Gf2paxdkoqg=="
   }
 ]
