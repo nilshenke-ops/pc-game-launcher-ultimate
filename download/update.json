@@ -1,26 +1,28 @@
 {
-  "version": "3.32.0",
+  "version": "3.33.0",
   "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion.exe",
-  "size": 95068511,
-  "sha256": "54a11834f774a7e26ddd5e72e06c61b9c27d02af4d2a1b208fbd2fd0067f95cc",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion.exe",
+  "size": 95069216,
+  "sha256": "26db28f685f5879d66375fd0918329aec47f5a5d3316966277e7dd25ad2e6f77",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.32.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion-3.32.0-win-x64.zip",
-    "size": 89342265,
-    "sha256": "b7e5fa1746c95679b9d829d628a426fdc3db88131daff0eb9b74daad9e2daae8"
+    "fileName": "PCGameLauncherCompanion-3.33.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion-3.33.0-win-x64.zip",
+    "size": 89342779,
+    "sha256": "4337bc2ce303d11bf49da19e129418b2dee0d7cbb109bc0b94b38ebb181d5374"
   },
-  "notes": "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt · Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf",
+  "notes": "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt · Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol · Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)",
   "changes": {
     "neu": [
-      "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt"
+      "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt",
+      "Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol",
+      "Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)"
     ],
     "verbessert": [
-      "Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf"
+      "Insel: Die Farben der Karten passen sich an – Musik und Spiel nehmen die Farbe des Covers bzw. Logos, der Fokus-Timer färbt sich je nach Phase (Fokus, Pause, lange Pause)"
     ],
     "behoben": []
   },
-  "signature": "LpNViIJ8nIsW2ozsbcxvCa0eN7UfAyEPKZt6jbZdwToWzsSFOqwKUA3xisrJ7om//qQmKsWyC/WPKOaIoK9yOA=="
+  "signature": "OKqB0EPNcRPrT998DxLKiCpsEidI/eGsFGEK0fCna3/L9LgLGEuGNrzWVwl0kAJJyvUriNGjDyqlhfgMhf7IMA=="
 }

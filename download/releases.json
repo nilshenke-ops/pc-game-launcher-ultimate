@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.33.0",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion.exe",
+    "size": 95069216,
+    "sha256": "26db28f685f5879d66375fd0918329aec47f5a5d3316966277e7dd25ad2e6f77",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.33.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion-3.33.0-win-x64.zip",
+      "size": 89342779,
+      "sha256": "4337bc2ce303d11bf49da19e129418b2dee0d7cbb109bc0b94b38ebb181d5374"
+    },
+    "notes": "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt · Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol · Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)",
+    "changes": {
+      "neu": [
+        "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt",
+        "Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol",
+        "Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)"
+      ],
+      "verbessert": [
+        "Insel: Die Farben der Karten passen sich an – Musik und Spiel nehmen die Farbe des Covers bzw. Logos, der Fokus-Timer färbt sich je nach Phase (Fokus, Pause, lange Pause)"
+      ],
+      "behoben": []
+    },
+    "signature": "OKqB0EPNcRPrT998DxLKiCpsEidI/eGsFGEK0fCna3/L9LgLGEuGNrzWVwl0kAJJyvUriNGjDyqlhfgMhf7IMA=="
+  },
+  {
     "version": "3.32.0",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1365,33 +1393,5 @@
       ]
     },
     "signature": "pykd8Wszr/bgrOzbDtWJi/mIpOILIw8Xd2fRjq6sZhMND47fNupQPj4z3zUP404dJVrfG9Tk3h4pHyq6vRRbpQ=="
-  },
-  {
-    "version": "2.96.0",
-    "date": "2026-11-04",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.96.0/PCGameLauncherCompanion.exe",
-    "size": 88453335,
-    "sha256": "da09ca8e80cf9876bf7f2e11dd113045d705e0a3946528f1179faf3fff88c8bc",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.96.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.96.0/PCGameLauncherCompanion-2.96.0-win-x64.zip",
-      "size": 82949500,
-      "sha256": "aac22dec24f3df50d977edf82a0e74360b161903cdb8ff029942ff7d132f6aca"
-    },
-    "notes": "Handy wie in den Vorlagen: Oben schwebt die Leiste ohne Hintergrund über der Seite (erst beim Scrollen bekommt sie ihr Glas) mit Menü-Knopf links (öffnet „Alle Bereiche“), dem Verbindungspunkt und dem Datenschutz-Knopf; rechts Suche, **JARVIS**, **Anmeldung** und Benachrichtigungen · Startseite am Handy: kompakte Kacheln für „Deine Spiele“ mit großen Logos (Steam, Xbox App, Game Pass), runde Schnellzugriff-Knöpfe in den Chrom-Designs, „Anpassen“ als runder Knopf neben „Jetzt starten“; die große PC-Karte entfällt (der Punkt oben zeigt den Zustand, „Jetzt starten“ führt ohne PC zur Verbindung) · Seitentitel in der Kopfleiste nur noch außerhalb der Startseite",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Handy wie in den Vorlagen: Oben schwebt die Leiste ohne Hintergrund über der Seite (erst beim Scrollen bekommt sie ihr Glas) mit Menü-Knopf links (öffnet „Alle Bereiche“), dem Verbindungspunkt und dem Datenschutz-Knopf; rechts Suche, **JARVIS**, **Anmeldung** und Benachrichtigungen",
-        "Startseite am Handy: kompakte Kacheln für „Deine Spiele“ mit großen Logos (Steam, Xbox App, Game Pass), runde Schnellzugriff-Knöpfe in den Chrom-Designs, „Anpassen“ als runder Knopf neben „Jetzt starten“; die große PC-Karte entfällt (der Punkt oben zeigt den Zustand, „Jetzt starten“ führt ohne PC zur Verbindung)",
-        "Seitentitel in der Kopfleiste nur noch außerhalb der Startseite"
-      ],
-      "behoben": [
-        "Browser-Test der Insel-Augenfarbe wartet jetzt, bis die Farbe eingeblendet ist (war zeitabhängig)"
-      ]
-    },
-    "signature": "kw1KGX8Aso9uVucYDe6mb+BJ7FfO4e0iim7zqawAG6hGE8ADLFUQkqMYfAuDY9++DM6UfJMuRyWCQpZb/owG/w=="
   }
 ]
