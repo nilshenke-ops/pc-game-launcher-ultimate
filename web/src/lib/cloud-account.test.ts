@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cloudAccountConfigured, cloudApi, cloudDelete, cloudLoad, cloudLogin, cloudRegister, cloudSave, pendingBlob, setPendingBlob } from "./cloud-account";
+import { cloudAccountConfigured, cloudApi, cloudDelete, cloudHealth, cloudLoad, cloudLogin, cloudRegister, cloudSave, pendingBlob, setPendingBlob } from "./cloud-account";
 
 const BASE = "https://cloud.example.workers.dev";
 const KEY = "aa".repeat(32);
@@ -122,5 +122,26 @@ describe("account requests", () => {
     expect(pendingBlob()).toBe("QUJD");
     setPendingBlob(null);
     expect(pendingBlob()).toBeNull();
+  });
+});
+
+describe("service health", () => {
+  it("asks the public health route and reports reachable only for ok:true", async () => {
+    stub(json({ ok: true, service: "nexus-cloud-account" }));
+    expect((await cloudHealth()).ok).toBe(true);
+    expect(calls[0].url).toBe(`${BASE}/api/account/health`);
+    expect(calls[0].init.method).toBe("GET");
+
+    stub(json({ ok: false }, 500));
+    expect((await cloudHealth()).ok).toBe(false);
+    stub(new Error("network down"));
+    expect((await cloudHealth()).ok).toBe(false);
+  });
+
+  it("does not pretend a build without cloud has a reachable service", async () => {
+    vi.stubEnv("VITE_CLOUD_API", "");
+    const h = await cloudHealth();
+    expect(h.ok).toBe(false);
+    expect(h.message).toMatch(/nicht eingerichtet/);
   });
 });

@@ -40,6 +40,30 @@ export function cloudApi(): string | null {
 
 export const cloudAccountConfigured = () => cloudApi() !== null;
 
+export interface CloudHealth { ok: boolean; message: string; checkedAt: number }
+
+/** Whether the service answers right now – the public health route, no account data and no login needed. */
+export async function cloudHealth(): Promise<CloudHealth> {
+  const checkedAt = Date.now();
+  const base = cloudApi();
+  if (!base) return { ok: false, message: t("Cloud ist für diese App noch nicht eingerichtet."), checkedAt };
+  if (typeof fetch !== "function") return { ok: false, message: t("Dieser Browser kann keine Verbindung zur Cloud aufbauen."), checkedAt };
+  let signal: AbortSignal | undefined;
+  try { signal = AbortSignal.timeout(8000); } catch { signal = undefined; }
+  try {
+    const res = await fetch(`${base}/api/account/health`, { method: "GET", headers: { Accept: "application/json" }, signal });
+    const text = await res.text().catch(() => "");
+    let data: Answer = {};
+    if (text) { try { data = JSON.parse(text) as Answer; } catch { data = {}; } }
+    if (!res.ok) return { ok: false, message: t("Der Cloud-Dienst meldet einen Fehler – bitte später erneut prüfen."), checkedAt };
+    return data.ok === true
+      ? { ok: true, message: t("Der Cloud-Dienst ist erreichbar."), checkedAt }
+      : { ok: false, message: t("Der Cloud-Dienst antwortet unerwartet – bitte später erneut prüfen."), checkedAt };
+  } catch {
+    return { ok: false, message: t("Der Cloud-Dienst antwortet nicht – bitte Internetverbindung prüfen."), checkedAt };
+  }
+}
+
 export function cloudSignOut() { set(PENDING_KEY, null); }
 
 /** The encrypted blob of a change that could not be sent yet; sent on the next opportunity. */

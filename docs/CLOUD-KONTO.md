@@ -72,6 +72,8 @@ Mit dem Konto reisen Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler
 
 Navigation → Verbindung → **Cloud** (oder über die Suche „cloud“): dort stehen Konto anlegen/anmelden/abmelden, die Adresse des Dienstes, der Status samt wartender Änderung, „Jetzt synchronisieren“ und eine ehrliche Liste, was in der Cloud liegt und was am PC bleibt. Konto löschen geht ebenfalls dort.
 
+Die Seite prüft außerdem, ob der Dienst gerade erreichbar ist (öffentliche Health-Route, unabhängig von der Anmeldung) – so lässt sich „Dienst ist down“ von „Passwort falsch“ unterscheiden. Eine eigene Karte zeigt, welche KI- und API-Schlüssel auf diesem Gerät liegen (bereit oder gesperrt) und stellt klar: Anmelden, Abmelden, Kontowechsel und Konto löschen fassen sie nicht an. Ins Konto reist nur die KI-Auswahl, nie ein Schlüssel.
+
 ## Grenzen
 
 - Bestehende Konten auf dem PC wandern **nicht** automatisch in die Cloud. Nach der Einrichtung einmal mit der Cloud registrieren/anmelden und das Design neu speichern (es liegt lokal weiter vor).

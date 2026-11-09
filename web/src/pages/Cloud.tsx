@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { Cloud, CloudOff, HardDrive, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Cloud, CloudOff, HardDrive, KeyRound, RefreshCw, ShieldCheck, Users } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { Banner, Button, Card } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
 import { AndroidAppCard } from "../components/android-app-card";
-import { cloudAccountConfigured, cloudApi, pendingBlob } from "../lib/cloud-account";
+import { cloudAccountConfigured, cloudApi, cloudHealth, pendingBlob, type CloudHealth } from "../lib/cloud-account";
 import { flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
+import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi } from "../lib/free-ai-local";
 
 /**
  * Everything about the cloud account in one place: sign in, the address of the service, whether a change is still
@@ -24,12 +26,36 @@ export default function CloudPage() {
   const [busy, setBusy] = useState(false);
   const [accounts, setAccounts] = useState(listAccounts);
   const [switching, setSwitching] = useState<string | null>(null);
+  const localAi = useLocalAi();
+  const [health, setHealth] = useState<CloudHealth | null>(null);
+  const [checking, setChecking] = useState(false);
   useEffect(() => {
     const refresh = () => { setS(session()); setWaiting(!!pendingBlob()); setAccounts(listAccounts()); };
     window.addEventListener("pgl-account", refresh);
     window.addEventListener("storage", refresh);
     return () => { window.removeEventListener("pgl-account", refresh); window.removeEventListener("storage", refresh); };
   }, []);
+
+  // Reachability of the service says more than a vague error: it separates "cloud is down" from "password is wrong".
+  useEffect(() => {
+    if (!configured) return;
+    let alive = true;
+    setChecking(true);
+    void cloudHealth().then((h) => { if (alive) setHealth(h); }).finally(() => { if (alive) setChecking(false); });
+    return () => { alive = false; };
+  }, [configured]);
+
+  const checkHealth = async () => {
+    setChecking(true);
+    try { setHealth(await cloudHealth()); } finally { setChecking(false); }
+  };
+
+  // The keys themselves are deliberately not part of the account; this only shows which ones stay here.
+  const localKeys = [
+    ...LOCAL_PROVIDERS.map((p) => ({ id: p, name: LOCAL_NAME[p], state: localAi[p] })),
+    ...SEARCH_PROVIDERS.map((p) => ({ id: p, name: `${SEARCH_NAME[p]} · ${t("Websuche")}`, state: localAi.search?.[p] ?? "none" })),
+    { id: "elevenlabs", name: "ElevenLabs", state: localAi.eleven ?? "none" },
+  ].filter((x) => x.state !== "none");
 
   const sync = async () => {
     setBusy(true);
@@ -71,6 +97,16 @@ export default function CloudPage() {
               : t("Nicht angemeldet")}
           </span>
         </div>
+        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+          <span className="small muted">{t("Dienst")}</span>
+          <span className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <span className="small" role="status">
+              {!configured ? t("Nicht eingerichtet") : checking ? t("Wird geprüft …") : health?.ok ? t("Erreichbar") : health ? t("Nicht erreichbar") : t("Noch nicht geprüft")}
+            </span>
+            {configured && <Button size="sm" variant="ghost" busy={checking} onClick={() => void checkHealth()}>{t("Prüfen")}</Button>}
+          </span>
+        </div>
+        {configured && health && !health.ok && <p className="tiny muted" style={{ margin: 0 }}>{health.message}</p>}
         {s?.cloud && waiting && <Banner kind="warn">{t("Eine Änderung wartet noch – sie wird gesendet, sobald die Cloud wieder erreichbar ist.")}</Banner>}
         {!s?.cloud && <p className="tiny muted" style={{ margin: 0 }}>{t("Anmelden geht auch bei ausgeschaltetem PC. Ohne Anmeldung bleibt alles auf diesem Gerät und am PC.")}</p>}
       </div>
@@ -103,6 +139,25 @@ export default function CloudPage() {
       <Card title={t("Was in der Cloud liegt")} icon={<Cloud size={18} />}>
         <p className="small" style={{ margin: 0 }}>{t("Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung und die Raum-Einstellung – schon im Browser verschlüsselt. Passwort und Schlüssel bleiben auf dem Gerät, der Dienst kann die Daten nicht lesen.")}</p>
         <p className="small" style={{ margin: "8px 0 0" }}>{t("Dazu kommen der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl – also welcher Anbieter zuerst antwortet. Auf dem Handy ist damit alles schon eingerichtet, bevor der PC verbunden ist. KI-Schlüssel und API-Schlüssel liegen nie im Konto.")}</p>
+      </Card>
+
+      <Card title={t("KI-Schlüssel bleiben auf diesem Gerät")} icon={<KeyRound size={18} />}>
+        <p className="small" style={{ margin: 0 }}>{t("KI-Schlüssel und API-Schlüssel liegen verschlüsselt auf diesem Gerät – die am PC eingerichteten bleiben am PC. Anmelden, Abmelden, Kontowechsel und „Konto löschen“ ändern daran nichts. Ins Konto reist nur die KI-Auswahl, also welcher Anbieter zuerst antwortet – nie ein Schlüssel.")}</p>
+        {localKeys.length > 0 ? (
+          <div className="stack-sm" style={{ marginTop: 8 }}>
+            {localKeys.map((k) => (
+              <div key={k.id} className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+                <span className="small">{k.name}</span>
+                <span className={`badge ${k.state === "ready" ? "ok" : "warn"}`}>{k.state === "ready" ? t("Bereit") : t("Gesperrt")}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Noch kein Schlüssel auf diesem Gerät eingerichtet – in der KI-Verwaltung eintragen, dann bleibt er hier.")}</p>
+        )}
+        <div className="row" style={{ marginTop: 10 }}>
+          <Link to="/assistant" className="btn sm">{t("Zur KI-Verwaltung")}</Link>
+        </div>
       </Card>
 
       <AndroidAppCard />
