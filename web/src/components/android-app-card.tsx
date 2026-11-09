@@ -5,7 +5,7 @@ import { RefreshCw, Smartphone } from "lucide-react";
 import { Button, Card } from "./ui";
 import { t } from "../lib/i18n";
 
-const APK = "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/android-latest/jarvis-android.apk";
+export const APK = "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/android-latest/jarvis-android.apk";
 const LATEST = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/android/latest.json";
 
 interface Bridge { version(): string; versionCode(): number; checkForUpdates(): void; install(): void }

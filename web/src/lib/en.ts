@@ -6735,6 +6735,7 @@ export const en: Record<string, string> = {
   "Cloud": "Cloud",
   "Konto & Cloud": "Account & cloud",
   "Cloud-Dienst": "Cloud service",
+  "Cloud speichern": "Save in the cloud",
   "Dienst": "Service",
   "Erreichbar": "Reachable",
   "Wird geprüft …": "Checking …",

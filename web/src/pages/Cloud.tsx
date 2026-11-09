@@ -7,7 +7,7 @@ import { relTime } from "../lib/format";
 import { Banner, Button, Card } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
 import { AndroidAppCard } from "../components/android-app-card";
-import { cloudAccountConfigured, cloudApi, cloudHealth, pendingBlob, type CloudHealth } from "../lib/cloud-account";
+import { CLOUD_WEB, cloudAccountConfigured, cloudApi, cloudHealth, pendingBlob, type CloudHealth } from "../lib/cloud-account";
 import { accountBackup, flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
 import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi } from "../lib/free-ai-local";
 
@@ -103,6 +103,10 @@ export default function CloudPage() {
         <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
           <span className="small muted">{t("Cloud-Dienst")}</span>
           <span className="mono tiny" title={endpoint ?? undefined}>{configured ? endpoint : t("Nicht eingerichtet")}</span>
+        </div>
+        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+          <span className="small muted">Cloudflare</span>
+          <a className="small" href={CLOUD_WEB} target="_blank" rel="noreferrer">{t("Cloud speichern")}</a>
         </div>
         <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
           <span className="small muted">{t("Status")}</span>

@@ -27,6 +27,9 @@ function set(key: string, value: string | null) {
 /** Public address of the cloud service this project ships with (not a secret); `VITE_CLOUD_API` overrides it. */
 const DEFAULT_API = import.meta.env.PROD ? "https://site-76a134eb24cf4cf69195c678bc381d2b.freebuff.page" : "";
 
+/** Public Cloudflare-hosted web app for the cloud page; the API endpoint itself is cloudApi(). */
+export const CLOUD_WEB = "https://site-cdc5204c9fe2498682e17155d0a01ac5.freebuff.page/#/cloud";
+
 export function cloudApi(): string | null {
   const raw = (String(import.meta.env.VITE_CLOUD_API ?? "").trim() || DEFAULT_API).replace(/\/+$/, "");
   if (!raw) return null;
