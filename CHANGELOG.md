@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.29.1 – 2026-11-09
+### Verbessert
+- Gibt jedem Website-Widget die Optik des In-Game-Overlays.
+
 ## 3.29.0 – 2026-11-09
 ### Behoben
 - Nexus-Cloud: Der Worker liefert jetzt die gebaute Website (statt der ungebuildeten `index.html` mit `/src/main.tsx`, die nur eine leere Seite ergab) und beantwortet alle `/api/account/*`-Routen
