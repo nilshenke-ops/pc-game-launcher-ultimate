@@ -1,24 +1,26 @@
 {
-  "version": "3.28.1",
+  "version": "3.29.0",
   "date": "2026-11-09",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.1/PCGameLauncherCompanion.exe",
-  "size": 95036397,
-  "sha256": "52301c2d3ebad22775f7fd148f9348463a452fb764ea16a03da40243d4bc078f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion.exe",
+  "size": 95036952,
+  "sha256": "2c355f7d39867db884d6697c7248712da45707d43c41fbe0d717d5675f82d4ed",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.28.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.1/PCGameLauncherCompanion-3.28.1-win-x64.zip",
-    "size": 89310733,
-    "sha256": "d14fb63ef0c62009fca9ec00c8b5a4a9efe47d87bb8a51a2a462b142881bad06"
+    "fileName": "PCGameLauncherCompanion-3.29.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion-3.29.0-win-x64.zip",
+    "size": 89311261,
+    "sha256": "f20d82a6ad05eccf4df6ffbf9d9f3e23deb22c761c8f39af4d49bddec567b5ea"
   },
   "notes": "",
   "changes": {
     "neu": [],
     "verbessert": [],
     "behoben": [
-      "Die Anleitung für den eigenen Cloudflare-Dienst nennt jetzt die richtige Datenbank-Bindung „DB“ und den nötigen Eintrag „ALLOWED_ORIGINS“, damit der Worker die Adresse der App durchlässt"
+      "Nexus-Cloud: Der Worker liefert jetzt die gebaute Website (statt der ungebuildeten `index.html` mit `/src/main.tsx`, die nur eine leere Seite ergab) und beantwortet alle `/api/account/*`-Routen",
+      "Fehlerantworten tragen CORS-Header; dadurch erscheint der echte Grund statt „Der Cloud-Dienst antwortet nicht“",
+      "Health-Check prüft die D1-Datenbank mit und nennt eine fehlende Bindung ausdrücklich"
     ]
   },
-  "signature": "q54xlVb6yzxnk96Ax/xDxoWPkeTxGc2rcdJGW68LBkJdbPZkEmMeJUQWHglVZvoCDngkOGCk1rGx+LTOy46d7g=="
+  "signature": "MI5PpLCq1SUsTSs/EvaU72IavVIv4dxFN90/6ZsU2LDh039H00HMJTRS8DuXCMIFDMl+cWhQPxEAAEd+f8PMnQ=="
 }

@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.29.0",
+    "date": "2026-11-09",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion.exe",
+    "size": 95036952,
+    "sha256": "2c355f7d39867db884d6697c7248712da45707d43c41fbe0d717d5675f82d4ed",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.29.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion-3.29.0-win-x64.zip",
+      "size": 89311261,
+      "sha256": "f20d82a6ad05eccf4df6ffbf9d9f3e23deb22c761c8f39af4d49bddec567b5ea"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Nexus-Cloud: Der Worker liefert jetzt die gebaute Website (statt der ungebuildeten `index.html` mit `/src/main.tsx`, die nur eine leere Seite ergab) und beantwortet alle `/api/account/*`-Routen",
+        "Fehlerantworten tragen CORS-Header; dadurch erscheint der echte Grund statt „Der Cloud-Dienst antwortet nicht“",
+        "Health-Check prüft die D1-Datenbank mit und nennt eine fehlende Bindung ausdrücklich"
+      ]
+    },
+    "signature": "MI5PpLCq1SUsTSs/EvaU72IavVIv4dxFN90/6ZsU2LDh039H00HMJTRS8DuXCMIFDMl+cWhQPxEAAEd+f8PMnQ=="
+  },
+  {
     "version": "3.28.1",
     "date": "2026-11-09",
     "channel": "stable",
@@ -1383,36 +1409,5 @@
       ]
     },
     "signature": "fSGXko+QOP85jup8hDFWek/3MT1HQ0JD6R1x1t49qDr4Jf1OJO3veHgQX3Z+n3jO9UfugQ465gh4gwBVywgb9g=="
-  },
-  {
-    "version": "2.90.0",
-    "date": "2026-11-03",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.90.0/PCGameLauncherCompanion.exe",
-    "size": 88422508,
-    "sha256": "e3cc9a32065821b1462ca6257d4b4ed415b6edc96ebc8e34e4dbba9ed83887fb",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-2.90.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v2.90.0/PCGameLauncherCompanion-2.90.0-win-x64.zip",
-      "size": 82918670,
-      "sha256": "7be161b051b78a3f274c3ffe977f0e42d4d41e21a652c515791e5bd33022758f"
-    },
-    "notes": "Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones · Aussehen der JARVIS-Insel (am PC, unter „Einrichten“ bzw. Overlay & Aufnahme): sieben Vorlagen (Standard, Neon Gaming, Minimal Dunkel, Liquid Glass, Blau, Lila, Schwarz-Weiß) mit Vorschau – erst „Übernehmen“ ändert die echte Insel; dazu Augenfarbe und Augengröße; „Standard“ ist das bisherige Aussehen · Insel-Fenster zeigt eine Karte „PC-Werte“ (CPU, RAM, GPU) – gemessen nur, solange das Fenster offen ist; nicht messbare Werte stehen als „n. v.“, abgeschaltete als „aus“",
-    "changes": {
-      "neu": [
-        "Status-Pille für Handy und iPad (Einstellungen → Design & Layout, standardmäßig aus, gilt nur für dieses Gerät): zeigt unter der oberen Leiste die Verbindung, ein laufendes Spiel und wartende Änderungen; antippen öffnet Details. Eine eigene Anzeige in der Seite – keine echte Dynamic Island des iPhones",
-        "Aussehen der JARVIS-Insel (am PC, unter „Einrichten“ bzw. Overlay & Aufnahme): sieben Vorlagen (Standard, Neon Gaming, Minimal Dunkel, Liquid Glass, Blau, Lila, Schwarz-Weiß) mit Vorschau – erst „Übernehmen“ ändert die echte Insel; dazu Augenfarbe und Augengröße; „Standard“ ist das bisherige Aussehen",
-        "Insel-Fenster zeigt eine Karte „PC-Werte“ (CPU, RAM, GPU) – gemessen nur, solange das Fenster offen ist; nicht messbare Werte stehen als „n. v.“, abgeschaltete als „aus“"
-      ],
-      "verbessert": [
-        "Dialoge auf Handys im Querformat und bei offener Bildschirmtastatur: Titel, Schließen-Knopf und Knöpfe bleiben im Bild, der Inhalt scrollt (die Höhe richtet sich nach dem sichtbaren Bereich)",
-        "Sortierung „Zuletzt“ der Spielebibliothek: bei gleichem Zeitpunkt nach Name",
-        "Insel-Fenster am PC ist etwas höher (520 statt 470 px), damit die neue Karte Platz hat",
-        "Neue Tests: Wiederherstellungspunkt im Browser, Sortierung/Favorit nach dem Neuladen, Dialoge bei kleiner Höhe, Status-Pille, Insel-Aussehen"
-      ],
-      "behoben": []
-    },
-    "signature": "BAqJFSPGqFfF+5VAzk4FSyTP/YwRZvomYmZKejWwIoU5rnOAPKrmNKoFIRFaa4hQ1L7+deX7dEOunFWD5XzE4w=="
   }
 ]
