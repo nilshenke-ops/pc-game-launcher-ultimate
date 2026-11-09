@@ -91,17 +91,20 @@ function WishEditor({ wish, onClose, allCats = [] }: { wish: Wish; onClose: () =
   );
 }
 
-/** "Just type the name": with the PC the game is found right away (Steam and Microsoft Store); without the PC the name
- * is kept and the PC finds the game at the next check. */
-function QuickAdd({ data, disabled, onQueued }: { data: DealData; disabled: boolean; onQueued?: (id: string, title: string) => void }) {
+/** "Just type the name": with the PC the game is found right away (Steam and Microsoft Store); without the PC the name is
+ * saved here and the price is looked up on this device at the same moment (Xbox at the Microsoft Store, Steam in the price
+ * list next to the website) – so the phone shows the discount without the PC. */
+function QuickAdd({ data, disabled, onAdded }: { data: DealData; disabled: boolean; onAdded?: (id: string, title: string) => Promise<string> }) {
   const conn = useConn();
   const online = conn.auth === "ok" && conn.phase === "online";
   const [title, setTitle] = useState("");
+  const [note, setNote] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const add = async () => {
     const name = title.trim();
     if (name.length < 2) return;
     setBusy(true);
+    setNote(null);
     try {
       if (online) {
         const w = await client.call<Wish>("deals.addByName", { title: name, targetCents: null });
@@ -110,7 +113,8 @@ function QuickAdd({ data, disabled, onQueued }: { data: DealData; disabled: bool
         // The outbox confirms with its own "saved – sent when the PC is connected" note.
         const id = clientId("wish");
         await client.call("deals.save", { id, title: name, steamAppId: null, targetCents: null });
-        onQueued?.(id, name);
+        // The button stays busy until the phone has asked the stores, so the answer belongs to this add.
+        if (onAdded) setNote(await onAdded(id, name));
       }
       setTitle("");
     } catch (e) { toast((e as Error).message, "error"); }
@@ -122,7 +126,8 @@ function QuickAdd({ data, disabled, onQueued }: { data: DealData; disabled: bool
         <input className="input" value={title} maxLength={80} placeholder={t("Spielname, z. B. Hades II")} aria-label={t("Name des Spiels")} onChange={(e) => setTitle(e.target.value)} />
         <Button type="submit" variant="primary" icon={<Plus size={16} />} busy={busy} disabled={disabled || title.trim().length < 2}>{t("Hinzufügen")}</Button>
       </div>
-      {(!data.enabled || !online) && <p className="tiny muted" style={{ margin: 0 }}>{!data.enabled ? t("Die Preisabfrage ist aus – der Name wird gespeichert, gesucht wird nach dem Einschalten.") : t("Ohne PC wird der Name vorgemerkt; der PC sucht das Spiel beim Verbinden.")}</p>}
+      {note ? <p className="tiny" style={{ margin: 0 }}>{note}</p>
+        : (!data.enabled || !online) && <p className="tiny muted" style={{ margin: 0 }}>{!data.enabled ? t("Die Preisabfrage ist aus – der Name wird gespeichert, gesucht wird nach dem Einschalten.") : t("Ohne PC prüft das Handy den Preis gleich selbst: Xbox im Microsoft Store, Steam in der Preisliste der Website. Findet es das Spiel nicht, sucht der PC beim Verbinden.")}</p>}
     </form>
   );
 }
@@ -466,6 +471,15 @@ export default function Deals() {
   useEffect(() => {
     for (const k of missingKey) if (!(k in catalog)) void loadCatalogPart(k).then((p) => setCatalog((c) => ({ ...c, [k]: p })));
   }, [missingKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  /** Reloads the Steam price lists on this device: the popular list, plus the catalog part of every entry that is not in it. */
+  const loadSteamPrices = async () => {
+    if (online || !raw) return;
+    const idx = (await loadSteamIndex(raw.country)) ?? steamIdx;
+    if (idx) setSteamIdx(idx);
+    const keys = [...new Set(raw.items.filter((w) => !(idx && lookup(idx, w))).map((w) => shard(w.title)))];
+    const loaded = await Promise.all(keys.map((k) => loadCatalogPart(k)));
+    if (keys.length) setCatalog((c) => { const next = { ...c }; keys.forEach((k, i) => { if (loaded[i]) next[k] = loaded[i]; }); return next; });
+  };
   const d = raw && { ...raw, items: raw.items.map((w) => withSteamList(withPhone(w, phone[w.id]), online ? null : steamIdx, catalog, !online)) };
   const msAllowed = !!raw?.enabled && raw.compareMicrosoft !== false;
   const checkFromPhone = async (only?: { id: string; title: string }[]) => {
@@ -481,6 +495,29 @@ export default function Deals() {
     }
     setChecking(null);
   };
+  /** Without the PC: look the typed name up on this device at once (Xbox at the Microsoft Store, Steam in the price list). */
+  const checkNameOnPhone = async (id: string, title: string) => {
+    const country = raw?.country ?? "de";
+    const found: string[] = [];
+    if (msAllowed) {
+      const r = await fetchMsPrice(title, country);
+      savePhonePrice(id, r);
+      setPhone(phonePrices());
+      if (!("error" in r)) found.push(`Xbox ${money(r.finalCents, r.currency)}`);
+    }
+    try {
+      const idx = steamIdx ?? (await loadSteamIndex(country));
+      if (idx && idx !== steamIdx) setSteamIdx(idx);
+      const hit = (idx && lookup(idx, { title })) || (await loadCatalogPart(title).then((p) => (p ? lookup(p, { title }) : null)));
+      if (hit?.finalCents != null) found.push(`Steam ${money(hit.finalCents, hit.currency)}`);
+    } catch { /* price list not reachable – the PC checks when it connects */ }
+    return found.length ? t("Geprüft: {p}", { p: found.join(" · ") }) : t("Kein Preis gefunden – der PC sucht das Spiel beim Verbinden.");
+  };
+  /** The phone button: Steam list first (one download), then Xbox one game at a time – both for the whole wish list. */
+  const [checkPrices, checkingPrices] = useAction(async () => {
+    await loadSteamPrices();
+    if (msAllowed) await checkFromPhone();
+  });
   const lastPhone = Math.max(0, ...Object.values(phone).map((v) => v.at));
   const configure = (p: { enabled?: boolean }) => client.call("deals.configure", p).then(() => saved(conn.auth === "ok"), (e: Error) => toast(e.message, "error"));
   const [f, setF] = useState<WishFilter>({});
@@ -500,11 +537,11 @@ export default function Deals() {
         {d && (
           <div className="stack">
             <SteamWishlistCard d={d} canManage={canManage} online={online} />
-            <QuickAdd data={d} disabled={!canManage} onQueued={(id, title) => { if (msAllowed) void checkFromPhone([{ id, title }]); }} />
-            {!online && msAllowed && d.items.length > 0 && (
+            <QuickAdd data={d} disabled={!canManage} onAdded={checkNameOnPhone} />
+            {!online && d.enabled && d.items.length > 0 && (
               <div className="deal-phone">
-                <span className="small">{checking ? t("Prüfe Xbox-Preise … {n}/{m}", { n: checking.done, m: checking.of }) : t("Ohne PC: Xbox-Preise prüft das Handy selbst beim Microsoft Store{x}. Steam-Preise kommen aus der Steam-Preisliste der Website{s}.", { x: lastPhone ? " (" + t("zuletzt {d}", { d: relTime(lastPhone) }) + ")" : "", s: steamIdx ? " (" + t("Stand {d}", { d: relTime(steamIdx.updatedAt) }) + ")" : "" })}</span>
-                <Button size="sm" icon={<RefreshCw size={15} />} busy={!!checking} onClick={() => void checkFromPhone()}>{t("Xbox-Preise prüfen")}</Button>
+                <span className="small">{checking ? t("Prüfe Preise … {n}/{m}", { n: checking.done, m: checking.of }) : msAllowed ? t("Ohne PC: Xbox-Preise prüft das Handy selbst beim Microsoft Store{x}. Steam-Preise kommen aus der Steam-Preisliste der Website{s}.", { x: lastPhone ? " (" + t("zuletzt {d}", { d: relTime(lastPhone) }) + ")" : "", s: steamIdx ? " (" + t("Stand {d}", { d: relTime(steamIdx.updatedAt) }) + ")" : "" }) : t("Steam-Preise kommen aus der Steam-Preisliste der Website{s}.", { s: steamIdx ? " (" + t("Stand {d}", { d: relTime(steamIdx.updatedAt) }) + ")" : "" })}</span>
+                <Button size="sm" icon={<RefreshCw size={15} />} busy={checkingPrices || !!checking} onClick={() => void checkPrices()}>{t("Preise prüfen")}</Button>
               </div>
             )}
             {!d.enabled && <Banner kind="info">{t("Die Preisabfrage ist aus – deshalb gibt es noch keine Preise.")} {canManage && <Button size="sm" variant="primary" onClick={() => configure({ enabled: true })}>{t("Einschalten")}</Button>}</Banner>}

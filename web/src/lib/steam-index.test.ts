@@ -41,4 +41,11 @@ describe("pictures and the full catalog", () => {
     await loadCatalogPart("Make Way", f); await loadCatalogPart("Minecraft", f);
     expect(urls).toEqual(["prices/apps/m.json"]);
   });
+  it("tries a part that could not be loaded again next time", async () => {
+    let calls = 0;
+    const flaky = (async () => { calls++; return calls === 1 ? { ok: false, json: async () => idx } : { ok: true, json: async () => idx }; }) as unknown as typeof fetch;
+    expect(await loadCatalogPart("Quake", flaky)).toBeNull();
+    expect((await loadCatalogPart("Quake", flaky))?.items.length).toBe(6);
+    expect(calls).toBe(2);
+  });
 });

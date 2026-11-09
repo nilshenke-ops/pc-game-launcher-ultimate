@@ -36,8 +36,13 @@ const parts = new Map<string, Promise<SteamIndex | null>>();
 /** Every game on Steam whose name starts like this one (one part of the daily catalog, loaded only when needed). */
 export function loadCatalogPart(name: string, fetcher: typeof fetch = fetch): Promise<SteamIndex | null> {
   const k = shard(name);
-  if (!parts.has(k)) parts.set(k, fetcher(`prices/apps/${k}.json`).then((r) => (r.ok ? (r.json() as Promise<SteamIndex>) : null)).catch(() => null));
-  return parts.get(k)!;
+  const known = parts.get(k);
+  if (known) return known;
+  const p = fetcher(`prices/apps/${k}.json`).then((r) => (r.ok ? (r.json() as Promise<SteamIndex>) : null)).catch(() => null);
+  parts.set(k, p);
+  // A part that could not be loaded is tried again next time – one failure should not stick for the whole session.
+  void p.then((d) => { if (!d && parts.get(k) === p) parts.delete(k); });
+  return p;
 }
 
 /** Price and picture for a wish-list entry: by Steam app id if known, otherwise by name (exact first, then with an edition name). */
