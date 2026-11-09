@@ -327,3 +327,148 @@ button.list-item:active { transform: translateX(1px) scale(0.998); }
 /* Leichte Darstellung: keine Dauerläufer, keine Scheine. */
 :root[data-lite="1"] .card::after { content: none; }
 :root[data-lite="1"] .eyebrow::before { box-shadow: none; }
+
+/* ================================================================== Overlay-Skin für alle Widgets (3.30)
+   Dieselbe Optik wie im In-Game-Overlay (.gb-*): ein 22-px-Glasfenster mit feiner Linie, tiefem weichem
+   Schatten und Licht von oben, eine 42-px-Kopfzeile mit Symbolkachel, 14-px-Knöpfe, Pill-Chips und
+   14-px-Felder. Die Schicht liegt über dem Widget-Raster (.dash) und damit über jedem Widget – auch über
+   Plugin-Widgets und allen, die später dazukommen. Raster, Größen und Funktionen bleiben unverändert. */
+
+.dash {
+  --gb-line: rgba(255, 255, 255, .1);
+  --gb-text: #f4f6fb;
+  --gb-dim: #a4abbd;
+  --gb-surface: rgba(20, 22, 34, .88);
+  --gb-head: rgba(16, 18, 28, .94);
+  /* Widgets sind kleine Overlay-Fenster: eigene dunkle Fläche, auch im hellen Theme. */
+  --text: var(--gb-text);
+  --muted: var(--gb-dim);
+  --border: var(--gb-line);
+  --border-strong: rgba(255, 255, 255, .16);
+  --surface-rgb: 20, 22, 34;
+  --surface-2: #191c2b;
+}
+
+/* Das Fenster ------------------------------------------------------------- */
+.dash > * > .card {
+  padding: 0 14px 16px;
+  border-radius: 22px;
+  border: 1px solid var(--gb-line);
+  background:
+    radial-gradient(120% 70% at 50% 0%, rgba(var(--primary-rgb), .1), transparent 62%),
+    linear-gradient(180deg, rgba(255, 255, 255, .055), transparent 38%),
+    var(--gb-surface);
+  box-shadow: 0 26px 60px -24px rgba(0, 0, 0, .8), inset 0 1px 0 rgba(255, 255, 255, .06);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  isolation: isolate;
+}
+.dash > * > .card:not(:has(> .card-head)) { padding-top: 16px; }
+.dash > * > .card.hero { border-color: rgba(var(--primary-rgb), .28); }
+.dash .card::after { content: none; } /* kein Lichtschein wie auf normalen Seitenkarten */
+@media (hover: hover) {
+  .dash > * > .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(var(--primary-rgb), .22);
+    box-shadow: 0 30px 66px -24px rgba(0, 0, 0, .85), inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 0 1px rgba(var(--primary-rgb), .1);
+  }
+}
+
+/* Kopfzeile wie .gb-panel-head ------------------------------------------- */
+.dash > * > .card > .card-head {
+  margin: 0 -14px 12px;
+  padding: 0 12px 0 14px;
+  min-height: 42px;
+  gap: 10px;
+  border-bottom: 1px solid var(--gb-line);
+  border-radius: 21px 21px 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .04), transparent);
+}
+.dash .card-head h2, .dash .card-head h3 { gap: 10px; font-size: 13px; font-weight: 600; letter-spacing: .01em; }
+.dash .card-head h2 svg, .dash .card-head h3 svg {
+  width: 16px; height: 16px; padding: 5px; box-sizing: content-box;
+  border-radius: 9px; background: rgba(var(--primary-rgb), .17); color: var(--primary);
+  filter: none;
+}
+.dash .card-head .meta { color: var(--gb-dim); font-size: 11px; }
+
+/* Knöpfe wie .gb-btn ----------------------------------------------------- */
+:root .dash .btn {
+  --btn-bg: rgba(255, 255, 255, .07);
+  --btn-fg: var(--gb-text);
+  --btn-border: var(--gb-line);
+  min-height: 38px; padding: 0 14px; border-radius: 14px; font-weight: 600; font-size: .85rem;
+}
+.dash .btn.sm { min-height: 30px; padding: 0 11px; border-radius: 11px; font-size: .78rem; }
+:root .dash .btn.primary { --btn-bg: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 70%, #fff 0%)); --btn-fg: var(--on-primary, #0b0b0f); --btn-border: transparent; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .25); }
+:root .dash .btn.danger { --btn-bg: linear-gradient(135deg, #f43f5e, #e11d48); --btn-fg: #fff; --btn-border: transparent; }
+:root[data-mode="light"] .dash .btn.danger { --btn-fg: #fff; }
+:root .dash .btn.ghost { --btn-bg: transparent; --btn-border: transparent; }
+:root[data-mode="light"] .dash .btn.ghost { --btn-bg: transparent; }
+@media (hover: hover) {
+  :root .dash .btn:not(:disabled):hover { transform: translateY(-1px); }
+  :root .dash .btn:not(.primary):not(.danger):not(.ghost):not(:disabled):hover { background: rgba(255, 255, 255, .12); border-color: rgba(255, 255, 255, .18); }
+  :root .dash .btn.ghost:not(:disabled):hover { background: rgba(255, 255, 255, .07); }
+}
+:root .dash .btn:not(:disabled):active { transform: scale(.96); }
+.dash > * > .card > .card-head .btn { min-height: 28px; padding: 0 10px; border-radius: 999px; font-size: .75rem; }
+
+/* Chips wie .gb-chip ----------------------------------------------------- */
+.dash .chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  height: 28px; padding: 0 12px; border-radius: 999px;
+  border: 1px solid var(--gb-line); background: rgba(255, 255, 255, .06);
+  color: var(--gb-text); font-size: 12px;
+}
+@media (hover: hover) { .dash .chip:not(:disabled):hover { background: rgba(var(--primary-rgb), .18); border-color: rgba(var(--primary-rgb), .5); transform: none; } }
+.dash .chip:active { transform: scale(.94); }
+.dash .chip.on { background: rgba(var(--primary-rgb), .24); border-color: rgba(var(--primary-rgb), .65); color: var(--gb-text); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06); }
+
+/* Felder wie .gb-search -------------------------------------------------- */
+.dash .input, .dash select.input, .dash textarea.input {
+  min-height: 38px; border-radius: 14px;
+  background: rgba(255, 255, 255, .06); border: 1px solid var(--gb-line); color: var(--gb-text);
+}
+.dash .input::placeholder, .dash textarea.input::placeholder { color: var(--gb-dim); }
+.dash .input:focus, .dash select.input:focus, .dash textarea.input:focus {
+  border-color: rgba(var(--primary-rgb), .6);
+  box-shadow: 0 0 0 3px rgba(var(--primary-rgb), .18);
+  background: rgba(255, 255, 255, .08);
+}
+.dash .home-notes { min-height: 88px; resize: vertical; }
+
+/* Listenzeilen wie .gb-menu-item ---------------------------------------- */
+.dash .list-item { border-top: 1px solid var(--gb-line); border-radius: 12px; padding: 8px 6px; }
+.dash .list-item:first-child { border-top: 0; }
+.dash .list-item .sub { color: var(--gb-dim); }
+@media (hover: hover) { .dash button.list-item:hover { background: rgba(255, 255, 255, .05); transform: none; } }
+.dash .list-item .thumb { border-radius: 10px; }
+
+/* Kennzahlen, Balken, Kacheln, Zähler ----------------------------------- */
+.dash .stat { padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .05); border: 1px solid var(--gb-line); }
+.dash .stat .v { font-size: 1.45rem; font-variant-numeric: tabular-nums; }
+.dash .stat .k { color: var(--gb-dim); }
+:root .dash .meter, :root .dash .progress-bar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, .08); box-shadow: none; }
+.dash .home-tile {
+  border-radius: 16px; border: 1px solid var(--gb-line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, .06), transparent 60%), var(--gb-surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+}
+.dash .home-tile-icon { width: 34px; height: 34px; border-radius: 10px; background: rgba(var(--primary-rgb), .17); color: var(--primary); }
+.dash .home-tile-label { font-weight: 600; text-shadow: none; }
+.dash .home-time { font-size: 1.7rem; font-weight: 700; letter-spacing: .02em; }
+.dash .counter-row { grid-template-columns: 1fr 38px 48px 38px; gap: 6px; }
+.dash .counter-btn { height: 38px; border-radius: 12px; background: rgba(255, 255, 255, .07); border: 1px solid var(--gb-line); color: var(--gb-text); }
+.dash .counter-btn.plus { background: rgba(var(--primary-rgb), .18); border-color: rgba(var(--primary-rgb), .55); }
+@media (hover: hover) { .dash .counter-btn:hover { background: rgba(255, 255, 255, .12); } }
+.dash .counter-value { font-variant-numeric: tabular-nums; }
+.dash .skeleton { border-radius: 14px; }
+
+/* Bearbeiten-Modus wie das Widget-Menü ---------------------------------- */
+.dash .widget-edit { border-radius: 22px; border: 1.5px dashed rgba(var(--primary-rgb), .55); background: var(--gb-head); backdrop-filter: blur(8px); }
+.dash .widget-edit b { font-size: 13px; }
+
+/* Weniger Bewegung: die Widgets bleiben stehen, wie das Overlay. */
+:root[data-motion="reduce"] .dash > * > .card:hover,
+:root[data-motion="reduce"] .dash .chip:active,
+:root[data-motion="reduce"] .dash .btn:not(:disabled):active { transform: none !important; }
