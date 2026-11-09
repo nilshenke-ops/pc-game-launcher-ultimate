@@ -3283,3 +3283,32 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 .m-track-cover { width: min(160px, 42vw); aspect-ratio: 1 / 1; height: auto; }
 .m-track-cover .j-img { width: 100%; height: 100%; object-fit: cover; }
 @media (max-width: 520px) { .m-cover.big, .m-track-cover { width: 100%; max-width: 220px; } }
+
+/* ================================================================== Soundtracks as a cover grid (3.32)
+   Square covers with title, game and one pill per music service – the pills open the service directly. */
+.card-art-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-top: 14px; }
+.card-art-cell { min-width: 0; }
+.st-card { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 10px; border-radius: 18px; border: 1px solid var(--border);
+  background: rgba(var(--surface-rgb), .55); transition: transform .3s var(--spr-soft), border-color .2s ease; }
+@media (hover: hover) { .st-card:hover { transform: translateY(-3px); border-color: rgba(var(--primary-rgb), .45); } }
+.st-card.on { border-color: rgba(var(--primary-rgb), .38); }
+.st-open { display: flex; flex-direction: column; gap: 7px; padding: 0; border: 0; background: none; color: inherit; text-align: left; cursor: pointer; min-width: 0; }
+.st-art { position: relative; display: grid; place-items: center; width: 100%; aspect-ratio: 1 / 1; border-radius: 13px; overflow: hidden;
+  background: rgba(var(--primary-rgb), .18); color: var(--primary); }
+.st-art .j-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.st-star { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%;
+  background: rgba(0, 0, 0, .55); color: #fde047; font-size: 13px; }
+.st-title { font-weight: 650; font-size: .92rem; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.st-game { font-size: .74rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-services { display: flex; flex-wrap: wrap; gap: 4px; margin-top: auto; }
+.st-svc { --svc: var(--primary); display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--svc) 48%, transparent); background: color-mix(in srgb, var(--svc) 15%, transparent);
+  color: color-mix(in srgb, var(--svc) 78%, var(--text)); font-size: .7rem; font-weight: 650; text-decoration: none; white-space: nowrap; }
+@media (hover: hover) { .st-svc:hover { background: color-mix(in srgb, var(--svc) 28%, transparent); } }
+.st-svc[data-s="Spotify"] { --svc: #1db954; }
+.st-svc[data-s="Apple Music"] { --svc: #fa2d48; }
+.st-svc[data-s="YouTube"] { --svc: #ff0033; }
+.st-svc[data-s="SoundCloud"] { --svc: #ff5500; }
+.st-svc[data-s="Bandcamp"] { --svc: #629aa9; }
+@media (max-width: 560px) { .card-art-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .st-card { padding: 8px; border-radius: 16px; } }
+@media (max-width: 350px) { .card-art-grid { grid-template-columns: 1fr; } }

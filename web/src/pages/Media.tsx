@@ -7,14 +7,14 @@ import { useSearchParams } from "react-router-dom";
 import { BookHeart, ExternalLink, Film, Images, Music2, Play, SortAsc } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
-import { bytes } from "../lib/format";
+import { bytes, gradientFor } from "../lib/format";
 import { newId, type Entry } from "../lib/journal";
 import type { Data } from "../lib/collections";
 import { CLIPMARK, TRACK } from "../lib/collection-schemas";
 import { fmtTime, linkAt, musicService, parseTime } from "../lib/media";
 import { readCapture } from "../lib/captures";
 import { CollectionView } from "../components/collection-view";
-import { JImage, SyncBadge, trySave } from "../components/journal-ui";
+import { JImage, SyncBadge, gameLabel, trySave, useGames } from "../components/journal-ui";
 import { Banner, Button, Field, Meter, PageHead } from "../components/ui";
 import { Museum } from "../components/media-museum";
 import { MemoryBook } from "../components/media-book";
@@ -27,6 +27,7 @@ export default function MediaPage() {
   const [params, setParams] = useSearchParams();
   const tab = (TABS.includes(params.get("tab") as Tab) ? params.get("tab") : "museum") as Tab;
   const focus = params.get("id");
+  const games = useGames();
   return (
     <>
       <PageHead eyebrow={t("Spielbegleiter")} title={t("Medien")} text={t("Fotomuseum, Erinnerungsbuch, Screenshots sortieren, Clip-Momente und Soundtracks – auf diesem Gerät gespeichert, auch ohne PC.")} actions={<SyncBadge />} />
@@ -42,7 +43,7 @@ export default function MediaPage() {
           detail={(e) => <ClipTools e={e} />} />}
         {tab === "music" && <CollectionView key="s" schema={TRACK} icon={<Music2 size={18} />} focus={focus}
           intro={t("Lieblingsstücke aus Spielen mit Links zu offiziellen Musikdiensten. Es gibt keinen eingebauten Player: Abgespielt wird beim jeweiligen Dienst, nichts wird heruntergeladen.")}
-          cardExtra={(e) => <TrackCard e={e} />}
+          gridCard={(e, open) => <SoundtrackCard e={e} open={open} games={games} />}
           detail={(e) => <TrackTools e={e} />} />}
       </div>
     </>
@@ -128,13 +129,30 @@ function ClipTools({ e }: { e: Entry<Data> }) {
 
 const trackLinks = (e: Entry<Data>) => ((e.data.links as Data[]) ?? []).map((l) => String(l.url ?? "")).filter(Boolean);
 
-function TrackCard({ e }: { e: Entry<Data> }) {
-  const services = [...new Set(trackLinks(e).map((u) => musicService(u) ?? t("Website")))];
+function SoundtrackCard({ e, open, games }: { e: Entry<Data>; open: () => void; games: { id: string; name: string }[] }) {
+  const title = String(e.data.title ?? "");
+  const links = trackLinks(e);
+  const game = gameLabel((e.data.game as object) ?? {}, games);
+  const artist = String(e.data.artist ?? "");
   return (
-    <span className="row nowrap" style={{ gap: 8, width: "100%" }}>
-      {!!e.data.cover && <span className="m-cover"><JImage id={String(e.data.cover)} /></span>}
-      {services.length > 0 && <span className="row" style={{ gap: 4 }}>{services.map((s) => <span key={s} className="badge">{s}</span>)}</span>}
-    </span>
+    <div className={`st-card${e.data.favorite ? " on" : ""}`}>
+      <button type="button" className="st-open" onClick={open} aria-label={title}>
+        <span className="st-art" style={e.data.cover ? undefined : { background: gradientFor(title) }}>
+          {e.data.cover ? <JImage id={String(e.data.cover)} alt={title} /> : <Music2 size={30} aria-hidden />}
+          {!!e.data.favorite && <span className="st-star" aria-hidden>★</span>}
+        </span>
+        <span className="st-title">{title}</span>
+        <span className="st-game">{game || artist || t("Ohne Spiel")}</span>
+      </button>
+      {links.length > 0 && (
+        <div className="st-services">
+          {links.map((u, i) => {
+            const name = musicService(u) ?? t("Website");
+            return <a key={i} className="st-svc" data-s={name} href={u} target="_blank" rel="noopener noreferrer" title={u}>{name}</a>;
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

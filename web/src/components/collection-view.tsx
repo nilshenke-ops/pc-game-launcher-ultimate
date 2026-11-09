@@ -18,12 +18,14 @@ type Games = { id: string; name: string }[];
 const fieldLabel = (f: FieldDef) => t(f.label);
 export const errText = (e: FieldError) => t(e.message, { ...e.vars, f: e.vars?.f ? t(String(e.vars.f)) : "" });
 
-export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, editorExtra }: {
+export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, editorExtra, gridCard }: {
   schema: Schema; icon: ReactNode; intro?: ReactNode; focus?: string | null;
   detail?: (e: Entry<Data>, save: (d: Data) => void) => ReactNode;
   cardExtra?: (e: Entry<Data>) => ReactNode;
   /** Feature-specific inputs in the form (e.g. choosing a PC file for a hidden field). */
   editorExtra?: (d: Data, set: (k: string, v: unknown) => void) => ReactNode;
+  /** Replaces the card grid (e.g. covers with direct buttons); search, filters, dialog and editor stay the same. */
+  gridCard?: (e: Entry<Data>, open: () => void) => ReactNode;
 }) {
   const list = useJournal<Data>(schema.kind);
   const games = useGames();
@@ -106,6 +108,8 @@ export function CollectionView({ schema, icon, intro, focus, detail, cardExtra, 
             ))}</tbody>
           </table>
         </div>
+      ) : gridCard ? (
+        <div className="card-art-grid">{shown.map((e) => <div key={e.id} className="card-art-cell">{gridCard(e, () => setOpen(e.id))}</div>)}</div>
       ) : (
         <div className="grid-3">
           {shown.map((e) => (
