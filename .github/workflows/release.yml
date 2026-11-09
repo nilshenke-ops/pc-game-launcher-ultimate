@@ -208,10 +208,12 @@ jobs:
         if: env.RELEASE == 'true' && env.SIGNED == '1'
         working-directory: main
         run: |
-          for i in $(seq 1 30); do
+          # GitHub Pages caches the manifest for a while and ignores the query string; give the CDN up to 20 minutes
+          # so a slow cache does not turn a correctly published release into a red run.
+          for i in $(seq 1 40); do
             if curl -fsS "$SITE/download/update.json?t=$(date +%s)" -o /tmp/live-update.json && \
                jq -e --arg v "$V" '.version == $v and .signature != null' /tmp/live-update.json >/dev/null; then break; fi
-            sleep 20
+            sleep 30
           done
           jq -e --arg v "$V" '.version == $v and .signature != null' /tmp/live-update.json >/dev/null
           dotnet run --project companion/src/Companion.Headless -- --check-update "$SITE/download/update.json" --assume-version 0.0.1 --download
