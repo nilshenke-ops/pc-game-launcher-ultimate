@@ -138,7 +138,8 @@ function SoundtrackCard({ e, open, games }: { e: Entry<Data>; open: () => void; 
     <div className={`st-card${e.data.favorite ? " on" : ""}`}>
       <button type="button" className="st-open" onClick={open} aria-label={title}>
         <span className="st-art" style={e.data.cover ? undefined : { background: gradientFor(title) }}>
-          {e.data.cover ? <JImage id={String(e.data.cover)} alt={title} /> : <Music2 size={30} aria-hidden />}
+          {e.data.cover ? <JImage id={String(e.data.cover)} alt={title} />
+            : <span className="st-art-ini" aria-hidden>{title.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase()}</span>}
           {!!e.data.favorite && <span className="st-star" aria-hidden>★</span>}
         </span>
         <span className="st-title">{title}</span>

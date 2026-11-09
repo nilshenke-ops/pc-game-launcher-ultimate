@@ -3312,3 +3312,5 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 .st-svc[data-s="Bandcamp"] { --svc: #629aa9; }
 @media (max-width: 560px) { .card-art-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; } .st-card { padding: 8px; border-radius: 16px; } }
 @media (max-width: 350px) { .card-art-grid { grid-template-columns: 1fr; } }
+.st-art-ini { font-size: clamp(1.6rem, 14cqw, 2.6rem); font-weight: 800; letter-spacing: .05em; color: rgba(255, 255, 255, .92); text-shadow: 0 2px 10px rgba(0, 0, 0, .35); }
+.st-art { container-type: inline-size; }
