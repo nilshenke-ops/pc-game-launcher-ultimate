@@ -434,7 +434,7 @@ export default function Dashboard() {
         {shownWidgets.map((w, i) => {
           const meta = metaFor(w.id);
           if (w.id === "download") return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><DownloadCard compact />{edit && <EditOverlay />}</div>;
-          if (meta.bare) return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><div style={{ maxWidth: 720, marginInline: "auto" }}>{meta.render()}</div>{edit && <EditOverlay />}</div>;
+          if (meta.bare) return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><div className="cw-frame" style={{ maxWidth: 720, marginInline: "auto" }}>{meta.render()}</div>{edit && <EditOverlay />}</div>;
           return (
             <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}>
               <Card title={meta.title()} icon={meta.icon} className={w.id === "status" ? "hero" : ""} style={{ height: "100%" }}
