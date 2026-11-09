@@ -6808,7 +6808,7 @@ export const en: Record<string, string> = {
   "Standard wiederherstellen": "Restore default",
   "Eigenen Cloudflare-Dienst einrichten": "Set up your own Cloudflare service",
   "1. Im Cloudflare-Dashboard eine D1-Datenbank anlegen.": "1. Create a D1 database in the Cloudflare dashboard.",
-  "2. Den Ordner cloud-account-worker als Worker veröffentlichen und die Datenbank als Bindung CLOUD_DB eintragen.": "2. Publish the cloud-account-worker folder as a Worker and bind the database as CLOUD_DB.",
+  "2. Den Ordner cloud-account-worker als Worker veröffentlichen, die Datenbank als Bindung DB eintragen und ALLOWED_ORIGINS auf * setzen.": "2. Publish the cloud-account-worker folder as a Worker, bind the database as DB and set ALLOWED_ORIGINS to *.",
   "3. Die Adresse des Workers hier eintragen, speichern und auf Handy und PC mit demselben Konto anmelden.": "3. Enter the Worker address here, save, and sign in on phone and PC with the same account.",
   "Der API-Schlüssel bleibt im Worker – Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht. Dein Schlüssel wird nie an diese App geschickt.": "The API key stays in the Worker – Cloudflare does not allow direct database access from the browser. Your key is never sent to this app.",
   "Worker-Code auf GitHub": "Worker code on GitHub",

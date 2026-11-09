@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.28.1 – 2026-11-09
+### Behoben
+- Die Anleitung für den eigenen Cloudflare-Dienst nennt jetzt die richtige Datenbank-Bindung „DB“ und den nötigen Eintrag „ALLOWED_ORIGINS“, damit der Worker die Adresse der App durchlässt
+
 ## 3.28.0 – 2026-11-09
 ### Neu
 - Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC

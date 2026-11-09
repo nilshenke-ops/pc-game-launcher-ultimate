@@ -159,7 +159,7 @@ export default function CloudPage() {
               <summary className="small">{t("Eigenen Cloudflare-Dienst einrichten")}</summary>
               <div className="stack-sm" style={{ marginTop: 8 }}>
                 <p className="tiny muted" style={{ margin: 0 }}>{t("1. Im Cloudflare-Dashboard eine D1-Datenbank anlegen.")}</p>
-                <p className="tiny muted" style={{ margin: 0 }}>{t("2. Den Ordner cloud-account-worker als Worker veröffentlichen und die Datenbank als Bindung CLOUD_DB eintragen.")}</p>
+                <p className="tiny muted" style={{ margin: 0 }}>{t("2. Den Ordner cloud-account-worker als Worker veröffentlichen, die Datenbank als Bindung DB eintragen und ALLOWED_ORIGINS auf * setzen.")}</p>
                 <p className="tiny muted" style={{ margin: 0 }}>{t("3. Die Adresse des Workers hier eintragen, speichern und auf Handy und PC mit demselben Konto anmelden.")}</p>
                 <p className="tiny muted" style={{ margin: 0 }}>{t("Der API-Schlüssel bleibt im Worker – Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht. Dein Schlüssel wird nie an diese App geschickt.")}</p>
                 <a className="small" href={CLOUD_WORKER_GUIDE} target="_blank" rel="noreferrer">{t("Worker-Code auf GitHub")}</a>
