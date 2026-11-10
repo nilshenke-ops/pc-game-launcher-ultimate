@@ -1,32 +1,27 @@
 {
-  "version": "3.43.0",
+  "version": "3.44.0",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.43.0/PCGameLauncherCompanion.exe",
-  "size": 95109695,
-  "sha256": "f13ccf773987814f210633e4be89ba58ba921e34499b29c6240afa9cad6a8b89",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.0/PCGameLauncherCompanion.exe",
+  "size": 95109958,
+  "sha256": "d8f4324f2c4dd93c5eca8743b6c86367fbc181f25567a2b33358b6c0aff8f033",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.43.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.43.0/PCGameLauncherCompanion-3.43.0-win-x64.zip",
-    "size": 89383395,
-    "sha256": "1d9b73b43d8ef0da51f964dbec60576422eebd25fa46538f9733fac9e78e45af"
+    "fileName": "PCGameLauncherCompanion-3.44.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.0/PCGameLauncherCompanion-3.44.0-win-x64.zip",
+    "size": 89383780,
+    "sha256": "0f18dc80fd39837c1aa79c770b76cf62d80449171c125b6108e8f37ee94b21b8"
   },
-  "notes": "Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein · Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter · Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung",
+  "notes": "Insel: Öffnen und Schließen sind jetzt länger und weicher (Feder ca. 0,65 s statt 0,35 s, Schließen ruhig ohne Überschwingen); der Inhalt blendet entsprechend gestaffelt ein und aus · Insel: Während sie sich bewegt, pausiert die Seite das Weichzeichnen ihrer Glasflächen – das war der teuerste Teil und ließ die Bewegung ruckeln (Messung im Testbrowser: 15 → 20 Bilder pro Sekunde, ohne Grafikkarte) · Holo-Ansicht: Karten gleiten länger (1 s) und ohne Filter-Neuberechnung je Bild, der Wechsel der Infos kommt ohne Weichzeichner",
   "changes": {
-    "neu": [
-      "Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein",
-      "Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter",
-      "Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung",
-      "Seitenleiste links: Logo, Einträge und Fußbereich kommen nacheinander, Symbole kippen und federn beim Darüberfahren, der aktive Eintrag springt auf, Beschriftung rückt ein",
-      "Untere Leiste (Handy): fährt ein, das gewählte Symbol federt; „Alle Bereiche“: Kacheln erscheinen nacheinander",
-      "Auswahlschalter gleiten, Schalter dehnen sich beim Drücken und federn, Filter-Chips und Knöpfe federn beim Tippen, Listen und Kacheln erscheinen gestaffelt",
-      "Automatische Tests prüfen Bewegung auf Handy, iPad und PC (auch bei „System: Bewegung reduzieren“)"
+    "neu": [],
+    "verbessert": [
+      "Insel: Öffnen und Schließen sind jetzt länger und weicher (Feder ca. 0,65 s statt 0,35 s, Schließen ruhig ohne Überschwingen); der Inhalt blendet entsprechend gestaffelt ein und aus",
+      "Insel: Während sie sich bewegt, pausiert die Seite das Weichzeichnen ihrer Glasflächen – das war der teuerste Teil und ließ die Bewegung ruckeln (Messung im Testbrowser: 15 → 20 Bilder pro Sekunde, ohne Grafikkarte)",
+      "Holo-Ansicht: Karten gleiten länger (1 s) und ohne Filter-Neuberechnung je Bild, der Wechsel der Infos kommt ohne Weichzeichner",
+      "Seitenleiste: die Markierung gleitet langsamer und weicher zum neuen Eintrag"
     ],
-    "verbessert": [],
-    "behoben": [
-      "**Keine Animationen am PC (Ursache gefunden):** Die App schaltete alle Bewegung ab, sobald Windows „Animationen anzeigen“ aus hat (viele Gaming-PCs) oder das iPad „Bewegung reduzieren“ meldet – dann standen Insel, Seitenleiste, Übergänge und alle Federn still. Jetzt zählt nur noch die Einstellung der App (Einstellungen → Design: „Animationen reduzieren“ / Leichte Darstellung); wer will, schaltet „Systemeinstellung ‚Bewegung reduzieren‘ beachten“ ein"
-    ]
+    "behoben": []
   },
-  "signature": "gg7mAZTMYAdMfnNyMz0tQ0kHlu8S7sae6hR65Qu/h/5eQ4bkXkEpya1zUw/eb1MxgQhrRWnjSbyUGqHHeqVhDg=="
+  "signature": "wVfv+jk+OJlmUwZBrmgbQqo/tYZZkp5ydMfbvJJvSFFw+VTuj/2ggibuOHo07nnPQX19+lGviVwwj2Cp3TrDDg=="
 }

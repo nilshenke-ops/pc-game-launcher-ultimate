@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.44.0",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.0/PCGameLauncherCompanion.exe",
+    "size": 95109958,
+    "sha256": "d8f4324f2c4dd93c5eca8743b6c86367fbc181f25567a2b33358b6c0aff8f033",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.44.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.0/PCGameLauncherCompanion-3.44.0-win-x64.zip",
+      "size": 89383780,
+      "sha256": "0f18dc80fd39837c1aa79c770b76cf62d80449171c125b6108e8f37ee94b21b8"
+    },
+    "notes": "Insel: Öffnen und Schließen sind jetzt länger und weicher (Feder ca. 0,65 s statt 0,35 s, Schließen ruhig ohne Überschwingen); der Inhalt blendet entsprechend gestaffelt ein und aus · Insel: Während sie sich bewegt, pausiert die Seite das Weichzeichnen ihrer Glasflächen – das war der teuerste Teil und ließ die Bewegung ruckeln (Messung im Testbrowser: 15 → 20 Bilder pro Sekunde, ohne Grafikkarte) · Holo-Ansicht: Karten gleiten länger (1 s) und ohne Filter-Neuberechnung je Bild, der Wechsel der Infos kommt ohne Weichzeichner",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Insel: Öffnen und Schließen sind jetzt länger und weicher (Feder ca. 0,65 s statt 0,35 s, Schließen ruhig ohne Überschwingen); der Inhalt blendet entsprechend gestaffelt ein und aus",
+        "Insel: Während sie sich bewegt, pausiert die Seite das Weichzeichnen ihrer Glasflächen – das war der teuerste Teil und ließ die Bewegung ruckeln (Messung im Testbrowser: 15 → 20 Bilder pro Sekunde, ohne Grafikkarte)",
+        "Holo-Ansicht: Karten gleiten länger (1 s) und ohne Filter-Neuberechnung je Bild, der Wechsel der Infos kommt ohne Weichzeichner",
+        "Seitenleiste: die Markierung gleitet langsamer und weicher zum neuen Eintrag"
+      ],
+      "behoben": []
+    },
+    "signature": "wVfv+jk+OJlmUwZBrmgbQqo/tYZZkp5ydMfbvJJvSFFw+VTuj/2ggibuOHo07nnPQX19+lGviVwwj2Cp3TrDDg=="
+  },
+  {
     "version": "3.43.0",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1324,33 +1351,5 @@
       "behoben": []
     },
     "signature": "aJDPsHR+z0SJdynqxaSlGxJquouo1kiCRV/hQyqW4qGuwNaZKQnf6Wfigc0piroS9W3ZjVYnWYxiEti8HJG8DQ=="
-  },
-  {
-    "version": "3.12.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion.exe",
-    "size": 94917152,
-    "sha256": "435718cbd5de7b1250b0f1fb876013ccdf7b295f98fd8e07f32781dbbbc69e47",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.12.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.12.0/PCGameLauncherCompanion-3.12.0-win-x64.zip",
-      "size": 89192027,
-      "sha256": "08b4d0d07027674a276b67996f249172430a4b170e176f2facd009d64623736e"
-    },
-    "notes": "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät) · Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt · Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
-    "changes": {
-      "neu": [
-        "Zwei weitere kostenlose KIs: Cerebras (sehr schnell) und Mistral (Tarif „Experiment“) – wie Groq mit eigenem kostenlosen Schlüssel, ohne Zahlungsmittel. Sie stehen in der KI-Verwaltung mit Schritt-für-Schritt-Anleitung, werden erst nach deiner Bestätigung „kostenloser Tarif“ benutzt, tauchen in „Meine KIs“, in der Reihenfolge, in „Schnellster gewinnt“ und im Insel-Menü auf und gehen auch ohne PC (Schlüssel mit Passwort auf dem Gerät)"
-      ],
-      "verbessert": [
-        "Jeder Schlüssel wird nur in seiner eigenen Form angenommen (Cerebras „csk-…“, Mistral 32 Zeichen) und nur an den eigenen Dienst geschickt; Modelle für Sprache, Bilder, Texterkennung oder Einbettungen werden nie gefragt",
-        "Die gespeicherte Reihenfolge der KIs bekommt die neuen Anbieter automatisch vor Pollinations; die Bestätigung „kostenloser Tarif“ gilt je Dienst (die bisherige für Groq bleibt erhalten)",
-        "„Schnellster gewinnt“ fragt alle KIs mit Schlüssel gleichzeitig; der Bereich „OpenRouter und Groq ohne PC“ heißt jetzt „Schlüssel ohne PC“"
-      ],
-      "behoben": []
-    },
-    "signature": "j19cL05WQh614SRK8DjgbIKtVPunU44a5AA3E44//1DNPNeeqRFyPD9mXlJKdDupXTxCkCzDeUq0PaOZZDbKIQ=="
   }
 ]
