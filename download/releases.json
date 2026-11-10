@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.35.0",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.35.0/PCGameLauncherCompanion.exe",
+    "size": 95076394,
+    "sha256": "cbd0cba1208cdfce7a14a0677bb9a1c0f3b1c83404e01509337137eff78a0ea6",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.35.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.35.0/PCGameLauncherCompanion-3.35.0-win-x64.zip",
+      "size": 89350001,
+      "sha256": "8084d7f88a5d3467d63d21b4ad0d06181ecd7188e811540c0ea8c2b03b24ea1a"
+    },
+    "notes": "Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite · Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da",
+    "changes": {
+      "neu": [
+        "Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite",
+        "Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "„Wie viel hat Bayern gespielt?“ (und „wie hat Dortmund heute gespielt?“) wird als Sportfrage mit echten Ergebnissen beantwortet und nicht mehr als Frage nach der eigenen Spielzeit",
+        "Insel: Ein Tipp auf einen Reiter, während sich die Insel noch bewegt, geht nicht mehr verloren – sie fährt danach dorthin",
+        "Wischen in der Insel auf dem Handy: Der Bereich folgt dem Finger jetzt auch bei Android-Chrome (die Geste wurde vorher vom Browser abgebrochen)"
+      ]
+    },
+    "signature": "kS7EgF6CFBs4e3SaS+7LuMaBFMqevOH08atcmtIKm+4SDO+tse3M647DdQHFpFko/kJ/1Pv2aYNekV3KceJu1g=="
+  },
+  {
     "version": "3.34.1",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1342,40 +1371,5 @@
       ]
     },
     "signature": "M2/puGdD1Gg7eKh2x6PtoI5yDzs++UQeIo4lodKJCvoyAZVymf6PZlGFt8+brwzyYW6abmhh3Dy/of5xwlRYXA=="
-  },
-  {
-    "version": "3.0.0",
-    "date": "2026-11-04",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.0.0/PCGameLauncherCompanion.exe",
-    "size": 94833574,
-    "sha256": "32d7923b75a35270e5b33f4d3b02cffb41ed013b1c9106d89b9d12884d437a1d",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.0.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.0.0/PCGameLauncherCompanion-3.0.0-win-x64.zip",
-      "size": 89109019,
-      "sha256": "c383bd6739485492d4b32b4e36bea06bd254c71ed8a1a6920043197356804bf2"
-    },
-    "notes": "Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“) · Mit JARVIS sprechen: Mikrofon in der Insel antippen, den Satz sagen, er wird als Frage geschickt und die Antwort laut vorgelesen (Spracherkennung des Browsers; im Windows-Insel-Fenster nur, wenn dessen Browser-Engine sie hat – sonst sagt die Insel das und man schreibt) · Apps-Reiter mit „WhatsApp“, sobald es in der Bibliothek steht, und den zuletzt gestarteten Programmen; ohne WhatsApp in der Bibliothek steht dort, was zu tun ist",
-    "changes": {
-      "neu": [
-        "Die Insel ist neu aufgebaut: Kopfzeile mit Augen, Datum und Uhrzeit, darunter Karten (JARVIS, Spiel, Musik, Fokus) und eine Reiterleiste – Home, Spiel, Musik, JARVIS, Fokus, Meldungen, Apps, PC, Notiz; alle bisherigen Widgets sind weiter da (unter „PC“, „Fokus“ und „Notiz“)",
-        "Mit JARVIS sprechen: Mikrofon in der Insel antippen, den Satz sagen, er wird als Frage geschickt und die Antwort laut vorgelesen (Spracherkennung des Browsers; im Windows-Insel-Fenster nur, wenn dessen Browser-Engine sie hat – sonst sagt die Insel das und man schreibt)",
-        "Apps-Reiter mit „WhatsApp“, sobald es in der Bibliothek steht, und den zuletzt gestarteten Programmen; ohne WhatsApp in der Bibliothek steht dort, was zu tun ist",
-        "Musik: Titelbild, Fortschrittsbalken mit Zeiten und eine Akzentfarbe aus dem Titelbild (Windows-Begleiter)",
-        "Spiel-Ansicht bei laufendem Spiel: Name, Spielzeit, Verbindung zum PC, Overlay, Aufnahme und Replay",
-        "Timer: pausieren und fortsetzen, eigene Minuten, Fortschrittsring; die Pause bleibt auch in der geschlossenen Insel sichtbar",
-        "Meldungen mit Verlauf: Spiel gestartet/beendet, Verbindung verloren/wiederhergestellt, Timer, JARVIS-Antworten bleiben nach dem Verschwinden aus der Leiste erhalten (60 Einträge, nur auf diesem Gerät)",
-        "Mehrere Aktivitäten gleichzeitig: das Wichtigste führt die geschlossene Insel (Frage, JARVIS arbeitet, Meldung, Timer, Spiel, Musik), die anderen erscheinen als kleine Symbole",
-        "Widgets der Insel im Wackel-Modus: im Menü „⋯“ → „Widgets bearbeiten“ (oder ein Widget lange halten) – „−“ entfernt, „+“ fügt hinzu, gespeichert am PC"
-      ],
-      "verbessert": [
-        "Öffnen und Schließen laufen als echte Feder (Breite, Höhe und Rundung zusammen, mit kleinem Überschwingen): die Seite rechnet jedes Bild selbst, im Windows-Fenster bleibt das Fenster fest groß und bekommt nur die Form jedes Bildes – kein Neuberechnen der Seite, kein zweiter Takt im Begleiter, der abweichen könnte",
-        "Musik-Abfrage fragt seltener nach, wenn nichts läuft (alle 3 s bei Wiedergabe, sonst 6–10 s); das Titelbild geht nur einmal pro Titel über die Leitung"
-      ],
-      "behoben": []
-    },
-    "signature": "MWVUxId1zibAu6NQ+pm4MiBxt4JLASSGMr2qup+SB96LEfdTeRDyzTxK1tx+zr6l578L0zuNRIkn+u7QKqzXnA=="
   }
 ]
