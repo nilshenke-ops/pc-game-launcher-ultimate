@@ -1,5 +1,6 @@
 // Cloud page: the state of the automatic sync in plain words – cloud, PC, what is running, what is still waiting – and the PC's own link to the account.
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { CloudCog, RefreshCw } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
@@ -21,7 +22,11 @@ export function CloudSyncCard() {
   const acct = session();
   if (!acct?.cloud) return (
     <Card title={t("Automatische Synchronisierung")} icon={<CloudCog size={18} />}>
-      <p className="small muted" style={{ margin: 0 }}>{t("Melde dich oben mit deinem Cloud-Konto an – dann hält die Cloud den letzten Stand deines PCs für alle deine Geräte bereit, auch bei ausgeschaltetem PC.")}</p>
+      <div className="stack-sm">
+        <p className="small muted" style={{ margin: 0 }}>{t("Melde dich oben mit deinem Cloud-Konto an – dann hält die Cloud den letzten Stand deines PCs für alle deine Geräte bereit, auch bei ausgeschaltetem PC.")}</p>
+        <p className="small" style={{ margin: 0 }}>{t("Wichtig: Auch am PC selbst muss dieses Cloud-Konto angemeldet sein – ein Konto „am PC“ oder ein anderes Konto lädt nichts in die Cloud.")}</p>
+        <div><Link className="btn primary" to="/profile">{t("Zur Anmeldung")}</Link></div>
+      </div>
     </Card>
   );
   const d = describeSync(s, pcOnline);
@@ -67,5 +72,21 @@ export function CloudSyncCard() {
         <p className="tiny muted" style={{ margin: 0 }}>{t("Nur Funktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung …), brauchen eine aktive PC-Verbindung. Alles andere siehst und änderst du auch ohne PC.")}</p>
       </div>
     </Card>
+  );
+}
+
+
+/**
+ * Shown on pages that list the PC's data when this device is signed in to the cloud but the PC never uploaded anything:
+ * says plainly why the lists are empty and what to do at the PC (instead of silently showing defaults).
+ */
+export function CloudEmptyHint() {
+  const conn = useConn();
+  const s = useCloudSync();
+  if (!s.active || conn.phase === "online" && conn.auth === "ok" || s.pcSyncedAt || s.cloud === "unknown") return null;
+  return (
+    <Banner kind="info">
+      {t("Dein PC hat noch nichts in die Cloud übertragen – darum siehst du hier noch keine Spiele und Apps. Öffne die Seite am PC, melde dich dort mit demselben Konto „{u}“ an (Profil) und lass den Begleiter laufen. Danach erscheint alles hier, auch bei ausgeschaltetem PC.", { u: s.user ?? "" })}
+    </Banner>
   );
 }

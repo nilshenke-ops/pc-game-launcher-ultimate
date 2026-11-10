@@ -168,20 +168,20 @@ sealed class WindowsLauncher : ILauncher
         return null;
     }
 
-    /// <summary>The program's own icon as PNG (96 px, transparent) – from the shell, so it also works for start-menu and
+    /// <summary>The program's own icon as PNG (256 px, transparent) – from the shell, so it also works for start-menu and
     /// Microsoft Store apps ("shell:AppsFolder\&lt;id&gt;", e.g. Spotify, Minecraft Launcher). Falls back to the EXE's icon.</summary>
     public string? ExtractIcon(string path)
     {
         string? result = null;
         // Shell objects want a single-threaded apartment (like the start-menu listing).
-        var t = new Thread(() => { try { result = ShellIcon(path, 96); } catch (Exception ex) { Log.Warn("icon", ex.Message); } });
+        var t = new Thread(() => { try { result = ShellIcon(path, 256); if (result is { Length: > 190_000 }) result = ShellIcon(path, 128); } catch (Exception ex) { Log.Warn("icon", ex.Message); } });
         t.SetApartmentState(ApartmentState.STA);
         t.Start();
         t.Join(TimeSpan.FromSeconds(10));
         if (result != null || path.StartsWith("shell:", StringComparison.OrdinalIgnoreCase) || !File.Exists(path)) return result;
         using var icon = Icon.ExtractAssociatedIcon(path);
         if (icon == null) return null;
-        using var bmp = new Bitmap(icon.ToBitmap(), new Size(48, 48));
+        using var bmp = new Bitmap(icon.ToBitmap(), new Size(128, 128));
         return Png(bmp);
     }
 

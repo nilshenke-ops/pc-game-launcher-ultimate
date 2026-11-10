@@ -4,6 +4,18 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.39.0 – 2026-11-10
+### Neu
+- Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %)
+- Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab
+- Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen
+- Insel: Logo des laufenden Spiels als Abzeichen auf der Spiel-Karte, auch wenn ein Titelbild da ist
+- Hinweis auf Home und in der Bibliothek, wenn der PC noch nichts in die Cloud übertragen hat (mit Anleitung)
+### Verbessert
+- Insel: Titelbilder der Musik 360 statt 128 Pixel, Programm- und Spiel-Symbole 256 statt 96 Pixel – deutlich schärfer (neue Symbole nach dem Update des Begleiters)
+- Cloud: Lehnt die Cloud eine Änderung ab, steht jetzt der Grund da statt „Cloud nicht erreichbar“
+- Cloud-Karte ohne Anmeldung erklärt, dass auch der PC mit demselben Konto angemeldet sein muss, und führt zur Anmeldung
+
 ## 3.38.0 – 2026-11-10
 ### Neu
 - Stimmenwechsler: zweiter Reiter „Echte Stimmen (ElevenLabs)“. Ein Satz wird aufgenommen (Taste „Sprechen“ halten oder automatisch bei Sprechpausen), an ElevenLabs geschickt und kommt in einer Stimme aus deinem ElevenLabs-Konto zurück – auf das virtuelle Kabel für Discord. Mit Stimmenliste aus dem Konto, Verzögerungsanzeige und gesendeter Sprechzeit. Nicht live (ein bis drei Sekunden pro Satz); den Schlüssel trägst du einmal in der KI-Verwaltung ein, er gilt auf allen Geräten des Kontos

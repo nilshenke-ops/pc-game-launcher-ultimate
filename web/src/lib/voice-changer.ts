@@ -7,12 +7,14 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
-import { effectivePitch, voiceById, type VoicePreset } from "./voice-presets";
+import { effectivePitch, scaleVoice, voiceById, type VoicePreset } from "./voice-presets";
 
 export interface VoiceSettings {
   voice: string;
   /** Fine tuning on top of the voice, in semitones (−6 … +6). */
   trim: number;
+  /** How strong the voice is, 0.2 … 1 (less = easier to understand). */
+  strength: number;
   micId: string;
   outId: string;
   /** Microphone gain 0 … 2. */
@@ -27,6 +29,8 @@ export interface VoiceSettings {
 export interface VoiceState {
   running: boolean;
   starting: boolean;
+  /** Test mode: you hear yourself on the default headphones/speakers; nothing goes to Discord. */
+  testing: boolean;
   error: string | null;
   /** Level at the microphone and at the output, 0 … 1. */
   inLevel: number;
@@ -38,14 +42,14 @@ export interface VoiceState {
 export interface DeviceInfo { id: string; label: string; cable: boolean }
 
 const KEY = "pgl.voicechanger";
-export const DEFAULTS: VoiceSettings = { voice: "original", trim: 0, micId: "", outId: "", micGain: 1, volume: 1, monitor: false, clean: true };
+export const DEFAULTS: VoiceSettings = { voice: "original", trim: 0, strength: 0.7, micId: "", outId: "", micGain: 1, volume: 1, monitor: false, clean: true };
 const clamp = (v: unknown, lo: number, hi: number, d: number) => (typeof v === "number" && Number.isFinite(v) ? Math.min(hi, Math.max(lo, v)) : d);
 
 export function readSettings(): VoiceSettings {
   const r = readJson<Partial<VoiceSettings>>(KEY) ?? {};
   return {
     voice: voiceById(typeof r.voice === "string" ? r.voice : "").id,
-    trim: clamp(r.trim, -6, 6, 0), micId: typeof r.micId === "string" ? r.micId : "", outId: typeof r.outId === "string" ? r.outId : "",
+    trim: clamp(r.trim, -6, 6, 0), strength: clamp(r.strength, 0.2, 1, 0.7), micId: typeof r.micId === "string" ? r.micId : "", outId: typeof r.outId === "string" ? r.outId : "",
     micGain: clamp(r.micGain, 0, 2, 1), volume: clamp(r.volume, 0, 1.5, 1), monitor: r.monitor === true, clean: r.clean !== false,
   };
 }
@@ -87,14 +91,14 @@ export function suggestDevices(inputs: DeviceInfo[], outputs: DeviceInfo[]): { m
 
 // ------------------------------------------------------------------ the engine
 
-let state: VoiceState = { running: false, starting: false, error: null, inLevel: 0, outLevel: 0, route: null, settings: readSettings() };
+let state: VoiceState = { running: false, starting: false, testing: false, error: null, inLevel: 0, outLevel: 0, route: null, settings: readSettings() };
 const listeners = new Set<() => void>();
 const publish = (patch: Partial<VoiceState>) => { state = { ...state, ...patch }; listeners.forEach((l) => l()); };
 export const voiceState = () => state;
 export const useVoiceChanger = () => useSyncExternalStore((fn) => { listeners.add(fn); return () => listeners.delete(fn); }, () => state);
 
 interface Engine {
-  ctx: AudioContext; stream: MediaStream; apply(v: VoicePreset, trim: number): void;
+  ctx: AudioContext; stream: MediaStream; apply(v: VoicePreset, trim: number, strength: number): void;
   micGain: GainNode; volume: GainNode; monitorGain: GainNode; monitorEl: HTMLAudioElement | null; monitorDest: MediaStreamAudioDestinationNode;
   outEl: HTMLAudioElement | null; timer: number; stop(): void;
 }
@@ -150,8 +154,9 @@ export function buildChain(ctx: AudioContext, pitch: AudioWorkletNode) {
   wet.connect(output);
 
   const set = (p: AudioParam, v: number) => p.setTargetAtTime(v, ctx.currentTime, 0.03);
-  const apply = (v: VoicePreset, trim: number) => {
-    const plain = v.id === "original" && trim === 0;
+  const apply = (preset: VoicePreset, trim: number, strength: number) => {
+    const v = scaleVoice(preset, strength);
+    const plain = preset.id === "original" && trim === 0;
     set(dry.gain, plain ? 1 : 0); set(wet.gain, plain ? 0 : 1);
     (pitch.parameters.get("ratio") as AudioParam).setTargetAtTime(effectivePitch(v, trim), ctx.currentTime, 0.02);
     const ring = v.ring; set(ringWet.gain, ring?.mix ?? 0); set(ringDry.gain, 1 - (ring?.mix ?? 0)); if (ring) ringOsc.frequency.setTargetAtTime(ring.hz, ctx.currentTime, 0.03);
@@ -171,7 +176,7 @@ export function updateSettings(patch: Partial<VoiceSettings>) {
   publish({ settings: next });
   if (!engine) return;
   const e = engine;
-  if ("voice" in patch || "trim" in patch) e.apply(voiceById(next.voice), next.trim);
+  if ("voice" in patch || "trim" in patch || "strength" in patch) e.apply(voiceById(next.voice), next.trim, next.strength);
   if ("micGain" in patch) e.micGain.gain.setTargetAtTime(next.micGain, e.ctx.currentTime, 0.03);
   if ("volume" in patch) e.volume.gain.setTargetAtTime(next.volume, e.ctx.currentTime, 0.03);
   if ("monitor" in patch) {
@@ -180,11 +185,13 @@ export function updateSettings(patch: Partial<VoiceSettings>) {
   }
 }
 
-export async function startVoiceChanger(): Promise<void> {
+export async function startVoiceChanger(opts: { test?: boolean } = {}): Promise<void> {
   if (engine || state.starting) return;
   if (!voiceChangerSupported()) { publish({ error: "Dieser Browser kann das nicht: Chrome oder Edge am PC nehmen." }); return; }
   publish({ starting: true, error: null });
-  const s = state.settings;
+  const test = !!opts.test;
+  // Test: straight to the default headphones/speakers with almost no delay (no audio element in between), nothing to the cable.
+  const s = test ? { ...state.settings, outId: "", monitor: false } : state.settings;
   let ctx: AudioContext | null = null, stream: MediaStream | null = null;
   try {
     ctx = new AudioContext({ latencyHint: "interactive" });
@@ -207,7 +214,9 @@ export async function startVoiceChanger(): Promise<void> {
     let outEl: HTMLAudioElement | null = null;
     let route: VoiceState["route"] = "default";
     const wantOut = s.outId && s.outId !== "default";
-    if (wantOut && canSinkContext()) {
+    if (test) {
+      limiter.connect(ctx.destination);
+    } else if (wantOut && canSinkContext()) {
       await (ctx as AudioContext & { setSinkId(id: string): Promise<void> }).setSinkId(s.outId);
       limiter.connect(ctx.destination);
     } else if (wantOut && canSinkElement()) {
@@ -224,7 +233,7 @@ export async function startVoiceChanger(): Promise<void> {
     monitorGain.gain.value = s.monitor ? 1 : 0; limiter.connect(monitorGain); monitorGain.connect(monitorDest);
     const monitorEl = new Audio(); monitorEl.srcObject = monitorDest.stream;
     if (s.monitor) await monitorEl.play().catch(() => undefined);
-    chain.apply(voiceById(s.voice), s.trim);
+    chain.apply(voiceById(s.voice), s.trim, s.strength);
     if (ctx.state === "suspended") await ctx.resume();
 
     const levelOf = (an: AnalyserNode) => { const d = new Float32Array(an.fftSize); an.getFloatTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v)); return Math.min(1, m); };
@@ -243,7 +252,7 @@ export async function startVoiceChanger(): Promise<void> {
       stop() { window.clearInterval(timer); chain.stop(); owned.stream.getTracks().forEach((t) => t.stop()); outEl?.pause(); monitorEl.pause(); void owned.ctx.close().catch(() => undefined); },
     };
     const cableOut = !!wantOut;
-    publish({ running: true, starting: false, route: cableOut ? "other" : route });
+    publish({ running: true, starting: false, testing: test, route: cableOut ? "other" : route });
   } catch (e) {
     stream?.getTracks().forEach((t) => t.stop());
     void ctx?.close().catch(() => undefined);
@@ -254,7 +263,7 @@ export async function startVoiceChanger(): Promise<void> {
 export async function stopVoiceChanger(error: string | null = null): Promise<void> {
   const e = engine; engine = null;
   e?.stop();
-  publish({ running: false, starting: false, inLevel: 0, outLevel: 0, route: null, error });
+  publish({ running: false, starting: false, testing: false, inLevel: 0, outLevel: 0, route: null, error });
 }
 
 function friendly(e: unknown): string {

@@ -597,7 +597,9 @@ public sealed class AssistantService
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { throw; }
         }
-        if (needsWeb && anySearchKey && webBlock == null)
+        // Web search also for football and weather: the free data source gives the exact numbers, the search adds news/context (and answers when the source has nothing).
+        var dataBlock = webKind is "Sportdaten" or "Wetterdaten" ? webBlock : null;
+        if (needsWeb && anySearchKey && (webBlock == null || dataBlock != null))
         {
             // one search provider after the other (Tavily → Serper → Exa) until one delivers; each has its own monthly cap and stops by itself at its free limit
             foreach (var sid in WebSearchClient.Providers)
@@ -610,7 +612,13 @@ public sealed class AssistantService
                     var key = (sid == "searxng" ? prot : _secrets.Unprotect(prot)) ?? throw new RpcException("assistant-key", $"{WebSearchClient.Name(sid)}: Der Websuche-Schlüssel lässt sich nicht entschlüsseln.");
                     var hits = await Search.SearchAsync(sid, key, text, 5, ct);
                     CountMonth(m => { switch (sid) { case "serper": m.SerperRequests++; break; case "exa": m.ExaRequests++; break; case "brave": m.BraveRequests++; break; case "searxng": m.SearxRequests++; break; default: m.SearchRequests++; break; } });
-                    if (hits.Count > 0) { webBlock = WebSearchClient.Block(hits, TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local)); webSources = WebSearchClient.Domains(hits); break; }
+                    if (hits.Count > 0)
+                    {
+                        var sb = WebSearchClient.Block(hits, TimeZoneInfo.ConvertTimeFromUtc(_now(), TimeZoneInfo.Local));
+                        if (dataBlock != null) { webBlock = dataBlock + "\n\n" + sb; webSources = webSources + " + " + WebSearchClient.Domains(hits); }
+                        else { webBlock = sb; webSources = WebSearchClient.Domains(hits); }
+                        break;
+                    }
                 }
                 catch (RpcException e) when (e.Code is "assistant-limit" or "assistant-offline" or "assistant-unavailable" or "assistant-key") { failed.Add("Websuche: " + e.Message); }
             }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { PitchShifterCore } from "./voice-pitch-worklet.js";
-import { effectivePitch, semitoneRatio, voiceById, VOICES } from "./voice-presets";
+import { effectivePitch, scaleVoice, semitoneRatio, voiceById, VOICES } from "./voice-presets";
 
 const SR = 48000;
 /** Energy of one frequency in a signal (Goertzel). */
@@ -103,5 +103,28 @@ describe("ElevenLabs-Modus: Stimmenliste und Sprache-zu-Sprache", () => {
     await expect(elevenSpeechToSpeech(new Blob([new Uint8Array(8_100_000)]), "pNInz6obpgDQGcFmaJgB", { fetcher })).rejects.toThrow(/lang/);
     expect(calls).toBe(0);
     removeLocalElevenKey(); setDeviceKeyForTests(null);
+  });
+});
+
+describe("Stärke der Stimme: verständlich bleiben", () => {
+  it("0 % ist die eigene Stimme, 100 % die Stimme wie definiert, dazwischen wird alles sanfter", () => {
+    const d = voiceById("demon");
+    const none = scaleVoice(d, 0), full = scaleVoice(d, 1), part = scaleVoice(d, 0.7);
+    expect(none.pitch).toBeCloseTo(1, 10); expect(none.ring?.mix).toBe(0); expect(none.reverb).toBe(0);
+    expect(full.pitch).toBeCloseTo(d.pitch, 10); expect(full.ring?.mix).toBeCloseTo(d.ring!.mix, 10);
+    expect(part.pitch).toBeGreaterThan(d.pitch); expect(part.pitch).toBeLessThan(1);
+    expect(part.ring!.mix).toBeLessThan(d.ring!.mix); expect(part.reverb!).toBeLessThan(d.reverb!);
+  });
+  it("das Bandfilter öffnet sich mit weniger Stärke, bei 0 % ist es offen", () => {
+    const r = voiceById("radio"), none = scaleVoice(r, 0);
+    expect(none.band!.low).toBe(20); expect(none.band!.high).toBe(20000);
+    expect(scaleVoice(r, 0.5).band!.low).toBeLessThan(r.band!.low);
+  });
+  it("jede Stimme bleibt bei jeder Stärke im erlaubten Bereich", () => {
+    for (const v of VOICES) for (const k of [0, 0.2, 0.5, 0.7, 1]) {
+      const x = scaleVoice(v, k);
+      expect(x.pitch).toBeGreaterThanOrEqual(0.25); expect(x.pitch).toBeLessThanOrEqual(4);
+      if (x.echo) expect(x.echo.feedback).toBeLessThan(0.85);
+    }
   });
 });

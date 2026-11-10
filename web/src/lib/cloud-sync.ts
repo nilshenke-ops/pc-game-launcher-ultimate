@@ -184,7 +184,9 @@ export async function flushOps(): Promise<boolean> {
     return true;
   } catch (e) {
     if (e instanceof AuthError) forgetToken();
-    setStatus({ cloud: "unreachable" });
+    // Only a real network problem is "unreachable"; when the cloud answered with a refusal, say what it said (the cause was hidden before).
+    const net = navigator.onLine === false || !(e instanceof Error) || e instanceof AuthError || e.message === "server" || /fetch|network|abort|timeout|load failed/i.test(e.message);
+    setStatus(net ? { cloud: "unreachable" } : { cloud: "ok", error: t("Die Cloud hat eine Änderung abgelehnt: {m}", { m: (e as Error).message }) });
     return false;
   } finally { flushing = false; setStatus({ syncing: false, pending: pendingOps().length }); }
 }

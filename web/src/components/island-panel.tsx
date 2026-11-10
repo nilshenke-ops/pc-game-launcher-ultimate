@@ -69,8 +69,8 @@ export const findWhatsApp = (items: LibraryItem[] | undefined) => items?.find((i
 
 function AppLogo({ item }: { item: LibraryItem }) {
   const b = brandFor(item);
-  if (b) return <BrandLogo brand={b} size={26} color="currentColor" />;
-  if (item.iconData) return <img src={item.iconData} alt="" width={26} height={26} />;
+  if (b) return <BrandLogo brand={b} size={30} color="currentColor" />;
+  if (item.iconData) return <img className="isl2-appimg" src={item.iconData} alt="" width={30} height={30} decoding="async" />;
   return <span className="isl2-letter" aria-hidden>{item.name.slice(0, 1).toUpperCase()}</span>;
 }
 
@@ -361,7 +361,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       </div>
       {game && (
         <div className={`isl2-card gm${gCover || gItem ? " filled" : ""}`} style={gStyle}>
-          {gCover ? <img className="isl2-fill" src={gCover} alt="" />
+          {gCover ? <img className="isl2-fill" src={gCover} alt="" decoding="async" />
             : gItem && (gBrand || gItem.iconData) ? (
               <span className="isl2-fill logo" aria-hidden>
                 {gItem.iconData && <img className="isl2-fill-blur" src={gItem.iconData} alt="" />}
@@ -369,6 +369,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
               </span>
             ) : null}
           <button type="button" className="isl2-ctitle" onClick={() => setTab("game")}>{t("Spiel")}</button>
+          {gCover && gItem && (gBrand || gItem.iconData) && <span className="isl2-badge" aria-hidden>{gBrand ? <BrandLogo brand={gBrand} size={30} color="#fff" /> : <img src={gItem.iconData!} alt="" decoding="async" />}</span>}
           {!(gCover || (gItem && (gBrand || gItem.iconData))) && <span className="isl2-art" aria-hidden><Gamepad2 size={22} /></span>}
           <b className="isl2-big ellipsis" title={game.name}>{game.name}</b>
           <span className="isl2-sub ellipsis">{playTime(gameSince, now) ?? t("läuft")}</span>
@@ -376,7 +377,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       )}
       {has("music") && (
         <div className={`isl2-card mu${musicFilled ? " filled" : ""}`} style={accentStyle}>
-          {musicFilled && <img className="isl2-fill" src={np!.cover!} alt="" key={np!.cover} />}
+          {musicFilled && <img className="isl2-fill" src={np!.cover!} alt="" key={np!.cover} decoding="async" />}
           <button type="button" className="isl2-ctitle" onClick={() => setTab("music")}>{t("Musik")}</button>
           {!musicFilled && <span className="isl2-art" aria-hidden>{cover}</span>}
           {playing && <Bars level={0.4} />}

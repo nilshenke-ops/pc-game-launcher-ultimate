@@ -67,3 +67,22 @@ export const voiceById = (id: string): VoicePreset => VOICES.find((v) => v.id ==
 export const semitoneRatio = (st: number) => Math.pow(2, st / 12);
 /** Pitch of the voice with the person's own fine tuning (±6 semitones) on top, kept in the range the shifter can do. */
 export const effectivePitch = (v: VoicePreset, trimSemitones: number) => Math.min(4, Math.max(0.25, v.pitch * semitoneRatio(Math.max(-12, Math.min(12, trimSemitones)))));
+
+/**
+ * The same voice, weaker or stronger: 1 = as defined, 0 = your own voice. A strongly changed voice is hard to understand, so the app starts at
+ * 70 %: the pitch moves less (a power of the factor – so an octave stays an octave at 100 %), and ring modulation, distortion, echo, reverb and
+ * the band filter fade towards "off". Everything stays in the range the stages can do.
+ */
+export function scaleVoice(v: VoicePreset, strength: number): VoicePreset {
+  const k = Math.min(1, Math.max(0, strength));
+  const out: VoicePreset = { ...v, pitch: Math.pow(v.pitch, k) };
+  if (v.ring) out.ring = { hz: v.ring.hz, mix: v.ring.mix * k };
+  if (v.vibrato) out.vibrato = { hz: v.vibrato.hz, ms: v.vibrato.ms * k };
+  if (v.band) out.band = { low: 20 + (v.band.low - 20) * k, high: 20000 - (20000 - v.band.high) * k };
+  if (v.drive) out.drive = v.drive * k;
+  if (v.lowShelf) out.lowShelf = v.lowShelf * k;
+  if (v.highShelf) out.highShelf = v.highShelf * k;
+  if (v.echo) out.echo = { time: v.echo.time, feedback: v.echo.feedback * k, mix: v.echo.mix * k };
+  if (v.reverb) out.reverb = v.reverb * k;
+  return out;
+}

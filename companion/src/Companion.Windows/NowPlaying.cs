@@ -74,11 +74,12 @@ sealed class WindowsNowPlaying : INowPlaying
             if (ms.Length == 0 || ms.Length > 8_000_000) return null;
             ms.Position = 0;
             using var img = System.Drawing.Image.FromStream(ms);
-            const int size = 128;
+            const int size = 360;   // sharp even on a big island card (was 128)
             using var bmp = new System.Drawing.Bitmap(size, size);
             using (var g = System.Drawing.Graphics.FromImage(bmp))
             {
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
                 // centre crop to a square
                 var side = Math.Min(img.Width, img.Height);
                 g.DrawImage(img, new System.Drawing.Rectangle(0, 0, size, size), new System.Drawing.Rectangle((img.Width - side) / 2, (img.Height - side) / 2, side, side), System.Drawing.GraphicsUnit.Pixel);
@@ -86,7 +87,7 @@ sealed class WindowsNowPlaying : INowPlaying
             using var outMs = new MemoryStream();
             var jpeg = System.Drawing.Imaging.ImageCodecInfo.GetImageEncoders().First(c => c.FormatID == System.Drawing.Imaging.ImageFormat.Jpeg.Guid);
             using var ep = new System.Drawing.Imaging.EncoderParameters(1);
-            ep.Param[0] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 78L);
+            ep.Param[0] = new System.Drawing.Imaging.EncoderParameter(System.Drawing.Imaging.Encoder.Quality, 88L);
             bmp.Save(outMs, jpeg, ep);
             _cover = "data:image/jpeg;base64," + Convert.ToBase64String(outMs.ToArray());
         }

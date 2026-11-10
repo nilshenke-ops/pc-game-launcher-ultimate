@@ -55,14 +55,18 @@ export default function VoiceChanger() {
           <div className="stack-sm">
             <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
               {v.running
-                ? <Button variant="danger" icon={<Square size={16} />} onClick={() => void stopVoiceChanger()}>{t("Stoppen")}</Button>
-                : <Button variant="primary" icon={<Play size={16} />} busy={v.starting} disabled={!supported} onClick={() => { stopEleven(); void startVoiceChanger().then(() => load(false)); }}>{t("Stimmenwechsler starten")}</Button>}
+                ? <Button variant="danger" icon={<Square size={16} />} onClick={() => void stopVoiceChanger()}>{v.testing ? t("Test beenden") : t("Stoppen")}</Button>
+                : <>
+                    <Button variant="primary" icon={<Play size={16} />} busy={v.starting} disabled={!supported} onClick={() => { stopEleven(); void startVoiceChanger().then(() => load(false)); }}>{t("Stimmenwechsler starten")}</Button>
+                    <Button icon={<Headphones size={16} />} disabled={!supported || v.starting} onClick={() => { stopEleven(); void startVoiceChanger({ test: true }).then(() => load(false)); }}>{t("Stimme testen")}</Button>
+                  </>}
               <Button icon={<Dices size={16} />} onClick={random}>{t("Zufällige Stimme")}</Button>
             </div>
             <div className="vc-meters" aria-label={t("Pegel")}>
               <span className="tiny muted">{t("Du")}</span><span className="vc-bar" role="meter" aria-label={t("Pegel Mikrofon")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v.inLevel * 100)}><i style={{ width: `${Math.round(v.inLevel * 100)}%` }} /></span>
               <span className="tiny muted">{t("Discord")}</span><span className="vc-bar" role="meter" aria-label={t("Pegel Ausgang")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v.outLevel * 100)}><i style={{ width: `${Math.round(v.outLevel * 100)}%` }} /></span>
             </div>
+            {v.testing && <p className="small" style={{ margin: 0 }} role="status">{t("Test läuft: Du hörst dich selbst in der gewählten Stimme – nur mit Kopfhörern, sonst pfeift es. Zu Discord geht dabei nichts. Wechsle die Stimme, während du sprichst.")}</p>}
             <p className="tiny muted" style={{ margin: 0 }}>{t("Läuft weiter, wenn du eine andere Seite öffnest – nur wenn du das Fenster schließt, hört es auf.")}</p>
           </div>
         </Card>
@@ -78,6 +82,9 @@ export default function VoiceChanger() {
             ))}
           </div>
           <div className="stack-sm" style={{ marginTop: 14 }}>
+            <Field label={t("Stärke der Stimme: {v} %", { v: Math.round(s.strength * 100) })} hint={t("Weniger = du bleibst besser zu verstehen, mehr = die Stimme klingt extremer. Zum Anfang: 70 %.")}>
+              <input type="range" min={0.2} max={1} step={0.05} value={s.strength} onChange={(e) => updateSettings({ strength: +e.target.value })} aria-label={t("Stärke der Stimme")} />
+            </Field>
             <Field label={t("Feinabstimmung der Tonhöhe: {v} Halbtöne", { v: (s.trim > 0 ? "+" : "") + s.trim })} hint={t("Macht die gewählte Stimme etwas höher oder tiefer.")}>
               <input type="range" min={-6} max={6} step={1} value={s.trim} onChange={(e) => updateSettings({ trim: +e.target.value })} aria-label={t("Feinabstimmung der Tonhöhe")} />
             </Field>

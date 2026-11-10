@@ -504,9 +504,13 @@ export async function askLocalChain(question: string, history: Turn[], o: Opts =
       asked = `${wx.block}\n\nFrage: ${question}`; via = "Wetterdaten: Open-Meteo";
       if (wx.fromQuestion && !homePlace()) { setHomePlace(wx.place); via += ` · Gedächtnis: ${wx.place} gemerkt als dein Ort („Ich wohne in …“ ändert das)`; }
     }
-    else if (wantsLiveData(question) && readySearch().length > 0) {
+    // Web search (Tavily/Serper) also for football and weather: the free data source gives the exact numbers, the search adds the latest news around them – and answers when the data source has nothing.
+    if ((wantsLiveData(question) || sp || wx) && readySearch().length > 0) {
       const w = await searchLive(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if (e instanceof FreeAiError && e.message === "Abgebrochen.") throw e; return null; });
-      if (w) { asked = `${w.block}\n\nFrage: ${question}`; via = `Websuche: ${w.domains}`; }
+      if (w) {
+        asked = sp || wx ? `${sp ? sp.block : wx!.block}\n\n${w.block}\n\nFrage: ${question}` : `${w.block}\n\nFrage: ${question}`;
+        via = via ? `${via} + Websuche: ${w.domains}` : `Websuche: ${w.domains}`;
+      }
     }
   }
   { const league = !via ? uncoveredLeague(question) : null; if (league && readySearch().length === 0) return { text: uncoveredAnswer(league), model: "", provider: "local", label: "JARVIS – ohne Datenquelle" }; }

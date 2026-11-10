@@ -32,6 +32,7 @@ import { CapturesWidget, ChallengesWidget, DiceWidget, MemoryWidget, NightWidget
 import { CUSTOM_PREFIX, type CustomWidget } from "../lib/custom-widgets";
 import { HomePages } from "../components/home-pages";
 import { HomeShowcase } from "../components/home-showcase";
+import { CloudEmptyHint } from "../components/cloud-sync-card";
 // Loaded only when the widget is shown (the task catalog is not needed on every start).
 const BingoWidget = lazy(() => import("../components/bingo-board").then((m) => ({ default: m.BingoWidget })));
 import { CUSTOM_WIDGET } from "../lib/prefs-core";
@@ -425,6 +426,7 @@ export default function Dashboard() {
           <Button variant={edit ? "primary" : undefined} icon={edit ? <Check size={16} /> : <LayoutDashboard size={16} />} onClick={() => setEdit(!edit)}>{edit ? t("Fertig") : t("Anpassen")}</Button>
         </>} />
       ) : <HomeShowcase onEdit={() => setEdit(true)} />}
+      <CloudEmptyHint />
       <HomePages layout={layout} mobile={mobile} edit={edit} pluginWidgets={pluginWidgets.map((x) => x.id)} />
       {state && !edit && <div style={{ marginBottom: 12 }}><StableAddressOffer /></div>}
       {edit && <Banner kind="info" title={t("Layout „{n}“ bearbeiten", { n: layout.name })}>{t("Widgets verschieben, Größe ändern oder ausblenden. Weitere Layouts und Bildschirmgrößen unter Einstellungen → Design & Layout.")}</Banner>}
