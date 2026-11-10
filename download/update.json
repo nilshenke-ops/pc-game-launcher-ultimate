@@ -1,32 +1,24 @@
 {
-  "version": "3.39.0",
+  "version": "3.39.1",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.0/PCGameLauncherCompanion.exe",
-  "size": 95096588,
-  "sha256": "a831846212c7c614346398b49ddf4d6dfa4acaa650530e5ad24678be893b8c03",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion.exe",
+  "size": 95096649,
+  "sha256": "4af916fc8a5ae701fa0b64f0bcf4fbf4901595bcb9ae1df966ed85d25b2658b5",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.39.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.0/PCGameLauncherCompanion-3.39.0-win-x64.zip",
-    "size": 89370473,
-    "sha256": "e380ed6577d041e85d8dbdebd898a831affe3b2319def656662c9d9985c2e17c"
+    "fileName": "PCGameLauncherCompanion-3.39.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion-3.39.1-win-x64.zip",
+    "size": 89370564,
+    "sha256": "55c1c1c00802b7e7226c03969cc1e929220f8e7ebff657df6ec23609da9d44e9"
   },
-  "notes": "Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %) · Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab · Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen",
+  "notes": "",
   "changes": {
-    "neu": [
-      "Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %)",
-      "Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab",
-      "Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen",
-      "Insel: Logo des laufenden Spiels als Abzeichen auf der Spiel-Karte, auch wenn ein Titelbild da ist",
-      "Hinweis auf Home und in der Bibliothek, wenn der PC noch nichts in die Cloud übertragen hat (mit Anleitung)"
-    ],
-    "verbessert": [
-      "Insel: Titelbilder der Musik 360 statt 128 Pixel, Programm- und Spiel-Symbole 256 statt 96 Pixel – deutlich schärfer (neue Symbole nach dem Update des Begleiters)",
-      "Cloud: Lehnt die Cloud eine Änderung ab, steht jetzt der Grund da statt „Cloud nicht erreichbar“",
-      "Cloud-Karte ohne Anmeldung erklärt, dass auch der PC mit demselben Konto angemeldet sein muss, und führt zur Anmeldung"
-    ],
-    "behoben": []
+    "neu": [],
+    "verbessert": [],
+    "behoben": [
+      "Cloud: Lehnt die Cloud einen einzelnen Eintrag ab (z. B. die Spiele-Liste mit vielen Bildern ist zu groß), blockiert das nicht mehr alle anderen – der Eintrag wird einzeln, dann ohne große Bilder erneut gesendet; bleibt ein Fehler, steht der genaue Grund auf der Cloud-Seite am PC"
+    ]
   },
-  "signature": "4sV50/zwpz6uSvqeXovwQbrh+385FTEUP+QdoHUqIA2iONwjNjxReY/dCDrmjDi9FtIAi9E9vIsYh5CAJYNwFw=="
+  "signature": "vyiktmW9qekUVLanrao9NrPxLlETtAtpnC1EG2QVTWt6wnoA77hbg7PQIaA9RCEdYQETKjRE6jCC/WGjsulPGQ=="
 }

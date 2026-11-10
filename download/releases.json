@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.39.1",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion.exe",
+    "size": 95096649,
+    "sha256": "4af916fc8a5ae701fa0b64f0bcf4fbf4901595bcb9ae1df966ed85d25b2658b5",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.39.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion-3.39.1-win-x64.zip",
+      "size": 89370564,
+      "sha256": "55c1c1c00802b7e7226c03969cc1e929220f8e7ebff657df6ec23609da9d44e9"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Cloud: Lehnt die Cloud einen einzelnen Eintrag ab (z. B. die Spiele-Liste mit vielen Bildern ist zu groß), blockiert das nicht mehr alle anderen – der Eintrag wird einzeln, dann ohne große Bilder erneut gesendet; bleibt ein Fehler, steht der genaue Grund auf der Cloud-Seite am PC"
+      ]
+    },
+    "signature": "vyiktmW9qekUVLanrao9NrPxLlETtAtpnC1EG2QVTWt6wnoA77hbg7PQIaA9RCEdYQETKjRE6jCC/WGjsulPGQ=="
+  },
+  {
     "version": "3.39.0",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1326,35 +1350,5 @@
       "behoben": []
     },
     "signature": "SRUtuvHuzcCebGQTL6izVo2+VXVOe7f6kvH0LUQ5Z8OuTqQslb9SCdR9K28r3QZPpmN7CRsASjrezMgf5FO0Cw=="
-  },
-  {
-    "version": "3.4.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.4.0/PCGameLauncherCompanion.exe",
-    "size": 94890725,
-    "sha256": "769aad2b08079863754561dd53cccf0a3d56be70b27fec2cb7aea54e01bcecc8",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.4.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.4.0/PCGameLauncherCompanion-3.4.0-win-x64.zip",
-      "size": 89165891,
-      "sha256": "1c27cea7e1dedd0fcae5a34e98c61f61ddf2b30a6fdb57616c4aea1b201d5dfc"
-    },
-    "notes": "Gespräch mit JARVIS (Insel, Knopf neben dem Mikrofon): JARVIS hört nach jeder vorgelesenen Antwort von selbst wieder zu, bis du „Danke“ oder „Ende“ sagst, auf das Mikrofon tippst oder zweimal nacheinander nichts gesagt wird · Steuerwörter beim Sprechen: „Stopp“ (auch „Sei still“, „Abbrechen“, „Genug“) macht die Stimme still und wird nicht als Auftrag gesendet; „Danke“, „Das war’s“, „Tschüss“ beenden das Gespräch · Gesprochene Sätze werden wie getippte: „Hey Jarvis, ähm, starte bitte Rocket League.“ wird zu „Starte bitte Rocket League“ (Weckwort, Füllwörter, Schlusspunkt und „bitte“ am Ende fallen weg, der Inhalt bleibt)",
-    "changes": {
-      "neu": [
-        "Gespräch mit JARVIS (Insel, Knopf neben dem Mikrofon): JARVIS hört nach jeder vorgelesenen Antwort von selbst wieder zu, bis du „Danke“ oder „Ende“ sagst, auf das Mikrofon tippst oder zweimal nacheinander nichts gesagt wird",
-        "Steuerwörter beim Sprechen: „Stopp“ (auch „Sei still“, „Abbrechen“, „Genug“) macht die Stimme still und wird nicht als Auftrag gesendet; „Danke“, „Das war’s“, „Tschüss“ beenden das Gespräch"
-      ],
-      "verbessert": [
-        "Gesprochene Sätze werden wie getippte: „Hey Jarvis, ähm, starte bitte Rocket League.“ wird zu „Starte bitte Rocket League“ (Weckwort, Füllwörter, Schlusspunkt und „bitte“ am Ende fallen weg, der Inhalt bleibt)",
-        "Die Chat-Seite nutzt dieselbe Spracheingabe wie die Insel: Zwischentext beim Sprechen, verständliche Fehler, die Antwort auf eine gesprochene Frage wird vorgelesen",
-        "Das Mikrofon wird vorab geprüft: ist es für die Seite gesperrt, sagt JARVIS das und wie man es erlaubt (statt eines englischen Fehlercodes); der Selbsttest zeigt es ebenfalls",
-        "Fehlermeldungen sind verständlich: nackte Codes („forbidden“, „session-expired“, „timeout“, „unknown-method“ …) werden zu einem Satz mit nächstem Schritt (z. B. „Am PC unter Updates aktualisieren“); genaue Meldungen des PCs bleiben unverändert"
-      ],
-      "behoben": []
-    },
-    "signature": "CY1ec3S8xc1hkaQsM4qfYOUhB8A+qNUwVs02jq8wL+azgXEPOVxqgOt70Xrp1mhn2y3xBUsJISuknQIGKoZntw=="
   }
 ]
