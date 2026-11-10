@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.41.1",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.41.1/PCGameLauncherCompanion.exe",
+    "size": 95105036,
+    "sha256": "5397e129b9b9c67d3afe9c8bbfba9b759e77229f3055aff8962a7979652a9599",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.41.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.41.1/PCGameLauncherCompanion-3.41.1-win-x64.zip",
+      "size": 89378763,
+      "sha256": "187f3090c5b48432572653cf62bc21aafd8da735783b19d3e6c9f29734e9c115"
+    },
+    "notes": "Konto & Anmeldedaten: Benutzername und Passwort stehen jetzt für jedes Konto da – Cloud-Konto und Konto am PC (ansehen, kopieren, Passwort einmal merken); Ändern und Geheimcode für Cloud-Konten, „In die Cloud übernehmen“ zusätzlich für ein Konto am PC · Wer sich am PC-Konto anmeldet oder eins anlegt, sieht sein Passwort danach sofort",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Konto & Anmeldedaten: Benutzername und Passwort stehen jetzt für jedes Konto da – Cloud-Konto und Konto am PC (ansehen, kopieren, Passwort einmal merken); Ändern und Geheimcode für Cloud-Konten, „In die Cloud übernehmen“ zusätzlich für ein Konto am PC",
+        "Wer sich am PC-Konto anmeldet oder eins anlegt, sieht sein Passwort danach sofort"
+      ],
+      "behoben": []
+    },
+    "signature": "OAM4wORuoapvoPSFOc6gbeHLE6LdZl9nsNmCSR4RriB6nE7zVydNOBR82fwjUKZbZSwAjwWfhcLPaxHg/o1KCQ=="
+  },
+  {
     "version": "3.41.0",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1326,31 +1351,5 @@
       "behoben": []
     },
     "signature": "KperHsYiUpa8/QQ/piv1SYvyWY1OvKptPDKT3LycsmC/aJjJCXm6NlhhltDK//5DonO5gPqysMq2JpBULbQwiw=="
-  },
-  {
-    "version": "3.8.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.8.0/PCGameLauncherCompanion.exe",
-    "size": 94904700,
-    "sha256": "54342743abe5705d99f219cd6fb1437e8ca98d98306665ecd2b6a81cf314c8b6",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.8.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.8.0/PCGameLauncherCompanion-3.8.0-win-x64.zip",
-      "size": 89179858,
-      "sha256": "dc5fef347fc73c7f0a2c8f2810f0b3f11b400f2788b0d3e8407a1968dfe80301"
-    },
-    "notes": "„So antwortet JARVIS gerade“ in der KI-Verwaltung und im JARVIS-Menü der Insel: Betriebsart (Ersatz-Reihenfolge, Schnellster gewinnt, Nur eine KI), die Reihenfolge der KIs mit dem Modell, mit dem jede startet, was in der Insel für die nächste Frage ausgewählt ist, wer zuletzt geantwortet hat und dass Befehle und PC-Werte die eingebaute Hilfe ohne KI beantwortet · „Meine KIs“ nennt bei jeder eingerichteten KI das gewählte Modell und die Ersatzmodelle (OpenRouter: der kostenlose Router zuerst; Pollinations: festes schnelles Modell; Ollama: das am PC gewählte Modell)",
-    "changes": {
-      "neu": [
-        "„So antwortet JARVIS gerade“ in der KI-Verwaltung und im JARVIS-Menü der Insel: Betriebsart (Ersatz-Reihenfolge, Schnellster gewinnt, Nur eine KI), die Reihenfolge der KIs mit dem Modell, mit dem jede startet, was in der Insel für die nächste Frage ausgewählt ist, wer zuletzt geantwortet hat und dass Befehle und PC-Werte die eingebaute Hilfe ohne KI beantwortet"
-      ],
-      "verbessert": [
-        "„Meine KIs“ nennt bei jeder eingerichteten KI das gewählte Modell und die Ersatzmodelle (OpenRouter: der kostenlose Router zuerst; Pollinations: festes schnelles Modell; Ollama: das am PC gewählte Modell)"
-      ],
-      "behoben": []
-    },
-    "signature": "fOxHSsVJTAM3gGDBMF0NnRwqwFumuGvSYY17LFapeNxO3stAjkfSYwDKlP/BjSUBPnnlcusGV65YBh0QmC3qvQ=="
   }
 ]
