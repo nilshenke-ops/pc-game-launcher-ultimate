@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.34.1 – 2026-11-10
+### Verbessert
+- Zeigt im Widget-Baukasten eine Live-Vorschau der Glasfläche.
+- Hellere Bühne im Baukasten, damit der Glasrand sichtbar wird.
+
 ## 3.34.0 – 2026-11-09
 ### Neu
 - Profil: Tippen auf das „N“ öffnet jetzt eine Konto-Übersicht mit den schon verbundenen Konten – ein Tipp wechselt zwischen ihnen, ohne Passwort. Die Seite „Konto & Cloud“ heißt jetzt „Profil“ und ist neu geordnet: oben Konto, Kontowechsel, KI-Schlüssel und Backup, darunter alles zur Cloud (Dienst, Synchronisierung, was in der Cloud liegt, was am PC bleibt)
