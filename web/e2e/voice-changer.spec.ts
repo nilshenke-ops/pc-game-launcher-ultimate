@@ -19,19 +19,19 @@ test("Stimmenwechsler: starten, Pegel bewegen sich, Stimme live wechseln, stoppe
   // All voices are offered; Original is chosen at first.
   const voices = p.getByRole("radiogroup", { name: "Stimme" }).getByRole("radio");
   expect(await voices.count()).toBeGreaterThanOrEqual(10);
-  await expect(p.getByRole("radio", { name: /Original/ })).toHaveAttribute("aria-checked", "true");
+  await expect(p.getByRole("radio", { name: /^Original(\s|$)/ })).toHaveAttribute("aria-checked", "true");
   await p.getByRole("button", { name: "Stimmenwechsler starten" }).click();
   await expect(p.getByRole("button", { name: "Stoppen" })).toBeVisible({ timeout: 15000 });
   await expect(p.getByText("Aktiv", { exact: true })).toBeVisible();
   const level = (name: string) => p.getByRole("meter", { name }).getAttribute("aria-valuenow").then((v) => Number(v));
   // The fake microphone beeps: the level at the microphone moves, and the changed voice comes out.
   await expect.poll(() => level("Pegel Mikrofon"), { timeout: 12000 }).toBeGreaterThan(0);
-  await p.getByRole("radio", { name: /Roboter/ }).click();
-  await expect(p.getByRole("radio", { name: /Roboter/ })).toHaveAttribute("aria-checked", "true");
+  await p.getByRole("radio", { name: /^Roboter(\s|$)/ }).click();
+  await expect(p.getByRole("radio", { name: /^Roboter(\s|$)/ })).toHaveAttribute("aria-checked", "true");
   await expect(p.getByText("Läuft: Roboter")).toBeVisible();
   await expect.poll(() => level("Pegel Ausgang"), { timeout: 12000 }).toBeGreaterThan(0);
   // Another voice while it runs – and the fine tuning – without stopping.
-  for (const name of [/Monster/, /Chipmunk/, /Echo/, /Megafon/, /Original/]) {
+  for (const name of [/^Monster(\s|$)/, /^Chipmunk(\s|$)/, /^Echo(\s|$)/, /^Megafon(\s|$)/, /^Original(\s|$)/]) {
     await p.getByRole("radio", { name }).click();
     await expect(p.getByRole("radio", { name })).toHaveAttribute("aria-checked", "true");
   }
