@@ -26,7 +26,7 @@ const POLL_MS = 10_000, POLL_HIDDEN_MS = 60_000, TIMEOUT_MS = 20_000, MAX_OPS = 
 export const SYNC_ITEMS = ["state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
   "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list"] as const;
 /** Changes a device may hand over through the cloud while the PC is off (data only – never starting anything). */
-export const OP_METHODS = new Set(["library.update", "settings.save", "memory.configure", "ai.set"]);
+export const OP_METHODS = new Set(["library.update", "settings.save", "memory.configure", "ai.set", "sounds.importUrl"]);
 
 interface TokenRec { user: string; api: string; token: string; seq: number; have: Record<string, string>; pcAt: string | null; pcName: string | null; okAt: number | null }
 export interface PendingOp { id: string; method: string; params: Record<string, unknown>; base?: Record<string, unknown>; at: string }
@@ -133,6 +133,7 @@ export async function pullNow(): Promise<boolean> {
       }
       if (undecryptable > 0) setStatus({ error: t("{n} Einträge aus der Cloud ließen sich nicht lesen – wurde der PC mit einem anderen Passwort/Konto verbunden? Melde den PC mit demselben Konto neu an.", { n: undecryptable }) });
       writeJson(TOKEN_KEY, { ...rec, seq: undecryptable > 0 ? -1 : seq, have, pcAt, pcName, okAt: Date.now() });
+      if (Array.isArray(r.ops)) void import("./pending-sounds").then((m) => m.reconcileCloudSounds((r.ops as { id: string }[]).map((o) => o.id))).catch(() => { /* later */ });
       if (wrote) bumpCache();
     } else writeJson(TOKEN_KEY, { ...rec, seq, pcAt, pcName, okAt: Date.now() });
     setStatus({ cloud: "ok", okAt: Date.now(), pcSyncedAt: pcAt ? Date.parse(pcAt) : null, pcName, upToDate: true, error: null });
@@ -169,6 +170,16 @@ export function queueCloudOp(method: string, params: Record<string, unknown>, ba
   savePending([...pendingOps(), op]);
   setStatus({ pending: pendingOps().length });
   void flushOps();
+}
+
+/** Hands one change to the cloud right now and says whether the cloud has it (its id is returned so the caller can see when the PC has taken it over). */
+export async function sendCloudOp(method: string, params: Record<string, unknown>): Promise<string | null> {
+  if (!OP_METHODS.has(method) || !currentSession()) return null;
+  const op: PendingOp = { id: "op_" + Array.from(crypto.getRandomValues(new Uint8Array(9)), (b) => b.toString(36).padStart(2, "0")).join("").slice(0, 16), method, params: structuredClone(params), at: new Date().toISOString() };
+  savePending([...pendingOps(), op]);
+  setStatus({ pending: pendingOps().length });
+  await flushOps();
+  return pendingOps().some((o) => o.id === op.id) ? null : op.id;       // still waiting here = the cloud does not have it yet (it is sent later by itself)
 }
 
 let flushing = false;

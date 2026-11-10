@@ -272,6 +272,22 @@ test("8–10 Offline ändern, Cloud kurz weg, Cloud zurück, PC startet: alles w
   await p.context().close();
 });
 
+test("Soundboard: ein Link, am iPad ohne PC hinzugefügt, geht über die Cloud – der PC übernimmt ihn von selbst", async ({ browser }) => {
+  const p = await ipad(browser);
+  await p.goto(`${HOSTED_SITE}/#/soundboard`);
+  await p.getByRole("button", { name: "Sounds hinzufügen" }).first().click();
+  await p.getByRole("radio", { name: /Link \/ MyInstants/ }).click();
+  await p.getByPlaceholder(/myinstants/).fill("https://127.0.0.1:1/test-sound.mp3");
+  await p.getByRole("button", { name: "Importieren" }).click();
+  await expect(p.getByText(/In der Cloud gespeichert/)).toBeVisible({ timeout: 30_000 });
+  // the PC (running) takes the link over from the cloud by itself: the change leaves the cloud and the PC notes what it did
+  await expect.poll(async () => (await rpc("cloud.status")).conflicts.join(" "), { timeout: 90_000, intervals: [3000] }).toContain("Sound-Link");
+  await expect.poll(async () => (await pullAll()).ops.length, { timeout: 30_000, intervals: [2000] }).toBe(0);
+  await p.reload();
+  await expect(p.getByText(/In der Cloud gespeichert/)).toHaveCount(0, { timeout: 30_000 });      // taken over: the waiting entry is gone
+  await p.context().close();
+});
+
 test("Benutzername und Passwort ändern (rekey): neues Login gilt, altes nicht mehr, Sync-Daten des alten Logins sind weg, Name nicht doppelt", async () => {
   const a = "rk" + Math.floor(Math.random() * 1e6), b = a + "x", other = "rk" + Math.floor(Math.random() * 1e6) + "o";
   const ka = deriveKeys(a, "passwort-eins"), kb = deriveKeys(b, "passwort-zwei"), ko = deriveKeys(other, "irgendwas-123");

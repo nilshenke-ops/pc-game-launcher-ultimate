@@ -43,7 +43,7 @@ public sealed class CloudSyncService : IDisposable
         "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list",
     };
     /// <summary>Changes a device may make through the cloud while the PC is off – data only, never starting programs or changing what runs.</summary>
-    public static readonly HashSet<string> OpMethods = new() { "library.update", "settings.save", "memory.configure", "ai.set" };
+    public static readonly HashSet<string> OpMethods = new() { "library.update", "settings.save", "memory.configure", "ai.set", "sounds.importUrl" };
     /// <summary>
     /// Takes over account settings that only the PC itself may apply (the memory folder, AI keys): the account owner set them up once on any device,
     /// they arrive sealed with the account key, and the PC applies them with its own rights. Set by <c>CompanionServices</c>.
@@ -344,6 +344,14 @@ public sealed class CloudSyncService : IDisposable
             await AccountSettings(method, p);
             Log.Info("cloud", $"Einstellung von {device} übernommen: {method}");
             return null;
+        }
+        if (method == "sounds.importUrl")
+        {
+            // A link a device added while the PC was off: only https, then the same import as from the phone (the PC checks size and format itself).
+            var url = p.TryGetProperty("url", out var u) && u.ValueKind == JsonValueKind.String ? u.GetString() : null;
+            if (url == null || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return $"Link von {device}: nur https-Links werden übernommen – verworfen.";
+            try { await _invoke("sounds.importUrl", p.Clone()); Log.Info("cloud", $"Sound-Link von {device} übernommen."); return null; }
+            catch (Exception e) { return $"Sound-Link von {device} nicht übernommen: {e.Message}"; }      // any failure (download, format, size) is noted – the change must not stay open forever
         }
         var hasBase = op.TryGetProperty("base", out var b) && b.ValueKind == JsonValueKind.Object;
         JsonElement? current = null;

@@ -7,6 +7,7 @@ import { elevenDeviceReady, SEARCH_PROVIDERS, SEARCH_NAME, useLocalAi } from "..
 import { buildRoster, type AssistantLite, type RosterState } from "../lib/ai-roster";
 import { resolveStt, sttReady, setSttEngine, sttEngine, useSttEngine, type SttEngine, type SttRoute } from "../lib/island-voice";
 import { setTtsEngine, useTtsEngine, type TtsEngine } from "../lib/jarvis-voice";
+import { useTtsProblem } from "../lib/voice-eleven";
 import { elevenPcKeySet, elevenReady } from "../lib/voice-eleven";
 import { useConn } from "../lib/hooks";
 import type { AiOverview } from "./ai-manager";
@@ -63,6 +64,7 @@ export function AiTiles({ online, ai }: { online: boolean; ai?: AiOverview | nul
   ];
 
   const ttsEng = useTtsEngineValue();
+  const ttsProblem = useTtsProblem();
   const deviceEleven = elevenDeviceReady();
   const pcEleven = elevenReady();
   const ttsParts: Part[] = [
@@ -94,7 +96,7 @@ export function AiTiles({ online, ai }: { online: boolean; ai?: AiOverview | nul
         </div>
       </Tile>
       <Tile id="tts" icon={<AudioLines size={16} />} title={t("Sprache sprechen")} duty={t("Liest JARVIS-Antworten vor (nur auf deine Frage hin, jederzeit abschaltbar)")} parts={ttsParts}
-        hint={pcEleven || deviceEleven ? undefined : t("Für die natürlichste Stimme einen ElevenLabs-Schlüssel eintragen (am PC unter KI-Assistent → Stimme, oder hier unter „Schlüssel ohne PC“).")}>
+        hint={ttsProblem ? t("Die ElevenLabs-Stimme hat zuletzt nicht gesprochen – JARVIS nahm die Browser-Stimme. Grund: {m}", { m: ttsProblem }) : pcEleven || deviceEleven ? undefined : t("Für die natürlichste Stimme einen ElevenLabs-Schlüssel eintragen (am PC unter KI-Assistent → Stimme, oder hier unter „Schlüssel ohne PC“).")}>
         <div className="aim-choice" role="radiogroup" aria-label={t("Stimme wählen")}>
           {ttsOpt.map(([id, name, why]) => (
             <button key={id} type="button" role="radio" aria-checked={ttsEng === id} className={`isl2-chip${ttsEng === id ? " on" : ""}`} title={why} onClick={() => setTtsEngine(id)}>{name}</button>

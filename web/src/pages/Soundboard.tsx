@@ -42,7 +42,7 @@ function PendingCard() {
             <span className={`dot ${p.error ? "error" : "warn"}`} />
             <div className="grow" style={{ minWidth: 0 }}>
               <div className="title small" style={{ overflowWrap: "anywhere" }}>{p.name}</div>
-              <div className="sub">{p.error ? p.error : p.kind === "url" ? t("Link – der PC lädt ihn beim Verbinden herunter") : `${bytes(p.size)} · ${t("wartet auf PC")}`}</div>
+              <div className="sub">{p.error ? p.error : p.viaCloud ? t("In der Cloud gespeichert – der PC lädt ihn von selbst herunter, sobald er läuft") : p.kind === "url" ? t("Link – der PC lädt ihn beim Verbinden herunter") : `${bytes(p.size)} · ${t("wartet auf PC")}`}</div>
             </div>
             {p.kind === "file" && <Button size="sm" variant="ghost" icon={<Headphones size={15} />} onClick={() => previewPending(p)} aria-label={t("Auf diesem Gerät anhören")} title={t("Auf diesem Gerät anhören")} />}
             {p.error && online && <Button size="sm" onClick={() => retryPending(p.id)}>{t("Erneut")}</Button>}
@@ -216,7 +216,7 @@ function ImportDialog({ onClose, offline }: { onClose: () => void; offline: bool
   const importUrl = async () => {
     setBusy(true);
     if (offline) {
-      try { await addPendingUrl(url); setResults((r) => [...r, { name: url, ok: true, msg: t("Gespeichert – der PC lädt den Link, sobald er verbunden ist") }]); setUrl(""); }
+      try { await addPendingUrl(url); setResults((r) => [...r, { name: url, ok: true, msg: t("Gespeichert – der Link geht über die Cloud an den PC, der ihn von selbst lädt") }]); setUrl(""); }
       catch (e) { setResults((r) => [...r, { name: url, ok: false, msg: (e as Error).message }]); }
       setBusy(false);
       return;

@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.42.0 – 2026-11-10
+### Neu
+- Soundboard ohne PC: Ein Link (https), den du am iPad/Handy hinzufügst, geht jetzt über die Cloud – der PC lädt ihn von selbst herunter, sobald er läuft; kein Warten auf eine PC-Verbindung mehr (Dateien brauchen weiterhin die PC-Verbindung)
+- JARVIS-Stimme: Spricht die ElevenLabs-Stimme nicht, steht der Grund jetzt in der KI-Verwaltung (Sprache sprechen) statt dass still die Browser-Stimme übernimmt
+
 ## 3.41.2 – 2026-11-10
 ### Verbessert
 - Anmeldung am iPad/Handy: Ist der Name nicht in der Cloud und kein PC erreichbar, sagt die Meldung jetzt, dass das Konto vermutlich nur am PC liegt, und wo man es in die Cloud übernimmt

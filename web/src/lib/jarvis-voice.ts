@@ -3,7 +3,7 @@
 
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
-import { elevenReady, playElevenBlob, speakEleven, stopEleven } from "./voice-eleven";
+import { elevenReady, playElevenBlob, setTtsProblem, speakEleven, stopEleven } from "./voice-eleven";
 import { elevenDeviceReady, speakElevenDevice } from "./free-ai-local";
 
 const KEY = "pgl.jarvis.voice";
@@ -95,7 +95,7 @@ export function speak(text: string, lang = document.documentElement.lang === "en
   if (engine !== "browser" && !elevenReady() && elevenDeviceReady() && deviceCharsLeft() >= say.length) {
     // this device's own ElevenLabs key: text → MP3 straight from here; anything that goes wrong → the browser voice
     void speakElevenDevice(say).then((b) => { countDeviceChars(say.length); return playElevenBlob(b, () => mine === seq, () => { speaking = true; publish(); }, () => { if (mine === seq) { speaking = false; publish(); } }); })
-      .then((ok) => { if (!ok && mine === seq) speakBrowser(say, lang); }, () => { if (mine === seq) speakBrowser(say, lang); });
+      .then((ok) => { if (!ok && mine === seq) speakBrowser(say, lang); }, (e) => { setTtsProblem((e as Error).message || "ElevenLabs"); if (mine === seq) speakBrowser(say, lang); });
     return;
   }
   if (engine !== "browser" && elevenReady()) {
