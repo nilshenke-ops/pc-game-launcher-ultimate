@@ -1,26 +1,27 @@
 {
-  "version": "3.40.1",
+  "version": "3.41.0",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.40.1/PCGameLauncherCompanion.exe",
-  "size": 95104146,
-  "sha256": "67aa2db598560980929ef8c631775bfc1c3859f5f773f87b6a85af20f8fee028",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.41.0/PCGameLauncherCompanion.exe",
+  "size": 95105104,
+  "sha256": "7acbe81098866a0ad8a7e19e9b5a87b7af0345dded6c3b85a8ef82fbcb41d5b4",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.40.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.40.1/PCGameLauncherCompanion-3.40.1-win-x64.zip",
-    "size": 89377944,
-    "sha256": "8a72370858229aa6ba016344ed3236ddfe795bd6e3c1c37971b01f92fc18bbb6"
+    "fileName": "PCGameLauncherCompanion-3.41.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.41.0/PCGameLauncherCompanion-3.41.0-win-x64.zip",
+    "size": 89378851,
+    "sha256": "150d6f444020cb26834c658af8841e8d3564dc5a75a46d44226ffb683c530e02"
   },
-  "notes": "Einstellungen → Allgemein: Karte „Zugangsdaten“ ganz oben – Benutzername und Passwort sehen, kopieren und ändern (auch weiter im Profil) · Ein neues Passwort lässt sich ohne das alte festlegen (das angemeldete Gerät genügt) – danach ist es sofort sichtbar; wer sich neu anmeldet, sieht sein Passwort ohne Eingabe",
+  "notes": "Einstellungen: neuer Punkt „Konto & Anmeldedaten“ – zeigt Benutzername und Passwort (ansehen, kopieren, ändern, optionaler Geheimcode); ohne Anmeldung gleich mit Anmeldung/Registrierung · Ein Konto, das nur am PC liegt („Konto am PC“), lässt sich mit einem Knopf in die Cloud übernehmen (gleicher Name, gleiches Passwort) – danach verbindet sich der PC mit der Cloud und lädt seine Spiele hoch, sodass iPad und Handy sie auch ohne PC sehen · „Prüfen & reparieren“ erkennt ein Konto nur am PC und sagt, wo man es in die Cloud übernimmt",
   "changes": {
     "neu": [
-      "Einstellungen → Allgemein: Karte „Zugangsdaten“ ganz oben – Benutzername und Passwort sehen, kopieren und ändern (auch weiter im Profil)"
+      "Einstellungen: neuer Punkt „Konto & Anmeldedaten“ – zeigt Benutzername und Passwort (ansehen, kopieren, ändern, optionaler Geheimcode); ohne Anmeldung gleich mit Anmeldung/Registrierung",
+      "Ein Konto, das nur am PC liegt („Konto am PC“), lässt sich mit einem Knopf in die Cloud übernehmen (gleicher Name, gleiches Passwort) – danach verbindet sich der PC mit der Cloud und lädt seine Spiele hoch, sodass iPad und Handy sie auch ohne PC sehen"
     ],
     "verbessert": [
-      "Ein neues Passwort lässt sich ohne das alte festlegen (das angemeldete Gerät genügt) – danach ist es sofort sichtbar; wer sich neu anmeldet, sieht sein Passwort ohne Eingabe"
+      "„Prüfen & reparieren“ erkennt ein Konto nur am PC und sagt, wo man es in die Cloud übernimmt"
     ],
     "behoben": []
   },
-  "signature": "sl4/ScS3JxplSaAYI1ZsE/0RfjQHbLG1aMRMczHhYYeOJR5wXUSmFlJaX3lnxWd88HKjAiVwUVX8ZPjoPgHg+Q=="
+  "signature": "+VwrzXBAyfin0oE0hJR+hl6VwrKufWCPRA+NHRn8rJ8NsRZXBVsbu7bM9gqp+anNKpHJlRsSiv8eekQ9UUlDsg=="
 }
