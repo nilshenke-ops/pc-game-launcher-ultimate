@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.44.0 – 2026-11-10
+### Verbessert
+- Insel: Öffnen und Schließen sind jetzt länger und weicher (Feder ca. 0,65 s statt 0,35 s, Schließen ruhig ohne Überschwingen); der Inhalt blendet entsprechend gestaffelt ein und aus
+- Insel: Während sie sich bewegt, pausiert die Seite das Weichzeichnen ihrer Glasflächen – das war der teuerste Teil und ließ die Bewegung ruckeln (Messung im Testbrowser: 15 → 20 Bilder pro Sekunde, ohne Grafikkarte)
+- Holo-Ansicht: Karten gleiten länger (1 s) und ohne Filter-Neuberechnung je Bild, der Wechsel der Infos kommt ohne Weichzeichner
+- Seitenleiste: die Markierung gleitet langsamer und weicher zum neuen Eintrag
+
 ## 3.43.0 – 2026-11-10
 ### Behoben
 - **Keine Animationen am PC (Ursache gefunden):** Die App schaltete alle Bewegung ab, sobald Windows „Animationen anzeigen“ aus hat (viele Gaming-PCs) oder das iPad „Bewegung reduzieren“ meldet – dann standen Insel, Seitenleiste, Übergänge und alle Federn still. Jetzt zählt nur noch die Einstellung der App (Einstellungen → Design: „Animationen reduzieren“ / Leichte Darstellung); wer will, schaltet „Systemeinstellung ‚Bewegung reduzieren‘ beachten“ ein

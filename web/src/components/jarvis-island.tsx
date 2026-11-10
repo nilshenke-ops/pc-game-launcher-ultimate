@@ -99,7 +99,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
   const hostRef = useRef<HTMLDivElement>(null);
-  const panelMounted = useExit(open, 760);
+  const panelMounted = useExit(open, 1100);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
   // In the app (phone, tablet, browser) the island stays the small face with the two eyes – the eyes show what JARVIS does; the wide bar with
@@ -157,6 +157,8 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
       // How far open the island is (0 closed … 1 open): the content (header, tabs, cards) fades, rises and clears its blur by this number – so
       // opening, closing and turning around halfway are one continuous movement that always follows the spring (see motion-pack.css).
       el.style.setProperty("--isl-p", islandProgress(b.h).toFixed(3));
+      // While the island moves, the blur behind the page's glass surfaces is paused (re-blurring them every frame is the costliest part).
+      document.documentElement.toggleAttribute("data-isl-anim", animRef.current?.moving ?? false);
       // In the Windows window the island hangs from the top edge: square at the top, round at the bottom (like the cut-out of the window).
       el.style.borderRadius = floating ? `${b.r}px` : `0 0 ${b.r}px ${b.r}px`;
       if (floating) return;

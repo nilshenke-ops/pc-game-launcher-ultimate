@@ -3372,7 +3372,7 @@ a.card:active, .card[role="button"]:active, button.card:active, .game-card:activ
 /* the highlight of the menu is ONE element that glides with a spring to the entry that was opened */
 .mn-list { position: relative; }
 .mn-pill { position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; opacity: 0; will-change: transform; width: 0; height: 0; margin: 0; border: 1px solid transparent; box-sizing: border-box; }
-.mn-pill.ready { transition: transform .55s var(--spr-soft), width .45s var(--spr-soft), height .45s var(--spr-soft), opacity .2s ease; }
+.mn-pill.ready { transition: transform .85s var(--spr-soft), width .75s var(--spr-soft), height .75s var(--spr-soft), opacity .25s ease; }
 .mn-list.has-pill .mn-link { z-index: 1; }
 .mn-list.has-pill .mn-link.active { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 .mn-list.has-pill .mn-link.active::before { display: none !important; }

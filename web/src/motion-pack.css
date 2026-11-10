@@ -10,7 +10,7 @@
 :root:not([data-motion="reduce"]) .isl-host.v2 .isl2-wrap {
   animation: none !important; transform-origin: 50% 0;
   opacity: clamp(0, calc(var(--isl-p) * 5 - 0.35), 1);
-  filter: blur(calc(max(0, 1 - var(--isl-p) * 2.2) * 9px));
+  filter: blur(calc(max(0, 1 - var(--isl-p) * 2.2) * 6px));
   scale: calc(0.9 + 0.1 * clamp(0, calc(var(--isl-p) * 1.5), 1)) calc(0.72 + 0.28 * clamp(0, calc(var(--isl-p) * 1.4), 1));
   pointer-events: none;
 }
@@ -47,17 +47,17 @@
              rotateY(calc(var(--o) * -32deg))
              scale(calc(1 + (1 - min(1, var(--ao))) * 0.07));
   opacity: clamp(0, calc((3.3 - var(--ao)) * 0.8), 1) !important;
-  transition: transform .8s var(--spr-soft), opacity .35s ease, filter .5s ease;
-  filter: saturate(calc(1 - min(1, var(--ao)) * 0.25)) brightness(calc(1 - min(1, var(--ao)) * 0.18));
+  /* No filter here: a saturate/brightness filter on every card is re-painted on each frame and made the swipe stutter; depth already dims through opacity. */
+  transition: transform 1s var(--spr-soft), opacity .5s ease; will-change: transform, opacity;
   animation: holo-enter .6s var(--out-expo) backwards; animation-delay: calc(var(--abs, 0) * 55ms);
 }
 :root:not([data-motion="reduce"]) .holo.dragging .holo-card { transition: none; }
 :root:not([data-motion="reduce"]) .holo-stage { cursor: grab; }
 :root:not([data-motion="reduce"]) .holo.dragging .holo-stage { cursor: grabbing; }
 @keyframes holo-enter { from { opacity: 0; translate: 0 26px; scale: .9; } }
-:root:not([data-motion="reduce"]) .holo-floor { translate: calc(var(--drag, 0) * -34px) 0; transition: translate .8s var(--spr-soft), opacity .4s ease; }
-:root:not([data-motion="reduce"]) .holo-panel-in { animation: holo-panel-in .6s var(--out-expo) backwards; }
-@keyframes holo-panel-in { from { opacity: 0; translate: calc(var(--hdir, 1) * 28px) 0; filter: blur(6px); } }
+:root:not([data-motion="reduce"]) .holo-floor { translate: calc(var(--drag, 0) * -34px) 0; transition: translate 1s var(--spr-soft), opacity .4s ease; }
+:root:not([data-motion="reduce"]) .holo-panel-in { animation: holo-panel-in .8s var(--out-expo) backwards; }
+@keyframes holo-panel-in { from { opacity: 0; translate: calc(var(--hdir, 1) * 28px) 0; } }
 :root:not([data-motion="reduce"]) .holo-card.cur .holo-cover { transition: box-shadow .6s ease, border-color .4s ease; }
 
 /* ---------------------------------------------------------------- Sidebar (left) and bottom bar (phone)
@@ -141,3 +141,7 @@
 :root:not([data-motion="reduce"]) .list > .list-item:nth-child(4) { animation-delay: .12s; } :root:not([data-motion="reduce"]) .list > .list-item:nth-child(n+5) { animation-delay: .16s; }
 /* buttons answer a press with a quick squash */
 :root:not([data-motion="reduce"]) .btn:active:not(:disabled) { scale: .96; transition-duration: .08s; }
+
+/* While the island opens or closes the page's glass blur is paused: re-blurring everything behind the moving island on every frame
+   is what made the movement stutter. The surfaces are mostly opaque, so the difference is barely visible for under a second. */
+html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
