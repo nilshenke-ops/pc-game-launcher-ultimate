@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.37.1 – 2026-11-10
+### Verbessert
+- Test des Stimmenwechslers: Stimmen mit exaktem Namen wählen
+
 ## 3.37.0 – 2026-11-10
 ### Neu
 - Stimmenwechsler: 19 neue Stimmen, jetzt über 30 – u. a. Duell-Ansager (dramatisch wie bei einem großen Kartenduell), Riese, Oger, Dunkler Herrscher, Bösewicht, Zombie, Geist, Gruselkeller, Unterwasser, Helium, Maus, Fee, Kobold, Blechdose, Cyborg, Durchsage, Stadion-Sprecher, Doppelgänger und Pilot
