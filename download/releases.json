@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.41.2",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.41.2/PCGameLauncherCompanion.exe",
+    "size": 95105383,
+    "sha256": "5eab15fc3041393026f65f1a291159f94d561cd4955727e0ba38ead2c5cd30b8",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.41.2-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.41.2/PCGameLauncherCompanion-3.41.2-win-x64.zip",
+      "size": 89379163,
+      "sha256": "06a011e0b897dd1087482741486dfc1153d9f5dfb1bfd6da05e78c14a1f0c672"
+    },
+    "notes": "Anmeldung am iPad/Handy: Ist der Name nicht in der Cloud und kein PC erreichbar, sagt die Meldung jetzt, dass das Konto vermutlich nur am PC liegt, und wo man es in die Cloud übernimmt",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Anmeldung am iPad/Handy: Ist der Name nicht in der Cloud und kein PC erreichbar, sagt die Meldung jetzt, dass das Konto vermutlich nur am PC liegt, und wo man es in die Cloud übernimmt"
+      ],
+      "behoben": []
+    },
+    "signature": "qyYZWk2kA+ME7GX50kIAVdBG82XXExBof3oNIjeM+zkUvWP2ZnTLaM88YlJp5PTDbutznYk45Z8orfvnz3K6bg=="
+  },
+  {
     "version": "3.41.1",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1324,32 +1348,5 @@
       ]
     },
     "signature": "We3urXLD0+w7zPs/K4NC5PFEni/ol63HtUseewcYm7TrwOheQEzyI0g5TOxrQqViNuGftLB/MoqiLjxwF2gVBQ=="
-  },
-  {
-    "version": "3.9.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.0/PCGameLauncherCompanion.exe",
-    "size": 94910438,
-    "sha256": "19082380112cffb7a23047f9b7e31940853cc412c5558877f2e0235a7e75d4a7",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.9.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.0/PCGameLauncherCompanion-3.9.0-win-x64.zip",
-      "size": 89184573,
-      "sha256": "09fce826ba6dc05e5650ffc998fd2dd6d8660ef6ca0641d35de8df1710069015"
-    },
-    "notes": "Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum · Live-Daten für JARVIS: Fragen, die aktuelle Fakten brauchen („Wann spielt der FC Bayern als Nächstes?“, Wetter, Preise, Patchnotes von heute), sucht JARVIS erst im Internet (Tavily, kostenlos: 1000 Suchen im Monat, kein Zahlungsmittel; Schlüssel nur am PC) und antwortet dann aus den Ergebnissen; die Quelle nennt er auf Nachfrage. Ohne Schlüssel steht ein kurzer Tipp zur Einrichtung unter der Antwort · Gemini ist entfernt (Karte, Modus, Auswahl und Anzeige). Zusammenfassungen und „KI fragen“ der Recherche übernehmen die kostenlosen KIs aus der KI-Verwaltung in deiner Reihenfolge; ein alter Gemini-Modus wird zu „Automatisch“",
-    "changes": {
-      "neu": [
-        "Ollama-Modelle direkt aus der Oberfläche installieren: In „Lokale KI (Ollama)“ steht bei jedem empfohlenen Modell ein Knopf „Installieren“ (mit Fortschrittsbalken), dazu ein Feld für ein anderes Modell aus der Ollama-Bibliothek; nach dem Laden wird das Modell automatisch ausgewählt – kein Terminal mehr nötig. Ist die Modellliste leer, steht jetzt klar da, warum",
-        "Live-Daten für JARVIS: Fragen, die aktuelle Fakten brauchen („Wann spielt der FC Bayern als Nächstes?“, Wetter, Preise, Patchnotes von heute), sucht JARVIS erst im Internet (Tavily, kostenlos: 1000 Suchen im Monat, kein Zahlungsmittel; Schlüssel nur am PC) und antwortet dann aus den Ergebnissen; die Quelle nennt er auf Nachfrage. Ohne Schlüssel steht ein kurzer Tipp zur Einrichtung unter der Antwort"
-      ],
-      "verbessert": [
-        "Gemini ist entfernt (Karte, Modus, Auswahl und Anzeige). Zusammenfassungen und „KI fragen“ der Recherche übernehmen die kostenlosen KIs aus der KI-Verwaltung in deiner Reihenfolge; ein alter Gemini-Modus wird zu „Automatisch“"
-      ],
-      "behoben": []
-    },
-    "signature": "KperHsYiUpa8/QQ/piv1SYvyWY1OvKptPDKT3LycsmC/aJjJCXm6NlhhltDK//5DonO5gPqysMq2JpBULbQwiw=="
   }
 ]
