@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.37.0 – 2026-11-10
+### Neu
+- Stimmenwechsler: 19 neue Stimmen, jetzt über 30 – u. a. Duell-Ansager (dramatisch wie bei einem großen Kartenduell), Riese, Oger, Dunkler Herrscher, Bösewicht, Zombie, Geist, Gruselkeller, Unterwasser, Helium, Maus, Fee, Kobold, Blechdose, Cyborg, Durchsage, Stadion-Sprecher, Doppelgänger und Pilot
+
 ## 3.36.0 – 2026-11-10
 ### Neu
 - Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC

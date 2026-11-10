@@ -51,7 +51,8 @@ describe("Stimmen", () => {
       if (v.echo) { expect(v.echo.feedback).toBeLessThan(0.85); expect(v.echo.time).toBeLessThanOrEqual(1); }
       if (v.band) expect(v.band.low).toBeLessThan(v.band.high);
     }
-    expect(VOICES.length).toBeGreaterThanOrEqual(10);
+    expect(VOICES.length).toBeGreaterThanOrEqual(30);
+    expect(VOICES.map((v) => v.id)).toContain("duel");
   });
   it("Original ändert nichts; unbekannte Kennung fällt auf Original zurück", () => {
     expect(voiceById("original").pitch).toBe(1);
