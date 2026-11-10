@@ -1,24 +1,24 @@
 {
-  "version": "3.37.0",
+  "version": "3.37.1",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.0/PCGameLauncherCompanion.exe",
-  "size": 95090024,
-  "sha256": "2770f043df9689dfddc35832eb0b3d2b259f996c377b0e0e7d81f851cb0cdda5",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.1/PCGameLauncherCompanion.exe",
+  "size": 95090036,
+  "sha256": "c5ec851768687de5bf312fbaa5f011649022015ac2239d581c7078d862aaaa43",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.37.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.0/PCGameLauncherCompanion-3.37.0-win-x64.zip",
-    "size": 89363420,
-    "sha256": "f4e1325361ae43b1daec20e8a565a866330b0fccd0eaa8440fbfd59d00b999b6"
+    "fileName": "PCGameLauncherCompanion-3.37.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.1/PCGameLauncherCompanion-3.37.1-win-x64.zip",
+    "size": 89363386,
+    "sha256": "7bd92294ad32be1ae5c1ca7d30c53ddc030cbd4c51b80d14f637aed5b084f185"
   },
-  "notes": "Stimmenwechsler: 19 neue Stimmen, jetzt über 30 – u. a. Duell-Ansager (dramatisch wie bei einem großen Kartenduell), Riese, Oger, Dunkler Herrscher, Bösewicht, Zombie, Geist, Gruselkeller, Unterwasser, Helium, Maus, Fee, Kobold, Blechdose, Cyborg, Durchsage, Stadion-Sprecher, Doppelgänger und Pilot",
+  "notes": "Test des Stimmenwechslers: Stimmen mit exaktem Namen wählen",
   "changes": {
-    "neu": [
-      "Stimmenwechsler: 19 neue Stimmen, jetzt über 30 – u. a. Duell-Ansager (dramatisch wie bei einem großen Kartenduell), Riese, Oger, Dunkler Herrscher, Bösewicht, Zombie, Geist, Gruselkeller, Unterwasser, Helium, Maus, Fee, Kobold, Blechdose, Cyborg, Durchsage, Stadion-Sprecher, Doppelgänger und Pilot"
+    "neu": [],
+    "verbessert": [
+      "Test des Stimmenwechslers: Stimmen mit exaktem Namen wählen"
     ],
-    "verbessert": [],
     "behoben": []
   },
-  "signature": "dSUmoMJ1a26NpXkwnorSBJCerbQzq0apriLeXXD3zWyB0ysXfaa1y/GoZVWuZOHhL50yLMlbapckjTO69PVPZg=="
+  "signature": "rW0KmAVVQoN6ToE5Ey+excpXiuH9CQB7zTAijtqMSm29QQX7OzoNy6ofMT6/vxfQpxKxmk5qbCCdpfwEt+T7aQ=="
 }
