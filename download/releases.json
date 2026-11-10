@@ -1,5 +1,37 @@
 [
   {
+    "version": "3.39.0",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.0/PCGameLauncherCompanion.exe",
+    "size": 95096588,
+    "sha256": "a831846212c7c614346398b49ddf4d6dfa4acaa650530e5ad24678be893b8c03",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.39.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.0/PCGameLauncherCompanion-3.39.0-win-x64.zip",
+      "size": 89370473,
+      "sha256": "e380ed6577d041e85d8dbdebd898a831affe3b2319def656662c9d9985c2e17c"
+    },
+    "notes": "Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %) · Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab · Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen",
+    "changes": {
+      "neu": [
+        "Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %)",
+        "Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab",
+        "Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen",
+        "Insel: Logo des laufenden Spiels als Abzeichen auf der Spiel-Karte, auch wenn ein Titelbild da ist",
+        "Hinweis auf Home und in der Bibliothek, wenn der PC noch nichts in die Cloud übertragen hat (mit Anleitung)"
+      ],
+      "verbessert": [
+        "Insel: Titelbilder der Musik 360 statt 128 Pixel, Programm- und Spiel-Symbole 256 statt 96 Pixel – deutlich schärfer (neue Symbole nach dem Update des Begleiters)",
+        "Cloud: Lehnt die Cloud eine Änderung ab, steht jetzt der Grund da statt „Cloud nicht erreichbar“",
+        "Cloud-Karte ohne Anmeldung erklärt, dass auch der PC mit demselben Konto angemeldet sein muss, und führt zur Anmeldung"
+      ],
+      "behoben": []
+    },
+    "signature": "4sV50/zwpz6uSvqeXovwQbrh+385FTEUP+QdoHUqIA2iONwjNjxReY/dCDrmjDi9FtIAi9E9vIsYh5CAJYNwFw=="
+  },
+  {
     "version": "3.38.0",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1324,36 +1356,5 @@
       "behoben": []
     },
     "signature": "CY1ec3S8xc1hkaQsM4qfYOUhB8A+qNUwVs02jq8wL+azgXEPOVxqgOt70Xrp1mhn2y3xBUsJISuknQIGKoZntw=="
-  },
-  {
-    "version": "3.3.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.3.0/PCGameLauncherCompanion.exe",
-    "size": 94887712,
-    "sha256": "ca6d6d6c0d7dc458fc7c34ea8d311e39cc4aef400964431a964c8b67c336c253",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.3.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.3.0/PCGameLauncherCompanion-3.3.0-win-x64.zip",
-      "size": 89162882,
-      "sha256": "31345e060dc021f8e5df2c6640ce261aea5d8d5194cd27ab30b762a805e59c48"
-    },
-    "notes": "KI leicht umschalten, auch vom Handy: Oben in der KI-Verwaltung wählst du mit einem Tipp, wie die KIs arbeiten – „Ersatz-Reihenfolge“ (eine nach der anderen, die nächste springt ein), „Schnellster gewinnt“ (OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt) oder „Nur eine KI“ (nur die gewählte antwortet, nichts springt ein). Darunter schaltest du OpenRouter und Groq mit je einem Tipp ein oder aus (oder gehst direkt zum Einrichten) · Schlüssel vom Handy oder iPad eintragen, auch im WLAN ohne https: Der Schlüssel wird im Browser mit dem Gerätegeheimnis versiegelt (nur für diese Sitzung und diesen Anbieter lesbar, nicht fälschbar) und erst am PC entschlüsselt, geprüft und geschützt gespeichert. Am PC selbst geht es wie bisher · Selbsttest in der KI-Verwaltung: prüft PC, einen echten PC-Befehl („Wie geht es meinem PC?“), die Internetsuche (offene Wikis), jede eingerichtete KI einzeln und die Spracheingabe – und sagt in einfachen Worten, was geklappt hat; ein eigener Knopf „Wiederverbindung prüfen“ trennt die Verbindung kurz und misst, wie schnell sie von selbst wieder steht",
-    "changes": {
-      "neu": [
-        "KI leicht umschalten, auch vom Handy: Oben in der KI-Verwaltung wählst du mit einem Tipp, wie die KIs arbeiten – „Ersatz-Reihenfolge“ (eine nach der anderen, die nächste springt ein), „Schnellster gewinnt“ (OpenRouter und Groq werden gleichzeitig gefragt, die schnellere Antwort zählt) oder „Nur eine KI“ (nur die gewählte antwortet, nichts springt ein). Darunter schaltest du OpenRouter und Groq mit je einem Tipp ein oder aus (oder gehst direkt zum Einrichten)",
-        "Schlüssel vom Handy oder iPad eintragen, auch im WLAN ohne https: Der Schlüssel wird im Browser mit dem Gerätegeheimnis versiegelt (nur für diese Sitzung und diesen Anbieter lesbar, nicht fälschbar) und erst am PC entschlüsselt, geprüft und geschützt gespeichert. Am PC selbst geht es wie bisher",
-        "Selbsttest in der KI-Verwaltung: prüft PC, einen echten PC-Befehl („Wie geht es meinem PC?“), die Internetsuche (offene Wikis), jede eingerichtete KI einzeln und die Spracheingabe – und sagt in einfachen Worten, was geklappt hat; ein eigener Knopf „Wiederverbindung prüfen“ trennt die Verbindung kurz und misst, wie schnell sie von selbst wieder steht"
-      ],
-      "verbessert": [
-        "Die Betriebsart bleibt gespeichert; der frühere Schalter „Automatisch wechseln“ wird übernommen (aus = „Nur eine KI“)",
-        "Spracheingabe: der Selbsttest sagt klar, ob der Browser (oder die Home-Bildschirm-App) Sprache erkennen kann und was man tun kann, wenn nicht"
-      ],
-      "behoben": [
-        "Ein bei Groq gespeicherter Schlüssel ohne Bestätigung „kostenloser Tarif“ schaltete Groq nicht ein (Reihenfolge der Prüfung): behoben, auch beim Setzen von Schlüssel und Bestätigung in einem Schritt"
-      ]
-    },
-    "signature": "TLLuzQ5P+6Ou58S34BRDjOHSsFfI1hz+uR7XgYsT7AlXVoUiFOT0l/hAzaVuFACXuDy0WTHzLnCR2+ljpyI+OQ=="
   }
 ]
