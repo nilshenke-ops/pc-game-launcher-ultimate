@@ -1,5 +1,37 @@
 [
   {
+    "version": "3.43.0",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.43.0/PCGameLauncherCompanion.exe",
+    "size": 95109695,
+    "sha256": "f13ccf773987814f210633e4be89ba58ba921e34499b29c6240afa9cad6a8b89",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.43.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.43.0/PCGameLauncherCompanion-3.43.0-win-x64.zip",
+      "size": 89383395,
+      "sha256": "1d9b73b43d8ef0da51f964dbec60576422eebd25fa46538f9733fac9e78e45af"
+    },
+    "notes": "Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein · Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter · Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung",
+    "changes": {
+      "neu": [
+        "Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein",
+        "Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter",
+        "Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung",
+        "Seitenleiste links: Logo, Einträge und Fußbereich kommen nacheinander, Symbole kippen und federn beim Darüberfahren, der aktive Eintrag springt auf, Beschriftung rückt ein",
+        "Untere Leiste (Handy): fährt ein, das gewählte Symbol federt; „Alle Bereiche“: Kacheln erscheinen nacheinander",
+        "Auswahlschalter gleiten, Schalter dehnen sich beim Drücken und federn, Filter-Chips und Knöpfe federn beim Tippen, Listen und Kacheln erscheinen gestaffelt",
+        "Automatische Tests prüfen Bewegung auf Handy, iPad und PC (auch bei „System: Bewegung reduzieren“)"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "**Keine Animationen am PC (Ursache gefunden):** Die App schaltete alle Bewegung ab, sobald Windows „Animationen anzeigen“ aus hat (viele Gaming-PCs) oder das iPad „Bewegung reduzieren“ meldet – dann standen Insel, Seitenleiste, Übergänge und alle Federn still. Jetzt zählt nur noch die Einstellung der App (Einstellungen → Design: „Animationen reduzieren“ / Leichte Darstellung); wer will, schaltet „Systemeinstellung ‚Bewegung reduzieren‘ beachten“ ein"
+      ]
+    },
+    "signature": "gg7mAZTMYAdMfnNyMz0tQ0kHlu8S7sae6hR65Qu/h/5eQ4bkXkEpya1zUw/eb1MxgQhrRWnjSbyUGqHHeqVhDg=="
+  },
+  {
     "version": "3.42.1",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1320,31 +1352,5 @@
       "behoben": []
     },
     "signature": "j19cL05WQh614SRK8DjgbIKtVPunU44a5AA3E44//1DNPNeeqRFyPD9mXlJKdDupXTxCkCzDeUq0PaOZZDbKIQ=="
-  },
-  {
-    "version": "3.11.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.11.0/PCGameLauncherCompanion.exe",
-    "size": 94913792,
-    "sha256": "9687319bfde7748651b4d7f8244749855fded50c2f7077e73b9cca32380b95c3",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.11.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.11.0/PCGameLauncherCompanion-3.11.0-win-x64.zip",
-      "size": 89188428,
-      "sha256": "330429bbcb3488524178e835fbe779066f597f5e60172e226ec83e7890fca388"
-    },
-    "notes": "Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein) · Falsche Eingaben werden erklärt (Profil nicht gefunden, kein gültiger Link) und ändern nichts; „Verbindung lösen“ beendet den Abgleich, die übernommenen Spiele bleiben",
-    "changes": {
-      "neu": [
-        "Steam-Wunschliste im Deal Radar mit einem Profillink: Oben im Deal Radar steht die Karte „Steam-Wunschliste“ – Profillink, Profilname oder Steam-ID eintragen, „Übernehmen“, fertig. Alle Spiele deiner Wunschliste landen sofort in der Liste, die Preisabfrage wird eingeschaltet und die Preise folgen; neue Wunschlisten-Spiele kommen bei jeder Preisprüfung automatisch dazu. Dafür braucht es keinen Steam-API-Schlüssel mehr und kein verbundenes Steam-Konto (die Wunschliste muss in Steam öffentlich sein)"
-      ],
-      "verbessert": [
-        "Falsche Eingaben werden erklärt (Profil nicht gefunden, kein gültiger Link) und ändern nichts; „Verbindung lösen“ beendet den Abgleich, die übernommenen Spiele bleiben"
-      ],
-      "behoben": []
-    },
-    "signature": "U33MrBkB5F/5fN5Cl2j+KrEhB2/hj+uqfY5Vh0RN+HHKcmYdFPxp9rCdtx/6HhX8AVOv23TFlJTCaEQC/JinzA=="
   }
 ]

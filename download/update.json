@@ -1,27 +1,32 @@
 {
-  "version": "3.42.1",
+  "version": "3.43.0",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.1/PCGameLauncherCompanion.exe",
-  "size": 95107346,
-  "sha256": "b357afb6b28220538edfdaf760cfe6039db4152e2e71d9dee532808dd2dac342",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.43.0/PCGameLauncherCompanion.exe",
+  "size": 95109695,
+  "sha256": "f13ccf773987814f210633e4be89ba58ba921e34499b29c6240afa9cad6a8b89",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.42.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.1/PCGameLauncherCompanion-3.42.1-win-x64.zip",
-    "size": 89380852,
-    "sha256": "12f9f7350dcbd874d15150eed6ca342f0fee49c295d7c95043a59bbab24dcd37"
+    "fileName": "PCGameLauncherCompanion-3.43.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.43.0/PCGameLauncherCompanion-3.43.0-win-x64.zip",
+    "size": 89383395,
+    "sha256": "1d9b73b43d8ef0da51f964dbec60576422eebd25fa46538f9733fac9e78e45af"
   },
-  "notes": "Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen",
+  "notes": "Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein · Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter · Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen"
+    "neu": [
+      "Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein",
+      "Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter",
+      "Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung",
+      "Seitenleiste links: Logo, Einträge und Fußbereich kommen nacheinander, Symbole kippen und federn beim Darüberfahren, der aktive Eintrag springt auf, Beschriftung rückt ein",
+      "Untere Leiste (Handy): fährt ein, das gewählte Symbol federt; „Alle Bereiche“: Kacheln erscheinen nacheinander",
+      "Auswahlschalter gleiten, Schalter dehnen sich beim Drücken und federn, Filter-Chips und Knöpfe federn beim Tippen, Listen und Kacheln erscheinen gestaffelt",
+      "Automatische Tests prüfen Bewegung auf Handy, iPad und PC (auch bei „System: Bewegung reduzieren“)"
     ],
+    "verbessert": [],
     "behoben": [
-      "Soundboard: Die Lautstärke wirkt jetzt sofort – auch auf Sounds, die gerade laufen (vorher nur auf den nächsten Sound), und beim Ziehen des Reglers (nicht erst beim Loslassen, auch am iPad)",
-      "JARVIS-Insel am PC: Das Fenster wird beim Öffnen und Schließen ohne Neuzeichnen pro Bild angepasst – die Öffnen- und Schließ-Animation läuft ruhiger durch"
+      "**Keine Animationen am PC (Ursache gefunden):** Die App schaltete alle Bewegung ab, sobald Windows „Animationen anzeigen“ aus hat (viele Gaming-PCs) oder das iPad „Bewegung reduzieren“ meldet – dann standen Insel, Seitenleiste, Übergänge und alle Federn still. Jetzt zählt nur noch die Einstellung der App (Einstellungen → Design: „Animationen reduzieren“ / Leichte Darstellung); wer will, schaltet „Systemeinstellung ‚Bewegung reduzieren‘ beachten“ ein"
     ]
   },
-  "signature": "6XizyFiCRJwBLqS9nWlofGPDSeiWriNPs8mFOe1ekf9CGIPpIUmbqJ8er2jkipCKr7txAG2V4dfurnj6DiRNHw=="
+  "signature": "gg7mAZTMYAdMfnNyMz0tQ0kHlu8S7sae6hR65Qu/h/5eQ4bkXkEpya1zUw/eb1MxgQhrRWnjSbyUGqHHeqVhDg=="
 }
