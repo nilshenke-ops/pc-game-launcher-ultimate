@@ -144,6 +144,7 @@ export async function createProfile(userIn: string, password: string) {
   }
   const k = await deriveKeys(user, password);
   await client.call("design.create", { user, key: k.auth, blob: await encryptDesign(k.enc, getPrefs()) });
+  rememberPassword(user, password);
   store({ user, ...k, savedAt: Date.now() });
   await adoptKeys();
   void saveNow().catch(() => { /* next change tries again */ });
@@ -173,6 +174,7 @@ export async function signIn(userIn: string, password: string) {
   const r = await client.call<{ blob: string; updatedAt: string }>("design.load", { user, key: k.auth });
   const data = await decryptDesign(k.enc, r.blob);
   applyData(data, true);
+  rememberPassword(user, password);
   store({ user, ...k, savedAt: Date.now() });
   await adoptKeys(data.keys);
   notifyAccount();

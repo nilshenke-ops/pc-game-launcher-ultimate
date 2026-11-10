@@ -362,15 +362,22 @@ test("Konto nur am PC: in den Einstellungen sichtbar und per Knopf in die Cloud 
   const card = p.locator(".card", { hasText: "Zugangsdaten" });
   await expect(card.getByText(user, { exact: true })).toBeVisible({ timeout: 20_000 });
   await expect(card.getByText("Dieses Konto liegt nur am PC")).toBeVisible();
-  await card.locator("input[type=password]").fill("falsches-passwort");
-  await card.getByRole("button", { name: "In die Cloud übernehmen" }).click();
+  // the name and the password are shown for an account at the PC as well
+  await card.getByPlaceholder("Passwort", { exact: true }).fill("falsches-passwort");
+  await card.getByRole("button", { name: "Merken" }).click();
   await expect(card.getByText("Das Passwort stimmt nicht.")).toBeVisible({ timeout: 20_000 });
-  await card.locator("input[type=password]").fill(password);
-  await card.getByRole("button", { name: "In die Cloud übernehmen" }).click();
-  await expect(card.getByText("Passwort", { exact: true }).first()).toBeVisible({ timeout: 30_000 });   // now the cloud card (user name + password rows)
-  await expect(card.getByRole("button", { name: "Anzeigen" })).toBeVisible();
-  expect((await cloud("account/login", { user, key: k.auth })).status).toBe(200);                      // the account exists in the cloud now
+  await card.getByPlaceholder("Passwort", { exact: true }).fill(password);
+  await card.getByRole("button", { name: "Merken" }).click();
   await card.getByRole("button", { name: "Anzeigen" }).click();
   await expect(card.getByText(password, { exact: true })).toBeVisible();
+  // and it can move into the cloud
+  const box = card.locator(".card-inner input[type=password]");
+  await box.fill("falsches-passwort");
+  await card.getByRole("button", { name: "In die Cloud übernehmen" }).click();
+  await expect(card.getByText("Das Passwort stimmt nicht.").last()).toBeVisible({ timeout: 20_000 });
+  await box.fill(password);
+  await card.getByRole("button", { name: "In die Cloud übernehmen" }).click();
+  await expect(card.getByRole("button", { name: "Ändern" }).first()).toBeVisible({ timeout: 30_000 });   // the cloud card: now the name can be changed
+  expect((await cloud("account/login", { user, key: k.auth })).status).toBe(200);                      // the account exists in the cloud now
   await ctx.close();
 });

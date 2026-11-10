@@ -26,7 +26,8 @@ export function AccountCredentials() {
   const [codeOld, setCodeOld] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  if (!s?.cloud) return null;
+  if (!s) return null;
+  const cloud = !!s.cloud;
   const state = passwordState(s.user), locked = hasAccessCode(s.user);
   const run = async (fn: () => Promise<void>, ok?: string) => { setBusy(true); setErr(null); try { await fn(); if (ok) toast(ok, "success"); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); } };
   const done = () => { setMode(""); setNewUser(""); setNewPw(""); setNewPw2(""); setCurPw(""); setCodeNew(""); setCodeOld(""); setShown(null); setCode(""); setTypedPw(""); };
@@ -39,7 +40,7 @@ export function AccountCredentials() {
           <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
             <code style={{ fontSize: "1.05rem" }}>{s.user}</code>
             <Button size="sm" icon={<Copy size={14} />} onClick={() => void copy(s.user)}>{t("Kopieren")}</Button>
-            <Button size="sm" onClick={() => { setErr(null); setMode(mode === "user" ? "" : "user"); }}>{t("Ändern")}</Button>
+            {cloud && <Button size="sm" onClick={() => { setErr(null); setMode(mode === "user" ? "" : "user"); }}>{t("Ändern")}</Button>}
           </div>
         </Field>
 
@@ -54,7 +55,7 @@ export function AccountCredentials() {
               : state === "visible"
                 ? <Button size="sm" icon={<Eye size={14} />} onClick={() => void run(async () => setShown(await revealPassword(s.user)))}>{t("Anzeigen")}</Button>
                 : null}
-            <Button size="sm" onClick={() => { setErr(null); setMode(mode === "pass" ? "" : "pass"); }}>{t("Ändern")}</Button>
+            {cloud && <Button size="sm" onClick={() => { setErr(null); setMode(mode === "pass" ? "" : "pass"); }}>{t("Ändern")}</Button>}
           </div>
           {state === "locked" && shown === null && (
             <div className="row" style={{ gap: 8, flexWrap: "wrap", marginTop: 8 }}>
@@ -68,7 +69,7 @@ export function AccountCredentials() {
               <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
                 <input className="input" type="password" value={typedPw} onChange={(e) => setTypedPw(e.target.value)} placeholder={t("Passwort")} autoComplete="current-password" style={{ maxWidth: 260 }} />
                 <Button size="sm" variant="primary" busy={busy} onClick={() => void run(async () => { await confirmPassword(typedPw); setTypedPw(""); tick((n) => n + 1); }, t("Passwort gemerkt."))}>{t("Merken")}</Button>
-                <Button size="sm" onClick={() => { setErr(null); setMode("pass"); }}>{t("Neues Passwort festlegen")}</Button>
+                {cloud && <Button size="sm" onClick={() => { setErr(null); setMode("pass"); }}>{t("Neues Passwort festlegen")}</Button>}
               </div>
             </div>
           )}
@@ -114,6 +115,7 @@ export function AccountCredentials() {
           </div>
         )}
         {err && <Banner kind="error">{err}</Banner>}
+        {!cloud && <MoveToCloud />}
       </div>
     </Card>
   );
@@ -132,30 +134,24 @@ export function AccountSettings() {
       </div>
     </Card>
   );
-  if (s.cloud) return <AccountCredentials />;
-  return <PcAccountCard user={s.user} />;
+  return <AccountCredentials />;
 }
 
-/** An account that exists only at the PC: shows the name and moves it into the cloud (same name and password) so the other devices see the PC's data too. */
-function PcAccountCard({ user }: { user: string }) {
+/** An account that exists only at the PC can move into the cloud (same name and password) so the other devices see the PC's data too. */
+function MoveToCloud() {
   const [pw, setPw] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   return (
-    <Card title={t("Zugangsdaten")} icon={<KeyRound size={18} />}>
-      <div className="stack-sm">
-        <Field label={t("Benutzername")}>
-          <div className="row" style={{ gap: 8, flexWrap: "wrap" }}><code style={{ fontSize: "1.05rem" }}>{user}</code><Button size="sm" icon={<Copy size={14} />} onClick={() => void copy(user)}>{t("Kopieren")}</Button></div>
-        </Field>
-        <Banner kind="warn" title={t("Dieses Konto liegt nur am PC – nicht in der Cloud")}>
-          {t("Darum sehen andere Geräte (iPad, Handy) die Spiele deines PCs nicht, und der PC lädt nichts hoch. Übernimm das Konto in die Cloud: gleicher Name, gleiches Passwort.")}
-        </Banner>
-        <Field label={t("Passwort")} hint={t("Gib dein Passwort einmal ein. Es wird geprüft und danach hier angezeigt.")}>
-          <input className="input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="current-password" />
-        </Field>
-        <div><Button variant="primary" busy={busy} onClick={() => { setBusy(true); setErr(null); void moveToCloud(pw).then(() => { setPw(""); toast(t("Konto in der Cloud – der PC verbindet sich jetzt."), "success"); }).catch((e) => setErr((e as Error).message)).finally(() => setBusy(false)); }}>{t("In die Cloud übernehmen")}</Button></div>
-        {err && <Banner kind="error">{err}</Banner>}
-      </div>
-    </Card>
+    <div className="stack-sm card-inner">
+      <Banner kind="warn" title={t("Dieses Konto liegt nur am PC – nicht in der Cloud")}>
+        {t("Darum sehen andere Geräte (iPad, Handy) die Spiele deines PCs nicht, und der PC lädt nichts hoch. Übernimm das Konto in die Cloud: gleicher Name, gleiches Passwort.")}
+      </Banner>
+      <Field label={t("Passwort")} hint={t("Gib dein Passwort einmal ein. Es wird geprüft und danach hier angezeigt.")}>
+        <input className="input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="current-password" />
+      </Field>
+      <div><Button variant="primary" busy={busy} onClick={() => { setBusy(true); setErr(null); void moveToCloud(pw).then(() => { setPw(""); toast(t("Konto in der Cloud – der PC verbindet sich jetzt."), "success"); }).catch((e) => setErr((e as Error).message)).finally(() => setBusy(false)); }}>{t("In die Cloud übernehmen")}</Button></div>
+      {err && <Banner kind="error">{err}</Banner>}
+    </div>
   );
 }

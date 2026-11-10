@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.41.1 – 2026-11-10
+### Verbessert
+- Konto & Anmeldedaten: Benutzername und Passwort stehen jetzt für jedes Konto da – Cloud-Konto und Konto am PC (ansehen, kopieren, Passwort einmal merken); Ändern und Geheimcode für Cloud-Konten, „In die Cloud übernehmen“ zusätzlich für ein Konto am PC
+- Wer sich am PC-Konto anmeldet oder eins anlegt, sieht sein Passwort danach sofort
+
 ## 3.41.0 – 2026-11-10
 ### Neu
 - Einstellungen: neuer Punkt „Konto & Anmeldedaten“ – zeigt Benutzername und Passwort (ansehen, kopieren, ändern, optionaler Geheimcode); ohne Anmeldung gleich mit Anmeldung/Registrierung
