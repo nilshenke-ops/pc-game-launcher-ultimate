@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.42.0",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.0/PCGameLauncherCompanion.exe",
+    "size": 95106100,
+    "sha256": "7a7f09407b5400edd75b5be41e2dda6085a77de3565aa14c7328988a57c91733",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.42.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.0/PCGameLauncherCompanion-3.42.0-win-x64.zip",
+      "size": 89379514,
+      "sha256": "e6d1eb3d1a336153ebc502d197804e56645526cd5fc793bc0c57f4c3a4824a88"
+    },
+    "notes": "Soundboard ohne PC: Ein Link (https), den du am iPad/Handy hinzufügst, geht jetzt über die Cloud – der PC lädt ihn von selbst herunter, sobald er läuft; kein Warten auf eine PC-Verbindung mehr (Dateien brauchen weiterhin die PC-Verbindung) · JARVIS-Stimme: Spricht die ElevenLabs-Stimme nicht, steht der Grund jetzt in der KI-Verwaltung (Sprache sprechen) statt dass still die Browser-Stimme übernimmt",
+    "changes": {
+      "neu": [
+        "Soundboard ohne PC: Ein Link (https), den du am iPad/Handy hinzufügst, geht jetzt über die Cloud – der PC lädt ihn von selbst herunter, sobald er läuft; kein Warten auf eine PC-Verbindung mehr (Dateien brauchen weiterhin die PC-Verbindung)",
+        "JARVIS-Stimme: Spricht die ElevenLabs-Stimme nicht, steht der Grund jetzt in der KI-Verwaltung (Sprache sprechen) statt dass still die Browser-Stimme übernimmt"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "2aCs5G8CMuRdPD9ZpAwNxDwI9+YNvTxwvvxh60pGARmN6hdBPGqMU3fMedysDYKBMDuDcX/5f3TvD947WPNlCg=="
+  },
+  {
     "version": "3.41.2",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1321,32 +1346,5 @@
       "behoben": []
     },
     "signature": "9E6Ri5ArWm69KgutloMsNWn0+v2pGURGm6P7nzvA76iL3ppJC720DmOpKj6nhKhCDw/MSWcnrHzjBro/DwVB7w=="
-  },
-  {
-    "version": "3.9.1",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion.exe",
-    "size": 94910829,
-    "sha256": "7379254e0cde58542937ad8d43c9739509a349e55d9b4afdfd959fc733eb0960",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.9.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.9.1/PCGameLauncherCompanion-3.9.1-win-x64.zip",
-      "size": 89185011,
-      "sha256": "9ef0de5bfc898b6ba2b581a683aab42e91bc453490c58791b5827ce99819f921"
-    },
-    "notes": "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü · Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Die JARVIS-Insel in der App bleibt das kleine Gesicht mit den zwei Augen und wird nicht mehr zur breiten Leiste mit Text („JARVIS – antippen für Widgets“), die die Knöpfe oben verdeckt; was JARVIS tut, zeigen die Augen, Antworten stehen im geöffneten Menü",
-        "Die geöffnete Insel schließt mit einem Tipp auf ihre Oberkante (Augen und Datum) – so wie sie sich öffnet, ohne den Umweg über „⋯“ und „Schließen“ (das Menü bleibt)"
-      ],
-      "behoben": [
-        "Der zusätzliche Menü-Knopf links oben neben der Suche erscheint nicht mehr, wenn die Seitenleiste sichtbar ist (iPad, PC); auf dem Handy bleibt er"
-      ]
-    },
-    "signature": "We3urXLD0+w7zPs/K4NC5PFEni/ol63HtUseewcYm7TrwOheQEzyI0g5TOxrQqViNuGftLB/MoqiLjxwF2gVBQ=="
   }
 ]
