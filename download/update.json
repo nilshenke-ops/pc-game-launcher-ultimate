@@ -1,25 +1,26 @@
 {
-  "version": "3.39.2",
+  "version": "3.39.3",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion.exe",
-  "size": 95097598,
-  "sha256": "5601fed1c7d797d4ee36296666d003206bb3f391664cbf113bcfa5333fddb958",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.3/PCGameLauncherCompanion.exe",
+  "size": 95099583,
+  "sha256": "b94fcc0ce7072adf905d4aa726518c5c0c737853ce6b0f3d0ea11152014e9da1",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.39.2-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion-3.39.2-win-x64.zip",
-    "size": 89371449,
-    "sha256": "03ad645f2129824462764640439753621dbd32f6837d4add351e2ba50eed0e1e"
+    "fileName": "PCGameLauncherCompanion-3.39.3-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.3/PCGameLauncherCompanion-3.39.3-win-x64.zip",
+    "size": 89373492,
+    "sha256": "7e10d6d5fe100e3daf1fbfe1e22a544185b1b3189f5ea93d259118c961eb7e66"
   },
-  "notes": "",
+  "notes": "Cloud-Karte: Knopf „Prüfen & reparieren“ – prüft Schritt für Schritt Konto, Cloud, PC-Verbindung und Upload, verbindet den PC bei Bedarf mit dem Konto und zeigt in Klartext, wo es hängt (auch am iPad: zeigt, was in der Cloud liegt und wann der PC zuletzt hochgeladen hat) · Automatischer Test deckt jetzt auch die Startseite ohne PC-Verbindung ab (die Spiele des PCs statt der Standard-Kacheln)",
   "changes": {
-    "neu": [],
-    "verbessert": [],
-    "behoben": [
-      "Cloud-Karte: Der Knopf „Zur Anmeldung“ tat auf der Profil-Seite nichts – er heißt jetzt „Jetzt anmelden“ und öffnet direkt die Anmeldung",
-      "Cloud-Karte zeigt Anmeldung und Abmeldung sofort (blieb vorher auf „nicht angemeldet“ stehen, bis der nächste Abgleich lief) und sagt, ob das Gerät nur lokal oder mit dem Cloud-Konto angemeldet ist"
-    ]
+    "neu": [
+      "Cloud-Karte: Knopf „Prüfen & reparieren“ – prüft Schritt für Schritt Konto, Cloud, PC-Verbindung und Upload, verbindet den PC bei Bedarf mit dem Konto und zeigt in Klartext, wo es hängt (auch am iPad: zeigt, was in der Cloud liegt und wann der PC zuletzt hochgeladen hat)"
+    ],
+    "verbessert": [
+      "Automatischer Test deckt jetzt auch die Startseite ohne PC-Verbindung ab (die Spiele des PCs statt der Standard-Kacheln)"
+    ],
+    "behoben": []
   },
-  "signature": "xKVPJWFAPbe9xVzcFr3n93ofZPyu8hyyPep+0sCYxEbaDeopI/rRXtdP3Ssa8ZYKfojpT3RLdEJN8qIPYOrVfg=="
+  "signature": "UtJNLsbmJEgMU7fjOS5bMIYnHf507s2UBi7irlgSwXQsBtUI7aFy5UGIiXLHc+L/cu7JJ4vGUTWYPx2zlHpc2A=="
 }

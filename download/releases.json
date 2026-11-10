@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.39.3",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.3/PCGameLauncherCompanion.exe",
+    "size": 95099583,
+    "sha256": "b94fcc0ce7072adf905d4aa726518c5c0c737853ce6b0f3d0ea11152014e9da1",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.39.3-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.3/PCGameLauncherCompanion-3.39.3-win-x64.zip",
+      "size": 89373492,
+      "sha256": "7e10d6d5fe100e3daf1fbfe1e22a544185b1b3189f5ea93d259118c961eb7e66"
+    },
+    "notes": "Cloud-Karte: Knopf „Prüfen & reparieren“ – prüft Schritt für Schritt Konto, Cloud, PC-Verbindung und Upload, verbindet den PC bei Bedarf mit dem Konto und zeigt in Klartext, wo es hängt (auch am iPad: zeigt, was in der Cloud liegt und wann der PC zuletzt hochgeladen hat) · Automatischer Test deckt jetzt auch die Startseite ohne PC-Verbindung ab (die Spiele des PCs statt der Standard-Kacheln)",
+    "changes": {
+      "neu": [
+        "Cloud-Karte: Knopf „Prüfen & reparieren“ – prüft Schritt für Schritt Konto, Cloud, PC-Verbindung und Upload, verbindet den PC bei Bedarf mit dem Konto und zeigt in Klartext, wo es hängt (auch am iPad: zeigt, was in der Cloud liegt und wann der PC zuletzt hochgeladen hat)"
+      ],
+      "verbessert": [
+        "Automatischer Test deckt jetzt auch die Startseite ohne PC-Verbindung ab (die Spiele des PCs statt der Standard-Kacheln)"
+      ],
+      "behoben": []
+    },
+    "signature": "UtJNLsbmJEgMU7fjOS5bMIYnHf507s2UBi7irlgSwXQsBtUI7aFy5UGIiXLHc+L/cu7JJ4vGUTWYPx2zlHpc2A=="
+  },
+  {
     "version": "3.39.2",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1322,29 +1348,5 @@
       ]
     },
     "signature": "rZkZCamzu5AGLbyBIG8l3S4vGNKHne9LvnbVNn3knrUpL4YzgT14XKbMxnKRSYW/IHg+RgWoaQcI7xRdHUoNpA=="
-  },
-  {
-    "version": "3.5.1",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.1/PCGameLauncherCompanion.exe",
-    "size": 94896609,
-    "sha256": "2dd238a865db61cf398cad4b492bf270b727674cf9f2e741ab2d83bfd75aa28e",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.5.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.1/PCGameLauncherCompanion-3.5.1-win-x64.zip",
-      "size": 89171764,
-      "sha256": "bd1217fb3b73f855813eee3b776d54f207ff77cd2ffb8a9bff49affdac9d5e26"
-    },
-    "notes": "Der QR-Code zum Koppeln ist jetzt eine scharfe Vektorgrafik mit vollem weißem Rand und deutlich größer (bis 300 Pixel statt 196); mit „QR-Code größer anzeigen“ füllt er den Bildschirm, damit die Handykamera ihn sicher erkennt",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Der QR-Code zum Koppeln ist jetzt eine scharfe Vektorgrafik mit vollem weißem Rand und deutlich größer (bis 300 Pixel statt 196); mit „QR-Code größer anzeigen“ füllt er den Bildschirm, damit die Handykamera ihn sicher erkennt"
-      ],
-      "behoben": []
-    },
-    "signature": "uAbHCrRHFoEf1EugZUuyeNJG94JdT6toOiKgM/Jkjffl/34V6V0uShlDtzRPwPUjSBfzANuxov5gs7gr5jy2Rg=="
   }
 ]
