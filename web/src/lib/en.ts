@@ -6920,6 +6920,7 @@ export const en: Record<string, string> = {
   "Konto & Anmeldedaten": "Account & sign-in details",
   "Konto in der Cloud – der PC verbindet sich jetzt.": "Account is in the cloud – the PC is connecting now.",
   "Das Konto „{u}“ liegt nur am PC, nicht in der Cloud. Öffne Einstellungen → Konto & Anmeldedaten und tippe auf „In die Cloud übernehmen“.": "The account “{u}” lives only on the PC, not in the cloud. Open Settings → Account & sign-in details and tap “Move to the cloud”.",
+  "Benutzername oder Passwort falsch – oder das Konto liegt nur am PC. Öffne am PC Einstellungen → Konto & Anmeldedaten und tippe auf „In die Cloud übernehmen“, dann geht die Anmeldung auch hier.": "User name or password wrong – or the account exists only on the PC. On the PC open Settings → Account & sign-in details and tap “Move to the cloud”, then signing in works here too.",
   "Weiteres Konto hinzufügen": "Add another account",
   "Stimme testen": "Test voice",
   "Test läuft: Du hörst dich selbst in der gewählten Stimme – nur mit Kopfhörern, sonst pfeift es. Zu Discord geht dabei nichts. Wechsle die Stimme, während du sprichst.": "Test running: you hear yourself in the chosen voice – headphones only, otherwise it will whistle. Nothing goes to Discord. Switch the voice while you talk.",

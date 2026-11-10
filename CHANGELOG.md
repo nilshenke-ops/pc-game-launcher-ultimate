@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.41.2 – 2026-11-10
+### Verbessert
+- Anmeldung am iPad/Handy: Ist der Name nicht in der Cloud und kein PC erreichbar, sagt die Meldung jetzt, dass das Konto vermutlich nur am PC liegt, und wo man es in die Cloud übernimmt
+
 ## 3.41.1 – 2026-11-10
 ### Verbessert
 - Konto & Anmeldedaten: Benutzername und Passwort stehen jetzt für jedes Konto da – Cloud-Konto und Konto am PC (ansehen, kopieren, Passwort einmal merken); Ändern und Geheimcode für Cloud-Konten, „In die Cloud übernehmen“ zusätzlich für ein Konto am PC

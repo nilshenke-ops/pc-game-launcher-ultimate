@@ -167,7 +167,9 @@ export async function signIn(userIn: string, password: string) {
       return;
     } catch (e) {
       // Accounts made before the cloud still live on the PC: an unknown name there is tried on the connected PC once.
-      if (!/falsch/i.test((e as Error).message) || client.status.auth !== "ok") throw e;
+      if (!/falsch/i.test((e as Error).message)) throw e;
+      // Not in the cloud and no PC to ask: say what is probably the case (the account only exists at the PC) instead of just "wrong".
+      if (client.status.auth !== "ok") throw new Error(t("Benutzername oder Passwort falsch – oder das Konto liegt nur am PC. Öffne am PC Einstellungen → Konto & Anmeldedaten und tippe auf „In die Cloud übernehmen“, dann geht die Anmeldung auch hier."));
     }
   }
   const k = await deriveKeys(user, password);
