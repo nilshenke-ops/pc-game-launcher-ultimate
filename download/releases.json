@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.39.2",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion.exe",
+    "size": 95097598,
+    "sha256": "5601fed1c7d797d4ee36296666d003206bb3f391664cbf113bcfa5333fddb958",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.39.2-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion-3.39.2-win-x64.zip",
+      "size": 89371449,
+      "sha256": "03ad645f2129824462764640439753621dbd32f6837d4add351e2ba50eed0e1e"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Cloud-Karte: Der Knopf „Zur Anmeldung“ tat auf der Profil-Seite nichts – er heißt jetzt „Jetzt anmelden“ und öffnet direkt die Anmeldung",
+        "Cloud-Karte zeigt Anmeldung und Abmeldung sofort (blieb vorher auf „nicht angemeldet“ stehen, bis der nächste Abgleich lief) und sagt, ob das Gerät nur lokal oder mit dem Cloud-Konto angemeldet ist"
+      ]
+    },
+    "signature": "xKVPJWFAPbe9xVzcFr3n93ofZPyu8hyyPep+0sCYxEbaDeopI/rRXtdP3Ssa8ZYKfojpT3RLdEJN8qIPYOrVfg=="
+  },
+  {
     "version": "3.39.1",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1321,34 +1346,5 @@
       "behoben": []
     },
     "signature": "uAbHCrRHFoEf1EugZUuyeNJG94JdT6toOiKgM/Jkjffl/34V6V0uShlDtzRPwPUjSBfzANuxov5gs7gr5jy2Rg=="
-  },
-  {
-    "version": "3.5.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.0/PCGameLauncherCompanion.exe",
-    "size": 94896288,
-    "sha256": "91fd77ca00a797a3ace0154b147edaf042267f13a9dac7a59908062e9a6de140",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.5.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.5.0/PCGameLauncherCompanion-3.5.0-win-x64.zip",
-      "size": 89171521,
-      "sha256": "ae7932c2f644e1d43921530e0cc1765ed1ae55c741972dbb3f3e00507cedfec6"
-    },
-    "notes": "OpenRouter und Groq ohne PC einrichten und benutzen: In der KI-Verwaltung der Website (https) trägst du den Schlüssel am Handy oder iPad ein und vergibst ein Passwort; der Schlüssel wird mit AES-GCM (Passwort → PBKDF2) verschlüsselt nur auf diesem Gerät gespeichert, nach dem Neuladen ist er gesperrt, bis du das Passwort eingibst. Dann antwortet JARVIS auch ohne PC direkt aus dem Browser – mit „Beantwortet von OpenRouter – kostenloses Modell“ und derselben Kette (OpenRouter → Groq → Pollinations mit deinem Ja) · Dieselben Kostenregeln wie am PC im Browser: nur Modelle mit Preis 0 (Liste höchstens 5 Minuten alt, vor jeder Anfrage neu geprüft), Höchstpreis 0 in jeder Anfrage, kein Aufladen, der Schlüssel geht ausschließlich an den eigenen Dienst; Groq nur nach der Bestätigung „kostenloser Tarif“ · Automatisch an den PC übertragen: Hast du am Handy einen Schlüssel eingerichtet und entsperrt und ist der PC verbunden, schickt die KI-Verwaltung ihn versiegelt an den PC (nur wenn der PC noch keinen eigenen hat); danach arbeitet der PC damit",
-    "changes": {
-      "neu": [
-        "OpenRouter und Groq ohne PC einrichten und benutzen: In der KI-Verwaltung der Website (https) trägst du den Schlüssel am Handy oder iPad ein und vergibst ein Passwort; der Schlüssel wird mit AES-GCM (Passwort → PBKDF2) verschlüsselt nur auf diesem Gerät gespeichert, nach dem Neuladen ist er gesperrt, bis du das Passwort eingibst. Dann antwortet JARVIS auch ohne PC direkt aus dem Browser – mit „Beantwortet von OpenRouter – kostenloses Modell“ und derselben Kette (OpenRouter → Groq → Pollinations mit deinem Ja)",
-        "Dieselben Kostenregeln wie am PC im Browser: nur Modelle mit Preis 0 (Liste höchstens 5 Minuten alt, vor jeder Anfrage neu geprüft), Höchstpreis 0 in jeder Anfrage, kein Aufladen, der Schlüssel geht ausschließlich an den eigenen Dienst; Groq nur nach der Bestätigung „kostenloser Tarif“",
-        "Automatisch an den PC übertragen: Hast du am Handy einen Schlüssel eingerichtet und entsperrt und ist der PC verbunden, schickt die KI-Verwaltung ihn versiegelt an den PC (nur wenn der PC noch keinen eigenen hat); danach arbeitet der PC damit"
-      ],
-      "verbessert": [
-        "Der Selbsttest und die KI-Verwaltung ohne PC zeigen den Stand der Schlüssel auf dem Gerät (nicht eingerichtet, gesperrt, bereit) und sagen verständlich, was zu tun ist, wenn der Schlüssel gesperrt ist",
-        "Hinweistext der KI-Verwaltung ohne PC stimmt wieder: OpenRouter und Groq gehen jetzt auch dort, nur Ollama braucht den PC"
-      ],
-      "behoben": []
-    },
-    "signature": "SRUtuvHuzcCebGQTL6izVo2+VXVOe7f6kvH0LUQ5Z8OuTqQslb9SCdR9K28r3QZPpmN7CRsASjrezMgf5FO0Cw=="
   }
 ]

@@ -1,24 +1,25 @@
 {
-  "version": "3.39.1",
+  "version": "3.39.2",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion.exe",
-  "size": 95096649,
-  "sha256": "4af916fc8a5ae701fa0b64f0bcf4fbf4901595bcb9ae1df966ed85d25b2658b5",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion.exe",
+  "size": 95097598,
+  "sha256": "5601fed1c7d797d4ee36296666d003206bb3f391664cbf113bcfa5333fddb958",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.39.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion-3.39.1-win-x64.zip",
-    "size": 89370564,
-    "sha256": "55c1c1c00802b7e7226c03969cc1e929220f8e7ebff657df6ec23609da9d44e9"
+    "fileName": "PCGameLauncherCompanion-3.39.2-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion-3.39.2-win-x64.zip",
+    "size": 89371449,
+    "sha256": "03ad645f2129824462764640439753621dbd32f6837d4add351e2ba50eed0e1e"
   },
   "notes": "",
   "changes": {
     "neu": [],
     "verbessert": [],
     "behoben": [
-      "Cloud: Lehnt die Cloud einen einzelnen Eintrag ab (z. B. die Spiele-Liste mit vielen Bildern ist zu groß), blockiert das nicht mehr alle anderen – der Eintrag wird einzeln, dann ohne große Bilder erneut gesendet; bleibt ein Fehler, steht der genaue Grund auf der Cloud-Seite am PC"
+      "Cloud-Karte: Der Knopf „Zur Anmeldung“ tat auf der Profil-Seite nichts – er heißt jetzt „Jetzt anmelden“ und öffnet direkt die Anmeldung",
+      "Cloud-Karte zeigt Anmeldung und Abmeldung sofort (blieb vorher auf „nicht angemeldet“ stehen, bis der nächste Abgleich lief) und sagt, ob das Gerät nur lokal oder mit dem Cloud-Konto angemeldet ist"
     ]
   },
-  "signature": "vyiktmW9qekUVLanrao9NrPxLlETtAtpnC1EG2QVTWt6wnoA77hbg7PQIaA9RCEdYQETKjRE6jCC/WGjsulPGQ=="
+  "signature": "xKVPJWFAPbe9xVzcFr3n93ofZPyu8hyyPep+0sCYxEbaDeopI/rRXtdP3Ssa8ZYKfojpT3RLdEJN8qIPYOrVfg=="
 }
