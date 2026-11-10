@@ -158,16 +158,27 @@ const seal = (pass: string, purpose: string, secret: string) => pass ? lockSecre
 
 // ------------------------------------------------------------------ what is stored and what is unlocked right now
 
-const STORE = "pgl.localai", SESSION = "pgl.localai.session";
+// Each account has its OWN key store on this device ("pgl.localai@name"): another account on the same device never sees these keys.
+// Without an account the old, unscoped store is used. The first account that signs in on a device takes over the keys that were typed before.
+const BASE_STORE = "pgl.localai", BASE_SESSION = "pgl.localai.session", BASE_SESSION_S = "pgl.localsearch.session", BASE_SESSION_E = "pgl.localeleven.session";
+const ACCOUNT_SESSION = "pgl.designAccount";
+const scopeUser = (): string => { try { return readJson<{ user?: string }>(ACCOUNT_SESSION)?.user ?? ""; } catch { return ""; } };
+let scope = scopeUser();
+const nm = (base: string) => (scope ? `${base}@${scope}` : base);
+const STORE = () => nm(BASE_STORE), SESSION = () => nm(BASE_SESSION), SESSION_S = () => nm(BASE_SESSION_S), SESSION_E = () => nm(BASE_SESSION_E);
 interface Stored { openrouter?: Locked; groq?: Locked; cerebras?: Locked; mistral?: Locked; attested?: Partial<Record<LocalProvider, boolean>>; groqAttested?: boolean; search?: Partial<Record<SearchProvider, Locked>>; eleven?: Locked }
 /** "Free plan" confirmations; older versions stored only the one for Groq. */
 const attestedOf = (s: Stored): Record<LocalProvider, boolean> => ({ openrouter: true, groq: !!(s.attested?.groq ?? s.groqAttested), cerebras: !!s.attested?.cerebras, mistral: !!s.attested?.mistral });
-const read = (): Stored => { try { return readJson<Stored>(STORE) ?? {}; } catch { return {}; } };
-const write = (s: Stored) => { try { writeJson(STORE, s); } catch { /* storage blocked – this visit only */ } };
-const SESSION_S = "pgl.localsearch.session", SESSION_E = "pgl.localeleven.session";
-let unlockedEleven: string | null = (() => { try { return readJson<string>(SESSION_E, "session") ?? null; } catch { return null; } })();
-const unlockedSearch: Partial<Record<SearchProvider, string>> = (() => { try { return readJson<Partial<Record<SearchProvider, string>>>(SESSION_S, "session") ?? {}; } catch { return {}; } })();
-const unlocked: Partial<Record<LocalProvider, string>> = (() => { try { return readJson<Partial<Record<LocalProvider, string>>>(SESSION, "session") ?? {}; } catch { return {}; } })();
+const read = (): Stored => { try { return readJson<Stored>(STORE()) ?? {}; } catch { return {}; } };
+let quietWrites = 0;
+const write = (s: Stored) => {
+  try { writeJson(STORE(), s); } catch { /* storage blocked – this visit only */ }
+  // A change of the keys goes into the account too (design-account.ts listens) – except while the account's own keys are being put here.
+  if (!quietWrites && scope && typeof window !== "undefined" && typeof window.dispatchEvent === "function") window.dispatchEvent(new Event("pgl-keys"));
+};
+let unlockedEleven: string | null = (() => { try { return readJson<string>(SESSION_E(), "session") ?? null; } catch { return null; } })();
+const unlockedSearch: Partial<Record<SearchProvider, string>> = (() => { try { return readJson<Partial<Record<SearchProvider, string>>>(SESSION_S(), "session") ?? {}; } catch { return {}; } })();
+const unlocked: Partial<Record<LocalProvider, string>> = (() => { try { return readJson<Partial<Record<LocalProvider, string>>>(SESSION(), "session") ?? {}; } catch { return {}; } })();
 
 export type LocalState = "none" | "locked" | "ready";
 export interface LocalSnap { openrouter: LocalState; groq: LocalState; cerebras: LocalState; mistral: LocalState; attested: Record<LocalProvider, boolean>; search?: Record<SearchProvider, LocalState>; eleven?: LocalState;
@@ -223,7 +234,7 @@ export async function transferKeysToPc(
   return { done, failed };
 }
 
-function remember(on: boolean) { try { writeJson(SESSION, on ? unlocked : null, "session"); writeJson(SESSION_S, on ? unlockedSearch : null, "session"); writeJson(SESSION_E, on ? unlockedEleven : null, "session"); } catch { /* ignore */ } }
+function remember(on: boolean) { try { writeJson(SESSION(), on ? unlocked : null, "session"); writeJson(SESSION_S(), on ? unlockedSearch : null, "session"); writeJson(SESSION_E(), on ? unlockedEleven : null, "session"); } catch { /* ignore */ } }
 
 export async function saveLocalKey(p: LocalProvider, key: string, pass = "", o: { attested?: boolean; remember?: boolean } = {}): Promise<void> {
   if (!localAiSupported()) throw new FreeAiError("Hier ist das Verschlüsseln nicht möglich (nur auf der Website im Internet, nicht auf der http-Seite im WLAN).");
@@ -290,12 +301,72 @@ export async function loadDeviceKeys(): Promise<void> {
     if (s.eleven?.v === 2 && !unlockedEleven) { const v = await unlockDevice("voice:elevenlabs", s.eleven); if (v !== null) unlockedEleven = v; }
   } finally { deviceLoading = false; publish(); }
 }
-void loadDeviceKeys();
+let keysReady: Promise<void> = loadDeviceKeys();
+/** Resolves when the keys of the current account are open (a save that ran earlier would otherwise leave them out of the account). */
+export const whenLocalAiReady = (): Promise<void> => keysReady;
+
+/**
+ * The account of this device changed (signed in, switched, signed out): forget what was open, take over the keys typed before any account
+ * existed (only the first account), and open the keys of the new one. Nothing of the former account stays in memory.
+ */
+export function rescopeLocalAi(): Promise<void> {
+  scope = scopeUser();
+  for (const p of LOCAL_PROVIDERS) delete unlocked[p];
+  for (const p of SEARCH_PROVIDERS) delete unlockedSearch[p];
+  unlockedEleven = null; resetLocalAiState();
+  try {
+    if (scope && !readJson<Stored>(STORE()) && readJson<Stored>(BASE_STORE)) {
+      writeJson(STORE(), readJson<Stored>(BASE_STORE)); writeJson(BASE_STORE, null);
+    }
+    const kept = readJson<unknown>(SESSION(), "session");
+    if (kept && typeof kept === "object") Object.assign(unlocked, kept as object);
+  } catch { /* storage blocked */ }
+  deviceLoading = true; publish();
+  return (keysReady = loadDeviceKeys());
+}
+
+/** Removes the keys of an account from this device (the account was deleted). */
+export function wipeLocalAi(user: string) {
+  try { for (const b of [BASE_STORE, BASE_SESSION, BASE_SESSION_S, BASE_SESSION_E]) writeJson(`${b}@${user}`, null, b === BASE_STORE ? undefined : "session"); } catch { /* ignore */ }
+  if (scope === user) void rescopeLocalAi();
+}
+
+/** The keys of the account as one object – goes only into the account blob, which is encrypted in the browser before it leaves. */
+export interface AiKeyBundle { v: 1; providers: Partial<Record<LocalProvider, { key: string; attested: boolean }>>; search: Partial<Record<SearchProvider, string>>; eleven?: string }
+export function exportKeyBundle(): AiKeyBundle | null {
+  if (!scope) return null;
+  const providers = unlockedKeys();
+  const search = { ...unlockedSearch };
+  if (!Object.keys(providers).length && !Object.keys(search).length && !unlockedEleven) return null;
+  return { v: 1, providers, search, ...(unlockedEleven ? { eleven: unlockedEleven } : {}) };
+}
+/** Puts the keys of the account on this device, sealed with the device key. Keys already here stay; wrong shapes are skipped. */
+export async function importKeyBundle(raw: unknown): Promise<void> {
+  const b = raw as Partial<AiKeyBundle> | null;
+  if (!scope || !b || b.v !== 1 || !deviceKeysSupported()) return;
+  quietWrites++;
+  try {
+    const s = read();
+    for (const p of LOCAL_PROVIDERS) {
+      const e = b.providers?.[p];
+      if (!e || typeof e.key !== "string" || !keyLooksRight(p, e.key)) continue;
+      s[p] = await lockDevice(p, e.key); unlocked[p] = e.key;
+      if (needsAttestation(p)) s.attested = { ...s.attested, [p]: !!e.attested || !!s.attested?.[p] };
+    }
+    for (const sp of SEARCH_PROVIDERS) {
+      const k = b.search?.[sp];
+      if (typeof k !== "string" || k.length < 8 || k.length > 300) continue;
+      (s.search ??= {})[sp] = await lockDevice("search:" + sp, k); unlockedSearch[sp] = k;
+    }
+    if (typeof b.eleven === "string" && b.eleven.length >= 8 && b.eleven.length <= 300) { s.eleven = await lockDevice("voice:elevenlabs", b.eleven); unlockedEleven = b.eleven; }
+    write(s);
+  } finally { quietWrites--; publish(); }
+}
 
 export function lockLocalAi() { for (const p of LOCAL_PROVIDERS) delete unlocked[p]; for (const p of SEARCH_PROVIDERS) delete unlockedSearch[p]; unlockedEleven = null; remember(false); publish(); }
 export function removeLocalKey(p: LocalProvider) {
   const s = read(); delete s[p]; if (s.attested) delete s.attested[p]; if (p === "groq") delete s.groqAttested; write(s);
-  const kept = !!readJson(SESSION, "session"); delete unlocked[p];
+  const kept = !!readJson(SESSION(), "session"); delete unlocked[p];
   remember(kept && Object.keys(unlocked).length > 0); publish();
 }
 

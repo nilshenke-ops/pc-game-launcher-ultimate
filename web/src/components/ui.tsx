@@ -1,3 +1,4 @@
+import { motionOff, recentTap } from "../lib/last-tap";
 import { cloneElement, isValidElement, useEffect, useId, useRef, useSyncExternalStore, type ReactElement, type ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, CircleSlash, HelpCircle, Info, Loader2, MonitorSmartphone, RefreshCw, WifiOff, X, XCircle } from "lucide-react";
 import { createPortal } from "react-dom";
@@ -201,6 +202,13 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
       else if (!e.shiftKey && (document.activeElement === lastEl || !ref.current.contains(document.activeElement))) { e.preventDefault(); firstEl.focus(); }
     };
     document.addEventListener("keydown", onKey);
+    // Opened by a tap on a wide screen: grow out of the spot that was pressed (the phone sheet rises from the bottom instead).
+    const tap = recentTap(), box = ref.current;
+    if (tap && box && !motionOff() && !window.matchMedia?.("(max-width: 640px)").matches) {
+      const r = box.getBoundingClientRect();
+      box.style.transformOrigin = `${Math.max(0, Math.min(r.width, tap.x - r.left))}px ${Math.max(0, Math.min(r.height, tap.y - r.top))}px`;
+      box.classList.add("from-tap");
+    }
     const first = ref.current?.querySelector<HTMLElement>("input, select, textarea, button:not(.modal-close)");
     first?.focus();
     document.body.style.overflow = "hidden";

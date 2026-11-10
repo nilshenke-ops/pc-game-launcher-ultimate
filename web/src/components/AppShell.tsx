@@ -1,5 +1,6 @@
 import { PrivacyButton } from "./privacy";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { recentTap } from "../lib/last-tap";
 import { AccountButton } from "./account-button";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Bell, Check, ChevronDown, Menu, Monitor, MonitorSmartphone, PanelBottom, Pencil, RotateCcw, Search, Shield, Smartphone, Wifi } from "lucide-react";
@@ -133,6 +134,12 @@ export function AppShell({ children }: { children: ReactNode }) {
   useEffect(() => { const on = () => setScrolled(window.scrollY > 6); on(); window.addEventListener("scroll", on, { passive: true }); return () => window.removeEventListener("scroll", on); }, []);
   const loc = useLocation();
   const [entering, setEntering] = useState(true);
+  // A page opened by tapping something INSIDE a page (a card, a tile) grows out of that spot; from the sidebar/top bar it rises as before.
+  const [origin, setOrigin] = useState<{ x: number; y: number } | null>(null);
+  useLayoutEffect(() => {
+    const tap = recentTap(900);
+    setOrigin(tap && !tap.side ? { x: tap.x, y: tap.y - (document.querySelector(".content")?.getBoundingClientRect().top ?? 0) } : null);
+  }, [loc.pathname]);
   useEffect(() => { setEntering(true); const id = window.setTimeout(() => setEntering(false), 900); return () => window.clearTimeout(id); }, [loc.pathname]);
   const conn = useConn();
   const { state } = useAppState();
@@ -231,7 +238,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {showOutbox && <OutboxDialog onClose={() => setShowOutbox(false)} />}
         <StatusPill />
 
-        <main id="main" className={`content tx-${prefs.fx.transition.kind}${entering ? " entering" : ""}`} style={{ ["--tx-ms" as string]: `${prefs.fx.transition.ms}ms` }} key={loc.pathname}>{children}</main>
+        <main id="main" className={`content tx-${prefs.fx.transition.kind}${entering ? " entering" : ""}${entering && origin ? " from-tap" : ""}`} style={{ ["--tx-ms" as string]: `${prefs.fx.transition.ms}ms`, ...(origin ? { ["--ox" as string]: `${origin.x}px`, ["--oy" as string]: `${origin.y}px` } : {}) }} key={loc.pathname}>{children}</main>
       </div>
 
       <MemoryHint />

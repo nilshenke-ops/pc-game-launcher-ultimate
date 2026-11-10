@@ -411,3 +411,81 @@ describe("Schlüssel ohne Passwort (Geräteschlüssel)", () => {
     expect(snapNow().openrouter).toBe("ready");
   });
 });
+
+import { exportKeyBundle, importKeyBundle, rescopeLocalAi, wipeLocalAi } from "./free-ai-local";
+
+describe("KI-Schlüssel gehören zum Konto", () => {
+  const deviceKey = () => crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]) as Promise<CryptoKey>;
+  const signAs = async (user: string | null) => { if (user) local.setItem("pgl.designAccount", JSON.stringify({ user, auth: "a", enc: "e" })); else local.removeItem("pgl.designAccount"); await rescopeLocalAi(); };
+  const GR2 = "gsk_zzzzzzzzzzzzzzzzzzzzzzzzzzzz";
+
+  it("ein zweites Konto auf demselben Gerät sieht die Schlüssel des ersten nicht", async () => {
+    setDeviceKeyForTests(await deviceKey());
+    try {
+      await signAs("anna");
+      await saveLocalKey("openrouter", OR);
+      expect(snapNow().openrouter).toBe("ready");
+      await signAs("ben");
+      expect(snapNow().openrouter).toBe("none");                 // nothing of anna's is open for ben
+      expect(local._m.get("pgl.localai@ben")).toBeUndefined();
+      await saveLocalKey("groq", GR2, "", { attested: true });
+      expect(snapNow().groq).toBe("ready");
+      await signAs("anna");                                      // back: anna's own keys, not ben's
+      expect(snapNow().openrouter).toBe("ready"); expect(snapNow().groq).toBe("none");
+      expect(local._m.get("pgl.localai@anna")).not.toContain(OR);   // sealed, never in plain text
+    } finally { await signAs(null); setDeviceKeyForTests(null); }
+  });
+
+  it("Schlüssel von vor dem ersten Konto gehen nur an das erste Konto", async () => {
+    setDeviceKeyForTests(await deviceKey());
+    try {
+      await saveLocalKey("openrouter", OR);                      // no account yet
+      await signAs("anna");
+      expect(snapNow().openrouter).toBe("ready");
+      await signAs("ben");
+      expect(snapNow().openrouter).toBe("none");
+    } finally { await signAs(null); setDeviceKeyForTests(null); }
+  });
+
+  it("das Bündel reist verschlüsselt im Konto und öffnet sich auf einem anderen Gerät", async () => {
+    setDeviceKeyForTests(await deviceKey());
+    try {
+      await signAs("anna");
+      await saveLocalKey("openrouter", OR);
+      await saveLocalKey("groq", GR2, "", { attested: true });
+      const bundle = exportKeyBundle();
+      expect(bundle?.providers.openrouter?.key).toBe(OR);
+      // another device: its own device key, an empty store, the same account
+      local._m.clear(); setDeviceKeyForTests(await deviceKey());
+      local.setItem("pgl.designAccount", JSON.stringify({ user: "anna", auth: "a", enc: "e" }));
+      await rescopeLocalAi();
+      expect(snapNow().openrouter).toBe("none");
+      await importKeyBundle(JSON.parse(JSON.stringify(bundle)));
+      expect(snapNow().openrouter).toBe("ready"); expect(snapNow().groq).toBe("ready");
+      expect(local._m.get("pgl.localai@anna")).not.toContain(OR);
+    } finally { await signAs(null); setDeviceKeyForTests(null); }
+  });
+
+  it("ungültige Schlüssel im Bündel werden übersprungen, ohne Konto gibt es kein Bündel", async () => {
+    setDeviceKeyForTests(await deviceKey());
+    try {
+      expect(exportKeyBundle()).toBeNull();
+      await signAs("anna");
+      await importKeyBundle({ v: 1, providers: { openrouter: { key: "kein-schluessel", attested: true } }, search: {} });
+      expect(snapNow().openrouter).toBe("none");
+      await importKeyBundle("müll"); await importKeyBundle(null);
+      expect(exportKeyBundle()).toBeNull();
+    } finally { await signAs(null); setDeviceKeyForTests(null); }
+  });
+
+  it("Konto löschen entfernt die Schlüssel des Kontos vom Gerät", async () => {
+    setDeviceKeyForTests(await deviceKey());
+    try {
+      await signAs("anna");
+      await saveLocalKey("openrouter", OR);
+      expect(local._m.get("pgl.localai@anna")).toBeTruthy();
+      wipeLocalAi("anna");
+      expect(local._m.get("pgl.localai@anna")).toBeUndefined();
+    } finally { await signAs(null); setDeviceKeyForTests(null); }
+  });
+});

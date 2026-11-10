@@ -4,6 +4,22 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.34.0 – 2026-11-09
+### Neu
+- Profil: Tippen auf das „N“ öffnet jetzt eine Konto-Übersicht mit den schon verbundenen Konten – ein Tipp wechselt zwischen ihnen, ohne Passwort. Die Seite „Konto & Cloud“ heißt jetzt „Profil“ und ist neu geordnet: oben Konto, Kontowechsel, KI-Schlüssel und Backup, darunter alles zur Cloud (Dienst, Synchronisierung, was in der Cloud liegt, was am PC bleibt)
+- KI-Schlüssel gehören zum Konto: Sie sind auf jedem Gerät da, auf dem du angemeldet bist, und ein anderes Konto auf demselben Gerät sieht sie nie. Sie reisen nur verschlüsselt (schon im Browser) im Konto, die Cloud kann sie nicht lesen, und sie sind nicht in der Backup-Datei
+- Seitenleiste: Die Markierung des aktiven Eintrags gleitet mit einer Feder zum neuen Eintrag, statt zu springen (wie die Reiter der Insel)
+- Öffnen mit Animation: Fenster wachsen dort auf, wo getippt wurde; eine Seite, die aus einer Seite heraus geöffnet wird, wächst ebenfalls von der Tippstelle; aufklappbare Bereiche öffnen sich weich
+### Verbessert
+- Überall wieder runde Formen: Suchleisten, Eingabefelder, Knöpfe, Chips, Reiter, Hinweise und Fenster sind rund statt eckig (Pillen bzw. weiche Ecken)
+- Insel: Der leere Platz neben der Fokus-Karte ist gefüllt – eine PC-Karte zeigt, ob der PC verbunden ist
+- Android-App (APK, Version, Update-Prüfung) liegt jetzt bei „Updates & Versionen“ statt bei der Cloud
+- Jedes Konto speichert seine Daten getrennt unter seinem Namen; beim Wechsel wird nichts vom vorherigen Konto auf dem Gerät mitgenommen. Schlüssel, die vor dem ersten Konto auf dem Gerät eingegeben wurden, gehen nur an das erste Konto, das sich anmeldet
+
+## 3.33.1 – 2026-11-09
+### Verbessert
+- Macht Widgets wieder zu klarem Glas und zieht den Baukasten mit.
+
 ## 3.33.0 – 2026-11-09
 ### Neu
 - Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt

@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Cloud, CloudOff, Download, HardDrive, KeyRound, RefreshCw, ShieldCheck, Users } from "lucide-react";
+import { Cloud, CloudOff, Download, HardDrive, KeyRound, RefreshCw, ShieldCheck, UserRound, Users } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast, useConn } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { Banner, Button, Card, Segmented } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
-import { AndroidAppCard } from "../components/android-app-card";
 import { CloudSyncCard } from "../components/cloud-sync-card";
 import { CLOUD_WEB, CLOUD_WORKER_GUIDE, cloudApi, cloudHealth, customCloudApi, pendingBlob, setCustomCloudApi, type CloudHealth } from "../lib/cloud-account";
 import { accountBackup, flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
@@ -16,7 +15,7 @@ import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi 
  * Everything about the cloud account in one place: sign in, the address of the service, whether a change is still
  * waiting, and an honest list of what travels with the account and what stays on the PC.
  */
-export default function CloudPage() {
+export default function ProfilePage() {
   const conn = useConn();
   const online = conn.phase === "online";
   const [endpoint, setEndpoint] = useState<string | null>(() => cloudApi());
@@ -133,8 +132,108 @@ export default function CloudPage() {
   return (
     <div className="stack">
       <div className="row between" style={{ gap: 10, flexWrap: "wrap" }}>
-        <h1 className="h1" style={{ margin: 0 }}><Cloud size={26} style={{ verticalAlign: -4 }} /> {t("Konto & Cloud")}</h1>
+        <h1 className="h1" style={{ margin: 0 }}><UserRound size={26} style={{ verticalAlign: -4 }} /> {t("Profil")}</h1>
         {s?.cloud && <Button size="sm" icon={<RefreshCw size={14} />} busy={busy} onClick={() => void sync()}>{t("Jetzt synchronisieren")}</Button>}
+      </div>
+
+      {!!s && (
+        <div className="card profile-head">
+          <span className="profile-avatar" aria-hidden="true">{s.user.slice(0, 1).toUpperCase()}</span>
+          <div className="profile-who">
+            <b>{s.user}</b>
+            <span className="small muted">{s.cloud ? t("Cloud-Konto") : t("Konto am PC")}{s.savedAt ? <> · {t("gespeichert {d}", { d: relTime(s.savedAt) })}</> : null}</span>
+          </div>
+        </div>
+      )}
+      <Card title={t("Konto")} icon={<ShieldCheck size={18} />}>
+        <AccountPanel />
+        <details style={{ marginTop: 10 }}>
+          <summary className="small">{t("Weiteres Konto hinzufügen")}</summary>
+          <div style={{ marginTop: 8 }}><AccountPanel forceForm /></div>
+        </details>
+      </Card>
+
+      {accounts.length > 0 && (
+        <Card title={t("Konten auf diesem Gerät")} icon={<Users size={18} />} meta={<span className="badge">{accounts.length}</span>}>
+          <div className="stack-sm">
+            {accounts.map((a) => (
+              <div key={a.user} className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+                <span className="small">
+                  <b>{a.user}</b>{s?.user === a.user && <> <span className="badge ok">{t("aktiv")}</span></>}
+                  {!a.cloud && <span className="tiny muted"> · {t("Konto am PC")}</span>}
+                </span>
+                <Button size="sm" disabled={s?.user === a.user} busy={switching === a.user} onClick={() => void switchTo(a.user)}>{t("Wechseln")}</Button>
+              </div>
+            ))}
+            <p className="tiny muted" style={{ margin: 0 }}>{t("Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeden Benutzernamen gibt es nur einmal – ein zweites Konto mit demselben Namen lehnt der Dienst ab.")}</p>
+          </div>
+        </Card>
+      )}
+
+      <Card title={t("KI-Schlüssel dieses Kontos")} icon={<KeyRound size={18} />}>
+        <p className="small" style={{ margin: 0 }}>{t("Deine KI-Schlüssel gehören zu diesem Konto: Sie sind auf jedem Gerät da, auf dem du angemeldet bist – und ein anderes Konto sieht sie nie. Im Browser werden sie verschlüsselt, bevor sie ins Konto gehen; die Cloud kann sie nicht lesen. Ins Backup-Datei kommen sie nicht.")}</p>
+        {localKeys.length > 0 ? (
+          <div className="stack-sm" style={{ marginTop: 8 }}>
+            {localKeys.map((k) => (
+              <div key={k.id} className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+                <span className="small">{k.name}</span>
+                <span className={`badge ${k.state === "ready" ? "ok" : "warn"}`}>{k.state === "ready" ? t("Bereit") : t("Einmal entsperren nötig")}</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Noch kein Schlüssel in diesem Konto – in der KI-Verwaltung eintragen, dann ist er auf all deinen Geräten da.")}</p>
+        )}
+        <div className="row" style={{ marginTop: 10 }}>
+          <Link to="/assistant" className="btn sm">{t("Zur KI-Verwaltung")}</Link>
+        </div>
+      </Card>
+
+      <Card title={t("Backup der Kontodaten")} icon={<Download size={18} />}>
+        <p className="small" style={{ margin: 0 }}>{t("Sichert den Stand dieses Kontos auf diesem Gerät als lesbare JSON-Datei: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung, Raum-Einstellung, JARVIS-MEMORY-Ordner und -Regeln, Wetter-Ort und KI-Auswahl. KI- und API-Schlüssel sind nicht enthalten – sie bleiben verschlüsselt auf dem Gerät.")}</p>
+        {s ? (
+          <div className="row" style={{ gap: 10, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <Button size="sm" icon={<Download size={14} />} onClick={downloadBackup}>{t("Backup herunterladen")}</Button>
+            <span className="tiny muted">{t("Konto: {u}", { u: s.user })}</span>
+          </div>
+        ) : (
+          <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Zum Sichern bitte erst anmelden – ohne Konto gibt es keine Kontodaten.")}</p>
+        )}
+        <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Die Datei ist nicht verschlüsselt – bitte sicher aufbewahren.")}</p>
+      </Card>
+
+      <h2 className="h2 profile-sec">{t("Cloud & Synchronisierung")}</h2>
+      <div className="card stack-sm">
+        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+          <span className="small muted">{t("Cloud-Dienst")}</span>
+          <span className="mono tiny" title={endpoint ?? undefined}>{configured ? endpoint : t("Nicht eingerichtet")}</span>
+        </div>
+        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+          <span className="small muted">{t("Speicherort")}</span>
+          {customCloudApi()
+            ? <span className="small">{t("Eigener Cloudflare-Dienst")}</span>
+            : <a className="small" href={CLOUD_WEB} target="_blank" rel="noreferrer">{t("Cloud speichern")}</a>}
+        </div>
+        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+          <span className="small muted">{t("Status")}</span>
+          <span className="small">
+            {s?.cloud
+              ? <>{t("Angemeldet als {u}", { u: s.user })}{s.savedAt ? <span className="muted"> · {t("gespeichert {d}", { d: relTime(s.savedAt) })}</span> : null}</>
+              : t("Nicht angemeldet")}
+          </span>
+        </div>
+        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+          <span className="small muted">{t("Dienst")}</span>
+          <span className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+            <span className="small" role="status">
+              {!configured ? t("Nicht eingerichtet") : checking ? t("Wird geprüft …") : health?.ok ? t("Erreichbar") : health ? t("Nicht erreichbar") : t("Noch nicht geprüft")}
+            </span>
+            {configured && <Button size="sm" variant="ghost" busy={checking} onClick={() => void checkHealth()}>{t("Prüfen")}</Button>}
+          </span>
+        </div>
+        {configured && health && !health.ok && <p className="tiny muted" style={{ margin: 0 }}>{health.message}</p>}
+        {s?.cloud && waiting && <Banner kind="warn">{t("Eine Änderung wartet noch – sie wird gesendet, sobald die Cloud wieder erreichbar ist.")}</Banner>}
+        {!s?.cloud && <p className="tiny muted" style={{ margin: 0 }}>{t("Anmelden geht auch bei ausgeschaltetem PC. Ohne Anmeldung bleibt alles auf diesem Gerät und am PC.")}</p>}
       </div>
 
       <Card title={t("Wo die Daten liegen")} icon={<HardDrive size={18} />}>
@@ -173,104 +272,12 @@ export default function CloudPage() {
         )}
       </Card>
 
-      <div className="card stack-sm">
-        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-          <span className="small muted">{t("Cloud-Dienst")}</span>
-          <span className="mono tiny" title={endpoint ?? undefined}>{configured ? endpoint : t("Nicht eingerichtet")}</span>
-        </div>
-        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-          <span className="small muted">{t("Speicherort")}</span>
-          {customCloudApi()
-            ? <span className="small">{t("Eigener Cloudflare-Dienst")}</span>
-            : <a className="small" href={CLOUD_WEB} target="_blank" rel="noreferrer">{t("Cloud speichern")}</a>}
-        </div>
-        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-          <span className="small muted">{t("Status")}</span>
-          <span className="small">
-            {s?.cloud
-              ? <>{t("Angemeldet als {u}", { u: s.user })}{s.savedAt ? <span className="muted"> · {t("gespeichert {d}", { d: relTime(s.savedAt) })}</span> : null}</>
-              : t("Nicht angemeldet")}
-          </span>
-        </div>
-        <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-          <span className="small muted">{t("Dienst")}</span>
-          <span className="row" style={{ gap: 8, flexWrap: "wrap" }}>
-            <span className="small" role="status">
-              {!configured ? t("Nicht eingerichtet") : checking ? t("Wird geprüft …") : health?.ok ? t("Erreichbar") : health ? t("Nicht erreichbar") : t("Noch nicht geprüft")}
-            </span>
-            {configured && <Button size="sm" variant="ghost" busy={checking} onClick={() => void checkHealth()}>{t("Prüfen")}</Button>}
-          </span>
-        </div>
-        {configured && health && !health.ok && <p className="tiny muted" style={{ margin: 0 }}>{health.message}</p>}
-        {s?.cloud && waiting && <Banner kind="warn">{t("Eine Änderung wartet noch – sie wird gesendet, sobald die Cloud wieder erreichbar ist.")}</Banner>}
-        {!s?.cloud && <p className="tiny muted" style={{ margin: 0 }}>{t("Anmelden geht auch bei ausgeschaltetem PC. Ohne Anmeldung bleibt alles auf diesem Gerät und am PC.")}</p>}
-      </div>
-
-      {accounts.length > 0 && (
-        <Card title={t("Konten auf diesem Gerät")} icon={<Users size={18} />} meta={<span className="badge">{accounts.length}</span>}>
-          <div className="stack-sm">
-            {accounts.map((a) => (
-              <div key={a.user} className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-                <span className="small">
-                  <b>{a.user}</b>{s?.user === a.user && <> <span className="badge ok">{t("aktiv")}</span></>}
-                  {!a.cloud && <span className="tiny muted"> · {t("Konto am PC")}</span>}
-                </span>
-                <Button size="sm" disabled={s?.user === a.user} busy={switching === a.user} onClick={() => void switchTo(a.user)}>{t("Wechseln")}</Button>
-              </div>
-            ))}
-            <p className="tiny muted" style={{ margin: 0 }}>{t("Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeden Benutzernamen gibt es nur einmal – ein zweites Konto mit demselben Namen lehnt der Dienst ab.")}</p>
-          </div>
-        </Card>
-      )}
-
-      <Card title={t("Konto")} icon={<ShieldCheck size={18} />}>
-        <AccountPanel />
-        <details style={{ marginTop: 10 }}>
-          <summary className="small">{t("Weiteres Konto hinzufügen")}</summary>
-          <div style={{ marginTop: 8 }}><AccountPanel forceForm /></div>
-        </details>
-      </Card>
-
       <CloudSyncCard />
 
       <Card title={t("Was in der Cloud liegt")} icon={<Cloud size={18} />}>
         <p className="small" style={{ margin: 0 }}>{t("Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung und die Raum-Einstellung – schon im Browser verschlüsselt. Passwort und Schlüssel bleiben auf dem Gerät, der Dienst kann die Daten nicht lesen.")}</p>
-        <p className="small" style={{ margin: "8px 0 0" }}>{t("Dazu kommen der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl – also welcher Anbieter zuerst antwortet. Auf dem Handy ist damit alles schon eingerichtet, bevor der PC verbunden ist. KI-Schlüssel und API-Schlüssel liegen nie im Konto.")}</p>
+        <p className="small" style={{ margin: "8px 0 0" }}>{t("Dazu kommen der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl – also welcher Anbieter zuerst antwortet. Auf dem Handy ist damit alles schon eingerichtet, bevor der PC verbunden ist. Auch deine KI-Schlüssel reisen mit – verschlüsselt, und nur für dieses Konto.")}</p>
       </Card>
-
-      <Card title={t("KI-Schlüssel bleiben auf diesem Gerät")} icon={<KeyRound size={18} />}>
-        <p className="small" style={{ margin: 0 }}>{t("KI-Schlüssel und API-Schlüssel liegen verschlüsselt auf diesem Gerät – die am PC eingerichteten bleiben am PC. Anmelden, Abmelden, Kontowechsel und „Konto löschen“ ändern daran nichts. Ins Konto reist nur die KI-Auswahl, also welcher Anbieter zuerst antwortet – nie ein Schlüssel.")}</p>
-        {localKeys.length > 0 ? (
-          <div className="stack-sm" style={{ marginTop: 8 }}>
-            {localKeys.map((k) => (
-              <div key={k.id} className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
-                <span className="small">{k.name}</span>
-                <span className={`badge ${k.state === "ready" ? "ok" : "warn"}`}>{k.state === "ready" ? t("Bereit") : t("Einmal entsperren nötig")}</span>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Noch kein Schlüssel auf diesem Gerät eingerichtet – in der KI-Verwaltung eintragen, dann bleibt er hier.")}</p>
-        )}
-        <div className="row" style={{ marginTop: 10 }}>
-          <Link to="/assistant" className="btn sm">{t("Zur KI-Verwaltung")}</Link>
-        </div>
-      </Card>
-
-      <Card title={t("Backup der Kontodaten")} icon={<Download size={18} />}>
-        <p className="small" style={{ margin: 0 }}>{t("Sichert den Stand dieses Kontos auf diesem Gerät als lesbare JSON-Datei: Design, Startseite und Leiste, Sprache, Gamer-Pass, Zähler, Pausen-Erinnerung, Raum-Einstellung, JARVIS-MEMORY-Ordner und -Regeln, Wetter-Ort und KI-Auswahl. KI- und API-Schlüssel sind nicht enthalten – sie bleiben verschlüsselt auf dem Gerät.")}</p>
-        {s ? (
-          <div className="row" style={{ gap: 10, marginTop: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <Button size="sm" icon={<Download size={14} />} onClick={downloadBackup}>{t("Backup herunterladen")}</Button>
-            <span className="tiny muted">{t("Konto: {u}", { u: s.user })}</span>
-          </div>
-        ) : (
-          <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Zum Sichern bitte erst anmelden – ohne Konto gibt es keine Kontodaten.")}</p>
-        )}
-        <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Die Datei ist nicht verschlüsselt – bitte sicher aufbewahren.")}</p>
-      </Card>
-
-      <AndroidAppCard />
 
       <Card title={t("Was am PC bleibt")} icon={<HardDrive size={18} />}>
         <p className="small" style={{ margin: 0 }}>{t("Spiele, Programme, Profile, Kalender, Dateien und die PC-Steuerung. Dafür muss der PC an sein – die Cloud-Anmeldung gibt keine Rechte am PC.")}</p>
