@@ -1,25 +1,27 @@
 {
-  "version": "3.42.0",
+  "version": "3.42.1",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.0/PCGameLauncherCompanion.exe",
-  "size": 95106100,
-  "sha256": "7a7f09407b5400edd75b5be41e2dda6085a77de3565aa14c7328988a57c91733",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.1/PCGameLauncherCompanion.exe",
+  "size": 95107346,
+  "sha256": "b357afb6b28220538edfdaf760cfe6039db4152e2e71d9dee532808dd2dac342",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.42.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.0/PCGameLauncherCompanion-3.42.0-win-x64.zip",
-    "size": 89379514,
-    "sha256": "e6d1eb3d1a336153ebc502d197804e56645526cd5fc793bc0c57f4c3a4824a88"
+    "fileName": "PCGameLauncherCompanion-3.42.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.1/PCGameLauncherCompanion-3.42.1-win-x64.zip",
+    "size": 89380852,
+    "sha256": "12f9f7350dcbd874d15150eed6ca342f0fee49c295d7c95043a59bbab24dcd37"
   },
-  "notes": "Soundboard ohne PC: Ein Link (https), den du am iPad/Handy hinzufügst, geht jetzt über die Cloud – der PC lädt ihn von selbst herunter, sobald er läuft; kein Warten auf eine PC-Verbindung mehr (Dateien brauchen weiterhin die PC-Verbindung) · JARVIS-Stimme: Spricht die ElevenLabs-Stimme nicht, steht der Grund jetzt in der KI-Verwaltung (Sprache sprechen) statt dass still die Browser-Stimme übernimmt",
+  "notes": "Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen",
   "changes": {
-    "neu": [
-      "Soundboard ohne PC: Ein Link (https), den du am iPad/Handy hinzufügst, geht jetzt über die Cloud – der PC lädt ihn von selbst herunter, sobald er läuft; kein Warten auf eine PC-Verbindung mehr (Dateien brauchen weiterhin die PC-Verbindung)",
-      "JARVIS-Stimme: Spricht die ElevenLabs-Stimme nicht, steht der Grund jetzt in der KI-Verwaltung (Sprache sprechen) statt dass still die Browser-Stimme übernimmt"
+    "neu": [],
+    "verbessert": [
+      "Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen"
     ],
-    "verbessert": [],
-    "behoben": []
+    "behoben": [
+      "Soundboard: Die Lautstärke wirkt jetzt sofort – auch auf Sounds, die gerade laufen (vorher nur auf den nächsten Sound), und beim Ziehen des Reglers (nicht erst beim Loslassen, auch am iPad)",
+      "JARVIS-Insel am PC: Das Fenster wird beim Öffnen und Schließen ohne Neuzeichnen pro Bild angepasst – die Öffnen- und Schließ-Animation läuft ruhiger durch"
+    ]
   },
-  "signature": "2aCs5G8CMuRdPD9ZpAwNxDwI9+YNvTxwvvxh60pGARmN6hdBPGqMU3fMedysDYKBMDuDcX/5f3TvD947WPNlCg=="
+  "signature": "6XizyFiCRJwBLqS9nWlofGPDSeiWriNPs8mFOe1ekf9CGIPpIUmbqJ8er2jkipCKr7txAG2V4dfurnj6DiRNHw=="
 }

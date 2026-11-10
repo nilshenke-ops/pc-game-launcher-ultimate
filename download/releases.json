@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.42.1",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.1/PCGameLauncherCompanion.exe",
+    "size": 95107346,
+    "sha256": "b357afb6b28220538edfdaf760cfe6039db4152e2e71d9dee532808dd2dac342",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.42.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.42.1/PCGameLauncherCompanion-3.42.1-win-x64.zip",
+      "size": 89380852,
+      "sha256": "12f9f7350dcbd874d15150eed6ca342f0fee49c295d7c95043a59bbab24dcd37"
+    },
+    "notes": "Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen"
+      ],
+      "behoben": [
+        "Soundboard: Die Lautstärke wirkt jetzt sofort – auch auf Sounds, die gerade laufen (vorher nur auf den nächsten Sound), und beim Ziehen des Reglers (nicht erst beim Loslassen, auch am iPad)",
+        "JARVIS-Insel am PC: Das Fenster wird beim Öffnen und Schließen ohne Neuzeichnen pro Bild angepasst – die Öffnen- und Schließ-Animation läuft ruhiger durch"
+      ]
+    },
+    "signature": "6XizyFiCRJwBLqS9nWlofGPDSeiWriNPs8mFOe1ekf9CGIPpIUmbqJ8er2jkipCKr7txAG2V4dfurnj6DiRNHw=="
+  },
+  {
     "version": "3.42.0",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1319,32 +1346,5 @@
       "behoben": []
     },
     "signature": "U33MrBkB5F/5fN5Cl2j+KrEhB2/hj+uqfY5Vh0RN+HHKcmYdFPxp9rCdtx/6HhX8AVOv23TFlJTCaEQC/JinzA=="
-  },
-  {
-    "version": "3.10.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.10.0/PCGameLauncherCompanion.exe",
-    "size": 94911288,
-    "sha256": "e2d09e8a0764a0b21b67fd139b3daef7165520e5ceb4867112b0516c2ed26671",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.10.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.10.0/PCGameLauncherCompanion-3.10.0-win-x64.zip",
-      "size": 89185589,
-      "sha256": "f213d12aeaf1bd39395fc5c8e7c4b2402ec4cb396deac392c732f5c213a8d61d"
-    },
-    "notes": "Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt · Der Koppel-Link im QR-Code enthält jetzt auch die WLAN-Adresse des PCs: Klappt die Verbindung über die Website nicht (z. B. weil Tailscale auf dem iPad nicht läuft), erscheint „Im WLAN beim PC koppeln“ – ein Tipp öffnet die PC-Seite im selben WLAN, dort gelingt das Koppeln · Die WLAN-Adresse des PCs wird auf dem Gerät gemerkt, damit die Startseite „Zur PC-App (WLAN)“ anbietet; die Kopplung bleibt auf der PC-Seite gespeichert (kein erneutes Anmelden)",
-    "changes": {
-      "neu": [
-        "Der KI-Assistent hat zwei Reiter: „Gespräch“ (nur Chat) und „KI & Einstellungen“ (JARVIS-Insel, KI-Verwaltung mit allen Anbietern, Schlüsseln, Reihenfolge und Tests) – auf Handy, iPad und PC wird der Chat nicht mehr von Einstellungen überdeckt",
-        "Der Koppel-Link im QR-Code enthält jetzt auch die WLAN-Adresse des PCs: Klappt die Verbindung über die Website nicht (z. B. weil Tailscale auf dem iPad nicht läuft), erscheint „Im WLAN beim PC koppeln“ – ein Tipp öffnet die PC-Seite im selben WLAN, dort gelingt das Koppeln"
-      ],
-      "verbessert": [
-        "Die WLAN-Adresse des PCs wird auf dem Gerät gemerkt, damit die Startseite „Zur PC-App (WLAN)“ anbietet; die Kopplung bleibt auf der PC-Seite gespeichert (kein erneutes Anmelden)"
-      ],
-      "behoben": []
-    },
-    "signature": "9E6Ri5ArWm69KgutloMsNWn0+v2pGURGm6P7nzvA76iL3ppJC720DmOpKj6nhKhCDw/MSWcnrHzjBro/DwVB7w=="
   }
 ]
