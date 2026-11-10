@@ -6832,6 +6832,7 @@ export const en: Record<string, string> = {
   "Konto gewechselt: {u}": "Switched account: {u}",
   "Wechseln braucht kein Passwort mehr – die Schlüssel liegen verschlüsselt auf diesem Gerät. Jeden Benutzernamen gibt es nur einmal – ein zweites Konto mit demselben Namen lehnt der Dienst ab.": "Switching needs no password any more – the keys are stored encrypted on this device. Every user name exists only once – a second account with the same name is refused by the service.",
   "Weiteres Konto hinzufügen": "Add another account",
+  "Dazu habe ich keine Antwort bekommen.": "I did not get an answer to that.",
   "Cloud & Synchronisierung": "Cloud & sync",
   "Cloud-Konto": "Cloud account",
   "Dazu kommen der Ordner und die Regeln für JARVIS MEMORY, dein Wetter-Ort und die KI-Auswahl – also welcher Anbieter zuerst antwortet. Auf dem Handy ist damit alles schon eingerichtet, bevor der PC verbunden ist. Auch deine KI-Schlüssel reisen mit – verschlüsselt, und nur für dieses Konto.": "Also included are the folder and rules for JARVIS MEMORY, your weather place and the AI choice – which provider answers first. On the phone everything is already set up before the PC is connected. Your AI keys travel along too – encrypted, and only for this account.",

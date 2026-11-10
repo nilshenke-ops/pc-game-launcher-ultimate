@@ -125,7 +125,12 @@ export function AiManager({ online, onChanged, roster = true }: { online: boolea
     // On a phone or tablet the key travels sealed with the device key (also in the home network without https); at the PC itself it goes as it is.
     const send = () => { const sealed = client.sealSecret("ai.key:" + p.id, key); return client.call("ai.set", { provider: p.id, ...(sealed ? { sealed } : { key }), ...(attested !== undefined ? { attested } : {}) }); };
     try { await send(); } catch (e) { if (/noch einmal absenden/.test((e as Error).message)) await send(); else throw e; }   // the session was renewed in between: seal anew
-    setKeys((k) => ({ ...k, [p.id]: "" }));            // the key is not kept in this browser
+    setKeys((k) => ({ ...k, [p.id]: "" }));
+    // Entered once: the PC has it now, and so does the account – sealed on this device and (encrypted in the browser) in the account, so every other
+    // device of this account has the key too without typing it again. A key that does not fit the local shape is simply not kept here.
+    if ((LOCAL_PROVIDERS as readonly string[]).includes(p.id) && localAiSupported() && deviceKeysSupported()) {
+      try { await saveLocalKey(p.id as LocalProvider, key, "", { attested: attested ?? p.attested ?? true }); } catch { /* the PC has it – the account copy is only a convenience */ }
+    }
     return await test(p.id);
   });
   const move = (i: number, d: -1 | 1) => {

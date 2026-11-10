@@ -17,11 +17,8 @@ import { JarvisHud } from "../components/jarvis-hud";
 import { IslandSettingsCard } from "../components/island-settings";
 import { SettingsDialog, type Status } from "../components/assistant-settings";
 import { getPrefs, setPrefs } from "../lib/prefs";
-import { navItems } from "../lib/nav";
 import type { SetupOp } from "../lib/assistant-setup";
-import type { LibraryItem } from "../lib/types";
-import { getEntry, useJournal } from "../lib/journal";
-import { readCache } from "../lib/offline-cache";
+import { useJournal } from "../lib/journal";
 import type { Card as BingoCard } from "../lib/bingo";
 import { chosenEngine, phaseText, setChosenEngine, setWebSwitch, webSwitch, type Cite, type Phase } from "../lib/research-chat";
 
@@ -39,11 +36,6 @@ function ChatBingo({ id }: { id: string }) {
   const e = cards.find((c) => c.id === id);
   if (!e) return <span className="tiny muted">{t("Dieses Bingo wurde gelöscht.")}</span>;
   return <div className="as-bingo"><b className="small">{e.data.title}</b><BingoBoardLazy e={e} /></div>;
-}
-
-/** Games of the last loaded library (for "Für welches Spiel?" suggestions) – most recently added first. */
-function readCacheNames(): string[] {
-  return (readCache<{ items: LibraryItem[] }>("library.list")?.data.items ?? []).filter((x) => x.kind === "game" && !x.duplicateOf).map((x) => x.name).slice(0, 4);
 }
 
 /** The numbered sources under a researched answer – only pages really found; a clear line when no search ran. */
@@ -188,6 +180,8 @@ export default function Assistant() {
     if (x.phase) setPhase(x.phase);
     if (x.phase === "writing" && x.text) setLive((v) => (v + x.text).slice(-4000));
   }), []);
+  // The island asks the same JARVIS: its questions and answers show up here at once.
+  useEffect(() => { const f = () => setChat(readChat()); window.addEventListener("pgl-chat", f); return () => window.removeEventListener("pgl-chat", f); }, []);
   // Opening this page starts the JARVIS session (if switched on) – it lasts while this tab is open.
   useEffect(() => { openJarvis(); }, [online]);
 
@@ -223,80 +217,10 @@ export default function Assistant() {
       }
       // The chat builds on itself: right after a bingo, "es soll mittel sein und ich bin Impostor" changes that card
       // (not a web lookup and not split into JARVIS steps). Also after "im Internet nachsehen?" for such a change.
-      const lastBot = [...chat.turns].reverse().find((x) => x.role === "bot");
-      const lastBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-      const afterBingo = !!lastBot?.bingoId || (extra.bingoWeb !== undefined && !!lastBingo);
-      if (afterBingo && lastBingo) {
-        const { isBingoFollowUp } = await import("../lib/bingo");
-        if (isBingoFollowUp(question)) {
-          const { bingoFromChat } = await import("../lib/bingo-chat");
-          const b = await bingoFromChat(question, lastBingo, { online, provider: online ? st.data?.bingoProvider ?? null : null, web: extra.bingoWeb });
-          if (add(b.reply, { bingoId: b.bingoId }) && jv.enabled) speak(b.reply.text);
-          return;
-        }
-      }
-      // The decision before every answer: research (B) and "which game?" (clarify) here; the rest as before.
-      const { routeQuestion, research, clarifyReply, chatContext } = await import("../lib/research-chat");
-      const { coachIntent } = await import("../lib/game-coach");
-      // Messages in one chat build on each other: the game from before and the last turns go along.
-      const ctx = chatContext(chat.turns, (id) => getEntry<BingoCard>(id)?.data.gameName ?? null);
-      const route = extra.research ? { ...routeQuestion(question, { force: true, contextGame: ctx.game }), kind: "research" as const } : routeQuestion(question, { force: web, coach: !!coachIntent(question), contextGame: ctx.game });
-      if (route.kind === "clarify") {
-        const lib = readCacheNames();
-        add(clarifyReply(question, lib));
-        return;
-      }
-      if (route.kind === "research" && extra.lookup !== false) {
-        const { webPermission } = await import("../lib/web-lookup");
-        const perm = webPermission();
-        // Going online needs the user's yes – the switch "Im Internet suchen" or "Such im Internet …" is that yes.
-        if (!route.force && !extra.lookup && perm !== "always") {
-          if (perm === "never") { add({ text: t("Das bräuchte aktuelle Infos aus dem Internet – nachsehen ist ausgeschaltet (JARVIS → Stimme & Ton). Ohne Suche kann ich das nicht verlässlich beantworten."), actions: [], sources: [], suggestions: [], mode: "device" }); return; }
-          add({ text: t("Dafür brauche ich aktuelle Infos. Darf ich im Internet nachsehen? Gesendet wird nur deine Frage – an die Websuche am PC (falls eingerichtet) bzw. an offene Wikis und offizielle Patchnotes."), actions: [
-            { kind: "lookupChoice", label: t("Ja, nachsehen"), params: { question, ok: true } },
-            { kind: "lookupChoice", label: t("Ja, immer erlauben"), params: { question, ok: true, always: true } },
-            { kind: "lookupChoice", label: t("Nein"), params: { question, ok: false } },
-          ], sources: [], suggestions: [], mode: "device" });
-          return;
-        }
-        const r = await research(question, { pc: online ? { call: (m, p) => client.call(m, p) } : null, webSearch: !!st.data?.webSearch, route, requestId, engine: eng, onPhase: setPhase, history: ctx.history });
-        add(r);
-        return;
-      }
-      if (jv.enabled) {
-        // JARVIS: understands the request, runs named gaming actions and website changes directly, reports the real result.
-        const { jarvisAsk } = await import("../lib/jarvis-chat");
-        const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-        const r = await jarvisAsk(question, { online, conversationId: chat.conversationId, previousBingo, bingoProvider: st.data?.bingoProvider ?? null, bingoWeb: extra.bingoWeb, lookup: extra.lookup, ai: extra.ai, sources: extra.sources, engine: eng, requestId, contextGame: ctx.game });
-        if (!add(r.reply, { bingoId: r.bingoId, undo: r.undo }, r.conversationId)) return;
-        speak(r.reply.text);
-        if (r.navigate) navTo(r.navigate);
-        return;
-      }
-      // Setting up this device ("Mach das Design hell", "Pack das Deck in die Leiste") is answered here – with or without the PC.
-      const { setupReply } = await import("../lib/assistant-setup");
-      const setup = setupReply(question, getPrefs(), navItems());
-      if (setup) { setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: setup }] })); return; }
-      // Bingo ("Erstelle ein 4×4-Bingo für Minecraft auf mittel"): made here, tasks from the PC's AI or the catalog.
-      const previousBingo = [...chat.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
-      const { isBingoRequest } = await import("../lib/bingo");
-      if (isBingoRequest(question, !!previousBingo)) {
-        const { bingoFromChat } = await import("../lib/bingo-chat");
-        const b = await bingoFromChat(question, previousBingo, { online, provider: online ? st.data?.bingoProvider ?? null : null, web: extra.bingoWeb });
-        setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: b.reply, bingoId: b.bingoId }] }));
-        return;
-      }
-      if (!online) {
-        // Without a PC: the help built into the app answers right here in the browser (no internet, 0 €).
-        const [{ answerOffline }, lib] = await Promise.all([import("../lib/assistant-offline"), client.call<{ items: LibraryItem[] }>("library.list").catch(() => ({ items: [] as LibraryItem[] }))]);
-        let r = answerOffline(question, { library: lib.items ?? [], paired: !!client.credentials });
-        // Not a question about the app: a general question goes to the free AI (only with this device's yes – asked once).
-        if (r.unsure) { const { freeAiAnswer } = await import("../lib/free-ai-chat"); r = await freeAiAnswer(question, chat.turns.map((x) => ({ role: x.role, text: x.role === "user" ? x.text ?? "" : x.reply?.text ?? "" })).filter((x) => x.text), r, (s) => setLive(t("Der kostenlose Dienst erlaubt nur etwa eine Antwort alle 45 Sekunden – ich warte {s} s …", { s }))); }
-        setChat((c) => ({ ...c, turns: [...c.turns, { role: "bot", reply: r }] }));
-        return;
-      }
-      const r = await client.call<{ conversationId: string; reply: AssistantReply }>("assistant.ask", { conversationId: chat.conversationId, text: question, engine: eng, requestId });
-      add(r.reply, {}, r.conversationId);
+      // The same brain as the island (lib/jarvis-ask.ts): one JARVIS, whichever place it is asked from.
+      const { askJarvis } = await import("../lib/jarvis-ask");
+      await askJarvis(question, { online, engine: eng, web, webSearch: !!st.data?.webSearch, bingoProvider: st.data?.bingoProvider ?? null, conversationId: chat.conversationId, turns: chat.turns, requestId }, extra,
+        { add, speak: (x) => speak(x), navigate: navTo, setPhase, setLive });
     } catch (e) {
       // The real error (key, limit, timeout, no connection) – never a made-up answer instead.
       add({ text: friendlyError(e), actions: [], sources: [], suggestions: [], mode: "local" });

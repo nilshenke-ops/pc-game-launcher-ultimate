@@ -203,6 +203,15 @@ public sealed class CompanionServices : IAsyncDisposable
             Permissions = new HashSet<string> { Security.Permissions.View, Security.Permissions.Launch, Security.Permissions.Manage },
         };
         CloudSync = new CloudSyncService(paths, platform.Secrets, (m, p) => Rpc.InvokeInternalAsync(m, cloudSession, p), () => Settings.Get().PcName ?? Environment.MachineName, Rpc);
+        // What the account owner set up once (memory folder and rules, AI keys) is applied here with the PC's own rights – no second set-up at the PC.
+        CloudSync.AccountSettings = (accMethod, acc) =>
+        {
+            string? AccStr(string n) => acc.TryGetProperty(n, out var accV) && accV.ValueKind == System.Text.Json.JsonValueKind.String ? accV.GetString() : null;
+            bool? AccBool(string n) => acc.TryGetProperty(n, out var accB) && accB.ValueKind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False ? accB.GetBoolean() : null;
+            if (accMethod == "memory.configure") Memory.Configure(AccStr("path"), AccBool("enabled"), AccBool("writeEnabled"), AccBool("deleteEnabled"), AccStr("auto"), true);
+            else Assistant.AiSet(AccStr("provider") ?? throw new RpcException("invalid-params", "Anbieter fehlt."), AccBool("enabled"), AccStr("key"), AccBool("attested"), AccBool("consent"), true);
+            return Task.CompletedTask;
+        };
         Rpc.TopicChanged += CloudSync.Changed;
         Activity = new ActivityService(paths, Rpc, () => Sessions.Running().Select(r => (r.itemId, Library.Get(r.itemId)?.Name ?? "?", r.since)).ToList());
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };

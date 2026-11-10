@@ -94,7 +94,7 @@ async function allTeams(f: Fetcher, now: Date, signal?: AbortSignal): Promise<Te
 }
 
 /** Words that make a question about a team a question about its matches. */
-export const looksSporty = (q: string) => /\b(spiel\w*|ergebnis\w*|ausgegangen|gewonnen|verloren|unentschieden|tabelle|spieltag|punkte|tore?|torsch[üu]tze|aufstellung|gegner|gegen|stand|steht|l[äa]uft|live|n[äa]chste\w*|letzte\w*|zuletzt|wann)\b/i.test(q);
+export const looksSporty = (q: string) => /\b(spiel\w*|gespielt|ergebnis\w*|gestern|heute|ausgegangen|gewonnen|verloren|unentschieden|tabelle|spieltag|punkte|tore?|torsch[üu]tze|aufstellung|gegner|gegen|stand|steht|l[äa]uft|live|n[äa]chste\w*|letzte\w*|zuletzt|wann)\b/i.test(q);
 
 export interface SportsAnswer { block: string; teams: string[] }
 

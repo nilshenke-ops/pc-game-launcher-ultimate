@@ -26,7 +26,7 @@ const POLL_MS = 10_000, POLL_HIDDEN_MS = 60_000, TIMEOUT_MS = 20_000, MAX_OPS = 
 export const SYNC_ITEMS = ["state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
   "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list"] as const;
 /** Changes a device may hand over through the cloud while the PC is off (data only – never starting anything). */
-export const OP_METHODS = new Set(["library.update", "settings.save"]);
+export const OP_METHODS = new Set(["library.update", "settings.save", "memory.configure", "ai.set"]);
 
 interface TokenRec { user: string; api: string; token: string; seq: number; have: Record<string, string>; pcAt: string | null; pcName: string | null; okAt: number | null }
 export interface PendingOp { id: string; method: string; params: Record<string, unknown>; base?: Record<string, unknown>; at: string }
@@ -214,6 +214,7 @@ export async function linkPcNow(force = false): Promise<"linked" | "already" | "
     }
     await client.call("cloud.link", params);
     writeJson(NOAUTO_KEY, null);
+    void import("./account-to-pc").then((m) => m.sendAccountToPc(true)).catch(() => { /* the next change sends it */ });   // the PC gets what the account already has (memory folder, AI keys)
     return "linked";
   } catch { return "failed"; }
   finally { linking = false; }

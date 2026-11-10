@@ -51,6 +51,9 @@ export async function ensureJarvis(): Promise<boolean> {
   return activeSince > 0;
 }
 
+/** Is JARVIS switched on (without subscribing to changes)? */
+export const jarvisEnabled = () => enabled;
+
 export function useJarvis() {
   return useSyncExternalStore((fn) => { listeners.add(fn); return () => listeners.delete(fn); }, () => snap);
 }

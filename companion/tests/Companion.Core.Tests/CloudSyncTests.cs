@@ -120,6 +120,27 @@ public class CloudSyncTests
         return (sync, cloud, pc, dir);
     }
 
+    [Fact]
+    public async Task Memory_folder_and_AI_keys_set_up_once_in_the_account_are_applied_by_the_PC_itself()
+    {
+        var (sync, _, _, dir) = Make();
+        using var _d = dir; using var __ = sync;
+        using var doc = JsonDocument.Parse("{\"method\":\"memory.configure\",\"params\":{\"path\":\"C:\\\\Notes\\\\JARVIS\",\"enabled\":true,\"auto\":\"suggest\"}}");
+        // Without the PC's own handler nothing is taken over.
+        await Assert.ThrowsAsync<RpcException>(() => sync.ApplyAsync(doc.RootElement, "iPad"));
+        var seen = new List<(string method, string json)>();
+        sync.AccountSettings = (m, p) => { seen.Add((m, p.GetRawText())); return Task.CompletedTask; };
+        Assert.Null(await sync.ApplyAsync(doc.RootElement, "iPad"));
+        using var keys = JsonDocument.Parse("{\"method\":\"ai.set\",\"params\":{\"provider\":\"groq\",\"key\":\"gsk_x\",\"attested\":true}}");
+        Assert.Null(await sync.ApplyAsync(keys.RootElement, "iPad"));
+        Assert.Equal(new[] { "memory.configure", "ai.set" }, seen.Select(x => x.method));
+        Assert.Contains("JARVIS", seen[0].json);
+        Assert.Contains("groq", seen[1].json);
+        // Other methods stay forbidden.
+        using var bad = JsonDocument.Parse("{\"method\":\"library.launch\",\"params\":{}}");
+        await Assert.ThrowsAsync<RpcException>(() => sync.ApplyAsync(bad.RootElement, "iPad"));
+    }
+
     static string Op(string method, object @params, object? @base = null) =>
         CloudSyncService.Seal(Key, JsonSerializer.Serialize(new { method, @params, @base, at = "2026-11-09T10:00:00Z", device = "iPad" }));
 

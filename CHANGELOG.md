@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.35.0 – 2026-11-10
+### Neu
+- Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite
+- Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da
+### Behoben
+- „Wie viel hat Bayern gespielt?“ (und „wie hat Dortmund heute gespielt?“) wird als Sportfrage mit echten Ergebnissen beantwortet und nicht mehr als Frage nach der eigenen Spielzeit
+- Insel: Ein Tipp auf einen Reiter, während sich die Insel noch bewegt, geht nicht mehr verloren – sie fährt danach dorthin
+- Wischen in der Insel auf dem Handy: Der Bereich folgt dem Finger jetzt auch bei Android-Chrome (die Geste wurde vorher vom Browser abgebrochen)
+
 ## 3.34.1 – 2026-11-10
 ### Verbessert
 - Zeigt im Widget-Baukasten eine Live-Vorschau der Glasfläche.

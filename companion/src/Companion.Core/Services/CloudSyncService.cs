@@ -43,7 +43,12 @@ public sealed class CloudSyncService : IDisposable
         "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list",
     };
     /// <summary>Changes a device may make through the cloud while the PC is off – data only, never starting programs or changing what runs.</summary>
-    public static readonly HashSet<string> OpMethods = new() { "library.update", "settings.save" };
+    public static readonly HashSet<string> OpMethods = new() { "library.update", "settings.save", "memory.configure", "ai.set" };
+    /// <summary>
+    /// Takes over account settings that only the PC itself may apply (the memory folder, AI keys): the account owner set them up once on any device,
+    /// they arrive sealed with the account key, and the PC applies them with its own rights. Set by <c>CompanionServices</c>.
+    /// </summary>
+    public Func<string, JsonElement, Task>? AccountSettings { get; set; }
     const int PartSize = 900_000, MaxApplied = 1000;
     static readonly TimeSpan Period = TimeSpan.FromSeconds(30), Debounce = TimeSpan.FromSeconds(2), Heartbeat = TimeSpan.FromMinutes(5);
 
@@ -289,6 +294,13 @@ public sealed class CloudSyncService : IDisposable
         if (!OpMethods.Contains(method)) throw new RpcException("forbidden", $"„{method}“ wird aus der Cloud nicht übernommen.");
         var p = op.GetProperty("params");
         if (p.ValueKind != JsonValueKind.Object) throw new RpcException("invalid-params", "Ungültige Änderung.");
+        if (method is "memory.configure" or "ai.set")
+        {
+            if (AccountSettings == null) throw new RpcException("forbidden", $"„{method}“ wird aus der Cloud nicht übernommen.");
+            await AccountSettings(method, p);
+            Log.Info("cloud", $"Einstellung von {device} übernommen: {method}");
+            return null;
+        }
         var hasBase = op.TryGetProperty("base", out var b) && b.ValueKind == JsonValueKind.Object;
         JsonElement? current = null;
         if (method == "library.update")

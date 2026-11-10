@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { aliasesOf, describeTeam, resetSportsCache, sportsFor, teamsInQuestion, uncoveredAnswer, uncoveredLeague, type Team } from "./sports";
+import { looksSporty, aliasesOf, describeTeam, resetSportsCache, sportsFor, teamsInQuestion, uncoveredAnswer, uncoveredLeague, type Team } from "./sports";
 
 const BAY: Team = { id: 40, name: "FC Bayern München", short: "Bayern" };
 const BVB: Team = { id: 7, name: "Borussia Dortmund", short: "Dortmund" };
@@ -73,5 +73,12 @@ describe("Ligen ohne freie Datenquelle", () => {
     expect(uncoveredLeague("Wie steht es in der La Liga?")).toBe("La Liga");
     expect(uncoveredLeague("Wann spielt Bayern als Nächstes?")).toBeNull();
     expect(uncoveredAnswer("Premier League")).toContain("keine freie Datenquelle");
+  });
+});
+
+describe("„Wie viel hat Bayern gespielt?“ ist eine Sportfrage, keine Frage nach der eigenen Spielzeit", () => {
+  it("erkennt die Fragen nach dem Ergebnis auch mit „gespielt“", () => {
+    for (const q of ["Wie viel hat Bayern gespielt?", "wie viel Bayern gespielt hat", "Wie hat Bayern gestern gespielt?", "Was hat Dortmund heute gespielt?"]) expect(looksSporty(q), q).toBe(true);
+    expect(teamsInQuestion("wie viel Bayern gespielt hat", TEAMS).map((t) => t.id)).toEqual([40]);
   });
 });
