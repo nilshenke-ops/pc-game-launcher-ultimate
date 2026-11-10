@@ -182,6 +182,14 @@ test("Handy mit Admin-Recht verbindet den PC mit dem Konto (versiegelt) – ohne
   await expect.poll(async () => (await rpc("cloud.status")).linked, { timeout: 40_000 }).toBe(true);
   expect((await rpc("cloud.status")).user).toBe(USER);
   await expect.poll(async () => (await pullAll()).pcAt, { timeout: 30_000 }).not.toBeNull();
+  // "Prüfen & reparieren": the PC is unlinked again, one button links it, uploads and says so line by line.
+  await rpc("cloud.unlink");
+  await phone.goto(`${HOSTED_SITE}/#/cloud`);
+  const card = phone.locator(".card", { hasText: "Automatische Synchronisierung" });
+  await card.getByRole("button", { name: "Prüfen & reparieren" }).click();
+  await expect(card.getByText(/Der PC wurde jetzt mit dem Konto verbunden|Der PC ist mit dem Konto/)).toBeVisible({ timeout: 40_000 });
+  await expect(card.getByText(/Der PC hat gerade hochgeladen/)).toBeVisible({ timeout: 40_000 });
+  expect((await rpc("cloud.status")).linked).toBe(true);
   await phone.context().close();
 });
 
@@ -192,6 +200,10 @@ test("4–5 Dasselbe Konto am iPad (nie mit dem PC gekoppelt): alles ist aktuell
   await expect(p.getByText("Cloud Zweitspiel").first()).toBeVisible();
   await expect(favButton(p, "Cloud Testspiel")).toHaveAttribute("aria-pressed", "true");     // favourite from the PC
   await expect(favButton(p, "Cloud Zweitspiel")).toHaveAttribute("aria-pressed", "false");
+  // The home page too (it showed only the default tiles before): the PC's games, not "Steam / Xbox App / Game Pass".
+  await p.goto(`${HOSTED_SITE}/#/`);
+  await expect(p.getByText("Deine Spiele").first()).toBeVisible({ timeout: 20_000 });
+  await expect(p.getByText("Cloud Testspiel").first()).toBeVisible({ timeout: 20_000 });
   // The status says it in words.
   await p.goto(`${HOSTED_SITE}/#/cloud`);
   const card = p.locator(".card", { hasText: "Automatische Synchronisierung" });

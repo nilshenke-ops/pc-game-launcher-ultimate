@@ -6,7 +6,7 @@ import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useConn, useRpc } from "../lib/hooks";
 import { relTime } from "../lib/format";
-import { describeSync, flushOps, linkPcNow, pullNow, setAutoLink, useCloudSync } from "../lib/cloud-sync";
+import { describeSync, diagnoseCloud, flushOps, type CheckLine, linkPcNow, pullNow, setAutoLink, useCloudSync } from "../lib/cloud-sync";
 import { session } from "../lib/design-account";
 import { Banner, Button, Card, Modal } from "./ui";
 import { AccountPanel } from "./design-profile";
@@ -21,6 +21,7 @@ export function CloudSyncCard() {
   const pc = useRpc<PcCloud>("cloud.status", {}, ["cloud"], pcOnline);
   const [busy, setBusy] = useState(false);
   const [loginOpen, setLoginOpen] = useState(false);
+  const [lines, setLines] = useState<CheckLine[] | null>(null);
   const [, setTick] = useState(0);
   // The card follows sign-in/sign-out at once (before it only changed when the next sync round ran).
   useEffect(() => { const f = () => setTick((n) => n + 1); window.addEventListener("pgl-account", f); window.addEventListener("storage", f); return () => { window.removeEventListener("pgl-account", f); window.removeEventListener("storage", f); }; }, []);
@@ -31,7 +32,8 @@ export function CloudSyncCard() {
         <p className="small muted" style={{ margin: 0 }}>{t("Melde dich oben mit deinem Cloud-Konto an – dann hält die Cloud den letzten Stand deines PCs für alle deine Geräte bereit, auch bei ausgeschaltetem PC.")}</p>
         <p className="small" style={{ margin: 0 }}>{t("Wichtig: Auch am PC selbst muss dieses Cloud-Konto angemeldet sein – ein Konto „am PC“ oder ein anderes Konto lädt nichts in die Cloud.")}</p>
         <p className="small muted" style={{ margin: 0 }}>{acct ? t("Dieses Gerät ist als „{u}“ nur lokal angemeldet (Konto am PC) – für die Cloud melde dich mit dem Cloud-Konto an.", { u: acct.user }) : t("Dieses Gerät ist noch nicht angemeldet.")}</p>
-        <div><Button variant="primary" onClick={() => setLoginOpen(true)}>{t("Jetzt anmelden")}</Button></div>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}><Button variant="primary" onClick={() => setLoginOpen(true)}>{t("Jetzt anmelden")}</Button><Button onClick={() => void diagnoseCloud().then(setLines)}>{t("Prüfen & reparieren")}</Button></div>
+        {lines && <ul className="steps small" role="status" style={{ margin: 0 }}>{lines.map((l, i) => <li key={i}>{l.ok ? "✓ " : "✗ "}{l.text}</li>)}</ul>}
         {loginOpen && createPortal(<Modal title={t("Anmelden oder registrieren")} onClose={() => setLoginOpen(false)}><AccountPanel onDone={() => setLoginOpen(false)} /></Modal>, document.body)}
       </div>
     </Card>
@@ -76,6 +78,10 @@ export function CloudSyncCard() {
           {canAdmin && !pcLinked && <Button variant="primary" busy={busy} onClick={() => run(async () => { setAutoLink(true); const r = await linkPcNow(true); if (r === "failed") throw new Error(t("Der PC konnte nicht mit der Cloud verbunden werden.")); }, t("PC mit dem Konto verbunden"))}>{t("PC mit diesem Konto verbinden")}</Button>}
           {canAdmin && pcLinked && <Button variant="ghost" busy={busy} onClick={() => run(async () => { setAutoLink(false); await client.call("cloud.unlink"); }, t("PC von der Cloud getrennt"))}>{t("PC von der Cloud trennen")}</Button>}
         </div>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <Button busy={busy} onClick={() => run(async () => { setLines(null); setLines(await diagnoseCloud()); })}>{t("Prüfen & reparieren")}</Button>
+        </div>
+        {lines && <ul className="steps small" role="status" style={{ margin: 0 }}>{lines.map((l, i) => <li key={i}>{l.ok ? "✓ " : "✗ "}{l.text}</li>)}</ul>}
         <p className="tiny muted" style={{ margin: 0 }}>{t("Nur Funktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung …), brauchen eine aktive PC-Verbindung. Alles andere siehst und änderst du auch ohne PC.")}</p>
       </div>
     </Card>

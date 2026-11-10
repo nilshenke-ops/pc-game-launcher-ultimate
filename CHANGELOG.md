@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.39.3 – 2026-11-10
+### Neu
+- Cloud-Karte: Knopf „Prüfen & reparieren“ – prüft Schritt für Schritt Konto, Cloud, PC-Verbindung und Upload, verbindet den PC bei Bedarf mit dem Konto und zeigt in Klartext, wo es hängt (auch am iPad: zeigt, was in der Cloud liegt und wann der PC zuletzt hochgeladen hat)
+### Verbessert
+- Automatischer Test deckt jetzt auch die Startseite ohne PC-Verbindung ab (die Spiele des PCs statt der Standard-Kacheln)
+
 ## 3.39.2 – 2026-11-10
 ### Behoben
 - Cloud-Karte: Der Knopf „Zur Anmeldung“ tat auf der Profil-Seite nichts – er heißt jetzt „Jetzt anmelden“ und öffnet direkt die Anmeldung
