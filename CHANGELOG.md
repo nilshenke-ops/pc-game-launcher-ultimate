@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.42.1 – 2026-11-10
+### Behoben
+- Soundboard: Die Lautstärke wirkt jetzt sofort – auch auf Sounds, die gerade laufen (vorher nur auf den nächsten Sound), und beim Ziehen des Reglers (nicht erst beim Loslassen, auch am iPad)
+- JARVIS-Insel am PC: Das Fenster wird beim Öffnen und Schließen ohne Neuzeichnen pro Bild angepasst – die Öffnen- und Schließ-Animation läuft ruhiger durch
+### Verbessert
+- Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen
+
 ## 3.42.0 – 2026-11-10
 ### Neu
 - Soundboard ohne PC: Ein Link (https), den du am iPad/Handy hinzufügst, geht jetzt über die Cloud – der PC lädt ihn von selbst herunter, sobald er läuft; kein Warten auf eine PC-Verbindung mehr (Dateien brauchen weiterhin die PC-Verbindung)

@@ -337,6 +337,8 @@ public interface IAudioEngine
     void Pause(string playbackId);
     void Resume(string playbackId);
     void StopAll();
+    /// <summary>Changes the volume of a sound that is playing right now (main output and monitor, 0..2) – the slider then works at once, not only for the next sound.</summary>
+    void SetVolume(string playbackId, float volume, float monitorVolume) { }
     /// <summary>Mixes the microphone into the soundboard output (for a virtual cable). Returns an error message or null.</summary>
     string? SetMicPassthrough(bool enabled, string? micDeviceId, string? outputDeviceId, float volume);
     bool MicPassthroughActive { get; }

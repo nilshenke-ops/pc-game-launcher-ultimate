@@ -34,6 +34,8 @@ export interface VoiceState {
   error: string | null;
   /** Level at the microphone and at the output, 0 … 1. */
   inLevel: number;
+  /** Running for a while but the microphone delivers nothing at all (wrong or muted microphone). */
+  micSilent: boolean;
   outLevel: number;
   /** Which output the voice really goes to ("cable", "default" or "other") – only while running. */
   route: "cable" | "default" | "other" | null;
@@ -91,7 +93,7 @@ export function suggestDevices(inputs: DeviceInfo[], outputs: DeviceInfo[]): { m
 
 // ------------------------------------------------------------------ the engine
 
-let state: VoiceState = { running: false, starting: false, testing: false, error: null, inLevel: 0, outLevel: 0, route: null, settings: readSettings() };
+let state: VoiceState = { running: false, starting: false, testing: false, error: null, inLevel: 0, outLevel: 0, micSilent: false, route: null, settings: readSettings() };
 const listeners = new Set<() => void>();
 const publish = (patch: Partial<VoiceState>) => { state = { ...state, ...patch }; listeners.forEach((l) => l()); };
 export const voiceState = () => state;
@@ -196,7 +198,7 @@ export async function startVoiceChanger(opts: { test?: boolean } = {}): Promise<
   try {
     ctx = new AudioContext({ latencyHint: "interactive" });
     stream = await navigator.mediaDevices.getUserMedia({
-      audio: { ...(s.micId ? { deviceId: { exact: s.micId } } : {}), echoCancellation: s.clean, noiseSuppression: s.clean, autoGainControl: false, channelCount: 1 },
+      audio: { ...(s.micId ? { deviceId: { exact: s.micId } } : {}), echoCancellation: s.clean, noiseSuppression: s.clean, autoGainControl: s.clean, channelCount: 1 },
     });
     await ctx.audioWorklet.addModule(workletUrl());
     const pitch = new AudioWorkletNode(ctx, "pgl-pitch", { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [1] });
@@ -238,9 +240,13 @@ export async function startVoiceChanger(opts: { test?: boolean } = {}): Promise<
 
     const levelOf = (an: AnalyserNode) => { const d = new Float32Array(an.fftSize); an.getFloatTimeDomainData(d); let m = 0; for (const v of d) m = Math.max(m, Math.abs(v)); return Math.min(1, m); };
     // Peak meter with a slow fall, so a short sound does not flicker past unseen.
-    let inHold = 0, outHold = 0;
+    let inHold = 0, outHold = 0, quietSince = performance.now(), everHeard = false;
     const timer = window.setInterval(() => {
-      inHold = Math.max(levelOf(inAn), inHold * 0.86); outHold = Math.max(levelOf(outAn), outHold * 0.86);
+      const rawIn = levelOf(inAn);
+      if (rawIn > 0.004) { everHeard = true; quietSince = performance.now(); }
+      const silent = !everHeard && performance.now() - quietSince > 6000;       // 6 s with not a whisper from the microphone
+      if (silent !== state.micSilent) publish({ micSilent: silent });
+      inHold = Math.max(rawIn, inHold * 0.86); outHold = Math.max(levelOf(outAn), outHold * 0.86);
       const a = inHold < 0.01 ? 0 : inHold, b = outHold < 0.01 ? 0 : outHold;
       if (Math.abs(a - state.inLevel) > 0.02 || Math.abs(b - state.outLevel) > 0.02 || (a === 0 && state.inLevel !== 0) || (b === 0 && state.outLevel !== 0)) publish({ inLevel: a, outLevel: b });
     }, 90);
@@ -263,7 +269,7 @@ export async function startVoiceChanger(opts: { test?: boolean } = {}): Promise<
 export async function stopVoiceChanger(error: string | null = null): Promise<void> {
   const e = engine; engine = null;
   e?.stop();
-  publish({ running: false, starting: false, testing: false, inLevel: 0, outLevel: 0, route: null, error });
+  publish({ running: false, starting: false, testing: false, inLevel: 0, outLevel: 0, micSilent: false, route: null, error });
 }
 
 function friendly(e: unknown): string {

@@ -6924,6 +6924,8 @@ export const en: Record<string, string> = {
   "In der Cloud gespeichert – der PC lädt ihn von selbst herunter, sobald er läuft": "Saved in the cloud – the PC downloads it by itself as soon as it runs",
   "Gespeichert – der Link geht über die Cloud an den PC, der ihn von selbst lädt": "Saved – the link goes to the PC through the cloud, which downloads it by itself",
   "Die ElevenLabs-Stimme hat zuletzt nicht gesprochen – JARVIS nahm die Browser-Stimme. Grund: {m}": "The ElevenLabs voice did not speak last time – JARVIS used the browser voice. Reason: {m}",
+  "Dein Mikrofon liefert kein Signal": "Your microphone delivers no signal",
+  "Sprich etwas – bewegt sich „Du“ nicht, ist vermutlich das falsche oder ein stummes Mikrofon gewählt. Wähle unten dein richtiges Mikrofon, prüfe in Windows (Einstellungen → Datenschutz → Mikrofon), dass Browser Zugriff haben, und starte neu.": "Say something – if “You” does not move, the wrong or a muted microphone is probably chosen. Choose your real microphone below, check in Windows (Settings → Privacy → Microphone) that browsers have access, and restart.",
   "Weiteres Konto hinzufügen": "Add another account",
   "Stimme testen": "Test voice",
   "Test läuft: Du hörst dich selbst in der gewählten Stimme – nur mit Kopfhörern, sonst pfeift es. Zu Discord geht dabei nichts. Wechsle die Stimme, während du sprichst.": "Test running: you hear yourself in the chosen voice – headphones only, otherwise it will whistle. Nothing goes to Discord. Switch the voice while you talk.",

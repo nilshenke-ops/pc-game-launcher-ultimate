@@ -66,6 +66,7 @@ export default function VoiceChanger() {
               <span className="tiny muted">{t("Du")}</span><span className="vc-bar" role="meter" aria-label={t("Pegel Mikrofon")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v.inLevel * 100)}><i style={{ width: `${Math.round(v.inLevel * 100)}%` }} /></span>
               <span className="tiny muted">{t("Discord")}</span><span className="vc-bar" role="meter" aria-label={t("Pegel Ausgang")} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(v.outLevel * 100)}><i style={{ width: `${Math.round(v.outLevel * 100)}%` }} /></span>
             </div>
+            {v.micSilent && <Banner kind="warn" title={t("Dein Mikrofon liefert kein Signal")}>{t("Sprich etwas – bewegt sich „Du“ nicht, ist vermutlich das falsche oder ein stummes Mikrofon gewählt. Wähle unten dein richtiges Mikrofon, prüfe in Windows (Einstellungen → Datenschutz → Mikrofon), dass Browser Zugriff haben, und starte neu.")}</Banner>}
             {v.testing && <p className="small" style={{ margin: 0 }} role="status">{t("Test läuft: Du hörst dich selbst in der gewählten Stimme – nur mit Kopfhörern, sonst pfeift es. Zu Discord geht dabei nichts. Wechsle die Stimme, während du sprichst.")}</p>}
             <p className="tiny muted" style={{ margin: 0 }}>{t("Läuft weiter, wenn du eine andere Seite öffnest – nur wenn du das Fenster schließt, hört es auf.")}</p>
           </div>

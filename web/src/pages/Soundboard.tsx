@@ -74,6 +74,7 @@ export default function Soundboard() {
   const [editing, setEditing] = useState<Sound | null>(null);
   const [colEdit, setColEdit] = useState<SoundCollection | null>(null);
   const [volume, setVolume] = useState<number | null>(null);
+  const volTimer = useRef<number | undefined>(undefined);
   useEvent<PlayingState>("sounds.playing", setPlaying);
 
   const data = q.data?.data;
@@ -107,7 +108,7 @@ export default function Soundboard() {
         <div className="row">
           <div className="row nowrap grow" style={{ minWidth: 220 }}>
             <Volume2 size={18} className="muted" />
-            <input type="range" min={0} max={100} value={vol} disabled={!canManage} title={canManage ? undefined : t("Lautstärke ändern braucht die Berechtigung „Verwalten“ (am PC unter Geräte).")} onChange={(e) => setVolume(+e.target.value)} onPointerUp={() => saveVolume(vol)} onKeyUp={() => saveVolume(vol)} aria-label={t("Lautstärke Soundboard")} />
+            <input type="range" min={0} max={100} value={vol} disabled={!canManage} title={canManage ? undefined : t("Lautstärke ändern braucht die Berechtigung „Verwalten“ (am PC unter Geräte).")} onChange={(e) => { const v = +e.target.value; setVolume(v); volTimer.current && window.clearTimeout(volTimer.current); volTimer.current = window.setTimeout(() => saveVolume(v), 120); }} aria-label={t("Lautstärke Soundboard")} />
             <b className="small" style={{ width: 44, textAlign: "right" }}>{vol}%</b>
           </div>
           <div className="row nowrap">
