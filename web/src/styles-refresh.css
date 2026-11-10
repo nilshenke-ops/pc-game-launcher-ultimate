@@ -582,3 +582,12 @@ select.input { border-radius: 999px; padding-inline: 18px 14px; }
 .list-item { border-radius: 18px; }
 .sheet-grid a, .sheet-cell > a { border-radius: 20px; }
 kbd { border-radius: 8px; }
+
+/* Bühne heller, damit der Glasrand und die Durchsicht der Karte wirklich sichtbar sind. */
+.ws-preview {
+  background:
+    radial-gradient(120% 80% at 12% 0%, rgba(255, 255, 255, .72), transparent 55%),
+    radial-gradient(70% 60% at 92% 96%, rgba(var(--primary-rgb), .42), transparent 62%),
+    linear-gradient(155deg, #d6dae5 0%, #a3aabf 45%, #4a5168 100%);
+}
+.ws-preview .cw-frame { padding: 14px; box-shadow: 0 30px 60px -32px rgba(0, 0, 0, .7); }
