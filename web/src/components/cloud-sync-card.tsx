@@ -1,6 +1,6 @@
 // Cloud page: the state of the automatic sync in plain words – cloud, PC, what is running, what is still waiting – and the PC's own link to the account.
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { CloudCog, RefreshCw } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
@@ -8,7 +8,8 @@ import { toast, useConn, useRpc } from "../lib/hooks";
 import { relTime } from "../lib/format";
 import { describeSync, flushOps, linkPcNow, pullNow, setAutoLink, useCloudSync } from "../lib/cloud-sync";
 import { session } from "../lib/design-account";
-import { Banner, Button, Card } from "./ui";
+import { Banner, Button, Card, Modal } from "./ui";
+import { AccountPanel } from "./design-profile";
 
 interface PcCloud { linked: boolean; user: string | null; state: string; lastPushAt: string | null; lastOkAt: string | null; lastError: string | null; conflicts: string[] }
 
@@ -19,13 +20,19 @@ export function CloudSyncCard() {
   const canAdmin = pcOnline && (!!conn.me?.isLocal || !!conn.me?.permissions.includes("admin"));
   const pc = useRpc<PcCloud>("cloud.status", {}, ["cloud"], pcOnline);
   const [busy, setBusy] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [, setTick] = useState(0);
+  // The card follows sign-in/sign-out at once (before it only changed when the next sync round ran).
+  useEffect(() => { const f = () => setTick((n) => n + 1); window.addEventListener("pgl-account", f); window.addEventListener("storage", f); return () => { window.removeEventListener("pgl-account", f); window.removeEventListener("storage", f); }; }, []);
   const acct = session();
   if (!acct?.cloud) return (
     <Card title={t("Automatische Synchronisierung")} icon={<CloudCog size={18} />}>
       <div className="stack-sm">
         <p className="small muted" style={{ margin: 0 }}>{t("Melde dich oben mit deinem Cloud-Konto an – dann hält die Cloud den letzten Stand deines PCs für alle deine Geräte bereit, auch bei ausgeschaltetem PC.")}</p>
         <p className="small" style={{ margin: 0 }}>{t("Wichtig: Auch am PC selbst muss dieses Cloud-Konto angemeldet sein – ein Konto „am PC“ oder ein anderes Konto lädt nichts in die Cloud.")}</p>
-        <div><Link className="btn primary" to="/profile">{t("Zur Anmeldung")}</Link></div>
+        <p className="small muted" style={{ margin: 0 }}>{acct ? t("Dieses Gerät ist als „{u}“ nur lokal angemeldet (Konto am PC) – für die Cloud melde dich mit dem Cloud-Konto an.", { u: acct.user }) : t("Dieses Gerät ist noch nicht angemeldet.")}</p>
+        <div><Button variant="primary" onClick={() => setLoginOpen(true)}>{t("Jetzt anmelden")}</Button></div>
+        {loginOpen && createPortal(<Modal title={t("Anmelden oder registrieren")} onClose={() => setLoginOpen(false)}><AccountPanel onDone={() => setLoginOpen(false)} /></Modal>, document.body)}
       </div>
     </Card>
   );

@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.39.2 – 2026-11-10
+### Behoben
+- Cloud-Karte: Der Knopf „Zur Anmeldung“ tat auf der Profil-Seite nichts – er heißt jetzt „Jetzt anmelden“ und öffnet direkt die Anmeldung
+- Cloud-Karte zeigt Anmeldung und Abmeldung sofort (blieb vorher auf „nicht angemeldet“ stehen, bis der nächste Abgleich lief) und sagt, ob das Gerät nur lokal oder mit dem Cloud-Konto angemeldet ist
+
 ## 3.39.1 – 2026-11-10
 ### Behoben
 - Cloud: Lehnt die Cloud einen einzelnen Eintrag ab (z. B. die Spiele-Liste mit vielen Bildern ist zu groß), blockiert das nicht mehr alle anderen – der Eintrag wird einzeln, dann ohne große Bilder erneut gesendet; bleibt ein Fehler, steht der genaue Grund auf der Cloud-Seite am PC
