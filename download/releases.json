@@ -1,5 +1,31 @@
 [
   {
+    "version": "3.36.0",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion.exe",
+    "size": 95088264,
+    "sha256": "7d4b625d47afd1a0903dde908819242d918404e366c0a24797ad3018d3f84a9c",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.36.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion-3.36.0-win-x64.zip",
+      "size": 89361957,
+      "sha256": "421393d07fda4b833c7d764d560f75741c6e886b7ee828964261af151dac1209"
+    },
+    "notes": "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC",
+    "changes": {
+      "neu": [
+        "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "Beim Start der Seite gab es einen Ladefehler im Schlüsselspeicher (Zugriff auf eine Liste, bevor sie angelegt war); die Schlüssel werden jetzt sauber nach dem Laden geöffnet"
+      ]
+    },
+    "signature": "BFI5ZykH841lm77wlQle9xpLrezIAIe097kj+O5Tf4zaRfjlIwV5f5gtgPtMR5YQUij7cOkPyJvjcpf3TVg79g=="
+  },
+  {
     "version": "3.35.0",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1341,35 +1367,5 @@
       "behoben": []
     },
     "signature": "c4A2AMJmzRKzOQBAECMhVqndHVs3sSvG9RhYFBmCNf8tC8jk97xx5agSRj67yQowuB/8EJX6P46brya3a5LAcQ=="
-  },
-  {
-    "version": "3.1.0",
-    "date": "2026-11-04",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.0/PCGameLauncherCompanion.exe",
-    "size": 94843236,
-    "sha256": "5ad8c888c5ab82fa67737c3fde9fcdc7ba2d09f6164ee00377222bf152306410",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.1.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.1.0/PCGameLauncherCompanion-3.1.0-win-x64.zip",
-      "size": 89118137,
-      "sha256": "723adb59be949b1d64c2a618129d2905556829ee4b735d3bf325651956ba8f63"
-    },
-    "notes": "„Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde · Der erste eingerichtete kostenlose Zugang schaltet auf „Automatisch“ um (ohne Umweg über die Einstellungen); in der Insel (Reiter JARVIS) und im Chat lässt sich die KI mit einem Tipp wechseln: Automatisch, Gemini, Router, lokale KI, eingebaut, Standard des PCs · Kostenlose KI einrichten in drei Schritten (Insel und JARVIS-Seite): Gemini-Schlüssel aus Google AI Studio einfügen und testen; als Ersatz mit einem Tipp OpenRouter oder Groq einrichten – der PC wählt die kostenlosen Modelle selbst. ChatGPT bietet Apps keinen kostenlosen Zugang und wird deshalb nicht angeboten",
-    "changes": {
-      "neu": [
-        "„Automatisch“ für JARVIS und die Insel: Befehle und PC-Werte erledigt der PC selbst („Starte …“ geht nie an eine KI), allgemeine Fragen beantwortet eine kostenlose KI – erst Gemini, ist die ausgelastet oder nicht erreichbar der KI-Router (OpenRouter-/Groq-Gratismodelle), dann die lokale KI, zuletzt der eingebaute Assistent. Die Antwort sagt, welche KI geantwortet hat und warum eine andere übersprungen wurde",
-        "Der erste eingerichtete kostenlose Zugang schaltet auf „Automatisch“ um (ohne Umweg über die Einstellungen); in der Insel (Reiter JARVIS) und im Chat lässt sich die KI mit einem Tipp wechseln: Automatisch, Gemini, Router, lokale KI, eingebaut, Standard des PCs",
-        "Kostenlose KI einrichten in drei Schritten (Insel und JARVIS-Seite): Gemini-Schlüssel aus Google AI Studio einfügen und testen; als Ersatz mit einem Tipp OpenRouter oder Groq einrichten – der PC wählt die kostenlosen Modelle selbst. ChatGPT bietet Apps keinen kostenlosen Zugang und wird deshalb nicht angeboten",
-        "Ohne PC (Handy, iPad, fremder Browser): allgemeine Fragen beantwortet eine freie KI ohne Konto und ohne Schlüssel (Pollinations) – erst nach deinem Ja auf diesem Gerät, gesendet wird nur die Frage mit den letzten Nachrichten, höchstens 20 Fragen pro Stunde; die Antwort ist als „Freie KI ohne PC“ gekennzeichnet; auch in der Insel auf dem Handy/iPad"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "„Wie lange sollte man schlafen?“ wurde als Frage nach der Spielzeit gelesen und mit „keine erkannte Spielsitzung“ beantwortet – Spielzeit-Fragen brauchen jetzt einen Spielbezug",
-        "Die Antwort der Insel nennt, welche KI geantwortet hat"
-      ]
-    },
-    "signature": "M2/puGdD1Gg7eKh2x6PtoI5yDzs++UQeIo4lodKJCvoyAZVymf6PZlGFt8+brwzyYW6abmhh3Dy/of5xwlRYXA=="
   }
 ]

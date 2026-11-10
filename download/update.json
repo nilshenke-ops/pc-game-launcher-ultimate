@@ -1,29 +1,26 @@
 {
-  "version": "3.35.0",
+  "version": "3.36.0",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.35.0/PCGameLauncherCompanion.exe",
-  "size": 95076394,
-  "sha256": "cbd0cba1208cdfce7a14a0677bb9a1c0f3b1c83404e01509337137eff78a0ea6",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion.exe",
+  "size": 95088264,
+  "sha256": "7d4b625d47afd1a0903dde908819242d918404e366c0a24797ad3018d3f84a9c",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.35.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.35.0/PCGameLauncherCompanion-3.35.0-win-x64.zip",
-    "size": 89350001,
-    "sha256": "8084d7f88a5d3467d63d21b4ad0d06181ecd7188e811540c0ea8c2b03b24ea1a"
+    "fileName": "PCGameLauncherCompanion-3.36.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion-3.36.0-win-x64.zip",
+    "size": 89361957,
+    "sha256": "421393d07fda4b833c7d764d560f75741c6e886b7ee828964261af151dac1209"
   },
-  "notes": "Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite · Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da",
+  "notes": "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC",
   "changes": {
     "neu": [
-      "Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite",
-      "Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da"
+      "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC"
     ],
     "verbessert": [],
     "behoben": [
-      "„Wie viel hat Bayern gespielt?“ (und „wie hat Dortmund heute gespielt?“) wird als Sportfrage mit echten Ergebnissen beantwortet und nicht mehr als Frage nach der eigenen Spielzeit",
-      "Insel: Ein Tipp auf einen Reiter, während sich die Insel noch bewegt, geht nicht mehr verloren – sie fährt danach dorthin",
-      "Wischen in der Insel auf dem Handy: Der Bereich folgt dem Finger jetzt auch bei Android-Chrome (die Geste wurde vorher vom Browser abgebrochen)"
+      "Beim Start der Seite gab es einen Ladefehler im Schlüsselspeicher (Zugriff auf eine Liste, bevor sie angelegt war); die Schlüssel werden jetzt sauber nach dem Laden geöffnet"
     ]
   },
-  "signature": "kS7EgF6CFBs4e3SaS+7LuMaBFMqevOH08atcmtIKm+4SDO+tse3M647DdQHFpFko/kJ/1Pv2aYNekV3KceJu1g=="
+  "signature": "BFI5ZykH841lm77wlQle9xpLrezIAIe097kj+O5Tf4zaRfjlIwV5f5gtgPtMR5YQUij7cOkPyJvjcpf3TVg79g=="
 }
