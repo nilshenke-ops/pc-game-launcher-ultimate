@@ -280,7 +280,11 @@ export async function diagnoseCloud(): Promise<CheckLine[]> {
   const out: CheckLine[] = [];
   const add = (ok: boolean, text: string) => out.push({ ok, text });
   const s = currentSession();
-  if (!s) { add(false, t("Hier ist kein Cloud-Konto angemeldet. Melde dich mit dem Cloud-Konto an (Person oben rechts).")); return out; }
+  if (!s) {
+    const local = session();
+    add(false, local ? t("Das Konto „{u}“ liegt nur am PC, nicht in der Cloud. Öffne Einstellungen → Konto & Anmeldedaten und tippe auf „In die Cloud übernehmen“.", { u: local.user }) : t("Hier ist kein Cloud-Konto angemeldet. Melde dich mit dem Cloud-Konto an (Person oben rechts)."));
+    return out;
+  }
   add(true, t("Angemeldet mit dem Cloud-Konto „{u}“.", { u: s.user }));
   // 1 the cloud itself and what it holds
   let pcAt: string | null = null;

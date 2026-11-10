@@ -353,3 +353,33 @@ export async function changeCredentials(o: { currentPassword?: string; newUser?:
   notifyAccount();
   void import("./cloud-sync").then((m) => { m.setAutoLink(true); return m.linkPcNow(true); }).catch(() => { /* the next round tries again */ });
 }
+
+
+/**
+ * A account that lives only on the PC ("Konto am PC") moves into the cloud under the same name and password: afterwards every device can sign in
+ * without the PC, and the PC connects to it and uploads its data. If the name already exists in the cloud, the same password signs in to it.
+ */
+export async function moveToCloud(password: string): Promise<void> {
+  const s = session();
+  if (!s) throw new Error(t("Nicht angemeldet."));
+  if (s.cloud) throw new Error(t("Dieses Konto liegt schon in der Cloud."));
+  if (!cloudAccountConfigured()) throw new Error(t("Cloud ist für diese App noch nicht eingerichtet."));
+  const k = await deriveKeys(s.user, password);
+  if (k.auth !== s.auth) throw new Error(t("Das Passwort stimmt nicht."));
+  await whenLocalAiReady();
+  const blob = await encryptDesign(k.enc, getPrefs());
+  let data: AccountData | null = null;
+  try { await cloudRegister(s.user, k.auth, blob); }
+  catch (e) {
+    if (!/gibt es schon/i.test((e as Error).message)) throw e;
+    const remote = await cloudLoad(s.user, k.auth);                  // the name exists: only the same password opens it
+    data = remote ? await decryptDesign(k.enc, remote.blob) : null;
+  }
+  if (data) applyData(data);                                          // an existing cloud account keeps its data
+  rememberPassword(s.user, password);
+  store({ user: s.user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
+  await adoptKeys(data?.keys);
+  if (!data) void saveNow().catch(() => { /* next change tries again */ });
+  notifyAccount();
+  void import("./cloud-sync").then((m) => { m.setAutoLink(true); return m.linkPcNow(true); }).catch(() => { /* the next round tries again */ });
+}

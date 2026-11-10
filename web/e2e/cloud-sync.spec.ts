@@ -308,7 +308,8 @@ test("Benutzername und Passwort ändern (rekey): neues Login gilt, altes nicht m
 
 test("Profil: Benutzername und Passwort sehen, Geheimcode setzen, Passwort ändern – am iPad, mit dem echten Dienst", async ({ browser }) => {
   const p = await ipad(browser);
-  await p.goto(`${HOSTED_SITE}/#/settings`);                       // the same card is in the settings
+  await p.goto(`${HOSTED_SITE}/#/settings?s=account`);             // its own item in the settings
+  await expect(p.getByRole("button", { name: /Konto & Anmeldedaten/ })).toBeVisible({ timeout: 20_000 });
   await expect(p.locator(".card", { hasText: "Zugangsdaten" })).toBeVisible({ timeout: 20_000 });
   await p.goto(`${HOSTED_SITE}/#/profile`);
   const card = p.locator(".card", { hasText: "Zugangsdaten" });
@@ -346,4 +347,30 @@ test("Profil: Benutzername und Passwort sehen, Geheimcode setzen, Passwort ände
   expect((await cloud("account/login", { user: USER, key: nk.auth })).status).toBe(200);
   expect((await cloud("account/login", { user: USER, key: keys.auth })).status).toBe(401);
   await p.context().close();
+});
+
+
+test("Konto nur am PC: in den Einstellungen sichtbar und per Knopf in die Cloud übernehmen (gleicher Name, gleiches Passwort)", async ({ browser }) => {
+  const user = "pcacc" + Math.floor(Math.random() * 1e6), password = "pc-konto-passwort";
+  const k = deriveKeys(user, password);
+  const ctx = await browser.newContext({ ...devices["iPad (gen 7)"], locale: "de-DE" });
+  await ctx.addInitScript(([hash, api, session]) => {
+    try { localStorage.setItem("pgl.access", hash as string); localStorage.setItem("pgl.cloud.endpoint", api as string); localStorage.setItem("pgl.designAccount", JSON.stringify(session)); } catch { /* ignore */ }
+  }, [ACCESS_HASH, API, { user, auth: k.auth, enc: k.enc, savedAt: Date.now() }]);       // no "cloud": true = an account at the PC
+  const p = await ctx.newPage();
+  await p.goto(`${HOSTED_SITE}/#/settings?s=account`);
+  const card = p.locator(".card", { hasText: "Zugangsdaten" });
+  await expect(card.getByText(user, { exact: true })).toBeVisible({ timeout: 20_000 });
+  await expect(card.getByText("Dieses Konto liegt nur am PC")).toBeVisible();
+  await card.locator("input[type=password]").fill("falsches-passwort");
+  await card.getByRole("button", { name: "In die Cloud übernehmen" }).click();
+  await expect(card.getByText("Das Passwort stimmt nicht.")).toBeVisible({ timeout: 20_000 });
+  await card.locator("input[type=password]").fill(password);
+  await card.getByRole("button", { name: "In die Cloud übernehmen" }).click();
+  await expect(card.getByText("Passwort", { exact: true }).first()).toBeVisible({ timeout: 30_000 });   // now the cloud card (user name + password rows)
+  await expect(card.getByRole("button", { name: "Anzeigen" })).toBeVisible();
+  expect((await cloud("account/login", { user, key: k.auth })).status).toBe(200);                      // the account exists in the cloud now
+  await card.getByRole("button", { name: "Anzeigen" }).click();
+  await expect(card.getByText(password, { exact: true })).toBeVisible();
+  await ctx.close();
 });

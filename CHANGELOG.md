@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.41.0 – 2026-11-10
+### Neu
+- Einstellungen: neuer Punkt „Konto & Anmeldedaten“ – zeigt Benutzername und Passwort (ansehen, kopieren, ändern, optionaler Geheimcode); ohne Anmeldung gleich mit Anmeldung/Registrierung
+- Ein Konto, das nur am PC liegt („Konto am PC“), lässt sich mit einem Knopf in die Cloud übernehmen (gleicher Name, gleiches Passwort) – danach verbindet sich der PC mit der Cloud und lädt seine Spiele hoch, sodass iPad und Handy sie auch ohne PC sehen
+### Verbessert
+- „Prüfen & reparieren“ erkennt ein Konto nur am PC und sagt, wo man es in die Cloud übernimmt
+
 ## 3.40.1 – 2026-11-10
 ### Neu
 - Einstellungen → Allgemein: Karte „Zugangsdaten“ ganz oben – Benutzername und Passwort sehen, kopieren und ändern (auch weiter im Profil)

@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import { Copy, Eye, EyeOff, KeyRound } from "lucide-react";
 import { t } from "../lib/i18n";
 import { toast } from "../lib/hooks";
-import { changeCredentials, confirmPassword, hasAccessCode, MIN_CODE, passwordState, revealPassword, session, setAccessCode } from "../lib/design-account";
+import { changeCredentials, confirmPassword, hasAccessCode, MIN_CODE, moveToCloud, passwordState, revealPassword, session, setAccessCode } from "../lib/design-account";
+import { AccountPanel } from "./design-profile";
 import { Banner, Button, Card, Field } from "./ui";
 
 const copy = async (text: string) => { try { await navigator.clipboard.writeText(text); toast(t("Kopiert."), "success"); } catch { toast(t("Kopieren ist hier nicht möglich."), "error"); } };
@@ -112,6 +113,47 @@ export function AccountCredentials() {
             <span className="tiny muted">{t("Vergisst du den Geheimcode, hilft nur erneutes Anmelden mit dem Passwort.")}</span>
           </div>
         )}
+        {err && <Banner kind="error">{err}</Banner>}
+      </div>
+    </Card>
+  );
+}
+
+
+/** The settings section "Konto & Anmeldedaten": whatever the sign-in state is, it says where the login details are and what to do. */
+export function AccountSettings() {
+  const [s, setS] = useState(session);
+  useEffect(() => { const f = () => setS(session()); window.addEventListener("pgl-account", f); window.addEventListener("storage", f); return () => { window.removeEventListener("pgl-account", f); window.removeEventListener("storage", f); }; }, []);
+  if (!s) return (
+    <Card title={t("Konto & Anmeldedaten")} icon={<KeyRound size={18} />}>
+      <div className="stack-sm">
+        <p className="small" style={{ margin: 0 }}>{t("Auf diesem Gerät ist niemand angemeldet. Melde dich an oder lege ein Konto an – danach siehst du hier Benutzername und Passwort und kannst beides ändern.")}</p>
+        <AccountPanel />
+      </div>
+    </Card>
+  );
+  if (s.cloud) return <AccountCredentials />;
+  return <PcAccountCard user={s.user} />;
+}
+
+/** An account that exists only at the PC: shows the name and moves it into the cloud (same name and password) so the other devices see the PC's data too. */
+function PcAccountCard({ user }: { user: string }) {
+  const [pw, setPw] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  return (
+    <Card title={t("Zugangsdaten")} icon={<KeyRound size={18} />}>
+      <div className="stack-sm">
+        <Field label={t("Benutzername")}>
+          <div className="row" style={{ gap: 8, flexWrap: "wrap" }}><code style={{ fontSize: "1.05rem" }}>{user}</code><Button size="sm" icon={<Copy size={14} />} onClick={() => void copy(user)}>{t("Kopieren")}</Button></div>
+        </Field>
+        <Banner kind="warn" title={t("Dieses Konto liegt nur am PC – nicht in der Cloud")}>
+          {t("Darum sehen andere Geräte (iPad, Handy) die Spiele deines PCs nicht, und der PC lädt nichts hoch. Übernimm das Konto in die Cloud: gleicher Name, gleiches Passwort.")}
+        </Banner>
+        <Field label={t("Passwort")} hint={t("Gib dein Passwort einmal ein. Es wird geprüft und danach hier angezeigt.")}>
+          <input className="input" type="password" value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="current-password" />
+        </Field>
+        <div><Button variant="primary" busy={busy} onClick={() => { setBusy(true); setErr(null); void moveToCloud(pw).then(() => { setPw(""); toast(t("Konto in der Cloud – der PC verbindet sich jetzt."), "success"); }).catch((e) => setErr((e as Error).message)).finally(() => setBusy(false)); }}>{t("In die Cloud übernehmen")}</Button></div>
         {err && <Banner kind="error">{err}</Banner>}
       </div>
     </Card>

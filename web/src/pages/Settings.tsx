@@ -1,10 +1,10 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { DesignProfileCard } from "../components/design-profile";
-import { AccountCredentials } from "../components/account-credentials";
+import { AccountSettings } from "../components/account-credentials";
 import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ArchiveRestore, Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
+  ArchiveRestore, Bell, History, Copy, KeyRound, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
   LifeBuoy, Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Undo2, Upload, UserX,
 } from "lucide-react";
 import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
@@ -24,7 +24,7 @@ import { DataCenter } from "../components/data-center";
 import { setStatusPill, useStatusPill } from "../lib/status-pill";
 import { setUserName, useUserName } from "../components/home-showcase";
 
-type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
+type Section = "general" | "account" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
 
 interface SettingsResp { settings: Settings; relaySecretSet: boolean; dataDir?: string; restartRequired: boolean; webStartError?: string }
 
@@ -42,6 +42,7 @@ export default function SettingsPage() {
   const section = (params.get("s") as Section) || "general";
   const nav: [Section, string, ReactNode][] = [
     ["general", t("Allgemein"), <SettingsIcon size={17} />],
+    ["account", t("Konto & Anmeldedaten"), <KeyRound size={17} />],
     ["design", t("Design & Layout"), <Palette size={17} />],
     ["connection", t("Verbindung"), <Globe size={17} />],
     ["security", t("Sicherheit"), <Lock size={17} />],
@@ -61,6 +62,7 @@ export default function SettingsPage() {
         </nav>
         <div className="stack fade-in" key={section}>
           {section === "general" && <General />}
+          {section === "account" && <AccountSettings />}
           {section === "design" && <Design />}
           {section === "connection" && <Connection />}
           {section === "security" && <Security />}
@@ -86,8 +88,6 @@ function General() {
   const uname = useUserName();
   useEffect(() => { if (s.data) { setName(s.data.settings.pcName); setScan(s.data.settings.processScanSeconds); } }, [s.data]);
   return (
-    <>
-    <AccountCredentials />
     <Loadable loading={s.loading} error={s.error} onRetry={s.reload}>
       <Card title={t("Allgemein")} icon={<SettingsIcon size={18} />}>
         <div className="stack">
@@ -107,7 +107,6 @@ function General() {
         </div>
       </Card>
     </Loadable>
-    </>
   );
 }
 
