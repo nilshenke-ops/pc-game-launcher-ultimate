@@ -6726,6 +6726,7 @@ export const en: Record<string, string> = {
   "Mikrofon stummschalten": "Mute microphone",
   "Szene wechseln": "Switch scene",
   "Szene": "Scene",
+  "Glasfläche wie auf dem Dashboard": "Glass surface as on the dashboard",
   "Replay-Puffer": "Replay buffer",
   "Desktop-Ton": "Desktop audio",
   "Aufnahme & Replay über {p}": "Recording & replay via {p}",

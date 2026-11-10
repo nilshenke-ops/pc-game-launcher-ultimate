@@ -408,8 +408,13 @@ export default function WidgetStudio() {
 
             <div className="ws-stage">
               <div className="ws-canvas" style={{ maxWidth: 480 }}>
-                <CustomWidgetView widget={draft} interactive={false}
-                  overlayElements={<Handles w={draft} sel={sel} onSelect={setSel} onChange={setEl} onRemove={removeEl} />} />
+                <div className="ws-preview">
+                  <div className="cw-frame">
+                    <CustomWidgetView widget={draft} interactive={false}
+                      overlayElements={<Handles w={draft} sel={sel} onSelect={setSel} onChange={setEl} onRemove={removeEl} />} />
+                  </div>
+                </div>
+                <span className="ws-preview-label">{t("Glasfläche wie auf dem Dashboard")}</span>
               </div>
               <p className="tiny muted" style={{ textAlign: "center" }}>{t("Elemente ziehen zum Verschieben, Ecke unten rechts für die Größe. Pfeiltasten: feiner (mit Shift größere Schritte), Entf: löschen.")}</p>
               <div className="ws-palette" role="group" aria-label={t("Element hinzufügen")}>
