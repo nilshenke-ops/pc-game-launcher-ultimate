@@ -129,7 +129,7 @@ function answerError(a: Answer, status: number): string {
   }
 }
 
-async function post(action: "register" | "login" | "load" | "save" | "delete", body: Record<string, unknown>): Promise<Answer> {
+async function post(action: "register" | "login" | "load" | "save" | "delete" | "rekey", body: Record<string, unknown>): Promise<Answer> {
   const base = cloudApi();
   if (!base) fail(t("Cloud ist für diese App noch nicht eingerichtet."));
   if (typeof fetch !== "function") fail(t("Dieser Browser kann keine Verbindung zur Cloud aufbauen."));
@@ -171,4 +171,10 @@ export async function cloudSave(user: string, key: string, blob: string) {
 
 export async function cloudDelete(user: string, key: string) {
   await post("delete", { user, key });
+}
+
+/** New user name and/or password: the data is sealed anew by the caller; the cloud then forgets what the PC and devices synced with the old key. */
+export async function cloudRekey(user: string, key: string, newUser: string, newKey: string, blob: string) {
+  if (blob.length > MAX_BLOB) fail(t("Die Kontodaten sind zu groß für die Cloud (Hintergrundbild verkleinern)."));
+  await post("rekey", { user, key, newUser, newKey, blob });
 }

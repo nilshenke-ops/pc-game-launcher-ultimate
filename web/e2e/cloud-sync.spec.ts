@@ -271,3 +271,78 @@ test("8–10 Offline ändern, Cloud kurz weg, Cloud zurück, PC startet: alles w
   await expect(favButton(p, "Cloud Testspiel")).toHaveAttribute("aria-pressed", "false");
   await p.context().close();
 });
+
+test("Benutzername und Passwort ändern (rekey): neues Login gilt, altes nicht mehr, Sync-Daten des alten Logins sind weg, Name nicht doppelt", async () => {
+  const a = "rk" + Math.floor(Math.random() * 1e6), b = a + "x", other = "rk" + Math.floor(Math.random() * 1e6) + "o";
+  const ka = deriveKeys(a, "passwort-eins"), kb = deriveKeys(b, "passwort-zwei"), ko = deriveKeys(other, "irgendwas-123");
+  expect((await cloud("account/register", { user: a, key: ka.auth, blob: "QUJD" })).status).toBe(200);
+  expect((await cloud("account/register", { user: other, key: ko.auth, blob: "QUJD" })).status).toBe(200);
+  const tok = (await cloud("sync/token", { user: a, key: ka.auth, device: "t" })).body.token as string;
+  expect((await cloud("sync/push", { user: a, token: tok, items: [{ item: "library.list", ver: "abcdefgh", parts: ["QUJD"] }] })).status).toBe(200);
+  // a taken name is refused and nothing changes
+  const taken = await cloud("account/rekey", { user: a, key: ka.auth, newUser: other, newKey: kb.auth, blob: "REVG" });
+  expect(taken.status).toBe(409);
+  expect((await cloud("account/login", { user: a, key: ka.auth })).status).toBe(200);
+  // wrong current password is refused
+  expect((await cloud("account/rekey", { user: a, key: kb.auth, newUser: b, newKey: kb.auth, blob: "REVG" })).status).toBe(401);
+  // the change: new name + new password
+  const ok = await cloud("account/rekey", { user: a, key: ka.auth, newUser: b, newKey: kb.auth, blob: "REVG" });
+  expect(ok.status).toBe(200);
+  expect(ok.body.user).toBe(b);
+  expect((await cloud("account/login", { user: b, key: kb.auth })).status).toBe(200);
+  expect((await cloud("account/login", { user: a, key: ka.auth })).status).toBe(401);
+  expect((await cloud("account/login", { user: b, key: ka.auth })).status).toBe(401);
+  expect((await cloud("account/load", { user: b, key: kb.auth })).body.blob).toBe("REVG");           // the data sealed with the new key
+  // what was synced with the old login is gone, the old device token no longer works
+  expect((await cloud("sync/pull", { user: a, token: tok, seq: -1, have: {} })).status).toBe(401);
+  const tok2 = (await cloud("sync/token", { user: b, key: kb.auth, device: "t" })).body.token as string;
+  const pulled = await cloud("sync/pull", { user: b, token: tok2, seq: -1, have: {} });
+  expect(pulled.status).toBe(200);
+  expect(pulled.body.items ?? []).toHaveLength(0);
+  // password only (same name)
+  const kc = deriveKeys(b, "passwort-drei");
+  expect((await cloud("account/rekey", { user: b, key: kb.auth, newUser: b, newKey: kc.auth, blob: "REVG" })).status).toBe(200);
+  expect((await cloud("account/login", { user: b, key: kc.auth })).status).toBe(200);
+  expect((await cloud("account/login", { user: b, key: kb.auth })).status).toBe(401);
+});
+
+test("Profil: Benutzername und Passwort sehen, Geheimcode setzen, Passwort ändern – am iPad, mit dem echten Dienst", async ({ browser }) => {
+  const p = await ipad(browser);
+  await p.goto(`${HOSTED_SITE}/#/profile`);
+  const card = p.locator(".card", { hasText: "Zugangsdaten" });
+  await expect(card.getByText(USER, { exact: true })).toBeVisible({ timeout: 20_000 });
+  // an older sign-in: the password is typed once (checked against the account), then it can be shown
+  await expect(card.getByText(/kennt dein Passwort noch nicht/)).toBeVisible();
+  await card.getByPlaceholder("Passwort", { exact: true }).fill("falsches-passwort");
+  await card.getByRole("button", { name: "Merken" }).click();
+  await expect(card.getByText("Das Passwort stimmt nicht.")).toBeVisible({ timeout: 20_000 });
+  await card.getByPlaceholder("Passwort", { exact: true }).fill(PASSWORD);
+  await card.getByRole("button", { name: "Merken" }).click();
+  await card.getByRole("button", { name: "Anzeigen" }).click();
+  await expect(card.getByText(PASSWORD, { exact: true })).toBeVisible();
+  // the optional extra code: off at first, then set – the view is locked until the code is typed
+  await expect(card.getByText("Aktuell ohne Code")).toBeVisible();
+  await card.getByRole("button", { name: "Geheimcode festlegen" }).click();
+  await card.getByLabel("Neuer Geheimcode").fill("4711");
+  await card.getByRole("button", { name: "Geheimcode speichern" }).click();
+  await expect(card.getByText("Der Geheimcode ist gesetzt")).toBeVisible({ timeout: 20_000 });
+  await expect(card.getByText(PASSWORD, { exact: true })).toHaveCount(0);
+  await card.getByPlaceholder("Geheimcode", { exact: true }).fill("0000");
+  await card.getByRole("button", { name: "Mit Geheimcode anzeigen" }).click();
+  await expect(card.getByText("Der Geheimcode ist falsch.")).toBeVisible({ timeout: 20_000 });
+  await card.getByPlaceholder("Geheimcode", { exact: true }).fill("4711");
+  await card.getByRole("button", { name: "Mit Geheimcode anzeigen" }).click();
+  await expect(card.getByText(PASSWORD, { exact: true })).toBeVisible({ timeout: 20_000 });
+  // change the password (the stored one is code-protected, so the current one is asked for)
+  const NEW = "neues-passwort-99";
+  await card.locator(".field", { hasText: "Passwort" }).first().getByRole("button", { name: "Ändern" }).click();
+  await card.getByLabel("Neues Passwort", { exact: true }).fill(NEW);
+  await card.getByLabel("Neues Passwort wiederholen").fill(NEW);
+  await card.getByLabel("Aktuelles Passwort").fill(PASSWORD);
+  await card.getByRole("button", { name: "Passwort ändern", exact: true }).click();
+  await expect(p.getByText("Passwort geändert.")).toBeVisible({ timeout: 40_000 });
+  const nk = deriveKeys(USER, NEW);
+  expect((await cloud("account/login", { user: USER, key: nk.auth })).status).toBe(200);
+  expect((await cloud("account/login", { user: USER, key: keys.auth })).status).toBe(401);
+  await p.context().close();
+});

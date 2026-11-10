@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.40.0 – 2026-11-10
+### Neu
+- Profil: neue Karte „Zugangsdaten“ – Benutzername und Passwort lassen sich ansehen und kopieren und beide ändern (das Konto wird dabei neu verschlüsselt, der PC verbindet sich von selbst neu)
+- Freiwilliger Extra-Geheimcode: schützt das Anzeigen des Passworts; am Anfang ist er aus und das Passwort direkt sichtbar. Das Passwort liegt nur auf dem Gerät (mit Code nur versiegelt), nie in der Cloud
+- Cloud-Dienst: neue Aktion zum Ändern von Name und Passwort (alte Anmeldung und alte Sync-Daten werden ungültig, doppelte Namen abgelehnt)
+### Behoben
+- iPad ohne PC zeigte „Noch keine Spiele“, obwohl der PC hochgeladen hatte: Eine Spiele-Liste mit vielen Bildern passte nicht in den Browser-Speicher und wurde nie gespeichert – sie wird jetzt ohne die ganz großen Bilder gespeichert
+- iPad ohne PC: Wurde der lokale Speicher geleert (Abmelden, Kontowechsel), glaubte das Gerät, es sei aktuell, und holte die Listen nie neu – fehlende Listen werden jetzt immer neu geladen
+- Lässt sich ein Eintrag aus der Cloud nicht entschlüsseln (anderes Passwort), steht jetzt ein Hinweis statt stillem Leerlauf
+
 ## 3.39.3 – 2026-11-10
 ### Neu
 - Cloud-Karte: Knopf „Prüfen & reparieren“ – prüft Schritt für Schritt Konto, Cloud, PC-Verbindung und Upload, verbindet den PC bei Bedarf mit dem Konto und zeigt in Klartext, wo es hängt (auch am iPad: zeigt, was in der Cloud liegt und wann der PC zuletzt hochgeladen hat)

@@ -13,7 +13,7 @@ import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { cloudApi } from "./cloud-account";
 import { session, type DesignSession } from "./design-account";
-import { saveCache, savedOverview, bumpCache } from "./offline-cache";
+import { saveCache, savedOverview, bumpCache, readCache, CACHED_METHODS } from "./offline-cache";
 import { setOpQueuedHook } from "./outbox";
 import { openBlob, sealBlob } from "./cloud-seal";
 export { openBlob, sealBlob } from "./cloud-seal";
@@ -107,7 +107,12 @@ export async function pullNow(): Promise<boolean> {
   try {
     let rec = await ensureToken(s);
     let r: Record<string, unknown>;
-    try { r = await post(s.api, "pull", { user: s.user, token: rec.token, seq: rec.seq, have: rec.have }); }
+    // The device's copy may be gone (signed out, switched account, storage cleared) while the remembered versions say "up to date":
+    // an item without a local copy is asked for again, and the cloud then sends it in full.
+    const have = { ...rec.have };
+    let missing = false;
+    for (const it of Object.keys(have)) if (CACHED_METHODS.has(it) && !readCache(it)) { delete have[it]; missing = true; }
+    try { r = await post(s.api, "pull", { user: s.user, token: rec.token, seq: missing ? -1 : rec.seq, have }); }
     catch (e) {
       if (!(e instanceof AuthError)) throw e;
       forgetToken(); rec = await ensureToken(s);                                        // the cloud forgot this device: new token, same account
@@ -117,16 +122,17 @@ export async function pullNow(): Promise<boolean> {
     const pcAt = typeof r.pcAt === "string" ? r.pcAt : null, pcName = typeof r.pcName === "string" ? r.pcName : null;
     if (!r.unchanged) {
       const have = { ...rec.have };
-      let wrote = false;
+      let wrote = false, undecryptable = 0;
       for (const it of (r.items as { item: string; ver: string; parts?: string[] }[] | undefined) ?? []) {
         if (!it.parts) { have[it.item] = it.ver; continue; }                            // not changed since the last time
         try {
           const data = JSON.parse(await openBlob(s.enc, it.parts.join(""))) as unknown;
           if (applyFromCloud(it.item, data)) wrote = true;
           have[it.item] = it.ver;
-        } catch { /* another password key or a newer format: this item is skipped, the rest still works */ }
+        } catch { undecryptable++; }                                                     // another password key or a newer format: this item is skipped, the rest still works
       }
-      writeJson(TOKEN_KEY, { ...rec, seq, have, pcAt, pcName, okAt: Date.now() });
+      if (undecryptable > 0) setStatus({ error: t("{n} Einträge aus der Cloud ließen sich nicht lesen – wurde der PC mit einem anderen Passwort/Konto verbunden? Melde den PC mit demselben Konto neu an.", { n: undecryptable }) });
+      writeJson(TOKEN_KEY, { ...rec, seq: undecryptable > 0 ? -1 : seq, have, pcAt, pcName, okAt: Date.now() });
       if (wrote) bumpCache();
     } else writeJson(TOKEN_KEY, { ...rec, seq, pcAt, pcName, okAt: Date.now() });
     setStatus({ cloud: "ok", okAt: Date.now(), pcSyncedAt: pcAt ? Date.parse(pcAt) : null, pcName, upToDate: true, error: null });

@@ -11,9 +11,25 @@ export const CACHED_METHODS = new Set(["library.list", "gamepass.list", "steam.l
   "quick.list", "profiles.list", "automations.list", "hotkeys.list", "sounds.list", "audio.state", "settings.get", "history.get", "obs.status", "capture.status", "overlay.layout", "overlay.presets", "vault.list", "inventory.get", "privacy.status", "gamestate.list", "remote.status", "moves.list", "moves.options", "widgets.list", "network.targets", "quests.get", "deals.list", "deck.list", "calendar.list", "activity.get", "storage.get", "files.list", "captures.list", "layouts.list", "mods.overview", "mods.list", "rgb.status", "rgb.settings", "controllers.list", "input.list", "input.devices", "history.startTimes", "state.get"]);
 const key = (method: string, params?: string) => PREFIX + method + (params && params !== "{}" ? params : "");
 
+/** Browsers keep about 5 MB per site: pictures stored as data URLs (covers, icons) are what blows it up. */
+const BIG = 1_500_000, LONG_TEXT = 20_000;
+/** Drops every very long text (a picture as data URL) – names, ratings, categories and normal links stay. */
+export function slimLongStrings<T>(data: T): T {
+  const walk = (n: unknown): unknown => {
+    if (typeof n === "string") return n.length > LONG_TEXT ? undefined : n;
+    if (Array.isArray(n)) return n.map(walk);
+    if (n && typeof n === "object") { const o: Record<string, unknown> = {}; for (const [k, v] of Object.entries(n)) { const w = walk(v); if (w !== undefined) o[k] = w; } return o; }
+    return n;
+  };
+  return walk(data) as T;
+}
+
 export function saveCache(method: string, data: unknown, params?: string) {
   if (!CACHED_METHODS.has(method)) return;
-  const k = key(method, params), v = JSON.stringify({ at: Date.now(), data });
+  const k = key(method, params);
+  let v = JSON.stringify({ at: Date.now(), data });
+  // A list with many pictures would not fit: keep it WITHOUT the big pictures (the games still show, with their logo or first letter).
+  if (v.length > BIG) v = JSON.stringify({ at: Date.now(), data: slimLongStrings(data), slim: true });
   try { localStorage.setItem(k, v); return; } catch { /* storage full or blocked */ }
   // Full: the oldest saved copies make room (never the one being written); if it still does not fit, say so once.
   try {
@@ -22,7 +38,9 @@ export function saveCache(method: string, data: unknown, params?: string) {
       .sort((a, b) => a.at - b.at);
     for (const o of old.slice(0, Math.max(1, Math.ceil(old.length / 3)))) localStorage.removeItem(o.x);
     localStorage.setItem(k, v);
-  } catch { cacheFull = true; cacheListeners.forEach((l) => l()); }
+  } catch {
+    try { localStorage.setItem(k, JSON.stringify({ at: Date.now(), data: slimLongStrings(data), slim: true })); return; } catch { /* really full */ }
+    cacheFull = true; cacheListeners.forEach((l) => l()); }
 }
 
 /** True once a copy could not be saved even after making room – the app then says so instead of failing silently. */

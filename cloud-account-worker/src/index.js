@@ -5,6 +5,7 @@
 //   POST /api/account/login    { user, key }
 //   POST /api/account/load     { user, key } -> { blob, updatedAt }
 //   POST /api/account/save     { user, key, blob }
+//   POST /api/account/rekey    { user, key, newUser, newKey, blob }  (change user name and/or password; the data is sealed anew by the client)
 //   POST /api/account/delete   { user, key }
 //   POST /api/sync/…                       -> automatic sync PC ↔ cloud ↔ devices (see sync.js)
 //
@@ -16,7 +17,7 @@ import { deleteSyncData, handleSync } from "./sync.js";
 
 const API_PREFIX = "/api/account/";
 const SYNC_PREFIX = "/api/sync/";
-const ACTIONS = new Set(["register", "login", "load", "save", "delete"]);
+const ACTIONS = new Set(["register", "login", "load", "save", "delete", "rekey"]);
 const USER_RX = /^[a-z0-9._-]{3,24}$/;
 const KEY_RX = /^[0-9a-f]{64}$/;
 const BLOB_RX = /^[A-Za-z0-9+/=]+$/;
@@ -90,7 +91,7 @@ async function route(request, env, url, cors) {
   const blob = typeof body?.blob === "string" ? body.blob : "";
   if (!USER_RX.test(user)) return fail("invalid-params", "Benutzername: 3–24 Zeichen, nur a–z, Ziffern, Punkt, Minus, Unterstrich.", 400, cors);
   if (!KEY_RX.test(key)) return fail("invalid-params", "Ungültiger Schlüssel.", 400, cors);
-  if ((action === "register" || action === "save") && (!blob || blob.length > MAX_BLOB || !BLOB_RX.test(blob))) {
+  if ((action === "register" || action === "save" || action === "rekey") && (!blob || blob.length > MAX_BLOB || !BLOB_RX.test(blob))) {
     return fail("invalid-params", "Design-Daten ungültig oder zu groß (Hintergrundbild verkleinern).", 400, cors);
   }
 
@@ -123,6 +124,24 @@ async function route(request, env, url, cors) {
 
   if (action === "login") return json({ ok: true, user, updatedAt: acc.updated_at }, 200, cors);
   if (action === "load") return json({ ok: true, user, blob: acc.blob, updatedAt: acc.updated_at }, 200, cors);
+  if (action === "rekey") {
+    // New user name and/or new password: the client has sealed the data with the new key; here only the login check changes.
+    const newUser = String(body?.newUser ?? "").trim().toLowerCase();
+    const newKey = String(body?.newKey ?? "");
+    if (!USER_RX.test(newUser)) return fail("invalid-params", "Benutzername: 3–24 Zeichen, nur a–z, Ziffern, Punkt, Minus, Unterstrich.", 400, cors);
+    if (!KEY_RX.test(newKey)) return fail("invalid-params", "Ungültiger Schlüssel.", 400, cors);
+    if (newUser !== user && await env.DB.prepare("SELECT user FROM accounts WHERE user = ?1").bind(newUser).first()) {
+      return fail("conflict", "Diesen Benutzernamen gibt es schon – bitte einen anderen wählen.", 409, cors);
+    }
+    const salt = randomB64(16);
+    const hash = await hashKey(newKey, salt);
+    const now = new Date().toISOString();
+    await env.DB.prepare("UPDATE accounts SET user = ?2, auth_salt = ?3, auth_hash = ?4, blob = ?5, updated_at = ?6 WHERE user = ?1").bind(user, newUser, salt, hash, blob, now).run();
+    await env.DB.prepare("DELETE FROM login_fails WHERE user = ?1").bind(user).run();
+    // What the PC and the devices synced was sealed with the old key: it is removed, the PC uploads it again with the new one.
+    await deleteSyncData(env, user);
+    return json({ ok: true, user: newUser, updatedAt: now }, 200, cors);
+  }
   if (action === "save") {
     const now = new Date().toISOString();
     await env.DB.prepare("UPDATE accounts SET blob = ?2, updated_at = ?3 WHERE user = ?1").bind(user, blob, now).run();
