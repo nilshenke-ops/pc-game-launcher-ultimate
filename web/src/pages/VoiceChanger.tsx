@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { Cable, Dices, Headphones, Mic, RefreshCw, Square, Play } from "lucide-react";
 import { t } from "../lib/i18n";
-import { Banner, Button, Card, Field, PageHead, Switch } from "../components/ui";
+import { Banner, Button, Card, Field, PageHead, Segmented, Switch } from "../components/ui";
+import { ElevenPanel } from "../components/voice-eleven-panel";
+import { stopEleven, useElevenChanger } from "../lib/voice-changer-eleven";
 import { VOICES, voiceById } from "../lib/voice-presets";
 import { canChooseOutput, isCableInput, listDevices, startVoiceChanger, stopVoiceChanger, suggestDevices, updateSettings, useVoiceChanger, voiceChangerSupported, type DeviceInfo } from "../lib/voice-changer";
 
 /** Stimmenwechsler für Discord: Mikrofon → andere Stimme → virtuelles Kabel; in Discord ist das Kabel das Mikrofon. */
 export default function VoiceChanger() {
   const v = useVoiceChanger();
+  const ev = useElevenChanger();
   const s = v.settings;
+  const [mode, setMode] = useState<"effects" | "eleven">(() => (ev.running ? "eleven" : "effects"));
   const [devs, setDevs] = useState<{ inputs: DeviceInfo[]; outputs: DeviceInfo[]; labelsKnown: boolean }>({ inputs: [], outputs: [], labelsKnown: false });
   const [loading, setLoading] = useState(false);
   const supported = voiceChangerSupported();
@@ -43,13 +47,16 @@ export default function VoiceChanger() {
         {v.error && <Banner kind="error" title={t("Das hat nicht geklappt")}>{v.error}</Banner>}
         {v.running && !toCable && <Banner kind="info" title={t("Discord hört dich so nicht")}>{t("Die Stimme geht gerade auf ein normales Gerät, nicht auf das virtuelle Kabel. Wähle unten als Ausgabe „CABLE Input“ – sonst hörst nur du dich.")}</Banner>}
 
+        <Segmented<"effects" | "eleven"> label={t("Art")} value={mode} onChange={setMode}
+          options={[{ value: "effects", label: t("Effekte (live)") }, { value: "eleven", label: t("Echte Stimmen (ElevenLabs)") }]} />
+        {mode === "effects" ? (<>
         <Card title={v.running ? t("Läuft: {n}", { n: t(voice.name) }) : t("Aus")} icon={<Mic size={18} />}
           meta={<span className={`badge${v.running ? " ok" : ""}`}>{v.running ? t("Aktiv") : t("Gestoppt")}</span>}>
           <div className="stack-sm">
             <div className="row" style={{ gap: 10, flexWrap: "wrap" }}>
               {v.running
                 ? <Button variant="danger" icon={<Square size={16} />} onClick={() => void stopVoiceChanger()}>{t("Stoppen")}</Button>
-                : <Button variant="primary" icon={<Play size={16} />} busy={v.starting} disabled={!supported} onClick={() => void startVoiceChanger().then(() => load(false))}>{t("Stimmenwechsler starten")}</Button>}
+                : <Button variant="primary" icon={<Play size={16} />} busy={v.starting} disabled={!supported} onClick={() => { stopEleven(); void startVoiceChanger().then(() => load(false)); }}>{t("Stimmenwechsler starten")}</Button>}
               <Button icon={<Dices size={16} />} onClick={random}>{t("Zufällige Stimme")}</Button>
             </div>
             <div className="vc-meters" aria-label={t("Pegel")}>
@@ -76,6 +83,8 @@ export default function VoiceChanger() {
             </Field>
           </div>
         </Card>
+
+        </>) : <ElevenPanel />}
 
         <div className="grid-2">
           <Card title={t("Geräte")} icon={<Cable size={18} />}
@@ -112,6 +121,15 @@ export default function VoiceChanger() {
               <li className="small">{micDev?.cable ? t("Als Mikrofon ist das Kabel selbst gewählt – bitte dein echtes Mikrofon wählen.") : t("Hier „Stimmenwechsler starten“ tippen.")}</li>
               <li className="small">{t("In Discord → Einstellungen → Sprache & Video: Eingabegerät = „CABLE Output“. Das kann keine App von außen prüfen – mit dem Mikrofontest von Discord kontrollieren.")}</li>
             </ol>
+            <details style={{ marginTop: 10 }}>
+              <summary className="small">{t("Mit anderen Voice-Changern kombinieren")}</summary>
+              <ul className="stack-sm tiny muted" style={{ margin: "8px 0 0", paddingLeft: 18 }}>
+                <li>{t("Voicemod, Voicemeeter, RVC/w-okada und ähnliche Programme haben ihr eigenes virtuelles Gerät. Du kannst sie hintereinanderschalten.")}</li>
+                <li>{t("Erst diese Seite, dann das andere Programm: Hier als „Ausgabe an Discord“ das virtuelle Gerät des anderen Programms wählen (dessen Eingang), in Discord dessen Ausgang als Mikrofon.")}</li>
+                <li>{t("Erst das andere Programm, dann diese Seite: Hier als „Mikrofon“ das virtuelle Gerät des anderen Programms wählen, als Ausgabe das Kabel für Discord.")}</li>
+                <li>{t("Zwei Programme nacheinander verzögern etwas mehr. Voicemod bietet keine offene Schnittstelle – es lässt sich nur so einbinden, nicht steuern.")}</li>
+              </ul>
+            </details>
             <p className="tiny muted" style={{ margin: "10px 0 0" }}>{t("Tipp: Discords eigene Rauschunterdrückung und Echo-Entfernung kannst du dann ausschalten, die Seite macht das schon.")}</p>
           </Card>
         </div>

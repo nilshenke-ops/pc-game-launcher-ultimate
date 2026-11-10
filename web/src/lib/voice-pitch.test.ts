@@ -65,3 +65,43 @@ describe("Stimmen", () => {
     expect(effectivePitch(voiceById("monster"), -99)).toBeGreaterThanOrEqual(0.25);
   });
 });
+
+import { elevenSpeechToSpeech, elevenVoices, saveLocalElevenKey, setDeviceKeyForTests, removeLocalElevenKey } from "./free-ai-local";
+describe("ElevenLabs-Modus: Stimmenliste und Sprache-zu-Sprache", () => {
+  const key = "sk_" + "a".repeat(32);
+  const mem = () => { const m = new Map<string, string>(); return { getItem: (k: string) => m.get(k) ?? null, setItem: (k: string, v: string) => void m.set(k, v), removeItem: (k: string) => void m.delete(k) }; };
+  const setup = async () => {
+    (globalThis as unknown as { window: unknown }).window = { localStorage: mem(), sessionStorage: mem() };
+    setDeviceKeyForTests(await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]) as CryptoKey);
+    await saveLocalElevenKey(key);
+  };
+  it("lädt nur brauchbare Stimmen mit Namen und Art", async () => {
+    await setup();
+    const fetcher = (async () => new Response(JSON.stringify({ voices: [{ voice_id: "pNInz6obpgDQGcFmaJgB", name: "Adam", category: "premade" }, { voice_id: "kaputt!", name: "X" }, { voice_id: "abcdefghij1234", name: "Meine Stimme", category: "cloned" }, { name: "ohne id" }] }), { status: 200 })) as unknown as typeof fetch;
+    expect(await elevenVoices({ fetcher })).toEqual([{ id: "pNInz6obpgDQGcFmaJgB", name: "Adam", category: "premade" }, { id: "abcdefghij1234", name: "Meine Stimme", category: "cloned" }]);
+    removeLocalElevenKey(); setDeviceKeyForTests(null);
+  });
+  it("schickt die Aufnahme mit Stimme, Modell und Schlüssel an die Sprache-zu-Sprache-Schnittstelle", async () => {
+    await setup();
+    const seen: { url: string; key: string | null; fields: string[] }[] = [];
+    const fetcher = (async (url: string, init?: RequestInit) => {
+      seen.push({ url, key: new Headers(init?.headers).get("xi-api-key"), fields: [...(init!.body as FormData).keys()] });
+      return new Response(new Uint8Array(400), { status: 200 });
+    }) as unknown as typeof fetch;
+    const out = await elevenSpeechToSpeech(new Blob([new Uint8Array(4000)], { type: "audio/webm" }), "pNInz6obpgDQGcFmaJgB", { fetcher });
+    expect(out.size).toBe(400);
+    expect(seen[0].url).toContain("https://api.elevenlabs.io/v1/speech-to-speech/pNInz6obpgDQGcFmaJgB");
+    expect(seen[0].key).toBe(key);
+    expect(seen[0].fields).toEqual(expect.arrayContaining(["audio", "model_id"]));
+    removeLocalElevenKey(); setDeviceKeyForTests(null);
+  });
+  it("lehnt ungültige Stimme, zu kurze und zu lange Aufnahmen ab, ohne etwas zu senden", async () => {
+    await setup();
+    let calls = 0; const fetcher = (async () => { calls++; return new Response("x"); }) as unknown as typeof fetch;
+    await expect(elevenSpeechToSpeech(new Blob([new Uint8Array(4000)]), "../x", { fetcher })).rejects.toThrow(/Stimme/);
+    await expect(elevenSpeechToSpeech(new Blob([new Uint8Array(100)]), "pNInz6obpgDQGcFmaJgB", { fetcher })).rejects.toThrow(/kurz/);
+    await expect(elevenSpeechToSpeech(new Blob([new Uint8Array(8_100_000)]), "pNInz6obpgDQGcFmaJgB", { fetcher })).rejects.toThrow(/lang/);
+    expect(calls).toBe(0);
+    removeLocalElevenKey(); setDeviceKeyForTests(null);
+  });
+});

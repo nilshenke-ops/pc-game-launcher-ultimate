@@ -3392,3 +3392,6 @@ a.card:active, .card[role="button"]:active, button.card:active, .game-card:activ
 .vc-meters { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 10px; }
 .vc-bar { display: block; height: 10px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
 .vc-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--primary), #7be7b5); transition: width .09s linear; }
+.vc-talk { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 22px; border-radius: 999px; border: 1px solid var(--border-strong); background: rgba(255,255,255,.06); color: var(--text); font: inherit; font-weight: 600; cursor: pointer; touch-action: none; user-select: none; -webkit-user-select: none; transition: transform .3s var(--spr-snap), background-color .2s ease; }
+.vc-talk:disabled { opacity: .45; cursor: not-allowed; }
+.vc-talk.on { background: linear-gradient(135deg, rgba(var(--primary-rgb), .9), rgba(var(--primary-rgb), .55)); transform: scale(1.04); }

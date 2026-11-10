@@ -726,3 +726,31 @@ export async function testLocalEleven(o: { fetcher?: Fetcher } = {}): Promise<{ 
     return { ok: false, message: (e as Error).message };
   }
 }
+
+// ------------------------------------------------------------------ ElevenLabs voice changer (speech → speech): the person's own voice library
+
+export interface ElevenVoice { id: string; name: string; category: string }
+/** The voices of the account behind this device's key (needs the right "voices_read"): premade, designed and the person's own. */
+export async function elevenVoices(o: { fetcher?: Fetcher; signal?: AbortSignal } = {}): Promise<ElevenVoice[]> {
+  const res = await elevenCall("/v1/voices", { method: "GET" }, { ...o, timeoutMs: 25_000 });
+  const d = await res.json().catch(() => null) as { voices?: { voice_id?: unknown; name?: unknown; category?: unknown }[] } | null;
+  return (d?.voices ?? [])
+    .filter((v) => typeof v.voice_id === "string" && /^[A-Za-z0-9]{10,40}$/.test(v.voice_id as string) && typeof v.name === "string")
+    .map((v) => ({ id: v.voice_id as string, name: String(v.name).slice(0, 60), category: typeof v.category === "string" ? v.category : "" }));
+}
+
+/** One spoken sentence → the same sentence in another voice (MP3). Audio goes straight from this device to ElevenLabs. */
+export async function elevenSpeechToSpeech(audio: Blob, voiceId: string, o: { fetcher?: Fetcher; signal?: AbortSignal; noise?: boolean } = {}): Promise<Blob> {
+  if (!/^[A-Za-z0-9]{10,40}$/.test(voiceId)) throw new LocalAiError("ElevenLabs: Bitte erst eine Stimme wählen.", "model");
+  if (audio.size < 1500) throw new LocalAiError("ElevenLabs: Die Aufnahme war zu kurz.", "empty");
+  if (audio.size > 8_000_000) throw new LocalAiError("ElevenLabs: Die Aufnahme ist zu lang – in kürzeren Sätzen sprechen.", "model");
+  const ext = /mp4|aac|m4a/.test(audio.type) ? "mp4" : /ogg/.test(audio.type) ? "ogg" : /wav/.test(audio.type) ? "wav" : "webm";
+  const form = new FormData();
+  form.append("model_id", "eleven_multilingual_sts_v2");
+  form.append("remove_background_noise", o.noise === false ? "false" : "true");
+  form.append("audio", audio, `sprache.${ext}`);
+  const res = await elevenCall(`/v1/speech-to-speech/${voiceId}?output_format=mp3_44100_64`, { method: "POST", body: form, headers: { accept: "audio/mpeg" } }, { ...o, timeoutMs: 60_000 });
+  const b = await res.blob();
+  if (b.size < 200) throw new LocalAiError("ElevenLabs: keine brauchbare Antwort.", "empty");
+  return b;
+}

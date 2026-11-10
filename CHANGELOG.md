@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.38.0 – 2026-11-10
+### Neu
+- Stimmenwechsler: zweiter Reiter „Echte Stimmen (ElevenLabs)“. Ein Satz wird aufgenommen (Taste „Sprechen“ halten oder automatisch bei Sprechpausen), an ElevenLabs geschickt und kommt in einer Stimme aus deinem ElevenLabs-Konto zurück – auf das virtuelle Kabel für Discord. Mit Stimmenliste aus dem Konto, Verzögerungsanzeige und gesendeter Sprechzeit. Nicht live (ein bis drei Sekunden pro Satz); den Schlüssel trägst du einmal in der KI-Verwaltung ein, er gilt auf allen Geräten des Kontos
+- Stimmenwechsler: Anleitung, wie man ihn mit Voicemod, Voicemeeter oder RVC/w-okada hintereinanderschaltet
+
 ## 3.37.1 – 2026-11-10
 ### Verbessert
 - Test des Stimmenwechslers: Stimmen mit exaktem Namen wählen
