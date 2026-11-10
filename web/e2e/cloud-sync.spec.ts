@@ -308,6 +308,8 @@ test("Benutzername und Passwort ändern (rekey): neues Login gilt, altes nicht m
 
 test("Profil: Benutzername und Passwort sehen, Geheimcode setzen, Passwort ändern – am iPad, mit dem echten Dienst", async ({ browser }) => {
   const p = await ipad(browser);
+  await p.goto(`${HOSTED_SITE}/#/settings`);                       // the same card is in the settings
+  await expect(p.locator(".card", { hasText: "Zugangsdaten" })).toBeVisible({ timeout: 20_000 });
   await p.goto(`${HOSTED_SITE}/#/profile`);
   const card = p.locator(".card", { hasText: "Zugangsdaten" });
   await expect(card.getByText(USER, { exact: true })).toBeVisible({ timeout: 20_000 });
@@ -333,12 +335,11 @@ test("Profil: Benutzername und Passwort sehen, Geheimcode setzen, Passwort ände
   await card.getByPlaceholder("Geheimcode", { exact: true }).fill("4711");
   await card.getByRole("button", { name: "Mit Geheimcode anzeigen" }).click();
   await expect(card.getByText(PASSWORD, { exact: true })).toBeVisible({ timeout: 20_000 });
-  // change the password (the stored one is code-protected, so the current one is asked for)
+  // change the password – no old password needed (the device is signed in)
   const NEW = "neues-passwort-99";
   await card.locator(".field", { hasText: "Passwort" }).first().getByRole("button", { name: "Ändern" }).click();
   await card.getByLabel("Neues Passwort", { exact: true }).fill(NEW);
   await card.getByLabel("Neues Passwort wiederholen").fill(NEW);
-  await card.getByLabel("Aktuelles Passwort").fill(PASSWORD);
   await card.getByRole("button", { name: "Passwort ändern", exact: true }).click();
   await expect(p.getByText("Passwort geändert.")).toBeVisible({ timeout: 40_000 });
   const nk = deriveKeys(USER, NEW);

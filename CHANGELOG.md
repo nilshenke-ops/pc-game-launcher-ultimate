@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.40.1 – 2026-11-10
+### Neu
+- Einstellungen → Allgemein: Karte „Zugangsdaten“ ganz oben – Benutzername und Passwort sehen, kopieren und ändern (auch weiter im Profil)
+### Verbessert
+- Ein neues Passwort lässt sich ohne das alte festlegen (das angemeldete Gerät genügt) – danach ist es sofort sichtbar; wer sich neu anmeldet, sieht sein Passwort ohne Eingabe
+
 ## 3.40.0 – 2026-11-10
 ### Neu
 - Profil: neue Karte „Zugangsdaten“ – Benutzername und Passwort lassen sich ansehen und kopieren und beide ändern (das Konto wird dabei neu verschlüsselt, der PC verbindet sich von selbst neu)

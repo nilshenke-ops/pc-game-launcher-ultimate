@@ -63,10 +63,11 @@ export function AccountCredentials() {
           )}
           {state === "unknown" && (
             <div className="stack-sm" style={{ marginTop: 8 }}>
-              <span className="tiny muted">{t("Dieses Gerät kennt dein Passwort noch nicht (du hast dich früher angemeldet). Gib es einmal ein – dann kannst du es hier jederzeit ansehen.")}</span>
+              <span className="tiny muted">{t("Dieses Gerät kennt dein Passwort noch nicht (du hast dich früher angemeldet) – aus der Anmeldung lässt es sich nicht zurückrechnen. Gib es einmal ein, oder lege gleich ein neues fest (dafür brauchst du das alte nicht). Danach siehst du es hier immer sofort.")}</span>
               <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
                 <input className="input" type="password" value={typedPw} onChange={(e) => setTypedPw(e.target.value)} placeholder={t("Passwort")} autoComplete="current-password" style={{ maxWidth: 260 }} />
                 <Button size="sm" variant="primary" busy={busy} onClick={() => void run(async () => { await confirmPassword(typedPw); setTypedPw(""); tick((n) => n + 1); }, t("Passwort gemerkt."))}>{t("Merken")}</Button>
+                <Button size="sm" onClick={() => { setErr(null); setMode("pass"); }}>{t("Neues Passwort festlegen")}</Button>
               </div>
             </div>
           )}
@@ -85,10 +86,9 @@ export function AccountCredentials() {
           <div className="stack-sm card-inner">
             <Field label={t("Neues Passwort")} hint={t("Mindestens 6 Zeichen.")}><input className="input" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} autoComplete="new-password" /></Field>
             <Field label={t("Neues Passwort wiederholen")}><input className="input" type="password" value={newPw2} onChange={(e) => setNewPw2(e.target.value)} autoComplete="new-password" /></Field>
-            {needCurrent && <Field label={t("Aktuelles Passwort")}><input className="input" type="password" value={curPw} onChange={(e) => setCurPw(e.target.value)} autoComplete="current-password" /></Field>}
             <Button variant="primary" busy={busy} onClick={() => void run(async () => {
               if (newPw !== newPw2) throw new Error(t("Die beiden neuen Passwörter sind nicht gleich."));
-              await changeCredentials({ currentPassword: needCurrent ? curPw : await revealPassword(s.user), newPassword: newPw }); done();
+              await changeCredentials({ newPassword: newPw }); done();
             }, t("Passwort geändert."))}>{t("Passwort ändern")}</Button>
           </div>
         )}

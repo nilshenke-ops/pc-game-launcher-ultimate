@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { DesignProfileCard } from "../components/design-profile";
+import { AccountCredentials } from "../components/account-credentials";
 import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -85,6 +86,8 @@ function General() {
   const uname = useUserName();
   useEffect(() => { if (s.data) { setName(s.data.settings.pcName); setScan(s.data.settings.processScanSeconds); } }, [s.data]);
   return (
+    <>
+    <AccountCredentials />
     <Loadable loading={s.loading} error={s.error} onRetry={s.reload}>
       <Card title={t("Allgemein")} icon={<SettingsIcon size={18} />}>
         <div className="stack">
@@ -104,6 +107,7 @@ function General() {
         </div>
       </Card>
     </Loadable>
+    </>
   );
 }
 

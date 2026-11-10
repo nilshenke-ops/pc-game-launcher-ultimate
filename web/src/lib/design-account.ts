@@ -322,17 +322,21 @@ export async function setAccessCode(newCode: string | null, oldCode?: string): P
  * Changes the user name and/or the password of the signed-in cloud account. Both are part of the keys, so the account data is sealed
  * anew and the cloud switches to the new login in one step; the PC takes the new account over by itself (and uploads again).
  */
-export async function changeCredentials(o: { currentPassword: string; newUser?: string; newPassword?: string }): Promise<void> {
+export async function changeCredentials(o: { currentPassword?: string; newUser?: string; newPassword?: string }): Promise<void> {
   const s = session();
   if (!s?.cloud) throw new Error(t("Das geht nur mit einem Cloud-Konto."));
   const oldUser = s.user;
   const newUser = (o.newUser ?? oldUser).trim().toLowerCase();
   const newPassword = o.newPassword ?? o.currentPassword;
+  // A new PASSWORD needs no old one: this device is signed in (its login key proves it to the cloud). A new NAME is part of the keys, so the password is needed.
+  if (!newPassword) throw new Error(t("Für einen neuen Benutzernamen wird das Passwort gebraucht."));
   if (!USER_RX.test(newUser)) throw new Error(t("Benutzername: 3–24 Zeichen, nur a–z, Ziffern, Punkt, Minus, Unterstrich."));
   if (newPassword.length < 6) throw new Error(t("Das Passwort braucht mindestens 6 Zeichen."));
   if (newUser === oldUser && newPassword === o.currentPassword) throw new Error(t("Es hat sich nichts geändert."));
-  const check = await deriveKeys(oldUser, o.currentPassword);
-  if (check.auth !== s.auth) throw new Error(t("Das aktuelle Passwort stimmt nicht."));
+  if (o.currentPassword !== undefined) {
+    const check = await deriveKeys(oldUser, o.currentPassword);
+    if (check.auth !== s.auth) throw new Error(t("Das aktuelle Passwort stimmt nicht."));
+  }
   const nk = await deriveKeys(newUser, newPassword);
   await whenLocalAiReady();
   const keys = exportKeyBundle();
