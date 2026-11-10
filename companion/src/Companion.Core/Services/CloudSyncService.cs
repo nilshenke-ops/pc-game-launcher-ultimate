@@ -169,7 +169,8 @@ public sealed class CloudSyncService : IDisposable
             await TakeOverAsync(f.Api, f.User, token, key);
             await PushAsync(f.Api, f.User, token, key);
             _failures = 0; _nextTry = DateTime.MinValue; _state = "ok";
-            _store.Update(x => { x.LastOkAt = DateTime.UtcNow; x.LastError = null; });
+            var partial = PushFailures; PushFailures = null;
+            _store.Update(x => { x.LastOkAt = DateTime.UtcNow; x.LastError = partial; });
             return true;
         }
         catch (CloudAuthException)
@@ -216,13 +217,56 @@ public sealed class CloudSyncService : IDisposable
         if (changed.Count == 0 && !heartbeat) return;
         if (changed.Count == 0) changed.Add(("state.get", "", Volatile("state.get", Json.Serialize(await _invoke("state.get", EmptyParams)))));
         // Several small requests instead of one big one (each item may be up to a few MB as ciphertext).
+        // One item the cloud refuses (too big, …) must not block all the others: it is retried alone, then without its big pictures, and only then reported.
+        var failures = new List<string>();
         foreach (var batch in Batches(changed))
+        {
+            if (await TryPushAsync(api, user, token, key, batch, null)) continue;
+            foreach (var c in batch)
+            {
+                if (await TryPushAsync(api, user, token, key, new List<(string item, string hash, string json)> { c }, failures)) continue;
+                var slim = SlimPictures(c.json);
+                if (slim != c.json && await TryPushAsync(api, user, token, key, new List<(string item, string hash, string json)> { (c.item, c.hash, slim) }, failures)) { failures.RemoveAll(x => x.StartsWith(c.item + ":")); Log.Warn("cloud", $"{c.item}: ohne große Bilder übertragen (war zu groß)."); }
+            }
+        }
+        PushFailures = failures.Count == 0 ? null : "Nicht in die Cloud übertragen: " + string.Join("; ", failures);
+        if (changed.Any(c => c.hash != "")) Log.Info("cloud", "In die Cloud übertragen: " + string.Join(", ", changed.Where(c => c.hash != "").Select(c => c.item)));
+    }
+
+    /// <summary>What went wrong with single items in the last round (shown on the cloud page), or null.</summary>
+    string? PushFailures;
+
+    async Task<bool> TryPushAsync(string api, string user, string token, byte[] key, List<(string item, string hash, string json)> batch, List<string>? failures)
+    {
+        try
         {
             var items = batch.Select(c => new { item = c.item, ver = Ids.Token(10), parts = Split(Seal(key, c.json)) }).ToList();
             await PostAsync(api, "push", new { user, token, pc = _pcName(), items });
             _store.Update(x => { foreach (var c in batch) if (c.hash != "") x.Pushed[c.item] = c.hash; x.LastPushAt = DateTime.UtcNow; });
+            return true;
         }
-        if (changed.Any(c => c.hash != "")) Log.Info("cloud", "In die Cloud übertragen: " + string.Join(", ", changed.Where(c => c.hash != "").Select(c => c.item)));
+        catch (RpcException ex)
+        {
+            failures?.Add($"{batch[0].item}: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>Fallback for an item that is too big for the cloud: every very long text (a picture as data URL) is dropped, everything else stays.</summary>
+    static string SlimPictures(string json)
+    {
+        try
+        {
+            var node = JsonNode.Parse(json);
+            void Walk(JsonNode? n)
+            {
+                if (n is JsonObject o) foreach (var k in o.Select(x => x.Key).ToList()) { if (o[k] is JsonValue v && v.TryGetValue<string>(out var str) && str.Length > 20_000) o[k] = null; else Walk(o[k]); }
+                else if (n is JsonArray a) foreach (var x in a) Walk(x);
+            }
+            Walk(node);
+            return node?.ToJsonString(Json.Options) ?? json;
+        }
+        catch (JsonException) { return json; }
     }
 
     static IEnumerable<List<(string item, string hash, string json)>> Batches(List<(string item, string hash, string json)> all)
