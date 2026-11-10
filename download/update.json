@@ -1,26 +1,24 @@
 {
-  "version": "3.36.0",
+  "version": "3.37.0",
   "date": "2026-11-10",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion.exe",
-  "size": 95088264,
-  "sha256": "7d4b625d47afd1a0903dde908819242d918404e366c0a24797ad3018d3f84a9c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.0/PCGameLauncherCompanion.exe",
+  "size": 95090024,
+  "sha256": "2770f043df9689dfddc35832eb0b3d2b259f996c377b0e0e7d81f851cb0cdda5",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.36.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion-3.36.0-win-x64.zip",
-    "size": 89361957,
-    "sha256": "421393d07fda4b833c7d764d560f75741c6e886b7ee828964261af151dac1209"
+    "fileName": "PCGameLauncherCompanion-3.37.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.0/PCGameLauncherCompanion-3.37.0-win-x64.zip",
+    "size": 89363420,
+    "sha256": "f4e1325361ae43b1daec20e8a565a866330b0fccd0eaa8440fbfd59d00b999b6"
   },
-  "notes": "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC",
+  "notes": "Stimmenwechsler: 19 neue Stimmen, jetzt über 30 – u. a. Duell-Ansager (dramatisch wie bei einem großen Kartenduell), Riese, Oger, Dunkler Herrscher, Bösewicht, Zombie, Geist, Gruselkeller, Unterwasser, Helium, Maus, Fee, Kobold, Blechdose, Cyborg, Durchsage, Stadion-Sprecher, Doppelgänger und Pilot",
   "changes": {
     "neu": [
-      "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC"
+      "Stimmenwechsler: 19 neue Stimmen, jetzt über 30 – u. a. Duell-Ansager (dramatisch wie bei einem großen Kartenduell), Riese, Oger, Dunkler Herrscher, Bösewicht, Zombie, Geist, Gruselkeller, Unterwasser, Helium, Maus, Fee, Kobold, Blechdose, Cyborg, Durchsage, Stadion-Sprecher, Doppelgänger und Pilot"
     ],
     "verbessert": [],
-    "behoben": [
-      "Beim Start der Seite gab es einen Ladefehler im Schlüsselspeicher (Zugriff auf eine Liste, bevor sie angelegt war); die Schlüssel werden jetzt sauber nach dem Laden geöffnet"
-    ]
+    "behoben": []
   },
-  "signature": "BFI5ZykH841lm77wlQle9xpLrezIAIe097kj+O5Tf4zaRfjlIwV5f5gtgPtMR5YQUij7cOkPyJvjcpf3TVg79g=="
+  "signature": "dSUmoMJ1a26NpXkwnorSBJCerbQzq0apriLeXXD3zWyB0ysXfaa1y/GoZVWuZOHhL50yLMlbapckjTO69PVPZg=="
 }
