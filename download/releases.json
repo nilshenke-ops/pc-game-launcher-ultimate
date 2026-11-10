@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.38.0",
+    "date": "2026-11-10",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.38.0/PCGameLauncherCompanion.exe",
+    "size": 95093844,
+    "sha256": "1d8ac5de5bff1ffb03af1c12b71093e9f98b939d82e29d8d1eb00417121ae198",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.38.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.38.0/PCGameLauncherCompanion-3.38.0-win-x64.zip",
+      "size": 89367364,
+      "sha256": "8ca9411b9144b29297067425df7321b274d5ab1797c485a414a1bfc5c2929549"
+    },
+    "notes": "Stimmenwechsler: zweiter Reiter „Echte Stimmen (ElevenLabs)“. Ein Satz wird aufgenommen (Taste „Sprechen“ halten oder automatisch bei Sprechpausen), an ElevenLabs geschickt und kommt in einer Stimme aus deinem ElevenLabs-Konto zurück – auf das virtuelle Kabel für Discord. Mit Stimmenliste aus dem Konto, Verzögerungsanzeige und gesendeter Sprechzeit. Nicht live (ein bis drei Sekunden pro Satz); den Schlüssel trägst du einmal in der KI-Verwaltung ein, er gilt auf allen Geräten des Kontos · Stimmenwechsler: Anleitung, wie man ihn mit Voicemod, Voicemeeter oder RVC/w-okada hintereinanderschaltet",
+    "changes": {
+      "neu": [
+        "Stimmenwechsler: zweiter Reiter „Echte Stimmen (ElevenLabs)“. Ein Satz wird aufgenommen (Taste „Sprechen“ halten oder automatisch bei Sprechpausen), an ElevenLabs geschickt und kommt in einer Stimme aus deinem ElevenLabs-Konto zurück – auf das virtuelle Kabel für Discord. Mit Stimmenliste aus dem Konto, Verzögerungsanzeige und gesendeter Sprechzeit. Nicht live (ein bis drei Sekunden pro Satz); den Schlüssel trägst du einmal in der KI-Verwaltung ein, er gilt auf allen Geräten des Kontos",
+        "Stimmenwechsler: Anleitung, wie man ihn mit Voicemod, Voicemeeter oder RVC/w-okada hintereinanderschaltet"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "XmkwMU32oGpzI52WWUnMKw+KSfque8vjnWSvmywAqgJM11fQ8FbF3uVH4XUTtRq2/frZwWD8xbED4BG7gwv/7w=="
+  },
+  {
     "version": "3.37.1",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1330,33 +1355,5 @@
       ]
     },
     "signature": "TLLuzQ5P+6Ou58S34BRDjOHSsFfI1hz+uR7XgYsT7AlXVoUiFOT0l/hAzaVuFACXuDy0WTHzLnCR2+ljpyI+OQ=="
-  },
-  {
-    "version": "3.2.1",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.2.1/PCGameLauncherCompanion.exe",
-    "size": 94878148,
-    "sha256": "d676e7da09131ba64145e34f67363c6caa68723c2f2811150fbba3dae184974a",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.2.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.2.1/PCGameLauncherCompanion-3.2.1-win-x64.zip",
-      "size": 89153468,
-      "sha256": "a73e130e015666047a95767467678f548cecb37093b7083a43f2fe18530f9eda"
-    },
-    "notes": "Befehle („Starte …“, „Mach leiser“) und PC-Werte laufen sofort – auch wenn im selben Chat gerade eine langsame KI-Antwort aussteht. Im Chat lassen sich Befehle senden, während noch geantwortet wird · Pollinations: schnelleres Modell (`openai-fast`) mit wenig Nachdenken und kürzeren Antworten; die Verbindung wird nach deinem Ja schon vorab geöffnet. Das Tempolimit des Dienstes (HTTP 402 „FREE_LIMIT“: etwa eine Antwort alle 45 Sekunden je Internetadresse) wird erkannt – bis 30 Sekunden wird abgewartet und neu gefragt, wartet noch ein anderer Anbieter, wird sofort gewechselt. Bisher wurde das fälschlich als „verlangt Geld“ gewertet und der Anbieter gesperrt · Zeitlimit je Anbieter: 20 Sekunden, wenn danach noch ein weiterer folgt (der letzte darf 45 Sekunden brauchen)",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Befehle („Starte …“, „Mach leiser“) und PC-Werte laufen sofort – auch wenn im selben Chat gerade eine langsame KI-Antwort aussteht. Im Chat lassen sich Befehle senden, während noch geantwortet wird",
-        "Pollinations: schnelleres Modell (`openai-fast`) mit wenig Nachdenken und kürzeren Antworten; die Verbindung wird nach deinem Ja schon vorab geöffnet. Das Tempolimit des Dienstes (HTTP 402 „FREE_LIMIT“: etwa eine Antwort alle 45 Sekunden je Internetadresse) wird erkannt – bis 30 Sekunden wird abgewartet und neu gefragt, wartet noch ein anderer Anbieter, wird sofort gewechselt. Bisher wurde das fälschlich als „verlangt Geld“ gewertet und der Anbieter gesperrt",
-        "Zeitlimit je Anbieter: 20 Sekunden, wenn danach noch ein weiterer folgt (der letzte darf 45 Sekunden brauchen)"
-      ],
-      "behoben": [
-        "Eine Seite, die dein PC selbst ausliefert (WLAN-Adresse, Lesezeichen auf dem Handy nach dem Koppeln), ist eine Kopie im Begleiter und wird nur neuer, wenn der Begleiter am PC aktualisiert wird – „Neu laden“ ändert daran nichts. Die Seite sagt das jetzt und führt zu „Updates“ (Version der Seite und die neueste werden genannt)"
-      ]
-    },
-    "signature": "PdAEkSLtktAeRL5zCHJKLAfZnXDaYRJnBT9s2iAvpw+RjDCJiRuM+dh1a9N/YI/Emo8F9mQ6OpalyoRHgdmGTg=="
   }
 ]
