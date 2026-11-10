@@ -2396,6 +2396,7 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
 });
 
 test("JARVIS-Insel: neue Widgets (Stoppuhr, Zuletzt gespielt, Profile, Sounds) und Stoppuhr läuft bei geschlossenem Panel weiter", async ({ browser }) => {
+  test.setTimeout(150_000);                                         // many waits in a row; under load 60 s was too tight
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   const { adminRpc } = await import("./rpc");

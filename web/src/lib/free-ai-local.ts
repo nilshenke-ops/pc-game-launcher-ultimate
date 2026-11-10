@@ -301,7 +301,8 @@ export async function loadDeviceKeys(): Promise<void> {
     if (s.eleven?.v === 2 && !unlockedEleven) { const v = await unlockDevice("voice:elevenlabs", s.eleven); if (v !== null) unlockedEleven = v; }
   } finally { deviceLoading = false; publish(); }
 }
-let keysReady: Promise<void> = loadDeviceKeys();
+// Started one tick later: the lists of providers further down in this file must exist first (a read of them during loading was an error before any key was stored).
+let keysReady: Promise<void> = Promise.resolve().then(() => loadDeviceKeys()).catch(() => undefined);
 /** Resolves when the keys of the current account are open (a save that ran earlier would otherwise leave them out of the account). */
 export const whenLocalAiReady = (): Promise<void> => keysReady;
 

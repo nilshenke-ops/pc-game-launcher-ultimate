@@ -195,6 +195,11 @@ Seite: /trophies
 Stichworte: trophäen trophäenraum erfolge gamer-pass profilkarte karte level xp teilen bild gold silber bronze
 Die Erfolge aus GameQuest als Trophäen in drei Regalen: Gold (100 XP und mehr), Silber (50 XP), Bronze (25 XP); freigeschaltete mit Datum, gesperrte mit Fortschritt. Der Gamer-Pass ist eine Karte mit Level, XP-Balken, Stunden, Spielen, längster Serie, Trophäen und meistgespieltem Spiel – Name und Symbol frei wählbar (bleiben auf dem Gerät), „Als Bild speichern“ oder „Teilen“. Alles aus eigenen Daten; ohne PC wird der zuletzt geladene Stand gezeigt.
 
+## Stimmenwechsler für Discord
+Seite: /voice-changer
+Stichworte: stimmenwechsler voice changer stimme stimmen discord roboter monster alien megafon chipmunk kabel cable vb-audio
+Audio → Stimmenwechsler: Dein Mikrofon läuft in Echtzeit durch diese Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel; in Discord wählst du als Eingabegerät „CABLE Output“ – dann hören deine Freunde die neue Stimme. Zur Auswahl stehen Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle und Echo, dazu „Zufällige Stimme“ und eine Feinabstimmung der Tonhöhe in Halbtönen. Gewechselt wird live während du sprichst. Nötig: ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable – selbst installieren) und Chrome oder Edge am PC (andere Browser können den Ton nicht an ein Gerät schicken). Als Ausgabe „CABLE Input“ wählen, „Stimmenwechsler starten“ tippen. „Mich selbst hören“ geht nur mit Kopfhörern. Läuft weiter, wenn du eine andere Seite öffnest, und stoppt beim Schließen des Fensters. Was in Discord eingestellt ist, kann keine App von außen prüfen.
+
 ## Ein JARVIS (Insel und Assistent)
 Seite: /assistant
 Stichworte: insel jarvis assistent derselbe gleich schlüssel einmal chat

@@ -3380,3 +3380,15 @@ a.card:active, .card[role="button"]:active, button.card:active, .game-card:activ
 /* Wischen in der Insel auf dem Handy: Der Browser darf senkrecht scrollen, das Waagerechte gehört der Insel (sonst bricht Android-Chrome
    die Geste nach wenigen Pixeln ab und der Bereich folgt dem Finger nicht). Eingabefelder und Knöpfe behalten ihr eigenes Verhalten. */
 .isl2-stage, .isl2-body, .isl2-peek, .isl2-cards { touch-action: pan-y; }
+
+/* Stimmenwechsler */
+.vc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; }
+.vc-voice { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border-radius: 24px; border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text); cursor: pointer; text-align: left; font: inherit; transition: transform .35s var(--spr-snap), background-color .2s ease, border-color .2s ease, box-shadow .25s ease; }
+.vc-voice small { color: var(--muted); font-size: .74rem; line-height: 1.3; }
+.vc-voice:active { transform: scale(.96); transition-duration: .1s; }
+@media (hover: hover) { .vc-voice:hover { transform: translateY(-2px); border-color: rgba(var(--primary-rgb), .4); } }
+.vc-voice.on { border-color: rgba(var(--primary-rgb), .75); background: linear-gradient(150deg, rgba(var(--primary-rgb), .3), rgba(var(--primary-rgb), .1)); box-shadow: 0 12px 30px -16px rgba(var(--primary-rgb), .9); }
+.vc-emoji { font-size: 1.6rem; line-height: 1; }
+.vc-meters { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 6px 10px; }
+.vc-bar { display: block; height: 10px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+.vc-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--primary), #7be7b5); transition: width .09s linear; }

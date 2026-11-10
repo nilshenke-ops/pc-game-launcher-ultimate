@@ -39,6 +39,8 @@ export default defineConfig({
   build: {
     outDir: demo ? "dist-demo" : hosted ? "dist-hosted" : "dist",
     assetsDir: "assets",
+    // The voice changer's audio worklet must stay a real file (a worklet cannot be loaded from a data: address under the page's security rules).
+    assetsInlineLimit: (file: string) => (file.includes("voice-pitch-worklet") ? false : undefined),
     sourcemap: false,
     chunkSizeWarningLimit: 700,
     rollupOptions: {

@@ -74,7 +74,8 @@ const Deals = lazy(() => import("./pages/Deals"));
 const DesktopWidget = lazy(() => import("./pages/DesktopWidget"));
 const IslandPage = lazy(() => import("./pages/IslandPage"));
 const Connect = lazy(() => import("./pages/Connect"));
-const ProfilePage = lazy(() => import("./pages/Profile"));const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
+const ProfilePage = lazy(() => import("./pages/Profile"));
+const VoiceChanger = lazy(() => import("./pages/VoiceChanger"));const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
 function Loading() {
   return <div className="stack" aria-busy><div className="skeleton" style={{ height: 28, width: "30%" }} /><div className="skeleton" style={{ height: 160 }} /></div>;
@@ -135,6 +136,7 @@ function Gate() {
           <Route path="/quick" element={<QuickActions />} />
           <Route path="/soundboard" element={<Soundboard />} />
           <Route path="/audio" element={<AudioCenter />} />
+          <Route path="/voice-changer" element={<VoiceChanger />} />
           <Route path="/monitor" element={<Monitor />} />
           <Route path="/profiles" element={<Profiles />} />
           <Route path="/automations" element={<Automations />} />
