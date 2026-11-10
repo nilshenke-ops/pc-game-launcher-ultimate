@@ -39,6 +39,7 @@ import { relTime } from "../lib/format";
 import { brandBg, brandFor } from "../lib/brands";
 import type { LibraryItem, Notification } from "../lib/types";
 import { BrandLogo } from "./brand-logo";
+import { useGlidePill } from "./glide-pill";
 import { Bars, IslandEyes } from "./island-bits";
 import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, IslandStats, IslandStopwatch, IslandTemps, IslandVolume } from "./island-widgets";
 
@@ -107,6 +108,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   // Swipe: like a deck of cards – the area follows the finger and the NEXT one is already there beside it, moving along. On release both carry on
   // (the next one comes to rest in the middle), or both spring back. Touch and pen only, never over a field or a button. A tap on a tab does the same.
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const tabsRef = useRef<HTMLElement | null>(null);
+  const thumbRef = useRef<HTMLSpanElement | null>(null);
+  useGlidePill(tabsRef, thumbRef, ".isl2-tab.on", [current, tabs.length]);
   const peekRef = useRef<HTMLDivElement | null>(null);
   const swipe = useRef<{ x: number; y: number; id: number; locked: boolean; samples: { x: number; t: number }[]; dx: number; d: 1 | -1 } | null>(null);
   const swipedAt = useRef(0); // a swipe must not also count as a tap on the card under the finger
@@ -117,7 +121,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const goTabRef = useRef<(to: IslandTab) => Promise<void>>(async () => undefined);
   const [slide, setSlide] = useState<"none" | null>(null);
   const [peek, setPeek] = useState<IslandTab | null>(null);
-  const reduced = () => document.documentElement.dataset.motion === "reduce" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const reduced = () => document.documentElement.dataset.motion === "reduce";
   const idx = () => tabs.indexOf(current);
   const spot = (dx: number, d: 1 | -1) => { const w = bodyRef.current?.clientWidth || 400; if (peekRef.current) peekRef.current.style.transform = `translate3d(${dx + d * w}px,0,0)`; };
   // The neighbour is mounted a moment after the drag starts: put it where the finger says as soon as it exists.
@@ -663,7 +667,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
         {peek && <div className="isl2-body isl2-peek" aria-hidden ref={peekRef} {...({ inert: "" } as object)}>{body[peek]}</div>}
       </div>
-      <nav className="isl2-tabs" role="tablist" aria-label={t("Bereiche der Insel")}>
+      <nav className="isl2-tabs has-thumb" role="tablist" aria-label={t("Bereiche der Insel")} ref={tabsRef}>
+        <span className="isl2-thumb" ref={thumbRef} aria-hidden="true" />
         {tabs.map((id) => {
           const m = TAB_META[id], on = id === current;
           return (

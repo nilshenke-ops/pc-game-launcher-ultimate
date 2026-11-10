@@ -12,6 +12,12 @@ const WINDOW = 4;
 
 export interface HoloInfo { minutes?: number; lastPlayed?: number }
 
+/** Distance between two neighbouring cards in pixels (the same numbers as in the CSS), so a finger and the cards move together. */
+function pitchPx(stage: HTMLElement | null): number {
+  const card = stage?.querySelector<HTMLElement>(".holo-card"); const w = card?.offsetWidth ?? 220;
+  return Math.max(60, Math.min(w * 0.58, 170) + w * 0.2);
+}
+
 function Cover({ item, cover }: { item: LibraryItem; cover?: string }) {
   const [broken, setBroken] = useState(false);
   return (
@@ -28,12 +34,17 @@ export function HoloLibrary({ items, coverOf, running, installed, launching, inf
   // The chosen game is kept by id: a new sort or a new favourite keeps it in the middle; a filter without it starts at the first.
   const [curId, setCurId] = useState<string | null>(null);
   const i = Math.max(0, curId ? items.findIndex((x) => x.id === curId) : 0);
-  const go = (n: number) => { const it = items[Math.max(0, Math.min(items.length - 1, n))]; if (it) setCurId(it.id); };
-  const start = useRef<{ x: number; id: number } | null>(null);
+  const go = (n: number) => { const it = items[Math.max(0, Math.min(items.length - 1, n))]; if (it) { dirRef.current = n >= i ? 1 : -1; setCurId(it.id); } };
+  const start = useRef<{ x: number; id: number; t: number; lastX: number; lastT: number; v: number; moved: boolean } | null>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const holoRef = useRef<HTMLDivElement>(null);
+  const dirRef = useRef<1 | -1>(1);
+  const prevI = useRef(0);
   const swipedAt = useRef(0);
   const wheelAt = useRef(0);
 
   if (!items.length) return null;
+  prevI.current = i;
   const cur = items[i];
   const meta = info.get(cur.id);
   const lo = Math.max(0, i - WINDOW), hi = Math.min(items.length - 1, i + WINDOW);
@@ -41,7 +52,7 @@ export function HoloLibrary({ items, coverOf, running, installed, launching, inf
   for (let k = lo; k <= hi; k++) shown.push(k);
 
   return (
-    <div className="holo" tabIndex={0} role="region" aria-roledescription={t("Karussell")} aria-label={t("Holo-Ansicht: {n} von {m}", { n: i + 1, m: items.length })}
+    <div ref={holoRef} className="holo" tabIndex={0} role="region" aria-roledescription={t("Karussell")} aria-label={t("Holo-Ansicht: {n} von {m}", { n: i + 1, m: items.length })}
       onKeyDown={(e) => {
         if (e.target !== e.currentTarget) return;
         if (e.key === "ArrowRight") { e.preventDefault(); go(i + 1); }
@@ -56,8 +67,37 @@ export function HoloLibrary({ items, coverOf, running, installed, launching, inf
         wheelAt.current = Date.now(); go(i + (d > 0 ? 1 : -1));
       }}>
       <div className="holo-stage"
-        onPointerDown={(e) => { start.current = { x: e.clientX, id: e.pointerId }; }}
-        onPointerUp={(e) => { const s = start.current; start.current = null; if (s && s.id === e.pointerId && Math.abs(e.clientX - s.x) > 40) { swipedAt.current = Date.now(); go(i + (e.clientX < s.x ? 1 : -1)); } }}>
+        ref={stageRef}
+        onPointerDown={(e) => {
+          if ((e.target as HTMLElement).closest("input,[data-no-drag]")) return;
+          start.current = { x: e.clientX, id: e.pointerId, t: performance.now(), lastX: e.clientX, lastT: performance.now(), v: 0, moved: false };
+        }}
+        onPointerMove={(e) => {
+          const s0 = start.current; if (!s0 || s0.id !== e.pointerId) return;
+          const dx = e.clientX - s0.x;
+          if (!s0.moved && Math.abs(dx) < 6) return;                      // a tap stays a tap
+          if (!s0.moved) { s0.moved = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch { /* not capturable */ } holoRef.current?.classList.add("dragging"); }
+          const now = performance.now(), dt = Math.max(1, now - s0.lastT);
+          s0.v = 0.8 * s0.v + 0.2 * ((e.clientX - s0.lastX) / dt);         // px/ms, smoothed
+          s0.lastX = e.clientX; s0.lastT = now;
+          // The cards follow the finger (1 = one card further); at the ends they resist a little, like rubber.
+          const pitch = pitchPx(stageRef.current);
+          let f = -dx / pitch;
+          if ((f < 0 && i === 0) || (f > 0 && i === items.length - 1)) f = Math.sign(f) * (1 - Math.exp(-Math.abs(f) * 1.4)) * 0.35;
+          stageRef.current?.style.setProperty("--drag", String(-f));
+        }}
+        onPointerUp={(e) => {
+          const s0 = start.current; start.current = null;
+          holoRef.current?.classList.remove("dragging");
+          stageRef.current?.style.setProperty("--drag", "0");              // the cards glide into their places (spring in CSS)
+          if (!s0 || s0.id !== e.pointerId || !s0.moved) return;
+          const dx = e.clientX - s0.x, pitch = pitchPx(stageRef.current);
+          const flick = Math.abs(s0.v) > 0.6;                              // a fast flick may skip one more
+          const steps = Math.abs(dx) < Math.min(40, pitch * 0.25) && !flick ? 0 : Math.max(1, Math.round(Math.abs(dx) / pitch) + (flick ? 1 : 0));
+          if (steps > 0) { swipedAt.current = Date.now(); dirRef.current = dx < 0 ? 1 : -1; go(i + (dx < 0 ? steps : -steps)); }
+          else if (Math.abs(dx) > 6) swipedAt.current = Date.now();       // a drag that came back is no tap on a card
+        }}
+        onPointerCancel={() => { start.current = null; holoRef.current?.classList.remove("dragging"); stageRef.current?.style.setProperty("--drag", "0"); }}>
         {shown.map((k) => {
           const it = items[k], off = k - i, a = Math.abs(off);
           const style = { "--off": off, "--abs": a, zIndex: 20 - a, opacity: a > 3 ? 0 : 1 - a * 0.22 } as CSSProperties;
@@ -79,8 +119,8 @@ export function HoloLibrary({ items, coverOf, running, installed, launching, inf
         <span className="tiny muted" style={{ minWidth: 64, textAlign: "center" }}>{i + 1} / {items.length}</span>
         <Button size="sm" icon={<ChevronRight size={18} />} aria-label={t("Nächstes Spiel")} disabled={i === items.length - 1} onClick={() => go(i + 1)} />
       </div>
-      <div className="holo-panel" aria-live="polite">
-        <div className="row between" style={{ gap: 8, alignItems: "flex-start" }}>
+      <div className="holo-panel" aria-live="polite" style={{ ["--hdir" as string]: dirRef.current }}>
+        <div className="row between holo-panel-in" key={cur.id} style={{ gap: 8, alignItems: "flex-start" }}>
           <div className="stack-xs" style={{ minWidth: 0 }}>
             <h2 className="holo-title">{cur.name}</h2>
             <div className="row" style={{ gap: 6, flexWrap: "wrap" }}>

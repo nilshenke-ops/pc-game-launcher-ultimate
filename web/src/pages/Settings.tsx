@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { DesignProfileCard } from "../components/design-profile";
 import { AccountSettings } from "../components/account-credentials";
+import { followOsMotion, osReducesMotion, setFollowOsMotion } from "../lib/motion";
 import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
@@ -110,6 +111,15 @@ function General() {
   );
 }
 
+/** By default the app animates whatever Windows/iPad say; this switch makes it follow the system's "reduce motion" again. */
+function FollowSystemMotion() {
+  const [on, setOn] = useState(followOsMotion);
+  return (
+    <Switch checked={on} onChange={(v) => { setOn(v); setFollowOsMotion(v); }} label={t("Systemeinstellung „Bewegung reduzieren“ beachten")}
+      hint={osReducesMotion() ? t("Dein System meldet gerade „Animationen aus“ (Windows: Animationen anzeigen · iPad: Bewegung reduzieren). Solange das hier aus ist, animiert die App trotzdem.") : t("Aus (Standard): Die App animiert unabhängig von Windows/iPad. An: Meldet das System „Bewegung reduzieren“, bleibt alles ruhig.")} />
+  );
+}
+
 // ------------------------------------------------------------------ design & layout
 
 function Design() {
@@ -202,6 +212,7 @@ function Design() {
           <Field label={t("Rahmen")}><Segmented value={th.border ?? "subtle"} onChange={(border) => setTheme({ border })} options={[{ value: "subtle", label: t("Dezent") }, { value: "bold", label: t("Deutlich") }]} /></Field>
           <Switch checked={!!th.touch} onChange={(touch) => setTheme({ touch })} label={t("Große Schaltflächen (iPad, Touch)")} />
           <Switch checked={th.reduceMotion} onChange={(reduceMotion) => setTheme({ reduceMotion })} label={t("Animationen reduzieren")} />
+          <FollowSystemMotion />
           <Switch checked={!!th.lite} onChange={(lite) => setTheme({ lite })} label={t("Leichte Darstellung (spart Leistung)")}
             hint={t("Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.")} />
         </div>

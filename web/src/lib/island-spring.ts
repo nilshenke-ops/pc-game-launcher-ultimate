@@ -70,6 +70,12 @@ export const ISLAND_DIMS: Record<IslandBoxSize, Box> = {
 };
 export const WINDOW_W = 620, WINDOW_H = 380;
 
+/** How far open an island of this height is: 0 = closed island, 1 = open panel (the spring may swing a little past 1 and below 0 – clamped). */
+export function islandProgress(h: number): number {
+  const lo = ISLAND_DIMS.bar.h, hi = ISLAND_DIMS.panel.h;
+  return Math.min(1, Math.max(0, (h - lo) / (hi - lo)));
+}
+
 /** The box of a size; on narrow screens (phone) never wider than the screen, and a smaller closed island. */
 export function islandBox(size: IslandBoxSize, viewportW = Infinity, floating = false): Box {
   const d = ISLAND_DIMS[size];

@@ -4,6 +4,18 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.43.0 – 2026-11-10
+### Behoben
+- **Keine Animationen am PC (Ursache gefunden):** Die App schaltete alle Bewegung ab, sobald Windows „Animationen anzeigen“ aus hat (viele Gaming-PCs) oder das iPad „Bewegung reduzieren“ meldet – dann standen Insel, Seitenleiste, Übergänge und alle Federn still. Jetzt zählt nur noch die Einstellung der App (Einstellungen → Design: „Animationen reduzieren“ / Leichte Darstellung); wer will, schaltet „Systemeinstellung ‚Bewegung reduzieren‘ beachten“ ein
+### Neu
+- Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein
+- Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter
+- Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung
+- Seitenleiste links: Logo, Einträge und Fußbereich kommen nacheinander, Symbole kippen und federn beim Darüberfahren, der aktive Eintrag springt auf, Beschriftung rückt ein
+- Untere Leiste (Handy): fährt ein, das gewählte Symbol federt; „Alle Bereiche“: Kacheln erscheinen nacheinander
+- Auswahlschalter gleiten, Schalter dehnen sich beim Drücken und federn, Filter-Chips und Knöpfe federn beim Tippen, Listen und Kacheln erscheinen gestaffelt
+- Automatische Tests prüfen Bewegung auf Handy, iPad und PC (auch bei „System: Bewegung reduzieren“)
+
 ## 3.42.1 – 2026-11-10
 ### Behoben
 - Soundboard: Die Lautstärke wirkt jetzt sofort – auch auf Sounds, die gerade laufen (vorher nur auf den nächsten Sound), und beim Ziehen des Reglers (nicht erst beim Loslassen, auch am iPad)

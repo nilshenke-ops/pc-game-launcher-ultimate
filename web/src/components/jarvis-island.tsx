@@ -23,7 +23,7 @@ if (typeof window !== "undefined") {
 }
 import { consumeSpoken } from "../lib/island-voice";
 import { speak } from "../lib/jarvis-voice";
-import { createBoxAnimator, islandBox, WINDOW_W, type Box } from "../lib/island-spring";
+import { createBoxAnimator, islandBox, islandProgress, WINDOW_W, type Box } from "../lib/island-spring";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { useConn } from "../lib/hooks";
 import { eyeColor, clock, islandAnswer, islandEvent, islandBusy, islandClearAsk, islandGaming, islandMusic, islandSize, islandTouch, islandNotice, noticeFresh, moodOf, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
@@ -31,6 +31,7 @@ import type { AssistantAction } from "../lib/assistant";
 import { mainGame, playedGames } from "../lib/running";
 import { nowLine, useNowPlaying } from "../lib/now-playing";
 import { Bars, IslandEyes, TimerRing } from "./island-bits";
+import { motionOff } from "../lib/motion";
 export { IslandEyes, RobotHead } from "./island-bits";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
@@ -79,7 +80,7 @@ function useViewportW() {
   useEffect(() => { const on = () => setW(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
   return w;
 }
-const reducedMotion = () => (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) || document.documentElement.getAttribute("data-motion") === "reduce";
+const reducedMotion = () => motionOff();
 
 /** The island page (own window of the Windows companion; opened in a browser it shows the same at the top). */
 export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) {
@@ -98,7 +99,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
   const hostRef = useRef<HTMLDivElement>(null);
-  const panelMounted = useExit(open, 520);
+  const panelMounted = useExit(open, 760);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
   // In the app (phone, tablet, browser) the island stays the small face with the two eyes – the eyes show what JARVIS does; the wide bar with
@@ -153,6 +154,9 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     const post = (m: unknown) => (window as HostWindow).chrome?.webview?.postMessage(m);
     const apply = (b: Box) => {
       el.style.width = `${b.w}px`; el.style.height = `${b.h}px`;
+      // How far open the island is (0 closed … 1 open): the content (header, tabs, cards) fades, rises and clears its blur by this number – so
+      // opening, closing and turning around halfway are one continuous movement that always follows the spring (see motion-pack.css).
+      el.style.setProperty("--isl-p", islandProgress(b.h).toFixed(3));
       // In the Windows window the island hangs from the top edge: square at the top, round at the bottom (like the cut-out of the window).
       el.style.borderRadius = floating ? `${b.r}px` : `0 0 ${b.r}px ${b.r}px`;
       if (floating) return;

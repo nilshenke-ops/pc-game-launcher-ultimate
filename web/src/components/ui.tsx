@@ -74,9 +74,13 @@ export function Field({ label, hint, error, children }: { label: ReactNode; hint
   );
 }
 
+import { useGlidePill } from "./glide-pill";
 export function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: { value: T; label: ReactNode }[]; onChange: (v: T) => void; label?: string }) {
+  const box = useRef<HTMLDivElement>(null), thumb = useRef<HTMLSpanElement>(null);
+  useGlidePill(box, thumb, "button.on", [value, options.length]);
   return (
-    <div className="segmented" role="radiogroup" aria-label={label}>
+    <div className="segmented has-thumb" role="radiogroup" aria-label={label} ref={box}>
+      <span className="seg-thumb" ref={thumb} aria-hidden="true" />
       {options.map((o) => (
         <button key={o.value} type="button" role="radio" aria-checked={value === o.value} className={value === o.value ? "on" : ""} onClick={() => onChange(o.value)}>{o.label}</button>
       ))}
@@ -175,7 +179,7 @@ export function Modal({ title, onClose, children, footer, wide, className = "" }
   const backdropRef = useRef<HTMLDivElement>(null);
   const requestClose = useRef(() => {
     const bd = backdropRef.current;
-    const still = document.documentElement.dataset.motion === "reduce" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    const still = document.documentElement.dataset.motion === "reduce";
     if (bd && !still) {
       const ghost = bd.cloneNode(true) as HTMLElement;
       ghost.querySelectorAll("[id]").forEach((e) => e.removeAttribute("id"));

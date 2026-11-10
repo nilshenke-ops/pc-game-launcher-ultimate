@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./styles.css";
 import "./styles-refresh.css";
+import "./motion-pack.css";
 import "./lib/prefs";
 import "./lib/state";
 import { captureAdminToken, captureHandoff, client, demoRequested } from "./lib/rpc";

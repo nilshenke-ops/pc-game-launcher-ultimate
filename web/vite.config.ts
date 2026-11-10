@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { readFileSync } from "node:fs";
+import motionQueries from "./postcss-motion.mjs";
 
 // Single version source shared with the companion build.
 const version = readFileSync(new URL("../VERSION", import.meta.url), "utf8").trim();
@@ -26,6 +27,7 @@ export default defineConfig({
   plugins: [react(), offlineManifest()],
   // A new build id makes the browser install a fresh service worker, which stores the new app files.
   define: { __BUILD_ID__: JSON.stringify(Date.now().toString(36)), __APP_VERSION__: JSON.stringify(version) },
+  css: { postcss: { plugins: [motionQueries()] } },
   base: "./",
   server: {
     port: 5173,

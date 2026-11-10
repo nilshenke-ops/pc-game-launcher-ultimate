@@ -1,3 +1,4 @@
+import { followOsMotion, osReducesMotion } from "./motion";
 import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { setLanguage } from "./i18n";
@@ -182,10 +183,14 @@ export function applyTheme(t: Theme) {
   const scene = !t.bgImage && t.bgScene ? BG_SCENES.find((s) => s.id === t.bgScene) : undefined;
   root.dataset.bgfit = scene?.phone ? "phone" : scene?.sky ? "bottom" : "cover";
   root.style.setProperty("--bg-sky", scene?.sky ?? "transparent");
-  root.dataset.motion = t.reduceMotion || t.lite ? "reduce" : "full";
+  root.dataset.motion = t.reduceMotion || t.lite || (followOsMotion() && osReducesMotion()) ? "reduce" : "full";
   root.dataset.lite = t.lite ? "1" : "0";
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", t.background);
 }
 
 applyTheme(prefs.theme);
 setLanguage(prefs.lang);
+if (typeof window !== "undefined") {
+  window.addEventListener("pgl-motion", () => applyTheme(getPrefs().theme));
+  try { window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", () => { if (followOsMotion()) applyTheme(getPrefs().theme); }); } catch { /* old browser */ }
+}
