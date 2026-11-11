@@ -1,24 +1,24 @@
 {
-  "version": "3.45.0",
+  "version": "3.45.1",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.0/PCGameLauncherCompanion.exe",
-  "size": 95110674,
-  "sha256": "33b401d964a8df5754cc6483ba2f77cf0bd5a07e040374fd3122d2b1d04a9caf",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.1/PCGameLauncherCompanion.exe",
+  "size": 95110678,
+  "sha256": "71f472e0fdbaf187d39446bf814f4fce33fbc19116b92e7c7a3b840453008cb6",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.45.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.0/PCGameLauncherCompanion-3.45.0-win-x64.zip",
-    "size": 89384583,
-    "sha256": "9c22052c9aa7ed840aed5b2599ac7ae77281196800e51f8b78fa30a803953a5d"
+    "fileName": "PCGameLauncherCompanion-3.45.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.1/PCGameLauncherCompanion-3.45.1-win-x64.zip",
+    "size": 89384500,
+    "sha256": "6d61218c14813ead01e6695e55a7b90ca230d50e04e24d084f4ec7939e8d23eb"
   },
-  "notes": "Insel: Öffnen und Schließen komplett neu als durchchoreografierte Bewegung statt Feder – Öffnen ≈ 1,1 s (erst wird die Insel breiter, dann wächst sie in die Höhe, der Inhalt folgt), Schließen ≈ 0,95 s (erst faltet sich die Höhe zu, dann die Breite). Weicher Start, weiche Landung, kein Überschwingen; ein Richtungswechsel mitten drin startet dort, wo die Insel gerade ist",
+  "notes": "Holo-Ansicht: das Leuchten am Boden wandert mit den Karten mit, die Infos unter dem Spiel (Titel, Marken, Knöpfe) fahren nacheinander ein",
   "changes": {
     "neu": [
-      "Insel: Öffnen und Schließen komplett neu als durchchoreografierte Bewegung statt Feder – Öffnen ≈ 1,1 s (erst wird die Insel breiter, dann wächst sie in die Höhe, der Inhalt folgt), Schließen ≈ 0,95 s (erst faltet sich die Höhe zu, dann die Breite). Weicher Start, weiche Landung, kein Überschwingen; ein Richtungswechsel mitten drin startet dort, wo die Insel gerade ist"
+      "Holo-Ansicht: das Leuchten am Boden wandert mit den Karten mit, die Infos unter dem Spiel (Titel, Marken, Knöpfe) fahren nacheinander ein"
     ],
     "verbessert": [],
     "behoben": []
   },
-  "signature": "L+GVuqkhyiRMrQyWjxC/kQ6cx49Nma43zlfDRNxjZRR+ifCgq/R89MmKOZk/elUvRjodcvKNOF1OZ7fJVxA1ZQ=="
+  "signature": "7gkvJMmj7kXLhFA8lFBeMwTk7QhfteKzt+ySDcxBrECoK0tyrcaD9SXebEjfU2zV8ipCPB+cgk4609tgIIPLew=="
 }
