@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.46.0 – 2026-11-11
+### Neu
+- Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch)
+- Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt
+- Chips und Marken federn beim Darüberfahren und Drücken
+- Karten einer Seite gleiten beim Hineinscrollen ein (Browser mit Scroll-Animationen)
+- Alles stoppt mit „Animationen reduzieren“ und in der Leichten Darstellung
+
 ## 3.45.1 – 2026-11-11
 ### Neu
 - Holo-Ansicht: das Leuchten am Boden wandert mit den Karten mit, die Infos unter dem Spiel (Titel, Marken, Knöpfe) fahren nacheinander ein

@@ -157,3 +157,42 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 :root:not([data-motion="reduce"]) .holo-panel-in .row > :nth-child(3) { --n: 2; }
 :root:not([data-motion="reduce"]) .holo-panel-in .row > :nth-child(4) { --n: 3; }
 @keyframes holo-rise { from { opacity: 0; translate: 0 14px; } }
+
+/* ================================================================ Motion pack 2: the whole page */
+/* Game cards and tiles: lift, tilt towards the pointer (lib/tilt.ts) and a light spot that follows it. */
+:root:not([data-motion="reduce"]) .game-card, :root:not([data-motion="reduce"]) .qa-tile {
+  transform: perspective(900px) translateY(var(--lift, 0px)) rotateX(var(--prx, 0deg)) rotateY(var(--pry, 0deg));
+  transition: transform .7s var(--spr-soft), box-shadow .5s ease, border-color .3s ease;
+  will-change: transform;
+}
+@media (hover: hover) {
+  :root:not([data-motion="reduce"]) .game-card:hover, :root:not([data-motion="reduce"]) .qa-tile:hover { --lift: -6px; transform: perspective(900px) translateY(var(--lift)) rotateX(var(--prx, 0deg)) rotateY(var(--pry, 0deg)); }
+  :root:not([data-motion="reduce"]) .game-card.ptilt, :root:not([data-motion="reduce"]) .qa-tile.ptilt { transition: transform .12s linear, box-shadow .5s ease; }
+}
+:root:not([data-motion="reduce"]) .game-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .4s ease;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 30%), rgba(255, 255, 255, .22), transparent 60%); mix-blend-mode: soft-light;
+}
+@media (hover: hover) { :root:not([data-motion="reduce"]) .game-card:hover::after { opacity: 1; } }
+
+/* The background light drifts slowly (stops with "reduce animations" and in the light mode). */
+:root:not([data-motion="reduce"]) .app-bg::before { will-change: transform; animation: aurora-drift 34s ease-in-out infinite alternate; }
+@keyframes aurora-drift { from { transform: translate3d(-3%, -2%, 0) scale(1) rotate(0deg); } 50% { transform: translate3d(3%, 2%, 0) scale(1.06) rotate(1.5deg); } to { transform: translate3d(-1%, 4%, 0) scale(1.03) rotate(-1.2deg); } }
+
+/* Page titles arrive out of a blur, the small text under them follows. */
+:root:not([data-motion="reduce"]) .content h1 { animation: h1-reveal 1s var(--out-expo) backwards; }
+:root:not([data-motion="reduce"]) .content h1 + p, :root:not([data-motion="reduce"]) .content h1 ~ .muted { animation: holo-rise .9s var(--out-expo) 120ms backwards; }
+@keyframes h1-reveal { from { opacity: 0; translate: 0 18px; filter: blur(8px); letter-spacing: .03em; } }
+
+/* Chips, badges and small round buttons spring up when hovered or pressed. */
+@media (hover: hover) {
+  :root:not([data-motion="reduce"]) .chip, :root:not([data-motion="reduce"]) .badge { transition: transform .5s var(--spr-bounce), background-color .25s ease, border-color .25s ease; }
+  :root:not([data-motion="reduce"]) .chip:hover { transform: translateY(-2px) scale(1.04); }
+}
+:root:not([data-motion="reduce"]) .chip:active { transform: scale(.94); transition-duration: .12s; }
+
+/* Cards of a page glide in when they scroll into view (browsers with scroll-driven animations). */
+@supports (animation-timeline: view()) {
+  :root:not([data-motion="reduce"]) .content .card:not(.dash > *):not(.card .card) { animation: card-view linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+  @keyframes card-view { from { opacity: 0; translate: 0 32px; scale: .97; } }
+}

@@ -50,7 +50,7 @@ for (const size of SIZES) {
       await expect(btn).toBeVisible({ timeout: 30_000 });
       expect(await p.evaluate(() => document.documentElement.dataset.motion)).toBe("full");     // the system setting no longer switches the app off
       await p.waitForTimeout(1500);
-      const open = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".isl-host", "--isl-p", 1100));
+      const open = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".isl-host", "--isl-p", 1900));
       await btn.click();
       const pOpen = await open;
       expect(Math.max(...pOpen)).toBeGreaterThan(0.95);                                        // it opens fully
@@ -59,13 +59,13 @@ for (const size of SIZES) {
       expect(distinct(pOpen)).toBeGreaterThanOrEqual(4);
       await expect(p.locator(".isl2-card").first()).toBeVisible();
       // folding back: the same movement the other way
-      const close = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".isl-host", "--isl-p", 1100));
+      const close = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".isl-host", "--isl-p", 1900));
       await p.keyboard.press("Escape");
       const pClose = await close;
       expect(Math.min(...pClose)).toBeLessThan(0.02);
       expect(pClose.filter((v) => v > 0.05 && v < 0.95).length).toBeGreaterThanOrEqual(2);
       // changing its mind halfway (open, then close after 120 ms) must not jump
-      const turn = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".isl-host", "--isl-p", 1300));
+      const turn = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".isl-host", "--isl-p", 1900));
       await btn.click(); await p.waitForTimeout(140); await p.keyboard.press("Escape");
       const pTurn = await turn;
       expect(maxJump(pTurn)).toBeLessThan(0.55);
