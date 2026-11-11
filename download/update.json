@@ -1,27 +1,25 @@
 {
-  "version": "3.48.0",
+  "version": "3.48.1",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.0/PCGameLauncherCompanion.exe",
-  "size": 95112622,
-  "sha256": "a4a38f586ce6ff260b63a9b7120831b3aa6e0cd65e0057da841101701a53c8ce",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.1/PCGameLauncherCompanion.exe",
+  "size": 95113720,
+  "sha256": "d46b631afd4af7f318adb33415658eac5e0bb6fea9d99bb00185a002b2c369dc",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.48.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.0/PCGameLauncherCompanion-3.48.0-win-x64.zip",
-    "size": 89386635,
-    "sha256": "6bbf732a0e3284f28a0740ae32e0b575019efd8f6420c774daf3ff31b75a7b98"
+    "fileName": "PCGameLauncherCompanion-3.48.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.1/PCGameLauncherCompanion-3.48.1-win-x64.zip",
+    "size": 89387715,
+    "sha256": "26e4d6ad3b04153ca744e063bccbfc17674ce0a016e60868811d643229d23be0"
   },
-  "notes": "**Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen · **ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen",
+  "notes": "",
   "changes": {
     "neu": [],
-    "verbessert": [
-      "**Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen",
-      "**ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen"
-    ],
+    "verbessert": [],
     "behoben": [
-      "Die Scroll-Einblendung der Karten (3.46.0) ist wieder entfernt: sie verschob Positionen auf Seiten mit vielen Karten und machte Tests und Schalter unruhig"
+      "**Startseite stürzt mit „Dieser Bereich konnte nicht geladen werden“ ab (nur angemeldet):** Ein einzelnes kaputtes Widget legt nicht mehr die ganze Startseite lahm – es zeigt „Dieses Widget konnte nicht angezeigt werden“ mit „Nochmal“, der Rest funktioniert",
+      "Die Fehlerkarte zeigt jetzt den genauen Fehler samt Fundstelle, hat „Fehler kopieren“ und „Startseite zurücksetzen“ (setzt nur Startseiten-Layout und Raum zurück, nicht das Konto) und speichert den letzten Fehler auf dem Gerät"
     ]
   },
-  "signature": "1qsPolQpK4loxqoaz/l1+afHbRosgbjvVURy6M1xseJAq0a69xB6lHvDi1dNDFzPx3ve4Mrtm4FVPdUq5aixJQ=="
+  "signature": "2lyg+0kEFF9oC1QVjHAU5x5+Lz5S4GdAScDC4qr41BJyq1ZR71hb3tU0xw795HwnwCAjEkcJjrREiqDOmwWJCQ=="
 }
