@@ -95,17 +95,16 @@ for (const size of SIZES) {
       const cdp = touch ? await p.context().newCDPSession(p) : null;
       const send = (type: string, x: number) => cdp!.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y, id: 1 }] });
       if (touch) await send("touchStart", x0); else { await p.mouse.move(x0, y); await p.mouse.down(); }
-      const dragRec = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".holo-stage", "--drag", 500));
+      const dragRec = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".holo-stage", "--pos", 500));
       for (let i = 1; i <= 8; i++) { if (touch) await send("touchMove", x0 - i * 14); else await p.mouse.move(x0 - i * 14, y); await p.waitForTimeout(25); }
       const dragged = await dragRec;
-      expect(Math.max(...dragged.map(Math.abs))).toBeGreaterThan(0.1);                           // the cards were pulled along by the finger
+      expect(Math.max(...dragged) - Math.min(...dragged)).toBeGreaterThan(0.1);                          // the cards were pulled along by the finger
       expect(await p.locator(".holo").evaluate((el) => el.classList.contains("dragging"))).toBe(true);
       const settle = p.evaluate(() => (window as never as { __rec: (s: string, q: string, m: number) => Promise<number[]> }).__rec(".holo-card.cur", "x", 900));
       if (touch) await send("touchEnd", 0); else await p.mouse.up();
       const xs = await settle;
       await expect(cur).not.toHaveAttribute("aria-label", first ?? "", { timeout: 5000 });       // the next game is in the middle
       expect(await p.locator(".holo").evaluate((el) => el.classList.contains("dragging"))).toBe(false);
-      expect(await p.locator(".holo-stage").evaluate((el) => getComputedStyle(el).getPropertyValue("--drag").trim())).toBe("0");
       expect(distinct(xs, 2)).toBeGreaterThanOrEqual(4);                                                // the settling is a glide through many positions
       await p.keyboard.press("ArrowRight");                                                      // keyboard and buttons still work
       await p.context().close();

@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.44.2 – 2026-11-11
+### Verbessert
+- Insel: Öffnen und Schließen sind jetzt klar sichtbar langsamer (ca. 0,65 s bis fast fertig, Schließen ca. 0,8 s), weiche Feder
+- Holo-Ansicht: komplett neu bewegt – die Karten folgen dem Finger direkt, beim Loslassen übernimmt eine Feder mit der Geschwindigkeit des Wischens (Schwung wie in der Insel, auch über mehrere Karten); Tastatur, Pfeile und Regler gleiten genauso
+
 ## 3.44.1 – 2026-11-11
 ### Verbessert
 - Insel: Öffnen und Schließen deutlich sichtbarer – die Feder ist nochmal gut doppelt so weich (Öffnen ≈ 0,5 s bis fast fertig, Schließen ≈ 0,6 s), der Inhalt fährt gestaffelt mit

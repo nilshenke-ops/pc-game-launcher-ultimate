@@ -41,21 +41,22 @@
 /* ---------------------------------------------------------------- Holo view: the cards follow the finger, then settle like a spring
    --drag (set while a finger/mouse drags the stage) shifts every card by that many places; --off is the place of the card. */
 :root:not([data-motion="reduce"]) .holo-card, :root:not([data-motion="reduce"]) .holo-card.cur {
-  --o: calc(var(--off) + var(--drag, 0)); --ao: max(var(--o), calc(var(--o) * -1));
+  --o: calc(var(--k, 0) - var(--pos, 0)); --ao: max(var(--o), calc(var(--o) * -1));
   transform: translateX(calc(var(--o) * min(58%, 170px) + var(--o) * 20%))
              translateZ(calc(var(--ao) * -140px + (1 - min(1, var(--ao))) * 46px))
              rotateY(calc(var(--o) * -32deg))
              scale(calc(1 + (1 - min(1, var(--ao))) * 0.07));
   opacity: clamp(0, calc((3.3 - var(--ao)) * 0.8), 1) !important;
   /* No filter here: a saturate/brightness filter on every card is re-painted on each frame and made the swipe stutter; depth already dims through opacity. */
-  transition: transform 1s var(--spr-soft), opacity .5s ease; will-change: transform, opacity;
+  /* The position (--pos, a fractional card number) is moved by a spring in holo-library.tsx every frame – the finger and the settling are one continuous movement, no CSS transition in between. */
+  transition: none; will-change: transform, opacity; z-index: calc(200 - var(--ao) * 20);
   animation: holo-enter .6s var(--out-expo) backwards; animation-delay: calc(var(--abs, 0) * 55ms);
 }
 :root:not([data-motion="reduce"]) .holo.dragging .holo-card { transition: none; }
 :root:not([data-motion="reduce"]) .holo-stage { cursor: grab; }
 :root:not([data-motion="reduce"]) .holo.dragging .holo-stage { cursor: grabbing; }
 @keyframes holo-enter { from { opacity: 0; translate: 0 26px; scale: .9; } }
-:root:not([data-motion="reduce"]) .holo-floor { translate: calc(var(--drag, 0) * -34px) 0; transition: translate 1s var(--spr-soft), opacity .4s ease; }
+:root:not([data-motion="reduce"]) .holo-floor { transition: opacity .4s ease; }
 :root:not([data-motion="reduce"]) .holo-panel-in { animation: holo-panel-in .8s var(--out-expo) backwards; }
 @keyframes holo-panel-in { from { opacity: 0; translate: calc(var(--hdir, 1) * 28px) 0; } }
 :root:not([data-motion="reduce"]) .holo-card.cur .holo-cover { transition: box-shadow .6s ease, border-color .4s ease; }
