@@ -193,6 +193,48 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 
 /* Cards of a page glide in when they scroll into view (browsers with scroll-driven animations). */
 @supports (animation-timeline: view()) {
-  :root:not([data-motion="reduce"]) .content .card:not(.dash > *):not(.card .card) { animation: card-view linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+  :root:not([data-motion="reduce"]) .content .card:not(.dash > *):not(.card .card):not(.isl-host *) { animation: card-view linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
   @keyframes card-view { from { opacity: 0; translate: 0 32px; scale: .97; } }
 }
+
+/* ================================================================ The small module: eyes that live, and more to see when it opens and closes */
+/* Resting: the eyes look left, blink, look right, blink twice – not just one blink. */
+:root:not([data-motion="reduce"]) .isl-host.v2 .isl-eyes.m-idle i { animation: eye-reopen .6s var(--out-expo) .62s backwards, eye-life 11s ease-in-out 1.4s infinite; }
+:root:not([data-motion="reduce"]) .isl-host.v2 .isl-eyes.m-idle i:last-child { animation-delay: .66s, 1.43s; }
+@keyframes eye-life {
+  0%, 12% { transform: translate(0, 0) scaleY(1); }
+  16%, 30% { transform: translate(-3px, 0) scaleY(1); }           /* looks left */
+  33% { transform: translate(-3px, 0) scaleY(.08); }              /* blink */
+  36%, 50% { transform: translate(-3px, 0) scaleY(1); }
+  56%, 72% { transform: translate(3px, -1px) scaleY(1); }         /* looks right and a little up */
+  75% { transform: translate(3px, -1px) scaleY(.08); }
+  78% { transform: translate(3px, -1px) scaleY(1); }
+  80% { transform: translate(3px, -1px) scaleY(.08); }           /* second blink */
+  83%, 100% { transform: translate(0, 0) scaleY(1); }
+}
+/* Closing ends with the eyes opening again (after being shut while the island folds), and the page start does the same: waking up. */
+@keyframes eye-reopen { 0% { transform: scaleY(.06) scaleX(1.25); opacity: .4; } 55% { transform: scaleY(1.25) scaleX(.9); opacity: 1; } 100% { transform: scaleY(1) scaleX(1); } }
+/* Opening: the eyes in the header widen, glance up and settle – it is awake. */
+:root:not([data-motion="reduce"]) .isl-host.v2.is-open .isl2-wrap .isl-eyes i { animation: eye-wake 1.1s var(--out-expo) .2s backwards, isl-blink 6s 2s infinite; }
+:root:not([data-motion="reduce"]) .isl-host.v2.is-open .isl2-wrap .isl-eyes i:last-child { animation-delay: .26s, 2s; }
+@keyframes eye-wake { 0% { transform: scaleY(.08); opacity: 0; } 30% { transform: translateY(-2px) scale(1.35); opacity: 1; } 60% { transform: translate(2px, -3px) scale(1.2); } 100% { transform: none; } }
+/* Folding shut: the eyes close first. */
+:root:not([data-motion="reduce"]) .isl-host.v2 .isl2-wrap.closing .isl-eyes i { animation: eye-shut .45s ease-in forwards; }
+@keyframes eye-shut { 0% { transform: none; } 55% { transform: scaleY(.06) scaleX(1.2); } 100% { transform: scaleY(.06) scaleX(1.2); opacity: .5; } }
+
+/* A light sweeps over the surface while it opens, and the inside glows for a moment. */
+:root:not([data-motion="reduce"]) .isl-host.v2::before {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none; border-radius: inherit; opacity: 0;
+  background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .34) 50%, transparent 70%); background-size: 280% 100%; background-position: 130% 0;
+}
+:root:not([data-motion="reduce"]) .isl-host.v2.is-open::before { animation: isl-sweep 1.1s ease-out .08s; }
+@keyframes isl-sweep { 0% { opacity: 1; background-position: 130% 0; } 85% { opacity: 1; } 100% { opacity: 0; background-position: -30% 0; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.is-open { animation: isl-open-glow 1.2s ease-out; }
+@keyframes isl-open-glow { 0% { box-shadow: inset 0 0 0 0 transparent; } 35% { box-shadow: inset 0 0 38px 4px color-mix(in srgb, var(--isl-c, #9ef0c8) 38%, transparent); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+
+/* The "…" menu pops out of its corner and its entries follow one by one. */
+:root:not([data-motion="reduce"]) .isl2-menu { transform-origin: top right; animation: menu-pop .42s var(--spr-bounce) backwards; }
+:root:not([data-motion="reduce"]) .isl2-menu > * { animation: holo-rise .5s var(--out-expo) backwards; }
+:root:not([data-motion="reduce"]) .isl2-menu > :nth-child(2) { animation-delay: 60ms; }
+:root:not([data-motion="reduce"]) .isl2-menu > :nth-child(3) { animation-delay: 120ms; }
+@keyframes menu-pop { from { opacity: 0; transform: scale(.7) translateY(-8px); } }

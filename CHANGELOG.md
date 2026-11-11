@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.47.1 – 2026-11-11
+### Neu
+- Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite)
+- Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander
+### Behoben
+- Insel: die neue Scroll-Einblendung der Karten (3.46.0) griff auch auf Karten innerhalb der Insel und störte dort das Wischen – die Insel ist jetzt ausgenommen
+- Insel: sanftes Überschwingen und dichtere Fläche aus 3.47.0 sind jetzt auch in den Tests abgebildet
+
 ## 3.47.0 – 2026-11-11
 ### Verbessert
 - Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite)
