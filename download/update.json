@@ -1,24 +1,28 @@
 {
-  "version": "3.45.1",
+  "version": "3.46.0",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.1/PCGameLauncherCompanion.exe",
-  "size": 95110678,
-  "sha256": "71f472e0fdbaf187d39446bf814f4fce33fbc19116b92e7c7a3b840453008cb6",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.0/PCGameLauncherCompanion.exe",
+  "size": 95111807,
+  "sha256": "37ffada8177685f13ee50bf2ec0f00536f20b107fbffd87265edff9d7bf08f14",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.45.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.1/PCGameLauncherCompanion-3.45.1-win-x64.zip",
-    "size": 89384500,
-    "sha256": "6d61218c14813ead01e6695e55a7b90ca230d50e04e24d084f4ec7939e8d23eb"
+    "fileName": "PCGameLauncherCompanion-3.46.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.0/PCGameLauncherCompanion-3.46.0-win-x64.zip",
+    "size": 89385818,
+    "sha256": "fa4ca0cc2b378b6794c1e29440fb02ecc88fb9e8fbec19f9761aa8a97338689f"
   },
-  "notes": "Holo-Ansicht: das Leuchten am Boden wandert mit den Karten mit, die Infos unter dem Spiel (Titel, Marken, Knöpfe) fahren nacheinander ein",
+  "notes": "Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch) · Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt · Chips und Marken federn beim Darüberfahren und Drücken",
   "changes": {
     "neu": [
-      "Holo-Ansicht: das Leuchten am Boden wandert mit den Karten mit, die Infos unter dem Spiel (Titel, Marken, Knöpfe) fahren nacheinander ein"
+      "Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch)",
+      "Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt",
+      "Chips und Marken federn beim Darüberfahren und Drücken",
+      "Karten einer Seite gleiten beim Hineinscrollen ein (Browser mit Scroll-Animationen)",
+      "Alles stoppt mit „Animationen reduzieren“ und in der Leichten Darstellung"
     ],
     "verbessert": [],
     "behoben": []
   },
-  "signature": "7gkvJMmj7kXLhFA8lFBeMwTk7QhfteKzt+ySDcxBrECoK0tyrcaD9SXebEjfU2zV8ipCPB+cgk4609tgIIPLew=="
+  "signature": "BSNSxtilYq7w/fdQKmdnyD+FSE+M8tZ8nVLzE3Q/TDij0KfMKIh9Du4RXqMcyxFkL/U49p0QOVqUdsuhuM6dZQ=="
 }

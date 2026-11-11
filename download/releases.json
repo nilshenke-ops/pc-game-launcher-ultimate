@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.46.0",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.0/PCGameLauncherCompanion.exe",
+    "size": 95111807,
+    "sha256": "37ffada8177685f13ee50bf2ec0f00536f20b107fbffd87265edff9d7bf08f14",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.46.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.0/PCGameLauncherCompanion-3.46.0-win-x64.zip",
+      "size": 89385818,
+      "sha256": "fa4ca0cc2b378b6794c1e29440fb02ecc88fb9e8fbec19f9761aa8a97338689f"
+    },
+    "notes": "Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch) · Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt · Chips und Marken federn beim Darüberfahren und Drücken",
+    "changes": {
+      "neu": [
+        "Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch)",
+        "Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt",
+        "Chips und Marken federn beim Darüberfahren und Drücken",
+        "Karten einer Seite gleiten beim Hineinscrollen ein (Browser mit Scroll-Animationen)",
+        "Alles stoppt mit „Animationen reduzieren“ und in der Leichten Darstellung"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "BSNSxtilYq7w/fdQKmdnyD+FSE+M8tZ8nVLzE3Q/TDij0KfMKIh9Du4RXqMcyxFkL/U49p0QOVqUdsuhuM6dZQ=="
+  },
+  {
     "version": "3.45.1",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1318,29 +1346,5 @@
       "behoben": []
     },
     "signature": "mGzY9DYZaohp/J7JGB+Tf6Bx/ntF+8tTCGQyh+p6JOYKELslrkrCiPlnFlx8mrynpXR16/SMyBIpobQfryetAw=="
-  },
-  {
-    "version": "3.16.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.16.0/PCGameLauncherCompanion.exe",
-    "size": 94940080,
-    "sha256": "e0746b52dc6640f3486ad7a8f2fbaaea3aec3fc7ba3b77e3e9f1261ef33deb47",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.16.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.16.0/PCGameLauncherCompanion-3.16.0-win-x64.zip",
-      "size": 89215444,
-      "sha256": "3f2cb52e40796b30ed56d6984b98c2eebde8962af997b127b9c38052839571be"
-    },
-    "notes": "Bessere Spracheingabe für JARVIS (optional): Mit deinem Groq-Schlüssel auf dem Gerät (KI-Verwaltung → Schlüssel ohne PC → „Bessere Spracherkennung (Whisper)“) nimmt JARVIS einen Satz auf, die Aufnahme endet nach einer Sprechpause, und Groq (Whisper, kostenloser Tarif) macht Text daraus – genauer bei Eigennamen und Spielen und auch dort, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Der eine Satz geht direkt von deinem Gerät an Groq und wird nicht gespeichert; erfundene Sätze bei Stille („Untertitel der …“) werden verworfen. Ohne den Schalter bleibt alles wie bisher",
-    "changes": {
-      "neu": [
-        "Bessere Spracheingabe für JARVIS (optional): Mit deinem Groq-Schlüssel auf dem Gerät (KI-Verwaltung → Schlüssel ohne PC → „Bessere Spracherkennung (Whisper)“) nimmt JARVIS einen Satz auf, die Aufnahme endet nach einer Sprechpause, und Groq (Whisper, kostenloser Tarif) macht Text daraus – genauer bei Eigennamen und Spielen und auch dort, wo der Browser keine Spracherkennung hat (iPad-App vom Home-Bildschirm). Der eine Satz geht direkt von deinem Gerät an Groq und wird nicht gespeichert; erfundene Sätze bei Stille („Untertitel der …“) werden verworfen. Ohne den Schalter bleibt alles wie bisher"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "5bHqtPSi5sqRZgxJ7ZHZoi+wI4HPRAgcQsv5sFW3LRInxqLNWUKKcoHK+WPhMe9f07+5IIJP+Kxp0EDWMLyxhA=="
   }
 ]
