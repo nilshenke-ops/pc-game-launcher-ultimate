@@ -266,9 +266,9 @@ function TimerPills({ e, style, interactive }: { e: WidgetElement; style: CSSPro
           aria-disabled={!interactive} tabIndex={interactive ? 0 : -1} onClick={interactive ? reset : undefined}>{t("Zurücksetzen")}</button>
       </div>
       {presets.length > 0 && (
-        <div style={{ display: "flex", gap: "1.6%", justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "1.4%", justifyContent: "center", flexWrap: "nowrap" }}>
           {presets.map((m) => (
-            <button key={m} type="button" className="cw-button" style={{ ...pill("rgba(255,255,255,.05)", "inherit"), minWidth: "3.7em" }}
+            <button key={m} type="button" className="cw-button" style={{ ...pill("rgba(255,255,255,.05)", "inherit"), flex: "1 1 0", minWidth: 0, paddingInline: "0.4em" }}
               aria-disabled={!interactive} tabIndex={interactive ? 0 : -1} onClick={interactive ? () => preset(m) : undefined}>{m} min</button>
           ))}
         </div>
