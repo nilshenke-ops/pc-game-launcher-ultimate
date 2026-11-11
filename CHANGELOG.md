@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.49.0 – 2026-11-11
+### Neu
+- **Soundboard ohne PC:** Solange das Handy/iPad mit dem PC verbunden ist, speichert es alle Sounds im Hintergrund auf dem Gerät (nur was neu oder geändert ist, höchstens 12 MB je Datei und 120 MB insgesamt). Ist der PC nicht verbunden, spielen die Kacheln den Sound auf dem Gerät selbst ab – mit der eingestellten Lautstärke, Wiederholung und „Alle stoppen“. Ein Hinweis zeigt, wie viele Sounds schon auf dem Gerät sind; noch nicht gespeicherte sagen, was zu tun ist
+- Begleiter: neue Schnittstelle `sounds.fetch` (Sound-Datei in kleinen Stücken lesen) – nötig fürs Speichern auf dem Gerät; der Windows-Begleiter muss dafür aktualisiert sein
+
 ## 3.48.2 – 2026-11-11
 ### Behoben
 - **Animationen verschwinden nach der Anmeldung:** „Animationen reduzieren“ und „Leichte Darstellung“ kamen mit dem Design aus der Cloud oder vom PC auf jedes Gerät und schalteten dort die Bewegung ab. Diese beiden Schalter gehören jetzt dem Gerät und werden von keinem Konto mehr überschrieben

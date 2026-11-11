@@ -644,6 +644,7 @@ public static class RpcApi
         rpc.Register("sounds.update", ctx => s.Soundboard.Update(ctx.Bind<SoundboardService.SoundUpdate>()));
         rpc.Register("sounds.remove", ctx => { s.Soundboard.Remove(ctx.Str("id", 64)); return true; });
         rpc.Register("sounds.play", ctx => s.Soundboard.Play(ctx.Str("id", 64)) is { } err ? throw new RpcException("audio", err) : true);
+        rpc.Register("sounds.fetch", ctx => s.Soundboard.ReadChunk(ctx.Str("id", 64), ctx.OptLong("offset") ?? 0, ctx.Int("length", 262_144, 1, 300_000)));
         rpc.Register("sounds.stop", ctx => { s.Soundboard.Stop(ctx.Str("playbackId", 64)); return true; });
         rpc.Register("sounds.stopAll", ctx => { s.Soundboard.StopAll(); return true; });
         rpc.Register("sounds.pause", ctx => { s.Soundboard.Pause(ctx.Str("playbackId", 64), true); return true; });

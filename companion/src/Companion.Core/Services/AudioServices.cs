@@ -445,6 +445,23 @@ public sealed class SoundboardService
         return r;
     }
 
+    /// <summary>One piece of a sound file for a phone that keeps its own copy (so the sounds also play without the PC). Chunked, so no message gets large.</summary>
+    public object ReadChunk(string soundId, long offset, int length)
+    {
+        var sound = _store.Get(f => f.Sounds.FirstOrDefault(s => s.Id == soundId)) ?? throw new RpcException("not-found", "Sound nicht gefunden.");
+        var path = Path.Combine(_paths.SoundsDir, sound.FileName);
+        if (!File.Exists(path)) throw new RpcException("not-found", "Audiodatei fehlt auf dem PC.");
+        length = Math.Clamp(length, 1, 300_000);
+        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var total = fs.Length;
+        offset = Math.Clamp(offset, 0, total);
+        fs.Seek(offset, SeekOrigin.Begin);
+        var buf = new byte[(int)Math.Min(length, total - offset)];
+        var read = 0;
+        while (read < buf.Length) { var n = fs.Read(buf, read, buf.Length - read); if (n <= 0) break; read += n; }
+        return new { data = Convert.ToBase64String(buf, 0, read), total, format = sound.Format, sha256 = sound.Sha256, done = offset + read >= total };
+    }
+
     /// <summary>Sounds whose audio file is no longer on the PC (deleted or moved by hand).</summary>
     public List<string> Missing() => Get().Sounds.Where(x => !File.Exists(Path.Combine(_paths.SoundsDir, x.FileName))).Select(x => x.Id).ToList();
 
