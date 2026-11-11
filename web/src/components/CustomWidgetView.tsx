@@ -250,9 +250,9 @@ function TimerPills({ e, style, interactive }: { e: WidgetElement; style: CSSPro
   const stopwatch = () => { setMode("stopwatch"); if (!running) { setAcc(0); setStartedAt(Date.now()); } };
   const preset = (min: number) => { setMode("countdown"); setTotal(min * 60); setAcc(0); setStartedAt(Date.now()); };
   const pill = (bg: string, color: string, strong = false): CSSProperties => ({
-    background: bg, color, border: 0, borderRadius: 999, padding: strong ? "0.62em 1.15em" : "0.55em 1.05em",
-    fontSize: fs(strong ? 13 : 12.5), fontWeight: 600, lineHeight: 1.15, cursor: interactive ? "pointer" : "default",
-    boxShadow: strong ? "none" : "inset 0 0 0 1px rgba(255,255,255,.16)", whiteSpace: "nowrap",
+    background: bg, color, border: 0, borderRadius: 999, padding: strong ? "0.6em 1.05em" : "0.5em 0.8em",
+    fontSize: fs(strong ? 13 : 12), fontWeight: 600, lineHeight: 1.15, cursor: interactive ? "pointer" : "default",
+    boxShadow: strong ? "none" : "inset 0 0 0 1px rgba(255,255,255,.16)", whiteSpace: "nowrap", paddingBlock: "0.5em",
   });
   return (
     <div style={{ ...style, flexDirection: "column", justifyContent: "center", gap: "5%" }}>
@@ -266,9 +266,9 @@ function TimerPills({ e, style, interactive }: { e: WidgetElement; style: CSSPro
           aria-disabled={!interactive} tabIndex={interactive ? 0 : -1} onClick={interactive ? reset : undefined}>{t("Zurücksetzen")}</button>
       </div>
       {presets.length > 0 && (
-        <div style={{ display: "flex", gap: "2.2%", justifyContent: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "1.6%", justifyContent: "center", flexWrap: "wrap" }}>
           {presets.map((m) => (
-            <button key={m} type="button" className="cw-button" style={{ ...pill("rgba(255,255,255,.05)", "inherit"), minWidth: "4.6em" }}
+            <button key={m} type="button" className="cw-button" style={{ ...pill("rgba(255,255,255,.05)", "inherit"), minWidth: "3.7em" }}
               aria-disabled={!interactive} tabIndex={interactive ? 0 : -1} onClick={interactive ? () => preset(m) : undefined}>{m} min</button>
           ))}
         </div>
