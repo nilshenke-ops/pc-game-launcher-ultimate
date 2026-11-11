@@ -1,24 +1,25 @@
 {
-  "version": "3.46.2",
+  "version": "3.47.0",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.2/PCGameLauncherCompanion.exe",
-  "size": 95111839,
-  "sha256": "00a7eb226b3af66a3a95e8e8f3e52028e22114b449c0a8a4b39bf09362289745",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.0/PCGameLauncherCompanion.exe",
+  "size": 95112238,
+  "sha256": "0a08f75604e87db2f7ad8905208cfa7a360f3904034b32541c873bc3994e594f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.46.2-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.2/PCGameLauncherCompanion-3.46.2-win-x64.zip",
-    "size": 89385821,
-    "sha256": "7f3e129d53b4136b01a66738ab47169b1250d92e6133b2a0bf619f93a290dcf4"
+    "fileName": "PCGameLauncherCompanion-3.47.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.0/PCGameLauncherCompanion-3.47.0-win-x64.zip",
+    "size": 89386380,
+    "sha256": "df1a9519629280d100f426392cb475e7d972b2c346fd4538a2e88ff7006c4d46"
   },
-  "notes": "",
+  "notes": "Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite) · Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber",
   "changes": {
     "neu": [],
-    "verbessert": [],
-    "behoben": [
-      "**„Dieser Bereich konnte nicht geladen werden“ bleibt stehen (Handy):** Der Browser lieferte eine alte Kopie der Startseite aus, die auf nicht mehr vorhandene Dateien zeigte, und „Neu laden“ half nicht. Jetzt wird die App-Seite immer direkt vom Server geholt, bei dem Fehler heilt sich die Seite einmal selbst (Zwischenspeicher und Service-Worker werden gelöscht, Neuladen mit neuer Adresse), und „Neu laden“ macht dasselbe"
-    ]
+    "verbessert": [
+      "Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite)",
+      "Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber"
+    ],
+    "behoben": []
   },
-  "signature": "UP6bPcskH19BK+weutVjbFIytqpbt5LKb1amP2JLx7JJlePpM55zt6YMyC24v/uJQViyqv9JLzOiMSRennZHmQ=="
+  "signature": "8SAWWTuLxucwNJu5Njb5IbHRli244t782y1/ltyPgmEdVwtYrCjkH8EKteGUJxjYabD0OkzCNxsuOCtt6KIErw=="
 }

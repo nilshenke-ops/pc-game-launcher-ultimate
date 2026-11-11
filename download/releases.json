@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.47.0",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.0/PCGameLauncherCompanion.exe",
+    "size": 95112238,
+    "sha256": "0a08f75604e87db2f7ad8905208cfa7a360f3904034b32541c873bc3994e594f",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.47.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.0/PCGameLauncherCompanion-3.47.0-win-x64.zip",
+      "size": 89386380,
+      "sha256": "df1a9519629280d100f426392cb475e7d972b2c346fd4538a2e88ff7006c4d46"
+    },
+    "notes": "Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite) · Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite)",
+        "Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber"
+      ],
+      "behoben": []
+    },
+    "signature": "8SAWWTuLxucwNJu5Njb5IbHRli244t782y1/ltyPgmEdVwtYrCjkH8EKteGUJxjYabD0OkzCNxsuOCtt6KIErw=="
+  },
+  {
     "version": "3.46.2",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1317,32 +1342,5 @@
       "behoben": []
     },
     "signature": "kuQGzefRligrGH5wUcmasaInxKObfEpPUfpsHdTc9iGUwv68CiNCiG5GjvWRvBJxbIZqRzB3PfwHBG2cGCcjKg=="
-  },
-  {
-    "version": "3.19.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.19.0/PCGameLauncherCompanion.exe",
-    "size": 94948472,
-    "sha256": "41d8578b201171f8f7cf09b9480a26f26e02d1afce0c21a7c51dba2518e48a8c",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.19.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.19.0/PCGameLauncherCompanion-3.19.0-win-x64.zip",
-      "size": 89223805,
-      "sha256": "58132b954580fa4e207646381089c90908abc4af2145e00bf916a23cda617496"
-    },
-    "notes": "Gedächtnis für deinen Ort: „Ich wohne in Adendorf“ (oder „Mein Wohnort ist …“, „Merk dir, dass ich in … wohne“) merkt sich JARVIS; fragst du danach nach dem Wetter ohne Ort, bekommst du das Wetter von Adendorf. Fragst du zum ersten Mal nach dem Wetter in einem Ort und ist noch keiner gemerkt, übernimmt JARVIS ihn und sagt das dazu. „Wo wohne ich?“ beantwortet er auch. Am PC und ohne PC im Browser · „Was war meine letzte Spielzeit?“ / „Wie lange habe ich zuletzt gespielt?“ nennt jetzt die letzte Spielsitzung mit Spiel, Dauer und Startzeit (statt der Gesamtzeit)",
-    "changes": {
-      "neu": [
-        "Gedächtnis für deinen Ort: „Ich wohne in Adendorf“ (oder „Mein Wohnort ist …“, „Merk dir, dass ich in … wohne“) merkt sich JARVIS; fragst du danach nach dem Wetter ohne Ort, bekommst du das Wetter von Adendorf. Fragst du zum ersten Mal nach dem Wetter in einem Ort und ist noch keiner gemerkt, übernimmt JARVIS ihn und sagt das dazu. „Wo wohne ich?“ beantwortet er auch. Am PC und ohne PC im Browser",
-        "„Was war meine letzte Spielzeit?“ / „Wie lange habe ich zuletzt gespielt?“ nennt jetzt die letzte Spielsitzung mit Spiel, Dauer und Startzeit (statt der Gesamtzeit)"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "„Wie war das letzte Bayern-Spiel ausgegangen?“ zeigte deine eigene Spielzeit bzw. das zuletzt gespielte Spiel. Fragen zu den Spielen einer Fußballmannschaft und Wetterfragen gehen jetzt nie mehr an die PC-Antworten, sondern an OpenLigaDB bzw. Open-Meteo und die KI – „letztes Spiel“ mit Ergebnis, „nächstes Spiel“ mit Datum, laufendes Spiel mit Zwischenstand"
-      ]
-    },
-    "signature": "ls/KsGgszKJ1tfiJOBdodtuUiMs9ETiNdSFCzgy5kwcwChMQaUO5qdagBqq6fktwF2EHjPOy4ebTLqff77eC3A=="
   }
 ]
