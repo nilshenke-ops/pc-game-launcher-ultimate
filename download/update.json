@@ -1,28 +1,25 @@
 {
-  "version": "3.46.0",
+  "version": "3.46.1",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.0/PCGameLauncherCompanion.exe",
-  "size": 95111807,
-  "sha256": "37ffada8177685f13ee50bf2ec0f00536f20b107fbffd87265edff9d7bf08f14",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.1/PCGameLauncherCompanion.exe",
+  "size": 95111794,
+  "sha256": "cd8e25cc47b0e8db3144da1a040d18cf5d2a3640463c748a649673cf89029145",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.46.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.0/PCGameLauncherCompanion-3.46.0-win-x64.zip",
-    "size": 89385818,
-    "sha256": "fa4ca0cc2b378b6794c1e29440fb02ecc88fb9e8fbec19f9761aa8a97338689f"
+    "fileName": "PCGameLauncherCompanion-3.46.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.1/PCGameLauncherCompanion-3.46.1-win-x64.zip",
+    "size": 89385774,
+    "sha256": "bc0ee395ce454cdd3da8042734aaa71c85086ac18803cec4918334bfc3704e42"
   },
-  "notes": "Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch) · Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt · Chips und Marken federn beim Darüberfahren und Drücken",
+  "notes": "",
   "changes": {
-    "neu": [
-      "Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch)",
-      "Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt",
-      "Chips und Marken federn beim Darüberfahren und Drücken",
-      "Karten einer Seite gleiten beim Hineinscrollen ein (Browser mit Scroll-Animationen)",
-      "Alles stoppt mit „Animationen reduzieren“ und in der Leichten Darstellung"
-    ],
+    "neu": [],
     "verbessert": [],
-    "behoben": []
+    "behoben": [
+      "**Insel ohne Inhalt / „Dieser Bereich konnte nicht geladen werden“ nach einem Update:** Eine noch offene alte Seite fragte nach Programmteilen, die es nach dem Update nicht mehr gab. Jetzt lädt sich die Seite dann einmal selbst neu und holt die neue Version (nicht öfter als alle 30 Sekunden, damit es nie in einer Schleife hängt) – damit sind Öffnen/Schließen der Insel wieder da",
+      "**Abmelden:** Danach bleiben keine Daten des Kontos mehr sichtbar – Design, Layout, Kacheln, gespeicherte Spiele-/Appslisten und die Cloud-Kopie werden vom Gerät entfernt, es gilt wieder das Standard-Aussehen. Noch wartende Änderungen werden vorher (höchstens 2,5 s) gesendet. Beim Anmelden mit dem richtigen Konto kommt alles aus der Cloud zurück"
+    ]
   },
-  "signature": "BSNSxtilYq7w/fdQKmdnyD+FSE+M8tZ8nVLzE3Q/TDij0KfMKIh9Du4RXqMcyxFkL/U49p0QOVqUdsuhuM6dZQ=="
+  "signature": "z72THn9mTGl7BaXO7WE++dpNIWbIOVYcBN4D0pHOTRPrVBND/PN/hSH1mu0kYJigCharOO792NxotbMxP8gNWg=="
 }

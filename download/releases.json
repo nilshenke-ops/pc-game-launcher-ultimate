@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.46.1",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.1/PCGameLauncherCompanion.exe",
+    "size": 95111794,
+    "sha256": "cd8e25cc47b0e8db3144da1a040d18cf5d2a3640463c748a649673cf89029145",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.46.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.46.1/PCGameLauncherCompanion-3.46.1-win-x64.zip",
+      "size": 89385774,
+      "sha256": "bc0ee395ce454cdd3da8042734aaa71c85086ac18803cec4918334bfc3704e42"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "**Insel ohne Inhalt / „Dieser Bereich konnte nicht geladen werden“ nach einem Update:** Eine noch offene alte Seite fragte nach Programmteilen, die es nach dem Update nicht mehr gab. Jetzt lädt sich die Seite dann einmal selbst neu und holt die neue Version (nicht öfter als alle 30 Sekunden, damit es nie in einer Schleife hängt) – damit sind Öffnen/Schließen der Insel wieder da",
+        "**Abmelden:** Danach bleiben keine Daten des Kontos mehr sichtbar – Design, Layout, Kacheln, gespeicherte Spiele-/Appslisten und die Cloud-Kopie werden vom Gerät entfernt, es gilt wieder das Standard-Aussehen. Noch wartende Änderungen werden vorher (höchstens 2,5 s) gesendet. Beim Anmelden mit dem richtigen Konto kommt alles aus der Cloud zurück"
+      ]
+    },
+    "signature": "z72THn9mTGl7BaXO7WE++dpNIWbIOVYcBN4D0pHOTRPrVBND/PN/hSH1mu0kYJigCharOO792NxotbMxP8gNWg=="
+  },
+  {
     "version": "3.46.0",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1322,29 +1347,5 @@
       "behoben": []
     },
     "signature": "8OAjTbqDsP5XORxmUXJn7q5XLUEFYuGVnfRjXQDztm13zlpeTrGiNRvPrrVz/EIyY6Ir4rBjQp2GO3nMjlGp4Q=="
-  },
-  {
-    "version": "3.17.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.17.0/PCGameLauncherCompanion.exe",
-    "size": 94944599,
-    "sha256": "f491ea17ba9272afadbbeb9babceff33920fc446ab7e7cf408c20ee8443e7a2a",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.17.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.17.0/PCGameLauncherCompanion-3.17.0-win-x64.zip",
-      "size": 89219524,
-      "sha256": "8c7aa8524b4a69e46e6a84c3d5a7dd9747f1384f665669b43b226173dce4a50a"
-    },
-    "notes": "Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche",
-    "changes": {
-      "neu": [
-        "Wetter ohne Schlüssel und ohne Suchdienst: „Wie wird das Wetter morgen in Berlin?“, „Regnet es heute in Bad Homburg?“ beantwortet JARVIS mit der Vorhersage von Open-Meteo (kostenlos, kein Konto): jetzt, heute, morgen und übermorgen mit Temperatur, Wetterlage und Regenwahrscheinlichkeit. Am PC und genauso ohne PC direkt im Browser; die Antwort nennt die Quelle („Wetterdaten: Open-Meteo“). Ohne genannten Ort oder bei einem Ausfall läuft die Frage wie bisher über die Websuche"
-      ],
-      "verbessert": [],
-      "behoben": []
-    },
-    "signature": "mGzY9DYZaohp/J7JGB+Tf6Bx/ntF+8tTCGQyh+p6JOYKELslrkrCiPlnFlx8mrynpXR16/SMyBIpobQfryetAw=="
   }
 ]
