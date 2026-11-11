@@ -1,25 +1,26 @@
 {
-  "version": "3.48.1",
+  "version": "3.48.2",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.1/PCGameLauncherCompanion.exe",
-  "size": 95113720,
-  "sha256": "d46b631afd4af7f318adb33415658eac5e0bb6fea9d99bb00185a002b2c369dc",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.2/PCGameLauncherCompanion.exe",
+  "size": 95113629,
+  "sha256": "4ead1ef1a154fcebaded14d746979074e95694da52182e5bc74cdb832b72683d",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.48.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.1/PCGameLauncherCompanion-3.48.1-win-x64.zip",
-    "size": 89387715,
-    "sha256": "26e4d6ad3b04153ca744e063bccbfc17674ce0a016e60868811d643229d23be0"
+    "fileName": "PCGameLauncherCompanion-3.48.2-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.2/PCGameLauncherCompanion-3.48.2-win-x64.zip",
+    "size": 89387668,
+    "sha256": "93efe11970f57d5b0be438ae4b715349950532aa71c354b98080f319c53eb30f"
   },
-  "notes": "",
+  "notes": "Handy: Insel öffnet flüssiger – kein Weichzeichner-Filter, kein Aufleuchten und leichteres Glas, nur noch die Bewegung selbst",
   "changes": {
     "neu": [],
-    "verbessert": [],
+    "verbessert": [
+      "Handy: Insel öffnet flüssiger – kein Weichzeichner-Filter, kein Aufleuchten und leichteres Glas, nur noch die Bewegung selbst"
+    ],
     "behoben": [
-      "**Startseite stürzt mit „Dieser Bereich konnte nicht geladen werden“ ab (nur angemeldet):** Ein einzelnes kaputtes Widget legt nicht mehr die ganze Startseite lahm – es zeigt „Dieses Widget konnte nicht angezeigt werden“ mit „Nochmal“, der Rest funktioniert",
-      "Die Fehlerkarte zeigt jetzt den genauen Fehler samt Fundstelle, hat „Fehler kopieren“ und „Startseite zurücksetzen“ (setzt nur Startseiten-Layout und Raum zurück, nicht das Konto) und speichert den letzten Fehler auf dem Gerät"
+      "**Animationen verschwinden nach der Anmeldung:** „Animationen reduzieren“ und „Leichte Darstellung“ kamen mit dem Design aus der Cloud oder vom PC auf jedes Gerät und schalteten dort die Bewegung ab. Diese beiden Schalter gehören jetzt dem Gerät und werden von keinem Konto mehr überschrieben"
     ]
   },
-  "signature": "2lyg+0kEFF9oC1QVjHAU5x5+Lz5S4GdAScDC4qr41BJyq1ZR71hb3tU0xw795HwnwCAjEkcJjrREiqDOmwWJCQ=="
+  "signature": "ZqFgOt8WhrHnzrs6WnXuxgkTohQDRciyKzyxPtyMy0daVYgL0zCwz3LTTW5i+WhAw6PRgMu8jRFMAe018fkE4g=="
 }
