@@ -9,7 +9,7 @@ import {
   pendingBlob, setPendingBlob,
 } from "./cloud-account";
 import { ACCOUNT_KEYS, buildAccountBackup, type AccountBackup } from "./account-backup";
-import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
+import { getPrefs, keepDeviceMotion, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
 import { defaultPrefs } from "./prefs-core";
 import { forgetCloudCopy } from "./cloud-sync";
@@ -126,7 +126,7 @@ export const cloudMode = () => cloudAccountConfigured();
 /** Puts the decrypted data on this device. Called only after every step that can fail has succeeded. */
 function applyData(data: AccountData, reset = false) {
   if (reset) clearAccountData();
-  replacePrefs({ ...data.prefs, theme: { ...data.prefs.theme, bgImage: data.prefs.theme.bgImage ?? getPrefs().theme.bgImage } });
+  replacePrefs(keepDeviceMotion({ ...data.prefs, theme: { ...data.prefs.theme, bgImage: data.prefs.theme.bgImage ?? getPrefs().theme.bgImage } }));
   for (const key of ACCOUNT_KEYS) if (key in data.local) writeJson(key, data.local[key]);
   reloadRoom();
 }
@@ -267,7 +267,7 @@ export const signOut = async () => {
   if (s) forget(s.user);
   // Back to the standard look and the standard home: design, layout, tiles and the saved lists of the account are removed from this device.
   clearAccountData();
-  replacePrefs({ ...defaultPrefs(), lang: getPrefs().lang });
+  replacePrefs(keepDeviceMotion({ ...defaultPrefs(), lang: getPrefs().lang }));
   forgetCloudCopy();
   reloadRoom();
   void rescopeLocalAi();                                     // signed out: the keys of the account are no longer open here

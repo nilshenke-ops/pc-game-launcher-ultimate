@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.48.2 – 2026-11-11
+### Behoben
+- **Animationen verschwinden nach der Anmeldung:** „Animationen reduzieren“ und „Leichte Darstellung“ kamen mit dem Design aus der Cloud oder vom PC auf jedes Gerät und schalteten dort die Bewegung ab. Diese beiden Schalter gehören jetzt dem Gerät und werden von keinem Konto mehr überschrieben
+### Verbessert
+- Handy: Insel öffnet flüssiger – kein Weichzeichner-Filter, kein Aufleuchten und leichteres Glas, nur noch die Bewegung selbst
+
 ## 3.48.1 – 2026-11-11
 ### Behoben
 - **Startseite stürzt mit „Dieser Bereich konnte nicht geladen werden“ ab (nur angemeldet):** Ein einzelnes kaputtes Widget legt nicht mehr die ganze Startseite lahm – es zeigt „Dieses Widget konnte nicht angezeigt werden“ mit „Nochmal“, der Rest funktioniert

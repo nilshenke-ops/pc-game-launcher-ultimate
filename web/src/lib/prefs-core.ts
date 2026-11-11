@@ -424,3 +424,8 @@ export function withProfileTheme(own: Theme, pt: { mode?: string; primary?: stri
   const scene = pt.bgScene && BG_SCENES.some((s) => s.id === pt.bgScene) ? pt.bgScene : null;
   return { ...own, preset: "profile", mode: pt.mode === "light" ? "light" : "dark", primary: pt.primary!, accent: pt.accent!, background: pt.background!, ...(scene ? { bgScene: scene, bgImage: null } : {}) };
 }
+
+/** A design from another device keeps this device's own choice for "reduce animations" and "light display" (they depend on how fast the device is). */
+export function keepMotion(incoming: Prefs, own: Theme): Prefs {
+  return { ...incoming, theme: { ...incoming.theme, reduceMotion: !!own.reduceMotion, lite: !!own.lite } };
+}

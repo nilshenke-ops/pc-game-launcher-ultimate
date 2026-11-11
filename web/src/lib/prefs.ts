@@ -3,7 +3,7 @@ import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { setLanguage } from "./i18n";
 import { setTilt } from "./tilt";
-import { BG_SCENES, DEFAULT_THEME, defaultPrefs, hexToRgb, homeVariant, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
+import { BG_SCENES, DEFAULT_THEME, defaultPrefs, keepMotion, hexToRgb, homeVariant, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
 import type { ProfileTheme } from "./types";
 
 export * from "./prefs-core";
@@ -106,7 +106,7 @@ export async function loadRemotePrefs() {
     if (!r.prefs) { scheduleSync(); return; }
     const remote = sanitizePrefs(JSON.parse(r.prefs));
     if (remote.updatedAt > prefs.updatedAt) {
-      prefs = remote;
+      prefs = keepDeviceMotion(remote);
       writeJson(KEY, prefs);
       applyTheme(effectiveTheme());
       setLanguage(prefs.lang);
@@ -121,6 +121,13 @@ export function onPrefsChange(fn: () => void) { changeListeners.add(fn); return 
 
 /** Puts a whole design on this device (design profile, design code) and saves it like an own change. */
 export function replacePrefs(p: Prefs) { setPrefs(() => p); }
+
+/**
+ * Settings that belong to the DEVICE, not to the account: "reduce animations" and "light display" are decisions about how fast this device is.
+ * A design that arrives from the cloud or the PC (another device with other wishes) must not switch the movement off here – that is what made
+ * the island and all animations vanish right after signing in.
+ */
+export function keepDeviceMotion(incoming: Prefs): Prefs { return keepMotion(incoming, prefs.theme); }
 
 export function usePrefs(): Prefs {
   return useSyncExternalStore((fn) => { listeners.add(fn); return () => listeners.delete(fn); }, () => prefs);
