@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.45.1 – 2026-11-11
+### Neu
+- Holo-Ansicht: das Leuchten am Boden wandert mit den Karten mit, die Infos unter dem Spiel (Titel, Marken, Knöpfe) fahren nacheinander ein
+
 ## 3.45.0 – 2026-11-11
 ### Neu
 - Insel: Öffnen und Schließen komplett neu als durchchoreografierte Bewegung statt Feder – Öffnen ≈ 1,1 s (erst wird die Insel breiter, dann wächst sie in die Höhe, der Inhalt folgt), Schließen ≈ 0,95 s (erst faltet sich die Höhe zu, dann die Breite). Weicher Start, weiche Landung, kein Überschwingen; ein Richtungswechsel mitten drin startet dort, wo die Insel gerade ist
