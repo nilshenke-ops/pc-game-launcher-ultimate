@@ -190,6 +190,13 @@ function ElementProps({ e, set }: { e: WidgetElement; set: (p: Partial<WidgetEle
               <input className="input" type="number" min={1} max={86400} value={e.ref ?? "300"} onChange={(x) => set({ ref: String(Math.min(86400, Math.max(1, Math.round(Number(x.target.value) || 1)))) })} />
             </Field>
           )}
+          <Switch checked={e.display === "pills"} onChange={(v) => set({ display: v ? "pills" : null })} label={t("Schnellwahl-Knöpfe")}
+            hint={t("Große Zeit mit Start/Pause, Zurücksetzen und Minuten-Knöpfen – wie auf der Karte im Baukasten.")} />
+          {e.display === "pills" && (
+            <Field label={t("Schnellwahl (Minuten)")} hint={t("Mit Komma getrennt, höchstens sechs Werte – z. B. 1, 5, 10.")}>
+              <input className="input" maxLength={60} value={e.text ?? "1,3,5,10,15"} onChange={(x) => set({ text: x.target.value })} />
+            </Field>
+          )}
         </>
       )}
       {e.type === "image" && <ImagePicker label={t("Bild")} value={e.image} onChange={(v) => set({ image: v })} />}

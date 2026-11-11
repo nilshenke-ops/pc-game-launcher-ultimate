@@ -3376,3 +3376,6 @@ a.card:active, .card[role="button"]:active, button.card:active, .game-card:activ
 .mn-list.has-pill .mn-link { z-index: 1; }
 .mn-list.has-pill .mn-link.active { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 .mn-list.has-pill .mn-link.active::before { display: none !important; }
+
+/* Symbol-Elemente füllen ihre Fläche (Kopfzeilen-Kachel, Schnellzugriff) statt fester 64 px. */
+.cw-icon svg { width: 100%; height: 100%; }

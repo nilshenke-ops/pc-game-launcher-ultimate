@@ -124,7 +124,7 @@ function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e:
     }
     case "button":
       return (
-        <button type="button" className="cw-button" style={{ ...style, background: e.fill ?? "rgba(255,255,255,.12)", gap: "0.4em", borderRadius: Math.min(12, w.radius), cursor: interactive ? "pointer" : "default" }}
+        <button type="button" className="cw-button" style={{ ...style, background: e.fill ?? "rgba(255,255,255,.12)", gap: "0.4em", borderRadius: 999, cursor: interactive ? "pointer" : "default" }}
           onClick={interactive ? () => runButton(e) : undefined} tabIndex={interactive ? 0 : -1} aria-label={e.text || (e.action === "media" ? t(MEDIA_KEYS.find((k) => k[0] === e.ref)?.[1] ?? "Medien & Lautstärke") : "") || e.action || ""}>
           {e.icon && <DeckIcon name={e.icon} size={18} />}{e.text}
         </button>
@@ -136,9 +136,9 @@ function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e:
     }
     case "nowPlaying": return <div style={style}><span className="ellipsis">{playing ? `▶ ${playing}` : t("Kein Spiel aktiv")}</span></div>;
     case "music": return <MusicView style={style} />;
-    case "shape": return <div style={{ ...style, background: e.fill ?? "#ffffff", borderRadius: 4 }} />;
-    case "icon": return <div style={{ ...style, justifyContent: "center" }}><span style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}><DeckIcon name={e.icon ?? "zap"} size={64} /></span></div>;
-    case "timer": return <TimerView e={e} style={style} interactive={interactive} />;
+    case "shape": return <div style={{ ...style, background: e.fill ?? "#ffffff", borderRadius: Math.min(40, Math.max(0, e.size || 4)) }} />;
+    case "icon": return <div style={{ ...style, justifyContent: "center" }}><span className="cw-icon" style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}><DeckIcon name={e.icon ?? "zap"} size={64} /></span></div>;
+    case "timer": return e.display === "pills" ? <TimerPills e={e} style={style} interactive={interactive} /> : <TimerView e={e} style={style} interactive={interactive} />;
   }
 }
 
@@ -210,6 +210,68 @@ function TimerView({ e, style, interactive }: { e: WidgetElement; style: CSSProp
           <button type="button" className="cw-button" style={{ padding: "2px 10px", borderRadius: 8, background: "rgba(255,255,255,.14)" }} onClick={toggle}>{running ? t("Pause") : done ? t("Neu") : t("Start")}</button>
           <button type="button" className="cw-button" style={{ padding: "2px 10px", borderRadius: 8, background: "rgba(255,255,255,.08)" }} onClick={reset}>{t("Zurücksetzen")}</button>
         </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Stopwatch and countdown with large time, pill buttons and minute quick picks – the card look from the design.
+ * Everything runs on this device; nothing is sent to the PC. The quick picks are minutes from the element's text
+ * ("1,3,5,10,15"), so they can be changed in the widget editor.
+ */
+function TimerPills({ e, style, interactive }: { e: WidgetElement; style: CSSProperties; interactive: boolean }) {
+  const presets = useMemo(() => (e.text ?? "1,3,5,10,15").split(",")
+    .map((x) => Math.round(Number(x))).filter((n) => Number.isFinite(n) && n >= 1 && n <= 1440).slice(0, 6), [e.text]);
+  const [mode, setMode] = useState<"stopwatch" | "countdown">(e.kind === "countdown" ? "countdown" : "stopwatch");
+  const [total, setTotal] = useState(() => (presets[0] ?? 5) * 60);
+  const [startedAt, setStartedAt] = useState<number | null>(null);
+  const [acc, setAcc] = useState(0);
+  const [, tick] = useState(0);
+  useEffect(() => {
+    if (startedAt == null) return;
+    const id = window.setInterval(() => tick((x) => x + 1), 250);
+    return () => clearInterval(id);
+  }, [startedAt]);
+  const elapsed = acc + (startedAt != null ? Date.now() - startedAt : 0);
+  const left = Math.max(0, total * 1000 - elapsed);
+  const running = startedAt != null;
+  const done = mode === "countdown" && left === 0 && (running || acc > 0);
+  const doneRef = useRef(false);
+  useEffect(() => {
+    if (done && !doneRef.current) { doneRef.current = true; navigator.vibrate?.([200, 100, 200]); setAcc(total * 1000); setStartedAt(null); }
+    if (!done) doneRef.current = false;
+  }, [done, total]);
+  const sec = Math.max(0, Math.ceil((mode === "countdown" ? left : elapsed) / 1000));
+  const text = `${sec >= 3600 ? `${Math.floor(sec / 3600)}:` : ""}${String(Math.floor((sec % 3600) / 60)).padStart(sec >= 3600 ? 2 : 1, "0")}:${String(sec % 60).padStart(2, "0")}`;
+  const start = () => { if (mode === "countdown" && left === 0) setAcc(0); setStartedAt(Date.now()); };
+  const toggle = () => { if (running) { setAcc(elapsed); setStartedAt(null); } else start(); };
+  const reset = () => { setStartedAt(null); setAcc(0); };
+  const stopwatch = () => { setMode("stopwatch"); if (!running) { setAcc(0); setStartedAt(Date.now()); } };
+  const preset = (min: number) => { setMode("countdown"); setTotal(min * 60); setAcc(0); setStartedAt(Date.now()); };
+  const pill = (bg: string, color: string, strong = false): CSSProperties => ({
+    background: bg, color, border: 0, borderRadius: 999, padding: strong ? "0.62em 1.15em" : "0.55em 1.05em",
+    fontSize: fs(strong ? 13 : 12.5), fontWeight: 600, lineHeight: 1.15, cursor: interactive ? "pointer" : "default",
+    boxShadow: strong ? "none" : "inset 0 0 0 1px rgba(255,255,255,.16)", whiteSpace: "nowrap",
+  });
+  return (
+    <div style={{ ...style, flexDirection: "column", justifyContent: "center", gap: "5%" }}>
+      <span style={{ fontVariantNumeric: "tabular-nums", fontWeight: 700, lineHeight: 1 }}>{text}</span>
+      <div style={{ display: "flex", gap: "2.6%", justifyContent: "center", flexWrap: "wrap" }}>
+        <button type="button" className="cw-button" style={pill("rgba(248,250,252,.94)", "#151821", true)}
+          aria-disabled={!interactive} tabIndex={interactive ? 0 : -1} onClick={interactive ? (running ? toggle : mode === "stopwatch" ? stopwatch : start) : undefined}>
+          {running ? t("Pause") : mode === "countdown" ? t("Fortsetzen") : t("Stoppuhr")}
+        </button>
+        <button type="button" className="cw-button" style={pill("rgba(255,255,255,.06)", "inherit")}
+          aria-disabled={!interactive} tabIndex={interactive ? 0 : -1} onClick={interactive ? reset : undefined}>{t("Zurücksetzen")}</button>
+      </div>
+      {presets.length > 0 && (
+        <div style={{ display: "flex", gap: "2.2%", justifyContent: "center", flexWrap: "wrap" }}>
+          {presets.map((m) => (
+            <button key={m} type="button" className="cw-button" style={{ ...pill("rgba(255,255,255,.05)", "inherit"), minWidth: "4.6em" }}
+              aria-disabled={!interactive} tabIndex={interactive ? 0 : -1} onClick={interactive ? () => preset(m) : undefined}>{m} min</button>
+          ))}
+        </div>
       )}
     </div>
   );

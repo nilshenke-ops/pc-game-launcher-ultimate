@@ -9,7 +9,7 @@ export type ButtonAction = "quick" | "launch" | "sound" | "profile" | "overlay" 
 export interface WidgetElement {
   id: string; type: ElementType; x: number; y: number; w: number; h: number;
   text?: string | null; size: number; color?: string | null; fill?: string | null; align: "left" | "center" | "right"; bold: boolean;
-  kind?: string | null; display?: "number" | "bar" | "ring" | null; action?: ButtonAction | null; ref?: string | null; icon?: string | null; image?: string | null;
+  kind?: string | null; display?: "number" | "bar" | "ring" | "pills" | null; action?: ButtonAction | null; ref?: string | null; icon?: string | null; image?: string | null;
 }
 
 export interface CustomWidget {
@@ -52,6 +52,19 @@ const el = (type: ElementType, patch: Partial<WidgetElement>): WidgetElement => 
 export function templates(): { name: string; make: () => CustomWidget }[] {
   const base = (name: string, height: number, background: string, background2: string | null, elements: WidgetElement[]): CustomWidget =>
     ({ id: newWidgetId(), name, height, background, background2, image: null, opacity: 1, radius: 16, textColor: "#f8fafc", elements, desktop: false, desktopX: 0.75, desktopY: 0.08, desktopW: 320 });
+  /** Dark glass card with a calmer radius – the look of the new cards. */
+  const glass = (name: string, height: number, elements: WidgetElement[]): CustomWidget =>
+    ({ ...base(name, height, "#262a34", "#191c24", elements), radius: 20 });
+  /** 44 px icon tile, bold title and a hairline below – the header from the design. */
+  const cardHead = (title: string, icon: string, height: number): WidgetElement[] => {
+    const tile = Math.round((44 / height) * 1000) / 10;
+    return [
+      el("shape", { x: 5, y: 6, w: 12.2, h: tile, size: 14, fill: "rgba(255,255,255,0.10)" }),
+      el("icon", { icon, x: 5, y: 6, w: 12.2, h: tile, color: "#f8fafc" }),
+      el("text", { text: title, x: 20.5, y: 6, w: 75, h: tile, size: 17, bold: true }),
+      el("shape", { x: 0, y: Math.round((6 + tile + 5) * 10) / 10, w: 100, h: 0.4, size: 1, fill: "rgba(255,255,255,0.10)" }),
+    ];
+  };
   const btn = (action: NonNullable<WidgetElement["action"]>, text: string, icon: string, x: number, y: number, w: number, h: number, fill = "rgba(255,255,255,0.14)", color = "#ffffff", ref?: string): WidgetElement =>
     el("button", { action, text, icon, fill, color, x, y, w, h, ref: ref ?? null, size: 14 });
   const dark = ["#0f172a", "#1e1b4b"] as const;
@@ -142,6 +155,30 @@ export function templates(): { name: string; make: () => CustomWidget }[] {
     ]) },
     { name: t("Notiz"), make: () => base(t("Notiz"), 150, "#fef3c7", "#fde68a", [
       el("text", { text: t("Hier steht deine Notiz …"), x: 6, y: 10, w: 88, h: 76, size: 18, bold: false, color: "#422006" }),
+    ]) },
+    // ---- Karten im neuen Glas-Stil: Kopfzeile mit Symbol-Kachel, Titel und Trennlinie wie auf dem Dashboard
+    { name: t("Stoppuhr & Countdown"), make: () => glass(t("Stoppuhr & Countdown"), 260, [
+      ...cardHead(t("Stoppuhr & Countdown"), "timer", 260),
+      el("timer", { kind: "stopwatch", display: "pills", text: "1,3,5,10,15", x: 4, y: 31, w: 92, h: 63, size: 46, align: "center", bold: true }),
+    ]) },
+    { name: t("Fokus & Pausen"), make: () => glass(t("Fokus & Pausen"), 240, [
+      ...cardHead(t("Fokus & Pausen"), "coffee", 240),
+      el("timer", { kind: "countdown", display: "pills", ref: "1500", text: "5,15,25,45", x: 4, y: 34, w: 92, h: 59, size: 42, align: "center", bold: true }),
+    ]) },
+    { name: t("Medien & Ton"), make: () => glass(t("Medien & Ton"), 230, [
+      ...cardHead(t("Medien & Ton"), "music-2", 230),
+      el("music", { x: 6, y: 33, w: 88, h: 22, size: 16, bold: true }),
+      btn("media", "", "skip-back", 6, 60, 14, 16, "rgba(255,255,255,0.10)", "#ffffff", "prev"),
+      btn("media", "", "play", 24.5, 60, 14, 16, "#f8fafc", "#151821", "playpause"),
+      btn("media", "", "skip-forward", 43, 60, 14, 16, "rgba(255,255,255,0.10)", "#ffffff", "next"),
+      btn("media", "", "volume-2", 61.5, 60, 14, 16, "rgba(255,255,255,0.10)", "#ffffff", "volup"),
+      btn("media", "", "volume-x", 80, 60, 14, 16, "rgba(255,255,255,0.10)", "#ffffff", "mute"),
+    ]) },
+    { name: t("System im Blick"), make: () => glass(t("System im Blick"), 240, [
+      ...cardHead(t("System im Blick"), "cpu", 240),
+      el("metric", { kind: "cpu", text: "CPU", display: "bar", x: 6, y: 33, w: 88, h: 17, size: 14, fill: "#22d3ee" }),
+      el("metric", { kind: "ram", text: "RAM", display: "bar", x: 6, y: 53, w: 88, h: 17, size: 14, fill: "#a78bfa" }),
+      el("metric", { kind: "gpu", text: "GPU", display: "bar", x: 6, y: 73, w: 88, h: 17, size: 14, fill: "#34d399" }),
     ]) },
   ];
 }
