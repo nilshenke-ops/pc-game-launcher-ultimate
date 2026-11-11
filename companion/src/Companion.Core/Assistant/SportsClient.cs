@@ -42,7 +42,7 @@ public sealed class SportsClient
         return words.Concat(Extra.TryGetValue(t.Name.ToLowerInvariant(), out var e) ? e : Array.Empty<string>()).Distinct().ToList();
     }
 
-    static readonly Regex Sporty = new(@"\b(spiel\w*|ergebnis\w*|ausgegangen|gewonnen|verloren|unentschieden|tabelle|spieltag|punkte|tore?|torsch[üu]tze|aufstellung|gegner|gegen|stand|steht|l[äa]uft|live|n[äa]chste\w*|letzte\w*|zuletzt|wann)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+    static readonly Regex Sporty = new(@"\b(spiel\w*|gespielt|ergebnis\w*|gestern|heute|ausgegangen|gewonnen|verloren|unentschieden|tabelle|spieltag|punkte|tore?|torsch[üu]tze|aufstellung|gegner|gegen|stand|steht|l[äa]uft|live|n[äa]chste\w*|letzte\w*|zuletzt|wann)\b", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
     /// <summary>Words that make a question about a team a question about its matches (the team itself is checked by <see cref="NamesTeamAsync"/>).</summary>
     public static bool LooksSporty(string q) => Sporty.IsMatch(q);
 

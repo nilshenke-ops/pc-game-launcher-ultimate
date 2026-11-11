@@ -59,7 +59,7 @@ export default function Overlay() {
   const [find, setFind] = useState("");
   const [snap, setSnap] = useState(() => { try { return localStorage.getItem("pgl.gb.snap") !== "0"; } catch { return true; } });
   const presets = useRpc<{ presets: { id: string; name: string; layout: OverlayLayout }[] }>("overlay.presets", {}, ["overlay"]);
-  const still = () => document.documentElement.dataset.motion === "reduce" || !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const still = () => document.documentElement.dataset.motion === "reduce";
   // Closing plays a short exit (0.18 s) first, then the PC hides the window.
   const hide = () => {
     if (leaving) return;

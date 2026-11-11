@@ -7,6 +7,7 @@ import { elevenDeviceReady, SEARCH_PROVIDERS, SEARCH_NAME, useLocalAi } from "..
 import { buildRoster, type AssistantLite, type RosterState } from "../lib/ai-roster";
 import { resolveStt, sttReady, setSttEngine, sttEngine, useSttEngine, type SttEngine, type SttRoute } from "../lib/island-voice";
 import { setTtsEngine, useTtsEngine, type TtsEngine } from "../lib/jarvis-voice";
+import { useTtsProblem } from "../lib/voice-eleven";
 import { elevenPcKeySet, elevenReady } from "../lib/voice-eleven";
 import { useConn } from "../lib/hooks";
 import type { AiOverview } from "./ai-manager";
@@ -63,6 +64,7 @@ export function AiTiles({ online, ai }: { online: boolean; ai?: AiOverview | nul
   ];
 
   const ttsEng = useTtsEngineValue();
+  const ttsProblem = useTtsProblem();
   const deviceEleven = elevenDeviceReady();
   const pcEleven = elevenReady();
   const ttsParts: Part[] = [
@@ -82,8 +84,8 @@ export function AiTiles({ online, ai }: { online: boolean; ai?: AiOverview | nul
       <Tile id="commands" icon={<Terminal size={16} />} title={t("Befehle & PC")} duty={t("Spiele starten, Lautstärke, Profile, PC-Werte, Spielzeit, dein Wohnort – ohne KI, sofort")}
         parts={[{ name: t("Eingebaute Hilfe am PC"), state: online ? "works" : "none", note: online ? undefined : t("PC nicht verbunden") }]} />
       <Tile id="live" icon={<CloudSun size={16} />} title={t("Fußball & Wetter")} duty={t("Wer spielt wann, Spielstand, Wetter für einen Ort – kostenlos, ohne Schlüssel")}
-        parts={[{ name: "OpenLigaDB", state: "works", note: t("Fußball") }, { name: "Open-Meteo", state: "works", note: t("Wetter") }]} hint={t("Die KI formuliert die Antwort aus diesen Daten – dafür reicht irgendeine bereite KI.")} />
-      <Tile id="search" icon={<Globe size={16} />} title={t("Websuche")} duty={t("Alles Aktuelle außer Fußball und Wetter: Nachrichten, andere Sportarten, Preise, Patchnotes")} parts={searchParts}
+        parts={[{ name: "OpenLigaDB", state: "works", note: t("Fußball") }, { name: "Open-Meteo", state: "works", note: t("Wetter") }]} hint={t("Ist eine Websuche eingerichtet (z. B. Tavily), wird sie zusätzlich genutzt – die KI formuliert die Antwort aus Daten und Suchergebnissen.")} />
+      <Tile id="search" icon={<Globe size={16} />} title={t("Websuche")} duty={t("Alles Aktuelle: Nachrichten, andere Sportarten, Preise, Patchnotes – bei Fußball und Wetter ergänzt sie die Live-Daten")} parts={searchParts}
         hint={t("Mehrere sind möglich – ist einer leer, fragt JARVIS den nächsten.")} />
       <Tile id="stt" icon={<Mic size={16} />} title={t("Sprache verstehen")} duty={t("Wandelt deine gesprochene Frage in Text um (Mikrofon in der Insel und im Chat)")} parts={sttParts}
         hint={route ? t("Jetzt aktiv: {n}", { n: t(NAME_STT[route]) }) : t("Hier kann dieses Gerät gerade nicht zuhören – richte Groq oder ElevenLabs ein oder nimm einen Browser mit Spracherkennung.")}>
@@ -94,7 +96,7 @@ export function AiTiles({ online, ai }: { online: boolean; ai?: AiOverview | nul
         </div>
       </Tile>
       <Tile id="tts" icon={<AudioLines size={16} />} title={t("Sprache sprechen")} duty={t("Liest JARVIS-Antworten vor (nur auf deine Frage hin, jederzeit abschaltbar)")} parts={ttsParts}
-        hint={pcEleven || deviceEleven ? undefined : t("Für die natürlichste Stimme einen ElevenLabs-Schlüssel eintragen (am PC unter KI-Assistent → Stimme, oder hier unter „Schlüssel ohne PC“).")}>
+        hint={ttsProblem ? t("Die ElevenLabs-Stimme hat zuletzt nicht gesprochen – JARVIS nahm die Browser-Stimme. Grund: {m}", { m: ttsProblem }) : pcEleven || deviceEleven ? undefined : t("Für die natürlichste Stimme einen ElevenLabs-Schlüssel eintragen (am PC unter KI-Assistent → Stimme, oder hier unter „Schlüssel ohne PC“).")}>
         <div className="aim-choice" role="radiogroup" aria-label={t("Stimme wählen")}>
           {ttsOpt.map(([id, name, why]) => (
             <button key={id} type="button" role="radio" aria-checked={ttsEng === id} className={`isl2-chip${ttsEng === id ? " on" : ""}`} title={why} onClick={() => setTtsEngine(id)}>{name}</button>

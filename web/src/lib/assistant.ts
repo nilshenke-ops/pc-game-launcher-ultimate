@@ -25,6 +25,16 @@ export function readChat(): ChatState {
   return emptyChat();
 }
 
+/** The island asks the same JARVIS as the assistant page: what it asks and answers lands in the same chat (the page, if open, shows it at once). */
+export function appendChat(user: string, reply: AssistantReply, conversationId?: string | null) {
+  try {
+    const c = readChat();
+    const next: ChatState = { conversationId: conversationId ?? c.conversationId, turns: [...c.turns, { role: "user" as const, text: user }, { role: "bot" as const, reply }].slice(-60) };
+    sessionStorage.setItem(CHAT_KEY, JSON.stringify(next));
+    if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") window.dispatchEvent(new Event("pgl-chat"));
+  } catch { /* private mode */ }
+}
+
 /** Cost in US dollars: "< 0,01 $" for tiny amounts, otherwise two decimals. */
 export function formatCost(usd: number): string {
   if (usd <= 0) return "0 $";

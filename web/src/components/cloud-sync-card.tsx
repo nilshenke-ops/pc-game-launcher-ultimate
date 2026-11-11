@@ -1,13 +1,15 @@
 // Cloud page: the state of the automatic sync in plain words – cloud, PC, what is running, what is still waiting – and the PC's own link to the account.
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { CloudCog, RefreshCw } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useConn, useRpc } from "../lib/hooks";
 import { relTime } from "../lib/format";
-import { describeSync, flushOps, linkPcNow, pullNow, setAutoLink, useCloudSync } from "../lib/cloud-sync";
+import { describeSync, diagnoseCloud, flushOps, type CheckLine, linkPcNow, pullNow, setAutoLink, useCloudSync } from "../lib/cloud-sync";
 import { session } from "../lib/design-account";
-import { Banner, Button, Card } from "./ui";
+import { Banner, Button, Card, Modal } from "./ui";
+import { AccountPanel } from "./design-profile";
 
 interface PcCloud { linked: boolean; user: string | null; state: string; lastPushAt: string | null; lastOkAt: string | null; lastError: string | null; conflicts: string[] }
 
@@ -18,10 +20,22 @@ export function CloudSyncCard() {
   const canAdmin = pcOnline && (!!conn.me?.isLocal || !!conn.me?.permissions.includes("admin"));
   const pc = useRpc<PcCloud>("cloud.status", {}, ["cloud"], pcOnline);
   const [busy, setBusy] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [lines, setLines] = useState<CheckLine[] | null>(null);
+  const [, setTick] = useState(0);
+  // The card follows sign-in/sign-out at once (before it only changed when the next sync round ran).
+  useEffect(() => { const f = () => setTick((n) => n + 1); window.addEventListener("pgl-account", f); window.addEventListener("storage", f); return () => { window.removeEventListener("pgl-account", f); window.removeEventListener("storage", f); }; }, []);
   const acct = session();
   if (!acct?.cloud) return (
     <Card title={t("Automatische Synchronisierung")} icon={<CloudCog size={18} />}>
-      <p className="small muted" style={{ margin: 0 }}>{t("Melde dich oben mit deinem Cloud-Konto an – dann hält die Cloud den letzten Stand deines PCs für alle deine Geräte bereit, auch bei ausgeschaltetem PC.")}</p>
+      <div className="stack-sm">
+        <p className="small muted" style={{ margin: 0 }}>{t("Melde dich oben mit deinem Cloud-Konto an – dann hält die Cloud den letzten Stand deines PCs für alle deine Geräte bereit, auch bei ausgeschaltetem PC.")}</p>
+        <p className="small" style={{ margin: 0 }}>{t("Wichtig: Auch am PC selbst muss dieses Cloud-Konto angemeldet sein – ein Konto „am PC“ oder ein anderes Konto lädt nichts in die Cloud.")}</p>
+        <p className="small muted" style={{ margin: 0 }}>{acct ? t("Dieses Gerät ist als „{u}“ nur lokal angemeldet (Konto am PC) – für die Cloud melde dich mit dem Cloud-Konto an.", { u: acct.user }) : t("Dieses Gerät ist noch nicht angemeldet.")}</p>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}><Button variant="primary" onClick={() => setLoginOpen(true)}>{t("Jetzt anmelden")}</Button><Button onClick={() => void diagnoseCloud().then(setLines)}>{t("Prüfen & reparieren")}</Button></div>
+        {lines && <ul className="steps small" role="status" style={{ margin: 0 }}>{lines.map((l, i) => <li key={i}>{l.ok ? "✓ " : "✗ "}{l.text}</li>)}</ul>}
+        {loginOpen && createPortal(<Modal title={t("Anmelden oder registrieren")} onClose={() => setLoginOpen(false)}><AccountPanel onDone={() => setLoginOpen(false)} /></Modal>, document.body)}
+      </div>
     </Card>
   );
   const d = describeSync(s, pcOnline);
@@ -64,8 +78,28 @@ export function CloudSyncCard() {
           {canAdmin && !pcLinked && <Button variant="primary" busy={busy} onClick={() => run(async () => { setAutoLink(true); const r = await linkPcNow(true); if (r === "failed") throw new Error(t("Der PC konnte nicht mit der Cloud verbunden werden.")); }, t("PC mit dem Konto verbunden"))}>{t("PC mit diesem Konto verbinden")}</Button>}
           {canAdmin && pcLinked && <Button variant="ghost" busy={busy} onClick={() => run(async () => { setAutoLink(false); await client.call("cloud.unlink"); }, t("PC von der Cloud getrennt"))}>{t("PC von der Cloud trennen")}</Button>}
         </div>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <Button busy={busy} onClick={() => run(async () => { setLines(null); setLines(await diagnoseCloud()); })}>{t("Prüfen & reparieren")}</Button>
+        </div>
+        {lines && <ul className="steps small" role="status" style={{ margin: 0 }}>{lines.map((l, i) => <li key={i}>{l.ok ? "✓ " : "✗ "}{l.text}</li>)}</ul>}
         <p className="tiny muted" style={{ margin: 0 }}>{t("Nur Funktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung …), brauchen eine aktive PC-Verbindung. Alles andere siehst und änderst du auch ohne PC.")}</p>
       </div>
     </Card>
+  );
+}
+
+
+/**
+ * Shown on pages that list the PC's data when this device is signed in to the cloud but the PC never uploaded anything:
+ * says plainly why the lists are empty and what to do at the PC (instead of silently showing defaults).
+ */
+export function CloudEmptyHint() {
+  const conn = useConn();
+  const s = useCloudSync();
+  if (!s.active || conn.phase === "online" && conn.auth === "ok" || s.pcSyncedAt || s.cloud === "unknown") return null;
+  return (
+    <Banner kind="info">
+      {t("Dein PC hat noch nichts in die Cloud übertragen – darum siehst du hier noch keine Spiele und Apps. Öffne die Seite am PC, melde dich dort mit demselben Konto „{u}“ an (Profil) und lass den Begleiter laufen. Danach erscheint alles hier, auch bei ausgeschaltetem PC.", { u: s.user ?? "" })}
+    </Banner>
   );
 }

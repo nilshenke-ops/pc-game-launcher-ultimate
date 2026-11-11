@@ -20,7 +20,7 @@ async function newCtx(browser: Browser, opts: Parameters<Browser["newContext"]>[
   // The page and card entrance animations move content by a few pixels for half a second; tests that click right after loading (some with
   // force) would hit a moving target. Only those are switched off here – the island, dialogs and everything else run with their real animations.
   await ctx.addInitScript(() => {
-    const css = ".content > *, .content .stack > *, .content .grid > * { animation: none !important; }";
+    const css = ".content, .content > *, .content .stack > *, .content .grid > * { animation: none !important; }";
     const add = () => { const st = document.createElement("style"); st.textContent = css; (document.head ?? document.documentElement).appendChild(st); };
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", add, { once: true }); else add();
   });
@@ -2281,6 +2281,7 @@ test("Designs: fünf Designs (Lavendel-Glas ist Standard), jedes mit eigener Sta
 });
 
 test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ablehnen, Widgets, nicht im Website-Kopf", async ({ browser }) => {
+  test.setTimeout(150_000);                                         // the island now asks the same JARVIS as the assistant page, which checks that a started game really runs
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   await expect(p.locator(".topbar .isl")).toHaveCount(0); // never in the website's top bar
@@ -2395,6 +2396,7 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
 });
 
 test("JARVIS-Insel: neue Widgets (Stoppuhr, Zuletzt gespielt, Profile, Sounds) und Stoppuhr läuft bei geschlossenem Panel weiter", async ({ browser }) => {
+  test.setTimeout(150_000);                                         // many waits in a row; under load 60 s was too tight
   const p = await adminPage(browser);
   await expect(p.getByRole("heading", { name: "Gaming-Zentrale", exact: true })).toBeVisible({ timeout: 15000 });
   const { adminRpc } = await import("./rpc");

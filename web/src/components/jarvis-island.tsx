@@ -5,8 +5,9 @@
 // island and only gets told the shape of every frame, so the screen and the window cut-out can never drift apart.
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
+import { lazyRetry } from "../lib/lazy-retry";
 import { plainAnswer } from "../lib/answer-text";
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Bell, Check, Gamepad2, Music, Timer as TimerIcon, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
@@ -16,14 +17,14 @@ import { advanceTimer, countdownView, playTime, timerLive, useTimer } from "../l
 // The open panel (tabs, AI settings, widgets) is by far the biggest part of the island and is only needed after a tap: it loads in the
 // background right after the page has started (idle), so the first tap is still instant, but the start of the app does not wait for it.
 const loadPanel = () => import("./island-panel");
-const IslandPanel = lazy(() => loadPanel().then((m) => ({ default: m.IslandPanel })));
+const IslandPanel = lazyRetry(() => loadPanel().then((m) => ({ default: m.IslandPanel })));
 if (typeof window !== "undefined") {
   const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
   if (idle) idle(() => { void loadPanel(); }, { timeout: 4000 }); else window.setTimeout(() => { void loadPanel(); }, 2500);
 }
 import { consumeSpoken } from "../lib/island-voice";
 import { speak } from "../lib/jarvis-voice";
-import { createBoxAnimator, islandBox, WINDOW_W, type Box } from "../lib/island-spring";
+import { createBoxAnimator, islandBox, islandProgress, WINDOW_W, type Box } from "../lib/island-spring";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { useConn } from "../lib/hooks";
 import { eyeColor, clock, islandAnswer, islandEvent, islandBusy, islandClearAsk, islandGaming, islandMusic, islandSize, islandTouch, islandNotice, noticeFresh, moodOf, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
@@ -31,6 +32,7 @@ import type { AssistantAction } from "../lib/assistant";
 import { mainGame, playedGames } from "../lib/running";
 import { nowLine, useNowPlaying } from "../lib/now-playing";
 import { Bars, IslandEyes, TimerRing } from "./island-bits";
+import { motionOff } from "../lib/motion";
 export { IslandEyes, RobotHead } from "./island-bits";
 
 type HostWindow = Window & { chrome?: { webview?: { postMessage: (m: unknown) => void } } };
@@ -79,7 +81,7 @@ function useViewportW() {
   useEffect(() => { const on = () => setW(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
   return w;
 }
-const reducedMotion = () => (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) || document.documentElement.getAttribute("data-motion") === "reduce";
+const reducedMotion = () => motionOff();
 
 /** The island page (own window of the Windows companion; opened in a browser it shows the same at the top). */
 export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) {
@@ -98,7 +100,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
   const hostRef = useRef<HTMLDivElement>(null);
-  const panelMounted = useExit(open, 520);
+  const panelMounted = useExit(open, 1300);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
   // In the app (phone, tablet, browser) the island stays the small face with the two eyes – the eyes show what JARVIS does; the wide bar with
@@ -153,6 +155,11 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     const post = (m: unknown) => (window as HostWindow).chrome?.webview?.postMessage(m);
     const apply = (b: Box) => {
       el.style.width = `${b.w}px`; el.style.height = `${b.h}px`;
+      // How far open the island is (0 closed … 1 open): the content (header, tabs, cards) fades, rises and clears its blur by this number – so
+      // opening, closing and turning around halfway are one continuous movement that always follows the spring (see motion-pack.css).
+      el.style.setProperty("--isl-p", islandProgress(b.h).toFixed(3));
+      // While the island moves, the blur behind the page's glass surfaces is paused (re-blurring them every frame is the costliest part).
+      document.documentElement.toggleAttribute("data-isl-anim", animRef.current?.moving ?? false);
       // In the Windows window the island hangs from the top edge: square at the top, round at the bottom (like the cut-out of the window).
       el.style.borderRadius = floating ? `${b.r}px` : `0 0 ${b.r}px ${b.r}px`;
       if (floating) return;

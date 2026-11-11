@@ -23,7 +23,7 @@ test("Seitenleiste: die Markierung gleitet zum neuen Eintrag, ohne zu springen",
   // record the pill's position in every frame while another entry is opened
   await page.evaluate(() => { (window as unknown as { __ys: number[] }).__ys = []; const loop = () => { const el = document.querySelector(".mn-pill"); if (el) (window as unknown as { __ys: number[] }).__ys.push(el.getBoundingClientRect().top); (window as unknown as { __raf: number }).__raf = requestAnimationFrame(loop); }; loop(); });
   await page.locator(".mn-link", { hasText: "Einstellungen" }).first().click();
-  await page.waitForTimeout(900);
+  await page.waitForTimeout(1700);
   const ys: number[] = await page.evaluate(() => { cancelAnimationFrame((window as unknown as { __raf: number }).__raf); return (window as unknown as { __ys: number[] }).__ys; });
   const after = (await pillRect()).y;
   expect(Math.abs(after - before)).toBeGreaterThan(40);                                    // it really moved

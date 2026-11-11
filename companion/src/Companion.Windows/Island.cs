@@ -60,6 +60,8 @@ sealed class IslandForm : Form
 {
     [DllImport("gdi32.dll")] static extern IntPtr CreateRoundRectRgn(int x1, int y1, int x2, int y2, int w, int h);
     [DllImport("gdi32.dll")] static extern bool DeleteObject(IntPtr obj);
+    /// <summary>Sets the window's cut-out directly (without a repaint of the whole window per frame – Form.Region does that and makes the opening/closing stutter). The system owns the region afterwards.</summary>
+    [DllImport("user32.dll")] static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool redraw);
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
     const int WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000, WS_EX_TOPMOST = 0x8;
     const uint SWP_NOACTIVATE = 0x10, SWP_SHOWWINDOW = 0x40;
@@ -108,10 +110,7 @@ sealed class IslandForm : Form
         w = Math.Max(1, Math.Min(w, windowW)); h = Math.Max(1, Math.Min(h, Height));
         var off = _position == "left" ? 0 : _position == "right" ? windowW - w : (windowW - w) / 2;
         var rgn = CreateRoundRectRgn(off, -radius, off + w + 1, h + 1, radius * 2, radius * 2);
-        var old = Region;
-        Region = Region.FromHrgn(rgn);
-        old?.Dispose();
-        DeleteObject(rgn);
+        if (!IsHandleCreated || SetWindowRgn(Handle, rgn, false) == 0) DeleteObject(rgn);   // not applied: free it ourselves (applied: the system frees it)
         _curW = w; _curH = h; _curR = radius;
     }
 

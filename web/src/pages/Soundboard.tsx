@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Clock, MonitorSmartphone, Download, FileAudio, Headphones, Link2, ListMusic, Music, Pause, Pencil, Play, Plus, Search, Shuffle, Square, Star, Trash2, Upload, Volume2 } from "lucide-react";
 import { client } from "../lib/rpc";
@@ -9,6 +9,8 @@ const fail = (e: unknown) => toast((e as Error).message, "error");
 import { bytes } from "../lib/format";
 import type { AudioSettings, PlayingState, Sound, SoundCollection, SoundsFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented } from "../components/ui";
+import { playLocal, stopAllLocal, useLocalPlaying } from "../lib/local-sounds";
+import { syncSoundCache, useSoundCache } from "../lib/sound-cache";
 import { addPendingFiles, addPendingUrl, MAX_SOUND_BYTES, previewPending, removePending, retryPending, uploadBytes, usePendingSounds } from "../lib/pending-sounds";
 
 const COLORS = ["#22d3ee", "#a78bfa", "#f472b6", "#34d399", "#fbbf24", "#fb923c", "#f87171", "#60a5fa"];
@@ -42,7 +44,7 @@ function PendingCard() {
             <span className={`dot ${p.error ? "error" : "warn"}`} />
             <div className="grow" style={{ minWidth: 0 }}>
               <div className="title small" style={{ overflowWrap: "anywhere" }}>{p.name}</div>
-              <div className="sub">{p.error ? p.error : p.kind === "url" ? t("Link – der PC lädt ihn beim Verbinden herunter") : `${bytes(p.size)} · ${t("wartet auf PC")}`}</div>
+              <div className="sub">{p.error ? p.error : p.viaCloud ? t("In der Cloud gespeichert – der PC lädt ihn von selbst herunter, sobald er läuft") : p.kind === "url" ? t("Link – der PC lädt ihn beim Verbinden herunter") : `${bytes(p.size)} · ${t("wartet auf PC")}`}</div>
             </div>
             {p.kind === "file" && <Button size="sm" variant="ghost" icon={<Headphones size={15} />} onClick={() => previewPending(p)} aria-label={t("Auf diesem Gerät anhören")} title={t("Auf diesem Gerät anhören")} />}
             {p.error && online && <Button size="sm" onClick={() => retryPending(p.id)}>{t("Erneut")}</Button>}
@@ -74,6 +76,7 @@ export default function Soundboard() {
   const [editing, setEditing] = useState<Sound | null>(null);
   const [colEdit, setColEdit] = useState<SoundCollection | null>(null);
   const [volume, setVolume] = useState<number | null>(null);
+  const volTimer = useRef<number | undefined>(undefined);
   useEvent<PlayingState>("sounds.playing", setPlaying);
 
   const data = q.data?.data;
@@ -88,13 +91,20 @@ export default function Soundboard() {
     ).sort((a, b) => Number(b.favorite) - Number(a.favorite) || a.name.localeCompare(b.name));
   }, [data, search, filter, activeCol]);
 
-  const play = (s: Sound) => client.call("sounds.play", { id: s.id }).catch((e) => toast(e.message, "error"));
+  // Without the PC the sounds play on this device from the copy kept in its storage; connected, the PC plays them (and the copy is refreshed in the background).
+  const local = useLocalPlaying();
+  const cache = useSoundCache();
+  useEffect(() => { if (online && data) void syncSoundCache(data.sounds, new Set(q.data?.missing ?? [])); }, [online, data]); // eslint-disable-line react-hooks/exhaustive-deps
+  const play = (s: Sound) => {
+    if (online) return client.call("sounds.play", { id: s.id }).catch((e) => toast(e.message, "error"));
+    return playLocal(s, (volume ?? audio.data?.settings.soundboardVolume ?? 80) / 100).then((err) => { if (err) toast(err, "warning"); });
+  };
   const vol = volume ?? audio.data?.settings.soundboardVolume ?? 80;
   const saveVolume = (v: number) => {
     const s = audio.data?.settings;
     if (s) client.call("audio.save", { ...s, soundboardVolume: v }).catch((e) => toast(e.message, "error"));
   };
-  const playingIds = new Set(now.playing.map((p) => p.soundId));
+  const playingIds = new Set([...now.playing.map((p) => p.soundId), ...local]);
 
   return (
     <>
@@ -107,7 +117,7 @@ export default function Soundboard() {
         <div className="row">
           <div className="row nowrap grow" style={{ minWidth: 220 }}>
             <Volume2 size={18} className="muted" />
-            <input type="range" min={0} max={100} value={vol} disabled={!canManage} title={canManage ? undefined : t("Lautstärke ändern braucht die Berechtigung „Verwalten“ (am PC unter Geräte).")} onChange={(e) => setVolume(+e.target.value)} onPointerUp={() => saveVolume(vol)} onKeyUp={() => saveVolume(vol)} aria-label={t("Lautstärke Soundboard")} />
+            <input type="range" min={0} max={100} value={vol} disabled={!canManage} title={canManage ? undefined : t("Lautstärke ändern braucht die Berechtigung „Verwalten“ (am PC unter Geräte).")} onChange={(e) => { const v = +e.target.value; setVolume(v); volTimer.current && window.clearTimeout(volTimer.current); volTimer.current = window.setTimeout(() => saveVolume(v), 120); }} aria-label={t("Lautstärke Soundboard")} />
             <b className="small" style={{ width: 44, textAlign: "right" }}>{vol}%</b>
           </div>
           <div className="row nowrap">
@@ -131,6 +141,7 @@ export default function Soundboard() {
       {offlineView ? (
         <>
           <PendingCard />
+
           {!pending.items.length && pending.available && (
             <Card><Empty icon={<Music size={28} />} title={t("PC nicht verbunden")}
               text={t("Du kannst schon Sounds hinzufügen. Sie werden auf diesem Gerät gespeichert und automatisch übertragen, sobald dein PC verbunden ist.")}
@@ -158,7 +169,19 @@ export default function Soundboard() {
 
       <PendingCard />
 
-      <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
+      {!online && (data?.sounds.length ?? 0) > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <Banner kind="info" title={t("Ohne PC: die Sounds spielen auf diesem Gerät")}>
+            <div className="row between" style={{ gap: 8, flexWrap: "wrap" }}>
+              <span>{t("Auf diesem Gerät gespeichert: {n} von {m}. Die anderen sind wieder da, sobald du einmal mit dem PC verbunden bist.", { n: (data?.sounds ?? []).filter((x) => cache.cached.has(x.id)).length, m: data?.sounds.length ?? 0 })}</span>
+              {local.size > 0 && <Button size="sm" variant="danger" icon={<Square size={14} />} onClick={stopAllLocal}>{t("Alle stoppen")}</Button>}
+            </div>
+          </Banner>
+        </div>
+      )}
+      {online && cache.busy && <p className="tiny muted" style={{ marginBottom: 8 }}>{t("Sounds werden für die Wiedergabe ohne PC auf dem Gerät gespeichert … {d}/{n}", { d: cache.done, n: cache.total })}</p>}
+
+      <Loadable loading={q.loading && !q.data} error={q.data ? null : q.error} onRetry={q.reload}>
         {(data?.sounds.length ?? 0) === 0 ? (
           <Card><Empty icon={<Music size={28} />} title={t("Noch keine Sounds")} text={t("Importiere MP3/WAV-Dateien vom Gerät oder füge einen MyInstants-Link ein.")} action={canManage && <Button variant="primary" onClick={() => setImporting(true)}>{t("Sounds importieren")}</Button>} /></Card>
         ) : shown.length === 0 ? <Card><Empty icon={<Search size={26} />} title={t("Keine Treffer")} /></Card> : (
@@ -168,7 +191,7 @@ export default function Soundboard() {
             {shown.map((s, i) => {
               const live = now.playing.find((p) => p.soundId === s.id);
               return (
-                <button key={s.id} className={`pad ${playingIds.has(s.id) ? "playing" : ""} ${missing.has(s.id) ? "missing" : ""}`} style={{ ["--pad" as string]: s.color ?? COLORS[i % COLORS.length], ["--dur" as string]: `${(live?.durationMs ?? 2000) / 1000}s` }} onClick={() => play(s)} aria-label={t("{n} abspielen", { n: s.name })}>
+                <button key={s.id} className={`pad ${playingIds.has(s.id) ? "playing" : ""} ${online && missing.has(s.id) ? "missing" : ""}`} style={{ ["--pad" as string]: s.color ?? COLORS[i % COLORS.length], ["--dur" as string]: `${(live?.durationMs ?? 2000) / 1000}s` }} onClick={() => play(s)} aria-label={t("{n} abspielen", { n: s.name })}>
                   <b>{s.icon && <span className="pad-icon" aria-hidden>{s.icon} </span>}{s.name}</b>
                   <span className="pad-meta">{s.favorite && <Star size={12} fill="currentColor" color="#fde047" />}{missing.has(s.id) ? <b className="pad-missing">{t("Datei fehlt")}</b> : <>{s.categories[0] ?? s.format.toUpperCase()}{s.volume !== 100 ? ` · ${s.volume}%` : ""}{s.loop ? " · ↻" : ""}</>}</span>
                   {canManage && <span className="pad-edit btn ghost icon sm" role="button" tabIndex={0} aria-label={t("Bearbeiten")} onClick={(e) => { e.stopPropagation(); setEditing(s); }} onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); setEditing(s); } }}><Pencil size={13} /></span>}
@@ -216,7 +239,7 @@ function ImportDialog({ onClose, offline }: { onClose: () => void; offline: bool
   const importUrl = async () => {
     setBusy(true);
     if (offline) {
-      try { await addPendingUrl(url); setResults((r) => [...r, { name: url, ok: true, msg: t("Gespeichert – der PC lädt den Link, sobald er verbunden ist") }]); setUrl(""); }
+      try { await addPendingUrl(url); setResults((r) => [...r, { name: url, ok: true, msg: t("Gespeichert – der Link geht über die Cloud an den PC, der ihn von selbst lädt") }]); setUrl(""); }
       catch (e) { setResults((r) => [...r, { name: url, ok: false, msg: (e as Error).message }]); }
       setBusy(false);
       return;

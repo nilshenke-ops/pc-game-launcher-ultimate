@@ -25,6 +25,7 @@ export interface PendingSound {
   url?: string; // link the PC downloads later (kind "url")
   addedAt: string;
   error?: string; // last upload error reported by the PC
+  viaCloud?: string; // id of the change in the cloud: the PC takes the link over from there (no PC connection needed here)
 }
 
 let items: PendingSound[] = [];
@@ -90,7 +91,33 @@ export async function addPendingUrl(url: string) {
   let u: URL;
   try { u = new URL(url.trim()); } catch { throw new Error(t("Ungültiger Link.")); }
   if (u.protocol !== "https:" && u.protocol !== "http:") throw new Error(t("Ungültiger Link."));
-  await tx("readwrite", (s) => s.put({ id: crypto.randomUUID(), kind: "url", name: u.toString(), size: 0, url: u.toString(), addedAt: new Date().toISOString() } satisfies PendingSound));
+  const entry: PendingSound = { id: crypto.randomUUID(), kind: "url", name: u.toString(), size: 0, url: u.toString(), addedAt: new Date().toISOString() };
+  await tx("readwrite", (s) => s.put(entry));
+  await reload();
+  void sendLinksToCloud();
+}
+
+/** A link goes through the cloud: the PC downloads it by itself the next time it runs – this device needs no PC connection (links only, https). */
+let sending = false;
+export async function sendLinksToCloud() {
+  if (sending) return;
+  sending = true;
+  try {
+    const { sendCloudOp } = await import("./cloud-sync");
+    for (const p of items.filter((x) => x.kind === "url" && x.url?.startsWith("https:") && !x.viaCloud && !x.error)) {
+      const id = await sendCloudOp("sounds.importUrl", { url: p.url }).catch(() => null);
+      if (!id) break;                                                   // no cloud account or cloud not reachable: stays local, goes by the PC connection
+      await tx("readwrite", (s) => s.put({ ...p, viaCloud: id }));
+    }
+  } finally { sending = false; await reload(); }
+}
+
+/** The cloud no longer lists a change = the PC has taken it over: the waiting entry can go. */
+export async function reconcileCloudSounds(openOps: string[]) {
+  const open = new Set(openOps);
+  const done = items.filter((p) => p.viaCloud && !open.has(p.viaCloud));
+  if (!done.length) return;
+  for (const p of done) await tx("readwrite", (s) => s.delete(p.id)).catch(() => undefined);
   await reload();
 }
 
@@ -142,7 +169,7 @@ async function runPending(): Promise<{ sent: number; failed: number }> {
   let sent = 0, failed = 0;
   try {
     await reload();
-    for (const p of items.filter((x) => !x.error)) {
+    for (const p of items.filter((x) => !x.error && !x.viaCloud)) {
       if (!connected()) break;
       try {
         let sound: Sound | undefined;
@@ -180,6 +207,6 @@ let started = false;
 export function startPendingSync(onDone: (r: { sent: number; failed: number }) => void) {
   if (started) return;
   started = true;
-  reload().then(() => { if (connected()) syncPending().then(onDone); });
+  reload().then(() => { void sendLinksToCloud(); if (connected()) syncPending().then(onDone); });
   client.on("authenticated", () => { syncPending().then(onDone); });
 }

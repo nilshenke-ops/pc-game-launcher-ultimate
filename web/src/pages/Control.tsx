@@ -11,6 +11,7 @@ import { dateTime, relTime } from "../lib/format";
 import { Banner, Button, Card, confirmDialog, Empty, PageHead } from "../components/ui";
 import type { LibraryItem } from "../lib/types";
 import type { Now, Proc } from "../lib/perf-chat";
+import { WakeCard } from "../components/wake-card";
 
 const gb = (b: number) => `${(b / 1073741824).toFixed(1)} GB`;
 interface SessionRow { itemId: string; name: string; startedAt: string; minutes: number; perf?: { cpuAvg?: number | null; cpuMax?: number | null; ramAvg?: number | null; gpuAvg?: number | null; gpuMax?: number | null; samples: number } | null }
@@ -75,13 +76,14 @@ export default function ControlPage() {
   return (
     <>
       <PageHead eyebrow={t("Steuerung")} title={t("PC-Steuerung")} text={t("Verbindung, Live-Werte, laufende Programme, Favoriten und Fehlerdiagnose für deinen Windows-PC – vom Handy, iPad oder am PC selbst.")} />
+      <div style={{ marginBottom: 16 }}><WakeCard /></div>
       <div className="grid-3">
         <Card title={t("Verbindung")} icon={<Smartphone size={18} />}>
           <div className="stack-sm">
             <div className="row" style={{ gap: 8 }}><span className={`badge ${online ? "success" : "warn"}`}>{online ? t("Verbunden") : conn.phase === "connecting" ? t("Verbindet …") : t("Getrennt")}</span>
               {conn.relayCompanion && <span className="tiny muted">{t("Relay: Begleiter {s}", { s: conn.relayCompanion === "online" ? t("erreichbar") : t("nicht erreichbar") })}</span>}</div>
             {lastPong > 0 && <div className="small muted">{t("Letzter Kontakt: {d}", { d: relTime(new Date(lastPong).toISOString()) })}</div>}
-            {!online && <Banner kind="info">{conn.lastError ? t("Fehler: {e}", { e: conn.lastError }) : t("Der Begleiter am PC ist nicht erreichbar. Ist der PC an und läuft der Begleiter? Ein ausgeschalteter PC lässt sich über die Website nicht steuern.")}</Banner>}
+            {!online && <Banner kind="info">{conn.lastError ? t("Fehler: {e}", { e: conn.lastError }) : t("Der Begleiter am PC ist nicht erreichbar. Ist der PC an und läuft der Begleiter? Ist er aus, kannst du ihn oben mit „PC einschalten“ starten.")}</Banner>}
             <div className="row">
               <Link className="btn sm" to="/diagnostics"><Stethoscope size={15} /> {t("Verbindungs-Check")}</Link>
               <Link className="btn sm" to="/devices"><Smartphone size={15} /> {t("Geräte & Rechte")}</Link>

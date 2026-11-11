@@ -301,7 +301,8 @@ export async function loadDeviceKeys(): Promise<void> {
     if (s.eleven?.v === 2 && !unlockedEleven) { const v = await unlockDevice("voice:elevenlabs", s.eleven); if (v !== null) unlockedEleven = v; }
   } finally { deviceLoading = false; publish(); }
 }
-let keysReady: Promise<void> = loadDeviceKeys();
+// Started one tick later: the lists of providers further down in this file must exist first (a read of them during loading was an error before any key was stored).
+let keysReady: Promise<void> = Promise.resolve().then(() => loadDeviceKeys()).catch(() => undefined);
 /** Resolves when the keys of the current account are open (a save that ran earlier would otherwise leave them out of the account). */
 export const whenLocalAiReady = (): Promise<void> => keysReady;
 
@@ -503,9 +504,13 @@ export async function askLocalChain(question: string, history: Turn[], o: Opts =
       asked = `${wx.block}\n\nFrage: ${question}`; via = "Wetterdaten: Open-Meteo";
       if (wx.fromQuestion && !homePlace()) { setHomePlace(wx.place); via += ` · Gedächtnis: ${wx.place} gemerkt als dein Ort („Ich wohne in …“ ändert das)`; }
     }
-    else if (wantsLiveData(question) && readySearch().length > 0) {
+    // Web search (Tavily/Serper) also for football and weather: the free data source gives the exact numbers, the search adds the latest news around them – and answers when the data source has nothing.
+    if ((wantsLiveData(question) || sp || wx) && readySearch().length > 0) {
       const w = await searchLive(question, { fetcher: o.fetcher, signal: o.signal }).catch((e) => { if (e instanceof FreeAiError && e.message === "Abgebrochen.") throw e; return null; });
-      if (w) { asked = `${w.block}\n\nFrage: ${question}`; via = `Websuche: ${w.domains}`; }
+      if (w) {
+        asked = sp || wx ? `${sp ? sp.block : wx!.block}\n\n${w.block}\n\nFrage: ${question}` : `${w.block}\n\nFrage: ${question}`;
+        via = via ? `${via} + Websuche: ${w.domains}` : `Websuche: ${w.domains}`;
+      }
     }
   }
   { const league = !via ? uncoveredLeague(question) : null; if (league && readySearch().length === 0) return { text: uncoveredAnswer(league), model: "", provider: "local", label: "JARVIS – ohne Datenquelle" }; }
@@ -724,4 +729,34 @@ export async function testLocalEleven(o: { fetcher?: Fetcher } = {}): Promise<{ 
     if (e instanceof LocalAiError && e.kind === "blocked") return { ok: true, message: "Der Schlüssel wird angenommen. Das Kontingent lässt sich mit ihm nicht anzeigen (Recht „user_read“ fehlt) – das betrifft nur die Anzeige. Für die Stimme braucht er „text_to_speech“, für die Spracherkennung „speech_to_text“." };
     return { ok: false, message: (e as Error).message };
   }
+}
+
+// ------------------------------------------------------------------ ElevenLabs voice changer (speech → speech): the person's own voice library
+
+export interface ElevenVoice { id: string; name: string; category: string }
+/** The voices of the account behind this device's key (needs the right "voices_read"): premade, designed and the person's own. */
+export async function elevenVoices(o: { fetcher?: Fetcher; signal?: AbortSignal } = {}): Promise<ElevenVoice[]> {
+  const res = await elevenCall("/v1/voices", { method: "GET" }, { ...o, timeoutMs: 25_000 });
+  const d = await res.json().catch(() => null) as { voices?: { voice_id?: unknown; name?: unknown; category?: unknown }[] } | null;
+  return (d?.voices ?? [])
+    .filter((v) => typeof v.voice_id === "string" && /^[A-Za-z0-9]{10,40}$/.test(v.voice_id as string) && typeof v.name === "string")
+    .map((v) => ({ id: v.voice_id as string, name: String(v.name).slice(0, 60), category: typeof v.category === "string" ? v.category : "" }));
+}
+
+/** One spoken sentence → the same sentence in another voice (MP3). Audio goes straight from this device to ElevenLabs. */
+export async function elevenSpeechToSpeech(audio: Blob, voiceId: string, o: { fetcher?: Fetcher; signal?: AbortSignal; noise?: boolean } = {}): Promise<Blob> {
+  if (!/^[A-Za-z0-9]{10,40}$/.test(voiceId)) throw new LocalAiError("ElevenLabs: Bitte erst eine Stimme wählen.", "model");
+  if (audio.size < 1500) throw new LocalAiError("ElevenLabs: Die Aufnahme war zu kurz.", "empty");
+  if (audio.size > 8_000_000) throw new LocalAiError("ElevenLabs: Die Aufnahme ist zu lang – in kürzeren Sätzen sprechen.", "model");
+  const ext = /mp4|aac|m4a/.test(audio.type) ? "mp4" : /ogg/.test(audio.type) ? "ogg" : /wav/.test(audio.type) ? "wav" : "webm";
+  const form = new FormData();
+  form.append("model_id", "eleven_multilingual_sts_v2");
+  form.append("remove_background_noise", o.noise === false ? "false" : "true");
+  // Follow the speaker's expression closely (lower stability), keep the chosen voice's character (similarity) and sound clear (speaker boost).
+  form.append("voice_settings", JSON.stringify({ stability: 0.4, similarity_boost: 0.85, style: 0, use_speaker_boost: true }));
+  form.append("audio", audio, `sprache.${ext}`);
+  const res = await elevenCall(`/v1/speech-to-speech/${voiceId}?output_format=mp3_44100_128`, { method: "POST", body: form, headers: { accept: "audio/mpeg" } }, { ...o, timeoutMs: 60_000 });
+  const b = await res.blob();
+  if (b.size < 200) throw new LocalAiError("ElevenLabs: keine brauchbare Antwort.", "empty");
+  return b;
 }

@@ -1,8 +1,9 @@
+import { followOsMotion, osReducesMotion } from "./motion";
 import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { setLanguage } from "./i18n";
 import { setTilt } from "./tilt";
-import { BG_SCENES, DEFAULT_THEME, defaultPrefs, hexToRgb, homeVariant, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
+import { BG_SCENES, DEFAULT_THEME, defaultPrefs, keepMotion, hexToRgb, homeVariant, contrast, mix, sanitizePrefs, withProfileTheme, type Prefs, type Theme } from "./prefs-core";
 import type { ProfileTheme } from "./types";
 
 export * from "./prefs-core";
@@ -105,7 +106,7 @@ export async function loadRemotePrefs() {
     if (!r.prefs) { scheduleSync(); return; }
     const remote = sanitizePrefs(JSON.parse(r.prefs));
     if (remote.updatedAt > prefs.updatedAt) {
-      prefs = remote;
+      prefs = keepDeviceMotion(remote);
       writeJson(KEY, prefs);
       applyTheme(effectiveTheme());
       setLanguage(prefs.lang);
@@ -120,6 +121,13 @@ export function onPrefsChange(fn: () => void) { changeListeners.add(fn); return 
 
 /** Puts a whole design on this device (design profile, design code) and saves it like an own change. */
 export function replacePrefs(p: Prefs) { setPrefs(() => p); }
+
+/**
+ * Settings that belong to the DEVICE, not to the account: "reduce animations" and "light display" are decisions about how fast this device is.
+ * A design that arrives from the cloud or the PC (another device with other wishes) must not switch the movement off here – that is what made
+ * the island and all animations vanish right after signing in.
+ */
+export function keepDeviceMotion(incoming: Prefs): Prefs { return keepMotion(incoming, prefs.theme); }
 
 export function usePrefs(): Prefs {
   return useSyncExternalStore((fn) => { listeners.add(fn); return () => listeners.delete(fn); }, () => prefs);
@@ -182,10 +190,14 @@ export function applyTheme(t: Theme) {
   const scene = !t.bgImage && t.bgScene ? BG_SCENES.find((s) => s.id === t.bgScene) : undefined;
   root.dataset.bgfit = scene?.phone ? "phone" : scene?.sky ? "bottom" : "cover";
   root.style.setProperty("--bg-sky", scene?.sky ?? "transparent");
-  root.dataset.motion = t.reduceMotion || t.lite ? "reduce" : "full";
+  root.dataset.motion = t.reduceMotion || t.lite || (followOsMotion() && osReducesMotion()) ? "reduce" : "full";
   root.dataset.lite = t.lite ? "1" : "0";
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", t.background);
 }
 
 applyTheme(prefs.theme);
 setLanguage(prefs.lang);
+if (typeof window !== "undefined") {
+  window.addEventListener("pgl-motion", () => applyTheme(getPrefs().theme));
+  try { window.matchMedia("(prefers-reduced-motion: reduce)").addEventListener("change", () => { if (followOsMotion()) applyTheme(getPrefs().theme); }); } catch { /* old browser */ }
+}

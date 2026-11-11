@@ -19,7 +19,7 @@ const PREVIEW_EVENT = "pgl-launch-preview";
 /** Shows the start animation with a sample name (settings → Design) – nothing is started. */
 export function previewLaunch(fx: Fx["launch"], name = "Beispielspiel") { window.dispatchEvent(new CustomEvent(PREVIEW_EVENT, { detail: { fx, name } })); }
 
-export const reducedMotion = () => document.documentElement.dataset.motion === "reduce" || !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+export const reducedMotion = () => document.documentElement.dataset.motion === "reduce";
 
 /** How long the screen stays at most (ms): fast mode is short, reduced motion shows a still screen briefly. */
 export function cinemaMs(fx: Fx["launch"], still: boolean) { return still ? Math.min(1500, fx.seconds * 1000) : fx.fast ? 1200 : fx.seconds * 1000; }

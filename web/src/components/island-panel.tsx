@@ -39,6 +39,7 @@ import { relTime } from "../lib/format";
 import { brandBg, brandFor } from "../lib/brands";
 import type { LibraryItem, Notification } from "../lib/types";
 import { BrandLogo } from "./brand-logo";
+import { useGlidePill } from "./glide-pill";
 import { Bars, IslandEyes } from "./island-bits";
 import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, IslandStats, IslandStopwatch, IslandTemps, IslandVolume } from "./island-widgets";
 
@@ -69,8 +70,8 @@ export const findWhatsApp = (items: LibraryItem[] | undefined) => items?.find((i
 
 function AppLogo({ item }: { item: LibraryItem }) {
   const b = brandFor(item);
-  if (b) return <BrandLogo brand={b} size={26} color="currentColor" />;
-  if (item.iconData) return <img src={item.iconData} alt="" width={26} height={26} />;
+  if (b) return <BrandLogo brand={b} size={30} color="currentColor" />;
+  if (item.iconData) return <img className="isl2-appimg" src={item.iconData} alt="" width={30} height={30} decoding="async" />;
   return <span className="isl2-letter" aria-hidden>{item.name.slice(0, 1).toUpperCase()}</span>;
 }
 
@@ -107,13 +108,20 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   // Swipe: like a deck of cards – the area follows the finger and the NEXT one is already there beside it, moving along. On release both carry on
   // (the next one comes to rest in the middle), or both spring back. Touch and pen only, never over a field or a button. A tap on a tab does the same.
   const bodyRef = useRef<HTMLDivElement | null>(null);
+  const tabsRef = useRef<HTMLElement | null>(null);
+  const thumbRef = useRef<HTMLSpanElement | null>(null);
+  useGlidePill(tabsRef, thumbRef, ".isl2-tab.on", [current, tabs.length]);
   const peekRef = useRef<HTMLDivElement | null>(null);
   const swipe = useRef<{ x: number; y: number; id: number; locked: boolean; samples: { x: number; t: number }[]; dx: number; d: 1 | -1 } | null>(null);
   const swipedAt = useRef(0); // a swipe must not also count as a tap on the card under the finger
   const busyMoving = useRef(false);
+  const queuedTab = useRef<IslandTab | null>(null);
+  const tabRef = useRef<IslandTab>(current);
+  tabRef.current = current;
+  const goTabRef = useRef<(to: IslandTab) => Promise<void>>(async () => undefined);
   const [slide, setSlide] = useState<"none" | null>(null);
   const [peek, setPeek] = useState<IslandTab | null>(null);
-  const reduced = () => document.documentElement.dataset.motion === "reduce" || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  const reduced = () => document.documentElement.dataset.motion === "reduce";
   const idx = () => tabs.indexOf(current);
   const spot = (dx: number, d: 1 | -1) => { const w = bodyRef.current?.clientWidth || 400; if (peekRef.current) peekRef.current.style.transform = `translate3d(${dx + d * w}px,0,0)`; };
   // The neighbour is mounted a moment after the drag starts: put it where the finger says as soon as it exists.
@@ -121,7 +129,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   /** Carries the current area out and the next one in (from where the finger left them), then hands over to the real next area without a flicker. */
   const goTab = async (to: IslandTab, from = 0, vx = 0) => {
     const el = bodyRef.current, i = idx(), j = tabs.indexOf(to);
-    if (j < 0 || j === i || busyMoving.current) return;
+    if (j < 0) return;
+    if (busyMoving.current) { queuedTab.current = to; return; }          // tapped while moving: it goes there right after, nothing is lost
+    if (j === i) return;
     const d: 1 | -1 = j > i ? 1 : -1;
     busyMoving.current = true;
     try {
@@ -138,8 +148,15 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       }
       setSlide("none"); setTabRaw(to); setPeek(null);   // the real area appears exactly where the neighbour stopped
       navigator.vibrate?.(8);
-    } finally { window.setTimeout(() => { busyMoving.current = false; }, 60); }
+    } finally {
+      window.setTimeout(() => {
+        busyMoving.current = false;
+        const next = queuedTab.current; queuedTab.current = null;
+        if (next && next !== tabRef.current) void goTabRef.current(next);
+      }, 60);
+    }
   };
+  goTabRef.current = (to) => goTab(to);
   const stepTab = (d: 1 | -1, from = 0, vx = 0) => { const to = tabs[idx() + d]; if (to) void goTab(to, from, vx); };
   const springBack = (el: HTMLElement, from: number, d: 1 | -1) => {
     const pe = peekRef.current, w = el.clientWidth || 400;
@@ -190,7 +207,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   useEvent("notification", () => { if (current === "inbox") inbox.reload(); });
 
   // Which AI answers: "Automatisch" (commands at the PC, questions per free AI with a spare) is the default; the chips switch to one AI for this question.
-  const ai = useRpc<{ engines?: { id: string; label: string }[] }>("assistant.status", {}, ["assistant"], online && current === "jarvis");
+  const ai = useRpc<{ engines?: { id: string; label: string }[]; webSearch?: boolean; bingoProvider?: string | null }>("assistant.status", {}, ["assistant"], online);
   const aiv = useRpc<AiOverview>("ai.status", {}, ["assistant"], online && current === "jarvis");
   const ENGINE_KEY = "pgl.island.engine";
   const [engine, setEngineState] = useState<string>(() => { try { return readJson<string>(ENGINE_KEY) ?? "smart"; } catch { return "smart"; } });
@@ -237,15 +254,39 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       return;
     }
     if (!online) { await askWithoutPc(v); return; }
+    // The same JARVIS as on the assistant page (lib/jarvis-ask.ts): one brain, the same AIs and keys, the same chat – so nothing has to be set up twice.
+    islandBusy(true);
     try {
-      // "direct": I said or typed this command myself – what I named ("Starte Among Us", "Öffne Discord") runs at once, without asking again.
-      const res = await client.call<{ reply?: { actions?: (AssistantAction & { auto?: boolean })[] } }>("assistant.ask", { text: v, direct: true, ...(engineNow === "auto" ? {} : { engine: engineNow }) });
-      const autos = (res?.reply?.actions ?? []).filter((a) => a.auto && a.method && a.kind !== "navigate");
-      for (const a of autos) {
-        try { await client.call(a.method!, a.params ?? {}); islandAnswer(a.kind === "launch" ? t("{n} wird gestartet", { n: a.label.replace(/ starten$/, "") }) : a.kind === "stopSounds" ? t("Sounds gestoppt") : t("✓ {n}", { n: a.label }), true); }
-        catch (e) { islandAnswer(friendlyError(e), false); break; }
-      }
+      const { askJarvis } = await import("../lib/jarvis-ask");
+      const { appendChat, readChat } = await import("../lib/assistant");
+      const { jarvisEnabled, openJarvis } = await import("../lib/jarvis-session");
+      openJarvis();                                                    // asking here starts the JARVIS session like opening the page does (named commands run at once)
+      const { webSwitch } = await import("../lib/research-chat");
+      const chat = readChat();
+      let shown = false;
+      await askJarvis(v, { online: true, engine: engineNow === "auto" ? "auto" : engineNow, web: webSwitch(), webSearch: !!ai.data?.webSearch, bingoProvider: ai.data?.bingoProvider ?? null, conversationId: chat.conversationId, turns: chat.turns, requestId: "i" + Math.random().toString(36).slice(2, 10), direct: true }, {},
+        {
+          add: (reply, _more, conversationId) => {
+            shown = true;
+            islandAnswer(reply.text, reply.failed ? false : true, reply.actions, "jarvis", reply.model ?? undefined);
+            appendChat(v, reply, conversationId);
+            if (consumeSpoken()) speak(reply.text);
+            // With JARVIS switched off nothing ran by itself: what the PC named for direct execution runs now (a started game, a sound).
+            if (!jarvisEnabled()) void (async () => {
+              for (const a of reply.actions.filter((x: AssistantAction & { auto?: boolean }) => x.auto && x.method && x.kind !== "navigate")) {
+                try { await client.call(a.method!, a.params ?? {}); islandAnswer(a.kind === "launch" ? t("{n} wird gestartet", { n: a.label.replace(/ starten$/, "") }) : t("✓ {n}", { n: a.label }), true); }
+                catch (e) { islandAnswer(friendlyError(e), false); break; }
+              }
+            })();
+            return true;
+          },
+          speak: () => { /* the island reads an answer aloud only when the question was spoken (see add) */ },
+          navigate: () => { /* the island stays where it is */ },
+          setPhase: () => { /* no phases here */ },
+        });
+      if (!shown) islandAnswer(t("Dazu habe ich keine Antwort bekommen."), false);
     } catch (err) { islandAnswer(friendlyError(err), false); }
+    finally { islandBusy(false); }
   };
   // Speaking to JARVIS: the sentence is cleaned like a typed one, "Stopp" quietens the voice, "Danke" ends the conversation.
   const convo = useConversation();
@@ -324,7 +365,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       </div>
       {game && (
         <div className={`isl2-card gm${gCover || gItem ? " filled" : ""}`} style={gStyle}>
-          {gCover ? <img className="isl2-fill" src={gCover} alt="" />
+          {gCover ? <img className="isl2-fill" src={gCover} alt="" decoding="async" />
             : gItem && (gBrand || gItem.iconData) ? (
               <span className="isl2-fill logo" aria-hidden>
                 {gItem.iconData && <img className="isl2-fill-blur" src={gItem.iconData} alt="" />}
@@ -332,6 +373,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
               </span>
             ) : null}
           <button type="button" className="isl2-ctitle" onClick={() => setTab("game")}>{t("Spiel")}</button>
+          {gCover && gItem && (gBrand || gItem.iconData) && <span className="isl2-badge" aria-hidden>{gBrand ? <BrandLogo brand={gBrand} size={30} color="#fff" /> : <img src={gItem.iconData!} alt="" decoding="async" />}</span>}
           {!(gCover || (gItem && (gBrand || gItem.iconData))) && <span className="isl2-art" aria-hidden><Gamepad2 size={22} /></span>}
           <b className="isl2-big ellipsis" title={game.name}>{game.name}</b>
           <span className="isl2-sub ellipsis">{playTime(gameSince, now) ?? t("läuft")}</span>
@@ -339,7 +381,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       )}
       {has("music") && (
         <div className={`isl2-card mu${musicFilled ? " filled" : ""}`} style={accentStyle}>
-          {musicFilled && <img className="isl2-fill" src={np!.cover!} alt="" key={np!.cover} />}
+          {musicFilled && <img className="isl2-fill" src={np!.cover!} alt="" key={np!.cover} decoding="async" />}
           <button type="button" className="isl2-ctitle" onClick={() => setTab("music")}>{t("Musik")}</button>
           {!musicFilled && <span className="isl2-art" aria-hidden>{cover}</span>}
           {playing && <Bars level={0.4} />}
@@ -625,7 +667,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
         {peek && <div className="isl2-body isl2-peek" aria-hidden ref={peekRef} {...({ inert: "" } as object)}>{body[peek]}</div>}
       </div>
-      <nav className="isl2-tabs" role="tablist" aria-label={t("Bereiche der Insel")}>
+      <nav className="isl2-tabs has-thumb" role="tablist" aria-label={t("Bereiche der Insel")} ref={tabsRef}>
+        <span className="isl2-thumb" ref={thumbRef} aria-hidden="true" />
         {tabs.map((id) => {
           const m = TAB_META[id], on = id === current;
           return (

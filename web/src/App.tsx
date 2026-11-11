@@ -1,6 +1,9 @@
+import { hardReload, lazyRetry, reloadOnceForNewVersion } from "./lib/lazy-retry";
 import { DesignPreviewBar } from "./components/design-preview-bar";
-import { Component, lazy, Suspense, useEffect, useSyncExternalStore, type ReactNode } from "react";
+import { Component, Suspense, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { getRoom, subscribeRoom } from "./lib/room";
+import { defaultPrefs } from "./lib/prefs-core";
+import { getPrefs, replacePrefs } from "./lib/prefs";
 import { startDesignAutoSave } from "./lib/design-account";
 import { startAccountAutoApply } from "./lib/account-auto";
 import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -15,82 +18,94 @@ import { loadRemotePrefs, usePrefs } from "./lib/prefs";
 import { client } from "./lib/rpc";
 import { t, useLanguageVersion } from "./lib/i18n";
 
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Library = lazy(() => import("./pages/Library"));
-const QuickActions = lazy(() => import("./pages/QuickActions"));
-const Soundboard = lazy(() => import("./pages/Soundboard"));
-const AudioCenter = lazy(() => import("./pages/AudioCenter"));
-const Monitor = lazy(() => import("./pages/Monitor"));
-const Profiles = lazy(() => import("./pages/Profiles"));
-const Automations = lazy(() => import("./pages/Automations"));
-const Hotkeys = lazy(() => import("./pages/Hotkeys"));
-const History = lazy(() => import("./pages/History"));
-const Devices = lazy(() => import("./pages/Devices"));
-const Notifications = lazy(() => import("./pages/Notifications"));
-const SettingsPage = lazy(() => import("./pages/Settings"));
-const Diagnostics = lazy(() => import("./pages/Diagnostics"));
-const Help = lazy(() => import("./pages/Help"));
-const Updates = lazy(() => import("./pages/Updates"));
-const Plugins = lazy(() => import("./pages/Plugins"));
-const OverlaySettings = lazy(() => import("./pages/OverlaySettings"));
-const Overlay = lazy(() => import("./pages/Overlay"));
-const WidgetStudio = lazy(() => import("./pages/WidgetStudio"));
-const Network = lazy(() => import("./pages/Network"));
-const Quests = lazy(() => import("./pages/Quests"));
-const Backlog = lazy(() => import("./pages/Backlog"));
-const CalendarPage = lazy(() => import("./pages/Calendar"));
-const StoragePage = lazy(() => import("./pages/Storage"));
-const FilesPage = lazy(() => import("./pages/Files"));
-const InboxPage = lazy(() => import("./pages/Inbox"));
-const CapturesPage = lazy(() => import("./pages/Captures"));
-const ModsPage = lazy(() => import("./pages/Mods"));
-const VaultPage = lazy(() => import("./pages/Vault"));
-const MemoryPage = lazy(() => import("./pages/Memory"));
-const InventoryPage = lazy(() => import("./pages/Inventory"));
-const CrashesPage = lazy(() => import("./pages/Crashes"));
-const GameStatePage = lazy(() => import("./pages/GameState"));
-const RemotePage = lazy(() => import("./pages/Remote"));
-const ControlPage = lazy(() => import("./pages/Control"));
-const MovePage = lazy(() => import("./pages/Move"));
-const JournalPage = lazy(() => import("./pages/Journal"));
-const WikiPage = lazy(() => import("./pages/Wiki"));
-const PlayPage = lazy(() => import("./pages/Play"));
-const WorldsPage = lazy(() => import("./pages/Worlds"));
-const BuildsPage = lazy(() => import("./pages/Builds"));
-const FriendsPage = lazy(() => import("./pages/Friends"));
-const MediaPage = lazy(() => import("./pages/Media"));
-const StudioPage = lazy(() => import("./pages/Studio"));
-const InfosPage = lazy(() => import("./pages/Infos"));
-const InsightsPage = lazy(() => import("./pages/Insights"));
-const LayoutsPage = lazy(() => import("./pages/Layouts"));
-const PeripheralsPage = lazy(() => import("./pages/Peripherals"));
-const InputPage = lazy(() => import("./pages/Input"));
-const StartTimesPage = lazy(() => import("./pages/StartTimes"));
-const TrophiesPage = lazy(() => import("./pages/Trophies"));
-const RoomPage = lazy(() => import("./pages/Room"));
-const Deck = lazy(() => import("./pages/Deck"));
-const Assistant = lazy(() => import("./pages/Assistant"));
-const Deals = lazy(() => import("./pages/Deals"));
-const DesktopWidget = lazy(() => import("./pages/DesktopWidget"));
-const IslandPage = lazy(() => import("./pages/IslandPage"));
-const Connect = lazy(() => import("./pages/Connect"));
-const ProfilePage = lazy(() => import("./pages/Profile"));const PairAdmin = lazy(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
+const Dashboard = lazyRetry(() => import("./pages/Dashboard"));
+const Library = lazyRetry(() => import("./pages/Library"));
+const QuickActions = lazyRetry(() => import("./pages/QuickActions"));
+const Soundboard = lazyRetry(() => import("./pages/Soundboard"));
+const AudioCenter = lazyRetry(() => import("./pages/AudioCenter"));
+const Monitor = lazyRetry(() => import("./pages/Monitor"));
+const Profiles = lazyRetry(() => import("./pages/Profiles"));
+const Automations = lazyRetry(() => import("./pages/Automations"));
+const Hotkeys = lazyRetry(() => import("./pages/Hotkeys"));
+const History = lazyRetry(() => import("./pages/History"));
+const Devices = lazyRetry(() => import("./pages/Devices"));
+const Notifications = lazyRetry(() => import("./pages/Notifications"));
+const SettingsPage = lazyRetry(() => import("./pages/Settings"));
+const Diagnostics = lazyRetry(() => import("./pages/Diagnostics"));
+const Help = lazyRetry(() => import("./pages/Help"));
+const Updates = lazyRetry(() => import("./pages/Updates"));
+const Plugins = lazyRetry(() => import("./pages/Plugins"));
+const OverlaySettings = lazyRetry(() => import("./pages/OverlaySettings"));
+const Overlay = lazyRetry(() => import("./pages/Overlay"));
+const WidgetStudio = lazyRetry(() => import("./pages/WidgetStudio"));
+const Network = lazyRetry(() => import("./pages/Network"));
+const Quests = lazyRetry(() => import("./pages/Quests"));
+const Backlog = lazyRetry(() => import("./pages/Backlog"));
+const CalendarPage = lazyRetry(() => import("./pages/Calendar"));
+const StoragePage = lazyRetry(() => import("./pages/Storage"));
+const FilesPage = lazyRetry(() => import("./pages/Files"));
+const InboxPage = lazyRetry(() => import("./pages/Inbox"));
+const CapturesPage = lazyRetry(() => import("./pages/Captures"));
+const ModsPage = lazyRetry(() => import("./pages/Mods"));
+const VaultPage = lazyRetry(() => import("./pages/Vault"));
+const MemoryPage = lazyRetry(() => import("./pages/Memory"));
+const InventoryPage = lazyRetry(() => import("./pages/Inventory"));
+const CrashesPage = lazyRetry(() => import("./pages/Crashes"));
+const GameStatePage = lazyRetry(() => import("./pages/GameState"));
+const RemotePage = lazyRetry(() => import("./pages/Remote"));
+const ControlPage = lazyRetry(() => import("./pages/Control"));
+const MovePage = lazyRetry(() => import("./pages/Move"));
+const JournalPage = lazyRetry(() => import("./pages/Journal"));
+const WikiPage = lazyRetry(() => import("./pages/Wiki"));
+const PlayPage = lazyRetry(() => import("./pages/Play"));
+const WorldsPage = lazyRetry(() => import("./pages/Worlds"));
+const BuildsPage = lazyRetry(() => import("./pages/Builds"));
+const FriendsPage = lazyRetry(() => import("./pages/Friends"));
+const MediaPage = lazyRetry(() => import("./pages/Media"));
+const StudioPage = lazyRetry(() => import("./pages/Studio"));
+const InfosPage = lazyRetry(() => import("./pages/Infos"));
+const InsightsPage = lazyRetry(() => import("./pages/Insights"));
+const LayoutsPage = lazyRetry(() => import("./pages/Layouts"));
+const PeripheralsPage = lazyRetry(() => import("./pages/Peripherals"));
+const InputPage = lazyRetry(() => import("./pages/Input"));
+const StartTimesPage = lazyRetry(() => import("./pages/StartTimes"));
+const TrophiesPage = lazyRetry(() => import("./pages/Trophies"));
+const RoomPage = lazyRetry(() => import("./pages/Room"));
+const Deck = lazyRetry(() => import("./pages/Deck"));
+const Assistant = lazyRetry(() => import("./pages/Assistant"));
+const Deals = lazyRetry(() => import("./pages/Deals"));
+const DesktopWidget = lazyRetry(() => import("./pages/DesktopWidget"));
+const IslandPage = lazyRetry(() => import("./pages/IslandPage"));
+const Connect = lazyRetry(() => import("./pages/Connect"));
+const ProfilePage = lazyRetry(() => import("./pages/Profile"));
+const VoiceChanger = lazyRetry(() => import("./pages/VoiceChanger"));const PairAdmin = lazyRetry(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
 
 function Loading() {
   return <div className="stack" aria-busy><div className="skeleton" style={{ height: 28, width: "30%" }} /><div className="skeleton" style={{ height: 160 }} /></div>;
 }
 
 /** Shows a clear message instead of a blank page if a page part cannot be loaded (e.g. offline and not cached). */
-class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  state = { error: null as Error | null };
+class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null; where: string }> {
+  state = { error: null as Error | null, where: "" };
   static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(_e: Error, info: { componentStack?: string | null }) {
+    const where = String(info?.componentStack ?? "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4).join(" › ");
+    this.setState({ where });
+    try { localStorage.setItem("pgl.lastError", JSON.stringify({ at: Date.now(), message: String(_e?.message ?? ""), stack: String(_e?.stack ?? "").slice(0, 1500), where })); } catch { /* ignore */ }
+    reloadOnceForNewVersion();
+  }          // a part of an old version is missing: the page heals itself once
   render() {
     if (!this.state.error) return this.props.children;
     return (
       <div className="card stack" role="alert">
         <h2>{t("Dieser Bereich konnte nicht geladen werden")}</h2>
         <p className="muted">{t("Wahrscheinlich ist der PC aus und der Bereich wurde noch nicht auf diesem Gerät gespeichert. Sobald der PC erreichbar ist, funktioniert er wieder.")}</p>
-        <div><button className="btn primary" onClick={() => location.reload()}>{t("Neu laden")}</button></div>
+        {this.state.error.message && <p className="tiny muted" style={{ overflowWrap: "anywhere" }}>{String(this.state.error.message).slice(0, 220)}{this.state.where ? ` — ${this.state.where.slice(0, 260)}` : ""}</p>}
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <button className="btn primary" onClick={() => void hardReload()}>{t("Neu laden")}</button>
+          <button className="btn ghost" onClick={() => { void navigator.clipboard?.writeText(`${this.state.error?.message}\n${this.state.error?.stack ?? ""}\n${this.state.where}`).catch(() => undefined); }}>{t("Fehler kopieren")}</button>
+          <button className="btn ghost" onClick={() => { try { const d = defaultPrefs(); replacePrefs({ ...getPrefs(), layouts: d.layouts, activeLayout: d.activeLayout }); localStorage.removeItem("pgl.room"); } catch { /* reload anyway */ } void hardReload(); }}>{t("Startseite zurücksetzen")}</button>
+        </div>
       </div>
     );
   }
@@ -135,6 +150,7 @@ function Gate() {
           <Route path="/quick" element={<QuickActions />} />
           <Route path="/soundboard" element={<Soundboard />} />
           <Route path="/audio" element={<AudioCenter />} />
+          <Route path="/voice-changer" element={<VoiceChanger />} />
           <Route path="/monitor" element={<Monitor />} />
           <Route path="/profiles" element={<Profiles />} />
           <Route path="/automations" element={<Automations />} />

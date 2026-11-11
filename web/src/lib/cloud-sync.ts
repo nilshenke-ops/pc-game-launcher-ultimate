@@ -13,7 +13,7 @@ import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { cloudApi } from "./cloud-account";
 import { session, type DesignSession } from "./design-account";
-import { saveCache, savedOverview, bumpCache } from "./offline-cache";
+import { saveCache, savedOverview, bumpCache, readCache, clearCaches, CACHED_METHODS } from "./offline-cache";
 import { setOpQueuedHook } from "./outbox";
 import { openBlob, sealBlob } from "./cloud-seal";
 export { openBlob, sealBlob } from "./cloud-seal";
@@ -23,10 +23,10 @@ const TOKEN_KEY = "pgl.cloudSync.token", OPS_KEY = "pgl.cloudSync.ops", NOAUTO_K
 const POLL_MS = 10_000, POLL_HIDDEN_MS = 60_000, TIMEOUT_MS = 20_000, MAX_OPS = 400;
 
 /** What the PC uploads, as cache keys of the pages (same names as the RPC methods). */
-export const SYNC_ITEMS = ["state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
+export const SYNC_ITEMS = ["wol.info", "state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
   "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list"] as const;
 /** Changes a device may hand over through the cloud while the PC is off (data only – never starting anything). */
-export const OP_METHODS = new Set(["library.update", "settings.save"]);
+export const OP_METHODS = new Set(["library.update", "settings.save", "memory.configure", "ai.set", "sounds.importUrl"]);
 
 interface TokenRec { user: string; api: string; token: string; seq: number; have: Record<string, string>; pcAt: string | null; pcName: string | null; okAt: number | null }
 export interface PendingOp { id: string; method: string; params: Record<string, unknown>; base?: Record<string, unknown>; at: string }
@@ -95,9 +95,29 @@ function deviceName(): string {
   return /iPad/.test(ua) ? "iPad" : /iPhone/.test(ua) ? "iPhone" : /Android/.test(ua) ? "Android" : "Browser";
 }
 
+/** One call of this device to the cloud, signed with its device token (a token the cloud forgot is renewed once). */
+export async function cloudCall(action: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const s = currentSession();
+  if (!s) throw new Error(t("Dafür musst du mit deinem Cloud-Konto angemeldet sein."));
+  let rec = await ensureToken(s);
+  try { return await post(s.api, action, { user: s.user, token: rec.token, ...body }); }
+  catch (e) {
+    if (!(e instanceof AuthError)) throw e;
+    forgetToken(); rec = await ensureToken(s);
+    return post(s.api, action, { user: s.user, token: rec.token, ...body });
+  }
+}
+
 // ------------------------------------------------------------------ pulling: the cloud copy becomes the device's copy
 
 let pulling = false;
+/** Signed out: the device's copy of the cloud data (games, tiles, state …), the token and waiting changes go – nothing of the account stays visible here. */
+export function forgetCloudCopy() {
+  forgetToken(); writeJson(OPS_KEY, null); writeJson(NOAUTO_KEY, null);
+  clearCaches(); bumpCache();
+  setStatus({ active: false, user: null, pending: 0 });
+}
+
 export async function pullNow(): Promise<boolean> {
   const s = currentSession();
   if (!s) { setStatus({ active: false, user: null }); return false; }
@@ -107,7 +127,12 @@ export async function pullNow(): Promise<boolean> {
   try {
     let rec = await ensureToken(s);
     let r: Record<string, unknown>;
-    try { r = await post(s.api, "pull", { user: s.user, token: rec.token, seq: rec.seq, have: rec.have }); }
+    // The device's copy may be gone (signed out, switched account, storage cleared) while the remembered versions say "up to date":
+    // an item without a local copy is asked for again, and the cloud then sends it in full.
+    const have = { ...rec.have };
+    let missing = false;
+    for (const it of Object.keys(have)) if (CACHED_METHODS.has(it) && !readCache(it)) { delete have[it]; missing = true; }
+    try { r = await post(s.api, "pull", { user: s.user, token: rec.token, seq: missing ? -1 : rec.seq, have }); }
     catch (e) {
       if (!(e instanceof AuthError)) throw e;
       forgetToken(); rec = await ensureToken(s);                                        // the cloud forgot this device: new token, same account
@@ -117,16 +142,18 @@ export async function pullNow(): Promise<boolean> {
     const pcAt = typeof r.pcAt === "string" ? r.pcAt : null, pcName = typeof r.pcName === "string" ? r.pcName : null;
     if (!r.unchanged) {
       const have = { ...rec.have };
-      let wrote = false;
+      let wrote = false, undecryptable = 0;
       for (const it of (r.items as { item: string; ver: string; parts?: string[] }[] | undefined) ?? []) {
         if (!it.parts) { have[it.item] = it.ver; continue; }                            // not changed since the last time
         try {
           const data = JSON.parse(await openBlob(s.enc, it.parts.join(""))) as unknown;
           if (applyFromCloud(it.item, data)) wrote = true;
           have[it.item] = it.ver;
-        } catch { /* another password key or a newer format: this item is skipped, the rest still works */ }
+        } catch { undecryptable++; }                                                     // another password key or a newer format: this item is skipped, the rest still works
       }
-      writeJson(TOKEN_KEY, { ...rec, seq, have, pcAt, pcName, okAt: Date.now() });
+      if (undecryptable > 0) setStatus({ error: t("{n} Einträge aus der Cloud ließen sich nicht lesen – wurde der PC mit einem anderen Passwort/Konto verbunden? Melde den PC mit demselben Konto neu an.", { n: undecryptable }) });
+      writeJson(TOKEN_KEY, { ...rec, seq: undecryptable > 0 ? -1 : seq, have, pcAt, pcName, okAt: Date.now() });
+      if (Array.isArray(r.ops)) void import("./pending-sounds").then((m) => m.reconcileCloudSounds((r.ops as { id: string }[]).map((o) => o.id))).catch(() => { /* later */ });
       if (wrote) bumpCache();
     } else writeJson(TOKEN_KEY, { ...rec, seq, pcAt, pcName, okAt: Date.now() });
     setStatus({ cloud: "ok", okAt: Date.now(), pcSyncedAt: pcAt ? Date.parse(pcAt) : null, pcName, upToDate: true, error: null });
@@ -165,6 +192,16 @@ export function queueCloudOp(method: string, params: Record<string, unknown>, ba
   void flushOps();
 }
 
+/** Hands one change to the cloud right now and says whether the cloud has it (its id is returned so the caller can see when the PC has taken it over). */
+export async function sendCloudOp(method: string, params: Record<string, unknown>): Promise<string | null> {
+  if (!OP_METHODS.has(method) || !currentSession()) return null;
+  const op: PendingOp = { id: "op_" + Array.from(crypto.getRandomValues(new Uint8Array(9)), (b) => b.toString(36).padStart(2, "0")).join("").slice(0, 16), method, params: structuredClone(params), at: new Date().toISOString() };
+  savePending([...pendingOps(), op]);
+  setStatus({ pending: pendingOps().length });
+  await flushOps();
+  return pendingOps().some((o) => o.id === op.id) ? null : op.id;       // still waiting here = the cloud does not have it yet (it is sent later by itself)
+}
+
 let flushing = false;
 export async function flushOps(): Promise<boolean> {
   const s = currentSession(), ops = pendingOps();
@@ -184,7 +221,9 @@ export async function flushOps(): Promise<boolean> {
     return true;
   } catch (e) {
     if (e instanceof AuthError) forgetToken();
-    setStatus({ cloud: "unreachable" });
+    // Only a real network problem is "unreachable"; when the cloud answered with a refusal, say what it said (the cause was hidden before).
+    const net = navigator.onLine === false || !(e instanceof Error) || e instanceof AuthError || e.message === "server" || /fetch|network|abort|timeout|load failed/i.test(e.message);
+    setStatus(net ? { cloud: "unreachable" } : { cloud: "ok", error: t("Die Cloud hat eine Änderung abgelehnt: {m}", { m: (e as Error).message }) });
     return false;
   } finally { flushing = false; setStatus({ syncing: false, pending: pendingOps().length }); }
 }
@@ -214,6 +253,7 @@ export async function linkPcNow(force = false): Promise<"linked" | "already" | "
     }
     await client.call("cloud.link", params);
     writeJson(NOAUTO_KEY, null);
+    void import("./account-to-pc").then((m) => m.sendAccountToPc(true)).catch(() => { /* the next change sends it */ });   // the PC gets what the account already has (memory folder, AI keys)
     return "linked";
   } catch { return "failed"; }
   finally { linking = false; }
@@ -259,4 +299,70 @@ export function describeSync(s: CloudSyncStatus, pcOnline: boolean): { cloud: st
     pc: pcOnline ? t("PC verbunden") : t("PC nicht verbunden"),
     sync: s.syncing ? t("Synchronisierung läuft …") : s.pending > 0 ? t("{n} Änderung(en) ausstehend", { n: s.pending }) : s.upToDate ? t("Synchronisierung abgeschlossen") : t("Noch nicht synchronisiert"),
   };
+}
+
+
+// ------------------------------------------------------------------ "Prüfen & reparieren": every link of the chain, one line each
+
+export interface CheckLine { ok: boolean; text: string }
+
+/** Walks through the whole chain account → cloud → PC link → PC upload → what the cloud holds, repairs what it can, and says in plain words where it stops. */
+export async function diagnoseCloud(): Promise<CheckLine[]> {
+  const out: CheckLine[] = [];
+  const add = (ok: boolean, text: string) => out.push({ ok, text });
+  const s = currentSession();
+  if (!s) {
+    const local = session();
+    add(false, local ? t("Das Konto „{u}“ liegt nur am PC, nicht in der Cloud. Öffne Einstellungen → Konto & Anmeldedaten und tippe auf „In die Cloud übernehmen“.", { u: local.user }) : t("Hier ist kein Cloud-Konto angemeldet. Melde dich mit dem Cloud-Konto an (Person oben rechts)."));
+    return out;
+  }
+  add(true, t("Angemeldet mit dem Cloud-Konto „{u}“.", { u: s.user }));
+  // 1 the cloud itself and what it holds
+  let pcAt: string | null = null;
+  try {
+    const rec = await ensureToken(s);
+    const r = await post(s.api, "pull", { user: s.user, token: rec.token, seq: -1, have: {} });
+    const items = ((r.items as { item: string }[] | undefined) ?? []).map((i) => i.item);
+    pcAt = typeof r.pcAt === "string" ? r.pcAt : null;
+    add(true, t("Die Cloud antwortet."));
+    add(items.includes("library.list"), items.includes("library.list") ? t("In der Cloud liegen {n} Einträge, darunter die Spiele-Liste.", { n: items.length }) : t("In der Cloud liegt noch keine Spiele-Liste ({n} Einträge). Der PC hat sie noch nicht hochgeladen.", { n: items.length }));
+    add(!!pcAt, pcAt ? t("Der PC hat zuletzt {w} hochgeladen.", { w: relTimeShort(pcAt) }) : t("Kein PC hat bisher etwas hochgeladen."));
+  } catch (e) {
+    add(false, t("Die Cloud ist nicht erreichbar oder lehnt ab: {m}", { m: e instanceof Error ? e.message : String(e) }));
+    return out;
+  }
+  // 2 the PC
+  const online = client.status.phase === "online" && client.status.auth === "ok";
+  if (!online) { add(false, t("Dieses Gerät ist gerade nicht mit dem PC verbunden. Öffne diese Prüfung am PC selbst – nur dort kann der PC mit dem Konto verbunden werden.")); return out; }
+  const me = await client.call<{ isLocal: boolean; permissions: string[] }>("devices.me").catch(() => client.status.me);
+  const admin = !!me?.isLocal || !!me?.permissions.includes("admin");
+  add(admin, admin ? t("Dieses Gerät darf den PC mit dem Konto verbinden.") : t("Dieses Gerät hat am PC kein Admin-Recht – am PC selbst oder mit einem Gerät mit Admin-Recht wiederholen."));
+  if (!admin) return out;
+  // 3 the PC's own link, repaired when missing
+  type PcSt = { linked: boolean; user: string | null; lastPushAt: string | null; lastError: string | null; state: string };
+  let st = await client.call<PcSt>("cloud.status").catch(() => null);
+  if (!st) { add(false, t("Der PC kennt die Cloud-Funktion nicht – bitte den Begleiter am PC aktualisieren.")); return out; }
+  if (!st.linked || st.user !== s.user) {
+    setAutoLink(true);
+    const r = await linkPcNow(true);
+    add(r === "linked" || r === "already", r === "linked" ? t("Der PC wurde jetzt mit dem Konto verbunden.") : t("Der PC konnte nicht mit dem Konto verbunden werden ({r}).", { r }));
+    st = await client.call<PcSt>("cloud.status").catch(() => st);
+  } else add(true, t("Der PC ist mit dem Konto „{u}“ verbunden.", { u: st!.user ?? "" }));
+  // 4 upload now
+  st = await client.call<PcSt>("cloud.syncNow").catch(() => st);
+  // The first upload may still be running (it started with the link): wait for it instead of calling that a failure.
+  for (let i = 0; i < 40 && st && (st.state === "syncing" || (st.state === "pending" && !st.lastPushAt && !st.lastError)); i++) {
+    await new Promise((r) => setTimeout(r, 1000));
+    st = await client.call<PcSt>("cloud.status").catch(() => st);
+  }
+  if (st?.lastError) add(false, t("Beim Hochladen am PC: {m}", { m: st.lastError }));
+  else if (st?.lastPushAt) add(true, t("Der PC hat gerade hochgeladen. Auf dem iPad die Seite neu laden – dann sind die Spiele da."));
+  else add(false, t("Der PC hat noch nichts hochgeladen (Status: {s}).", { s: st?.state ?? "?" }));
+  void pullNow();
+  return out;
+}
+
+function relTimeShort(iso: string): string {
+  const m = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
+  return m < 1 ? t("gerade eben") : m < 60 ? t("vor {n} Min.", { n: m }) : m < 2880 ? t("vor {n} Std.", { n: Math.round(m / 60) }) : t("vor {n} Tagen", { n: Math.round(m / 1440) });
 }

@@ -5,13 +5,16 @@
 // The password itself never leaves the device, and neither the PC nor the cloud can read the stored data.
 import { client, readJson, writeJson } from "./rpc";
 import {
-  cloudAccountConfigured, cloudDelete, cloudLoad, cloudRegister, cloudSave, cloudSignOut,
+  cloudAccountConfigured, cloudDelete, cloudLoad, cloudRegister, cloudRekey, cloudSave, cloudSignOut,
   pendingBlob, setPendingBlob,
 } from "./cloud-account";
 import { ACCOUNT_KEYS, buildAccountBackup, type AccountBackup } from "./account-backup";
-import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
+import { getPrefs, keepDeviceMotion, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
+import { defaultPrefs } from "./prefs-core";
+import { forgetCloudCopy } from "./cloud-sync";
 import { t } from "./i18n";
+import { hasAccessCode, moveSecret, rememberPassword, setCode } from "./account-secret";
 import { exportKeyBundle, importKeyBundle, rescopeLocalAi, whenLocalAiReady, wipeLocalAi } from "./free-ai-local";
 export { ACCOUNT_KEYS } from "./account-backup";
 
@@ -123,7 +126,7 @@ export const cloudMode = () => cloudAccountConfigured();
 /** Puts the decrypted data on this device. Called only after every step that can fail has succeeded. */
 function applyData(data: AccountData, reset = false) {
   if (reset) clearAccountData();
-  replacePrefs({ ...data.prefs, theme: { ...data.prefs.theme, bgImage: data.prefs.theme.bgImage ?? getPrefs().theme.bgImage } });
+  replacePrefs(keepDeviceMotion({ ...data.prefs, theme: { ...data.prefs.theme, bgImage: data.prefs.theme.bgImage ?? getPrefs().theme.bgImage } }));
   for (const key of ACCOUNT_KEYS) if (key in data.local) writeJson(key, data.local[key]);
   reloadRoom();
 }
@@ -134,6 +137,7 @@ export async function createProfile(userIn: string, password: string) {
     const k = await deriveKeys(user, password);
     const blob = await encryptDesign(k.enc, getPrefs());
     await cloudRegister(user, k.auth, blob);               // taken name ends here – nothing local changes
+    rememberPassword(user, password);
     setPendingBlob(null);
     store({ user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
     await adoptKeys();                                      // keys typed before take the new account – then they travel with it
@@ -142,6 +146,7 @@ export async function createProfile(userIn: string, password: string) {
   }
   const k = await deriveKeys(user, password);
   await client.call("design.create", { user, key: k.auth, blob: await encryptDesign(k.enc, getPrefs()) });
+  rememberPassword(user, password);
   store({ user, ...k, savedAt: Date.now() });
   await adoptKeys();
   void saveNow().catch(() => { /* next change tries again */ });
@@ -156,6 +161,7 @@ export async function signIn(userIn: string, password: string) {
       const remote = await cloudLoad(user, k.auth);         // wrong name/key ends here
       const data = remote ? await decryptDesign(k.enc, remote.blob) : null; // a wrong key ends here as well
       if (data) applyData(data, true);                     // nothing of the account before stays on this device
+      rememberPassword(user, password);
       store({ user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
       await adoptKeys(data?.keys);                         // the keys of this account, and only these
       if (!data) await saveNow();                          // new cloud account: take the design of this device along
@@ -163,13 +169,16 @@ export async function signIn(userIn: string, password: string) {
       return;
     } catch (e) {
       // Accounts made before the cloud still live on the PC: an unknown name there is tried on the connected PC once.
-      if (!/falsch/i.test((e as Error).message) || client.status.auth !== "ok") throw e;
+      if (!/falsch/i.test((e as Error).message)) throw e;
+      // Not in the cloud and no PC to ask: say what is probably the case (the account only exists at the PC) instead of just "wrong".
+      if (client.status.auth !== "ok") throw new Error(t("Benutzername oder Passwort falsch – oder das Konto liegt nur am PC. Öffne am PC Einstellungen → Konto & Anmeldedaten und tippe auf „In die Cloud übernehmen“, dann geht die Anmeldung auch hier."));
     }
   }
   const k = await deriveKeys(user, password);
   const r = await client.call<{ blob: string; updatedAt: string }>("design.load", { user, key: k.auth });
   const data = await decryptDesign(k.enc, r.blob);
   applyData(data, true);
+  rememberPassword(user, password);
   store({ user, ...k, savedAt: Date.now() });
   await adoptKeys(data.keys);
   notifyAccount();
@@ -247,11 +256,20 @@ export async function deleteProfile() {
   notifyAccount();
 }
 
-export const signOut = () => {
+export const signOut = async () => {
   const s = session();
+  // Changes that still wait are sent first (a few seconds at most) – after signing out nothing of the account stays on this device.
+  if (s && (cloudAccountConfigured() || client.status.auth === "ok")) {
+    try { await Promise.race([flushPending(), new Promise((r) => window.setTimeout(r, 2500))]); } catch { /* the account keeps what was saved before */ }
+  }
   if (s?.cloud) cloudSignOut();
   store(null);
   if (s) forget(s.user);
+  // Back to the standard look and the standard home: design, layout, tiles and the saved lists of the account are removed from this device.
+  clearAccountData();
+  replacePrefs(keepDeviceMotion({ ...defaultPrefs(), lang: getPrefs().lang }));
+  forgetCloudCopy();
+  reloadRoom();
   void rescopeLocalAi();                                     // signed out: the keys of the account are no longer open here
   notifyAccount();
 };
@@ -291,4 +309,92 @@ export function applyDesignCode(code: string): boolean {
   if (!c.startsWith("NXD1:")) return false;
   try { replacePrefs(sanitizePrefs(JSON.parse(new TextDecoder().decode(unb64(c.slice(5)))))); return true; }
   catch { return false; }
+}
+
+
+// ------------------------------------------------------------------ seeing and changing the user name and password
+// (the password memory itself – plain or sealed with the optional secret code – lives in account-secret.ts)
+
+export { hasAccessCode, MIN_CODE, passwordState, revealPassword, type PasswordState } from "./account-secret";
+
+/** Checks a typed password against the signed-in account (same keys) and remembers it for display. */
+export async function confirmPassword(password: string): Promise<void> {
+  const s = session();
+  if (!s) throw new Error(t("Nicht angemeldet."));
+  const k = await deriveKeys(s.user, password);
+  if (k.auth !== s.auth) throw new Error(t("Das Passwort stimmt nicht."));
+  rememberPassword(s.user, password);
+}
+
+/** Sets, changes or removes the extra secret code of the signed-in account. Without a code the password can be seen straight away (the default). */
+export async function setAccessCode(newCode: string | null, oldCode?: string): Promise<void> {
+  const s = session();
+  if (!s) throw new Error(t("Nicht angemeldet."));
+  await setCode(s.user, newCode, oldCode);
+}
+
+/**
+ * Changes the user name and/or the password of the signed-in cloud account. Both are part of the keys, so the account data is sealed
+ * anew and the cloud switches to the new login in one step; the PC takes the new account over by itself (and uploads again).
+ */
+export async function changeCredentials(o: { currentPassword?: string; newUser?: string; newPassword?: string }): Promise<void> {
+  const s = session();
+  if (!s?.cloud) throw new Error(t("Das geht nur mit einem Cloud-Konto."));
+  const oldUser = s.user;
+  const newUser = (o.newUser ?? oldUser).trim().toLowerCase();
+  const newPassword = o.newPassword ?? o.currentPassword;
+  // A new PASSWORD needs no old one: this device is signed in (its login key proves it to the cloud). A new NAME is part of the keys, so the password is needed.
+  if (!newPassword) throw new Error(t("Für einen neuen Benutzernamen wird das Passwort gebraucht."));
+  if (!USER_RX.test(newUser)) throw new Error(t("Benutzername: 3–24 Zeichen, nur a–z, Ziffern, Punkt, Minus, Unterstrich."));
+  if (newPassword.length < 6) throw new Error(t("Das Passwort braucht mindestens 6 Zeichen."));
+  if (newUser === oldUser && newPassword === o.currentPassword) throw new Error(t("Es hat sich nichts geändert."));
+  if (o.currentPassword !== undefined) {
+    const check = await deriveKeys(oldUser, o.currentPassword);
+    if (check.auth !== s.auth) throw new Error(t("Das aktuelle Passwort stimmt nicht."));
+  }
+  const nk = await deriveKeys(newUser, newPassword);
+  await whenLocalAiReady();
+  const keys = exportKeyBundle();
+  const blob = await encryptDesign(nk.enc, getPrefs());
+  await cloudRekey(oldUser, s.auth, newUser, nk.auth, blob);        // refused (name taken, wrong password) = nothing changed anywhere
+  // From here the cloud knows only the new login: this device follows at once.
+  const hadCode = hasAccessCode(oldUser);
+  forget(oldUser);
+  moveSecret(oldUser, newUser, hadCode ? null : newPassword);         // protected by a code: type the new password once to see it again
+  store({ user: newUser, auth: nk.auth, enc: nk.enc, savedAt: Date.now(), cloud: true });
+  setPendingBlob(null);
+  await adoptKeys(keys);
+  if (newUser !== oldUser) wipeLocalAi(oldUser);
+  notifyAccount();
+  void import("./cloud-sync").then((m) => { m.setAutoLink(true); return m.linkPcNow(true); }).catch(() => { /* the next round tries again */ });
+}
+
+
+/**
+ * A account that lives only on the PC ("Konto am PC") moves into the cloud under the same name and password: afterwards every device can sign in
+ * without the PC, and the PC connects to it and uploads its data. If the name already exists in the cloud, the same password signs in to it.
+ */
+export async function moveToCloud(password: string): Promise<void> {
+  const s = session();
+  if (!s) throw new Error(t("Nicht angemeldet."));
+  if (s.cloud) throw new Error(t("Dieses Konto liegt schon in der Cloud."));
+  if (!cloudAccountConfigured()) throw new Error(t("Cloud ist für diese App noch nicht eingerichtet."));
+  const k = await deriveKeys(s.user, password);
+  if (k.auth !== s.auth) throw new Error(t("Das Passwort stimmt nicht."));
+  await whenLocalAiReady();
+  const blob = await encryptDesign(k.enc, getPrefs());
+  let data: AccountData | null = null;
+  try { await cloudRegister(s.user, k.auth, blob); }
+  catch (e) {
+    if (!/gibt es schon/i.test((e as Error).message)) throw e;
+    const remote = await cloudLoad(s.user, k.auth);                  // the name exists: only the same password opens it
+    data = remote ? await decryptDesign(k.enc, remote.blob) : null;
+  }
+  if (data) applyData(data);                                          // an existing cloud account keeps its data
+  rememberPassword(s.user, password);
+  store({ user: s.user, auth: k.auth, enc: k.enc, savedAt: Date.now(), cloud: true });
+  await adoptKeys(data?.keys);
+  if (!data) void saveNow().catch(() => { /* next change tries again */ });
+  notifyAccount();
+  void import("./cloud-sync").then((m) => { m.setAutoLink(true); return m.linkPcNow(true); }).catch(() => { /* the next round tries again */ });
 }

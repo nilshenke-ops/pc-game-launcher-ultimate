@@ -14,4 +14,4 @@ export function startTapTracking() {
 export const recentTap = (ms = 1200) => (last && performance.now() - last.t < ms ? last : null);
 
 /** Motion is switched off (setting or system)? */
-export const motionOff = () => typeof document === "undefined" || document.documentElement.dataset.motion === "reduce" || !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+export const motionOff = () => typeof document === "undefined" || document.documentElement.dataset.motion === "reduce";

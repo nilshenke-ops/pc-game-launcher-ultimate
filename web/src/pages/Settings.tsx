@@ -1,9 +1,11 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { DesignProfileCard } from "../components/design-profile";
+import { AccountSettings } from "../components/account-credentials";
+import { followOsMotion, osReducesMotion, setFollowOsMotion } from "../lib/motion";
 import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ArchiveRestore, Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
+  ArchiveRestore, Bell, History, Copy, KeyRound, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
   LifeBuoy, Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Undo2, Upload, UserX,
 } from "lucide-react";
 import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
@@ -23,7 +25,7 @@ import { DataCenter } from "../components/data-center";
 import { setStatusPill, useStatusPill } from "../lib/status-pill";
 import { setUserName, useUserName } from "../components/home-showcase";
 
-type Section = "general" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
+type Section = "general" | "account" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
 
 interface SettingsResp { settings: Settings; relaySecretSet: boolean; dataDir?: string; restartRequired: boolean; webStartError?: string }
 
@@ -41,6 +43,7 @@ export default function SettingsPage() {
   const section = (params.get("s") as Section) || "general";
   const nav: [Section, string, ReactNode][] = [
     ["general", t("Allgemein"), <SettingsIcon size={17} />],
+    ["account", t("Konto & Anmeldedaten"), <KeyRound size={17} />],
     ["design", t("Design & Layout"), <Palette size={17} />],
     ["connection", t("Verbindung"), <Globe size={17} />],
     ["security", t("Sicherheit"), <Lock size={17} />],
@@ -60,6 +63,7 @@ export default function SettingsPage() {
         </nav>
         <div className="stack fade-in" key={section}>
           {section === "general" && <General />}
+          {section === "account" && <AccountSettings />}
           {section === "design" && <Design />}
           {section === "connection" && <Connection />}
           {section === "security" && <Security />}
@@ -104,6 +108,15 @@ function General() {
         </div>
       </Card>
     </Loadable>
+  );
+}
+
+/** By default the app animates whatever Windows/iPad say; this switch makes it follow the system's "reduce motion" again. */
+function FollowSystemMotion() {
+  const [on, setOn] = useState(followOsMotion);
+  return (
+    <Switch checked={on} onChange={(v) => { setOn(v); setFollowOsMotion(v); }} label={t("Systemeinstellung „Bewegung reduzieren“ beachten")}
+      hint={osReducesMotion() ? t("Dein System meldet gerade „Animationen aus“ (Windows: Animationen anzeigen · iPad: Bewegung reduzieren). Solange das hier aus ist, animiert die App trotzdem.") : t("Aus (Standard): Die App animiert unabhängig von Windows/iPad. An: Meldet das System „Bewegung reduzieren“, bleibt alles ruhig.")} />
   );
 }
 
@@ -199,6 +212,7 @@ function Design() {
           <Field label={t("Rahmen")}><Segmented value={th.border ?? "subtle"} onChange={(border) => setTheme({ border })} options={[{ value: "subtle", label: t("Dezent") }, { value: "bold", label: t("Deutlich") }]} /></Field>
           <Switch checked={!!th.touch} onChange={(touch) => setTheme({ touch })} label={t("Große Schaltflächen (iPad, Touch)")} />
           <Switch checked={th.reduceMotion} onChange={(reduceMotion) => setTheme({ reduceMotion })} label={t("Animationen reduzieren")} />
+          <FollowSystemMotion />
           <Switch checked={!!th.lite} onChange={(lite) => setTheme({ lite })} label={t("Leichte Darstellung (spart Leistung)")}
             hint={t("Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.")} />
         </div>

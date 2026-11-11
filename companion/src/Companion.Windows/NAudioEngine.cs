@@ -241,6 +241,13 @@ public sealed class NAudioEngine : IAudioEngine
         if (_playing.TryGetValue(playbackId, out var pb)) foreach (var o in pb.Outputs) try { o.Play(); } catch { }
     }
 
+    public void SetVolume(string playbackId, float volume, float monitorVolume)
+    {
+        if (!_playing.TryGetValue(playbackId, out var pb)) return;
+        for (var i = 0; i < pb.Readers.Count; i++)
+            if (pb.Readers[i] is AudioFileReader r) { try { r.Volume = Math.Clamp(i == 0 ? volume : monitorVolume, 0f, 2f); } catch { /* just finished */ } }
+    }
+
     public void StopAll()
     {
         foreach (var id in _playing.Keys.ToList()) Stop(id);

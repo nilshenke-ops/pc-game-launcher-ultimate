@@ -3,7 +3,7 @@
 import type { Prefs } from "./prefs-core";
 
 /** Data of this device that travels with the account (and into a backup). */
-export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room", "pgl.memory", "pgl.homePlace", "pgl.aiChoice"] as const;
+export const ACCOUNT_KEYS = ["pgl.gamerpass", "pgl.widget.counters", "pgl.widget.break", "pgl.deals.ms", "pgl.room", "pgl.memory", "pgl.homePlace", "pgl.aiChoice", "pgl.wake"] as const;
 
 /** Sealed key stores of the device. They must never appear in an account blob or a backup. */
 export const DEVICE_KEY_STORES = ["pgl.localai", "pgl.localai.session", "pgl.localsearch.session", "pgl.localeleven.session"] as const;

@@ -4,6 +4,210 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.50.0 – 2026-11-11
+### Neu
+- **PC einschalten (Wake-on-LAN über die FRITZ!Box):** In der PC-Steuerung startest du den ausgeschalteten PC vom Handy, iPad oder PC – zu Hause und unterwegs. Die FRITZ!Box sendet das Wecksignal (AVM-Schnittstelle TR-064), ausgelöst über dein Cloud-Konto. Kein offener Port zum PC, keine UDP-Freigabe
+- Ehrliche Anzeige: „PC ausgeschaltet“ → „PC wird gestartet“ (Signal gesendet) → „PC startet gerade“ (FRITZ!Box sieht ihn im Heimnetz) → „Verbindung wird hergestellt“ → „PC verbunden“; nach 4 Minuten ohne Erfolg „PC nicht erreichbar“ mit Grund
+- Einrichtung mit „Verbindung testen“; die FRITZ!Box-Zugangsdaten werden mit dem Konto-Schlüssel verschlüsselt auf den Geräten aufbewahrt, nie im Code und nie in der Cloud gespeichert
+- Schutz vor Mehrfach-Befehlen: höchstens ein Startsignal alle 20 Sekunden und 20 pro Stunde je Konto
+- Begleiter: liest die MAC-Adresse des LAN-Anschlusses und prüft die Windows-Einstellungen (LAN-Kabel, Magic Packet, Wecken erlaubt, Schnellstart, Ruhezustand, Netzteil) – was sich nicht lesen lässt, steht als „unbekannt“ da
+- Anleitung für BIOS, Windows und FRITZ!Box: docs/WAKE-ON-LAN.md
+### Verbessert
+- Soundboard ohne PC: die Kacheln bleiben stehen, während die App den PC sucht (vorher wurden sie bei jedem Verbindungsversuch kurz neu aufgebaut)
+
+## 3.49.0 – 2026-11-11
+### Neu
+- **Soundboard ohne PC:** Solange das Handy/iPad mit dem PC verbunden ist, speichert es alle Sounds im Hintergrund auf dem Gerät (nur was neu oder geändert ist, höchstens 12 MB je Datei und 120 MB insgesamt). Ist der PC nicht verbunden, spielen die Kacheln den Sound auf dem Gerät selbst ab – mit der eingestellten Lautstärke, Wiederholung und „Alle stoppen“. Ein Hinweis zeigt, wie viele Sounds schon auf dem Gerät sind; noch nicht gespeicherte sagen, was zu tun ist
+- Begleiter: neue Schnittstelle `sounds.fetch` (Sound-Datei in kleinen Stücken lesen) – nötig fürs Speichern auf dem Gerät; der Windows-Begleiter muss dafür aktualisiert sein
+
+## 3.48.2 – 2026-11-11
+### Behoben
+- **Animationen verschwinden nach der Anmeldung:** „Animationen reduzieren“ und „Leichte Darstellung“ kamen mit dem Design aus der Cloud oder vom PC auf jedes Gerät und schalteten dort die Bewegung ab. Diese beiden Schalter gehören jetzt dem Gerät und werden von keinem Konto mehr überschrieben
+### Verbessert
+- Handy: Insel öffnet flüssiger – kein Weichzeichner-Filter, kein Aufleuchten und leichteres Glas, nur noch die Bewegung selbst
+
+## 3.48.1 – 2026-11-11
+### Behoben
+- **Startseite stürzt mit „Dieser Bereich konnte nicht geladen werden“ ab (nur angemeldet):** Ein einzelnes kaputtes Widget legt nicht mehr die ganze Startseite lahm – es zeigt „Dieses Widget konnte nicht angezeigt werden“ mit „Nochmal“, der Rest funktioniert
+- Die Fehlerkarte zeigt jetzt den genauen Fehler samt Fundstelle, hat „Fehler kopieren“ und „Startseite zurücksetzen“ (setzt nur Startseiten-Layout und Raum zurück, nicht das Konto) und speichert den letzten Fehler auf dem Gerät
+
+## 3.48.0 – 2026-11-11
+### Verbessert
+- **Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen
+- **ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen
+### Behoben
+- Die Scroll-Einblendung der Karten (3.46.0) ist wieder entfernt: sie verschob Positionen auf Seiten mit vielen Karten und machte Tests und Schalter unruhig
+
+## 3.47.1 – 2026-11-11
+### Neu
+- Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite)
+- Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander
+### Behoben
+- Insel: die neue Scroll-Einblendung der Karten (3.46.0) griff auch auf Karten innerhalb der Insel und störte dort das Wischen – die Insel ist jetzt ausgenommen
+- Insel: sanftes Überschwingen und dichtere Fläche aus 3.47.0 sind jetzt auch in den Tests abgebildet
+
+## 3.47.0 – 2026-11-11
+### Verbessert
+- Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite)
+- Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber
+
+## 3.46.2 – 2026-11-11
+### Behoben
+- **„Dieser Bereich konnte nicht geladen werden“ bleibt stehen (Handy):** Der Browser lieferte eine alte Kopie der Startseite aus, die auf nicht mehr vorhandene Dateien zeigte, und „Neu laden“ half nicht. Jetzt wird die App-Seite immer direkt vom Server geholt, bei dem Fehler heilt sich die Seite einmal selbst (Zwischenspeicher und Service-Worker werden gelöscht, Neuladen mit neuer Adresse), und „Neu laden“ macht dasselbe
+
+## 3.46.1 – 2026-11-11
+### Behoben
+- **Insel ohne Inhalt / „Dieser Bereich konnte nicht geladen werden“ nach einem Update:** Eine noch offene alte Seite fragte nach Programmteilen, die es nach dem Update nicht mehr gab. Jetzt lädt sich die Seite dann einmal selbst neu und holt die neue Version (nicht öfter als alle 30 Sekunden, damit es nie in einer Schleife hängt) – damit sind Öffnen/Schließen der Insel wieder da
+- **Abmelden:** Danach bleiben keine Daten des Kontos mehr sichtbar – Design, Layout, Kacheln, gespeicherte Spiele-/Appslisten und die Cloud-Kopie werden vom Gerät entfernt, es gilt wieder das Standard-Aussehen. Noch wartende Änderungen werden vorher (höchstens 2,5 s) gesendet. Beim Anmelden mit dem richtigen Konto kommt alles aus der Cloud zurück
+
+## 3.46.0 – 2026-11-11
+### Neu
+- Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch)
+- Hintergrundlicht driftet langsam (Nordlicht-Effekt); Seitentitel fahren aus der Unschärfe ein, der Text darunter folgt
+- Chips und Marken federn beim Darüberfahren und Drücken
+- Karten einer Seite gleiten beim Hineinscrollen ein (Browser mit Scroll-Animationen)
+- Alles stoppt mit „Animationen reduzieren“ und in der Leichten Darstellung
+
+## 3.45.1 – 2026-11-11
+### Neu
+- Holo-Ansicht: das Leuchten am Boden wandert mit den Karten mit, die Infos unter dem Spiel (Titel, Marken, Knöpfe) fahren nacheinander ein
+
+## 3.45.0 – 2026-11-11
+### Neu
+- Insel: Öffnen und Schließen komplett neu als durchchoreografierte Bewegung statt Feder – Öffnen ≈ 1,1 s (erst wird die Insel breiter, dann wächst sie in die Höhe, der Inhalt folgt), Schließen ≈ 0,95 s (erst faltet sich die Höhe zu, dann die Breite). Weicher Start, weiche Landung, kein Überschwingen; ein Richtungswechsel mitten drin startet dort, wo die Insel gerade ist
+
+## 3.44.2 – 2026-11-11
+### Verbessert
+- Insel: Öffnen und Schließen sind jetzt klar sichtbar langsamer (ca. 0,65 s bis fast fertig, Schließen ca. 0,8 s), weiche Feder
+- Holo-Ansicht: komplett neu bewegt – die Karten folgen dem Finger direkt, beim Loslassen übernimmt eine Feder mit der Geschwindigkeit des Wischens (Schwung wie in der Insel, auch über mehrere Karten); Tastatur, Pfeile und Regler gleiten genauso
+
+## 3.44.1 – 2026-11-11
+### Verbessert
+- Insel: Öffnen und Schließen deutlich sichtbarer – die Feder ist nochmal gut doppelt so weich (Öffnen ≈ 0,5 s bis fast fertig, Schließen ≈ 0,6 s), der Inhalt fährt gestaffelt mit
+
+## 3.44.0 – 2026-11-10
+### Verbessert
+- Insel: Öffnen und Schließen sind jetzt länger und weicher (Feder ca. 0,65 s statt 0,35 s, Schließen ruhig ohne Überschwingen); der Inhalt blendet entsprechend gestaffelt ein und aus
+- Insel: Während sie sich bewegt, pausiert die Seite das Weichzeichnen ihrer Glasflächen – das war der teuerste Teil und ließ die Bewegung ruckeln (Messung im Testbrowser: 15 → 20 Bilder pro Sekunde, ohne Grafikkarte)
+- Holo-Ansicht: Karten gleiten länger (1 s) und ohne Filter-Neuberechnung je Bild, der Wechsel der Infos kommt ohne Weichzeichner
+- Seitenleiste: die Markierung gleitet langsamer und weicher zum neuen Eintrag
+
+## 3.43.0 – 2026-11-10
+### Behoben
+- **Keine Animationen am PC (Ursache gefunden):** Die App schaltete alle Bewegung ab, sobald Windows „Animationen anzeigen“ aus hat (viele Gaming-PCs) oder das iPad „Bewegung reduzieren“ meldet – dann standen Insel, Seitenleiste, Übergänge und alle Federn still. Jetzt zählt nur noch die Einstellung der App (Einstellungen → Design: „Animationen reduzieren“ / Leichte Darstellung); wer will, schaltet „Systemeinstellung ‚Bewegung reduzieren‘ beachten“ ein
+### Neu
+- Insel (Handy, iPad, PC): Der Inhalt (Kopfzeile, Karten, Reiter) folgt der Feder Bild für Bild – Öffnen, Schließen und Umkehren mitten drin sind eine durchgehende Bewegung ohne Ruck; die geschlossene Insel blendet erst am Ende wieder ein
+- Insel-Reiter: eine Markierung gleitet von Reiter zu Reiter
+- Holo-Ansicht: Die Karten folgen dem Finger (Maus/Touch), rasten mit Feder ein, ein schneller Wisch überspringt eine Karte, am Rand gibt es ein Gummiband; Titel und Glanz wechseln mit der Wischrichtung
+- Seitenleiste links: Logo, Einträge und Fußbereich kommen nacheinander, Symbole kippen und federn beim Darüberfahren, der aktive Eintrag springt auf, Beschriftung rückt ein
+- Untere Leiste (Handy): fährt ein, das gewählte Symbol federt; „Alle Bereiche“: Kacheln erscheinen nacheinander
+- Auswahlschalter gleiten, Schalter dehnen sich beim Drücken und federn, Filter-Chips und Knöpfe federn beim Tippen, Listen und Kacheln erscheinen gestaffelt
+- Automatische Tests prüfen Bewegung auf Handy, iPad und PC (auch bei „System: Bewegung reduzieren“)
+
+## 3.42.1 – 2026-11-10
+### Behoben
+- Soundboard: Die Lautstärke wirkt jetzt sofort – auch auf Sounds, die gerade laufen (vorher nur auf den nächsten Sound), und beim Ziehen des Reglers (nicht erst beim Loslassen, auch am iPad)
+- JARVIS-Insel am PC: Das Fenster wird beim Öffnen und Schließen ohne Neuzeichnen pro Bild angepasst – die Öffnen- und Schließ-Animation läuft ruhiger durch
+### Verbessert
+- Stimmenwechsler: Liefert das Mikrofon nach 6 Sekunden gar kein Signal, erscheint ein Hinweis mit den nächsten Schritten; die Mikrofon-Automatik (Lautstärkeregelung) ist bei „Störgeräusche dämpfen“ jetzt an, damit leise Laptop-Mikrofone besser ankommen
+
+## 3.42.0 – 2026-11-10
+### Neu
+- Soundboard ohne PC: Ein Link (https), den du am iPad/Handy hinzufügst, geht jetzt über die Cloud – der PC lädt ihn von selbst herunter, sobald er läuft; kein Warten auf eine PC-Verbindung mehr (Dateien brauchen weiterhin die PC-Verbindung)
+- JARVIS-Stimme: Spricht die ElevenLabs-Stimme nicht, steht der Grund jetzt in der KI-Verwaltung (Sprache sprechen) statt dass still die Browser-Stimme übernimmt
+
+## 3.41.2 – 2026-11-10
+### Verbessert
+- Anmeldung am iPad/Handy: Ist der Name nicht in der Cloud und kein PC erreichbar, sagt die Meldung jetzt, dass das Konto vermutlich nur am PC liegt, und wo man es in die Cloud übernimmt
+
+## 3.41.1 – 2026-11-10
+### Verbessert
+- Konto & Anmeldedaten: Benutzername und Passwort stehen jetzt für jedes Konto da – Cloud-Konto und Konto am PC (ansehen, kopieren, Passwort einmal merken); Ändern und Geheimcode für Cloud-Konten, „In die Cloud übernehmen“ zusätzlich für ein Konto am PC
+- Wer sich am PC-Konto anmeldet oder eins anlegt, sieht sein Passwort danach sofort
+
+## 3.41.0 – 2026-11-10
+### Neu
+- Einstellungen: neuer Punkt „Konto & Anmeldedaten“ – zeigt Benutzername und Passwort (ansehen, kopieren, ändern, optionaler Geheimcode); ohne Anmeldung gleich mit Anmeldung/Registrierung
+- Ein Konto, das nur am PC liegt („Konto am PC“), lässt sich mit einem Knopf in die Cloud übernehmen (gleicher Name, gleiches Passwort) – danach verbindet sich der PC mit der Cloud und lädt seine Spiele hoch, sodass iPad und Handy sie auch ohne PC sehen
+### Verbessert
+- „Prüfen & reparieren“ erkennt ein Konto nur am PC und sagt, wo man es in die Cloud übernimmt
+
+## 3.40.1 – 2026-11-10
+### Neu
+- Einstellungen → Allgemein: Karte „Zugangsdaten“ ganz oben – Benutzername und Passwort sehen, kopieren und ändern (auch weiter im Profil)
+### Verbessert
+- Ein neues Passwort lässt sich ohne das alte festlegen (das angemeldete Gerät genügt) – danach ist es sofort sichtbar; wer sich neu anmeldet, sieht sein Passwort ohne Eingabe
+
+## 3.40.0 – 2026-11-10
+### Neu
+- Profil: neue Karte „Zugangsdaten“ – Benutzername und Passwort lassen sich ansehen und kopieren und beide ändern (das Konto wird dabei neu verschlüsselt, der PC verbindet sich von selbst neu)
+- Freiwilliger Extra-Geheimcode: schützt das Anzeigen des Passworts; am Anfang ist er aus und das Passwort direkt sichtbar. Das Passwort liegt nur auf dem Gerät (mit Code nur versiegelt), nie in der Cloud
+- Cloud-Dienst: neue Aktion zum Ändern von Name und Passwort (alte Anmeldung und alte Sync-Daten werden ungültig, doppelte Namen abgelehnt)
+### Behoben
+- iPad ohne PC zeigte „Noch keine Spiele“, obwohl der PC hochgeladen hatte: Eine Spiele-Liste mit vielen Bildern passte nicht in den Browser-Speicher und wurde nie gespeichert – sie wird jetzt ohne die ganz großen Bilder gespeichert
+- iPad ohne PC: Wurde der lokale Speicher geleert (Abmelden, Kontowechsel), glaubte das Gerät, es sei aktuell, und holte die Listen nie neu – fehlende Listen werden jetzt immer neu geladen
+- Lässt sich ein Eintrag aus der Cloud nicht entschlüsseln (anderes Passwort), steht jetzt ein Hinweis statt stillem Leerlauf
+
+## 3.39.3 – 2026-11-10
+### Neu
+- Cloud-Karte: Knopf „Prüfen & reparieren“ – prüft Schritt für Schritt Konto, Cloud, PC-Verbindung und Upload, verbindet den PC bei Bedarf mit dem Konto und zeigt in Klartext, wo es hängt (auch am iPad: zeigt, was in der Cloud liegt und wann der PC zuletzt hochgeladen hat)
+### Verbessert
+- Automatischer Test deckt jetzt auch die Startseite ohne PC-Verbindung ab (die Spiele des PCs statt der Standard-Kacheln)
+
+## 3.39.2 – 2026-11-10
+### Behoben
+- Cloud-Karte: Der Knopf „Zur Anmeldung“ tat auf der Profil-Seite nichts – er heißt jetzt „Jetzt anmelden“ und öffnet direkt die Anmeldung
+- Cloud-Karte zeigt Anmeldung und Abmeldung sofort (blieb vorher auf „nicht angemeldet“ stehen, bis der nächste Abgleich lief) und sagt, ob das Gerät nur lokal oder mit dem Cloud-Konto angemeldet ist
+
+## 3.39.1 – 2026-11-10
+### Behoben
+- Cloud: Lehnt die Cloud einen einzelnen Eintrag ab (z. B. die Spiele-Liste mit vielen Bildern ist zu groß), blockiert das nicht mehr alle anderen – der Eintrag wird einzeln, dann ohne große Bilder erneut gesendet; bleibt ein Fehler, steht der genaue Grund auf der Cloud-Seite am PC
+
+## 3.39.0 – 2026-11-10
+### Neu
+- Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %)
+- Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab
+- Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen
+- Insel: Logo des laufenden Spiels als Abzeichen auf der Spiel-Karte, auch wenn ein Titelbild da ist
+- Hinweis auf Home und in der Bibliothek, wenn der PC noch nichts in die Cloud übertragen hat (mit Anleitung)
+### Verbessert
+- Insel: Titelbilder der Musik 360 statt 128 Pixel, Programm- und Spiel-Symbole 256 statt 96 Pixel – deutlich schärfer (neue Symbole nach dem Update des Begleiters)
+- Cloud: Lehnt die Cloud eine Änderung ab, steht jetzt der Grund da statt „Cloud nicht erreichbar“
+- Cloud-Karte ohne Anmeldung erklärt, dass auch der PC mit demselben Konto angemeldet sein muss, und führt zur Anmeldung
+
+## 3.38.0 – 2026-11-10
+### Neu
+- Stimmenwechsler: zweiter Reiter „Echte Stimmen (ElevenLabs)“. Ein Satz wird aufgenommen (Taste „Sprechen“ halten oder automatisch bei Sprechpausen), an ElevenLabs geschickt und kommt in einer Stimme aus deinem ElevenLabs-Konto zurück – auf das virtuelle Kabel für Discord. Mit Stimmenliste aus dem Konto, Verzögerungsanzeige und gesendeter Sprechzeit. Nicht live (ein bis drei Sekunden pro Satz); den Schlüssel trägst du einmal in der KI-Verwaltung ein, er gilt auf allen Geräten des Kontos
+- Stimmenwechsler: Anleitung, wie man ihn mit Voicemod, Voicemeeter oder RVC/w-okada hintereinanderschaltet
+
+## 3.37.1 – 2026-11-10
+### Verbessert
+- Test des Stimmenwechslers: Stimmen mit exaktem Namen wählen
+
+## 3.37.0 – 2026-11-10
+### Neu
+- Stimmenwechsler: 19 neue Stimmen, jetzt über 30 – u. a. Duell-Ansager (dramatisch wie bei einem großen Kartenduell), Riese, Oger, Dunkler Herrscher, Bösewicht, Zombie, Geist, Gruselkeller, Unterwasser, Helium, Maus, Fee, Kobold, Blechdose, Cyborg, Durchsage, Stadion-Sprecher, Doppelgänger und Pilot
+
+## 3.36.0 – 2026-11-10
+### Neu
+- Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC
+### Behoben
+- Beim Start der Seite gab es einen Ladefehler im Schlüsselspeicher (Zugriff auf eine Liste, bevor sie angelegt war); die Schlüssel werden jetzt sauber nach dem Laden geöffnet
+
+## 3.35.0 – 2026-11-10
+### Neu
+- Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite
+- Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da
+### Behoben
+- „Wie viel hat Bayern gespielt?“ (und „wie hat Dortmund heute gespielt?“) wird als Sportfrage mit echten Ergebnissen beantwortet und nicht mehr als Frage nach der eigenen Spielzeit
+- Insel: Ein Tipp auf einen Reiter, während sich die Insel noch bewegt, geht nicht mehr verloren – sie fährt danach dorthin
+- Wischen in der Insel auf dem Handy: Der Bereich folgt dem Finger jetzt auch bei Android-Chrome (die Geste wurde vorher vom Browser abgebrochen)
+
+## 3.34.1 – 2026-11-10
+### Verbessert
+- Zeigt im Widget-Baukasten eine Live-Vorschau der Glasfläche.
+- Hellere Bühne im Baukasten, damit der Glasrand sichtbar wird.
+
 ## 3.34.0 – 2026-11-09
 ### Neu
 - Profil: Tippen auf das „N“ öffnet jetzt eine Konto-Übersicht mit den schon verbundenen Konten – ein Tipp wechselt zwischen ihnen, ohne Passwort. Die Seite „Konto & Cloud“ heißt jetzt „Profil“ und ist neu geordnet: oben Konto, Kontowechsel, KI-Schlüssel und Backup, darunter alles zur Cloud (Dienst, Synchronisierung, was in der Cloud liegt, was am PC bleibt)

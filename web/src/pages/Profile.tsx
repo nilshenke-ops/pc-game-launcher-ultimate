@@ -7,6 +7,7 @@ import { relTime } from "../lib/format";
 import { Banner, Button, Card, Segmented } from "../components/ui";
 import { AccountPanel } from "../components/design-profile";
 import { CloudSyncCard } from "../components/cloud-sync-card";
+import { AccountCredentials } from "../components/account-credentials";
 import { CLOUD_WEB, CLOUD_WORKER_GUIDE, cloudApi, cloudHealth, customCloudApi, pendingBlob, setCustomCloudApi, type CloudHealth } from "../lib/cloud-account";
 import { accountBackup, flushPending, listAccounts, saveNow, session, switchAccount } from "../lib/design-account";
 import { LOCAL_NAME, LOCAL_PROVIDERS, SEARCH_NAME, SEARCH_PROVIDERS, useLocalAi } from "../lib/free-ai-local";
@@ -271,6 +272,8 @@ export default function ProfilePage() {
           <p className="tiny muted" style={{ margin: "10px 0 0" }}>{t("Der mitgelieferte Dienst ist voreingestellt. Ein eigener Dienst lohnt sich, wenn deine Daten in deinem Cloudflare-Konto liegen sollen.")}</p>
         )}
       </Card>
+
+      <AccountCredentials />
 
       <CloudSyncCard />
 

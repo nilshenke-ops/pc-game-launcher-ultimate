@@ -33,5 +33,7 @@ export function memorySettings(): MemorySettings {
 export function setMemorySettings(patch: Partial<MemorySettings>): MemorySettings {
   const next = { ...memorySettings(), ...patch };
   writeJson(MEMORY_SETTINGS_KEY, next);
+  // Only a change of the settings themselves (not the note "the PC took it over") goes to the PC through the account.
+  if (("path" in patch || "enabled" in patch || "writeEnabled" in patch || "deleteEnabled" in patch || "auto" in patch) && typeof window !== "undefined" && typeof window.dispatchEvent === "function") window.dispatchEvent(new Event("pgl-memory-config"));
   return next;
 }

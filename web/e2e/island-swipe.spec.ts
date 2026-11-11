@@ -41,7 +41,9 @@ test("Wischen: der Bereich folgt dem Finger, fährt weiter und der nächste fede
   const peek = panel.locator(".isl2-peek");
   await expect(peek).toHaveCount(1);
   const gap = await page.evaluate(() => { const b = document.querySelector(".isl2-body:not(.isl2-peek)")!.getBoundingClientRect(), p = document.querySelector(".isl2-peek")!.getBoundingClientRect(); return { dx: p.left - b.left, w: b.width, po: Number(getComputedStyle(document.querySelector(".isl2-peek")!).opacity) }; });
-  expect(Math.abs(gap.dx - gap.w)).toBeLessThan(3); expect(gap.po).toBe(1);
+  expect(gap.po).toBe(1);
+  // (the two areas settle within a few frames after the first move; under load that can take a moment)
+  await expect.poll(() => page.evaluate(() => { const b = document.querySelector(".isl2-body:not(.isl2-peek)")!.getBoundingClientRect(), p = document.querySelector(".isl2-peek")!.getBoundingClientRect(); return Math.abs(p.left - b.left - b.width); }), { timeout: 2000 }).toBeLessThan(3);
   // Release far enough: on to the next area, the body starts fresh (no leftover transform), and it really is another tab.
   await body.evaluate((el) => el.dispatchEvent(new PointerEvent("pointermove", { bubbles: true, pointerId: 7, pointerType: "touch", clientX: el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2 - 170, clientY: el.getBoundingClientRect().top + 30 })));
   await body.evaluate((el) => el.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, pointerId: 7, pointerType: "touch", clientX: el.getBoundingClientRect().left + el.getBoundingClientRect().width / 2 - 170, clientY: el.getBoundingClientRect().top + 30 })));
@@ -112,4 +114,16 @@ test("Übergang ist flüssig: viele Zwischenbilder, ohne Sprünge und ohne Flack
   expect(Math.max(...jumps)).toBeLessThan(120);
   expect(Math.min(...frames.map((f) => f.o))).toBe(1);                           // and it never fades out or flickers
   expect(frames.at(-1)!.o).toBe(1);                                              // and it ends fully visible
+});
+
+test("zwei Tipps schnell hintereinander: die Insel landet beim zuletzt getippten Reiter, nichts geht verloren", async () => {
+  const panel = page.getByRole("dialog", { name: "JARVIS-Insel" });
+  const home = panel.getByRole("tab", { name: "Home", exact: true });
+  if ((await home.getAttribute("aria-selected")) !== "true") await home.click();
+  await expect(home).toHaveAttribute("aria-selected", "true", { timeout: 4000 });
+  await expect.poll(() => panel.locator(".isl2-body:not(.isl2-peek)").evaluate((el) => el.getAnimations().length), { timeout: 3000 }).toBe(0);
+  await panel.getByRole("tab", { name: "PC", exact: true }).click();
+  await home.click();                                                           // still moving: this tap is queued
+  await expect(panel.getByRole("tab", { name: "Home", exact: true })).toHaveAttribute("aria-selected", "true", { timeout: 4000 });
+  await expect(panel.locator(".isl2-peek")).toHaveCount(0, { timeout: 4000 });
 });

@@ -1,3 +1,4 @@
+import { CloudEmptyHint } from "../components/cloud-sync-card";
 import { sortLibrary } from "../lib/library-sort";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Box, Check, FolderOpen, Wand2, Gamepad2, LayoutGrid, List, Loader2, MoreVertical, Pencil, Play, Plus, Radar, RefreshCw, Search, Star, Trash2 } from "lucide-react";
@@ -99,6 +100,7 @@ export default function Library({ kind }: { kind: ItemKind }) {
 
   return (
     <>
+      <CloudEmptyHint />
       <PageHead eyebrow={t("Bibliothek")} title={isGame ? t("Spiele") : t("Programme")}
         text={isGame ? t("Starte Spiele von Steam, Epic, Xbox/Microsoft Store und eigene EXE-Dateien – direkt vom Handy.") : t("Freigegebene Windows-Programme wie Discord, Browser oder OBS mit einem Tipp starten.")}
         actions={canManage && <>

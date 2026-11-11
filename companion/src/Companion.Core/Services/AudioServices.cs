@@ -86,6 +86,9 @@ public sealed class AudioService
         return missing;
     }
 
+    /// <summary>Raised when the soundboard/monitor volume changed: sounds that play right now follow at once.</summary>
+    public event Action? VolumeChanged;
+
     public AudioSettings Save(AudioSettings u)
     {
         u.SoundboardVolume = Math.Clamp(u.SoundboardVolume, 0, 100);
@@ -95,6 +98,7 @@ public sealed class AudioService
         if (u.PlayMode is not ("overlap" or "queue" or "replace")) u.PlayMode = "overlap";
         var before = Settings();
         _store.Replace(u);
+        if (before.SoundboardVolume != u.SoundboardVolume || before.MonitorVolume != u.MonitorVolume) VolumeChanged?.Invoke();
         // Restarting the mic passthrough causes a short dropout in Discord – only do it when mic settings changed.
         var err = MicChanged(before, u) ? ApplyMic() : null;
         _hub.Changed("audio");
@@ -255,6 +259,7 @@ public sealed class SoundboardService
         _store = new JsonStore<SoundsFile>(paths.File("sounds.json"));
         _paths = paths;
         _audio = audio;
+        _audio.VolumeChanged += ApplyVolumeToPlaying;
         _hub = hub;
         _http = http ?? new HttpClient(new SocketsHttpHandler { ConnectCallback = SafeConnect, AllowAutoRedirect = true, MaxAutomaticRedirections = 3 }) { Timeout = TimeSpan.FromSeconds(20) };
         _http.DefaultRequestHeaders.UserAgent.ParseAdd("PCGameLauncherUltimate/1.0 (+soundboard import)");
@@ -440,6 +445,23 @@ public sealed class SoundboardService
         return r;
     }
 
+    /// <summary>One piece of a sound file for a phone that keeps its own copy (so the sounds also play without the PC). Chunked, so no message gets large.</summary>
+    public object ReadChunk(string soundId, long offset, int length)
+    {
+        var sound = _store.Get(f => f.Sounds.FirstOrDefault(s => s.Id == soundId)) ?? throw new RpcException("not-found", "Sound nicht gefunden.");
+        var path = Path.Combine(_paths.SoundsDir, sound.FileName);
+        if (!File.Exists(path)) throw new RpcException("not-found", "Audiodatei fehlt auf dem PC.");
+        length = Math.Clamp(length, 1, 300_000);
+        using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var total = fs.Length;
+        offset = Math.Clamp(offset, 0, total);
+        fs.Seek(offset, SeekOrigin.Begin);
+        var buf = new byte[(int)Math.Min(length, total - offset)];
+        var read = 0;
+        while (read < buf.Length) { var n = fs.Read(buf, read, buf.Length - read); if (n <= 0) break; read += n; }
+        return new { data = Convert.ToBase64String(buf, 0, read), total, format = sound.Format, sha256 = sound.Sha256, done = offset + read >= total };
+    }
+
     /// <summary>Sounds whose audio file is no longer on the PC (deleted or moved by hand).</summary>
     public List<string> Missing() => Get().Sounds.Where(x => !File.Exists(Path.Combine(_paths.SoundsDir, x.FileName))).Select(x => x.Id).ToList();
 
@@ -485,6 +507,20 @@ public sealed class SoundboardService
     }
 
     // ---------------------------------------------------------------- playback
+
+    /// <summary>The volume slider also works on sounds that are playing right now (before, only the next sound used the new value).</summary>
+    void ApplyVolumeToPlaying()
+    {
+        var a = _audio.Settings();
+        List<(string pb, string soundId)> now;
+        lock (_lock) now = _playing.Select(x => (x.Key, x.Value.soundId)).ToList();
+        foreach (var (pb, soundId) in now)
+        {
+            var sound = _store.Get(f => f.Sounds.FirstOrDefault(s => s.Id == soundId));
+            if (sound == null) continue;
+            _audio.Engine.SetVolume(pb, Math.Clamp(a.SoundboardVolume / 100f * sound.Volume / 100f, 0f, 2f), Math.Clamp(a.MonitorVolume / 100f * sound.Volume / 100f, 0f, 2f));
+        }
+    }
 
     public string? Play(string soundId, bool fromQueue = false)
     {

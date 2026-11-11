@@ -644,6 +644,7 @@ public static class RpcApi
         rpc.Register("sounds.update", ctx => s.Soundboard.Update(ctx.Bind<SoundboardService.SoundUpdate>()));
         rpc.Register("sounds.remove", ctx => { s.Soundboard.Remove(ctx.Str("id", 64)); return true; });
         rpc.Register("sounds.play", ctx => s.Soundboard.Play(ctx.Str("id", 64)) is { } err ? throw new RpcException("audio", err) : true);
+        rpc.Register("sounds.fetch", ctx => s.Soundboard.ReadChunk(ctx.Str("id", 64), ctx.OptLong("offset") ?? 0, ctx.Int("length", 262_144, 1, 300_000)));
         rpc.Register("sounds.stop", ctx => { s.Soundboard.Stop(ctx.Str("playbackId", 64)); return true; });
         rpc.Register("sounds.stopAll", ctx => { s.Soundboard.StopAll(); return true; });
         rpc.Register("sounds.pause", ctx => { s.Soundboard.Pause(ctx.Str("playbackId", 64), true); return true; });
@@ -871,6 +872,7 @@ public static class RpcApi
         rpc.Register("obs.muteToggle", async ctx => (object)new { message = await s.Obs.MuteToggle(ctx.Str("kind", 10)) });
 
         // ------------------------------------------------------------ inventory, error reports, plugin test lab
+        rpc.Register("wol.info", async ctx => await Task.Run(() => s.Wake.Get(ctx.Params.TryGetProperty("fresh", out var f) && f.ValueKind == System.Text.Json.JsonValueKind.True)));
         rpc.Register("inventory.get", async _ => await Task.Run(() => s.Inventory.Get()));
         rpc.Register("crash.list", _ => new { reports = s.Crashes.List() });
         rpc.Register("crash.create", async ctx => { var id = ctx.Str("itemId", 64); return (object?)await Task.Run(() => s.Crashes.Create(id)); });

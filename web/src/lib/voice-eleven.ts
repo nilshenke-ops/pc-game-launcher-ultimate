@@ -2,6 +2,7 @@
 // (the key never reaches a phone or this page) and sends back a short MP3. Off unless it was switched on at the PC;
 // whenever anything goes wrong the browser voice speaks instead, so JARVIS is never silent because of this.
 
+import { useSyncExternalStore } from "react";
 import { client } from "./rpc";
 import { toast } from "./hooks";
 import { t } from "./i18n";
@@ -41,6 +42,13 @@ export function elevenReady(): boolean {
   return status.enabled && client.status.phase === "online" && client.status.auth === "ok";
 }
 
+// Why the ElevenLabs voice did not speak the last time (null = it worked or was not tried): shown in the AI management instead of a silent switch to the browser voice.
+let problem: string | null = null;
+const pl = new Set<() => void>();
+export const ttsProblem = () => problem;
+export function setTtsProblem(p: string | null) { if (p === problem) return; problem = p; pl.forEach((l) => l()); }
+export const useTtsProblem = () => useSyncExternalStore((fn) => { pl.add(fn); return () => { pl.delete(fn); }; }, ttsProblem);
+
 let audio: HTMLAudioElement | null = null;
 let told = "";
 
@@ -65,9 +73,11 @@ export async function speakEleven(text: string, isCurrent: () => boolean, onStar
     a.onerror = () => { if (audio === a) audio = null; onEnd(); };
     await a.play();
     onStart();
+    setTtsProblem(null);
     return true;
   } catch (e) {
     const code = (e as { code?: string }).code ?? "";
+    if (code !== "voice-off") setTtsProblem((e as Error).message || code);
     // Tell the user once per reason why the browser voice speaks (key wrong, limit reached …); everything else stays quiet.
     if (/^voice-(key|limit|not-stock)$/.test(code) && told !== code) { told = code; toast(t("ElevenLabs-Stimme nicht verfügbar – JARVIS spricht mit der Browser-Stimme. ({m})", { m: (e as Error).message }), "warning"); }
     if (code === "voice-off") void refreshEleven();
@@ -85,5 +95,5 @@ export async function playElevenBlob(blob: Blob, isCurrent: () => boolean, onSta
   audio = a;
   const done = () => { if (audio === a) audio = null; URL.revokeObjectURL(url); onEnd(); };
   a.onended = done; a.onerror = done;
-  try { await a.play(); onStart(); return true; } catch { done(); return false; }
+  try { await a.play(); onStart(); setTtsProblem(null); return true; } catch (e) { done(); setTtsProblem((e as Error).message || "Wiedergabe blockiert"); return false; }
 }

@@ -40,10 +40,15 @@ public sealed class CloudSyncService : IDisposable
     public static readonly string[] Items =
     {
         "state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
-        "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list",
+        "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list", "wol.info",
     };
     /// <summary>Changes a device may make through the cloud while the PC is off – data only, never starting programs or changing what runs.</summary>
-    public static readonly HashSet<string> OpMethods = new() { "library.update", "settings.save" };
+    public static readonly HashSet<string> OpMethods = new() { "library.update", "settings.save", "memory.configure", "ai.set", "sounds.importUrl" };
+    /// <summary>
+    /// Takes over account settings that only the PC itself may apply (the memory folder, AI keys): the account owner set them up once on any device,
+    /// they arrive sealed with the account key, and the PC applies them with its own rights. Set by <c>CompanionServices</c>.
+    /// </summary>
+    public Func<string, JsonElement, Task>? AccountSettings { get; set; }
     const int PartSize = 900_000, MaxApplied = 1000;
     static readonly TimeSpan Period = TimeSpan.FromSeconds(30), Debounce = TimeSpan.FromSeconds(2), Heartbeat = TimeSpan.FromMinutes(5);
 
@@ -164,7 +169,8 @@ public sealed class CloudSyncService : IDisposable
             await TakeOverAsync(f.Api, f.User, token, key);
             await PushAsync(f.Api, f.User, token, key);
             _failures = 0; _nextTry = DateTime.MinValue; _state = "ok";
-            _store.Update(x => { x.LastOkAt = DateTime.UtcNow; x.LastError = null; });
+            var partial = PushFailures; PushFailures = null;
+            _store.Update(x => { x.LastOkAt = DateTime.UtcNow; x.LastError = partial; });
             return true;
         }
         catch (CloudAuthException)
@@ -211,13 +217,56 @@ public sealed class CloudSyncService : IDisposable
         if (changed.Count == 0 && !heartbeat) return;
         if (changed.Count == 0) changed.Add(("state.get", "", Volatile("state.get", Json.Serialize(await _invoke("state.get", EmptyParams)))));
         // Several small requests instead of one big one (each item may be up to a few MB as ciphertext).
+        // One item the cloud refuses (too big, …) must not block all the others: it is retried alone, then without its big pictures, and only then reported.
+        var failures = new List<string>();
         foreach (var batch in Batches(changed))
+        {
+            if (await TryPushAsync(api, user, token, key, batch, null)) continue;
+            foreach (var c in batch)
+            {
+                if (await TryPushAsync(api, user, token, key, new List<(string item, string hash, string json)> { c }, failures)) continue;
+                var slim = SlimPictures(c.json);
+                if (slim != c.json && await TryPushAsync(api, user, token, key, new List<(string item, string hash, string json)> { (c.item, c.hash, slim) }, failures)) { failures.RemoveAll(x => x.StartsWith(c.item + ":")); Log.Warn("cloud", $"{c.item}: ohne große Bilder übertragen (war zu groß)."); }
+            }
+        }
+        PushFailures = failures.Count == 0 ? null : "Nicht in die Cloud übertragen: " + string.Join("; ", failures);
+        if (changed.Any(c => c.hash != "")) Log.Info("cloud", "In die Cloud übertragen: " + string.Join(", ", changed.Where(c => c.hash != "").Select(c => c.item)));
+    }
+
+    /// <summary>What went wrong with single items in the last round (shown on the cloud page), or null.</summary>
+    string? PushFailures;
+
+    async Task<bool> TryPushAsync(string api, string user, string token, byte[] key, List<(string item, string hash, string json)> batch, List<string>? failures)
+    {
+        try
         {
             var items = batch.Select(c => new { item = c.item, ver = Ids.Token(10), parts = Split(Seal(key, c.json)) }).ToList();
             await PostAsync(api, "push", new { user, token, pc = _pcName(), items });
             _store.Update(x => { foreach (var c in batch) if (c.hash != "") x.Pushed[c.item] = c.hash; x.LastPushAt = DateTime.UtcNow; });
+            return true;
         }
-        if (changed.Any(c => c.hash != "")) Log.Info("cloud", "In die Cloud übertragen: " + string.Join(", ", changed.Where(c => c.hash != "").Select(c => c.item)));
+        catch (RpcException ex)
+        {
+            failures?.Add($"{batch[0].item}: {ex.Message}");
+            return false;
+        }
+    }
+
+    /// <summary>Fallback for an item that is too big for the cloud: every very long text (a picture as data URL) is dropped, everything else stays.</summary>
+    static string SlimPictures(string json)
+    {
+        try
+        {
+            var node = JsonNode.Parse(json);
+            void Walk(JsonNode? n)
+            {
+                if (n is JsonObject o) foreach (var k in o.Select(x => x.Key).ToList()) { if (o[k] is JsonValue v && v.TryGetValue<string>(out var str) && str.Length > 20_000) o[k] = null; else Walk(o[k]); }
+                else if (n is JsonArray a) foreach (var x in a) Walk(x);
+            }
+            Walk(node);
+            return node?.ToJsonString(Json.Options) ?? json;
+        }
+        catch (JsonException) { return json; }
     }
 
     static IEnumerable<List<(string item, string hash, string json)>> Batches(List<(string item, string hash, string json)> all)
@@ -289,6 +338,21 @@ public sealed class CloudSyncService : IDisposable
         if (!OpMethods.Contains(method)) throw new RpcException("forbidden", $"„{method}“ wird aus der Cloud nicht übernommen.");
         var p = op.GetProperty("params");
         if (p.ValueKind != JsonValueKind.Object) throw new RpcException("invalid-params", "Ungültige Änderung.");
+        if (method is "memory.configure" or "ai.set")
+        {
+            if (AccountSettings == null) throw new RpcException("forbidden", $"„{method}“ wird aus der Cloud nicht übernommen.");
+            await AccountSettings(method, p);
+            Log.Info("cloud", $"Einstellung von {device} übernommen: {method}");
+            return null;
+        }
+        if (method == "sounds.importUrl")
+        {
+            // A link a device added while the PC was off: only https, then the same import as from the phone (the PC checks size and format itself).
+            var url = p.TryGetProperty("url", out var u) && u.ValueKind == JsonValueKind.String ? u.GetString() : null;
+            if (url == null || !Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps) return $"Link von {device}: nur https-Links werden übernommen – verworfen.";
+            try { await _invoke("sounds.importUrl", p.Clone()); Log.Info("cloud", $"Sound-Link von {device} übernommen."); return null; }
+            catch (Exception e) { return $"Sound-Link von {device} nicht übernommen: {e.Message}"; }      // any failure (download, format, size) is noted – the change must not stay open forever
+        }
         var hasBase = op.TryGetProperty("base", out var b) && b.ValueKind == JsonValueKind.Object;
         JsonElement? current = null;
         if (method == "library.update")

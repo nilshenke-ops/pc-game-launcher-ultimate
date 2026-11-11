@@ -43,6 +43,7 @@ export function navItems(): NavItem[] {
     { path: "/layouts", label: t("Fenster-Layouts"), short: t("Layouts"), icon: LayoutTemplate, group: g.ctrl, keywords: "fenster monitor bildschirm anordnen layout zweiter monitor position discord obs" },
     { path: "/hotkeys", label: t("Hotkeys & Makros"), short: t("Hotkeys"), icon: Keyboard, group: g.ctrl, keywords: "tastenkürzel tasten macro studio makro medientasten" },
     { path: "/soundboard", label: t("Soundboard"), short: t("Sounds"), icon: Music, group: g.audio, keywords: "sounds myinstants soundlab discord" },
+    { path: "/voice-changer", label: t("Stimmenwechsler"), short: t("Stimme"), icon: Mic, group: g.audio, keywords: "stimme stimmen voice changer discord verändern roboter monster tief hoch alien echo megafon mikrofon kabel cable vb-audio sprechen" },
     { path: "/audio", label: t("Audio Center"), short: t("Audio"), icon: Headphones, group: g.audio, keywords: "mikrofon discord kabel ausgabe" },
     { path: "/monitor", label: t("PC Monitor"), short: t("Monitor"), icon: Activity, group: g.sys, keywords: "cpu ram gpu temperatur vram performance center" },
     { path: "/captures", label: t("Aufnahmen"), icon: Camera, group: g.sys, keywords: "screenshot screenshots clip clips video aufnahme replay bilder galerie obs nvidia game bar steam" },

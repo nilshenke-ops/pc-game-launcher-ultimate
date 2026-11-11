@@ -55,7 +55,7 @@ export function AccountPanel({ onDone, forceForm }: { onDone?: () => void; /** S
                 <span><b>{s.user}</b> <span className="tiny muted">{s.savedAt ? t("· gespeichert {d}", { d: relTime(s.savedAt) }) : ""}</span></span>
                 <div className="row" style={{ gap: 6 }}>
                   <Button size="sm" icon={<Save size={14} />} busy={busy} disabled={!s.cloud && !online} onClick={() => void run(saveNow, t("Daten im Konto gespeichert"))}>{t("Jetzt speichern")}</Button>
-                  <Button size="sm" variant="ghost" icon={<LogOut size={14} />} onClick={() => { signOut(); refresh(); window.dispatchEvent(new Event("pgl-account")); }}>{t("Abmelden")}</Button>
+                  <Button size="sm" variant="ghost" icon={<LogOut size={14} />} onClick={async () => { await signOut(); refresh(); window.dispatchEvent(new Event("pgl-account")); }}>{t("Abmelden")}</Button>
                 </div>
               </div>
               <p className="tiny muted" style={{ margin: 0 }}>{s.cloud
