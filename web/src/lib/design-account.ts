@@ -11,6 +11,8 @@ import {
 import { ACCOUNT_KEYS, buildAccountBackup, type AccountBackup } from "./account-backup";
 import { getPrefs, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
+import { defaultPrefs } from "./prefs-core";
+import { forgetCloudCopy } from "./cloud-sync";
 import { t } from "./i18n";
 import { hasAccessCode, moveSecret, rememberPassword, setCode } from "./account-secret";
 import { exportKeyBundle, importKeyBundle, rescopeLocalAi, whenLocalAiReady, wipeLocalAi } from "./free-ai-local";
@@ -254,11 +256,20 @@ export async function deleteProfile() {
   notifyAccount();
 }
 
-export const signOut = () => {
+export const signOut = async () => {
   const s = session();
+  // Changes that still wait are sent first (a few seconds at most) – after signing out nothing of the account stays on this device.
+  if (s && (cloudAccountConfigured() || client.status.auth === "ok")) {
+    try { await Promise.race([flushPending(), new Promise((r) => window.setTimeout(r, 2500))]); } catch { /* the account keeps what was saved before */ }
+  }
   if (s?.cloud) cloudSignOut();
   store(null);
   if (s) forget(s.user);
+  // Back to the standard look and the standard home: design, layout, tiles and the saved lists of the account are removed from this device.
+  clearAccountData();
+  replacePrefs({ ...defaultPrefs(), lang: getPrefs().lang });
+  forgetCloudCopy();
+  reloadRoom();
   void rescopeLocalAi();                                     // signed out: the keys of the account are no longer open here
   notifyAccount();
 };

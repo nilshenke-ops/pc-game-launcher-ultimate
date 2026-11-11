@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.46.1 – 2026-11-11
+### Behoben
+- **Insel ohne Inhalt / „Dieser Bereich konnte nicht geladen werden“ nach einem Update:** Eine noch offene alte Seite fragte nach Programmteilen, die es nach dem Update nicht mehr gab. Jetzt lädt sich die Seite dann einmal selbst neu und holt die neue Version (nicht öfter als alle 30 Sekunden, damit es nie in einer Schleife hängt) – damit sind Öffnen/Schließen der Insel wieder da
+- **Abmelden:** Danach bleiben keine Daten des Kontos mehr sichtbar – Design, Layout, Kacheln, gespeicherte Spiele-/Appslisten und die Cloud-Kopie werden vom Gerät entfernt, es gilt wieder das Standard-Aussehen. Noch wartende Änderungen werden vorher (höchstens 2,5 s) gesendet. Beim Anmelden mit dem richtigen Konto kommt alles aus der Cloud zurück
+
 ## 3.46.0 – 2026-11-11
 ### Neu
 - Spielkarten und Schnellkacheln neigen sich zur Maus, heben sich an und tragen einen Lichtfleck, der dem Zeiger folgt (nur mit Maus, nie auf Touch)

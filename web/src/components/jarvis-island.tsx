@@ -5,8 +5,9 @@
 // island and only gets told the shape of every frame, so the screen and the window cut-out can never drift apart.
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
+import { lazyRetry } from "../lib/lazy-retry";
 import { plainAnswer } from "../lib/answer-text";
-import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { Bell, Check, Gamepad2, Music, Timer as TimerIcon, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
@@ -16,7 +17,7 @@ import { advanceTimer, countdownView, playTime, timerLive, useTimer } from "../l
 // The open panel (tabs, AI settings, widgets) is by far the biggest part of the island and is only needed after a tap: it loads in the
 // background right after the page has started (idle), so the first tap is still instant, but the start of the app does not wait for it.
 const loadPanel = () => import("./island-panel");
-const IslandPanel = lazy(() => loadPanel().then((m) => ({ default: m.IslandPanel })));
+const IslandPanel = lazyRetry(() => loadPanel().then((m) => ({ default: m.IslandPanel })));
 if (typeof window !== "undefined") {
   const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
   if (idle) idle(() => { void loadPanel(); }, { timeout: 4000 }); else window.setTimeout(() => { void loadPanel(); }, 2500);

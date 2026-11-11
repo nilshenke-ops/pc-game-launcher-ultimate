@@ -13,7 +13,7 @@ import { useSyncExternalStore } from "react";
 import { client, readJson, writeJson } from "./rpc";
 import { cloudApi } from "./cloud-account";
 import { session, type DesignSession } from "./design-account";
-import { saveCache, savedOverview, bumpCache, readCache, CACHED_METHODS } from "./offline-cache";
+import { saveCache, savedOverview, bumpCache, readCache, clearCaches, CACHED_METHODS } from "./offline-cache";
 import { setOpQueuedHook } from "./outbox";
 import { openBlob, sealBlob } from "./cloud-seal";
 export { openBlob, sealBlob } from "./cloud-seal";
@@ -98,6 +98,13 @@ function deviceName(): string {
 // ------------------------------------------------------------------ pulling: the cloud copy becomes the device's copy
 
 let pulling = false;
+/** Signed out: the device's copy of the cloud data (games, tiles, state …), the token and waiting changes go – nothing of the account stays visible here. */
+export function forgetCloudCopy() {
+  forgetToken(); writeJson(OPS_KEY, null); writeJson(NOAUTO_KEY, null);
+  clearCaches(); bumpCache();
+  setStatus({ active: false, user: null, pending: 0 });
+}
+
 export async function pullNow(): Promise<boolean> {
   const s = currentSession();
   if (!s) { setStatus({ active: false, user: null }); return false; }
