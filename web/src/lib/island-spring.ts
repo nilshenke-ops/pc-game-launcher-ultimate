@@ -28,31 +28,49 @@ export const isSettled = (x: number[], v: number[], target: number[], eps = 0.25
 export interface Scheduler { request(cb: (nowMs: number) => void): number; cancel(id: number): void }
 const browser: Scheduler = { request: (cb) => requestAnimationFrame(cb), cancel: (id) => cancelAnimationFrame(id) };
 
+/** Opening and closing take a fixed, clearly visible time (ms for a full open / full close). */
+export const OPEN_MS = 1100;
+export const CLOSE_MS = 950;
+const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
+/** Ease in and out (cubic): starts gently, glides through the middle, lands softly – no abrupt start and no abrupt stop. */
+export const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+/** The part of the total time in which one value moves (start, end): opening – the width leads, the height follows; closing – the height folds first, the width follows. */
+const PHASES = {
+  open: { w: [0, 0.72], h: [0.18, 1], r: [0.1, 1] },
+  close: { w: [0.28, 1], h: [0, 0.8], r: [0, 0.9] },
+} as const;
+
 /**
- * Moves a box to its target with the spring above and tells `apply` the box of every frame. `to(…, true)` jumps (reduced motion, first
- * paint). Created once per island; the scheduler can be replaced to test it without a browser.
+ * Moves a box to its target as a choreographed movement of fixed duration (not a spring: a spring is over after a few frames and
+ * hardly seen). Width, height and corner radius move in overlapping phases, each with an ease-in-out curve. A new target in the
+ * middle of a movement starts from where the box is now (shorter, in proportion to the way left). `to(…, true)` jumps (reduced
+ * motion, first paint). The scheduler can be replaced to test it without a browser.
  */
 export function createBoxAnimator(apply: (b: Box) => void, start: Box, scheduler: Scheduler = browser) {
-  const x = [start.w, start.h, start.r], v = [0, 0, 0];
-  let target = [...x], raf = 0, last = 0, k = STIFFNESS, c = DAMPING;
+  const x = [start.w, start.h, start.r];
+  let from = [...x], target = [...x], raf = 0, t0 = 0, dur = OPEN_MS, phase: typeof PHASES.open | typeof PHASES.close = PHASES.open;
   const emit = () => apply({ w: x[0], h: x[1], r: x[2] });
   const frame = (now: number) => {
-    const dt = last ? Math.min(0.05, Math.max(0.001, (now - last) / 1000)) : 1 / 60;
-    last = now;
-    stepSpring(x, v, target, dt, k, c);
-    if (isSettled(x, v, target)) { x[0] = target[0]; x[1] = target[1]; x[2] = target[2]; v[0] = v[1] = v[2] = 0; raf = 0; last = 0; emit(); return; }
+    if (!t0) t0 = now;
+    const t = clamp01((now - t0) / dur);
+    if (t >= 1) { x[0] = target[0]; x[1] = target[1]; x[2] = target[2]; raf = 0; t0 = 0; emit(); return; }
+    const keys = ["w", "h", "r"] as const;
+    for (let i = 0; i < 3; i++) { const [a, b] = phase[keys[i]]; x[i] = from[i] + (target[i] - from[i]) * easeInOut(clamp01((t - a) / (b - a))); }
     emit();
     raf = scheduler.request(frame);
   };
   return {
     to(t: Box, instant = false) {
-      const closing = t.h < x[1] - 1 || t.w < x[0] - 1;   // getting smaller: calm; getting bigger: lively
-      k = closing ? CLOSE_STIFFNESS : STIFFNESS; c = closing ? CLOSE_DAMPING : DAMPING;
-      target = [t.w, t.h, t.r];
-      if (instant) { x[0] = t.w; x[1] = t.h; x[2] = t.r; v[0] = v[1] = v[2] = 0; if (raf) scheduler.cancel(raf); raf = 0; last = 0; emit(); return; }
-      if (!raf) { last = 0; raf = scheduler.request(frame); }
+      const closing = t.h < x[1] - 1 || t.w < x[0] - 1;   // getting smaller: folds shut; getting bigger: opens
+      if (instant) { x[0] = t.w; x[1] = t.h; x[2] = t.r; target = [t.w, t.h, t.r]; if (raf) scheduler.cancel(raf); raf = 0; t0 = 0; emit(); return; }
+      from = [...x]; target = [t.w, t.h, t.r]; phase = closing ? PHASES.close : PHASES.open;
+      const way = Math.max(Math.abs(t.h - x[1]) / (ISLAND_DIMS.panel.h - ISLAND_DIMS.bar.h), Math.abs(t.w - x[0]) / (ISLAND_DIMS.panel.w - ISLAND_DIMS.notch.w));
+      dur = (closing ? CLOSE_MS : OPEN_MS) * Math.min(1, Math.max(0.45, way));
+      t0 = 0;
+      if (raf) scheduler.cancel(raf);
+      raf = scheduler.request(frame);
     },
-    stop() { if (raf) scheduler.cancel(raf); raf = 0; last = 0; },
+    stop() { if (raf) scheduler.cancel(raf); raf = 0; t0 = 0; },
     get box(): Box { return { w: x[0], h: x[1], r: x[2] }; },
     get moving() { return raf !== 0; },
   };
