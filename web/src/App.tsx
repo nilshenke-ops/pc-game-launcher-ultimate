@@ -1,4 +1,4 @@
-import { lazyRetry } from "./lib/lazy-retry";
+import { hardReload, lazyRetry, reloadOnceForNewVersion } from "./lib/lazy-retry";
 import { DesignPreviewBar } from "./components/design-preview-bar";
 import { Component, Suspense, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { getRoom, subscribeRoom } from "./lib/room";
@@ -86,13 +86,14 @@ function Loading() {
 class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
   state = { error: null as Error | null };
   static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch() { reloadOnceForNewVersion(); }          // a part of an old version is missing: the page heals itself once
   render() {
     if (!this.state.error) return this.props.children;
     return (
       <div className="card stack" role="alert">
         <h2>{t("Dieser Bereich konnte nicht geladen werden")}</h2>
         <p className="muted">{t("Wahrscheinlich ist der PC aus und der Bereich wurde noch nicht auf diesem Gerät gespeichert. Sobald der PC erreichbar ist, funktioniert er wieder.")}</p>
-        <div><button className="btn primary" onClick={() => location.reload()}>{t("Neu laden")}</button></div>
+        <div><button className="btn primary" onClick={() => void hardReload()}>{t("Neu laden")}</button></div>
       </div>
     );
   }

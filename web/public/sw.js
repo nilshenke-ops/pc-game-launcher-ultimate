@@ -1,7 +1,7 @@
 // Service worker: keeps the app shell on the device so the page opens even while the PC is off
 // (design and layout stay usable; the app connects by itself once the PC is reachable).
 // Live data always goes over the WebSocket and is never cached. Works only over https (e.g. a tunnel) or localhost.
-const CACHE = "pgl-shell-v3";
+const CACHE = "pgl-shell-v4";
 const NAV_TIMEOUT_MS = 4000;
 
 self.addEventListener("install", (e) => {
@@ -52,7 +52,8 @@ self.addEventListener("fetch", (e) => {
     const isNav = e.request.mode === "navigate";
     try {
       const res = await Promise.race([
-        fetch(e.request),
+        // The app page is always asked from the server itself, never from the browser's own copy (which can be minutes old and point to files that no longer exist).
+        isNav ? fetch(e.request.url, { cache: "no-store", credentials: "same-origin" }) : fetch(e.request),
         new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), isNav ? NAV_TIMEOUT_MS : 15000)),
       ]);
       // Only the app page itself is kept, not every file that was ever requested.

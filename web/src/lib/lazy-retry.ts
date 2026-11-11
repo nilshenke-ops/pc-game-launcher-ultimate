@@ -4,16 +4,23 @@ import { lazy, type ComponentType } from "react";
 
 const KEY = "pgl.chunkReload";
 
-/** Reloads once (not again within 30 s, so a real outage never loops). Returns false when it did not reload. */
+/** Throws away everything the device kept of the app (service worker + stored files) and loads it fresh from the server, bypassing the browser cache. */
+export async function hardReload(): Promise<void> {
+  try { for (const r of await navigator.serviceWorker?.getRegistrations?.() ?? []) await r.unregister(); } catch { /* none */ }
+  try { for (const k of await caches.keys()) await caches.delete(k); } catch { /* none */ }
+  const u = new URL(location.href);
+  u.searchParams.set("_r", String(Date.now()));                 // a new address: the browser cannot answer with its old copy of the page
+  location.replace(u.toString());
+}
+
+/** Heals once (not again within 30 s, so a real outage never loops). Returns false when it did not. */
 export function reloadOnceForNewVersion(): boolean {
   try {
     const last = Number(sessionStorage.getItem(KEY) ?? 0);
     if (Date.now() - last < 30_000) return false;
     sessionStorage.setItem(KEY, String(Date.now()));
-  } catch { /* storage blocked: still reload once per call below */ }
-  const done = () => location.reload();
-  // The old copy of the files must not be served again: forget the cached app shell, then reload.
-  if ("caches" in window) caches.keys().then((ks) => Promise.all(ks.map((k) => caches.delete(k)))).then(done, done); else done();
+  } catch { /* storage blocked */ }
+  void hardReload();
   return true;
 }
 

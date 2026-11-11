@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.46.2 – 2026-11-11
+### Behoben
+- **„Dieser Bereich konnte nicht geladen werden“ bleibt stehen (Handy):** Der Browser lieferte eine alte Kopie der Startseite aus, die auf nicht mehr vorhandene Dateien zeigte, und „Neu laden“ half nicht. Jetzt wird die App-Seite immer direkt vom Server geholt, bei dem Fehler heilt sich die Seite einmal selbst (Zwischenspeicher und Service-Worker werden gelöscht, Neuladen mit neuer Adresse), und „Neu laden“ macht dasselbe
+
 ## 3.46.1 – 2026-11-11
 ### Behoben
 - **Insel ohne Inhalt / „Dieser Bereich konnte nicht geladen werden“ nach einem Update:** Eine noch offene alte Seite fragte nach Programmteilen, die es nach dem Update nicht mehr gab. Jetzt lädt sich die Seite dann einmal selbst neu und holt die neue Version (nicht öfter als alle 30 Sekunden, damit es nie in einer Schleife hängt) – damit sind Öffnen/Schließen der Insel wieder da
