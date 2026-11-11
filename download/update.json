@@ -1,25 +1,31 @@
 {
-  "version": "3.49.0",
+  "version": "3.50.0",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.49.0/PCGameLauncherCompanion.exe",
-  "size": 95115933,
-  "sha256": "1043f691a8fa1fd6397a82299b397368a413f97f0c345790c59929bc083aef93",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.50.0/PCGameLauncherCompanion.exe",
+  "size": 95128775,
+  "sha256": "22c0ccc1ab87e0c340322a5130202d298c8715b79bd548b47876c74f885f58ca",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.49.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.49.0/PCGameLauncherCompanion-3.49.0-win-x64.zip",
-    "size": 89389646,
-    "sha256": "19a0ce788c8beef771269570eeb7b281c67c5ab8a62e880937525f54f5a8c493"
+    "fileName": "PCGameLauncherCompanion-3.50.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.50.0/PCGameLauncherCompanion-3.50.0-win-x64.zip",
+    "size": 89402812,
+    "sha256": "153c5bfe968920779d7560335a8bec738d4b666e20b0f1ecbf68ba0d2b3de543"
   },
-  "notes": "**Soundboard ohne PC:** Solange das Handy/iPad mit dem PC verbunden ist, speichert es alle Sounds im Hintergrund auf dem Gerät (nur was neu oder geändert ist, höchstens 12 MB je Datei und 120 MB insgesamt). Ist der PC nicht verbunden, spielen die Kacheln den Sound auf dem Gerät selbst ab – mit der eingestellten Lautstärke, Wiederholung und „Alle stoppen“. Ein Hinweis zeigt, wie viele Sounds schon auf dem Gerät sind; noch nicht gespeicherte sagen, was zu tun ist · Begleiter: neue Schnittstelle `sounds.fetch` (Sound-Datei in kleinen Stücken lesen) – nötig fürs Speichern auf dem Gerät; der Windows-Begleiter muss dafür aktualisiert sein",
+  "notes": "**PC einschalten (Wake-on-LAN über die FRITZ!Box):** In der PC-Steuerung startest du den ausgeschalteten PC vom Handy, iPad oder PC – zu Hause und unterwegs. Die FRITZ!Box sendet das Wecksignal (AVM-Schnittstelle TR-064), ausgelöst über dein Cloud-Konto. Kein offener Port zum PC, keine UDP-Freigabe · Ehrliche Anzeige: „PC ausgeschaltet“ → „PC wird gestartet“ (Signal gesendet) → „PC startet gerade“ (FRITZ!Box sieht ihn im Heimnetz) → „Verbindung wird hergestellt“ → „PC verbunden“; nach 4 Minuten ohne Erfolg „PC nicht erreichbar“ mit Grund · Einrichtung mit „Verbindung testen“; die FRITZ!Box-Zugangsdaten werden mit dem Konto-Schlüssel verschlüsselt auf den Geräten aufbewahrt, nie im Code und nie in der Cloud gespeichert",
   "changes": {
     "neu": [
-      "**Soundboard ohne PC:** Solange das Handy/iPad mit dem PC verbunden ist, speichert es alle Sounds im Hintergrund auf dem Gerät (nur was neu oder geändert ist, höchstens 12 MB je Datei und 120 MB insgesamt). Ist der PC nicht verbunden, spielen die Kacheln den Sound auf dem Gerät selbst ab – mit der eingestellten Lautstärke, Wiederholung und „Alle stoppen“. Ein Hinweis zeigt, wie viele Sounds schon auf dem Gerät sind; noch nicht gespeicherte sagen, was zu tun ist",
-      "Begleiter: neue Schnittstelle `sounds.fetch` (Sound-Datei in kleinen Stücken lesen) – nötig fürs Speichern auf dem Gerät; der Windows-Begleiter muss dafür aktualisiert sein"
+      "**PC einschalten (Wake-on-LAN über die FRITZ!Box):** In der PC-Steuerung startest du den ausgeschalteten PC vom Handy, iPad oder PC – zu Hause und unterwegs. Die FRITZ!Box sendet das Wecksignal (AVM-Schnittstelle TR-064), ausgelöst über dein Cloud-Konto. Kein offener Port zum PC, keine UDP-Freigabe",
+      "Ehrliche Anzeige: „PC ausgeschaltet“ → „PC wird gestartet“ (Signal gesendet) → „PC startet gerade“ (FRITZ!Box sieht ihn im Heimnetz) → „Verbindung wird hergestellt“ → „PC verbunden“; nach 4 Minuten ohne Erfolg „PC nicht erreichbar“ mit Grund",
+      "Einrichtung mit „Verbindung testen“; die FRITZ!Box-Zugangsdaten werden mit dem Konto-Schlüssel verschlüsselt auf den Geräten aufbewahrt, nie im Code und nie in der Cloud gespeichert",
+      "Schutz vor Mehrfach-Befehlen: höchstens ein Startsignal alle 20 Sekunden und 20 pro Stunde je Konto",
+      "Begleiter: liest die MAC-Adresse des LAN-Anschlusses und prüft die Windows-Einstellungen (LAN-Kabel, Magic Packet, Wecken erlaubt, Schnellstart, Ruhezustand, Netzteil) – was sich nicht lesen lässt, steht als „unbekannt“ da",
+      "Anleitung für BIOS, Windows und FRITZ!Box: docs/WAKE-ON-LAN.md"
     ],
-    "verbessert": [],
+    "verbessert": [
+      "Soundboard ohne PC: die Kacheln bleiben stehen, während die App den PC sucht (vorher wurden sie bei jedem Verbindungsversuch kurz neu aufgebaut)"
+    ],
     "behoben": []
   },
-  "signature": "tpELAkK1RAe8lMEmk8KDFPc6qfcUiEbzuZjZq7/mcJG3bnXIh3kYyHlMd3mwRVda2xg+PAz42x22ke/bj8TJxA=="
+  "signature": "SAJ2L35GRnEmEXGdn6a8d7WoRVxG2R2Kuep9tmdXWJeYeSU/lt3EvK8jhNNfPQqPPe+AKHF+WAFujNf4ZVuvcw=="
 }

@@ -1,5 +1,36 @@
 [
   {
+    "version": "3.50.0",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.50.0/PCGameLauncherCompanion.exe",
+    "size": 95128775,
+    "sha256": "22c0ccc1ab87e0c340322a5130202d298c8715b79bd548b47876c74f885f58ca",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.50.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.50.0/PCGameLauncherCompanion-3.50.0-win-x64.zip",
+      "size": 89402812,
+      "sha256": "153c5bfe968920779d7560335a8bec738d4b666e20b0f1ecbf68ba0d2b3de543"
+    },
+    "notes": "**PC einschalten (Wake-on-LAN über die FRITZ!Box):** In der PC-Steuerung startest du den ausgeschalteten PC vom Handy, iPad oder PC – zu Hause und unterwegs. Die FRITZ!Box sendet das Wecksignal (AVM-Schnittstelle TR-064), ausgelöst über dein Cloud-Konto. Kein offener Port zum PC, keine UDP-Freigabe · Ehrliche Anzeige: „PC ausgeschaltet“ → „PC wird gestartet“ (Signal gesendet) → „PC startet gerade“ (FRITZ!Box sieht ihn im Heimnetz) → „Verbindung wird hergestellt“ → „PC verbunden“; nach 4 Minuten ohne Erfolg „PC nicht erreichbar“ mit Grund · Einrichtung mit „Verbindung testen“; die FRITZ!Box-Zugangsdaten werden mit dem Konto-Schlüssel verschlüsselt auf den Geräten aufbewahrt, nie im Code und nie in der Cloud gespeichert",
+    "changes": {
+      "neu": [
+        "**PC einschalten (Wake-on-LAN über die FRITZ!Box):** In der PC-Steuerung startest du den ausgeschalteten PC vom Handy, iPad oder PC – zu Hause und unterwegs. Die FRITZ!Box sendet das Wecksignal (AVM-Schnittstelle TR-064), ausgelöst über dein Cloud-Konto. Kein offener Port zum PC, keine UDP-Freigabe",
+        "Ehrliche Anzeige: „PC ausgeschaltet“ → „PC wird gestartet“ (Signal gesendet) → „PC startet gerade“ (FRITZ!Box sieht ihn im Heimnetz) → „Verbindung wird hergestellt“ → „PC verbunden“; nach 4 Minuten ohne Erfolg „PC nicht erreichbar“ mit Grund",
+        "Einrichtung mit „Verbindung testen“; die FRITZ!Box-Zugangsdaten werden mit dem Konto-Schlüssel verschlüsselt auf den Geräten aufbewahrt, nie im Code und nie in der Cloud gespeichert",
+        "Schutz vor Mehrfach-Befehlen: höchstens ein Startsignal alle 20 Sekunden und 20 pro Stunde je Konto",
+        "Begleiter: liest die MAC-Adresse des LAN-Anschlusses und prüft die Windows-Einstellungen (LAN-Kabel, Magic Packet, Wecken erlaubt, Schnellstart, Ruhezustand, Netzteil) – was sich nicht lesen lässt, steht als „unbekannt“ da",
+        "Anleitung für BIOS, Windows und FRITZ!Box: docs/WAKE-ON-LAN.md"
+      ],
+      "verbessert": [
+        "Soundboard ohne PC: die Kacheln bleiben stehen, während die App den PC sucht (vorher wurden sie bei jedem Verbindungsversuch kurz neu aufgebaut)"
+      ],
+      "behoben": []
+    },
+    "signature": "SAJ2L35GRnEmEXGdn6a8d7WoRVxG2R2Kuep9tmdXWJeYeSU/lt3EvK8jhNNfPQqPPe+AKHF+WAFujNf4ZVuvcw=="
+  },
+  {
     "version": "3.49.0",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1300,35 +1331,5 @@
       ]
     },
     "signature": "RtF59yKeuQYsC6nyPOPDhaRxtTb+iJJCqbh//b7jE/EFOLcIF70X0Lz51j5iMEM1H/4dwhDLp9aa09opdRPfOQ=="
-  },
-  {
-    "version": "3.23.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.23.0/PCGameLauncherCompanion.exe",
-    "size": 94996257,
-    "sha256": "6c9011d22b659d15c023e8848cc8151344f638fea4a2e528bffaf8f647ade27c",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.23.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.23.0/PCGameLauncherCompanion-3.23.0-win-x64.zip",
-      "size": 89270983,
-      "sha256": "a7cd664e405031e52d4dcd1f7ea2a1db430625b37d61863c34e4130c0064a01c"
-    },
-    "notes": "Game-Overlay im Stil der Webseite: schwebende Glas-Leiste mit runden Ecken, Farben und Schrift der App statt Game-Bar-Optik. Leiste und Fenster fahren mit Feder-Animation ein (gestaffelt), beim Schließen blenden sie kurz aus; ein Fenster hebt sich beim Verschieben leicht an. Weiterhin ohne Unschärfe und ohne Dauer-Animationen (läuft über einem Spiel) – nur der rote Aufnahmepunkt atmet, solange eine Aufnahme läuft · Aufnahme-Chip in der Leiste: roter Punkt und laufende Zeit, ein Tipp startet oder stoppt die Aufnahme – auch wenn das Aufnahme-Fenster ausgeblendet ist · Aufnahme-Fenster neu: großer Aufnahmeknopf, Zeit in großen Ziffern, Verbindungsstatus, Replay speichern und Replay-Puffer wie bisher",
-    "changes": {
-      "neu": [
-        "Game-Overlay im Stil der Webseite: schwebende Glas-Leiste mit runden Ecken, Farben und Schrift der App statt Game-Bar-Optik. Leiste und Fenster fahren mit Feder-Animation ein (gestaffelt), beim Schließen blenden sie kurz aus; ein Fenster hebt sich beim Verschieben leicht an. Weiterhin ohne Unschärfe und ohne Dauer-Animationen (läuft über einem Spiel) – nur der rote Aufnahmepunkt atmet, solange eine Aufnahme läuft",
-        "Aufnahme-Chip in der Leiste: roter Punkt und laufende Zeit, ein Tipp startet oder stoppt die Aufnahme – auch wenn das Aufnahme-Fenster ausgeblendet ist",
-        "Aufnahme-Fenster neu: großer Aufnahmeknopf, Zeit in großen Ziffern, Verbindungsstatus, Replay speichern und Replay-Puffer wie bisher",
-        "Widget-Menü: Suche, gespeicherte Ansichten (HUD-Layouts) mit einem Tipp anwenden, „Alle ausblenden/einblenden“, Schalter im App-Stil",
-        "Einrasten: Fenster rasten beim Verschieben an einem 8-Pixel-Raster und an den Bildschirmrändern ein (Alt gedrückt halten: frei), ein-/ausschaltbar"
-      ],
-      "verbessert": [
-        "Fenster bleiben immer ganz auf dem Bildschirm (rechts abgeschnittene Fenster bei kleineren Auflösungen)"
-      ],
-      "behoben": []
-    },
-    "signature": "ogM1PH7aQKDEQhD8KwOZoD9266aa63rd2pweKLxs7XQtOcSeZus/rxheFOuRZDjAb1wq5L+XJakfM4vLKdtGcQ=="
   }
 ]
