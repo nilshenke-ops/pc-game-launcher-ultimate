@@ -2,6 +2,8 @@ import { hardReload, lazyRetry, reloadOnceForNewVersion } from "./lib/lazy-retry
 import { DesignPreviewBar } from "./components/design-preview-bar";
 import { Component, Suspense, useEffect, useSyncExternalStore, type ReactNode } from "react";
 import { getRoom, subscribeRoom } from "./lib/room";
+import { defaultPrefs } from "./lib/prefs-core";
+import { getPrefs, replacePrefs } from "./lib/prefs";
 import { startDesignAutoSave } from "./lib/design-account";
 import { startAccountAutoApply } from "./lib/account-auto";
 import { HashRouter, MemoryRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -83,17 +85,27 @@ function Loading() {
 }
 
 /** Shows a clear message instead of a blank page if a page part cannot be loaded (e.g. offline and not cached). */
-class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
-  state = { error: null as Error | null };
+class PageErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null; where: string }> {
+  state = { error: null as Error | null, where: "" };
   static getDerivedStateFromError(error: Error) { return { error }; }
-  componentDidCatch() { reloadOnceForNewVersion(); }          // a part of an old version is missing: the page heals itself once
+  componentDidCatch(_e: Error, info: { componentStack?: string | null }) {
+    const where = String(info?.componentStack ?? "").split("\n").map((l) => l.trim()).filter(Boolean).slice(0, 4).join(" › ");
+    this.setState({ where });
+    try { localStorage.setItem("pgl.lastError", JSON.stringify({ at: Date.now(), message: String(_e?.message ?? ""), stack: String(_e?.stack ?? "").slice(0, 1500), where })); } catch { /* ignore */ }
+    reloadOnceForNewVersion();
+  }          // a part of an old version is missing: the page heals itself once
   render() {
     if (!this.state.error) return this.props.children;
     return (
       <div className="card stack" role="alert">
         <h2>{t("Dieser Bereich konnte nicht geladen werden")}</h2>
         <p className="muted">{t("Wahrscheinlich ist der PC aus und der Bereich wurde noch nicht auf diesem Gerät gespeichert. Sobald der PC erreichbar ist, funktioniert er wieder.")}</p>
-        <div><button className="btn primary" onClick={() => void hardReload()}>{t("Neu laden")}</button></div>
+        {this.state.error.message && <p className="tiny muted" style={{ overflowWrap: "anywhere" }}>{String(this.state.error.message).slice(0, 220)}{this.state.where ? ` — ${this.state.where.slice(0, 260)}` : ""}</p>}
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <button className="btn primary" onClick={() => void hardReload()}>{t("Neu laden")}</button>
+          <button className="btn ghost" onClick={() => { void navigator.clipboard?.writeText(`${this.state.error?.message}\n${this.state.error?.stack ?? ""}\n${this.state.where}`).catch(() => undefined); }}>{t("Fehler kopieren")}</button>
+          <button className="btn ghost" onClick={() => { try { const d = defaultPrefs(); replacePrefs({ ...getPrefs(), layouts: d.layouts, activeLayout: d.activeLayout }); localStorage.removeItem("pgl.room"); } catch { /* reload anyway */ } void hardReload(); }}>{t("Startseite zurücksetzen")}</button>
+        </div>
       </div>
     );
   }

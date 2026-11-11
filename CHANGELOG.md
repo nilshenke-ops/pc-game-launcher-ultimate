@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.48.1 – 2026-11-11
+### Behoben
+- **Startseite stürzt mit „Dieser Bereich konnte nicht geladen werden“ ab (nur angemeldet):** Ein einzelnes kaputtes Widget legt nicht mehr die ganze Startseite lahm – es zeigt „Dieses Widget konnte nicht angezeigt werden“ mit „Nochmal“, der Rest funktioniert
+- Die Fehlerkarte zeigt jetzt den genauen Fehler samt Fundstelle, hat „Fehler kopieren“ und „Startseite zurücksetzen“ (setzt nur Startseiten-Layout und Raum zurück, nicht das Konto) und speichert den letzten Fehler auf dem Gerät
+
 ## 3.48.0 – 2026-11-11
 ### Verbessert
 - **Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen

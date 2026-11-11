@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useRef, useState, type CSSProperties } from "react";
+import { Component, lazy, Suspense, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { StableAddressOffer } from "../components/keep-access";
 import { Link } from "react-router-dom";
 import {
@@ -319,6 +319,19 @@ export const META: Record<BuiltinWidgetId, { icon: React.ReactNode; title: () =>
   topplayed: { icon: <BarChart3 size={18} />, title: () => t("Meistgespielt (7 Tage)"), render: () => <TopPlayedWidget />, link: "/history" },
 };
 
+/** One broken widget must not take the whole home page down: it shows a small note and the rest keeps working. */
+class WidgetBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state = { error: null as Error | null };
+  static getDerivedStateFromError(error: Error) { return { error }; }
+  componentDidCatch(error: Error) { console.error("Widget", error); }
+  render() {
+    if (!this.state.error) return this.props.children;
+    return <p className="small muted" role="status">{t("Dieses Widget konnte nicht angezeigt werden.")} <button className="btn ghost sm" onClick={() => this.setState({ error: null })}>{t("Nochmal")}</button></p>;
+  }
+}
+function WidgetBody({ render }: { render: () => ReactNode }) { return <>{render()}</>; }
+function SafeWidget({ render }: { render: () => ReactNode }) { return <WidgetBoundary><WidgetBody render={render} /></WidgetBoundary>; }
+
 export default function Dashboard() {
   const prefs = usePrefs();
   const { state } = useAppState();
@@ -436,12 +449,12 @@ export default function Dashboard() {
         {shownWidgets.map((w, i) => {
           const meta = metaFor(w.id);
           if (w.id === "download") return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><DownloadCard compact />{edit && <EditOverlay />}</div>;
-          if (meta.bare) return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><div className="cw-frame" style={{ maxWidth: 720, marginInline: "auto" }}>{meta.render()}</div>{edit && <EditOverlay />}</div>;
+          if (meta.bare) return <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}><div className="cw-frame" style={{ maxWidth: 720, marginInline: "auto" }}><SafeWidget render={meta.render} /></div>{edit && <EditOverlay />}</div>;
           return (
             <div key={w.id} className={`w-${w.size} c${colsOf(w)}`} style={cell(w)}>
               <Card title={meta.title()} icon={meta.icon} className={w.id === "status" ? "hero" : ""} style={{ height: "100%" }}
                 actions={meta.link && !edit ? <Link to={meta.link} className="btn ghost sm">{t("Alle")}</Link> : undefined}>
-                {meta.render()}
+                <SafeWidget render={meta.render} />
               </Card>
               {edit && <EditOverlay />}
             </div>
