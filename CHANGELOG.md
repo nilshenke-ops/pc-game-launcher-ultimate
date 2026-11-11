@@ -4,6 +4,13 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.48.0 – 2026-11-11
+### Verbessert
+- **Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen
+- **ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen
+### Behoben
+- Die Scroll-Einblendung der Karten (3.46.0) ist wieder entfernt: sie verschob Positionen auf Seiten mit vielen Karten und machte Tests und Schalter unruhig
+
 ## 3.47.1 – 2026-11-11
 ### Neu
 - Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite)

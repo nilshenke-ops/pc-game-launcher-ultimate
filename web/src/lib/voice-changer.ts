@@ -144,7 +144,15 @@ export function buildChain(ctx: AudioContext, pitch: AudioWorkletNode) {
   // bass / treble
   const low = ctx.createBiquadFilter(), high = ctx.createBiquadFilter();
   low.type = "lowshelf"; low.frequency.value = 220; low.gain.value = 0; high.type = "highshelf"; high.frequency.value = 3500; high.gain.value = 0;
-  shaper.connect(low); low.connect(high);
+  // Intelligibility of low voices: lowering the pitch also drags the vowels' colour and the hissing consonants down – the voice turns muffled.
+  // A cut of the muddy range, a lift of the speech range and a little of the ORIGINAL high consonants (s, t, k, f) put the words back.
+  const mud = ctx.createBiquadFilter(), presence = ctx.createBiquadFilter();
+  mud.type = "peaking"; mud.frequency.value = 270; mud.Q.value = 0.8; mud.gain.value = 0;
+  presence.type = "peaking"; presence.frequency.value = 2900; presence.Q.value = 0.9; presence.gain.value = 0;
+  shaper.connect(mud); mud.connect(presence); presence.connect(low); low.connect(high);
+  const clarityHp = ctx.createBiquadFilter(), clarity = ctx.createGain();
+  clarityHp.type = "highpass"; clarityHp.frequency.value = 3200; clarityHp.Q.value = 0.7; clarity.gain.value = 0;
+  input.connect(clarityHp); clarityHp.connect(clarity);
   // echo
   const echoDelay = ctx.createDelay(1), echoFb = ctx.createGain(), echoWet = ctx.createGain(), echoOut = ctx.createGain();
   echoDelay.delayTime.value = 0.2; echoFb.gain.value = 0; echoWet.gain.value = 0;
@@ -152,8 +160,9 @@ export function buildChain(ctx: AudioContext, pitch: AudioWorkletNode) {
   // reverb
   const conv = ctx.createConvolver(), reverbWet = ctx.createGain();
   conv.buffer = roomImpulse(ctx); reverbWet.gain.value = 0;
-  echoOut.connect(wet); echoOut.connect(conv); conv.connect(reverbWet); reverbWet.connect(wet);
-  wet.connect(output);
+  const makeup = ctx.createGain();                    // low voices carry less energy: a little louder makes them as audible as the original
+  echoOut.connect(wet); echoOut.connect(conv); conv.connect(reverbWet); reverbWet.connect(wet); clarity.connect(wet);
+  wet.connect(makeup); makeup.connect(output);
 
   const set = (p: AudioParam, v: number) => p.setTargetAtTime(v, ctx.currentTime, 0.03);
   const apply = (preset: VoicePreset, trim: number, strength: number) => {
@@ -168,6 +177,11 @@ export function buildChain(ctx: AudioContext, pitch: AudioWorkletNode) {
     set(low.gain, v.lowShelf ?? 0); set(high.gain, v.highShelf ?? 0);
     set(echoWet.gain, v.echo?.mix ?? 0); set(echoFb.gain, v.echo?.feedback ?? 0); if (v.echo) set(echoDelay.delayTime, v.echo.time);
     set(reverbWet.gain, v.reverb ?? 0);
+    const eff = effectivePitch(v, trim), down = Math.max(0, 1 - eff), up = Math.max(0, eff - 1);
+    set(mud.gain, -down * 9);                                                   // less boom
+    set(presence.gain, down * 11 + up * 2);                                     // clearer words
+    set(clarity.gain, plain ? 0 : (v.band ? 0.12 : Math.min(0.65, down * 1.6 + up * 0.18)));   // the real "s" and "t" on top (not with telephone-like voices)
+    set(makeup.gain, plain ? 1 : 1 + down * 1.1);
   };
   return { input, output, apply, stop() { try { ringOsc.stop(); lfo.stop(); } catch { /* already stopped */ } } };
 }

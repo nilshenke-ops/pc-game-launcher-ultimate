@@ -92,7 +92,8 @@ describe("ElevenLabs-Modus: Stimmenliste und Sprache-zu-Sprache", () => {
     expect(out.size).toBe(400);
     expect(seen[0].url).toContain("https://api.elevenlabs.io/v1/speech-to-speech/pNInz6obpgDQGcFmaJgB");
     expect(seen[0].key).toBe(key);
-    expect(seen[0].fields).toEqual(expect.arrayContaining(["audio", "model_id"]));
+    expect(seen[0].fields).toEqual(expect.arrayContaining(["audio", "model_id", "voice_settings"]));   // follows the speaker closely, speaker boost on
+    expect(seen[0].url).toContain("mp3_44100_128");                                               // clear sound
     removeLocalElevenKey(); setDeviceKeyForTests(null);
   });
   it("lehnt ungültige Stimme, zu kurze und zu lange Aufnahmen ab, ohne etwas zu senden", async () => {
@@ -126,5 +127,12 @@ describe("Stärke der Stimme: verständlich bleiben", () => {
       expect(x.pitch).toBeGreaterThanOrEqual(0.25); expect(x.pitch).toBeLessThanOrEqual(4);
       if (x.echo) expect(x.echo.feedback).toBeLessThan(0.85);
     }
+  });
+});
+
+describe("tiefe Stimmen bleiben verständlich", () => {
+  it("der Bass wird nicht doppelt angehoben (Tiefe kommt vom Tonhöhen-Schieber, nicht vom Brummen)", async () => {
+    const { VOICES } = await import("./voice-presets");
+    for (const v of VOICES.filter((x) => x.pitch < 0.8)) expect(v.lowShelf ?? 0, v.id).toBeLessThanOrEqual(3);
   });
 });

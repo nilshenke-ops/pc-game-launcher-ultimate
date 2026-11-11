@@ -77,7 +77,7 @@ export async function startEleven(): Promise<void> {
   let ctx: AudioContext | null = null, stream: MediaStream | null = null;
   try {
     ctx = new AudioContext({ latencyHint: "interactive" });
-    stream = await navigator.mediaDevices.getUserMedia({ audio: { ...(s.micId ? { deviceId: { exact: s.micId } } : {}), echoCancellation: s.clean, noiseSuppression: s.clean, autoGainControl: false, channelCount: 1 } });
+    stream = await navigator.mediaDevices.getUserMedia({ audio: { ...(s.micId ? { deviceId: { exact: s.micId } } : {}), echoCancellation: s.clean, noiseSuppression: s.clean, autoGainControl: s.clean, channelCount: 1 } });
     const out = ctx.createGain(); out.gain.value = s.volume;
     let outEl: HTMLAudioElement | null = null;
     const wantOut = !!s.outId && s.outId !== "default";
@@ -105,9 +105,9 @@ export async function startEleven(): Promise<void> {
       if (Math.abs(lv - state.level) > 0.02 || (lv === 0 && state.level !== 0)) publish({ level: lv });
       if (!e.autoOn || e.talkHeld || state.playing) { loud = 0; return; }
       const now = performance.now();
-      if (!e.rec) { loud = m > 0.06 ? loud + 1 : 0; if (loud >= 2) { beginSegment(); quietSince = 0; } }
+      if (!e.rec) { loud = m > 0.045 ? loud + 1 : 0; if (loud >= 1) { beginSegment(); quietSince = 0; } }   // at the first sound: the start of the sentence is not cut off
       else {
-        if (m < 0.035) { quietSince ||= now; if (now - quietSince > 800) finishSegment(); } else quietSince = 0;
+        if (m < 0.035) { quietSince ||= now; if (now - quietSince > 650) finishSegment(); } else quietSince = 0;
         if (now - e.startedAt > MAX_SEGMENT_MS) finishSegment();
       }
     }, 60);
@@ -162,7 +162,16 @@ async function work() {
         const mp3 = await elevenSpeechToSpeech(seg.blob, state.settings.voiceId);
         const audio = await e.ctx.decodeAudioData(await mp3.arrayBuffer());
         publish({ sending: false, playing: true, lastDelayMs: Math.round(performance.now() - seg.endedAt), sentences: state.sentences + 1, sentSeconds: state.sentSeconds + seg.ms / 1000, error: null });
-        await new Promise<void>((done) => { const n = e.ctx.createBufferSource(); n.buffer = audio; n.connect(e.out); n.onended = () => done(); n.start(); });
+        // Evened out: the answer is brought to a clear level (quiet voices louder, never clipping) and fades in and out softly.
+        const peak = (() => { let m = 0; const d = audio.getChannelData(0); for (let i = 0; i < d.length; i += 4) m = Math.max(m, Math.abs(d[i])); return m; })();
+        const norm = peak > 0.01 ? Math.min(3, 0.9 / peak) : 1;
+        await new Promise<void>((done) => {
+          const n = e.ctx.createBufferSource(), g = e.ctx.createGain(), t0 = e.ctx.currentTime;
+          n.buffer = audio; n.connect(g); g.connect(e.out);
+          g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(norm, t0 + 0.02);
+          g.gain.setValueAtTime(norm, t0 + Math.max(0.03, audio.duration - 0.05)); g.gain.linearRampToValueAtTime(0, t0 + audio.duration);
+          n.onended = () => done(); n.start();
+        });
       } catch (err) { publish({ error: friendly(err) }); }
       finally { publish({ sending: false, playing: false }); }
     }

@@ -191,11 +191,7 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 }
 :root:not([data-motion="reduce"]) .chip:active { transform: scale(.94); transition-duration: .12s; }
 
-/* Cards of a page glide in when they scroll into view (browsers with scroll-driven animations). */
-@supports (animation-timeline: view()) {
-  :root:not([data-motion="reduce"]) .content .card:not(.dash > *):not(.card .card):not(.isl-host *) { animation: card-view linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
-  @keyframes card-view { from { opacity: 0; translate: 0 32px; scale: .97; } }
-}
+
 
 /* ================================================================ The small module: eyes that live, and more to see when it opens and closes */
 /* Resting: the eyes look left, blink, look right, blink twice – not just one blink. */

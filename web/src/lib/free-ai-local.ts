@@ -752,8 +752,10 @@ export async function elevenSpeechToSpeech(audio: Blob, voiceId: string, o: { fe
   const form = new FormData();
   form.append("model_id", "eleven_multilingual_sts_v2");
   form.append("remove_background_noise", o.noise === false ? "false" : "true");
+  // Follow the speaker's expression closely (lower stability), keep the chosen voice's character (similarity) and sound clear (speaker boost).
+  form.append("voice_settings", JSON.stringify({ stability: 0.4, similarity_boost: 0.85, style: 0, use_speaker_boost: true }));
   form.append("audio", audio, `sprache.${ext}`);
-  const res = await elevenCall(`/v1/speech-to-speech/${voiceId}?output_format=mp3_44100_64`, { method: "POST", body: form, headers: { accept: "audio/mpeg" } }, { ...o, timeoutMs: 60_000 });
+  const res = await elevenCall(`/v1/speech-to-speech/${voiceId}?output_format=mp3_44100_128`, { method: "POST", body: form, headers: { accept: "audio/mpeg" } }, { ...o, timeoutMs: 60_000 });
   const b = await res.blob();
   if (b.size < 200) throw new LocalAiError("ElevenLabs: keine brauchbare Antwort.", "empty");
   return b;
