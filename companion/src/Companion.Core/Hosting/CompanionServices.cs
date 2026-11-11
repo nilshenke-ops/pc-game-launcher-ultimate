@@ -22,6 +22,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public PowerService Power { get; }
     public SaveVaultService Vault { get; }
     public InventoryService Inventory { get; }
+    public WakeService Wake { get; } = new();
     public CrashReportService Crashes { get; }
     public PrivacyService Privacy { get; }
     public RemoteService Remote { get; }

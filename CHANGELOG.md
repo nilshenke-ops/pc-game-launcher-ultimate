@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.50.0 – 2026-11-11
+### Neu
+- **PC einschalten (Wake-on-LAN über die FRITZ!Box):** In der PC-Steuerung startest du den ausgeschalteten PC vom Handy, iPad oder PC – zu Hause und unterwegs. Die FRITZ!Box sendet das Wecksignal (AVM-Schnittstelle TR-064), ausgelöst über dein Cloud-Konto. Kein offener Port zum PC, keine UDP-Freigabe
+- Ehrliche Anzeige: „PC ausgeschaltet“ → „PC wird gestartet“ (Signal gesendet) → „PC startet gerade“ (FRITZ!Box sieht ihn im Heimnetz) → „Verbindung wird hergestellt“ → „PC verbunden“; nach 4 Minuten ohne Erfolg „PC nicht erreichbar“ mit Grund
+- Einrichtung mit „Verbindung testen“; die FRITZ!Box-Zugangsdaten werden mit dem Konto-Schlüssel verschlüsselt auf den Geräten aufbewahrt, nie im Code und nie in der Cloud gespeichert
+- Schutz vor Mehrfach-Befehlen: höchstens ein Startsignal alle 20 Sekunden und 20 pro Stunde je Konto
+- Begleiter: liest die MAC-Adresse des LAN-Anschlusses und prüft die Windows-Einstellungen (LAN-Kabel, Magic Packet, Wecken erlaubt, Schnellstart, Ruhezustand, Netzteil) – was sich nicht lesen lässt, steht als „unbekannt“ da
+- Anleitung für BIOS, Windows und FRITZ!Box: docs/WAKE-ON-LAN.md
+### Verbessert
+- Soundboard ohne PC: die Kacheln bleiben stehen, während die App den PC sucht (vorher wurden sie bei jedem Verbindungsversuch kurz neu aufgebaut)
+
 ## 3.49.0 – 2026-11-11
 ### Neu
 - **Soundboard ohne PC:** Solange das Handy/iPad mit dem PC verbunden ist, speichert es alle Sounds im Hintergrund auf dem Gerät (nur was neu oder geändert ist, höchstens 12 MB je Datei und 120 MB insgesamt). Ist der PC nicht verbunden, spielen die Kacheln den Sound auf dem Gerät selbst ab – mit der eingestellten Lautstärke, Wiederholung und „Alle stoppen“. Ein Hinweis zeigt, wie viele Sounds schon auf dem Gerät sind; noch nicht gespeicherte sagen, was zu tun ist

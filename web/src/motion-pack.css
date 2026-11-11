@@ -242,3 +242,24 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
   :root:not([data-motion="reduce"]) .isl-host.v2.is-open::before { animation: none; }
   .isl-host.floating, .isl-host.floating[data-isl-style] { backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); }
 }
+
+/* ---------------------------------------------------------------- "PC einschalten": one calm status line, a start button that breathes while the PC boots */
+.wake-status { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 1.05rem; }
+.wake-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
+.wake-status.k-connected .wake-dot { background: var(--success, #34d399); box-shadow: 0 0 10px var(--success, #34d399); }
+.wake-status.k-off .wake-dot { background: #7a8aa5; }
+.wake-status.k-unreachable .wake-dot { background: var(--warning, #fbbf24); }
+.wake-status.k-unavailable .wake-dot { background: transparent; border: 2px solid var(--muted); }
+.wake-status.k-sent .wake-dot, .wake-status.k-booting .wake-dot, .wake-status.k-connecting .wake-dot { background: var(--primary); }
+:root:not([data-motion="reduce"]) .wake-status.k-sent .wake-dot, :root:not([data-motion="reduce"]) .wake-status.k-booting .wake-dot, :root:not([data-motion="reduce"]) .wake-status.k-connecting .wake-dot { animation: wake-pulse 1.4s ease-in-out infinite; }
+@keyframes wake-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), .55); } 50% { box-shadow: 0 0 0 9px rgba(var(--primary-rgb), 0); } }
+.wake-steps { display: flex; gap: 6px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap; }
+.wake-steps li { font-size: .78rem; padding: 4px 10px; border-radius: 99px; border: 1px solid var(--border); color: var(--muted); transition: background-color .5s ease, color .5s ease, border-color .5s ease; }
+.wake-steps li.on { color: var(--text); border-color: rgba(var(--primary-rgb), .7); background: rgba(var(--primary-rgb), .2); }
+:root:not([data-motion="reduce"]) .wake-btn.busy { animation: wake-breathe 1.8s ease-in-out infinite; }
+@keyframes wake-breathe { 0%, 100% { box-shadow: 0 0 0 0 rgba(var(--primary-rgb), .5); } 50% { box-shadow: 0 0 0 10px rgba(var(--primary-rgb), 0); } }
+.wake-checks { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+.wake-checks li { display: flex; gap: 8px; align-items: flex-start; font-size: .9rem; }
+.wake-checks li svg { flex: none; margin-top: 3px; }
+.wake-checks li.ok svg { color: var(--success, #34d399); } .wake-checks li.bad svg { color: var(--danger, #f87171); } .wake-checks li.unknown svg { color: var(--muted); }
+.wake-checks li small { display: block; color: var(--muted); font-size: .8rem; margin-top: 2px; }

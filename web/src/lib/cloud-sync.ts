@@ -23,7 +23,7 @@ const TOKEN_KEY = "pgl.cloudSync.token", OPS_KEY = "pgl.cloudSync.ops", NOAUTO_K
 const POLL_MS = 10_000, POLL_HIDDEN_MS = 60_000, TIMEOUT_MS = 20_000, MAX_OPS = 400;
 
 /** What the PC uploads, as cache keys of the pages (same names as the RPC methods). */
-export const SYNC_ITEMS = ["state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
+export const SYNC_ITEMS = ["wol.info", "state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
   "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list"] as const;
 /** Changes a device may hand over through the cloud while the PC is off (data only – never starting anything). */
 export const OP_METHODS = new Set(["library.update", "settings.save", "memory.configure", "ai.set", "sounds.importUrl"]);
@@ -93,6 +93,19 @@ async function ensureToken(s: DesignSession & { api: string }): Promise<TokenRec
 function deviceName(): string {
   const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
   return /iPad/.test(ua) ? "iPad" : /iPhone/.test(ua) ? "iPhone" : /Android/.test(ua) ? "Android" : "Browser";
+}
+
+/** One call of this device to the cloud, signed with its device token (a token the cloud forgot is renewed once). */
+export async function cloudCall(action: string, body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const s = currentSession();
+  if (!s) throw new Error(t("Dafür musst du mit deinem Cloud-Konto angemeldet sein."));
+  let rec = await ensureToken(s);
+  try { return await post(s.api, action, { user: s.user, token: rec.token, ...body }); }
+  catch (e) {
+    if (!(e instanceof AuthError)) throw e;
+    forgetToken(); rec = await ensureToken(s);
+    return post(s.api, action, { user: s.user, token: rec.token, ...body });
+  }
 }
 
 // ------------------------------------------------------------------ pulling: the cloud copy becomes the device's copy

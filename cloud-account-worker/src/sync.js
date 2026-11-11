@@ -6,12 +6,15 @@
 //   POST /api/sync/op     { user, token, ops: [{ id, blob, at }] }                  -> { seq, stored }
 //   POST /api/sync/ack    { user, token, ids: [id…] }                               -> { seq }
 //   POST /api/sync/revoke { user, token }                                           -> { ok }
+//   POST /api/sync/wake | wakeinfo                                                  -> see wake.js (the FRITZ!Box wakes the PC)
 //
 // Everything stored here is encrypted on the PC or in the browser with the account's own key – the server sees only ciphertext,
 // item names ("library.list" …) and times. The PC is the source of its data: it pushes the latest state of each item whenever it
 // changes; devices pull what differs from what they have. Changes made on a device while the PC is off are "ops": stored here until
 // the PC takes them over (ack), visible to every device of the account in the meantime. A long random token per device (only its
 // SHA-256 is stored) authenticates every sync call – the expensive password check runs once, when the token is made.
+
+import { handleWake } from "./wake.js";
 
 const USER_RX = /^[a-z0-9._-]{3,24}$/;
 const KEY_RX = /^[0-9a-f]{64}$/;
@@ -89,6 +92,8 @@ export async function handleSync(request, env, action, cors, deps) {
   if (!row || row.user !== user) return fail("unauthorized", "Bitte erneut anmelden.", 401, cors);
   // Last use is noted at most once an hour (fewer writes).
   if (Date.parse(row.used_at) < Date.now() - 3_600_000) await env.DB.prepare("UPDATE sync_tokens SET used_at = ?2 WHERE hash = ?1").bind(hash, now).run();
+
+  if (action === "wake" || action === "wakeinfo") return handleWake(env, action, user, body, cors, { json, fail }, deps.fetcher);
 
   if (action === "revoke") {
     await env.DB.prepare("DELETE FROM sync_tokens WHERE hash = ?1").bind(hash).run();

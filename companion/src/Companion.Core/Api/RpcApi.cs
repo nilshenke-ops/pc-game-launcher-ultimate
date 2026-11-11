@@ -872,6 +872,7 @@ public static class RpcApi
         rpc.Register("obs.muteToggle", async ctx => (object)new { message = await s.Obs.MuteToggle(ctx.Str("kind", 10)) });
 
         // ------------------------------------------------------------ inventory, error reports, plugin test lab
+        rpc.Register("wol.info", async ctx => await Task.Run(() => s.Wake.Get(ctx.Params.TryGetProperty("fresh", out var f) && f.ValueKind == System.Text.Json.JsonValueKind.True)));
         rpc.Register("inventory.get", async _ => await Task.Run(() => s.Inventory.Get()));
         rpc.Register("crash.list", _ => new { reports = s.Crashes.List() });
         rpc.Register("crash.create", async ctx => { var id = ctx.Str("itemId", 64); return (object?)await Task.Run(() => s.Crashes.Create(id)); });

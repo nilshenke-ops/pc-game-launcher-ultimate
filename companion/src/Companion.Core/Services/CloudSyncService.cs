@@ -40,7 +40,7 @@ public sealed class CloudSyncService : IDisposable
     public static readonly string[] Items =
     {
         "state.get", "library.list", "launchers.list", "quick.list", "profiles.list", "sounds.list", "settings.get", "history.get",
-        "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list",
+        "deck.list", "calendar.list", "widgets.list", "quests.get", "deals.list", "layouts.list", "overlay.layout", "activity.get", "plugins.list", "wol.info",
     };
     /// <summary>Changes a device may make through the cloud while the PC is off – data only, never starting programs or changing what runs.</summary>
     public static readonly HashSet<string> OpMethods = new() { "library.update", "settings.save", "memory.configure", "ai.set", "sounds.importUrl" };

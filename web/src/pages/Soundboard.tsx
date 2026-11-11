@@ -181,7 +181,7 @@ export default function Soundboard() {
       )}
       {online && cache.busy && <p className="tiny muted" style={{ marginBottom: 8 }}>{t("Sounds werden für die Wiedergabe ohne PC auf dem Gerät gespeichert … {d}/{n}", { d: cache.done, n: cache.total })}</p>}
 
-      <Loadable loading={q.loading} error={q.error} onRetry={q.reload}>
+      <Loadable loading={q.loading && !q.data} error={q.data ? null : q.error} onRetry={q.reload}>
         {(data?.sounds.length ?? 0) === 0 ? (
           <Card><Empty icon={<Music size={28} />} title={t("Noch keine Sounds")} text={t("Importiere MP3/WAV-Dateien vom Gerät oder füge einen MyInstants-Link ein.")} action={canManage && <Button variant="primary" onClick={() => setImporting(true)}>{t("Sounds importieren")}</Button>} /></Card>
         ) : shown.length === 0 ? <Card><Empty icon={<Search size={26} />} title={t("Keine Treffer")} /></Card> : (
