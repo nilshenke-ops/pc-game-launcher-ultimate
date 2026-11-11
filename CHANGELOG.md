@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.44.1 – 2026-11-11
+### Verbessert
+- Insel: Öffnen und Schließen deutlich sichtbarer – die Feder ist nochmal gut doppelt so weich (Öffnen ≈ 0,5 s bis fast fertig, Schließen ≈ 0,6 s), der Inhalt fährt gestaffelt mit
+
 ## 3.44.0 – 2026-11-10
 ### Verbessert
 - Insel: Öffnen und Schließen sind jetzt länger und weicher (Feder ca. 0,65 s statt 0,35 s, Schließen ruhig ohne Überschwingen); der Inhalt blendet entsprechend gestaffelt ein und aus

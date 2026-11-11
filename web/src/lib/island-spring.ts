@@ -6,10 +6,10 @@
 export interface Box { w: number; h: number; r: number }
 
 /** Spring constants: soft and long like a system animation – damping ratio ≈ 0.78 (≈ 2 % swing past the target), visibly settled after ~0.65 s. */
-export const STIFFNESS = 120;
-export const DAMPING = 2 * Math.sqrt(STIFFNESS) * 0.78;
+export const STIFFNESS = 52;
+export const DAMPING = 2 * Math.sqrt(STIFFNESS) * 0.82;
 /** Folding back into the notch is calm: critically damped (no swing past the target, so the island never "pops" shut). Slightly softer than opening. */
-export const CLOSE_STIFFNESS = 95;
+export const CLOSE_STIFFNESS = 44;
 export const CLOSE_DAMPING = 2 * Math.sqrt(CLOSE_STIFFNESS) * 0.985;
 
 /** One step of a damped spring for several values at once (semi-implicit Euler in small, fixed sub-steps – stable at any frame rate). */
