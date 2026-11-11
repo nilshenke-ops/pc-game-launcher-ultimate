@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.44.2",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.2/PCGameLauncherCompanion.exe",
+    "size": 95110186,
+    "sha256": "254891ae6fd78a94630910b6d9b366f2dac53aba2da79d0f358c6fea00796bc0",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.44.2-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.2/PCGameLauncherCompanion-3.44.2-win-x64.zip",
+      "size": 89383981,
+      "sha256": "336791854e32e7f88162dfe1792b3fe53e6364dbb92fec5eeaeeaa23e24d3be2"
+    },
+    "notes": "Insel: Öffnen und Schließen sind jetzt klar sichtbar langsamer (ca. 0,65 s bis fast fertig, Schließen ca. 0,8 s), weiche Feder · Holo-Ansicht: komplett neu bewegt – die Karten folgen dem Finger direkt, beim Loslassen übernimmt eine Feder mit der Geschwindigkeit des Wischens (Schwung wie in der Insel, auch über mehrere Karten); Tastatur, Pfeile und Regler gleiten genauso",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Insel: Öffnen und Schließen sind jetzt klar sichtbar langsamer (ca. 0,65 s bis fast fertig, Schließen ca. 0,8 s), weiche Feder",
+        "Holo-Ansicht: komplett neu bewegt – die Karten folgen dem Finger direkt, beim Loslassen übernimmt eine Feder mit der Geschwindigkeit des Wischens (Schwung wie in der Insel, auch über mehrere Karten); Tastatur, Pfeile und Regler gleiten genauso"
+      ],
+      "behoben": []
+    },
+    "signature": "9ZRs3epxiSz5pzQ2BGTFMiA0CIPqLUh4YhHFloF4oXGVxXGwmdHQKfF8f1jvBqmxlWkbvV106mjewwBT8F1GzQ=="
+  },
+  {
     "version": "3.44.1",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1323,31 +1348,5 @@
       "behoben": []
     },
     "signature": "xohFZLTyjJVMH+9UBsU+I/5ovpbw26pMvFLnfSOuRVxX4eKhaKdEeyU7yi/R5ONPx5FsLXmdPCXqAjDaflflrA=="
-  },
-  {
-    "version": "3.13.1",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.13.1/PCGameLauncherCompanion.exe",
-    "size": 94923848,
-    "sha256": "aad6f62eefb4bd15208da319a6a93d1e78ba014ef085d8ac5e55fcab66e1c561",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.13.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.13.1/PCGameLauncherCompanion-3.13.1-win-x64.zip",
-      "size": 89198880,
-      "sha256": "823fad89c5a27b7cbcf4a607c2907e558a5c20807514d0f158523ea645789b83"
-    },
-    "notes": "Bei jedem KI-Schlüssel und jedem Suchdienst steht jetzt kurz „Wofür?“: was die KI kann, wann man sie wählt und dass sie ohne Websuche nichts Aktuelles weiß; dazu „Welche KI soll ich nutzen?“ in der KI-Verwaltung (zwei reichen: eine schnelle und ein Allrounder) und ein Hinweis zu Sport: Wer als Nächstes gegen Bayern spielt oder wie es gerade gegen Dortmund steht, beantwortet JARVIS mit Websuche (Tavily oder Serper) plus einer beliebigen KI – der Stand ist so aktuell wie die Suchergebnisse",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Bei jedem KI-Schlüssel und jedem Suchdienst steht jetzt kurz „Wofür?“: was die KI kann, wann man sie wählt und dass sie ohne Websuche nichts Aktuelles weiß; dazu „Welche KI soll ich nutzen?“ in der KI-Verwaltung (zwei reichen: eine schnelle und ein Allrounder) und ein Hinweis zu Sport: Wer als Nächstes gegen Bayern spielt oder wie es gerade gegen Dortmund steht, beantwortet JARVIS mit Websuche (Tavily oder Serper) plus einer beliebigen KI – der Stand ist so aktuell wie die Suchergebnisse"
-      ],
-      "behoben": [
-        "Fragen wie „Wie ist der Spielstand Bayern gegen Dortmund?“, „Wie steht es bei …?“ und „Wer spielt gegen …?“ lösen jetzt die Websuche aus"
-      ]
-    },
-    "signature": "n5I6cDmH1qO+45gLccrwbRauHIw/7eVEqdy3EfIf9azCOGc4hDPd4b2pC3PJdvRRztQgTpPUxEgcOgnnWImNfQ=="
   }
 ]
