@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.44.1",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.1/PCGameLauncherCompanion.exe",
+    "size": 95110130,
+    "sha256": "94078283a2b87887d0ec8989f1bdf047759df660e5281ce04e0b75bb740d4495",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.44.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.1/PCGameLauncherCompanion-3.44.1-win-x64.zip",
+      "size": 89383950,
+      "sha256": "71150206390cf6b6ef1ae0ce61311edd8fc27b2267a4ff6593e250359c5494bc"
+    },
+    "notes": "Insel: Öffnen und Schließen deutlich sichtbarer – die Feder ist nochmal gut doppelt so weich (Öffnen ≈ 0,5 s bis fast fertig, Schließen ≈ 0,6 s), der Inhalt fährt gestaffelt mit",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "Insel: Öffnen und Schließen deutlich sichtbarer – die Feder ist nochmal gut doppelt so weich (Öffnen ≈ 0,5 s bis fast fertig, Schließen ≈ 0,6 s), der Inhalt fährt gestaffelt mit"
+      ],
+      "behoben": []
+    },
+    "signature": "idNLEuSvOfOW9+CUiF/WJ0+hhcqEC2dJJU4AMk83J9N24tekednckMI+EILik92rk5mbpBysIChtpdS2pKk6XA=="
+  },
+  {
     "version": "3.44.0",
     "date": "2026-11-10",
     "channel": "stable",
@@ -1325,31 +1349,5 @@
       ]
     },
     "signature": "n5I6cDmH1qO+45gLccrwbRauHIw/7eVEqdy3EfIf9azCOGc4hDPd4b2pC3PJdvRRztQgTpPUxEgcOgnnWImNfQ=="
-  },
-  {
-    "version": "3.13.0",
-    "date": "2026-11-05",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.13.0/PCGameLauncherCompanion.exe",
-    "size": 94920982,
-    "sha256": "05a3d385d95b74f51118f0ae7a0a53f5e3b7e0011b966ca6c28821a97885f1f1",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.13.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.13.0/PCGameLauncherCompanion-3.13.0-win-x64.zip",
-      "size": 89196169,
-      "sha256": "e20b80dbb42bfa7406dda649a78ef08cb9021c55ed21b69e5a4483511e3aeea2"
-    },
-    "notes": "Websuche für JARVIS mit mehreren kostenlosen Suchdiensten: zusätzlich zu Tavily jetzt Serper (Google-Ergebnisse, 2500 Gratis-Suchen) und Exa (monatliches Gratis-Guthaben) – alle mit eigenem Schlüssel ohne Zahlungsmittel. Ist ein Dienst leer, abgelehnt oder gestört, fragt JARVIS automatisch den nächsten (Tavily → Serper → Exa); jeder hat sein eigenes Monatslimit und stoppt am Gratis-Kontingent, es wird nie etwas bezahlt · Jeder Suchschlüssel wird nur in seiner Form angenommen und nur an den eigenen Dienst geschickt; bei Fehlern steht der Name des Dienstes in der Meldung",
-    "changes": {
-      "neu": [
-        "Websuche für JARVIS mit mehreren kostenlosen Suchdiensten: zusätzlich zu Tavily jetzt Serper (Google-Ergebnisse, 2500 Gratis-Suchen) und Exa (monatliches Gratis-Guthaben) – alle mit eigenem Schlüssel ohne Zahlungsmittel. Ist ein Dienst leer, abgelehnt oder gestört, fragt JARVIS automatisch den nächsten (Tavily → Serper → Exa); jeder hat sein eigenes Monatslimit und stoppt am Gratis-Kontingent, es wird nie etwas bezahlt"
-      ],
-      "verbessert": [
-        "Jeder Suchschlüssel wird nur in seiner Form angenommen und nur an den eigenen Dienst geschickt; bei Fehlern steht der Name des Dienstes in der Meldung"
-      ],
-      "behoben": []
-    },
-    "signature": "aJDPsHR+z0SJdynqxaSlGxJquouo1kiCRV/hQyqW4qGuwNaZKQnf6Wfigc0piroS9W3ZjVYnWYxiEti8HJG8DQ=="
   }
 ]
