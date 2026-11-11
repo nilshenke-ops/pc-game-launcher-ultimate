@@ -2392,8 +2392,8 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
 }
 .isl-host.floating, .isl-host.floating[data-isl-style] {
   color: var(--text); border: 1px solid rgba(255,255,255,0.3);
-  background: linear-gradient(155deg, rgba(255,255,255,0.22), rgba(var(--primary-rgb), 0.46)), rgba(var(--surface-rgb), 0.55);
-  backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4);
+  background: linear-gradient(155deg, rgba(255,255,255,0.16), rgba(var(--primary-rgb), 0.38)), rgba(var(--surface-rgb), 0.9);
+  backdrop-filter: blur(28px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4);
   box-shadow: 0 18px 40px -18px rgba(10,8,40,0.65), inset 0 1px 0 rgba(255,255,255,0.4);
 }
 .isl-host.floating { --isl-ring: color-mix(in srgb, var(--accent) 70%, #fff); }

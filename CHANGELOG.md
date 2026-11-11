@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.47.0 – 2026-11-11
+### Verbessert
+- Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite)
+- Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber
+
 ## 3.46.2 – 2026-11-11
 ### Behoben
 - **„Dieser Bereich konnte nicht geladen werden“ bleibt stehen (Handy):** Der Browser lieferte eine alte Kopie der Startseite aus, die auf nicht mehr vorhandene Dateien zeigte, und „Neu laden“ half nicht. Jetzt wird die App-Seite immer direkt vom Server geholt, bei dem Fehler heilt sich die Seite einmal selbst (Zwischenspeicher und Service-Worker werden gelöscht, Neuladen mit neuer Adresse), und „Neu laden“ macht dasselbe

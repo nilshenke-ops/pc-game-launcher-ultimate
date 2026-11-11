@@ -11,14 +11,16 @@ function clock() {
 const run = (c: ReturnType<typeof clock>, max = 600) => { let n = 0; while (c.pending() && n++ < max) c.tick(); return n; };
 
 describe("Öffnen und Schließen der Insel", () => {
-  it("öffnet in gut einer Sekunde, ohne Überschwingen, und endet genau im Ziel", () => {
+  it("öffnet in ca. einer Sekunde mit sanftem Überschwingen und endet genau im Ziel", () => {
     const frames: Box[] = [], c = clock();
     const a = createBoxAnimator((b) => frames.push(b), ISLAND_DIMS.notch, c.s);
     a.to(ISLAND_DIMS.panel);
     const n = run(c);
     expect(frames[frames.length - 1]).toEqual(ISLAND_DIMS.panel);
-    expect(n).toBeGreaterThan(55); expect(n).toBeLessThan(80);                  // ≈ 1.1 s at 60 frames a second
-    expect(Math.max(...frames.map((f) => f.h))).toBeLessThanOrEqual(ISLAND_DIMS.panel.h + 0.01);
+    expect(n).toBeGreaterThan(50); expect(n).toBeLessThan(75);                  // ≈ 1 s at 60 frames a second
+    const over = Math.max(...frames.map((f) => f.h)) - ISLAND_DIMS.panel.h;
+    expect(over).toBeGreaterThan(2);                                            // a gentle swing past the target …
+    expect(over).toBeLessThan((WINDOW_H - ISLAND_DIMS.panel.h) * 0.8);          // … that still fits into the window
     expect(a.moving).toBe(false);
   });
   it("schließt ruhig in knapp einer Sekunde, nie kleiner als das Ziel", () => {
@@ -27,7 +29,7 @@ describe("Öffnen und Schließen der Insel", () => {
     a.to(ISLAND_DIMS.notch);
     const n = run(c);
     expect(frames[frames.length - 1]).toEqual(ISLAND_DIMS.notch);
-    expect(n).toBeGreaterThan(48); expect(n).toBeLessThan(70);
+    expect(n).toBeGreaterThan(44); expect(n).toBeLessThan(65);
     expect(Math.min(...frames.map((f) => f.h))).toBeGreaterThanOrEqual(ISLAND_DIMS.notch.h - 0.01);
     expect(Math.min(...frames.map((f) => f.w))).toBeGreaterThanOrEqual(ISLAND_DIMS.notch.w - 0.01);
   });
@@ -67,7 +69,7 @@ describe("Öffnen und Schließen der Insel", () => {
     const frames: Box[] = [], c = clock();
     const a = createBoxAnimator((b) => frames.push(b), ISLAND_DIMS.notch, c.s);
     a.to(ISLAND_DIMS.panel); c.tick(); c.tick(5000);
-    expect(Math.max(...frames.map((f) => f.h))).toBeLessThanOrEqual(ISLAND_DIMS.panel.h);
+    expect(Math.max(...frames.map((f) => f.h))).toBeLessThan(WINDOW_H);
   });
   it("stepSpring und isSettled (für die Holo-Ansicht)", () => {
     const x = [0], v = [0];

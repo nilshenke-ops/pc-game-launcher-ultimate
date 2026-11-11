@@ -29,11 +29,13 @@ export interface Scheduler { request(cb: (nowMs: number) => void): number; cance
 const browser: Scheduler = { request: (cb) => requestAnimationFrame(cb), cancel: (id) => cancelAnimationFrame(id) };
 
 /** Opening and closing take a fixed, clearly visible time (ms for a full open / full close). */
-export const OPEN_MS = 1100;
-export const CLOSE_MS = 950;
+export const OPEN_MS = 1000;
+export const CLOSE_MS = 850;
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 /** Ease in and out (cubic): starts gently, glides through the middle, lands softly – no abrupt start and no abrupt stop. */
 export const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+/** Opening: fast start (visible at once), swings ≈ 5 % past the target and settles – like the real Dynamic Island. */
+export const easeOutBack = (t: number) => { const c1 = 1.0, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
 /** The part of the total time in which one value moves (start, end): opening – the width leads, the height follows; closing – the height folds first, the width follows. */
 const PHASES = {
   open: { w: [0, 0.72], h: [0.18, 1], r: [0.1, 1] },
@@ -54,8 +56,8 @@ export function createBoxAnimator(apply: (b: Box) => void, start: Box, scheduler
     if (!t0) t0 = now;
     const t = clamp01((now - t0) / dur);
     if (t >= 1) { x[0] = target[0]; x[1] = target[1]; x[2] = target[2]; raf = 0; t0 = 0; emit(); return; }
-    const keys = ["w", "h", "r"] as const;
-    for (let i = 0; i < 3; i++) { const [a, b] = phase[keys[i]]; x[i] = from[i] + (target[i] - from[i]) * easeInOut(clamp01((t - a) / (b - a))); }
+    const keys = ["w", "h", "r"] as const, ease = phase === PHASES.open ? easeOutBack : easeInOut;
+    for (let i = 0; i < 3; i++) { const [a, b] = phase[keys[i]]; x[i] = from[i] + (target[i] - from[i]) * ease(clamp01((t - a) / (b - a))); }
     emit();
     raf = scheduler.request(frame);
   };
