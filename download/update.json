@@ -1,25 +1,28 @@
 {
-  "version": "3.47.0",
+  "version": "3.47.1",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.0/PCGameLauncherCompanion.exe",
-  "size": 95112238,
-  "sha256": "0a08f75604e87db2f7ad8905208cfa7a360f3904034b32541c873bc3994e594f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.1/PCGameLauncherCompanion.exe",
+  "size": 95112394,
+  "sha256": "4f5c8d63e086795e97c320912f44f83b506e70ed57207b3b75d434b9d9949d5d",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.47.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.0/PCGameLauncherCompanion-3.47.0-win-x64.zip",
-    "size": 89386380,
-    "sha256": "df1a9519629280d100f426392cb475e7d972b2c346fd4538a2e88ff7006c4d46"
+    "fileName": "PCGameLauncherCompanion-3.47.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.1/PCGameLauncherCompanion-3.47.1-win-x64.zip",
+    "size": 89386568,
+    "sha256": "fa32663b85fbccde2ea763d2f2fb916d17c80d8dd5ee92a629ed9172391b2023"
   },
-  "notes": "Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite) · Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber",
+  "notes": "Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite) · Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Insel: Öffnen ≈ 1 s – schneller, sichtbarer Start, die Insel schwingt am Ende rund 5 % über und setzt sich weich; Schließen ≈ 0,85 s ohne Überschwingen (erst faltet sich die Höhe zu, dann die Breite)",
-      "Insel: die Fläche ist jetzt deutlich dichter (90 % statt 55 %) und stärker weichgezeichnet – Kacheln und Symbole der Seite dahinter scheinen nicht mehr durch, Öffnen und Schließen wirken sauber"
+    "neu": [
+      "Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite)",
+      "Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander"
     ],
-    "behoben": []
+    "verbessert": [],
+    "behoben": [
+      "Insel: die neue Scroll-Einblendung der Karten (3.46.0) griff auch auf Karten innerhalb der Insel und störte dort das Wischen – die Insel ist jetzt ausgenommen",
+      "Insel: sanftes Überschwingen und dichtere Fläche aus 3.47.0 sind jetzt auch in den Tests abgebildet"
+    ]
   },
-  "signature": "8SAWWTuLxucwNJu5Njb5IbHRli244t782y1/ltyPgmEdVwtYrCjkH8EKteGUJxjYabD0OkzCNxsuOCtt6KIErw=="
+  "signature": "OBkMvV8jqLCrtWM5aKRBpUgxf2fv5SSxc7XZzbMf62hTWPOar0nOdbvy0SX4vs3j3tDrW6mTEpDLlX6iyt/C0g=="
 }

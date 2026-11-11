@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.47.1",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.1/PCGameLauncherCompanion.exe",
+    "size": 95112394,
+    "sha256": "4f5c8d63e086795e97c320912f44f83b506e70ed57207b3b75d434b9d9949d5d",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.47.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.1/PCGameLauncherCompanion-3.47.1-win-x64.zip",
+      "size": 89386568,
+      "sha256": "fa32663b85fbccde2ea763d2f2fb916d17c80d8dd5ee92a629ed9172391b2023"
+    },
+    "notes": "Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite) · Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander",
+    "changes": {
+      "neu": [
+        "Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite)",
+        "Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander"
+      ],
+      "verbessert": [],
+      "behoben": [
+        "Insel: die neue Scroll-Einblendung der Karten (3.46.0) griff auch auf Karten innerhalb der Insel und störte dort das Wischen – die Insel ist jetzt ausgenommen",
+        "Insel: sanftes Überschwingen und dichtere Fläche aus 3.47.0 sind jetzt auch in den Tests abgebildet"
+      ]
+    },
+    "signature": "OBkMvV8jqLCrtWM5aKRBpUgxf2fv5SSxc7XZzbMf62hTWPOar0nOdbvy0SX4vs3j3tDrW6mTEpDLlX6iyt/C0g=="
+  },
+  {
     "version": "3.47.0",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1312,35 +1340,5 @@
       "behoben": []
     },
     "signature": "NBxQau6OZYZnb7xr5O2hHu0EttdBFoFc/WNifX/6+Z0k1IMb2mibCrd/DG1VqQdNrrEgwBR2N9RsnBu5+cl04w=="
-  },
-  {
-    "version": "3.20.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.20.0/PCGameLauncherCompanion.exe",
-    "size": 94953736,
-    "sha256": "b02ca3a1a7ea24275b2f0ad5b1b8fdf9c2a4aacf3f2db3ce0dfc6f00134d6279",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.20.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.20.0/PCGameLauncherCompanion-3.20.0-win-x64.zip",
-      "size": 89228754,
-      "sha256": "11e62e532fd5dda9fb91d5690aa7b87081c2e10a6d86432db3f927622d1d69d3"
-    },
-    "notes": "Kacheln „Wer ist wofür zuständig“ in der KI-Verwaltung und im Insel-Menü: Antworten (Chat-KIs), Befehle & PC, Fußball & Wetter, Websuche, Sprache verstehen, Sprache sprechen – jede Kachel nennt, wofür sie zuständig ist, zeigt die Dienste dahinter mit Zustand (aktiv, am Limit, Problem, angefangen, nicht eingerichtet) und wie viele gerade aktiv sind · ElevenLabs-Schlüssel für JARVIS: am PC wie bisher (Stimme) und zusätzlich auf dem Gerät mit Passwort unter „Schlüssel ohne PC“ – dann geht die natürliche Stimme auch ohne PC (eigene Grenze: 15.000 Zeichen im Monat je Gerät, bei Fehlern spricht die Browser-Stimme), und ElevenLabs „Scribe“ versteht deine Sprache sehr genau · Spracherkennung klar wählbar (Kachel „Sprache verstehen“): Automatisch, Browser, Groq Whisper oder ElevenLabs Scribe – jeweils mit Anzeige, was bereit ist und was gerade wirklich zuhört. „Automatisch“ nimmt den Browser, wo es seine Erkennung gibt, und sonst Scribe/Whisper: so funktioniert das Mikrofon der Insel jetzt auch in Firefox, in Browsern ohne Spracherkennung und in der iPad-App vom Home-Bildschirm",
-    "changes": {
-      "neu": [
-        "Kacheln „Wer ist wofür zuständig“ in der KI-Verwaltung und im Insel-Menü: Antworten (Chat-KIs), Befehle & PC, Fußball & Wetter, Websuche, Sprache verstehen, Sprache sprechen – jede Kachel nennt, wofür sie zuständig ist, zeigt die Dienste dahinter mit Zustand (aktiv, am Limit, Problem, angefangen, nicht eingerichtet) und wie viele gerade aktiv sind",
-        "ElevenLabs-Schlüssel für JARVIS: am PC wie bisher (Stimme) und zusätzlich auf dem Gerät mit Passwort unter „Schlüssel ohne PC“ – dann geht die natürliche Stimme auch ohne PC (eigene Grenze: 15.000 Zeichen im Monat je Gerät, bei Fehlern spricht die Browser-Stimme), und ElevenLabs „Scribe“ versteht deine Sprache sehr genau",
-        "Spracherkennung klar wählbar (Kachel „Sprache verstehen“): Automatisch, Browser, Groq Whisper oder ElevenLabs Scribe – jeweils mit Anzeige, was bereit ist und was gerade wirklich zuhört. „Automatisch“ nimmt den Browser, wo es seine Erkennung gibt, und sonst Scribe/Whisper: so funktioniert das Mikrofon der Insel jetzt auch in Firefox, in Browsern ohne Spracherkennung und in der iPad-App vom Home-Bildschirm",
-        "Auch ohne eigenen Schlüssel am Gerät: Liegt der ElevenLabs-Schlüssel am PC, erkennt der PC die aufgenommene Sprache für Handy und iPad",
-        "Stimme wählbar (Kachel „Sprache sprechen“): Automatisch (ElevenLabs, wenn bereit), Browser-Stimme oder ElevenLabs"
-      ],
-      "verbessert": [
-        "Der alte Schalter „Bessere Spracherkennung (Whisper)“ ist in die Kachel „Sprache verstehen“ gewandert (eine frühere Einstellung bleibt als „Groq Whisper“ erhalten)"
-      ],
-      "behoben": []
-    },
-    "signature": "kuQGzefRligrGH5wUcmasaInxKObfEpPUfpsHdTc9iGUwv68CiNCiG5GjvWRvBJxbIZqRzB3PfwHBG2cGCcjKg=="
   }
 ]
