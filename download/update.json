@@ -1,25 +1,24 @@
 {
-  "version": "3.44.2",
+  "version": "3.45.0",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.2/PCGameLauncherCompanion.exe",
-  "size": 95110186,
-  "sha256": "254891ae6fd78a94630910b6d9b366f2dac53aba2da79d0f358c6fea00796bc0",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.0/PCGameLauncherCompanion.exe",
+  "size": 95110674,
+  "sha256": "33b401d964a8df5754cc6483ba2f77cf0bd5a07e040374fd3122d2b1d04a9caf",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.44.2-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.44.2/PCGameLauncherCompanion-3.44.2-win-x64.zip",
-    "size": 89383981,
-    "sha256": "336791854e32e7f88162dfe1792b3fe53e6364dbb92fec5eeaeeaa23e24d3be2"
+    "fileName": "PCGameLauncherCompanion-3.45.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.45.0/PCGameLauncherCompanion-3.45.0-win-x64.zip",
+    "size": 89384583,
+    "sha256": "9c22052c9aa7ed840aed5b2599ac7ae77281196800e51f8b78fa30a803953a5d"
   },
-  "notes": "Insel: Öffnen und Schließen sind jetzt klar sichtbar langsamer (ca. 0,65 s bis fast fertig, Schließen ca. 0,8 s), weiche Feder · Holo-Ansicht: komplett neu bewegt – die Karten folgen dem Finger direkt, beim Loslassen übernimmt eine Feder mit der Geschwindigkeit des Wischens (Schwung wie in der Insel, auch über mehrere Karten); Tastatur, Pfeile und Regler gleiten genauso",
+  "notes": "Insel: Öffnen und Schließen komplett neu als durchchoreografierte Bewegung statt Feder – Öffnen ≈ 1,1 s (erst wird die Insel breiter, dann wächst sie in die Höhe, der Inhalt folgt), Schließen ≈ 0,95 s (erst faltet sich die Höhe zu, dann die Breite). Weicher Start, weiche Landung, kein Überschwingen; ein Richtungswechsel mitten drin startet dort, wo die Insel gerade ist",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Insel: Öffnen und Schließen sind jetzt klar sichtbar langsamer (ca. 0,65 s bis fast fertig, Schließen ca. 0,8 s), weiche Feder",
-      "Holo-Ansicht: komplett neu bewegt – die Karten folgen dem Finger direkt, beim Loslassen übernimmt eine Feder mit der Geschwindigkeit des Wischens (Schwung wie in der Insel, auch über mehrere Karten); Tastatur, Pfeile und Regler gleiten genauso"
+    "neu": [
+      "Insel: Öffnen und Schließen komplett neu als durchchoreografierte Bewegung statt Feder – Öffnen ≈ 1,1 s (erst wird die Insel breiter, dann wächst sie in die Höhe, der Inhalt folgt), Schließen ≈ 0,95 s (erst faltet sich die Höhe zu, dann die Breite). Weicher Start, weiche Landung, kein Überschwingen; ein Richtungswechsel mitten drin startet dort, wo die Insel gerade ist"
     ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "9ZRs3epxiSz5pzQ2BGTFMiA0CIPqLUh4YhHFloF4oXGVxXGwmdHQKfF8f1jvBqmxlWkbvV106mjewwBT8F1GzQ=="
+  "signature": "L+GVuqkhyiRMrQyWjxC/kQ6cx49Nma43zlfDRNxjZRR+ifCgq/R89MmKOZk/elUvRjodcvKNOF1OZ7fJVxA1ZQ=="
 }
