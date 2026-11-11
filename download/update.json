@@ -1,28 +1,27 @@
 {
-  "version": "3.47.1",
+  "version": "3.48.0",
   "date": "2026-11-11",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.1/PCGameLauncherCompanion.exe",
-  "size": 95112394,
-  "sha256": "4f5c8d63e086795e97c320912f44f83b506e70ed57207b3b75d434b9d9949d5d",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.0/PCGameLauncherCompanion.exe",
+  "size": 95112622,
+  "sha256": "a4a38f586ce6ff260b63a9b7120831b3aa6e0cd65e0057da841101701a53c8ce",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.47.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.47.1/PCGameLauncherCompanion-3.47.1-win-x64.zip",
-    "size": 89386568,
-    "sha256": "fa32663b85fbccde2ea763d2f2fb916d17c80d8dd5ee92a629ed9172391b2023"
+    "fileName": "PCGameLauncherCompanion-3.48.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.0/PCGameLauncherCompanion-3.48.0-win-x64.zip",
+    "size": 89386635,
+    "sha256": "6bbf732a0e3284f28a0740ae32e0b575019efd8f6420c774daf3ff31b75a7b98"
   },
-  "notes": "Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite) · Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander",
+  "notes": "**Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen · **ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen",
   "changes": {
-    "neu": [
-      "Kleine Insel (Handy, iPad, PC): die Augen leben – im Ruhezustand schauen sie nach links, blinzeln, schauen nach rechts und blinzeln zweimal; beim Öffnen weiten sie sich und schauen kurz nach oben, beim Schließen schließen sie sich zuerst und öffnen sich am Ende wieder (auch beim Start der Seite)",
-      "Beim Öffnen läuft ein Lichtschimmer über die Fläche und die Innenseite leuchtet kurz auf; das „…“-Menü springt aus seiner Ecke, die Einträge folgen nacheinander"
+    "neu": [],
+    "verbessert": [
+      "**Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen",
+      "**ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen"
     ],
-    "verbessert": [],
     "behoben": [
-      "Insel: die neue Scroll-Einblendung der Karten (3.46.0) griff auch auf Karten innerhalb der Insel und störte dort das Wischen – die Insel ist jetzt ausgenommen",
-      "Insel: sanftes Überschwingen und dichtere Fläche aus 3.47.0 sind jetzt auch in den Tests abgebildet"
+      "Die Scroll-Einblendung der Karten (3.46.0) ist wieder entfernt: sie verschob Positionen auf Seiten mit vielen Karten und machte Tests und Schalter unruhig"
     ]
   },
-  "signature": "OBkMvV8jqLCrtWM5aKRBpUgxf2fv5SSxc7XZzbMf62hTWPOar0nOdbvy0SX4vs3j3tDrW6mTEpDLlX6iyt/C0g=="
+  "signature": "1qsPolQpK4loxqoaz/l1+afHbRosgbjvVURy6M1xseJAq0a69xB6lHvDi1dNDFzPx3ve4Mrtm4FVPdUq5aixJQ=="
 }

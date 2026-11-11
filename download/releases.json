@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.48.0",
+    "date": "2026-11-11",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.0/PCGameLauncherCompanion.exe",
+    "size": 95112622,
+    "sha256": "a4a38f586ce6ff260b63a9b7120831b3aa6e0cd65e0057da841101701a53c8ce",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.48.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.48.0/PCGameLauncherCompanion-3.48.0-win-x64.zip",
+      "size": 89386635,
+      "sha256": "6bbf732a0e3284f28a0740ae32e0b575019efd8f6420c774daf3ff31b75a7b98"
+    },
+    "notes": "**Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen · **ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "**Stimmenwechsler – tiefe Stimmen besser verständlich:** Beim Tieferlegen rutschen auch die Zischlaute (s, t, k, f) nach unten und die Stimme wird dumpf – gemessen: die hohen Anteile sanken um rund 60 %. Neu: die echten hohen Laute der Originalstimme werden dazugemischt, der Dröhn-Bereich (≈ 270 Hz) wird abgesenkt, der Sprachbereich (≈ 3 kHz) angehoben, und tiefe Stimmen werden etwas lauter (sonst klingen sie leiser als das Original). Dazu weniger Bass-Anhebung bei Tief-Stimmen (Tief, Monster, Dämon, Riese, Oger, Herrscher) – die Tiefe kommt aus der Tonhöhe, nicht aus dem Brummen",
+        "**ElevenLabs:** Stimme folgt deiner Betonung genauer und bleibt trotzdem die gewählte Stimme (Einstellungen für Stabilität, Ähnlichkeit, Sprecher-Verstärkung), bessere Klangqualität (128 kbit/s), der Anfang eines Satzes wird im Auto-Modus nicht mehr abgeschnitten (Aufnahme beginnt beim ersten Laut), kürzere Pause bis zum Senden (0,65 s), die Antwort wird auf eine klare Lautstärke gebracht und weich ein- und ausgeblendet, automatische Mikrofon-Lautstärke wie bei den Effekt-Stimmen"
+      ],
+      "behoben": [
+        "Die Scroll-Einblendung der Karten (3.46.0) ist wieder entfernt: sie verschob Positionen auf Seiten mit vielen Karten und machte Tests und Schalter unruhig"
+      ]
+    },
+    "signature": "1qsPolQpK4loxqoaz/l1+afHbRosgbjvVURy6M1xseJAq0a69xB6lHvDi1dNDFzPx3ve4Mrtm4FVPdUq5aixJQ=="
+  },
+  {
     "version": "3.47.1",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1310,35 +1337,5 @@
       ]
     },
     "signature": "hVoa2ddU7DIg8RapPPKgMqHaZP0kJ5sSsnpyEo+Za+3A/8Wm3M7MRGdD/65ZOUhbmnVfcumEdWoyM1c4WpwtDg=="
-  },
-  {
-    "version": "3.21.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion.exe",
-    "size": 94986791,
-    "sha256": "e5f84ad431a077c476a9f7f6867133b200dbe18a491d526b506adf0996e2b24a",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.21.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.21.0/PCGameLauncherCompanion-3.21.0-win-x64.zip",
-      "size": 89261904,
-      "sha256": "c45c0c5b30d674c120e13a6a49053c706949194d87c0ec0bb77968d238f75167"
-    },
-    "notes": "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt · „Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht · Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
-    "changes": {
-      "neu": [
-        "JARVIS MEMORY: Langzeitgedächtnis als Ordner mit normalen Markdown-Notizen auf dem PC (ein Obsidian-Vault, aber auch ohne installiertes oder geöffnetes Obsidian nutzbar). Ordnerstruktur JARVIS-MEMORY mit System, Personen, Projekte, Gaming, Gespräche, Wissen und Aufgaben wird angelegt; vorhandene Notizen bleiben unberührt",
-        "„Merk dir, dass mein Minecraft-Projekt noch nicht fertig ist“ legt die Notiz an oder aktualisiert sie (keine Doppelten, geänderter Status ersetzt den alten und bleibt im Verlauf nachvollziehbar); „Wo war ich bei meinem Minecraft-Projekt stehen geblieben?“ antwortet aus den Notizen mit Quelle und sagt ehrlich, wenn nichts dazu steht",
-        "Lokale Volltextsuche ohne KI und ohne Netz; an die KI gehen nur die wenigen passenden Ausschnitte, nie der ganze Vault",
-        "Neue Seite „JARVIS MEMORY“: Verbindungsstatus, Notizzahl, zuletzt Gemerktes, Projekte, gespeicherte Informationen, Suche, Notizen anlegen, bearbeiten und löschen, Pflege-Hinweise (Doppelte, lange nicht angefasste Projekte, Lücken) im Glas-Design",
-        "Sicherheit: Der Vault wird nur über den PC-Begleiter und nur mit angemeldeter Verbindung erreicht (nie über GitHub Pages); Pfad-Tricks (.., absolute Pfade, Laufwerke, versteckte Ordner, Verknüpfungen) werden abgelehnt; Schreiben und Löschen sind einzeln abschaltbar; der Ordner wird nur am PC selbst gewählt; Löschen nie von selbst, nie endgültig (Papierkorb .trash); jede Änderung sichert die alte Fassung unter 00-System/Verlauf"
-      ],
-      "verbessert": [
-        "Ist der Vault nicht erreichbar (Laufwerk getrennt, Ordner gelöscht, PC aus), arbeitet JARVIS ohne Gedächtnis normal weiter; „Merk dir …“ und „Wo war ich …“ gehen bei eingeschaltetem Gedächtnis an den PC statt an das kleine Browser-Gedächtnis"
-      ],
-      "behoben": []
-    },
-    "signature": "NBxQau6OZYZnb7xr5O2hHu0EttdBFoFc/WNifX/6+Z0k1IMb2mibCrd/DG1VqQdNrrEgwBR2N9RsnBu5+cl04w=="
   }
 ]
