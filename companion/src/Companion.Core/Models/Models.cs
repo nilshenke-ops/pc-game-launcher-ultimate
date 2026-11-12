@@ -369,6 +369,11 @@ public sealed class Settings
     public string? PublicUrl { get; set; }
     /// <summary>Address of the hosted web app (static site that stays online while the PC is off). Its QR code links there.</summary>
     public string? WebAppUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate";
+    /// <summary>
+    /// While this PC is linked to a cloud account: keep an outbound connection to the account's cloud link, so the account's devices find the PC from
+    /// anywhere without a QR code, and let a device that is signed in to the same account get its own (revocable) access by itself.
+    /// </summary>
+    public bool CloudLink { get; set; } = true;
     public bool RelayEnabled { get; set; }
     public string? RelayUrl { get; set; }
     public string? RelayCompanionId { get; set; }

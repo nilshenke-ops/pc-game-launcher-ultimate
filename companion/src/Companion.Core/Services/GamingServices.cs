@@ -311,6 +311,7 @@ public sealed class SettingsService
         public int? Port { get; set; }
         public string? PublicUrl { get; set; }
         public string? WebAppUrl { get; set; }
+        public bool? CloudLink { get; set; }
         public bool? RelayEnabled { get; set; }
         public string? RelayUrl { get; set; }
         public string? RelayCompanionId { get; set; }
@@ -342,6 +343,7 @@ public sealed class SettingsService
             if (u.Port != null) s.Port = u.Port.Value;
             if (u.PublicUrl != null) s.PublicUrl = u.PublicUrl == "" ? null : u.PublicUrl.TrimEnd('/');
             if (u.WebAppUrl != null) s.WebAppUrl = u.WebAppUrl == "" ? null : u.WebAppUrl.Trim().TrimEnd('/');
+            if (u.CloudLink != null) s.CloudLink = u.CloudLink.Value;
             if (u.RelayEnabled != null) s.RelayEnabled = u.RelayEnabled.Value;
             if (u.RelayUrl != null) s.RelayUrl = u.RelayUrl == "" ? null : u.RelayUrl;
             if (u.RelayCompanionId != null) s.RelayCompanionId = u.RelayCompanionId == "" ? null : u.RelayCompanionId;
@@ -369,6 +371,7 @@ public sealed class SettingsService
         s.ObsPasswordProtected = keepSecurityFrom.ObsPasswordProtected;
         s.ObsUrl = keepSecurityFrom.ObsUrl; // decides where the OBS password is sent
         // The relay address decides where the companion sends its relay secret – only changeable at the PC (settings.save).
+        s.CloudLink = keepSecurityFrom.CloudLink; // how the PC is reachable is never decided by a backup file
         s.RelayEnabled = keepSecurityFrom.RelayEnabled;
         s.RelayUrl = keepSecurityFrom.RelayUrl;
         s.RelayCompanionId = keepSecurityFrom.RelayCompanionId;

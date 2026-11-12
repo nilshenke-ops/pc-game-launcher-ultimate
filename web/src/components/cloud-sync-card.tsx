@@ -10,8 +10,9 @@ import { describeSync, diagnoseCloud, flushOps, type CheckLine, linkPcNow, pullN
 import { session } from "../lib/design-account";
 import { Banner, Button, Card, Modal } from "./ui";
 import { AccountPanel } from "./design-profile";
+import { connView } from "../lib/conn-state";
 
-interface PcCloud { linked: boolean; user: string | null; state: string; lastPushAt: string | null; lastOkAt: string | null; lastError: string | null; conflicts: string[] }
+interface PcCloud { linked: boolean; user: string | null; state: string; lastPushAt: string | null; lastOkAt: string | null; lastError: string | null; conflicts: string[]; link?: { enabled: boolean; state: string; lastError: string | null; connectedAt: string | null } | null }
 
 export function CloudSyncCard() {
   const conn = useConn();
@@ -42,13 +43,17 @@ export function CloudSyncCard() {
   const dot = (kind: "ok" | "warn" | "off") => <span className={`dot ${kind === "ok" ? "ok" : kind === "warn" ? "warn" : ""}`} aria-hidden style={{ display: "inline-block", marginRight: 8 }} />;
   const run = async (fn: () => Promise<unknown>, ok?: string) => { setBusy(true); try { await fn(); if (ok) toast(ok, "success"); } catch (e) { toast((e as Error).message, "error"); } finally { setBusy(false); } };
   const pcLinked = !!pc.data?.linked && pc.data.user === acct.user;
+  const link = pc.data?.link ?? null, isLocal = !!conn.me?.isLocal;
+  const autostart = useRpc<{ supported: boolean; enabled: boolean }>("autostart.get", {}, [], pcOnline && isLocal);
+  // How this device and the PC find each other: said from the real state of the connection (lib/conn-state.ts), never guessed.
+  const view = connView(conn, { hasCredentials: !!client.credentials });
   return (
     <Card title={t("Automatische Synchronisierung")} icon={<CloudCog size={18} />}
       meta={<span className={`badge ${s.cloud === "ok" && s.pending === 0 ? "ok" : "warn"}`}>{s.syncing ? t("läuft") : s.pending > 0 ? t("ausstehend") : s.cloud === "ok" ? t("aktuell") : t("wartet")}</span>}>
       <div className="stack-sm">
         <div className="small" role="status" aria-live="polite">
           <div>{dot(s.cloud === "ok" ? "ok" : s.cloud === "unreachable" ? "warn" : "off")}{d.cloud}{s.okAt ? <span className="muted"> · {t("zuletzt {w}", { w: relTime(new Date(s.okAt).toISOString()) })}</span> : null}</div>
-          <div>{dot(pcOnline ? "ok" : "off")}{d.pc}</div>
+          <div>{dot(pcOnline ? "ok" : "off")}{d.pc}{pcOnline && conn.via === "cloud" ? <span className="muted"> · {t("über die Cloud")}</span> : null}{!pcOnline ? <span className="muted"> · {view.label}</span> : null}</div>
           <div>{dot(s.syncing ? "warn" : s.pending > 0 ? "warn" : s.upToDate ? "ok" : "off")}{d.sync}</div>
         </div>
         <p className="small muted" style={{ margin: 0 }}>
@@ -56,6 +61,23 @@ export function CloudSyncCard() {
             ? t("Der PC „{n}“ hat seine Daten zuletzt {w} in die Cloud übertragen. Dieses Gerät zeigt genau diesen Stand – auch wenn der PC jetzt aus ist.", { n: s.pcName ?? "PC", w: relTime(new Date(s.pcSyncedAt).toISOString()) })
             : t("Noch hat kein PC Daten in die Cloud übertragen. Sobald der PC-Begleiter mit diesem Konto verbunden ist und läuft, geschieht das von selbst.")}
         </p>
+        <div className="stack-sm">
+          <b className="small">{t("Automatische PC-Verbindung")}</b>
+          <p className="small muted" style={{ margin: 0 }}>{t("Läuft der Begleiter auf dem PC und ist dort dieses Konto angemeldet, hält der PC von sich aus eine Verbindung zur Cloud. Jedes Gerät in diesem Konto findet ihn darüber von selbst – ohne QR-Code, ohne Code, ohne Portfreigabe am Router. Die Cloud leitet nur weiter; angemeldet wird Ende-zu-Ende am PC.")}</p>
+          {pcOnline && link && (
+            <div className="small" role="status">{dot(link.state === "connected" ? "ok" : link.enabled ? "warn" : "off")}
+              {!link.enabled ? t("Am PC ausgeschaltet") : link.state === "connected" ? t("Der PC ist mit der Cloud verbunden") : link.state === "disabled" ? t("Der PC ist noch nicht mit dem Konto verbunden") : t("Der PC baut die Verbindung zur Cloud auf …")}
+              {link.enabled && link.state !== "connected" && link.lastError ? <span className="muted"> · {link.lastError}</span> : null}</div>
+          )}
+          {pcOnline && isLocal && link && (
+            <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+              <Button busy={busy} onClick={() => run(async () => { await client.call("settings.saveSecurity", { cloudLink: !link.enabled }); pc.reload(); }, link.enabled ? t("Automatische PC-Verbindung ausgeschaltet") : t("Automatische PC-Verbindung eingeschaltet"))}>{link.enabled ? t("Ausschalten") : t("Einschalten")}</Button>
+              {autostart.data?.supported && !autostart.data.enabled && <Button variant="primary" busy={busy} onClick={() => run(async () => { await client.call("autostart.set", { enabled: true }); autostart.reload(); }, t("Der Begleiter startet jetzt mit Windows"))}>{t("Mit Windows starten")}</Button>}
+            </div>
+          )}
+          {pcOnline && isLocal && autostart.data?.supported && !autostart.data.enabled && <Banner kind="warn">{t("Der Begleiter startet noch nicht mit Windows. Erst mit Autostart findet dein Handy den PC nach dem Einschalten von selbst.")}</Banner>}
+          {pcOnline && !isLocal && link && !link.enabled && <p className="tiny muted" style={{ margin: 0 }}>{t("Ein- und Ausschalten geht nur direkt am PC.")}</p>}
+        </div>
         {s.pending > 0 && <Banner kind="info">{t("{n} Änderung(en) von diesem Gerät warten darauf, in die Cloud zu kommen. Sie werden automatisch gesendet, sobald die Verbindung da ist – nichts geht verloren.", { n: s.pending })}</Banner>}
         {s.error && <Banner kind="warn">{s.error}</Banner>}
         {pcOnline && pc.data && (

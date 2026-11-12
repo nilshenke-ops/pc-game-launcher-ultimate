@@ -49,6 +49,8 @@ public sealed class CloudSyncService : IDisposable
     /// they arrive sealed with the account key, and the PC applies them with its own rights. Set by <c>CompanionServices</c>.
     /// </summary>
     public Func<string, JsonElement, Task>? AccountSettings { get; set; }
+    /// <summary>State of the PC's outbound cloud link (set by <c>CompanionServices</c>): { enabled, state, lastError, connectedAt, clients }.</summary>
+    public Func<object>? LinkStatus { get; set; }
     const int PartSize = 900_000, MaxApplied = 1000;
     static readonly TimeSpan Period = TimeSpan.FromSeconds(30), Debounce = TimeSpan.FromSeconds(2), Heartbeat = TimeSpan.FromMinutes(5);
 
@@ -78,6 +80,40 @@ public sealed class CloudSyncService : IDisposable
 
     public bool Linked { get { var f = _store.Snapshot(); return f.User != null && f.TokenProtected != null && f.EncProtected != null; } }
 
+    /// <summary>Where this PC keeps its outbound cloud link (see RelayClient "cloudlink"): the account's link address and the PC's own device token.</summary>
+    public (string endpoint, string user, string token)? LinkTarget()
+    {
+        var f = _store.Snapshot();
+        if (f.Api == null || f.User == null || f.TokenProtected == null || f.EncProtected == null) return null;
+        var token = _secrets.Unprotect(f.TokenProtected);
+        if (token == null) return null;
+        var ws = f.Api.StartsWith("https://", StringComparison.OrdinalIgnoreCase) ? "wss://" + f.Api[8..] : f.Api.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ? "ws://" + f.Api[7..] : null;
+        return ws == null ? null : (ws.TrimEnd('/') + "/api/link/companion?user=" + Uri.EscapeDataString(f.User), f.User, token);
+    }
+
+    /// <summary>A short public mark of the linked account (not the name): a device compares it with its own account before it offers the account login.</summary>
+    public string? AccountMark()
+    {
+        var user = _store.Snapshot().User;
+        return user == null || !Linked ? null : Ids.Sha256Hex("pgl-account:" + user)[..16];
+    }
+
+    /// <summary>
+    /// Does the caller know the account's data key? Proof = HMAC(SHA-256(key as Base64 text), nonce of this connection) – the same construction as the
+    /// device login. The data key never leaves the account's devices and this PC, so only someone signed in to the same account can answer.
+    /// </summary>
+    public bool VerifyAccountProof(string user, string proofHex, byte[] nonce)
+    {
+        var f = _store.Snapshot();
+        if (!Linked || f.User == null || !string.Equals(f.User, user.Trim(), StringComparison.OrdinalIgnoreCase)) return false;
+        var enc = f.EncProtected == null ? null : _secrets.Unprotect(f.EncProtected);
+        if (enc == null) return false;
+        var expected = System.Security.Cryptography.HMACSHA256.HashData(System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(enc)), nonce);
+        byte[] given;
+        try { given = Convert.FromHexString(proofHex); } catch (FormatException) { return false; }
+        return System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(expected, given);
+    }
+
     public void Start()
     {
         _timer = new Timer(_ => _ = SyncAsync(), null, TimeSpan.FromSeconds(3), Period);
@@ -98,6 +134,7 @@ public sealed class CloudSyncService : IDisposable
             linked = Linked, user = f.User, api = f.Api, state = Linked ? (_syncing ? "syncing" : _state) : "off",
             lastPushAt = f.LastPushAt, lastPullAt = f.LastPullAt, lastOkAt = f.LastOkAt, lastError = f.LastError,
             conflicts = f.Conflicts.TakeLast(10).ToList(), items = Items.Length,
+            link = LinkStatus?.Invoke(),
         };
     }
 

@@ -1,4 +1,4 @@
-import { loginProof } from "./sha256";
+import { loginProof, sha256, toHex, utf8 } from "./sha256";
 import { sealSecret as seal, type Sealed } from "./seal";
 import { t } from "./i18n";
 import { clearCaches } from "./offline-cache";
@@ -11,7 +11,8 @@ export interface Hello {
   protocol: number;
   nonce: string;
   transport: "local" | "relay";
-  info: { app: string; version: string; pcName: string; platform: string; features: Record<string, boolean> };
+  /** `account`: a short mark of the cloud account this PC is linked to (not its name) – a device in the same account can sign in without pairing. */
+  info: { app: string; version: string; pcName: string; platform: string; features: Record<string, boolean>; account?: string | null };
 }
 
 export interface Me { isLocal: boolean; permissions: string[]; device?: { id: string; name: string } | null }
@@ -26,6 +27,13 @@ export interface ConnStatus {
   lastError?: string;
   everConnected: boolean;
   relayCompanion?: "online" | "offline";
+  /** How this page talks to the PC right now: straight (Wi-Fi, Tailscale, own relay) or through the account's cloud link. */
+  via?: "direct" | "cloud";
+  /**
+   * The account's cloud link (only while the PC is not reachable directly): "waiting" – the cloud is connected and tells this page the moment the
+   * PC comes online (nothing is retried meanwhile); "down" – the cloud itself did not answer.
+   */
+  cloudLink?: "waiting" | "down";
   /** The user opened the app without a PC connection (design/layout can be changed, connects automatically later). */
   offlineShell?: boolean;
   /** Hosted build without a saved PC address: show "PC verbinden" instead of connecting anywhere. */
@@ -58,7 +66,7 @@ const REQUEST_TIMEOUT_MS = 20000;
 /** Requests that pages make by themselves (loading data); they fail quietly instead of opening the "PC verbinden" hint. */
 const QUIET = /\.(list|get|status|state|logs|subscribe|unsubscribe|diagnose|run|me|pending|getPrefs|now)$/;
 // Requests that work without login (connection setup and pairing) always go to the PC.
-const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim", "pairing.handoff"]);
+const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim", "pairing.handoff", "pairing.account"]);
 const HANDOFF_KEY = "pgl.handoff";
 
 function store(kind: "local" | "session") {
@@ -94,6 +102,29 @@ export function rememberLanPc(httpBase: string) {
 export function lanPc(): string | null { return readJson<string>(LAN_PC_KEY); }
 
 export function serverConfigured() { return !!readJson<string>(SERVER_KEY); }
+
+// ------------------------------------------------------------------ the account's cloud link
+// Signed in to a cloud account, this device holds the account's data key and its own cloud token (lib/cloud-sync.ts). With them it can meet the
+// PC at the account's cloud link (cloud-account-worker/src/link.js) – from any network, without a QR code. The PC keeps an outbound connection
+// there while its companion runs; the link only forwards, the login at the PC stays end to end.
+const ACCOUNT_KEY = "pgl.designAccount", SYNC_TOKEN_KEY = "pgl.cloudSync.token";
+export interface LinkTarget { url: string; user: string; token: string; enc: string }
+export function cloudLinkTarget(): LinkTarget | null {
+  const acc = readJson<{ user?: string; enc?: string }>(ACCOUNT_KEY), tok = readJson<{ user?: string; api?: string; token?: string }>(SYNC_TOKEN_KEY);
+  if (!acc?.user || !acc.enc || !tok?.token || !tok.api || tok.user !== acc.user) return null;
+  try {
+    const u = new URL(tok.api);
+    u.protocol = u.protocol === "https:" ? "wss:" : "ws:";
+    if (typeof location !== "undefined" && location.protocol === "https:" && u.protocol === "ws:") return null; // blocked as mixed content
+    u.pathname = u.pathname.replace(/\/+$/, "") + "/api/link/ws";
+    u.search = "?user=" + encodeURIComponent(acc.user);
+    return { url: u.toString(), user: acc.user, token: tok.token, enc: acc.enc };
+  } catch { return null; }
+}
+/** The mark a PC shows for the account it is linked to (see CloudSyncService.AccountMark). */
+export const accountMark = (user: string) => toHex(sha256(utf8("pgl-account:" + user.trim().toLowerCase()))).slice(0, 16);
+/** Failed direct tries in a row after which the cloud link takes over (the direct address is tried again whenever the page comes back). */
+export const DIRECT_TRIES = 2;
 
 export function setServerUrl(url: string | null) {
   writeJson(SERVER_KEY, url && url.trim() ? url.trim() : null);
@@ -266,9 +297,86 @@ class Client {
 
   reconnectNow() {
     if (this.retryTimer) { clearTimeout(this.retryTimer); this.retryTimer = null; }
-    if (this.ws && this.ws.readyState <= 1) return;
+    if (this.ws && this.ws.readyState <= 1) {
+      if (this.status.cloudLink !== "waiting") return;
+      // Waiting at the cloud link for the PC: where a direct address exists, it is tried first again (the phone may be back in the Wi-Fi);
+      // otherwise only check that the waiting connection is still alive.
+      if (!this.hasDirect()) { this.linkBeat(); return; }
+      this.dropSocket();
+    }
     this.attempt = 0;
+    this.directFails = 0;
     this.connect();
+  }
+
+  /** The account or its cloud token changed (signed in, signed out, token renewed): use the cloud link now, or leave it. */
+  linkChanged() {
+    if (this.demo || !this.started) return;
+    const link = cloudLinkTarget();
+    if (this.via === "cloud" && this.ws && (!link || link.url !== this.status.url)) { this.dropSocket(); this.set({ cloudLink: undefined, via: undefined }); this.attempt = 0; this.connect(); return; }
+    if (link && this.status.phase !== "online" && !(this.ws && this.ws.readyState <= 1)) { this.cloudBlockedUntil = 0; this.reconnectNow(); }
+  }
+
+  private via: "direct" | "cloud" = "direct";
+  private directFails = 0;
+  private cloudBlockedUntil = 0;
+  private linkTimer: number | null = null;
+  private linkPongAt = 0;
+  private hasDirect() { return !(HOSTED && !serverConfigured()); }
+  /** Closes the current socket without the "connection lost" handling (a new attempt follows right away). */
+  private dropSocket() {
+    const ws = this.ws; this.ws = null;
+    this.stopLinkTimer();
+    if (this.pingTimer) { clearInterval(this.pingTimer); this.pingTimer = null; }
+    for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new RpcError("offline", t("Verbindung unterbrochen"))); }
+    this.pending.clear();
+    try { ws?.close(); } catch { /* already closed */ }
+  }
+  private stopLinkTimer() { if (this.linkTimer) { clearInterval(this.linkTimer); this.linkTimer = null; } }
+  /** One heartbeat of the waiting cloud connection; no answer within 8 s = dead socket (sleep, network change) → reconnect. */
+  private linkBeat() {
+    const ws = this.ws;
+    if (!ws || ws.readyState !== WebSocket.OPEN || this.via !== "cloud") return;
+    const sent = Date.now();
+    try { ws.send('{"type":"link-ping"}'); } catch { /* closing */ }
+    window.setTimeout(() => { if (this.ws === ws && this.status.cloudLink === "waiting" && this.linkPongAt < sent) { this.closeReason = t("Die Cloud antwortet nicht mehr."); ws.close(); } }, 8000);
+  }
+  /** While waiting for the PC at the cloud: a heartbeat every 25 s and, where a direct address exists, a tiny check whether the PC answers there again. */
+  private startLinkTimer() {
+    this.stopLinkTimer();
+    this.linkTimer = window.setInterval(() => {
+      if (this.status.cloudLink !== "waiting" || this.via !== "cloud") { this.stopLinkTimer(); return; }
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return; // the cloud wakes this page anyway when the PC arrives
+      this.linkBeat();
+      const probe = this.hasDirect() ? this.probeUrl(serverUrl()) : null;
+      if (probe) void fetch(probe, { mode: "no-cors", cache: "no-store", signal: AbortSignal.timeout?.(1500) }).then(() => { if (this.status.cloudLink === "waiting") this.reconnectNow(); }, () => { /* still off */ });
+    }, 25000);
+  }
+  /** The PC is not at the cloud link (off, or its companion is not running): keep the socket and wait – the cloud says when it arrives. */
+  private waitForPc() {
+    if (this.pingTimer) { clearInterval(this.pingTimer); this.pingTimer = null; }
+    for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new RpcError("relay-companion-offline", t("Der PC ist gerade nicht erreichbar."))); }
+    this.pending.clear();
+    this.attempt = 0;
+    const auth = this.status.auth === "revoked" ? "revoked" : this.status.auth === "ok" ? "checking" : this.status.auth;
+    this.set({ phase: "offline", cloudLink: "waiting", via: "cloud", relayCompanion: undefined, retryAt: undefined, attempt: 0, auth, lastError: t("PC offline – verbindet sich von selbst, sobald er läuft") });
+    this.startLinkTimer();
+  }
+  /** The socket is open and leads to the PC: start a session (hello → login → heartbeat). */
+  private async openSession(ws: WebSocket) {
+    try {
+      this.nextId = 1;
+      const hello = await this.call<Hello>("hello");
+      if (this.ws !== ws) return;
+      this.set({ phase: "online", hello, everConnected: true, lastError: undefined, cloudLink: undefined, via: this.via });
+      await this.authenticate();
+      this.startPing();
+    } catch (e) {
+      if ((e as RpcError).code === "relay-companion-offline") return;
+      // e.g. incompatible protocol version: show the reason and retry later instead of spinning forever.
+      this.closeReason = (e as RpcError).code === "protocol" ? t("Companion-Version passt nicht zu dieser Web-App: {m}", { m: (e as Error).message }) : (e as Error).message;
+      ws.close();
+    }
   }
 
   /** No PC paired on this device yet: pages show "Offline", actions ask to connect the PC first. */
@@ -300,21 +408,26 @@ class Client {
   lastPong = 0;
 
   private async connect() {
-    if (HOSTED && !serverConfigured()) {
-      // Nothing to connect to yet – the user scans the QR code or types the PC address.
-      this.set({ phase: "offline", needsServer: true, url: "", lastError: undefined, retryAt: undefined });
+    // The PC's own window never needs the cloud; everywhere else the account's cloud link takes over when the PC does not answer directly.
+    const link = readJson<string>(ADMIN_KEY, "session") ? null : cloudLinkTarget();
+    const direct = this.hasDirect();
+    if (!direct && !link) {
+      // Nothing to connect to yet – the user signs in to the account, scans the QR code or types the PC address.
+      this.set({ phase: "offline", needsServer: true, url: "", lastError: undefined, retryAt: undefined, cloudLink: undefined, via: undefined });
       return;
     }
     if (this.status.needsServer) this.set({ needsServer: false });
-    const url = serverUrl();
+    const cloud = !!link && (!direct || (this.directFails >= DIRECT_TRIES && Date.now() >= this.cloudBlockedUntil));
+    this.via = cloud ? "cloud" : "direct";
+    const url = cloud ? link!.url : serverUrl();
     // Every attempt has its own number: an older attempt that is still waiting for its check never opens a second socket.
     const my = ++this.tryId;
     this.set({ phase: "connecting", url, attempt: this.attempt, retryAt: undefined });
-    const probe = this.attempt >= 1 ? this.probeUrl(url) : null;
+    const probe = this.attempt >= 1 && !cloud ? this.probeUrl(url) : null;
     if (probe) {
       const ok = await fetch(probe, { mode: "no-cors", cache: "no-store", signal: AbortSignal.timeout?.(1500) }).then(() => true, () => false);
       if (my !== this.tryId || this.retryTimer != null || (this.ws && this.ws.readyState <= 1)) return; // a newer attempt took over
-      if (!ok) { this.onClosed(this.status.everConnected ? t("Verbindung unterbrochen") : t("Companion nicht erreichbar")); return; }
+      if (!ok) { this.directFails++; this.onClosed(this.status.everConnected ? t("Verbindung unterbrochen") : t("Companion nicht erreichbar")); return; }
     }
     if (this.ws && this.ws.readyState <= 1) return; // one connection at a time
     let ws: WebSocket;
@@ -323,25 +436,28 @@ class Client {
     this.ws = ws;
     this.nextId = 1;
     const openTimeout = window.setTimeout(() => { if (ws.readyState === WebSocket.CONNECTING) ws.close(); }, 10000);
+    let opened = false;
     ws.onopen = async () => {
       clearTimeout(openTimeout);
+      opened = true;
       this.attempt = 0;
-      try {
-        const hello = await this.call<Hello>("hello");
-        this.set({ phase: "online", hello, everConnected: true, lastError: undefined });
-        await this.authenticate();
-        this.startPing();
-      } catch (e) {
-        if ((e as RpcError).code === "relay-companion-offline") return;
-        // e.g. incompatible protocol version: show the reason and retry later instead of spinning forever.
-        this.closeReason = (e as RpcError).code === "protocol" ? t("Companion-Version passt nicht zu dieser Web-App: {m}", { m: (e as Error).message }) : (e as Error).message;
-        ws.close();
+      if (cloud) {
+        // First the cloud checks this device's token; it answers whether the PC is there ("relay" message) – the session starts then.
+        this.linkPongAt = Date.now();
+        try { ws.send(JSON.stringify({ type: "link-auth", token: link!.token })); } catch { ws.close(); }
+        return;
       }
+      this.directFails = 0;
+      await this.openSession(ws);
     };
     ws.onmessage = (ev) => this.onMessage(String(ev.data));
     ws.onclose = (ev) => {
       clearTimeout(openTimeout);
       if (this.ws !== ws) return;
+      if (!cloud && !opened) this.directFails++;
+      // The cloud itself did not answer: the direct address gets its turn again before the cloud is asked anew (growing pause, at most a minute).
+      if (cloud && !opened) { this.cloudFails++; this.cloudBlockedUntil = Date.now() + Math.min(60000, 2000 * 2 ** Math.min(this.cloudFails, 5)); this.directFails = 0; this.set({ cloudLink: "down" }); }
+      else if (cloud) { this.cloudFails = 0; if (this.status.cloudLink) this.set({ cloudLink: undefined }); }
       const reason = this.closeReason ?? (ev.reason || (this.status.everConnected ? t("Verbindung unterbrochen") : t("Companion nicht erreichbar")));
       this.closeReason = null;
       this.onClosed(reason);
@@ -349,8 +465,10 @@ class Client {
     ws.onerror = () => { /* onclose follows */ };
   }
 
+  private cloudFails = 0;
   private onClosed(reason: string) {
     this.ws = null;
+    this.stopLinkTimer();
     if (this.pingTimer) { clearInterval(this.pingTimer); this.pingTimer = null; }
     for (const [, p] of this.pending) { clearTimeout(p.timer); p.reject(new RpcError("offline", t("Verbindung unterbrochen"))); }
     this.pending.clear();
@@ -396,6 +514,20 @@ class Client {
   private onMessage(text: string) {
     let msg: { v?: number; id?: number; ok?: boolean; r?: unknown; e?: { code: string; message: string }; ev?: string; d?: unknown; type?: string; state?: string };
     try { msg = JSON.parse(text); } catch { return; }
+    if (msg.type === "link-pong") { this.linkPongAt = Date.now(); return; }
+    if (msg.type === "relay" && this.via === "cloud") {
+      // The account's cloud link: it keeps this socket and says when the PC comes and goes – no reconnecting, no polling.
+      const ws = this.ws;
+      if (!ws) return;
+      if (msg.state === "companion-online") { this.stopLinkTimer(); this.set({ phase: "connecting", cloudLink: undefined, via: "cloud" }); void this.openSession(ws); }
+      else if (msg.state === "auth-failed") {
+        // The cloud does not know this device's token any more: the sync gets a new one (lib/cloud-sync.ts) and calls linkChanged().
+        this.cloudBlockedUntil = Date.now() + 30000;
+        this.emit("link-auth-failed", null);
+      }
+      else this.waitForPc();
+      return;
+    }
     if (msg.type === "relay") {
       // Status messages from the relay itself (not from the companion).
       const online = msg.state === "companion-online";
@@ -454,7 +586,7 @@ class Client {
     }
     return new Promise<T>((resolve, reject) => {
       const ws = this.ws;
-      if (!ws || ws.readyState !== WebSocket.OPEN) {
+      if (!ws || ws.readyState !== WebSocket.OPEN || this.status.cloudLink === "waiting") {
         // Configuration changes wait on this device; actions (start, play …) need the PC: explain instead of a bare error.
         if (QUEUEABLE[method]) { resolve(this.queue(method, params) as T); return; }
         if (!QUIET.test(method) && !NO_LOGIN.has(method)) this.emit("needs-pc", { method });
@@ -504,6 +636,17 @@ class Client {
         this.set({ authError: (e as Error).message });
         this.emit("handoff-failed", (e as Error).message);
       }
+    }
+    // Signed in to the same cloud account as this PC and not paired here yet: the account is the key – the PC gives this device its own access
+    // (a normal, removable entry in its device list). The proof is bound to this connection; the account's data key itself is never sent.
+    const acc = !admin && !this.credentials && this.status.auth !== "revoked" ? readJson<{ user?: string; enc?: string }>(ACCOUNT_KEY) : null;
+    if (acc?.user && acc.enc && hello.info?.account && hello.info.account === accountMark(acc.user)) {
+      try {
+        const r = await this.call<{ deviceId: string; token: string }>("pairing.account", { user: acc.user, proof: loginProof(acc.enc, hello.nonce), deviceName: `${platformName()} (${t("Konto")})`.slice(0, 40), platform: platformName() });
+        writeJson(CRED_KEY, { deviceId: r.deviceId, token: r.token, pcName: hello.info?.pcName });
+        askPersistentStorage();
+        this.emit("account-paired", hello.info?.pcName);
+      } catch (e) { this.set({ authError: (e as Error).message }); }
     }
     const cred = this.credentials;
     if (!admin && !cred) {

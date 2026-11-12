@@ -51,4 +51,10 @@ describe("Companion zu alt für diese Seite", () => {
   it("kommt auch ohne bekannte Version aus", () => {
     expect(outdatedCompanionMessage()).toContain("kennt diese Funktion noch nicht");
   });
+  it("Cloud-Verbindung: wartet auf den PC, Cloud nicht erreichbar, PC wird gesucht", () => {
+    expect(view({ phase: "offline", cloudLink: "waiting", via: "cloud" }).key).toBe("pc-offline-cloud");
+    expect(view({ phase: "offline", cloudLink: "down", via: "cloud" }).key).toBe("cloud-down");
+    expect(view({ phase: "connecting", via: "cloud" }).short).toBe("PC wird gesucht …");
+    expect(view({ phase: "online", auth: "ok", via: "cloud" }).key).toBe("connected");
+  });
 });

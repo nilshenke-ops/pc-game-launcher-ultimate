@@ -14,6 +14,10 @@
 // that login key. `accounts` and `login_fails` are created by the migration and (defensively) on first use.
 
 import { deleteSyncData, handleSync } from "./sync.js";
+import { handleLink, PcLink } from "./link.js";
+
+// The cloud link (PC ↔ devices of one account) lives in a Durable Object – see link.js.
+export { PcLink };
 
 const API_PREFIX = "/api/account/";
 const SYNC_PREFIX = "/api/sync/";
@@ -35,6 +39,8 @@ const MSG_SERVER = "Der Cloud-Dienst hatte einen Fehler – bitte später erneut
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // WebSockets of the cloud link go straight to the account's object (no CORS: browsers do not apply it to WebSockets; the token is the key).
+    if (url.pathname.startsWith("/api/link/")) return handleLink(request, env, url);
     if (url.pathname.startsWith("/api/")) return handleApi(request, env, url);
     // The hosted build (web/dist-hosted) is served by the platform from the ASSETS binding.
     if (env.ASSETS) return env.ASSETS.fetch(request);
@@ -176,7 +182,7 @@ async function healthResponse(env, cors) {
   try {
     const row = await env.DB.prepare("SELECT 1 AS ok").first();
     if (row?.ok !== 1) throw new Error("SELECT 1 returned no row");
-    return json({ ok: true, service: SERVICE, database: "ok", checkedAt }, 200, cors);
+    return json({ ok: true, service: SERVICE, database: "ok", link: env.PC_LINK ? "ok" : "unavailable", checkedAt }, 200, cors);
   } catch (e) {
     console.error("health: database check failed:", e?.message ?? String(e));
     return json({ ok: false, service: SERVICE, database: "unavailable", error: "database-unavailable", message: MSG_DB_MISSING, checkedAt }, 503, cors);

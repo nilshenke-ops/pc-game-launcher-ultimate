@@ -94,6 +94,10 @@ public sealed class CompanionServices : IAsyncDisposable
     /// <summary>JARVIS' voice through ElevenLabs (off until switched on; key only at the PC).</summary>
     public Assistant.VoiceService Voice { get; }
     public RelayClient Relay { get; }
+    /// <summary>Outbound connection to the cloud account's link: the account's devices reach this PC through it from anywhere (no open port).</summary>
+    public RelayClient CloudLink { get; }
+    /// <summary>Wrong answers to the account login (pairing.account) per address.</summary>
+    public RateLimiter AccountPairLimiter { get; } = new(8, TimeSpan.FromMinutes(5));
     public WebHost Web { get; }
 
     public CompanionServices(IPlatform platform, AppPaths paths, WebAssets? assets = null)
@@ -122,6 +126,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Metrics.Apply(Settings.Get().Metrics ?? new());
         Monitor = new MonitorService(Metrics, Rpc);
         Relay = new RelayClient(Rpc);
+        CloudLink = new RelayClient(Rpc, "cloudlink");
         Web = new WebHost(this, assets);
         Network = new NetworkDiagnostics(Relay.Status, Settings.Get, Web.LanUrls);
         Updates = new UpdateService(paths, Settings.Get, platform.UpdateInstaller, Rpc);
@@ -213,7 +218,10 @@ public sealed class CompanionServices : IAsyncDisposable
             else Assistant.AiSet(AccStr("provider") ?? throw new RpcException("invalid-params", "Anbieter fehlt."), AccBool("enabled"), AccStr("key"), AccBool("attested"), AccBool("consent"), true);
             return Task.CompletedTask;
         };
+        CloudSync.LinkStatus = () => new { enabled = Settings.Get().CloudLink, state = CloudLink.State, lastError = CloudLink.LastError, connectedAt = CloudLink.ConnectedAt };
+        CloudLink.StateChanged += _ => Rpc.Changed("cloud");
         Rpc.TopicChanged += CloudSync.Changed;
+        Rpc.TopicChanged += topic => { if (topic == "cloud") ApplyCloudLink(); };
         Activity = new ActivityService(paths, Rpc, () => Sessions.Running().Select(r => (r.itemId, Library.Get(r.itemId)?.Name ?? "?", r.since)).ToList());
         Capture = new CaptureService(Settings.Get, Settings, Obs, platform) { OwnHotkeys = () => Hotkeys.List().Where(h => h.Enabled).Select(h => h.Keys) };
         Launchers = new LauncherService(Library, platform, Settings, Rpc) { CoverByName = name => Covers.FindByNameAsync(name) };
@@ -262,6 +270,7 @@ public sealed class CompanionServices : IAsyncDisposable
         version = UpdateService.CurrentVersion,
         pcName = Settings.Get().PcName,
         platform = Platform.Name,
+        account = Settings.Get().CloudLink ? CloudSync.AccountMark() : null,
         features = Features(),
     };
 
@@ -438,7 +447,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Notifications.ProfileQuiet = () => Profiles.Active()?.QuietNotifications == true;
         Notifications.OnDesktop = n => { try { Platform.Desktop.ShowToast(n.Title, n.Message ?? ""); } catch { } };
 
-        Settings.Saved += s => ApplyRelaySettings(s);
+        Settings.Saved += s => { ApplyRelaySettings(s); ApplyCloudLink(); };
         Settings.Saved += s => Metrics.Apply(s.Metrics ?? new());
         var (epicWasOn, eaWasOn) = (Settings.Get().EpicEnabled, Settings.Get().EaEnabled);
         Settings.Saved += s =>
@@ -547,7 +556,22 @@ public sealed class CompanionServices : IAsyncDisposable
         return list.OrderByDescending(x => x.at).Select(x => $"{x.at:u} {x.text}");
     }
 
-    string? _relayFingerprint;
+    string? _relayFingerprint, _cloudLinkFingerprint;
+    readonly object _cloudLinkLock = new();
+
+    /// <summary>Starts, restarts or stops the outbound cloud link – whenever the account link, its token or the switch changes.</summary>
+    void ApplyCloudLink()
+    {
+        lock (_cloudLinkLock)
+        {
+            var target = Settings.Get().CloudLink ? CloudSync.LinkTarget() : null;
+            var fp = target == null ? null : $"{target.Value.endpoint}|{Ids.Sha256Hex(target.Value.token)}";
+            if (fp == _cloudLinkFingerprint) return;
+            _cloudLinkFingerprint = fp;
+            if (target == null) { _ = CloudLink.StopAsync(); return; }
+            CloudLink.Start(target.Value.endpoint, target.Value.user, target.Value.token);
+        }
+    }
 
     void ApplyRelaySettings(Settings s)
     {
@@ -607,6 +631,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Steam.Start();
         Launchers.Start();
         ApplyRelaySettings(Settings.Get());
+        ApplyCloudLink();
         _ = Automations.Fire(TriggerType.CompanionStarted, null);
         _scheduleTimer = new Timer(_ => _ = Automations.CheckSchedule(DateTime.Now), null, TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
@@ -762,6 +787,7 @@ public sealed class CompanionServices : IAsyncDisposable
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
         await Relay.DisposeAsync();
+        await CloudLink.DisposeAsync();
         await Web.DisposeAsync();
         Log.Info("companion", "Companion beendet.");
     }

@@ -93,6 +93,28 @@ public static class RpcApi
                 : new RpcException("handoff-invalid", "Der Übertragungs-Link ist abgelaufen oder wurde schon benutzt. Auf dem gekoppelten Gerät unter „Geräte & Verbindungen“ einen neuen erzeugen.");
         });
 
+        // Signed in to the same cloud account as this PC: the device gets its own access without a QR code. It proves that it knows the account's data
+        // key (which only the account's devices and this PC hold) against the nonce of this connection; the new access is a normal entry in the device
+        // list with the standard rights – visible, renameable, removable at any time.
+        rpc.Register("pairing.account", ctx =>
+        {
+            var ip = ctx.Session.Channel.RemoteIp;
+            if (!s.Settings.Get().CloudLink || !s.CloudSync.Linked)
+                throw new RpcException("account-off", "Dieser PC nimmt keine Anmeldung über das Cloud-Konto an (am PC unter „Cloud“ einschalten oder klassisch koppeln).");
+            if (s.AccountPairLimiter.Blocked(ip)) throw new RpcException("rate-limited", "Zu viele Versuche. Bitte kurz warten.");
+            if (!s.CloudSync.VerifyAccountProof(ctx.Str("user", 40), ctx.Str("proof", 80), ctx.Session.Nonce))
+            {
+                s.AccountPairLimiter.TryHit(ip);
+                throw new RpcException("account-mismatch", "Dieser PC gehört zu einem anderen Cloud-Konto (oder das Konto-Passwort wurde geändert – dann am PC neu anmelden).");
+            }
+            if (s.Rpc.Devices.Full) throw DeviceLimit();
+            var name = DeviceStore.Sanitize(ctx.OptStr("deviceName", 60), 40, "Gerät") ;
+            var (device, token) = s.Rpc.Devices.Create(name, DeviceStore.Sanitize(ctx.OptStr("platform", 60), 40, "Browser"), Permissions.Default, ip);
+            s.Notifications.Push("pairing-account", Severity.Info, $"Neuer Zugang über dein Konto: {device.Name}", "Das Gerät ist im selben Cloud-Konto angemeldet und hat einen eigenen Zugang bekommen. Nicht gewollt? Unter „Geräte & Verbindungen“ entfernen und das Konto-Passwort ändern.", "/devices");
+            s.Rpc.Changed("devices");
+            return new { deviceId = device.Id, token, name = device.Name };
+        });
+
         // Tailscale (only at the PC): status and one click for https in the own tailnet – fixed commands, see TailscaleCli.
         rpc.Register("tailscale.get", async ctx =>
         {
@@ -719,7 +741,7 @@ public static class RpcApi
         {
             var u = ctx.Bind<SettingsService.SecurityUpdate>();
             // Changing how the PC is reachable is only allowed from the PC itself.
-            if (!ctx.Session.IsLocalAdmin && (u.LanAccess != null || u.Port != null || u.RelayEnabled != null || u.RelayUrl != null || u.RelaySecret != null || u.RelayCompanionId != null))
+            if (!ctx.Session.IsLocalAdmin && (u.LanAccess != null || u.Port != null || u.CloudLink != null || u.RelayEnabled != null || u.RelayUrl != null || u.RelaySecret != null || u.RelayCompanionId != null))
                 throw new RpcException("forbidden", "Verbindungseinstellungen können nur direkt am PC geändert werden.");
             // Where updates and plugins come from and which web pages may connect: only at the PC – a remote device could
             // otherwise switch to an unsigned update source or let a foreign page in.

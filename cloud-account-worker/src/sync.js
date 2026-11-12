@@ -80,7 +80,7 @@ export async function handleSync(request, env, action, cors, deps) {
     const hash = await sha256Hex(token);
     await env.DB.prepare("INSERT INTO sync_tokens (hash, user, device, created_at, used_at) VALUES (?1, ?2, ?3, ?4, ?4)").bind(hash, user, device, now).run();
     // Only the newest tokens stay valid – an account cannot pile up tokens forever.
-    await env.DB.prepare("DELETE FROM sync_tokens WHERE user = ?1 AND hash NOT IN (SELECT hash FROM sync_tokens WHERE user = ?1 ORDER BY created_at DESC LIMIT ?2)").bind(user, MAX_TOKENS).run();
+    await env.DB.prepare("DELETE FROM sync_tokens WHERE user = ?1 AND hash NOT IN (SELECT hash FROM sync_tokens WHERE user = ?1 ORDER BY used_at DESC, created_at DESC LIMIT ?2)").bind(user, MAX_TOKENS).run();
     return json({ ok: true, token }, 200, cors);
   }
 

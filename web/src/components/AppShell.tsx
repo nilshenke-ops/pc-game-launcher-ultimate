@@ -305,20 +305,26 @@ function StatusStrip({ preview, waiting, home, hidePreview, onShowOutbox }: { pr
   const offline = !client.demo && !preview && conn.phase !== "online" && !soon;
   const relayDown = conn.relayCompanion === "offline";
   const paused = !client.demo && conn.phase === "online" && conn.auth === "paused";
-  const showConn = (preview && !hidePreview && !home) || (offline && !home) || relayDown || paused;
+  // Signed in to the cloud account: the cloud link waits for the PC (or the cloud itself does not answer) – said as it is, with nothing to do for the user.
+  const cloudWait = !client.demo && conn.phase !== "online" && conn.cloudLink === "waiting";
+  const cloudDown = !client.demo && conn.phase !== "online" && conn.cloudLink === "down" && conn.via === "cloud";
+  const cloudSeek = !client.demo && conn.phase === "connecting" && conn.via === "cloud";
+  const showConn = (preview && !hidePreview && !home) || (offline && !home) || relayDown || paused || ((cloudWait || cloudDown) && !home);
   if (!showConn && waiting.length === 0) return null;
   const error = waiting.some((w) => w.error), confirm = waiting.some((w) => needsConfirm(w));
-  const kind = relayDown || error ? "error" : preview || offline || confirm || paused ? "warn" : "info";
-  const title = preview ? (conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden"))
+  const kind = relayDown || error || cloudDown ? "error" : preview || offline || confirm || paused || cloudWait ? "warn" : "info";
+  const title = cloudWait ? t("Cloud verbunden · PC offline") : cloudDown ? t("Cloud nicht erreichbar") : cloudSeek && (preview || offline) ? t("PC wird gesucht") : preview ? (conn.auth === "revoked" ? t("Kopplung wurde aufgehoben") : t("Offline – kein PC verbunden"))
     : paused ? t("Vom PC pausiert (Datenschutzmodus)") : relayDown ? t("PC nicht erreichbar") : offline ? (conn.everConnected ? t("Verbindung unterbrochen") : t("PC ist aus oder nicht erreichbar")) : null;
   const lanHome = HOSTED && location.protocol === "https:" ? lanPc() : null;
   const detail = [
     lanHome && preview ? t("Diese Website (https) darf den PC im WLAN nicht direkt erreichen. Im WLAN läuft die App direkt vom PC unter {u} – dort ist dieses Gerät gekoppelt. Tipp: Diese PC-Seite zum Home-Bildschirm hinzufügen (Geräte & Verbindungen → „Als App auf den Home-Bildschirm“).", { u: lanHome.replace(/^http:\/\//, "") }) : null,
-    preview ? t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.") : null,
+    cloudWait ? t("Dein Konto ist angemeldet, deine Cloud-Daten sind da. Sobald dein PC an ist und der Begleiter läuft, verbindet sich diese Seite von selbst – ohne QR-Code, ohne Code und ohne erneutes Anmelden.") : null,
+    cloudDown ? t("Die Cloud antwortet gerade nicht. Es wird in wachsenden Abständen erneut versucht; im WLAN verbindet sich die Seite weiter direkt mit dem PC.") : null,
+    preview && !cloudWait && !cloudDown ? t("Du kannst schon alles einrichten – Spiele bearbeiten, Sounds, Profile, Hotkeys, Aktionen, Automatisierungen, Plugins, Design. Übertragen wird beim ersten Verbinden.") : null,
     paused ? `${conn.authError ?? ""} ${t("Sobald der Datenschutzmodus am PC aus ist, verbindet sich dieses Gerät von selbst wieder. Angezeigt wird bis dahin der letzte Stand.")}`.trim() : null,
     relayDown ? t("Das Relay ist erreichbar, aber der Companion auf deinem PC ist nicht verbunden. Ist der PC an und läuft der Companion?") : null,
     offline && !relayDown && !HOSTED && isHomeNetworkHost(conn.url) && navigator.onLine ? t("Ist am Handy ein VPN aktiv? Viele VPNs leiten auch Verbindungen ins Heimnetz um – dann im VPN „Zugriff auf lokales Netzwerk“ erlauben oder es kurz ausschalten. Diagnose zeigt Details.") : null,
-    offline && !relayDown ? (conn.everConnected ? t("Automatischer neuer Versuch läuft. Angezeigte Daten können veraltet sein.") : t("Die App verbindet sich automatisch, sobald der PC an ist. Design und Layout kannst du schon jetzt unter Einstellungen ändern.")) : null,
+    offline && !relayDown && !cloudWait && !cloudDown ? (conn.everConnected ? t("Automatischer neuer Versuch läuft. Angezeigte Daten können veraltet sein.") : t("Die App verbindet sich automatisch, sobald der PC an ist. Design und Layout kannst du schon jetzt unter Einstellungen ändern.")) : null,
     waiting.length ? (error ? t("Einige Änderungen hat der PC abgelehnt – bitte ansehen.") : confirm ? t("Einige Änderungen (Plugins oder ältere) werden erst nach deiner Bestätigung übertragen.") : t("Sie werden automatisch übertragen, sobald der PC verbunden ist.")) : null,
   ].filter(Boolean);
   return (
@@ -334,8 +340,8 @@ function StatusStrip({ preview, waiting, home, hidePreview, onShowOutbox }: { pr
       </button>
       <span className="ss-actions">
         {preview && !hidePreview && lanHome && <a href={`${lanHome}/#/`} className="btn primary sm"><MonitorSmartphone size={15} />{t("Zur PC-App (WLAN)")}</a>}
-        {preview && !hidePreview && !lanHome && <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}
-        {offline && !relayDown && <Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}
+        {preview && !hidePreview && !lanHome && !cloudWait && !cloudSeek && <NavLink to="/connect" className="btn primary sm"><MonitorSmartphone size={15} />{t("PC verbinden")}</NavLink>}
+        {offline && !relayDown && !cloudWait && <Button size="sm" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</Button>}
         {waiting.length > 0 && <Button size="sm" onClick={onShowOutbox}>{t("Anzeigen")}</Button>}
       </span>
       {open && <div className="ss-detail small">{detail.map((d) => <p key={d}>{d}</p>)}</div>}

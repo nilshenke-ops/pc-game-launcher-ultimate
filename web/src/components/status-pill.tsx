@@ -32,12 +32,12 @@ export function StatusPill() {
       {open && (
         <div className="status-pill-panel" role="status">
           <div className="sp-row"><Wifi size={16} /><span>{view.label}</span></div>
-          {connected && conn.latencyMs != null && <div className="sp-row tiny muted">{conn.hello?.transport === "relay" ? t("Über Relay") : t("Lokal")} · {conn.latencyMs} ms</div>}
+          {connected && conn.latencyMs != null && <div className="sp-row tiny muted">{conn.via === "cloud" ? t("Über die Cloud") : conn.hello?.transport === "relay" ? t("Über Relay") : t("Lokal")} · {conn.latencyMs} ms</div>}
           {game && <div className="sp-row"><Gamepad2 size={16} /><span>{t("Läuft gerade: {g}", { g: game })}</span></div>}
           {waiting.length > 0 && <div className="sp-row tiny muted">{t("{n} Änderungen warten auf den PC", { n: waiting.length })}</div>}
           <div className="row">
             <Link className="btn sm" to="/diagnostics" onClick={() => setOpen(false)}>{t("Verbindung prüfen")}</Link>
-            {!connected && <button type="button" className="btn sm primary" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</button>}
+            {!connected && view.key !== "pc-offline-cloud" && <button type="button" className="btn sm primary" onClick={() => client.reconnectNow()}>{t("Jetzt verbinden")}</button>}
           </div>
         </div>
       )}

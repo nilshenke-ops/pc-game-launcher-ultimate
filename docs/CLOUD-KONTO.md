@@ -111,3 +111,35 @@ Zusätzlich zum Konto-Datensatz hält die Cloud den letzten Stand des PCs bereit
 **Konflikte:** Jede Änderung trägt den Wert, den das Feld vorher hatte. Der PC setzt ein Feld nur, wenn es noch diesen Wert hat; was am PC inzwischen anders geändert wurde, bleibt (Hinweis unter „Cloud“).
 
 **Test:** `npm run test:cloud` startet den echten Worker (workerd, D1 auf Platte), einen zweiten Begleiter und zwei Browser und prüft: Upload verschlüsselt, zweites Gerät ohne PC-Kopplung sieht alles, PC aus, Änderungen ohne PC, Cloud-Ausfall und Rückkehr, PC übernimmt genau einmal.
+
+## Automatische PC-Verbindung über die Cloud (ab 3.52.0)
+
+Ziel: einmal mit dem JARVIS-Konto anmelden, danach findet jedes Gerät den PC von selbst – ohne QR-Code, ohne Verbindungscode, ohne Tailscale, ohne Portfreigabe.
+
+**So läuft es ab**
+
+1. Der Begleiter startet mit Windows (Autostart) und ist mit dem Konto verbunden (`cloud.link`; passiert von selbst, sobald das Konto in der PC-App angemeldet ist).
+2. Er baut **ausgehend** eine WebSocket-Verbindung zum Cloud-Dienst auf: `wss://…/api/link/companion?user=<konto>` und weist sich mit seinem Geräte-Token aus (dasselbe Token wie für die Synchronisierung; in D1 liegt nur dessen SHA-256).
+3. Ein Gerät, das im selben Konto angemeldet ist, verbindet sich mit `wss://…/api/link/ws?user=<konto>` und seinem eigenen Geräte-Token.
+4. Der Dienst (ein Durable Object je Konto, [`cloud-account-worker/src/link.js`](../cloud-account-worker/src/link.js)) leitet die Nachrichten nur weiter – dieselben Rahmen wie das selbst betriebene Relay (`open`/`msg`/`close`). Er meldet dem Gerät `companion-online` bzw. `companion-offline`.
+5. Ist der PC aus, bleibt die Verbindung des Geräts zur Cloud einfach offen. Es wird **nichts** wiederholt versucht; sobald der Begleiter läuft, meldet die Cloud das und die Sitzung beginnt auf derselben Verbindung.
+6. Anmeldung am PC bleibt Ende-zu-Ende: Ein noch nicht gekoppeltes Gerät beweist mit `pairing.account`, dass es den Datenschlüssel des Kontos kennt (HMAC über die Nonce dieser Verbindung – der Schlüssel selbst wird nie gesendet), und bekommt einen eigenen Geräteschlüssel. Danach meldet es sich wie jedes gekoppelte Gerät an.
+
+**Reihenfolge der Wege (Website und App):** zuerst die direkte Adresse (WLAN, Tailscale, eigenes Relay); antwortet sie zweimal nicht, übernimmt die Cloud-Verbindung. Während dort auf den PC gewartet wird, prüft die Seite alle 25 s, ob die direkte Adresse wieder antwortet, und schickt einen Herzschlag (tote Verbindung nach WLAN-Wechsel oder Schlaf → neuer Aufbau). Antwortet die Cloud selbst nicht, wird mit wachsender Pause (2 s … 60 s) erneut versucht. Der Begleiter verbindet sich nach einem Abbruch mit 2 s … 60 s Pause und ±20 % Streuung neu.
+
+**Anzeige:** „PC verbunden“ (mit „über die Cloud“), „PC wird gesucht“, „Cloud verbunden · PC offline“, „Cloud nicht erreichbar“, „Verbindung unterbrochen – automatische Wiederverbindung“ – immer aus dem echten Zustand der Verbindung (`web/src/lib/conn-state.ts`).
+
+**Sicherheit**
+
+- Kein offener Port am Router, keine öffentliche Steuer-Adresse: Beide Seiten verbinden sich ausgehend, jede Verbindung braucht ein gültiges Geräte-Token des Kontos (falsches Token → `auth-failed`, Verbindung zu; ohne Anmeldung wird nach spätestens 30 s getrennt).
+- Die Cloud kann sich am PC nicht anmelden und keine Befehle erzeugen, die der PC annimmt: Der PC führt nur aus, was ein angemeldetes Gerät sendet (Challenge-Response mit dem Geräteschlüssel).
+- Der über das Konto entstandene Zugang ist ein normaler Eintrag unter „Geräte & Verbindungen“ mit Standardrechten (ansehen, starten, Soundboard, verwalten – **kein** Admin, keine Energie-/Fernsteuer-Rechte), umbenennbar und jederzeit entfernbar; der PC zeigt dazu eine Benachrichtigung.
+- Widerruf: Gerät am PC entfernen (sofort getrennt), Cloud-Token zurückziehen (`revoke`), Konto-Passwort ändern, oder den Schalter „Automatische PC-Verbindung“ am PC ausschalten (`settings.saveSecurity { cloudLink: false }`, nur direkt am PC).
+- Wer das Konto-Passwort kennt, kann über das Konto einen Zugang zum PC bekommen – das Passwort ist damit der Schlüssel zum PC. Ein starkes Passwort ist Pflicht; wer das nicht will, schaltet die Funktion am PC aus und koppelt klassisch.
+- Geräte-Tokens werden jetzt nach „zuletzt benutzt“ aufgeräumt (höchstens 30 je Konto). Vorher flog nach 30 neuen Anmeldungen das älteste – also das des PCs – heraus.
+
+**Test:** `web/e2e/cloud-link.spec.ts` (läuft mit `PGL_WRANGLER`, echter Worker mit Durable Object, echter Begleiter, Browser): PC an → Handy nur mit Konto verbindet sich und startet ein Spiel · PC aus → „PC offline“, Cloud-Daten bleiben · PC wieder an → von selbst verbunden · Browser-Neustart · Cloud-Ausfall und Rückkehr · zweites Gerät · falsches Token/falscher Kontoschlüssel abgewiesen · Gerät entfernt · Schalter aus.
+
+**Nicht geprüft (hier nicht möglich):** echtes Windows (Autostart nach Neustart), echtes iPhone/iPad/Android, Wechsel WLAN ↔ Mobilfunk am echten Gerät. Die Logik dafür (Herzschlag, Neuaufbau bei `online`/Vordergrund) ist dieselbe wie im Test mit Cloud-Ausfall.
+
+**Kosten/Grenzen:** Durable Objects mit WebSocket-Hibernation – eine wartende Verbindung kostet keine Rechenzeit. Der Fernzugriff auf den Bildschirm (Remote Desktop) läuft über die Cloud-Verbindung mit, verbraucht dort aber viele Nachrichten; dafür bleibt Tailscale die bessere Wahl.

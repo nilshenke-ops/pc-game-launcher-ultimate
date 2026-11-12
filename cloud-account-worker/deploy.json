@@ -1,5 +1,5 @@
 {
   "entrypoint": "index.js",
   "compatibilityDate": "2026-11-01",
-  "modules": [{ "name": "index.js", "type": "esm", "path": "./src/index.js" }, { "name": "sync.js", "type": "esm", "path": "./src/sync.js" }, { "name": "wake.js", "type": "esm", "path": "./src/wake.js" }]
+  "modules": [{ "name": "index.js", "type": "esm", "path": "./src/index.js" }, { "name": "sync.js", "type": "esm", "path": "./src/sync.js" }, { "name": "wake.js", "type": "esm", "path": "./src/wake.js" }, { "name": "link.js", "type": "esm", "path": "./src/link.js" }]
 }

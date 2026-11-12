@@ -87,6 +87,8 @@ async function ensureToken(s: DesignSession & { api: string }): Promise<TokenRec
   const r = await post(s.api, "token", { user: s.user, key: s.auth, device: deviceName() });
   const rec: TokenRec = { user: s.user, api: s.api, token: String(r.token), seq: -1, have: {}, pcAt: null, pcName: null, okAt: null };
   writeJson(TOKEN_KEY, rec);
+  // With its own cloud token this device can meet the PC at the account's cloud link (lib/rpc.ts) – right away, without pairing.
+  queueMicrotask(() => client.linkChanged());
   return rec;
 }
 
@@ -116,6 +118,7 @@ export function forgetCloudCopy() {
   forgetToken(); writeJson(OPS_KEY, null); writeJson(NOAUTO_KEY, null);
   clearCaches(); bumpCache();
   setStatus({ active: false, user: null, pending: 0 });
+  client.linkChanged(); // signed out: the cloud link of this account is left as well
 }
 
 export async function pullNow(): Promise<boolean> {
@@ -280,6 +283,8 @@ export function startCloudSync() {
   window.addEventListener("online", () => soon());
   window.addEventListener("pgl-account", () => soon(100));
   client.on("authenticated", () => { soon(500); });
+  // The cloud link refused this device's token (revoked, or the cloud forgot it): get a new one with the account – the link reconnects by itself then.
+  client.on("link-auth-failed", () => { forgetToken(); soon(200); });
   // Rights given or taken at the PC: try to hand the PC the account right away instead of at the next round.
   client.on("changed", (d) => { if ((d as { topic?: string }).topic === "devices") void linkPcNow(); });
   soon(800);

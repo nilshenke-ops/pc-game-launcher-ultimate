@@ -27,7 +27,9 @@ public sealed class RelayClient : IAsyncDisposable
     public string? Url { get; private set; }
     public event Action<string>? StateChanged;
 
-    public RelayClient(RpcServer rpc) { _rpc = rpc; }
+    readonly string _name, _label;
+    /// <param name="name">"relay" (self-hosted relay server) or "cloudlink" (the account's cloud link – same frames, see cloud-account-worker/src/link.js).</param>
+    public RelayClient(RpcServer rpc, string name = "relay") { _rpc = rpc; _name = name; _label = name == "relay" ? "Relay" : "Cloud-Verbindung"; }
 
     public object Status() => new { state = State, url = Url, lastError = LastError, connectedAt = ConnectedAt, clients = _channels.Count };
 
@@ -43,7 +45,7 @@ public sealed class RelayClient : IAsyncDisposable
         _ = StopAsync();
         Url = url;
         SetState("error", problem);
-        Log.Warn("relay", problem);
+        Log.Warn(_name, problem);
     }
 
     public void Start(string url, string companionId, string secret)
@@ -60,7 +62,7 @@ public sealed class RelayClient : IAsyncDisposable
         State = s;
         if (error != null) LastError = error;
         StateChanged?.Invoke(s);
-        _rpc.Broadcast("relay.status", Status());
+        _rpc.Broadcast(_name + ".status", Status());
     }
 
     async Task Loop(string endpoint, string id, string secret, CancellationToken ct)
@@ -86,10 +88,10 @@ public sealed class RelayClient : IAsyncDisposable
                     var t = doc.RootElement.TryGetProperty("t", out var te) ? te.GetString() : null;
                     // A PC companion (not a relay) answers with an RPC response {v,id,ok:false,...}.
                     if (t == null && doc.RootElement.TryGetProperty("v", out _))
-                        throw new InvalidOperationException($"Unter {endpoint} antwortet ein PC-Begleiter, kein Relay. Trage die Adresse deines Relay-Servers ein (Standard-Port 8788) oder schalte das Relay aus – im WLAN wird es nicht gebraucht.");
+                        throw new InvalidOperationException($"Unter {Shown(endpoint)} antwortet ein PC-Begleiter, kein Relay. Trage die Adresse deines Relay-Servers ein (Standard-Port 8788) oder schalte das Relay aus – im WLAN wird es nicht gebraucht.");
                     if (t != "ok")
                     {
-                        var msg = doc.RootElement.TryGetProperty("message", out var m) ? m.GetString() : "Relay hat die Anmeldung abgelehnt.";
+                        var msg = doc.RootElement.TryGetProperty("message", out var m) ? m.GetString() : _label + " hat die Anmeldung abgelehnt.";
                         throw new InvalidOperationException(msg);
                     }
                 }
@@ -97,21 +99,21 @@ public sealed class RelayClient : IAsyncDisposable
                 LastError = null;
                 delay = TimeSpan.FromSeconds(2);
                 SetState("connected");
-                Log.Info("relay", $"Mit Relay verbunden: {endpoint}");
+                Log.Info(_name, $"{_label} steht: {Shown(endpoint)}");
                 while (ws.State == WebSocketState.Open && !ct.IsCancellationRequested)
                 {
                     var text = await Receive(ws, ct);
                     if (text == null) break;
                     HandleFrame(text);
                 }
-                SetState("reconnecting", "Verbindung zum Relay getrennt.");
+                SetState("reconnecting", _name == "relay" ? "Verbindung zum Relay getrennt." : "Verbindung zur Cloud getrennt – wird neu aufgebaut.");
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested) { break; }
             catch (Exception ex)
             {
-                var msg = Explain(ex, endpoint);
+                var msg = Explain(ex, Shown(endpoint));
                 SetState("error", msg);
-                Log.Warn("relay", $"Relay nicht erreichbar: {msg}");
+                Log.Warn(_name, $"{_label} nicht erreichbar: {msg}");
             }
             finally
             {
@@ -125,6 +127,9 @@ public sealed class RelayClient : IAsyncDisposable
         }
         SetState("disabled");
     }
+
+    /// <summary>The address without its query (the account name is not for the log).</summary>
+    static string Shown(string endpoint) { var i = endpoint.IndexOf('?'); return i < 0 ? endpoint : endpoint[..i]; }
 
     static string Explain(Exception ex, string endpoint)
     {
@@ -179,7 +184,7 @@ public sealed class RelayClient : IAsyncDisposable
                     break;
             }
         }
-        catch (Exception ex) { Log.Warn("relay", "Ungültiger Relay-Frame: " + ex.Message); }
+        catch (Exception ex) { Log.Warn(_name, "Ungültiger Frame: " + ex.Message); }
     }
 
     internal async Task SendRaw(string text)

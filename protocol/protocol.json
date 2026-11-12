@@ -11,6 +11,7 @@
     "pairing.request": "none",
     "pairing.claim": "none",
     "pairing.handoff": "none",
+    "pairing.account": "none",
     "pairing.create": "local",
     "pairing.cancel": "local",
     "pairing.pending": "local",
@@ -434,6 +435,7 @@
     "network.sample",
     "update.progress",
     "relay.status",
+    "cloudlink.status",
     "profile.active"
   ]
 }

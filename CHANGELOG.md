@@ -4,6 +4,25 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.52.0 – 2026-11-12
+### Neu
+- **Einmal anmelden – der PC wird von selbst gefunden.** Der Begleiter hält jetzt von sich aus eine Verbindung zur Cloud deines JARVIS-Kontos (ausgehend, keine Portfreigabe, kein Tailscale nötig). Jedes Gerät, das im selben Konto angemeldet ist, erreicht den PC darüber – zu Hause und unterwegs, ohne QR-Code, ohne Verbindungscode, ohne erneutes Anmelden
+- Ist der PC aus, bleibt dein Konto angemeldet und die Cloud-Daten bleiben sichtbar („Cloud verbunden · PC offline“). Sobald Windows läuft und der Begleiter gestartet ist, meldet die Cloud das und die Seite verbindet sich von selbst – ohne Neuladen, ohne Antippen
+- Neue Geräte im Konto bekommen automatisch einen eigenen Zugang zum PC (Standardrechte, kein Admin) – sichtbar unter „Geräte & Verbindungen“, jederzeit entfernbar; der PC meldet jeden neuen Zugang
+- Einheitliche, ehrliche Statusanzeige: „PC verbunden“ (mit „über die Cloud“), „PC wird gesucht“, „Cloud verbunden · PC offline“, „Cloud nicht erreichbar“, „Verbindung unterbrochen – automatische Wiederverbindung“
+- Unter „Cloud“: Abschnitt „Automatische PC-Verbindung“ mit Zustand, Schalter (nur am PC) und Hinweis samt Knopf, falls der Begleiter noch nicht mit Windows startet
+### Verbessert
+- Wiederverbinden ohne Dauer-Versuche: Während auf den PC gewartet wird, hält die Seite genau eine Verbindung zur Cloud (Herzschlag alle 25 s) statt alle halbe Sekunde neu zu probieren; die direkte Adresse im WLAN hat weiter Vorrang und wird nebenbei geprüft; bei Cloud-Ausfall wachsende Pausen (2–60 s)
+- Jede Seite öffnet sich per Link, auch nach Neuladen und beim zweiten Aufruf – als fester Test für alle 62 Seiten (Website ohne PC und PC-App)
+### Behoben
+- **PC flog nach vielen Anmeldungen aus der Cloud:** Geräte-Tokens wurden nach Alter aufgeräumt – nach 30 neuen Anmeldungen traf es das Token des PCs („Die Cloud kennt diesen PC nicht mehr“). Jetzt zählt „zuletzt benutzt“
+### Sicherheit
+- Keine offenen Ports, keine öffentliche Steuer-Adresse: Die Cloud leitet nur weiter und lässt nur Geräte mit gültigem Konto-Token zu; angemeldet wird weiterhin Ende-zu-Ende am PC. Der Konto-Datenschlüssel wird nie übertragen (nur ein an die Verbindung gebundener Nachweis)
+- Hinweis: Das Konto-Passwort ist damit der Schlüssel zum PC – bitte ein starkes wählen. Abschaltbar am PC unter „Cloud“
+### Hinweise
+- Anmeldemöglichkeiten geprüft: Es gibt genau eine – das JARVIS-Konto (Benutzername + Passwort, Cloud). GitHub- oder Tailscale-Anmeldeknöpfe gab es nicht und gibt es nicht; die GitHub-/Tailscale-Verweise in der App sind Anleitungen bzw. Download-Links, keine Logins
+- Getestet mit echtem Cloud-Dienst, echtem Begleiter und Browsern (PC an/aus/wieder an, Browser-Neustart, Cloud-Ausfall, zweites Gerät, Abweisungen). Nicht prüfbar von hier: echtes Windows (Autostart nach Neustart), echtes iPhone/iPad/Android, Wechsel WLAN ↔ Mobilfunk. Details: docs/CLOUD-KONTO.md
+
 ## 3.51.0 – 2026-11-12
 ### Neu
 - **JARVIS-Insel am PC: viel mehr Bewegung (nur am PC – Handy und iPad bleiben wie sie sind).** Jedes Öffnen und Schließen sieht anders aus: vier Arten zu öffnen (klassisch, herabfallen, aufploppen, erst breit dann ausrollen) und vier zu schließen (klassisch, zusammenziehen, schmelzen, hochschnappen) – nie zweimal dieselbe hintereinander; Inhalt und Lichtstreifen bewegen sich passend dazu
