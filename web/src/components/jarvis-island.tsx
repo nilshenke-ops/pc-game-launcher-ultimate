@@ -24,7 +24,7 @@ if (typeof window !== "undefined") {
 }
 import { consumeSpoken } from "../lib/island-voice";
 import { speak } from "../lib/jarvis-voice";
-import { createBoxAnimator, islandBox, islandProgress, WINDOW_W, type Box } from "../lib/island-spring";
+import { CLOSE_VARIANTS, createBoxAnimator, islandBox, islandProgress, nextVariant, OPEN_VARIANTS, WINDOW_W, type Box, type BoxVariant, type CloseVariant, type OpenVariant } from "../lib/island-spring";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { useConn } from "../lib/hooks";
 import { eyeColor, clock, islandAnswer, islandEvent, islandBusy, islandClearAsk, islandGaming, islandMusic, islandSize, islandTouch, islandNotice, noticeFresh, moodOf, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
@@ -82,6 +82,11 @@ function useViewportW() {
   return w;
 }
 const reducedMotion = () => motionOff();
+const OPEN_KEYS = Object.keys(OPEN_VARIANTS) as OpenVariant[], CLOSE_KEYS = Object.keys(CLOSE_VARIANTS) as CloseVariant[];
+/** Small things the resting eyes do on the PC from time to time (see motion-pack.css, "PC island"). */
+const EMOTES = ["wink", "look-left", "look-right", "roll", "squint", "hop", "peek", "blink2", "wide"] as const;
+/** A PC: the island's own window, or a browser with a mouse on a wide screen. Phones and tablets keep their calmer set of animations. */
+const isPc = (floating: boolean) => !floating || (typeof window !== "undefined" && window.innerWidth >= 900 && !!window.matchMedia?.("(hover: hover) and (pointer: fine)").matches);
 
 /** The island page (own window of the Windows companion; opened in a browser it shows the same at the top). */
 export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) {
@@ -100,6 +105,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const notice = noticeFresh(s, now) ? s.notice : null;
   const prevMood = useRef<Mood>(mood);
   const hostRef = useRef<HTMLDivElement>(null);
+  const [pc] = useState(() => isPc(floating));
   const panelMounted = useExit(open, 1300);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
@@ -173,7 +179,45 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     return () => { a.stop(); animRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [floating]);
-  useEffect(() => { animRef.current?.to(box, reducedMotion()); }, [box.w, box.h, box.r, look.position]); // eslint-disable-line react-hooks/exhaustive-deps
+  // On the PC every opening and every folding shut plays another variant than the one before (phones and tablets: always the classic one).
+  const wasPanel = useRef(false), openVar = useRef<OpenVariant | null>(null), closeVar = useRef<CloseVariant | null>(null);
+  useEffect(() => {
+    const isPanel = size === "panel"; let variant: BoxVariant | undefined;
+    if (pc && isPanel !== wasPanel.current) {
+      variant = isPanel ? (openVar.current = nextVariant(OPEN_KEYS, openVar.current)) : (closeVar.current = nextVariant(CLOSE_KEYS, closeVar.current));
+      hostRef.current?.setAttribute("data-isl-var", variant);
+    }
+    wasPanel.current = isPanel;
+    animRef.current?.to(box, reducedMotion(), variant);
+  }, [box.w, box.h, box.r, look.position]); // eslint-disable-line react-hooks/exhaustive-deps
+  // PC only: the resting eyes do something small every few seconds (wink, look around, roll, hop …) – written straight to the element, so
+  // nothing re-renders. Any other mood has its own eyes and wins.
+  const emote = (name: string, ms = 1500) => {
+    const el = hostRef.current; if (!el || !pc || reducedMotion()) return;
+    el.dataset.emote = name;
+    window.clearTimeout(emoteOff.current);
+    emoteOff.current = window.setTimeout(() => { delete el.dataset.emote; }, ms);
+  };
+  const emoteOff = useRef(0), lastEmote = useRef<string | null>(null);
+  useEffect(() => {
+    if (!pc || mood !== "idle") return;
+    let id = 0;
+    const plan = () => { id = window.setTimeout(() => { emote(lastEmote.current = nextVariant(EMOTES, lastEmote.current as typeof EMOTES[number] | null)); plan(); }, 4500 + Math.random() * 6500); };
+    plan();
+    return () => { window.clearTimeout(id); window.clearTimeout(emoteOff.current); if (hostRef.current) delete hostRef.current.dataset.emote; };
+  }, [pc, mood]); // eslint-disable-line react-hooks/exhaustive-deps
+  // Moving to another place at the top edge: the eyes look where it goes and the island leans into the movement (the window itself glides, see Island.cs).
+  const placeSeen = useRef(look.position);
+  useEffect(() => {
+    const order = { left: 0, center: 1, right: 2 } as Record<string, number>, was = placeSeen.current; placeSeen.current = look.position;
+    if (was === look.position || !pc || reducedMotion()) return;
+    const el = hostRef.current; if (!el) return;
+    const dir = (order[look.position] ?? 1) > (order[was] ?? 1) ? "right" : "left";
+    emote(`look-${dir}`, 900);
+    el.dataset.islMove = dir;
+    const id = window.setTimeout(() => { delete el.dataset.islMove; }, 760);
+    return () => window.clearTimeout(id);
+  }, [look.position]); // eslint-disable-line react-hooks/exhaustive-deps
   // The companion only needs to know when the panel is open (it takes the keyboard focus for typing then).
   useEffect(() => { (window as HostWindow).chrome?.webview?.postMessage({ type: "island-size", size }); }, [size]);
 
@@ -230,7 +274,8 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     const r = el.getBoundingClientRect();
     const dx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / (r.width / 2 || 1)));
     const dy = Math.max(-1, Math.min(1, (e.clientY - (r.top + 18)) / 60));
-    el.style.setProperty("--ex", `${(dx * 3).toFixed(1)}px`); el.style.setProperty("--ey", `${(dy * 2).toFixed(1)}px`);
+    const reach = pc ? 1.7 : 1;   // on the PC the eyes follow the mouse further
+    el.style.setProperty("--ex", `${(dx * 3 * reach).toFixed(1)}px`); el.style.setProperty("--ey", `${(dy * 2 * reach).toFixed(1)}px`);
   };
   const unfollow = () => { const el = hostRef.current; if (el) { el.style.setProperty("--ex", "0px"); el.style.setProperty("--ey", "0px"); } };
 
@@ -238,7 +283,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const innerW = panelMounted ? panelW : box.w;
 
   return (
-    <div ref={hostRef} className={`isl-host v2 s-${size} h-${mood}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
+    <div ref={hostRef} className={`isl-host v2 s-${size} h-${mood}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}${pc ? " pc" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); if (!open && mood === "idle") emote("wide", 700); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
       <div className="isl-inner" style={{ width: innerW }}>
       {mood === "happy" && s.last && <Confetti key={s.last.at} />}
       {mood === "dancing" && s.music && s.music.beatAt > 0 && <span className="isl-beat" key={s.music.beatAt} aria-hidden />}

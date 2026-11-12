@@ -36,36 +36,61 @@ const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 export const easeInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 /** Opening: fast start (visible at once), swings ≈ 5 % past the target and settles – like the real Dynamic Island. */
 export const easeOutBack = (t: number) => { const c1 = 1.0, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
-/** The part of the total time in which one value moves (start, end): opening – the width leads, the height follows; closing – the height folds first, the width follows. */
-const PHASES = {
-  open: { w: [0, 0.72], h: [0.18, 1], r: [0.1, 1] },
-  close: { w: [0.28, 1], h: [0, 0.8], r: [0, 0.9] },
-} as const;
+/** The part of the total time in which one value moves (start, end). */
+interface Phases { w: readonly [number, number]; h: readonly [number, number]; r: readonly [number, number] }
+/**
+ * Ways to open and to fold shut. "classic" is the one every device uses: opening – the width leads, the height follows; closing – the height
+ * folds first, the width follows. The others are for the island on the PC screen, which picks a different one each time:
+ * opening – drop (falls down as a narrow column, then spreads), pop (everything at once), unfold (a wide bar first, then it rolls down);
+ * closing – zip (narrows to a column, then pulls up), melt (everything at once), snap (rolls up fast, the bar shrinks last).
+ */
+export const OPEN_VARIANTS = {
+  classic: { w: [0, 0.72], h: [0.18, 1], r: [0.1, 1] },
+  drop: { w: [0.34, 1], h: [0, 0.72], r: [0, 1] },
+  pop: { w: [0, 0.86], h: [0, 0.86], r: [0, 0.86] },
+  unfold: { w: [0, 0.52], h: [0.28, 1], r: [0.26, 1] },
+} as const satisfies Record<string, Phases>;
+export const CLOSE_VARIANTS = {
+  classic: { w: [0.28, 1], h: [0, 0.8], r: [0, 0.9] },
+  zip: { w: [0, 0.62], h: [0.3, 1], r: [0.3, 1] },
+  melt: { w: [0.04, 1], h: [0, 0.96], r: [0, 1] },
+  snap: { w: [0.5, 1], h: [0, 0.56], r: [0, 0.7] },
+} as const satisfies Record<string, Phases>;
+export type OpenVariant = keyof typeof OPEN_VARIANTS;
+export type CloseVariant = keyof typeof CLOSE_VARIANTS;
+export type BoxVariant = OpenVariant | CloseVariant;
+/** The next variant of a list – never the one that just played (so every opening looks different from the one before). */
+export function nextVariant<T extends string>(all: readonly T[], last: T | null, random: () => number = Math.random): T {
+  const pool = all.filter((v) => v !== last);
+  return pool[Math.min(pool.length - 1, Math.floor(random() * pool.length))] ?? all[0];
+}
 
 /**
  * Moves a box to its target as a choreographed movement of fixed duration (not a spring: a spring is over after a few frames and
- * hardly seen). Width, height and corner radius move in overlapping phases, each with an ease-in-out curve. A new target in the
+ * hardly seen). Width, height and corner radius move in overlapping phases, each with an ease curve. A new target in the
  * middle of a movement starts from where the box is now (shorter, in proportion to the way left). `to(…, true)` jumps (reduced
- * motion, first paint). The scheduler can be replaced to test it without a browser.
+ * motion, first paint); `to(…, false, "drop")` plays one of the variants above. The scheduler can be replaced to test it without a browser.
  */
 export function createBoxAnimator(apply: (b: Box) => void, start: Box, scheduler: Scheduler = browser) {
   const x = [start.w, start.h, start.r];
-  let from = [...x], target = [...x], raf = 0, t0 = 0, dur = OPEN_MS, phase: typeof PHASES.open | typeof PHASES.close = PHASES.open;
+  let from = [...x], target = [...x], raf = 0, t0 = 0, dur = OPEN_MS, phase: Phases = OPEN_VARIANTS.classic, opening = true;
   const emit = () => apply({ w: x[0], h: x[1], r: x[2] });
   const frame = (now: number) => {
     if (!t0) t0 = now;
     const t = clamp01((now - t0) / dur);
     if (t >= 1) { x[0] = target[0]; x[1] = target[1]; x[2] = target[2]; raf = 0; t0 = 0; emit(); return; }
-    const keys = ["w", "h", "r"] as const, ease = phase === PHASES.open ? easeOutBack : easeInOut;
+    const keys = ["w", "h", "r"] as const, ease = opening ? easeOutBack : easeInOut;
     for (let i = 0; i < 3; i++) { const [a, b] = phase[keys[i]]; x[i] = from[i] + (target[i] - from[i]) * ease(clamp01((t - a) / (b - a))); }
     emit();
     raf = scheduler.request(frame);
   };
   return {
-    to(t: Box, instant = false) {
+    to(t: Box, instant = false, variant?: BoxVariant) {
       const closing = t.h < x[1] - 1 || t.w < x[0] - 1;   // getting smaller: folds shut; getting bigger: opens
       if (instant) { x[0] = t.w; x[1] = t.h; x[2] = t.r; target = [t.w, t.h, t.r]; if (raf) scheduler.cancel(raf); raf = 0; t0 = 0; emit(); return; }
-      from = [...x]; target = [t.w, t.h, t.r]; phase = closing ? PHASES.close : PHASES.open;
+      from = [...x]; target = [t.w, t.h, t.r]; opening = !closing;
+      const table: Record<string, Phases> = closing ? CLOSE_VARIANTS : OPEN_VARIANTS;
+      phase = (variant && table[variant]) || table.classic;
       const way = Math.max(Math.abs(t.h - x[1]) / (ISLAND_DIMS.panel.h - ISLAND_DIMS.bar.h), Math.abs(t.w - x[0]) / (ISLAND_DIMS.panel.w - ISLAND_DIMS.notch.w));
       dur = (closing ? CLOSE_MS : OPEN_MS) * Math.min(1, Math.max(0.45, way));
       t0 = 0;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createBoxAnimator, islandBox, ISLAND_DIMS, isSettled, stepSpring, WINDOW_H, WINDOW_W, type Box, type Scheduler } from "./island-spring";
+import { CLOSE_VARIANTS, createBoxAnimator, nextVariant, OPEN_VARIANTS, islandBox, ISLAND_DIMS, isSettled, stepSpring, WINDOW_H, WINDOW_W, type Box, type Scheduler } from "./island-spring";
 
 /** A fake frame clock: 60 frames a second, run by hand. */
 function clock() {
@@ -76,6 +76,40 @@ describe("Öffnen und Schließen der Insel", () => {
     for (let i = 0; i < 200; i++) stepSpring(x, v, [100], 1 / 60);
     expect(isSettled(x, v, [100])).toBe(true);
     expect(isSettled([50], [0], [100])).toBe(false);
+  });
+});
+
+describe("Varianten für die Insel am PC", () => {
+  it("jede Öffnungsvariante endet genau im Ziel, bleibt im Fenster und springt nie", () => {
+    for (const v of Object.keys(OPEN_VARIANTS) as (keyof typeof OPEN_VARIANTS)[]) {
+      const c = clock(), frames: Box[] = [];
+      createBoxAnimator((b) => frames.push(b), ISLAND_DIMS.notch, c.s).to(ISLAND_DIMS.panel, false, v); run(c);
+      expect(frames.at(-1), v).toEqual(ISLAND_DIMS.panel);
+      expect(Math.max(...frames.map((f) => f.w)), v).toBeLessThanOrEqual(WINDOW_W);
+      expect(Math.max(...frames.map((f) => f.h)), v).toBeLessThanOrEqual(WINDOW_H);
+      for (let i = 1; i < frames.length; i++) expect(Math.abs(frames[i].h - frames[i - 1].h), v).toBeLessThan(30);
+    }
+  });
+  it("jede Schließvariante endet genau im Ziel und wird nie kleiner als die geschlossene Insel", () => {
+    for (const v of Object.keys(CLOSE_VARIANTS) as (keyof typeof CLOSE_VARIANTS)[]) {
+      const c = clock(), frames: Box[] = [];
+      createBoxAnimator((b) => frames.push(b), ISLAND_DIMS.panel, c.s).to(ISLAND_DIMS.notch, false, v); run(c);
+      expect(frames.at(-1), v).toEqual(ISLAND_DIMS.notch);
+      expect(Math.min(...frames.map((f) => f.w)), v).toBeGreaterThanOrEqual(ISLAND_DIMS.notch.w - 0.01);
+      expect(Math.min(...frames.map((f) => f.h)), v).toBeGreaterThanOrEqual(ISLAND_DIMS.notch.h - 0.01);
+    }
+  });
+  it("„drop“ fällt zuerst nach unten, „unfold“ wird zuerst breit; „zip“ wird zuerst schmal", () => {
+    const mid = (from: Box, to: Box, v: string) => { const c = clock(), f: Box[] = []; createBoxAnimator((b) => f.push(b), from, c.s).to(to, false, v as never); run(c); return f[Math.floor(f.length * 0.3)]; };
+    const drop = mid(ISLAND_DIMS.notch, ISLAND_DIMS.panel, "drop"), unfold = mid(ISLAND_DIMS.notch, ISLAND_DIMS.panel, "unfold"), zip = mid(ISLAND_DIMS.panel, ISLAND_DIMS.notch, "zip");
+    expect(drop.h).toBeGreaterThan(150); expect(drop.w).toBeLessThan(160);
+    expect(unfold.w).toBeGreaterThan(450); expect(unfold.h).toBeLessThan(90);
+    expect(zip.w).toBeLessThan(400); expect(zip.h).toBeGreaterThan(330);
+  });
+  it("die nächste Variante ist nie die gerade gespielte", () => {
+    const all = ["classic", "drop", "pop", "unfold"] as const;
+    for (const last of all) for (const r of [0, 0.3, 0.6, 0.999]) expect(nextVariant(all, last, () => r)).not.toBe(last);
+    expect(all).toContain(nextVariant(all, null, () => 0.5));
   });
 });
 
