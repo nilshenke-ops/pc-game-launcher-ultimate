@@ -65,6 +65,12 @@ export function templates(): { name: string; make: () => CustomWidget }[] {
       el("shape", { x: 0, y: Math.round((6 + tile + 5) * 10) / 10, w: 100, h: 0.4, size: 1, fill: "rgba(255,255,255,0.10)" }),
     ];
   };
+  /** Small grey label above or below a value. */
+  const mute = (text: string, x: number, y: number, w: number, h: number, align: "left" | "center" | "right" = "left"): WidgetElement =>
+    el("text", { text, x, y, w, h, size: 11, color: "#94a3b8", bold: false, align });
+  /** Button that opens a page of the app – never a command. */
+  const pageBtn = (text: string, icon: string, path: string, x: number, y: number, w: number, h: number): WidgetElement =>
+    btn("open", text, icon, x, y, w, h, "rgba(255,255,255,0.10)", "#ffffff", path);
   const btn = (action: NonNullable<WidgetElement["action"]>, text: string, icon: string, x: number, y: number, w: number, h: number, fill = "rgba(255,255,255,0.14)", color = "#ffffff", ref?: string): WidgetElement =>
     el("button", { action, text, icon, fill, color, x, y, w, h, ref: ref ?? null, size: 14 });
   const dark = ["#0f172a", "#1e1b4b"] as const;
@@ -179,6 +185,142 @@ export function templates(): { name: string; make: () => CustomWidget }[] {
       el("metric", { kind: "cpu", text: "CPU", display: "bar", x: 6, y: 33, w: 88, h: 17, size: 14, fill: "#22d3ee" }),
       el("metric", { kind: "ram", text: "RAM", display: "bar", x: 6, y: 53, w: 88, h: 17, size: 14, fill: "#a78bfa" }),
       el("metric", { kind: "gpu", text: "GPU", display: "bar", x: 6, y: 73, w: 88, h: 17, size: 14, fill: "#34d399" }),
+    ]) },
+    // ---- Weitere Karten im Glas-Stil: Kombinationen, die es vorher nicht gab
+    { name: t("Mini-HUD"), make: () => glass(t("Mini-HUD"), 120, [
+      el("shape", { x: 4, y: 12, w: 10, h: 30, size: 12, fill: "rgba(255,255,255,0.10)" }),
+      el("icon", { icon: "zap", x: 4, y: 12, w: 10, h: 30, color: "#f8fafc" }),
+      el("clock", { kind: "time", x: 16, y: 14, w: 22, h: 26, size: 20, bold: true }),
+      el("nowPlaying", { x: 39, y: 14, w: 34, h: 26, size: 13, bold: true }),
+      el("metric", { kind: "cpu", text: "CPU", display: "number", x: 74, y: 14, w: 22, h: 26, size: 14, align: "right", bold: true }),
+    ]) },
+    { name: t("Zeit & System"), make: () => glass(t("Zeit & System"), 240, [
+      ...cardHead(t("Zeit & System"), "gauge", 240),
+      el("clock", { kind: "time", x: 6, y: 33, w: 50, h: 16, size: 30, bold: true }),
+      el("clock", { kind: "date", x: 6, y: 49, w: 50, h: 7, size: 11, color: "#94a3b8", bold: false }),
+      el("metric", { kind: "cpu", text: "CPU", display: "number", x: 6, y: 64, w: 26, h: 16, size: 16, align: "center" }),
+      el("metric", { kind: "ram", text: "RAM", display: "number", x: 37, y: 64, w: 26, h: 16, size: 16, align: "center" }),
+      el("metric", { kind: "gpu", text: "GPU", display: "number", x: 68, y: 64, w: 26, h: 16, size: 16, align: "center" }),
+    ]) },
+    { name: t("Spiel & System"), make: () => glass(t("Spiel & System"), 220, [
+      ...cardHead(t("Spiel & System"), "gamepad-2", 220),
+      el("nowPlaying", { x: 6, y: 34, w: 88, h: 12, size: 16, bold: true }),
+      el("playtime", { kind: "today", text: t("Heute"), x: 6, y: 47, w: 40, h: 8, size: 12 }),
+      el("metric", { kind: "cpu", text: "CPU", display: "bar", x: 6, y: 61, w: 42, h: 12, size: 12, fill: "#22d3ee" }),
+      el("metric", { kind: "gpu", text: "GPU", display: "bar", x: 52, y: 61, w: 42, h: 12, size: 12, fill: "#34d399" }),
+      el("metric", { kind: "ram", text: "RAM", display: "bar", x: 6, y: 79, w: 88, h: 12, size: 12, fill: "#a78bfa" }),
+    ]) },
+    { name: t("Medien & Zeit"), make: () => glass(t("Medien & Zeit"), 210, [
+      ...cardHead(t("Medien & Zeit"), "music-2", 210),
+      el("clock", { kind: "time", x: 6, y: 34, w: 34, h: 12, size: 22, bold: true }),
+      el("music", { x: 6, y: 50, w: 88, h: 14, size: 14, bold: true }),
+      btn("media", "", "skip-back", 6, 70, 14, 14, "rgba(255,255,255,0.10)", "#ffffff", "prev"),
+      btn("media", "", "play", 24.5, 70, 14, 14, "#f8fafc", "#151821", "playpause"),
+      btn("media", "", "skip-forward", 43, 70, 14, 14, "rgba(255,255,255,0.10)", "#ffffff", "next"),
+      btn("media", "", "volume-2", 61.5, 70, 14, 14, "rgba(255,255,255,0.10)", "#ffffff", "volup"),
+      btn("media", "", "volume-x", 80, 70, 14, 14, "rgba(255,255,255,0.10)", "#ffffff", "mute"),
+    ]) },
+    { name: t("Spiel & Spielzeit"), make: () => glass(t("Spiel & Spielzeit"), 200, [
+      ...cardHead(t("Spiel & Spielzeit"), "gamepad-2", 200),
+      el("nowPlaying", { x: 6, y: 35, w: 88, h: 12, size: 16, bold: true }),
+      el("playtime", { kind: "today", text: t("Heute"), x: 6, y: 54, w: 40, h: 16, size: 22, bold: true }),
+      el("playtime", { kind: "week", text: t("7 Tage"), x: 52, y: 54, w: 42, h: 16, size: 22, bold: true }),
+    ]) },
+    { name: t("Wochen-Fortschritt"), make: () => glass(t("Wochen-Fortschritt"), 210, [
+      ...cardHead(t("Wochen-Fortschritt"), "trophy", 210),
+      el("playtime", { kind: "week", text: t("7 Tage"), x: 6, y: 35, w: 56, h: 26, size: 32, bold: true }),
+      el("playtime", { kind: "today", text: t("Heute"), x: 64, y: 38, w: 30, h: 16, size: 20, bold: true, align: "right" }),
+      el("clock", { kind: "time", x: 64, y: 58, w: 30, h: 10, size: 12, color: "#94a3b8", bold: false, align: "right" }),
+    ]) },
+    { name: t("CPU & Temperatur"), make: () => glass(t("CPU & Temperatur"), 200, [
+      ...cardHead(t("CPU & Temperatur"), "cpu", 200),
+      mute(t("Auslastung"), 6, 33, 40, 6),
+      el("metric", { kind: "cpu", display: "number", x: 6, y: 39, w: 34, h: 16, size: 26, bold: true }),
+      mute(t("Temperatur"), 44, 33, 44, 6),
+      el("metric", { kind: "cputemp", display: "number", x: 44, y: 39, w: 40, h: 16, size: 26, bold: true }),
+      el("metric", { kind: "cpu", text: "CPU", display: "bar", x: 6, y: 62, w: 88, h: 12, size: 12, fill: "#22d3ee" }),
+    ]) },
+    { name: t("GPU & Temperatur"), make: () => glass(t("GPU & Temperatur"), 200, [
+      ...cardHead(t("GPU & Temperatur"), "gauge", 200),
+      mute(t("Auslastung"), 6, 33, 40, 6),
+      el("metric", { kind: "gpu", display: "number", x: 6, y: 39, w: 34, h: 16, size: 26, bold: true }),
+      mute(t("Temperatur"), 44, 33, 44, 6),
+      el("metric", { kind: "gputemp", display: "number", x: 44, y: 39, w: 40, h: 16, size: 26, bold: true }),
+      el("metric", { kind: "gpu", text: "GPU", display: "bar", x: 6, y: 62, w: 88, h: 12, size: 12, fill: "#34d399" }),
+    ]) },
+    { name: t("Last & Wärme"), make: () => glass(t("Last & Wärme"), 250, [
+      ...cardHead(t("Last & Wärme"), "flame", 250),
+      el("metric", { kind: "cpu", text: "CPU", display: "bar", x: 6, y: 32, w: 88, h: 10, size: 12, fill: "#22d3ee" }),
+      el("metric", { kind: "gpu", text: "GPU", display: "bar", x: 6, y: 47, w: 88, h: 10, size: 12, fill: "#34d399" }),
+      el("metric", { kind: "cputemp", display: "number", x: 6, y: 63, w: 40, h: 12, size: 18, bold: true }),
+      el("metric", { kind: "gputemp", display: "number", x: 52, y: 63, w: 40, h: 12, size: 18, bold: true }),
+      mute(t("CPU-Temperatur"), 6, 76, 40, 6),
+      mute(t("GPU-Temperatur"), 52, 76, 40, 6),
+    ]) },
+    { name: t("System-Kacheln"), make: () => glass(t("System-Kacheln"), 230, [
+      ...cardHead(t("System-Kacheln"), "layout-grid", 230),
+      el("shape", { x: 4.5, y: 34, w: 28, h: 38, size: 16, fill: "rgba(255,255,255,0.06)" }),
+      el("shape", { x: 36, y: 34, w: 28, h: 38, size: 16, fill: "rgba(255,255,255,0.06)" }),
+      el("shape", { x: 67.5, y: 34, w: 28, h: 38, size: 16, fill: "rgba(255,255,255,0.06)" }),
+      el("metric", { kind: "cpu", display: "number", x: 4.5, y: 36, w: 28, h: 20, size: 24, bold: true, align: "center" }),
+      el("metric", { kind: "ram", display: "number", x: 36, y: 36, w: 28, h: 20, size: 24, bold: true, align: "center" }),
+      el("metric", { kind: "gpu", display: "number", x: 67.5, y: 36, w: 28, h: 20, size: 24, bold: true, align: "center" }),
+      mute("CPU", 4.5, 62, 28, 6, "center"), mute("RAM", 36, 62, 28, 6, "center"), mute("GPU", 67.5, 62, 28, 6, "center"),
+    ]) },
+    { name: t("Aufnahme & Overlay"), make: () => glass(t("Aufnahme & Overlay"), 180, [
+      ...cardHead(t("Aufnahme & Overlay"), "clapperboard", 180),
+      btn("record", t("Aufnahme"), "radio", 6, 44, 27, 24, "#ef4444", "#ffffff"),
+      btn("replay", t("Replay"), "star", 36, 44, 27, 24, "#22d3ee", "#04121a"),
+      btn("overlay", t("Overlay"), "layers", 66, 44, 27, 24),
+    ]) },
+    { name: t("Streaming-Deck"), make: () => glass(t("Streaming-Deck"), 200, [
+      ...cardHead(t("Streaming-Deck"), "radio", 200),
+      btn("record", t("Aufnahme"), "radio", 6, 36, 42, 20, "#ef4444", "#ffffff"),
+      btn("replay", t("Replay"), "star", 52, 36, 42, 20, "#22d3ee", "#04121a"),
+      btn("overlay", t("Overlay"), "layers", 6, 60, 42, 20),
+      btn("stopSounds", t("Sounds stoppen"), "square", 52, 60, 42, 20),
+    ]) },
+    { name: t("Schnellzugriff kompakt"), make: () => glass(t("Schnellzugriff kompakt"), 170, [
+      ...cardHead(t("Schnellzugriff kompakt"), "layout-grid", 170),
+      pageBtn(t("Spiele"), "gamepad-2", "/games", 4.5, 46, 21.5, 24),
+      pageBtn(t("Deck"), "layout-grid", "/deck", 27.5, 46, 21.5, 24),
+      pageBtn(t("Sounds"), "music", "/soundboard", 50.5, 46, 21.5, 24),
+      pageBtn(t("Musik"), "music-2", "/media", 73.5, 46, 21.5, 24),
+    ]) },
+    { name: t("Studio-Zugriff"), make: () => glass(t("Studio-Zugriff"), 170, [
+      ...cardHead(t("Studio-Zugriff"), "wand", 170),
+      pageBtn(t("Studio"), "wand", "/studio", 4.5, 46, 21.5, 24),
+      pageBtn(t("Widgets"), "layout-grid", "/widgets", 27.5, 46, 21.5, 24),
+      pageBtn(t("Overlay"), "layers", "/overlay-settings", 50.5, 46, 21.5, 24),
+      pageBtn(t("Einstellungen"), "settings", "/settings", 73.5, 46, 21.5, 24),
+    ]) },
+    { name: t("Countdown Kurz"), make: () => glass(t("Countdown Kurz"), 240, [
+      ...cardHead(t("Countdown Kurz"), "timer", 240),
+      el("timer", { kind: "stopwatch", display: "pills", text: "1,3,5,10", x: 4, y: 34, w: 92, h: 58, size: 44, align: "center", bold: true }),
+    ]) },
+    { name: t("Runden-Timer"), make: () => glass(t("Runden-Timer"), 240, [
+      ...cardHead(t("Runden-Timer"), "swords", 240),
+      el("timer", { kind: "stopwatch", display: "pills", text: "2,3,5,8", x: 4, y: 34, w: 92, h: 58, size: 44, align: "center", bold: true }),
+    ]) },
+    { name: t("Uhr & Timer"), make: () => glass(t("Uhr & Timer"), 250, [
+      ...cardHead(t("Uhr & Timer"), "clock", 250),
+      el("clock", { kind: "time", x: 6, y: 31, w: 50, h: 11, size: 24, bold: true }),
+      el("timer", { kind: "stopwatch", display: "pills", text: "3,5,10", x: 4, y: 45, w: 92, h: 49, size: 30, align: "center", bold: true }),
+    ]) },
+    { name: t("Notiz & Zeit"), make: () => glass(t("Notiz & Zeit"), 200, [
+      ...cardHead(t("Notiz & Zeit"), "message-circle", 200),
+      el("clock", { kind: "time", x: 6, y: 33, w: 40, h: 9, size: 13, color: "#94a3b8", bold: false }),
+      el("text", { text: t("Hier steht deine Notiz …"), x: 6, y: 44, w: 88, h: 48, size: 15, bold: false }),
+    ]) },
+    { name: t("Abend-Cockpit"), make: () => glass(t("Abend-Cockpit"), 240, [
+      ...cardHead(t("Abend-Cockpit"), "moon", 240),
+      el("clock", { kind: "time", x: 6, y: 33, w: 88, h: 16, size: 34, align: "center", bold: true }),
+      el("playtime", { kind: "today", text: t("Heute"), x: 6, y: 54, w: 42, h: 18, size: 20, bold: true }),
+      el("playtime", { kind: "week", text: t("7 Tage"), x: 52, y: 54, w: 42, h: 18, size: 20, bold: true }),
+    ]) },
+    { name: t("Pausen-Timer"), make: () => glass(t("Pausen-Timer"), 240, [
+      ...cardHead(t("Pausen-Timer"), "coffee", 240),
+      el("timer", { kind: "stopwatch", display: "pills", text: "5,10,15,20", x: 4, y: 34, w: 92, h: 58, size: 42, align: "center", bold: true }),
     ]) },
   ];
 }
