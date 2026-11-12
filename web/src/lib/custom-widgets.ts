@@ -262,9 +262,9 @@ export function templates(): { name: string; make: () => CustomWidget }[] {
       el("shape", { x: 4.5, y: 34, w: 28, h: 38, size: 16, fill: "rgba(255,255,255,0.06)" }),
       el("shape", { x: 36, y: 34, w: 28, h: 38, size: 16, fill: "rgba(255,255,255,0.06)" }),
       el("shape", { x: 67.5, y: 34, w: 28, h: 38, size: 16, fill: "rgba(255,255,255,0.06)" }),
-      el("metric", { kind: "cpu", display: "number", x: 4.5, y: 36, w: 28, h: 20, size: 24, bold: true, align: "center" }),
-      el("metric", { kind: "ram", display: "number", x: 36, y: 36, w: 28, h: 20, size: 24, bold: true, align: "center" }),
-      el("metric", { kind: "gpu", display: "number", x: 67.5, y: 36, w: 28, h: 20, size: 24, bold: true, align: "center" }),
+      el("metric", { kind: "cpu", text: null, display: "number", x: 4.5, y: 36, w: 28, h: 20, size: 22, bold: true, align: "center" }),
+      el("metric", { kind: "ram", text: null, display: "number", x: 36, y: 36, w: 28, h: 20, size: 22, bold: true, align: "center" }),
+      el("metric", { kind: "gpu", text: null, display: "number", x: 67.5, y: 36, w: 28, h: 20, size: 22, bold: true, align: "center" }),
       mute("CPU", 4.5, 62, 28, 6, "center"), mute("RAM", 36, 62, 28, 6, "center"), mute("GPU", 67.5, 62, 28, 6, "center"),
     ]) },
     { name: t("Aufnahme & Overlay"), make: () => glass(t("Aufnahme & Overlay"), 180, [
