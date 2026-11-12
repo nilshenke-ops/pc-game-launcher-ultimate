@@ -67,7 +67,7 @@ public sealed class CustomWidgetService
 {
     static readonly Regex Color = new("^#[0-9a-fA-F]{6}$");
     static readonly Regex LocalId = new("^[a-z0-9_-]{1,40}$");
-    static readonly string[] Types = { "text", "clock", "metric", "button", "image", "playtime", "nowPlaying", "music", "shape", "icon", "timer" };
+    static readonly string[] Types = { "text", "clock", "metric", "button", "image", "playtime", "nowPlaying", "music", "shape", "icon", "timer", "counter", "note", "until", "conn", "battery", "dice" };
     static readonly string[] Metrics = { "cpu", "ram", "gpu", "gputemp", "cputemp", "disk" };
     static readonly string[] Actions = { "quick", "launch", "sound", "profile", "overlay", "record", "replay", "stopSounds", "media", "open" };
     const int MaxWidgets = 30, MaxElements = 40, MaxImage = 200_000;
@@ -170,6 +170,17 @@ public sealed class CustomWidgetService
                 case "clock": e.Kind = e.Kind is "date" or "both" ? e.Kind : "time"; break;
                 case "playtime": e.Kind = e.Kind == "week" ? "week" : "today"; break;
                 case "icon": e.Icon ??= "zap"; break;
+                // Building blocks that live on the device that shows the widget (3.54): the PC only keeps their settings.
+                case "counter": e.Kind = e.Kind == "up" ? "up" : "updown"; e.Ref = null; break;
+                case "note": e.Kind = null; e.Ref = null; break;
+                case "until":
+                    // Ref = the day (YYYY-MM-DD) the widget counts down to.
+                    e.Kind = null;
+                    e.Ref = e.Ref is { Length: 10 } day && DateOnly.TryParseExact(day, "yyyy-MM-dd", out _) ? day : throw Bad("„Tage bis …“ braucht ein Datum (JJJJ-MM-TT).");
+                    break;
+                case "conn": e.Kind = e.Kind == "ping" ? "ping" : "status"; e.Ref = null; break;
+                case "battery": e.Kind = null; e.Ref = null; break;
+                case "dice": e.Kind = e.Kind == "coin" ? "coin" : "dice"; e.Ref = null; break;
                 case "timer":
                     // Stopwatch or countdown (Ref = seconds, 1 s – 24 h). Runs on the device; nothing is sent to the PC.
                     e.Kind = e.Kind == "countdown" ? "countdown" : "stopwatch";

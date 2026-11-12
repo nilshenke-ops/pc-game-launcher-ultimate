@@ -3,7 +3,7 @@
 // phone, in the PC app, in the overlay and as a Windows desktop widget. Font sizes are designed for a 360 px wide box.
 import { t } from "./i18n";
 
-export type ElementType = "text" | "clock" | "metric" | "button" | "image" | "playtime" | "nowPlaying" | "music" | "shape" | "icon" | "timer";
+export type ElementType = "text" | "clock" | "metric" | "button" | "image" | "playtime" | "nowPlaying" | "music" | "shape" | "icon" | "timer" | "counter" | "note" | "until" | "conn" | "battery" | "dice";
 export type ButtonAction = "quick" | "launch" | "sound" | "profile" | "overlay" | "record" | "replay" | "stopSounds" | "media" | "open";
 
 export interface WidgetElement {
@@ -26,7 +26,7 @@ export const newWidgetId = () => `cw_${rid()}${rid()}`;
 export const newElementId = () => `e${rid()}`;
 
 export function elementLabel(type: ElementType): string {
-  return ({ text: t("Text"), clock: t("Uhr"), metric: t("Messwert"), button: t("Knopf"), image: t("Bild"), playtime: t("Spielzeit"), nowPlaying: t("Laufendes Spiel"), music: t("Musik/Video am PC"), shape: t("Fläche"), icon: t("Symbol"), timer: t("Stoppuhr/Countdown") } as Record<ElementType, string>)[type];
+  return ({ text: t("Text"), clock: t("Uhr"), metric: t("Messwert"), button: t("Knopf"), image: t("Bild"), playtime: t("Spielzeit"), nowPlaying: t("Laufendes Spiel"), music: t("Musik/Video am PC"), shape: t("Fläche"), icon: t("Symbol"), timer: t("Stoppuhr/Countdown"), counter: t("Zähler"), note: t("Notizfeld"), until: t("Tage bis …"), conn: t("Verbindung/Ping"), battery: t("Akku (dieses Gerät)"), dice: t("Würfel/Münze") } as Record<ElementType, string>)[type];
 }
 
 export function newElement(type: ElementType): WidgetElement {
@@ -43,6 +43,12 @@ export function newElement(type: ElementType): WidgetElement {
     case "shape": return { ...base, fill: "#ffffff", w: 84, h: 2, x: 8, y: 50 };
     case "icon": return { ...base, icon: "gamepad-2", size: 40, align: "center", w: 22, h: 40 };
     case "timer": return { ...base, kind: "stopwatch", size: 34, bold: true, align: "center", w: 84, h: 40 };
+    case "counter": return { ...base, kind: "updown", text: t("Zähler"), size: 40, bold: true, align: "center", w: 84, h: 44 };
+    case "note": return { ...base, text: t("Notiz …"), size: 15, w: 84, h: 50 };
+    case "until": return { ...base, text: t("Bis zum Release"), ref: new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10), size: 34, bold: true, align: "center", w: 84, h: 40 };
+    case "conn": return { ...base, kind: "status", text: t("Mein PC"), size: 22, bold: true, w: 84, h: 34 };
+    case "battery": return { ...base, text: t("Akku"), size: 16, w: 84, h: 24 };
+    case "dice": return { ...base, kind: "dice", size: 44, bold: true, align: "center", w: 50, h: 60 };
   }
 }
 
@@ -317,6 +323,38 @@ export function templates(): { name: string; make: () => CustomWidget }[] {
       el("clock", { kind: "time", x: 6, y: 33, w: 88, h: 16, size: 34, align: "center", bold: true }),
       el("playtime", { kind: "today", text: t("Heute"), x: 6, y: 54, w: 42, h: 18, size: 20, bold: true }),
       el("playtime", { kind: "week", text: t("7 Tage"), x: 52, y: 54, w: 42, h: 18, size: 20, bold: true }),
+    ]) },
+    { name: t("Tode-Zähler"), make: () => glass(t("Tode-Zähler"), 220, [
+      ...cardHead(t("Tode-Zähler"), "skull", 220),
+      el("counter", { kind: "updown", text: t("Tode in diesem Run"), x: 4, y: 34, w: 92, h: 58, size: 56, fill: "#f87171" }),
+    ]) },
+    { name: t("Siege & Niederlagen"), make: () => glass(t("Siege & Niederlagen"), 220, [
+      ...cardHead(t("Siege & Niederlagen"), "trophy", 220),
+      el("counter", { kind: "updown", text: t("Siege"), x: 4, y: 34, w: 45, h: 58, size: 40, fill: "#34d399" }),
+      el("counter", { kind: "updown", text: t("Niederlagen"), x: 51, y: 34, w: 45, h: 58, size: 40, fill: "#f87171" }),
+    ]) },
+    { name: t("Release-Countdown"), make: () => glass(t("Release-Countdown"), 210, [
+      ...cardHead(t("Release-Countdown"), "rocket", 210),
+      el("until", { text: t("Bis zum Release"), x: 4, y: 36, w: 92, h: 54, size: 44 }),
+    ]) },
+    { name: t("Notizzettel"), make: () => glass(t("Notizzettel"), 240, [
+      ...cardHead(t("Notizzettel"), "lightbulb", 240),
+      el("note", { text: t("Tippe hier – bleibt auf diesem Gerät gespeichert."), x: 4, y: 31, w: 92, h: 63, size: 15 }),
+    ]) },
+    { name: t("PC-Verbindung"), make: () => glass(t("PC-Verbindung"), 200, [
+      ...cardHead(t("PC-Verbindung"), "wifi", 200),
+      el("conn", { kind: "status", text: null, x: 6, y: 38, w: 56, h: 50, size: 24 }),
+      el("conn", { kind: "ping", text: t("Antwortzeit"), x: 64, y: 38, w: 30, h: 50, size: 22, align: "right" }),
+    ]) },
+    { name: t("Akku & Uhr"), make: () => glass(t("Akku & Uhr"), 200, [
+      ...cardHead(t("Akku & Uhr"), "power", 200),
+      el("clock", { kind: "time", x: 6, y: 36, w: 88, h: 22, size: 36, bold: true }),
+      el("battery", { text: t("Akku dieses Geräts"), x: 6, y: 66, w: 88, h: 24, size: 14 }),
+    ]) },
+    { name: t("Würfel & Münze"), make: () => glass(t("Würfel & Münze"), 230, [
+      ...cardHead(t("Würfel & Münze"), "party-popper", 230),
+      el("dice", { kind: "dice", text: t("Würfel"), x: 4, y: 33, w: 45, h: 62, size: 46 }),
+      el("dice", { kind: "coin", text: t("Münze"), x: 51, y: 33, w: 45, h: 62, size: 46 }),
     ]) },
     { name: t("Pausen-Timer"), make: () => glass(t("Pausen-Timer"), 240, [
       ...cardHead(t("Pausen-Timer"), "coffee", 240),

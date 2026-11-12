@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { BatteryView, ConnView, CounterView, DiceView, NoteView, UntilView } from "./cw-extra";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
 import { toast, useEvent, useLiveSubscription, useRpc } from "../lib/hooks";
@@ -138,6 +139,12 @@ function ElementView({ e, w, metrics, now, minutes, playing, interactive }: { e:
     case "music": return <MusicView style={style} />;
     case "shape": return <div style={{ ...style, background: e.fill ?? "#ffffff", borderRadius: Math.min(40, Math.max(0, e.size || 4)) }} />;
     case "icon": return <div style={{ ...style, justifyContent: "center" }}><span className="cw-icon" style={{ width: "100%", height: "100%", display: "grid", placeItems: "center" }}><DeckIcon name={e.icon ?? "zap"} size={64} /></span></div>;
+    case "counter": return <CounterView e={e} w={w} style={style} interactive={interactive} />;
+    case "note": return <NoteView e={e} w={w} style={style} interactive={interactive} />;
+    case "until": return <UntilView e={e} w={w} style={style} interactive={interactive} now={now} />;
+    case "conn": return <ConnView e={e} w={w} style={style} interactive={interactive} />;
+    case "battery": return <BatteryView e={e} w={w} style={style} interactive={interactive} />;
+    case "dice": return <DiceView e={e} w={w} style={style} interactive={interactive} />;
     case "timer": return e.display === "pills" ? <TimerPills e={e} style={style} interactive={interactive} /> : <TimerView e={e} style={style} interactive={interactive} />;
   }
 }

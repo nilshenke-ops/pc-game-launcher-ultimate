@@ -18,7 +18,7 @@ import { DECK_ICONS, DeckIcon } from "../components/deck-icons";
 import { CustomWidgetView } from "../components/CustomWidgetView";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Modal, PageHead, Segmented, Switch } from "../components/ui";
 
-const TYPES: ElementType[] = ["text", "clock", "metric", "button", "icon", "timer", "image", "playtime", "nowPlaying", "music", "shape"];
+const TYPES: ElementType[] = ["text", "clock", "metric", "button", "icon", "timer", "counter", "note", "until", "conn", "battery", "dice", "image", "playtime", "nowPlaying", "music", "shape"];
 const ACTIONS: { value: ButtonAction; label: () => string; needsRef?: "quick" | "launch" | "sound" | "profile" }[] = [
   { value: "record", label: () => t("Aufnahme starten/stoppen") },
   { value: "replay", label: () => t("Replay speichern") },
@@ -111,7 +111,7 @@ function RefPicker({ kind, value, onChange }: { kind: "quick" | "launch" | "soun
 
 function ElementProps({ e, set }: { e: WidgetElement; set: (p: Partial<WidgetElement>) => void }) {
   const action = ACTIONS.find((a) => a.value === e.action);
-  const withText = e.type === "text" || e.type === "button" || e.type === "metric" || e.type === "playtime";
+  const withText = e.type === "text" || e.type === "button" || e.type === "metric" || e.type === "playtime" || e.type === "counter" || e.type === "note" || e.type === "until" || e.type === "conn" || e.type === "battery" || e.type === "dice";
   return (
     <div className="stack-sm">
       {withText && (
@@ -199,10 +199,28 @@ function ElementProps({ e, set }: { e: WidgetElement; set: (p: Partial<WidgetEle
           )}
         </>
       )}
+      {e.type === "counter" && (
+        <Switch checked={e.kind !== "up"} onChange={(v) => set({ kind: v ? "updown" : "up" })} label={t("Auch herunterzählen")} hint={t("Zeigt neben + auch −. Der Stand bleibt auf dem Gerät gespeichert, auf dem gezählt wird.")} />
+      )}
+      {e.type === "note" && <p className="tiny muted" style={{ margin: 0 }}>{t("Die Bezeichnung ist der graue Hinweistext. Was du ins Widget tippst, bleibt auf diesem Gerät gespeichert.")}</p>}
+      {e.type === "until" && (
+        <Field label={t("Datum")} hint={t("Am letzten Tag zählt das Widget Stunden und Minuten.")}>
+          <input className="input" type="date" value={(e.ref ?? "").slice(0, 10)} onChange={(x) => set({ ref: x.target.value || null })} />
+        </Field>
+      )}
+      {e.type === "conn" && (
+        <Segmented label={t("Anzeige")} value={(e.kind === "ping" ? "ping" : "status") as "status" | "ping"} onChange={(v) => set({ kind: v })}
+          options={[{ value: "status", label: t("Zustand") }, { value: "ping", label: t("Antwortzeit") }]} />
+      )}
+      {e.type === "battery" && <p className="tiny muted" style={{ margin: 0 }}>{t("Zeigt den Akku des Geräts, auf dem das Widget läuft. iPhone und iPad verraten ihn Webseiten nicht – dort steht das ehrlich da.")}</p>}
+      {e.type === "dice" && (
+        <Segmented label={t("Art")} value={(e.kind === "coin" ? "coin" : "dice") as "dice" | "coin"} onChange={(v) => set({ kind: v })}
+          options={[{ value: "dice", label: t("Würfel") }, { value: "coin", label: t("Münze") }]} />
+      )}
       {e.type === "image" && <ImagePicker label={t("Bild")} value={e.image} onChange={(v) => set({ image: v })} />}
       <div className="grid-2">
         {e.type !== "shape" && e.type !== "image" && <ColorField label={t("Schriftfarbe")} value={e.color} fallback="#ffffff" optional onChange={(v) => set({ color: v })} />}
-        {(e.type === "button" || e.type === "shape" || e.type === "metric") && (
+        {(e.type === "button" || e.type === "shape" || e.type === "metric" || e.type === "counter" || e.type === "note" || e.type === "battery" || e.type === "dice") && (
           <ColorField label={e.type === "metric" ? t("Balken-/Ringfarbe") : t("Füllfarbe")} value={e.fill} fallback="#22d3ee" optional={e.type !== "shape"} onChange={(v) => set({ fill: v })} />
         )}
       </div>

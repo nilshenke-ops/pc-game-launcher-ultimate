@@ -356,9 +356,36 @@ function BottomBar({ items, preview, more, onMore, onEdit }: { items: NavItem[];
   const start = () => { press.current = window.setTimeout(() => { press.current = null; navigator.vibrate?.(20); onEdit(); }, 600); };
   const cancel = () => { if (press.current) { clearTimeout(press.current); press.current = null; } };
   const cols = shown.length + (preview ? 1 : 0) + 1;
+  // One highlight that glides from entry to entry (measured, so it fits every number of entries and every label). A page that is not in the bar
+  // belongs to "Mehr" – so there is always one place lit and the bar says where you are.
+  const loc = useLocation();
+  const inBar = shown.some((i) => (i.path === "/" ? loc.pathname === "/" : loc.pathname === i.path || loc.pathname.startsWith(i.path + "/"))) || (preview && loc.pathname.startsWith("/connect"));
+  const moreOn = more || !inBar;
+  const navRef = useRef<HTMLElement>(null), thumbRef = useRef<HTMLSpanElement>(null);
+  useLayoutEffect(() => {
+    const place = () => {
+      const nav = navRef.current, th = thumbRef.current;
+      if (!nav || !th) return;
+      const act = nav.querySelector<HTMLElement>(".active .bn-icon");
+      if (!act) { th.style.opacity = "0"; return; }
+      // offsets instead of screen rectangles: the bar's own entrance animation must not shift the measurement
+      let x = 0, y = 0;
+      for (let el: HTMLElement | null = act; el && el !== nav; el = el.offsetParent as HTMLElement | null) { x += el.offsetLeft; y += el.offsetTop; }
+      th.style.width = `${act.offsetWidth}px`; th.style.height = `${act.offsetHeight}px`;
+      th.style.transform = `translate(${x}px, ${y}px)`;
+      th.style.opacity = "1";
+      th.style.setProperty("--bn-c", getComputedStyle(act).color);
+      requestAnimationFrame(() => th.classList.add("ready"));
+    };
+    place();
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [loc.pathname, moreOn, cols, prefs.nav.bottom.join(","), prefs.lang]); // eslint-disable-line react-hooks/exhaustive-deps
+  const tap = () => { navigator.vibrate?.(6); };
   return (
-    <nav className="bottom-nav" aria-label={t("Schnellnavigation")} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}
+    <nav ref={navRef} className="bottom-nav has-thumb" aria-label={t("Schnellnavigation")} style={{ gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }} onClick={tap}
       onPointerDown={start} onPointerUp={cancel} onPointerLeave={cancel} onPointerCancel={cancel} onContextMenu={(e) => { e.preventDefault(); cancel(); onEdit(); }}>
+      <span className="bn-thumb" ref={thumbRef} aria-hidden />
       {shown.map((i) => (
         <NavLink key={i.path} to={i.path} end={i.path === "/"} className={({ isActive }) => (isActive ? "active" : "")} style={icStyle(i.path, prefs.nav.colors)}>
           <span className="bn-icon"><i.icon size={22} /></span><span className="bn-label">{i.short ?? i.label}</span>
@@ -369,7 +396,7 @@ function BottomBar({ items, preview, more, onMore, onEdit }: { items: NavItem[];
           <span className="bn-icon"><MonitorSmartphone size={22} /><span className="dot error" aria-hidden /></span><span className="bn-label">{t("Verbinden")}</span>
         </NavLink>
       )}
-      <button type="button" onClick={onMore} className={more ? "active" : ""} aria-expanded={more} aria-haspopup="dialog">
+      <button type="button" onClick={onMore} className={moreOn ? "active" : ""} aria-expanded={more} aria-haspopup="dialog">
         <span className="bn-icon"><Menu size={22} /></span><span className="bn-label">{t("Mehr")}</span>
       </button>
     </nav>

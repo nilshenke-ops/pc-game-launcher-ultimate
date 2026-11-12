@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.54.0 – 2026-11-12
+### Neu
+- **Soundboard am Handy: Lautstärke regeln.** Ohne PC steuert der Regler oben jetzt die Wiedergabe auf diesem Gerät – sofort, auch für laufende Sounds, und er merkt sich den Wert. Funktioniert auch auf iPhone und iPad (dort ignoriert der Browser die normale Lautstärke); eigene Lautstärken über 100 % je Sound wirken ebenfalls. „Alle stoppen“ und die Anzeige „aktiv/Ruhe“ gelten dann für dieses Gerät
+- **Sechs neue Bausteine im Widget-Baukasten:** Zähler (Tode, Siege, Runden – mit +/− und Zurücksetzen), Notizfeld zum Hineintippen, „Tage bis …“ (Datum, am letzten Tag Stunden und Minuten), Verbindung/Ping zum PC, Akku dieses Geräts, Würfel/Münze. Dazu sieben Vorlagen: Tode-Zähler, Siege & Niederlagen, Release-Countdown, Notizzettel, PC-Verbindung, Akku & Uhr, Würfel & Münze
+### Verbessert
+- **Untere Leiste am Handy:** eine Markierung, die weich von Eintrag zu Eintrag gleitet; das aktive Symbol hüpft kurz, die Beschriftung blendet ein, die Einträge erscheinen gestaffelt, Antippen gibt spürbare Rückmeldung. Liegt die offene Seite nicht in der Leiste, leuchtet „Mehr“ – man sieht immer, wo man ist
+### Hinweise
+- Zählerstand und Notiz bleiben auf dem Gerät gespeichert, auf dem sie eingegeben werden. Der Akku-Baustein zeigt auf iPhone und iPad ehrlich „verrät seinen Akkustand nicht“ (der Browser gibt ihn dort nicht heraus). Neue Bausteine brauchen am PC den Begleiter ab 3.54.0
+
 ## 3.53.0 – 2026-11-12
 ### Neu
 - **JARVIS-Insel kann mehr:** PC direkt aus der Insel einschalten (wo „PC einschalten“ eingerichtet ist) oder neu verbinden – auf der PC-Karte der Startseite und als eigene Verbindungskarte im PC-Bereich, mit dem echten Zustand („PC offline – verbindet sich von selbst“, „Cloud nicht erreichbar“, „PC wird gestartet“ …)

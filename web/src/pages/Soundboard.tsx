@@ -9,7 +9,7 @@ const fail = (e: unknown) => toast((e as Error).message, "error");
 import { bytes } from "../lib/format";
 import type { AudioSettings, PlayingState, Sound, SoundCollection, SoundsFile } from "../lib/types";
 import { Banner, Button, Card, confirmDialog, Empty, Field, Loadable, Modal, PageHead, Segmented } from "../components/ui";
-import { playLocal, stopAllLocal, useLocalPlaying } from "../lib/local-sounds";
+import { playLocal, setLocalVolume, stopAllLocal, useLocalPlaying, useLocalVolume } from "../lib/local-sounds";
 import { syncSoundCache, useSoundCache } from "../lib/sound-cache";
 import { addPendingFiles, addPendingUrl, MAX_SOUND_BYTES, previewPending, removePending, retryPending, uploadBytes, usePendingSounds } from "../lib/pending-sounds";
 
@@ -97,9 +97,11 @@ export default function Soundboard() {
   useEffect(() => { if (online && data) void syncSoundCache(data.sounds, new Set(q.data?.missing ?? [])); }, [online, data]); // eslint-disable-line react-hooks/exhaustive-deps
   const play = (s: Sound) => {
     if (online) return client.call("sounds.play", { id: s.id }).catch((e) => toast(e.message, "error"));
-    return playLocal(s, (volume ?? audio.data?.settings.soundboardVolume ?? 80) / 100).then((err) => { if (err) toast(err, "warning"); });
+    return playLocal(s).then((err) => { if (err) toast(err, "warning"); });
   };
-  const vol = volume ?? audio.data?.settings.soundboardVolume ?? 80;
+  // Connected: the slider is the PC's soundboard volume. Without the PC it is the volume of this device's own playback (kept on this device).
+  const deviceVol = useLocalVolume();
+  const vol = online ? volume ?? audio.data?.settings.soundboardVolume ?? 80 : deviceVol;
   const saveVolume = (v: number) => {
     const s = audio.data?.settings;
     if (s) client.call("audio.save", { ...s, soundboardVolume: v }).catch((e) => toast(e.message, "error"));
@@ -113,19 +115,26 @@ export default function Soundboard() {
 
       {q.data && !q.data.supported && <div style={{ marginBottom: 16 }}><Banner kind="warn" title={t("Wiedergabe auf diesem Server nicht möglich")}>{q.data.reason}</Banner></div>}
 
-      {audio.data && <Card className="nowplaying" style={{ marginBottom: 16, padding: 14 }}>
+      {(online ? !!audio.data : (data?.sounds.length ?? 0) > 0) && <Card className="nowplaying" style={{ marginBottom: 16, padding: 14 }}>
         <div className="row">
           <div className="row nowrap grow" style={{ minWidth: 220 }}>
             <Volume2 size={18} className="muted" />
-            <input type="range" min={0} max={100} value={vol} disabled={!canManage} title={canManage ? undefined : t("Lautstärke ändern braucht die Berechtigung „Verwalten“ (am PC unter Geräte).")} onChange={(e) => { const v = +e.target.value; setVolume(v); volTimer.current && window.clearTimeout(volTimer.current); volTimer.current = window.setTimeout(() => saveVolume(v), 120); }} aria-label={t("Lautstärke Soundboard")} />
+            {online
+              ? <input type="range" min={0} max={100} value={vol} disabled={!canManage} title={canManage ? undefined : t("Lautstärke ändern braucht die Berechtigung „Verwalten“ (am PC unter Geräte).")} onChange={(e) => { const v = +e.target.value; setVolume(v); volTimer.current && window.clearTimeout(volTimer.current); volTimer.current = window.setTimeout(() => saveVolume(v), 120); }} aria-label={t("Lautstärke Soundboard")} style={{ flex: 1 }} />
+              : <input type="range" min={0} max={100} value={vol} onChange={(e) => setLocalVolume(+e.target.value)} aria-label={t("Lautstärke auf diesem Gerät")} title={t("Lautstärke auf diesem Gerät")} style={{ flex: 1 }} />}
             <b className="small" style={{ width: 44, textAlign: "right" }}>{vol}%</b>
           </div>
           <div className="row nowrap">
-            {now.playing.length > 0 ? <span className="badge ok"><span className="dot ok pulse" />{t("{n} aktiv", { n: now.playing.length })}{now.queued ? ` · ${t("{n} in Warteschlange", { n: now.queued })}` : ""}</span> : <span className="badge">{t("Ruhe")}</span>}
-            <Button variant="danger" size="sm" icon={<Square size={14} />} disabled={!now.playing.length && !now.queued} onClick={() => client.call("sounds.stopAll").catch(fail)}>{t("Alle stoppen")}</Button>
+            {online
+              ? (now.playing.length > 0 ? <span className="badge ok"><span className="dot ok pulse" />{t("{n} aktiv", { n: now.playing.length })}{now.queued ? ` · ${t("{n} in Warteschlange", { n: now.queued })}` : ""}</span> : <span className="badge">{t("Ruhe")}</span>)
+              : (local.size > 0 ? <span className="badge ok"><span className="dot ok pulse" />{t("{n} aktiv", { n: local.size })}</span> : <span className="badge">{t("Ruhe")}</span>)}
+            {online
+              ? <Button variant="danger" size="sm" icon={<Square size={14} />} disabled={!now.playing.length && !now.queued} onClick={() => client.call("sounds.stopAll").catch(fail)}>{t("Alle stoppen")}</Button>
+              : <Button variant="danger" size="sm" icon={<Square size={14} />} disabled={!local.size} onClick={stopAllLocal}>{t("Alle stoppen")}</Button>}
           </div>
         </div>
-        {now.playing.length > 0 && (
+        {!online && <p className="tiny muted" style={{ margin: "8px 0 0" }}>{t("Ohne PC regelst du hier die Lautstärke auf diesem Gerät. Die Lautstärke am PC bleibt, wie sie ist.")}</p>}
+        {online && now.playing.length > 0 && (
           <div className="row" style={{ marginTop: 10 }}>
             {now.playing.map((p) => (
               <span key={p.playbackId} className="badge info" style={{ gap: 8 }}>

@@ -505,3 +505,42 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 .isl2-card:not(:has(> .isl2-round)) .isl2-big, .isl2-card:not(:has(> .isl2-round)) .isl2-sub { padding-right: 0; }
 /* four home cards on a narrow screen: two by two instead of three and one */
 @media (max-width: 520px) { .isl2-cards:has(> .isl2-card:nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ================================================================ Bottom bar 3.54 – one gliding highlight, livelier icons, clearer state */
+@media (max-width: 899px) {
+  .bottom-nav { padding: 0 6px; border-radius: 24px; background: rgba(var(--surface-rgb), 0.86); box-shadow: 0 14px 34px rgba(0, 0, 0, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.08); }
+  .bottom-nav a, .bottom-nav button { position: relative; z-index: 1; gap: 3px; -webkit-tap-highlight-color: transparent; }
+  .bottom-nav .bn-label { font-size: .66rem; letter-spacing: .01em; opacity: .82; transition: opacity .25s ease, color .25s ease; }
+  .bottom-nav .active .bn-label { opacity: 1; color: var(--text); font-weight: 700; }
+  .bottom-nav a:focus-visible, .bottom-nav button:focus-visible { outline: 2px solid var(--primary); outline-offset: -4px; border-radius: 16px; }
+  /* the highlight: measured by the page (AppShell.tsx) and moved with a transform */
+  .bn-thumb { position: absolute; left: 0; top: 0; width: 54px; height: 30px; border-radius: 15px; opacity: 0; pointer-events: none; z-index: 0;
+    background: color-mix(in srgb, var(--bn-c, var(--primary)) 22%, transparent); box-shadow: 0 0 18px -4px var(--bn-c, var(--primary)), inset 0 0 0 1px color-mix(in srgb, var(--bn-c, var(--primary)) 30%, transparent); }
+  .bn-thumb.ready { transition: transform .55s var(--spr-soft, cubic-bezier(.2, .9, .3, 1.2)), width .4s ease, opacity .25s ease, background-color .3s ease, box-shadow .3s ease; }
+  .bottom-nav.has-thumb .active .bn-icon, .bottom-nav.has-thumb a.active .bn-icon { background: transparent; }
+  html[data-nav-plain] .bn-thumb { box-shadow: none; }
+  :root:not([data-motion="reduce"]) .bottom-nav .active .bn-icon svg { animation: bn-hop .6s var(--spr-bounce, ease-out) backwards; }
+  :root:not([data-motion="reduce"]) .bottom-nav .bn-icon svg { transition: translate .35s var(--spr-soft, ease), scale .35s var(--spr-soft, ease); }
+  :root:not([data-motion="reduce"]) .bottom-nav a:not(.active):active .bn-icon svg, :root:not([data-motion="reduce"]) .bottom-nav button:not(.active):active .bn-icon svg { translate: 0 2px; scale: .9; }
+  :root:not([data-motion="reduce"]) .bottom-nav .active .bn-label { animation: bn-label .45s var(--out-expo, ease-out) backwards; }
+  :root:not([data-motion="reduce"]) .bottom-nav > a, :root:not([data-motion="reduce"]) .bottom-nav > button { animation: bn-item-in .55s var(--out-expo, ease-out) backwards; }
+  :root:not([data-motion="reduce"]) .bottom-nav > :nth-child(3) { animation-delay: 50ms; } :root:not([data-motion="reduce"]) .bottom-nav > :nth-child(4) { animation-delay: 100ms; }
+  :root:not([data-motion="reduce"]) .bottom-nav > :nth-child(5) { animation-delay: 150ms; } :root:not([data-motion="reduce"]) .bottom-nav > :nth-child(n + 6) { animation-delay: 200ms; }
+  :root:not([data-motion="reduce"]) .bottom-nav .connect-item .dot { animation: isl-conn-pulse 1.8s ease-in-out infinite; }
+  [data-motion="reduce"] .bn-thumb.ready { transition: none; }
+}
+@keyframes bn-hop { 0% { translate: 0 6px; scale: .7; } 55% { translate: 0 -3px; scale: 1.12; } 100% { translate: 0 0; scale: 1; } }
+@keyframes bn-label { from { opacity: 0; translate: 0 4px; } }
+@keyframes bn-item-in { from { opacity: 0; translate: 0 10px; } }
+
+/* ================================================================ Widget kit 3.54 – movement of the new building blocks */
+.cw-tap { transition: transform .25s var(--spr-bounce, ease), background-color .2s ease; }
+.cw-tap:active { transform: scale(.85); }
+.cw-note::placeholder { color: inherit; opacity: .5; }
+:root:not([data-motion="reduce"]) .cw-pop { display: inline-block; animation: cw-pop .35s var(--spr-bounce, ease-out); }
+@keyframes cw-pop { from { scale: 1.35; } }
+:root:not([data-motion="reduce"]) .cw-blink { animation: isl-conn-pulse 1.6s ease-in-out infinite; }
+:root:not([data-motion="reduce"]) .cw-roll { animation: cw-roll .6s var(--spr-soft, ease-out); }
+@keyframes cw-roll { 0% { rotate: -200deg; scale: .6; } 70% { rotate: 12deg; scale: 1.08; } 100% { rotate: 0deg; scale: 1; } }
+:root:not([data-motion="reduce"]) .cw-flip { animation: cw-flip .7s ease-out; }
+@keyframes cw-flip { 0% { transform: translateY(0) rotateX(0); } 45% { transform: translateY(-40%) rotateX(900deg); } 100% { transform: translateY(0) rotateX(1440deg); } }
