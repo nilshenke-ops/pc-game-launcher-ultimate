@@ -4,6 +4,16 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.53.0 – 2026-11-12
+### Neu
+- **JARVIS-Insel kann mehr:** PC direkt aus der Insel einschalten (wo „PC einschalten“ eingerichtet ist) oder neu verbinden – auf der PC-Karte der Startseite und als eigene Verbindungskarte im PC-Bereich, mit dem echten Zustand („PC offline – verbindet sich von selbst“, „Cloud nicht erreichbar“, „PC wird gestartet“ …)
+- Laufenden Timer anpassen: +1, +5, +10 und −1 Minute (zwischen 1 Minute und 3 Stunden), auch in der Pause
+- Tastatur am PC: 1–9 öffnet einen Bereich, ← und → wechseln zum Nachbarn (nicht während des Tippens)
+- JARVIS-Antwort mit einem Tipp kopieren
+### Verbessert
+- Insel übersichtlicher: Texte auf den Startkarten werden nicht mehr abgeschnitten (zwei Zeilen), vier Karten stehen auf dem Handy 2×2 statt 3+1, „Meldungen“ mit klaren Leerzuständen und Abschnitten, KI-Auswahl in einer wischbaren Zeile, Nachrichtenfeld lässt Platz für seine Knöpfe, im PC-Bereich keine Lücke neben einer einzelnen Karte
+- Mehr Bewegung: Leerzustände und Verbindungskarte blenden weich ein, Meldungen rücken gestaffelt nach, die Offline-Anzeige pulsiert ruhig, das Verbindungsbanner der Seiten gleitet herein – alles aus mit „Animationen reduzieren“
+
 ## 3.52.0 – 2026-11-12
 ### Neu
 - **Einmal anmelden – der PC wird von selbst gefunden.** Der Begleiter hält jetzt von sich aus eine Verbindung zur Cloud deines JARVIS-Kontos (ausgehend, keine Portfreigabe, kein Tailscale nötig). Jedes Gerät, das im selben Konto angemeldet ist, erreicht den PC darüber – zu Hause und unterwegs, ohne QR-Code, ohne Verbindungscode, ohne erneutes Anmelden

@@ -6,17 +6,19 @@ import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocit
 import { flushSync } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
+import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
+import { connView } from "../lib/conn-state";
+import { sendWake, useWake, wakeLabel } from "../lib/wake";
 import { useIslandLook } from "../lib/island-look";
 import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
 import { clock, islandAnswer, islandState, islandBusy, islandPet, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
 import { asksForSource } from "../lib/answer-text";
 import type { AssistantAction } from "../lib/assistant";
-import { countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, useTimer } from "../lib/island-timer";
+import { addCountdown, countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, useTimer } from "../lib/island-timer";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { nowPosition, nowSub, songTime, useNowPlaying } from "../lib/now-playing";
 import { accentOfCover } from "../lib/cover-accent";
@@ -84,6 +86,12 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const canMedia = useCan("launch");
   const canSound = useCan("soundboard");
   const online = conn.auth === "ok" && conn.phase === "online";
+  // The real state of the connection in words (lib/conn-state.ts), and the wake signal for a PC that is off (lib/wake.ts, only where it is set up).
+  const cview = connView(conn, { hasCredentials: !!client.credentials });
+  const wake = useWake();
+  const waking = wake.phase === "sending" || wake.phase === "sent" || wake.phase === "booting" || wake.phase === "connecting";
+  const pcLine = online ? (conn.via === "cloud" ? t("über die Cloud") : t("PC bereit")) : waking ? wakeLabel(wake, false, true).text : cview.label;
+  const [copied, setCopied] = useState(false);
   const np = useNowPlaying();
   const tm = useTimer();
   const game = mainGame(app?.running);
@@ -321,6 +329,17 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     idle.current = 0; askedAt.current = 0; setConversation(true);
   };
   const submit = (e: FormEvent) => { e.preventDefault(); void send(q); };
+  // Keyboard on the PC: 1–9 open an area, ← and → go to its neighbours – never while something is being typed.
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (e.ctrlKey || e.metaKey || e.altKey || !el || el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+      if (/^[1-9]$/.test(e.key)) { const to = tabs[Number(e.key) - 1]; if (to) { e.preventDefault(); void goTabRef.current(to); } }
+      else if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const to = tabs[tabs.indexOf(tabRef.current) + (e.key === "ArrowRight" ? 1 : -1)]; if (to) { e.preventDefault(); void goTabRef.current(to); } }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [tabs.join(",")]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Escape closes the "⋯" menu first, then the island.
   const menuRef = useRef<HTMLDivElement>(null);
@@ -388,7 +407,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           <button type="button" className="isl2-ctitle" onClick={() => setTab("music")}>{t("Musik")}</button>
           {!musicFilled && <span className="isl2-art" aria-hidden>{cover}</span>}
           {playing && <Bars level={0.4} />}
-          <b className="isl2-big ellipsis" title={np?.title}>{np?.active ? np.title : t("Nichts")}</b>
+          <b className="isl2-big ellipsis" title={np?.title}>{np?.active ? np.title : t("Stille")}</b>
           <span className="isl2-sub ellipsis">{np?.active ? nowSub(np) : online ? t("Gerade läuft nichts") : t("PC nicht verbunden")}</span>
           {pos && <span className="isl2-prog" aria-hidden><i style={{ transform: `scaleX(${pos.ratio})` }} /></span>}
           <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("playpause")} aria-label={t("Wiedergabe/Pause")}>{playing ? <Pause size={16} /> : <Play size={16} />}</button>
@@ -408,8 +427,11 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         <div className={`isl2-card pc ${online ? "on" : "off"}`}>
           <button type="button" className="isl2-ctitle" onClick={() => setTab("pc")}>{t("PC")}</button>
           <span className="isl2-art" aria-hidden><Monitor size={22} /></span>
-          <b className="isl2-big">{online ? t("Verbunden") : t("Offline")}</b>
-          <span className="isl2-sub ellipsis">{online ? t("PC bereit") : t("PC nicht erreichbar")}</span>
+          <b className="isl2-big">{online ? t("Verbunden") : waking ? t("Startet …") : cview.short}</b>
+          <span className="isl2-sub">{pcLine}</span>
+          {!online && (wake.configured
+            ? <button type="button" className={`isl2-round${waking ? " busy" : ""}`} disabled={waking} onClick={() => void sendWake()} aria-label={t("PC einschalten")} title={t("PC einschalten")}><Power size={16} /></button>
+            : conn.cloudLink !== "waiting" && <button type="button" className="isl2-round" onClick={() => client.reconnectNow()} aria-label={t("Jetzt verbinden")} title={t("Jetzt verbinden")}><RefreshCw size={16} /></button>)}
         </div>
       )}
     </div>
@@ -504,6 +526,12 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
             </div>
           )}
         </div>
+        {view && (
+          <div className="isl2-tchips more" role="group" aria-label={t("Zeit anpassen")}>
+            {[1, 5, 10].map((m) => <button key={m} type="button" className="isl2-chip" onClick={() => addCountdown(m)}>+{m} min</button>)}
+            <button type="button" className="isl2-chip" onClick={() => addCountdown(-1)} aria-label={t("Eine Minute weniger")}>−1 min</button>
+          </div>
+        )}
         {!view && (
           <>
             <div className="isl2-tchips">
@@ -528,7 +556,11 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const jarvisTab = (
     <div className="isl2-chat">
       <div className="isl2-answer">
-        <span className="badge">{t(MOOD_LABEL[mood])}</span>
+        <div className="isl2-ahead">
+          <span className="badge">{t(MOOD_LABEL[mood])}</span>
+          {s.last && <button type="button" className="isl2-copy" aria-label={t("Antwort kopieren")} title={t("Antwort kopieren")}
+            onClick={() => { void navigator.clipboard?.writeText(s.last!.text).then(() => { setCopied(true); window.setTimeout(() => setCopied(false), 1400); }, () => toast(t("Kopieren nicht möglich"), "error")); }}>{copied ? <Check size={14} /> : <Copy size={14} />}</button>}
+        </div>
         <p className="isl-last">{s.last ? s.last.text : t("Noch nichts gefragt.")}</p>
       </div>
       {pendingFree && (
@@ -599,15 +631,15 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const inboxTab = (
     <div className="isl2-inbox">
       <div className="isl2-hhead"><b>{t("Verlauf")}</b>{hist.length > 0 && <button type="button" className="isl2-chip" onClick={clearIslandHistory} aria-label={t("Verlauf leeren")}><Trash2 size={13} /></button>}</div>
-      {hist.length === 0 ? <p className="isl2-sub">{t("Noch nichts passiert.")}</p> : hist.slice(0, 8).map((h) => (
+      {hist.length === 0 ? <div className="isl2-empty"><History size={18} aria-hidden /><span>{t("Noch nichts passiert.")}</span></div> : hist.slice(0, 8).map((h) => (
         <div key={h.id} className="isl2-note">
           <span className={`dot ${dot(h.level)}`} />
           <div className="isl2-ntext"><b className="ellipsis">{h.text}</b><span className="tiny muted">{relTime(h.at)}</span></div>
         </div>
       ))}
       <div className="isl2-hhead"><b>{t("Meldungen des PCs")}</b></div>
-      {!online ? <p className="isl2-sub">{t("PC nicht verbunden")}</p>
-        : !inbox.loading && !list.length ? <p className="isl2-sub">{t("Keine offenen Meldungen.")}</p>
+      {!online ? <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{pcLine}</span></div>
+        : !inbox.loading && !list.length ? <div className="isl2-empty ok"><BellOff size={18} aria-hidden /><span>{t("Keine offenen Meldungen.")}</span></div>
         : list.map((n) => (
           <div key={n.id} className="isl2-note">
             <span className={`dot ${n.severity === "error" ? "error" : n.severity === "warning" ? "warn" : "ok"}`} />
@@ -619,6 +651,19 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
 
   const pcTab = (
     <div className="isl-grid">
+      {!online && (
+        <div className={`isl-card isl2-conn ${cview.tone}`} role="status">
+          <span className="isl-ic"><Monitor size={18} /></span>
+          <div className="isl-main">
+            <b>{waking ? wakeLabel(wake, false, true).text : cview.short}</b>
+            <span className="tiny muted">{waking ? t("Das dauert meist ein bis zwei Minuten – die Insel verbindet sich danach von selbst.") : cview.label}</span>
+          </div>
+          <div className="isl2-connbtns">
+            {wake.configured && <button type="button" className="isl2-chip accent" disabled={waking} onClick={() => void sendWake()}><Power size={14} /> {waking ? t("Wird gestartet …") : t("PC einschalten")}</button>}
+            {conn.cloudLink !== "waiting" && !waking && <button type="button" className="isl2-chip" onClick={() => client.reconnectNow()}><RefreshCw size={14} /> {t("Jetzt verbinden")}</button>}
+          </div>
+        </div>
+      )}
       {has("game") && (
         <div className="isl-card">
           <div className="isl-main">
@@ -683,7 +728,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         {tabs.map((id) => {
           const m = TAB_META[id], on = id === current;
           return (
-            <button key={id} type="button" role="tab" id={`isl2-tab-${id}`} aria-selected={on} aria-controls="isl2-panel" aria-label={t(m.label)} title={t(m.label)}
+            <button key={id} type="button" role="tab" id={`isl2-tab-${id}`} aria-selected={on} aria-controls="isl2-panel" aria-label={t(m.label)} title={`${t(m.label)} (${tabs.indexOf(id) + 1})`}
               className={`isl2-tab${on ? " on" : ""}`} onClick={() => { if (id !== current) void goTab(id); }}><m.icon size={17} />{on && <span>{t(m.label)}</span>}</button>
           );
         })}

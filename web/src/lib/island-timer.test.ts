@@ -72,3 +72,23 @@ describe("Insel-Timer", () => {
     expect(playTime("kaputt", T0)).toBeNull();
   });
 });
+
+describe("Zeit anpassen (addCountdown)", () => {
+  it("verlängert den laufenden Timer und bleibt zwischen 1 min und 3 h", async () => {
+    const tm = await import("./island-timer");
+    tm.resetTimers(); tm.startCountdown(5, 0);
+    tm.addCountdown(5, 60_000);
+    expect(tm.timerState().end).toBe(60_000 + 9 * 60_000);
+    tm.addCountdown(-60, 60_000);
+    expect(tm.timerState().end).toBe(60_000 + 60_000);
+    tm.addCountdown(999, 60_000);
+    expect(tm.timerState().end).toBe(60_000 + 180 * 60_000);
+  });
+  it("wirkt auch im pausierten Zustand und tut ohne Timer nichts", async () => {
+    const tm = await import("./island-timer");
+    tm.resetTimers(); tm.addCountdown(5, 0); expect(tm.timerLive(tm.timerState())).toBe(false);
+    tm.startCountdown(10, 0); tm.pauseCountdown(120_000); tm.addCountdown(1, 500_000);
+    expect(tm.timerState().pausedLeft).toBe(9 * 60_000);
+    tm.resetTimers();
+  });
+});

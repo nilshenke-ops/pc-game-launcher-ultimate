@@ -439,8 +439,69 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 .isl2-menu { min-width: 300px; max-width: calc(100vw - 24px); background: #131822; -webkit-backdrop-filter: none; backdrop-filter: none; }
 .isl2 .isl-grid { gap: 8px; }
 .isl2 .isl-grid > .isl-card { padding: 10px 12px; }
-.isl2 .isl-grid > .isl-card:not(.isl-stats):nth-child(odd):has(+ .isl-stats), .isl2 .isl-grid > .isl-card:not(.isl-stats):nth-child(odd):last-child { grid-column: 1 / -1; }
+.isl2 .isl-grid > .isl-card:not(.isl-stats):nth-child(odd of :not(.isl2-conn)):has(+ .isl-stats), .isl2 .isl-grid > .isl-card:not(.isl-stats):nth-child(odd of :not(.isl2-conn)):last-child { grid-column: 1 / -1; }
 .isl2 .isl-grid > .isl-stats { padding: 10px 14px; }
 /* the menu lies above the cards below the header (every part of the island is its own layer while it opens) */
 .isl2-head { position: relative; z-index: 5; }
 .isl2-menu { min-width: 336px; }
+
+/* ================================================================ Island 3.53 – clearer, more capable (all devices)
+   Home cards show their whole line, empty areas say so with a symbol, the JARVIS area is calmer, the PC area tells the real connection state. */
+.isl2-card .isl2-sub, .isl2-card .isl2-sub.ellipsis { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; line-height: 1.25; }
+.isl2-card .isl2-big { letter-spacing: -.01em; }
+.isl2-card.pc.off { --tint: rgba(232, 160, 58, 0.34); }
+.isl2-card.pc.on { --tint: rgba(58, 190, 120, 0.42); }
+.isl2-round.busy { animation: wake-spin 1.2s linear infinite; }
+@keyframes wake-spin { to { transform: rotate(360deg); } }
+/* empty areas */
+.isl2-empty { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 16px; font-size: .8rem; color: inherit; opacity: .8;
+  border: 1px dashed color-mix(in srgb, currentColor 18%, transparent); background: color-mix(in srgb, currentColor 3%, transparent); }
+.isl2-empty svg { flex: none; opacity: .75; }
+.isl2-empty.ok svg { color: var(--isl-c, #9ef0c8); opacity: 1; }
+.isl2-inbox { gap: 8px; }
+.isl2-inbox .isl2-hhead { margin-top: 6px; font-size: .72rem; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.isl2-note { border-radius: 16px; border: 1px solid color-mix(in srgb, currentColor 8%, transparent); }
+/* JARVIS: the answer card with its own header, engines in one row that can be swiped, a short hint */
+.isl2-ahead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.isl2-copy { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 10px; border: 0; cursor: pointer; color: inherit; background: color-mix(in srgb, currentColor 10%, transparent); transition: background .2s ease, transform .3s var(--spr-bounce, ease); }
+.isl2-copy:hover { background: color-mix(in srgb, currentColor 20%, transparent); }
+.isl2-copy:active { transform: scale(.88); }
+.isl2-copy:focus-visible { outline: 2px solid var(--isl-ring, #9ef0c8); outline-offset: 2px; }
+.isl2-answer { border-radius: 20px; border: 1px solid color-mix(in srgb, currentColor 9%, transparent); }
+.isl2-engines { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.isl2-engines::-webkit-scrollbar { display: none; }
+.isl2-engines > * { flex: none; }
+.isl2-chat .isl2-tip.muted { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; margin: 0; }
+/* Apps: the message field leaves room for its buttons */
+.isl2-apps textarea { min-height: 56px; height: 56px; }
+/* PC area: the connection card across the row, timer chips for "more time" */
+.isl2 .isl-grid > .isl2-conn { grid-column: 1 / -1; flex-wrap: wrap; }
+.isl2-conn.error .isl-ic { color: #ff8a8a; } .isl2-conn.warn .isl-ic { color: #ffc860; }
+.isl2-connbtns { display: flex; gap: 6px; flex-wrap: wrap; margin-left: auto; }
+.isl2-tchips.more .isl2-chip { font-variant-numeric: tabular-nums; }
+
+/* ---- movement for the above (not with "Animationen reduzieren") */
+:root:not([data-motion="reduce"]) .isl2-empty { animation: isl-empty-in .5s var(--out-expo, ease-out) backwards; }
+:root:not([data-motion="reduce"]) .isl2-empty svg { animation: isl-empty-float 3.4s ease-in-out infinite; }
+@keyframes isl-empty-in { from { opacity: 0; translate: 0 8px; } }
+@keyframes isl-empty-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
+:root:not([data-motion="reduce"]) .isl2-inbox .isl2-note { animation: isl-note-in .45s var(--out-expo, ease-out) backwards; }
+:root:not([data-motion="reduce"]) .isl2-inbox .isl2-note:nth-child(3) { animation-delay: 40ms; } :root:not([data-motion="reduce"]) .isl2-inbox .isl2-note:nth-child(4) { animation-delay: 80ms; }
+:root:not([data-motion="reduce"]) .isl2-inbox .isl2-note:nth-child(n + 5) { animation-delay: 120ms; }
+@keyframes isl-note-in { from { opacity: 0; translate: -10px 0; } }
+:root:not([data-motion="reduce"]) .isl2-copy svg { animation: isl-copy-pop .4s var(--spr-bounce, ease-out); }
+@keyframes isl-copy-pop { from { scale: .4; rotate: -30deg; } }
+:root:not([data-motion="reduce"]) .isl2-conn { animation: isl-empty-in .5s var(--out-expo, ease-out) backwards; }
+:root:not([data-motion="reduce"]) .isl2-conn.warn .isl-ic, :root:not([data-motion="reduce"]) .isl2-conn.error .isl-ic { animation: isl-conn-pulse 2.2s ease-in-out infinite; }
+@keyframes isl-conn-pulse { 50% { opacity: .5; scale: .92; } }
+:root:not([data-motion="reduce"]) .isl2-card.pc.off .isl2-art { animation: isl-conn-pulse 2.6s ease-in-out infinite; }
+/* the time jumps a little when minutes are added */
+:root:not([data-motion="reduce"]) .isl2-tchips.more .isl2-chip:active { transform: scale(.88); }
+/* the connection banner of the pages glides in instead of appearing */
+:root:not([data-motion="reduce"]) .status-strip { animation: strip-in .5s var(--out-expo, ease-out) backwards; }
+@keyframes strip-in { from { opacity: 0; translate: 0 -10px; } }
+:root:not([data-motion="reduce"]) .status-strip .dot.warn, :root:not([data-motion="reduce"]) .status-strip .dot.error { animation: isl-conn-pulse 2s ease-in-out infinite; }
+/* only cards with a round button keep room for it on the right */
+.isl2-card:not(:has(> .isl2-round)) .isl2-big, .isl2-card:not(:has(> .isl2-round)) .isl2-sub { padding-right: 0; }
+/* four home cards on a narrow screen: two by two instead of three and one */
+@media (max-width: 520px) { .isl2-cards:has(> .isl2-card:nth-child(4):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

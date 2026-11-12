@@ -7241,4 +7241,9 @@ export const en: Record<string, string> = {
   "über die Cloud": "through the cloud",
   "Cloud nicht erreichbar – neuer Versuch läuft": "Cloud not reachable – trying again",
   "Cloud offline": "Cloud offline",
+  "Stille": "Silence",
+  "Startet …": "Starting …",
+  "Das dauert meist ein bis zwei Minuten – die Insel verbindet sich danach von selbst.": "This usually takes one to two minutes – the island connects by itself afterwards.",
+  "Zeit anpassen": "Adjust time",
+  "Eine Minute weniger": "One minute less",
 };

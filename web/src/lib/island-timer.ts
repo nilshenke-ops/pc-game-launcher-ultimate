@@ -41,6 +41,13 @@ export function stopCountdown() { set({ ...state, end: null, total: 0, pomo: nul
 export function pauseCountdown(now = Date.now()) { if (state.end != null) set({ ...state, end: null, pausedLeft: Math.max(0, state.end - now) }); }
 export function resumeCountdown(now = Date.now()) { if (state.pausedLeft != null) set({ ...state, end: now + state.pausedLeft, pausedLeft: null }); }
 
+/** More (or less) time for the running or paused countdown – at least one minute stays, at most three hours. The progress ring keeps its meaning. */
+export function addCountdown(minutes: number, now = Date.now()) {
+  const add = Math.round(minutes) * 60_000, clampLeft = (ms: number) => Math.min(180 * 60_000, Math.max(60_000, ms));
+  if (state.end != null) { const left = clampLeft(state.end - now + add); set({ ...state, end: now + left, total: Math.max(state.total + add, left) }); }
+  else if (state.pausedLeft != null) { const left = clampLeft(state.pausedLeft + add); set({ ...state, pausedLeft: left, total: Math.max(state.total + add, left) }); }
+}
+
 /** Called by the island's clock: when the countdown has run out it ends (or moves to the next Pomodoro phase) and says what happened. */
 export function advanceTimer(now = Date.now()): TimerEvent | null {
   if (state.end == null || now < state.end) return null;
