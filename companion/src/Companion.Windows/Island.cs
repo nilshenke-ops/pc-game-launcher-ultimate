@@ -64,7 +64,7 @@ sealed class IslandForm : Form
     [DllImport("user32.dll")] static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool redraw);
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
     const int WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000, WS_EX_TOPMOST = 0x8;
-    const uint SWP_NOACTIVATE = 0x10, SWP_SHOWWINDOW = 0x40;
+    const uint SWP_NOSIZE = 0x1, SWP_NOZORDER = 0x4, SWP_NOACTIVATE = 0x10, SWP_SHOWWINDOW = 0x40;
     static readonly IntPtr HWND_TOPMOST = new(-1);
 
     /// <summary>
@@ -83,6 +83,10 @@ sealed class IslandForm : Form
     string _position = "center";
     // The shape the page reported last (device pixels): width, height, corner radius.
     int _curW, _curH, _curR;
+    // Moving to another place at the top edge (left, centre, right): the island glides there instead of jumping.
+    const int GlideMs = 560;
+    readonly System.Windows.Forms.Timer _glide = new() { Interval = 10 };
+    int _glideFrom, _glideTo; long _glideStart;
 
     public IslandForm(CoreWebView2Environment env, string origin, string token)
     {
@@ -94,6 +98,21 @@ sealed class IslandForm : Form
         StartPosition = FormStartPosition.Manual;
         BackColor = Color.FromArgb(7, 9, 13);
         Controls.Add(_web);
+        _glide.Tick += (_, _) => GlideStep();
+    }
+
+    /// <summary>Where the visible island starts inside the window (device pixels) for a place and an island width.</summary>
+    static int ShapeOffset(string position, int w, int windowW) => position == "left" ? 0 : position == "right" ? windowW - w : (windowW - w) / 2;
+
+    /// <summary>One frame of the glide: ease in and out (cubic), the last frame lands exactly on the target.</summary>
+    void GlideStep()
+    {
+        if (!IsHandleCreated || !Visible) { _glide.Stop(); return; }
+        var t = Math.Clamp((Environment.TickCount64 - _glideStart) / (double)GlideMs, 0, 1);
+        var k = t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
+        var x = t >= 1 ? _glideTo : _glideFrom + (int)Math.Round((_glideTo - _glideFrom) * k);
+        SetWindowPos(Handle, IntPtr.Zero, x, Top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        if (t >= 1) _glide.Stop();
     }
 
     /// <summary>Not in Alt+Tab, never activated by showing or resizing (the game keeps the focus).</summary>
@@ -108,7 +127,7 @@ sealed class IslandForm : Form
     void Shape(int w, int h, int radius, int windowW)
     {
         w = Math.Max(1, Math.Min(w, windowW)); h = Math.Max(1, Math.Min(h, Height));
-        var off = _position == "left" ? 0 : _position == "right" ? windowW - w : (windowW - w) / 2;
+        var off = ShapeOffset(_position, w, windowW);
         var rgn = CreateRoundRectRgn(off, -radius, off + w + 1, h + 1, radius * 2, radius * 2);
         if (!IsHandleCreated || SetWindowRgn(Handle, rgn, false) == 0) DeleteObject(rgn);   // not applied: free it ourselves (applied: the system frees it)
         _curW = w; _curH = h; _curR = radius;
@@ -116,6 +135,7 @@ sealed class IslandForm : Form
 
     void Place()
     {
+        _glide.Stop();
         var screen = Screen.PrimaryScreen!.Bounds;
         var w = LogicalToDeviceUnits(WindowW);
         var h = LogicalToDeviceUnits(WindowH);
@@ -131,8 +151,20 @@ sealed class IslandForm : Form
     {
         Opacity = Math.Clamp(opacityPercent, 50, 100) / 100.0;
         if (_position == position) return;
+        var before = _position;
         _position = position;
-        if (Visible) Place();
+        if (!Visible) return;
+        if (_curW == 0 || !IsHandleCreated) { Place(); return; }
+        // The island inside the window hangs left, centred or right. The cut-out changes to the new place at once and the window is put
+        // where the island stays exactly where it was on the screen – from there the whole window glides to its new place.
+        var screen = Screen.PrimaryScreen!.Bounds;
+        var onScreen = Left + ShapeOffset(before, _curW, Width);
+        Shape(_curW, _curH, _curR, Width);
+        _glideFrom = onScreen - ShapeOffset(_position, _curW, Width);
+        _glideTo = TargetX(Width, screen);
+        SetWindowPos(Handle, IntPtr.Zero, _glideFrom, Top, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+        _glideStart = Environment.TickCount64;
+        _glide.Start();
     }
 
     public async void ShowIsland()
@@ -219,7 +251,7 @@ sealed class IslandForm : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) { _web.Dispose(); }
+        if (disposing) { _glide.Dispose(); _web.Dispose(); }
         base.Dispose(disposing);
     }
 }

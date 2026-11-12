@@ -263,3 +263,184 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 .wake-checks li svg { flex: none; margin-top: 3px; }
 .wake-checks li.ok svg { color: var(--success, #34d399); } .wake-checks li.bad svg { color: var(--danger, #f87171); } .wake-checks li.unknown svg { color: var(--muted); }
 .wake-checks li small { display: block; color: var(--muted); font-size: .8rem; margin-top: 2px; }
+
+/* ================================================================ Island cleanup (3.51) – all devices
+   One card language (same corner radius, border and soft gradient everywhere), a tidy timer, a menu in the same style, thin scroll bars. */
+.isl2 .isl-card, .isl2-tcard, .isl2-card, .isl2-act {
+  border-radius: 20px; border: 1px solid color-mix(in srgb, currentColor 10%, transparent); box-shadow: inset 0 1px 0 color-mix(in srgb, currentColor 7%, transparent);
+}
+.isl2 .isl-card { background: linear-gradient(165deg, color-mix(in srgb, currentColor 8%, transparent), color-mix(in srgb, currentColor 3.5%, transparent)); }
+.isl2 .isl-ic { border-radius: 12px; background: color-mix(in srgb, var(--isl-c, #9ef0c8) 16%, color-mix(in srgb, currentColor 5%, transparent)); }
+.isl2 .isl-big { font-weight: 700; letter-spacing: -.01em; }
+.isl2 .isl-stats { padding: 12px 14px; gap: 14px; }
+.isl2 .isl-stat { gap: 3px; padding-bottom: 10px; }
+.isl2 .isl-stat b { font-size: 1.02rem; font-variant-numeric: tabular-nums; }
+.isl2 .isl-stat::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 4px; border-radius: 4px; background: color-mix(in srgb, currentColor 11%, transparent); }
+.isl2 .isl-stat i { height: 4px; border-radius: 4px; z-index: 1; opacity: 1; }
+.isl2-tabs { border-radius: 20px; }
+.isl2-tab, .isl2-thumb { border-radius: 15px; }
+.isl2, .isl2 * { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, currentColor 24%, transparent) transparent; }
+.isl2 ::-webkit-scrollbar { width: 6px; height: 6px; }
+.isl2 ::-webkit-scrollbar-track { background: transparent; }
+.isl2 ::-webkit-scrollbar-thumb { border-radius: 6px; background: color-mix(in srgb, currentColor 22%, transparent); }
+
+/* the timer: ring and time on top, the four lengths in one even row, Pomodoro and "own minutes" as one line below */
+.isl2-tcard { flex-direction: column; align-items: stretch; gap: 10px; padding: 12px; background: linear-gradient(165deg, color-mix(in srgb, currentColor 6%, transparent), rgba(148, 84, 226, 0.4)); }
+.isl2-thead { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.isl2-tcard .isl2-ring { width: 64px; height: 64px; }
+.isl2-tcard .isl2-ttext { gap: 2px; flex: 1; }
+.isl2-tcard .isl2-ttext .isl2-time { font-size: 2rem; letter-spacing: -.02em; }
+.isl2-trun { display: flex; align-items: center; gap: 8px; flex: none; }
+.isl2-tchips { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.isl2-trow { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.isl2-tchips .isl2-chip, .isl2-trow .isl2-chip { justify-content: center; height: 32px; border-radius: 12px; padding: 0 10px; white-space: nowrap; }
+.isl2-chip.accent { background: color-mix(in srgb, var(--isl-c, #9ef0c8) 30%, color-mix(in srgb, currentColor 10%, transparent)); }
+.isl2-custom { flex: 1; min-width: 0; gap: 0; height: 32px; border-radius: 12px; overflow: hidden; background: color-mix(in srgb, currentColor 10%, transparent); border: 1px solid color-mix(in srgb, currentColor 12%, transparent); transition: border-color .2s ease; }
+.isl2-custom:focus-within { border-color: var(--isl-c, #9ef0c8); }
+.isl2-custom .input { flex: 1; min-width: 0; width: auto; height: 100%; border: 0; border-radius: 0; background: none; box-shadow: none; outline: none; padding: 0 10px; font-size: .78rem; color: inherit; }
+.isl2-custom .input::placeholder { color: inherit; opacity: .55; }
+.isl2-custom .isl2-chip { height: 100%; border-radius: 0; padding: 0 12px; background: color-mix(in srgb, currentColor 14%, transparent); }
+
+/* the "…" menu: a card like the others, every entry with its symbol, a real switch for the sound */
+.isl2-menu { top: 36px; min-width: 252px; display: grid; gap: 2px; padding: 6px; border-radius: 20px; background: rgba(16, 20, 29, 0.9); color: #e8edf6;
+  border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 22px 48px -14px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(22px) saturate(1.4); backdrop-filter: blur(22px) saturate(1.4); }
+.isl2-mi { gap: 10px; min-height: 40px; padding: 6px 10px 6px 6px; border-radius: 14px; font-weight: 600; box-sizing: border-box; transition: background .18s ease; }
+.isl2-mi:hover, .isl2-mi:focus-visible { background: rgba(255, 255, 255, 0.1); outline: none; }
+.isl2-mii { width: 28px; height: 28px; flex: none; display: grid; place-items: center; border-radius: 10px; background: rgba(255, 255, 255, 0.09); color: var(--isl-c, #9ef0c8); }
+.isl2-mit { flex: 1; min-width: 0; }
+.isl2-msep { height: 1px; margin: 3px 10px; background: rgba(255, 255, 255, 0.1); }
+.isl2-menu input.isl2-switch { appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 34px; height: 20px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 20px; background: rgba(255, 255, 255, 0.22); cursor: pointer; transition: background .25s ease; }
+.isl2-menu input.isl2-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); transition: transform .35s var(--spr-bounce, ease); }
+.isl2-menu input.isl2-switch:checked { background: var(--isl-c, #9ef0c8); }
+.isl2-menu input.isl2-switch:checked::after { transform: translateX(14px); }
+.isl2-menu input.isl2-switch:focus-visible { outline: 2px solid var(--isl-ring, #9ef0c8); outline-offset: 2px; }
+.isl2-menu.closing { opacity: 0; pointer-events: none; }
+:root:not([data-motion="reduce"]) .isl2-menu.closing { opacity: 1; animation: menu-out .18s ease-in forwards; }
+@keyframes menu-out { to { opacity: 0; transform: scale(.78) translateY(-8px); } }
+
+/* ================================================================ PC island (3.51): much more movement – only on the PC
+   .pc is set by the page for the island's own window on the PC screen and for a browser with a mouse on a wide screen (jarvis-island.tsx).
+   Phones and tablets never get this class, so their animations stay exactly as they were. Only transform-like properties, opacity and filter. */
+
+/* ---- eyes: small things they do from time to time (the page sets data-emote for a moment). They are added to the running eye animations
+   as a third one through a variable, so blinking and looking around go on underneath and nothing restarts when the emote ends. */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-eyes.m-idle i { animation: eye-reopen .6s var(--out-expo) .62s backwards, eye-life 11s ease-in-out 1.4s infinite, var(--eye-emote, none); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-eyes.m-idle i:last-child { animation-delay: .66s, 1.43s, 0s; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open .isl2-wrap .isl-eyes.m-idle i { animation: eye-wake 1.1s var(--out-expo) .2s backwards, isl-blink 6s 2s infinite, var(--eye-emote, none); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open .isl2-wrap .isl-eyes.m-idle i:last-child { animation-delay: .26s, 2s, 0s; }
+.isl-host.pc[data-emote="wink"] .isl-eyes i:last-child { --eye-emote: pc-wink .9s ease-in-out; }
+.isl-host.pc[data-emote="wink"] .isl-eyes i:first-child { --eye-emote: pc-wide .9s ease-in-out; }
+.isl-host.pc[data-emote="wide"] .isl-eyes i { --eye-emote: pc-wide .7s var(--out-expo); }
+.isl-host.pc[data-emote="look-left"] .isl-eyes i { --eye-emote: pc-look-l 1.3s var(--out-expo); }
+.isl-host.pc[data-emote="look-right"] .isl-eyes i { --eye-emote: pc-look-r 1.3s var(--out-expo); }
+.isl-host.pc[data-emote="roll"] .isl-eyes i { --eye-emote: pc-roll 1.4s ease-in-out; }
+.isl-host.pc[data-emote="squint"] .isl-eyes i { --eye-emote: pc-squint 1.4s ease-in-out; }
+.isl-host.pc[data-emote="hop"] .isl-eyes i { --eye-emote: pc-hop .9s var(--out-expo); }
+.isl-host.pc[data-emote="hop"] .isl-eyes i:last-child { --eye-emote: pc-hop .9s var(--out-expo) .09s; }
+.isl-host.pc[data-emote="peek"] .isl-eyes i { --eye-emote: pc-peek 1.3s ease-in-out; }
+.isl-host.pc[data-emote="blink2"] .isl-eyes i { --eye-emote: pc-blink2 .8s ease-in-out; }
+@keyframes pc-wink { 0%, 100% { scale: 1 1; } 30%, 62% { scale: 1.3 .1; } }
+@keyframes pc-wide { 0%, 100% { scale: 1 1; } 40% { scale: 1.3 1.28; } }
+@keyframes pc-look-l { 0%, 100% { translate: 0 0; } 22%, 72% { translate: -5px 0; } }
+@keyframes pc-look-r { 0%, 100% { translate: 0 0; } 22%, 72% { translate: 5px 0; } }
+@keyframes pc-roll { 0%, 100% { translate: 0 0; } 18% { translate: 4px -2px; } 38% { translate: 1px 3px; } 58% { translate: -4px 1px; } 78% { translate: -1px -3px; } }
+@keyframes pc-squint { 0%, 100% { scale: 1 1; } 22%, 78% { scale: 1.3 .38; } }
+@keyframes pc-hop { 0%, 100% { translate: 0 0; scale: 1 1; } 18% { scale: 1.25 .65; } 45% { translate: 0 -5px; scale: .88 1.22; } 72% { translate: 0 0; scale: 1.18 .8; } }
+@keyframes pc-peek { 0%, 100% { translate: 0 0; scale: 1 1; } 28%, 66% { translate: 0 -4px; scale: 1 1.18; } }
+@keyframes pc-blink2 { 0%, 24%, 48%, 100% { scale: 1 1; } 12%, 36% { scale: 1 .08; } }
+/* pressing the closed island: the eyes duck */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-pill .isl-eyes { transition: transform .2s ease-out, scale .35s var(--spr-bounce); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-pill:active .isl-eyes { scale: .82; }
+
+/* ---- several ways to open and to fold shut (the page picks another one each time and writes it to data-isl-var; the shape itself moves
+   in island-spring.ts). Here the content follows in the matching way. */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="drop"] .isl2 > * { translate: 0 calc((1 - var(--k)) * -30px); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="drop"] .isl2-card { translate: 0 calc((1 - var(--kc)) * -34px); rotate: calc((1 - var(--kc)) * (var(--ci) - 1) * 7deg); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="pop"] .isl2 > * { translate: 0 0; scale: calc(0.72 + 0.28 * var(--k)); transform-origin: 50% 50%; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="pop"] .isl2-card { translate: 0 0; scale: calc(0.55 + 0.45 * var(--kc)); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="unfold"] .isl2 > * { translate: calc((1 - var(--k)) * 46px) 0; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="unfold"] .isl2 > :nth-child(even) { translate: calc((1 - var(--k)) * -46px) 0; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="unfold"] .isl2-card { translate: calc((1 - var(--kc)) * (1 - var(--ci)) * 70px) 0; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="zip"] .isl2 > * { translate: 0 calc((1 - var(--k)) * -16px); scale: calc(0.8 + 0.2 * var(--k)) 1; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="melt"] .isl2 > * { translate: 0 0; filter: blur(calc((1 - var(--k)) * 9px)); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="snap"] .isl2 > * { translate: 0 calc((1 - var(--k)) * -10px); scale: 1 calc(0.5 + 0.5 * var(--k)); }
+/* the light that runs over the island while it opens matches the way it opens */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="drop"]::before { background: linear-gradient(180deg, transparent 30%, rgba(255, 255, 255, .3) 50%, transparent 70%); background-size: 100% 280%; background-position: 0 130%; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open[data-isl-var="drop"]::before { animation: pc-sweep-down 1.1s ease-out .05s; }
+@keyframes pc-sweep-down { 0% { opacity: 1; background-position: 0 130%; } 85% { opacity: 1; } 100% { opacity: 0; background-position: 0 -30%; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-var="pop"]::before { background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, .34), transparent 62%); background-size: 100% 100%; background-position: 0 0; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open[data-isl-var="pop"]::before { animation: pc-flash .9s ease-out; }
+@keyframes pc-flash { 0% { opacity: 0; scale: .4; } 30% { opacity: 1; } 100% { opacity: 0; scale: 1.5; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open[data-isl-var="unfold"]::before { animation: isl-sweep 1.2s ease-out .05s reverse; }
+/* folding shut ends with a small nod of the closed island */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc:not(.is-open) .isl-pill { animation: pc-settle .7s var(--spr-bounce) .5s backwards; }
+@keyframes pc-settle { from { scale: 1.16 .8; } }
+
+/* ---- moving to another place at the top edge: the island leans into the movement and swings back */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-move="left"] .isl-inner { animation: pc-lean-l .76s var(--spr-soft); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc[data-isl-move="right"] .isl-inner { animation: pc-lean-r .76s var(--spr-soft); }
+@keyframes pc-lean-l { 0%, 100% { translate: 0 0; scale: 1 1; } 28% { translate: 7px 0; scale: 1.07 .92; } 64% { translate: -4px 0; scale: .97 1.04; } }
+@keyframes pc-lean-r { 0%, 100% { translate: 0 0; scale: 1 1; } 28% { translate: -7px 0; scale: 1.07 .92; } 64% { translate: 4px 0; scale: .97 1.04; } }
+
+/* ---- the closed island: text and marks of the bar glide in, the time ticks softly */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-text { animation: pc-text-in .55s var(--out-expo) both; }
+@keyframes pc-text-in { from { opacity: 0; translate: -14px 0; filter: blur(5px); } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-time, :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-marks { animation: pc-pop-in .5s var(--spr-bounce) .12s backwards; }
+@keyframes pc-pop-in { from { opacity: 0; scale: .5; } }
+
+/* ---- inside the open island: areas, tabs, cards, chips, timer, values, menu */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-body:not(.swipe-none):not(.isl2-peek) { animation: pc-area-in .5s var(--out-expo) both; }
+@keyframes pc-area-in { from { opacity: 0; translate: 0 14px; scale: .975; filter: blur(5px); } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-body:not(.swipe-none):not(.isl2-peek) > * > * { animation: pc-rise .55s var(--out-expo) backwards; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-body > * > :nth-child(2) { animation-delay: 50ms; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-body > * > :nth-child(3) { animation-delay: 100ms; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-body > * > :nth-child(4) { animation-delay: 150ms; }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-body > * > :nth-child(n + 5) { animation-delay: 200ms; }
+@keyframes pc-rise { from { opacity: 0; translate: 0 12px; } }
+@media (hover: hover) {
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2 .isl-card, :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-card,
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-act, :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard { transition: transform .5s var(--spr-soft), border-color .3s ease, box-shadow .3s ease; }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2 .isl-card:hover, :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-card:hover, :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-act:hover:not(:disabled) {
+    transform: translateY(-3px); border-color: color-mix(in srgb, var(--isl-c, #9ef0c8) 45%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, currentColor 10%, transparent), 0 12px 22px -16px var(--isl-c, #9ef0c8);
+  }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2 .isl-card:hover .isl-ic { animation: pc-ic-pop .6s var(--spr-bounce); }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tab:not(.on):not(:disabled):hover svg { animation: pc-wiggle .5s ease-in-out; }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-chip { transition: transform .45s var(--spr-bounce), background-color .2s ease; }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-chip:hover:not(:disabled) { transform: translateY(-2px) scale(1.05); }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-custom .isl2-chip:hover:not(:disabled) { transform: none; }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-round:hover { transform: scale(1.1); }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-mi .isl2-mii { transition: scale .4s var(--spr-bounce), rotate .4s var(--spr-bounce), background-color .2s ease; }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-mi:hover .isl2-mii { scale: 1.14; rotate: -8deg; background: color-mix(in srgb, var(--isl-c, #9ef0c8) 24%, transparent); }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-mi .isl2-mit { transition: translate .35s var(--spr-soft); }
+  :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-mi:hover .isl2-mit { translate: 3px 0; }
+}
+@keyframes pc-ic-pop { 0% { scale: 1; rotate: 0deg; } 40% { scale: 1.2; rotate: -10deg; } 100% { scale: 1; rotate: 0deg; } }
+@keyframes pc-wiggle { 0%, 100% { rotate: 0deg; translate: 0 0; } 30% { rotate: -12deg; translate: 0 -2px; } 65% { rotate: 9deg; translate: 0 -1px; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-chip:active:not(:disabled), :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tab:active:not(:disabled) { transform: scale(.9); transition-duration: .1s; }
+/* the three dots turn while the menu is open */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-more svg { transition: rotate .5s var(--spr-bounce); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-more[aria-expanded="true"] svg { rotate: 90deg; }
+/* the timer: starting it pops the card, a running ring glows in a slow pulse, a paused one blinks */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard.running .isl2-thead { animation: pc-tstart .6s var(--spr-bounce); }
+@keyframes pc-tstart { from { scale: .9; opacity: .4; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard.running:not(.paused) .isl2-ring { animation: pc-ring 2.2s ease-in-out infinite; }
+@keyframes pc-ring { 0%, 100% { filter: drop-shadow(0 0 0 transparent); scale: 1; } 50% { filter: drop-shadow(0 0 7px var(--isl-c, #9ef0c8)); scale: 1.04; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard.paused .isl2-time { animation: pc-paused 1.4s ease-in-out infinite; }
+@keyframes pc-paused { 50% { opacity: .45; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard .isl2-trun { animation: pc-pop-in .5s var(--spr-bounce) backwards; }
+/* values (CPU, RAM, GPU): the bars glide to their new length like a spring */
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-stat i { transition: transform 1s var(--spr-soft); }
+
+/* fine-tuning of the cleanup: the "own minutes" field sits on the line, the menu is opaque and wide enough for its longest entry,
+   the PC area is denser and a card that would stand alone in its row fills the row */
+.isl2-custom .input { min-height: 0; line-height: 30px; }
+.isl2-menu { min-width: 300px; max-width: calc(100vw - 24px); background: #131822; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.isl2 .isl-grid { gap: 8px; }
+.isl2 .isl-grid > .isl-card { padding: 10px 12px; }
+.isl2 .isl-grid > .isl-card:not(.isl-stats):nth-child(odd):has(+ .isl-stats), .isl2 .isl-grid > .isl-card:not(.isl-stats):nth-child(odd):last-child { grid-column: 1 / -1; }
+.isl2 .isl-grid > .isl-stats { padding: 10px 14px; }
+/* the menu lies above the cards below the header (every part of the island is its own layer while it opens) */
+.isl2-head { position: relative; z-index: 5; }
+.isl2-menu { min-width: 336px; }

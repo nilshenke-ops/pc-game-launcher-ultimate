@@ -13,6 +13,17 @@ const KEY = "pgl.prefs";
 // ------------------------------------------------------------------ store
 
 let prefs: Prefs = sanitizePrefs(readJson(KEY) ?? defaultPrefs());
+// Up to 3.48.1 "Animationen reduzieren" and the light mode travelled with the account: a device could get them switched on from another device
+// and – since they are device-local now – keep them forever without anyone having chosen that here (the PC showed no island animation at all).
+// Once per device both go back to "off"; whoever wants them switches them on again in Settings → Design, and that choice then stays.
+try {
+  if (typeof localStorage !== "undefined" && !localStorage.getItem("pgl.motion.reset351")) {
+    localStorage.setItem("pgl.motion.reset351", "1");
+    if (prefs.theme.reduceMotion || prefs.theme.lite) { prefs = { ...prefs, theme: { ...prefs.theme, reduceMotion: false, lite: false } }; writeJson(KEY, prefs); }
+  }
+} catch { /* storage blocked – nothing to reset */ }
+/** The island's own window on the PC screen (Windows companion): it is all about movement, so only the explicit "follow the system" switch can calm it. */
+export const isIslandWindow = (): boolean => typeof window !== "undefined" && ((window as unknown as { __PGL_ISLAND__?: boolean }).__PGL_ISLAND__ === true || /^#\/island\b/.test(window.location.hash));
 const listeners = new Set<() => void>();
 let syncTimer: number | null = null;
 
@@ -190,8 +201,9 @@ export function applyTheme(t: Theme) {
   const scene = !t.bgImage && t.bgScene ? BG_SCENES.find((s) => s.id === t.bgScene) : undefined;
   root.dataset.bgfit = scene?.phone ? "phone" : scene?.sky ? "bottom" : "cover";
   root.style.setProperty("--bg-sky", scene?.sky ?? "transparent");
-  root.dataset.motion = t.reduceMotion || t.lite || (followOsMotion() && osReducesMotion()) ? "reduce" : "full";
-  root.dataset.lite = t.lite ? "1" : "0";
+  const osCalm = followOsMotion() && osReducesMotion(), island = isIslandWindow();
+  root.dataset.motion = osCalm || (!island && (t.reduceMotion || t.lite)) ? "reduce" : "full";
+  root.dataset.lite = t.lite && !island ? "1" : "0";
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", t.background);
 }
 

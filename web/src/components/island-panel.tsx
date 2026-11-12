@@ -6,7 +6,7 @@ import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocit
 import { flushSync } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
+import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
@@ -94,6 +94,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const setTab = (to: IslandTab) => { setSlide(null); setTabRaw(to); };
   const [msg, setMsg] = useState<{ text: string; app: Messenger; phone: string | null }>(() => ({ text: "", app: ((): Messenger => { const v = readJson<string>("pgl.island.msgapp"); return v === "telegram" || v === "sms" || v === "mail" ? v : "whatsapp"; })(), phone: null }));
   const [menu, setMenu] = useState(false);
+  // The menu stays for a moment after it was closed, so it can fold back into its corner.
+  const [menuShown, setMenuShown] = useState(false);
+  useEffect(() => { if (menu) { setMenuShown(true); return; } const id = window.setTimeout(() => setMenuShown(false), 190); return () => window.clearTimeout(id); }, [menu]);
   const [edit, setEdit] = useState(false);
   const hold = useRef<number | null>(null);
   // Holding a card (or "Widgets bearbeiten" in the menu) makes the widgets wiggle: − removes one, + adds one (saved at the PC, admin right needed).
@@ -487,31 +490,34 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const [custom, setCustom] = useState("");
   const focusTab = (
     <div className="isl2-focus">
-      <div className="isl2-tcard">
-        <div className={`isl2-ring${view?.paused ? " paused" : ""}`} style={{ ["--p" as string]: view ? view.progress : 0 } as React.CSSProperties} aria-hidden><i /></div>
-        <div className="isl2-ttext">
-          <b className="isl2-time">{view ? clock(view.left) : "25:00"}</b>
-          <span className="isl2-sub">{timerSub}{tm.pomo ? ` · ${tm.pomo.done} ✓` : ""}</span>
-          <div className="isl2-ctrls">
-            {view ? (
-              <>
-                <button type="button" className="isl2-round big" onClick={() => (view.paused ? resumeCountdown() : pauseCountdown())} aria-label={view.paused ? t("Fortsetzen") : t("Pausieren")}>{view.paused ? <Play size={18} /> : <Pause size={18} />}</button>
-                <button type="button" className="isl2-chip" onClick={stopCountdown}>{t("Stopp")}</button>
-              </>
-            ) : (
-              <>
-                {[5, 15, 25, 45].map((m) => <button key={m} type="button" className="isl2-chip" onClick={() => startCountdown(m)}>{m} min</button>)}
-                <button type="button" className="isl2-chip" title={t("25 min Fokus, 5 min Pause, nach vier Runden 15 min")} onClick={() => startPomodoro()}>{t("Pomodoro")}</button>
-              </>
-            )}
+      <div className={`isl2-tcard${view ? " running" : ""}${view?.paused ? " paused" : ""}`}>
+        <div className="isl2-thead">
+          <div className={`isl2-ring${view?.paused ? " paused" : ""}`} style={{ ["--p" as string]: view ? view.progress : 0 } as React.CSSProperties} aria-hidden><i /></div>
+          <div className="isl2-ttext">
+            <b className="isl2-time">{view ? clock(view.left) : "25:00"}</b>
+            <span className="isl2-sub">{timerSub}{tm.pomo ? ` · ${tm.pomo.done} ✓` : ""}</span>
           </div>
-          {!view && (
-            <form className="isl2-custom" onSubmit={(e) => { e.preventDefault(); const m = Number(custom); if (m >= 1 && m <= 180) { startCountdown(m); setCustom(""); } }}>
-              <input className="input" inputMode="numeric" value={custom} maxLength={3} placeholder={t("Eigene Minuten")} aria-label={t("Eigene Minuten")} onChange={(e) => setCustom(e.target.value.replace(/\D/g, ""))} />
-              <button type="submit" className="isl2-chip" aria-label={t("Eigene Minuten starten")} disabled={!(Number(custom) >= 1 && Number(custom) <= 180)}>{t("Start")}</button>
-            </form>
+          {view && (
+            <div className="isl2-trun">
+              <button type="button" className="isl2-round big" onClick={() => (view.paused ? resumeCountdown() : pauseCountdown())} aria-label={view.paused ? t("Fortsetzen") : t("Pausieren")}>{view.paused ? <Play size={18} /> : <Pause size={18} />}</button>
+              <button type="button" className="isl2-chip" onClick={stopCountdown}>{t("Stopp")}</button>
+            </div>
           )}
         </div>
+        {!view && (
+          <>
+            <div className="isl2-tchips">
+              {[5, 15, 25, 45].map((m) => <button key={m} type="button" className="isl2-chip" onClick={() => startCountdown(m)}>{m} min</button>)}
+            </div>
+            <div className="isl2-trow">
+              <button type="button" className="isl2-chip accent" title={t("25 min Fokus, 5 min Pause, nach vier Runden 15 min")} onClick={() => startPomodoro()}>{t("Pomodoro")}</button>
+              <form className="isl2-custom" onSubmit={(e) => { e.preventDefault(); const m = Number(custom); if (m >= 1 && m <= 180) { startCountdown(m); setCustom(""); } }}>
+                <input className="input" inputMode="numeric" value={custom} maxLength={3} placeholder={t("Eigene Minuten")} aria-label={t("Eigene Minuten")} onChange={(e) => setCustom(e.target.value.replace(/\D/g, ""))} />
+                <button type="submit" className="isl2-chip" aria-label={t("Eigene Minuten starten")} disabled={!(Number(custom) >= 1 && Number(custom) <= 180)}>{t("Start")}</button>
+              </form>
+            </div>
+          </>
+        )}
       </div>
       {has("stopwatch") && <IslandStopwatch />}
     </div>
@@ -650,13 +656,18 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         {playing && <Bars level={0.4} />}
         <div className="isl2-moreWrap" ref={menuRef}>
           <button type="button" className="isl2-more" aria-haspopup="menu" aria-expanded={menu} aria-label={t("Mehr")} onClick={() => setMenu((m) => !m)}><MoreHorizontal size={18} /></button>
-          {menu && (
-            <div className="isl2-menu" role="menu">
-              <label className="isl2-mi" role="menuitemcheckbox" aria-checked={prefs.sound}><input type="checkbox" checked={prefs.sound} onChange={(e) => setIslandPrefs({ sound: e.target.checked })} /> {t("Ton bei „fertig“ und Rückfragen")}</label>
-              {canManage && <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("home"); setEdit(true); }}>{t("Widgets bearbeiten")}</button>}
-              {floating && <Link to="/assistant" role="menuitem" className="isl2-mi" onClick={onClose}>{t("JARVIS öffnen")}</Link>}
-              {floating && <Link to="/overlay-settings" role="menuitem" className="isl2-mi" onClick={onClose}>{t("Insel-Einstellungen")}</Link>}
-              <button type="button" role="menuitem" className="isl2-mi" onClick={onClose}>{t("Schließen")}</button>
+          {(menu || menuShown) && (
+            <div className={`isl2-menu${menu ? "" : " closing"}`} role="menu">
+              <label className="isl2-mi" role="menuitemcheckbox" aria-checked={prefs.sound}>
+                <span className="isl2-mii" aria-hidden><Volume2 size={15} /></span>
+                <span className="isl2-mit">{t("Ton bei „fertig“ und Rückfragen")}</span>
+                <input type="checkbox" className="isl2-switch" checked={prefs.sound} onChange={(e) => setIslandPrefs({ sound: e.target.checked })} />
+              </label>
+              <span className="isl2-msep" aria-hidden />
+              {canManage && <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("home"); setEdit(true); }}><span className="isl2-mii" aria-hidden><LayoutGrid size={15} /></span><span className="isl2-mit">{t("Widgets bearbeiten")}</span></button>}
+              {floating && <Link to="/assistant" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><MessageCircle size={15} /></span><span className="isl2-mit">{t("JARVIS öffnen")}</span></Link>}
+              {floating && <Link to="/overlay-settings" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><Settings2 size={15} /></span><span className="isl2-mit">{t("Insel-Einstellungen")}</span></Link>}
+              <button type="button" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><ChevronUp size={15} /></span><span className="isl2-mit">{t("Schließen")}</span></button>
             </div>
           )}
         </div>

@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.51.0 – 2026-11-12
+### Neu
+- **JARVIS-Insel am PC: viel mehr Bewegung (nur am PC – Handy und iPad bleiben wie sie sind).** Jedes Öffnen und Schließen sieht anders aus: vier Arten zu öffnen (klassisch, herabfallen, aufploppen, erst breit dann ausrollen) und vier zu schließen (klassisch, zusammenziehen, schmelzen, hochschnappen) – nie zweimal dieselbe hintereinander; Inhalt und Lichtstreifen bewegen sich passend dazu
+- Augen mit Eigenleben: zwinkern, nach links und rechts schauen, rollen, zusammenkneifen, hüpfen, nach oben spähen, doppelt blinzeln, große Augen beim Überfahren mit der Maus; sie folgen der Maus weiter als bisher und ducken sich beim Anklicken
+- Insel an eine andere Stelle setzen (links, Mitte, rechts): Das Fenster gleitet weich dorthin statt zu springen, die Augen schauen in die Richtung, die Insel lehnt sich in die Bewegung
+- Im offenen Fenster: Bereiche blenden weich ein, Karten heben sich unter der Maus, Symbole wackeln, Chips federn, der Timer-Ring pulsiert beim Laufen und die Zeit blinkt bei Pause, CPU/RAM/GPU-Balken gleiten, die drei Punkte drehen sich beim Öffnen des Menüs, das Menü faltet sich beim Schließen zurück
+### Verbessert
+- **Insel aufgeräumt (alle Geräte):** eine Kartensprache – gleiche Ecken, Rahmen und Verläufe für alle Karten; schmale, unauffällige Bildlaufleisten statt der grauen Standardleiste
+- Timer übersichtlicher: Ring und Zeit oben, die vier Zeiten in einer gleichmäßigen Reihe, Pomodoro und „Eigene Minuten“ in einer Zeile darunter (das Feld ist nicht mehr abgeschnitten); läuft der Timer, stehen Pause und Stopp direkt neben der Zeit
+- Menü hinter den drei Punkten im Stil der Insel: Symbol vor jedem Eintrag, echter Schalter statt Häkchen für den Ton, liegt jetzt sauber über den Karten
+- PC-Bereich dichter: eine einzelne Karte füllt ihre Zeile (keine Lücke mehr), Werte mit sichtbarer Balkenspur
+### Behoben
+- **Öffnen/Schließen der Insel lief am PC ohne Animation:** „Animationen reduzieren“ und der Leichtmodus konnten früher über das Konto von einem anderen Gerät kommen und blieben dann auf dem PC dauerhaft hängen. Beides wird auf jedem Gerät einmalig auf „aus“ gesetzt (in Einstellungen → Design jederzeit wieder einschaltbar und bleibt dann); das Insel-Fenster am PC animiert außerdem unabhängig davon – nur „Systemeinstellung folgen“ beruhigt es noch
 ## 3.50.1 – 2026-11-11
 ### Verbessert
 - Vier neue Widget-Vorlagen im Glas-Stil und Pillen-Knöpfe für eigene Widgets.
