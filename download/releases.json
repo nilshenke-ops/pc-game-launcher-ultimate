@@ -1,5 +1,38 @@
 [
   {
+    "version": "3.52.0",
+    "date": "2026-11-12",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.52.0/PCGameLauncherCompanion.exe",
+    "size": 95142131,
+    "sha256": "65fe6c33e6e0b879225d9f91ae3413f19e75d1f55d32400036c0c1ad10ffbaec",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.52.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.52.0/PCGameLauncherCompanion-3.52.0-win-x64.zip",
+      "size": 89416419,
+      "sha256": "84760805796468ebcad74edb3353df0f1b025670e4f2ebf9670268b0460638c4"
+    },
+    "notes": "**Einmal anmelden – der PC wird von selbst gefunden.** Der Begleiter hält jetzt von sich aus eine Verbindung zur Cloud deines JARVIS-Kontos (ausgehend, keine Portfreigabe, kein Tailscale nötig). Jedes Gerät, das im selben Konto angemeldet ist, erreicht den PC darüber – zu Hause und unterwegs, ohne QR-Code, ohne Verbindungscode, ohne erneutes Anmelden · Ist der PC aus, bleibt dein Konto angemeldet und die Cloud-Daten bleiben sichtbar („Cloud verbunden · PC offline“). Sobald Windows läuft und der Begleiter gestartet ist, meldet die Cloud das und die Seite verbindet sich von selbst – ohne Neuladen, ohne Antippen · Neue Geräte im Konto bekommen automatisch einen eigenen Zugang zum PC (Standardrechte, kein Admin) – sichtbar unter „Geräte & Verbindungen“, jederzeit entfernbar; der PC meldet jeden neuen Zugang",
+    "changes": {
+      "neu": [
+        "**Einmal anmelden – der PC wird von selbst gefunden.** Der Begleiter hält jetzt von sich aus eine Verbindung zur Cloud deines JARVIS-Kontos (ausgehend, keine Portfreigabe, kein Tailscale nötig). Jedes Gerät, das im selben Konto angemeldet ist, erreicht den PC darüber – zu Hause und unterwegs, ohne QR-Code, ohne Verbindungscode, ohne erneutes Anmelden",
+        "Ist der PC aus, bleibt dein Konto angemeldet und die Cloud-Daten bleiben sichtbar („Cloud verbunden · PC offline“). Sobald Windows läuft und der Begleiter gestartet ist, meldet die Cloud das und die Seite verbindet sich von selbst – ohne Neuladen, ohne Antippen",
+        "Neue Geräte im Konto bekommen automatisch einen eigenen Zugang zum PC (Standardrechte, kein Admin) – sichtbar unter „Geräte & Verbindungen“, jederzeit entfernbar; der PC meldet jeden neuen Zugang",
+        "Einheitliche, ehrliche Statusanzeige: „PC verbunden“ (mit „über die Cloud“), „PC wird gesucht“, „Cloud verbunden · PC offline“, „Cloud nicht erreichbar“, „Verbindung unterbrochen – automatische Wiederverbindung“",
+        "Unter „Cloud“: Abschnitt „Automatische PC-Verbindung“ mit Zustand, Schalter (nur am PC) und Hinweis samt Knopf, falls der Begleiter noch nicht mit Windows startet"
+      ],
+      "verbessert": [
+        "Wiederverbinden ohne Dauer-Versuche: Während auf den PC gewartet wird, hält die Seite genau eine Verbindung zur Cloud (Herzschlag alle 25 s) statt alle halbe Sekunde neu zu probieren; die direkte Adresse im WLAN hat weiter Vorrang und wird nebenbei geprüft; bei Cloud-Ausfall wachsende Pausen (2–60 s)",
+        "Jede Seite öffnet sich per Link, auch nach Neuladen und beim zweiten Aufruf – als fester Test für alle 62 Seiten (Website ohne PC und PC-App)"
+      ],
+      "behoben": [
+        "**PC flog nach vielen Anmeldungen aus der Cloud:** Geräte-Tokens wurden nach Alter aufgeräumt – nach 30 neuen Anmeldungen traf es das Token des PCs („Die Cloud kennt diesen PC nicht mehr“). Jetzt zählt „zuletzt benutzt“"
+      ]
+    },
+    "signature": "vJlumR+t5BK2n/y5wl/jpZ5a/8vbqyl9iDlp4CUtQOamOUL0nzWPBHOfBH2bnKsdxkiLT8Hn9PaylYJUKSoc9Q=="
+  },
+  {
     "version": "3.51.0",
     "date": "2026-11-12",
     "channel": "stable",
@@ -1309,32 +1342,5 @@
       ]
     },
     "signature": "oD8rqvCPITQsGuYDWDxiEcjUR3FNl+K/uuIYUVW+U7uwncaKNiXVVoP/SJAFPgTHtz2X02QNDiXmxufsDdaXYA=="
-  },
-  {
-    "version": "3.25.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion.exe",
-    "size": 95013796,
-    "sha256": "ef976aca8616008a8a83ca6e53c553124e62a125dacd6783788492d0e4151e8a",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.25.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.0/PCGameLauncherCompanion-3.25.0-win-x64.zip",
-      "size": 89288372,
-      "sha256": "3f65e9364541ea65aa8222e60f85f43c64f8079a9c283dc6b85a8433eebc5809"
-    },
-    "notes": "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text · Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen · Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort",
-    "changes": {
-      "neu": [
-        "„An PC senden“: Links und Text vom Handy oder iPad direkt an den PC schicken. Neue Seite mit Eingabefeld, „Einfügen“ und dem Schalter „Link gleich am PC öffnen“. Gesendete Einträge stehen in einer Liste (30 Tage, höchstens 50), ein Link lässt sich dort jederzeit „Am PC öffnen“, Text lässt sich kopieren; am PC erscheint beim Senden eine Benachrichtigung. Nur echte http(s)-Links werden am PC geöffnet, alles andere bleibt Text",
-        "Auf Android (installierte App) erscheint die Seite im Teilen-Menü: „Teilen → PC Game Launcher“ übernimmt Link oder Text. iOS kennt diese Funktion für Web-Apps nicht – dort bleibt das Einfügen"
-      ],
-      "verbessert": [
-        "Schnellerer Start: Das große Inselpanel (Tabs, KI-Einstellungen, Widgets) gehört nicht mehr zum Startpaket, sondern lädt direkt nach dem Start im Leerlauf nach. Das Startpaket schrumpft von 316 auf 287 KB (gzip, −9 %); der erste Tipp auf die Insel bleibt sofort"
-      ],
-      "behoben": []
-    },
-    "signature": "/C7Hsugm+Ayopo8pGt7PuLFsEe7Fyzhza2i9WpayloB02ip1AgyT8ngS+Gp0/UE6y1+V4nNfJA9SqUT+oTwRLA=="
   }
 ]
