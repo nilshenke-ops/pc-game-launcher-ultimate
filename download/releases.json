@@ -1,5 +1,39 @@
 [
   {
+    "version": "3.51.0",
+    "date": "2026-11-12",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.51.0/PCGameLauncherCompanion.exe",
+    "size": 95134325,
+    "sha256": "3e1fa4e632b0158bbb7361ffb3800bcff49ae4bb55f1b0512f11062cf3702e9f",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.51.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.51.0/PCGameLauncherCompanion-3.51.0-win-x64.zip",
+      "size": 89408117,
+      "sha256": "fe6f4d134214bf52a8b3121951658d8915932dce8b83f6262961b43febff4cf9"
+    },
+    "notes": "**JARVIS-Insel am PC: viel mehr Bewegung (nur am PC – Handy und iPad bleiben wie sie sind).** Jedes Öffnen und Schließen sieht anders aus: vier Arten zu öffnen (klassisch, herabfallen, aufploppen, erst breit dann ausrollen) und vier zu schließen (klassisch, zusammenziehen, schmelzen, hochschnappen) – nie zweimal dieselbe hintereinander; Inhalt und Lichtstreifen bewegen sich passend dazu · Augen mit Eigenleben: zwinkern, nach links und rechts schauen, rollen, zusammenkneifen, hüpfen, nach oben spähen, doppelt blinzeln, große Augen beim Überfahren mit der Maus; sie folgen der Maus weiter als bisher und ducken sich beim Anklicken · Insel an eine andere Stelle setzen (links, Mitte, rechts): Das Fenster gleitet weich dorthin statt zu springen, die Augen schauen in die Richtung, die Insel lehnt sich in die Bewegung",
+    "changes": {
+      "neu": [
+        "**JARVIS-Insel am PC: viel mehr Bewegung (nur am PC – Handy und iPad bleiben wie sie sind).** Jedes Öffnen und Schließen sieht anders aus: vier Arten zu öffnen (klassisch, herabfallen, aufploppen, erst breit dann ausrollen) und vier zu schließen (klassisch, zusammenziehen, schmelzen, hochschnappen) – nie zweimal dieselbe hintereinander; Inhalt und Lichtstreifen bewegen sich passend dazu",
+        "Augen mit Eigenleben: zwinkern, nach links und rechts schauen, rollen, zusammenkneifen, hüpfen, nach oben spähen, doppelt blinzeln, große Augen beim Überfahren mit der Maus; sie folgen der Maus weiter als bisher und ducken sich beim Anklicken",
+        "Insel an eine andere Stelle setzen (links, Mitte, rechts): Das Fenster gleitet weich dorthin statt zu springen, die Augen schauen in die Richtung, die Insel lehnt sich in die Bewegung",
+        "Im offenen Fenster: Bereiche blenden weich ein, Karten heben sich unter der Maus, Symbole wackeln, Chips federn, der Timer-Ring pulsiert beim Laufen und die Zeit blinkt bei Pause, CPU/RAM/GPU-Balken gleiten, die drei Punkte drehen sich beim Öffnen des Menüs, das Menü faltet sich beim Schließen zurück"
+      ],
+      "verbessert": [
+        "**Insel aufgeräumt (alle Geräte):** eine Kartensprache – gleiche Ecken, Rahmen und Verläufe für alle Karten; schmale, unauffällige Bildlaufleisten statt der grauen Standardleiste",
+        "Timer übersichtlicher: Ring und Zeit oben, die vier Zeiten in einer gleichmäßigen Reihe, Pomodoro und „Eigene Minuten“ in einer Zeile darunter (das Feld ist nicht mehr abgeschnitten); läuft der Timer, stehen Pause und Stopp direkt neben der Zeit",
+        "Menü hinter den drei Punkten im Stil der Insel: Symbol vor jedem Eintrag, echter Schalter statt Häkchen für den Ton, liegt jetzt sauber über den Karten",
+        "PC-Bereich dichter: eine einzelne Karte füllt ihre Zeile (keine Lücke mehr), Werte mit sichtbarer Balkenspur"
+      ],
+      "behoben": [
+        "**Öffnen/Schließen der Insel lief am PC ohne Animation:** „Animationen reduzieren“ und der Leichtmodus konnten früher über das Konto von einem anderen Gerät kommen und blieben dann auf dem PC dauerhaft hängen. Beides wird auf jedem Gerät einmalig auf „aus“ gesetzt (in Einstellungen → Design jederzeit wieder einschaltbar und bleibt dann); das Insel-Fenster am PC animiert außerdem unabhängig davon – nur „Systemeinstellung folgen“ beruhigt es noch"
+      ]
+    },
+    "signature": "NRM5tTW+WHQMbaXi27gEAD3/eeA/NNLOoBPrRKkb3PGRYZgu04jYBgrqqxIgWaRxaX9cpFETRzD4LXSqyr+qsA=="
+  },
+  {
     "version": "3.50.0",
     "date": "2026-11-11",
     "channel": "stable",
@@ -1302,34 +1336,5 @@
       "behoben": []
     },
     "signature": "/C7Hsugm+Ayopo8pGt7PuLFsEe7Fyzhza2i9WpayloB02ip1AgyT8ngS+Gp0/UE6y1+V4nNfJA9SqUT+oTwRLA=="
-  },
-  {
-    "version": "3.24.0",
-    "date": "2026-11-06",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.24.0/PCGameLauncherCompanion.exe",
-    "size": 95001326,
-    "sha256": "f0d52a6603ed57b4cbb75272bd5104a2314fd18e42c46331283e420adb67bfe4",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.24.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.24.0/PCGameLauncherCompanion-3.24.0-win-x64.zip",
-      "size": 89276345,
-      "sha256": "88c1c683e614008be59a16553ee5253d42d7d7d1d7009159aa01bc550dc94074"
-    },
-    "notes": "OBS-Szenen im Overlay: Das Aufnahme-Fenster zeigt die Szenen von OBS als Auswahl, ein Tipp schaltet die Szene um (der Begleiter nimmt nur Szenen an, die OBS wirklich hat) · Mikrofon und Desktop-Ton von OBS stummschalten: Knöpfe im Aufnahme-Fenster und ein Mikrofon-Knopf in der Overlay-Leiste (rot, solange stumm) – ohne das Spiel zu verlassen. Nur sichtbar, wenn OBS verbunden ist und ein Mikrofon bzw. Desktop-Audio eingerichtet hat · JARVIS MEMORY fragt bei Widersprüchen nach: Sagst du das Gegenteil von dem, was in der Notiz steht („Mein Lieblingsspiel ist Hollow Knight“ nach „… Celeste“, „Ich wohne in Hamburg“ nach „… Adendorf“, dasselbe mit und ohne „nicht“), wird nichts still gespeichert. JARVIS zeigt die alte Aussage und fragt „ersetzen oder beides behalten?“. „Ersetze es“ streicht die alte Zeile durch (sie bleibt im Verlauf nachlesbar), „Behalte beides“ speichert beides, „Nein“ ändert nichts",
-    "changes": {
-      "neu": [
-        "OBS-Szenen im Overlay: Das Aufnahme-Fenster zeigt die Szenen von OBS als Auswahl, ein Tipp schaltet die Szene um (der Begleiter nimmt nur Szenen an, die OBS wirklich hat)",
-        "Mikrofon und Desktop-Ton von OBS stummschalten: Knöpfe im Aufnahme-Fenster und ein Mikrofon-Knopf in der Overlay-Leiste (rot, solange stumm) – ohne das Spiel zu verlassen. Nur sichtbar, wenn OBS verbunden ist und ein Mikrofon bzw. Desktop-Audio eingerichtet hat",
-        "JARVIS MEMORY fragt bei Widersprüchen nach: Sagst du das Gegenteil von dem, was in der Notiz steht („Mein Lieblingsspiel ist Hollow Knight“ nach „… Celeste“, „Ich wohne in Hamburg“ nach „… Adendorf“, dasselbe mit und ohne „nicht“), wird nichts still gespeichert. JARVIS zeigt die alte Aussage und fragt „ersetzen oder beides behalten?“. „Ersetze es“ streicht die alte Zeile durch (sie bleibt im Verlauf nachlesbar), „Behalte beides“ speichert beides, „Nein“ ändert nichts"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "Gedächtnis: „X“ und „nicht X“ zählten als dieselbe Zeile (das Wort „nicht“ wurde beim Vergleich ignoriert) und wurden als Doppeltes verworfen. Jetzt sind sie verschieden",
-        "„Merk dir, dass mein Lieblingsspiel Celeste ist“ wird mit dem Verb an zweiter Stelle gespeichert („… ist Celeste“) und lässt sich dadurch mit anderen Notizen vergleichen"
-      ]
-    },
-    "signature": "RtF59yKeuQYsC6nyPOPDhaRxtTb+iJJCqbh//b7jE/EFOLcIF70X0Lz51j5iMEM1H/4dwhDLp9aa09opdRPfOQ=="
   }
 ]
