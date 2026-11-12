@@ -269,9 +269,9 @@ export function templates(): { name: string; make: () => CustomWidget }[] {
     ]) },
     { name: t("Aufnahme & Overlay"), make: () => glass(t("Aufnahme & Overlay"), 180, [
       ...cardHead(t("Aufnahme & Overlay"), "clapperboard", 180),
-      btn("record", t("Aufnahme"), "radio", 6, 44, 27, 24, "#ef4444", "#ffffff"),
-      btn("replay", t("Replay"), "star", 36, 44, 27, 24, "#22d3ee", "#04121a"),
-      btn("overlay", t("Overlay"), "layers", 66, 44, 27, 24),
+      el("button", { action: "record", text: t("Aufnahme"), icon: "radio", x: 6, y: 44, w: 27, h: 24, size: 12, align: "center", bold: true, fill: "#ef4444", color: "#ffffff" }),
+      el("button", { action: "replay", text: t("Replay"), icon: "star", x: 36, y: 44, w: 27, h: 24, size: 12, align: "center", bold: true, fill: "#22d3ee", color: "#04121a" }),
+      el("button", { action: "overlay", text: t("Overlay"), icon: "layers", x: 66, y: 44, w: 27, h: 24, size: 12, align: "center", bold: true }),
     ]) },
     { name: t("Streaming-Deck"), make: () => glass(t("Streaming-Deck"), 200, [
       ...cardHead(t("Streaming-Deck"), "radio", 200),
@@ -292,7 +292,7 @@ export function templates(): { name: string; make: () => CustomWidget }[] {
       pageBtn(t("Studio"), "wand", "/studio", 4.5, 46, 21.5, 24),
       pageBtn(t("Widgets"), "layout-grid", "/widgets", 27.5, 46, 21.5, 24),
       pageBtn(t("Overlay"), "layers", "/overlay-settings", 50.5, 46, 21.5, 24),
-      pageBtn(t("Einstellungen"), "settings", "/settings", 73.5, 46, 21.5, 24),
+      pageBtn(t("Setup"), "settings", "/settings", 73.5, 46, 21.5, 24),
     ]) },
     { name: t("Countdown Kurz"), make: () => glass(t("Countdown Kurz"), 240, [
       ...cardHead(t("Countdown Kurz"), "timer", 240),

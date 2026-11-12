@@ -1858,6 +1858,7 @@ export const en: Record<string, string> = {
   "Abend-Cockpit": "Evening cockpit",
   "Pausen-Timer": "Break timer",
   "Auslastung": "Load",
+  "Setup": "Setup",
   "Aufnahme-Knöpfe": "Recording buttons",
   "Aus dem Overlay entfernt": "Removed from the overlay",
   "Ausrichtung": "Alignment",
