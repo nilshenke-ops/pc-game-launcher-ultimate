@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.54.0",
+    "date": "2026-11-12",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.54.0/PCGameLauncherCompanion.exe",
+    "size": 95149316,
+    "sha256": "dc411e48e12e005a435fea4fceedda300239f1593d9ee018acc9494d662614ba",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.54.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.54.0/PCGameLauncherCompanion-3.54.0-win-x64.zip",
+      "size": 89423771,
+      "sha256": "b10c0931bbb89ced164a15849b94411bc7666dea010e3d2797d63e3cb9ca4e7d"
+    },
+    "notes": "**Soundboard am Handy: Lautstärke regeln.** Ohne PC steuert der Regler oben jetzt die Wiedergabe auf diesem Gerät – sofort, auch für laufende Sounds, und er merkt sich den Wert. Funktioniert auch auf iPhone und iPad (dort ignoriert der Browser die normale Lautstärke); eigene Lautstärken über 100 % je Sound wirken ebenfalls. „Alle stoppen“ und die Anzeige „aktiv/Ruhe“ gelten dann für dieses Gerät · **Sechs neue Bausteine im Widget-Baukasten:** Zähler (Tode, Siege, Runden – mit +/− und Zurücksetzen), Notizfeld zum Hineintippen, „Tage bis …“ (Datum, am letzten Tag Stunden und Minuten), Verbindung/Ping zum PC, Akku dieses Geräts, Würfel/Münze. Dazu sieben Vorlagen: Tode-Zähler, Siege & Niederlagen, Release-Countdown, Notizzettel, PC-Verbindung, Akku & Uhr, Würfel & Münze · **Untere Leiste am Handy:** eine Markierung, die weich von Eintrag zu Eintrag gleitet; das aktive Symbol hüpft kurz, die Beschriftung blendet ein, die Einträge erscheinen gestaffelt, Antippen gibt spürbare Rückmeldung. Liegt die offene Seite nicht in der Leiste, leuchtet „Mehr“ – man sieht immer, wo man ist",
+    "changes": {
+      "neu": [
+        "**Soundboard am Handy: Lautstärke regeln.** Ohne PC steuert der Regler oben jetzt die Wiedergabe auf diesem Gerät – sofort, auch für laufende Sounds, und er merkt sich den Wert. Funktioniert auch auf iPhone und iPad (dort ignoriert der Browser die normale Lautstärke); eigene Lautstärken über 100 % je Sound wirken ebenfalls. „Alle stoppen“ und die Anzeige „aktiv/Ruhe“ gelten dann für dieses Gerät",
+        "**Sechs neue Bausteine im Widget-Baukasten:** Zähler (Tode, Siege, Runden – mit +/− und Zurücksetzen), Notizfeld zum Hineintippen, „Tage bis …“ (Datum, am letzten Tag Stunden und Minuten), Verbindung/Ping zum PC, Akku dieses Geräts, Würfel/Münze. Dazu sieben Vorlagen: Tode-Zähler, Siege & Niederlagen, Release-Countdown, Notizzettel, PC-Verbindung, Akku & Uhr, Würfel & Münze"
+      ],
+      "verbessert": [
+        "**Untere Leiste am Handy:** eine Markierung, die weich von Eintrag zu Eintrag gleitet; das aktive Symbol hüpft kurz, die Beschriftung blendet ein, die Einträge erscheinen gestaffelt, Antippen gibt spürbare Rückmeldung. Liegt die offene Seite nicht in der Leiste, leuchtet „Mehr“ – man sieht immer, wo man ist"
+      ],
+      "behoben": []
+    },
+    "signature": "pc78QzE5bO8J88sF6zEo4dOMstqUMm9NMAySQ/ffALE1lGOfwqvuz/WOJYpW47/Bk4+Rj8dfUeF6PCULbVSWnA=="
+  },
+  {
     "version": "3.52.0",
     "date": "2026-11-12",
     "channel": "stable",
@@ -1316,31 +1343,5 @@
       ]
     },
     "signature": "2//BtlrqLMZxdXVT9H5qoZ8m95fgfgUuD5beJUjw0th8LRhAPguYQYJZg2WIo6qpPgv5WE8x+GnGPlur4J9Wqw=="
-  },
-  {
-    "version": "3.25.1",
-    "date": "2026-11-07",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion.exe",
-    "size": 95014050,
-    "sha256": "099109dbd53e9da56155862457630493802d5a1439f395e04898e9f729a01c40",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.25.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.1/PCGameLauncherCompanion-3.25.1-win-x64.zip",
-      "size": 89288677,
-      "sha256": "ed2e27cf0dd389ddf4a08c1b45f009be863e7a744cbc8d38a4e093df09d28767"
-    },
-    "notes": "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Update vom Handy aus: „Jetzt aktualisieren“ geht jetzt auch von einem gekoppelten Gerät mit dem Recht „Admin“, nicht mehr nur direkt am PC. Die Datei bleibt signiert und wird vor dem Ersetzen erneut per SHA-256 geprüft; während eines Spiels wird das Installieren abgelehnt. Zurücksetzen und „Updates automatisch installieren“ bleiben aus Sicherheitsgründen am PC"
-      ],
-      "behoben": [
-        "Der Hinweis auf der Update-Seite sagte „nur direkt am PC“, obwohl das Handy nach „Herunterladen“ nichts weiter tun konnte; er erklärt jetzt, was dieses Gerät darf"
-      ]
-    },
-    "signature": "oD8rqvCPITQsGuYDWDxiEcjUR3FNl+K/uuIYUVW+U7uwncaKNiXVVoP/SJAFPgTHtz2X02QNDiXmxufsDdaXYA=="
   }
 ]

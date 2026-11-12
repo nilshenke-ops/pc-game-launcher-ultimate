@@ -1,33 +1,27 @@
 {
-  "version": "3.52.0",
+  "version": "3.54.0",
   "date": "2026-11-12",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.52.0/PCGameLauncherCompanion.exe",
-  "size": 95142131,
-  "sha256": "65fe6c33e6e0b879225d9f91ae3413f19e75d1f55d32400036c0c1ad10ffbaec",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.54.0/PCGameLauncherCompanion.exe",
+  "size": 95149316,
+  "sha256": "dc411e48e12e005a435fea4fceedda300239f1593d9ee018acc9494d662614ba",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.52.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.52.0/PCGameLauncherCompanion-3.52.0-win-x64.zip",
-    "size": 89416419,
-    "sha256": "84760805796468ebcad74edb3353df0f1b025670e4f2ebf9670268b0460638c4"
+    "fileName": "PCGameLauncherCompanion-3.54.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.54.0/PCGameLauncherCompanion-3.54.0-win-x64.zip",
+    "size": 89423771,
+    "sha256": "b10c0931bbb89ced164a15849b94411bc7666dea010e3d2797d63e3cb9ca4e7d"
   },
-  "notes": "**Einmal anmelden – der PC wird von selbst gefunden.** Der Begleiter hält jetzt von sich aus eine Verbindung zur Cloud deines JARVIS-Kontos (ausgehend, keine Portfreigabe, kein Tailscale nötig). Jedes Gerät, das im selben Konto angemeldet ist, erreicht den PC darüber – zu Hause und unterwegs, ohne QR-Code, ohne Verbindungscode, ohne erneutes Anmelden · Ist der PC aus, bleibt dein Konto angemeldet und die Cloud-Daten bleiben sichtbar („Cloud verbunden · PC offline“). Sobald Windows läuft und der Begleiter gestartet ist, meldet die Cloud das und die Seite verbindet sich von selbst – ohne Neuladen, ohne Antippen · Neue Geräte im Konto bekommen automatisch einen eigenen Zugang zum PC (Standardrechte, kein Admin) – sichtbar unter „Geräte & Verbindungen“, jederzeit entfernbar; der PC meldet jeden neuen Zugang",
+  "notes": "**Soundboard am Handy: Lautstärke regeln.** Ohne PC steuert der Regler oben jetzt die Wiedergabe auf diesem Gerät – sofort, auch für laufende Sounds, und er merkt sich den Wert. Funktioniert auch auf iPhone und iPad (dort ignoriert der Browser die normale Lautstärke); eigene Lautstärken über 100 % je Sound wirken ebenfalls. „Alle stoppen“ und die Anzeige „aktiv/Ruhe“ gelten dann für dieses Gerät · **Sechs neue Bausteine im Widget-Baukasten:** Zähler (Tode, Siege, Runden – mit +/− und Zurücksetzen), Notizfeld zum Hineintippen, „Tage bis …“ (Datum, am letzten Tag Stunden und Minuten), Verbindung/Ping zum PC, Akku dieses Geräts, Würfel/Münze. Dazu sieben Vorlagen: Tode-Zähler, Siege & Niederlagen, Release-Countdown, Notizzettel, PC-Verbindung, Akku & Uhr, Würfel & Münze · **Untere Leiste am Handy:** eine Markierung, die weich von Eintrag zu Eintrag gleitet; das aktive Symbol hüpft kurz, die Beschriftung blendet ein, die Einträge erscheinen gestaffelt, Antippen gibt spürbare Rückmeldung. Liegt die offene Seite nicht in der Leiste, leuchtet „Mehr“ – man sieht immer, wo man ist",
   "changes": {
     "neu": [
-      "**Einmal anmelden – der PC wird von selbst gefunden.** Der Begleiter hält jetzt von sich aus eine Verbindung zur Cloud deines JARVIS-Kontos (ausgehend, keine Portfreigabe, kein Tailscale nötig). Jedes Gerät, das im selben Konto angemeldet ist, erreicht den PC darüber – zu Hause und unterwegs, ohne QR-Code, ohne Verbindungscode, ohne erneutes Anmelden",
-      "Ist der PC aus, bleibt dein Konto angemeldet und die Cloud-Daten bleiben sichtbar („Cloud verbunden · PC offline“). Sobald Windows läuft und der Begleiter gestartet ist, meldet die Cloud das und die Seite verbindet sich von selbst – ohne Neuladen, ohne Antippen",
-      "Neue Geräte im Konto bekommen automatisch einen eigenen Zugang zum PC (Standardrechte, kein Admin) – sichtbar unter „Geräte & Verbindungen“, jederzeit entfernbar; der PC meldet jeden neuen Zugang",
-      "Einheitliche, ehrliche Statusanzeige: „PC verbunden“ (mit „über die Cloud“), „PC wird gesucht“, „Cloud verbunden · PC offline“, „Cloud nicht erreichbar“, „Verbindung unterbrochen – automatische Wiederverbindung“",
-      "Unter „Cloud“: Abschnitt „Automatische PC-Verbindung“ mit Zustand, Schalter (nur am PC) und Hinweis samt Knopf, falls der Begleiter noch nicht mit Windows startet"
+      "**Soundboard am Handy: Lautstärke regeln.** Ohne PC steuert der Regler oben jetzt die Wiedergabe auf diesem Gerät – sofort, auch für laufende Sounds, und er merkt sich den Wert. Funktioniert auch auf iPhone und iPad (dort ignoriert der Browser die normale Lautstärke); eigene Lautstärken über 100 % je Sound wirken ebenfalls. „Alle stoppen“ und die Anzeige „aktiv/Ruhe“ gelten dann für dieses Gerät",
+      "**Sechs neue Bausteine im Widget-Baukasten:** Zähler (Tode, Siege, Runden – mit +/− und Zurücksetzen), Notizfeld zum Hineintippen, „Tage bis …“ (Datum, am letzten Tag Stunden und Minuten), Verbindung/Ping zum PC, Akku dieses Geräts, Würfel/Münze. Dazu sieben Vorlagen: Tode-Zähler, Siege & Niederlagen, Release-Countdown, Notizzettel, PC-Verbindung, Akku & Uhr, Würfel & Münze"
     ],
     "verbessert": [
-      "Wiederverbinden ohne Dauer-Versuche: Während auf den PC gewartet wird, hält die Seite genau eine Verbindung zur Cloud (Herzschlag alle 25 s) statt alle halbe Sekunde neu zu probieren; die direkte Adresse im WLAN hat weiter Vorrang und wird nebenbei geprüft; bei Cloud-Ausfall wachsende Pausen (2–60 s)",
-      "Jede Seite öffnet sich per Link, auch nach Neuladen und beim zweiten Aufruf – als fester Test für alle 62 Seiten (Website ohne PC und PC-App)"
+      "**Untere Leiste am Handy:** eine Markierung, die weich von Eintrag zu Eintrag gleitet; das aktive Symbol hüpft kurz, die Beschriftung blendet ein, die Einträge erscheinen gestaffelt, Antippen gibt spürbare Rückmeldung. Liegt die offene Seite nicht in der Leiste, leuchtet „Mehr“ – man sieht immer, wo man ist"
     ],
-    "behoben": [
-      "**PC flog nach vielen Anmeldungen aus der Cloud:** Geräte-Tokens wurden nach Alter aufgeräumt – nach 30 neuen Anmeldungen traf es das Token des PCs („Die Cloud kennt diesen PC nicht mehr“). Jetzt zählt „zuletzt benutzt“"
-    ]
+    "behoben": []
   },
-  "signature": "vJlumR+t5BK2n/y5wl/jpZ5a/8vbqyl9iDlp4CUtQOamOUL0nzWPBHOfBH2bnKsdxkiLT8Hn9PaylYJUKSoc9Q=="
+  "signature": "pc78QzE5bO8J88sF6zEo4dOMstqUMm9NMAySQ/ffALE1lGOfwqvuz/WOJYpW47/Bk4+Rj8dfUeF6PCULbVSWnA=="
 }
