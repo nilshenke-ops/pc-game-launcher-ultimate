@@ -4,6 +4,12 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.50.1 – 2026-11-11
+### Verbessert
+- Vier neue Widget-Vorlagen im Glas-Stil und Pillen-Knöpfe für eigene Widgets.
+- Minuten-Pillen im Timer passen in eine Reihe.
+- Minuten-Reihe im Timer bleibt in einer Zeile.
+
 ## 3.50.0 – 2026-11-11
 ### Neu
 - **PC einschalten (Wake-on-LAN über die FRITZ!Box):** In der PC-Steuerung startest du den ausgeschalteten PC vom Handy, iPad oder PC – zu Hause und unterwegs. Die FRITZ!Box sendet das Wecksignal (AVM-Schnittstelle TR-064), ausgelöst über dein Cloud-Konto. Kein offener Port zum PC, keine UDP-Freigabe
