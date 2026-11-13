@@ -1,24 +1,28 @@
 {
-  "version": "3.55.1",
+  "version": "3.56.0",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.1/PCGameLauncherCompanion.exe",
-  "size": 95163921,
-  "sha256": "a634f0c3c312a1e85db976521eeaa0b1a902eed99c1b865450bce1bc81a36b29",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.56.0/PCGameLauncherCompanion.exe",
+  "size": 95171621,
+  "sha256": "0c0ded293d3bf5caa52f807be4400fe9cef4200327dca33661da8cd16d3e8df2",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.55.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.1/PCGameLauncherCompanion-3.55.1-win-x64.zip",
-    "size": 89438409,
-    "sha256": "ee2082182336d7978df259b09ba9835d70bfd21bbfabbfc504dc148a5e11761b"
+    "fileName": "PCGameLauncherCompanion-3.56.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.56.0/PCGameLauncherCompanion-3.56.0-win-x64.zip",
+    "size": 89445518,
+    "sha256": "295a89b07d9f78f69d7a5e46883eb8e4e89d561266bbcdfe5970d9f41f96551b"
   },
-  "notes": "Tastatur verdeckt Suche und Eingabefelder nicht mehr",
+  "notes": "**Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da. · **Netzwerk-Geschwindigkeit:** Der Bereich „System“ zeigt, wie schnell der PC gerade empfängt und sendet, mit kleiner Verlaufslinie. · **Mikrofon am PC stummschalten:** neuer Schalter im Bereich „Regler“, mit dem Namen des Programms, das das Mikrofon gerade benutzt.",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "Tastatur verdeckt Suche und Eingabefelder nicht mehr"
+    "neu": [
+      "**Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da.",
+      "**Netzwerk-Geschwindigkeit:** Der Bereich „System“ zeigt, wie schnell der PC gerade empfängt und sendet, mit kleiner Verlaufslinie.",
+      "**Mikrofon am PC stummschalten:** neuer Schalter im Bereich „Regler“, mit dem Namen des Programms, das das Mikrofon gerade benutzt.",
+      "**Anzeige für Mikrofon und Kamera:** Benutzt ein Programm am PC das Mikrofon (orange) oder die Kamera (grün), zeigt die Kopfzeile der Insel einen Punkt mit dem Programmnamen. Gelesen wird nur, was Windows selbst dazu festhält.",
+      "**Download-Meldungen abschaltbar:** Schalter „Fertige Downloads melden“ im Bereich „Meldungen“ der Insel und in den Einstellungen."
     ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "W8jDpFH3f4Qb43USNqUh4nKK26d5Aa/hzdKodD/abXfuOS5MS8chvf+LDhz3CTelj19YWKjYUoRFijZFiTewTA=="
+  "signature": "D+4Mm32UQpJOZPfw6KkbhlRneR6zOMBXci3Shx9IHVaH2ahze0zeqsToeNAnW77hPsyB5UlOiwPVeF1Uxthsvw=="
 }

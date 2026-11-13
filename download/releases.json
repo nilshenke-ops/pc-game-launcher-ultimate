@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.56.0",
+    "date": "2026-11-13",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.56.0/PCGameLauncherCompanion.exe",
+    "size": 95171621,
+    "sha256": "0c0ded293d3bf5caa52f807be4400fe9cef4200327dca33661da8cd16d3e8df2",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.56.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.56.0/PCGameLauncherCompanion-3.56.0-win-x64.zip",
+      "size": 89445518,
+      "sha256": "295a89b07d9f78f69d7a5e46883eb8e4e89d561266bbcdfe5970d9f41f96551b"
+    },
+    "notes": "**Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da. · **Netzwerk-Geschwindigkeit:** Der Bereich „System“ zeigt, wie schnell der PC gerade empfängt und sendet, mit kleiner Verlaufslinie. · **Mikrofon am PC stummschalten:** neuer Schalter im Bereich „Regler“, mit dem Namen des Programms, das das Mikrofon gerade benutzt.",
+    "changes": {
+      "neu": [
+        "**Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da.",
+        "**Netzwerk-Geschwindigkeit:** Der Bereich „System“ zeigt, wie schnell der PC gerade empfängt und sendet, mit kleiner Verlaufslinie.",
+        "**Mikrofon am PC stummschalten:** neuer Schalter im Bereich „Regler“, mit dem Namen des Programms, das das Mikrofon gerade benutzt.",
+        "**Anzeige für Mikrofon und Kamera:** Benutzt ein Programm am PC das Mikrofon (orange) oder die Kamera (grün), zeigt die Kopfzeile der Insel einen Punkt mit dem Programmnamen. Gelesen wird nur, was Windows selbst dazu festhält.",
+        "**Download-Meldungen abschaltbar:** Schalter „Fertige Downloads melden“ im Bereich „Meldungen“ der Insel und in den Einstellungen."
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "D+4Mm32UQpJOZPfw6KkbhlRneR6zOMBXci3Shx9IHVaH2ahze0zeqsToeNAnW77hPsyB5UlOiwPVeF1Uxthsvw=="
+  },
+  {
     "version": "3.55.1",
     "date": "2026-11-13",
     "channel": "stable",
@@ -1307,33 +1335,5 @@
       "behoben": []
     },
     "signature": "sR8gCruicQSlHBDJoFUJ6mulp5gtPRwAx8FmUYbSO6B05hDR/NO0svGDGdcFCPmOXASpQai8tBe6dOnY86aRSg=="
-  },
-  {
-    "version": "3.27.0",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion.exe",
-    "size": 95034142,
-    "sha256": "c26f4af107bc56a222bc8c93865e86cdb3505896b17b29702ed65815d4e03f89",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.27.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.27.0/PCGameLauncherCompanion-3.27.0-win-x64.zip",
-      "size": 89308589,
-      "sha256": "ad536f9e64f85519149fe6b3da0da511f22caae5b2e7640bd2b747e190de165b"
-    },
-    "notes": "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante · Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig · Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
-    "changes": {
-      "neu": [
-        "Neue PC-Oberfläche: ruhigere Flächen mit weicheren Schatten, klarere Typografie und gleichmäßige Abstände, eine aufgeräumte Seitenleiste mit animiertem Aktiv-Streifen und eine Titelzeile mit wandernder Lichtkante",
-        "Karten tragen jetzt einen weichen Lichtschein, der beim Überfahren einmal über die Fläche zieht; Knöpfe, Felder und Chips sind eckiger und ruhiger statt durchgehend pillenförmig"
-      ],
-      "verbessert": [
-        "Deutlich mehr Bewegung in der PC-App: Navigation und Listen gleiten gestaffelt herein, Karten heben sich unter dem Zeiger, Knöpfe antworten auf den Druck, Dialoge federn auf, Messbalken laufen mit einem Lichtstreifen, und der Hintergrund zieht langsam als Aurora",
-        "„Weniger Bewegung“, „Leichte Darstellung“, die Systemeinstellung und alle Theme-Farben gelten unverändert weiter – die neuen Dauerläufer und Scheine schalten sich dort vollständig ab"
-      ],
-      "behoben": []
-    },
-    "signature": "9KUG7Xo8yQn6Yylqin/rzOEr7V/e9UhbQoOazHtO2D7WJSGtwYUQc8pja6ZJ1QMk07ruwiwWjUqYh2tuK8CpwA=="
   }
 ]
