@@ -1,5 +1,42 @@
 [
   {
+    "version": "3.57.0",
+    "date": "2026-11-13",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.57.0/PCGameLauncherCompanion.exe",
+    "size": 95193189,
+    "sha256": "008664e6687ad6fd8f59f72fbb8425a30c0fe869c0b9a0663559d7567e472fcb",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.57.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.57.0/PCGameLauncherCompanion-3.57.0-win-x64.zip",
+      "size": 89467820,
+      "sha256": "dacd5050050e036830e29a1593ef858f7f04352eba1c96b22be6054647b67b60"
+    },
+    "notes": "**Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung. · **Bereiche wählen und ordnen:** Welche Symbole oben in der Leiste stehen und in welcher Reihenfolge, stellst du im Menü unter „Bereiche anpassen“ ein. · **Auch von außen bearbeitbar:** Unter Overlay & Aufnahme → „Insel anpassen“ gibt es Bereiche, Startseite und Übersicht samt Einstellungen jeder Kachel.",
+    "changes": {
+      "neu": [
+        "**Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung.",
+        "**Bereiche wählen und ordnen:** Welche Symbole oben in der Leiste stehen und in welcher Reihenfolge, stellst du im Menü unter „Bereiche anpassen“ ein.",
+        "**Auch von außen bearbeitbar:** Unter Overlay & Aufnahme → „Insel anpassen“ gibt es Bereiche, Startseite und Übersicht samt Einstellungen jeder Kachel.",
+        "**Audio (wie ein Anruf-Check):** Ein großer Stumm-Knopf für das Mikrofon des PCs. Lautsprecher und Mikrofon lassen sich als Windows-Standardgerät umstellen und testen (Testton bzw. Pegel). „Kamera prüfen“ zeigt das Bild der Kamera dieses Geräts, nur dort und ohne Speichern.",
+        "**Am Handy weiterhören:** Im Musik-Bereich pausiert ein Knopf das Lied am PC und öffnet es auf dem Handy in Spotify bzw. bei Browser-Musik in YouTube. Die Stelle im Lied wird dabei nicht übernommen."
+      ],
+      "verbessert": [
+        "**Aussehen wie NotchPixel:** fast schwarze Insel, dunkle kompakte Kacheln, farbige Status-Chips. Jeder Bereich füllt die Insel aus, ohne leere graue Fläche unten. Das gilt für Spiel, Regler, System, Fokus, Übersicht und JARVIS, am PC wie am Handy.",
+        "**Liedtext:** Die gesungene Zeile steht immer in der Mitte, größer und hervorgehoben; die Liste gleitet darunter weiter statt zu springen. Mit Liedtext stehen Lied und Text nebeneinander.",
+        "**Lautstärke als Schieber** (mit Stumm-Knopf) statt der Leiser/Lauter-Knöpfe – in Musik und im Bereich PC.",
+        "**Spiel-Bereich:** Das Bild des Spiels füllt die Fläche, dazu Live-Werte (CPU, GPU, RAM, FPS falls messbar) und die Aktionen.",
+        "**JARVIS-Bereich:** große Antwortfläche mit Vorschlägen zum Antippen, darunter die Eingabe und die KI-Auswahl in einer Zeile. Status, Hinweise und KI-Verwaltung sind eingeklappt.",
+        "**JARVIS-Karte auf der Startseite:** zeigt seine Augen."
+      ],
+      "behoben": [
+        "Der Punkt „Mikrofon/Kamera in Benutzung“ saß auf der Musik-Karte statt in der Kopfzeile."
+      ]
+    },
+    "signature": "LVIuYiRVAASibbllfIb4rEM9e7JfdSk3PyRPgLADF51DpbNdxPPwDVqsxLA8YldOmsj0rujBkPHcka7dUv+lng=="
+  },
+  {
     "version": "3.56.0",
     "date": "2026-11-13",
     "channel": "stable",
@@ -1308,32 +1345,5 @@
       ]
     },
     "signature": "q54xlVb6yzxnk96Ax/xDxoWPkeTxGc2rcdJGW68LBkJdbPZkEmMeJUQWHglVZvoCDngkOGCk1rGx+LTOy46d7g=="
-  },
-  {
-    "version": "3.28.0",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.0/PCGameLauncherCompanion.exe",
-    "size": 95036440,
-    "sha256": "40eed2f92f2fb3b48a68be361efdc7f8cab5680fb8fc56b4b3e7bedf0330f4ad",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.28.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.28.0/PCGameLauncherCompanion-3.28.0-win-x64.zip",
-      "size": 89310837,
-      "sha256": "d0c82e8ed56c1972ddac2bce4d2c56449d72c77959bd537cf3b8573ca5455d02"
-    },
-    "notes": "Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC · Die Adresse wird vor dem Speichern geprüft; die Einrichtung des mitgelieferten Workers steht direkt im Feld. Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht – der API-Schlüssel bleibt deshalb im Worker und wird nie an die App geschickt · Die Cloud-Seite zeigt jetzt, wo die Kontodaten liegen, und führt mit einem Knopf zurück zum Standard-Dienst. Ein Wechsel ist erst nach dem Abmelden möglich, damit keine Daten im falschen Speicher landen",
-    "changes": {
-      "neu": [
-        "Eigener Cloud-Dienst: Unter „Konto & Cloud“ lässt sich statt der Nexus-Cloud eine eigene, kompatible Adresse eintragen – etwa ein selbst betriebener Cloudflare-Worker mit eigener D1-Datenbank. Handy und PC melden sich dort mit demselben Konto an und haben ihre Daten auch bei ausgeschaltetem PC",
-        "Die Adresse wird vor dem Speichern geprüft; die Einrichtung des mitgelieferten Workers steht direkt im Feld. Cloudflare erlaubt den direkten Datenbank-Zugriff aus dem Browser nicht – der API-Schlüssel bleibt deshalb im Worker und wird nie an die App geschickt"
-      ],
-      "verbessert": [
-        "Die Cloud-Seite zeigt jetzt, wo die Kontodaten liegen, und führt mit einem Knopf zurück zum Standard-Dienst. Ein Wechsel ist erst nach dem Abmelden möglich, damit keine Daten im falschen Speicher landen"
-      ],
-      "behoben": []
-    },
-    "signature": "sR8gCruicQSlHBDJoFUJ6mulp5gtPRwAx8FmUYbSO6B05hDR/NO0svGDGdcFCPmOXASpQai8tBe6dOnY86aRSg=="
   }
 ]

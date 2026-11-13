@@ -1,28 +1,37 @@
 {
-  "version": "3.56.0",
+  "version": "3.57.0",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.56.0/PCGameLauncherCompanion.exe",
-  "size": 95171621,
-  "sha256": "0c0ded293d3bf5caa52f807be4400fe9cef4200327dca33661da8cd16d3e8df2",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.57.0/PCGameLauncherCompanion.exe",
+  "size": 95193189,
+  "sha256": "008664e6687ad6fd8f59f72fbb8425a30c0fe869c0b9a0663559d7567e472fcb",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.56.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.56.0/PCGameLauncherCompanion-3.56.0-win-x64.zip",
-    "size": 89445518,
-    "sha256": "295a89b07d9f78f69d7a5e46883eb8e4e89d561266bbcdfe5970d9f41f96551b"
+    "fileName": "PCGameLauncherCompanion-3.57.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.57.0/PCGameLauncherCompanion-3.57.0-win-x64.zip",
+    "size": 89467820,
+    "sha256": "dacd5050050e036830e29a1593ef858f7f04352eba1c96b22be6054647b67b60"
   },
-  "notes": "**Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da. · **Netzwerk-Geschwindigkeit:** Der Bereich „System“ zeigt, wie schnell der PC gerade empfängt und sendet, mit kleiner Verlaufslinie. · **Mikrofon am PC stummschalten:** neuer Schalter im Bereich „Regler“, mit dem Namen des Programms, das das Mikrofon gerade benutzt.",
+  "notes": "**Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung. · **Bereiche wählen und ordnen:** Welche Symbole oben in der Leiste stehen und in welcher Reihenfolge, stellst du im Menü unter „Bereiche anpassen“ ein. · **Auch von außen bearbeitbar:** Unter Overlay & Aufnahme → „Insel anpassen“ gibt es Bereiche, Startseite und Übersicht samt Einstellungen jeder Kachel.",
   "changes": {
     "neu": [
-      "**Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da.",
-      "**Netzwerk-Geschwindigkeit:** Der Bereich „System“ zeigt, wie schnell der PC gerade empfängt und sendet, mit kleiner Verlaufslinie.",
-      "**Mikrofon am PC stummschalten:** neuer Schalter im Bereich „Regler“, mit dem Namen des Programms, das das Mikrofon gerade benutzt.",
-      "**Anzeige für Mikrofon und Kamera:** Benutzt ein Programm am PC das Mikrofon (orange) oder die Kamera (grün), zeigt die Kopfzeile der Insel einen Punkt mit dem Programmnamen. Gelesen wird nur, was Windows selbst dazu festhält.",
-      "**Download-Meldungen abschaltbar:** Schalter „Fertige Downloads melden“ im Bereich „Meldungen“ der Insel und in den Einstellungen."
+      "**Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung.",
+      "**Bereiche wählen und ordnen:** Welche Symbole oben in der Leiste stehen und in welcher Reihenfolge, stellst du im Menü unter „Bereiche anpassen“ ein.",
+      "**Auch von außen bearbeitbar:** Unter Overlay & Aufnahme → „Insel anpassen“ gibt es Bereiche, Startseite und Übersicht samt Einstellungen jeder Kachel.",
+      "**Audio (wie ein Anruf-Check):** Ein großer Stumm-Knopf für das Mikrofon des PCs. Lautsprecher und Mikrofon lassen sich als Windows-Standardgerät umstellen und testen (Testton bzw. Pegel). „Kamera prüfen“ zeigt das Bild der Kamera dieses Geräts, nur dort und ohne Speichern.",
+      "**Am Handy weiterhören:** Im Musik-Bereich pausiert ein Knopf das Lied am PC und öffnet es auf dem Handy in Spotify bzw. bei Browser-Musik in YouTube. Die Stelle im Lied wird dabei nicht übernommen."
     ],
-    "verbessert": [],
-    "behoben": []
+    "verbessert": [
+      "**Aussehen wie NotchPixel:** fast schwarze Insel, dunkle kompakte Kacheln, farbige Status-Chips. Jeder Bereich füllt die Insel aus, ohne leere graue Fläche unten. Das gilt für Spiel, Regler, System, Fokus, Übersicht und JARVIS, am PC wie am Handy.",
+      "**Liedtext:** Die gesungene Zeile steht immer in der Mitte, größer und hervorgehoben; die Liste gleitet darunter weiter statt zu springen. Mit Liedtext stehen Lied und Text nebeneinander.",
+      "**Lautstärke als Schieber** (mit Stumm-Knopf) statt der Leiser/Lauter-Knöpfe – in Musik und im Bereich PC.",
+      "**Spiel-Bereich:** Das Bild des Spiels füllt die Fläche, dazu Live-Werte (CPU, GPU, RAM, FPS falls messbar) und die Aktionen.",
+      "**JARVIS-Bereich:** große Antwortfläche mit Vorschlägen zum Antippen, darunter die Eingabe und die KI-Auswahl in einer Zeile. Status, Hinweise und KI-Verwaltung sind eingeklappt.",
+      "**JARVIS-Karte auf der Startseite:** zeigt seine Augen."
+    ],
+    "behoben": [
+      "Der Punkt „Mikrofon/Kamera in Benutzung“ saß auf der Musik-Karte statt in der Kopfzeile."
+    ]
   },
-  "signature": "D+4Mm32UQpJOZPfw6KkbhlRneR6zOMBXci3Shx9IHVaH2ahze0zeqsToeNAnW77hPsyB5UlOiwPVeF1Uxthsvw=="
+  "signature": "LVIuYiRVAASibbllfIb4rEM9e7JfdSk3PyRPgLADF51DpbNdxPPwDVqsxLA8YldOmsj0rujBkPHcka7dUv+lng=="
 }
