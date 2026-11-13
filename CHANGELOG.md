@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.55.1 – 2026-11-13
+### Verbessert
+- Tastatur verdeckt Suche und Eingabefelder nicht mehr
+
 ## 3.55.0 – 2026-11-13
 ### Neu
 - **JARVIS-Insel im Stil von NotchPixel und Smart Notch – im eigenen Design:** Die Bereiche liegen jetzt als Symbolleiste ganz oben (mit gleitender Markierung und Punkt unter dem offenen Bereich), rechts daneben Akku des PCs, Wetter und Uhrzeit.
