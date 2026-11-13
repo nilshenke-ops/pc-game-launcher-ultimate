@@ -348,6 +348,8 @@
     "vault.restore": "manage",
     "vault.diff": "view",
     "power.status": "view",
+    "controls.get": "view",
+    "controls.set": "launch",
     "privacy.status": "view",
     "moves.list": "view",
     "moves.options": "view",

@@ -947,6 +947,20 @@ public static class RpcApi
             return await Task.Run(() => s.Vault.Restore(id, b)); });
         rpc.Register("vault.diff", ctx => s.Vault.Diff(ctx.Str("id", 48), ctx.Str("a", 40), ctx.Str("b", 40)));
 
+        // Quick controls of the island: what this PC can tell and set (volume, mute, brightness, battery, power plan) – null where it cannot.
+        object Controls() { var c = s.Platform.Controls.Read(); return new { supported = s.Platform.Controls.Supported, volume = c.Volume, muted = c.Muted, brightness = c.Brightness, battery = c.BatteryPercent, charging = c.Charging, powerMode = c.PowerMode }; }
+        rpc.Register("controls.get", _ => Controls());
+        rpc.Register("controls.set", ctx =>
+        {
+            int? Num(string n) => ctx.Params.TryGetProperty(n, out var v) && v.ValueKind == System.Text.Json.JsonValueKind.Number && v.TryGetInt32(out var i) ? Math.Clamp(i, 0, 100) : null;
+            bool? muted = ctx.Params.TryGetProperty("muted", out var mv) && mv.ValueKind is System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False ? mv.GetBoolean() : null;
+            var mode = ctx.OptStr("powerMode", 20);
+            if (mode != null && mode is not ("saver" or "balanced" or "performance")) throw new RpcException("invalid-params", "Unbekannter Energiemodus.");
+            var err = s.Platform.Controls.Set(Num("volume"), muted, Num("brightness"), mode);
+            if (err != null) throw new RpcException("controls", err);
+            Changed(s, "controls");
+            return Controls();
+        });
         rpc.Register("power.status", ctx => s.Power.Status(ctx.Session));
         // Locking is harmless (sign in again) – every device that may start games may lock the PC.
         rpc.Register("power.lock", ctx => { s.Power.Run("lock", 0, ctx.Session.Who); return true; });

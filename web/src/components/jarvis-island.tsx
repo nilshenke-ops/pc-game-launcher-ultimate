@@ -296,6 +296,8 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
           {ripples.map((r) => <span key={r.id} className="isl-ripple" style={{ left: r.x }} aria-hidden />)}
           {live && size !== "notch" && !ask && <TimerRing progress={live.progress} />}
           {/* A tap anywhere on the closed island opens it – the eyes included (poking them is for the open island's header). */}
+          {/* What plays shows its cover in the closed island (the eyes stay next to it). */}
+          {mediaLine && np?.cover && !ask && <img className="isl-cover" src={np.cover} alt="" decoding="async" />}
           <IslandEyes mood={mood} />
           {mood === "dancing" && s.music ? <Bars level={s.music.level} /> : mediaLine ? <Bars level={0.35} /> : null}
           {live && size === "notch" && <span className="isl-live"><TimerRing progress={live.progress} />{clock(live.left)}</span>}

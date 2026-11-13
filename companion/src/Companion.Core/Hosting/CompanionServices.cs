@@ -93,6 +93,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public Assistant.AssistantService Assistant { get; }
     /// <summary>JARVIS' voice through ElevenLabs (off until switched on; key only at the PC).</summary>
     public Assistant.VoiceService Voice { get; }
+    public DownloadWatchService Downloads { get; }
     public RelayClient Relay { get; }
     /// <summary>Outbound connection to the cloud account's link: the account's devices reach this PC through it from anywhere (no open port).</summary>
     public RelayClient CloudLink { get; }
@@ -125,6 +126,9 @@ public sealed class CompanionServices : IAsyncDisposable
         Metrics = new SwitchedMetrics(platform.Metrics, () => Settings.Get().Metrics ?? new());
         Metrics.Apply(Settings.Get().Metrics ?? new());
         Monitor = new MonitorService(Metrics, Rpc);
+        Downloads = new DownloadWatchService(
+            (name, size) => Notifications.Push("download-" + name, Severity.Info, "Download fertig: " + name, $"{size / 1048576.0:0.#} MB im Downloads-Ordner."),
+            () => Settings.Get().DownloadNotices);
         Relay = new RelayClient(Rpc);
         CloudLink = new RelayClient(Rpc, "cloudlink");
         Web = new WebHost(this, assets);
@@ -632,6 +636,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Launchers.Start();
         ApplyRelaySettings(Settings.Get());
         ApplyCloudLink();
+        Downloads.Start();
         _ = Automations.Fire(TriggerType.CompanionStarted, null);
         _scheduleTimer = new Timer(_ => _ = Automations.CheckSchedule(DateTime.Now), null, TimeSpan.FromSeconds(20), TimeSpan.FromSeconds(20));
         Log.Info("companion", $"Companion {UpdateService.CurrentVersion} gestartet. Daten: {Paths.DataDir}");
@@ -786,6 +791,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Playtime.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }
         try { Platform.Audio.StopAll(); Platform.Audio.SetMicPassthrough(false, null, null, 0); } catch { }
+        Downloads.Dispose();
         await Relay.DisposeAsync();
         await CloudLink.DisposeAsync();
         await Web.DisposeAsync();

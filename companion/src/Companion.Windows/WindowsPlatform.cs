@@ -36,6 +36,7 @@ sealed class WindowsPlatform : IPlatform
     public IEnumerable<IDetector> Detectors { get; } = new IDetector[] { new SteamDetector(SteamDetector.DefaultRoots()), new EpicDetector(EpicDetector.DefaultManifestDir()) };
     public IUpdateInstaller UpdateInstaller { get; } = new SelfReplaceInstaller();
     public IPowerControl Power { get; } = new WindowsPower();
+    public ISystemControls Controls { get; } = new WindowsSystemControls();
     public IHardwareInfo Hardware { get; } = new WindowsHardwareInfo();
     public IScreenCapture Screen { get; } = new WindowsScreenCapture();
     public IRemoteInput RemoteInput { get; } = new WindowsRemoteInput();

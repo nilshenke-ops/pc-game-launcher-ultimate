@@ -44,6 +44,7 @@ public sealed class SettingsService
         public string? PcName { get; set; }
         public string? Language { get; set; }
         public bool? HistoryEnabled { get; set; }
+        public bool? DownloadNotices { get; set; }
         public bool? RecordSessionPerf { get; set; }
         public bool? StartMinimized { get; set; }
         public bool? KeepRunningInTray { get; set; }
@@ -75,6 +76,7 @@ public sealed class SettingsService
             if (u.PcName != null) s.PcName = DeviceStore.Sanitize(u.PcName, 40, s.PcName);
             if (u.Language != null) s.Language = u.Language;
             if (u.HistoryEnabled != null) s.HistoryEnabled = u.HistoryEnabled.Value;
+            if (u.DownloadNotices != null) s.DownloadNotices = u.DownloadNotices.Value;
             if (u.RecordSessionPerf != null) s.RecordSessionPerf = u.RecordSessionPerf.Value;
             if (u.StartMinimized != null) s.StartMinimized = u.StartMinimized.Value;
             if (u.KeepRunningInTray != null) s.KeepRunningInTray = u.KeepRunningInTray.Value;

@@ -4,6 +4,19 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.55.0 – 2026-11-13
+### Neu
+- **JARVIS-Insel im Stil von NotchPixel und Smart Notch – im eigenen Design:** Die Bereiche liegen jetzt als Symbolleiste ganz oben (mit gleitender Markierung und Punkt unter dem offenen Bereich), rechts daneben Akku des PCs, Wetter und Uhrzeit.
+- **Übersicht:** Kalenderwoche mit „KW“ und markiertem heutigen Tag, Fokus-Timer mit Ring (kürzer, länger, Pause, Stopp), Wetter für deinen Ort (Open-Meteo, ohne Konto) und CPU, GPU und Arbeitsspeicher als Verlaufslinien.
+- **Regler:** Helligkeit und Lautstärke des PCs als hohe Schieber, dazu Stumm, Fokus, Akkustand und Energiemodus (Sparen, Ausgewogen, Leistung). Gezeigt wird nur, was der PC wirklich meldet.
+- **System:** Kacheln für CPU, Arbeitsspeicher, GPU, freien Speicher, Akku und Laufzeit seit dem letzten Start.
+- **Download fertig:** Der Begleiter beobachtet den Downloads-Ordner und meldet eine Datei, sobald sie vollständig ist (nur der Dateiname, nichts wird geöffnet oder gelesen). Halb geladene Dateien (.crdownload, .part …) werden nicht gemeldet.
+- Meldungen des PCs lassen sich in der Insel mit „Alle löschen“ auf einmal wegräumen.
+- Läuft Musik, zeigt die geschlossene Insel das Albumbild.
+### Hinweise
+- Lautstärke, Helligkeit, Akku und Energiemodus am echten Windows-PC sind eingebaut und übersetzen fehlerfrei, konnten hier aber nicht auf einem Windows-Gerät ausprobiert werden. Helligkeit geht nur bei Bildschirmen, die Windows selbst regeln kann (meist Laptops); bei anderen bleibt der Regler aus.
+- Bewusst nicht eingebaut: WLAN, Bluetooth und Nachtmodus per Schalter (WLAN aus der Ferne abzuschalten würde die Verbindung zum Handy kappen), Liedtexte, Anruf- und Kamera-Bereich, „Arbeitsspeicher optimieren“.
+
 ## 3.54.0 – 2026-11-12
 ### Neu
 - **Soundboard am Handy: Lautstärke regeln.** Ohne PC steuert der Regler oben jetzt die Wiedergabe auf diesem Gerät – sofort, auch für laufende Sounds, und er merkt sich den Wert. Funktioniert auch auf iPhone und iPad (dort ignoriert der Browser die normale Lautstärke); eigene Lautstärken über 100 % je Sound wirken ebenfalls. „Alle stoppen“ und die Anzeige „aktiv/Ruhe“ gelten dann für dieses Gerät

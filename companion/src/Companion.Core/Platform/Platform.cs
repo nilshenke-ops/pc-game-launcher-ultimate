@@ -34,6 +34,8 @@ public interface IPlatform
     IOverlay Overlay => NullOverlay.Instance;
     /// <summary>The JARVIS island at the top of the screen (Windows companion only).</summary>
     IDesktopIsland Island => NullDesktopIsland.Instance;
+    /// <summary>Volume, mute, brightness, battery and power plan for the island's quick controls (Windows companion only).</summary>
+    ISystemControls Controls => NullSystemControls.Instance;
     /// <summary>Which window is in front (desktop, this app, another program) – decides where the island shows (Windows companion only).</summary>
     IForegroundWatcher Foreground => NullForegroundWatcher.Instance;
     /// <summary>What the PC plays right now (Spotify, Firefox, YouTube …: title and artist) from Windows' media sessions (Windows companion only).</summary>

@@ -6,12 +6,13 @@ import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocit
 import { flushSync } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, VolumeX, Layers } from "lucide-react";
+import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, Layers } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
 import { connView } from "../lib/conn-state";
+import { IslandControls, IslandDash, IslandSystem, useIslandWeather, usePcControls, WeatherIcon } from "./island-extra";
 import { sendWake, useWake, wakeLabel } from "../lib/wake";
 import { useIslandLook } from "../lib/island-look";
 import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
@@ -45,9 +46,9 @@ import { useGlidePill } from "./glide-pill";
 import { Bars, IslandEyes } from "./island-bits";
 import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, IslandStats, IslandStopwatch, IslandTemps, IslandVolume } from "./island-widgets";
 
-export type IslandTab = "home" | "game" | "music" | "jarvis" | "focus" | "inbox" | "apps" | "pc" | "note";
+export type IslandTab = "home" | "dash" | "game" | "music" | "jarvis" | "focus" | "inbox" | "apps" | "controls" | "system" | "pc" | "note";
 const TAB_META: Record<IslandTab, { icon: typeof Home; label: string }> = {
-  home: { icon: Home, label: "Home" }, game: { icon: Gamepad2, label: "Spiel" }, music: { icon: Music, label: "Musik" }, jarvis: { icon: MessageCircle, label: "JARVIS" }, focus: { icon: Timer, label: "Fokus" },
+  home: { icon: Home, label: "Home" }, dash: { icon: LayoutDashboard, label: "Übersicht" }, controls: { icon: SlidersHorizontal, label: "Regler" }, system: { icon: Activity, label: "System" }, game: { icon: Gamepad2, label: "Spiel" }, music: { icon: Music, label: "Musik" }, jarvis: { icon: MessageCircle, label: "JARVIS" }, focus: { icon: Timer, label: "Fokus" },
   inbox: { icon: Inbox, label: "Meldungen" }, apps: { icon: LayoutGrid, label: "Apps" }, pc: { icon: Monitor, label: "PC" }, note: { icon: StickyNote, label: "Notiz" },
 };
 /** Widgets of the old panel that now live under the "PC" tab (music, focus, stopwatch and note have their own places). */
@@ -56,12 +57,12 @@ const PC_WIDGETS: IslandWidgetId[] = ["game", "start", "clock", "stats", "temp",
 /** Which tabs show: the fixed ones always, the others follow the widget choice in the settings (so nothing the person switched off comes back). */
 export function visibleTabs(widgets: IslandWidgetId[], gameRunning = false): IslandTab[] {
   const has = (id: IslandWidgetId) => widgets.includes(id);
-  const tabs: IslandTab[] = ["home"];
+  const tabs: IslandTab[] = ["home", "dash"];   // the overview (calendar, focus, weather, load) is always there
   if (gameRunning) tabs.push("game"); // the gaming view appears with a running game and goes with it
   if (has("music")) tabs.push("music");
   tabs.push("jarvis");
   if (has("focus") || has("stopwatch")) tabs.push("focus");
-  tabs.push("inbox", "apps");
+  tabs.push("inbox", "apps", "controls", "system");
   if (PC_WIDGETS.some(has)) tabs.push("pc");
   if (has("note")) tabs.push("note");
   return tabs;
@@ -92,6 +93,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const waking = wake.phase === "sending" || wake.phase === "sent" || wake.phase === "booting" || wake.phase === "connecting";
   const pcLine = online ? (conn.via === "cloud" ? t("über die Cloud") : t("PC bereit")) : waking ? wakeLabel(wake, false, true).text : cview.label;
   const [copied, setCopied] = useState(false);
+  const pcControls = usePcControls(online);
+  const weather = useIslandWeather();
   const np = useNowPlaying();
   const tm = useTimer();
   const game = mainGame(app?.running);
@@ -637,7 +640,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           <div className="isl2-ntext"><b className="ellipsis">{h.text}</b><span className="tiny muted">{relTime(h.at)}</span></div>
         </div>
       ))}
-      <div className="isl2-hhead"><b>{t("Meldungen des PCs")}</b></div>
+      <div className="isl2-hhead"><b>{t("Meldungen des PCs")}</b>{online && list.length > 0 && <button type="button" className="isl2-chip" onClick={() => void client.call("notifications.dismissAll", {}).then(() => inbox.reload(), () => undefined)}>{t("Alle löschen")}</button>}</div>
       {!online ? <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{pcLine}</span></div>
         : !inbox.loading && !list.length ? <div className="isl2-empty ok"><BellOff size={18} aria-hidden /><span>{t("Keine offenen Meldungen.")}</span></div>
         : list.map((n) => (
@@ -688,7 +691,10 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     </div>
   );
 
-  const body: Record<IslandTab, ReactNode> = { home, game: gameTab, music: musicTab, jarvis: jarvisTab, apps: appsTab, inbox: inboxTab, pc: pcTab, focus: focusTab, note: <IslandNote /> };
+  const body: Record<IslandTab, ReactNode> = { home, game: gameTab, music: musicTab, jarvis: jarvisTab, apps: appsTab, inbox: inboxTab, pc: pcTab, focus: focusTab, note: <IslandNote />,
+    dash: <IslandDash online={online} now={now} weather={weather} />,
+    controls: <IslandControls online={online} canUse={canMedia} controls={pcControls} now={now} press={media} />,
+    system: <IslandSystem online={online} controls={pcControls} /> };
 
   return (
     <div className="isl2" role="dialog" aria-label={t("JARVIS-Insel")}>
@@ -696,9 +702,23 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         {/* Like the closed island opens with a tap on its top, the open one closes with a tap on its top (eyes and date) – no menu needed. */}
         <button type="button" className="isl2-closeTap" aria-label={t("JARVIS-Insel schließen")} title={t("Tippen zum Schließen")} onClick={() => { islandTouch(); onClose(); }}>
           <IslandEyes mood={mood} />
-          <time className="isl2-date" dateTime={new Date(now).toISOString()}>{new Date(now).toLocaleString([], { weekday: "short", day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time>
         </button>
-        {playing && <Bars level={0.4} />}
+        <nav className="isl2-tabs has-thumb top" role="tablist" aria-label={t("Bereiche der Insel")} ref={tabsRef}>
+          <span className="isl2-thumb" ref={thumbRef} aria-hidden="true" />
+          {tabs.map((id) => {
+            const m = TAB_META[id], on = id === current;
+            return (
+              <button key={id} type="button" role="tab" id={`isl2-tab-${id}`} aria-selected={on} aria-controls="isl2-panel" aria-label={t(m.label)} title={`${t(m.label)} (${tabs.indexOf(id) + 1})`}
+                className={`isl2-tab${on ? " on" : ""}`} onClick={() => { if (id !== current) void goTab(id); }}><m.icon size={16} /></button>
+            );
+          })}
+        </nav>
+        <span className="isl2-status" title={new Date(now).toLocaleString([], { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}>
+          {playing && <Bars level={0.4} />}
+          {weather.w && <span className="isl2-stat" aria-label={t("Wetter: {n} Grad", { n: weather.w.temp })}><WeatherIcon code={weather.w.code} size={14} />{weather.w.temp}°</span>}
+          {pcControls.data?.battery != null && <span className="isl2-stat" aria-label={t("Akku des PCs: {n} Prozent", { n: pcControls.data.battery })}>{pcControls.data.charging ? <BatteryCharging size={14} /> : <BatteryMedium size={14} />}{pcControls.data.battery}%</span>}
+          <time className="isl2-clock" dateTime={new Date(now).toISOString()}>{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time>
+        </span>
         <div className="isl2-moreWrap" ref={menuRef}>
           <button type="button" className="isl2-more" aria-haspopup="menu" aria-expanded={menu} aria-label={t("Mehr")} onClick={() => setMenu((m) => !m)}><MoreHorizontal size={18} /></button>
           {(menu || menuShown) && (
@@ -723,18 +743,6 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
         {peek && <div className="isl2-body isl2-peek" aria-hidden ref={peekRef} {...({ inert: "" } as object)}>{body[peek]}</div>}
       </div>
-      <nav className="isl2-tabs has-thumb" role="tablist" aria-label={t("Bereiche der Insel")} ref={tabsRef}>
-        <span className="isl2-thumb" ref={thumbRef} aria-hidden="true" />
-        {tabs.map((id) => {
-          const m = TAB_META[id], on = id === current;
-          return (
-            <button key={id} type="button" role="tab" id={`isl2-tab-${id}`} aria-selected={on} aria-controls="isl2-panel" aria-label={t(m.label)} title={`${t(m.label)} (${tabs.indexOf(id) + 1})`}
-              className={`isl2-tab${on ? " on" : ""}`} onClick={() => { if (id !== current) void goTab(id); }}><m.icon size={17} />{on && <span>{t(m.label)}</span>}</button>
-          );
-        })}
-        <span className="isl2-grow" />
-        <button type="button" className="isl2-tab" disabled={ctl} onClick={() => media("mute")} aria-label={t("Ton aus/an")} title={t("Ton aus/an")}><VolumeX size={17} /></button>
-      </nav>
     </div>
   );
 }

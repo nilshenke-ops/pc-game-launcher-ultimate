@@ -25,6 +25,8 @@ public sealed class GenericPlatform : IPlatform
     /// <summary>No power actions by default; the headless companion can use <see cref="DryRunPower"/> for trying out the app.</summary>
     public IPowerControl Power { get; init; } = NullPower.Instance;
     public IHardwareInfo Hardware { get; init; } = NullHardwareInfo.Instance;
+    /// <summary>In-memory controls only for trying out the page and the tests (PGL_TEST_CONTROLS=1); otherwise none.</summary>
+    public ISystemControls Controls { get; init; } = Environment.GetEnvironmentVariable("PGL_TEST_CONTROLS") == "1" ? new MemorySystemControls() : NullSystemControls.Instance;
     public IScreenCapture Screen { get; init; } = NullScreenCapture.Instance;
     public IRemoteInput RemoteInput { get; init; } = NullRemoteInput.Instance;
     public IAudioLoopback AudioLoopback { get; init; } = NullAudioLoopback.Instance;

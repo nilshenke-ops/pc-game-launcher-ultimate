@@ -379,6 +379,8 @@ public sealed class Settings
     public string? RelayCompanionId { get; set; }
     public string? RelaySecretProtected { get; set; }
     public bool HistoryEnabled { get; set; } = true;
+    /// <summary>Report finished downloads (file name only) as a notification and in the island.</summary>
+    public bool DownloadNotices { get; set; } = true;
     public bool StartMinimized { get; set; } = true;
     public bool KeepRunningInTray { get; set; } = true;
     public int ProcessScanSeconds { get; set; } = 5;
