@@ -1,29 +1,27 @@
 {
-  "version": "3.60.0",
+  "version": "3.61.0",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.60.0/PCGameLauncherCompanion.exe",
-  "size": 95247017,
-  "sha256": "51265978ff5363bdb410ddc828f2aa99f5dcfa33159419f312d2aff96d5ee2b9",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.61.0/PCGameLauncherCompanion.exe",
+  "size": 95248427,
+  "sha256": "5e66b119fba140d3ba7b67d7c614e894f3dbdd0d075ac57b7269f6615fd66025",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.60.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.60.0/PCGameLauncherCompanion-3.60.0-win-x64.zip",
-    "size": 89522366,
-    "sha256": "b509fadfd7d8684ddd76dbace6beaf03fc734722139be45e7738c51d5716ae34"
+    "fileName": "PCGameLauncherCompanion-3.61.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.61.0/PCGameLauncherCompanion-3.61.0-win-x64.zip",
+    "size": 89523597,
+    "sha256": "efe9b4b1d25e39de9d780ca9247809595f4e3040f98ec38601f47ad304d4dd6c"
   },
-  "notes": "**Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC. · **JARVIS-Aufträge live in der Insel (AI Activity Island).** Die Insel am PC zeigt, was JARVIS gerade tut, von welchem Gerät der Auftrag auch kommt: · Der PC selbst darf über JARVIS-Aufträge entscheiden, die ein Handy gestellt hat. Andere Geräte sehen und steuern weiter nur ihre eigenen.",
+  "notes": "**Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`): · **Die Augen leben weiter, ohne Daueranimation.** Alle paar Sekunden blinzeln sie oder schauen kurz zur Seite, dazwischen ruht alles. Das pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“. · **Leucht-Effekte ruhen nach ein paar Durchgängen:**",
   "changes": {
-    "neu": [
-      "**Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC.",
-      "**JARVIS-Aufträge live in der Insel (AI Activity Island).** Die Insel am PC zeigt, was JARVIS gerade tut, von welchem Gerät der Auftrag auch kommt:"
-    ],
+    "neu": [],
     "verbessert": [
-      "Der PC selbst darf über JARVIS-Aufträge entscheiden, die ein Handy gestellt hat. Andere Geräte sehen und steuern weiter nur ihre eigenen.",
-      "Bestandsaufnahme „Dynamic Island 2.0“ mit Plan und ehrlichen Grenzen in `docs/DYNAMIC-ISLAND-2.0.md`. Beispiel: Windows-Benachrichtigungen anderer Programme kann eine klassische Windows-Anwendung nicht lesen.",
-      "Tests: Der Test-Helfer nutzt eine gemeinsame Verbindung zum Begleiter, statt für jeden Aufruf eine neue zu öffnen. Das traf die Schutzgrenze für neue Verbindungen; die Insel-Tests laufen dadurch auch schneller."
+      "**Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`):",
+      "**Die Augen leben weiter, ohne Daueranimation.** Alle paar Sekunden blinzeln sie oder schauen kurz zur Seite, dazwischen ruht alles. Das pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“.",
+      "**Leucht-Effekte ruhen nach ein paar Durchgängen:**",
+      "Neues Messwerkzeug `web/e2e/perf-measure.spec.ts` für Vorher/Nachher-Vergleiche (läuft nur auf Wunsch)."
     ],
     "behoben": []
   },
-  "signature": "plbM6bXYUqgNixIjgVlAuDysYUv0Co96XhWc0co/D3oW5NYNAS7H+NWSRQodk9WokoJRk4fLN4DFvgI00gvQbw=="
+  "signature": "RGDUZYSxWHO1rLaB/u30XS5J4v7Cp9j8T9QjTsgACbG5HwzBxl5algxBGB3IRiJwzAczG9jGyiBoqYBQHJ499w=="
 }

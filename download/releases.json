@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.61.0",
+    "date": "2026-11-13",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.61.0/PCGameLauncherCompanion.exe",
+    "size": 95248427,
+    "sha256": "5e66b119fba140d3ba7b67d7c614e894f3dbdd0d075ac57b7269f6615fd66025",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.61.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.61.0/PCGameLauncherCompanion-3.61.0-win-x64.zip",
+      "size": 89523597,
+      "sha256": "efe9b4b1d25e39de9d780ca9247809595f4e3040f98ec38601f47ad304d4dd6c"
+    },
+    "notes": "**Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`): · **Die Augen leben weiter, ohne Daueranimation.** Alle paar Sekunden blinzeln sie oder schauen kurz zur Seite, dazwischen ruht alles. Das pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“. · **Leucht-Effekte ruhen nach ein paar Durchgängen:**",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "**Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`):",
+        "**Die Augen leben weiter, ohne Daueranimation.** Alle paar Sekunden blinzeln sie oder schauen kurz zur Seite, dazwischen ruht alles. Das pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“.",
+        "**Leucht-Effekte ruhen nach ein paar Durchgängen:**",
+        "Neues Messwerkzeug `web/e2e/perf-measure.spec.ts` für Vorher/Nachher-Vergleiche (läuft nur auf Wunsch)."
+      ],
+      "behoben": []
+    },
+    "signature": "RGDUZYSxWHO1rLaB/u30XS5J4v7Cp9j8T9QjTsgACbG5HwzBxl5algxBGB3IRiJwzAczG9jGyiBoqYBQHJ499w=="
+  },
+  {
     "version": "3.60.0",
     "date": "2026-11-13",
     "channel": "stable",
@@ -1325,31 +1352,5 @@
       ]
     },
     "signature": "Zwbo7TovK6LfG6fZwi10q4vbCSgGU9QaX8lRs59YIlNzIjm0FVsaPS3LNYi3CD9Hx1392ISSF5OG+cM+FuJt8A=="
-  },
-  {
-    "version": "3.30.1",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.30.1/PCGameLauncherCompanion.exe",
-    "size": 95043659,
-    "sha256": "0d0bd81f9dc660289bcf15f8748f5088f9c30d23133b3acc96c71263bda2f4be",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.30.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.30.1/PCGameLauncherCompanion-3.30.1-win-x64.zip",
-      "size": 89318071,
-      "sha256": "81d71bda62e73287eacf29de8a37d768b7e22503a6ad306931ea974a3e87ff2f"
-    },
-    "notes": "Macht Aufnahme und Widget-Menü im Overlay übersichtlich. · Wischen wechselt Startseiten und das Musik-Widget wird klarer. · Kürzt die Beschriftungen der Musik-Tasten, damit sie auf dem Handy nicht abschneiden.",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Macht Aufnahme und Widget-Menü im Overlay übersichtlich.",
-        "Wischen wechselt Startseiten und das Musik-Widget wird klarer.",
-        "Kürzt die Beschriftungen der Musik-Tasten, damit sie auf dem Handy nicht abschneiden."
-      ],
-      "behoben": []
-    },
-    "signature": "3m2HZ2Do53c2sdaQtlrJD3Stnar5R2EMKWRwzHFXgsnYx1RLVw8hemyIo2EWeHE/nvWhF4b8RPL76zwbJW8YWg=="
   }
 ]
