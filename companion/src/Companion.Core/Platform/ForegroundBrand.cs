@@ -32,7 +32,7 @@ public static class ForegroundBrand
         {
             // the site's name stands at the end of the title, before the browser's own name
             var parts = (title ?? "").Split(new[] { " - ", " – ", " | ", " — " }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            foreach (var part in parts.Reverse().Skip(parts.Length > 1 ? 1 : 0).Take(2))
+            foreach (var part in Enumerable.Reverse(parts).Skip(parts.Length > 1 ? 1 : 0).Take(2))
             {
                 var l = part.ToLowerInvariant();
                 foreach (var (t, b) in Sites) if (l == t || l.StartsWith(t + " ") || l.EndsWith(" " + t)) return b;
