@@ -1,37 +1,26 @@
 {
-  "version": "3.57.0",
+  "version": "3.58.0",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.57.0/PCGameLauncherCompanion.exe",
-  "size": 95193189,
-  "sha256": "008664e6687ad6fd8f59f72fbb8425a30c0fe869c0b9a0663559d7567e472fcb",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.0/PCGameLauncherCompanion.exe",
+  "size": 95205077,
+  "sha256": "bb062b774e7a01ea2dd5c29a764698afa369f5bfadfcd7f29d86d8b257c54705",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.57.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.57.0/PCGameLauncherCompanion-3.57.0-win-x64.zip",
-    "size": 89467820,
-    "sha256": "dacd5050050e036830e29a1593ef858f7f04352eba1c96b22be6054647b67b60"
+    "fileName": "PCGameLauncherCompanion-3.58.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.0/PCGameLauncherCompanion-3.58.0-win-x64.zip",
+    "size": 89479018,
+    "sha256": "20f127eb1f54e52df5b6929b9f0b2eafff25d41b3498afee4b5c3b6cbf00d6c5"
   },
-  "notes": "**Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung. · **Bereiche wählen und ordnen:** Welche Symbole oben in der Leiste stehen und in welcher Reihenfolge, stellst du im Menü unter „Bereiche anpassen“ ein. · **Auch von außen bearbeitbar:** Unter Overlay & Aufnahme → „Insel anpassen“ gibt es Bereiche, Startseite und Übersicht samt Einstellungen jeder Kachel.",
+  "notes": "**Was am meisten verbraucht:** Im System-Bereich der Insel (und in der System-Kachel) auf CPU oder Arbeitsspeicher tippen. Es erscheint die Liste der Programme, die gerade am meisten brauchen, das meiste oben. · **Farbe & Effekt der Insel:** 16 Farben, eine eigene Farbe oder „Automatisch“. Automatisch färbt die Insel wie die App oder Website vorne am PC (z. B. Discord-Blau, Spotify-Grün, YouTube-Rot), sonst wie das Albumbild des laufenden Lieds. Vom Vordergrund erfährt die Insel nur einen Kurznamen wie „discord“, nie den Fenstertitel. · **Regler: WLAN, Bluetooth und Nachtmodus.**",
   "changes": {
     "neu": [
-      "**Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung.",
-      "**Bereiche wählen und ordnen:** Welche Symbole oben in der Leiste stehen und in welcher Reihenfolge, stellst du im Menü unter „Bereiche anpassen“ ein.",
-      "**Auch von außen bearbeitbar:** Unter Overlay & Aufnahme → „Insel anpassen“ gibt es Bereiche, Startseite und Übersicht samt Einstellungen jeder Kachel.",
-      "**Audio (wie ein Anruf-Check):** Ein großer Stumm-Knopf für das Mikrofon des PCs. Lautsprecher und Mikrofon lassen sich als Windows-Standardgerät umstellen und testen (Testton bzw. Pegel). „Kamera prüfen“ zeigt das Bild der Kamera dieses Geräts, nur dort und ohne Speichern.",
-      "**Am Handy weiterhören:** Im Musik-Bereich pausiert ein Knopf das Lied am PC und öffnet es auf dem Handy in Spotify bzw. bei Browser-Musik in YouTube. Die Stelle im Lied wird dabei nicht übernommen."
+      "**Was am meisten verbraucht:** Im System-Bereich der Insel (und in der System-Kachel) auf CPU oder Arbeitsspeicher tippen. Es erscheint die Liste der Programme, die gerade am meisten brauchen, das meiste oben.",
+      "**Farbe & Effekt der Insel:** 16 Farben, eine eigene Farbe oder „Automatisch“. Automatisch färbt die Insel wie die App oder Website vorne am PC (z. B. Discord-Blau, Spotify-Grün, YouTube-Rot), sonst wie das Albumbild des laufenden Lieds. Vom Vordergrund erfährt die Insel nur einen Kurznamen wie „discord“, nie den Fenstertitel.",
+      "**Regler: WLAN, Bluetooth und Nachtmodus.**"
     ],
-    "verbessert": [
-      "**Aussehen wie NotchPixel:** fast schwarze Insel, dunkle kompakte Kacheln, farbige Status-Chips. Jeder Bereich füllt die Insel aus, ohne leere graue Fläche unten. Das gilt für Spiel, Regler, System, Fokus, Übersicht und JARVIS, am PC wie am Handy.",
-      "**Liedtext:** Die gesungene Zeile steht immer in der Mitte, größer und hervorgehoben; die Liste gleitet darunter weiter statt zu springen. Mit Liedtext stehen Lied und Text nebeneinander.",
-      "**Lautstärke als Schieber** (mit Stumm-Knopf) statt der Leiser/Lauter-Knöpfe – in Musik und im Bereich PC.",
-      "**Spiel-Bereich:** Das Bild des Spiels füllt die Fläche, dazu Live-Werte (CPU, GPU, RAM, FPS falls messbar) und die Aktionen.",
-      "**JARVIS-Bereich:** große Antwortfläche mit Vorschlägen zum Antippen, darunter die Eingabe und die KI-Auswahl in einer Zeile. Status, Hinweise und KI-Verwaltung sind eingeklappt.",
-      "**JARVIS-Karte auf der Startseite:** zeigt seine Augen."
-    ],
-    "behoben": [
-      "Der Punkt „Mikrofon/Kamera in Benutzung“ saß auf der Musik-Karte statt in der Kopfzeile."
-    ]
+    "verbessert": [],
+    "behoben": []
   },
-  "signature": "LVIuYiRVAASibbllfIb4rEM9e7JfdSk3PyRPgLADF51DpbNdxPPwDVqsxLA8YldOmsj0rujBkPHcka7dUv+lng=="
+  "signature": "irMKGk7b6XvfPRcAl1zbr1LuDW/1Ad4YxQ+pUGHWWwF9pGSu3CryjiNltXhJzIP2bkzs9TYO1Yw6f4Wsy6PCbw=="
 }
