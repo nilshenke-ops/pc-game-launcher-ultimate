@@ -1,27 +1,29 @@
 {
-  "version": "3.59.0",
+  "version": "3.60.0",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.59.0/PCGameLauncherCompanion.exe",
-  "size": 95240846,
-  "sha256": "9ecc03d89ae1457499c957000bc3e23cc8b9e42e46e335963d1dc75bb4b2d835",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.60.0/PCGameLauncherCompanion.exe",
+  "size": 95247017,
+  "sha256": "51265978ff5363bdb410ddc828f2aa99f5dcfa33159419f312d2aff96d5ee2b9",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.59.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.59.0/PCGameLauncherCompanion-3.59.0-win-x64.zip",
-    "size": 89516050,
-    "sha256": "9b8fe6bcec7ac0acabcd6cac98ce94aa0ec4dc3f02055363e2b9278705cd525d"
+    "fileName": "PCGameLauncherCompanion-3.60.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.60.0/PCGameLauncherCompanion-3.60.0-win-x64.zip",
+    "size": 89522366,
+    "sha256": "b509fadfd7d8684ddd76dbace6beaf03fc734722139be45e7738c51d5716ae34"
   },
-  "notes": "**JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung. · **Aufträge (neuer Reiter bei JARVIS):** Verlauf aller Aufträge mit Zeit, Modell, Schritten, Ergebnissen, Fehlern und Dauer. · **JARVIS kennt die Seite, auf der du bist.** „Warum geht das nicht?“ im Audio Center wird eine Audio-Diagnose. Eine Spielfrage wie „Warum ist Elden Ring so schwer?“ bleibt eine Frage an den Chat.",
+  "notes": "**Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC. · **JARVIS-Aufträge live in der Insel (AI Activity Island).** Die Insel am PC zeigt, was JARVIS gerade tut, von welchem Gerät der Auftrag auch kommt: · Der PC selbst darf über JARVIS-Aufträge entscheiden, die ein Handy gestellt hat. Andere Geräte sehen und steuern weiter nur ihre eigenen.",
   "changes": {
     "neu": [
-      "**JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung.",
-      "**Aufträge (neuer Reiter bei JARVIS):** Verlauf aller Aufträge mit Zeit, Modell, Schritten, Ergebnissen, Fehlern und Dauer.",
-      "**JARVIS kennt die Seite, auf der du bist.** „Warum geht das nicht?“ im Audio Center wird eine Audio-Diagnose. Eine Spielfrage wie „Warum ist Elden Ring so schwer?“ bleibt eine Frage an den Chat.",
-      "**Insel:** Ein Plan aus der Insel zeigt die Zusammenfassung und „Plan ansehen“."
+      "**Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC.",
+      "**JARVIS-Aufträge live in der Insel (AI Activity Island).** Die Insel am PC zeigt, was JARVIS gerade tut, von welchem Gerät der Auftrag auch kommt:"
     ],
-    "verbessert": [],
+    "verbessert": [
+      "Der PC selbst darf über JARVIS-Aufträge entscheiden, die ein Handy gestellt hat. Andere Geräte sehen und steuern weiter nur ihre eigenen.",
+      "Bestandsaufnahme „Dynamic Island 2.0“ mit Plan und ehrlichen Grenzen in `docs/DYNAMIC-ISLAND-2.0.md`. Beispiel: Windows-Benachrichtigungen anderer Programme kann eine klassische Windows-Anwendung nicht lesen.",
+      "Tests: Der Test-Helfer nutzt eine gemeinsame Verbindung zum Begleiter, statt für jeden Aufruf eine neue zu öffnen. Das traf die Schutzgrenze für neue Verbindungen; die Insel-Tests laufen dadurch auch schneller."
+    ],
     "behoben": []
   },
-  "signature": "FU0fOtPOZT58Uk8Stq6YDDtdLTXQBtDaHgp0cwhv/A3AjPIBEAVv4dBDLtQdAX4RvlGHm5MAiRCAuID2xpRj5w=="
+  "signature": "plbM6bXYUqgNixIjgVlAuDysYUv0Co96XhWc0co/D3oW5NYNAS7H+NWSRQodk9WokoJRk4fLN4DFvgI00gvQbw=="
 }

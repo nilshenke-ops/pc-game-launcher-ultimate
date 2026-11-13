@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.60.0",
+    "date": "2026-11-13",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.60.0/PCGameLauncherCompanion.exe",
+    "size": 95247017,
+    "sha256": "51265978ff5363bdb410ddc828f2aa99f5dcfa33159419f312d2aff96d5ee2b9",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.60.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.60.0/PCGameLauncherCompanion-3.60.0-win-x64.zip",
+      "size": 89522366,
+      "sha256": "b509fadfd7d8684ddd76dbace6beaf03fc734722139be45e7738c51d5716ae34"
+    },
+    "notes": "**Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC. · **JARVIS-Aufträge live in der Insel (AI Activity Island).** Die Insel am PC zeigt, was JARVIS gerade tut, von welchem Gerät der Auftrag auch kommt: · Der PC selbst darf über JARVIS-Aufträge entscheiden, die ein Handy gestellt hat. Andere Geräte sehen und steuern weiter nur ihre eigenen.",
+    "changes": {
+      "neu": [
+        "**Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC.",
+        "**JARVIS-Aufträge live in der Insel (AI Activity Island).** Die Insel am PC zeigt, was JARVIS gerade tut, von welchem Gerät der Auftrag auch kommt:"
+      ],
+      "verbessert": [
+        "Der PC selbst darf über JARVIS-Aufträge entscheiden, die ein Handy gestellt hat. Andere Geräte sehen und steuern weiter nur ihre eigenen.",
+        "Bestandsaufnahme „Dynamic Island 2.0“ mit Plan und ehrlichen Grenzen in `docs/DYNAMIC-ISLAND-2.0.md`. Beispiel: Windows-Benachrichtigungen anderer Programme kann eine klassische Windows-Anwendung nicht lesen.",
+        "Tests: Der Test-Helfer nutzt eine gemeinsame Verbindung zum Begleiter, statt für jeden Aufruf eine neue zu öffnen. Das traf die Schutzgrenze für neue Verbindungen; die Insel-Tests laufen dadurch auch schneller."
+      ],
+      "behoben": []
+    },
+    "signature": "plbM6bXYUqgNixIjgVlAuDysYUv0Co96XhWc0co/D3oW5NYNAS7H+NWSRQodk9WokoJRk4fLN4DFvgI00gvQbw=="
+  },
+  {
     "version": "3.59.0",
     "date": "2026-11-13",
     "channel": "stable",
@@ -1322,32 +1351,5 @@
       "behoben": []
     },
     "signature": "3m2HZ2Do53c2sdaQtlrJD3Stnar5R2EMKWRwzHFXgsnYx1RLVw8hemyIo2EWeHE/nvWhF4b8RPL76zwbJW8YWg=="
-  },
-  {
-    "version": "3.30.0",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.30.0/PCGameLauncherCompanion.exe",
-    "size": 95039485,
-    "sha256": "580e5ca759727578a9ffa46d9f148d0fffbd2dea96dc9749d64d1f8b0edcd8af",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.30.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.30.0/PCGameLauncherCompanion-3.30.0-win-x64.zip",
-      "size": 89313717,
-      "sha256": "1bb1023b67587ed6ed24b9e4ddc11781352935f57e9360f090251b1bd90c4b95"
-    },
-    "notes": "Handy oder iPad ohne Tailscale verbinden: In Einstellungen → Verbindung gibt es am PC jetzt „Für Handys ohne Tailscale einschalten“ (Tailscale Funnel, ein Klick, kein PowerShell). Dann ist die https-Adresse des PCs auch ohne Tailscale erreichbar – von überall, auch über Mobilfunk – und der QR-Code mit der github.io-Adresse verbindet sich. Der Zugang ist öffentlich erreichbar, aber ohne einen Kopplungscode, den du am PC erzeugst und bestätigst, kommt niemand hinein. Jederzeit wieder ausschaltbar. Beim ersten Mal muss Funnel einmalig im Tailscale-Konto freigegeben werden (der Link steht in der Meldung) · Die Fehlermeldung „PC nicht erreichbar“ und die Hilfe unter dem QR-Code nennen diesen Weg jetzt · Sicherheit: Anfragen, die Tailscale (Serve/Funnel) von diesem PC weiterleitet, gelten nie als „direkt am PC“, auch wenn die weitergeleitete Adresse fehlt",
-    "changes": {
-      "neu": [
-        "Handy oder iPad ohne Tailscale verbinden: In Einstellungen → Verbindung gibt es am PC jetzt „Für Handys ohne Tailscale einschalten“ (Tailscale Funnel, ein Klick, kein PowerShell). Dann ist die https-Adresse des PCs auch ohne Tailscale erreichbar – von überall, auch über Mobilfunk – und der QR-Code mit der github.io-Adresse verbindet sich. Der Zugang ist öffentlich erreichbar, aber ohne einen Kopplungscode, den du am PC erzeugst und bestätigst, kommt niemand hinein. Jederzeit wieder ausschaltbar. Beim ersten Mal muss Funnel einmalig im Tailscale-Konto freigegeben werden (der Link steht in der Meldung)"
-      ],
-      "verbessert": [
-        "Die Fehlermeldung „PC nicht erreichbar“ und die Hilfe unter dem QR-Code nennen diesen Weg jetzt",
-        "Sicherheit: Anfragen, die Tailscale (Serve/Funnel) von diesem PC weiterleitet, gelten nie als „direkt am PC“, auch wenn die weitergeleitete Adresse fehlt"
-      ],
-      "behoben": []
-    },
-    "signature": "eOvEuI9ctv0FevHAYarCvxx8Ix1JQS8ecjA5f8C2o8bHLmYoR2Vr1ZajJjHBBJls1mUfLCIo0daDlDqPGwJZcA=="
   }
 ]
