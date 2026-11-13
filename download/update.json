@@ -1,25 +1,27 @@
 {
-  "version": "3.58.1",
+  "version": "3.59.0",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.1/PCGameLauncherCompanion.exe",
-  "size": 95210370,
-  "sha256": "dfd5896de6b47095d920f082e8bf4e1eaf42b59f10b1558aa259ab51e987a330",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.59.0/PCGameLauncherCompanion.exe",
+  "size": 95240846,
+  "sha256": "9ecc03d89ae1457499c957000bc3e23cc8b9e42e46e335963d1dc75bb4b2d835",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.58.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.1/PCGameLauncherCompanion-3.58.1-win-x64.zip",
-    "size": 89484805,
-    "sha256": "47ec9330177034f72f0fde0d54a34c9dc3b8811632e2f4e1cf42b07e076db83a"
+    "fileName": "PCGameLauncherCompanion-3.59.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.59.0/PCGameLauncherCompanion-3.59.0-win-x64.zip",
+    "size": 89516050,
+    "sha256": "9b8fe6bcec7ac0acabcd6cac98ce94aa0ec4dc3f02055363e2b9278705cd525d"
   },
-  "notes": "",
+  "notes": "**JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung. · **Aufträge (neuer Reiter bei JARVIS):** Verlauf aller Aufträge mit Zeit, Modell, Schritten, Ergebnissen, Fehlern und Dauer. · **JARVIS kennt die Seite, auf der du bist.** „Warum geht das nicht?“ im Audio Center wird eine Audio-Diagnose. Eine Spielfrage wie „Warum ist Elden Ring so schwer?“ bleibt eine Frage an den Chat.",
   "changes": {
-    "neu": [],
+    "neu": [
+      "**JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung.",
+      "**Aufträge (neuer Reiter bei JARVIS):** Verlauf aller Aufträge mit Zeit, Modell, Schritten, Ergebnissen, Fehlern und Dauer.",
+      "**JARVIS kennt die Seite, auf der du bist.** „Warum geht das nicht?“ im Audio Center wird eine Audio-Diagnose. Eine Spielfrage wie „Warum ist Elden Ring so schwer?“ bleibt eine Frage an den Chat.",
+      "**Insel:** Ein Plan aus der Insel zeigt die Zusammenfassung und „Plan ansehen“."
+    ],
     "verbessert": [],
-    "behoben": [
-      "**Beim Start des Begleiters gingen viele Programme auf und der PC wurde langsam.** Ursache war eine Schleife im Spielmodus („Programme beim Spielen schließen und danach wieder öffnen“):",
-      "**Mit dem Soundboard für Discord konnte man nicht mehr reden.** Spielte das Soundboard ins virtuelle Kabel, ging nur der Sound hinein und nicht die eigene Stimme, solange die Mikrofon-Durchleitung aus war."
-    ]
+    "behoben": []
   },
-  "signature": "+++K2hbeWTgn9UV9mH7b4705SZeKLgSJrZe2MBrcShQgBBNAjbjnRvvEJ1HXApwm/2+N3OMmgXFe2WKWiGNAsg=="
+  "signature": "FU0fOtPOZT58Uk8Stq6YDDtdLTXQBtDaHgp0cwhv/A3AjPIBEAVv4dBDLtQdAX4RvlGHm5MAiRCAuID2xpRj5w=="
 }

@@ -1,5 +1,32 @@
 [
   {
+    "version": "3.59.0",
+    "date": "2026-11-13",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.59.0/PCGameLauncherCompanion.exe",
+    "size": 95240846,
+    "sha256": "9ecc03d89ae1457499c957000bc3e23cc8b9e42e46e335963d1dc75bb4b2d835",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.59.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.59.0/PCGameLauncherCompanion-3.59.0-win-x64.zip",
+      "size": 89516050,
+      "sha256": "9b8fe6bcec7ac0acabcd6cac98ce94aa0ec4dc3f02055363e2b9278705cd525d"
+    },
+    "notes": "**JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung. · **Aufträge (neuer Reiter bei JARVIS):** Verlauf aller Aufträge mit Zeit, Modell, Schritten, Ergebnissen, Fehlern und Dauer. · **JARVIS kennt die Seite, auf der du bist.** „Warum geht das nicht?“ im Audio Center wird eine Audio-Diagnose. Eine Spielfrage wie „Warum ist Elden Ring so schwer?“ bleibt eine Frage an den Chat.",
+    "changes": {
+      "neu": [
+        "**JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung.",
+        "**Aufträge (neuer Reiter bei JARVIS):** Verlauf aller Aufträge mit Zeit, Modell, Schritten, Ergebnissen, Fehlern und Dauer.",
+        "**JARVIS kennt die Seite, auf der du bist.** „Warum geht das nicht?“ im Audio Center wird eine Audio-Diagnose. Eine Spielfrage wie „Warum ist Elden Ring so schwer?“ bleibt eine Frage an den Chat.",
+        "**Insel:** Ein Plan aus der Insel zeigt die Zusammenfassung und „Plan ansehen“."
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "FU0fOtPOZT58Uk8Stq6YDDtdLTXQBtDaHgp0cwhv/A3AjPIBEAVv4dBDLtQdAX4RvlGHm5MAiRCAuID2xpRj5w=="
+  },
+  {
     "version": "3.58.1",
     "date": "2026-11-13",
     "channel": "stable",
@@ -1322,29 +1349,5 @@
       "behoben": []
     },
     "signature": "eOvEuI9ctv0FevHAYarCvxx8Ix1JQS8ecjA5f8C2o8bHLmYoR2Vr1ZajJjHBBJls1mUfLCIo0daDlDqPGwJZcA=="
-  },
-  {
-    "version": "3.29.1",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.1/PCGameLauncherCompanion.exe",
-    "size": 95037681,
-    "sha256": "762e5f02c6c921154d1630e6f52977c194111321622cb7ba1933ca9885c21f44",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.29.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.1/PCGameLauncherCompanion-3.29.1-win-x64.zip",
-      "size": 89312046,
-      "sha256": "bbff7cdf39168c7e69cd0e107ab9a8808db4ebbb066331097a7a939ac6f9803f"
-    },
-    "notes": "Gibt jedem Website-Widget die Optik des In-Game-Overlays.",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Gibt jedem Website-Widget die Optik des In-Game-Overlays."
-      ],
-      "behoben": []
-    },
-    "signature": "/Hsd2LL9NzLQQy7joym/SdA5kVMHEkNULcmNQDE2EraDShS+hzgPMpn26hJ5e30Py6kuwBrHG+xxnb9zfmednQ=="
   }
 ]
