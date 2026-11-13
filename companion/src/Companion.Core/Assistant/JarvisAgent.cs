@@ -179,6 +179,7 @@ public sealed class JarvisAgent
             foreach (var old in _open.Values.Where(x => x.State == "planned" && _now() - x.CreatedAt > TimeSpan.FromHours(2)).Select(x => x.Id).ToList()) _open.Remove(old);
         }
         Record(task);
+        Publish(task);
         return task;
     }
 
@@ -471,20 +472,31 @@ public sealed class JarvisAgent
 
     public AgentTask? Get(string id) { lock (_lock) return _open.TryGetValue(id, out var t) ? t : null; }
 
+    /// <summary>The task the island should show: a running one, else the newest still waiting for a decision (within 30 minutes).</summary>
+    public AgentTask? Current(string? owner)
+    {
+        lock (_lock)
+        {
+            var mine = _open.Values.Where(t => owner == null || t.Owner == owner).ToList();
+            return mine.FirstOrDefault(t => t.State == "running")
+                ?? mine.Where(t => t.State == "planned" && t.Steps.Count > 0 && _now() - t.CreatedAt < TimeSpan.FromMinutes(30)).OrderByDescending(t => t.CreatedAt).FirstOrDefault();
+        }
+    }
+
     /// <summary>
     /// Runs the chosen steps one after the other. Every step is checked against the device's permissions; critical steps run
     /// only with <paramref name="confirmCritical"/>. One task per person at a time, a task never twice.
     /// </summary>
-    public async Task<AgentTask> ExecuteAsync(string owner, string id, IReadOnlyCollection<string> selected, IReadOnlyDictionary<string, string> refs, bool confirmCritical,
+    public async Task<AgentTask> ExecuteAsync(string? owner, string id, IReadOnlyCollection<string> selected, IReadOnlyDictionary<string, string> refs, bool confirmCritical,
         Func<string, bool> can, Action<AgentTask>? progress, CancellationToken outer = default)
     {
         AgentTask task;
         CancellationTokenSource cts;
         lock (_lock)
         {
-            if (!_open.TryGetValue(id, out task!) || task.Owner != owner) throw new RpcException("not-found", "Diesen Plan gibt es nicht (mehr). Bitte neu fragen.");
+            if (!_open.TryGetValue(id, out task!) || (owner != null && task.Owner != owner)) throw new RpcException("not-found", "Diesen Plan gibt es nicht (mehr). Bitte neu fragen.");
             if (task.State != "planned") throw new RpcException("invalid", task.State == "running" ? "Dieser Plan läuft schon." : "Dieser Plan wurde schon ausgeführt – für einen neuen Lauf bitte neu fragen.");
-            if (_running.Keys.Any(k => _open.TryGetValue(k, out var other) && other.Owner == owner)) throw new RpcException("busy", "JARVIS führt gerade schon einen Auftrag aus. Erst abwarten oder abbrechen.");
+            if (_running.Keys.Any(k => _open.TryGetValue(k, out var other) && other.Owner == task.Owner)) throw new RpcException("busy", "JARVIS führt gerade schon einen Auftrag aus. Erst abwarten oder abbrechen.");
             cts = CancellationTokenSource.CreateLinkedTokenSource(outer);
             _running[id] = cts;
             task.State = "running";
@@ -503,14 +515,14 @@ public sealed class JarvisAgent
                     st.Title = st.Kind == "profile" ? $"Profil „{label}“ aktivieren" : st.Kind == "launch" ? $"„{label}“ starten" : st.Title;
                 }
             }
-            progress?.Invoke(task);
+            progress?.Invoke(task); Publish(task);
             foreach (var st in task.Steps)
             {
                 if (cts.IsCancellationRequested) { if (st.Status == "planned") st.Status = "cancelled"; continue; }
                 if (!st.Selected) { st.Status = "skipped"; continue; }
                 if (!can(st.Permission)) { st.Status = "refused"; st.Ok = false; st.Result = $"Dieses Gerät hat dafür nicht das Recht „{PermLabel(st.Permission)}“."; anyFailed = true; progress?.Invoke(task); continue; }
                 if (st.Tier == "critical" && !confirmCritical) { st.Status = "refused"; st.Ok = false; st.Result = "Kritischer Schritt – nur mit ausdrücklicher Bestätigung."; anyFailed = true; progress?.Invoke(task); continue; }
-                st.Status = "running"; progress?.Invoke(task);
+                st.Status = "running"; progress?.Invoke(task); Publish(task);
                 var sw = System.Diagnostics.Stopwatch.StartNew();
                 try
                 {
@@ -521,7 +533,7 @@ public sealed class JarvisAgent
                 catch (OperationCanceledException) { st.Status = "cancelled"; st.Result = "Abgebrochen."; }
                 catch (Exception ex) { st.Status = "failed"; st.Ok = false; st.Result = ex is RpcException ? ex.Message : "Fehler: " + ex.Message; anyFailed = true; Log.Warn("jarvis", $"Schritt {st.Kind}: {ex.Message}"); }
                 st.Ms = sw.ElapsedMilliseconds;
-                progress?.Invoke(task);
+                progress?.Invoke(task); Publish(task);
             }
             task.State = cts.IsCancellationRequested ? "cancelled" : anyFailed ? "failed" : "done";
         }
@@ -531,30 +543,30 @@ public sealed class JarvisAgent
             lock (_lock) { _running.Remove(id); }
             cts.Dispose();
             Record(task);
-            progress?.Invoke(task);
+            progress?.Invoke(task); Publish(task);
             Log.Info("jarvis", $"Auftrag {task.Kind} ({task.Topic ?? "-"}): {task.State}, {task.Steps.Count(s => s.Status == "done")} von {task.Steps.Count(s => s.Selected)} Schritten erledigt.");
         }
         return task;
     }
 
-    public bool Cancel(string owner, string id)
+    public bool Cancel(string? owner, string id)
     {
         lock (_lock)
         {
-            if (!_open.TryGetValue(id, out var t) || t.Owner != owner) return false;
+            if (!_open.TryGetValue(id, out var t) || (owner != null && t.Owner != owner)) return false;
             if (_running.TryGetValue(id, out var cts)) { cts.Cancel(); return true; }
-            if (t.State == "planned") { t.State = "cancelled"; t.EndedAt = _now(); foreach (var st in t.Steps) st.Status = "cancelled"; Record(t); return true; }
+            if (t.State == "planned") { t.State = "cancelled"; t.EndedAt = _now(); foreach (var st in t.Steps) st.Status = "cancelled"; Record(t); Publish(t); return true; }
             return false;
         }
     }
 
     /// <summary>"Stopp": every running JARVIS task of this person ends before its next step.</summary>
-    public int StopAll(string owner)
+    public int StopAll(string? owner)
     {
         lock (_lock)
         {
             var n = 0;
-            foreach (var (id, cts) in _running) if (_open.TryGetValue(id, out var t) && t.Owner == owner) { cts.Cancel(); n++; }
+            foreach (var (id, cts) in _running) if (_open.TryGetValue(id, out var t) && (owner == null || t.Owner == owner)) { cts.Cancel(); n++; }
             return n;
         }
     }
@@ -650,6 +662,25 @@ public sealed class JarvisAgent
             default: return (false, "Unbekannter Schritt.");
         }
     }
+
+    // ================================================================ AI activity island
+
+    /// <summary>
+    /// The short state of a task for the island on the PC screen (only to this PC's own windows, like "jarvis.activity"):
+    /// what JARVIS does, how far, whether he waits for a decision, the error. No findings, no request text.
+    /// </summary>
+    public static object Brief(AgentTask t) => new
+    {
+        id = t.Id, kind = t.Kind, topic = t.Topic, state = t.State, summary = t.Summary, by = t.By,
+        done = t.Steps.Count(x => x.Status is "done" or "failed" or "refused" or "skipped" or "cancelled" && x.Selected),
+        total = t.Steps.Count(x => x.Selected),
+        current = t.Steps.FirstOrDefault(x => x.Status == "running")?.Title,
+        error = t.Steps.FirstOrDefault(x => x.Status is "failed" or "refused")?.Result,
+        critical = t.Steps.Any(x => x.Tier == "critical" && x.Selected),
+        steps = t.Steps.Count,
+    };
+
+    void Publish(AgentTask t) { try { _s.Rpc.Broadcast("jarvis.agent", Brief(t), Permissions.Local); } catch (Exception ex) { Log.Debug("jarvis", ex.Message); } }
 
     // ================================================================ history
 

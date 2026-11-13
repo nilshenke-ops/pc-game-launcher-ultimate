@@ -4,9 +4,9 @@
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
 
-export type IslandTab = "home" | "dash" | "game" | "music" | "jarvis" | "focus" | "inbox" | "apps" | "controls" | "system" | "audio" | "pc" | "note";
+export type IslandTab = "home" | "dash" | "game" | "music" | "jarvis" | "focus" | "inbox" | "apps" | "controls" | "system" | "audio" | "pc" | "note" | "shelf";
 /** Every area in its usual order. "home" is always there; "game" only appears while a game runs. */
-export const ALL_TABS: IslandTab[] = ["home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "pc", "note"];
+export const ALL_TABS: IslandTab[] = ["home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "shelf", "pc", "note"];
 export const isTab = (v: unknown): v is IslandTab => typeof v === "string" && (ALL_TABS as string[]).includes(v);
 
 export type TileType = "jarvis" | "game" | "music" | "focus" | "pc" | "calendar" | "weather" | "system" | "volume" | "network" | "battery" | "clock" | "note";

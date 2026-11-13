@@ -29,6 +29,8 @@ import { speak } from "../lib/jarvis-voice";
 import { CLOSE_VARIANTS, createBoxAnimator, islandBox, islandProgress, nextVariant, OPEN_VARIANTS, WINDOW_W, type Box, type BoxVariant, type CloseVariant, type OpenVariant } from "../lib/island-spring";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { useConn } from "../lib/hooks";
+import { carriesFiles, dropOnShelf, requestShelf } from "../lib/island-shelf";
+import { agentLine, agentPhase, agentProgress, setAgentBrief, useAgentBrief, type AgentBrief } from "../lib/island-agent";
 import { eyeColor, clock, islandAnswer, islandEvent, islandBusy, islandClearAsk, islandGaming, islandMusic, islandSize, islandTouch, islandNotice, noticeFresh, moodOf, useIsland, useIslandPrefs, ASK_TTL, type Mood } from "../lib/island";
 import type { AssistantAction } from "../lib/assistant";
 import { mainGame, playedGames } from "../lib/running";
@@ -98,6 +100,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const app = useAppState().state;
   const [hover, setHover] = useState(false);
   const [open, setOpen] = useState(false);
+  const [dropping, setDropping] = useState(false);
   const [now, setNow] = useState(Date.now());
   const mood = moodOf(s, now);
   const tm = useTimer();
@@ -111,15 +114,25 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const panelMounted = useExit(open, 1300);
   const [ripples, setRipples] = useState<{ id: number; x: number }[]>([]);
   const ask = s.ask && now - s.ask.at < ASK_TTL ? s.ask.action : null;
+  // AI Activity Island: the newest JARVIS task (decision, work, result) – from the PC, only to its own windows.
+  const agent = useAgentBrief();
+  const aph = ask ? null : agentPhase(agent, now);
+  const agentBar = aph === "decide" || aph === "working";
   // In the app (phone, tablet, browser) the island stays the small face with the two eyes – the eyes show what JARVIS does; the wide bar with
   // text would cover the buttons of the top bar. The wide bar is for the island window on the PC screen.
-  const wanted = islandSize({ open, ask: !!ask, hover, mood, notice: !!notice });
+  const wanted = islandSize({ open, ask: !!ask || agentBar, hover, mood, notice: !!notice || aph === "done" || aph === "error" });
   const size = floating && wanted === "bar" ? "notch" : wanted;
   const vw = useViewportW();
   const box = islandBox(size, vw, floating);
   const panelW = islandBox("panel", vw, floating).w;
 
   // JARVIS' activity comes from the PC (whichever device asks him) – only to this PC's own windows.
+  useEffect(() => client.on("jarvis.agent", (d) => setAgentBrief(d as AgentBrief)), []);
+  useEffect(() => {
+    const load = () => client.call<{ task?: AgentBrief }>("jarvis.current", {}).then((r) => { if (r.task) setAgentBrief(r.task); }, () => undefined);
+    if (client.status.auth === "ok") void load();
+    return client.on("authenticated", () => { void load(); });
+  }, []);
   useEffect(() => client.on("jarvis.activity", (d) => {
     const x = d as { phase?: string; ok?: boolean; text?: string; via?: string; note?: string; ask?: AssistantAction | null };
     if (x.phase === "busy") islandBusy(true);
@@ -270,7 +283,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   // The other live things show as small marks next to the time, so nothing that is going on is hidden.
   const gameText = game ? (gameTime ? `${game.name} · ${gameTime}` : game.name) : "";
   const leadKind = ask || mood === "thinking" || mood === "listening" || ((mood === "happy" || mood === "error") && s.last) ? "jarvis" : notice ? "notice" : timerText ? "timer" : game ? "game" : mediaLine || (mood === "dancing" && s.music) ? "music" : null;
-  const text = ask ? t("JARVIS fragt: {a}?", { a: ask.label }) : mood === "thinking" ? t("JARVIS denkt nach …") : mood === "listening" ? t("JARVIS hört zu …")
+  const text = ask ? t("JARVIS fragt: {a}?", { a: ask.label }) : aph && agent ? agentLine(agent, aph) : mood === "thinking" ? t("JARVIS denkt nach …") : mood === "listening" ? t("JARVIS hört zu …")
     : (mood === "happy" || mood === "error") && s.last ? s.last.text : notice ? notice.text : timerText ? timerText : game ? gameText : mediaLine ? `♪ ${mediaLine}` : mood === "dancing" && s.music ? t("Musik läuft") : t("JARVIS – antippen für Widgets");
   const marks = ([live ? "timer" : null, game ? "game" : null, mediaLine || (mood === "dancing" && s.music) ? "music" : null] as const).filter((k): k is "timer" | "game" | "music" => !!k && k !== leadKind);
   // A counting text (timer, play time) keeps one element so only real changes of the message animate.
@@ -290,7 +303,12 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const innerW = panelMounted ? panelW : box.w;
 
   return (
-    <div ref={hostRef} className={`isl-host v2 s-${size} h-${mood}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}${pc ? " pc" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} data-accent={accent ? "1" : undefined} data-fx={look.effect !== "none" ? look.effect : undefined} style={{ ...(eyeColor(look.eye) ? { "--isl-eye": eyeColor(look.eye) } : {}), ...(accent ? { "--isl-accent": accent } : {}) } as CSSProperties} onMouseEnter={() => { setHover(true); islandTouch(); if (!open && mood === "idle") emote("wide", 700); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
+    <div ref={hostRef}
+      // File shelf: files dragged onto the island open it on the shelf; dropped anywhere on it they go to the PC's exchange folder.
+      onDragOver={(e) => { if (!carriesFiles(e.dataTransfer)) return; e.preventDefault(); if (!dropping) setDropping(true); if (!open) { requestShelf(); setOpen(true); } }}
+      onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropping(false); }}
+      onDrop={(e) => { if (!carriesFiles(e.dataTransfer)) return; e.preventDefault(); setDropping(false); dropOnShelf(Array.from(e.dataTransfer.files)); }}
+      className={`isl-host v2 s-${size} h-${mood}${dropping ? " dropping" : ""}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}${pc ? " pc" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} data-accent={accent ? "1" : undefined} data-fx={look.effect !== "none" ? look.effect : undefined} style={{ ...(eyeColor(look.eye) ? { "--isl-eye": eyeColor(look.eye) } : {}), ...(accent ? { "--isl-accent": accent } : {}) } as CSSProperties} onMouseEnter={() => { setHover(true); islandTouch(); if (!open && mood === "idle") emote("wide", 700); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
       <div className="isl-inner" style={{ width: innerW }}>
       {mood === "happy" && s.last && <Confetti key={s.last.at} />}
       {mood === "dancing" && s.music && s.music.beatAt > 0 && <span className="isl-beat" key={s.music.beatAt} aria-hidden />}
@@ -313,6 +331,18 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
         </button>
         {size !== "notch" && !ask && marks.length > 0 && <span className="isl-marks" aria-hidden>{marks.map((k) => k === "timer" ? <TimerIcon key={k} size={13} /> : k === "game" ? <Gamepad2 key={k} size={13} /> : <Music key={k} size={13} />)}</span>}
         {size !== "notch" && !ask && <span className="isl-time">{live ? clock(live.left) : new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+        {!ask && agent && aph === "decide" && (
+          <span className="isl-ask">
+            <button type="button" className="btn sm primary" onClick={() => client.call("jarvis.execute", { taskId: agent.id, default: true }).catch((e: Error) => islandAnswer(e.message, false))}><Check size={15} /> {t("Ausführen")}</button>
+            <button type="button" className="btn sm" onClick={() => setOpen(true)}>{t("Ansehen")}</button>
+          </span>
+        )}
+        {!ask && agent && aph === "working" && (
+          <span className="isl-ask">
+            <button type="button" className="btn sm danger" onClick={() => client.call("jarvis.stop", {}).catch(() => undefined)}><X size={15} /> {t("Stopp")}</button>
+          </span>
+        )}
+        {!ask && agent && aph === "working" && <span className="isl-agentbar" style={{ ["--p" as string]: agentProgress(agent) } as React.CSSProperties} aria-hidden />}
         {ask && (
           <span className="isl-ask">
             <button type="button" className="btn sm primary" onClick={() => void allow()}><Check size={15} /> {t("Erlauben")}</button>

@@ -163,6 +163,22 @@ public sealed class TransferService
         _hub.Changed("files");
     }
 
+    /// <summary>Renames a file of the exchange folder (island shelf). The new name is made safe; an existing name is never overwritten.</summary>
+    public TransferEntry Rename(string name, string newName)
+    {
+        var f = Find(name);
+        var target = SafeName(newName);
+        if (Path.GetExtension(target).Length == 0 && f.Extension.Length > 0) target += f.Extension; // keep the type when only the name was typed
+        if (string.Equals(target, f.Name, StringComparison.Ordinal)) return new TransferEntry(f.Name, f.Length, f.LastWriteTimeUtc, KindOf(f.Name));
+        var dest = Path.Combine(_dir, target);
+        if (File.Exists(dest) && !string.Equals(Path.GetFullPath(dest), f.FullName, StringComparison.OrdinalIgnoreCase))
+            throw new RpcException("exists", $"„{target}“ gibt es schon im Austausch-Ordner.");
+        File.Move(f.FullName, dest);
+        _hub.Changed("files");
+        var n = new FileInfo(dest);
+        return new TransferEntry(n.Name, n.Length, n.LastWriteTimeUtc, KindOf(n.Name));
+    }
+
     public void OpenFolder()
     {
         Directory.CreateDirectory(_dir);

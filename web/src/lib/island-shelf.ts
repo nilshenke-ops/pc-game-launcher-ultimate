@@ -26,3 +26,30 @@ export function shelfUrl(webAppUrl: string | undefined | null, here: { href: str
   const base = appBase(webAppUrl) ?? (!isLoopbackAddress(here.hostname) ? appBase(here.href) : null) ?? DEFAULT_APP_URL;
   return `${base}/${SHELF_ROUTE}`;
 }
+
+// ---------------------------------------------------------------- dropping files on the island
+// Files dragged onto the closed island open it on the shelf; the shelf picks them up as soon as it is there.
+let pending: File[] = [];
+let wantShelf = false;
+const sinks = new Set<(files: File[]) => void>();
+const tabListeners = new Set<() => void>();
+
+export function dropOnShelf(files: File[]) {
+  if (!files.length) return;
+  wantShelf = true;
+  tabListeners.forEach((l) => l());
+  if (sinks.size) sinks.forEach((s) => s(files)); else pending = [...pending, ...files];
+}
+/** The shelf registers itself; files dropped before it was shown are handed over at once. */
+export function onShelfFiles(sink: (files: File[]) => void) {
+  sinks.add(sink);
+  if (pending.length) { const p = pending; pending = []; sink(p); }
+  return () => { sinks.delete(sink); };
+}
+/** Files are dragged over the island: open it on the shelf (the files follow with the drop). */
+export function requestShelf() { wantShelf = true; tabListeners.forEach((l) => l()); }
+/** The panel asks whether it should open on the shelf (once). */
+export function takeShelfRequest() { const w = wantShelf; wantShelf = false; return w; }
+export function onShelfRequest(l: () => void) { tabListeners.add(l); return () => { tabListeners.delete(l); }; }
+/** A drag that carries files (not text or a link from the page itself). */
+export const carriesFiles = (dt: DataTransfer | null) => !!dt && Array.from(dt.types ?? []).includes("Files");

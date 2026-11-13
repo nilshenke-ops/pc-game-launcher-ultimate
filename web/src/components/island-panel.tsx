@@ -6,7 +6,7 @@ import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocit
 import { flushSync } from "react-dom";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume2, Layers, Camera, ScrollText, Download, Headphones, Pencil, Plus, X, Smartphone, Cpu, Gauge, MemoryStick, Palette } from "lucide-react";
+import { FolderUp, Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume2, Layers, Camera, ScrollText, Download, Headphones, Pencil, Plus, X, Smartphone, Cpu, Gauge, MemoryStick, Palette } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
@@ -15,6 +15,9 @@ import { connView } from "../lib/conn-state";
 import { handoffUrl, IslandControls, IslandLyrics, IslandSystem, onTouchDevice, PcVolumeBar, useIslandWeather, useMetricsHistory, usePcControls, usePcSensors, WeatherIcon } from "./island-extra";
 import { IslandTile, TabsEditor, TileCatalog, TileEditBar, TileSettings, type TileCtx } from "./island-tiles";
 import { IslandAudio } from "./island-audio";
+import { AgentIslandCard } from "./island-agent-card";
+import { IslandShelf } from "./island-shelf";
+import { onShelfRequest, takeShelfRequest } from "../lib/island-shelf";
 import { ProcSheet, type ProcKind } from "./island-procs";
 import { IslandColorPicker } from "./island-color";
 import { addTile, moveTile, opt, removeTile, setTabs, setTileOpt, tabsOf, tileDef, MAX_TILES, type IslandLayout, type IslandTab, type LayoutPage, type Tile } from "../lib/island-layout";
@@ -54,7 +57,7 @@ import { IslandNet, IslandNote, IslandProfiles, IslandSounds, IslandStart, Islan
 export type { IslandTab } from "../lib/island-layout";
 const TAB_META: Record<IslandTab, { icon: typeof Home; label: string }> = {
   home: { icon: Home, label: "Home" }, dash: { icon: LayoutDashboard, label: "Übersicht" }, controls: { icon: SlidersHorizontal, label: "Regler" }, audio: { icon: Headphones, label: "Audio" }, system: { icon: Activity, label: "System" }, game: { icon: Gamepad2, label: "Spiel" }, music: { icon: Music, label: "Musik" }, jarvis: { icon: MessageCircle, label: "JARVIS" }, focus: { icon: Timer, label: "Fokus" },
-  inbox: { icon: Inbox, label: "Meldungen" }, apps: { icon: LayoutGrid, label: "Apps" }, pc: { icon: Monitor, label: "PC" }, note: { icon: StickyNote, label: "Notiz" },
+  inbox: { icon: Inbox, label: "Meldungen" }, apps: { icon: LayoutGrid, label: "Apps" }, pc: { icon: Monitor, label: "PC" }, note: { icon: StickyNote, label: "Notiz" }, shelf: { icon: FolderUp, label: "Ablage" },
 };
 /** Widgets of the old panel that now live under the "PC" tab (music, focus, stopwatch and note have their own places). */
 const PC_WIDGETS: IslandWidgetId[] = ["game", "start", "clock", "stats", "temp", "net", "volume", "profile", "sounds"];
@@ -67,7 +70,7 @@ export function visibleTabs(widgets: IslandWidgetId[], gameRunning = false): Isl
   if (has("music")) tabs.push("music");
   tabs.push("jarvis");
   if (has("focus") || has("stopwatch")) tabs.push("focus");
-  tabs.push("inbox", "apps", "controls", "audio", "system");
+  tabs.push("inbox", "apps", "controls", "audio", "system", "shelf");
   if (PC_WIDGETS.some(has)) tabs.push("pc");
   if (has("note")) tabs.push("note");
   return tabs;
@@ -110,7 +113,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const tabs = tabsOf(L, visibleTabs(look.widgets, !!game), !!game);
   const metrics = useMetricsHistory(online);
   const has = (id: IslandWidgetId) => look.widgets.includes(id);
-  const [tab, setTabRaw] = useState<IslandTab>("home");
+  const [tab, setTabRaw] = useState<IslandTab>(() => (takeShelfRequest() ? "shelf" : "home"));
   // Any other change of area (voice, buttons, links) fades the new area in; only the swipe carousel hands over without a second animation.
   const setTab = (to: IslandTab) => { setSlide(null); setTabRaw(to); };
   const [msg, setMsg] = useState<{ text: string; app: Messenger; phone: string | null }>(() => ({ text: "", app: ((): Messenger => { const v = readJson<string>("pgl.island.msgapp"); return v === "telegram" || v === "sms" || v === "mail" ? v : "whatsapp"; })(), phone: null }));
@@ -187,6 +190,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     }
   };
   goTabRef.current = (to) => goTab(to);
+  // Files dragged onto the island: show the shelf (it takes the files itself).
+  useEffect(() => onShelfRequest(() => { if (takeShelfRequest() && tabRef.current !== "shelf") void goTabRef.current("shelf"); }), []);
   const stepTab = (d: 1 | -1, from = 0, vx = 0) => { const to = tabs[idx() + d]; if (to) void goTab(to, from, vx); };
   const springBack = (el: HTMLElement, from: number, d: 1 | -1) => {
     const pe = peekRef.current, w = el.clientWidth || 400;
@@ -570,7 +575,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       </div>
     </div>
   );
-  const home = <div className="isl3-page">{editHead("home")}{homeCards}</div>;
+  const home = <div className="isl3-page"><AgentIslandCard now={now} />{editHead("home")}{homeCards}</div>;
   const dashPage = <div className="isl3-page">{editHead("dash")}{dashTiles}</div>;
 
   // ---------------------------------------------------------------- the other tabs
@@ -685,6 +690,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     : ["Wie wird das Wetter morgen?", "Erzähl mir einen Witz", "Was ist 15 % von 80?"];
   const jarvisTab = (
     <div className="isl2-chat v3">
+      <AgentIslandCard now={now} />
       <div className="isl2-answer grow">
         <div className="isl2-ahead">
           <span className="badge">{t(MOOD_LABEL[mood])}</span>
@@ -842,6 +848,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const body: Record<IslandTab, ReactNode> = { home, game: gameTab, music: musicBody, jarvis: jarvisTab, apps: appsTab, inbox: inboxTab, pc: edit && canManage ? editor : pcTab, focus: focusTab, note: <IslandNote />,
     dash: dashPage,
     audio: <IslandAudio online={online} canUse={canMedia} canManage={canManage} controls={pcControls} sensors={sensors} />,
+    shelf: <IslandShelf online={online} canManage={canManage} />,
     controls: <IslandControls online={online} canUse={canMedia} controls={pcControls} sensors={sensors} now={now} press={media} />,
     system: <IslandSystem online={online} controls={pcControls} onDetails={online ? setProcs : undefined} /> };
 

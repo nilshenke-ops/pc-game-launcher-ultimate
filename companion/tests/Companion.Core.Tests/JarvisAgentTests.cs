@@ -216,4 +216,25 @@ public class JarvisAgentTests
         Assert.Equal("forbidden", await viewer.Error("jarvis.historyClear"));
         Assert.False((await viewer.Ok("jarvis.plan", new { text = "Hallo" })).TryGetProperty("task", out _)); // an ordinary question: no plan
     }
+
+    [Fact]
+    public async Task The_island_sees_the_current_task_and_the_PC_itself_may_decide_on_a_phone_task()
+    {
+        using var dir = new TempDir();
+        await using var s = Make(dir);
+        var t = (await s.Agent.PlanAsync("Bereite meinen PC für eine Runde vor", null, "phone1", "Handy"))!;
+        Assert.Equal(t.Id, s.Agent.Current(null)!.Id);            // the PC sees every task
+        Assert.Equal(t.Id, s.Agent.Current("phone1")!.Id);
+        Assert.Null(s.Agent.Current("tablet"));                    // another device does not see it
+        var brief = JsonSerializer.SerializeToElement(JarvisAgent.Brief(t), Json.Options);
+        Assert.Equal("planned", brief.GetProperty("state").GetString());
+        Assert.False(brief.TryGetProperty("request", out _));      // the island never gets the request text or findings
+        Assert.False(brief.TryGetProperty("findings", out _));
+        // Another device may not run it; the PC (owner null) may.
+        await Assert.ThrowsAsync<RpcException>(() => s.Agent.ExecuteAsync("tablet", t.Id, new HashSet<string>(), new Dictionary<string, string>(), false, _ => true, null));
+        var check = t.Steps.First(x => x.Kind == "check-pc").Id;
+        var r = await s.Agent.ExecuteAsync(null, t.Id, new HashSet<string> { check }, new Dictionary<string, string>(), false, _ => true, null);
+        Assert.Equal("done", r.Steps.Single(x => x.Kind == "check-pc").Status);
+        Assert.Null(s.Agent.Current(null));                        // finished: nothing waits any more
+    }
 }

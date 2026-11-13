@@ -291,10 +291,16 @@ public static class RpcApi
             var critical = ctx.Params.TryGetProperty("confirmCritical", out var cc) && cc.ValueKind == JsonValueKind.True;
             var session = ctx.Session;
             // Every step is checked against this device's own permissions – JARVIS never gets more rights than the person.
-            return await s.Agent.ExecuteAsync(session.PrefsKey, id, selected, refs, critical, perm => session.Has(perm), t => s.Rpc.SendTo(session, "jarvis.task", t));
+            // The PC itself (its own windows, e.g. the island) may decide on any task – a task asked from the phone can be confirmed at the PC.
+            var owner = session.IsLocalAdmin ? null : session.PrefsKey;
+            // "default": run what the plan ticked (the island's "Ausführen" has no step list of its own).
+            if (ctx.Params.TryGetProperty("default", out var df) && df.ValueKind == JsonValueKind.True && s.Agent.Get(id) is { } planned)
+                selected = planned.Steps.Where(x => x.Selected && (x.Tier != "critical" || critical)).Select(x => x.Id).ToHashSet();
+            return await s.Agent.ExecuteAsync(owner, id, selected, refs, critical, perm => session.Has(perm), t => s.Rpc.SendTo(session, "jarvis.task", t));
         });
-        rpc.Register("jarvis.cancelTask", ctx => new { cancelled = s.Agent.Cancel(ctx.Session.PrefsKey, ctx.Str("taskId", 40)) });
-        rpc.Register("jarvis.stop", ctx => new { stopped = s.Agent.StopAll(ctx.Session.PrefsKey) });
+        rpc.Register("jarvis.cancelTask", ctx => new { cancelled = s.Agent.Cancel(ctx.Session.IsLocalAdmin ? null : ctx.Session.PrefsKey, ctx.Str("taskId", 40)) });
+        rpc.Register("jarvis.stop", ctx => new { stopped = s.Agent.StopAll(ctx.Session.IsLocalAdmin ? null : ctx.Session.PrefsKey) });
+        rpc.Register("jarvis.current", ctx => new { task = s.Agent.Current(ctx.Session.IsLocalAdmin ? null : ctx.Session.PrefsKey) is { } t ? Assistant.JarvisAgent.Brief(t) : null });
         rpc.Register("jarvis.history", ctx => s.Agent.History(ctx.OptStr("query", 100), ctx.OptStr("kind", 20), ctx.OptStr("state", 20), ctx.Params.TryGetProperty("limit", out var l) && l.TryGetInt32(out var n) ? n : 50));
         rpc.Register("jarvis.historyDelete", ctx => new { deleted = s.Agent.Delete(ctx.Str("taskId", 40)) });
         rpc.Register("jarvis.historyClear", ctx => new { deleted = s.Agent.Clear() });
@@ -831,6 +837,7 @@ public static class RpcApi
         rpc.Register("files.read", ctx => s.Transfer.Read(ctx.Str("name", 260),
             ctx.Params.TryGetProperty("offset", out var o) ? o.GetInt64() : 0, ctx.Params.TryGetProperty("length", out var l) ? l.GetInt32() : TransferService.MaxChunkBytes));
         rpc.Register("files.remove", ctx => { s.Transfer.Remove(ctx.Str("name", 260)); return true; });
+        rpc.Register("files.rename", ctx => s.Transfer.Rename(ctx.Str("name", 260), ctx.Str("newName", 160)));
         rpc.Register("files.openFolder", _ => { s.Transfer.OpenFolder(); return true; });
 
         // ------------------------------------------------------------ screenshots and clips (only picture/video files of known folders)

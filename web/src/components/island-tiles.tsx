@@ -24,7 +24,7 @@ export const TILE_ICON: Record<TileType, typeof Music> = {
 };
 export const TAB_LABEL: Record<IslandTab, string> = {
   home: "Home", dash: "Übersicht", game: "Spiel", music: "Musik", jarvis: "JARVIS", focus: "Fokus", inbox: "Meldungen", apps: "Apps",
-  controls: "Regler", audio: "Audio", system: "System", pc: "PC", note: "Notiz",
+  controls: "Regler", audio: "Audio", system: "System", pc: "PC", note: "Notiz", shelf: "Ablage",
 };
 
 /** Everything a tile may need from the island around it. */

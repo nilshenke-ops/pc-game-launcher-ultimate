@@ -4,6 +4,24 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.60.0 – 2026-11-13
+### Neu
+- **Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC.
+  - Eine Datei nach der anderen, mit Fortschritt und „Abbrechen“.
+  - Dateien lassen sich umbenennen (der Dateityp bleibt), auf dieses Gerät holen und löschen.
+  - **„Aufs Handy“** zeigt einen QR-Code, der immer gleich bleibt. Er enthält nur die Adresse der Web-App und die Seite „Dateien“, keinen Zugang und keine PC-Adresse. Das Handy meldet sich wie gewohnt an, so wie es gekoppelt ist.
+  - Ohne PC warten Dateien auf dem Gerät und gehen hinüber, sobald er verbunden ist.
+- **JARVIS-Aufträge live in der Insel (AI Activity Island).** Die Insel am PC zeigt, was JARVIS gerade tut, von welchem Gerät der Auftrag auch kommt:
+  - „braucht eine Entscheidung“: direkt in der Leiste „Ausführen“ oder „Ansehen“.
+  - „arbeitet (2/5): Audio prüfen“: mit Fortschrittslinie und „Stopp“.
+  - „ist fertig“ oder „hat einen Fehler erkannt“.
+  - Im geöffneten Panel steht der Auftrag oben auf Home und im JARVIS-Bereich, mit „Ganzer Plan“.
+  - Aus der Insel laufen nur die angehakten Schritte des Plans; kritische Schritte (Windows-Geräte ändern, Programme schließen) nur im ganzen Plan.
+### Verbessert
+- Der PC selbst darf über JARVIS-Aufträge entscheiden, die ein Handy gestellt hat. Andere Geräte sehen und steuern weiter nur ihre eigenen.
+- Bestandsaufnahme „Dynamic Island 2.0“ mit Plan und ehrlichen Grenzen in `docs/DYNAMIC-ISLAND-2.0.md`. Beispiel: Windows-Benachrichtigungen anderer Programme kann eine klassische Windows-Anwendung nicht lesen.
+- Tests: Der Test-Helfer nutzt eine gemeinsame Verbindung zum Begleiter, statt für jeden Aufruf eine neue zu öffnen. Das traf die Schutzgrenze für neue Verbindungen; die Insel-Tests laufen dadurch auch schneller.
+
 ## 3.59.0 – 2026-11-13
 ### Neu
 - **JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung.

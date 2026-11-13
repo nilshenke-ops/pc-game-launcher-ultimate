@@ -327,3 +327,69 @@ test("Regler: WLAN und Bluetooth schalten, Nachtmodus öffnet die Einstellung am
     await expect(page.getByText("Die Nachtmodus-Einstellung ist am PC geöffnet.")).toBeVisible();
   } finally { await ctx.close(); }
 });
+
+test("Ablage: Datei in die Insel, umbenennen, QR-Code nur mit Adresse, löschen; Dateien auf die geschlossene Insel ziehen", async ({ browser }) => {
+  const ctx = await browser.newContext({ deviceScaleFactor: SHOTS ? 2 : 1, locale: "de-DE" });
+  const page = await ctx.newPage();
+  const errors: string[] = []; page.on("pageerror", (e) => errors.push(String(e)));
+  const panel = await island(page);
+  await panel.getByRole("tab", { name: "Ablage" }).click();
+  const drop = panel.getByRole("region", { name: "Ablage – Dateien hier ablegen" });
+  await expect(drop).toBeVisible();
+  await drop.locator('input[type="file"]').setInputFiles({ name: "notiz-insel.txt", mimeType: "text/plain", buffer: Buffer.from("Hallo vom Test") });
+  const files = panel.getByRole("list", { name: "Dateien in der Ablage" });
+  await expect(files.getByText("notiz-insel.txt")).toBeVisible({ timeout: 15000 });
+  // rename (the type stays when only the name is typed)
+  await files.getByRole("button", { name: "notiz-insel.txt umbenennen" }).click();
+  await panel.getByRole("textbox", { name: "Neuer Name" }).fill("einkauf");
+  await panel.getByRole("button", { name: "Umbenennen" }).click();
+  await expect(files.getByText("einkauf.txt")).toBeVisible();
+  expect((await adminRpc<{ files: { name: string }[] }>("files.list")).files.map((f) => f.name)).toContain("einkauf.txt");
+  // the QR code holds only the web app's address and the page – no token, no PC address
+  await panel.getByRole("button", { name: "Aufs Handy" }).click();
+  await expect(panel.getByRole("img", { name: "QR-Code zur Ablage" })).toBeVisible();
+  const url = await panel.locator(".isl3-qr code").textContent();
+  expect(url).toMatch(/\/#\/files$/);
+  expect(url).not.toMatch(/token|admin|pc=|code=/i);
+  await shot(page, "shelf-qr");
+  await panel.getByRole("button", { name: "Aufs Handy" }).click();
+  await files.getByRole("button", { name: "einkauf.txt löschen" }).click();
+  await expect(files.getByText("einkauf.txt")).toHaveCount(0);
+
+  // Dropping files on the closed island opens it on the shelf and sends them.
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "JARVIS-Insel" })).toHaveCount(0);
+  await page.evaluate(() => {
+    const host = document.querySelector(".isl-host")!;
+    const dt = new DataTransfer();
+    dt.items.add(new File(["gezogen"], "gezogen.txt", { type: "text/plain" }));
+    host.dispatchEvent(new DragEvent("dragover", { dataTransfer: dt, bubbles: true, cancelable: true }));
+    host.dispatchEvent(new DragEvent("drop", { dataTransfer: dt, bubbles: true, cancelable: true }));
+  });
+  const p2 = page.getByRole("dialog", { name: "JARVIS-Insel" });
+  await expect(p2.getByRole("tab", { name: "Ablage" })).toHaveAttribute("aria-selected", "true");
+  await expect.poll(async () => (await adminRpc<{ files: { name: string }[] }>("files.list")).files.map((f) => f.name), { timeout: 15000 }).toContain("gezogen.txt");
+  await adminRpc("files.remove", { name: "gezogen.txt" });
+  expect(errors).toEqual([]);
+  await ctx.close();
+});
+
+test("JARVIS-Auftrag in der Insel: Entscheidung in der Leiste, Ausführen aus der Insel, fertig", async ({ browser }) => {
+  const ctx = await browser.newContext({ deviceScaleFactor: SHOTS ? 2 : 1, locale: "de-DE" });
+  const page = await ctx.newPage();
+  await page.addInitScript((tok) => { const w = window as unknown as Record<string, unknown>; w.__PGL_ADMIN__ = tok; w.__PGL_EMBEDDED__ = true; w.__PGL_ISLAND__ = true; }, state().adminToken);
+  await page.setViewportSize({ width: 620, height: 380 });
+  await page.goto(`${COMPANION}/#/island`);
+  await expect(page.getByRole("button", { name: "JARVIS-Insel öffnen" })).toBeVisible();
+  // A task asked from somewhere else (here another connection): the island shows that a decision is needed.
+  await adminRpc("jarvis.plan", { text: "Bereite meinen PC für eine Gaming-Session vor" });
+  await expect(page.locator(".isl-text")).toContainText("JARVIS braucht eine Entscheidung", { timeout: 15000 });
+  await shot(page, "agent-decide");
+  await page.locator(".isl-ask").getByRole("button", { name: "Ausführen" }).click();
+  await expect(page.locator(".isl-text")).toContainText(/JARVIS (arbeitet|ist fertig|hat einen Fehler erkannt)/, { timeout: 30000 });
+  await expect(page.locator(".isl-text")).toContainText(/JARVIS (ist fertig|hat einen Fehler erkannt)/, { timeout: 60000 });
+  const h = await adminRpc<{ tasks: { state: string; steps: { status: string; kind: string }[] }[] }>("jarvis.history");
+  expect(["done", "failed"]).toContain(h.tasks[0].state);
+  expect(h.tasks[0].steps.filter((x) => x.kind.startsWith("check")).every((x) => x.status !== "planned")).toBe(true);
+  await ctx.close();
+});

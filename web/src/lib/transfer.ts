@@ -71,10 +71,12 @@ function fromBase64(b64: string) {
 }
 
 /** Sends a file in pieces (only one piece in memory at a time). */
-export async function uploadFile(name: string, data: Blob, onProgress?: (p: number) => void): Promise<PcFile> {
+export async function uploadFile(name: string, data: Blob, onProgress?: (p: number) => void, signal?: AbortSignal): Promise<PcFile> {
   if (data.size > MAX_FILE_BYTES) throw new Error(t("{f}: höchstens 200 MB pro Datei.", { f: name }));
   const { uploadId } = await client.call<{ uploadId: string }>("files.uploadBegin", { name, size: data.size });
   for (let off = 0; off < data.size; off += CHUNK) {
+    // Cancelled: no further pieces; the PC throws the unfinished file away by itself (after 30 minutes at the latest).
+    if (signal?.aborted) throw Object.assign(new Error(t("Übertragung abgebrochen.")), { code: "cancelled" });
     const part = new Uint8Array(await data.slice(off, off + CHUNK).arrayBuffer());
     await client.call("files.uploadChunk", { uploadId, data: toBase64(part) });
     onProgress?.(Math.min(1, (off + CHUNK) / Math.max(data.size, 1)));

@@ -3,35 +3,32 @@
 import WebSocket from "ws";
 import { COMPANION, state } from "./env";
 
+// One shared admin connection for all calls of a test run: a new connection per call would hit the companion's own limit on new
+// connections per minute (a protection against floods) once many tests run one after the other. If the companion restarts
+// (some tests do that), the next call opens a fresh connection.
+let shared: Promise<Awaited<ReturnType<typeof adminSession>>> | null = null;
+
 export async function adminRpc<T = unknown>(method: string, params: object = {}): Promise<T> {
-  const ws = new WebSocket(COMPANION.replace(/^http/, "ws") + "/ws");
-  await new Promise<void>((res, rej) => { ws.once("open", () => res()); ws.once("error", rej); });
-  let id = 0;
-  const call = (m: string, p: object) => new Promise<{ ok: boolean; r?: T; e?: { message: string } }>((res, rej) => {
-    const n = ++id;
-    const t = setTimeout(() => rej(new Error(`${m}: keine Antwort`)), 10000);
-    const on = (raw: WebSocket.RawData) => {
-      const msg = JSON.parse(String(raw));
-      if (msg.id !== n) return;
-      clearTimeout(t); ws.off("message", on); res(msg);
-    };
-    ws.on("message", on);
-    ws.send(JSON.stringify({ v: 1, id: n, m, p }));
-  });
-  try {
-    await call("hello", {});
-    const login = await call("auth.login", { adminToken: state().adminToken });
-    if (!login.ok) throw new Error("Anmeldung fehlgeschlagen: " + login.e?.message);
-    const r = await call(method, params);
-    if (!r.ok) throw new Error(`${method}: ${r.e?.message}`);
-    return r.r as T;
-  } finally { ws.close(); }
+  for (let attempt = 0; ; attempt++) {
+    if (!shared) { shared = adminSession(() => { shared = null; }); shared.catch(() => { shared = null; }); }
+    let session: Awaited<ReturnType<typeof adminSession>>;
+    try { session = await shared; }
+    catch (e) { shared = null; if (attempt < 1) continue; throw e; }
+    try { return await session.call<T>(method, params); }
+    catch (e) {
+      // A connection that died (companion restarted) is retried once with a new one; a real error of the method is not.
+      if (!session.open() && attempt < 1) { shared = null; continue; }
+      throw e;
+    }
+  }
 }
 
 /** One admin connection for tests that make many calls in a row (a new connection per call would hit the companion's connection rate limit). */
-export async function adminSession() {
+export async function adminSession(onClose?: () => void) {
   const ws = new WebSocket(COMPANION.replace(/^http/, "ws") + "/ws");
   await new Promise<void>((res, rej) => { ws.once("open", () => res()); ws.once("error", rej); });
+  ws.on("close", () => onClose?.());
+  ws.on("error", () => undefined);
   let id = 0;
   const raw = (m: string, p: object) => new Promise<{ ok: boolean; r?: unknown; e?: { message: string } }>((res, rej) => {
     const n = ++id;
@@ -54,5 +51,6 @@ export async function adminSession() {
       return r.r as T;
     },
     close: () => ws.close(),
+    open: () => ws.readyState === WebSocket.OPEN,
   };
 }

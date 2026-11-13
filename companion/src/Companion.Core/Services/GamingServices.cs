@@ -193,7 +193,7 @@ public sealed class SettingsService
         public bool ResetLayout { get; init; }
     }
 
-    static readonly string[] LayoutTabs = { "home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "pc", "note" };
+    static readonly string[] LayoutTabs = { "home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "pc", "note", "shelf" };
     static readonly string[] LayoutTiles = { "jarvis", "game", "music", "focus", "pc", "calendar", "weather", "system", "volume", "network", "battery", "clock", "note" };
     static readonly System.Text.RegularExpressions.Regex TileIdRx = new("^[a-z0-9]{1,16}$"), OptKeyRx = new("^[a-zA-Z]{1,16}$");
     public const int MaxLayoutChars = 12000;
