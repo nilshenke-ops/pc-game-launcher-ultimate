@@ -109,6 +109,21 @@ sealed class WindowsForegroundWatcher : IForegroundWatcher, IDisposable
     }
     static readonly HashSet<string> NotGames = new() { "chrome", "msedge", "firefox", "brave", "opera", "vlc", "mpc-hc64", "mpc-hc", "wmplayer", "spotify", "explorer", "applicationframehost", "mpv", "teams", "zoom" };
 
+    public string? FrontBrand()
+    {
+        try
+        {
+            var h = GetForegroundWindow();
+            if (h == IntPtr.Zero) return null;
+            GetWindowThreadProcessId(h, out var pid);
+            if (pid == Environment.ProcessId) return "self";
+            var path = ImagePath(pid);
+            var title = new StringBuilder(256); GetWindowText(h, title, title.Capacity);
+            return ForegroundBrand.Detect(path == null ? null : System.IO.Path.GetFileNameWithoutExtension(path), title.ToString());
+        }
+        catch { return null; }
+    }
+
     static string? ImagePath(int pid)
     {
         var p = OpenProcess(0x1000, false, pid);

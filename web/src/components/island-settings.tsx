@@ -14,6 +14,7 @@ import { ISLAND_EYES, ISLAND_EYE_SIZES, ISLAND_STYLES, eyeColor, type IslandEye,
 import { ISLAND_POSITIONS, MIN_OPACITY, useIslandLayout, useIslandLook, type IslandPosition } from "../lib/island-look";
 import { addTile, ALL_TABS, MAX_TILES, moveTile, removeTile, setTabs, setTileOpt, tileDef, TILE_DEFS, type IslandLayout, type LayoutPage, type TileType } from "../lib/island-layout";
 import { TabsEditor, TILE_ICON, TileSettings } from "./island-tiles";
+import { IslandColorPicker } from "./island-color";
 import type { CSSProperties } from "react";
 
 type IslandScope = "app" | "desktop" | "programs" | "games" | "all";
@@ -144,6 +145,10 @@ export function IslandLayoutCard() {
         <p className="small muted">{lay.canPc
           ? t("Bereiche, Kacheln und ihre Einstellungen – gilt für die Insel auf allen Geräten. In der Insel selbst geht das auch: Stift oben rechts oder eine Kachel gedrückt halten.")
           : t("Dieses Gerät darf die Einstellungen des PCs nicht ändern – deine Anpassung gilt nur auf diesem Gerät.")}</p>
+        <section className="stack-sm">
+          <b>{t("Farbe & Effekt")}</b>
+          <IslandColorPicker />
+        </section>
         <section className="stack-sm">
           <b>{t("Bereiche in der Leiste")}</b>
           <TabsEditor tabs={L.tabs ?? ALL_TABS.filter((x) => x !== "note" && x !== "pc")} onChange={(list) => save(setTabs(L, list))} />

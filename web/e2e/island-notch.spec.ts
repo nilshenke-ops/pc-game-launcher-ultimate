@@ -260,3 +260,70 @@ test("Am Handy weiterhören: pausiert am PC und öffnet das Lied auf dem Handy",
     for (const name of ["Home", "Übersicht", "JARVIS", "Fokus", "Regler", "Audio", "System", "PC"]) { await panel.getByRole("tab", { name, exact: true }).click(); await shot(page, `phone-${name}`); }
   } finally { rmSync(media, { force: true }); await ctx.close(); }
 });
+
+test("Was am meisten verbraucht: Liste nach RAM/CPU, ein Programm schließen (erst sanft, dann erzwingen)", async ({ browser }) => {
+  // a harmless program with a name of its own, so nothing else on the test machine is touched
+  const { copyFileSync, chmodSync } = await import("node:fs");
+  const { spawn } = await import("node:child_process");
+  const name = "pgltest" + Date.now().toString(36).slice(-5);
+  const exe = join(state().dataDir, name);
+  copyFileSync("/bin/sleep", exe); chmodSync(exe, 0o755);
+  const child = spawn(exe, ["300"], { stdio: "ignore" });
+  const ctx = await browser.newContext({ deviceScaleFactor: SHOTS ? 2 : 1, locale: "de-DE" });
+  const page = await ctx.newPage();
+  try {
+    const panel = await island(page);
+    await panel.getByRole("tab", { name: "System" }).click();
+    await panel.getByRole("button", { name: "Arbeitsspeicher: was am meisten verbraucht" }).click();
+    const sheet = panel.getByRole("dialog", { name: "Was am meisten verbraucht" });
+    await expect(sheet.getByRole("list", { name: "Programme nach Arbeitsspeicher" }).locator("li").first()).toBeVisible({ timeout: 15_000 });
+    await sheet.getByRole("tab", { name: /CPU/ }).click();
+    await expect(sheet.getByRole("list", { name: "Programme nach CPU-Last" })).toBeVisible();
+    await shot(page, "procs");
+    // the list shows only the biggest users, so the tiny test program is closed through the same call the list's button makes
+    const r1 = await adminRpc<{ needsForce: boolean }>("system.closeProgram", { name, force: false });
+    expect(r1.needsForce).toBe(true); // no window to ask – it keeps running
+    const r2 = await adminRpc<{ left: number }>("system.closeProgram", { name, force: true });
+    expect(r2.left).toBe(0);
+    await expect.poll(() => child.exitCode !== null || child.signalCode !== null, { timeout: 5000 }).toBe(true);
+    // Windows' own processes are refused
+    await expect(adminRpc("system.closeProgram", { name: "explorer", force: true })).rejects.toThrow(/gehört zu Windows/);
+  } finally { try { child.kill(); } catch { /* gone */ } rmSync(exe, { force: true }); await ctx.close(); }
+});
+
+test("Farbe & Effekt: Farbe wählen färbt die Insel, Sakura-Blüten fallen, zurück auf Standard", async ({ browser }) => {
+  const ctx = await browser.newContext({ deviceScaleFactor: SHOTS ? 2 : 1, locale: "de-DE" });
+  const page = await ctx.newPage();
+  try {
+    const panel = await island(page);
+    await panel.getByRole("button", { name: "Mehr" }).click();
+    await panel.getByRole("menuitem", { name: "Farbe & Effekt" }).click();
+    const sheet = panel.getByRole("dialog", { name: "Farbe & Effekt" });
+    await sheet.getByRole("radio", { name: "Pink" }).click();
+    await expect.poll(async () => (await adminRpc<{ look: { accent: string } }>("island.get")).look.accent, { timeout: 8000 }).toBe("#f472b6");
+    await expect(page.locator(".isl-host")).toHaveAttribute("data-accent", "1");
+    await sheet.getByRole("radio", { name: "Sakura-Blüten" }).click();
+    await expect(page.locator(".isl-fx.fx-sakura")).toHaveCount(1);
+    await sheet.getByRole("radio", { name: "Automatisch" }).click();
+    await expect.poll(async () => (await adminRpc<{ look: { accent: string } }>("island.get")).look.accent, { timeout: 8000 }).toBe("auto");
+    await shot(page, "color");
+  } finally { await adminRpc("island.configure", { look: { accent: "default", effect: "none" } }); await ctx.close(); }
+});
+
+test("Regler: WLAN und Bluetooth schalten, Nachtmodus öffnet die Einstellung am PC", async ({ browser }) => {
+  const ctx = await browser.newContext({ locale: "de-DE" });
+  const page = await ctx.newPage();
+  try {
+    const panel = await island(page);
+    await panel.getByRole("tab", { name: "Regler" }).click();
+    const bt = panel.getByRole("button", { name: /^Bluetooth/ });
+    await expect(bt).toHaveAttribute("aria-pressed", "true");
+    await bt.click();
+    await expect.poll(async () => (await adminRpc<{ bluetooth: boolean }>("controls.get")).bluetooth, { timeout: 8000 }).toBe(false);
+    await bt.click();
+    await expect.poll(async () => (await adminRpc<{ bluetooth: boolean }>("controls.get")).bluetooth, { timeout: 8000 }).toBe(true);
+    await expect(panel.getByRole("button", { name: /^WLAN/ })).toHaveAttribute("aria-pressed", "true");
+    await panel.getByRole("button", { name: /^Nachtmodus/ }).click();
+    await expect(page.getByText("Die Nachtmodus-Einstellung ist am PC geöffnet.")).toBeVisible();
+  } finally { await ctx.close(); }
+});

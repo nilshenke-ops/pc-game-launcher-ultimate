@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.58.0 – 2026-11-13
+### Neu
+- **Was am meisten verbraucht:** Im System-Bereich der Insel (und in der System-Kachel) auf CPU oder Arbeitsspeicher tippen. Es erscheint die Liste der Programme, die gerade am meisten brauchen, das meiste oben.
+  - „Schließen“ fragt nach und bittet das Programm dann zu beenden, sodass es noch nach dem Speichern fragen kann. Erst wenn es sich nicht beendet, gibt es „Erzwingen“.
+  - Teile von Windows und der Begleiter selbst lassen sich nicht schließen; der PC lehnt das auch dann ab, wenn es jemand direkt versucht.
+- **Farbe & Effekt der Insel:** 16 Farben, eine eigene Farbe oder „Automatisch“. Automatisch färbt die Insel wie die App oder Website vorne am PC (z. B. Discord-Blau, Spotify-Grün, YouTube-Rot), sonst wie das Albumbild des laufenden Lieds. Vom Vordergrund erfährt die Insel nur einen Kurznamen wie „discord“, nie den Fenstertitel.
+  - Dazu ein Effekt: Sakura-Blüten, Schnee oder Sterne. Bei „weniger Bewegung“ bleiben die Effekte aus.
+  - Einzustellen im Insel-Menü und unter „Insel anpassen“.
+- **Regler: WLAN, Bluetooth und Nachtmodus.**
+  - WLAN und Bluetooth schalten über die Funk-Schalter von Windows.
+  - WLAN ausschalten geht nur am PC selbst, sonst risse die Verbindung zum Handy ab.
+  - Für den Nachtmodus bietet Windows Programmen keinen Schalter; der Knopf öffnet ehrlich die Nachtmodus-Einstellung am PC.
+### Hinweise
+- WLAN/Bluetooth, die App-Erkennung und das Öffnen der Einstellungen sind für den Windows-Begleiter gebaut und übersetzen fehlerfrei, wurden aber nicht auf einem echten Windows-PC ausprobiert. Windows kann das Schalten des Funks in den Datenschutz-Einstellungen verbieten; dann sagt die Insel das.
+
 ## 3.57.0 – 2026-11-13
 ### Neu
 - **Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung.

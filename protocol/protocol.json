@@ -254,6 +254,7 @@
     "monitor.subscribe": "view",
     "monitor.now": "view",
     "system.topProcesses": "manage",
+    "system.closeProgram": "manage",
     "monitor.unsubscribe": "view",
     "network.diagnose": "view",
 
@@ -354,6 +355,9 @@
     "controls.micMute": "launch",
     "net.speed": "view",
     "controls.setDefaultDevice": "launch",
+    "island.front": "view",
+    "controls.setRadio": "launch",
+    "controls.openSettings": "launch",
     "privacy.status": "view",
     "moves.list": "view",
     "moves.options": "view",

@@ -441,6 +441,10 @@ public sealed class Settings
     /// <summary>Layout of the opened island: areas in the strip (order), tiles on the start page and the overview with their options
     /// (checked by SettingsService.CheckIslandLayout); null = the usual island.</summary>
     public System.Text.Json.Nodes.JsonObject? IslandLayout { get; set; }
+    /// <summary>Colour of the island: "default" (the template's), "auto" (like the app or website in front, the game or the song) or a colour "#rrggbb".</summary>
+    public string IslandAccent { get; set; } = "default";
+    /// <summary>A small moving effect behind the island's content: none, sakura, snow or stars.</summary>
+    public string IslandEffect { get; set; } = "none";
     /// <summary>Place at the top edge: center, left or right.</summary>
     public string IslandPosition { get; set; } = "center";
     /// <summary>Opacity of the island window in percent (50–100).</summary>

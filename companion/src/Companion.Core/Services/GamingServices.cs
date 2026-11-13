@@ -177,6 +177,8 @@ public sealed class SettingsService
         public static readonly string[] EyeSizes = { "s", "m", "l" };
         public static readonly string[] Widgets = { "game", "start", "clock", "music", "focus", "stopwatch", "stats", "temp", "net", "volume", "profile", "sounds", "note" };
         public static readonly string[] Positions = { "center", "left", "right" };
+        public static readonly string[] Effects = { "none", "sakura", "snow", "stars" };
+        public static bool ValidAccent(string a) => a is "default" or "auto" || System.Text.RegularExpressions.Regex.IsMatch(a, "^#[0-9a-fA-F]{6}$");
         public static readonly string[] DefaultWidgets = { "game", "clock", "music", "focus", "stats" };
         public const int MinOpacity = 50, MaxOpacity = 100;
     }
@@ -187,6 +189,7 @@ public sealed class SettingsService
         public List<string>? Widgets { get; init; } public string? Position { get; init; } public int? Opacity { get; init; }
         /// <summary>The island's layout (areas, tiles, their options); with ResetLayout = true the usual island comes back.</summary>
         public System.Text.Json.JsonElement? Layout { get; init; }
+        public string? Accent { get; init; } public string? Effect { get; init; }
         public bool ResetLayout { get; init; }
     }
 
@@ -267,11 +270,15 @@ public sealed class SettingsService
             if (u.Widgets.Any(w => !IslandLook.Widgets.Contains(w))) throw new RpcException("invalid-params", "Unbekanntes Insel-Widget.");
             widgets = IslandLook.Widgets.Where(u.Widgets.Contains).ToList(); // fixed order, no duplicates
         }
+        if (u.Accent is { } ac && !IslandLook.ValidAccent(ac)) throw new RpcException("invalid-params", "Farbe der Insel: default, auto oder #rrggbb.");
+        if (u.Effect is { } ef && !IslandLook.Effects.Contains(ef)) throw new RpcException("invalid-params", "Unbekannter Effekt der Insel.");
         var layout = u.Layout is { } le && le.ValueKind != System.Text.Json.JsonValueKind.Null ? CheckIslandLayout(le) : null;
         var r = _store.Update(s =>
         {
             if (layout != null) s.IslandLayout = layout;
             else if (u.ResetLayout) s.IslandLayout = null;
+            if (u.Accent != null) s.IslandAccent = u.Accent.ToLowerInvariant();
+            if (u.Effect != null) s.IslandEffect = u.Effect;
             if (u.Style != null) s.IslandStyle = u.Style;
             if (u.Eye != null) s.IslandEye = u.Eye;
             if (u.EyeSize != null) s.IslandEyeSize = u.EyeSize;

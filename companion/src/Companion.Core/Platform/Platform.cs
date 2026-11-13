@@ -187,6 +187,8 @@ public interface IForegroundWatcher
     bool GameInFront { get; }
     /// <summary>The front window changed its kind.</summary>
     event Action? Changed;
+    /// <summary>The well-known app or website in front, looked at right now (see ForegroundBrand); "self" for this companion's own windows.</summary>
+    string? FrontBrand() => null;
     /// <summary>Watching costs a little – only while the island's place depends on it.</summary>
     void SetActive(bool on);
 }

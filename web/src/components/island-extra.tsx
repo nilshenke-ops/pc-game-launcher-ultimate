@@ -4,7 +4,7 @@
 //  · System    – tiles for CPU, memory, graphics card, storage, battery and running time
 // Every number comes from the PC (or Open-Meteo for the weather). What the PC cannot tell is left out or says so – never a made-up value.
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, BellOff, Clock3, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Cpu, Gauge, HardDrive, Leaf, MemoryStick, Mic, MicOff, Monitor, Music2, Network, Rocket, Volume1, Sun, Volume2, VolumeX, Zap } from "lucide-react";
+import { ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, BellOff, Clock3, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Cpu, Gauge, HardDrive, Leaf, MemoryStick, Mic, MicOff, Monitor, Moon, Music2, Network, Rocket, Volume1, Wifi, WifiOff, Bluetooth, Sun, Volume2, VolumeX, Zap } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useEvent, useLiveSubscription, useRpc } from "../lib/hooks";
@@ -16,7 +16,7 @@ import { fetchLyrics, lineAt, lyricsOn, setLyricsOn, speedText, type Lyrics } fr
 import { nowPosition, type NowPlaying } from "../lib/now-playing";
 import { cachedWeather, gb, loadWeather, pushHistory, sparkPoints, uptimeText, WEATHER_TTL, type IslandWeather } from "../lib/island-dash";
 
-export interface PcControls { supported: boolean; volume: number | null; muted: boolean | null; brightness: number | null; battery: number | null; charging: boolean | null; powerMode: "saver" | "balanced" | "performance" | null }
+export interface PcControls { supported: boolean; volume: number | null; muted: boolean | null; brightness: number | null; battery: number | null; charging: boolean | null; powerMode: "saver" | "balanced" | "performance" | null; wifi?: boolean | null; bluetooth?: boolean | null }
 
 /** The PC's quick controls – asked once per open island, refreshed when something changes them. */
 export function usePcControls(online: boolean) {
@@ -157,6 +157,9 @@ export function IslandControls({ online, canUse, controls, sensors, now, press }
   };
   const tm = useTimer();
   const view = countdownView(tm, now);
+  const setRadio = (kind: "wifi" | "bluetooth", on: boolean) => {
+    client.call("controls.setRadio", { kind, on }).then(() => controls.reload(), (e: Error) => toast(e.message, "error"));
+  };
   if (!online) return <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{t("PC nicht verbunden – die Regler steuern den PC.")}</span></div>;
   if (!c) return <div className="isl2-empty"><Gauge size={18} aria-hidden /><span>{controls.loading ? t("Regler werden gelesen …") : t("Der Begleiter auf dem PC kennt die Regler noch nicht – bitte aktualisieren.")}</span></div>;
   const vol = local.volume ?? c.volume, muted = local.muted ?? c.muted, bright = local.brightness ?? c.brightness, mode = local.powerMode ?? c.powerMode;
@@ -175,6 +178,22 @@ export function IslandControls({ online, canUse, controls, sensors, now, press }
           <button type="button" className={`isl3-tog mic${micMuted ? " on" : ""}`} aria-pressed={micMuted} disabled={off} onClick={toggleMic}>
             <span className="isl3-togic">{micMuted ? <MicOff size={16} /> : <Mic size={16} />}</span>
             <span><b>{t("Mikrofon")}</b><i>{micMuted ? t("stumm") : sn?.micInUse ? t("benutzt: {n}", { n: sn.micApp ?? "?" }) : t("an")}</i></span>
+          </button>
+        )}
+        {c.wifi != null && (
+          <button type="button" className={`isl3-tog radio${c.wifi ? " on" : ""}`} aria-pressed={c.wifi} disabled={off} onClick={() => setRadio("wifi", !c.wifi)}>
+            <span className="isl3-togic">{c.wifi ? <Wifi size={16} /> : <WifiOff size={16} />}</span><span><b>{t("WLAN")}</b><i>{c.wifi ? t("an") : t("aus")}</i></span>
+          </button>
+        )}
+        {c.bluetooth != null && (
+          <button type="button" className={`isl3-tog radio${c.bluetooth ? " on" : ""}`} aria-pressed={c.bluetooth} disabled={off} onClick={() => setRadio("bluetooth", !c.bluetooth)}>
+            <span className="isl3-togic"><Bluetooth size={16} /></span><span><b>{t("Bluetooth")}</b><i>{c.bluetooth ? t("an") : t("aus")}</i></span>
+          </button>
+        )}
+        {c.supported && (
+          <button type="button" className="isl3-tog" disabled={off} onClick={() => client.call("controls.openSettings", { page: "nightlight" }).then(() => toast(t("Die Nachtmodus-Einstellung ist am PC geöffnet."), "success"), (e: Error) => toast(e.message, "error"))}
+            title={t("Windows lässt Programme den Nachtmodus nicht direkt schalten – das öffnet die Einstellung am PC.")}>
+            <span className="isl3-togic"><Moon size={16} /></span><span><b>{t("Nachtmodus")}</b><i>{t("Einstellung öffnen")}</i></span>
           </button>
         )}
         <button type="button" className={`isl3-tog${view ? " on" : ""}`} aria-pressed={!!view} onClick={() => (view ? stopCountdown() : startCountdown(25))}><span className="isl3-togic"><BellOff size={16} /></span><span><b>{t("Fokus")}</b><i>{view ? clock(view.left) : t("Aus")}</i></span></button>
@@ -199,18 +218,19 @@ export function IslandControls({ online, canUse, controls, sensors, now, press }
 }
 
 // ------------------------------------------------------------------ System
-function Tile({ icon, name, value, sub, pct, color }: { icon: ReactNode; name: string; value: string; sub?: string; pct?: number | null; color: string }) {
+function Tile({ icon, name, value, sub, pct, color, onOpen }: { icon: ReactNode; name: string; value: string; sub?: string; pct?: number | null; color: string; onOpen?: () => void }) {
+  const El = onOpen ? "button" : "div";
   return (
-    <div className="isl3-stat" style={{ ["--c" as string]: color } as CSSProperties}>
+    <El {...(onOpen ? { type: "button" as const, onClick: onOpen, "aria-label": t("{n}: was am meisten verbraucht", { n: name }) } : {})} className={`isl3-stat${onOpen ? " tap" : ""}`} style={{ ["--c" as string]: color } as CSSProperties}>
       <span className="isl3-stathead">{icon}{name}</span>
       <b>{value}</b>
       {pct != null && <span className="isl3-bar"><i style={{ transform: `scaleX(${Math.max(0, Math.min(100, pct)) / 100})` }} /></span>}
       {sub && <span className="isl2-sub ellipsis">{sub}</span>}
-    </div>
+    </El>
   );
 }
 
-export function IslandSystem({ online, controls }: { online: boolean; controls: ReturnType<typeof usePcControls> }) {
+export function IslandSystem({ online, controls, onDetails }: { online: boolean; controls: ReturnType<typeof usePcControls>; onDetails?: (k: "ram" | "cpu") => void }) {
   const m = useMetrics(online);
   const net = useNetSpeed(online, true);
   if (!online) return <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{t("PC nicht verbunden")}</span></div>;
@@ -221,8 +241,8 @@ export function IslandSystem({ online, controls }: { online: boolean; controls: 
   const c = controls.data;
   return (
     <div className="isl3-stats">
-      <Tile color="#38bdf8" icon={<Cpu size={13} />} name="CPU" value={m?.cpuPercent != null ? `${Math.round(m.cpuPercent)} %` : na} pct={m?.cpuPercent} sub={m?.cpuTempC != null ? `${Math.round(m.cpuTempC)} °C` : m?.cpuName} />
-      <Tile color="#c084fc" icon={<MemoryStick size={13} />} name={t("Arbeitsspeicher")} value={m?.memUsedBytes != null ? gb(m.memUsedBytes) : na} pct={ramPct} sub={m?.memTotalBytes ? t("von {n}", { n: gb(m.memTotalBytes) }) : undefined} />
+      <Tile onOpen={onDetails && (() => onDetails("cpu"))} color="#38bdf8" icon={<Cpu size={13} />} name="CPU" value={m?.cpuPercent != null ? `${Math.round(m.cpuPercent)} %` : na} pct={m?.cpuPercent} sub={m?.cpuTempC != null ? `${Math.round(m.cpuTempC)} °C` : m?.cpuName} />
+      <Tile onOpen={onDetails && (() => onDetails("ram"))} color="#c084fc" icon={<MemoryStick size={13} />} name={t("Arbeitsspeicher")} value={m?.memUsedBytes != null ? gb(m.memUsedBytes) : na} pct={ramPct} sub={m?.memTotalBytes ? t("von {n}", { n: gb(m.memTotalBytes) }) : undefined} />
       <Tile color="#34d399" icon={<Zap size={13} />} name="GPU" value={gpu?.utilPercent != null ? `${Math.round(gpu.utilPercent)} %` : na} pct={gpu?.utilPercent} sub={gpu?.tempC != null ? `${Math.round(gpu.tempC)} °C` : gpu?.name} />
       <Tile color="#fbbf24" icon={<HardDrive size={13} />} name={t("Speicher")} value={disk ? t("{n} frei", { n: gb(disk.freeBytes) }) : na} pct={disk ? ((disk.totalBytes - disk.freeBytes) / disk.totalBytes) * 100 : null} sub={disk ? t("von {n}", { n: gb(disk.totalBytes) }) + (disk.label ? ` · ${disk.label}` : "") : undefined} />
       <Tile color="#4ade80" icon={c?.charging ? <BatteryCharging size={13} /> : <BatteryMedium size={13} />} name={t("Akku")} value={c?.battery != null ? `${c.battery} %` : t("kein Akku")} pct={c?.battery ?? null} sub={c?.battery != null ? (c.charging ? t("Netzbetrieb") : t("Akkubetrieb")) : c && !c.supported ? t("nur Windows-Begleiter") : undefined} />

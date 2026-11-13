@@ -694,6 +694,7 @@ public static class RpcApi
         // One look at the values (JARVIS: "Ist meine GPU ausgelastet?"), kept 2 s so several questions measure once.
         rpc.Register("monitor.now", _ => s.MetricsNow());
         rpc.Register("system.topProcesses", async ctx => await s.ProcessUsage.TopAsync());
+        rpc.Register("system.closeProgram", async ctx => await s.ProcessUsage.CloseAsync(ctx.Str("name", 120), ctx.Bool("force")));
         rpc.Register("monitor.subscribe", ctx => s.Monitor.Subscribe(ctx.Session));
         rpc.Register("monitor.unsubscribe", ctx => { s.Monitor.Unsubscribe(ctx.Session); return true; });
         rpc.Register("network.diagnose", async ctx => (object?)await s.Network.Run());
@@ -829,6 +830,8 @@ public static class RpcApi
         rpc.Register("overlay.hide", _ => { s.Platform.Overlay.Hide(); return true; });
         // JARVIS island at the top of the screen (Windows): on/off for desktop & programs, separately for games.
         rpc.Register("island.get", _ => IslandInfo(s));
+        // Which well-known app or website is in front (only its short id) – the island takes its colour when set to "auto".
+        rpc.Register("island.front", _ => new { brand = s.Platform.Foreground.FrontBrand() });
         rpc.Register("island.configure", ctx =>
         {
             bool? Opt(string k) => ctx.Params.TryGetProperty(k, out var v) && v.ValueKind is JsonValueKind.True or JsonValueKind.False ? v.GetBoolean() : null;
@@ -948,7 +951,7 @@ public static class RpcApi
         rpc.Register("vault.diff", ctx => s.Vault.Diff(ctx.Str("id", 48), ctx.Str("a", 40), ctx.Str("b", 40)));
 
         // Quick controls of the island: what this PC can tell and set (volume, mute, brightness, battery, power plan) – null where it cannot.
-        object Controls() { var c = s.Platform.Controls.Read(); return new { supported = s.Platform.Controls.Supported, volume = c.Volume, muted = c.Muted, brightness = c.Brightness, battery = c.BatteryPercent, charging = c.Charging, powerMode = c.PowerMode }; }
+        object Controls() { var c = s.Platform.Controls.Read(); return new { supported = s.Platform.Controls.Supported, volume = c.Volume, muted = c.Muted, brightness = c.Brightness, battery = c.BatteryPercent, charging = c.Charging, powerMode = c.PowerMode , wifi = s.Platform.Controls.Radios().Wifi, bluetooth = s.Platform.Controls.Radios().Bluetooth }; }
         rpc.Register("controls.get", _ => Controls());
         rpc.Register("controls.set", ctx =>
         {
@@ -971,6 +974,27 @@ public static class RpcApi
             return Sensors();
         });
         rpc.Register("net.speed", _ => s.NetSpeed.Read());
+        // Wi-Fi and Bluetooth like the quick settings of Windows. Wi-Fi may only be switched OFF on the PC itself – from a phone it would cut
+        // the very connection the phone uses.
+        rpc.Register("controls.setRadio", ctx =>
+        {
+            var kind = ctx.Str("kind", 12);
+            if (kind is not ("wifi" or "bluetooth")) throw new RpcException("invalid-params", "Funk: wifi oder bluetooth.");
+            var on = ctx.Bool("on");
+            if (kind == "wifi" && !on && !ctx.Session.IsLocalAdmin) throw new RpcException("forbidden", "WLAN lässt sich nur am PC selbst ausschalten – sonst reißt die Verbindung zu diesem Gerät ab.");
+            var err = s.Platform.Controls.SetRadio(kind, on);
+            if (err != null) throw new RpcException("controls", err);
+            Changed(s, "controls");
+            return Controls();
+        });
+        rpc.Register("controls.openSettings", ctx =>
+        {
+            var page = ctx.Str("page", 20);
+            if (page is not ("nightlight" or "bluetooth" or "wifi")) throw new RpcException("invalid-params", "Unbekannte Einstellungsseite.");
+            var err = s.Platform.Controls.OpenSettings(page);
+            if (err != null) throw new RpcException("controls", err);
+            return true;
+        });
         // Speaker or microphone as the Windows default (like the sound menu of the taskbar) – only a device the PC lists right now.
         rpc.Register("controls.setDefaultDevice", ctx =>
         {
@@ -1124,7 +1148,7 @@ public static class RpcApi
         return new
         {
             supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, scope = SettingsService.ScopeOf(set), front = s.Platform.Foreground.Kind.ToString().ToLowerInvariant(), foregroundSupported = s.Platform.Foreground.Supported, gameRunning = s.GameRunning(),
-            look = new { style = set.IslandStyle, eye = set.IslandEye, eyeSize = set.IslandEyeSize, widgets = set.IslandWidgets ?? SettingsService.IslandLook.DefaultWidgets.ToList(), position = set.IslandPosition, opacity = set.IslandOpacity, layout = set.IslandLayout },
+            look = new { style = set.IslandStyle, eye = set.IslandEye, eyeSize = set.IslandEyeSize, widgets = set.IslandWidgets ?? SettingsService.IslandLook.DefaultWidgets.ToList(), position = set.IslandPosition, opacity = set.IslandOpacity, layout = set.IslandLayout, accent = set.IslandAccent, effect = set.IslandEffect },
         };
     }
 

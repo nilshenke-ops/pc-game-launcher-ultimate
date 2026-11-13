@@ -87,6 +87,7 @@ public class IslandTests
     }
 
     static SettingsService NewSettings(TempDir dir) => new(new AppPaths(dir.Path), new NullHub());
+    internal static SettingsService NewSettingsFor(TempDir dir) => NewSettings(dir);
 
     [Fact]
     public void The_look_defaults_stay_as_before_and_changes_are_kept()

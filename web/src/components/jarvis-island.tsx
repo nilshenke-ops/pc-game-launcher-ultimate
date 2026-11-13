@@ -13,6 +13,8 @@ import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { useIslandLook } from "../lib/island-look";
+import { resolveAccent, useFrontBrand } from "../lib/island-theme";
+import { accentOfCover } from "../lib/cover-accent";
 import { advanceTimer, countdownView, playTime, timerLive, useTimer } from "../lib/island-timer";
 // The open panel (tabs, AI settings, widgets) is by far the biggest part of the island and is only needed after a tap: it loads in the
 // background right after the page has started (idle), so the first tap is still instant, but the start of the app does not wait for it.
@@ -143,6 +145,11 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   }, [app?.running]); // eslint-disable-line react-hooks/exhaustive-deps
   const conn = useConn();
   const online = conn.auth === "ok" && conn.phase === "online";
+  // The island's colour (3.58): chosen, or on "auto" like the app in front on the PC, else like the song's cover.
+  const brand = useFrontBrand(look.accent === "auto" && online);
+  const [songAccent, setSongAccent] = useState<string | null>(null);
+  useEffect(() => { if (look.accent !== "auto") return; let on = true; void accentOfCover(np?.cover).then((c) => { if (on) setSongAccent(c); }); return () => { on = false; }; }, [np?.cover, look.accent]);
+  const accent = resolveAccent(look.accent, brand, songAccent);
   const wasOnline = useRef<boolean | null>(null), hadOnline = useRef(false);
   useEffect(() => {
     const was = wasOnline.current; wasOnline.current = online;
@@ -283,7 +290,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const innerW = panelMounted ? panelW : box.w;
 
   return (
-    <div ref={hostRef} className={`isl-host v2 s-${size} h-${mood}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}${pc ? " pc" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} style={eyeColor(look.eye) ? ({ "--isl-eye": eyeColor(look.eye) } as CSSProperties) : undefined} onMouseEnter={() => { setHover(true); islandTouch(); if (!open && mood === "idle") emote("wide", 700); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
+    <div ref={hostRef} className={`isl-host v2 s-${size} h-${mood}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}${pc ? " pc" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} data-accent={accent ? "1" : undefined} data-fx={look.effect !== "none" ? look.effect : undefined} style={{ ...(eyeColor(look.eye) ? { "--isl-eye": eyeColor(look.eye) } : {}), ...(accent ? { "--isl-accent": accent } : {}) } as CSSProperties} onMouseEnter={() => { setHover(true); islandTouch(); if (!open && mood === "idle") emote("wide", 700); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
       <div className="isl-inner" style={{ width: innerW }}>
       {mood === "happy" && s.last && <Confetti key={s.last.at} />}
       {mood === "dancing" && s.music && s.music.beatAt > 0 && <span className="isl-beat" key={s.music.beatAt} aria-hidden />}
@@ -314,9 +321,21 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
         )}
       </div>
       {panelMounted && (
-        <div className={`isl2-wrap${open ? "" : " closing"}`}><Suspense fallback={null}><IslandPanel mood={mood} now={now} floating={floating} onClose={() => setOpen(false)} /></Suspense></div>
+        <div className={`isl2-wrap${open ? "" : " closing"}`}>{look.effect !== "none" && <IslandFx kind={look.effect} />}<Suspense fallback={null}><IslandPanel mood={mood} now={now} floating={floating} onClose={() => setOpen(false)} /></Suspense></div>
       )}
       </div>
     </div>
+  );
+}
+
+/** A small moving effect behind the open island: falling petals, snow or twinkling stars. Pure CSS, gone with reduced motion. */
+function IslandFx({ kind }: { kind: "sakura" | "snow" | "stars" }) {
+  const n = kind === "stars" ? 18 : 14;
+  return (
+    <span className={`isl-fx fx-${kind}`} aria-hidden>
+      {Array.from({ length: n }, (_, i) => (
+        <i key={i} style={{ ["--x" as string]: `${(i * 61) % 100}%`, ["--y" as string]: `${(i * 37) % 100}%`, ["--d" as string]: `${7 + (i % 5) * 1.6}s`, ["--w" as string]: `${-(i * 0.9)}s`, ["--s" as string]: `${0.6 + (i % 4) * 0.22}` } as CSSProperties} />
+      ))}
+    </span>
   );
 }

@@ -39,6 +39,8 @@ export interface TileCtx {
   metrics: MetricsHistory;
   pc: { title: string; sub: string; action?: ReactNode };
   setOpt: (id: string, key: string, value: OptValue) => void;
+  /** Opens the list of programs that use the most memory or processor. */
+  procs?: (k: "ram" | "cpu") => void;
 }
 type P = { tile: Tile; ctx: TileCtx; box: boolean };
 
@@ -138,7 +140,9 @@ function SystemTile({ tile, ctx }: P) {
   ] as const).filter(([k]) => opt<boolean>(tile, k));
   if (!rows.length) return <span className="isl2-sub">{t("Keine Werte gewählt – in den Einstellungen der Kachel einschalten.")}</span>;
   return <>{rows.map(([k, name, list, color, value, tc]) => (
-    <div key={k} className="isl3-sysrow"><span className="isl3-sysname">{name}</span><Spark list={list} color={color} /><b>{value}</b><span className="isl3-systemp">{tc}</span></div>
+    k !== "gpu" && ctx.procs
+      ? <button key={k} type="button" className="isl3-sysrow tap" onClick={() => ctx.procs!(k as "ram" | "cpu")} aria-label={t("{n}: was am meisten verbraucht", { n: name })}><span className="isl3-sysname">{name}</span><Spark list={list} color={color} /><b>{value}</b><span className="isl3-systemp">{tc}</span></button>
+      : <div key={k} className="isl3-sysrow"><span className="isl3-sysname">{name}</span><Spark list={list} color={color} /><b>{value}</b><span className="isl3-systemp">{tc}</span></div>
   ))}</>;
 }
 

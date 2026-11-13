@@ -116,6 +116,57 @@ sealed class WindowsSystemControls : ISystemControls
         catch (Exception ex) { return "Das Mikrofon ließ sich nicht umschalten: " + ex.Message; }
     }
 
+    (bool? wifi, bool? bt) _radios; DateTime _radiosAt = DateTime.MinValue;
+
+    /// <summary>Wi-Fi and Bluetooth through Windows' radio interface (the same switches as the quick settings); read at most every 5 s.</summary>
+    public (bool? Wifi, bool? Bluetooth) Radios()
+    {
+        lock (_lock) if (DateTime.UtcNow - _radiosAt < TimeSpan.FromSeconds(5)) return _radios;
+        bool? wifi = null, bt = null;
+        try
+        {
+            var task = global::Windows.Devices.Radios.Radio.GetRadiosAsync().AsTask();
+            if (task.Wait(3000))
+                foreach (var r in task.Result)
+                {
+                    if (r.Kind == global::Windows.Devices.Radios.RadioKind.WiFi) wifi = r.State == global::Windows.Devices.Radios.RadioState.On;
+                    else if (r.Kind == global::Windows.Devices.Radios.RadioKind.Bluetooth) bt = r.State == global::Windows.Devices.Radios.RadioState.On;
+                }
+        }
+        catch (Exception ex) { Log.Debug("controls", "Funk nicht lesbar: " + ex.Message); }
+        lock (_lock) { _radios = (wifi, bt); _radiosAt = DateTime.UtcNow; }
+        return (wifi, bt);
+    }
+
+    public string? SetRadio(string kind, bool on)
+    {
+        try
+        {
+            var access = global::Windows.Devices.Radios.Radio.RequestAccessAsync().AsTask();
+            if (!access.Wait(5000) || access.Result != global::Windows.Devices.Radios.RadioAccessStatus.Allowed)
+                return "Windows erlaubt dem Begleiter nicht, den Funk zu schalten (Datenschutz-Einstellungen → Funkempfang).";
+            var want = kind == "wifi" ? global::Windows.Devices.Radios.RadioKind.WiFi : global::Windows.Devices.Radios.RadioKind.Bluetooth;
+            var list = global::Windows.Devices.Radios.Radio.GetRadiosAsync().AsTask();
+            if (!list.Wait(3000)) return "Windows hat nicht rechtzeitig geantwortet.";
+            var radio = list.Result.FirstOrDefault(r => r.Kind == want);
+            if (radio == null) return kind == "wifi" ? "Dieser PC hat kein WLAN." : "Dieser PC hat kein Bluetooth.";
+            var set = radio.SetStateAsync(on ? global::Windows.Devices.Radios.RadioState.On : global::Windows.Devices.Radios.RadioState.Off).AsTask();
+            if (!set.Wait(5000)) return "Windows hat nicht rechtzeitig geantwortet.";
+            if (set.Result != global::Windows.Devices.Radios.RadioAccessStatus.Allowed) return "Windows hat das Schalten abgelehnt.";
+            lock (_lock) _radiosAt = DateTime.MinValue;
+            return null;
+        }
+        catch (Exception ex) { return "Funk ließ sich nicht schalten: " + ex.Message; }
+    }
+
+    static readonly Dictionary<string, string> SettingsPages = new() { ["nightlight"] = "ms-settings:nightlight", ["bluetooth"] = "ms-settings:bluetooth", ["wifi"] = "ms-settings:network-wifi" };
+    public string? OpenSettings(string page)
+    {
+        if (!SettingsPages.TryGetValue(page, out var uri)) return "Unbekannte Einstellungsseite.";
+        try { Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true }); return null; }
+        catch (Exception ex) { return "Die Einstellungen ließen sich nicht öffnen: " + ex.Message; }
+    }
+
     /// <summary>
     /// Sets the default endpoint for all three roles (console, multimedia, communications) – the same call the sound settings of Windows
     /// make. Windows offers no documented way for programs; this uses the long-standing PolicyConfig interface that sound switchers use.

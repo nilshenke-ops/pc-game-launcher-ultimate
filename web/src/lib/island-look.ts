@@ -3,6 +3,7 @@
 // beim Start schon richtig aussieht, bevor der PC antwortet.
 
 import { useEffect } from "react";
+import { isAccent, isEffect, type IslandEffect } from "./island-theme";
 import { cacheLayout, cleanLayout, defaultLayout, setOwnLayout, useLayoutStore, type IslandLayout } from "./island-layout";
 import { client } from "./rpc";
 import { toast, useCan, useConn, useRpc } from "./hooks";
@@ -12,7 +13,7 @@ import { isIslandEye, isIslandEyeSize, isIslandStyle, setIslandPrefs, useIslandP
 export type IslandPosition = "center" | "left" | "right";
 export const ISLAND_POSITIONS: { id: IslandPosition; label: string }[] = [{ id: "left", label: "Links" }, { id: "center", label: "Mitte" }, { id: "right", label: "Rechts" }];
 export const MIN_OPACITY = 50;
-export interface IslandLook { style: IslandStyle; eye: IslandEye; eyeSize: IslandEyeSize; widgets: IslandWidgetId[]; position: IslandPosition; opacity: number; layout: IslandLayout | null }
+export interface IslandLook { style: IslandStyle; eye: IslandEye; eyeSize: IslandEyeSize; widgets: IslandWidgetId[]; position: IslandPosition; opacity: number; layout: IslandLayout | null; accent: string; effect: IslandEffect }
 export interface IslandInfo { supported: boolean; visible: boolean; desktop: boolean; games: boolean; gameRunning: boolean; look?: Partial<Record<keyof IslandLook, unknown>> }
 
 /** Checks what the PC sent (or an old companion left out) and fills the rest with the usual look. */
@@ -26,6 +27,8 @@ export function cleanLook(v: IslandInfo["look"] | undefined, fallback?: Partial<
     position: v?.position === "left" || v?.position === "right" ? v.position : "center",
     opacity,
     layout: cleanLayout(v?.layout),
+    accent: isAccent(v?.accent) ? (v!.accent as string).toLowerCase() : fallback?.accent ?? "default",
+    effect: isEffect(v?.effect) ? v!.effect as IslandEffect : fallback?.effect ?? "none",
   };
 }
 

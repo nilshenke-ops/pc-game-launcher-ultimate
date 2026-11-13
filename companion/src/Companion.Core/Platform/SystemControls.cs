@@ -14,6 +14,12 @@ public interface ISystemControls
     SensorState Sensors() => new(null, null, null, null, null);
     /// <summary>Mutes or unmutes the default microphone. Returns an error text, or null when applied.</summary>
     string? SetMicMuted(bool muted) => "Das Mikrofon lässt sich nur im Windows-Begleiter stummschalten.";
+    /// <summary>Wi-Fi and Bluetooth radio: on, off or null when this PC has none (or cannot tell).</summary>
+    (bool? Wifi, bool? Bluetooth) Radios() => (null, null);
+    /// <summary>Switches the Wi-Fi ("wifi") or Bluetooth ("bluetooth") radio. Returns an error text, or null.</summary>
+    string? SetRadio(string kind, bool on) => "Funk lässt sich nur im Windows-Begleiter schalten.";
+    /// <summary>Opens a page of the Windows settings on the PC (only the known pages: nightlight, bluetooth, wifi).</summary>
+    string? OpenSettings(string page) => "Die Windows-Einstellungen gibt es nur im Windows-Begleiter.";
     /// <summary>Makes a speaker (flow "render") or microphone ("capture") the Windows default for every role. Returns an error text, or null.</summary>
     string? SetDefaultDevice(string id, string flow) => "Das Standardgerät lässt sich nur im Windows-Begleiter umstellen.";
     bool Supported { get; }
@@ -40,6 +46,11 @@ public sealed class MemorySystemControls : ISystemControls
     public SystemControlState Read() { lock (_lock) return new(_volume, _muted, _brightness, 87, true, _mode); }
     public SensorState Sensors() { lock (_lock) return new(_micMuted, !_micMuted, _micMuted ? null : "Testprogramm", false, null); }
     public string? SetMicMuted(bool muted) { lock (_lock) _micMuted = muted; return null; }
+    bool _wifi = true, _bt = true;
+    public string? LastSettingsPage { get; private set; }
+    public (bool? Wifi, bool? Bluetooth) Radios() { lock (_lock) return (_wifi, _bt); }
+    public string? SetRadio(string kind, bool on) { lock (_lock) { if (kind == "wifi") _wifi = on; else _bt = on; } return null; }
+    public string? OpenSettings(string page) { LastSettingsPage = page; return null; }
     public string? LastDefaultDevice { get; private set; }
     public string? SetDefaultDevice(string id, string flow) { lock (_lock) LastDefaultDevice = flow + ":" + id; return null; }
     public string? Set(int? volume, bool? muted, int? brightness, string? powerMode)

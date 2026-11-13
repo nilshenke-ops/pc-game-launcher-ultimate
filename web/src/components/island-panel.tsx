@@ -6,7 +6,7 @@ import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocit
 import { flushSync } from "react-dom";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume2, Layers, Camera, ScrollText, Download, Headphones, Pencil, Plus, X, Smartphone, Cpu, Gauge, MemoryStick } from "lucide-react";
+import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume2, Layers, Camera, ScrollText, Download, Headphones, Pencil, Plus, X, Smartphone, Cpu, Gauge, MemoryStick, Palette } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
@@ -15,6 +15,8 @@ import { connView } from "../lib/conn-state";
 import { handoffUrl, IslandControls, IslandLyrics, IslandSystem, onTouchDevice, PcVolumeBar, useIslandWeather, useMetricsHistory, usePcControls, usePcSensors, WeatherIcon } from "./island-extra";
 import { IslandTile, TabsEditor, TileCatalog, TileEditBar, TileSettings, type TileCtx } from "./island-tiles";
 import { IslandAudio } from "./island-audio";
+import { ProcSheet, type ProcKind } from "./island-procs";
+import { IslandColorPicker } from "./island-color";
 import { addTile, moveTile, opt, removeTile, setTabs, setTileOpt, tabsOf, tileDef, MAX_TILES, type IslandLayout, type IslandTab, type LayoutPage, type Tile } from "../lib/island-layout";
 import { sendWake, useWake, wakeLabel } from "../lib/wake";
 import { useIslandLayout, useIslandLook } from "../lib/island-look";
@@ -119,7 +121,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const [edit, setEdit] = useState(false);
   // Editing the start page or the overview: the tiles wiggle, each can move, be set up or go; "+" adds one (3.57).
   const [editing, setEditing] = useState<LayoutPage | null>(null);
-  const [sheet, setSheet] = useState<null | { kind: "add" | "tabs" } | { kind: "opts"; id: string }>(null);
+  const [sheet, setSheet] = useState<null | { kind: "add" | "tabs" | "color" } | { kind: "opts"; id: string }>(null);
+  const [procs, setProcs] = useState<ProcKind | null>(null);
+  const canClosePrograms = useCan("manage");
   const hold = useRef<number | null>(null);
   // Holding a tile (or "… bearbeiten" in the menu) starts editing that page.
   const holdStart = () => { const page = tabRef.current; if (page !== "home" && page !== "dash") return; hold.current = window.setTimeout(() => { hold.current = null; setEditing(page); navigator.vibrate?.(15); }, 600); };
@@ -413,6 +417,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     controls: pcControls, weather, metrics,
     pc: { title: online ? t("Verbunden") : waking ? t("Startet …") : cview.short, sub: pcLine, action: pcAction },
     setOpt: (id, key, value) => saveL(setTileOpt(L, pageOf(id), id, key, value)),
+    procs: online ? (k) => setProcs(k) : undefined,
   };
 
   /** The start page keeps its rich cards for JARVIS, the game, music, focus and the PC; every other kind is a tile. */
@@ -527,7 +532,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   ) : null;
   const sheetPage: LayoutPage = sheet?.kind === "opts" ? pageOf(sheet.id) : editing ?? (current === "dash" ? "dash" : "home");
   const sheetTile = sheet?.kind === "opts" ? L[sheetPage].find((x) => x.id === sheet.id) : undefined;
-  const sheetTitle = !sheet ? "" : sheet.kind === "add" ? t("Kachel hinzufügen") : sheet.kind === "tabs" ? t("Bereiche in der Leiste") : sheetTile ? t("{n} einstellen", { n: t(tileDef(sheetTile.type).label) }) : "";
+  const sheetTitle = !sheet ? "" : sheet.kind === "add" ? t("Kachel hinzufügen") : sheet.kind === "tabs" ? t("Bereiche in der Leiste") : sheet.kind === "color" ? t("Farbe & Effekt") : sheetTile ? t("{n} einstellen", { n: t(tileDef(sheetTile.type).label) }) : "";
   const sheetView = sheet && (
     <div className="isl3-sheet" role="dialog" aria-label={sheetTitle}>
       <div className="isl3-sheethead"><b>{sheetTitle}</b><button type="button" className="isl3-mini" onClick={() => setSheet(null)} aria-label={t("Schließen")}><X size={15} /></button></div>
@@ -535,7 +540,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         {sheet.kind === "add" && <TileCatalog have={L[sheetPage].map((x) => x.type)} full={L[sheetPage].length >= MAX_TILES[sheetPage]} onPick={(type) => { saveL(addTile(L, sheetPage, type)); setSheet(null); }} />}
         {sheet.kind === "opts" && sheetTile && <TileSettings tile={sheetTile} onChange={(k, v) => saveL(setTileOpt(L, sheetPage, sheetTile.id, k, v))} />}
         {sheet.kind === "tabs" && <TabsEditor tabs={L.tabs ?? visibleTabs(look.widgets, true)} onChange={(list) => saveL(setTabs(L, list))} />}
-        {sheet.kind !== "add" && <p className="tiny muted">{lay.canPc ? t("Wird am PC gespeichert und gilt für die Insel auf allen Geräten.") : t("Dieses Gerät darf die Einstellungen des PCs nicht ändern – die Änderung gilt nur hier.")}</p>}
+        {sheet.kind === "color" && <IslandColorPicker />}
+        {sheet.kind !== "add" && sheet.kind !== "color" && <p className="tiny muted">{lay.canPc ? t("Wird am PC gespeichert und gilt für die Insel auf allen Geräten.") : t("Dieses Gerät darf die Einstellungen des PCs nicht ändern – die Änderung gilt nur hier.")}</p>}
       </div>
     </div>
   );
@@ -835,7 +841,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     dash: dashPage,
     audio: <IslandAudio online={online} canUse={canMedia} canManage={canManage} controls={pcControls} sensors={sensors} />,
     controls: <IslandControls online={online} canUse={canMedia} controls={pcControls} sensors={sensors} now={now} press={media} />,
-    system: <IslandSystem online={online} controls={pcControls} /> };
+    system: <IslandSystem online={online} controls={pcControls} onDetails={online ? setProcs : undefined} /> };
 
   return (
     <div className="isl2" role="dialog" aria-label={t("JARVIS-Insel")}>
@@ -877,6 +883,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
               <span className="isl2-msep" aria-hidden />
               <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("home"); setEditing("home"); }}><span className="isl2-mii" aria-hidden><Pencil size={15} /></span><span className="isl2-mit">{t("Startseite bearbeiten")}</span></button>
               <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("dash"); setEditing("dash"); }}><span className="isl2-mii" aria-hidden><LayoutDashboard size={15} /></span><span className="isl2-mit">{t("Übersicht bearbeiten")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setSheet({ kind: "color" }); }}><span className="isl2-mii" aria-hidden><Palette size={15} /></span><span className="isl2-mit">{t("Farbe & Effekt")}</span></button>
               <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setSheet({ kind: "tabs" }); }}><span className="isl2-mii" aria-hidden><SlidersHorizontal size={15} /></span><span className="isl2-mit">{t("Bereiche anpassen")}</span></button>
               {canManage && <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("pc"); setEdit(true); }}><span className="isl2-mii" aria-hidden><LayoutGrid size={15} /></span><span className="isl2-mit">{t("Widgets im Bereich PC")}</span></button>}
               {floating && <Link to="/assistant" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><MessageCircle size={15} /></span><span className="isl2-mit">{t("JARVIS öffnen")}</span></Link>}
@@ -892,6 +899,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           onClickCapture={(e) => { if (Date.now() - swipedAt.current < 400) { e.preventDefault(); e.stopPropagation(); } }}>{body[current]}</div>
         {peek && <div className="isl2-body isl2-peek" aria-hidden ref={peekRef} {...({ inert: "" } as object)}>{body[peek]}</div>}
         {sheetView}
+        {procs && <ProcSheet kind={procs} onKind={setProcs} onClose={() => setProcs(null)} canClose={canClosePrograms} />}
       </div>
     </div>
   );

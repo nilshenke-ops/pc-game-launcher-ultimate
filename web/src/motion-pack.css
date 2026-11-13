@@ -930,7 +930,7 @@ button.isl3-pill { cursor: pointer; }
 .isl3-editfab:hover, .isl3-editfab:focus-visible { opacity: 1; scale: 1.08; }
 
 /* ---------- sheet: add a tile, its settings, the areas ---------- */
-.isl3-sheet { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; border-radius: 18px; background: rgba(12, 12, 16, .97); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 -10px 30px rgba(0,0,0,.4); overflow: hidden; color: #f2f3f7; }
+.isl3-sheet { position: absolute; inset: 0; z-index: 20; display: flex; flex-direction: column; border-radius: 18px; background: rgb(13, 13, 17); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 -10px 30px rgba(0,0,0,.4); overflow: hidden; color: #f2f3f7; }
 :root:not([data-motion="reduce"]) .isl3-sheet { animation: isl3-sheet-in .38s cubic-bezier(.2, .9, .25, 1) both; }
 @keyframes isl3-sheet-in { from { translate: 0 18px; opacity: 0; } }
 .isl3-sheethead { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px 6px; }
@@ -1027,3 +1027,67 @@ button.isl3-pill { cursor: pointer; }
 .isl2-chat.v3 > details { width: 100%; box-sizing: border-box; flex: none; }
 .isl2-chat.v3 > details.isl2-setup { border-radius: 14px; background: rgba(255,255,255,.04); padding: 6px 10px; }
 .isl2-chat.v3 > details.isl2-setup > summary { font-size: .74rem; font-weight: 600; opacity: .75; }
+
+/* ---------- 3.58: what uses the PC most ---------- */
+.isl3-stat.tap, .isl3-sysrow.tap { width: 100%; text-align: left; color: inherit; font: inherit; cursor: pointer; transition: background .2s ease, scale .15s ease; }
+.isl3-sysrow.tap { padding: 0; border: 0; background: none; border-radius: 8px; }
+.isl3-stat.tap:hover, .isl3-sysrow.tap:hover { background-color: rgba(255,255,255,.08); }
+.isl3-stat.tap:active { scale: .98; }
+.isl3-seg { display: inline-flex; margin-left: auto; padding: 2px; border-radius: 12px; background: rgba(255,255,255,.07); }
+.isl3-seg button { display: inline-flex; align-items: center; gap: 4px; height: 26px; padding: 0 10px; border: 0; border-radius: 10px; background: none; color: inherit; font: inherit; font-size: .74rem; font-weight: 600; opacity: .7; cursor: pointer; }
+.isl3-seg button.on { background: rgba(255,255,255,.14); opacity: 1; }
+.isl3-sheethead .isl3-seg + .isl3-mini { margin-left: 4px; }
+.isl3-procs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.isl3-procs li { --w: 0%; position: relative; display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 4px 6px 4px 10px; border-radius: 12px; background: rgba(255,255,255,.045); overflow: hidden; isolation: isolate; }
+.isl3-pbar { position: absolute; inset: 0 auto 0 0; z-index: -1; width: var(--w); background: linear-gradient(90deg, rgba(96,165,250,.12), rgba(96,165,250,.26)); transition: width .5s ease; }
+:root:not([data-motion="reduce"]) .isl3-procs li { animation: isl3-in .4s var(--out-expo, ease-out) backwards; animation-delay: calc(var(--i, 0) * 30ms); }
+.isl3-pname { flex: 1; min-width: 0; display: grid; line-height: 1.2; }
+.isl3-pname b { font-size: .8rem; }
+.isl3-pname i { font-style: normal; font-size: .66rem; opacity: .6; }
+.isl3-pval { font-size: .8rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.isl3-pask { display: inline-flex; gap: 4px; }
+.isl3-chipbtn.danger { background: rgba(239, 68, 68, .85); color: #fff; }
+.isl3-chipbtn.danger:hover:not(:disabled) { background: #ef4444; }
+
+/* ---------- 3.58: the island's colour and effects ---------- */
+.isl-host[data-accent] { --isl-c: var(--isl-accent); --isl-ring: var(--isl-accent); }
+.isl-host[data-accent] .isl.m-idle, .isl-host[data-accent] .isl.m-happy, .isl-host[data-accent] .isl.m-gaming { --isl-c: var(--isl-accent); }
+.isl-host.floating[data-accent], .isl-host.floating[data-accent][data-isl-style] {
+  background: radial-gradient(120% 70% at 50% -25%, color-mix(in srgb, var(--isl-accent) 28%, transparent), transparent 62%), rgba(10, 10, 13, 0.95);
+  border-color: color-mix(in srgb, var(--isl-accent) 30%, rgba(255,255,255,.1));
+  transition: background .8s ease, border-color .8s ease;
+}
+.isl-host.v2[data-accent]:not(.floating) .isl2-wrap { background-image: radial-gradient(110% 60% at 50% -20%, color-mix(in srgb, var(--isl-accent) 20%, transparent), transparent 60%); }
+.isl-host[data-accent] .isl2-tabs.top .isl2-tab.on::after { background: var(--isl-accent); }
+.isl-host[data-accent] .isl3-edithead { background: color-mix(in srgb, var(--isl-accent) 14%, rgba(255,255,255,.04)); }
+
+.isl2-wrap { position: relative; }
+.isl-fx { position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; border-radius: inherit; }
+.isl2-wrap > :not(.isl-fx) { position: relative; z-index: 1; }
+.isl-fx i { position: absolute; left: var(--x); top: -12px; display: block; opacity: 0; scale: var(--s); animation: isl-fx-fall var(--d) linear infinite; animation-delay: var(--w); }
+.fx-sakura i { width: 10px; height: 7px; border-radius: 70% 0 70% 0; background: linear-gradient(135deg, #ffd1e3, #f9a8d4); box-shadow: 0 0 6px rgba(249,168,212,.35); }
+.fx-snow i { width: 5px; height: 5px; border-radius: 50%; background: #fff; box-shadow: 0 0 6px rgba(255,255,255,.7); }
+.fx-stars i { top: var(--y); width: 3px; height: 3px; border-radius: 50%; background: #fff; box-shadow: 0 0 8px 1px color-mix(in srgb, var(--isl-accent, #fff) 70%, #fff); animation-name: isl-fx-twinkle; }
+@keyframes isl-fx-fall {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10% { opacity: .8; }
+  50% { transform: translate(18px, 190px) rotate(160deg); }
+  90% { opacity: .7; }
+  100% { transform: translate(-10px, 380px) rotate(320deg); opacity: 0; }
+}
+@keyframes isl-fx-twinkle { 0%, 100% { opacity: .1; transform: scale(.6); } 50% { opacity: .9; transform: scale(1.2); } }
+[data-motion="reduce"] .isl-fx { display: none; }
+@media (prefers-reduced-motion: reduce) { :root:not([data-motion="full"]) .isl-fx { display: none; } }
+
+.isl3-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(34px, 1fr)); gap: 8px; }
+.isl3-swatch { position: relative; width: 100%; aspect-ratio: 1; padding: 0; border: 2px solid transparent; border-radius: 50%; background: var(--sw); cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); transition: scale .15s ease; }
+.isl3-swatch:hover { scale: 1.08; }
+.isl3-swatch[aria-checked="true"] { border-color: currentColor; box-shadow: 0 0 0 2px rgba(0,0,0,.5), 0 0 12px var(--sw); }
+.isl3-swatch.special { display: grid; place-items: center; background: conic-gradient(#f87171, #fbbf24, #4ade80, #22d3ee, #818cf8, #f472b6, #f87171); color: #111; font-size: .6rem; font-weight: 800; }
+.isl3-swatch.plain { background: rgba(255,255,255,.12); color: inherit; display: grid; place-items: center; font-size: .6rem; font-weight: 700; }
+.isl3-seg.wide { display: flex; margin: 0; flex-wrap: wrap; }
+.isl3-seg.wide button { flex: 1 1 auto; justify-content: center; }
+.isl3-ext .isl3-seg { background: color-mix(in srgb, currentColor 7%, transparent); }
+.isl3-ext .isl3-seg button.on { background: color-mix(in srgb, currentColor 16%, transparent); }
+.isl3-tog.radio.on { --isl-c: #3b82f6; }
+.isl3-tog.radio.on .isl3-togic { color: #fff; }
