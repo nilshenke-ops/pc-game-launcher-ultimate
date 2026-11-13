@@ -117,6 +117,51 @@ sealed class WindowsSystemControls : ISystemControls
     }
 
     /// <summary>
+    /// Sets the default endpoint for all three roles (console, multimedia, communications) – the same call the sound settings of Windows
+    /// make. Windows offers no documented way for programs; this uses the long-standing PolicyConfig interface that sound switchers use.
+    /// </summary>
+    public string? SetDefaultDevice(string id, string flow)
+    {
+        try
+        {
+            var cfg = (IPolicyConfig)new PolicyConfigClient();
+            try
+            {
+                for (var role = 0; role < 3; role++)
+                {
+                    var hr = cfg.SetDefaultEndpoint(id, role);
+                    if (hr != 0) return $"Windows hat das Gerät nicht umgestellt (Fehler 0x{hr:X8}).";
+                }
+            }
+            finally { System.Runtime.InteropServices.Marshal.ReleaseComObject(cfg); }
+            return null;
+        }
+        catch (Exception ex) { return "Das Standardgerät ließ sich nicht umstellen: " + ex.Message; }
+    }
+
+    [System.Runtime.InteropServices.ComImport, System.Runtime.InteropServices.Guid("870af99c-171d-4f9e-af0d-e63df40c2bc9")]
+    class PolicyConfigClient { }
+
+    [System.Runtime.InteropServices.ComImport, System.Runtime.InteropServices.Guid("f8679f50-850a-41cf-9c72-430f290290c8"),
+     System.Runtime.InteropServices.InterfaceType(System.Runtime.InteropServices.ComInterfaceType.InterfaceIsIUnknown)]
+    interface IPolicyConfig
+    {
+        // The order of the methods is the interface's – only SetDefaultEndpoint is called.
+        [System.Runtime.InteropServices.PreserveSig] int GetMixFormat(string id, IntPtr format);
+        [System.Runtime.InteropServices.PreserveSig] int GetDeviceFormat(string id, int def, IntPtr format);
+        [System.Runtime.InteropServices.PreserveSig] int ResetDeviceFormat(string id);
+        [System.Runtime.InteropServices.PreserveSig] int SetDeviceFormat(string id, IntPtr endpointFormat, IntPtr mixFormat);
+        [System.Runtime.InteropServices.PreserveSig] int GetProcessingPeriod(string id, int def, IntPtr defaultPeriod, IntPtr minPeriod);
+        [System.Runtime.InteropServices.PreserveSig] int SetProcessingPeriod(string id, IntPtr period);
+        [System.Runtime.InteropServices.PreserveSig] int GetShareMode(string id, IntPtr mode);
+        [System.Runtime.InteropServices.PreserveSig] int SetShareMode(string id, IntPtr mode);
+        [System.Runtime.InteropServices.PreserveSig] int GetPropertyValue(string id, IntPtr key, IntPtr value);
+        [System.Runtime.InteropServices.PreserveSig] int SetPropertyValue(string id, IntPtr key, IntPtr value);
+        [System.Runtime.InteropServices.PreserveSig] int SetDefaultEndpoint([System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] string id, int role);
+        [System.Runtime.InteropServices.PreserveSig] int SetEndpointVisibility(string id, int visible);
+    }
+
+    /// <summary>
     /// Windows notes per program when it last used the microphone or camera (the list behind Settings › Privacy). A program whose
     /// "LastUsedTimeStop" is 0 is using it right now. Only the program's name is read.
     /// </summary>

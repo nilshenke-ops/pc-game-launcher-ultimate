@@ -2,7 +2,7 @@
 // separately during games (off by default – the island then hides while a game from the library runs).
 
 import { useEffect, useState } from "react";
-import { Sparkles } from "lucide-react";
+import { ArrowDown, ArrowUp, LayoutDashboard, Plus, Settings2, Sparkles, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useCan, useConn, useRpc } from "../lib/hooks";
@@ -11,7 +11,9 @@ import { IslandEyes } from "./jarvis-island";
 import { setInAppIsland, useInAppIsland } from "../lib/island-inapp";
 import { ISLAND_WIDGETS, toggleWidget } from "../lib/island-widgets";
 import { ISLAND_EYES, ISLAND_EYE_SIZES, ISLAND_STYLES, eyeColor, type IslandEye, type IslandEyeSize, type IslandStyle } from "../lib/island";
-import { ISLAND_POSITIONS, MIN_OPACITY, useIslandLook, type IslandPosition } from "../lib/island-look";
+import { ISLAND_POSITIONS, MIN_OPACITY, useIslandLayout, useIslandLook, type IslandPosition } from "../lib/island-look";
+import { addTile, ALL_TABS, MAX_TILES, moveTile, removeTile, setTabs, setTileOpt, tileDef, TILE_DEFS, type IslandLayout, type LayoutPage, type TileType } from "../lib/island-layout";
+import { TabsEditor, TILE_ICON, TileSettings } from "./island-tiles";
 import type { CSSProperties } from "react";
 
 type IslandScope = "app" | "desktop" | "programs" | "games" | "all";
@@ -117,7 +119,7 @@ export function IslandWidgetsCard() {
   const { look, online, canManage, save } = useIslandLook();
   if (!online || !canManage) return null;
   return (
-    <Card title={t("Widgets in der Insel")} icon={<Sparkles size={18} />} className="flat">
+    <Card title={t("Widgets im Bereich „PC“")} icon={<Sparkles size={18} />} className="flat">
       <div className="stack-sm">
         <p className="small muted">{t("Wähle, was beim Antippen der Insel erscheint. Messwerte, Netzwerk-Ping und Temperaturen werden nur gemessen, solange die Insel offen ist.")}</p>
         {ISLAND_WIDGETS.map((w) => <Switch key={w.id} checked={look.widgets.includes(w.id)} onChange={(on) => void save({ widgets: toggleWidget(look.widgets, w.id, on) })} label={t(w.label)} hint={t(w.hint)} />)}
@@ -127,5 +129,66 @@ export function IslandWidgetsCard() {
 }
 
 export function IslandSettingsCard() {
-  return <><IslandSwitchesCard /><IslandStyleCard /><IslandWidgetsCard /></>;
+  return <><IslandSwitchesCard /><IslandStyleCard /><IslandLayoutCard /><IslandWidgetsCard /></>;
+}
+
+/** The island's layout from outside the island: areas in the strip, the tiles of the start page and the overview, and each tile's settings.
+ *  The same layout the island edits in place (saved on the PC, or on this device when it may not change the PC's settings). */
+export function IslandLayoutCard() {
+  const lay = useIslandLayout();
+  const L = lay.layout;
+  const save = (l: IslandLayout) => void lay.saveLayout(l);
+  return (
+    <Card title={t("Insel anpassen")} icon={<LayoutDashboard size={18} />} className="flat">
+      <div className="stack isl3-ext">
+        <p className="small muted">{lay.canPc
+          ? t("Bereiche, Kacheln und ihre Einstellungen – gilt für die Insel auf allen Geräten. In der Insel selbst geht das auch: Stift oben rechts oder eine Kachel gedrückt halten.")
+          : t("Dieses Gerät darf die Einstellungen des PCs nicht ändern – deine Anpassung gilt nur auf diesem Gerät.")}</p>
+        <section className="stack-sm">
+          <b>{t("Bereiche in der Leiste")}</b>
+          <TabsEditor tabs={L.tabs ?? ALL_TABS.filter((x) => x !== "note" && x !== "pc")} onChange={(list) => save(setTabs(L, list))} />
+        </section>
+        <TileListEditor title={t("Startseite")} page="home" layout={L} save={save} />
+        <TileListEditor title={t("Übersicht")} page="dash" layout={L} save={save} />
+        <div className="row"><Button variant="ghost" disabled={lay.source === "default"} onClick={() => void lay.reset()}>{t("Anordnung der Insel auf Standard")}</Button></div>
+      </div>
+    </Card>
+  );
+}
+
+function TileListEditor({ title, page, layout, save }: { title: string; page: LayoutPage; layout: IslandLayout; save: (l: IslandLayout) => void }) {
+  const [open, setOpen] = useState<string | null>(null);
+  const [pick, setPick] = useState<TileType>("clock");
+  const list = layout[page];
+  return (
+    <section className="stack-sm">
+      <b>{title}</b>
+      <ul className="isl3-tlist">
+        {list.map((tile, i) => {
+          const Icon = TILE_ICON[tile.type];
+          const label = t(tileDef(tile.type).label);
+          return (
+            <li key={tile.id} className="isl3-trow">
+              <div className="isl3-trowhead">
+                <span className="isl3-tname"><span className="row" style={{ gap: 6 }}><Icon size={14} aria-hidden />{label}</span></span>
+                <button type="button" className="isl3-mini" aria-expanded={open === tile.id} onClick={() => setOpen(open === tile.id ? null : tile.id)} aria-label={t("{n} einstellen", { n: label })}><Settings2 size={14} /></button>
+                <button type="button" className="isl3-mini" disabled={i === 0} onClick={() => save(moveTile(layout, page, tile.id, -1))} aria-label={t("{n} nach vorne", { n: label })}><ArrowUp size={14} /></button>
+                <button type="button" className="isl3-mini" disabled={i === list.length - 1} onClick={() => save(moveTile(layout, page, tile.id, 1))} aria-label={t("{n} nach hinten", { n: label })}><ArrowDown size={14} /></button>
+                <button type="button" className="isl3-mini" onClick={() => save(removeTile(layout, page, tile.id))} aria-label={t("{n} entfernen", { n: label })}><X size={14} /></button>
+              </div>
+              {open === tile.id && <TileSettings tile={tile} onChange={(k, v) => save(setTileOpt(layout, page, tile.id, k, v))} />}
+            </li>
+          );
+        })}
+      </ul>
+      {list.length < MAX_TILES[page] && (
+        <div className="row" style={{ gap: 8 }}>
+          <select className="input" value={pick} onChange={(e) => setPick(e.target.value as TileType)} aria-label={t("Kachel für {n}", { n: title })}>
+            {TILE_DEFS.map((d) => <option key={d.type} value={d.type}>{t(d.label)}</option>)}
+          </select>
+          <Button variant="ghost" onClick={() => save(addTile(layout, page, pick))}><Plus size={14} /> {t("Hinzufügen")}</Button>
+        </div>
+      )}
+    </section>
+  );
 }

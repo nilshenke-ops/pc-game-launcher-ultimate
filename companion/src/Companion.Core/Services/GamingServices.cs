@@ -185,6 +185,72 @@ public sealed class SettingsService
     {
         public string? Style { get; init; } public string? Eye { get; init; } public string? EyeSize { get; init; }
         public List<string>? Widgets { get; init; } public string? Position { get; init; } public int? Opacity { get; init; }
+        /// <summary>The island's layout (areas, tiles, their options); with ResetLayout = true the usual island comes back.</summary>
+        public System.Text.Json.JsonElement? Layout { get; init; }
+        public bool ResetLayout { get; init; }
+    }
+
+    static readonly string[] LayoutTabs = { "home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "pc", "note" };
+    static readonly string[] LayoutTiles = { "jarvis", "game", "music", "focus", "pc", "calendar", "weather", "system", "volume", "network", "battery", "clock", "note" };
+    static readonly System.Text.RegularExpressions.Regex TileIdRx = new("^[a-z0-9]{1,16}$"), OptKeyRx = new("^[a-zA-Z]{1,16}$");
+    public const int MaxLayoutChars = 12000;
+
+    /// <summary>
+    /// Checks the island layout before it is kept: only the known areas and tile kinds, at most 20 areas and 12 tiles per page, short ids,
+    /// and options that are plain values (text up to 300 characters, numbers, yes/no). Anything else is refused – nothing unknown is stored.
+    /// </summary>
+    public static System.Text.Json.Nodes.JsonObject CheckIslandLayout(System.Text.Json.JsonElement e)
+    {
+        static RpcException Bad(string m) => new("invalid-params", m);
+        if (e.ValueKind != System.Text.Json.JsonValueKind.Object) throw Bad("Das Insel-Layout muss ein Objekt sein.");
+        var raw = e.GetRawText();
+        if (raw.Length > MaxLayoutChars) throw Bad("Das Insel-Layout ist zu groß.");
+        foreach (var p in e.EnumerateObject())
+        {
+            if (p.Name == "tabs")
+            {
+                if (p.Value.ValueKind != System.Text.Json.JsonValueKind.Array || p.Value.GetArrayLength() > 20) throw Bad("Ungültige Bereiche der Insel.");
+                foreach (var t in p.Value.EnumerateArray())
+                    if (t.ValueKind != System.Text.Json.JsonValueKind.String || !LayoutTabs.Contains(t.GetString())) throw Bad("Unbekannter Bereich der Insel.");
+            }
+            else if (p.Name is "home" or "dash")
+            {
+                if (p.Value.ValueKind != System.Text.Json.JsonValueKind.Array || p.Value.GetArrayLength() > 12) throw Bad("Zu viele Kacheln in der Insel.");
+                foreach (var tile in p.Value.EnumerateArray()) CheckTile(tile);
+            }
+            else throw Bad("Unbekannter Teil des Insel-Layouts: " + p.Name);
+        }
+        return System.Text.Json.Nodes.JsonNode.Parse(raw)!.AsObject();
+
+        static void CheckTile(System.Text.Json.JsonElement t)
+        {
+            if (t.ValueKind != System.Text.Json.JsonValueKind.Object) throw Bad("Ungültige Kachel.");
+            foreach (var p in t.EnumerateObject())
+            {
+                switch (p.Name)
+                {
+                    case "id": if (p.Value.ValueKind != System.Text.Json.JsonValueKind.String || !TileIdRx.IsMatch(p.Value.GetString()!)) throw Bad("Ungültige Kennung einer Kachel."); break;
+                    case "type": if (p.Value.ValueKind != System.Text.Json.JsonValueKind.String || !LayoutTiles.Contains(p.Value.GetString())) throw Bad("Unbekannte Kachel."); break;
+                    case "opts":
+                        if (p.Value.ValueKind != System.Text.Json.JsonValueKind.Object) throw Bad("Ungültige Einstellungen einer Kachel.");
+                        var n = 0;
+                        foreach (var o in p.Value.EnumerateObject())
+                        {
+                            if (++n > 16 || !OptKeyRx.IsMatch(o.Name)) throw Bad("Ungültige Einstellung einer Kachel.");
+                            var ok = o.Value.ValueKind switch
+                            {
+                                System.Text.Json.JsonValueKind.String => o.Value.GetString()!.Length <= 300,
+                                System.Text.Json.JsonValueKind.Number or System.Text.Json.JsonValueKind.True or System.Text.Json.JsonValueKind.False => true,
+                                _ => false,
+                            };
+                            if (!ok) throw Bad("Ungültiger Wert in einer Kachel.");
+                        }
+                        break;
+                    default: throw Bad("Unbekanntes Feld einer Kachel.");
+                }
+            }
+            if (!t.TryGetProperty("id", out _) || !t.TryGetProperty("type", out _)) throw Bad("Einer Kachel fehlt Kennung oder Art.");
+        }
     }
 
     /// <summary>Look of the island (template, eyes, widgets, place, opacity) – only known values; the island window and every device see the change.</summary>
@@ -201,8 +267,11 @@ public sealed class SettingsService
             if (u.Widgets.Any(w => !IslandLook.Widgets.Contains(w))) throw new RpcException("invalid-params", "Unbekanntes Insel-Widget.");
             widgets = IslandLook.Widgets.Where(u.Widgets.Contains).ToList(); // fixed order, no duplicates
         }
+        var layout = u.Layout is { } le && le.ValueKind != System.Text.Json.JsonValueKind.Null ? CheckIslandLayout(le) : null;
         var r = _store.Update(s =>
         {
+            if (layout != null) s.IslandLayout = layout;
+            else if (u.ResetLayout) s.IslandLayout = null;
             if (u.Style != null) s.IslandStyle = u.Style;
             if (u.Eye != null) s.IslandEye = u.Eye;
             if (u.EyeSize != null) s.IslandEyeSize = u.EyeSize;

@@ -934,7 +934,9 @@ test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, 
   // Network: a real ping row or "Misst …"; volume keys are enabled; Pomodoro starts a 25 minute focus phase.
   await expect(panel).toContainText("Netzwerk");
   await expect.poll(async () => (await panel.textContent()) ?? "", { timeout: 20000 }).toMatch(/\d+ ms|keine Antwort|Misst/);
-  for (const b of ["Leiser", "Stumm", "Lauter"]) await expect(panel.getByRole("button", { name: b })).toBeEnabled();
+  // the PC can set its volume (test companion): one bar with a mute key instead of quieter/louder keys (3.57)
+  await expect(panel.getByRole("slider", { name: "Lautstärke am PC" })).toBeEnabled();
+  await expect(panel.locator(".isl3-vbar").getByRole("button", { name: "Stumm" })).toBeEnabled();
   await islandTab(panel, "Fokus").click();
   await panel.getByRole("button", { name: "Pomodoro" }).click();
   await expect(panel).toContainText(/24:5\d|25:00/);
@@ -2345,6 +2347,8 @@ test("JARVIS-Insel: eigenes Fenster mit Augen, Rückfrage vom PC mit Erlauben/Ab
   await expect(panel.locator(".isl-last")).toContainText("CPU");
   await expect(panel.locator(".isl2-answer")).not.toContainText("Antwort von");
   // "Meine KIs" in the island: which mode, which order, which model each AI starts with – and what is chosen for the next question.
+  // since 3.57 it lives in the folded part under the input, so the answer keeps the room
+  await panel.locator("details.isl2-more > summary").click();
   const mine = panel.getByRole("region", { name: "Meine KIs" });
   await mine.locator("summary").click();
   await expect(mine.getByLabel("So antwortet JARVIS gerade")).toContainText(/Ausgewählt für die nächste Frage: (Automatisch|Standard)/);
@@ -2451,7 +2455,7 @@ test("JARVIS-Insel 3.0: Tabs, Widgets im Wackel-Modus hinzufügen/entfernen, Tim
   await expect(islandTab(panel, "Notiz")).toHaveCount(0); // not switched on yet
   // Wiggle mode: + adds a widget (saved on the PC), − removes it again.
   await panel.getByRole("button", { name: "Mehr", exact: true }).click();
-  await panel.getByRole("menuitem", { name: "Widgets bearbeiten" }).click();
+  await panel.getByRole("menuitem", { name: "Widgets im Bereich PC" }).click();
   await panel.getByRole("button", { name: "Notiz hinzufügen" }).click();
   await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).toContain("note");
   await expect(panel.getByRole("button", { name: "Notiz entfernen" })).toBeVisible();

@@ -14,6 +14,8 @@ public interface ISystemControls
     SensorState Sensors() => new(null, null, null, null, null);
     /// <summary>Mutes or unmutes the default microphone. Returns an error text, or null when applied.</summary>
     string? SetMicMuted(bool muted) => "Das Mikrofon lässt sich nur im Windows-Begleiter stummschalten.";
+    /// <summary>Makes a speaker (flow "render") or microphone ("capture") the Windows default for every role. Returns an error text, or null.</summary>
+    string? SetDefaultDevice(string id, string flow) => "Das Standardgerät lässt sich nur im Windows-Begleiter umstellen.";
     bool Supported { get; }
     SystemControlState Read();
     /// <summary>Sets what is given (the rest stays). Returns an error text, or null when everything was applied. powerMode: saver, balanced, performance.</summary>
@@ -38,6 +40,8 @@ public sealed class MemorySystemControls : ISystemControls
     public SystemControlState Read() { lock (_lock) return new(_volume, _muted, _brightness, 87, true, _mode); }
     public SensorState Sensors() { lock (_lock) return new(_micMuted, !_micMuted, _micMuted ? null : "Testprogramm", false, null); }
     public string? SetMicMuted(bool muted) { lock (_lock) _micMuted = muted; return null; }
+    public string? LastDefaultDevice { get; private set; }
+    public string? SetDefaultDevice(string id, string flow) { lock (_lock) LastDefaultDevice = flow + ":" + id; return null; }
     public string? Set(int? volume, bool? muted, int? brightness, string? powerMode)
     {
         lock (_lock)

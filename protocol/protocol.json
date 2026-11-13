@@ -353,6 +353,7 @@
     "controls.sensors": "view",
     "controls.micMute": "launch",
     "net.speed": "view",
+    "controls.setDefaultDevice": "launch",
     "privacy.status": "view",
     "moves.list": "view",
     "moves.options": "view",

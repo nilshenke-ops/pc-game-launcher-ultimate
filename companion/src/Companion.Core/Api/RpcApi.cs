@@ -971,6 +971,18 @@ public static class RpcApi
             return Sensors();
         });
         rpc.Register("net.speed", _ => s.NetSpeed.Read());
+        // Speaker or microphone as the Windows default (like the sound menu of the taskbar) – only a device the PC lists right now.
+        rpc.Register("controls.setDefaultDevice", ctx =>
+        {
+            var id = ctx.Str("id", 512);
+            var flow = ctx.Str("flow", 10);
+            if (flow is not ("render" or "capture")) throw new RpcException("invalid-params", "Art des Geräts muss render oder capture sein.");
+            if (s.Audio.Devices().All(d => d.Id != id || d.Flow != flow)) throw new RpcException("not-found", "Dieses Gerät ist gerade nicht angeschlossen.");
+            var err = s.Platform.Controls.SetDefaultDevice(id, flow);
+            if (err != null) throw new RpcException("controls", err);
+            Changed(s, "audio");
+            return true;
+        });
         rpc.Register("power.status", ctx => s.Power.Status(ctx.Session));
         // Locking is harmless (sign in again) – every device that may start games may lock the PC.
         rpc.Register("power.lock", ctx => { s.Power.Run("lock", 0, ctx.Session.Who); return true; });
@@ -1112,7 +1124,7 @@ public static class RpcApi
         return new
         {
             supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, scope = SettingsService.ScopeOf(set), front = s.Platform.Foreground.Kind.ToString().ToLowerInvariant(), foregroundSupported = s.Platform.Foreground.Supported, gameRunning = s.GameRunning(),
-            look = new { style = set.IslandStyle, eye = set.IslandEye, eyeSize = set.IslandEyeSize, widgets = set.IslandWidgets ?? SettingsService.IslandLook.DefaultWidgets.ToList(), position = set.IslandPosition, opacity = set.IslandOpacity },
+            look = new { style = set.IslandStyle, eye = set.IslandEye, eyeSize = set.IslandEyeSize, widgets = set.IslandWidgets ?? SettingsService.IslandLook.DefaultWidgets.ToList(), position = set.IslandPosition, opacity = set.IslandOpacity, layout = set.IslandLayout },
         };
     }
 

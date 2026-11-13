@@ -141,4 +141,50 @@ public class IslandTests
         var s = svc.Get();
         Assert.Equal(("mono", "white", 70), (s.IslandStyle, s.IslandEye, s.IslandOpacity));
     }
+
+    static System.Text.Json.JsonElement J(string json) => System.Text.Json.JsonDocument.Parse(json).RootElement.Clone();
+
+    [Fact]
+    public void The_island_layout_is_kept_and_can_be_reset()
+    {
+        using var dir = new TempDir();
+        var svc = NewSettings(dir);
+        const string layout = """{"tabs":["home","dash","audio","music"],"home":[{"id":"a1","type":"jarvis"},{"id":"a2","type":"clock","opts":{"zone":"Asia/Tokyo","seconds":true}}],"dash":[{"id":"b1","type":"weather","opts":{"place":"Köln"}}]}""";
+        svc.SetIslandLook(new SettingsService.IslandLookUpdate { Layout = J(layout) });
+        var n = NewSettings(dir).Get(); // read again from the file
+        Assert.NotNull(n.IslandLayout);
+        Assert.Equal("Asia/Tokyo", n.IslandLayout!["home"]![1]!["opts"]!["zone"]!.GetValue<string>());
+        Assert.Equal(4, n.IslandLayout["tabs"]!.AsArray().Count);
+        // another part of the look leaves the layout alone
+        svc.SetIslandLook(new SettingsService.IslandLookUpdate { Eye = "pink" });
+        Assert.NotNull(svc.Get().IslandLayout);
+        svc.SetIslandLook(new SettingsService.IslandLookUpdate { ResetLayout = true });
+        Assert.Null(NewSettings(dir).Get().IslandLayout);
+    }
+
+    [Theory]
+    [InlineData("""{"tabs":["home","kamera"]}""")]
+    [InlineData("""{"home":[{"id":"x","type":"browser"}]}""")]
+    [InlineData("""{"home":[{"id":"X Y","type":"clock"}]}""")]
+    [InlineData("""{"home":[{"type":"clock"}]}""")]
+    [InlineData("""{"dash":[{"id":"a","type":"note","opts":{"text":{"nested":1}}}]}""")]
+    [InlineData("""{"dash":[{"id":"a","type":"note","script":"x"}]}""")]
+    [InlineData("""{"secret":1}""")]
+    [InlineData("""[1,2]""")]
+    public void A_wrong_island_layout_is_refused_and_nothing_changes(string json)
+    {
+        using var dir = new TempDir();
+        var svc = NewSettings(dir);
+        Assert.Equal("invalid-params", Assert.Throws<RpcException>(() => svc.SetIslandLook(new SettingsService.IslandLookUpdate { Layout = J(json) })).Code);
+        Assert.Null(svc.Get().IslandLayout);
+    }
+
+    [Fact]
+    public void An_island_layout_that_is_too_large_or_has_too_many_tiles_is_refused()
+    {
+        var many = "{\"dash\":[" + string.Join(",", Enumerable.Range(0, 13).Select(i => $"{{\"id\":\"t{i}\",\"type\":\"clock\"}}")) + "]}";
+        Assert.Throws<RpcException>(() => SettingsService.CheckIslandLayout(J(many)));
+        var huge = "{\"dash\":[" + string.Join(",", Enumerable.Range(0, 12).Select(i => $"{{\"id\":\"t{i}\",\"type\":\"note\",\"opts\":{{\"text\":\"{new string('x', 300)}\",\"label\":\"{new string('y', 300)}\",\"a\":\"{new string('z', 300)}\",\"b\":\"{new string('w', 300)}\"}}}}")) + "]}";
+        Assert.Throws<RpcException>(() => SettingsService.CheckIslandLayout(J(huge)));
+    }
 }

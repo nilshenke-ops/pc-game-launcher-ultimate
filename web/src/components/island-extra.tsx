@@ -3,18 +3,18 @@
 //  · Regler    – volume and brightness as tall sliders, mute, focus, battery, power plan
 //  · System    – tiles for CPU, memory, graphics card, storage, battery and running time
 // Every number comes from the PC (or Open-Meteo for the weather). What the PC cannot tell is left out or says so – never a made-up value.
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, BellOff, Clock3, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Cpu, Gauge, HardDrive, Leaf, MemoryStick, Mic, MicOff, Minus, Monitor, Music2, Network, Pause, Play, Plus, Rocket, Sun, Volume2, VolumeX, Zap } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, BellOff, Clock3, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Cpu, Gauge, HardDrive, Leaf, MemoryStick, Mic, MicOff, Monitor, Music2, Network, Rocket, Volume1, Sun, Volume2, VolumeX, Zap } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useEvent, useLiveSubscription, useRpc } from "../lib/hooks";
 import type { MetricsSample } from "../lib/types";
-import { addCountdown, countdownView, pauseCountdown, resumeCountdown, startCountdown, stopCountdown, useTimer } from "../lib/island-timer";
+import { countdownView, startCountdown, stopCountdown, useTimer } from "../lib/island-timer";
 import { clock } from "../lib/island";
-import { homePlace, setHomePlace, weatherText } from "../lib/weather";
+import { homePlace, setHomePlace } from "../lib/weather";
 import { fetchLyrics, lineAt, lyricsOn, setLyricsOn, speedText, type Lyrics } from "../lib/island-lyrics";
 import { nowPosition, type NowPlaying } from "../lib/now-playing";
-import { cachedWeather, gb, isoWeek, loadWeather, pushHistory, sparkPoints, uptimeText, weekStrip, WEATHER_TTL, type IslandWeather } from "../lib/island-dash";
+import { cachedWeather, gb, loadWeather, pushHistory, sparkPoints, uptimeText, WEATHER_TTL, type IslandWeather } from "../lib/island-dash";
 
 export interface PcControls { supported: boolean; volume: number | null; muted: boolean | null; brightness: number | null; battery: number | null; charging: boolean | null; powerMode: "saver" | "balanced" | "performance" | null }
 
@@ -73,10 +73,9 @@ export function WeatherIcon({ code, size = 22 }: { code: number; size?: number }
     : code >= 51 && code <= 57 ? CloudDrizzle : (code >= 61 && code <= 67) || (code >= 80 && code <= 82) ? CloudRain : (code >= 71 && code <= 77) || code === 85 || code === 86 ? CloudSnow : code >= 95 ? CloudLightning : Cloud;
   return <I size={size} aria-hidden />;
 }
-/** Weather of the home place: shown from the device's copy at once, refreshed every half hour while the island is open. */
-export function useIslandWeather(): { place: string | null; w: IslandWeather | null; loading: boolean; setPlace: (p: string) => void } {
-  const [place, setPlaceState] = useState(() => homePlace());
-  const [w, setW] = useState<IslandWeather | null>(() => cachedWeather(homePlace()));
+/** Weather of a place: shown from the device's copy at once, refreshed every half hour while the island is open. */
+export function useWeatherAt(place: string | null): { w: IslandWeather | null; loading: boolean } {
+  const [w, setW] = useState<IslandWeather | null>(() => cachedWeather(place));
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (!place) { setW(null); return; }
@@ -92,92 +91,36 @@ export function useIslandWeather(): { place: string | null; w: IslandWeather | n
     const id = window.setInterval(run, 5 * 60_000);
     return () => { gone = true; window.clearInterval(id); };
   }, [place]);
+  return { w, loading };
+}
+
+/** Weather of the home place (the header and every weather tile without a place of its own). */
+export function useIslandWeather(): { place: string | null; w: IslandWeather | null; loading: boolean; setPlace: (p: string) => void } {
+  const [place, setPlaceState] = useState(() => homePlace());
+  const { w, loading } = useWeatherAt(place);
   return { place, w, loading, setPlace: (p) => { const v = p.trim().slice(0, 60); setHomePlace(v || null); setPlaceState(v || null); } };
 }
 
+export interface MetricsHistory { m: MetricsSample | null; cpu: (number | null)[]; gpu: (number | null)[]; ram: (number | null)[] }
+/** The PC's values and their last 40 readings (for the small curves). */
+export function useMetricsHistory(online: boolean): MetricsHistory {
+  const m = useMetrics(online);
+  const [h, setH] = useState<Omit<MetricsHistory, "m">>({ cpu: [], gpu: [], ram: [] });
+  useEffect(() => {
+    if (!m) return;
+    const ram = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
+    setH((o) => ({ cpu: pushHistory(o.cpu, m.cpuPercent), gpu: pushHistory(o.gpu, m.gpus?.[0]?.utilPercent), ram: pushHistory(o.ram, ram) }));
+  }, [m]);
+  return { m, ...h };
+}
+
 // ------------------------------------------------------------------ Übersicht
-function Spark({ list, color }: { list: (number | null)[]; color: string }) {
+export function Spark({ list, color }: { list: (number | null)[]; color: string }) {
   const pts = sparkPoints(list, 100, 22);
   return (
     <svg className="isl3-spark" viewBox="0 0 100 22" preserveAspectRatio="none" aria-hidden>
       {pts ? <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" /> : <line x1="0" y1="20" x2="100" y2="20" stroke="currentColor" strokeOpacity=".2" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />}
     </svg>
-  );
-}
-
-export function IslandDash({ online, now, weather }: { online: boolean; now: number; weather: ReturnType<typeof useIslandWeather> }) {
-  const d = new Date(now);
-  const tm = useTimer();
-  const view = countdownView(tm, now);
-  const [preset, setPreset] = useState(25);
-  const m = useMetrics(online);
-  const hist = useRef<{ cpu: (number | null)[]; gpu: (number | null)[]; ram: (number | null)[] }>({ cpu: [], gpu: [], ram: [] });
-  const [, bump] = useState(0);
-  useEffect(() => {
-    if (!m) return;
-    const ram = m.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
-    hist.current = { cpu: pushHistory(hist.current.cpu, m.cpuPercent), gpu: pushHistory(hist.current.gpu, m.gpus?.[0]?.utilPercent), ram: pushHistory(hist.current.ram, ram) };
-    bump((x) => x + 1);
-  }, [m]);
-  const [placeIn, setPlaceIn] = useState("");
-  const pct = (v: number | null | undefined) => (v == null ? (m ? "n. v." : "–") : `${Math.round(v)} %`);
-  const temp = (v: number | null | undefined) => (v == null ? "" : `${Math.round(v)}°`);
-  const ramPct = m?.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
-  const { w } = weather;
-  return (
-    <div className="isl3-dash">
-      <section className="isl3-tile isl3-cal" aria-label={t("Kalender")}>
-        <div className="isl3-calhead">
-          <b className="isl3-daynum">{d.getDate()}</b>
-          <span className="isl3-dayname"><b>{d.toLocaleDateString([], { weekday: "short" }).replace(".", "")}</b><span>{d.toLocaleDateString([], { month: "short" }).replace(".", "")}</span></span>
-          <span className="isl3-kw">{t("KW {n}", { n: isoWeek(d) })}</span>
-        </div>
-        <div className="isl3-week" role="list">
-          {weekStrip(d).map((x) => (
-            <span key={x.date.toISOString()} role="listitem" className={x.today ? "today" : ""} aria-current={x.today ? "date" : undefined}>
-              <i>{x.date.toLocaleDateString([], { weekday: "narrow" })}</i><b>{x.day}</b>
-            </span>
-          ))}
-        </div>
-      </section>
-
-      <section className={`isl3-tile isl3-focus${view ? " running" : ""}${view?.paused ? " paused" : ""}`} aria-label={t("Fokus-Timer")}>
-        <span className="isl3-ring" style={{ ["--p" as string]: view ? view.progress : 0 } as CSSProperties}><b>{view ? clock(view.left) : `${preset}:00`}</b></span>
-        <div className="isl3-ftext">
-          <b>{t("Fokus-Timer")}</b>
-          <span className="isl2-sub">{view ? (view.paused ? t("Pausiert") : t("Läuft")) : t("{n} min", { n: preset })}</span>
-          <div className="isl3-fbtns">
-            <button type="button" className="isl2-round" onClick={() => (view ? (view.paused ? resumeCountdown() : pauseCountdown()) : startCountdown(preset))} aria-label={view ? (view.paused ? t("Fortsetzen") : t("Pausieren")) : t("Fokus starten")}>{view && !view.paused ? <Pause size={15} /> : <Play size={15} />}</button>
-            <button type="button" className="isl3-mini" onClick={() => (view ? addCountdown(-1) : setPreset((p) => Math.max(5, p - 5)))} aria-label={t("Kürzer")}><Minus size={14} /></button>
-            <button type="button" className="isl3-mini" onClick={() => (view ? addCountdown(1) : setPreset((p) => Math.min(90, p + 5)))} aria-label={t("Länger")}><Plus size={14} /></button>
-            {view && <button type="button" className="isl3-mini wide" onClick={stopCountdown}>{t("Stopp")}</button>}
-          </div>
-        </div>
-      </section>
-
-      <section className="isl3-tile isl3-weather" aria-label={t("Wetter")}>
-        {w ? (
-          <>
-            <div className="isl3-whead"><b className="isl3-temp">{w.temp}°</b><span className="isl3-wicon"><WeatherIcon code={w.code} size={30} /></span></div>
-            <div className="isl3-wfoot"><span className="ellipsis">{t(weatherText(w.code)).replace(/^./, (c) => c.toUpperCase())} · {w.place}</span>
-              {w.hi != null && w.lo != null && <span className="isl3-hilo">H {w.hi}° T {w.lo}°</span>}</div>
-          </>
-        ) : weather.place ? (
-          <div className="isl3-wempty"><CloudSun size={22} aria-hidden /><span>{weather.loading ? t("Wetter wird geladen …") : t("Wetter für „{p}“ gerade nicht erreichbar.", { p: weather.place })}</span></div>
-        ) : (
-          <form className="isl3-wform" onSubmit={(e) => { e.preventDefault(); if (placeIn.trim()) weather.setPlace(placeIn); }}>
-            <span className="isl2-sub">{t("Wetter für deinen Ort (Open-Meteo, ohne Konto):")}</span>
-            <span className="isl2-custom"><input className="input" value={placeIn} maxLength={60} placeholder={t("z. B. Köln")} aria-label={t("Ort für das Wetter")} onChange={(e) => setPlaceIn(e.target.value)} /><button type="submit" className="isl2-chip" disabled={!placeIn.trim()}>{t("OK")}</button></span>
-          </form>
-        )}
-      </section>
-
-      <section className="isl3-tile isl3-sys" aria-label={t("PC-Werte")}>
-        {online ? ([["CPU", hist.current.cpu, "#f8fafc", pct(m?.cpuPercent), temp(m?.cpuTempC)], ["GPU", hist.current.gpu, "#c084fc", pct(m?.gpus?.[0]?.utilPercent), temp(m?.gpus?.[0]?.tempC)], ["RAM", hist.current.ram, "#fbbf24", pct(ramPct), ""]] as const).map(([name, list, color, value, tc]) => (
-          <div key={name} className="isl3-sysrow"><span className="isl3-sysname">{name}</span><Spark list={list} color={color} /><b>{value}</b><span className="isl3-systemp">{tc}</span></div>
-        )) : <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{t("PC nicht verbunden")}</span></div>}
-      </section>
-    </div>
   );
 }
 
@@ -324,10 +267,22 @@ export function IslandLyrics({ np, now }: { np: NowPlaying | null | undefined; n
   const pos = nowPosition(np, now);
   const synced = state.key === key ? state.lyrics?.synced ?? null : null;
   const at = synced && pos ? lineAt(synced, pos.ms) : -1;
-  useEffect(() => {
-    const el = listRef.current?.querySelector<HTMLElement>("li.now");
-    if (el && listRef.current) listRef.current.scrollTo({ top: el.offsetTop - listRef.current.clientHeight / 2 + el.clientHeight / 2, behavior: "smooth" });
-  }, [at]);
+  // The line being sung always stands in the middle of the view: the list moves under it (no scrolling, no jumps).
+  const viewRef = useRef<HTMLDivElement>(null);
+  const [shift, setShift] = useState(0);
+  useLayoutEffect(() => {
+    const place = () => {
+      const list = listRef.current, view = viewRef.current;
+      if (!list || !view) return;
+      const el = list.children[Math.max(0, at)] as HTMLElement | undefined;
+      if (!el) return;
+      setShift(Math.round(view.clientHeight / 2 - (el.offsetTop + el.offsetHeight / 2)));
+    };
+    place();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(place) : null;
+    if (ro && viewRef.current) ro.observe(viewRef.current);
+    return () => ro?.disconnect();
+  }, [at, synced]);
 
   if (!on) return (
     <div className="isl3-lyr consent">
@@ -344,9 +299,55 @@ export function IslandLyrics({ np, now }: { np: NowPlaying | null | undefined; n
   return (
     <div className="isl3-lyr">
       {synced
-        ? <ol className="isl3-lines" ref={listRef} aria-label={t("Liedtext")}>{synced.map((l, i) => <li key={i} className={i === at ? "now" : i < at ? "past" : undefined} aria-current={i === at ? "true" : undefined}>{l.text || "♪"}</li>)}</ol>
+        ? (
+          <div className="isl3-lyrview" ref={viewRef}>
+            <ol className="isl3-lines" ref={listRef} aria-label={t("Liedtext")} style={{ transform: `translateY(${shift}px)` }}>
+              {synced.map((l, i) => <li key={i} className={i === at ? "now" : i < at ? "past" : Math.abs(i - at) === 1 ? "near" : undefined} aria-current={i === at ? "true" : undefined}>{l.text || "♪"}</li>)}
+            </ol>
+          </div>
+        )
         : <pre className="isl3-plain" aria-label={t("Liedtext")}>{state.lyrics.plain}</pre>}
       <span className="isl3-lyrsrc">{t("Quelle: lrclib.net")} · {off}</span>
     </div>
   );
 }
+
+// ------------------------------------------------------------------ volume bar (music, PC area)
+/** The PC's volume as one wide bar with a mute button – instead of separate quieter/louder keys. Without volume control (no Windows companion)
+ *  it falls back to the media keys, shown as one compact group. */
+export function PcVolumeBar({ controls, canUse, press }: { controls: ReturnType<typeof usePcControls>; canUse: boolean; press: (key: string) => void }) {
+  const c = controls.data;
+  const [local, setLocal] = useState<number | null>(null);
+  const timer = useRef<number | undefined>(undefined);
+  useEffect(() => setLocal(null), [c?.volume, c?.muted]);
+  if (c?.volume == null) return (
+    <span className="isl3-vkeys" role="group" aria-label={t("Lautstärke am PC")}>
+      <button type="button" disabled={!canUse} onClick={() => press("voldown")} aria-label={t("Leiser")}><Volume1 size={15} /></button>
+      <button type="button" disabled={!canUse} onClick={() => press("mute")} aria-label={t("Stumm")}><VolumeX size={15} /></button>
+      <button type="button" disabled={!canUse} onClick={() => press("volup")} aria-label={t("Lauter")}><Volume2 size={15} /></button>
+    </span>
+  );
+  const muted = !!c.muted;
+  const v = local ?? c.volume;
+  const send = (patch: Record<string, unknown>, wait: number) => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => client.call("controls.set", patch).then(() => controls.reload(), (e: Error) => { toast(e.message, "error"); setLocal(null); }), wait);
+  };
+  return (
+    <span className="isl3-vbar" style={{ ["--v" as string]: muted ? 0 : v } as CSSProperties}>
+      <button type="button" className={muted ? "on" : ""} disabled={!canUse} aria-pressed={muted} aria-label={t("Stumm")} onClick={() => send({ muted: !muted }, 0)}>{muted ? <VolumeX size={15} /> : v < 40 ? <Volume1 size={15} /> : <Volume2 size={15} />}</button>
+      <span className="isl3-hbar sm"><span className="isl3-hfill" aria-hidden /><input type="range" min={0} max={100} value={v} disabled={!canUse} aria-label={t("Lautstärke am PC")} onChange={(e) => { const x = Number(e.target.value); setLocal(x); send({ volume: x, ...(muted ? { muted: false } : {}) }, 110); }} /></span>
+      <i>{muted ? t("Stumm") : `${v}`}</i>
+    </span>
+  );
+}
+
+/** "Continue on the phone": the PC pauses and the phone opens the same song in Spotify (or YouTube for a song from the browser).
+ *  The place in the song is not carried over – the PC does not say where it is in a way another device could use. */
+export function handoffUrl(np: Pick<NowPlaying, "app" | "title" | "artist">): string {
+  const q = encodeURIComponent(`${np.title} ${np.artist}`.trim());
+  if (/spotify/i.test(np.app)) return `https://open.spotify.com/search/${q}`;
+  if (/firefox|chrome|edge|opera|brave|browser/i.test(np.app)) return `https://www.youtube.com/results?search_query=${q}`;
+  return `https://music.youtube.com/search?q=${q}`;
+}
+export const onTouchDevice = () => typeof window !== "undefined" && !!window.matchMedia?.("(pointer: coarse)").matches;

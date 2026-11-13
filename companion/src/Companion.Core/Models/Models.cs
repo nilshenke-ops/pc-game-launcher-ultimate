@@ -438,6 +438,9 @@ public sealed class Settings
     public string IslandEyeSize { get; set; } = "m";
     /// <summary>Widgets in the opened island (ids, see IslandLook); null = the usual set.</summary>
     public List<string>? IslandWidgets { get; set; }
+    /// <summary>Layout of the opened island: areas in the strip (order), tiles on the start page and the overview with their options
+    /// (checked by SettingsService.CheckIslandLayout); null = the usual island.</summary>
+    public System.Text.Json.Nodes.JsonObject? IslandLayout { get; set; }
     /// <summary>Place at the top edge: center, left or right.</summary>
     public string IslandPosition { get; set; } = "center";
     /// <summary>Opacity of the island window in percent (50–100).</summary>

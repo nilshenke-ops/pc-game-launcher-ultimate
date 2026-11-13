@@ -160,3 +160,103 @@ test("Download-Meldungen lassen sich in der Insel ausschalten und wieder einscha
   await expect.poll(async () => (await adminRpc<{ settings: { downloadNotices: boolean } }>("settings.get")).settings.downloadNotices, { timeout: 8000 }).toBe(true);
   await ctx.close();
 });
+
+type LayoutResp = { look: { layout: { home: { type: string; opts?: Record<string, unknown> }[]; dash: { id: string; type: string; opts?: Record<string, unknown> }[]; tabs?: string[] } | null } };
+const resetLayout = () => adminRpc("island.configure", { look: { resetLayout: true } });
+
+test("Übersicht bearbeiten: Kachel hinzufügen, einstellen, verschieben und entfernen – am PC gespeichert", async ({ browser }) => {
+  await resetLayout();
+  const ctx = await browser.newContext({ deviceScaleFactor: SHOTS ? 2 : 1, locale: "de-DE" });
+  const page = await ctx.newPage();
+  const errors: string[] = []; page.on("pageerror", (e) => errors.push(String(e)));
+  try {
+    const panel = await island(page);
+    await panel.getByRole("tab", { name: "Übersicht" }).click();
+    await panel.getByRole("button", { name: "Übersicht bearbeiten" }).click();
+    await expect(panel.getByRole("toolbar", { name: "Bearbeiten" })).toContainText("Übersicht bearbeiten");
+    await panel.getByRole("button", { name: "Kachel hinzufügen" }).click();
+    await panel.getByRole("dialog", { name: "Kachel hinzufügen" }).getByRole("listitem", { name: "Uhr hinzufügen" }).click();
+    await expect(panel.getByRole("region", { name: "Uhr" })).toBeVisible();
+    await shot(page, "edit");
+    await panel.getByRole("button", { name: "Uhr einstellen" }).click();
+    const sheet = panel.getByRole("dialog", { name: "Uhr einstellen" });
+    await sheet.getByLabel("Zeitzone").selectOption("Asia/Tokyo");
+    await shot(page, "tile-settings");
+    await expect.poll(async () => JSON.stringify((await adminRpc<LayoutResp>("island.get")).look.layout?.dash), { timeout: 8000 }).toContain("Asia/Tokyo");
+    await sheet.getByRole("button", { name: "Schließen" }).click();
+    await expect(panel.getByRole("region", { name: "Uhr" })).toContainText("Tokio");
+    await panel.getByRole("button", { name: "Uhr nach vorne" }).click();
+    await expect.poll(async () => (await adminRpc<LayoutResp>("island.get")).look.layout?.dash.map((x) => x.type).join(","), { timeout: 8000 }).toBe("calendar,focus,weather,clock,system");
+    await panel.getByRole("button", { name: "Uhr entfernen" }).click();
+    await expect(panel.getByRole("region", { name: "Uhr" })).toHaveCount(0);
+    await panel.getByRole("button", { name: "Fertig" }).click();
+    await expect(panel.getByRole("toolbar", { name: "Bearbeiten" })).toHaveCount(0);
+    // the areas: hide "Audio", it leaves the strip; show it again
+    await panel.getByRole("button", { name: "Mehr" }).click();
+    await panel.getByRole("menuitem", { name: "Bereiche anpassen" }).click();
+    const areas = panel.getByRole("dialog", { name: "Bereiche in der Leiste" });
+    await areas.getByRole("button", { name: "Audio ausblenden" }).click();
+    await expect(panel.getByRole("tab", { name: "Audio", exact: true })).toHaveCount(0);
+    await areas.getByRole("button", { name: "Audio einblenden" }).click();
+    await expect(panel.getByRole("tab", { name: "Audio", exact: true })).toBeVisible();
+    expect(errors).toEqual([]);
+  } finally { await resetLayout(); await ctx.close(); }
+});
+
+test("Insel anpassen von außen: in den Einstellungen eine Kachel auf die Startseite legen", async ({ browser }) => {
+  await resetLayout();
+  const ctx = await browser.newContext({ locale: "de-DE" });
+  const page = await ctx.newPage();
+  try {
+    await page.addInitScript((tok) => { (window as unknown as Record<string, unknown>).__PGL_ADMIN__ = tok; }, state().adminToken);
+    await page.goto(`${COMPANION}/#/overlay-settings`);
+    const card = page.locator(".card").filter({ has: page.getByRole("heading", { name: "Insel anpassen" }) });
+    await expect(card).toBeVisible({ timeout: 15_000 });
+    await card.getByLabel("Kachel für Startseite").selectOption("note");
+    await card.getByRole("button", { name: "Hinzufügen" }).first().click();
+    await expect.poll(async () => (await adminRpc<LayoutResp>("island.get")).look.layout?.home.map((x) => x.type).join(","), { timeout: 8000 }).toContain("note");
+    await card.getByRole("button", { name: "Notiz einstellen" }).click();
+    await card.getByLabel("Text").fill("Einkaufen");
+    await expect.poll(async () => JSON.stringify((await adminRpc<LayoutResp>("island.get")).look.layout?.home), { timeout: 8000 }).toContain("Einkaufen");
+  } finally { await resetLayout(); await ctx.close(); }
+});
+
+test("Audio: großer Stumm-Knopf schaltet das Mikrofon am PC, ehrlicher Hinweis ohne Geräteliste", async ({ browser }) => {
+  await adminRpc("controls.micMute", { muted: false });
+  const ctx = await browser.newContext({ deviceScaleFactor: SHOTS ? 2 : 1, locale: "de-DE" });
+  const page = await ctx.newPage();
+  try {
+    const panel = await island(page);
+    await panel.getByRole("tab", { name: "Audio", exact: true }).click();
+    const big = panel.getByRole("button", { name: "Mikrofon stummschalten" });
+    await expect(big).toHaveAttribute("aria-pressed", "false");
+    await expect(panel.getByText("Geräte zeigt nur der Windows-Begleiter.").first()).toBeVisible();
+    await big.click();
+    await expect.poll(async () => (await adminRpc<{ micMuted: boolean }>("controls.sensors")).micMuted, { timeout: 8000 }).toBe(true);
+    await expect(panel.getByRole("button", { name: "Mikrofon einschalten" })).toHaveAttribute("aria-pressed", "true");
+    await shot(page, "audio");
+    await panel.getByRole("button", { name: "Mikrofon einschalten" }).click();
+    await expect.poll(async () => (await adminRpc<{ micMuted: boolean }>("controls.sensors")).micMuted, { timeout: 8000 }).toBe(false);
+    await expect(panel.getByRole("button", { name: "Kamera prüfen" })).toBeVisible();
+  } finally { await ctx.close(); }
+});
+
+test("Am Handy weiterhören: pausiert am PC und öffnet das Lied auf dem Handy", async ({ browser }) => {
+  const media = join(state().dataDir, "media.txt");
+  writeFileSync(media, "Testlied\nTestband\n200000\n");
+  const ctx = await browser.newContext({ locale: "de-DE", hasTouch: true, isMobile: true, viewport: { width: 412, height: 860 }, deviceScaleFactor: SHOTS ? 2 : 1 });
+  const page = await ctx.newPage();
+  try {
+    await page.addInitScript(() => { const w = window as unknown as { __opened: string[]; open: (u: string) => null }; w.__opened = []; w.open = (u: string) => { w.__opened.push(u); return null; }; });
+    await page.addInitScript((tok) => { const w = window as unknown as Record<string, unknown>; w.__PGL_ADMIN__ = tok; w.__PGL_EMBEDDED__ = true; w.__PGL_ISLAND__ = true; }, state().adminToken);
+    await page.goto(`${COMPANION}/#/island`);
+    await page.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
+    const panel = page.getByRole("dialog", { name: "JARVIS-Insel" });
+    await panel.getByRole("tab", { name: "Musik" }).click();
+    await expect(panel.locator(".isl2-music .isl2-big")).toHaveText("Testlied", { timeout: 10_000 });
+    await shot(page, "phone-music");
+    await panel.getByRole("button", { name: "Am Handy weiterhören" }).click();
+    await expect.poll(() => page.evaluate(() => (window as unknown as { __opened: string[] }).__opened.join(" "))).toContain("music.youtube.com/search?q=Testlied%20Testband");
+    for (const name of ["Home", "Übersicht", "JARVIS", "Fokus", "Regler", "Audio", "System", "PC"]) { await panel.getByRole("tab", { name, exact: true }).click(); await shot(page, `phone-${name}`); }
+  } finally { rmSync(media, { force: true }); await ctx.close(); }
+});

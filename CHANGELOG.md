@@ -4,6 +4,31 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.57.0 – 2026-11-13
+### Neu
+- **Insel frei bearbeitbar:** Startseite und Übersicht bestehen jetzt aus Kacheln, die du selbst wählst. Zur Auswahl stehen Kalender, Fokus-Timer, Wetter, System, Musik, Spiel, Lautstärke/Helligkeit, Netzwerk, Akku, Uhr (auch einer anderen Stadt), Notiz, JARVIS und PC-Verbindung.
+  - Zum Bearbeiten tippst du auf den Stift oben rechts oder hältst eine Kachel gedrückt. Die Kacheln wackeln dann.
+  - Jede Kachel hat Knöpfe zum Verschieben, Einstellen und Entfernen; „+“ legt eine neue an.
+  - Jede Kachel hat eigene Einstellungen, z. B. Wetter für einen anderen Ort, welche Werte das System zeigt, Minuten des Timers, Zeitzone der Uhr oder Albumbild als Hintergrund.
+- **Bereiche wählen und ordnen:** Welche Symbole oben in der Leiste stehen und in welcher Reihenfolge, stellst du im Menü unter „Bereiche anpassen“ ein.
+- **Auch von außen bearbeitbar:** Unter Overlay & Aufnahme → „Insel anpassen“ gibt es Bereiche, Startseite und Übersicht samt Einstellungen jeder Kachel.
+  - Gespeichert wird am PC und gilt für die Insel auf allen Geräten.
+  - Ein Gerät ohne dieses Recht behält seine eigene Anordnung.
+- **Audio (wie ein Anruf-Check):** Ein großer Stumm-Knopf für das Mikrofon des PCs. Lautsprecher und Mikrofon lassen sich als Windows-Standardgerät umstellen und testen (Testton bzw. Pegel). „Kamera prüfen“ zeigt das Bild der Kamera dieses Geräts, nur dort und ohne Speichern.
+- **Am Handy weiterhören:** Im Musik-Bereich pausiert ein Knopf das Lied am PC und öffnet es auf dem Handy in Spotify bzw. bei Browser-Musik in YouTube. Die Stelle im Lied wird dabei nicht übernommen.
+### Verbessert
+- **Aussehen wie NotchPixel:** fast schwarze Insel, dunkle kompakte Kacheln, farbige Status-Chips. Jeder Bereich füllt die Insel aus, ohne leere graue Fläche unten. Das gilt für Spiel, Regler, System, Fokus, Übersicht und JARVIS, am PC wie am Handy.
+- **Liedtext:** Die gesungene Zeile steht immer in der Mitte, größer und hervorgehoben; die Liste gleitet darunter weiter statt zu springen. Mit Liedtext stehen Lied und Text nebeneinander.
+- **Lautstärke als Schieber** (mit Stumm-Knopf) statt der Leiser/Lauter-Knöpfe – in Musik und im Bereich PC.
+- **Spiel-Bereich:** Das Bild des Spiels füllt die Fläche, dazu Live-Werte (CPU, GPU, RAM, FPS falls messbar) und die Aktionen.
+- **JARVIS-Bereich:** große Antwortfläche mit Vorschlägen zum Antippen, darunter die Eingabe und die KI-Auswahl in einer Zeile. Status, Hinweise und KI-Verwaltung sind eingeklappt.
+- **JARVIS-Karte auf der Startseite:** zeigt seine Augen.
+### Behoben
+- Der Punkt „Mikrofon/Kamera in Benutzung“ saß auf der Musik-Karte statt in der Kopfzeile.
+### Hinweise
+- Standardgerät umschalten, Mikrofon stumm und die Geräte-Liste sind für den Windows-Begleiter gebaut und übersetzen fehlerfrei, wurden aber nicht auf einem echten Windows-PC ausprobiert. Für das Umschalten nutzt der Begleiter dieselbe Windows-Schnittstelle wie bekannte Sound-Umschalter.
+- FPS zeigt die Insel weiterhin nur, wenn der PC sie messen kann; ein FPS-Dienst folgt in einer späteren Version.
+
 ## 3.56.0 – 2026-11-13
 ### Neu
 - **Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da.
