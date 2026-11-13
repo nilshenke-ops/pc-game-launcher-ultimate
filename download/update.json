@@ -1,26 +1,25 @@
 {
-  "version": "3.58.0",
+  "version": "3.58.1",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.0/PCGameLauncherCompanion.exe",
-  "size": 95205077,
-  "sha256": "bb062b774e7a01ea2dd5c29a764698afa369f5bfadfcd7f29d86d8b257c54705",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.1/PCGameLauncherCompanion.exe",
+  "size": 95210370,
+  "sha256": "dfd5896de6b47095d920f082e8bf4e1eaf42b59f10b1558aa259ab51e987a330",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.58.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.0/PCGameLauncherCompanion-3.58.0-win-x64.zip",
-    "size": 89479018,
-    "sha256": "20f127eb1f54e52df5b6929b9f0b2eafff25d41b3498afee4b5c3b6cbf00d6c5"
+    "fileName": "PCGameLauncherCompanion-3.58.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.1/PCGameLauncherCompanion-3.58.1-win-x64.zip",
+    "size": 89484805,
+    "sha256": "47ec9330177034f72f0fde0d54a34c9dc3b8811632e2f4e1cf42b07e076db83a"
   },
-  "notes": "**Was am meisten verbraucht:** Im System-Bereich der Insel (und in der System-Kachel) auf CPU oder Arbeitsspeicher tippen. Es erscheint die Liste der Programme, die gerade am meisten brauchen, das meiste oben. · **Farbe & Effekt der Insel:** 16 Farben, eine eigene Farbe oder „Automatisch“. Automatisch färbt die Insel wie die App oder Website vorne am PC (z. B. Discord-Blau, Spotify-Grün, YouTube-Rot), sonst wie das Albumbild des laufenden Lieds. Vom Vordergrund erfährt die Insel nur einen Kurznamen wie „discord“, nie den Fenstertitel. · **Regler: WLAN, Bluetooth und Nachtmodus.**",
+  "notes": "",
   "changes": {
-    "neu": [
-      "**Was am meisten verbraucht:** Im System-Bereich der Insel (und in der System-Kachel) auf CPU oder Arbeitsspeicher tippen. Es erscheint die Liste der Programme, die gerade am meisten brauchen, das meiste oben.",
-      "**Farbe & Effekt der Insel:** 16 Farben, eine eigene Farbe oder „Automatisch“. Automatisch färbt die Insel wie die App oder Website vorne am PC (z. B. Discord-Blau, Spotify-Grün, YouTube-Rot), sonst wie das Albumbild des laufenden Lieds. Vom Vordergrund erfährt die Insel nur einen Kurznamen wie „discord“, nie den Fenstertitel.",
-      "**Regler: WLAN, Bluetooth und Nachtmodus.**"
-    ],
+    "neu": [],
     "verbessert": [],
-    "behoben": []
+    "behoben": [
+      "**Beim Start des Begleiters gingen viele Programme auf und der PC wurde langsam.** Ursache war eine Schleife im Spielmodus („Programme beim Spielen schließen und danach wieder öffnen“):",
+      "**Mit dem Soundboard für Discord konnte man nicht mehr reden.** Spielte das Soundboard ins virtuelle Kabel, ging nur der Sound hinein und nicht die eigene Stimme, solange die Mikrofon-Durchleitung aus war."
+    ]
   },
-  "signature": "irMKGk7b6XvfPRcAl1zbr1LuDW/1Ad4YxQ+pUGHWWwF9pGSu3CryjiNltXhJzIP2bkzs9TYO1Yw6f4Wsy6PCbw=="
+  "signature": "+++K2hbeWTgn9UV9mH7b4705SZeKLgSJrZe2MBrcShQgBBNAjbjnRvvEJ1HXApwm/2+N3OMmgXFe2WKWiGNAsg=="
 }

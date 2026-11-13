@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.58.1",
+    "date": "2026-11-13",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.1/PCGameLauncherCompanion.exe",
+    "size": 95210370,
+    "sha256": "dfd5896de6b47095d920f082e8bf4e1eaf42b59f10b1558aa259ab51e987a330",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.58.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.58.1/PCGameLauncherCompanion-3.58.1-win-x64.zip",
+      "size": 89484805,
+      "sha256": "47ec9330177034f72f0fde0d54a34c9dc3b8811632e2f4e1cf42b07e076db83a"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "**Beim Start des Begleiters gingen viele Programme auf und der PC wurde langsam.** Ursache war eine Schleife im Spielmodus („Programme beim Spielen schließen und danach wieder öffnen“):",
+        "**Mit dem Soundboard für Discord konnte man nicht mehr reden.** Spielte das Soundboard ins virtuelle Kabel, ging nur der Sound hinein und nicht die eigene Stimme, solange die Mikrofon-Durchleitung aus war."
+      ]
+    },
+    "signature": "+++K2hbeWTgn9UV9mH7b4705SZeKLgSJrZe2MBrcShQgBBNAjbjnRvvEJ1HXApwm/2+N3OMmgXFe2WKWiGNAsg=="
+  },
+  {
     "version": "3.58.0",
     "date": "2026-11-13",
     "channel": "stable",
@@ -1321,31 +1346,5 @@
       "behoben": []
     },
     "signature": "/Hsd2LL9NzLQQy7joym/SdA5kVMHEkNULcmNQDE2EraDShS+hzgPMpn26hJ5e30Py6kuwBrHG+xxnb9zfmednQ=="
-  },
-  {
-    "version": "3.29.0",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion.exe",
-    "size": 95036952,
-    "sha256": "2c355f7d39867db884d6697c7248712da45707d43c41fbe0d717d5675f82d4ed",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.29.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.29.0/PCGameLauncherCompanion-3.29.0-win-x64.zip",
-      "size": 89311261,
-      "sha256": "f20d82a6ad05eccf4df6ffbf9d9f3e23deb22c761c8f39af4d49bddec567b5ea"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Nexus-Cloud: Der Worker liefert jetzt die gebaute Website (statt der ungebuildeten `index.html` mit `/src/main.tsx`, die nur eine leere Seite ergab) und beantwortet alle `/api/account/*`-Routen",
-        "Fehlerantworten tragen CORS-Header; dadurch erscheint der echte Grund statt „Der Cloud-Dienst antwortet nicht“",
-        "Health-Check prüft die D1-Datenbank mit und nennt eine fehlende Bindung ausdrücklich"
-      ]
-    },
-    "signature": "MI5PpLCq1SUsTSs/EvaU72IavVIv4dxFN90/6ZsU2LDh039H00HMJTRS8DuXCMIFDMl+cWhQPxEAAEd+f8PMnQ=="
   }
 ]
