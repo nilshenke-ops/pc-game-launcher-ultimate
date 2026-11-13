@@ -1,30 +1,24 @@
 {
-  "version": "3.55.0",
+  "version": "3.55.1",
   "date": "2026-11-13",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.0/PCGameLauncherCompanion.exe",
-  "size": 95163392,
-  "sha256": "c3213580954ac676a7e6efe3ff4f4b7ffe847547f9322b35387108223461ee87",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.1/PCGameLauncherCompanion.exe",
+  "size": 95163921,
+  "sha256": "a634f0c3c312a1e85db976521eeaa0b1a902eed99c1b865450bce1bc81a36b29",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.55.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.0/PCGameLauncherCompanion-3.55.0-win-x64.zip",
-    "size": 89437716,
-    "sha256": "84061a3a28ff8244352c9cba995d20a4485daf481fdddbad34e135db9f281cc2"
+    "fileName": "PCGameLauncherCompanion-3.55.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.1/PCGameLauncherCompanion-3.55.1-win-x64.zip",
+    "size": 89438409,
+    "sha256": "ee2082182336d7978df259b09ba9835d70bfd21bbfabbfc504dc148a5e11761b"
   },
-  "notes": "**JARVIS-Insel im Stil von NotchPixel und Smart Notch – im eigenen Design:** Die Bereiche liegen jetzt als Symbolleiste ganz oben (mit gleitender Markierung und Punkt unter dem offenen Bereich), rechts daneben Akku des PCs, Wetter und Uhrzeit. · **Übersicht:** Kalenderwoche mit „KW“ und markiertem heutigen Tag, Fokus-Timer mit Ring (kürzer, länger, Pause, Stopp), Wetter für deinen Ort (Open-Meteo, ohne Konto) und CPU, GPU und Arbeitsspeicher als Verlaufslinien. · **Regler:** Helligkeit und Lautstärke des PCs als hohe Schieber, dazu Stumm, Fokus, Akkustand und Energiemodus (Sparen, Ausgewogen, Leistung). Gezeigt wird nur, was der PC wirklich meldet.",
+  "notes": "Tastatur verdeckt Suche und Eingabefelder nicht mehr",
   "changes": {
-    "neu": [
-      "**JARVIS-Insel im Stil von NotchPixel und Smart Notch – im eigenen Design:** Die Bereiche liegen jetzt als Symbolleiste ganz oben (mit gleitender Markierung und Punkt unter dem offenen Bereich), rechts daneben Akku des PCs, Wetter und Uhrzeit.",
-      "**Übersicht:** Kalenderwoche mit „KW“ und markiertem heutigen Tag, Fokus-Timer mit Ring (kürzer, länger, Pause, Stopp), Wetter für deinen Ort (Open-Meteo, ohne Konto) und CPU, GPU und Arbeitsspeicher als Verlaufslinien.",
-      "**Regler:** Helligkeit und Lautstärke des PCs als hohe Schieber, dazu Stumm, Fokus, Akkustand und Energiemodus (Sparen, Ausgewogen, Leistung). Gezeigt wird nur, was der PC wirklich meldet.",
-      "**System:** Kacheln für CPU, Arbeitsspeicher, GPU, freien Speicher, Akku und Laufzeit seit dem letzten Start.",
-      "**Download fertig:** Der Begleiter beobachtet den Downloads-Ordner und meldet eine Datei, sobald sie vollständig ist (nur der Dateiname, nichts wird geöffnet oder gelesen). Halb geladene Dateien (.crdownload, .part …) werden nicht gemeldet.",
-      "Meldungen des PCs lassen sich in der Insel mit „Alle löschen“ auf einmal wegräumen.",
-      "Läuft Musik, zeigt die geschlossene Insel das Albumbild."
+    "neu": [],
+    "verbessert": [
+      "Tastatur verdeckt Suche und Eingabefelder nicht mehr"
     ],
-    "verbessert": [],
     "behoben": []
   },
-  "signature": "yCdU2X3IIG3OJzAiyV4riAol1F+oaGOcbHFH4ePXakLIaLcKkZsH+NFU47Rli9kyPhxQvZDeKAmBgZBBAOuwbA=="
+  "signature": "W8jDpFH3f4Qb43USNqUh4nKK26d5Aa/hzdKodD/abXfuOS5MS8chvf+LDhz3CTelj19YWKjYUoRFijZFiTewTA=="
 }
