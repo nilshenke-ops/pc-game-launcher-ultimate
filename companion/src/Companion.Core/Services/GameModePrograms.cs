@@ -155,6 +155,17 @@ public sealed class GameModePrograms
         finally { _busy.Release(); }
     }
 
+    /// <summary>
+    /// At the start of the companion: programs that an earlier run closed for a game are not reopened later out of the blue
+    /// (the PC was restarted or the companion ended in between). Returns how many were forgotten.
+    /// </summary>
+    public int ForgetStaleClosed()
+    {
+        var n = _store.Update(x => { var c = x.ClosedPaths.Count; x.ClosedPaths.Clear(); return c; });
+        if (n > 0) Log.Info("gamemode", $"Spielmodus: {n} gemerkte(s) Programm(e) aus einem früheren Lauf werden nicht wieder geöffnet.");
+        return n;
+    }
+
     public async Task<int> AllGamesStoppedAsync()
     {
         var f = _store.Snapshot();

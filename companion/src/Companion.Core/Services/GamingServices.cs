@@ -744,6 +744,12 @@ public sealed class SessionTracker : IDisposable
     Timer? _timer;
     public event Action<LibraryItem, DateTime>? Started;
     public event Action<LibraryItem, DateTime>? Stopped;
+    bool _scannedOnce;
+    /// <summary>
+    /// True while the events of the very first scan run: those items were already running before the companion started. A
+    /// restart of the companion is no new start of them – nothing may be launched, closed or reopened because of it.
+    /// </summary>
+    public bool InitialScan { get; private set; }
 
     public SessionTracker(LibraryService library, IProcessSource processes, SettingsService settings)
     {
@@ -799,6 +805,8 @@ public sealed class SessionTracker : IDisposable
 
     public void Tick()
     {
+        var first = !_scannedOnce;
+        _scannedOnce = true;
         var items = _library.List().Where(i => i.ProcessNames.Count > 0 || i.InstallDir != null).ToList();
         if (items.Count == 0 && _running.Count == 0) return;
         IReadOnlyList<ProcessInfo> snapshot;
@@ -822,8 +830,13 @@ public sealed class SessionTracker : IDisposable
         }
         LastScanAccuracy = CurrentAccuracy;
         if (started.Count > 0 || (_boostUntil != default && now >= _boostUntil)) EndBoost();
-        foreach (var i in started) Started?.Invoke(i, now);
-        foreach (var i in stopped) Stopped?.Invoke(i, now);
+        InitialScan = first;
+        try
+        {
+            foreach (var i in started) Started?.Invoke(i, now);
+            foreach (var i in stopped) Stopped?.Invoke(i, now);
+        }
+        finally { InitialScan = false; }
     }
 
     public static bool IsRunning(LibraryItem item, HashSet<string> processNames, List<string> processPaths)

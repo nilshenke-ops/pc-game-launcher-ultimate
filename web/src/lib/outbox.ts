@@ -202,7 +202,7 @@ export const OFFLINE_DEFAULTS: Record<string, unknown> = {
   // Audio devices are only known on the PC; until then "Windows-Standard" is shown and only changed values are sent.
   "audio.state": {
     supported: true, devices: [], missing: [], micPassthroughActive: false, offlineDefaults: true,
-    settings: { outputDeviceId: null, soundboardVolume: 80, monitorEnabled: false, monitorDeviceId: null, monitorVolume: 60, micPassthrough: false, micDeviceId: null, micVolume: 100, playMode: "overlap", maxConcurrent: 8 },
+    settings: { outputDeviceId: null, soundboardVolume: 80, monitorEnabled: false, monitorDeviceId: null, monitorVolume: 60, micPassthrough: false, micFollowsSoundboard: true, micDeviceId: null, micVolume: 100, playMode: "overlap", maxConcurrent: 8 },
   },
   "plugins.list": { appVersion: WEB_VERSION, apiVersion: 1, permissions: PERMISSION_LABELS, plugins: [],
     categories: ["launcher", "audio", "discord", "performance", "design", "automation", "device", "information", "productivity", "community"] },

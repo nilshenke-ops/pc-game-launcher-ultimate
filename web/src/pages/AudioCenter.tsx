@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { discordSteps } from "../lib/discord-check";
-import { Cable, ExternalLink, Headphones, Mic, RefreshCw, Speaker, Stethoscope, Volume2 } from "lucide-react";
+import { discordSteps, micGoesAlong, outputIsCable, voiceMissing } from "../lib/discord-check";
+import { MicRescueActions } from "../components/mic-rescue";
+import { Cable, ExternalLink, Headphones, LifeBuoy, Mic, RefreshCw, Speaker, Stethoscope, Volume2 } from "lucide-react";
 import { client } from "../lib/rpc";
 import { t } from "../lib/i18n";
-import { useEvent, useLiveSubscription, useRpc, toast } from "../lib/hooks";
+import { useCan, useEvent, useLiveSubscription, useRpc, toast } from "../lib/hooks";
 import type { AudioDevice, AudioSettings, CheckResult } from "../lib/types";
 import { Banner, Button, Card, CheckList, Field, Loadable, Meter, PageHead, Segmented, Switch } from "../components/ui";
 
@@ -19,6 +20,7 @@ interface AudioState { supported: boolean; unsupportedReason?: string; settings:
 
 export default function AudioCenter() {
   const q = useRpc<AudioState>("audio.state", {}, ["audio"]);
+  const canManage = useCan("manage");
   const [s, setS] = useState<AudioSettings | null>(null);
   const [dirty, setDirty] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -70,6 +72,16 @@ export default function AudioCenter() {
         {q.data && !q.data.supported ? <Banner kind="warn" title={t("Nicht unterstützt")}>{q.data.unsupportedReason}</Banner> : s && q.data && (
           <div className="stack">
             {q.stale && <Banner kind="info" title={t("PC nicht verbunden")}>{t("Lautstärken, Wiedergabe-Modus, Monitoring und Mikrofon-Durchleitung kannst du schon einstellen – übertragen werden nur die Werte, die du hier änderst. Audiogeräte (z. B. das virtuelle Kabel) kennt nur der PC; sie erscheinen nach dem Verbinden. Testton und Mikrofon-Test brauchen den PC.")}</Banner>}
+            {!q.stale && !dirty && voiceMissing(q.data.settings, q.data.devices, q.data.micPassthroughActive) && (
+              <Banner kind="error" title={t("Discord hört dich gerade nicht")}>
+                <div className="stack-sm">
+                  <span>{micGoesAlong(q.data.settings, q.data.devices)
+                    ? t("Das Soundboard spielt ins virtuelle Kabel, aber dein Mikrofon läuft gerade nicht mit (Mikrofon getrennt oder belegt?). Deine Freunde hören nur die Sounds.")
+                    : t("Das Soundboard spielt ins virtuelle Kabel, dein Mikrofon aber nicht. Discord nimmt das Kabel als Mikrofon – deshalb hören deine Freunde nur die Sounds und nicht dich.")}</span>
+                  <MicRescueActions settings={q.data.settings} canManage={canManage} onDone={() => { setDirty(false); q.reload(); }} />
+                </div>
+              </Banner>
+            )}
             {q.data.missing.length > 0 && <Banner kind="error" title={t("Gerät fehlt")}>{t("Nicht gefunden: {x}. Gerät anschließen oder anderes wählen.", { x: q.data.missing.join(", ") })}</Banner>}
             <div className="grid-2">
               <Card title={t("Soundboard-Ausgabe")} icon={<Speaker size={18} />}>
@@ -102,7 +114,10 @@ export default function AudioCenter() {
               </Card>
               <Card title={t("Mikrofon-Durchleitung")} icon={<Mic size={18} />}>
                 <div className="stack">
-                  <Switch checked={s.micPassthrough} onChange={(micPassthrough) => set({ micPassthrough })} label={t("Mikrofon in die Soundboard-Ausgabe mischen")} hint={t("Nötig, wenn Discord das virtuelle Kabel als Mikrofon nutzt – sonst hört man dich nicht mehr.")} />
+                  <Switch checked={s.micFollowsSoundboard !== false} onChange={(micFollowsSoundboard) => set({ micFollowsSoundboard })} label={t("Meine Stimme automatisch mitsenden")}
+                    hint={t("Sobald das Soundboard ins virtuelle Kabel spielt, läuft dein echtes Mikrofon mit hinein – so hören dich deine Freunde in Discord und die Sounds. Empfohlen.")} />
+                  <Switch checked={s.micPassthrough} onChange={(micPassthrough) => set({ micPassthrough })} label={t("Mikrofon immer in die Soundboard-Ausgabe mischen")} hint={t("Auch wenn das Soundboard nicht ins Kabel spielt (nur für eigene Aufbauten nötig).")} />
+                  {outputIsCable(s, q.data.devices) && <p className="tiny muted">{micGoesAlong(s, q.data.devices) ? t("Deine Stimme geht mit ins Kabel. Als Mikrofon nimmt der PC nie das Kabel selbst, sondern dein echtes Mikrofon.") : t("Achtung: So hört Discord nur die Sounds, nicht dich.")}</p>}
                   <Field label={t("Mikrofon")}>
                     <select className="input" value={s.micDeviceId ?? ""} onChange={(e) => set({ micDeviceId: e.target.value || null })}>
                       <option value="">{t("Windows-Standardmikrofon")}</option>
@@ -125,7 +140,7 @@ export default function AudioCenter() {
                 <div className="stack">
                   <ol className="steps small">
                     <li>{t("Virtuelles Audiokabel installieren (z. B. VB-Audio Virtual Cable, kostenlos). Dieses Programm installiert keine Treiber.")}</li>
-                    <li>{t("Hier: Soundboard-Ausgabe = „CABLE Input“ und Mikrofon-Durchleitung einschalten.")}</li>
+                    <li>{t("Hier: Soundboard-Ausgabe = „CABLE Input“. Deine Stimme läuft automatisch mit (Schalter „Meine Stimme automatisch mitsenden“).")}</li>
                     <li>{t("In Discord → Sprache & Video: Eingabegerät = „CABLE Output“.")}</li>
                     <li>{t("Monitoring auf deine Kopfhörer stellen, um selbst mitzuhören.")}</li>
                   </ol>
@@ -141,6 +156,13 @@ export default function AudioCenter() {
                 </div>
               </Card>
             </div>
+            <Card title={t("Mikrofon wiederherstellen")} icon={<LifeBuoy size={18} />}>
+              <div className="stack-sm">
+                <p className="small">{t("Wenn dich niemand mehr hört oder du nicht weißt, was umgestellt ist: Das stellt alles auf normal – das Soundboard spielt wieder auf deinem Standardgerät, der Mikrofon-Weg ist aus, und wenn Windows über das virtuelle Kabel aufnimmt oder abspielt, wird wieder dein echtes Mikrofon bzw. deine Lautsprecher genommen.")}</p>
+                <p className="small muted">{t("Danach nur noch in Discord → Einstellungen → Sprache & Video das Eingabegerät auf dein Mikrofon (oder „Standard“) stellen – diese eine Einstellung kann keine App von außen ändern.")}</p>
+                <MicRescueActions settings={s} canManage={canManage} onDone={() => { setDirty(false); q.reload(); }} />
+              </div>
+            </Card>
             <Card title={t("Audio-Diagnose")} icon={<Stethoscope size={18} />} actions={<Button variant="primary" size="sm" onClick={runDiag}>{t("Diagnose ausführen")}</Button>}>
               {diag ? <CheckList checks={diag.checks} /> : <p className="muted small">{t("Prüft Geräte, virtuelles Kabel, Ausgabe-Routing und den Discord-Weg.")}</p>}
             </Card>

@@ -82,8 +82,34 @@ public sealed class AudioService
         var missing = new List<string>();
         if (s.OutputDeviceId != null && !ids.Contains(s.OutputDeviceId)) missing.Add("Soundboard-Ausgabe");
         if (s.MonitorEnabled && s.MonitorDeviceId != null && !ids.Contains(s.MonitorDeviceId)) missing.Add("Monitoring-Gerät");
-        if (s.MicPassthrough && s.MicDeviceId != null && !ids.Contains(s.MicDeviceId)) missing.Add("Mikrofon");
+        if (MicWanted(s, devices) && s.MicDeviceId != null && !ids.Contains(s.MicDeviceId)) missing.Add("Mikrofon");
         return missing;
+    }
+
+    /// <summary>The soundboard plays into a virtual cable (what Discord then uses as its microphone).</summary>
+    public static bool OutputIsCable(AudioSettings s, IReadOnlyList<AudioDevice> devices) =>
+        s.OutputDeviceId != null && devices.Any(d => d.Id == s.OutputDeviceId && d.Flow == "render" && d.IsVirtualCable);
+
+    /// <summary>Whether the own microphone should go into the soundboard's output: switched on, or automatically on the Discord way.</summary>
+    public static bool MicWanted(AudioSettings s, IReadOnlyList<AudioDevice> devices) =>
+        s.MicPassthrough || (s.MicFollowsSoundboard && OutputIsCable(s, devices));
+
+    /// <summary>
+    /// The real microphone for the passthrough. A virtual cable is never one: with the cable's own end as "microphone" the
+    /// cable would only hear itself and nobody would hear the person. Order: the chosen microphone (if real and present),
+    /// Windows' default recording device (if real), the first real microphone. found = false: there is no real microphone.
+    /// id = null means Windows' default (also when the device list is unknown).
+    /// </summary>
+    public static (bool found, string? id) ResolveMic(AudioSettings s, IReadOnlyList<AudioDevice> devices)
+    {
+        var caps = devices.Where(d => d.Flow == "capture").ToList();
+        if (caps.Count == 0) return (true, s.MicDeviceId);
+        if (s.MicDeviceId != null && caps.FirstOrDefault(d => d.Id == s.MicDeviceId) is { IsVirtualCable: false } chosen) return (true, chosen.Id);
+        if (s.MicDeviceId != null && caps.All(d => d.Id != s.MicDeviceId)) return (true, s.MicDeviceId); // unplugged: reported as missing, comes back by itself
+        var def = caps.FirstOrDefault(d => d.IsDefault);
+        if (def is { IsVirtualCable: false }) return (true, null);
+        var real = caps.FirstOrDefault(d => !d.IsVirtualCable);
+        return real == null ? (false, null) : (true, real.Id);
     }
 
     /// <summary>Raised when the soundboard/monitor volume changed: sounds that play right now follow at once.</summary>
@@ -100,7 +126,7 @@ public sealed class AudioService
         _store.Replace(u);
         if (before.SoundboardVolume != u.SoundboardVolume || before.MonitorVolume != u.MonitorVolume) VolumeChanged?.Invoke();
         // Restarting the mic passthrough causes a short dropout in Discord – only do it when mic settings changed.
-        var err = MicChanged(before, u) ? ApplyMic() : null;
+        var err = MicChanged(before, u) || before.MicFollowsSoundboard != u.MicFollowsSoundboard ? ApplyMic() : null;
         _hub.Changed("audio");
         if (err != null) throw new RpcException("audio", "Gespeichert, aber Mikrofon-Durchleitung fehlgeschlagen: " + err);
         return u;
@@ -124,8 +150,13 @@ public sealed class AudioService
     public string? ApplyMic()
     {
         var s = Settings();
-        var err = _engine.SetMicPassthrough(s.MicPassthrough && !MicSuppressed(), s.MicDeviceId, s.OutputDeviceId, s.MicVolume / 100f);
-        if (err == null && s.MicPassthrough && !MicSuppressed() && _engine.Supported)
+        var devices = Devices();
+        var want = MicWanted(s, devices) && !MicSuppressed();
+        var (found, micId) = ResolveMic(s, devices);
+        string? err;
+        if (want && !found) { _engine.SetMicPassthrough(false, null, null, 0); err = "Kein echtes Mikrofon gefunden – nur virtuelle Kabel. Headset/Mikrofon anschließen, dann geht deine Stimme wieder mit."; }
+        else err = _engine.SetMicPassthrough(want, micId, s.OutputDeviceId, s.MicVolume / 100f);
+        if (err == null && want && _engine.Supported)
             _levelTimer ??= new Timer(_ =>
             {
                 // Only sent to devices that have the Audio Center open (audio.subscribe) – nothing goes out otherwise.
@@ -197,7 +228,7 @@ public sealed class AudioService
                         {
                             _lastMissing = key;
                             if (missing.Count > 0) missingChanged(missing);
-                            else if (s.MicPassthrough && !_engine.MicPassthroughActive) ApplyMic(); // device is back
+                            else if (MicWanted(s, Devices()) && !_engine.MicPassthroughActive) ApplyMic(); // device is back
                         }
                     }
                     catch (Exception ex) { Log.Warn("audio", ex.Message); }
@@ -228,13 +259,41 @@ public sealed class AudioService
         if (cable != null)
         {
             var routed = s.OutputDeviceId == cable.Id;
-            Add("discord", "Discord-Weg", routed && s.MicPassthrough ? "ok" : "warn",
-                routed ? (s.MicPassthrough ? "Sounds + Mikrofon gehen in das virtuelle Kabel. In Discord als Eingabegerät „" + cable.Name.Replace("Input", "Output") + "“ wählen." : "Mikrofon-Durchleitung ist aus – in Discord wäre nur der Sound hörbar, nicht deine Stimme.")
+            var micOn = MicWanted(s, devices);
+            Add("discord", "Discord-Weg", routed && micOn && _engine.MicPassthroughActive ? "ok" : "warn",
+                routed ? (micOn ? (_engine.MicPassthroughActive ? "Sounds + Mikrofon gehen in das virtuelle Kabel. In Discord als Eingabegerät „" + cable.Name.Replace("Input", "Output") + "“ wählen." : "Dein Mikrofon soll mitlaufen, die Durchleitung läuft aber gerade nicht – „Mikrofon wiederherstellen“ im Audio Center hilft.") : "Mikrofon-Durchleitung ist aus – in Discord wäre nur der Sound hörbar, nicht deine Stimme.")
                        : "Soundboard-Ausgabe ist nicht das virtuelle Kabel – Sounds sind nur lokal hörbar.");
         }
         Add("discord-check", "Hören andere Teilnehmer den Sound?", "untested", "Kann der Companion nicht prüfen: das hängt von den Discord-Einstellungen ab. Bitte mit einer zweiten Person oder dem Discord-Mikrofontest prüfen.");
         foreach (var m in MissingDevices(s, devices)) Add("missing-" + m, m, "error", "Das gespeicherte Gerät ist nicht angeschlossen.");
         return r;
+    }
+
+    /// <summary>
+    /// "Mikrofon wiederherstellen": back to normal in one step. The soundboard plays on the Windows default again, the
+    /// passthrough is off, and where Windows itself records from or plays into a virtual cable (so the person could not be
+    /// heard or hear anything), the default goes back to a real device. What stays is the one setting inside Discord, which
+    /// no app can change: the input device there.
+    /// </summary>
+    public object ResetRouting(Func<string, string, string?> setWindowsDefault)
+    {
+        Update(a => { a.OutputDeviceId = null; a.MicPassthrough = false; });
+        var devices = Devices();
+        string? micRestored = null, outRestored = null;
+        var problems = new List<string>();
+        var caps = devices.Where(d => d.Flow == "capture").ToList();
+        if (caps.FirstOrDefault(d => d.IsDefault) is { IsVirtualCable: true } && caps.FirstOrDefault(d => !d.IsVirtualCable) is { } realMic)
+        {
+            if (setWindowsDefault(realMic.Id, "capture") is { } e) problems.Add(e); else micRestored = realMic.Name;
+        }
+        var outs = devices.Where(d => d.Flow == "render").ToList();
+        if (outs.FirstOrDefault(d => d.IsDefault) is { IsVirtualCable: true } && outs.FirstOrDefault(d => !d.IsVirtualCable) is { } realOut)
+        {
+            if (setWindowsDefault(realOut.Id, "render") is { } e) problems.Add(e); else outRestored = realOut.Name;
+        }
+        Log.Info("audio", "Audio-Weg zurückgesetzt" + (micRestored != null ? $"; Windows-Mikrofon: {micRestored}" : "") + (outRestored != null ? $"; Windows-Ausgabe: {outRestored}" : ""));
+        _hub.Changed("audio");
+        return new { micRestored, outRestored, problems };
     }
 
     internal AudioSettings Export() => Settings();

@@ -99,7 +99,93 @@ public class PerformanceTests
         finally { s.DisposeAsync().AsTask().Wait(); GameActivity.Set(false); }
     }
 
-    sealed class TestPlatform(IProcessSource procs, IGameMode mode) : IPlatform
+    /// <summary>Records what would be closed and started, like Windows would do it.</summary>
+    sealed class RecordingControl(FakeProcesses procs) : IProcessControl
+    {
+        public List<string> Closed { get; } = new();
+        public List<string> Started { get; } = new();
+        public bool Supported => true;
+        public string? CloseGracefully(int pid, TimeSpan wait)
+        {
+            var p = procs.Running.FirstOrDefault(x => x.Pid == pid);
+            if (p == null) return null;
+            Closed.Add(p.Name); procs.Running.RemoveAll(x => x.Pid == pid);
+            return null;
+        }
+        public string? Start(string exePath) { Started.Add(exePath); procs.Running.Add(new ProcessInfo(900 + Started.Count, Path.GetFileNameWithoutExtension(exePath), exePath)); return null; }
+    }
+
+    [Fact]
+    public void A_program_from_the_library_never_triggers_game_mode_and_nothing_reopens_in_a_loop()
+    {
+        // The bug: Discord is in the library as a program and on the game-mode list. Its start counted like a game start, game
+        // mode closed it, "nothing runs" reopened it, which counted as a start again … – programs kept opening.
+        using var dir = new TempDir();
+        var procs = new FakeProcesses();
+        var ctl = new RecordingControl(procs);
+        var s = new CompanionServices(new TestPlatform(procs, new RecordingGameMode(), ctl), new Pgl.Core.Infrastructure.AppPaths(dir.Path), new Hosting.WebAssets(dir.Path));
+        try
+        {
+            s.Library.Import(new LibraryFile { Items = {
+                new LibraryItem { Id = "item_dc", Kind = ItemKind.Program, Name = "Discord", ProcessNames = { "Discord" } },
+                new LibraryItem { Id = "item_g", Kind = ItemKind.Game, Name = "Testspiel", ProcessNames = { "game" } },
+            } });
+            s.GameModePrograms.Save(true, true, new List<GameModeProgram> { new() { Name = "Discord" } });
+            s.Sessions.Tick(); // first scan: nothing running yet
+            procs.Running.Add(new ProcessInfo(20, "Discord", @"C:\Discord\Discord.exe"));
+            for (var i = 0; i < 5; i++) { s.Sessions.Tick(); Thread.Sleep(30); }
+            Assert.Empty(ctl.Closed);
+            Assert.Empty(ctl.Started);
+            Assert.Contains(procs.Running, p => p.Name == "Discord");
+        }
+        finally { s.DisposeAsync().AsTask().Wait(); GameActivity.Set(false); }
+    }
+
+    [Fact]
+    public void Things_already_running_when_the_companion_starts_are_no_new_start()
+    {
+        using var dir = new TempDir();
+        var procs = new FakeProcesses();
+        var ctl = new RecordingControl(procs);
+        var s = new CompanionServices(new TestPlatform(procs, new RecordingGameMode(), ctl), new Pgl.Core.Infrastructure.AppPaths(dir.Path), new Hosting.WebAssets(dir.Path));
+        try
+        {
+            s.Library.Import(new LibraryFile { Items = {
+                new LibraryItem { Id = "item_dc", Kind = ItemKind.Program, Name = "Discord", ProcessNames = { "Discord" } },
+                new LibraryItem { Id = "item_g", Kind = ItemKind.Game, Name = "Testspiel", ProcessNames = { "game" } },
+                new LibraryItem { Id = "item_obs", Kind = ItemKind.Program, Name = "OBS", ProcessNames = { "obs64" }, Source = LaunchSource.Exe, Target = @"C:\OBS\obs64.exe" },
+            } });
+            // A profile for the game that starts OBS, switched to automatically.
+            var prof = s.Profiles.Save(new Profile { Name = "Spiel", GameIds = { "item_g" }, LaunchProgramIds = { "item_obs" } });
+            s.Profiles.SetAutoSwitch(true);
+            var before = s.Profiles.Get().ActiveProfileId;
+            s.GameModePrograms.Save(true, true, new List<GameModeProgram> { new() { Name = "Discord" } });
+            procs.Running.Add(new ProcessInfo(20, "Discord", @"C:\Discord\Discord.exe"));
+            procs.Running.Add(new ProcessInfo(30, "game", @"C:\Games\game.exe"));
+            s.Sessions.Tick(); // the companion's first look: both were running before it started
+            Thread.Sleep(50);
+            Assert.Equal(2, s.Sessions.Running().Count);   // shown as running …
+            Assert.Empty(ctl.Closed);                      // … but game mode did not close Discord
+            Assert.Equal(before, s.Profiles.Get().ActiveProfileId); // and the profile (with OBS) was not switched on
+            Assert.True(s.GameRunning());
+
+            // A game started later is a real start: game mode closes Discord and reopens it after the game.
+            procs.Running.RemoveAll(p => p.Name == "game");
+            s.Sessions.Tick();
+            procs.Running.Add(new ProcessInfo(31, "game", @"C:\Games\game.exe"));
+            s.Sessions.Tick();
+            for (var i = 0; i < 40 && ctl.Closed.Count == 0; i++) Thread.Sleep(25);
+            Assert.Equal(new[] { "Discord" }, ctl.Closed);
+            Assert.Equal(prof.Id, s.Profiles.Get().ActiveProfileId);
+            procs.Running.RemoveAll(p => p.Name == "game");
+            s.Sessions.Tick();
+            for (var i = 0; i < 40 && ctl.Started.Count == 0; i++) Thread.Sleep(25);
+            Assert.Contains(@"C:\Discord\Discord.exe", ctl.Started);
+        }
+        finally { s.DisposeAsync().AsTask().Wait(); GameActivity.Set(false); }
+    }
+
+    sealed class TestPlatform(IProcessSource procs, IGameMode mode, IProcessControl? control = null) : IPlatform
     {
         readonly GenericPlatform _g = new();
         public string Name => "Test";
@@ -114,5 +200,6 @@ public class PerformanceTests
         public IEnumerable<IDetector> Detectors => Array.Empty<IDetector>();
         public IUpdateInstaller UpdateInstaller => _g.UpdateInstaller;
         public IGameMode GameMode => mode;
+        public IProcessControl ProcessControl => control ?? NullProcessControl.Instance;
     }
 }

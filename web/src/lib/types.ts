@@ -143,6 +143,8 @@ export interface AudioSettings {
   monitorDeviceId?: string | null;
   monitorVolume: number;
   micPassthrough: boolean;
+  /** On the Discord way (soundboard into a virtual cable) the own microphone goes along automatically (default on, 3.59). */
+  micFollowsSoundboard?: boolean;
   micDeviceId?: string | null;
   micVolume: number;
   playMode: "overlap" | "queue" | "replace";

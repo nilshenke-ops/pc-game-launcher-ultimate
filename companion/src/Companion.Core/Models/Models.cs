@@ -275,6 +275,11 @@ public sealed class AudioSettings
     public string? MonitorDeviceId { get; set; }
     public int MonitorVolume { get; set; } = 60;
     public bool MicPassthrough { get; set; }
+    /// <summary>
+    /// While the soundboard plays into a virtual cable (the Discord way), the own microphone always goes with it – also when
+    /// the passthrough switch is off. Otherwise friends in Discord hear only the sounds and not the person (3.59).
+    /// </summary>
+    public bool MicFollowsSoundboard { get; set; } = true;
     public string? MicDeviceId { get; set; }
     public int MicVolume { get; set; } = 100;
     /// <summary>"overlap" plays sounds simultaneously, "queue" one after another, "replace" stops the previous one.</summary>

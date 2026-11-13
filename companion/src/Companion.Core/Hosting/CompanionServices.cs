@@ -352,14 +352,21 @@ public sealed class CompanionServices : IAsyncDisposable
         {
             History.SessionStarted(item, at, Sessions.LastScanAccuracy);
             Perf.GameStarted(item.Id);
+            // Already running when the companion started (a restart, Windows autostart): shown as running, but no profile
+            // switch with its programs, no automation and no game mode – otherwise every start of the companion opened and
+            // closed programs on its own.
+            var initial = Sessions.InitialScan;
+            var realGame = IsRealGame(item);
             var p = Profiles.Get();
             var profileId = ProfileFor(item, p);
-            if (p.AutoSwitch && profileId != null && p.ActiveProfileId != profileId)
-                Profiles.Activate(profileId, $"Spiel gestartet: {item.Name}");
+            if (!initial && p.AutoSwitch && profileId != null && p.ActiveProfileId != profileId)
+                Profiles.Activate(profileId, $"{(realGame ? "Spiel" : "Programm")} gestartet: {item.Name}");
             Rpc.Broadcast("session", RunningInfo());
             Activity.GameChanged();
-            _ = Automations.FireItem(item, started: true);
-            _ = GameModePrograms.GameStartedAsync();
+            if (!initial) _ = Automations.FireItem(item, started: true);
+            // Game mode closes programs only for a real game – never because Discord, a browser or another program from the
+            // library started (that closed and reopened programs in a loop).
+            if (!initial && realGame) _ = GameModePrograms.GameStartedAsync();
             UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs") _ = ObsReplayBuffer(true);
         };
@@ -384,7 +391,8 @@ public sealed class CompanionServices : IAsyncDisposable
             Rpc.Broadcast("session", RunningInfo());
             Activity.GameChanged();
             _ = Automations.FireItem(item, started: false);
-            if (Sessions.Running().Count == 0) _ = GameModePrograms.AllGamesStoppedAsync();
+            // Reopen what game mode closed only when the last real game ended (programs that still run do not matter).
+            if (IsRealGame(item) && !GameRunning()) _ = GameModePrograms.AllGamesStoppedAsync();
             GameActivity.RunWhenIdle("quests", () => { try { Quests.Get(); } catch (Exception ex) { Log.Warn("quests", ex.Message); } return Task.CompletedTask; });
             UpdateGameMode();
             if (Settings.Get() is { ObsReplayWhilePlaying: true } st && CaptureService.ProviderFor(st, "replay") == "obs" && Sessions.Running().Count == 0) _ = ObsReplayBuffer(false);
@@ -612,6 +620,7 @@ public sealed class CompanionServices : IAsyncDisposable
             Notifications.Push("audio-missing", Severity.Warning, "Audiogerät fehlt", string.Join(", ", missing) + " nicht gefunden.", "/audio");
             _ = Automations.Fire(TriggerType.AudioDeviceMissing, null);
         });
+        GameModePrograms.ForgetStaleClosed();
         Sessions.Start();
         LanAddress.Start();
         if (Settings.Get().LanAccess) Mdns.Start();
@@ -683,7 +692,9 @@ public sealed class CompanionServices : IAsyncDisposable
     /// mode, smaller memory footprint). While the large overlay is open, the companion runs normally so it reacts at once.
     /// </summary>
     /// <summary>A game from the library runs – a live wallpaper (Wallpaper Engine …) does not count, it is running all day.</summary>
-    public bool GameRunning() => Sessions.Running().Any(r => Library.Get(r.itemId) is { Kind: ItemKind.Game } it && !AmbientApps.IsAmbient(it.Name));
+    public bool GameRunning() => Sessions.Running().Any(r => Library.Get(r.itemId) is { } it && IsRealGame(it));
+    /// <summary>A game from the library – not a program and not a background app such as Wallpaper Engine.</summary>
+    public static bool IsRealGame(LibraryItem it) => it.Kind == ItemKind.Game && !AmbientApps.IsAmbient(it.Name);
 
     /// <summary>
     /// Where the island window shows. In front of the companion's own window it never shows (the island in the app is there):

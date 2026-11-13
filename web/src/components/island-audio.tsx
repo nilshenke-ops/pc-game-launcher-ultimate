@@ -5,10 +5,12 @@ import { Camera, CameraOff, Headphones, Mic, MicOff, Monitor, Play, Volume2 } fr
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useEvent, useRpc } from "../lib/hooks";
-import type { AudioDevice } from "../lib/types";
+import type { AudioDevice, AudioSettings } from "../lib/types";
+import { micGoesAlong, outputIsCable, voiceMissing } from "../lib/discord-check";
+import { MicRescueActions } from "./mic-rescue";
 import type { usePcControls, usePcSensors } from "./island-extra";
 
-interface AudioState { supported: boolean; unsupportedReason?: string; devices: AudioDevice[] }
+interface AudioState { supported: boolean; unsupportedReason?: string; devices: AudioDevice[]; settings?: AudioSettings; micPassthroughActive?: boolean }
 interface MicTestResult { peak: number; verdict: "silent" | "quiet" | "ok" | "clipping" }
 const VERDICT: Record<MicTestResult["verdict"], string> = {
   silent: "Nichts zu hören – ist das Mikrofon stumm oder ein anderes gewählt?",
@@ -76,6 +78,13 @@ export function IslandAudio({ online, canUse, canManage, controls, sensors }: {
           action={defMic && <button type="button" className="isl3-chipbtn" disabled={!canManage || !!testing} onClick={() => void micTest(defMic)}>{testing ? t("Hört zu …") : t("Testen")}</button>} />
         {result && <span className={`isl3-verdict ${result.r.verdict}`} role="status">{t(VERDICT[result.r.verdict])}</span>}
         {vol != null && <span className="isl3-callvol"><Volume2 size={13} aria-hidden /><span className="isl3-hbar sm" style={{ ["--v" as string]: c?.muted ? 0 : vol } as React.CSSProperties}><span className="isl3-hfill" aria-hidden /><input type="range" min={0} max={100} value={vol} disabled={!canUse} aria-label={t("Lautstärke am PC")} onChange={(e) => sendVol(Number(e.target.value))} /></span><i>{c?.muted ? t("Stumm") : `${vol} %`}</i></span>}
+        {st.data?.settings && outputIsCable(st.data.settings, devices) && (voiceMissing(st.data.settings, devices, !!st.data.micPassthroughActive)
+          ? <div className="isl3-discord bad" role="alert">
+              <b>{t("Discord hört dich nicht")}</b>
+              <span className="isl2-sub">{micGoesAlong(st.data.settings, devices) ? t("Dein Mikrofon läuft gerade nicht mit ins Kabel.") : t("Nur die Sounds gehen ins Kabel, deine Stimme nicht.")}</span>
+              <MicRescueActions compact settings={st.data.settings} canManage={canManage} onDone={st.reload} />
+            </div>
+          : <div className="isl3-discord ok"><b>{t("Discord: Stimme + Sounds")}</b><span className="isl2-sub">{t("Dein Mikrofon läuft mit ins Kabel.")}</span></div>)}
         <CameraCheck />
       </div>
     </div>

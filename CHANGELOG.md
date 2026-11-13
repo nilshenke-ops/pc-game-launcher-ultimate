@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.58.1 – 2026-11-13
+### Behoben
+- **Beim Start des Begleiters gingen viele Programme auf und der PC wurde langsam.** Ursache war eine Schleife im Spielmodus („Programme beim Spielen schließen und danach wieder öffnen“):
+  - Er sprang auch an, wenn nur ein normales Programm aus der Bibliothek lief (z. B. Discord oder eine automatisch übernommene Startmenü-App) – nicht nur bei Spielen. Er schloss dann Programme, meldete „kein Spiel mehr“ und öffnete alles wieder, was wieder als Start zählte.
+  - Jetzt schließt und öffnet der Spielmodus nur noch wegen echter Spiele (Hintergrund-Apps wie Wallpaper Engine zählen nicht).
+  - Was beim Start des Begleiters schon läuft, gilt nicht mehr als „gerade gestartet“: kein Profilwechsel mit seinen Programmen, keine Automation, kein Spielmodus. Es wird nur als „läuft“ angezeigt.
+  - Programme, die ein früherer Lauf für ein Spiel geschlossen hatte, werden nach einem Neustart nicht mehr irgendwann von selbst geöffnet.
+- **Mit dem Soundboard für Discord konnte man nicht mehr reden.** Spielte das Soundboard ins virtuelle Kabel, ging nur der Sound hinein und nicht die eigene Stimme, solange die Mikrofon-Durchleitung aus war.
+  - Neu: **„Meine Stimme automatisch mitsenden“** (an, auch für bestehende Einstellungen). Sobald das Soundboard ins Kabel spielt, läuft dein echtes Mikrofon mit hinein. Deine Freunde hören dich und die Sounds.
+  - Als Mikrofon nimmt der PC nie das Kabel selbst, auch wenn Windows über „CABLE Output“ aufnimmt oder es so gewählt war. Dann hörte sich das Kabel nur selbst. Er nimmt dein echtes Mikrofon.
+  - Neu: **„Mikrofon wiederherstellen“** im Audio Center. Ein Tipp stellt alles auf normal: Das Soundboard spielt wieder auf deinem Standardgerät, und nimmt Windows über das Kabel auf oder spielt darüber ab, kommt wieder dein echtes Mikrofon bzw. deine Lautsprecher. Nur das Eingabegerät in Discord muss man selbst zurückstellen; das kann keine App von außen.
+  - Hört Discord dich gerade nicht, sagen es das Audio Center und der Audio-Bereich der Insel deutlich und bieten beide Knöpfe an.
+### Hinweise
+- Mikrofon-Weg und Zurückstellen der Windows-Standardgeräte sind für den Windows-Begleiter gebaut und mit Tests geprüft, aber nicht auf einem echten Windows-PC mit Discord ausprobiert.
+
 ## 3.58.0 – 2026-11-13
 ### Neu
 - **Was am meisten verbraucht:** Im System-Bereich der Insel (und in der System-Kachel) auf CPU oder Arbeitsspeicher tippen. Es erscheint die Liste der Programme, die gerade am meisten brauchen, das meiste oben.

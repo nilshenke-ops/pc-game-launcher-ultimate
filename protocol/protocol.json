@@ -245,6 +245,7 @@
 
     "audio.state": "view",
     "audio.save": "manage",
+    "audio.resetRouting": "manage",
     "audio.testTone": "soundboard",
     "audio.diagnose": "view",
     "audio.micTest": "manage",

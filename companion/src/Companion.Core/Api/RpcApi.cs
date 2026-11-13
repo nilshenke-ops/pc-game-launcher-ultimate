@@ -207,7 +207,7 @@ public static class RpcApi
                 {
                     supported = s.Audio.Engine.Supported,
                     output = audio.OutputDeviceId == null ? "Windows-Standardgerät" : devices.FirstOrDefault(d => d.Id == audio.OutputDeviceId)?.Name ?? "Gerät fehlt",
-                    mic = audio.MicPassthrough ? (s.Audio.Engine.MicPassthroughActive ? "Durchleitung aktiv" : "Durchleitung gestört") : "Nicht durchgeleitet",
+                    mic = AudioService.MicWanted(audio, devices) ? (s.Audio.Engine.MicPassthroughActive ? "Durchleitung aktiv" : "Durchleitung gestört") : "Nicht durchgeleitet",
                     volume = audio.SoundboardVolume,
                     missing = AudioService.MissingDevices(audio, devices),
                 },
@@ -680,6 +680,7 @@ public static class RpcApi
         // ------------------------------------------------------------ audio
         rpc.Register("audio.state", ctx => s.Audio.State());
         rpc.Register("audio.save", ctx => s.Audio.Save(ctx.Bind<AudioSettings>()));
+        rpc.Register("audio.resetRouting", ctx => s.Audio.ResetRouting((id, flow) => s.Platform.Controls.SetDefaultDevice(id, flow)));
         rpc.Register("audio.testTone", ctx =>
         {
             int? volume = ctx.Params.TryGetProperty("volume", out var v) && v.ValueKind == System.Text.Json.JsonValueKind.Number ? v.GetInt32() : null;

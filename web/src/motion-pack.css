@@ -1091,3 +1091,12 @@ button.isl3-pill { cursor: pointer; }
 .isl3-ext .isl3-seg button.on { background: color-mix(in srgb, currentColor 16%, transparent); }
 .isl3-tog.radio.on { --isl-c: #3b82f6; }
 .isl3-tog.radio.on .isl3-togic { color: #fff; }
+
+/* ---------------- 3.59: Discord way in the island's audio area ---------------- */
+.isl3-discord { display: grid; gap: 4px; padding: 9px 11px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); }
+.isl3-discord b { font-size: 13px; }
+.isl3-discord.ok b::before { content: "✓ "; color: #4ade80; }
+.isl3-discord.bad { background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.35); }
+.isl3-discord.bad b { color: #fda4af; }
+.isl3-rescue { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.isl3-rescue .isl3-chipbtn { display: inline-flex; align-items: center; gap: 5px; }

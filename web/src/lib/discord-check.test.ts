@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { discordSteps } from "./discord-check";
+import { discordSteps, micGoesAlong, voiceMissing } from "./discord-check";
 import type { AudioDevice, AudioSettings } from "./types";
 
 const dev = (id: string, flow: "render" | "capture", cable = false, def = false): AudioDevice => ({ id, name: id, flow, isVirtualCable: cable, isDefault: def });
@@ -16,10 +16,22 @@ describe("Discord-Check", () => {
     const s = { ...base, outputDeviceId: "CABLE Input", micPassthrough: true, micDeviceId: "Headset-Mikro", monitorEnabled: true, monitorDeviceId: "Kopfhörer" };
     expect(discordSteps(s, devices).map((x) => x.state)).toEqual(["ok", "ok", "ok", "ok", "unknown"]);
   });
-  it("erkennt das Kabel als falsches Mikrofon", () => {
+  it("nimmt nie das Kabel als Mikrofon, sondern das echte (wie der PC)", () => {
     const s = { ...base, micPassthrough: true, micDeviceId: "CABLE Output" };
     const d = [...devices, dev("CABLE Output", "capture", true)];
-    expect(discordSteps(s, d)[2]).toMatchObject({ state: "todo" });
-    expect(discordSteps(s, d)[2].detail).toContain("Headset-Mikrofon");
+    expect(discordSteps(s, d)[2]).toMatchObject({ state: "ok" });
+    expect(discordSteps(s, d)[2].detail).toContain("Headset-Mikro");
+    expect(discordSteps(s, d)[2].detail).toContain("statt des Kabels");
+    expect(discordSteps(s, [dev("CABLE Output", "capture", true)])[2].state).toBe("todo"); // no real microphone at all
+  });
+  it("Soundboard im Kabel: die eigene Stimme läuft automatisch mit", () => {
+    const s = { ...base, outputDeviceId: "CABLE Input" };
+    expect(micGoesAlong(s, devices)).toBe(true);
+    expect(discordSteps(s, devices)[2].state).toBe("ok");
+    expect(micGoesAlong({ ...s, micFollowsSoundboard: false }, devices)).toBe(false);
+    // The PC reports the passthrough as not running → "Discord hört dich nicht" with the repair button.
+    expect(voiceMissing(s, devices, false)).toBe(true);
+    expect(voiceMissing(s, devices, true)).toBe(false);
+    expect(voiceMissing(base, devices, false)).toBe(false); // soundboard not in the cable: Discord uses the real mic anyway
   });
 });
