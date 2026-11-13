@@ -1,0 +1,125 @@
+{
+  "at": "2026-11-13T21:47:57.416Z",
+  "note": "Headless Chromium mit Software-Rendering im Test-Container; Begleiter = Headless-Version unter Linux. Vorher/Nachher nur auf derselben Maschine vergleichbar.",
+  "bundle": {
+    "initialFiles": 3,
+    "initialKb": 1306,
+    "initialGzipKb": 394,
+    "chunks": 197,
+    "totalKb": 4121
+  },
+  "firstLoadMs": 328,
+  "navigation": {
+    "domContentLoadedMs": 82,
+    "loadMs": 82,
+    "fcpMs": 300
+  },
+  "heapStartMb": 5.2,
+  "idleHome": {
+    "taskMsPerSec": 19.9,
+    "scriptMsPerSec": 2,
+    "layoutsPerSec": 1.2,
+    "styleRecalcsPerSec": 17.6,
+    "wsFramesPerMin": 57
+  },
+  "idleHomeAfter60s": {
+    "taskMsPerSec": 6.2,
+    "scriptMsPerSec": 1.1,
+    "layoutsPerSec": 1.05,
+    "styleRecalcsPerSec": 3.55,
+    "wsFramesPerMin": 48
+  },
+  "pageSwitchMs": {
+    "/ (erstes Mal)": 104,
+    "/games (erstes Mal)": 105,
+    "/apps (erstes Mal)": 91,
+    "/soundboard (erstes Mal)": 121,
+    "/assistant (erstes Mal)": 82,
+    "/audio (erstes Mal)": 72,
+    "/monitor (erstes Mal)": 76,
+    "/deals (erstes Mal)": 104,
+    "/settings (erstes Mal)": 84,
+    "/automations (erstes Mal)": 76,
+    "/files (erstes Mal)": 44,
+    "/overlay-settings (erstes Mal)": 72,
+    "/profiles (erstes Mal)": 73,
+    "/library (erstes Mal)": 73,
+    "/": 102,
+    "/games": 120,
+    "/apps": 114,
+    "/soundboard": 108,
+    "/assistant": 110,
+    "/audio": 92,
+    "/monitor": 94,
+    "/deals": 116,
+    "/settings": 114,
+    "/automations": 175,
+    "/files": 97,
+    "/overlay-settings": 115,
+    "/profiles": 100,
+    "/library": 114
+  },
+  "heapAfter45SwitchesMb": 7.9,
+  "idleSoundboard": {
+    "taskMsPerSec": 2.9,
+    "scriptMsPerSec": 0.1,
+    "layoutsPerSec": 0.47,
+    "styleRecalcsPerSec": 2.67,
+    "wsFramesPerMin": 16
+  },
+  "idleMonitor": {
+    "taskMsPerSec": 10.3,
+    "scriptMsPerSec": 1.8,
+    "layoutsPerSec": 0.93,
+    "styleRecalcsPerSec": 7.8,
+    "wsFramesPerMin": 88
+  },
+  "idleIslandClosed": {
+    "taskMsPerSec": 2.2,
+    "scriptMsPerSec": 0.3,
+    "layoutsPerSec": 0.67,
+    "styleRecalcsPerSec": 3.87,
+    "wsFramesPerMin": 16
+  },
+  "islandOpenClose": [
+    {
+      "frames": 179,
+      "avgFps": 60,
+      "p95FrameMs": 16.8,
+      "drops": 0,
+      "longest": 16.8
+    },
+    {
+      "frames": 179,
+      "avgFps": 60,
+      "p95FrameMs": 16.7,
+      "drops": 0,
+      "longest": 16.8
+    },
+    {
+      "frames": 179,
+      "avgFps": 60,
+      "p95FrameMs": 16.8,
+      "drops": 0,
+      "longest": 16.8
+    }
+  ],
+  "idleIslandOpen": {
+    "taskMsPerSec": 17.8,
+    "scriptMsPerSec": 4,
+    "layoutsPerSec": 0.73,
+    "styleRecalcsPerSec": 24.67,
+    "wsFramesPerMin": 80
+  },
+  "idleIslandOpenAfter45s": {
+    "taskMsPerSec": 7.4,
+    "scriptMsPerSec": 3.8,
+    "layoutsPerSec": 0.6,
+    "styleRecalcsPerSec": 3.87,
+    "wsFramesPerMin": 72
+  },
+  "companionIdle": {
+    "cpuPercentOfOneCore": 0.1,
+    "rssMb": 162
+  }
+}

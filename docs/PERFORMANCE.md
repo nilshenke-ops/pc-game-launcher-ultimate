@@ -251,3 +251,36 @@ Gemessen mit dem Headless-Begleiter und der Entwickler-Testquelle (Linux, 960×5
 
 Beim Messen gefunden und behoben: ohne Änderung im Bild wurde trotzdem mit voller Bildrate aufgenommen (81 % CPU) → jetzt 4 Aufnahmen/s, bis sich etwas ändert oder eine Eingabe kommt. Große Bilddaten bleiben nach der Sitzung nicht mehr im Speicher (einmaliges Aufräumen des Large Object Heap).
 **Nicht gemessen:** Windows-Bildschirmaufnahme (GDI + JPEG) und Bildrate/CPU/GPU auf dem echten PC; End-to-End-Verzögerung auf echtem iPhone/iPad.
+
+## 3.61.0 (13.11.2026) – Leerlauf-Last, Daueranimationen
+
+**Werkzeug:** `web/e2e/perf-measure.spec.ts` (nur mit `PGL_PERF=<datei.json>`), Rohdaten in `docs/perf/vorher-3.60.0.json` und `docs/perf/nach-3.61.json`. Beide Läufe: gleiche Maschine, gleicher Headless-Chromium (Software-Rendering, `--disable-gpu-compositing`), gleicher Headless-Begleiter. Absolutwerte sind auf einem echten PC mit Grafikkarte anders; der Vergleich vorher/nachher gilt für diese Umgebung.
+
+**Befund (vorher):** Im Leerlauf rechnete die Seite ständig – die geöffnete Insel 60-mal pro Sekunde (jedes Bild). Ein Experiment mit allen CSS-Animationen angehalten zeigte die Ursache: Startseite 28,4 → 9,7 ms/s, geschlossene Insel 10,3 → 1,8 ms/s. Es waren Endlos-Animationen: die Augen (Blinzeln, Blicke, „Atmen“), Leucht-Effekte mit `box-shadow`/`filter`/`background-position` (Kopfleisten-Linie, Verbindungs-Anzeige, JARVIS-Kugel, Fokus-Ring, Mikrofon-Anzeige) und der Glanz der Messbalken, der bei jeder Aktualisierung neu startete.
+
+**Änderung:**
+- **Augen:** Ein einziger Zeitgeber (`lib/eye-life.ts`) löst alle 3,5–8 Sekunden einen kurzen Moment aus (Blinzeln, Doppelblinzeln, Blick links oder rechts). Dazwischen läuft nichts. Er pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“.
+- **Leucht-Effekte:** Sie laufen nur noch begrenzt oft und ruhen dann. Fokus-Ring und JARVIS-Kugel leuchten fest und bewegen nur noch die Größe.
+- **Glanz der Messbalken:** nur noch beim Darüberfahren.
+- Kurze Zustände (Aufnahme, Wecken, Laden, Denken) behalten ihre Animation.
+
+| Leerlauf (nichts berührt) | Arbeit ms/s | Stil-Neuberechnungen/s | Nachrichten/min |
+|---|---|---|---|
+| Startseite, 3–23 s nach dem Laden | 31.5 → **19.9** | 17.85 → **17.6** | 57 → 57 |
+| Startseite nach 1 Minute Ruhe | 28.7 → **6.2** | 19.7 → **3.55** | 48 → 48 |
+| Soundboard | 15.2 → **2.9** | 17.27 → **2.67** | 16 → 16 |
+| PC-Monitor (Live-Werte) | 23.1 → **10.3** | 15.6 → **7.8** | 88 → 88 |
+| Insel geschlossen | 5.1 → **2.2** | 15.73 → **3.87** | 16 → 16 |
+| Insel offen, direkt nach dem Öffnen | 38 → **17.8** | 60.07 → **24.67** | 80 → 80 |
+| Insel offen nach 45 s | 37.6 → **7.4** | 60 → **3.87** | 72 → 72 |
+
+**Insel öffnen und schließen** (drei Läufe):
+- Vorher: 60 FPS / 0 Aussetzer / längstes Bild 16.8 ms, 60 FPS / 0 Aussetzer / längstes Bild 16.8 ms, 60 FPS / 0 Aussetzer / längstes Bild 16.8 ms.
+- Nachher: 60 FPS / 0 Aussetzer / längstes Bild 16.8 ms, 60 FPS / 0 Aussetzer / längstes Bild 16.8 ms, 60 FPS / 0 Aussetzer / längstes Bild 16.8 ms.
+
+**Weitere Werte:**
+- **Speicher (JS-Heap nach Speicherbereinigung):** vorher 5.3 MB → nach 45 Seitenwechseln 7.9 MB; nachher 5.2 → 7.9 MB. Der Zuwachs von etwa 2,6 MB kommt vom nachgeladenen Code der besuchten Seiten. Er ist vorher und nachher gleich; ein Leck, das mit jedem Wechsel wächst, zeigt sich nicht (eine Langzeitmessung über Stunden steht noch aus).
+- **Begleiter im Leerlauf:** vorher 0.1 % eines Kerns und 163.8 MB; nachher 0.1 % und 162 MB. Unverändert, war schon niedrig.
+- **Start-Code:** 394 KB (gzip), 197 nachgeladene Teile. Wird in einem späteren Schritt angegangen.
+
+**Nicht gemessen (braucht echte Hardware):** GPU-Last und Bildrate im WebView2-Fenster auf einem Windows-PC mit Grafikkarte, während ein Spiel läuft; Akku und Wärme auf iPhone und iPad.

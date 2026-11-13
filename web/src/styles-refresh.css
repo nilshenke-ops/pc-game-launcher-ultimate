@@ -137,7 +137,7 @@ h3 { letter-spacing: -0.012em; }
   content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(var(--primary-rgb), 0.55), rgba(var(--accent-rgb), 0.45), transparent);
   background-size: 220% 100%; opacity: 0.45;
-  animation: nx-topbar-line 18s linear infinite;
+  animation: nx-topbar-line 18s linear 2; /* runs over twice, then rests – no endless repaint */
 }
 @keyframes nx-topbar-line { from { background-position: -20% 0; } to { background-position: 220% 0; } }
 
@@ -253,8 +253,10 @@ button.list-item:active { transform: translateX(1px) scale(0.998); }
   content: ""; position: absolute; inset: 0;
   background: linear-gradient(100deg, transparent 28%, rgba(255, 255, 255, 0.34) 50%, transparent 72%);
   transform: translateX(-100%);
-  animation: nx-bar-sheen 3.2s ease-in-out infinite;
 }
+/* 3.61: the sheen runs once when the pointer is over the bar or its card – not by itself (no cost while nothing is touched). */
+:root:not([data-motion="reduce"]) .card:hover .meter > i::after, :root:not([data-motion="reduce"]) .meter:hover > i::after,
+:root:not([data-motion="reduce"]) .card:hover .progress-bar > i::after { animation: nx-bar-sheen 1.8s ease-in-out 1; }
 @keyframes nx-bar-sheen {
   0%, 42% { transform: translateX(-100%); }
   82%, 100% { transform: translateX(100%); }
@@ -281,7 +283,7 @@ button.list-item:active { transform: translateX(1px) scale(0.998); }
 .conn-pill .dot.ok::after {
   content: ""; position: absolute; inset: -3px; border-radius: 50%;
   border: 1px solid currentColor; color: var(--success); opacity: 0;
-  animation: nx-ring 2.6s ease-out infinite;
+  animation: nx-ring 2.6s ease-out 4;
 }
 @keyframes nx-ring {
   0% { transform: scale(0.7); opacity: 0.7; }

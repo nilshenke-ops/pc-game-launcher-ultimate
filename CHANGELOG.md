@@ -4,6 +4,24 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.61.0 – 2026-11-13
+### Verbessert
+- **Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`):
+  - Startseite nach einer Minute Ruhe: 28,7 → 6,2 ms Arbeit pro Sekunde.
+  - Geöffnete Insel nach 45 Sekunden: 37,6 → 7,4 ms; vorher wurde jedes Bild neu berechnet, jetzt 3,9-mal pro Sekunde.
+  - Soundboard: 15,2 → 2,9 ms.
+  - Geschlossene Insel: 5,1 → 2,2 ms. Das ist wichtig, weil sie beim Spielen sichtbar ist.
+  - Öffnen und Schließen der Insel bleibt bei 60 Bildern pro Sekunde ohne Aussetzer.
+- **Die Augen leben weiter, ohne Daueranimation.** Alle paar Sekunden blinzeln sie oder schauen kurz zur Seite, dazwischen ruht alles. Das pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“.
+- **Leucht-Effekte ruhen nach ein paar Durchgängen:**
+  - Linie in der Kopfleiste, Verbindungsanzeige, Status-Punkte, Mikrofon-Anzeige: laufen ein paar Mal, dann still.
+  - JARVIS-Kugel und Fokus-Ring: leuchten fest und bewegen nur noch ihre Größe.
+  - Glanz der Messbalken: nur noch beim Darüberfahren.
+  - Kurze Zustände (Aufnahme, Wecken, Laden, JARVIS denkt) behalten ihre Animation.
+- Neues Messwerkzeug `web/e2e/perf-measure.spec.ts` für Vorher/Nachher-Vergleiche (läuft nur auf Wunsch).
+### Hinweise
+- Gemessen in einem Testbrowser ohne Grafikkarte. Auf einem echten PC sind die Absolutwerte anders, die Richtung gilt. GPU-Last im Spiel und Akku auf iPhone/iPad sind nicht gemessen.
+
 ## 3.60.0 – 2026-11-13
 ### Neu
 - **Datei-Ablage in der Insel (neuer Bereich „Ablage“).** Dateien auf die Insel ziehen – auch auf die geschlossene: Sie öffnet sich bei der Ablage, und die Dateien gehen in den Austausch-Ordner am PC.

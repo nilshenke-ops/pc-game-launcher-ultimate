@@ -108,6 +108,9 @@ test("Messung: Bündel, Seitenwechsel, Leerlauf, Insel-Bildrate, Speicher, Begle
   await page.waitForTimeout(3000);
   result.heapStartMb = +((await heapAfterGc(cdp)) / 1048576).toFixed(1);
   result.idleHome = await idleCpu(page, cdp, 20);
+  // The same page after a minute without touching it (effects that run a limited number of times are over by then).
+  await page.waitForTimeout(40000);
+  result.idleHomeAfter60s = await idleCpu(page, cdp, 20);
 
   // Page changes inside the app (hash routes): time until the new page has drawn (two animation frames after the route changed).
   const switches: Record<string, number> = {};
@@ -153,6 +156,8 @@ test("Messung: Bündel, Seitenwechsel, Leerlauf, Insel-Bildrate, Speicher, Begle
   await ip.getByRole("button", { name: "JARVIS-Insel öffnen" }).click();
   await ip.waitForTimeout(2000);
   result.idleIslandOpen = await idleCpu(ip, icdp, 15);
+  await ip.waitForTimeout(30000);
+  result.idleIslandOpenAfter45s = await idleCpu(ip, icdp, 15);
   await ictx.close();
 
   result.companionIdle = await companionIdle(20);

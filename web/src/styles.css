@@ -1683,13 +1683,13 @@ select.input.studio-tpl { width: auto; min-height: 34px; }
 .jv-orb { position: relative; width: 64px; height: 64px; flex: 0 0 64px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #e0fbff 0%, rgb(var(--primary-rgb)) 38%, rgba(var(--primary-rgb), 0.15) 70%, transparent 72%); box-shadow: 0 0 28px rgba(var(--primary-rgb), 0.55); }
 .jv-orb i { position: absolute; inset: -6px; border-radius: 50%; border: 2px solid rgba(var(--primary-rgb), 0.45); opacity: 0; }
 .jv-off .jv-orb { filter: grayscale(0.9); opacity: 0.6; box-shadow: none; }
-.jv-ready .jv-orb { animation: jv-breathe 4s ease-in-out infinite; }
+.jv-ready .jv-orb { animation: jv-breathe 4s ease-in-out 3; }
 .jv-thinking .jv-orb { animation: jv-spin 1.6s linear infinite; background: conic-gradient(from 0deg, rgb(var(--primary-rgb)), #a78bfa, rgb(var(--primary-rgb))); }
 .jv-listening .jv-orb i, .jv-speaking .jv-orb i { animation: jv-ring 1.4s ease-out infinite; }
 .jv-listening .jv-orb i:nth-child(2), .jv-speaking .jv-orb i:nth-child(2) { animation-delay: 0.45s; }
 .jv-listening .jv-orb i:nth-child(3), .jv-speaking .jv-orb i:nth-child(3) { animation-delay: 0.9s; }
 .jv-listening .jv-orb { background: radial-gradient(circle at 35% 30%, #fff 0%, #f472b6 40%, rgba(244, 114, 182, 0.15) 70%, transparent 72%); }
-@keyframes jv-breathe { 50% { transform: scale(1.06); box-shadow: 0 0 40px rgba(var(--primary-rgb), 0.7); } }
+@keyframes jv-breathe { 50% { transform: scale(1.06); } }
 @keyframes jv-spin { to { transform: rotate(360deg); } }
 @keyframes jv-ring { from { opacity: 0.8; transform: scale(0.9); } to { opacity: 0; transform: scale(1.5); } }
 @media (prefers-reduced-motion: reduce) { .jv-orb, .jv-orb i { animation: none !important; } }
@@ -1824,7 +1824,7 @@ html.island-mode .app-bg { display: none; }
 
 /* The eyes: two glowing ovals – they blink, squint when happy, look around while thinking, grow when asking. */
 .isl-eyes { display: inline-flex; gap: 8px; align-items: center; flex: none; cursor: pointer; padding: 4px 2px; }
-.isl-eyes i { display: block; width: 8px; height: 14px; border-radius: 99px; background: var(--isl-c, #9ef0c8); box-shadow: 0 0 8px var(--isl-c, #9ef0c8); animation: isl-blink 5.5s infinite; transform-origin: center; }
+.isl-eyes i { display: block; width: 8px; height: 14px; border-radius: 99px; background: var(--isl-c, #9ef0c8); box-shadow: 0 0 8px var(--isl-c, #9ef0c8); animation: var(--eye-life, none); transform-origin: center; }
 .isl-eyes.big { gap: 14px; }
 .isl-eyes.big i { width: 14px; height: 26px; }
 .isl-eyes.m-thinking i { animation: isl-look 1.6s ease-in-out infinite; }
@@ -1860,9 +1860,9 @@ html.island-mode .app-bg { display: none; }
 /* Pet moods (eyes) */
 .isl-eyes.m-dancing i { background: var(--isl-c, #ff6b81); box-shadow: 0 0 10px var(--isl-c, #ff6b81); animation: isl-dance .5s ease-in-out infinite alternate; }
 .isl-eyes.m-dancing i:last-child { animation-delay: .25s; }
-.isl-eyes.m-gaming i { height: 9px; width: 12px; background: #a78bfa; box-shadow: 0 0 12px #a78bfa; animation: isl-gaze 2.4s ease-in-out infinite; }
+.isl-eyes.m-gaming i { height: 9px; width: 12px; background: #a78bfa; box-shadow: 0 0 12px #a78bfa; animation: var(--eye-life, none); }
 .isl-eyes.big.m-gaming i { height: 16px; width: 24px; }
-.isl-eyes.m-sleeping i { height: 3px; width: 11px; background: #7a8aa5; box-shadow: none; animation: isl-breathe-eye 4s ease-in-out infinite; }
+.isl-eyes.m-sleeping i { height: 3px; width: 11px; background: #7a8aa5; box-shadow: none; opacity: .7; animation: var(--eye-life, none); }
 .isl-eyes.big.m-sleeping i { height: 5px; width: 22px; }
 .isl-eyes.m-surprised i { width: 13px; height: 17px; background: #7cf5ff; box-shadow: 0 0 12px #7cf5ff; animation: isl-pop .35s ease-out; }
 .isl-eyes.big.m-surprised i { width: 24px; height: 30px; }
@@ -2285,7 +2285,7 @@ html[data-nav-plain] .nav-link svg { color: currentColor; }
 .isl-ripple { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px; border-radius: 50%; background: rgba(255,255,255,0.28); pointer-events: none; animation: isl-tap .6s ease-out both; }
 @keyframes isl-tap { to { transform: scale(16); opacity: 0; } }
 /* alive when nothing happens: the eyes glance around now and then and breathe */
-.isl-host.h-idle .isl-eyes:not(.big) { animation: isl-saccade 9s ease-in-out infinite, isl-breathe-s 4.5s ease-in-out infinite; }
+/* 3.61: no endless saccade/breathing – glances and blinks are one-shot moments (lib/eye-life.ts). */
 @keyframes isl-saccade { 0%, 38%, 100% { translate: 0 0; } 42%, 50% { translate: -3px 0; } 54%, 62% { translate: 3px -1px; } 66% { translate: 0 0; } }
 @keyframes isl-breathe-s { 0%, 100% { scale: 1; } 50% { scale: 1.07; } }
 .isl-robot.m-idle .isl-head { animation: isl-bob 3.2s ease-in-out infinite; }
@@ -3085,7 +3085,7 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
   .qa-tile:hover, .game-card:hover, .pad:hover { transform: translateY(-4px) scale(1.01); }
   .nav-link:hover { transform: translateX(2px); }
   .chip:not(:disabled):hover { transform: translateY(-1px); }
-  .badge.ok { animation: m-breathe 3.6s ease-in-out infinite; }
+  .badge.ok { animation: m-breathe 3.6s ease-in-out 3; }
 }
 .nav-link { transition: transform 0.18s var(--ease), background 0.18s var(--ease), color 0.18s var(--ease); }
 
@@ -3095,8 +3095,9 @@ select.input option, select.input optgroup { background-color: var(--surface-2);
 @media (hover: hover) { .btn:not(:disabled):hover { box-shadow: 0 10px 26px -16px rgba(var(--primary-rgb), 0.8); } }
 
 /* Soft glow on things that are alive: live badges, playing pads, the JARVIS orb. */
-.pad.playing, .pill.live, .conn-pill.ok { animation: m-soft-glow 3.2s ease-in-out infinite; }
-.state-icon { animation: m-pop-in 0.4s var(--ease) both, m-soft-glow 4.4s ease-in-out 0.4s infinite; }
+.pad.playing, .pill.live { animation: m-soft-glow 3.2s ease-in-out infinite; }
+.conn-pill.ok { animation: m-soft-glow 3.2s ease-in-out 2; } /* connected: glows twice, then rests (no endless repaint) */
+.state-icon { animation: m-pop-in 0.4s var(--ease) both, m-soft-glow 4.4s ease-in-out 0.4s 2; }
 .meter > i { background-size: 220% 100%; }
 
 /* Rows of a table/list ease in and slide a little when hovered. */

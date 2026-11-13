@@ -195,8 +195,8 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 
 /* ================================================================ The small module: eyes that live, and more to see when it opens and closes */
 /* Resting: the eyes look left, blink, look right, blink twice – not just one blink. */
-:root:not([data-motion="reduce"]) .isl-host.v2 .isl-eyes.m-idle i { animation: eye-reopen .6s var(--out-expo) .62s backwards, eye-life 11s ease-in-out 1.4s infinite; }
-:root:not([data-motion="reduce"]) .isl-host.v2 .isl-eyes.m-idle i:last-child { animation-delay: .66s, 1.43s; }
+:root:not([data-motion="reduce"]) .isl-host.v2 .isl-eyes.m-idle i { animation: eye-reopen .6s var(--out-expo) .62s backwards, var(--eye-life, none); }
+:root:not([data-motion="reduce"]) .isl-host.v2 .isl-eyes.m-idle i:last-child { animation-delay: .66s, .03s; }
 @keyframes eye-life {
   0%, 12% { transform: translate(0, 0) scaleY(1); }
   16%, 30% { transform: translate(-3px, 0) scaleY(1); }           /* looks left */
@@ -211,7 +211,7 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 /* Closing ends with the eyes opening again (after being shut while the island folds), and the page start does the same: waking up. */
 @keyframes eye-reopen { 0% { transform: scaleY(.06) scaleX(1.25); opacity: .4; } 55% { transform: scaleY(1.25) scaleX(.9); opacity: 1; } 100% { transform: scaleY(1) scaleX(1); } }
 /* Opening: the eyes in the header widen, glance up and settle – it is awake. */
-:root:not([data-motion="reduce"]) .isl-host.v2.is-open .isl2-wrap .isl-eyes i { animation: eye-wake 1.1s var(--out-expo) .2s backwards, isl-blink 6s 2s infinite; }
+:root:not([data-motion="reduce"]) .isl-host.v2.is-open .isl2-wrap .isl-eyes i { animation: eye-wake 1.1s var(--out-expo) .2s backwards, var(--eye-life, none); }
 :root:not([data-motion="reduce"]) .isl-host.v2.is-open .isl2-wrap .isl-eyes i:last-child { animation-delay: .26s, 2s; }
 @keyframes eye-wake { 0% { transform: scaleY(.08); opacity: 0; } 30% { transform: translateY(-2px) scale(1.35); opacity: 1; } 60% { transform: translate(2px, -3px) scale(1.2); } 100% { transform: none; } }
 /* Folding shut: the eyes close first. */
@@ -325,9 +325,9 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 
 /* ---- eyes: small things they do from time to time (the page sets data-emote for a moment). They are added to the running eye animations
    as a third one through a variable, so blinking and looking around go on underneath and nothing restarts when the emote ends. */
-:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-eyes.m-idle i { animation: eye-reopen .6s var(--out-expo) .62s backwards, eye-life 11s ease-in-out 1.4s infinite, var(--eye-emote, none); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-eyes.m-idle i { animation: eye-reopen .6s var(--out-expo) .62s backwards, var(--eye-life, none), var(--eye-emote, none); }
 :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl-eyes.m-idle i:last-child { animation-delay: .66s, 1.43s, 0s; }
-:root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open .isl2-wrap .isl-eyes.m-idle i { animation: eye-wake 1.1s var(--out-expo) .2s backwards, isl-blink 6s 2s infinite, var(--eye-emote, none); }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open .isl2-wrap .isl-eyes.m-idle i { animation: eye-wake 1.1s var(--out-expo) .2s backwards, var(--eye-life, none), var(--eye-emote, none); }
 :root:not([data-motion="reduce"]) .isl-host.v2.pc.is-open .isl2-wrap .isl-eyes.m-idle i:last-child { animation-delay: .26s, 2s, 0s; }
 .isl-host.pc[data-emote="wink"] .isl-eyes i:last-child { --eye-emote: pc-wink .9s ease-in-out; }
 .isl-host.pc[data-emote="wink"] .isl-eyes i:first-child { --eye-emote: pc-wide .9s ease-in-out; }
@@ -425,8 +425,8 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 /* the timer: starting it pops the card, a running ring glows in a slow pulse, a paused one blinks */
 :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard.running .isl2-thead { animation: pc-tstart .6s var(--spr-bounce); }
 @keyframes pc-tstart { from { scale: .9; opacity: .4; } }
-:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard.running:not(.paused) .isl2-ring { animation: pc-ring 2.2s ease-in-out infinite; }
-@keyframes pc-ring { 0%, 100% { filter: drop-shadow(0 0 0 transparent); scale: 1; } 50% { filter: drop-shadow(0 0 7px var(--isl-c, #9ef0c8)); scale: 1.04; } }
+:root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard.running:not(.paused) .isl2-ring { filter: drop-shadow(0 0 5px var(--isl-c, #9ef0c8)); animation: pc-ring 2.2s ease-in-out infinite; }
+@keyframes pc-ring { 0%, 100% { scale: 1; } 50% { scale: 1.04; } } /* 3.61: glow is static, only the scale moves (no filter repaint every frame) */
 :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard.paused .isl2-time { animation: pc-paused 1.4s ease-in-out infinite; }
 @keyframes pc-paused { 50% { opacity: .45; } }
 :root:not([data-motion="reduce"]) .isl-host.v2.pc .isl2-tcard .isl2-trun { animation: pc-pop-in .5s var(--spr-bounce) backwards; }
@@ -660,7 +660,7 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 @keyframes isl3-in { from { opacity: 0; translate: 0 12px; scale: .96; } }
 :root:not([data-motion="reduce"]) .isl3-week .today { animation: isl3-today .6s var(--spr-bounce, ease-out) .2s backwards; }
 @keyframes isl3-today { from { scale: .5; opacity: 0; } }
-:root:not([data-motion="reduce"]) .isl3-focus.running:not(.paused) .isl3-ring::before { animation: pc-ring 2.2s ease-in-out infinite; }
+:root:not([data-motion="reduce"]) .isl3-focus.running:not(.paused) .isl3-ring::before { filter: drop-shadow(0 0 5px var(--isl-c, #9ef0c8)); animation: pc-ring 2.2s ease-in-out infinite; }
 :root:not([data-motion="reduce"]) .isl3-wicon svg { animation: isl-empty-float 4s ease-in-out infinite; }
 :root:not([data-motion="reduce"]) .isl3-tog:active:not(.info):not(:disabled) { scale: .96; }
 :root:not([data-motion="reduce"]) .isl3-tog.on .isl3-togic { animation: m-icon-pop .5s var(--spr-bounce, ease-out); }
@@ -687,7 +687,7 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 .isl2-stat.sens { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border-radius: 50%; color: #111; }
 .isl2-stat.sens.mic { background: #fb923c; box-shadow: 0 0 10px rgba(251, 146, 60, .55); }
 .isl2-stat.sens.cam { background: #34d399; box-shadow: 0 0 10px rgba(52, 211, 153, .55); }
-:root:not([data-motion="reduce"]) .isl2-stat.sens { animation: isl-sens-in .45s var(--spr-bounce, ease) backwards, isl-sens-glow 2.4s ease-in-out .45s infinite; }
+:root:not([data-motion="reduce"]) .isl2-stat.sens { animation: isl-sens-in .45s var(--spr-bounce, ease) backwards, isl-sens-glow 2.4s ease-in-out .45s 3; }
 @keyframes isl-sens-in { from { scale: 0; opacity: 0; } }
 @keyframes isl-sens-glow { 50% { box-shadow: 0 0 2px transparent; } }
 .isl3-tog.mic.on { --isl-c: #f87171; }
@@ -810,7 +810,7 @@ button.isl3-thead { cursor: pointer; } button.isl3-thead:hover { opacity: 1; }
 .isl3-orb.m-happy i { height: 10px; border-radius: 10px 10px 4px 4px; }
 .isl3-orb.m-error i { background: #fb7185; box-shadow: 0 0 14px rgba(251, 113, 133, .6); }
 .isl3-orb.m-sleeping i { height: 4px; opacity: .6; }
-:root:not([data-motion="reduce"]) .isl3-orb:not(.m-thinking):not(.m-listening) i { animation: isl3-blink 5.5s infinite; }
+:root:not([data-motion="reduce"]) .isl3-orb:not(.m-thinking):not(.m-listening) i { animation: var(--eye-life, none); }
 @keyframes isl3-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
 @keyframes isl3-think { to { transform: translateY(-4px); opacity: .7; } }
 @keyframes isl3-listen { to { transform: scaleY(.6); } }
@@ -1175,3 +1175,20 @@ button.isl3-pill { cursor: pointer; }
 .isl3-qr code { max-width: 100%; opacity: 0.7; }
 .isl-host.dropping .isl { box-shadow: 0 0 0 2px var(--isl-accent, #a78bfa); }
 @media (max-width: 560px) { .isl3-shelf { grid-template-columns: 1fr; } }
+
+/* ---------------- 3.61: living eyes without endless animations ----------------
+   lib/eye-life.ts sets data-life on .isl-eyes / .isl3-orb for a moment every few seconds; in between nothing runs, so the island
+   costs (almost) nothing while it just sits there – also over a game. */
+.isl-eyes[data-life="blink"], .isl3-orb[data-life="blink"] { --eye-life: life-blink .26s ease-in-out; }
+.isl-eyes[data-life="blink2"], .isl3-orb[data-life="blink2"] { --eye-life: life-blink2 .62s ease-in-out; }
+.isl-eyes[data-life="left"] { --eye-life: life-left 1.7s ease-in-out; }
+.isl-eyes[data-life="right"] { --eye-life: life-right 1.7s ease-in-out; }
+.isl-eyes.m-gaming[data-life] { --eye-life: life-gaze 1.6s ease-in-out; }
+.isl-eyes.m-sleeping[data-life] { --eye-life: life-breathe 2.4s ease-in-out; }
+@keyframes life-blink { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(.08); } }
+@keyframes life-blink2 { 0%, 40%, 100% { transform: scaleY(1); } 20%, 60% { transform: scaleY(.08); } }
+@keyframes life-left { 0%, 100% { transform: translate(0, 0); } 15%, 70% { transform: translate(-3px, 0); } 40% { transform: translate(-3px, 0) scaleY(.08); } 45% { transform: translate(-3px, 0); } }
+@keyframes life-right { 0%, 100% { transform: translate(0, 0); } 15%, 70% { transform: translate(3px, -1px); } }
+@keyframes life-gaze { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-3px); } 70% { transform: translateX(3px); } }
+@keyframes life-breathe { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+:root[data-motion="reduce"] .isl-eyes[data-life], :root[data-motion="reduce"] .isl3-orb[data-life] { --eye-life: none; }
