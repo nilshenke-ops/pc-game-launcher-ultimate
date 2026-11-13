@@ -6,13 +6,13 @@ import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocit
 import { flushSync } from "react-dom";
 import { useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, Layers } from "lucide-react";
+import { Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume1, Volume2, Layers, Camera, ScrollText, Download } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
 import { connView } from "../lib/conn-state";
-import { IslandControls, IslandDash, IslandSystem, useIslandWeather, usePcControls, WeatherIcon } from "./island-extra";
+import { IslandControls, IslandDash, IslandLyrics, IslandSystem, useIslandWeather, usePcControls, usePcSensors, WeatherIcon } from "./island-extra";
 import { sendWake, useWake, wakeLabel } from "../lib/wake";
 import { useIslandLook } from "../lib/island-look";
 import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
@@ -94,6 +94,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const pcLine = online ? (conn.via === "cloud" ? t("über die Cloud") : t("PC bereit")) : waking ? wakeLabel(wake, false, true).text : cview.label;
   const [copied, setCopied] = useState(false);
   const pcControls = usePcControls(online);
+  const sensors = usePcSensors(online);
+  const [lyrics, setLyrics] = useState(false);
   const weather = useIslandWeather();
   const np = useNowPlaying();
   const tm = useTimer();
@@ -218,6 +220,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const lib = useRpc<{ items: LibraryItem[] }>("library.list", {}, ["library"], online && current === "apps");
   const recentHist = useRpc<HistoryData>("history.get", {}, ["history"], online && current === "apps");
   const inbox = useRpc<{ items: Notification[] }>("notifications.list", {}, ["notifications"], online && current === "inbox");
+  const general = useRpc<{ settings: { downloadNotices?: boolean } }>("settings.get", {}, ["settings"], online && current === "inbox" && canManage);
   useEvent("notification", () => { if (current === "inbox") inbox.reload(); });
 
   // Which AI answers: "Automatisch" (commands at the PC, questions per free AI with a spare) is the default; the chips switch to one AI for this question.
@@ -409,6 +412,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           {musicFilled && <img className="isl2-fill" src={np!.cover!} alt="" key={np!.cover} decoding="async" />}
           <button type="button" className="isl2-ctitle" onClick={() => setTab("music")}>{t("Musik")}</button>
           {!musicFilled && <span className="isl2-art" aria-hidden>{cover}</span>}
+          {sensors.data?.micInUse && <span className="isl2-stat sens mic" role="img" aria-label={t("Mikrofon in Benutzung: {n}", { n: sensors.data.micApp ?? "?" })} title={t("Mikrofon in Benutzung: {n}", { n: sensors.data.micApp ?? "?" })}><Mic size={12} /></span>}
+          {sensors.data?.cameraInUse && <span className="isl2-stat sens cam" role="img" aria-label={t("Kamera in Benutzung: {n}", { n: sensors.data.cameraApp ?? "?" })} title={t("Kamera in Benutzung: {n}", { n: sensors.data.cameraApp ?? "?" })}><Camera size={12} /></span>}
           {playing && <Bars level={0.4} />}
           <b className="isl2-big ellipsis" title={np?.title}>{np?.active ? np.title : t("Stille")}</b>
           <span className="isl2-sub ellipsis">{np?.active ? nowSub(np) : online ? t("Gerade läuft nichts") : t("PC nicht verbunden")}</span>
@@ -486,10 +491,12 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
           <span className="isl2-gap" />
           <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("voldown")} aria-label={t("Leiser")}><Volume1 size={16} /></button>
           <button type="button" className="isl2-round" disabled={ctl} onClick={() => media("volup")} aria-label={t("Lauter")}><Volume2 size={16} /></button>
+          <button type="button" className={`isl2-round${lyrics ? " on" : ""}`} onClick={() => setLyrics((v) => !v)} aria-pressed={lyrics} aria-label={t("Liedtext")} title={t("Liedtext")}><ScrollText size={16} /></button>
         </div>
       </div>
     </div>
   );
+  const musicBody = <>{musicTab}{lyrics && <IslandLyrics np={np} now={now} />}</>;
 
   // Game view: what runs, since when, the connection, and the controls that exist at the PC (overlay, recording, replay).
   const act = async (method: string, ok: string) => { try { const r = await client.call<{ message?: string }>(method, {}); toast(r?.message ? t(r.message) : ok, "success"); } catch (e) { toast((e as Error).message, "error"); } };
@@ -641,6 +648,14 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         </div>
       ))}
       <div className="isl2-hhead"><b>{t("Meldungen des PCs")}</b>{online && list.length > 0 && <button type="button" className="isl2-chip" onClick={() => void client.call("notifications.dismissAll", {}).then(() => inbox.reload(), () => undefined)}>{t("Alle löschen")}</button>}</div>
+      {online && canManage && general.data && (
+        <label className="isl2-dl">
+          <span className="isl2-mii" aria-hidden><Download size={14} /></span>
+          <span>{t("Fertige Downloads melden")}</span>
+          <input type="checkbox" className="isl2-switch" checked={general.data.settings.downloadNotices !== false}
+            onChange={(e) => { client.call("settings.save", { downloadNotices: e.target.checked }).then(() => general.reload(), (err: Error) => toast(err.message, "error")); }} />
+        </label>
+      )}
       {!online ? <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{pcLine}</span></div>
         : !inbox.loading && !list.length ? <div className="isl2-empty ok"><BellOff size={18} aria-hidden /><span>{t("Keine offenen Meldungen.")}</span></div>
         : list.map((n) => (
@@ -691,9 +706,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     </div>
   );
 
-  const body: Record<IslandTab, ReactNode> = { home, game: gameTab, music: musicTab, jarvis: jarvisTab, apps: appsTab, inbox: inboxTab, pc: pcTab, focus: focusTab, note: <IslandNote />,
+  const body: Record<IslandTab, ReactNode> = { home, game: gameTab, music: musicBody, jarvis: jarvisTab, apps: appsTab, inbox: inboxTab, pc: pcTab, focus: focusTab, note: <IslandNote />,
     dash: <IslandDash online={online} now={now} weather={weather} />,
-    controls: <IslandControls online={online} canUse={canMedia} controls={pcControls} now={now} press={media} />,
+    controls: <IslandControls online={online} canUse={canMedia} controls={pcControls} sensors={sensors} now={now} press={media} />,
     system: <IslandSystem online={online} controls={pcControls} /> };
 
   return (

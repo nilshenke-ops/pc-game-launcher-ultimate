@@ -219,6 +219,30 @@ public sealed class NullNowPlaying : INowPlaying
     public NowPlayingInfo? Current() => null;
 }
 
+/// <summary>
+/// A song read from a small text file (title, artist, length in ms – one per line) – only for the automatic tests (headless companion with
+/// PGL_TEST_MEDIA_FILE). No file = nothing plays. The position counts from the moment the file was written.
+/// </summary>
+public sealed class FileNowPlaying : INowPlaying
+{
+    readonly string _path;
+    public FileNowPlaying(string path) => _path = path;
+    public bool Supported => true;
+    public NowPlayingInfo? Current()
+    {
+        try
+        {
+            if (!File.Exists(_path)) return null;
+            var l = File.ReadAllLines(_path);
+            if (l.Length < 2) return null;
+            var length = l.Length > 2 && long.TryParse(l[2], out var d) ? d : 0;
+            var pos = (long)(DateTime.UtcNow - File.GetLastWriteTimeUtc(_path)).TotalMilliseconds;
+            return new NowPlayingInfo("Testplayer", l[0], l[1], true, length > 0 ? Math.Clamp(pos, 0, length) : 0, length, null, "test-" + l[0].GetHashCode().ToString("x"));
+        }
+        catch { return null; }
+    }
+}
+
 public sealed class NullDesktopIsland : IDesktopIsland
 {
     public static readonly NullDesktopIsland Instance = new();

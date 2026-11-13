@@ -89,6 +89,62 @@ sealed class WindowsSystemControls : ISystemControls
         return null;
     }
 
+    public SensorState Sensors()
+    {
+        bool? micMuted = null;
+        try
+        {
+            using var en = new MMDeviceEnumerator();
+            using var dev = en.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+            micMuted = dev.AudioEndpointVolume.Mute;
+        }
+        catch (Exception ex) { Log.Debug("controls", "Mikrofon nicht lesbar: " + ex.Message); }
+        var (mic, micApp) = InUse("microphone");
+        var (cam, camApp) = InUse("webcam");
+        return new SensorState(micMuted, mic, micApp, cam, camApp);
+    }
+
+    public string? SetMicMuted(bool muted)
+    {
+        try
+        {
+            using var en = new MMDeviceEnumerator();
+            using var dev = en.GetDefaultAudioEndpoint(DataFlow.Capture, Role.Communications);
+            dev.AudioEndpointVolume.Mute = muted;
+            return null;
+        }
+        catch (Exception ex) { return "Das Mikrofon ließ sich nicht umschalten: " + ex.Message; }
+    }
+
+    /// <summary>
+    /// Windows notes per program when it last used the microphone or camera (the list behind Settings › Privacy). A program whose
+    /// "LastUsedTimeStop" is 0 is using it right now. Only the program's name is read.
+    /// </summary>
+    static (bool? inUse, string? app) InUse(string capability)
+    {
+        try
+        {
+            using var root = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\" + capability);
+            if (root == null) return (null, null);
+            foreach (var (key, packaged) in new[] { (root, true), (root.OpenSubKey("NonPackaged"), false) })
+            {
+                if (key == null) continue;
+                foreach (var name in key.GetSubKeyNames())
+                {
+                    if (name == "NonPackaged") continue;
+                    using var k = key.OpenSubKey(name);
+                    if (k?.GetValue("LastUsedTimeStart") is long start && start != 0 && k.GetValue("LastUsedTimeStop") is long stop && stop == 0)
+                    {
+                        var app = packaged ? name.Split('_')[0] : Path.GetFileNameWithoutExtension(name.Replace('#', '\\'));
+                        return (true, app.Length > 60 ? app[..60] : app);
+                    }
+                }
+            }
+            return (false, null);
+        }
+        catch { return (null, null); }
+    }
+
     /// <summary>Runs a fixed system tool hidden and returns what it printed (null on any failure or after 6 s).</summary>
     static string? Run(string file, string args)
     {

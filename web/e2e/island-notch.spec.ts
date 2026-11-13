@@ -1,7 +1,7 @@
 // The island's newer areas (3.55): tab strip on top, overview, quick controls, system tiles and the download notice – against the real
 // headless companion (its controls live in memory there: PGL_TEST_CONTROLS=1, so nothing on the test machine changes).
 import { expect, test, type Page } from "@playwright/test";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { COMPANION, state } from "./env";
 import { adminRpc } from "./rpc";
@@ -39,7 +39,9 @@ test("Insel: Symbolleiste oben, Übersicht mit Kalenderwoche und Fokus-Timer, Sy
   await focus.getByRole("button", { name: "Stopp" }).click();
   await expect(focus.locator(".isl3-ring")).toHaveText("30:00");
   await panel.getByRole("tab", { name: "System" }).click();
-  await expect(panel.locator(".isl3-stat")).toHaveCount(6);
+  await expect(panel.locator(".isl3-stat")).toHaveCount(7);
+  // network: the companion measures twice, then the speeds stand there
+  await expect(panel.locator(".isl3-net")).toContainText(/\d+ (kB|MB)\/s/, { timeout: 10_000 });
   await expect(panel.locator(".isl3-stat").filter({ hasText: "Akku" })).toContainText("87 %");
   await shot(page, "system");
   await panel.getByRole("tab", { name: "Home" }).click(); await shot(page, "home");
@@ -87,5 +89,74 @@ test("Fertiger Download erscheint als Meldung (nur der Dateiname), ein halb gela
   await expect(panel.getByText("Download fertig: nexus-testdatei.zip")).toBeVisible({ timeout: 10_000 });
   await panel.getByRole("button", { name: "Alle löschen" }).click();
   await expect(panel.getByText("Keine offenen Meldungen.")).toBeVisible();
+  await ctx.close();
+});
+
+test("Mikrofon am PC stummschalten; die Insel zeigt, wenn ein Programm Mikrofon oder Kamera benutzt", async ({ browser }) => {
+  await adminRpc("controls.micMute", { muted: false });
+  const ctx = await browser.newContext({ locale: "de-DE" });
+  const page = await ctx.newPage();
+  const panel = await island(page);
+  // the test companion says a program uses the microphone while it is not muted: the orange dot is in the header
+  await expect(panel.getByRole("img", { name: "Mikrofon in Benutzung: Testprogramm" })).toBeVisible();
+  await panel.getByRole("tab", { name: "Regler" }).click();
+  const mic = panel.getByRole("button", { name: /^Mikrofon/ });
+  await expect(mic).toHaveAttribute("aria-pressed", "false");
+  await expect(mic).toContainText("benutzt: Testprogramm");
+  await mic.click();
+  await expect.poll(async () => (await adminRpc<{ micMuted: boolean }>("controls.sensors")).micMuted, { timeout: 8000 }).toBe(true);
+  await expect(mic).toHaveAttribute("aria-pressed", "true");
+  await expect(panel.getByRole("img", { name: /Mikrofon in Benutzung/ })).toHaveCount(0, { timeout: 8000 });
+  await mic.click();
+  await expect.poll(async () => (await adminRpc<{ micMuted: boolean }>("controls.sensors")).micMuted, { timeout: 8000 }).toBe(false);
+  await ctx.close();
+});
+
+test("Liedtext: erst nach Zustimmung, dann läuft die aktuelle Zeile mit dem Lied mit", async ({ browser }) => {
+  const media = join(state().dataDir, "media.txt");
+  writeFileSync(media, "Testlied\nTestband\n200000\n");
+  const ctx = await browser.newContext({ deviceScaleFactor: SHOTS ? 2 : 1, locale: "de-DE" });
+  const page = await ctx.newPage();
+  const asked: string[] = [];
+  // lrclib.net answered by the test (no outside network): timed lines, the second one is sung right now
+  await page.route("https://lrclib.net/api/**", (route) => {
+    asked.push(route.request().url());
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ instrumental: false, plainLyrics: "Erste Zeile\nZweite Zeile", syncedLyrics: "[00:00.00] Erste Zeile\n[00:00.50] Zweite Zeile\n[03:00.00] Letzte Zeile" }) });
+  });
+  try {
+    const panel = await island(page);
+    await panel.getByRole("tab", { name: "Musik" }).click();
+    await expect(panel.locator(".isl2-music .isl2-big")).toHaveText("Testlied", { timeout: 10_000 });
+    await panel.getByRole("button", { name: "Liedtext" }).click();
+    // nothing leaves the device before it is switched on
+    await expect(panel.getByText(/Titel und Interpret des laufenden Lieds/)).toBeVisible();
+    expect(asked).toEqual([]);
+    await panel.getByRole("button", { name: "Liedtexte einschalten" }).click();
+    const lines = panel.getByRole("list", { name: "Liedtext" });
+    await expect(lines.locator("li[aria-current=true]")).toHaveText("Zweite Zeile", { timeout: 10_000 });
+    expect(asked[0]).toContain("track_name=Testlied");
+    expect(asked[0]).toContain("artist_name=Testband");
+    await expect(panel.getByText("Quelle: lrclib.net")).toBeVisible();
+    await shot(page, "lyrics");
+    await panel.getByRole("button", { name: "Liedtexte ausschalten" }).click();
+    await expect(panel.getByRole("button", { name: "Liedtexte einschalten" })).toBeVisible();
+  } finally {
+    rmSync(media, { force: true });
+    await ctx.close();
+  }
+});
+
+test("Download-Meldungen lassen sich in der Insel ausschalten und wieder einschalten", async ({ browser }) => {
+  const ctx = await browser.newContext({ locale: "de-DE" });
+  const page = await ctx.newPage();
+  const panel = await island(page);
+  await panel.getByRole("tab", { name: "Meldungen" }).click();
+  const sw = panel.getByRole("checkbox", { name: "Fertige Downloads melden" });
+  await expect(sw).toBeChecked();
+  await sw.click();
+  await expect.poll(async () => (await adminRpc<{ settings: { downloadNotices: boolean } }>("settings.get")).settings.downloadNotices, { timeout: 8000 }).toBe(false);
+  await expect(sw).not.toBeChecked();
+  await sw.click();
+  await expect.poll(async () => (await adminRpc<{ settings: { downloadNotices: boolean } }>("settings.get")).settings.downloadNotices, { timeout: 8000 }).toBe(true);
   await ctx.close();
 });

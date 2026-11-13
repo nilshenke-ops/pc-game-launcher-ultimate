@@ -186,6 +186,8 @@ export interface Settings {
   relayUrl?: string;
   relayCompanionId?: string;
   historyEnabled: boolean;
+  /** Report finished downloads (Downloads folder) as notifications – default on. */
+  downloadNotices?: boolean;
   recordSessionPerf?: boolean;
   startMinimized: boolean;
   keepRunningInTray: boolean;

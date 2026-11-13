@@ -961,6 +961,16 @@ public static class RpcApi
             Changed(s, "controls");
             return Controls();
         });
+        object Sensors() { var x = s.Platform.Controls.Sensors(); return new { micMuted = x.MicMuted, micInUse = x.MicInUse, micApp = x.MicApp, cameraInUse = x.CameraInUse, cameraApp = x.CameraApp }; }
+        rpc.Register("controls.sensors", _ => Sensors());
+        rpc.Register("controls.micMute", ctx =>
+        {
+            var err = s.Platform.Controls.SetMicMuted(ctx.Bool("muted"));
+            if (err != null) throw new RpcException("controls", err);
+            Changed(s, "controls");
+            return Sensors();
+        });
+        rpc.Register("net.speed", _ => s.NetSpeed.Read());
         rpc.Register("power.status", ctx => s.Power.Status(ctx.Session));
         // Locking is harmless (sign in again) – every device that may start games may lock the PC.
         rpc.Register("power.lock", ctx => { s.Power.Run("lock", 0, ctx.Session.Who); return true; });

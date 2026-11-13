@@ -94,6 +94,7 @@ public sealed class CompanionServices : IAsyncDisposable
     /// <summary>JARVIS' voice through ElevenLabs (off until switched on; key only at the PC).</summary>
     public Assistant.VoiceService Voice { get; }
     public DownloadWatchService Downloads { get; }
+    public NetSpeedService NetSpeed { get; } = new();
     public RelayClient Relay { get; }
     /// <summary>Outbound connection to the cloud account's link: the account's devices reach this PC through it from anywhere (no open port).</summary>
     public RelayClient CloudLink { get; }

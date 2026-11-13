@@ -668,6 +668,7 @@ function Privacy() {
         <Card title={t("Datenschutz")} icon={<UserX size={18} />}>
           <div className="stack">
             <Switch checked={set.historyEnabled} onChange={(v) => s.save({ historyEnabled: v })} label={t("Spielverlauf aufzeichnen")} hint={t("Startzeiten und Spieldauer, nur lokal auf dem PC.")} />
+            <Switch checked={set.downloadNotices !== false} onChange={(v) => s.save({ downloadNotices: v })} label={t("Fertige Downloads melden")} hint={t("Meldung mit dem Dateinamen, sobald eine Datei im Downloads-Ordner vollständig ist. Nichts wird geöffnet oder gelesen.")} />
             <Switch checked={set.recordSessionPerf !== false} disabled={!set.historyEnabled} onChange={(v) => s.save({ recordSessionPerf: v })} label={t("Leistungswerte während Spielsitzungen aufzeichnen")} hint={t("CPU-, RAM- und GPU-Auslastung alle 10 Sekunden, nur solange ein Spiel läuft. Bleibt auf dem PC.")} />
             <Switch checked={set.coverSearch ?? true} onChange={(v) => s.save({ coverSearch: v })} label={t("Cover automatisch suchen")} hint={t("Der PC sucht für Spiele ohne Bild das echte Cover bei Steam und im Microsoft Store (nur bei exakt gleichem Titel). Dabei wird der Spielname an diese Shops gesendet.")} />
             <Switch checked={set.steamCoversFromCdn} onChange={(v) => s.save({ steamCoversFromCdn: v })} label={t("Steam-Cover aus dem Steam-CDN laden")} hint={t("Dein Gerät ruft die Bilder direkt bei Steam ab (dabei sieht Steam deine IP-Adresse).")} />

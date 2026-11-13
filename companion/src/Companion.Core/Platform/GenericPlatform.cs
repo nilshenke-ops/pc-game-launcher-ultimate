@@ -27,6 +27,7 @@ public sealed class GenericPlatform : IPlatform
     public IHardwareInfo Hardware { get; init; } = NullHardwareInfo.Instance;
     /// <summary>In-memory controls only for trying out the page and the tests (PGL_TEST_CONTROLS=1); otherwise none.</summary>
     public ISystemControls Controls { get; init; } = Environment.GetEnvironmentVariable("PGL_TEST_CONTROLS") == "1" ? new MemorySystemControls() : NullSystemControls.Instance;
+    public INowPlaying NowPlaying { get; init; } = Environment.GetEnvironmentVariable("PGL_TEST_MEDIA_FILE") is { Length: > 0 } f ? new FileNowPlaying(f) : NullNowPlaying.Instance;
     public IScreenCapture Screen { get; init; } = NullScreenCapture.Instance;
     public IRemoteInput RemoteInput { get; init; } = NullRemoteInput.Instance;
     public IAudioLoopback AudioLoopback { get; init; } = NullAudioLoopback.Instance;

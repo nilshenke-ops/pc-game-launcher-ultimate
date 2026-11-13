@@ -669,3 +669,49 @@ html[data-isl-anim] :not(.isl-host, .isl-host *) { backdrop-filter: none !import
 :root:not([data-motion="reduce"]) .isl2-tabs.top .isl2-tab.on::after { animation: isl3-dot .4s var(--spr-bounce, ease-out) backwards; }
 @keyframes isl3-dot { from { scale: 0; } }
 :root:not([data-motion="reduce"]) .isl2-stat { animation: pc-pop-in .5s var(--spr-bounce, ease-out) backwards; }
+
+/* ---------- 3.56 island: network, microphone/camera in use, lyrics, download switch ---------- */
+.isl3-stat.wide { grid-column: 1 / -1; }
+.isl3-netrow { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.isl3-netval { display: inline-flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.isl3-netval b { font-size: 1rem; }
+.isl3-netval.down svg { color: #60a5fa; }
+.isl3-netval.up svg { color: #f472b6; }
+.isl3-netspark { flex: 1; min-width: 60px; height: 24px; }
+.isl3-netspark polyline { fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.isl3-netspark .down { stroke: #60a5fa; }
+.isl3-netspark .up { stroke: #f472b6; opacity: .8; }
+@media (max-width: 520px) { .isl3-netspark { display: none; } }
+
+/* Like the dots of a phone: orange = the microphone is used, green = the camera. */
+.isl2-stat.sens { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border-radius: 50%; color: #111; }
+.isl2-stat.sens.mic { background: #fb923c; box-shadow: 0 0 10px rgba(251, 146, 60, .55); }
+.isl2-stat.sens.cam { background: #34d399; box-shadow: 0 0 10px rgba(52, 211, 153, .55); }
+:root:not([data-motion="reduce"]) .isl2-stat.sens { animation: isl-sens-in .45s var(--spr-bounce, ease) backwards, isl-sens-glow 2.4s ease-in-out .45s infinite; }
+@keyframes isl-sens-in { from { scale: 0; opacity: 0; } }
+@keyframes isl-sens-glow { 50% { box-shadow: 0 0 2px transparent; } }
+.isl3-tog.mic.on { --isl-c: #f87171; }
+
+.isl2-round.on { background: var(--isl-c, #9ef0c8); color: #04121a; }
+.isl2-music:has(+ .isl3-lyr) { height: auto; }
+.isl3-lyr { display: grid; gap: 8px; margin-top: 10px; padding: 12px 14px; border-radius: 18px; border: 1px solid color-mix(in srgb, currentColor 9%, transparent); background: color-mix(in srgb, currentColor 5%, transparent); }
+.isl3-lyr.consent { grid-template-columns: auto 1fr; align-items: center; }
+.isl3-lyr.consent p { margin: 0; font-size: .78rem; line-height: 1.4; opacity: .85; }
+.isl3-lyr.consent .isl2-chip { grid-column: 1 / -1; justify-self: start; }
+.isl3-lines { list-style: none; margin: 0; padding: 40px 0; max-height: 190px; overflow-y: auto; scrollbar-width: none; mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); -webkit-mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent); }
+.isl3-lines::-webkit-scrollbar { display: none; }
+.isl3-lines li { padding: 3px 0; font-size: .95rem; font-weight: 700; line-height: 1.35; opacity: .4; transform-origin: left center; transition: opacity .4s ease, transform .5s var(--spr-bounce, ease), color .4s ease; }
+.isl3-lines li.past { opacity: .25; }
+.isl3-lines li.now { opacity: 1; transform: scale(1.05); color: var(--isl-c, #9ef0c8); }
+.isl3-plain { margin: 0; max-height: 190px; overflow-y: auto; white-space: pre-wrap; font: inherit; font-size: .85rem; line-height: 1.5; }
+.isl3-lyrsrc { font-size: .68rem; opacity: .6; }
+.isl3-lyroff { background: none; border: 0; padding: 0; min-height: 0; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
+:root:not([data-motion="reduce"]) .isl3-lyr { animation: isl3-in .5s var(--out-expo, ease-out) backwards; }
+
+.isl2-dl { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 12px; font-size: .78rem; background: color-mix(in srgb, currentColor 5%, transparent); }
+.isl2-dl span:nth-child(2) { flex: 1; }
+.isl2-dl input.isl2-switch { appearance: none; -webkit-appearance: none; position: relative; flex: none; width: 34px; height: 20px; min-height: 0; margin: 0; padding: 0; border: 0; border-radius: 20px; background: rgba(255, 255, 255, 0.22); cursor: pointer; transition: background .25s ease; }
+.isl2-dl input.isl2-switch::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); transition: transform .35s var(--spr-bounce, ease); }
+.isl2-dl input.isl2-switch:checked { background: var(--isl-c, #9ef0c8); }
+.isl2-dl input.isl2-switch:checked::after { transform: translateX(14px); }
+.isl2-dl input.isl2-switch:focus-visible { outline: 2px solid var(--isl-ring, #9ef0c8); outline-offset: 2px; }

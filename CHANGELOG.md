@@ -4,6 +4,17 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.56.0 – 2026-11-13
+### Neu
+- **Liedtexte in der Insel:** Im Musik-Bereich blendet ein Knopf den Liedtext zum laufenden Lied ein. Mit Zeitangaben läuft die aktuelle Zeile mit und wird hervorgehoben, sonst steht der ganze Text da. Die Texte kommen von lrclib.net (kostenlos, ohne Konto). Erst nach dem Einschalten werden Titel und Interpret dorthin geschickt, vorher verlässt nichts das Gerät. Gibt es keinen Text, steht das so da.
+- **Netzwerk-Geschwindigkeit:** Der Bereich „System“ zeigt, wie schnell der PC gerade empfängt und sendet, mit kleiner Verlaufslinie.
+- **Mikrofon am PC stummschalten:** neuer Schalter im Bereich „Regler“, mit dem Namen des Programms, das das Mikrofon gerade benutzt.
+- **Anzeige für Mikrofon und Kamera:** Benutzt ein Programm am PC das Mikrofon (orange) oder die Kamera (grün), zeigt die Kopfzeile der Insel einen Punkt mit dem Programmnamen. Gelesen wird nur, was Windows selbst dazu festhält.
+- **Download-Meldungen abschaltbar:** Schalter „Fertige Downloads melden“ im Bereich „Meldungen“ der Insel und in den Einstellungen.
+### Hinweise
+- Mikrofon-Schalter und die Mikrofon-/Kamera-Anzeige sind für den Windows-Begleiter gebaut und übersetzen fehlerfrei, konnten hier aber nicht auf einem echten Windows-PC ausprobiert werden. Die Netzwerk-Geschwindigkeit funktioniert auch ohne Windows.
+- Die Liedtexte sind nur so gut wie die Datenbank von lrclib.net: Nicht jedes Lied ist dort, und nicht jedes hat Zeitangaben.
+
 ## 3.55.1 – 2026-11-13
 ### Verbessert
 - Tastatur verdeckt Suche und Eingabefelder nicht mehr
