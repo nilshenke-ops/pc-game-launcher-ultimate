@@ -4,6 +4,24 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.59.0 – 2026-11-13
+### Neu
+- **JARVIS-Steuerzentrale.** Größere Aufträge werden zu einem Plan aus den festen Aktionen der App. Du siehst ihn zuerst, kannst jeden Schritt abwählen oder ändern (anderes Profil, anderes Spiel), und nichts läuft vor deiner Bestätigung.
+  - „Bereite meinen PC für eine Runde Counter-Strike vor“: PC-Zustand, Spiel startklar, Hintergrundprogramme, Audio und Verbindung prüfen, genannte Programme öffnen, passendes Profil aktivieren, Spiel als letzter Schritt starten.
+  - „Warum funktioniert mein Soundboard nicht?“ / „Warum ruckelt mein Spiel?“ / „Warum geht mein Netzwerk nicht?“: eine Diagnose mit echten Messwerten. Jeder Befund nennt den Wert und woher er kommt, die wahrscheinlichste Ursache steht oben. Dazu Schritte zur Behebung und danach „Erneut prüfen“ mit „vorher – jetzt“.
+  - „Wenn ich Counter-Strike starte, öffne Discord und aktiviere mein Profil“: wird eine der vorhandenen Automatisierungen. Es gibt kein zweites System, und eine gleiche Regel wird nicht doppelt angelegt.
+  - Jeder Schritt hat eine Stufe (Nur ansehen, Ausführen, Kritisch). Kritische Schritte (Windows-Geräte ändern, Programme schließen) brauchen ein eigenes Häkchen.
+  - Der PC prüft jeden Schritt gegen die Rechte des Geräts. „Stopp“ beendet einen laufenden Auftrag vor dem nächsten Schritt.
+  - Die Pläne baut keine KI, sondern feste Regeln aus deinen Daten. Deshalb kann ein Text aus einer Webseite oder einem Spielnamen keinen Schritt hinzufügen. Kosten: 0 €.
+- **Aufträge (neuer Reiter bei JARVIS):** Verlauf aller Aufträge mit Zeit, Modell, Schritten, Ergebnissen, Fehlern und Dauer.
+  - Er ist durchsuchbar und filterbar, und Einträge lassen sich einzeln oder alle löschen.
+  - Abschaltbar ganz oder nur für den Auftragstext. Schlüssel und Passwörter werden nie gespeichert.
+- **JARVIS kennt die Seite, auf der du bist.** „Warum geht das nicht?“ im Audio Center wird eine Audio-Diagnose. Eine Spielfrage wie „Warum ist Elden Ring so schwer?“ bleibt eine Frage an den Chat.
+- **Insel:** Ein Plan aus der Insel zeigt die Zusammenfassung und „Plan ansehen“.
+### Hinweise
+- Bestandsaufnahme, Plan der weiteren Etappen (Gedächtnis mit Status, eigene Befehle, proaktive Hinweise, Screenshot-Analyse, Performance) und Testergebnisse stehen in `docs/JARVIS-3.0.md`.
+- Die Behebungsschritte für Audio sind mit Tests geprüft, aber nicht auf einem echten Windows-PC mit Discord ausprobiert.
+
 ## 3.58.1 – 2026-11-13
 ### Behoben
 - **Beim Start des Begleiters gingen viele Programme auf und der PC wurde langsam.** Ursache war eine Schleife im Spielmodus („Programme beim Spielen schließen und danach wieder öffnen“):

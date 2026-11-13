@@ -600,7 +600,7 @@ class Client {
         this.pending.delete(id);
         // Commands (start, keys, power …) are never sent twice by themselves – say that the outcome is unknown.
         reject(new RpcError("timeout", QUIET.test(method) || method === "ping" ? t("Der PC hat nicht rechtzeitig geantwortet.") : t("Der PC hat nicht rechtzeitig geantwortet. Ob der Befehl ausgeführt wurde, ist unklar – er wird nicht automatisch wiederholt.")));
-      }, method === "ping" ? 8000 : method === "assistant.ask" || method === "assistant.bingo" ? 180000 : method === "network.diagnose" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
+      }, method === "ping" ? 8000 : method === "assistant.ask" || method === "assistant.bingo" || method === "jarvis.execute" ? 180000 : method === "network.diagnose" || method === "jarvis.plan" || method === "updates.download" || method === "sounds.importUrl" ? 90000 : REQUEST_TIMEOUT_MS);
       this.pending.set(id, { resolve: resolve as (v: unknown) => void, reject, timer });
       ws.send(JSON.stringify({ v: PROTOCOL_VERSION, id, m: method, p: params ?? {}, ...(opts?.op ? { op: opts.op } : {}) }));
     });

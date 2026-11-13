@@ -16,6 +16,9 @@ import { friendlyError } from "../lib/friendly-error";
 import { JarvisHud } from "../components/jarvis-hud";
 import { IslandSettingsCard } from "../components/island-settings";
 import { SettingsDialog, type Status } from "../components/assistant-settings";
+import { AgentPlan } from "../components/agent-plan";
+import { AgentHistory } from "../components/agent-history";
+import type { AgentTask } from "../lib/jarvis-agent";
 import { getPrefs, setPrefs } from "../lib/prefs";
 import type { SetupOp } from "../lib/assistant-setup";
 import { useJournal } from "../lib/journal";
@@ -67,7 +70,7 @@ function Sources({ cites, info }: { cites: Cite[]; info?: AssistantReply["resear
 
 const AI_MODES = new Set(["claude", "ollama", "router", "openrouter", "groq", "cerebras", "mistral", "pollinations", "free"]);
 
-function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: { turn: ChatState["turns"][number]; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void; /** Only on the last answer. */ onRegenerate?: () => void; onContinue?: () => void }) {
+function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue, onTask }: { turn: ChatState["turns"][number]; /** A plan changed (ran, was cancelled) – kept in the chat. */ onTask?: (t: AgentTask) => void; onSuggest: (text: string) => void; onBingo: (question: string, web: boolean, label: string) => void; onLookup: (question: string, ok: boolean, label: string, ai?: boolean, sources?: boolean) => void; /** Only on the last answer. */ onRegenerate?: () => void; onContinue?: () => void }) {
   const nav = useNavigate();
   const [done, setDone] = useState<Record<number, boolean>>({});
   // Settings before a set-up change, to undo it with one tap.
@@ -116,6 +119,7 @@ function Turn({ turn, onSuggest, onBingo, onLookup, onRegenerate, onContinue }: 
       <div className="as-bubble">
         <div className="as-text">{AI_MODES.has(r.mode) ? plainAnswer(r.text) : r.text}</div>
         {turn.bingoId && <Suspense fallback={null}><ChatBingo id={turn.bingoId} /></Suspense>}
+        {turn.agentTask && <AgentPlan task={turn.agentTask} onTask={onTask} />}
         {(r.actions.length > 0 || before) && (
           <div className="row as-actions">
             {r.actions.map((a, i) => (
@@ -163,8 +167,8 @@ export default function Assistant() {
   const end = useRef<HTMLDivElement>(null);
   const [params, setParams] = useSearchParams();
   // Two areas: the conversation, and everything about the AIs (keys, order, models, island) – the chat stays uncluttered, the setup is one tap away.
-  const tab: "chat" | "ai" = params.get("tab") === "ai" ? "ai" : "chat";
-  const setTab = (v: "chat" | "ai") => { const n = new URLSearchParams(params); if (v === "ai") n.set("tab", "ai"); else n.delete("tab"); setParams(n, { replace: true }); };
+  const tab: "chat" | "tasks" | "ai" = params.get("tab") === "ai" ? "ai" : params.get("tab") === "tasks" ? "tasks" : "chat";
+  const setTab = (v: "chat" | "tasks" | "ai") => { const n = new URLSearchParams(params); if (v !== "chat") n.set("tab", v); else n.delete("tab"); setParams(n, { replace: true }); };
   const jv = useJarvis();
   const navTo = useNavigate();
   // The AI chosen for this chat (only the ones set up at the PC are offered) and the switch "Im Internet suchen".
@@ -275,8 +279,10 @@ export default function Assistant() {
         </>} />
       <div className="as-tabs" role="tablist" aria-label={t("Bereich")}>
         <button type="button" role="tab" aria-selected={tab === "chat"} className={`as-tab${tab === "chat" ? " on" : ""}`} onClick={() => setTab("chat")}>{t("Gespräch")}</button>
+        <button type="button" role="tab" aria-selected={tab === "tasks"} className={`as-tab${tab === "tasks" ? " on" : ""}`} onClick={() => setTab("tasks")}>{t("Aufträge")}</button>
         <button type="button" role="tab" aria-selected={tab === "ai"} className={`as-tab${tab === "ai" ? " on" : ""}`} onClick={() => setTab("ai")}>{t("KI & Einstellungen")}</button>
       </div>
+      {tab === "tasks" && (online ? <AgentHistory /> : <Banner kind="info" title={t("PC nicht verbunden")}>{t("Der Verlauf der JARVIS-Aufträge liegt am PC.")}</Banner>)}
       {tab === "chat" && (<>
       {jv.enabled && <JarvisHud busy={busy} listening={listening} active={jv.active} online={online} onPick={(x) => setText(x)} />}
       <Card className="jv-toggle">
@@ -294,7 +300,7 @@ export default function Assistant() {
               <div className="chips">{(jv.enabled ? jarvisChips() : online ? [...(s?.examples ?? []).slice(0, 4), ...setupChips()] : offlineExamples()).map((e) => <button key={e} type="button" className="chip" onClick={() => ask(e)}>{e}</button>)}</div>
             </div>
           )}
-          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label, ai, sources) => void ask(q, { lookup: ok, ai, sources, shown: label })}
+          {chat.turns.map((turn, i) => <Turn key={i} turn={turn} onTask={(x) => setChat((c) => ({ ...c, turns: c.turns.map((y, j) => (j === i ? { ...y, agentTask: x } : y)) }))} onSuggest={(x) => void ask(x)} onBingo={(q, web, label) => void ask(q, { bingoWeb: web, shown: label })} onLookup={(q, ok, label, ai, sources) => void ask(q, { lookup: ok, ai, sources, shown: label })}
             onRegenerate={i === lastBot && !busy && lastUser && turn.role === "bot" ? () => void ask(lastUser, { shown: t("↻ {q}", { q: lastUser }) }) : undefined}
             onContinue={i === lastBot && !busy && turn.role === "bot" && online ? () => void ask(t("Mach bitte genau da weiter, wo deine letzte Antwort aufgehört hat.")) : undefined} />)}
           {busy && (

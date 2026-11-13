@@ -31,6 +31,8 @@ export interface JarvisEnv {
   /** The chat so far (follow-up questions, the game talked about before). */
   turns: ChatState["turns"];
   requestId: string;
+  /** The page the person is on (context for "warum geht das nicht?"); null = unknown. */
+  page?: string | null;
   /** Typed or spoken by the person right now (the island): named commands run at once. */
   direct?: boolean;
 }
@@ -47,6 +49,19 @@ export interface JarvisHooks {
 
 export async function askJarvis(question: string, env: JarvisEnv, extra: JarvisExtra, hooks: JarvisHooks): Promise<void> {
   const add = hooks.add;
+  // JARVIS 3.0 control centre: preparing a session, "wenn ich X starte …" or a technical problem becomes a plan of fixed,
+  // confirmable steps with real measurements (built on the PC, nothing runs before the person confirms).
+  if (env.online && !extra.lookup && !extra.ai && !extra.research && !extra.sources) {
+    const { maybeAgentRequest, planTask, currentPage } = await import("./jarvis-agent");
+    if (maybeAgentRequest(question)) {
+      const task = await planTask(question, env.page !== undefined ? env.page : currentPage()).catch(() => null);
+      if (task) {
+        add({ text: task.summary, actions: [], sources: [t("JARVIS-Steuerzentrale")], suggestions: [], mode: "local" }, { agentTask: task });
+        if (jarvisEnabled()) hooks.speak(task.summary);
+        return;
+      }
+    }
+  }
     const lastBot = [...env.turns].reverse().find((x) => x.role === "bot");
     const lastBingo = [...env.turns].reverse().find((x) => x.bingoId)?.bingoId ?? null;
     const afterBingo = !!lastBot?.bingoId || (extra.bingoWeb !== undefined && !!lastBingo);

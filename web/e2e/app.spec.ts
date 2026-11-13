@@ -1968,10 +1968,14 @@ test("PC-Steuerung und Leistungsanalyse: echte Werte vom Begleiter, Messung auf 
   await say.fill("Welche Programme verbrauchen am meisten RAM?"); await say.press("Enter");
   await expect(last()).toContainText("📊 Gemessen (vom PC, jetzt)", { timeout: 15000 });
   await expect(last()).toContainText("Meister RAM:");
+  // 3.59: a performance problem becomes a diagnosis of the control centre – measured values with their source, FPS honestly
+  // "not measured", and nothing runs before the person confirms.
   await say.fill("Warum läuft mein Spiel langsam?"); await say.press("Enter");
-  await expect(last()).toContainText("💡 Vermutung");
-  await expect(last()).toContainText("FPS: Nicht verfügbar");
-  await expect(last()).toContainText("nichts passiert automatisch");
+  const plan = last().getByLabel("JARVIS-Auftrag");
+  await expect(plan).toBeVisible({ timeout: 15000 });
+  await expect(plan.getByText("Gemessene Werte")).toBeVisible();
+  await expect(plan).toContainText("FPS misst der PC nicht");
+  await expect(plan).toContainText("Quelle: PC-Messung (jetzt)");
   await p.context().close();
 });
 

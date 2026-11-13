@@ -4,7 +4,7 @@ import { t } from "./i18n";
 
 export interface AssistantAction { kind: string; label: string; method?: string | null; params?: Record<string, unknown>; path?: string | null; confirm?: boolean; /** JARVIS may run it now (decided on the PC). */ auto?: boolean; target?: string | null }
 export interface AssistantReply { text: string; actions: AssistantAction[]; sources: string[]; suggestions: string[]; mode: "local" | "ollama" | "claude" | "router" | "openrouter" | "groq" | "cerebras" | "mistral" | "pollinations" | "offline" | "device" | "free"; model?: string | null; costUsd?: number | null; /** Researched answer: numbered sources (only pages really found). */ cites?: import("./research-chat").Cite[]; /** How it was researched – or that no search ran. */ research?: import("./research-chat").ResearchInfo; /** Stopped by the user. */ cancelled?: boolean; /** Could not be done – JARVIS stops further steps. */ failed?: boolean; /** No good answer known – JARVIS may look it up. */ unsure?: boolean }
-export interface ChatState { conversationId: string | null; turns: { role: "user" | "bot"; text?: string; reply?: AssistantReply; bingoId?: string; /** Settings before a JARVIS change of this website – for "Rückgängig". */ undo?: unknown }[] }
+export interface ChatState { conversationId: string | null; turns: { role: "user" | "bot"; text?: string; reply?: AssistantReply; bingoId?: string; /** Settings before a JARVIS change of this website – for "Rückgängig". */ undo?: unknown; /** A plan of the JARVIS control centre (3.59) – shown as a card with its steps. */ agentTask?: import("./jarvis-agent").AgentTask }[] }
 
 export const CHAT_KEY = "pgl.assistant.chat";
 
@@ -13,7 +13,7 @@ export const offlineExamples = () => [t("Mach das Design hell"), t("Pack den Bac
 /** Set-up requests that work everywhere (answered on this device, also with the PC connected). */
 export const setupChips = () => [t("Mach das Design hell"), t("Pack den Backlog in die Leiste")];
 /** What JARVIS can be told (from the brief – each one really works). */
-export const jarvisChips = () => [t("Starte mein zuletzt gespieltes Spiel"), t("Warum ruckelt mein Spiel?"), t("Erstelle eine neue Dashboard-Anordnung für Minecraft"), t("Ordne mein Dashboard übersichtlicher an"), t("Zeige mir, welche meiner Spiele zu zweit spielbar sind"), t("Erstelle ein Gaming-Bingo für Minecraft")];
+export const jarvisChips = () => [t("Starte mein zuletzt gespieltes Spiel"), t("Bereite meinen PC für eine Runde vor"), t("Warum funktioniert mein Soundboard nicht?"), t("Warum ruckelt mein Spiel?"), t("Erstelle eine neue Dashboard-Anordnung für Minecraft"), t("Ordne mein Dashboard übersichtlicher an"), t("Zeige mir, welche meiner Spiele zu zweit spielbar sind"), t("Erstelle ein Gaming-Bingo für Minecraft")];
 export const emptyChat = (): ChatState => ({ conversationId: null, turns: [] });
 
 /** The chat of this tab (sessionStorage – gone when the tab closes; the PC keeps the conversation at most 3 hours). */
@@ -26,10 +26,10 @@ export function readChat(): ChatState {
 }
 
 /** The island asks the same JARVIS as the assistant page: what it asks and answers lands in the same chat (the page, if open, shows it at once). */
-export function appendChat(user: string, reply: AssistantReply, conversationId?: string | null) {
+export function appendChat(user: string, reply: AssistantReply, conversationId?: string | null, more: Partial<ChatState["turns"][number]> = {}) {
   try {
     const c = readChat();
-    const next: ChatState = { conversationId: conversationId ?? c.conversationId, turns: [...c.turns, { role: "user" as const, text: user }, { role: "bot" as const, reply }].slice(-60) };
+    const next: ChatState = { conversationId: conversationId ?? c.conversationId, turns: [...c.turns, { role: "user" as const, text: user }, { role: "bot" as const, reply, ...more }].slice(-60) };
     sessionStorage.setItem(CHAT_KEY, JSON.stringify(next));
     if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") window.dispatchEvent(new Event("pgl-chat"));
   } catch { /* private mode */ }

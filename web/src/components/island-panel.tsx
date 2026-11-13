@@ -297,10 +297,12 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       let shown = false;
       await askJarvis(v, { online: true, engine: engineNow === "auto" ? "auto" : engineNow, web: webSwitch(), webSearch: !!ai.data?.webSearch, bingoProvider: ai.data?.bingoProvider ?? null, conversationId: chat.conversationId, turns: chat.turns, requestId: "i" + Math.random().toString(36).slice(2, 10), direct: true }, {},
         {
-          add: (reply, _more, conversationId) => {
+          add: (reply, more, conversationId) => {
             shown = true;
-            islandAnswer(reply.text, reply.failed ? false : true, reply.actions, "jarvis", reply.model ?? undefined);
-            appendChat(v, reply, conversationId);
+            // A plan of the control centre is confirmed on the JARVIS page (steps, choices, live status) – the island points there.
+            const acts = more?.agentTask ? [...reply.actions, { kind: "navigate", label: t("Plan ansehen"), path: "/assistant" }] : reply.actions;
+            islandAnswer(reply.text, reply.failed ? false : true, acts, "jarvis", reply.model ?? undefined);
+            appendChat(v, reply, conversationId, more);
             if (consumeSpoken()) speak(reply.text);
             // With JARVIS switched off nothing ran by itself: what the PC named for direct execution runs now (a started game, a sound).
             if (!jarvisEnabled()) void (async () => {

@@ -13,7 +13,7 @@ namespace Pgl.Core.Tests;
 /// </summary>
 public class SoundboardMicTests
 {
-    sealed class CableAudio : IAudioEngine
+    internal sealed class CableAudio : IAudioEngine
     {
         public List<AudioDevice> List = new()
         {

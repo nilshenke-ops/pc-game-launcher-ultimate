@@ -93,6 +93,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public Assistant.AssistantService Assistant { get; }
     /// <summary>JARVIS' voice through ElevenLabs (off until switched on; key only at the PC).</summary>
     public Assistant.VoiceService Voice { get; }
+    /// <summary>JARVIS control centre: plans, diagnoses with real values, runs confirmed steps, keeps the task history (3.59).</summary>
+    public Assistant.JarvisAgent Agent { get; }
     public DownloadWatchService Downloads { get; }
     public NetSpeedService NetSpeed { get; } = new();
     public RelayClient Relay { get; }
@@ -249,6 +251,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Memory = new Assistant.MemoryVault(paths, Rpc);
         Assistant = new Assistant.AssistantService(paths, platform.Secrets, Rpc, new Assistant.AssistantData(this), memory: Memory);
         // Tests may point the voice at a stand-in server (loopback); the real address is fixed in the code.
+        Agent = new Assistant.JarvisAgent(this, paths);
         Voice = new Assistant.VoiceService(paths, platform.Secrets, baseUrl: Environment.GetEnvironmentVariable("PGL_TEST_ELEVENLABS_BASE") is { Length: > 0 } vb && Uri.TryCreate(vb, UriKind.Absolute, out var vu) && vu.IsLoopback ? vb : null);
         Research = new ResearchService(Assistant, News, SteamAchievements, Rpc) { MojangBase = Environment.GetEnvironmentVariable("PGL_MOJANG_BASE") is { Length: > 0 } mb ? mb : "https://launchercontent.mojang.com" };
 

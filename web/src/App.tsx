@@ -119,6 +119,8 @@ function Gate() {
 
   // Also when the login already happened before this view existed (fast connection, texts still loading).
   useEffect(() => startDesignAutoSave(), []);
+  // JARVIS knows which page the person is on ("warum geht das nicht?" in the audio center is about audio).
+  useEffect(() => { let off: (() => void) | undefined; void import("./lib/jarvis-agent").then((m) => { off = m.trackPages(); }); return () => off?.(); }, []);
   useEffect(() => startAccountAutoApply(), []);
   useEffect(() => { if (client.status.auth === "ok") void loadRemotePrefs(); return client.on("authenticated", () => { loadRemotePrefs(); }); }, []);
 

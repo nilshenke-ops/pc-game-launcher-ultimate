@@ -274,6 +274,33 @@ public static class RpcApi
             ctx.Session.JarvisUntil = on ? DateTime.UtcNow + Assistant.Jarvis.Idle : null;
             return new { active = on, idleMinutes = (int)Assistant.Jarvis.Idle.TotalMinutes };
         });
+        // ------------------------------------------------------------ JARVIS control centre (3.59): plan → confirm → run → check
+        rpc.Register("jarvis.plan", async ctx =>
+        {
+            var task = await s.Agent.PlanAsync(ctx.Str("text", 2000), ctx.OptStr("page", 80), ctx.Session.PrefsKey, ctx.Session.Who);
+            return new { task };
+        });
+        rpc.Register("jarvis.execute", async ctx =>
+        {
+            var id = ctx.Str("taskId", 40);
+            var selected = ctx.Params.TryGetProperty("steps", out var st) && st.ValueKind == JsonValueKind.Array
+                ? st.EnumerateArray().Where(x => x.ValueKind == JsonValueKind.String).Select(x => x.GetString()!).Take(30).ToHashSet() : new HashSet<string>();
+            var refs = new Dictionary<string, string>();
+            if (ctx.Params.TryGetProperty("refs", out var rf) && rf.ValueKind == JsonValueKind.Object)
+                foreach (var p in rf.EnumerateObject().Take(30)) if (p.Value.ValueKind == JsonValueKind.String && p.Value.GetString()!.Length <= 120) refs[p.Name] = p.Value.GetString()!;
+            var critical = ctx.Params.TryGetProperty("confirmCritical", out var cc) && cc.ValueKind == JsonValueKind.True;
+            var session = ctx.Session;
+            // Every step is checked against this device's own permissions – JARVIS never gets more rights than the person.
+            return await s.Agent.ExecuteAsync(session.PrefsKey, id, selected, refs, critical, perm => session.Has(perm), t => s.Rpc.SendTo(session, "jarvis.task", t));
+        });
+        rpc.Register("jarvis.cancelTask", ctx => new { cancelled = s.Agent.Cancel(ctx.Session.PrefsKey, ctx.Str("taskId", 40)) });
+        rpc.Register("jarvis.stop", ctx => new { stopped = s.Agent.StopAll(ctx.Session.PrefsKey) });
+        rpc.Register("jarvis.history", ctx => s.Agent.History(ctx.OptStr("query", 100), ctx.OptStr("kind", 20), ctx.OptStr("state", 20), ctx.Params.TryGetProperty("limit", out var l) && l.TryGetInt32(out var n) ? n : 50));
+        rpc.Register("jarvis.historyDelete", ctx => new { deleted = s.Agent.Delete(ctx.Str("taskId", 40)) });
+        rpc.Register("jarvis.historyClear", ctx => new { deleted = s.Agent.Clear() });
+        rpc.Register("jarvis.historyConfigure", ctx => s.Agent.Configure(
+            ctx.Params.TryGetProperty("keep", out var k) && k.ValueKind is JsonValueKind.True or JsonValueKind.False ? k.GetBoolean() : null,
+            ctx.Params.TryGetProperty("keepRequests", out var kr) && kr.ValueKind is JsonValueKind.True or JsonValueKind.False ? kr.GetBoolean() : null));
         rpc.Register("assistant.ask", async ctx =>
         {
             var wants = ctx.Params.TryGetProperty("jarvis", out var j) && j.ValueKind == JsonValueKind.True;
