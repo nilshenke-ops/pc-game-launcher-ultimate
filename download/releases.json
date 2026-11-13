@@ -1,5 +1,35 @@
 [
   {
+    "version": "3.55.0",
+    "date": "2026-11-13",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.0/PCGameLauncherCompanion.exe",
+    "size": 95163392,
+    "sha256": "c3213580954ac676a7e6efe3ff4f4b7ffe847547f9322b35387108223461ee87",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.55.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.55.0/PCGameLauncherCompanion-3.55.0-win-x64.zip",
+      "size": 89437716,
+      "sha256": "84061a3a28ff8244352c9cba995d20a4485daf481fdddbad34e135db9f281cc2"
+    },
+    "notes": "**JARVIS-Insel im Stil von NotchPixel und Smart Notch – im eigenen Design:** Die Bereiche liegen jetzt als Symbolleiste ganz oben (mit gleitender Markierung und Punkt unter dem offenen Bereich), rechts daneben Akku des PCs, Wetter und Uhrzeit. · **Übersicht:** Kalenderwoche mit „KW“ und markiertem heutigen Tag, Fokus-Timer mit Ring (kürzer, länger, Pause, Stopp), Wetter für deinen Ort (Open-Meteo, ohne Konto) und CPU, GPU und Arbeitsspeicher als Verlaufslinien. · **Regler:** Helligkeit und Lautstärke des PCs als hohe Schieber, dazu Stumm, Fokus, Akkustand und Energiemodus (Sparen, Ausgewogen, Leistung). Gezeigt wird nur, was der PC wirklich meldet.",
+    "changes": {
+      "neu": [
+        "**JARVIS-Insel im Stil von NotchPixel und Smart Notch – im eigenen Design:** Die Bereiche liegen jetzt als Symbolleiste ganz oben (mit gleitender Markierung und Punkt unter dem offenen Bereich), rechts daneben Akku des PCs, Wetter und Uhrzeit.",
+        "**Übersicht:** Kalenderwoche mit „KW“ und markiertem heutigen Tag, Fokus-Timer mit Ring (kürzer, länger, Pause, Stopp), Wetter für deinen Ort (Open-Meteo, ohne Konto) und CPU, GPU und Arbeitsspeicher als Verlaufslinien.",
+        "**Regler:** Helligkeit und Lautstärke des PCs als hohe Schieber, dazu Stumm, Fokus, Akkustand und Energiemodus (Sparen, Ausgewogen, Leistung). Gezeigt wird nur, was der PC wirklich meldet.",
+        "**System:** Kacheln für CPU, Arbeitsspeicher, GPU, freien Speicher, Akku und Laufzeit seit dem letzten Start.",
+        "**Download fertig:** Der Begleiter beobachtet den Downloads-Ordner und meldet eine Datei, sobald sie vollständig ist (nur der Dateiname, nichts wird geöffnet oder gelesen). Halb geladene Dateien (.crdownload, .part …) werden nicht gemeldet.",
+        "Meldungen des PCs lassen sich in der Insel mit „Alle löschen“ auf einmal wegräumen.",
+        "Läuft Musik, zeigt die geschlossene Insel das Albumbild."
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "yCdU2X3IIG3OJzAiyV4riAol1F+oaGOcbHFH4ePXakLIaLcKkZsH+NFU47Rli9kyPhxQvZDeKAmBgZBBAOuwbA=="
+  },
+  {
     "version": "3.54.0",
     "date": "2026-11-12",
     "channel": "stable",
@@ -1319,29 +1349,5 @@
       ]
     },
     "signature": "69h9t8NsNVLvgFFY92HrHQo5c5lw75rPApn6OmkrUVgw72QhuOGFwObzaKj/2FaVcb9Iw959Ewpu47LY/tDWRw=="
-  },
-  {
-    "version": "3.25.2",
-    "date": "2026-11-07",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion.exe",
-    "size": 95014780,
-    "sha256": "9458c301d6a0ae94faf37851415de74dd96da6c2c0ff06376713953bf53dca30",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.25.2-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.25.2/PCGameLauncherCompanion-3.25.2-win-x64.zip",
-      "size": 89289509,
-      "sha256": "58866a20b671937596f3e5c18c4d5469b319c7cce48d2bba96b17cc2480de10d"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "ElevenLabs: „Der Schlüssel wird abgelehnt“ bei einem richtigen Schlüssel. Der Verbindungstest fragt das Kontingent ab, und das braucht bei ElevenLabs das Recht „user_read“; ein auf einzelne Rechte beschränkter Schlüssel bekommt dort ein 401, obwohl er gültig ist. Jetzt gilt der Test als bestanden und sagt, dass nur die Kontingent-Anzeige fehlt. Fehlt für die Stimme oder die Spracherkennung ein Recht, nennt die Meldung es („text_to_speech“ bzw. „speech_to_text“) statt „abgelehnt“. Wirklich ungültige Schlüssel werden weiter abgelehnt"
-      ]
-    },
-    "signature": "2//BtlrqLMZxdXVT9H5qoZ8m95fgfgUuD5beJUjw0th8LRhAPguYQYJZg2WIo6qpPgv5WE8x+GnGPlur4J9Wqw=="
   }
 ]
