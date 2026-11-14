@@ -37,3 +37,10 @@ Keine Registry-Eingriffe, keine Änderung an Sicherheitsfunktionen, kein Beenden
 | Browser `e2e/perf-366.spec.ts` gegen echten Headless-Begleiter: CPU/RAM/Netz/Speicher/FPS/Analyse/Ping-Details, Verlauf vom PC, Mbit/s, FPS ehrlich „nicht verfügbar“ unter Linux, Einstellung aus/an | **bestanden** |
 | Windows-Build (PresentMon-Start, Signaturprüfung, Laufwerkszähler, SMART) | kompiliert; **nicht auf echter Windows-Hardware getestet** |
 | FPS mit echten Spielen (DX11/DX12/Vulkan/OpenGL, NVIDIA/AMD/Intel), FPS vorher/nachher, Neustart | **nicht getestet** – kein Windows-PC mit GPU im Testaufbau |
+
+## 3.67: Wofür wird es gebraucht + Kennzeichnung
+- Programme nach **RAM, CPU und GPU** (GPU-Last und eigener Grafikspeicher je Programm: Windows-Leistungsindikatoren „GPU Engine“ / „GPU Process Memory“, nur Windows-Begleiter).
+- **FPS:** alle Programme mit Bildausgabe und deren FPS; das gemessene Spiel ist markiert.
+- **Speicher:** größte Spiele/Programme (aus der Speicher-Seite), Windows-Laufwerk markiert.
+- **Kennzeichnung:** `windows` (Teil von Windows, nicht beendbar), `driver` (Treiber, Warnung vor dem Schließen), `companion` (Nexus), `app`. Bekannte Windows-Prozesse und Treiber haben eine kurze Erklärung (`ProcessUsageService.RoleOf`).
+- Tests: `ProcessKindTests` (Kennzeichnung, Erklärung, GPU-Liste sortiert / nicht unterstützt), `e2e/perf-366.spec.ts` (Programmliste mit Legende, GPU-Hinweis unter Linux, Speicher-Liste).

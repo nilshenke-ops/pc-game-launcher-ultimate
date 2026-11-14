@@ -185,6 +185,8 @@ export interface FpsLive {
   message?: string | null; canRequestPermission?: boolean; game?: string | null; process?: string | null; api?: string | null;
   fps?: number | null; avg?: number | null; low1?: number | null; low01?: number | null; frameMs?: number | null; stutters?: number;
   gpuBusy?: number | null; seconds?: number | null; frameTimes?: number[] | null;
+  /** Every program that shows frames right now, with its own frame rate. */
+  apps?: { name: string; fps: number | null; kind: "windows" | "driver" | "companion" | "app"; role?: string | null }[] | null;
 }
 export interface FpsSession { id: string; itemId?: string | null; game: string; process?: string | null; api?: string | null; startedAt: string; minutes: number; avg?: number | null; low1?: number | null; low01?: number | null; stutters: number; gpuBusy?: number | null; cpuAvg?: number | null; gpuAvg?: number | null; chart: number[]; compare?: string | null }
 export interface HistoryPoint { at: string; cpu?: number | null; ram?: number | null; gpu?: number | null; vram?: number | null; cpuTemp?: number | null; gpuTemp?: number | null; fps?: number | null; down?: number | null; up?: number | null; diskRead?: number | null; diskWrite?: number | null }

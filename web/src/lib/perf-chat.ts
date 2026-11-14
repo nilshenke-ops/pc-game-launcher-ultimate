@@ -23,7 +23,7 @@ export function perfIntent(raw: string): PerfIntent | null {
 
 export interface Gpu { name: string; utilPercent?: number | null; tempC?: number | null; memUsedBytes?: number | null; memTotalBytes?: number | null }
 export interface Sample { cpuPercent?: number | null; cpuTempC?: number | null; cpuName?: string | null; memTotalBytes?: number | null; memUsedBytes?: number | null; gpus?: Gpu[]; disks?: { name: string; label: string; totalBytes: number; freeBytes: number }[]; fpsStatus?: string | null; off?: string[] }
-export interface Proc { name: string; ramMb: number; cpuPercent?: number | null; count: number }
+export interface Proc { name: string; ramMb: number; cpuPercent?: number | null; count: number; kind?: "windows" | "driver" | "companion" | "app"; role?: string | null }
 export interface Now { sample: Sample; running: { itemId: string; name: string }[]; gameRunning: boolean }
 
 const pct = (n: number) => `${Math.round(n)} %`;

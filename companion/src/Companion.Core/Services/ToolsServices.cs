@@ -255,7 +255,9 @@ public sealed class StorageService
             try
             {
                 if (!d.IsReady || d.DriveType is not (DriveType.Fixed or DriveType.Removable) || d.TotalSize < 1_000_000_000) continue;
-                drives.Add(new { name = d.Name, label = d.VolumeLabel, total = d.TotalSize, free = d.AvailableFreeSpace, format = d.DriveFormat });
+                // The drive Windows runs from: its system folders must never be deleted – the page says so.
+                var system = string.Equals(d.Name, Path.GetPathRoot(Environment.SystemDirectory), StringComparison.OrdinalIgnoreCase) && OperatingSystem.IsWindows();
+                drives.Add(new { name = d.Name, label = d.VolumeLabel, total = d.TotalSize, free = d.AvailableFreeSpace, format = d.DriveFormat, system });
             }
             catch { /* drive vanished */ }
         var items = _library.List().Where(i => !string.IsNullOrEmpty(i.InstallDir)).Select(i =>

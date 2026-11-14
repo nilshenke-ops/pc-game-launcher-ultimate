@@ -230,3 +230,62 @@ sealed class WindowsDiskActivity : IDiskActivity
         catch (Exception ex) { Log.Warn("monitor", "Laufwerkszustand: " + ex.Message); return null; }
     }
 }
+
+/// <summary>
+/// Which programs use the graphics card: the "GPU Engine" counters per process (busiest engine type, like Task Manager's "GPU"
+/// column) and "GPU Process Memory" (dedicated graphics memory). Read only when someone opens the list.
+/// </summary>
+sealed class WindowsGpuProcesses : IGpuProcesses
+{
+    bool _broken;
+    public bool Supported => !_broken;
+
+    static int Pid(string instance) { var i = instance.IndexOf("pid_", StringComparison.Ordinal); if (i < 0) return -1; var j = instance.IndexOf('_', i + 4); return int.TryParse(instance[(i + 4)..(j < 0 ? instance.Length : j)], out var p) ? p : -1; }
+
+    public async Task<List<GpuProcUsage>?> ReadAsync(CancellationToken ct)
+    {
+        if (_broken) return null;
+        try
+        {
+            static Dictionary<string, CounterSample> Snap()
+            {
+                var d = new Dictionary<string, CounterSample>();
+                var data = new PerformanceCounterCategory("GPU Engine").ReadCategory()["Utilization Percentage"];
+                if (data != null) foreach (InstanceData i in data.Values) d[i.InstanceName] = i.Sample;
+                return d;
+            }
+            var a = await Task.Run(Snap, ct);
+            await Task.Delay(1000, ct);
+            var b = await Task.Run(Snap, ct);
+            // per process and engine type (3D, Copy, VideoDecode …): sum over engines of that type; the process value is its busiest type
+            var perType = new Dictionary<(int pid, string type), double>();
+            foreach (var (inst, s2) in b)
+            {
+                if (!a.TryGetValue(inst, out var s1)) continue;
+                var pid = Pid(inst); if (pid <= 0) continue;
+                var t = inst.LastIndexOf("engtype_", StringComparison.Ordinal) is var k and >= 0 ? inst[(k + 8)..] : "?";
+                perType[(pid, t)] = perType.GetValueOrDefault((pid, t)) + CounterSample.Calculate(s1, s2);
+            }
+            var util = perType.GroupBy(x => x.Key.pid).ToDictionary(g => g.Key, g => Math.Min(100, g.Max(x => x.Value)));
+            var vram = new Dictionary<int, double>();
+            try
+            {
+                var mem = new PerformanceCounterCategory("GPU Process Memory").ReadCategory()["Dedicated Usage"];
+                if (mem != null) foreach (InstanceData i in mem.Values) { var pid = Pid(i.InstanceName); if (pid > 0) vram[pid] = vram.GetValueOrDefault(pid) + i.RawValue / 1048576.0; }
+            }
+            catch { /* older Windows: no per-process graphics memory */ }
+            var names = new Dictionary<int, string>();
+            foreach (var pid in util.Keys.Concat(vram.Keys).Distinct())
+                try { using var p = Process.GetProcessById(pid); names[pid] = p.ProcessName; } catch { /* ended meanwhile */ }
+            return names.GroupBy(n => n.Value, StringComparer.OrdinalIgnoreCase).Select(g =>
+            {
+                var pids = g.Select(x => x.Key).ToList();
+                double? u = pids.Any(util.ContainsKey) ? Math.Round(Math.Min(100, pids.Sum(p => util.GetValueOrDefault(p))), 1) : null;
+                double? v = pids.Any(vram.ContainsKey) ? Math.Round(pids.Sum(p => vram.GetValueOrDefault(p))) : null;
+                return new GpuProcUsage(g.Key, u, v, pids.Count);
+            }).Where(x => x.GpuPercent is > 0.05 || x.VramMb is >= 1).ToList();
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) { _broken = true; Log.Warn("procs", "GPU-Leistungsindikatoren je Programm nicht verfügbar: " + ex.Message); return null; }
+    }
+}

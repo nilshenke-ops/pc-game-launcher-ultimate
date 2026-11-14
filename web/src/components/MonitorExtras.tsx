@@ -1,4 +1,5 @@
 import { PowerPanel } from "./power-panel";
+import { KindBadge } from "./island-procs";
 import { useState } from "react";
 import { FolderOpen, HardDrive, Power, Wifi } from "lucide-react";
 import { client } from "../lib/rpc";
@@ -68,7 +69,7 @@ export interface StorageItem {
   update?: { status: "current" | "update" | "updating" | "paused" | "damaged" | "unknown"; bytesToDownload?: number; bytesDownloaded?: number; lastUpdated?: string; buildId?: string } | null;
 }
 export interface StorageInfo {
-  drives: { name: string; label: string; total: number; free: number; format: string }[];
+  drives: { name: string; label: string; total: number; free: number; format: string; system?: boolean }[];
   items: StorageItem[];
   scanning?: string | null;
   checkedAt?: string;
@@ -109,8 +110,9 @@ export function StorageCard({ full = false }: { full?: boolean }) {
             {!online && d.checkedAt && <Banner kind="info">{t("Ohne PC: Stand vom {d}", { d: dateTime(d.checkedAt) })}</Banner>}
             {d.drives.map((dr) => (
               <div key={dr.name} className="stack-sm">
-                <div className="row between small"><b>{dr.name}{dr.label ? ` · ${dr.label}` : ""}</b><span className="muted">{t("{f} frei von {t}", { f: bytes(dr.free), t: bytes(dr.total) })}</span></div>
+                <div className="row between small"><b>{dr.name}{dr.label ? ` · ${dr.label}` : ""} {dr.system && <KindBadge kind="windows" role={t("Hier liegt Windows")} />}</b><span className="muted">{t("{f} frei von {t}", { f: bytes(dr.free), t: bytes(dr.total) })}</span></div>
                 <Meter value={((dr.total - dr.free) / dr.total) * 100} />
+                {dr.system && <span className="tiny" style={{ color: "#fbbf24" }}>{t("Windows-Laufwerk: Ordner wie „Windows“, „Programme“ und „Benutzer“ nicht löschen oder verschieben.")}</span>}
               </div>
             ))}
             {d.scanning && <Banner kind="info">{t("Berechne: {n} …", { n: d.scanning })}</Banner>}

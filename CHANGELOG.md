@@ -4,6 +4,22 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.67.0 – 2026-11-14
+### Neu
+- **Wofür wird es gebraucht – jetzt auch bei GPU, FPS und Speicher.** Bisher zeigten nur CPU und RAM, welche Programme sie verbrauchen.
+  - **GPU:** Neuer Tab „GPU“ in „Was am meisten verbraucht“. Er zeigt je Programm die Grafikkarten-Last und den belegten Grafikspeicher. Die Werte kommen aus denselben Windows-Leistungsindikatoren, die auch der Task-Manager nutzt. Erreichbar über GPU → „Programme nach GPU-Last“ und VRAM → „Welche Programme Grafikspeicher belegen“.
+  - **FPS:** „Programme mit Bildausgabe“ listet alles auf, was gerade Bilder ausgibt, jeweils mit eigenen FPS. Das gemessene Spiel ist markiert.
+  - **Speicher:** „Was am meisten Platz braucht“ zeigt die größten Spiele und Programme, mit Link zur Seite „Speicher“.
+- **Windows-Programme sind gekennzeichnet.**
+  - Teile von Windows (svchost, dwm, explorer, Defender …) tragen „Windows · wichtig“ und eine kurze Erklärung, wofür sie da sind. Beenden lassen sie sich hier nicht.
+  - Grafik-, Ton- und Zubehör-Treiber (NVIDIA, AMD, Intel, Realtek …) tragen „Treiber – besser laufen lassen“. Vor dem Schließen kommt ein Hinweis.
+  - Der Begleiter selbst trägt „Nexus“.
+  - Die Kennzeichnungen gelten in der Insel und in der PC-Steuerzentrale, mit einer Legende dazu.
+  - Das **Windows-Laufwerk** ist markiert: Ordner wie „Windows“, „Programme“ und „Benutzer“ nicht löschen oder verschieben.
+### Hinweise
+- Den Begleiter aktualisieren.
+- GPU je Programm gibt es nur im Windows-Begleiter. Auf echter Windows-Hardware ist das noch nicht getestet.
+
 ## 3.66.0 – 2026-11-14
 ### Neu
 - **FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel.

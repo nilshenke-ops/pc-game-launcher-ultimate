@@ -56,6 +56,7 @@ sealed class WindowsPlatform : IPlatform
     public IControllers Controllers { get; } = new XInputControllers();
     public IFrameCapture FrameCapture { get; } = new PresentMonCapture();
     public IDiskActivity DiskActivity { get; } = new WindowsDiskActivity();
+    public IGpuProcesses GpuProcesses { get; } = new WindowsGpuProcesses();
     public INetworkAccess NetworkAccess { get; } = new WindowsNetworkAccess();
     public IInputHook InputHook { get; } = new WindowsInputHook();
     public WindowsDesktopWidgets DesktopWidgetWindows { get; }

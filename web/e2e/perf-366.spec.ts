@@ -73,8 +73,28 @@ test("Insel: jeder Wert öffnet seine Detailansicht mit echten Werten und Verlau
     for (const f of ins.findings) { expect(f.why.length).toBeGreaterThan(5); expect(f.fix.length).toBeGreaterThan(5); expect(f.risk.length).toBeGreaterThan(2); }
     await shot(page, "perf-insights");
 
+    // what uses it: the program list (RAM/CPU/GPU) marks Windows parts, drivers and the companion
+    await an.getByRole("button", { name: "CPU", exact: true }).click();
+    await page.getByRole("dialog", { name: "CPU im Detail" }).getByRole("button", { name: "Programme nach CPU-Last" }).click();
+    const procs = panel.getByRole("dialog", { name: "Was am meisten verbraucht" });
+    await expect(procs.getByRole("list", { name: "Programme nach CPU-Last" }).locator("li").first()).toBeVisible({ timeout: 15_000 });
+    await procs.getByRole("tab", { name: /RAM/ }).click();
+    const self = procs.locator("li", { hasText: /pgl-companion/ });                 // Linux shortens process names to 15 letters
+    if (await self.count()) {
+      await expect(self.getByText("Nexus")).toBeVisible();                            // the companion is marked …
+      await expect(self.getByRole("button", { name: /schließen/ })).toHaveCount(0);  // … and cannot be closed
+    }
+    await expect(procs.getByText(/Teil von Windows – hält den PC am Laufen/)).toBeVisible();   // the legend explains the marks
+    await procs.getByRole("tab", { name: /GPU/ }).click();
+    await expect(procs.getByText(/liest nur der Windows-Begleiter/)).toBeVisible();          // Linux: said, not faked
+    await shot(page, "perf-procs");
+    await procs.getByRole("button", { name: "Schließen" }).first().click();
+    const back = page.getByRole("dialog", { name: "CPU im Detail" });
+    await back.getByRole("button", { name: "Speicher", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "Speicher im Detail" }).getByText("Was am meisten Platz braucht")).toBeVisible();
+    await page.getByRole("dialog", { name: "Speicher im Detail" }).getByRole("button", { name: "Ping", exact: true }).click();
+
     // ping: measured while the view is open
-    await an.getByRole("button", { name: "Ping", exact: true }).click();
     const ping = page.getByRole("dialog", { name: "Ping im Detail" });
     await expect(ping.getByText("Jitter").first()).toBeVisible({ timeout: 15_000 });
     await ping.getByRole("button", { name: "Zurück zur Insel" }).click();

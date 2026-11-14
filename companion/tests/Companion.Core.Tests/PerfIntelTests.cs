@@ -178,3 +178,32 @@ public class PerfIntelTests
         Assert.Equal(0.0, NetSpeedService.Mbit(0));
     }
 }
+
+public class ProcessKindTests
+{
+    [Fact]
+    public void Windows_parts_drivers_and_the_companion_are_marked_with_what_they_are_for()
+    {
+        var svchost = new ProcUsage("svchost", 300, 2, 60);
+        Assert.Equal("windows", svchost.Kind); Assert.False(svchost.Closable); Assert.Contains("Windows-Dienste", svchost.Role);
+        Assert.Equal("windows", new ProcUsage("dwm", 100, 1, 1).Kind);
+        Assert.Contains("Virenschutz", new ProcUsage("MsMpEng", 100, 1, 1).Role);
+        var nv = new ProcUsage("NVDisplay.Container", 80, 0, 2);
+        Assert.Equal("driver", nv.Kind); Assert.Equal("NVIDIA-Grafiktreiber", nv.Role); Assert.True(nv.Closable);
+        Assert.Equal("companion", new GpuProcUsage("PCGameLauncherCompanion.exe", 1, 50, 1).Kind);
+        var game = new GpuProcUsage("Brotato", 70, 900, 1);
+        Assert.Equal("app", game.Kind); Assert.Null(game.Role); Assert.True(game.Closable);
+    }
+
+    [Fact]
+    public async Task Gpu_per_program_comes_with_the_list_when_the_system_can_tell()
+    {
+        var svc = new ProcessUsageService(_ => Task.FromResult(new List<ProcUsage> { new("game", 900, 30, 1) }))
+        { Gpu = _ => Task.FromResult<List<GpuProcUsage>?>(new() { new("dwm", 3, 120, 1), new("game", 71, 2100, 1) }) };
+        var json = System.Text.Json.JsonSerializer.Serialize(await svc.TopAsync());
+        Assert.Contains("\"gpuSupported\":true", json);
+        Assert.True(json.IndexOf("\"game\"", json.IndexOf("\"gpu\"")) < json.IndexOf("\"dwm\"", json.IndexOf("\"gpu\"")));   // busiest first
+        var none = System.Text.Json.JsonSerializer.Serialize(await new ProcessUsageService(_ => Task.FromResult(new List<ProcUsage>())).TopAsync());
+        Assert.Contains("\"gpuSupported\":false", none);
+    }
+}

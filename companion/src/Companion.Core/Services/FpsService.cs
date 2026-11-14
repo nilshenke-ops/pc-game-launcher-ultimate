@@ -262,6 +262,18 @@ public sealed class FpsService : IDisposable
         return best ?? _apps.OrderByDescending(a => a.Value.Frames).Select(a => a.Key).FirstOrDefault();
     }
 
+    /// <summary>Every program that showed frames in the last 2 s, with its own frame rate – what the frames are "used for".</summary>
+    List<FpsApp> Presenting()
+    {
+        var now = Environment.TickCount64; var list = new List<FpsApp>();
+        foreach (var (app, q) in _rate)
+        {
+            int n; lock (q) { while (q.Count > 0 && now - q.Peek() > 2000) q.Dequeue(); n = q.Count; }
+            if (n > 0 && _apps.TryGetValue(app, out var st)) list.Add(new FpsApp(app, st.Now(), ProcessUsageService.KindOf(app), ProcessUsageService.RoleOf(app)));
+        }
+        return list.OrderByDescending(a => a.Fps ?? 0).Take(8).ToList();
+    }
+
     FpsSession? Finish()
     {
         var main = _apps.OrderByDescending(a => a.Value.Frames).FirstOrDefault();
@@ -296,6 +308,7 @@ public sealed class FpsService : IDisposable
             {
                 Game = _game, Process = app, Api = st.Api, Fps = st.Now(), Avg = st.Average, Low1 = st.Low1, Low01 = st.Low01, FrameMs = Math.Round(st.LastMs, 2),
                 Stutters = st.Stutters, GpuBusy = st.GpuBusyPercent, Seconds = Math.Round(st.DurationSeconds), FrameTimes = st.RecentFrameTimes().TakeLast(240).ToArray(),
+                Apps = Presenting(),
             };
         }
     }
@@ -343,4 +356,7 @@ public sealed record FpsLive(string State, string? Message)
     public double? GpuBusy { get; init; }
     public double? Seconds { get; init; }
     public double[]? FrameTimes { get; init; }
+    public List<FpsApp>? Apps { get; init; }
 }
+
+public sealed record FpsApp(string Name, double? Fps, string Kind, string? Role);

@@ -163,6 +163,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Perf = new PerformanceRecorder(Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
         NetMonitor = new NetworkMonitor(Rpc, () => Settings.Get().PingTargets);
         Fps = new FpsService(platform.FrameCapture, paths, () => Settings.Get().FpsAuto);
+        if (platform.GpuProcesses.Supported) ProcessUsage.Gpu = ct => platform.GpuProcesses.ReadAsync(ct);
         Fps.SessionLoad = id => { var (c, g) = Perf.Peek(id); return (c, g, null, null); };
         Fps.Saved += s => Rpc.Changed("fps");
         Monitor.Fps = () => Fps.Live();

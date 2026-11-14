@@ -7,6 +7,18 @@ public sealed record ProcUsage(string Name, double RamMb, double? CpuPercent, in
 {
     /// <summary>False for Windows' own processes and this companion – the page offers no "close" for them.</summary>
     public bool Closable => !ProcessUsageService.IsProtected(Name);
+    /// <summary>windows (part of Windows – never end) | companion (this app) | driver (graphics/sound driver – better leave running) | app.</summary>
+    public string Kind => ProcessUsageService.KindOf(Name);
+    /// <summary>What it is for, in plain words (known Windows parts and drivers), otherwise null.</summary>
+    public string? Role => ProcessUsageService.RoleOf(Name);
+}
+
+/// <summary>Graphics card use of one program: share of the GPU (busiest engine) and its own graphics memory.</summary>
+public sealed record GpuProcUsage(string Name, double? GpuPercent, double? VramMb, int Count)
+{
+    public bool Closable => !ProcessUsageService.IsProtected(Name);
+    public string Kind => ProcessUsageService.KindOf(Name);
+    public string? Role => ProcessUsageService.RoleOf(Name);
 }
 
 /// <summary>
@@ -20,6 +32,7 @@ public sealed class ProcessUsageService
     readonly Func<CancellationToken, Task<List<ProcUsage>>> _measure;
     readonly SemaphoreSlim _gate = new(1, 1);
     List<ProcUsage>? _last;
+    List<GpuProcUsage>? _gpu;
     DateTime _at;
 
     public ProcessUsageService(Func<CancellationToken, Task<List<ProcUsage>>>? measure = null) => _measure = measure ?? MeasureAsync;
@@ -29,12 +42,19 @@ public sealed class ProcessUsageService
         await _gate.WaitAsync(ct);
         try
         {
-            if (_last == null || DateTime.UtcNow - _at > TimeSpan.FromSeconds(5)) { _last = await _measure(ct); _at = DateTime.UtcNow; }
+            if (_last == null || DateTime.UtcNow - _at > TimeSpan.FromSeconds(5))
+            {
+                var gpuTask = Gpu?.Invoke(ct) ?? Task.FromResult<List<GpuProcUsage>?>(null);   // measured at the same time as the processor share
+                _last = await _measure(ct); _at = DateTime.UtcNow;
+                try { _gpu = await gpuTask; } catch (Exception ex) { _gpu = null; Pgl.Core.Infrastructure.Log.Warn("procs", "GPU je Programm: " + ex.Message); }
+            }
             return new
             {
                 at = _at,
                 ram = _last.OrderByDescending(p => p.RamMb).Take(n),
                 cpu = _last.Where(p => p.CpuPercent != null).OrderByDescending(p => p.CpuPercent).Take(n),
+                gpu = _gpu?.OrderByDescending(p => p.GpuPercent ?? 0).ThenByDescending(p => p.VramMb ?? 0).Take(n),
+                gpuSupported = _gpu != null,
                 cores = Environment.ProcessorCount,
             };
         }
@@ -63,6 +83,56 @@ public sealed class ProcessUsageService
     };
     static readonly string Self = Process.GetCurrentProcess().ProcessName;
     public static bool IsProtected(string name) => Protected.Contains(name) || string.Equals(name, Self, StringComparison.OrdinalIgnoreCase);
+
+    static string Bare(string n) => n.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? n[..^4] : n;
+    static readonly HashSet<string> Companion = new(StringComparer.OrdinalIgnoreCase) { "PCGameLauncherCompanion", "pgl-companion-headless", "msedgewebview2" };
+    // Graphics, sound and chipset helpers: not part of Windows, but ending them can break the picture, the sound or the overlay.
+    static readonly string[] Drivers = { "NVDisplay.Container", "nvcontainer", "nvsphelper64", "NVIDIA Web Helper", "NVIDIA Share", "NVIDIA Overlay", "amdfendrsr", "atiesrxx", "atieclxx", "AMDRSServ", "RadeonSoftware", "AMDRSSrcExt", "igfxEM", "igfxCUIService", "IntelCpHDCPSvc", "IntelGraphicsSoftware", "RtkAudUService64", "RtkAudioService", "WavesSvc64", "NahimicSvc64", "AsusOptimization", "LGHUB", "lghub_agent", "iCUE", "Corsair.Service" };
+    static readonly Dictionary<string, string> Roles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["Idle"] = "Freie Rechenzeit des Prozessors (kein echtes Programm)",
+        ["System"] = "Kern von Windows (Treiber, Laufwerke, Netzwerk)",
+        ["Registry"] = "Windows-Registrierung (Einstellungen von Windows)",
+        ["Memory Compression"] = "Speicherkomprimierung von Windows – spart Arbeitsspeicher",
+        ["MemCompression"] = "Speicherkomprimierung von Windows – spart Arbeitsspeicher",
+        ["smss"] = "Startet die Windows-Sitzung", ["csrss"] = "Grundlegender Windows-Prozess für Fenster und Konsole",
+        ["wininit"] = "Startet Windows-Dienste", ["winlogon"] = "Windows-Anmeldung und Sperrbildschirm",
+        ["services"] = "Verwaltet alle Windows-Dienste", ["lsass"] = "Anmeldung und Passwörter von Windows (Sicherheit)",
+        ["lsaiso"] = "Geschützte Anmeldedaten (Sicherheit)", ["svchost"] = "Windows-Dienste (Netzwerk, Updates, Audio, Bluetooth …)",
+        ["dwm"] = "Zeichnet den Desktop und alle Fenster", ["fontdrvhost"] = "Schriftarten von Windows",
+        ["sihost"] = "Windows-Oberfläche (Benachrichtigungen, Taskleiste)", ["explorer"] = "Taskleiste, Startmenü und Datei-Explorer",
+        ["audiodg"] = "Windows-Audio (Ton für alle Programme)", ["spoolsv"] = "Druckdienst von Windows",
+        ["ctfmon"] = "Tastatur-, Sprach- und Stifteingabe", ["conhost"] = "Hilfsprozess für Konsolenfenster",
+        ["RuntimeBroker"] = "Prüft Rechte von Windows-Apps", ["SearchHost"] = "Windows-Suche (Oberfläche)", ["SearchIndexer"] = "Windows-Suche (Index der Dateien)",
+        ["StartMenuExperienceHost"] = "Startmenü", ["ShellExperienceHost"] = "Windows-Oberfläche (Info-Center, Uhr)", ["TextInputHost"] = "Bildschirmtastatur und Emoji-Eingabe",
+        ["taskhostw"] = "Geplante Windows-Aufgaben", ["MsMpEng"] = "Microsoft Defender – Virenschutz", ["SecurityHealthService"] = "Windows-Sicherheit",
+        ["WmiPrvSE"] = "Windows-Verwaltung (Abfragen von Programmen)", ["dllhost"] = "Hilfsprozess von Windows", ["LogonUI"] = "Windows-Anmeldebildschirm",
+        ["userinit"] = "Startet die Benutzeroberfläche nach der Anmeldung",
+        ["PCGameLauncherCompanion"] = "Der Nexus-Begleiter selbst (diese App)", ["pgl-companion-headless"] = "Der Nexus-Begleiter selbst (diese App)",
+        ["msedgewebview2"] = "Anzeige von Webinhalten (u. a. für die Insel des Begleiters und andere Apps)",
+        ["init"] = "Startprozess des Systems", ["systemd"] = "Startprozess des Systems",
+    };
+
+    public static string KindOf(string name)
+    {
+        var n = Bare(name);
+        if (Companion.Contains(n) || string.Equals(n, Self, StringComparison.OrdinalIgnoreCase)) return "companion";
+        if (Protected.Contains(n)) return "windows";
+        if (Drivers.Any(d => n.StartsWith(d, StringComparison.OrdinalIgnoreCase))) return "driver";
+        return "app";
+    }
+
+    public static string? RoleOf(string name)
+    {
+        var n = Bare(name);
+        if (Roles.TryGetValue(n, out var r)) return r;
+        return KindOf(n) == "driver"
+            ? (n.StartsWith("NV", StringComparison.OrdinalIgnoreCase) ? "NVIDIA-Grafiktreiber" : n.StartsWith("amd", StringComparison.OrdinalIgnoreCase) || n.StartsWith("ati", StringComparison.OrdinalIgnoreCase) || n.StartsWith("Radeon", StringComparison.OrdinalIgnoreCase) ? "AMD-Grafiktreiber" : n.StartsWith("igfx", StringComparison.OrdinalIgnoreCase) || n.StartsWith("Intel", StringComparison.OrdinalIgnoreCase) ? "Intel-Grafiktreiber" : "Treiber für Ton oder Zubehör")
+            : null;
+    }
+
+    /// <summary>Graphics card use per program (Windows: "GPU Engine" and "GPU Process Memory" counters). Null when the system cannot tell.</summary>
+    public Func<CancellationToken, Task<List<GpuProcUsage>?>>? Gpu { get; set; }
 
     /// <summary>
     /// Closes every process of a program. Without force: asks its windows to close (the program may ask to save) and waits up to 4 s.

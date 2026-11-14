@@ -64,6 +64,8 @@ public interface IPlatform
     Pgl.Core.Services.IFrameCapture FrameCapture => Pgl.Core.Services.NullFrameCapture.Instance;
     /// <summary>Read/write speed and activity per drive (performance counters on Windows, /proc/diskstats on Linux).</summary>
     IDiskActivity DiskActivity => NullDiskActivity.Instance;
+    /// <summary>Graphics card use per program (Windows "GPU Engine" counters, like Task Manager).</summary>
+    IGpuProcesses GpuProcesses => NullGpuProcesses.Instance;
 }
 
 /// <summary>Pictures for the capture library and a delete that can be undone.</summary>
@@ -675,4 +677,18 @@ public sealed class ProcDiskActivity : IDiskActivity
         _last = cur; _at = now;
         return list;
     }
+}
+
+public interface IGpuProcesses
+{
+    bool Supported { get; }
+    /// <summary>Measures over about one second. Null when the system cannot tell.</summary>
+    Task<List<Pgl.Core.Services.GpuProcUsage>?> ReadAsync(CancellationToken ct);
+}
+
+public sealed class NullGpuProcesses : IGpuProcesses
+{
+    public static readonly NullGpuProcesses Instance = new();
+    public bool Supported => false;
+    public Task<List<Pgl.Core.Services.GpuProcUsage>?> ReadAsync(CancellationToken ct) => Task.FromResult<List<Pgl.Core.Services.GpuProcUsage>?>(null);
 }

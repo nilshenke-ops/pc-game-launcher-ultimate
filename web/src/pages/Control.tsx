@@ -11,6 +11,7 @@ import { dateTime, relTime } from "../lib/format";
 import { Banner, Button, Card, confirmDialog, Empty, PageHead } from "../components/ui";
 import type { LibraryItem } from "../lib/types";
 import type { Now, Proc } from "../lib/perf-chat";
+import { KindBadge } from "../components/island-procs";
 import { WakeCard } from "../components/wake-card";
 
 const gb = (b: number) => `${(b / 1073741824).toFixed(1)} GB`;
@@ -143,8 +144,9 @@ export default function ControlPage() {
         <Card title={t("Programme mit dem meisten Speicher")} icon={<Gauge size={18} />} style={{ marginTop: 16 }} actions={<Button size="sm" icon={<RefreshCw size={14} />} busy={measuring} disabled={!online} onClick={() => void measure()}>{top ? t("Neu messen") : t("Jetzt messen")}</Button>}>
           {!top ? <p className="small muted">{t("Wird nur gemessen, wenn du tippst (dauert etwa 1 Sekunde) – nicht dauernd im Hintergrund. Frag auch JARVIS: „Welche Programme verbrauchen am meisten RAM?“")}</p> : (
             <div className="grid-2">
-              <div><div className="label">{t("Arbeitsspeicher")}</div><ol className="small">{top.ram.map((p) => <li key={p.name}>{p.name} – {p.ramMb >= 1024 ? `${(p.ramMb / 1024).toFixed(1)} GB` : `${Math.round(p.ramMb)} MB`}{p.count > 1 ? ` (${p.count})` : ""}</li>)}</ol></div>
-              <div><div className="label">{t("Prozessor (1 Sekunde gemessen)")}</div><ol className="small">{top.cpu.map((p) => <li key={p.name}>{p.name} – {p.cpuPercent} %</li>)}</ol></div>
+              <div><div className="label">{t("Arbeitsspeicher")}</div><ol className="small">{top.ram.map((p) => <li key={p.name} title={p.role ?? undefined}>{p.name} <KindBadge kind={p.kind} role={p.role} /> – {p.ramMb >= 1024 ? `${(p.ramMb / 1024).toFixed(1)} GB` : `${Math.round(p.ramMb)} MB`}{p.count > 1 ? ` (${p.count})` : ""}</li>)}</ol></div>
+              <div><div className="label">{t("Prozessor (1 Sekunde gemessen)")}</div><ol className="small">{top.cpu.map((p) => <li key={p.name} title={p.role ?? undefined}>{p.name} <KindBadge kind={p.kind} role={p.role} /> – {p.cpuPercent} %</li>)}</ol></div>
+              <p className="tiny muted" style={{ gridColumn: "1 / -1" }}>{t("„Windows · wichtig“ = Teil von Windows, nicht beenden. „Treiber“ = Grafik-, Ton- oder Zubehör-Treiber, besser laufen lassen.")}</p>
             </div>
           )}
         </Card>

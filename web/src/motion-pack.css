@@ -1459,3 +1459,18 @@ button.isl3-net { display: grid; text-align: left; font: inherit; color: inherit
 .md-ping { display: grid; gap: 8px; }
 :root:not([data-motion="reduce"]) .md-body > * { animation: isl3-in .35s var(--out-expo, ease-out) backwards; }
 @media (max-width: 520px) { .md-big > b { font-size: 1.8rem; } .md-chart svg { height: 72px; } .isl3-stat[data-wide] { grid-column: 1 / -1; } }
+
+/* 3.67 – what kind of program it is: Windows (important, never end), driver (better leave running), the companion */
+.isl3-pill.kind-win { color: #fbbf24; background: rgba(251, 191, 36, .14); }
+.isl3-pill.kind-drv { color: #93c5fd; background: rgba(147, 197, 253, .14); }
+.isl3-pill.kind-app { color: #c4b5fd; background: rgba(196, 181, 253, .14); }
+.isl3-procs li.k-windows .isl3-pbar { background: linear-gradient(90deg, rgba(251, 191, 36, .22), rgba(251, 191, 36, .05)); }
+.isl3-procs li .isl3-pill { flex: none; }
+.isl3-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 4px 0 0; opacity: .85; line-height: 1.5; }
+.md-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.md-line { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.md-line > b:first-child { flex: 1; min-width: 0; }
+.md-rows-list li.md-cur { background: rgba(244, 114, 182, .1); }
+.md-warnline { color: #fbbf24; }
+.md-link { justify-self: start; text-decoration: none; }
+@media (max-width: 520px) { .isl3-procs li { flex-wrap: wrap; } .isl3-procs li .isl3-pname { flex-basis: 60%; } }

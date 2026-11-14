@@ -10,6 +10,7 @@ import { client } from "../lib/rpc";
 import { toast, useEvent, useLiveSubscription } from "../lib/hooks";
 import { dataSize, fileSpeed, mbit, netSpeed } from "../lib/units";
 import type { DriveHealth, FpsSession, HistoryPoint, MetricsSample, PerfFinding } from "../lib/types";
+import { KindBadge } from "./island-procs";
 
 export type DetailKind = "cpu" | "gpu" | "vram" | "ram" | "disk" | "fps" | "net" | "ping" | "battery" | "insights";
 const KINDS: { id: DetailKind; label: string; icon: ReactNode }[] = [
@@ -81,7 +82,7 @@ function Explain({ children }: { children: ReactNode }) { return <p className="m
 
 export function MetricDetail({ kind, onKind, onClose, online, floating, onProcs, battery }: {
   kind: DetailKind; onKind: (k: DetailKind) => void; onClose: () => void; online: boolean; floating?: boolean;
-  onProcs?: (k: "cpu" | "ram") => void; battery?: { battery: number | null; charging?: boolean | null; supported?: boolean } | null;
+  onProcs?: (k: "cpu" | "ram" | "gpu") => void; battery?: { battery: number | null; charging?: boolean | null; supported?: boolean } | null;
 }) {
   const m = useLive(online);
   const [range, setRange] = useState<number>(60);
@@ -113,7 +114,10 @@ export function MetricDetail({ kind, onKind, onClose, online, floating, onProcs,
       <Chart values={series((p) => p.gpu)} max={100} color="#34d399" label="GPU" unit="%" />
       {series((p) => p.gpuTemp).some((v) => v != null) && <Chart values={series((p) => p.gpuTemp)} color="#fb923c" label={t("GPU-Temperatur")} unit="°C" />}
       <Rows rows={[[t("Grafikkarte"), gpu?.name ?? "–"], [t("Temperatur"), deg(gpu?.tempC) ?? <span className="muted">{t("nicht verfügbar")}</span>], [t("Grafikspeicher"), gpu?.memTotalBytes ? `${gb(gpu.memUsedBytes)} / ${gb(gpu.memTotalBytes)}` : <span className="muted">{t("nicht verfügbar")}</span>], [t("Quelle"), gpu?.source ?? "–"]]} />
-      <button type="button" className="isl3-chipbtn" onClick={() => onKind("vram")}>{t("Grafikspeicher (VRAM)")}</button>
+      <span className="md-btns">
+        {onProcs && <button type="button" className="isl3-chipbtn" onClick={() => onProcs("gpu")}>{t("Programme nach GPU-Last")}</button>}
+        <button type="button" className="isl3-chipbtn" onClick={() => onKind("vram")}>{t("Grafikspeicher (VRAM)")}</button>
+      </span>
       <Explain>{t("Im Spiel ist eine hohe GPU-Last normal: Sie liefert so viele Bilder wie möglich. Takt und Lüfter liefert Windows ohne Herstellerwerkzeug nicht zuverlässig – sie werden deshalb nicht gezeigt.")}</Explain>
     </>
   );
@@ -123,6 +127,7 @@ export function MetricDetail({ kind, onKind, onClose, online, floating, onProcs,
       <>
         <Big value={vp == null ? "n. v." : pct(vp)} sub={gpu?.memTotalBytes ? `${gb(gpu.memUsedBytes)} / ${gb(gpu.memTotalBytes)}` : t("Dieser PC meldet den Grafikspeicher nicht (nur NVIDIA über nvidia-smi).")} />
         <Chart values={series((p) => p.vram)} max={100} color="#a78bfa" label="VRAM" unit="%" />
+        {onProcs && <button type="button" className="isl3-chipbtn" onClick={() => onProcs("gpu")}>{t("Welche Programme Grafikspeicher belegen")}</button>}
         <Explain>{t("Der Grafikspeicher hält Texturen und Bilder. Ist er voll, kommen Daten über den langsameren Arbeitsspeicher – typisch sind kurze Hänger. Abhilfe: Texturqualität senken.")}</Explain>
       </>
     );
@@ -200,6 +205,19 @@ function FpsDetail({ live, chart }: { live: MetricsSample["fps"]; chart: ReactNo
           <Big value={`${num(live.fps)} FPS`} sub={[live.game, live.api].filter(Boolean).join(" · ")} />
           <Rows rows={[[t("Durchschnitt"), `${num(live.avg, 1)} FPS`], [t("1 % Low"), live.low1 != null ? `${num(live.low1, 1)} FPS` : t("noch zu wenig Bilder")], [t("0,1 % Low"), live.low01 != null ? `${num(live.low01, 1)} FPS` : t("noch zu wenig Bilder")], [t("Bildzeit"), `${num(live.frameMs, 1)} ms`], [t("Ruckler"), num(live.stutters)], [t("GPU beschäftigt"), live.gpuBusy != null ? `${num(live.gpuBusy)} %` : t("nicht gemeldet")], [t("Gemessen seit"), `${Math.round((live.seconds ?? 0) / 60)} min`]]} />
           {ft.length > 1 && <Chart values={ft} color="#f472b6" label={t("Bildzeit")} unit="ms" />}
+          {!!live.apps?.length && (
+            <>
+              <h4 className="md-h">{t("Programme mit Bildausgabe")}</h4>
+              <ul className="md-rows-list">
+                {live.apps.map((a) => (
+                  <li key={a.name} className={a.name === live.process ? "md-cur" : ""}>
+                    <span className="md-line"><b className="ellipsis">{a.name}</b><KindBadge kind={a.kind} role={a.role} /><b>{a.fps != null ? `${num(a.fps)} FPS` : "–"}</b></span>
+                    <span className="tiny muted">{a.name === live.process ? t("wird gemessen (das Spiel)") : a.role ?? t("zeigt nebenher Bilder an")}</span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </>
       ) : (
         <div className={`md-state ${live.state}`}>
@@ -231,8 +249,13 @@ function FpsDetail({ live, chart }: { live: MetricsSample["fps"]; chart: ReactNo
 }
 
 // ------------------------------------------------------------------ drives
+interface StorageInfo { drives: { name: string; label: string; total: number; free: number; system?: boolean }[]; items: { id: string; name: string; kind: string; size?: { bytes: number } | null; launcher: string }[] }
 function DiskDetail({ m, chart }: { m: MetricsSample | null; chart: ReactNode }) {
   const [health, setHealth] = useState<DriveHealth[] | null | undefined>(undefined);
+  const [store, setStore] = useState<StorageInfo | null>(null);
+  useEffect(() => { client.call<StorageInfo>("storage.get", {}).then(setStore, () => setStore(null)); }, []);
+  const isSystem = (name: string) => !!store?.drives.find((d) => d.system && d.name.toUpperCase() === name.toUpperCase());
+  const biggest = (store?.items ?? []).filter((i) => (i.size?.bytes ?? 0) > 0).sort((a, b) => (b.size!.bytes) - (a.size!.bytes)).slice(0, 8);
   const [busy, setBusy] = useState(false);
   const io = m?.diskIo ?? [];
   const check = () => { setBusy(true); client.call<{ drives: DriveHealth[] | null }>("disk.health", {}).then((r) => setHealth(r.drives), (e: Error) => { toast(e.message, "error"); setHealth(null); }).finally(() => setBusy(false)); };
@@ -244,7 +267,8 @@ function DiskDetail({ m, chart }: { m: MetricsSample | null; chart: ReactNode })
           const a = io.find((x) => d.name.toUpperCase().startsWith(x.name.toUpperCase()));
           return (
             <li key={d.name} className={p >= 90 ? "low" : ""}>
-              <span className="md-dname"><b>{d.name}</b>{d.label && <i>{d.label}</i>}</span>
+              <span className="md-dname"><b>{d.name}</b>{d.label && <i>{d.label}</i>}{isSystem(d.name) && <KindBadge kind="windows" role={t("Hier liegt Windows")} />}</span>
+              {isSystem(d.name) && <span className="tiny md-warnline">{t("Windows-Laufwerk: Ordner wie „Windows“, „Programme“ und „Benutzer“ nicht löschen oder verschieben.")}</span>}
               <span className="isl2-prog" aria-hidden><i style={{ transform: `scaleX(${p / 100})` }} /></span>
               <span className="tiny">{t("{f} frei von {t} ({p} belegt)", { f: dataSize(d.freeBytes), t: dataSize(d.totalBytes), p: `${Math.round(p)} %` })}</span>
               {a && <span className="tiny muted">{t("Lesen {r} · Schreiben {w} · Aktivität {b}", { r: fileSpeed(a.readBps), w: fileSpeed(a.writeBps), b: a.busyPercent == null ? "–" : `${Math.round(a.busyPercent)} %` })}</span>}
@@ -253,6 +277,13 @@ function DiskDetail({ m, chart }: { m: MetricsSample | null; chart: ReactNode })
         })}
       </ul>
       {!m?.disks?.length && <p className="isl2-sub">{m?.off?.includes("disks") ? t("Laufwerke sind in den Einstellungen ausgeschaltet.") : t("Keine Laufwerke gemeldet.")}</p>}
+      <h4 className="md-h">{t("Was am meisten Platz braucht")}</h4>
+      {!store ? <p className="isl2-sub">{t("Wird geladen …")}</p> : !biggest.length ? <p className="isl2-sub">{t("Noch keine Größen bekannt. Auf der Seite „Speicher“ lassen sich Spiele und Programme vermessen.")}</p> : (
+        <ul className="md-rows-list">
+          {biggest.map((i) => <li key={i.id}><span className="md-line"><b className="ellipsis">{i.name}</b><span className="isl3-pill">{i.kind === "game" ? t("Spiel") : t("Programm")}</span><b>{dataSize(i.size!.bytes)}</b></span><span className="tiny muted">{i.launcher}</span></li>)}
+        </ul>
+      )}
+      <a className="isl3-chipbtn md-link" href="#/storage">{t("Alles auf der Seite „Speicher“")}</a>
       {chart}
       <div className="md-health">
         <button type="button" className="isl3-chipbtn" disabled={busy} onClick={check}>{busy ? t("Wird geprüft …") : t("Zustand prüfen (SMART)")}</button>
@@ -299,7 +330,7 @@ function PingDetail() {
 }
 
 // ------------------------------------------------------------------ analysis
-function Insights({ onProcs, onKind }: { onProcs?: (k: "cpu" | "ram") => void; onKind: (k: DetailKind) => void }) {
+function Insights({ onProcs, onKind }: { onProcs?: (k: "cpu" | "ram" | "gpu") => void; onKind: (k: DetailKind) => void }) {
   const [d, setD] = useState<{ findings: PerfFinding[]; gaming: boolean; self?: MetricsSample["self"] } | null>(null);
   const [err, setErr] = useState("");
   const [open, setOpen] = useState<string | null>(null);
