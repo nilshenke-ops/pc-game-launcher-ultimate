@@ -1,24 +1,31 @@
 {
-  "version": "3.64.1",
+  "version": "3.65.0",
   "date": "2026-11-14",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.1/PCGameLauncherCompanion.exe",
-  "size": 95307119,
-  "sha256": "4c4d822f778a3188b8b79718e272fa68a9e56c1cd81163be14c024d15174e5d8",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.65.0/PCGameLauncherCompanion.exe",
+  "size": 95309054,
+  "sha256": "c0f82b62d4c9c11ea601beef56d708b9845f7e154846e974bb171c290618a1a7",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.64.1-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.1/PCGameLauncherCompanion-3.64.1-win-x64.zip",
-    "size": 89580524,
-    "sha256": "6185e6ca03d7a65950295bbb5449b93440ee78e5aaa961ae4e61b6ca83093a73"
+    "fileName": "PCGameLauncherCompanion-3.65.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.65.0/PCGameLauncherCompanion-3.65.0-win-x64.zip",
+    "size": 89582714,
+    "sha256": "6e5af41b35aca60bdd074ab507efa5c42f62c07c1c617a14443c28a0f6e9fc8e"
   },
-  "notes": "Test: Insel-Widget-Schalter eindeutig (neben „Notiz in der Leiste“ seit 3.63)",
+  "notes": "**Insel auf Handy und iPad:** · Gewählte Knöpfe wie „Fertig“ oder die gewählte App sind auch bei dunklen und grauen Inselfarben gut lesbar.",
   "changes": {
     "neu": [],
     "verbessert": [
-      "Test: Insel-Widget-Schalter eindeutig (neben „Notiz in der Leiste“ seit 3.63)"
+      "**Insel auf Handy und iPad:**",
+      "Gewählte Knöpfe wie „Fertig“ oder die gewählte App sind auch bei dunklen und grauen Inselfarben gut lesbar."
     ],
-    "behoben": []
+    "behoben": [
+      "**Wetter-Ort wird gespeichert.** Der Ort, den man in der Wetter-Kachel eingibt, gehört jetzt zum Konto. Er bleibt nach dem Neuladen, nach dem Anmelden und auf allen Geräten erhalten. Bisher fehlte er in der Kontosicherung und ging beim nächsten Anmelden verloren. Ein schon gespeicherter Ort wird übernommen.",
+      "**Wischen auf der Übersicht.** Man kann jetzt auch dann zur nächsten Seite der Insel wischen, wenn der Finger auf einer Kachel oder einem Knopf startet. Bisher ging das nur auf freien Stellen, und die Übersicht besteht fast nur aus Kacheln. Ein normales Tippen bleibt ein Tippen.",
+      "**Bearbeiten am Handy ohne Überlappung.** Die Knöpfe (verschieben, einstellen, entfernen) sitzen jetzt als eigene Leiste unter jeder Kachel statt darauf. So verdecken sie weder die Kachel noch die nächste Reihe.",
+      "**Stift oben rechts immer sichtbar.** Bei vielen Bereichen in der Leiste wurde der Stift (Bearbeiten) zusammengedrückt und war nicht mehr zu sehen. Die Knöpfe rechts behalten jetzt ihre Größe, und die Leiste der Bereiche scrollt seitlich. Der gewählte Bereich wird dabei automatisch ins Bild geholt.",
+      "Am Handy rutschte die geöffnete Insel beim Tippen in ein Feld ein Stück zur Seite, sodass die Augen links abgeschnitten waren."
+    ]
   },
-  "signature": "f9W7eYDVlP1VBRBfxPG3Aqi+TWRuM03eu7guPBGhB2jWb03r2MSI+ALPxXDVczFyFrHkatI70xtAZkoHlC+OnQ=="
+  "signature": "S98RV690xY6Ro8gPEmZarpW841IwAARtjB/7TWKeCqhednYWB682ICfNwV/+esLSKUEuilYwLXnirzYJz3knQg=="
 }
