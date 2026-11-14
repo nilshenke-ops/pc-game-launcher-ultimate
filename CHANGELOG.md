@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.64.1 – 2026-11-14
+### Verbessert
+- Test: Insel-Widget-Schalter eindeutig (neben „Notiz in der Leiste“ seit 3.63)
+
 ## 3.64.0 – 2026-11-14
 ### Neu
 - **Dateien per QR-Code zwischen PC und Handy – in beide Richtungen.**
