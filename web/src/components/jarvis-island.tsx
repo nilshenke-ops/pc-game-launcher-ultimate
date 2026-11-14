@@ -13,7 +13,7 @@ import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { useIslandLook } from "../lib/island-look";
-import { resolveAccent, useFrontBrand } from "../lib/island-theme";
+import { resolveAccent, useFrontBrand, type IslandEffect } from "../lib/island-theme";
 import { accentOfCover } from "../lib/cover-accent";
 import { advanceTimer, countdownView, playTime, timerLive, useTimer } from "../lib/island-timer";
 // The open panel (tabs, AI settings, widgets) is by far the biggest part of the island and is only needed after a tap: it loads in the
@@ -358,9 +358,9 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   );
 }
 
-/** A small moving effect behind the open island: falling petals, snow or twinkling stars. Pure CSS, gone with reduced motion. */
-function IslandFx({ kind }: { kind: "sakura" | "snow" | "stars" }) {
-  const n = kind === "stars" ? 18 : 14;
+/** A small moving effect behind the open island (petals, snow, stars, rain, bubbles, fireflies, confetti, leaves, hearts). Pure CSS, gone with reduced motion. */
+function IslandFx({ kind }: { kind: Exclude<IslandEffect, "none"> }) {
+  const n = kind === "stars" || kind === "fireflies" ? 18 : kind === "rain" ? 24 : 14;
   return (
     <span className={`isl-fx fx-${kind}`} aria-hidden>
       {Array.from({ length: n }, (_, i) => (

@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { t } from "../lib/i18n";
 import { useIslandLook } from "../lib/island-look";
-import { ACCENTS, EFFECTS } from "../lib/island-theme";
+import { ACCENT_GROUPS, ACCENTS, EFFECTS } from "../lib/island-theme";
 
 export function IslandColorPicker() {
   const { look, save, canManage, online } = useIslandLook();
@@ -17,11 +17,18 @@ export function IslandColorPicker() {
         <div className="isl3-swatches" role="radiogroup" aria-label={t("Farbe der Insel")}>
           <button type="button" role="radio" aria-checked={look.accent === "default"} className="isl3-swatch plain" disabled={!can} onClick={() => pick("default")} aria-label={t("Wie die Vorlage")} title={t("Wie die Vorlage")}>{t("Std")}</button>
           <button type="button" role="radio" aria-checked={look.accent === "auto"} className="isl3-swatch special" disabled={!can} onClick={() => pick("auto")} aria-label={t("Automatisch")} title={t("Automatisch")}>{t("Auto")}</button>
-          {ACCENTS.map((a) => (
-            <button key={a.id} type="button" role="radio" aria-checked={look.accent === a.id} className="isl3-swatch" disabled={!can} style={{ ["--sw" as string]: a.id } as React.CSSProperties}
-              onClick={() => pick(a.id)} aria-label={t(a.label)} title={t(a.label)} />
-          ))}
         </div>
+        {ACCENT_GROUPS.map((g) => (
+          <div key={g.label} className="isl3-swgroup">
+            <i>{t(g.label)}</i>
+            <div className="isl3-swatches" role="radiogroup" aria-label={t(g.label)}>
+              {g.ids.map((id) => { const a = ACCENTS.find((x) => x.id === id)!; return (
+                <button key={id} type="button" role="radio" aria-checked={look.accent === id} className="isl3-swatch" disabled={!can} style={{ ["--sw" as string]: id } as React.CSSProperties}
+                  onClick={() => pick(id)} aria-label={t(a.label)} title={t(a.label)} />
+              ); })}
+            </div>
+          </div>
+        ))}
         <label className="isl3-frow" style={{ padding: 0, background: "none" }}>
           <span>{t("Eigene Farbe")}</span>
           <input type="color" value={custom} disabled={!can} aria-label={t("Eigene Farbe")} onChange={(e) => setCustom(e.target.value)} onBlur={() => pick(custom)} />

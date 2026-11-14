@@ -4,7 +4,9 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import {
   ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, CalendarDays, ChevronLeft, ChevronRight, Clock3, CloudSun, Cpu, Gamepad2, LayoutGrid,
   MessageCircle, Minus, Monitor, Music, Network, Pause, Play, Plus, Settings2, SkipBack, SkipForward, StickyNote, Sun, Timer, Volume2, VolumeX, X,
+  Dices, Hash, Hourglass, ListChecks, Wind, Watch, Link2, Smartphone, Search, LayoutList, Grid2x2, Rows3,
 } from "lucide-react";
+import { BreatheTile, ChecklistTile, CountdownTile, CounterTile, DevBatteryTile, DiceTile, LinksTile, StopwatchTile } from "./island-tools";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast } from "../lib/hooks";
@@ -14,17 +16,18 @@ import { isoWeek, weekStrip } from "../lib/island-dash";
 import { weatherText } from "../lib/weather";
 import { nowPosition, nowSub, songTime, type NowPlaying } from "../lib/now-playing";
 import { speedText } from "../lib/island-lyrics";
-import { ALL_TABS, moveTab, opt, tileDef, TILE_DEFS, ZONES, type IslandTab, type OptDef, type OptValue, type Tile, type TileType } from "../lib/island-layout";
+import { ALL_TABS, catalog, moveTab, NEW_TABS, opt, sortTabs, tileDef, TILE_CATS, TILE_VIEWS, ZONES, type IslandTab, type OptDef, type OptValue, type Tile, type TileCat, type TileSort, type TileType, type TileView } from "../lib/island-layout";
 import { Spark, speedCurve, useNetSpeed, useWeatherAt, WeatherIcon, type MetricsHistory, type PcControls, type useIslandWeather } from "./island-extra";
 import { sparkPoints } from "../lib/island-dash";
 
 export const TILE_ICON: Record<TileType, typeof Music> = {
   jarvis: MessageCircle, game: Gamepad2, music: Music, focus: Timer, pc: Monitor, calendar: CalendarDays, weather: CloudSun, system: Cpu,
   volume: Volume2, network: Network, battery: BatteryMedium, clock: Clock3, note: StickyNote,
+  dice: Dices, counter: Hash, countdown: Hourglass, checklist: ListChecks, breathe: Wind, stopwatch: Watch, links: Link2, devbattery: Smartphone,
 };
 export const TAB_LABEL: Record<IslandTab, string> = {
   home: "Home", dash: "Übersicht", game: "Spiel", music: "Musik", jarvis: "JARVIS", focus: "Fokus", inbox: "Meldungen", apps: "Apps",
-  controls: "Regler", audio: "Audio", system: "System", pc: "PC", note: "Notiz", shelf: "Ablage",
+  controls: "Regler", audio: "Audio", system: "System", pc: "PC", note: "Notiz", shelf: "Ablage", tools: "Werkzeuge", world: "Weltzeit", lists: "Listen",
 };
 
 /** Everything a tile may need from the island around it. */
@@ -314,9 +317,10 @@ function PcTile({ ctx }: P) {
 const BODY: Record<TileType, (p: P) => ReactNode> = {
   jarvis: JarvisTile, game: GameTile, music: MusicTile, focus: FocusTile, pc: PcTile, calendar: CalendarTile, weather: WeatherTile, system: SystemTile,
   volume: VolumeTile, network: NetworkTile, battery: BatteryTile, clock: ClockTile, note: NoteTile,
+  dice: DiceTile, counter: CounterTile, countdown: CountdownTile, checklist: ChecklistTile, breathe: BreatheTile, stopwatch: StopwatchTile, links: LinksTile, devbattery: DevBatteryTile,
 };
 /** Where tapping a tile's title leads. */
-const TARGET: Partial<Record<TileType, IslandTab>> = { jarvis: "jarvis", game: "game", music: "music", focus: "focus", pc: "pc", system: "system", volume: "controls", battery: "system", network: "system" };
+const TARGET: Partial<Record<TileType, IslandTab>> = { jarvis: "jarvis", game: "game", music: "music", focus: "focus", pc: "pc", system: "system", volume: "controls", battery: "system", network: "system", stopwatch: "focus" };
 
 /** One tile, as a tall card (start page) or a box (overview). */
 export function IslandTile({ tile, ctx, box, style, className }: P & { style?: CSSProperties; className?: string }) {
@@ -381,20 +385,68 @@ function OptField({ o, value, onChange }: { o: OptDef; value: OptValue; onChange
   );
 }
 
-/** All kinds of tiles to pick from (the ones already there are marked, they can still be added again). */
+/** All kinds of tiles to pick from: search, a filter by kind (or only the new ones) and the order. The ones already there are marked. */
 export function TileCatalog({ have, onPick, full }: { have: TileType[]; onPick: (type: TileType) => void; full: boolean }) {
+  const [cat, setCat] = useState<TileCat | "all" | "new">("all");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<"cat" | "az" | "new">("cat");
+  const list = catalog({ cat, query, sort }, (d) => t(d.label), (d) => t(d.hint));
   return (
-    <div className="isl3-catalog" role="list" aria-label={t("Kacheln zum Hinzufügen")}>
-      {TILE_DEFS.map((d) => {
-        const Icon = TILE_ICON[d.type];
-        return (
-          <button key={d.type} type="button" role="listitem" className="isl3-catitem" disabled={full} onClick={() => onPick(d.type)} aria-label={t("{n} hinzufügen", { n: t(d.label) })}>
-            <span className="isl3-caticon" aria-hidden><Icon size={18} /></span>
-            <span className="isl3-cattext"><b>{t(d.label)}{have.includes(d.type) ? " ✓" : ""}</b><i>{t(d.hint)}</i></span>
-            <Plus size={16} aria-hidden />
-          </button>
-        );
-      })}
+    <div className="isl3-catwrap">
+      <div className="isl3-catbar">
+        <label className="isl3-catsearch"><Search size={14} aria-hidden /><input className="input" value={query} placeholder={t("Kachel suchen …")} aria-label={t("Kachel suchen")} onChange={(e) => setQuery(e.target.value)} /></label>
+        <select className="input isl3-catsort" value={sort} aria-label={t("Sortieren")} onChange={(e) => setSort(e.target.value as typeof sort)}>
+          <option value="cat">{t("Nach Art")}</option><option value="az">{t("A–Z")}</option><option value="new">{t("Neue zuerst")}</option>
+        </select>
+      </div>
+      <div className="isl3-catchips" role="radiogroup" aria-label={t("Art der Kachel")}>
+        {([["all", "Alle"], ["new", "Neu"], ...TILE_CATS.map((c) => [c.id, c.label])] as [TileCat | "all" | "new", string][]).map(([id, label]) => (
+          <button key={id} type="button" role="radio" aria-checked={cat === id} className={`isl2-chip${cat === id ? " on" : ""}`} onClick={() => setCat(id)}>{t(label)}</button>
+        ))}
+      </div>
+      {full && <p className="isl2-sub">{t("Diese Seite ist voll – nimm erst eine Kachel weg.")}</p>}
+      <div className="isl3-catalog" role="list" aria-label={t("Kacheln zum Hinzufügen")}>
+        {list.map((d) => {
+          const Icon = TILE_ICON[d.type];
+          return (
+            <button key={d.type} type="button" role="listitem" className="isl3-catitem" disabled={full} onClick={() => onPick(d.type)} aria-label={t("{n} hinzufügen", { n: t(d.label) })}>
+              <span className="isl3-caticon" aria-hidden><Icon size={18} /></span>
+              <span className="isl3-cattext"><b>{t(d.label)}{have.includes(d.type) ? " ✓" : ""}{d.isNew && <em className="isl3-new">{t("Neu")}</em>}</b><i>{t(d.hint)}</i></span>
+              <Plus size={16} aria-hidden />
+            </button>
+          );
+        })}
+        {!list.length && <p className="isl2-sub">{t("Keine Kachel passt zur Suche.")}</p>}
+      </div>
+    </div>
+  );
+}
+
+/** How the tiles of a page are shown (cards, list, grid) and one-tap sorting. */
+export function TileViewSheet({ view, onView, onSort, count }: { view: TileView; onView: (v: TileView) => void; onSort: (how: TileSort) => void; count: number }) {
+  const ICON: Record<TileView, typeof LayoutGrid> = { cards: Rows3, list: LayoutList, grid: Grid2x2 };
+  return (
+    <div className="isl3-form">
+      <div className="isl3-frow col">
+        <span>{t("Ansicht")}</span>
+        <div className="isl3-views" role="radiogroup" aria-label={t("Ansicht")}>
+          {TILE_VIEWS.map((v) => { const I = ICON[v.id]; return (
+            <button key={v.id} type="button" role="radio" aria-checked={view === v.id} className={`isl3-viewbtn${view === v.id ? " on" : ""}`} onClick={() => onView(v.id)}>
+              <span className={`isl3-vprev v-${v.id}`} aria-hidden><i /><i /><i /><i /></span><span><I size={13} aria-hidden /> {t(v.label)}</span>
+            </button>
+          ); })}
+        </div>
+        <p className="tiny muted" style={{ margin: 0 }}>{t("Karten: groß mit allen Infos. Liste: eine Zeile je Kachel, passt viel auf den Bildschirm. Raster: kleine Quadrate.")}</p>
+      </div>
+      <div className="isl3-frow col">
+        <span>{t("Sortieren")}</span>
+        <div className="isl3-sortbtns">
+          {([["az", "A–Z"], ["za", "Z–A"], ["cat", "Nach Art"], ["reverse", "Umdrehen"]] as [TileSort, string][]).map(([id, label]) => (
+            <button key={id} type="button" className="isl2-chip" disabled={count < 2} onClick={() => onSort(id)}>{t(label)}</button>
+          ))}
+        </div>
+        <p className="tiny muted" style={{ margin: 0 }}>{t("Sortiert einmal sofort; danach lassen sich einzelne Kacheln wie gewohnt verschieben.")}</p>
+      </div>
     </div>
   );
 }
@@ -411,26 +463,36 @@ export function TileEditBar({ label, first, last, onMove, onSettings, onRemove }
   );
 }
 
-/** Which areas sit in the strip and in which order. "Home" always stays; "Spiel" only shows while a game runs. */
+/** Which areas sit in the strip and in which order: every area in one list with a switch, arrows for the order and one-tap sorting.
+ *  "Home" always stays first; "Spiel" only shows while a game runs. */
 export function TabsEditor({ tabs, onChange }: { tabs: IslandTab[]; onChange: (tabs: IslandTab[]) => void }) {
   const off = ALL_TABS.filter((x) => !tabs.includes(x));
+  const label = (x: IslandTab) => t(TAB_LABEL[x]);
   return (
     <div className="isl3-tabsed">
+      <div className="isl3-sortbtns">
+        <span className="isl2-sub">{t("{n} von {m} Bereichen in der Leiste", { n: tabs.length, m: ALL_TABS.length })}</span>
+        <button type="button" className="isl2-chip" onClick={() => onChange(sortTabs(tabs, "usual", label))}>{t("Übliche Reihenfolge")}</button>
+        <button type="button" className="isl2-chip" onClick={() => onChange(sortTabs(tabs, "az", label))}>{t("A–Z")}</button>
+        <button type="button" className="isl2-chip" disabled={off.length === 0} onClick={() => onChange([...tabs, ...off])}>{t("Alle zeigen")}</button>
+      </div>
       <ul className="isl3-tlist" aria-label={t("Bereiche in der Leiste")}>
-        {tabs.map((x, i) => (
-          <li key={x}>
-            <span className="isl3-tname">{t(TAB_LABEL[x])}{x === "game" ? <i>{t("nur während eines Spiels")}</i> : null}</span>
-            <button type="button" className="isl3-mini" disabled={i <= 1 || x === "home"} onClick={() => onChange(moveTab(tabs, x, -1))} aria-label={t("{n} nach vorne", { n: t(TAB_LABEL[x]) })}><ArrowUp size={14} /></button>
-            <button type="button" className="isl3-mini" disabled={x === "home" || i === tabs.length - 1} onClick={() => onChange(moveTab(tabs, x, 1))} aria-label={t("{n} nach hinten", { n: t(TAB_LABEL[x]) })}><ArrowDown size={14} /></button>
-            <button type="button" className="isl3-mini" disabled={x === "home"} onClick={() => onChange(tabs.filter((y) => y !== x))} aria-label={t("{n} ausblenden", { n: t(TAB_LABEL[x]) })}><X size={14} /></button>
-          </li>
-        ))}
+        {[...tabs, ...off].map((x) => {
+          const on = tabs.includes(x), i = tabs.indexOf(x);
+          return (
+            <li key={x} className={on ? "" : "off"}>
+              <label className="isl3-tname">
+                <input type="checkbox" role="switch" className="isl2-switch" checked={on} disabled={x === "home"} onChange={(e) => onChange(e.target.checked ? [...tabs, x] : tabs.filter((y) => y !== x))} aria-label={t("{n} in der Leiste", { n: label(x) })} />
+                <span>{label(x)}{NEW_TABS.includes(x) && <em className="isl3-new">{t("Neu")}</em>}{x === "game" ? <i>{t("nur während eines Spiels")}</i> : null}</span>
+              </label>
+              {on && <>
+                <button type="button" className="isl3-mini" disabled={i <= 1 || x === "home"} onClick={() => onChange(moveTab(tabs, x, -1))} aria-label={t("{n} nach vorne", { n: label(x) })}><ArrowUp size={14} /></button>
+                <button type="button" className="isl3-mini" disabled={x === "home" || i === tabs.length - 1} onClick={() => onChange(moveTab(tabs, x, 1))} aria-label={t("{n} nach hinten", { n: label(x) })}><ArrowDown size={14} /></button>
+              </>}
+            </li>
+          );
+        })}
       </ul>
-      {off.length > 0 && (
-        <div className="isl2-wig" role="group" aria-label={t("Ausgeblendete Bereiche")}>
-          {off.map((x) => <button key={x} type="button" className="isl2-wchip add" onClick={() => onChange([...tabs, x])} aria-label={t("{n} einblenden", { n: t(TAB_LABEL[x]) })}>+ {t(TAB_LABEL[x])}</button>)}
-        </div>
-      )}
     </div>
   );
 }

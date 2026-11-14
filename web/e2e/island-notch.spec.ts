@@ -175,7 +175,7 @@ test("Übersicht bearbeiten: Kachel hinzufügen, einstellen, verschieben und ent
     await panel.getByRole("button", { name: "Übersicht bearbeiten" }).click();
     await expect(panel.getByRole("toolbar", { name: "Bearbeiten" })).toContainText("Übersicht bearbeiten");
     await panel.getByRole("button", { name: "Kachel hinzufügen" }).click();
-    await panel.getByRole("dialog", { name: "Kachel hinzufügen" }).getByRole("listitem", { name: "Uhr hinzufügen" }).click();
+    await panel.getByRole("dialog", { name: "Kachel hinzufügen" }).getByRole("listitem", { name: "Uhr hinzufügen", exact: true }).click();
     await expect(panel.getByRole("region", { name: "Uhr" })).toBeVisible();
     await shot(page, "edit");
     await panel.getByRole("button", { name: "Uhr einstellen" }).click();
@@ -195,9 +195,9 @@ test("Übersicht bearbeiten: Kachel hinzufügen, einstellen, verschieben und ent
     await panel.getByRole("button", { name: "Mehr" }).click();
     await panel.getByRole("menuitem", { name: "Bereiche anpassen" }).click();
     const areas = panel.getByRole("dialog", { name: "Bereiche in der Leiste" });
-    await areas.getByRole("button", { name: "Audio ausblenden" }).click();
+    await areas.getByRole("switch", { name: "Audio in der Leiste" }).uncheck();
     await expect(panel.getByRole("tab", { name: "Audio", exact: true })).toHaveCount(0);
-    await areas.getByRole("button", { name: "Audio einblenden" }).click();
+    await areas.getByRole("switch", { name: "Audio in der Leiste" }).check();
     await expect(panel.getByRole("tab", { name: "Audio", exact: true })).toBeVisible();
     expect(errors).toEqual([]);
   } finally { await resetLayout(); await ctx.close(); }

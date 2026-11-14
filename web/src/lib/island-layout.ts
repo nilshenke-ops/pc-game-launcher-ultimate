@@ -4,15 +4,22 @@
 import { useSyncExternalStore } from "react";
 import { readJson, writeJson } from "./rpc";
 
-export type IslandTab = "home" | "dash" | "game" | "music" | "jarvis" | "focus" | "inbox" | "apps" | "controls" | "system" | "audio" | "pc" | "note" | "shelf";
+export type IslandTab = "home" | "dash" | "game" | "music" | "jarvis" | "focus" | "inbox" | "apps" | "controls" | "system" | "audio" | "pc" | "note" | "shelf" | "tools" | "world" | "lists";
 /** Every area in its usual order. "home" is always there; "game" only appears while a game runs. */
-export const ALL_TABS: IslandTab[] = ["home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "shelf", "pc", "note"];
+export const ALL_TABS: IslandTab[] = ["home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "shelf", "pc", "note", "tools", "world", "lists"];
+/** Areas added in 3.63 – off until someone switches them on. */
+export const NEW_TABS: IslandTab[] = ["tools", "world", "lists"];
 export const isTab = (v: unknown): v is IslandTab => typeof v === "string" && (ALL_TABS as string[]).includes(v);
 
-export type TileType = "jarvis" | "game" | "music" | "focus" | "pc" | "calendar" | "weather" | "system" | "volume" | "network" | "battery" | "clock" | "note";
+export type TileType = "jarvis" | "game" | "music" | "focus" | "pc" | "calendar" | "weather" | "system" | "volume" | "network" | "battery" | "clock" | "note"
+  | "dice" | "counter" | "countdown" | "checklist" | "breathe" | "stopwatch" | "links" | "devbattery";
+/** How the tiles of a page are laid out: big cards (as always), a compact list, or a grid of small squares. */
+export type TileView = "cards" | "list" | "grid";
+export const TILE_VIEWS: { id: TileView; label: string }[] = [{ id: "cards", label: "Karten" }, { id: "list", label: "Liste" }, { id: "grid", label: "Raster" }];
+export const isView = (v: unknown): v is TileView => v === "cards" || v === "list" || v === "grid";
 export type OptValue = string | number | boolean;
 export interface Tile { id: string; type: TileType; opts?: Record<string, OptValue> }
-export interface IslandLayout { tabs?: IslandTab[]; home: Tile[]; dash: Tile[] }
+export interface IslandLayout { tabs?: IslandTab[]; home: Tile[]; dash: Tile[]; view?: Partial<Record<LayoutPage, TileView>> }
 export type LayoutPage = "home" | "dash";
 
 export interface OptDef {
@@ -23,7 +30,11 @@ export interface OptDef {
   choices?: { id: string; label: string }[];
   hint?: string;
 }
-export interface TileDef { type: TileType; label: string; hint: string; opts: OptDef[] }
+export type TileCat = "info" | "pc" | "media" | "tools" | "fun";
+export const TILE_CATS: { id: TileCat; label: string }[] = [
+  { id: "info", label: "Info" }, { id: "pc", label: "PC" }, { id: "media", label: "Medien & Spiel" }, { id: "tools", label: "Werkzeuge" }, { id: "fun", label: "Spaß & Ruhe" },
+];
+export interface TileDef { type: TileType; label: string; hint: string; opts: OptDef[]; cat: TileCat; isNew?: boolean }
 
 /** Time zones offered for the second clock (any other valid IANA name can be typed in, too). */
 export const ZONES: { id: string; label: string }[] = [
@@ -33,42 +44,71 @@ export const ZONES: { id: string; label: string }[] = [
 ];
 
 export const TILE_DEFS: TileDef[] = [
-  { type: "jarvis", label: "JARVIS", hint: "Stimmung und letzte Antwort, Tippen öffnet das Gespräch", opts: [{ key: "last", label: "Letzte Antwort zeigen", kind: "bool", def: true }] },
-  { type: "game", label: "Spiel", hint: "Das laufende Spiel mit Bild und Spielzeit", opts: [{ key: "idle", label: "Auch ohne laufendes Spiel zeigen", kind: "bool", def: false }] },
-  { type: "music", label: "Musik", hint: "Was am PC läuft, mit Albumbild und Steuerung", opts: [
+  { type: "jarvis", cat: "info", label: "JARVIS", hint: "Stimmung und letzte Antwort, Tippen öffnet das Gespräch", opts: [{ key: "last", label: "Letzte Antwort zeigen", kind: "bool", def: true }] },
+  { type: "game", cat: "media", label: "Spiel", hint: "Das laufende Spiel mit Bild und Spielzeit", opts: [{ key: "idle", label: "Auch ohne laufendes Spiel zeigen", kind: "bool", def: false }] },
+  { type: "music", cat: "media", label: "Musik", hint: "Was am PC läuft, mit Albumbild und Steuerung", opts: [
     { key: "cover", label: "Albumbild als Hintergrund", kind: "bool", def: true },
     { key: "skip", label: "Zurück/Weiter zeigen", kind: "bool", def: false },
   ] },
-  { type: "focus", label: "Fokus-Timer", hint: "Ring mit Restzeit, Start und Pause", opts: [{ key: "minutes", label: "Minuten beim Start", kind: "number", def: 25, min: 1, max: 180 }] },
-  { type: "pc", label: "PC-Verbindung", hint: "Ob der PC verbunden ist – einschalten oder neu verbinden", opts: [] },
-  { type: "calendar", label: "Kalender", hint: "Datum, Kalenderwoche und die Tage der Woche", opts: [
+  { type: "focus", cat: "tools", label: "Fokus-Timer", hint: "Ring mit Restzeit, Start und Pause", opts: [{ key: "minutes", label: "Minuten beim Start", kind: "number", def: 25, min: 1, max: 180 }] },
+  { type: "pc", cat: "pc", label: "PC-Verbindung", hint: "Ob der PC verbunden ist – einschalten oder neu verbinden", opts: [] },
+  { type: "calendar", cat: "info", label: "Kalender", hint: "Datum, Kalenderwoche und die Tage der Woche", opts: [
     { key: "kw", label: "Kalenderwoche zeigen", kind: "bool", def: true },
     { key: "week", label: "Wochentage zeigen", kind: "bool", def: true },
   ] },
-  { type: "weather", label: "Wetter", hint: "Temperatur, Wetterlage, Höchst- und Tiefstwert (Open-Meteo, ohne Konto)", opts: [
+  { type: "weather", cat: "info", label: "Wetter", hint: "Temperatur, Wetterlage, Höchst- und Tiefstwert (Open-Meteo, ohne Konto)", opts: [
     { key: "place", label: "Ort (leer = dein Heimatort)", kind: "text", def: "", maxLength: 60 },
     { key: "range", label: "Höchst- und Tiefstwert zeigen", kind: "bool", def: true },
   ] },
-  { type: "system", label: "System", hint: "CPU, GPU und Arbeitsspeicher des PCs mit Verlaufslinie", opts: [
+  { type: "system", cat: "pc", label: "System", hint: "CPU, GPU und Arbeitsspeicher des PCs mit Verlaufslinie", opts: [
     { key: "cpu", label: "CPU", kind: "bool", def: true }, { key: "gpu", label: "GPU", kind: "bool", def: true },
     { key: "ram", label: "Arbeitsspeicher", kind: "bool", def: true }, { key: "temp", label: "Temperaturen", kind: "bool", def: true },
   ] },
-  { type: "volume", label: "Lautstärke / Helligkeit", hint: "Ein Schieber für den PC", opts: [
+  { type: "volume", cat: "pc", label: "Lautstärke / Helligkeit", hint: "Ein Schieber für den PC", opts: [
     { key: "what", label: "Regelt", kind: "choice", def: "volume", choices: [{ id: "volume", label: "Lautstärke" }, { id: "brightness", label: "Helligkeit" }] },
   ] },
-  { type: "network", label: "Netzwerk", hint: "Wie schnell der PC gerade empfängt und sendet", opts: [] },
-  { type: "battery", label: "Akku", hint: "Akkustand des PCs (nur mit Akku)", opts: [] },
-  { type: "clock", label: "Uhr", hint: "Uhrzeit – auch einer anderen Stadt", opts: [
+  { type: "network", cat: "pc", label: "Netzwerk", hint: "Wie schnell der PC gerade empfängt und sendet", opts: [] },
+  { type: "battery", cat: "pc", label: "Akku", hint: "Akkustand des PCs (nur mit Akku)", opts: [] },
+  { type: "clock", cat: "info", label: "Uhr", hint: "Uhrzeit – auch einer anderen Stadt", opts: [
     { key: "zone", label: "Zeitzone", kind: "choice", def: "", choices: ZONES },
     { key: "label", label: "Name (leer = Stadt)", kind: "text", def: "", maxLength: 24 },
     { key: "seconds", label: "Sekunden zeigen", kind: "bool", def: false },
   ] },
-  { type: "note", label: "Notiz", hint: "Ein kurzer Zettel, direkt in der Kachel geschrieben", opts: [{ key: "text", label: "Text", kind: "text", def: "", maxLength: 300 }] },
+  { type: "note", cat: "tools", label: "Notiz", hint: "Ein kurzer Zettel, direkt in der Kachel geschrieben", opts: [{ key: "text", label: "Text", kind: "text", def: "", maxLength: 300 }] },
+  // 3.63 – new kinds
+  { type: "dice", cat: "fun", isNew: true, label: "Zufall", hint: "Würfeln, Münze werfen oder eine Zahl ziehen – z. B. wer anfängt", opts: [
+    { key: "mode", label: "Art", kind: "choice", def: "d6", choices: [{ id: "d6", label: "Würfel (1–6)" }, { id: "d20", label: "W20 (1–20)" }, { id: "coin", label: "Münze" }, { id: "num", label: "Zahl 1 bis …" }] },
+    { key: "max", label: "Höchste Zahl (bei „Zahl“)", kind: "number", def: 100, min: 2, max: 1000 },
+  ] },
+  { type: "counter", cat: "tools", isNew: true, label: "Zähler", hint: "Plus und Minus – für Tode, Siege, Runden oder Kills", opts: [
+    { key: "name", label: "Name", kind: "text", def: "", maxLength: 24 },
+    { key: "value", label: "Stand", kind: "number", def: 0, min: -99999, max: 99999 },
+    { key: "step", label: "Schritt", kind: "number", def: 1, min: 1, max: 100 },
+  ] },
+  { type: "countdown", cat: "info", isNew: true, label: "Countdown", hint: "Tage und Stunden bis zu einem Datum – Release, Turnier, Urlaub", opts: [
+    { key: "name", label: "Wofür", kind: "text", def: "", maxLength: 32 },
+    { key: "date", label: "Datum (JJJJ-MM-TT)", kind: "text", def: "", maxLength: 10 },
+    { key: "time", label: "Uhrzeit (HH:MM, optional)", kind: "text", def: "", maxLength: 5 },
+  ] },
+  { type: "checklist", cat: "tools", isNew: true, label: "Checkliste", hint: "Kurze Liste zum Abhaken, direkt in der Kachel", opts: [
+    { key: "name", label: "Titel", kind: "text", def: "", maxLength: 24 },
+    { key: "items", label: "Einträge (einer pro Zeile)", kind: "text", def: "", maxLength: 300 },
+  ] },
+  { type: "breathe", cat: "fun", isNew: true, label: "Durchatmen", hint: "Ein ruhiger Atemkreis zwischen zwei Runden", opts: [
+    { key: "pattern", label: "Rhythmus", kind: "choice", def: "box", choices: [{ id: "box", label: "4-4-4-4 (Box)" }, { id: "calm", label: "4-7-8 (Beruhigen)" }, { id: "even", label: "5-5 (Gleichmäßig)" }] },
+  ] },
+  { type: "stopwatch", cat: "tools", isNew: true, label: "Stoppuhr", hint: "Starten, anhalten, Runden – dieselbe Stoppuhr wie im Bereich Fokus", opts: [] },
+  { type: "links", cat: "tools", isNew: true, label: "Schnell-Links", hint: "Bis zu drei Webseiten mit einem Tipp öffnen", opts: [
+    { key: "a", label: "Link 1 (https://…)", kind: "text", def: "", maxLength: 200 },
+    { key: "b", label: "Link 2 (https://…)", kind: "text", def: "", maxLength: 200 },
+    { key: "c", label: "Link 3 (https://…)", kind: "text", def: "", maxLength: 200 },
+  ] },
+  { type: "devbattery", cat: "info", isNew: true, label: "Akku dieses Geräts", hint: "Akkustand von Handy, Tablet oder Laptop, auf dem die Insel gerade offen ist", opts: [] },
 ];
 export const tileDef = (type: TileType): TileDef => TILE_DEFS.find((d) => d.type === type)!;
 const isType = (v: unknown): v is TileType => TILE_DEFS.some((d) => d.type === v);
 
-export const MAX_TILES: Record<LayoutPage, number> = { home: 6, dash: 8 };
+export const MAX_TILES: Record<LayoutPage, number> = { home: 8, dash: 12 };
 const ID_RX = /^[a-z0-9]{1,16}$/;
 
 /** The value of an option: what the tile says if it is valid, else the default. */
@@ -132,6 +172,12 @@ export function cleanLayout(v: unknown): IslandLayout | null {
   if (!home && !dash && !Array.isArray(o.tabs)) return null;
   const base = defaultLayout();
   const out: IslandLayout = { home: home ?? base.home, dash: dash ?? base.dash };
+  if (o.view && typeof o.view === "object" && !Array.isArray(o.view)) {
+    const vw = o.view as Record<string, unknown>, view: Partial<Record<LayoutPage, TileView>> = {};
+    if (isView(vw.home)) view.home = vw.home;
+    if (isView(vw.dash)) view.dash = vw.dash;
+    if (Object.keys(view).length) out.view = view;
+  }
   if (Array.isArray(o.tabs)) {
     const tabs = [...new Set(o.tabs.filter(isTab))];
     if (!tabs.includes("home")) tabs.unshift("home");
@@ -171,6 +217,47 @@ export function setTabs(l: IslandLayout, tabs: IslandTab[]): IslandLayout {
   if (!list.includes("home")) list.unshift("home");
   return { ...l, tabs: list };
 }
+export const viewOf = (l: IslandLayout, page: LayoutPage): TileView => l.view?.[page] ?? "cards";
+export function setView(l: IslandLayout, page: LayoutPage, v: TileView): IslandLayout {
+  const view = { ...l.view, [page]: v };
+  if (v === "cards") delete view[page];
+  return { ...l, view: Object.keys(view).length ? view : undefined };
+}
+
+/** Sorting the tiles of a page: by name, by kind (category, then name), or simply the other way round. */
+export type TileSort = "az" | "za" | "cat" | "reverse";
+export function sortTiles(l: IslandLayout, page: LayoutPage, how: TileSort, label: (t: TileType) => string = (x) => tileDef(x).label): IslandLayout {
+  const list = [...l[page]];
+  const cmp = (a: Tile, b: Tile) => label(a.type).localeCompare(label(b.type), "de");
+  const catIx = (x: TileType) => TILE_CATS.findIndex((c) => c.id === tileDef(x).cat);
+  if (how === "az") list.sort(cmp);
+  else if (how === "za") list.sort((a, b) => cmp(b, a));
+  else if (how === "cat") list.sort((a, b) => catIx(a.type) - catIx(b.type) || cmp(a, b));
+  else list.reverse();
+  return { ...l, [page]: list };
+}
+
+/** Sorting the areas: the usual order or by name. "Home" always stays first. */
+export function sortTabs(tabs: IslandTab[], how: "usual" | "az", label: (t: IslandTab) => string): IslandTab[] {
+  const rest = tabs.filter((x) => x !== "home");
+  if (how === "usual") rest.sort((a, b) => ALL_TABS.indexOf(a) - ALL_TABS.indexOf(b));
+  else rest.sort((a, b) => label(a).localeCompare(label(b), "de"));
+  return ["home", ...rest];
+}
+
+/** The catalog of tiles: filter by category and words, sorted by name, kind or "new first". */
+export function catalog(filter: { cat?: TileCat | "all" | "new"; query?: string; sort?: "cat" | "az" | "new" }, label: (d: TileDef) => string = (d) => d.label, hint: (d: TileDef) => string = (d) => d.hint): TileDef[] {
+  const q = (filter.query ?? "").trim().toLowerCase();
+  let list = TILE_DEFS.filter((d) => !filter.cat || filter.cat === "all" || (filter.cat === "new" ? d.isNew : d.cat === filter.cat));
+  if (q) list = list.filter((d) => (label(d) + " " + hint(d)).toLowerCase().includes(q));
+  const cmp = (a: TileDef, b: TileDef) => label(a).localeCompare(label(b), "de");
+  const catIx = (d: TileDef) => TILE_CATS.findIndex((c) => c.id === d.cat);
+  if (filter.sort === "az") list = [...list].sort(cmp);
+  else if (filter.sort === "new") list = [...list].sort((a, b) => Number(!!b.isNew) - Number(!!a.isNew) || cmp(a, b));
+  else list = [...list].sort((a, b) => catIx(a) - catIx(b) || cmp(a, b));
+  return list;
+}
+
 export function moveTab(tabs: IslandTab[], tab: IslandTab, by: -1 | 1): IslandTab[] {
   const list = [...tabs];
   const i = list.indexOf(tab), j = i + by;

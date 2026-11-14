@@ -111,7 +111,7 @@ export function IslandStopwatch() {
   const running = tm.watchStart != null;
   useEffect(() => { if (!running) return; const id = window.setInterval(() => setNow(Date.now()), 250); return () => window.clearInterval(id); }, [running]);
   return (
-    <div className="isl-card">
+    <div className="isl-card isl3-swcard">
       <span className="isl-ic"><Timer size={18} /></span>
       <div className="isl-main">
         <b className="isl-big" aria-label={t("Stoppuhr")}>{watchText(watchMs(tm, running ? now : Date.now()))}</b>

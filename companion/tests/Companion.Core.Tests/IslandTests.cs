@@ -171,6 +171,9 @@ public class IslandTests
     [InlineData("""{"dash":[{"id":"a","type":"note","opts":{"text":{"nested":1}}}]}""")]
     [InlineData("""{"dash":[{"id":"a","type":"note","script":"x"}]}""")]
     [InlineData("""{"secret":1}""")]
+    [InlineData("""{"view":{"home":"karussell"}}""")]
+    [InlineData("""{"view":{"seite3":"list"}}""")]
+    [InlineData("""{"view":"list"}""")]
     [InlineData("""[1,2]""")]
     public void A_wrong_island_layout_is_refused_and_nothing_changes(string json)
     {
@@ -187,5 +190,19 @@ public class IslandTests
         Assert.Throws<RpcException>(() => SettingsService.CheckIslandLayout(J(many)));
         var huge = "{\"dash\":[" + string.Join(",", Enumerable.Range(0, 12).Select(i => $"{{\"id\":\"t{i}\",\"type\":\"note\",\"opts\":{{\"text\":\"{new string('x', 300)}\",\"label\":\"{new string('y', 300)}\",\"a\":\"{new string('z', 300)}\",\"b\":\"{new string('w', 300)}\"}}}}")) + "]}";
         Assert.Throws<RpcException>(() => SettingsService.CheckIslandLayout(J(huge)));
+    }
+
+    [Fact]
+    public void The_new_island_areas_tiles_views_and_effects_of_3_63_are_kept()
+    {
+        using var dir = new TempDir();
+        var svc = NewSettings(dir);
+        var json = """{"tabs":["home","tools","world","lists"],"home":[{"id":"a1","type":"dice","opts":{"mode":"coin"}},{"id":"a2","type":"counter","opts":{"value":-3}},{"id":"a3","type":"checklist","opts":{"items":"x Brot\nMilch"}}],"dash":[{"id":"b1","type":"countdown"},{"id":"b2","type":"breathe"},{"id":"b3","type":"stopwatch"},{"id":"b4","type":"links"},{"id":"b5","type":"devbattery"}],"view":{"home":"list","dash":"grid"}}""";
+        svc.SetIslandLook(new SettingsService.IslandLookUpdate { Layout = J(json), Effect = "fireflies" });
+        var s = NewSettings(dir).Get();
+        Assert.Equal("fireflies", s.IslandEffect);
+        Assert.Equal("grid", s.IslandLayout!["view"]!["dash"]!.GetValue<string>());
+        Assert.Equal(3, s.IslandLayout!["tabs"]!.AsArray().Count - 1);
+        Assert.Throws<RpcException>(() => svc.SetIslandLook(new SettingsService.IslandLookUpdate { Effect = "lava" }));
     }
 }

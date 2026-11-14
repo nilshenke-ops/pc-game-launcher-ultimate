@@ -3,10 +3,12 @@
 // values and a note. Own design in the layout of "island" apps. Everything shown is real state of the PC; what the PC cannot tell stays "n. v.".
 
 import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocity } from "../lib/island-swipe";
-import { flushSync } from "react-dom";
+import { createPortal, flushSync } from "react-dom";
 import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { FolderUp, Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume2, Layers, Camera, ScrollText, Download, Headphones, Pencil, Plus, X, Smartphone, Cpu, Gauge, MemoryStick, Palette } from "lucide-react";
+import { FolderUp, Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume2, Layers, Camera, ScrollText, Download, Headphones, Pencil, Plus, X, Smartphone, Cpu, Gauge, MemoryStick, Palette, Wrench, Earth, ListTodo, ArrowDownAZ } from "lucide-react";
+import { ListsArea, ToolsArea, WorldArea } from "./island-tools";
+import { TileViewSheet } from "./island-tiles";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
@@ -20,7 +22,7 @@ import { IslandShelf } from "./island-shelf";
 import { onShelfRequest, takeShelfRequest } from "../lib/island-shelf";
 import { ProcSheet, type ProcKind } from "./island-procs";
 import { IslandColorPicker } from "./island-color";
-import { addTile, moveTile, opt, removeTile, setTabs, setTileOpt, tabsOf, tileDef, MAX_TILES, type IslandLayout, type IslandTab, type LayoutPage, type Tile } from "../lib/island-layout";
+import { addTile, moveTile, opt, removeTile, setTabs, setTileOpt, setView, sortTiles, tabsOf, tileDef, viewOf, MAX_TILES, type IslandLayout, type IslandTab, type LayoutPage, type Tile } from "../lib/island-layout";
 import { sendWake, useWake, wakeLabel } from "../lib/wake";
 import { useIslandLayout, useIslandLook } from "../lib/island-look";
 import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island-widgets";
@@ -58,6 +60,7 @@ export type { IslandTab } from "../lib/island-layout";
 const TAB_META: Record<IslandTab, { icon: typeof Home; label: string }> = {
   home: { icon: Home, label: "Home" }, dash: { icon: LayoutDashboard, label: "Übersicht" }, controls: { icon: SlidersHorizontal, label: "Regler" }, audio: { icon: Headphones, label: "Audio" }, system: { icon: Activity, label: "System" }, game: { icon: Gamepad2, label: "Spiel" }, music: { icon: Music, label: "Musik" }, jarvis: { icon: MessageCircle, label: "JARVIS" }, focus: { icon: Timer, label: "Fokus" },
   inbox: { icon: Inbox, label: "Meldungen" }, apps: { icon: LayoutGrid, label: "Apps" }, pc: { icon: Monitor, label: "PC" }, note: { icon: StickyNote, label: "Notiz" }, shelf: { icon: FolderUp, label: "Ablage" },
+  tools: { icon: Wrench, label: "Werkzeuge" }, world: { icon: Earth, label: "Weltzeit" }, lists: { icon: ListTodo, label: "Listen" },
 };
 /** Widgets of the old panel that now live under the "PC" tab (music, focus, stopwatch and note have their own places). */
 const PC_WIDGETS: IslandWidgetId[] = ["game", "start", "clock", "stats", "temp", "net", "volume", "profile", "sounds"];
@@ -124,7 +127,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const [edit, setEdit] = useState(false);
   // Editing the start page or the overview: the tiles wiggle, each can move, be set up or go; "+" adds one (3.57).
   const [editing, setEditing] = useState<LayoutPage | null>(null);
-  const [sheet, setSheet] = useState<null | { kind: "add" | "tabs" | "color" } | { kind: "opts"; id: string }>(null);
+  const [sheet, setSheet] = useState<null | { kind: "add" | "tabs" | "color" | "view" } | { kind: "opts"; id: string }>(null);
   const [procs, setProcs] = useState<ProcKind | null>(null);
   const canClosePrograms = useCan("manage");
   const hold = useRef<number | null>(null);
@@ -370,10 +373,20 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
 
   // Escape closes the "⋯" menu first, then the island.
   const menuRef = useRef<HTMLDivElement>(null);
+  const menuPopRef = useRef<HTMLDivElement>(null);
+  // In the app the menu opens over the page (fixed, right under the button) so the island's frame never cuts it off; it scrolls inside.
+  const [menuAt, setMenuAt] = useState<{ top: number; right: number } | null>(null);
+  useLayoutEffect(() => {
+    if (!menu || !floating) return;
+    const place = () => { const r = menuRef.current?.getBoundingClientRect(); if (r) setMenuAt({ top: r.bottom + 6, right: Math.max(8, window.innerWidth - r.right) }); };
+    place();
+    window.addEventListener("resize", place); window.addEventListener("scroll", place, true);
+    return () => { window.removeEventListener("resize", place); window.removeEventListener("scroll", place, true); };
+  }, [menu, floating]);
   useEffect(() => {
     if (!menu) return;
     const key = (e: KeyboardEvent) => { if (e.key === "Escape") { e.stopPropagation(); setMenu(false); } };
-    const away = (e: MouseEvent) => { if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false); };
+    const away = (e: MouseEvent) => { const n = e.target as Node; if (menuRef.current && !menuRef.current.contains(n) && !menuPopRef.current?.contains(n)) setMenu(false); };
     window.addEventListener("keydown", key, true); window.addEventListener("mousedown", away);
     return () => { window.removeEventListener("keydown", key, true); window.removeEventListener("mousedown", away); };
   }, [menu]);
@@ -516,14 +529,14 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const holdProps = { onPointerDown: (e: ReactPointerEvent) => { if (!(e.target as HTMLElement).closest("button, input, textarea, select, a")) holdStart(); }, onPointerUp: () => holdEnd(), onPointerLeave: () => holdEnd(), onPointerCancel: () => holdEnd() };
   const homeTiles = L.home.map((tile, i) => tileWrap("home", tile, i, L.home.length, richCard(tile))).filter(Boolean);
   const homeCards = (
-    <div className={`isl2-cards${editing === "home" ? " editing" : ""}`} data-n={homeTiles.length} {...holdProps}>
+    <div className={`isl2-cards view-${viewOf(L, "home")}${editing === "home" ? " editing" : ""}`} data-n={homeTiles.length} {...holdProps}>
       {homeTiles}
       {editing === "home" && addTileBtn("home")}
       {!homeTiles.length && editing !== "home" && <div className="isl2-empty"><LayoutGrid size={18} aria-hidden /><span>{t("Keine Kacheln – tippe auf den Stift, um welche hinzuzufügen.")}</span></div>}
     </div>
   );
   const dashTiles = (
-    <div className={`isl3-dash${editing === "dash" ? " editing" : ""}`} data-n={L.dash.length} {...holdProps}>
+    <div className={`isl3-dash view-${viewOf(L, "dash")}${editing === "dash" ? " editing" : ""}`} data-n={L.dash.length} {...holdProps}>
       {L.dash.map((tile, i) => tileWrap("dash", tile, i, L.dash.length, <IslandTile tile={tile} ctx={ctx} box />))}
       {editing === "dash" && addTileBtn("dash")}
       {!L.dash.length && editing !== "dash" && <div className="isl2-empty"><LayoutGrid size={18} aria-hidden /><span>{t("Keine Kacheln – tippe auf den Stift, um welche hinzuzufügen.")}</span></div>}
@@ -532,6 +545,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const editHead = (page: LayoutPage) => editing === page ? (
     <div className="isl3-edithead" role="toolbar" aria-label={t("Bearbeiten")}>
       <span className="isl3-ehtext"><b>{page === "home" ? t("Startseite bearbeiten") : t("Übersicht bearbeiten")}</b><i>{lay.canPc ? t("gilt für alle Geräte") : t("gilt nur für dieses Gerät")}</i></span>
+      <button type="button" className="isl2-chip" onClick={() => setSheet({ kind: "add" })}><Plus size={13} aria-hidden /> {t("Kachel")}</button>
+      <button type="button" className="isl2-chip" onClick={() => setSheet({ kind: "view" })}><ArrowDownAZ size={13} aria-hidden /> {t("Ansicht & Sortieren")}</button>
       <button type="button" className="isl2-chip" onClick={() => setSheet({ kind: "tabs" })}>{t("Bereiche")}</button>
       <button type="button" className="isl2-chip" disabled={lay.source === "default"} onClick={() => void lay.reset()}>{t("Zurücksetzen")}</button>
       <button type="button" className="isl2-chip done" onClick={() => { setEditing(null); setSheet(null); }}>{t("Fertig")}</button>
@@ -539,19 +554,25 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   ) : null;
   const sheetPage: LayoutPage = sheet?.kind === "opts" ? pageOf(sheet.id) : editing ?? (current === "dash" ? "dash" : "home");
   const sheetTile = sheet?.kind === "opts" ? L[sheetPage].find((x) => x.id === sheet.id) : undefined;
-  const sheetTitle = !sheet ? "" : sheet.kind === "add" ? t("Kachel hinzufügen") : sheet.kind === "tabs" ? t("Bereiche in der Leiste") : sheet.kind === "color" ? t("Farbe & Effekt") : sheetTile ? t("{n} einstellen", { n: t(tileDef(sheetTile.type).label) }) : "";
-  const sheetView = sheet && (
-    <div className="isl3-sheet" role="dialog" aria-label={sheetTitle}>
+  const sheetTitle = !sheet ? "" : sheet.kind === "add" ? t("Kachel hinzufügen") : sheet.kind === "tabs" ? t("Bereiche in der Leiste") : sheet.kind === "color" ? t("Farbe & Effekt") : sheet.kind === "view" ? (sheetPage === "home" ? t("Startseite: Ansicht & Sortieren") : t("Übersicht: Ansicht & Sortieren")) : sheetTile ? t("{n} einstellen", { n: t(tileDef(sheetTile.type).label) }) : "";
+  const sheetBox = sheet && (
+    <div className={`isl3-sheet${floating ? " modal" : ""}`} role="dialog" aria-modal={floating || undefined} aria-label={sheetTitle}>
       <div className="isl3-sheethead"><b>{sheetTitle}</b><button type="button" className="isl3-mini" onClick={() => setSheet(null)} aria-label={t("Schließen")}><X size={15} /></button></div>
       <div className="isl3-sheetbody">
         {sheet.kind === "add" && <TileCatalog have={L[sheetPage].map((x) => x.type)} full={L[sheetPage].length >= MAX_TILES[sheetPage]} onPick={(type) => { saveL(addTile(L, sheetPage, type)); setSheet(null); }} />}
         {sheet.kind === "opts" && sheetTile && <TileSettings tile={sheetTile} onChange={(k, v) => saveL(setTileOpt(L, sheetPage, sheetTile.id, k, v))} />}
         {sheet.kind === "tabs" && <TabsEditor tabs={L.tabs ?? visibleTabs(look.widgets, true)} onChange={(list) => saveL(setTabs(L, list))} />}
         {sheet.kind === "color" && <IslandColorPicker />}
-        {sheet.kind !== "add" && sheet.kind !== "color" && <p className="tiny muted">{lay.canPc ? t("Wird am PC gespeichert und gilt für die Insel auf allen Geräten.") : t("Dieses Gerät darf die Einstellungen des PCs nicht ändern – die Änderung gilt nur hier.")}</p>}
+        {sheet.kind === "view" && <TileViewSheet view={viewOf(L, sheetPage)} onView={(v) => saveL(setView(L, sheetPage, v))} onSort={(how) => saveL(sortTiles(L, sheetPage, how, (x) => t(tileDef(x).label)))} count={L[sheetPage].length} />}
+        {sheet.kind !== "add" && sheet.kind !== "color" && sheet.kind !== "view" && <p className="tiny muted">{lay.canPc ? t("Wird am PC gespeichert und gilt für die Insel auf allen Geräten.") : t("Dieses Gerät darf die Einstellungen des PCs nicht ändern – die Änderung gilt nur hier.")}</p>}
       </div>
     </div>
   );
+  // In the app (iPad, phone, browser) the editing windows open big over the page, so everything is visible and can be scrolled with a
+  // finger; in the island window on the PC they stay inside the island.
+  const sheetView = sheetBox && (floating
+    ? createPortal(<div className="isl3-backdrop" onClick={(e) => { if (e.target === e.currentTarget) setSheet(null); }}>{sheetBox}</div>, document.body)
+    : sheetBox);
 
   const label = (id: IslandWidgetId) => t(ISLAND_WIDGETS.find((w) => w.id === id)?.label ?? id);
   const setWidget = (id: IslandWidgetId, on: boolean) => void save({ widgets: toggleWidget(look.widgets, id, on) });
@@ -850,7 +871,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     audio: <IslandAudio online={online} canUse={canMedia} canManage={canManage} controls={pcControls} sensors={sensors} />,
     shelf: <IslandShelf online={online} canManage={canManage} />,
     controls: <IslandControls online={online} canUse={canMedia} controls={pcControls} sensors={sensors} now={now} press={media} />,
-    system: <IslandSystem online={online} controls={pcControls} onDetails={online ? setProcs : undefined} /> };
+    system: <IslandSystem online={online} controls={pcControls} onDetails={online ? setProcs : undefined} />,
+    tools: <ToolsArea />, world: <WorldArea now={now} />, lists: <ListsArea /> };
 
   return (
     <div className="isl2" role="dialog" aria-label={t("JARVIS-Insel")}>
@@ -882,7 +904,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         )}
         <div className="isl2-moreWrap" ref={menuRef}>
           <button type="button" className="isl2-more" aria-haspopup="menu" aria-expanded={menu} aria-label={t("Mehr")} onClick={() => setMenu((m) => !m)}><MoreHorizontal size={18} /></button>
-          {(menu || menuShown) && (
+          {(menu || menuShown) && (floating && menuAt
+            ? createPortal(<div ref={menuPopRef} className="isl2-menupop" style={{ top: menuAt.top, right: menuAt.right, maxHeight: `calc(100dvh - ${Math.round(menuAt.top)}px - 12px)` }}>
             <div className={`isl2-menu${menu ? "" : " closing"}`} role="menu">
               <label className="isl2-mi" role="menuitemcheckbox" aria-checked={prefs.sound}>
                 <span className="isl2-mii" aria-hidden><Volume2 size={15} /></span>
@@ -892,6 +915,8 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
               <span className="isl2-msep" aria-hidden />
               <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("home"); setEditing("home"); }}><span className="isl2-mii" aria-hidden><Pencil size={15} /></span><span className="isl2-mit">{t("Startseite bearbeiten")}</span></button>
               <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("dash"); setEditing("dash"); }}><span className="isl2-mii" aria-hidden><LayoutDashboard size={15} /></span><span className="isl2-mit">{t("Übersicht bearbeiten")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); if (current !== "dash") setTab("home"); setSheet({ kind: "add" }); }}><span className="isl2-mii" aria-hidden><Plus size={15} /></span><span className="isl2-mit">{t("Kachel hinzufügen")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); if (current !== "dash") setTab("home"); setSheet({ kind: "view" }); }}><span className="isl2-mii" aria-hidden><ArrowDownAZ size={15} /></span><span className="isl2-mit">{t("Ansicht & Sortieren")}</span></button>
               <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setSheet({ kind: "color" }); }}><span className="isl2-mii" aria-hidden><Palette size={15} /></span><span className="isl2-mit">{t("Farbe & Effekt")}</span></button>
               <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setSheet({ kind: "tabs" }); }}><span className="isl2-mii" aria-hidden><SlidersHorizontal size={15} /></span><span className="isl2-mit">{t("Bereiche anpassen")}</span></button>
               {canManage && <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("pc"); setEdit(true); }}><span className="isl2-mii" aria-hidden><LayoutGrid size={15} /></span><span className="isl2-mit">{t("Widgets im Bereich PC")}</span></button>}
@@ -899,7 +924,27 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
               {floating && <Link to="/overlay-settings" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><Settings2 size={15} /></span><span className="isl2-mit">{t("Insel-Einstellungen")}</span></Link>}
               <button type="button" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><ChevronUp size={15} /></span><span className="isl2-mit">{t("Schließen")}</span></button>
             </div>
-          )}
+              </div>, document.body)
+            : (
+            <div className={`isl2-menu${menu ? "" : " closing"}`} role="menu">
+              <label className="isl2-mi" role="menuitemcheckbox" aria-checked={prefs.sound}>
+                <span className="isl2-mii" aria-hidden><Volume2 size={15} /></span>
+                <span className="isl2-mit">{t("Ton bei „fertig“ und Rückfragen")}</span>
+                <input type="checkbox" className="isl2-switch" checked={prefs.sound} onChange={(e) => setIslandPrefs({ sound: e.target.checked })} />
+              </label>
+              <span className="isl2-msep" aria-hidden />
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("home"); setEditing("home"); }}><span className="isl2-mii" aria-hidden><Pencil size={15} /></span><span className="isl2-mit">{t("Startseite bearbeiten")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("dash"); setEditing("dash"); }}><span className="isl2-mii" aria-hidden><LayoutDashboard size={15} /></span><span className="isl2-mit">{t("Übersicht bearbeiten")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); if (current !== "dash") setTab("home"); setSheet({ kind: "add" }); }}><span className="isl2-mii" aria-hidden><Plus size={15} /></span><span className="isl2-mit">{t("Kachel hinzufügen")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); if (current !== "dash") setTab("home"); setSheet({ kind: "view" }); }}><span className="isl2-mii" aria-hidden><ArrowDownAZ size={15} /></span><span className="isl2-mit">{t("Ansicht & Sortieren")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setSheet({ kind: "color" }); }}><span className="isl2-mii" aria-hidden><Palette size={15} /></span><span className="isl2-mit">{t("Farbe & Effekt")}</span></button>
+              <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setSheet({ kind: "tabs" }); }}><span className="isl2-mii" aria-hidden><SlidersHorizontal size={15} /></span><span className="isl2-mit">{t("Bereiche anpassen")}</span></button>
+              {canManage && <button type="button" role="menuitem" className="isl2-mi" onClick={() => { setMenu(false); setTab("pc"); setEdit(true); }}><span className="isl2-mii" aria-hidden><LayoutGrid size={15} /></span><span className="isl2-mit">{t("Widgets im Bereich PC")}</span></button>}
+              {floating && <Link to="/assistant" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><MessageCircle size={15} /></span><span className="isl2-mit">{t("JARVIS öffnen")}</span></Link>}
+              {floating && <Link to="/overlay-settings" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><Settings2 size={15} /></span><span className="isl2-mit">{t("Insel-Einstellungen")}</span></Link>}
+              <button type="button" role="menuitem" className="isl2-mi" onClick={onClose}><span className="isl2-mii" aria-hidden><ChevronUp size={15} /></span><span className="isl2-mit">{t("Schließen")}</span></button>
+            </div>
+          ))}
         </div>
       </header>
       <div className="isl2-stage">

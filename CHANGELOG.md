@@ -4,6 +4,31 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.63.0 – 2026-11-14
+### Neu
+- **Drei neue Bereiche für die Insel** (zuschaltbar unter „Bereiche anpassen“, standardmäßig aus):
+  - **Werkzeuge:** Würfel/W20/Münze, Zähler, Stoppuhr mit Runden, Atemkreis.
+  - **Weltzeit:** bis zu sechs Städte mit Tag/Nacht.
+  - **Listen:** To-do, Spiele für später, Einkauf zum Abhaken.
+  - Die Bereiche speichern nur auf diesem Gerät.
+- **Acht neue Kacheln:**
+  - Zufall, Zähler (z. B. Tode oder Siege), Countdown bis zu einem Datum, Checkliste.
+  - Durchatmen, Stoppuhr, Schnell-Links (nur echte Web-Adressen) und Akku dieses Geräts (wo der Browser ihn meldet, sonst ein ehrlicher Hinweis).
+- **Ansichten** je Seite: Karten, Liste oder Raster. **Sortieren** der Kacheln: A–Z, Z–A, nach Art oder umgedreht. Die Bereiche lassen sich nach üblicher Reihenfolge oder A–Z sortieren.
+- **Kachel-Katalog** mit Suche, Filtern nach Art (Info, PC, Medien & Spiel, Werkzeuge, Spaß & Ruhe, Neu) und Reihenfolge.
+- **Mehr Farben und Effekte:**
+  - 32 Farben in übersichtlichen Gruppen.
+  - Sechs neue Effekte: Regen, Blasen, Glühwürmchen, Konfetti, Herbstlaub, Herzen.
+### Verbessert
+- **Menü und Bearbeiten-Fenster am iPad/Handy:**
+  - Das „…“-Menü öffnet über der Seite und scrollt; nichts wird mehr abgeschnitten.
+  - „Bereiche anpassen“, „Kachel hinzufügen“, „Farbe & Effekt“ sowie „Ansicht & Sortieren“ öffnen groß über der Seite und sind mit dem Finger scrollbar. Ein Tipp daneben schließt sie.
+  - Alle Bereiche stehen in einer Liste mit Schaltern.
+- **Timer und Stoppuhr** im Fokus-Bereich haben jetzt dieselbe Farbe (die Farbe der Insel, sonst Lila) und denselben Stil.
+### Hinweise
+- Am Begleiter angepasst: Er nimmt die neuen Bereiche, Kacheln, Ansichten und Effekte an. Ein älterer Begleiter lehnt sie ab, deshalb erst den Begleiter aktualisieren.
+- Getestet im Testbrowser in iPad-Größe, nicht auf einem echten iPad.
+
 ## 3.62.0 – 2026-11-13
 ### Neu
 - **Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …).

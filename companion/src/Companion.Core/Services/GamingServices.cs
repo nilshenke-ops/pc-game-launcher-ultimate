@@ -177,7 +177,7 @@ public sealed class SettingsService
         public static readonly string[] EyeSizes = { "s", "m", "l" };
         public static readonly string[] Widgets = { "game", "start", "clock", "music", "focus", "stopwatch", "stats", "temp", "net", "volume", "profile", "sounds", "note" };
         public static readonly string[] Positions = { "center", "left", "right" };
-        public static readonly string[] Effects = { "none", "sakura", "snow", "stars" };
+        public static readonly string[] Effects = { "none", "sakura", "snow", "stars", "rain", "bubbles", "fireflies", "confetti", "leaves", "hearts" };
         public static bool ValidAccent(string a) => a is "default" or "auto" || System.Text.RegularExpressions.Regex.IsMatch(a, "^#[0-9a-fA-F]{6}$");
         public static readonly string[] DefaultWidgets = { "game", "clock", "music", "focus", "stats" };
         public const int MinOpacity = 50, MaxOpacity = 100;
@@ -193,8 +193,10 @@ public sealed class SettingsService
         public bool ResetLayout { get; init; }
     }
 
-    static readonly string[] LayoutTabs = { "home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "pc", "note", "shelf" };
-    static readonly string[] LayoutTiles = { "jarvis", "game", "music", "focus", "pc", "calendar", "weather", "system", "volume", "network", "battery", "clock", "note" };
+    static readonly string[] LayoutTabs = { "home", "dash", "game", "music", "jarvis", "focus", "inbox", "apps", "controls", "audio", "system", "pc", "note", "shelf", "tools", "world", "lists" };
+    static readonly string[] LayoutTiles = { "jarvis", "game", "music", "focus", "pc", "calendar", "weather", "system", "volume", "network", "battery", "clock", "note",
+        "dice", "counter", "countdown", "checklist", "breathe", "stopwatch", "links", "devbattery" };
+    static readonly string[] LayoutViews = { "cards", "list", "grid" };
     static readonly System.Text.RegularExpressions.Regex TileIdRx = new("^[a-z0-9]{1,16}$"), OptKeyRx = new("^[a-zA-Z]{1,16}$");
     public const int MaxLayoutChars = 12000;
 
@@ -220,6 +222,13 @@ public sealed class SettingsService
             {
                 if (p.Value.ValueKind != System.Text.Json.JsonValueKind.Array || p.Value.GetArrayLength() > 12) throw Bad("Zu viele Kacheln in der Insel.");
                 foreach (var tile in p.Value.EnumerateArray()) CheckTile(tile);
+            }
+            else if (p.Name == "view")
+            {
+                // How the tiles of a page are laid out: cards, list or grid.
+                if (p.Value.ValueKind != System.Text.Json.JsonValueKind.Object) throw Bad("Ungültige Ansicht der Insel.");
+                foreach (var v in p.Value.EnumerateObject())
+                    if (v.Name is not ("home" or "dash") || v.Value.ValueKind != System.Text.Json.JsonValueKind.String || !LayoutViews.Contains(v.Value.GetString())) throw Bad("Unbekannte Ansicht der Insel.");
             }
             else throw Bad("Unbekannter Teil des Insel-Layouts: " + p.Name);
         }
