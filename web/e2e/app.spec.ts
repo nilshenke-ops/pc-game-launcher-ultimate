@@ -914,9 +914,9 @@ test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, 
   await pc.goto(`${COMPANION}/#/assistant?tab=ai`);
   await expect(sw(/^Laufendes Spiel/)).toBeChecked();
   await expect(sw(/^PC-Werte/)).toBeChecked();
-  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) await expect(sw(n)).not.toBeChecked();
+  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz(?! in der Leiste)/]) await expect(sw(n)).not.toBeChecked();
   // The switches follow the PC's answer (saved there first), so click and then wait for the state.
-  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) { await sw(n).click({ force: true }); await expect(sw(n)).toBeChecked(); }
+  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz(?! in der Leiste)/]) { await sw(n).click({ force: true }); await expect(sw(n)).toBeChecked(); }
   // The choice is kept on the PC (so a phone sees and changes the same), in the fixed order.
   await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).toEqual(["game", "clock", "music", "focus", "stats", "temp", "net", "volume", "note"]);
   await pc.goto(`${COMPANION}/#/island`);
@@ -955,8 +955,8 @@ test("Insel-Widgets: Auswahl (neue sind aus), Temperatur/FPS ehrlich, Netzwerk, 
   await pc.getByRole("textbox", { name: "Notiz" }).fill("");
   await pc.waitForTimeout(700);
   await pc.goto(`${COMPANION}/#/assistant?tab=ai`);
-  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz/]) { await sw(n).click({ force: true }); await expect(sw(n)).not.toBeChecked(); }
-  await expect(sw(/^Notiz/)).not.toBeChecked();
+  for (const n of [/^Temperatur & FPS/, /^Netzwerk/, /^Lautstärke/, /^Notiz(?! in der Leiste)/]) { await sw(n).click({ force: true }); await expect(sw(n)).not.toBeChecked(); }
+  await expect(sw(/^Notiz(?! in der Leiste)/)).not.toBeChecked();
   await expect.poll(async () => (await adminRpc<{ look: { widgets: string[] } }>("island.get")).look.widgets).toEqual(["game", "clock", "music", "focus", "stats"]);
 });
 
