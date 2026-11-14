@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.67.1",
+    "date": "2026-11-14",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.1/PCGameLauncherCompanion.exe",
+    "size": 95562767,
+    "sha256": "2c1a1fb07f23cc314bbcd236e096cdf6bd3113e76026ed3ac30f4d716f9167a9",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.67.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.1/PCGameLauncherCompanion-3.67.1-win-x64.zip",
+      "size": 89836648,
+      "sha256": "128cc84ff0a86e47b656292acd2aa261ca09f6b30517db3fc8691065b3cf06a2"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "**Wischen auf der Übersicht mit dem Finger.** Auf iPad und Handy ließ sich von der Übersicht (Kalender, Fokus, Wetter, System) nicht zum nächsten Bereich wischen, wenn der Finger auf einer Kachel startete. Ursache: Die Übersicht ist selbst ein scrollbarer Bereich. Der Browser hat die Seitwärtsbewegung für sich beansprucht und abgebrochen, bevor die Insel sie bekam. Jetzt scrollen alle Bereiche in der Insel nur hoch und runter, und das seitliche Wischen gehört der Insel. Reihen, die selbst seitlich scrollen (KI-Auswahl, Bearbeiten-Leiste), funktionieren weiter.",
+        "Der Test dafür nutzt jetzt echte Touch-Gesten des Browsers, auf iPad- und Handy-Größe. Der alte Test hatte künstliche Pointer-Ereignisse verwendet, die diese Browser-Regel umgehen. Deshalb war der Fehler darin nicht aufgefallen."
+      ]
+    },
+    "signature": "CC38UIoxK5CBD/UTKX7NjIs+dKikti9Qfw6kdInv/vdm+GfBJ1D3BmnHXegwNuZHfnuJol2sivtrfu9ldK3oVw=="
+  },
+  {
     "version": "3.67.0",
     "date": "2026-11-14",
     "channel": "stable",
@@ -1331,31 +1356,5 @@
       "behoben": []
     },
     "signature": "dSUmoMJ1a26NpXkwnorSBJCerbQzq0apriLeXXD3zWyB0ysXfaa1y/GoZVWuZOHhL50yLMlbapckjTO69PVPZg=="
-  },
-  {
-    "version": "3.36.0",
-    "date": "2026-11-10",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion.exe",
-    "size": 95088264,
-    "sha256": "7d4b625d47afd1a0903dde908819242d918404e366c0a24797ad3018d3f84a9c",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.36.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.36.0/PCGameLauncherCompanion-3.36.0-win-x64.zip",
-      "size": 89361957,
-      "sha256": "421393d07fda4b833c7d764d560f75741c6e886b7ee828964261af151dac1209"
-    },
-    "notes": "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC",
-    "changes": {
-      "neu": [
-        "Stimmenwechsler für Discord (Audio → Stimmenwechsler): Dein Mikrofon läuft in Echtzeit durch die Seite, die Stimme wird verändert und geht an ein virtuelles Audiokabel – in Discord wählst du als Eingabegerät „CABLE Output“. 13 Stimmen: Original, Tiefe Stimme, Monster, Dämon, Chipmunk, Kind, Roboter, Alien, Funkgerät, Telefon, Megafon, Höhle, Echo – dazu „Zufällige Stimme“, Feinabstimmung der Tonhöhe in Halbtönen, Pegelanzeigen, „Mich selbst hören“ (mit Kopfhörern) und Rauschunterdrückung. Die Stimme wechselt live, während du sprichst, und läuft weiter, wenn du eine andere Seite öffnest. Braucht ein virtuelles Kabel (z. B. das kostenlose VB-Audio Virtual Cable) und Chrome oder Edge am PC"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "Beim Start der Seite gab es einen Ladefehler im Schlüsselspeicher (Zugriff auf eine Liste, bevor sie angelegt war); die Schlüssel werden jetzt sauber nach dem Laden geöffnet"
-      ]
-    },
-    "signature": "BFI5ZykH841lm77wlQle9xpLrezIAIe097kj+O5Tf4zaRfjlIwV5f5gtgPtMR5YQUij7cOkPyJvjcpf3TVg79g=="
   }
 ]
