@@ -1,33 +1,25 @@
 {
-  "version": "3.66.0",
+  "version": "3.67.0",
   "date": "2026-11-14",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.66.0/PCGameLauncherCompanion.exe",
-  "size": 95554245,
-  "sha256": "63d5803c7035f44fe9ae87b19af0b19ac3476826bd105fb269b021adb3ce192f",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.0/PCGameLauncherCompanion.exe",
+  "size": 95562847,
+  "sha256": "c7ab7414035945b828c38d8684e7ce6ea8bad3930bfce00074072dd9b2767b66",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.66.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.66.0/PCGameLauncherCompanion-3.66.0-win-x64.zip",
-    "size": 89828208,
-    "sha256": "8e1da8d92260f8f02f2271039ec535ef9845f3029966756b0669384d49bd226e"
+    "fileName": "PCGameLauncherCompanion-3.67.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.0/PCGameLauncherCompanion-3.67.0-win-x64.zip",
+    "size": 89836691,
+    "sha256": "6323c0cba4b50d6bb3047f2d5c3e4936a0706d564caecdded1215e2c88749ba7"
   },
-  "notes": "**FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel. · **Jeder Wert der Insel ist anklickbar:** · **Nexus Performance Intelligence.** Die Analyse erkennt CPU- und GPU-Engpässe, Hintergrundlast, vollen Arbeits- oder Grafikspeicher, hohe Temperaturen, schwankende Bildzeiten, Ruckler, volle oder ausgelastete Laufwerke, Paketverlust und hohen Ping.",
+  "notes": "**Wofür wird es gebraucht – jetzt auch bei GPU, FPS und Speicher.** Bisher zeigten nur CPU und RAM, welche Programme sie verbrauchen. · **Windows-Programme sind gekennzeichnet.**",
   "changes": {
     "neu": [
-      "**FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel.",
-      "**Jeder Wert der Insel ist anklickbar:**",
-      "**Nexus Performance Intelligence.** Die Analyse erkennt CPU- und GPU-Engpässe, Hintergrundlast, vollen Arbeits- oder Grafikspeicher, hohe Temperaturen, schwankende Bildzeiten, Ruckler, volle oder ausgelastete Laufwerke, Paketverlust und hohen Ping.",
-      "**Laufwerke im Detail.** Angezeigt werden Lese- und Schreibgeschwindigkeit in MB/s, Aktivität, freier und belegter Platz sowie der SMART-Zustand auf Knopfdruck (Temperatur, Abnutzung, Fehler, Betriebsstunden – soweit das Laufwerk sie meldet).",
-      "**Netzwerk im Detail.** Download und Upload stehen in Mbit/s. Dazu kommen Verbindungsart (WLAN oder LAN) mit Geschwindigkeit, die Datenmenge seit dem Start des Begleiters sowie Ping, Jitter und Paketverlust.",
-      "Der eigene Verbrauch des Begleiters (CPU und RAM) wird angezeigt.",
-      "Neue Einstellung „FPS automatisch messen“ (standardmäßig an)."
+      "**Wofür wird es gebraucht – jetzt auch bei GPU, FPS und Speicher.** Bisher zeigten nur CPU und RAM, welche Programme sie verbrauchen.",
+      "**Windows-Programme sind gekennzeichnet.**"
     ],
-    "verbessert": [
-      "Netzwerkgeschwindigkeit überall in **Mbit/s** statt MB/s. Dateien und Laufwerke bleiben in MB/s, Datenmengen in MB/GB.",
-      "Der Begleiter speichert eine Stunde Messverlauf, aber nur solange jemand zusieht. Lücken bleiben sichtbar."
-    ],
+    "verbessert": [],
     "behoben": []
   },
-  "signature": "wRcsGFr8YO8AoMNiHDbQHtMnsoAKh0Xf4wokbjHhs9W2JgUXBm4Jd+9At2TgWm6wPDBBdhv+uJ5UuTN4PRSptw=="
+  "signature": "S1dHmF3FQZ3mczJA6h+ZrnAvcbshltQzQaK9VxztXZJt5cPtEoUJxK2eNmiUnJfotGANLkW2TN3yR9MF/Wl1cw=="
 }

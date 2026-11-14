@@ -1,5 +1,30 @@
 [
   {
+    "version": "3.67.0",
+    "date": "2026-11-14",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.0/PCGameLauncherCompanion.exe",
+    "size": 95562847,
+    "sha256": "c7ab7414035945b828c38d8684e7ce6ea8bad3930bfce00074072dd9b2767b66",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.67.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.0/PCGameLauncherCompanion-3.67.0-win-x64.zip",
+      "size": 89836691,
+      "sha256": "6323c0cba4b50d6bb3047f2d5c3e4936a0706d564caecdded1215e2c88749ba7"
+    },
+    "notes": "**Wofür wird es gebraucht – jetzt auch bei GPU, FPS und Speicher.** Bisher zeigten nur CPU und RAM, welche Programme sie verbrauchen. · **Windows-Programme sind gekennzeichnet.**",
+    "changes": {
+      "neu": [
+        "**Wofür wird es gebraucht – jetzt auch bei GPU, FPS und Speicher.** Bisher zeigten nur CPU und RAM, welche Programme sie verbrauchen.",
+        "**Windows-Programme sind gekennzeichnet.**"
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "S1dHmF3FQZ3mczJA6h+ZrnAvcbshltQzQaK9VxztXZJt5cPtEoUJxK2eNmiUnJfotGANLkW2TN3yR9MF/Wl1cw=="
+  },
+  {
     "version": "3.66.0",
     "date": "2026-11-14",
     "channel": "stable",
@@ -1332,34 +1357,5 @@
       ]
     },
     "signature": "BFI5ZykH841lm77wlQle9xpLrezIAIe097kj+O5Tf4zaRfjlIwV5f5gtgPtMR5YQUij7cOkPyJvjcpf3TVg79g=="
-  },
-  {
-    "version": "3.35.0",
-    "date": "2026-11-10",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.35.0/PCGameLauncherCompanion.exe",
-    "size": 95076394,
-    "sha256": "cbd0cba1208cdfce7a14a0677bb9a1c0f3b1c83404e01509337137eff78a0ea6",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.35.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.35.0/PCGameLauncherCompanion-3.35.0-win-x64.zip",
-      "size": 89350001,
-      "sha256": "8084d7f88a5d3467d63d21b4ad0d06181ecd7188e811540c0ea8c2b03b24ea1a"
-    },
-    "notes": "Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite · Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da",
-    "changes": {
-      "neu": [
-        "Ein JARVIS: Die JARVIS-Insel und die Assistent-Seite benutzen jetzt dasselbe „Gehirn“ – gleiche Erkennung der Fragen, gleiche KIs und Schlüssel, derselbe Chatverlauf. Was du in der Insel fragst, steht auch im Chat der Assistent-Seite",
-        "Einmal pro Konto einstellen: Gedächtnis-Ordner samt Regeln (Obsidian) und KI-Schlüssel gehen verschlüsselt über das Konto an den PC, und der PC übernimmt sie selbst, sobald er an ist – nichts muss am PC noch einmal eingegeben werden. Schlüssel, die direkt am PC in der KI-Verwaltung eingetragen werden, landen auch im Konto und sind auf allen Geräten da"
-      ],
-      "verbessert": [],
-      "behoben": [
-        "„Wie viel hat Bayern gespielt?“ (und „wie hat Dortmund heute gespielt?“) wird als Sportfrage mit echten Ergebnissen beantwortet und nicht mehr als Frage nach der eigenen Spielzeit",
-        "Insel: Ein Tipp auf einen Reiter, während sich die Insel noch bewegt, geht nicht mehr verloren – sie fährt danach dorthin",
-        "Wischen in der Insel auf dem Handy: Der Bereich folgt dem Finger jetzt auch bei Android-Chrome (die Geste wurde vorher vom Browser abgebrochen)"
-      ]
-    },
-    "signature": "kS7EgF6CFBs4e3SaS+7LuMaBFMqevOH08atcmtIKm+4SDO+tse3M647DdQHFpFko/kJ/1Pv2aYNekV3KceJu1g=="
   }
 ]
