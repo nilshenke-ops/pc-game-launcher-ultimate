@@ -4,6 +4,25 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.62.0 – 2026-11-13
+### Neu
+- **Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …).
+  - Alltagswörter funktionieren: „dunkel“, „laggt“, „Akku“, „Handy“, „mic“, „Kennwort“, „englisch“ …
+  - Ein Treffer öffnet die Seite und hebt die Einstellung kurz hervor.
+  - Dieselben Treffer stehen in der Befehlspalette (Strg+K).
+- **Leistungs-Presets** unter „Performance“: Energiesparend, Ausgewogen, Maximale Effekte.
+  - Vor dem Übernehmen steht genau da, was sich ändert („Leichte Darstellung: aus → an“).
+  - Danach macht „Rückgängig“ alles wieder wie vorher. Farben und Layout bleiben unberührt.
+- **Einfach / Erweitert:** Die einfache Ansicht blendet Expertenfelder aus (eigener Relay-Server, Server-Adresse, Update-Quelle, Prüfintervall) und sagt, wie viele das sind. Es ist nur eine Ansicht, kein Wert ändert sich.
+### Verbessert
+- **Klare Kategorien:** Allgemein, Personalisierung, Gaming, Audio, JARVIS, Dynamic Island, Verbindung & Geräte, Cloud & Sync, Datenschutz & Sicherheit, Performance, Erweitert, Hilfe.
+  - Einstellungen auf eigenen Seiten sind dort mit kurzer Erklärung verlinkt. Jede Einstellung hat weiter nur einen Ort.
+  - Animationen, leichte Darstellung und Spielerkennung stehen jetzt gesammelt unter „Performance“.
+  - Alte Links auf Einstellungsbereiche funktionieren weiter.
+- Bestandsaufnahme, Struktur und Tests stehen in `docs/SETTINGS.md`.
+### Hinweise
+- Nicht auf einem echten iPhone/iPad und nicht mit dem Audio Center am Windows-PC getestet (im Testbrowser nur PC- und Handy-Breite).
+
 ## 3.61.0 – 2026-11-13
 ### Verbessert
 - **Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`):

@@ -5,8 +5,9 @@ import { followOsMotion, osReducesMotion, setFollowOsMotion } from "../lib/motio
 import { FxSettings } from "../components/fx-settings";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-  ArchiveRestore, Bell, History, Copy, KeyRound, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
+  Bell, History, Copy, Download, FolderOpen, Globe, ImagePlus, Languages, LayoutGrid, Lock, Palette, Plus, Power, RefreshCw, RotateCcw,
   LifeBuoy, Save, Server, Settings as SettingsIcon, ShieldCheck, Trash2, Undo2, Upload, UserX,
+  AudioLines, Bot, ChevronRight, Cloud, Gamepad2, Gauge, Monitor, SlidersHorizontal, Wrench, Zap,
 } from "lucide-react";
 import { client, defaultServerUrl, serverUrl, setServerUrl } from "../lib/rpc";
 import { t } from "../lib/i18n";
@@ -20,12 +21,14 @@ import { Banner, Button, Card, confirmDialog, Field, Loadable, PageHead, Segment
 import { PcUpdates } from "../components/UpdateCenter";
 import { NavEditor } from "../components/NavEditor";
 import { HelpCenter } from "../components/help-center";
+import { IslandSettingsCard } from "../components/island-settings";
+import { SettingsLevelSwitch, SettingsSearch, useSettingsLevel } from "../components/settings-search";
+import { advancedCount, sectionOf, SETTINGS_CATS, type SettingsCat } from "../lib/settings-index";
+import { activePreset, applyPreset, presetChanges, PERF_PRESETS, withPerf, type PerfPresetId, type PerfValues } from "../lib/settings-presets";
 import { TailscaleCard } from "../components/tailscale-card";
 import { DataCenter } from "../components/data-center";
 import { setStatusPill, useStatusPill } from "../lib/status-pill";
 import { setUserName, useUserName } from "../components/home-showcase";
-
-type Section = "general" | "account" | "design" | "connection" | "security" | "notifications" | "autostart" | "updates" | "backup" | "privacy" | "help";
 
 interface SettingsResp { settings: Settings; relaySecretSet: boolean; dataDir?: string; restartRequired: boolean; webStartError?: string }
 
@@ -38,44 +41,91 @@ function useSettings() {
   return { ...q, save };
 }
 
+const CAT_ICON: Record<SettingsCat, ReactNode> = {
+  general: <SettingsIcon size={17} />, design: <Palette size={17} />, gaming: <Gamepad2 size={17} />, audio: <AudioLines size={17} />,
+  jarvis: <Bot size={17} />, island: <Monitor size={17} />, connection: <Globe size={17} />, cloud: <Cloud size={17} />,
+  privacy: <Lock size={17} />, performance: <Gauge size={17} />, advanced: <Wrench size={17} />, help: <LifeBuoy size={17} />,
+};
+
 export default function SettingsPage() {
   const [params, setParams] = useSearchParams();
-  const section = (params.get("s") as Section) || "general";
-  const nav: [Section, string, ReactNode][] = [
-    ["general", t("Allgemein"), <SettingsIcon size={17} />],
-    ["account", t("Konto & Anmeldedaten"), <KeyRound size={17} />],
-    ["design", t("Design & Layout"), <Palette size={17} />],
-    ["connection", t("Verbindung"), <Globe size={17} />],
-    ["security", t("Sicherheit"), <Lock size={17} />],
-    ["notifications", t("Benachrichtigungen"), <Bell size={17} />],
-    ["autostart", t("Installation & Autostart"), <Power size={17} />],
-    ["updates", t("Updates"), <RefreshCw size={17} />],
-    ["backup", t("Backup & Wiederherstellung"), <ArchiveRestore size={17} />],
-    ["privacy", t("Datenschutz"), <UserX size={17} />],
-    ["help", t("Hilfe"), <LifeBuoy size={17} />],
-  ];
+  const section = sectionOf(params.get("s"));
+  const level = useSettingsLevel();
+  const cat = SETTINGS_CATS.find((c) => c.id === section)!;
+  const hidden = level === "simple" ? advancedCount(section) : 0;
   return (
     <>
       <PageHead eyebrow={t("System")} title={t("Einstellungen")} />
+      <SettingsSearch />
       <div className="settings">
         <nav className="settings-nav" aria-label={t("Einstellungsbereiche")}>
-          {nav.map(([k, label, icon]) => <button key={k} className={section === k ? "on" : ""} aria-current={section === k} onClick={() => setParams({ s: k })}>{icon}{label}</button>)}
+          {SETTINGS_CATS.map((c) => <button key={c.id} className={section === c.id ? "on" : ""} aria-current={section === c.id} onClick={() => setParams({ s: c.id })}>{CAT_ICON[c.id]}{t(c.label)}</button>)}
         </nav>
         <div className="stack fade-in" key={section}>
-          {section === "general" && <General />}
-          {section === "account" && <AccountSettings />}
+          <div className="set-head">
+            <div><h2>{t(cat.label)}</h2><p className="small muted">{t(cat.desc)}</p></div>
+            {section !== "help" && <SettingsLevelSwitch />}
+          </div>
+          {hidden > 0 && <p className="tiny muted set-hidden">{t("{n} Einstellungen für Fortgeschrittene sind ausgeblendet – „Erweitert“ zeigt sie.", { n: hidden })}</p>}
+          {section === "general" && <><General /><NotificationSettings /><Autostart /></>}
           {section === "design" && <Design />}
-          {section === "connection" && <Connection />}
-          {section === "security" && <Security />}
-          {section === "notifications" && <NotificationSettings />}
-          {section === "autostart" && <Autostart />}
-          {section === "updates" && <Updates />}
-          {section === "backup" && <Backup />}
-          {section === "privacy" && <Privacy />}
+          {section === "gaming" && <Hub items={GAMING_HUB} />}
+          {section === "audio" && <Hub items={AUDIO_HUB} />}
+          {section === "jarvis" && <Hub items={JARVIS_HUB} />}
+          {section === "island" && <><IslandSettingsCard /><Hub items={ISLAND_HUB} /></>}
+          {section === "connection" && <><Connection /><Hub items={DEVICES_HUB} /></>}
+          {section === "cloud" && <><AccountSettings /><Hub items={CLOUD_HUB} /><Backup /></>}
+          {section === "privacy" && <><Security /><Privacy /></>}
+          {section === "performance" && <Performance />}
+          {section === "advanced" && <Advanced />}
           {section === "help" && <HelpCenter />}
         </div>
       </div>
     </>
+  );
+}
+
+// ------------------------------------------------------------------ settings that live on their own page
+
+interface HubItem { to: string; title: string; text: string; icon: ReactNode }
+const GAMING_HUB: HubItem[] = [
+  { to: "/profiles", title: "Gaming-Profile", text: "Automatischer Profilwechsel, Spielmodus (Programme beim Spielstart schließen), Soundboard-Sammlung und Layout je Profil.", icon: <Gamepad2 size={18} /> },
+  { to: "/overlay-settings", title: "Overlay & Aufnahme", text: "Overlay-Inhalt, Tastenkürzel, OBS, Replay-Puffer und Aufnahme-Programm.", icon: <Monitor size={18} /> },
+  { to: "/automations", title: "Automatisierungen", text: "Wenn-Dann-Regeln, die der PC selbst ausführt.", icon: <Zap size={18} /> },
+  { to: "/hotkeys", title: "Hotkeys", text: "Globale Tastenkürzel am PC.", icon: <SlidersHorizontal size={18} /> },
+];
+const AUDIO_HUB: HubItem[] = [
+  { to: "/audio", title: "Audio Center", text: "Soundboard-Ausgabe, selbst mithören, Mikrofon mitsenden, Discord einrichten, Mikrofon wiederherstellen, Audio-Diagnose.", icon: <AudioLines size={18} /> },
+  { to: "/soundboard", title: "Soundboard", text: "Sounds, Sammlungen und Tastenkürzel.", icon: <AudioLines size={18} /> },
+  { to: "/voice-changer", title: "Stimmenwechsler", text: "Stimme in Echtzeit verändern (Discord).", icon: <AudioLines size={18} /> },
+];
+const JARVIS_HUB: HubItem[] = [
+  { to: "/assistant?tab=ai", title: "KI & Einstellungen", text: "Wer antwortet, KI-Router, lokale KI (Ollama), Claude, Websuche, Kostenwächter. Schlüssel bleiben am PC bzw. verschlüsselt auf dem Gerät.", icon: <Bot size={18} /> },
+  { to: "/assistant?tab=tasks", title: "Aufträge", text: "Verlauf der JARVIS-Aufträge: behalten, Auftragstext speichern, löschen.", icon: <History size={18} /> },
+  { to: "/memory", title: "JARVIS MEMORY", text: "Was JARVIS sich merkt – ansehen, suchen, löschen.", icon: <Bot size={18} /> },
+];
+const ISLAND_HUB: HubItem[] = [
+  { to: "/overlay-settings", title: "Overlay & Aufnahme", text: "Die Insel-Einstellungen oben gelten überall – dort stehen zusätzlich Overlay und Aufnahme.", icon: <Monitor size={18} /> },
+];
+const DEVICES_HUB: HubItem[] = [
+  { to: "/devices", title: "Gekoppelte Geräte", text: "Handys und Tablets mit Zugriff, ihre Rechte, entfernen.", icon: <Globe size={18} /> },
+];
+const CLOUD_HUB: HubItem[] = [
+  { to: "/profile", title: "Profil & Cloud", text: "Konten auf diesem Gerät, Cloud-Synchronisierung, KI-Schlüssel je Konto.", icon: <Cloud size={18} /> },
+];
+
+/** Settings that belong to a feature stay on that feature's page (one place each); here they are listed and linked. */
+function Hub({ items }: { items: HubItem[] }) {
+  return (
+    <div className="set-hub">
+      {items.map((i) => (
+        <Link key={i.to + i.title} to={i.to} className="set-hub-item">
+          <span className="set-hub-icon" aria-hidden>{i.icon}</span>
+          <span className="set-hub-body"><b className="set-hub-title">{t(i.title)}</b><span className="small muted">{t(i.text)}</span></span>
+          <ChevronRight size={16} aria-hidden />
+        </Link>
+      ))}
+    </div>
   );
 }
 
@@ -85,20 +135,15 @@ function General() {
   const s = useSettings();
   const prefs = usePrefs();
   const [name, setName] = useState("");
-  const [scan, setScan] = useState(5);
   const uname = useUserName();
-  useEffect(() => { if (s.data) { setName(s.data.settings.pcName); setScan(s.data.settings.processScanSeconds); } }, [s.data]);
+  useEffect(() => { if (s.data) setName(s.data.settings.pcName); }, [s.data]);
   return (
     <Loadable loading={s.loading} error={s.error} onRetry={s.reload}>
       <Card title={t("Allgemein")} icon={<SettingsIcon size={18} />}>
         <div className="stack">
           <Field label={t("Dein Name auf der Startseite")} hint={t("Steht in der Begrüßung („Hallo …!“). Nur auf diesem Gerät gespeichert.")}><input className="input" value={uname} maxLength={24} placeholder={t("Gamer")} onChange={(e) => setUserName(e.target.value)} /></Field>
           <Field label={t("Name dieses PCs")} hint={t("Wird auf gekoppelten Geräten angezeigt.")}><input className="input" value={name} maxLength={40} onChange={(e) => setName(e.target.value)} /></Field>
-          <Field label={t("Spielerkennung: alle {n} Sekunden prüfen", { n: scan })} hint={t("Niedrigere Werte erkennen Spielstarts schneller, kosten aber minimal mehr Leistung. Empfohlen: 5.")}>
-            <input type="range" min={2} max={30} value={scan} onChange={(e) => setScan(+e.target.value)} />
-          </Field>
-          <div><Button variant="primary" icon={<Save size={16} />} onClick={() => s.save({ pcName: name, processScanSeconds: scan })}>{t("Speichern")}</Button></div>
-          {s.data && scan !== s.data.settings.processScanSeconds && <p className="tiny muted">{t("Das Prüfintervall wird nach einem Neustart des Companions wirksam.")}</p>}
+          <div><Button variant="primary" icon={<Save size={16} />} onClick={() => s.save({ pcName: name })}>{t("Speichern")}</Button></div>
         </div>
       </Card>
       <Card title={t("Sprache")} icon={<Languages size={18} />}>
@@ -117,6 +162,93 @@ function FollowSystemMotion() {
   return (
     <Switch checked={on} onChange={(v) => { setOn(v); setFollowOsMotion(v); }} label={t("Systemeinstellung „Bewegung reduzieren“ beachten")}
       hint={osReducesMotion() ? t("Dein System meldet gerade „Animationen aus“ (Windows: Animationen anzeigen · iPad: Bewegung reduzieren). Solange das hier aus ist, animiert die App trotzdem.") : t("Aus (Standard): Die App animiert unabhängig von Windows/iPad. An: Meldet das System „Bewegung reduzieren“, bleibt alles ruhig.")} />
+  );
+}
+
+// ------------------------------------------------------------------ performance
+
+/** Presets with a preview of what changes, the display switches that cost performance, and the game-detection interval. */
+function Performance() {
+  const prefs = usePrefs();
+  const th = prefs.theme;
+  const advanced = useSettingsLevel() === "advanced";
+  const setTheme = (p: Partial<Theme>) => setPrefs((x) => ({ ...x, theme: { ...x.theme, ...p } }));
+  const active = activePreset(prefs);
+  const [pick, setPick] = useState<PerfPresetId | null>(null);
+  const [undo, setUndo] = useState<{ values: PerfValues; label: string } | null>(null);
+  const changes = pick ? presetChanges(prefs, pick) : [];
+  const apply = () => {
+    if (!pick) return;
+    const { next, undo: before } = applyPreset(prefs, pick);
+    setPrefs(() => next);
+    setUndo({ values: before, label: PERF_PRESETS.find((x) => x.id === pick)!.label });
+    setPick(null);
+    toast(t("Preset übernommen"), "success");
+  };
+  return (
+    <>
+      <Card title={t("Leistungs-Preset")} icon={<Gauge size={18} />} meta={<span className="badge">{active ? t(PERF_PRESETS.find((x) => x.id === active)!.label) : t("Eigene Auswahl")}</span>}>
+        <div className="stack">
+          <div className="set-presets" role="radiogroup" aria-label={t("Leistungs-Preset")}>
+            {PERF_PRESETS.map((x) => (
+              <button key={x.id} type="button" role="radio" aria-checked={(pick ?? active) === x.id} className={`set-preset${(pick ?? active) === x.id ? " on" : ""}`} onClick={() => setPick(x.id === active ? null : x.id)}>
+                <b>{t(x.label)}</b><span className="small muted">{t(x.desc)}</span>
+              </button>
+            ))}
+          </div>
+          {pick && (
+            <div className="set-preview" aria-live="polite">
+              {changes.length === 0 ? <p className="small">{t("Damit ändert sich nichts – es ist schon so eingestellt.")}</p> : (
+                <>
+                  <p className="small"><b>{t("Das ändert sich:")}</b></p>
+                  <ul className="small">{changes.map((c) => <li key={c.field}>{t(c.label)}: {t(c.from)} → <b>{t(c.to)}</b></li>)}</ul>
+                </>
+              )}
+              <div className="row">
+                <Button variant="primary" disabled={changes.length === 0} onClick={apply}>{t("Übernehmen")}</Button>
+                <Button variant="ghost" onClick={() => setPick(null)}>{t("Abbrechen")}</Button>
+              </div>
+            </div>
+          )}
+          {undo && !pick && (
+            <div className="row">
+              <span className="small muted">{t("„{p}“ ist aktiv.", { p: t(undo.label) })}</span>
+              <Button size="sm" icon={<Undo2 size={15} />} onClick={() => { setPrefs((p) => withPerf(p, undo.values)); setUndo(null); toast(t("Vorherige Werte wiederhergestellt"), "info"); }}>{t("Rückgängig")}</Button>
+            </div>
+          )}
+          <p className="tiny muted">{t("Gilt nur für dieses Gerät. Ein Preset setzt nur die Schalter unten, das 3D-Neigen, den bewegten Hintergrund und den Seitenübergang – Farben und Layout bleiben.")}</p>
+        </div>
+      </Card>
+      <Card title={t("Animationen & Darstellung")} icon={<Zap size={18} />}>
+        <div className="stack">
+          <Switch checked={th.reduceMotion} onChange={(reduceMotion) => setTheme({ reduceMotion })} label={t("Animationen reduzieren")} />
+          <FollowSystemMotion />
+          <Switch checked={!!th.lite} onChange={(lite) => setTheme({ lite })} label={t("Leichte Darstellung (spart Leistung)")}
+            hint={t("Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.")} />
+          <p className="tiny muted">{t("3D-Neigen der Karten, bewegter Hintergrund und Seitenübergänge:")} <Link to="/settings?s=design">{t("Personalisierung")}</Link> · {t("Live-Werte des PCs:")} <Link to="/monitor">{t("PC Monitor")}</Link></p>
+        </div>
+      </Card>
+      {advanced && <ScanInterval />}
+    </>
+  );
+}
+
+function ScanInterval() {
+  const s = useSettings();
+  const [scan, setScan] = useState(5);
+  useEffect(() => { if (s.data) setScan(s.data.settings.processScanSeconds); }, [s.data]);
+  return (
+    <Loadable loading={s.loading} error={s.error} onRetry={s.reload}>
+      <Card title={t("Spielerkennung")} icon={<Gamepad2 size={18} />}>
+        <div className="stack">
+          <Field label={t("Spielerkennung: alle {n} Sekunden prüfen", { n: scan })} hint={t("Niedrigere Werte erkennen Spielstarts schneller, kosten aber minimal mehr Leistung. Empfohlen: 5.")}>
+            <input type="range" min={2} max={30} value={scan} onChange={(e) => setScan(+e.target.value)} />
+          </Field>
+          <div><Button variant="primary" icon={<Save size={16} />} disabled={!s.data || scan === s.data.settings.processScanSeconds} onClick={() => s.save({ processScanSeconds: scan })}>{t("Speichern")}</Button></div>
+          {s.data && scan !== s.data.settings.processScanSeconds && <p className="tiny muted">{t("Das Prüfintervall wird nach einem Neustart des Companions wirksam.")}</p>}
+        </div>
+      </Card>
+    </Loadable>
   );
 }
 
@@ -211,10 +343,7 @@ function Design() {
           <Field label={t("Schatten")}><Segmented value={th.shadow ?? "soft"} onChange={(shadow) => setTheme({ shadow })} options={[{ value: "none", label: t("Keine") }, { value: "soft", label: t("Weich") }, { value: "strong", label: t("Kräftig") }]} /></Field>
           <Field label={t("Rahmen")}><Segmented value={th.border ?? "subtle"} onChange={(border) => setTheme({ border })} options={[{ value: "subtle", label: t("Dezent") }, { value: "bold", label: t("Deutlich") }]} /></Field>
           <Switch checked={!!th.touch} onChange={(touch) => setTheme({ touch })} label={t("Große Schaltflächen (iPad, Touch)")} />
-          <Switch checked={th.reduceMotion} onChange={(reduceMotion) => setTheme({ reduceMotion })} label={t("Animationen reduzieren")} />
-          <FollowSystemMotion />
-          <Switch checked={!!th.lite} onChange={(lite) => setTheme({ lite })} label={t("Leichte Darstellung (spart Leistung)")}
-            hint={t("Ohne Unschärfe-Effekte, Leuchten und Animationen. Für schwächere Geräte, längere Akkulaufzeit oder wenn die App neben einem Spiel offen ist.")} />
+          <p className="tiny muted">{t("Animationen, leichte Darstellung und Leistungs-Presets:")} <Link to="/settings?s=performance">{t("Performance")}</Link></p>
         </div>
       </Card>
       <NavEditor />
@@ -333,6 +462,7 @@ function Layouts() {
 
 function Connection() {
   const s = useSettings();
+  const advanced = useSettingsLevel() === "advanced";
   const conn = useConn();
   const isLocal = !!conn.me?.isLocal;
   const st = useRpc<{ lanUrls: string[]; relay: { state: string; lastError?: string } }>("state.get", {}, ["settings"]);
@@ -356,7 +486,7 @@ function Connection() {
         </div>
       </Card>
       <TailscaleCard />
-      <Card title={t("Eigener Server (für Fortgeschrittene)")} icon={<Server size={18} />} meta={<span className={`badge ${st.data?.relay.state === "connected" ? "ok" : st.data?.relay.state === "disabled" ? "" : "warn"}`}>{t("Relay")}: {st.data?.relay.state ?? "–"}</span>}>
+      {advanced && <><Card title={t("Eigener Server (für Fortgeschrittene)")} icon={<Server size={18} />} meta={<span className={`badge ${st.data?.relay.state === "connected" ? "ok" : st.data?.relay.state === "disabled" ? "" : "warn"}`}>{t("Relay")}: {st.data?.relay.state ?? "–"}</span>}>
         <div className="stack">
           {!isLocal && <Banner kind="info">{t("Verbindungseinstellungen können nur direkt am PC geändert werden.")}</Banner>}
           <Field label={t("Öffentliche Adresse der Web-App (optional)")} hint={t("z. B. dein Cloudflare-Tunnel https://games.deinedomain.de – wird im QR-Code verwendet. Eine temporäre trycloudflare.com-Adresse ändert sich bei jedem Start.")}>
@@ -386,7 +516,7 @@ function Connection() {
             <Button variant="ghost" onClick={() => { setServerUrl(null); setUrl(defaultServerUrl()); client.restart(); }}>{t("Standard")}</Button>
           </div>
         </div>
-      </Card>
+      </Card></>}
     </Loadable>
   );
 }
@@ -510,14 +640,15 @@ function InstallCard() {
 
 // ------------------------------------------------------------------ updates
 
-function Updates() {
+function Advanced() {
   const s = useSettings();
+  const advanced = useSettingsLevel() === "advanced";
   const [src, setSrc] = useState("");
   const [cat, setCat] = useState("");
   useEffect(() => { setSrc(s.data?.settings.updateManifestUrl ?? ""); setCat(s.data?.settings.pluginCatalogUrl ?? ""); }, [s.data]);
   return (
     <>
-      <Card title={t("Update-Quelle")} icon={<RefreshCw size={18} />} actions={<Link className="btn sm" to="/updates">{t("Updates & Versionen")}</Link>}>
+      {advanced && <Card title={t("Update-Quelle")} icon={<RefreshCw size={18} />} actions={<Link className="btn sm" to="/updates">{t("Updates & Versionen")}</Link>}>
         <Field label={t("Update-Quelle (Manifest-URL)")} hint={t("Standard: die offizielle Download-Seite. Wird 2 Minuten nach dem Start und dann einmal täglich geprüft; bei einer neuen Version kommt eine Benachrichtigung. Leer = keine Prüfung. Es wird nie automatisch installiert.")}>
           <div className="row nowrap"><input className="input mono" value={src} onChange={(e) => setSrc(e.target.value)} placeholder="https://…/update.json" />
             <Button onClick={() => s.save({ updateManifestUrl: src }, true)}>{t("Speichern")}</Button></div>
@@ -527,7 +658,7 @@ function Updates() {
           <div className="row nowrap"><input className="input mono" value={cat} onChange={(e) => setCat(e.target.value)} placeholder="https://…/catalog.json" />
             <Button onClick={() => s.save({ pluginCatalogUrl: cat }, true)}>{t("Speichern")}</Button></div>
         </Field>
-      </Card>
+      </Card>}
       <PcUpdates />
     </>
   );

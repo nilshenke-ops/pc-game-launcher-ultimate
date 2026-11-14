@@ -13,10 +13,11 @@ import { runQuickAction } from "./run-quick";
 import { score } from "./search-score";
 import { allEntries } from "../lib/journal";
 import { entryTitle, KIND_LABEL, KIND_PATH, matchesQuery } from "../lib/journal-logic";
+import { SETTINGS_CATS, SETTINGS_INDEX } from "../lib/settings-index";
+import { goToSetting } from "../lib/settings-focus";
 
 interface Entry { key: string; group: string; label: string; sub?: string; icon: React.ReactNode; run: () => void; keywords?: string }
 
-const SETTINGS_SECTIONS = ["general", "design", "connection", "security", "notifications", "autostart", "updates", "backup", "privacy"];
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
   const nav = useNavigate();
@@ -48,8 +49,9 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
     const call = (method: string, params: unknown, ok: string) => () => { onClose(); client.call(method, params).then(() => toast(ok, "success")).catch((e) => toast(e.message, "error")); };
     const list: Entry[] = [];
     for (const n of navItems()) list.push({ key: "nav:" + n.path, group: t("Bereiche"), label: n.label, icon: <n.icon size={18} />, run: go(n.path), keywords: n.keywords });
-    const sectionLabels: Record<string, string> = { general: t("Allgemein"), design: t("Design & Layout"), connection: t("Verbindung"), security: t("Sicherheit"), notifications: t("Benachrichtigungen"), autostart: t("Autostart & Hintergrund"), updates: t("Updates"), backup: t("Backup & Wiederherstellung"), privacy: t("Datenschutz") };
-    for (const s of SETTINGS_SECTIONS) list.push({ key: "set:" + s, group: t("Einstellungen"), label: sectionLabels[s], sub: t("Einstellungen"), icon: <Settings size={18} />, run: go(`/settings?s=${s}`) });
+    // Every single setting (3.62): opens its page and highlights it, same list as the search on the settings page.
+    for (const c of SETTINGS_CATS) list.push({ key: "setc:" + c.id, group: t("Einstellungen"), label: t(c.label), sub: t("Einstellungen"), icon: <Settings size={18} />, run: go(`/settings?s=${c.id}`), keywords: t(c.desc) });
+    for (const e of SETTINGS_INDEX) list.push({ key: "set:" + e.id, group: t("Einstellungen"), label: t(e.label), sub: t(SETTINGS_CATS.find((c) => c.id === e.cat)!.label), icon: <Settings size={18} />, run: () => { onClose(); goToSetting(e, nav); }, keywords: e.words });
     for (const i of data.items) list.push({
       key: "item:" + i.id, group: i.kind === "game" ? t("Spiele") : t("Programme"), label: i.name, sub: t("Starten"),
       icon: i.iconData ? <img src={i.iconData} alt="" width={22} /> : i.kind === "game" ? <Gamepad2 size={18} /> : <LayoutGrid size={18} />,

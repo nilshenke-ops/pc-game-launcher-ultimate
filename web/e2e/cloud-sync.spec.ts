@@ -325,7 +325,7 @@ test("Benutzername und Passwort ändern (rekey): neues Login gilt, altes nicht m
 test("Profil: Benutzername und Passwort sehen, Geheimcode setzen, Passwort ändern – am iPad, mit dem echten Dienst", async ({ browser }) => {
   const p = await ipad(browser);
   await p.goto(`${HOSTED_SITE}/#/settings?s=account`);             // its own item in the settings
-  await expect(p.getByRole("button", { name: /Konto & Anmeldedaten/ })).toBeVisible({ timeout: 20_000 });
+  await expect(p.getByRole("button", { name: /Cloud & Sync/ })).toHaveAttribute("aria-current", "true", { timeout: 20_000 }); // 3.62: account lives under "Cloud & Sync"
   await expect(p.locator(".card", { hasText: "Zugangsdaten" })).toBeVisible({ timeout: 20_000 });
   await p.goto(`${HOSTED_SITE}/#/profile`);
   const card = p.locator(".card", { hasText: "Zugangsdaten" });
