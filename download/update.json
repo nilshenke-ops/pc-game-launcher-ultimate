@@ -1,29 +1,24 @@
 {
-  "version": "3.64.0",
+  "version": "3.64.1",
   "date": "2026-11-14",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.0/PCGameLauncherCompanion.exe",
-  "size": 95307790,
-  "sha256": "549ce4aad74bc2601d42fb70d08f1a87545f027d172ad06b89ee2ce49f4b07b2",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.1/PCGameLauncherCompanion.exe",
+  "size": 95307119,
+  "sha256": "4c4d822f778a3188b8b79718e272fa68a9e56c1cd81163be14c024d15174e5d8",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.64.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.0/PCGameLauncherCompanion-3.64.0-win-x64.zip",
-    "size": 89581250,
-    "sha256": "95a3986670e9cc3c65635033760718cf1ffaaf67bf0057595ce11d498bf2b575"
+    "fileName": "PCGameLauncherCompanion-3.64.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.1/PCGameLauncherCompanion-3.64.1-win-x64.zip",
+    "size": 89580524,
+    "sha256": "6185e6ca03d7a65950295bbb5449b93440ee78e5aaa961ae4e61b6ca83093a73"
   },
-  "notes": "**Dateien per QR-Code zwischen PC und Handy – in beide Richtungen.** · **Sicher aufgebaut:** · **Fortschritt:** pro Datei und gesamt, mit Geschwindigkeit, Restzeit, Pause, Abbrechen und „Erneut versuchen“ (nur für Fehlgeschlagenes). Nach einem kurzen Verbindungsabbruch geht es weiter.",
+  "notes": "Test: Insel-Widget-Schalter eindeutig (neben „Notiz in der Leiste“ seit 3.63)",
   "changes": {
-    "neu": [
-      "**Dateien per QR-Code zwischen PC und Handy – in beide Richtungen.**",
-      "**Sicher aufgebaut:**",
-      "**Fortschritt:** pro Datei und gesamt, mit Geschwindigkeit, Restzeit, Pause, Abbrechen und „Erneut versuchen“ (nur für Fehlgeschlagenes). Nach einem kurzen Verbindungsabbruch geht es weiter.",
-      "**Ablage:** Dateien lassen sich auswählen, frisch abgelegte sind schon ausgewählt. Dazu kommt ein Verlauf der letzten Übertragungen.",
-      "**Einstellungen** unter Verbindung & Geräte → Dateiübertragung:",
-      "Beschreibung, Sicherheitsmodell und Testergebnisse: `docs/FILE-TRANSFER.md`."
+    "neu": [],
+    "verbessert": [
+      "Test: Insel-Widget-Schalter eindeutig (neben „Notiz in der Leiste“ seit 3.63)"
     ],
-    "verbessert": [],
     "behoben": []
   },
-  "signature": "o5YARrY509p+Kpsf8CWbb5n9ZYslntvb41C+BOYdpF5DqdGYJBbuMgnJGA1DmNWOppVy0tQUK77jHNxVY90Eaw=="
+  "signature": "f9W7eYDVlP1VBRBfxPG3Aqi+TWRuM03eu7guPBGhB2jWb03r2MSI+ALPxXDVczFyFrHkatI70xtAZkoHlC+OnQ=="
 }
