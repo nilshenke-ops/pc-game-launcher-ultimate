@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.64.0",
+    "date": "2026-11-14",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.0/PCGameLauncherCompanion.exe",
+    "size": 95307790,
+    "sha256": "549ce4aad74bc2601d42fb70d08f1a87545f027d172ad06b89ee2ce49f4b07b2",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.64.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.64.0/PCGameLauncherCompanion-3.64.0-win-x64.zip",
+      "size": 89581250,
+      "sha256": "95a3986670e9cc3c65635033760718cf1ffaaf67bf0057595ce11d498bf2b575"
+    },
+    "notes": "**Dateien per QR-Code zwischen PC und Handy – in beide Richtungen.** · **Sicher aufgebaut:** · **Fortschritt:** pro Datei und gesamt, mit Geschwindigkeit, Restzeit, Pause, Abbrechen und „Erneut versuchen“ (nur für Fehlgeschlagenes). Nach einem kurzen Verbindungsabbruch geht es weiter.",
+    "changes": {
+      "neu": [
+        "**Dateien per QR-Code zwischen PC und Handy – in beide Richtungen.**",
+        "**Sicher aufgebaut:**",
+        "**Fortschritt:** pro Datei und gesamt, mit Geschwindigkeit, Restzeit, Pause, Abbrechen und „Erneut versuchen“ (nur für Fehlgeschlagenes). Nach einem kurzen Verbindungsabbruch geht es weiter.",
+        "**Ablage:** Dateien lassen sich auswählen, frisch abgelegte sind schon ausgewählt. Dazu kommt ein Verlauf der letzten Übertragungen.",
+        "**Einstellungen** unter Verbindung & Geräte → Dateiübertragung:",
+        "Beschreibung, Sicherheitsmodell und Testergebnisse: `docs/FILE-TRANSFER.md`."
+      ],
+      "verbessert": [],
+      "behoben": []
+    },
+    "signature": "o5YARrY509p+Kpsf8CWbb5n9ZYslntvb41C+BOYdpF5DqdGYJBbuMgnJGA1DmNWOppVy0tQUK77jHNxVY90Eaw=="
+  },
+  {
     "version": "3.63.0",
     "date": "2026-11-14",
     "channel": "stable",
@@ -1325,33 +1354,5 @@
       "behoben": []
     },
     "signature": "ruk1FHjcvLEiiczR5WQtIbDK+5/7J93KeQErYgKMXY6wZp+3KEOlgxNJnl9KY2nPmiV/sHC4VIEuqZOjROACAw=="
-  },
-  {
-    "version": "3.33.0",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion.exe",
-    "size": 95069216,
-    "sha256": "26db28f685f5879d66375fd0918329aec47f5a5d3316966277e7dd25ad2e6f77",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.33.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.33.0/PCGameLauncherCompanion-3.33.0-win-x64.zip",
-      "size": 89342779,
-      "sha256": "4337bc2ce303d11bf49da19e129418b2dee0d7cbb109bc0b94b38ebb181d5374"
-    },
-    "notes": "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt · Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol · Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)",
-    "changes": {
-      "neu": [
-        "Insel: Beim Wischen ist der nächste Bereich schon sichtbar und fährt neben dem aktuellen mit dem Finger mit (wie ein Karussell) – nichts blendet mehr aus oder springt",
-        "Insel: Die Musik-Karte füllt sich beim Hören komplett mit dem Cover (unscharf als Hintergrund, Cover scharf davor) statt nur ein Symbol zu zeigen; ohne Cover bleibt das Symbol",
-        "Insel: Die Spiel-Karte füllt sich mit dem Spielbild bzw. Logo des laufenden Spiels, farblich passend und ohne Verzerrung (Seitenverhältnis bleibt erhalten)"
-      ],
-      "verbessert": [
-        "Insel: Die Farben der Karten passen sich an – Musik und Spiel nehmen die Farbe des Covers bzw. Logos, der Fokus-Timer färbt sich je nach Phase (Fokus, Pause, lange Pause)"
-      ],
-      "behoben": []
-    },
-    "signature": "OKqB0EPNcRPrT998DxLKiCpsEidI/eGsFGEK0fCna3/L9LgLGEuGNrzWVwl0kAJJyvUriNGjDyqlhfgMhf7IMA=="
   }
 ]
