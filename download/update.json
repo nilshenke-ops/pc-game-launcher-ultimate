@@ -1,31 +1,33 @@
 {
-  "version": "3.65.0",
+  "version": "3.66.0",
   "date": "2026-11-14",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.65.0/PCGameLauncherCompanion.exe",
-  "size": 95309054,
-  "sha256": "c0f82b62d4c9c11ea601beef56d708b9845f7e154846e974bb171c290618a1a7",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.66.0/PCGameLauncherCompanion.exe",
+  "size": 95554245,
+  "sha256": "63d5803c7035f44fe9ae87b19af0b19ac3476826bd105fb269b021adb3ce192f",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.65.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.65.0/PCGameLauncherCompanion-3.65.0-win-x64.zip",
-    "size": 89582714,
-    "sha256": "6e5af41b35aca60bdd074ab507efa5c42f62c07c1c617a14443c28a0f6e9fc8e"
+    "fileName": "PCGameLauncherCompanion-3.66.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.66.0/PCGameLauncherCompanion-3.66.0-win-x64.zip",
+    "size": 89828208,
+    "sha256": "8e1da8d92260f8f02f2271039ec535ef9845f3029966756b0669384d49bd226e"
   },
-  "notes": "**Insel auf Handy und iPad:** · Gewählte Knöpfe wie „Fertig“ oder die gewählte App sind auch bei dunklen und grauen Inselfarben gut lesbar.",
+  "notes": "**FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel. · **Jeder Wert der Insel ist anklickbar:** · **Nexus Performance Intelligence.** Die Analyse erkennt CPU- und GPU-Engpässe, Hintergrundlast, vollen Arbeits- oder Grafikspeicher, hohe Temperaturen, schwankende Bildzeiten, Ruckler, volle oder ausgelastete Laufwerke, Paketverlust und hohen Ping.",
   "changes": {
-    "neu": [],
-    "verbessert": [
-      "**Insel auf Handy und iPad:**",
-      "Gewählte Knöpfe wie „Fertig“ oder die gewählte App sind auch bei dunklen und grauen Inselfarben gut lesbar."
+    "neu": [
+      "**FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel.",
+      "**Jeder Wert der Insel ist anklickbar:**",
+      "**Nexus Performance Intelligence.** Die Analyse erkennt CPU- und GPU-Engpässe, Hintergrundlast, vollen Arbeits- oder Grafikspeicher, hohe Temperaturen, schwankende Bildzeiten, Ruckler, volle oder ausgelastete Laufwerke, Paketverlust und hohen Ping.",
+      "**Laufwerke im Detail.** Angezeigt werden Lese- und Schreibgeschwindigkeit in MB/s, Aktivität, freier und belegter Platz sowie der SMART-Zustand auf Knopfdruck (Temperatur, Abnutzung, Fehler, Betriebsstunden – soweit das Laufwerk sie meldet).",
+      "**Netzwerk im Detail.** Download und Upload stehen in Mbit/s. Dazu kommen Verbindungsart (WLAN oder LAN) mit Geschwindigkeit, die Datenmenge seit dem Start des Begleiters sowie Ping, Jitter und Paketverlust.",
+      "Der eigene Verbrauch des Begleiters (CPU und RAM) wird angezeigt.",
+      "Neue Einstellung „FPS automatisch messen“ (standardmäßig an)."
     ],
-    "behoben": [
-      "**Wetter-Ort wird gespeichert.** Der Ort, den man in der Wetter-Kachel eingibt, gehört jetzt zum Konto. Er bleibt nach dem Neuladen, nach dem Anmelden und auf allen Geräten erhalten. Bisher fehlte er in der Kontosicherung und ging beim nächsten Anmelden verloren. Ein schon gespeicherter Ort wird übernommen.",
-      "**Wischen auf der Übersicht.** Man kann jetzt auch dann zur nächsten Seite der Insel wischen, wenn der Finger auf einer Kachel oder einem Knopf startet. Bisher ging das nur auf freien Stellen, und die Übersicht besteht fast nur aus Kacheln. Ein normales Tippen bleibt ein Tippen.",
-      "**Bearbeiten am Handy ohne Überlappung.** Die Knöpfe (verschieben, einstellen, entfernen) sitzen jetzt als eigene Leiste unter jeder Kachel statt darauf. So verdecken sie weder die Kachel noch die nächste Reihe.",
-      "**Stift oben rechts immer sichtbar.** Bei vielen Bereichen in der Leiste wurde der Stift (Bearbeiten) zusammengedrückt und war nicht mehr zu sehen. Die Knöpfe rechts behalten jetzt ihre Größe, und die Leiste der Bereiche scrollt seitlich. Der gewählte Bereich wird dabei automatisch ins Bild geholt.",
-      "Am Handy rutschte die geöffnete Insel beim Tippen in ein Feld ein Stück zur Seite, sodass die Augen links abgeschnitten waren."
-    ]
+    "verbessert": [
+      "Netzwerkgeschwindigkeit überall in **Mbit/s** statt MB/s. Dateien und Laufwerke bleiben in MB/s, Datenmengen in MB/GB.",
+      "Der Begleiter speichert eine Stunde Messverlauf, aber nur solange jemand zusieht. Lücken bleiben sichtbar."
+    ],
+    "behoben": []
   },
-  "signature": "S98RV690xY6Ro8gPEmZarpW841IwAARtjB/7TWKeCqhednYWB682ICfNwV/+esLSKUEuilYwLXnirzYJz3knQg=="
+  "signature": "wRcsGFr8YO8AoMNiHDbQHtMnsoAKh0Xf4wokbjHhs9W2JgUXBm4Jd+9At2TgWm6wPDBBdhv+uJ5UuTN4PRSptw=="
 }

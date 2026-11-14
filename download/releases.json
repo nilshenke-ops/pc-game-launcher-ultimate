@@ -1,5 +1,38 @@
 [
   {
+    "version": "3.66.0",
+    "date": "2026-11-14",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.66.0/PCGameLauncherCompanion.exe",
+    "size": 95554245,
+    "sha256": "63d5803c7035f44fe9ae87b19af0b19ac3476826bd105fb269b021adb3ce192f",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.66.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.66.0/PCGameLauncherCompanion-3.66.0-win-x64.zip",
+      "size": 89828208,
+      "sha256": "8e1da8d92260f8f02f2271039ec535ef9845f3029966756b0669384d49bd226e"
+    },
+    "notes": "**FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel. · **Jeder Wert der Insel ist anklickbar:** · **Nexus Performance Intelligence.** Die Analyse erkennt CPU- und GPU-Engpässe, Hintergrundlast, vollen Arbeits- oder Grafikspeicher, hohe Temperaturen, schwankende Bildzeiten, Ruckler, volle oder ausgelastete Laufwerke, Paketverlust und hohen Ping.",
+    "changes": {
+      "neu": [
+        "**FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel.",
+        "**Jeder Wert der Insel ist anklickbar:**",
+        "**Nexus Performance Intelligence.** Die Analyse erkennt CPU- und GPU-Engpässe, Hintergrundlast, vollen Arbeits- oder Grafikspeicher, hohe Temperaturen, schwankende Bildzeiten, Ruckler, volle oder ausgelastete Laufwerke, Paketverlust und hohen Ping.",
+        "**Laufwerke im Detail.** Angezeigt werden Lese- und Schreibgeschwindigkeit in MB/s, Aktivität, freier und belegter Platz sowie der SMART-Zustand auf Knopfdruck (Temperatur, Abnutzung, Fehler, Betriebsstunden – soweit das Laufwerk sie meldet).",
+        "**Netzwerk im Detail.** Download und Upload stehen in Mbit/s. Dazu kommen Verbindungsart (WLAN oder LAN) mit Geschwindigkeit, die Datenmenge seit dem Start des Begleiters sowie Ping, Jitter und Paketverlust.",
+        "Der eigene Verbrauch des Begleiters (CPU und RAM) wird angezeigt.",
+        "Neue Einstellung „FPS automatisch messen“ (standardmäßig an)."
+      ],
+      "verbessert": [
+        "Netzwerkgeschwindigkeit überall in **Mbit/s** statt MB/s. Dateien und Laufwerke bleiben in MB/s, Datenmengen in MB/GB.",
+        "Der Begleiter speichert eine Stunde Messverlauf, aber nur solange jemand zusieht. Lücken bleiben sichtbar."
+      ],
+      "behoben": []
+    },
+    "signature": "wRcsGFr8YO8AoMNiHDbQHtMnsoAKh0Xf4wokbjHhs9W2JgUXBm4Jd+9At2TgWm6wPDBBdhv+uJ5UuTN4PRSptw=="
+  },
+  {
     "version": "3.65.0",
     "date": "2026-11-14",
     "channel": "stable",
@@ -1328,30 +1361,5 @@
       ]
     },
     "signature": "kS7EgF6CFBs4e3SaS+7LuMaBFMqevOH08atcmtIKm+4SDO+tse3M647DdQHFpFko/kJ/1Pv2aYNekV3KceJu1g=="
-  },
-  {
-    "version": "3.34.1",
-    "date": "2026-11-10",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.34.1/PCGameLauncherCompanion.exe",
-    "size": 95073333,
-    "sha256": "61570913769a2751e90195285a0be0328f9b6c3f8a165ceb8c3c2cf8902e6b08",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.34.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.34.1/PCGameLauncherCompanion-3.34.1-win-x64.zip",
-      "size": 89346741,
-      "sha256": "44159dafc71e47429f9e85718cf264912a8713233d7bca37e6fb0cafb16a6315"
-    },
-    "notes": "Zeigt im Widget-Baukasten eine Live-Vorschau der Glasfläche. · Hellere Bühne im Baukasten, damit der Glasrand sichtbar wird.",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Zeigt im Widget-Baukasten eine Live-Vorschau der Glasfläche.",
-        "Hellere Bühne im Baukasten, damit der Glasrand sichtbar wird."
-      ],
-      "behoben": []
-    },
-    "signature": "sBjGk930CFoeIAJ8q6Eekxrl4b2ao6+ZhX9V9Eyqqn1We9FsOhiT+/BhcZaNTbBY9ZOMqn96elAi+VqpLVE9xg=="
   }
 ]
