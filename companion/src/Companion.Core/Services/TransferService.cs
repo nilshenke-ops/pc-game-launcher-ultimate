@@ -22,21 +22,59 @@ public sealed class TransferService
     static readonly Regex Bad = new(@"[<>:""/\\|?*\x00-\x1f]");
     static readonly Regex Reserved = new(@"^(con|prn|aux|nul|com[0-9]|lpt[0-9])(\..*)?$", RegexOptions.IgnoreCase);
 
-    readonly string _dir, _tmp;
+    readonly string _defaultDir, _tmp;
+    readonly Func<Models.Settings>? _settings;
     readonly IPlatform _platform;
     readonly IHub _hub;
     readonly NotificationCenter? _notify;
     readonly object _lock = new();
     readonly Dictionary<string, (string name, string path, long expected, long received, DateTime started, string by)> _uploads = new();
+    readonly HashSet<string> _quiet = new();
 
-    public TransferService(AppPaths paths, IPlatform platform, IHub hub, NotificationCenter? notify = null)
+    public TransferService(AppPaths paths, IPlatform platform, IHub hub, NotificationCenter? notify = null, Func<Models.Settings>? settings = null)
     {
-        _dir = paths.TransferDir;
+        _defaultDir = paths.TransferDir; _settings = settings;
         _tmp = Path.Combine(paths.DataDir, "transfer-tmp");
         _platform = platform; _hub = hub; _notify = notify;
     }
 
-    public string Folder => _dir;
+    /// <summary>The exchange folder: the one chosen in the settings (if it is usable), else the usual one.</summary>
+    public string Folder => _settings?.Invoke().TransferFolder is { Length: > 0 } f && Path.IsPathFullyQualified(f) ? f : _defaultDir;
+    string _dir => Folder;
+    public string DefaultFolder => _defaultDir;
+    /// <summary>Largest file accepted (setting, 1–4096 MB; default 200 MB).</summary>
+    public long MaxBytes => (_settings?.Invoke().TransferMaxMb is int mb and > 0 ? Math.Min(mb, 4096) : 200) * 1024L * 1024;
+
+    /// <summary>Checks a folder chosen for receiving files: an absolute path that is not a system folder; it is created if needed.</summary>
+    public static string CheckFolder(string path)
+    {
+        var p = (path ?? "").Trim();
+        if (!Path.IsPathFullyQualified(p) || p.Length > 240) throw new RpcException("invalid-params", "Bitte einen vollständigen Ordnerpfad angeben (z. B. D:\\Nexus Transfers).");
+        var full = Path.GetFullPath(p).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        var root = Path.GetPathRoot(full) ?? "";
+        string[] forbidden = OperatingSystem.IsWindows()
+            ? new[] { Environment.GetFolderPath(Environment.SpecialFolder.Windows), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), Environment.GetFolderPath(Environment.SpecialFolder.System) }
+            : new[] { "/bin", "/sbin", "/usr", "/etc", "/proc", "/sys", "/dev", "/boot" };
+        if (string.Equals(full.TrimEnd('\\', '/'), root.TrimEnd('\\', '/'), StringComparison.OrdinalIgnoreCase) || full.Length <= root.Length)
+            throw new RpcException("invalid-params", "Bitte einen Unterordner wählen, nicht ein ganzes Laufwerk.");
+        if (forbidden.Where(f => f.Length > 0).Any(f => full.StartsWith(f, StringComparison.OrdinalIgnoreCase)))
+            throw new RpcException("invalid-params", "Systemordner sind als Empfangsordner nicht erlaubt.");
+        try { Directory.CreateDirectory(full); } catch (Exception ex) { throw new RpcException("invalid-params", "Ordner lässt sich nicht anlegen: " + ex.Message); }
+        return full;
+    }
+
+    /// <summary>Removes files older than the given number of days from the exchange folder (setting; 0 = never).</summary>
+    public int CleanOld(int days)
+    {
+        if (days <= 0) return 0;
+        var n = 0;
+        foreach (var f in Files().Where(f => DateTime.UtcNow - f.LastWriteTimeUtc > TimeSpan.FromDays(days)).ToList())
+        { try { f.Delete(); n++; } catch { /* in use */ } }
+        if (n > 0) _hub.Changed("files");
+        return n;
+    }
+
+    public IReadOnlyList<TransferEntry> Entries() => Files().OrderByDescending(f => f.LastWriteTimeUtc).Take(500).Select(f => new TransferEntry(f.Name, f.Length, f.LastWriteTimeUtc, KindOf(f.Name))).ToList();
 
     /// <summary>A file name that is safe on Windows and cannot leave the folder.</summary>
     public static string SafeName(string? name)
@@ -66,15 +104,15 @@ public sealed class TransferService
         var files = Files().OrderByDescending(f => f.LastWriteTimeUtc).Take(500).Select(f => new TransferEntry(f.Name, f.Length, f.LastWriteTimeUtc, KindOf(f.Name))).ToList();
         long? free = null;
         try { free = new DriveInfo(Path.GetPathRoot(Path.GetFullPath(_dir))!).AvailableFreeSpace; } catch { /* unknown drive */ }
-        return new { files, folder = _dir, totalBytes = Files().Sum(f => f.Length), maxFileBytes = MaxFileBytes, freeBytes = free };
+        return new { files, folder = _dir, defaultFolder = _defaultDir, totalBytes = Files().Sum(f => f.Length), maxFileBytes = MaxBytes, freeBytes = free };
     }
 
     FileInfo Find(string name) =>
         Files().FirstOrDefault(f => f.Name == name) ?? throw new RpcException("not-found", "Datei nicht gefunden.");
 
-    public string UploadBegin(string name, long size, string by)
+    public string UploadBegin(string name, long size, string by, bool quiet = false)
     {
-        if (size < 0 || size > MaxFileBytes) throw new RpcException("too-large", $"Höchstens {MaxFileBytes / 1024 / 1024} MB pro Datei.");
+        if (size < 0 || size > MaxBytes) throw new RpcException("too-large", $"Höchstens {MaxBytes / 1024 / 1024} MB pro Datei (in den Einstellungen änderbar).");
         if (Files().Sum(f => f.Length) + size > MaxFolderBytes) throw new RpcException("too-large", "Der Austausch-Ordner ist voll (5 GB). Bitte alte Dateien löschen.");
         try { if (new DriveInfo(Path.GetPathRoot(Path.GetFullPath(_dir))!).AvailableFreeSpace < size + 1_000_000_000) throw new RpcException("too-large", "Zu wenig freier Speicher auf dem PC."); }
         catch (RpcException) { throw; } catch { /* unknown drive: the write itself fails if full */ }
@@ -88,6 +126,7 @@ public sealed class TransferService
             { _uploads.Remove(old.Key); try { File.Delete(old.Value.path); } catch { } }
             if (_uploads.Count >= 8) throw new RpcException("busy", "Zu viele gleichzeitige Übertragungen.");
             _uploads[id] = (SafeName(name), path, size, 0, DateTime.UtcNow, by);
+            if (quiet) _quiet.Add(id);
         }
         return id;
     }
@@ -99,6 +138,21 @@ public sealed class TransferService
         lock (_lock)
         {
             if (!_uploads.TryGetValue(uploadId, out var u)) throw new RpcException("not-found", "Übertragung nicht gefunden oder abgelaufen.");
+            if (u.received + data.Length > u.expected) throw new RpcException("too-large", "Mehr Daten als angekündigt.");
+            using (var fs = new FileStream(u.path, FileMode.Append)) fs.Write(data);
+            _uploads[uploadId] = u with { received = u.received + data.Length, started = DateTime.UtcNow };
+            return u.received + data.Length;
+        }
+    }
+
+    /// <summary>A piece of an upload as bytes, at the position the sender expects (a repeated piece after a lost answer is ignored).</summary>
+    public long UploadChunkBytes(string uploadId, byte[] data, long offset)
+    {
+        lock (_lock)
+        {
+            if (!_uploads.TryGetValue(uploadId, out var u)) throw new RpcException("not-found", "Übertragung nicht gefunden oder abgelaufen.");
+            if (offset + data.Length == u.received) return u.received;           // already written – the answer got lost
+            if (offset != u.received) throw new RpcException("conflict", $"Erwartet Position {u.received}.");
             if (u.received + data.Length > u.expected) throw new RpcException("too-large", "Mehr Daten als angekündigt.");
             using (var fs = new FileStream(u.path, FileMode.Append)) fs.Write(data);
             _uploads[uploadId] = u with { received = u.received + data.Length, started = DateTime.UtcNow };
@@ -119,7 +173,8 @@ public sealed class TransferService
             MarkFromOtherDevice(target);
             var f = new FileInfo(target);
             _hub.Changed("files");
-            _notify?.Push("files:" + f.Name, Severity.Info, $"Datei empfangen: {f.Name}", $"Von {u.by} · im Ordner „{Path.GetFileName(_dir)}“", "/files");
+            bool quiet; lock (_lock) quiet = _quiet.Remove(uploadId);
+            if (!quiet) _notify?.Push("files:" + f.Name, Severity.Info, $"Datei empfangen: {f.Name}", $"Von {u.by} · im Ordner „{Path.GetFileName(_dir)}“", "/files");
             return new TransferEntry(f.Name, f.Length, f.LastWriteTimeUtc, KindOf(f.Name));
         }
         finally { try { File.Delete(u.path); } catch { } }
@@ -143,6 +198,12 @@ public sealed class TransferService
     /// <summary>One piece of a file for the device (base64), so large files never need one huge message.</summary>
     public object Read(string name, long offset, int length)
     {
+        var (buf, size, eof) = ReadBytes(name, offset, length);
+        return new { data = Convert.ToBase64String(buf), size, offset, eof };
+    }
+
+    public (byte[] data, long size, bool eof) ReadBytes(string name, long offset, int length)
+    {
         var f = Find(name);
         if (offset < 0 || offset > f.Length) throw new RpcException("invalid-params", "Ungültige Position.");
         length = Math.Clamp(length, 1, MaxChunkBytes);
@@ -154,7 +215,7 @@ public sealed class TransferService
             while (read < buf.Length) { var n = fs.Read(buf, read, buf.Length - read); if (n == 0) break; read += n; }
             if (read < buf.Length) Array.Resize(ref buf, read);
         }
-        return new { data = Convert.ToBase64String(buf), size = f.Length, offset, eof = offset + buf.Length >= f.Length };
+        return (buf, f.Length, offset + buf.Length >= f.Length);
     }
 
     public void Remove(string name)

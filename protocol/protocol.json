@@ -148,6 +148,23 @@
     "files.remove": "manage",
     "files.rename": "manage",
     "files.openFolder": "manage",
+    "files.setFolder": "local",
+    "files.clean": "manage",
+    "share.create": "manage",
+    "share.approve": "manage",
+    "share.reject": "manage",
+    "share.revoke": "manage",
+    "share.list": "manage",
+    "share.clearHistory": "manage",
+    "share.hello": "none",
+    "share.join": "none",
+    "share.info": "none",
+    "share.read": "none",
+    "share.done": "none",
+    "share.uploadBegin": "none",
+    "share.uploadChunk": "none",
+    "share.uploadEnd": "none",
+    "share.finish": "none",
     "captures.list": "manage",
     "captures.scan": "manage",
     "captures.thumbs": "manage",
@@ -457,6 +474,8 @@
     "update.progress",
     "relay.status",
     "cloudlink.status",
-    "profile.active"
+    "profile.active",
+    "share.update",
+    "share.state"
   ]
 }

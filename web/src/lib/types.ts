@@ -194,6 +194,8 @@ export interface Settings {
   startMinimized: boolean;
   keepRunningInTray: boolean;
   processScanSeconds: number;
+  transferFolder?: string | null; transferMaxMb?: number; shareTtlMinutes?: number; shareKnownOnly?: boolean;
+  transferHistoryEnabled?: boolean; transferNotify?: boolean; shelfCleanDays?: number; sharePreviews?: boolean;
   updateManifestUrl?: string;
   pluginCatalogUrl?: string | null;
   notifyInfo: boolean;

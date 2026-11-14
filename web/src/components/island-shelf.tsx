@@ -4,7 +4,9 @@
 // the usual way (pairing). Without the PC, files wait on this device and go over when it is back.
 import { useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { Check, Download, FolderOpen, Pencil, QrCode, Trash2, Upload, X } from "lucide-react";
+import { Check, Download, FolderOpen, Pencil, QrCode, Smartphone, Trash2, Upload, X } from "lucide-react";
+import { SharePanel, ShareHistoryList } from "./share-panel";
+import type { Direction } from "../lib/share";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useRpc } from "../lib/hooks";
@@ -24,6 +26,8 @@ export function IslandShelf({ online, canManage }: { online: boolean; canManage:
   const [showQr, setShowQr] = useState(false);
   const [renaming, setRenaming] = useState<{ name: string; value: string } | null>(null);
   const [fetching, setFetching] = useState<string | null>(null);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  const [sharing, setSharing] = useState<{ direction: Direction; files: string[] } | null>(null);
   const pick = useRef<HTMLInputElement>(null);
   const queue = useRef<File[]>([]);
   const running = useRef(false);
@@ -45,7 +49,11 @@ export function IslandShelf({ online, canManage }: { online: boolean; canManage:
         if (!online) { const msgs = await queueFiles([f]); msgs.forEach((m) => toast(m, "error")); if (!msgs.length) toast(t("{f} wartet auf dem Gerät und geht zum PC, sobald er verbunden ist.", { f: f.name }), "info"); continue; }
         const ctl = new AbortController();
         setSending({ name: f.name, p: 0, ctl });
-        try { await uploadFile(f.name, f, (p) => setSending((s) => (s ? { ...s, p } : s)), ctl.signal); toast(t("{f} liegt in der Ablage am PC", { f: f.name }), "success"); }
+        try {
+          const done = await uploadFile(f.name, f, (p) => setSending((s) => (s ? { ...s, p } : s)), ctl.signal);
+          setPicked((p) => new Set(p).add(done?.name ?? f.name)); // what was just dropped is ready for "Mit Handy übertragen"
+          toast(t("{f} liegt in der Ablage am PC", { f: f.name }), "success");
+        }
         catch (e) { if ((e as { code?: string }).code !== "cancelled") toast((e as Error).message, "error"); else toast(t("{f}: abgebrochen", { f: f.name }), "info"); }
       }
     } finally { running.current = false; setSending(null); list.reload(); }
@@ -70,6 +78,10 @@ export function IslandShelf({ online, canManage }: { online: boolean; canManage:
 
   if (!canManage) return <div className="isl2-empty"><FolderOpen size={18} aria-hidden /><span>{t("Die Ablage braucht das Recht „Verwalten“.")}</span></div>;
   const files = [...(list.data?.files ?? [])].sort((a, b) => b.modified.localeCompare(a.modified));
+  const chosen = files.filter((f) => picked.has(f.name)).map((f) => f.name);
+  const sizes = Object.fromEntries(files.map((f) => [f.name, f.size]));
+  const pickedBytes = files.filter((f) => picked.has(f.name)).reduce((a, f) => a + f.size, 0);
+  const toggle = (name: string) => setPicked((p) => { const n = new Set(p); if (n.has(name)) n.delete(name); else n.add(name); return n; });
   return (
     <div className="isl3-shelf">
       <div className={`isl3-drop${over ? " over" : ""}`} role="region" aria-label={t("Ablage – Dateien hier ablegen")}
@@ -99,7 +111,16 @@ export function IslandShelf({ online, canManage }: { online: boolean; canManage:
             {online && <button type="button" className="isl3-mini" aria-label={t("Ordner am PC öffnen")} title={t("Ordner am PC öffnen")} onClick={() => client.call("files.openFolder", {}).catch((e: Error) => toast(e.message, "error"))}><FolderOpen size={14} /></button>}
           </span>
         </div>
-        {showQr ? (
+        {online && !sharing && (
+          <div className="xs-actions">
+            <button type="button" className="isl3-chipbtn on" disabled={!files.length} onClick={() => setSharing({ direction: "send", files: chosen.length ? chosen : files.slice(0, 50).map((f) => f.name) })}>
+              <Smartphone size={13} aria-hidden /> {chosen.length ? t("{n} mit Handy übertragen", { n: chosen.length }) : t("Mit Handy übertragen")}
+            </button>
+            <button type="button" className="isl3-chipbtn" onClick={() => setSharing({ direction: "receive", files: [] })}><Download size={13} aria-hidden /> {t("Vom Handy empfangen")}</button>
+            {chosen.length > 0 && <span className="tiny muted">{t("{n} gewählt · {s}", { n: chosen.length, s: bytes(pickedBytes) })} <button type="button" className="isl3-linkbtn" onClick={() => setPicked(new Set())}>{t("Auswahl aufheben")}</button></span>}
+          </div>
+        )}
+        {sharing ? <SharePanel direction={sharing.direction} files={sharing.files} sizes={sizes} onClose={() => { setSharing(null); list.reload(); }} /> : showQr ? (
           <div className="isl3-qr">
             {qr && <img src={qr} alt={t("QR-Code zur Ablage")} width={132} height={132} />}
             <span className="isl2-sub">{t("Mit der Handykamera scannen – die Ablage öffnet sich. Der Code bleibt immer gleich und enthält nur die Adresse, keinen Zugang; das Handy muss einmal gekoppelt sein.")}</span>
@@ -117,6 +138,7 @@ export function IslandShelf({ online, canManage }: { online: boolean; canManage:
                   </form>
                 ) : (
                   <>
+                    <input type="checkbox" className="xs-check" checked={picked.has(f.name)} onChange={() => toggle(f.name)} aria-label={t("{n} auswählen", { n: f.name })} />
                     <span className="isl3-fname"><b className="ellipsis">{f.name}</b><i>{bytes(f.size)}</i></span>
                     <button type="button" className="isl3-mini" aria-label={t("{n} umbenennen", { n: f.name })} onClick={() => setRenaming({ name: f.name, value: f.name })}><Pencil size={13} /></button>
                     <button type="button" className="isl3-mini" disabled={fetching === f.name} aria-label={t("{n} auf dieses Gerät holen", { n: f.name })} onClick={() => void fetchFile(f)}><Download size={13} /></button>
@@ -127,6 +149,7 @@ export function IslandShelf({ online, canManage }: { online: boolean; canManage:
             ))}
           </ul>
         )}
+        {!sharing && online && <ShareHistoryList />}
       </div>
     </div>
   );

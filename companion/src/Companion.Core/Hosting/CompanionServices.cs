@@ -64,6 +64,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public NetworkMonitor NetMonitor { get; }
     public StorageService Storage { get; }
     public TransferService Transfer { get; }
+    public ShareService Shares { get; }
     public CaptureLibraryService Captures { get; }
     public GamePassService GamePass { get; }
     public CoverService Covers { get; }
@@ -161,7 +162,9 @@ public sealed class CompanionServices : IAsyncDisposable
         Perf = new PerformanceRecorder(Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
         NetMonitor = new NetworkMonitor(Rpc, () => Settings.Get().PingTargets);
         Storage = new StorageService(paths, Library, platform, Rpc);
-        Transfer = new TransferService(paths, platform, Rpc, Notifications);
+        Transfer = new TransferService(paths, platform, Rpc, Notifications, Settings.Get);
+        Shares = new ShareService(paths, Transfer, Rpc, Settings.Get, (title, text) => Notifications.Push("share:" + title, Severity.Info, title, text, "/files"));
+        try { Transfer.CleanOld(Settings.Get().ShelfCleanDays); } catch { /* best effort */ }
         Captures = new CaptureLibraryService(paths, Library, platform, Rpc);
         Runs = new RunTracker(Runner, Rpc, StepLabel);
         Compat = new CompatService(paths, Metrics, Library);
@@ -185,6 +188,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Moves = new MoveService(paths, Library, SteamDetector.DefaultRoots, id => Sessions.Running().Any(r => r.itemId == id),
             () => platform.Processes.Snapshot().Any(p => string.Equals(p.Name, "steam", StringComparison.OrdinalIgnoreCase) || string.Equals(p.Name, "steam.exe", StringComparison.OrdinalIgnoreCase)), Rpc);
         Rpc.Closed += Remote.Closed;
+        Rpc.Closed += Shares.Closed;
         Notifications.Suppressed = Privacy.Quiet;
         GameState = new GameStateService(paths, platform, Library, Vault, Mods, () => Profiles.Get(), () => Plugins.Versions(), id => Sessions.Running().Any(r => r.itemId == id), Rpc);
         Layouts = new WindowLayoutService(paths, platform.WindowManager, Rpc);

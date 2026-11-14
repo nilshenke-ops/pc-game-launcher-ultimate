@@ -14,8 +14,12 @@ export function AccessGate({ children }: { children: ReactNode }) {
   const fails = useRef(0);
   const input = useRef<HTMLInputElement>(null);
   useEffect(() => { if (wait > 0) { const id = setTimeout(() => setWait(wait - 1), 1000); return () => clearTimeout(id); } }, [wait]);
+  // The page of a transfer QR code (#/x/…) has its own protection (one-time secret + OK at the PC) and shows nothing else of the app;
+  // it opens without the access code. Watched on every change of the address, so no other page gets through this way.
+  const [hash, setHash] = useState(() => location.hash);
+  useEffect(() => { const on = () => setHash(location.hash); window.addEventListener("hashchange", on); return () => window.removeEventListener("hashchange", on); }, []);
 
-  if (open) return <>{children}</>;
+  if (open || /^#\/x\/[A-Za-z0-9_.-]+$/.test(hash)) return <>{children}</>;
   const submit = (value: string) => {
     if (value.length !== 4 || wait > 0) return;
     if (unlock(value)) { setOpen(true); return; }

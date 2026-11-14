@@ -839,6 +839,37 @@ public static class RpcApi
         rpc.Register("files.remove", ctx => { s.Transfer.Remove(ctx.Str("name", 260)); return true; });
         rpc.Register("files.rename", ctx => s.Transfer.Rename(ctx.Str("name", 260), ctx.Str("newName", 160)));
         rpc.Register("files.openFolder", _ => { s.Transfer.OpenFolder(); return true; });
+        rpc.Register("files.setFolder", ctx =>
+        {
+            var f = ctx.OptStr("folder", 260);
+            var set = s.Settings.SetTransferFolder(string.IsNullOrWhiteSpace(f) ? null : TransferService.CheckFolder(f));
+            return new { folder = s.Transfer.Folder, custom = set.TransferFolder != null };
+        });
+        rpc.Register("files.clean", _ => new { removed = s.Transfer.CleanOld(Math.Max(1, s.Settings.Get().ShelfCleanDays)) });
+
+        // ------------------------------------------------------------ file transfer by QR code (3.64): PC side needs "manage"; the phone side
+        // needs no account – every call is tied to a share the PC created, the phone proved the QR secret and the PC allowed.
+        rpc.Register("share.create", ctx =>
+        {
+            var names = ctx.Params.TryGetProperty("files", out var fa) && fa.ValueKind == System.Text.Json.JsonValueKind.Array
+                ? fa.EnumerateArray().Where(x => x.ValueKind == System.Text.Json.JsonValueKind.String).Select(x => x.GetString()!).Take(50).ToList() : null;
+            return s.Shares.Create(ctx.Str("direction", 10), names, ctx.Session.Who);
+        });
+        rpc.Register("share.approve", ctx => { s.Shares.Approve(ctx.Str("id", 20)); return true; });
+        rpc.Register("share.reject", ctx => { s.Shares.Reject(ctx.Str("id", 20)); return true; });
+        rpc.Register("share.revoke", ctx => { s.Shares.Revoke(ctx.Str("id", 20)); return true; });
+        rpc.Register("share.list", _ => s.Shares.List());
+        rpc.Register("share.clearHistory", _ => { s.Shares.ClearHistory(); return true; });
+        rpc.Register("share.hello", ctx => s.Shares.Hello(ctx.Str("id", 20), ctx.Session));
+        rpc.Register("share.join", ctx => s.Shares.Join(ctx.Str("id", 20), ctx.Str("proof", 100), ctx.OptStr("device", 60) ?? "Gerät", ctx.OptStr("resume", 60), ctx.Session));
+        rpc.Register("share.info", ctx => s.Shares.Info(ctx.Str("id", 20), ctx.Session));
+        rpc.Register("share.read", ctx => s.Shares.Read(ctx.Str("id", 20), ctx.Str("name", 260),
+            ctx.Params.TryGetProperty("offset", out var so) ? so.GetInt64() : 0, ctx.Params.TryGetProperty("length", out var sl) ? sl.GetInt32() : TransferService.MaxChunkBytes, ctx.Session));
+        rpc.Register("share.done", ctx => s.Shares.Done(ctx.Str("id", 20), ctx.Str("name", 260), ctx.Session));
+        rpc.Register("share.uploadBegin", ctx => { var (uploadId, name) = s.Shares.UploadBegin(ctx.Str("id", 20), ctx.Str("name", 260), ctx.Params.GetProperty("size").GetInt64(), ctx.Session); return new { uploadId, name }; });
+        rpc.Register("share.uploadChunk", ctx => new { received = s.Shares.UploadChunk(ctx.Str("id", 20), ctx.Str("uploadId", 40), ctx.Params.GetProperty("offset").GetInt64(), ctx.Str("data", 800_000), ctx.Session) });
+        rpc.Register("share.uploadEnd", ctx => s.Shares.UploadEnd(ctx.Str("id", 20), ctx.Str("uploadId", 40), ctx.Session));
+        rpc.Register("share.finish", ctx => s.Shares.Finish(ctx.Str("id", 20), ctx.Session));
 
         // ------------------------------------------------------------ screenshots and clips (only picture/video files of known folders)
         rpc.Register("captures.list", _ => s.Captures.List());

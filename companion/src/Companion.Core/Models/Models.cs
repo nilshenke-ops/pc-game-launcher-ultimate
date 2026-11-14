@@ -386,6 +386,17 @@ public sealed class Settings
     public bool HistoryEnabled { get; set; } = true;
     /// <summary>Report finished downloads (file name only) as a notification and in the island.</summary>
     public bool DownloadNotices { get; set; } = true;
+    /// <summary>File transfer (3.64): own exchange folder (null = the usual one), largest file in MB, how long a QR code can be used
+    /// (minutes, 1–15), only paired devices, keep a history, notify when done, delete old files after n days (0 = never).</summary>
+    public string? TransferFolder { get; set; }
+    public int TransferMaxMb { get; set; } = 200;
+    public int ShareTtlMinutes { get; set; } = 5;
+    public bool ShareKnownOnly { get; set; }
+    public bool TransferHistoryEnabled { get; set; } = true;
+    public bool TransferNotify { get; set; } = true;
+    public int ShelfCleanDays { get; set; }
+    /// <summary>Show small previews of received pictures on the phone.</summary>
+    public bool SharePreviews { get; set; } = true;
     public bool StartMinimized { get; set; } = true;
     public bool KeepRunningInTray { get; set; } = true;
     public int ProcessScanSeconds { get; set; } = 5;

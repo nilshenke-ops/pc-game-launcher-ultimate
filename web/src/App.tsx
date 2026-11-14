@@ -76,6 +76,7 @@ const Assistant = lazyRetry(() => import("./pages/Assistant"));
 const Deals = lazyRetry(() => import("./pages/Deals"));
 const DesktopWidget = lazyRetry(() => import("./pages/DesktopWidget"));
 const IslandPage = lazyRetry(() => import("./pages/IslandPage"));
+const ShareTransfer = lazyRetry(() => import("./pages/ShareTransfer"));
 const Connect = lazyRetry(() => import("./pages/Connect"));
 const ProfilePage = lazyRetry(() => import("./pages/Profile"));
 const VoiceChanger = lazyRetry(() => import("./pages/VoiceChanger"));const PairAdmin = lazyRetry(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
@@ -129,6 +130,8 @@ function Gate() {
   // Without a logged-in PC the whole app is shown as a preview: example content, design and layout work locally,
   // everything else asks to connect the PC first ("Verbinden" in the navigation). Logged-in devices keep the app
   // during short connection losses and reconnect automatically.
+  // The page a transfer QR code opens on the phone (3.64): works without an account, without the app around it.
+  if (loc.pathname.startsWith("/x/")) return <Suspense fallback={null}><ShareTransfer token={decodeURIComponent(loc.pathname.slice(3))} /></Suspense>;
   if (!client.demo && conn.phase === "online" && conn.auth === "checking" && !conn.me)
     return <div className="center-screen"><div className="center-card"><Loading /></div></div>;
   const pcLoggedIn = client.demo || conn.auth === "ok" || !!conn.me || !!client.credentials;

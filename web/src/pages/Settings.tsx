@@ -73,7 +73,7 @@ export default function SettingsPage() {
           {section === "audio" && <Hub items={AUDIO_HUB} />}
           {section === "jarvis" && <Hub items={JARVIS_HUB} />}
           {section === "island" && <><IslandSettingsCard /><Hub items={ISLAND_HUB} /></>}
-          {section === "connection" && <><Connection /><Hub items={DEVICES_HUB} /></>}
+          {section === "connection" && <><Connection /><TransferSettings /><Hub items={DEVICES_HUB} /></>}
           {section === "cloud" && <><AccountSettings /><Hub items={CLOUD_HUB} /><Backup /></>}
           {section === "privacy" && <><Security /><Privacy /></>}
           {section === "performance" && <Performance />}
@@ -789,6 +789,57 @@ function Backup() {
 }
 
 // ------------------------------------------------------------------ privacy
+
+// ------------------------------------------------------------------ file transfer (3.64)
+
+/** QR transfer between PC and phone: where files land, how big they may be, how long a QR code works, who may use it, history. */
+function TransferSettings() {
+  const s = useSettings();
+  const conn = useConn();
+  const isLocal = !!conn.me?.isLocal;
+  const files = useRpc<{ folder: string; defaultFolder?: string }>("files.list", {}, ["files", "settings"]);
+  const [folder, setFolder] = useState("");
+  const [maxMb, setMaxMb] = useState(200);
+  useEffect(() => { if (s.data) { setFolder(s.data.settings.transferFolder ?? ""); setMaxMb(s.data.settings.transferMaxMb ?? 200); } }, [s.data]);
+  const set = s.data?.settings;
+  const saveFolder = (v: string | null) => client.call<{ folder: string }>("files.setFolder", { folder: v ?? "" }).then((r) => { toast(t("Empfangsordner: {f}", { f: r.folder }), "success"); files.reload(); }, (e: Error) => toast(e.message, "error"));
+  const clearHistory = async () => { if (await confirmDialog(t("Übertragungsverlauf löschen?"), t("Die Liste der letzten Übertragungen wird am PC gelöscht. Die Dateien selbst bleiben."))) client.call("share.clearHistory", {}).then(() => toast(t("Verlauf gelöscht"), "success"), (e: Error) => toast(e.message, "error")); };
+  return (
+    <Loadable loading={s.loading} error={s.error} onRetry={s.reload}>
+      {set && (
+        <Card title={t("Dateiübertragung")} icon={<Download size={18} />}>
+          <div className="stack">
+            <Field label={t("Empfangsordner am PC")} hint={t("Hier landen Dateien vom Handy, und hier liegt die Ablage der Insel. Leer = Standard ({f}). Nur direkt am PC änderbar.", { f: files.data?.defaultFolder ?? "…" })}>
+              <div className="row nowrap">
+                <input className="input mono" value={folder} disabled={!isLocal} placeholder={files.data?.defaultFolder ?? ""} onChange={(e) => setFolder(e.target.value)} />
+                {isLocal && <Button onClick={() => void saveFolder(folder.trim() || null)}>{t("Übernehmen")}</Button>}
+              </div>
+            </Field>
+            {files.data && <p className="tiny muted">{t("Aktuell: {f}", { f: files.data.folder })}</p>}
+            <Field label={t("Größte Datei: {n} MB", { n: maxMb })} hint={t("Gilt für Dateien vom Handy und für die Ablage. Große Dateien gehen in Stücken, der PC lädt sie nie ganz in den Speicher.")}>
+              <div className="row nowrap"><input type="range" min={50} max={4096} step={50} value={maxMb} onChange={(e) => setMaxMb(+e.target.value)} />
+                <Button disabled={maxMb === (set.transferMaxMb ?? 200)} onClick={() => s.save({ transferMaxMb: maxMb })}>{t("Speichern")}</Button></div>
+            </Field>
+            <Field label={t("QR-Code gilt {n} Minuten", { n: set.shareTtlMinutes ?? 5 })} hint={t("So lange kann ein Handy den Code nutzen. Danach braucht es einen neuen. 1 bis 15 Minuten.")}>
+              <input type="range" min={1} max={15} value={set.shareTtlMinutes ?? 5} onChange={(e) => void s.save({ shareTtlMinutes: +e.target.value })} />
+            </Field>
+            <Switch checked={!!set.shareKnownOnly} onChange={(v) => void s.save({ shareKnownOnly: v })} label={t("Nur gekoppelte Geräte")}
+              hint={t("An: Ein QR-Code funktioniert nur auf Handys, die schon mit diesem PC gekoppelt sind. Bestätigen musst du am PC immer.")} />
+            <Switch checked={set.sharePreviews !== false} onChange={(v) => void s.save({ sharePreviews: v })} label={t("Vorschaubilder am Handy")} hint={t("Kleine Vorschau empfangener Bilder – erst, wenn sie da sind.")} />
+            <Switch checked={set.transferNotify !== false} onChange={(v) => void s.save({ transferNotify: v })} label={t("Benachrichtigen, wenn eine Übertragung fertig ist")} />
+            <Switch checked={set.transferHistoryEnabled !== false} onChange={(v) => void s.save({ transferHistoryEnabled: v })} label={t("Übertragungsverlauf speichern")} hint={t("Nur Gerät, Anzahl, Größe, Dateinamen und Ergebnis – am PC.")} />
+            <Field label={t("Alte Dateien in der Ablage löschen")}>
+              <select className="input" value={set.shelfCleanDays ?? 0} onChange={(e) => void s.save({ shelfCleanDays: +e.target.value })}>
+                <option value={0}>{t("Nie")}</option><option value={1}>{t("Nach 1 Tag")}</option><option value={7}>{t("Nach 7 Tagen")}</option><option value={30}>{t("Nach 30 Tagen")}</option><option value={90}>{t("Nach 90 Tagen")}</option>
+              </select>
+            </Field>
+            <div className="row"><Button icon={<Trash2 size={15} />} onClick={() => void clearHistory()}>{t("Verlauf löschen")}</Button></div>
+          </div>
+        </Card>
+      )}
+    </Loadable>
+  );
+}
 
 function Privacy() {
   const s = useSettings();

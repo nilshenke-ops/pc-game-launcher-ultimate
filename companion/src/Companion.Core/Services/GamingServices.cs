@@ -63,6 +63,13 @@ public sealed class SettingsService
         public bool? AppsEnabled { get; set; }
         public string? OverlayCorner { get; set; }
         public Pgl.Core.Platform.MetricSwitches? Metrics { get; set; }
+        public int? TransferMaxMb { get; set; }
+        public int? ShareTtlMinutes { get; set; }
+        public bool? ShareKnownOnly { get; set; }
+        public bool? TransferHistoryEnabled { get; set; }
+        public bool? TransferNotify { get; set; }
+        public int? ShelfCleanDays { get; set; }
+        public bool? SharePreviews { get; set; }
     }
 
     public Settings SaveGeneral(GeneralUpdate u)
@@ -71,6 +78,9 @@ public sealed class SettingsService
         if (u.GamePassMarket is { } gm && !System.Text.RegularExpressions.Regex.IsMatch(gm, "^[A-Z]{2}$")) throw new RpcException("invalid-params", "Markt muss ein Ländercode aus zwei Großbuchstaben sein (z. B. DE).");
         if (u.OverlayCorner is { } oc && oc is not ("top-left" or "top-right" or "bottom-left" or "bottom-right")) throw new RpcException("invalid-params", "Ecke muss top-left, top-right, bottom-left oder bottom-right sein.");
         if (u.ProcessScanSeconds is { } p && (p < 2 || p > 60)) throw new RpcException("invalid-params", "Prüfintervall muss zwischen 2 und 60 Sekunden liegen.");
+        if (u.TransferMaxMb is { } mb && (mb < 1 || mb > 4096)) throw new RpcException("invalid-params", "Größte Datei: 1 bis 4096 MB.");
+        if (u.ShareTtlMinutes is { } ttl && (ttl < 1 || ttl > 15)) throw new RpcException("invalid-params", "Gültigkeit des QR-Codes: 1 bis 15 Minuten.");
+        if (u.ShelfCleanDays is { } cd && (cd < 0 || cd > 365)) throw new RpcException("invalid-params", "Aufräumen: 0 (nie) bis 365 Tage.");
         var s = _store.Update(s =>
         {
             if (u.PcName != null) s.PcName = DeviceStore.Sanitize(u.PcName, 40, s.PcName);
@@ -95,10 +105,25 @@ public sealed class SettingsService
             if (u.AppsEnabled != null) s.AppsEnabled = u.AppsEnabled.Value;
             if (u.OverlayCorner != null) s.OverlayCorner = u.OverlayCorner;
             if (u.Metrics != null) s.Metrics = u.Metrics.Copy();
+            if (u.TransferMaxMb != null) s.TransferMaxMb = u.TransferMaxMb.Value;
+            if (u.ShareTtlMinutes != null) s.ShareTtlMinutes = u.ShareTtlMinutes.Value;
+            if (u.ShareKnownOnly != null) s.ShareKnownOnly = u.ShareKnownOnly.Value;
+            if (u.TransferHistoryEnabled != null) s.TransferHistoryEnabled = u.TransferHistoryEnabled.Value;
+            if (u.TransferNotify != null) s.TransferNotify = u.TransferNotify.Value;
+            if (u.ShelfCleanDays != null) s.ShelfCleanDays = u.ShelfCleanDays.Value;
+            if (u.SharePreviews != null) s.SharePreviews = u.SharePreviews.Value;
             return Json.Deserialize<Settings>(Json.Serialize(s))!;
         });
         _hub.Changed("settings");
         Saved?.Invoke(s);
+        return s;
+    }
+
+    /// <summary>The folder for files between phone and PC (null = the usual one). Checked by TransferService.CheckFolder.</summary>
+    public Settings SetTransferFolder(string? folder)
+    {
+        var s = _store.Update(s => { s.TransferFolder = folder; return Json.Deserialize<Settings>(Json.Serialize(s))!; });
+        _hub.Changed("settings"); _hub.Changed("files");
         return s;
     }
 

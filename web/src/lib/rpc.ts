@@ -66,7 +66,9 @@ const REQUEST_TIMEOUT_MS = 20000;
 /** Requests that pages make by themselves (loading data); they fail quietly instead of opening the "PC verbinden" hint. */
 const QUIET = /\.(list|get|status|state|logs|subscribe|unsubscribe|diagnose|run|me|pending|getPrefs|now)$/;
 // Requests that work without login (connection setup and pairing) always go to the PC.
-const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim", "pairing.handoff", "pairing.account"]);
+const NO_LOGIN = new Set(["hello", "ping", "auth.login", "pairing.request", "pairing.claim", "pairing.handoff", "pairing.account",
+  // QR transfer (3.64): the phone has no account – every call is tied to a share it proved and the PC allowed (checked at the PC).
+  "share.hello", "share.join", "share.info", "share.read", "share.done", "share.uploadBegin", "share.uploadChunk", "share.uploadEnd", "share.finish"]);
 const HANDOFF_KEY = "pgl.handoff";
 
 function store(kind: "local" | "session") {

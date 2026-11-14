@@ -4,6 +4,29 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.64.0 – 2026-11-14
+### Neu
+- **Dateien per QR-Code zwischen PC und Handy – in beide Richtungen.**
+  - Dateien auf die Insel ziehen, „Mit Handy übertragen“, mit iPhone/iPad scannen, am PC „Erlauben“ – fertig.
+  - Andersherum: „Vom Handy empfangen“ → Dateien am Handy wählen → sie landen in der Ablage am PC.
+  - Keine App und kein Konto auf dem Handy nötig.
+- **Sicher aufgebaut:**
+  - Der QR-Code gilt nur wenige Minuten und nur für ein Gerät. Er enthält keine dauerhaften Zugangsdaten.
+  - Beide Seiten zeigen denselben 4-stelligen Code, und ohne „Erlauben“ am PC passiert nichts.
+  - Alles wird Stück für Stück mit AES-256 verschlüsselt, auch im WLAN und über das Relay.
+  - Programme und Skripte vom Handy werden abgelehnt.
+  - „Beenden“ widerruft sofort.
+- **Fortschritt:** pro Datei und gesamt, mit Geschwindigkeit, Restzeit, Pause, Abbrechen und „Erneut versuchen“ (nur für Fehlgeschlagenes). Nach einem kurzen Verbindungsabbruch geht es weiter.
+- **Ablage:** Dateien lassen sich auswählen, frisch abgelegte sind schon ausgewählt. Dazu kommt ein Verlauf der letzten Übertragungen.
+- **Einstellungen** unter Verbindung & Geräte → Dateiübertragung:
+  - Empfangsordner (nur am PC), größte Datei, Gültigkeit des QR-Codes.
+  - Nur gekoppelte Geräte, Vorschaubilder, Benachrichtigung.
+  - Verlauf speichern/löschen, alte Dateien automatisch löschen.
+- Beschreibung, Sicherheitsmodell und Testergebnisse: `docs/FILE-TRANSFER.md`.
+### Hinweise
+- Den Begleiter aktualisieren, die Funktion braucht ihn.
+- Im Testaufbau wurde mit einem zweiten Browser als Handy getestet. Mit einem echten iPhone/iPad ist es noch nicht getestet.
+
 ## 3.63.0 – 2026-11-14
 ### Neu
 - **Drei neue Bereiche für die Insel** (zuschaltbar unter „Bereiche anpassen“, standardmäßig aus):

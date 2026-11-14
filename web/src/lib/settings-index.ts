@@ -113,6 +113,10 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   { id: "tailscale", label: "Unterwegs mit Tailscale", cat: "connection", to: S("connection"), words: "unterwegs fernzugriff vpn tailscale" },
   { id: "relay", label: "Eigener Server (für Fortgeschrittene)", cat: "connection", to: S("connection"), words: "relay server tunnel cloudflare unterwegs", level: "advanced" },
   { id: "browser-server", label: "Server für diesen Browser", cat: "connection", to: S("connection"), words: "websocket adresse server browser", level: "advanced" },
+  { id: "transfer", label: "Dateiübertragung", cat: "connection", to: S("connection"), words: "datei übertragen qr handy iphone ipad senden empfangen airdrop ablage" },
+  { id: "transfer-folder", label: "Empfangsordner am PC", cat: "connection", to: S("connection"), words: "ordner empfangen speicherort download nexus transfers" },
+  { id: "transfer-ttl", label: "QR-Code gilt", cat: "connection", to: S("connection"), words: "qr gültig ablauf minuten sicherheit" },
+  { id: "transfer-known", label: "Nur gekoppelte Geräte", cat: "connection", to: S("connection"), words: "sicherheit fremde geräte qr übertragung" },
   { id: "devices", label: "Gekoppelte Geräte", cat: "connection", to: "/devices", words: "handy koppeln geräte rechte berechtigungen entfernen" },
   // Cloud & Sync
   { id: "account", label: "Zugangsdaten", cat: "cloud", to: S("cloud"), words: "konto passwort benutzername anmelden login geheimcode" },
