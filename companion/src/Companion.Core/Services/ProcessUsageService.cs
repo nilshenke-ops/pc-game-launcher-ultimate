@@ -41,6 +41,18 @@ public sealed class ProcessUsageService
         finally { _gate.Release(); }
     }
 
+    /// <summary>All measured programs (same 5-s cache as <see cref="TopAsync"/>).</summary>
+    public async Task<List<ProcUsage>> ListAsync(CancellationToken ct = default)
+    {
+        await _gate.WaitAsync(ct);
+        try
+        {
+            if (_last == null || DateTime.UtcNow - _at > TimeSpan.FromSeconds(5)) { _last = await _measure(ct); _at = DateTime.UtcNow; }
+            return _last.ToList();
+        }
+        finally { _gate.Release(); }
+    }
+
     /// <summary>Processes that keep Windows (or this companion) running – closing them would log out, crash the desktop or cut the connection.</summary>
     static readonly HashSet<string> Protected = new(StringComparer.OrdinalIgnoreCase)
     {

@@ -172,7 +172,24 @@ export interface MetricsSample {
   sources: Record<string, string>;
   /** Values switched off in the settings – not measured. */
   off?: ("cpu" | "ram" | "gpu" | "disks")[];
+  // 3.66 – filled by the companion's monitor (older companions leave them out)
+  fps?: FpsLive | null;
+  net?: { downBps: number | null; upBps: number | null; rxSinceStart: number | null; txSinceStart: number | null; links: { name: string; kind: "wlan" | "ethernet" | "mobile" | "other"; speedBps: number | null }[] } | null;
+  diskIo?: { name: string; readBps: number | null; writeBps: number | null; busyPercent: number | null }[] | null;
+  self?: { cpuPercent: number | null; ramMb: number; threads: number } | null;
 }
+
+/** Live FPS from the companion (Intel PresentMon). state: off | unavailable | permission | idle | waiting | measuring | stopped. */
+export interface FpsLive {
+  state: "off" | "unavailable" | "permission" | "idle" | "waiting" | "measuring" | "stopped";
+  message?: string | null; canRequestPermission?: boolean; game?: string | null; process?: string | null; api?: string | null;
+  fps?: number | null; avg?: number | null; low1?: number | null; low01?: number | null; frameMs?: number | null; stutters?: number;
+  gpuBusy?: number | null; seconds?: number | null; frameTimes?: number[] | null;
+}
+export interface FpsSession { id: string; itemId?: string | null; game: string; process?: string | null; api?: string | null; startedAt: string; minutes: number; avg?: number | null; low1?: number | null; low01?: number | null; stutters: number; gpuBusy?: number | null; cpuAvg?: number | null; gpuAvg?: number | null; chart: number[]; compare?: string | null }
+export interface HistoryPoint { at: string; cpu?: number | null; ram?: number | null; gpu?: number | null; vram?: number | null; cpuTemp?: number | null; gpuTemp?: number | null; fps?: number | null; down?: number | null; up?: number | null; diskRead?: number | null; diskWrite?: number | null }
+export interface PerfFinding { id: string; level: "info" | "warn" | "critical"; kind: "measured" | "suspicion"; area: string; title: string; what: string; why: string; fix: string; risk: string; action?: string | null }
+export interface DriveHealth { name: string; mediaType?: string | null; health?: string | null; tempC?: number | null; wearPercent?: number | null; readErrors?: number | null; writeErrors?: number | null; powerOnHours?: number | null }
 
 export interface MetricSwitches { cpu: boolean; ram: boolean; gpu: boolean; disks: boolean }
 
@@ -191,6 +208,8 @@ export interface Settings {
   /** Report finished downloads (Downloads folder) as notifications – default on. */
   downloadNotices?: boolean;
   recordSessionPerf?: boolean;
+  /** Measure FPS automatically while a game runs (Intel PresentMon, Windows companion). */
+  fpsAuto?: boolean;
   startMinimized: boolean;
   keepRunningInTray: boolean;
   processScanSeconds: number;

@@ -31,6 +31,7 @@ public sealed class GenericPlatform : IPlatform
     public IScreenCapture Screen { get; init; } = NullScreenCapture.Instance;
     public IRemoteInput RemoteInput { get; init; } = NullRemoteInput.Instance;
     public IAudioLoopback AudioLoopback { get; init; } = NullAudioLoopback.Instance;
+    public IDiskActivity DiskActivity { get; init; } = OperatingSystem.IsLinux() ? new ProcDiskActivity() : NullDiskActivity.Instance;
 }
 
 /// <summary>Only records what would happen (headless test runs with PGL_POWER_DRYRUN=1) – never switches anything off.</summary>

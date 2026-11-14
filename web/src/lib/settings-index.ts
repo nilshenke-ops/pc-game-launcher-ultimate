@@ -128,6 +128,7 @@ export const SETTINGS_INDEX: SettingEntry[] = [
   // Datenschutz & Sicherheit
   { id: "security", label: "Sicherheit", cat: "privacy", to: S("privacy"), words: "sicherheit zugriff schutz" },
   { id: "session-perf", label: "Leistungswerte während Spielsitzungen aufzeichnen", cat: "privacy", to: S("privacy"), words: "leistung messwerte aufzeichnen archiv" },
+  { id: "fpsAuto", label: "FPS automatisch messen", cat: "privacy", to: S("privacy"), words: "fps bildrate frames presentmon 1% low ruckler frametime messung" },
   { id: "cover-search", label: "Cover automatisch suchen", cat: "privacy", to: S("privacy"), words: "cover bilder internet suchen" },
   { id: "steam-cdn", label: "Steam-Cover aus dem Steam-CDN laden", cat: "privacy", to: S("privacy"), words: "steam cover cdn bilder" },
   { id: "download-notices", label: "Fertige Downloads melden", cat: "privacy", to: S("privacy"), words: "download fertig meldung" },

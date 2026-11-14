@@ -4,6 +4,32 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.66.0 – 2026-11-14
+### Neu
+- **FPS automatisch messen.** Mit jedem Spiel startet die Messung von selbst, ganz ohne Einrichtung pro Spiel.
+  - Gemessen werden aktuelle FPS, Durchschnitt, 1 %- und 0,1 %-Low, Bildzeit mit Verlauf, Ruckler und GPU-Auslastung.
+  - Grundlage ist Intel PresentMon. Es ist im Windows-Begleiter enthalten und wird vor jedem Start auf die Intel-Signatur geprüft. Es greift nicht in Spiele ein.
+  - Nach dem Spiel wird die Sitzung gespeichert und mit der letzten verglichen. Eine Mitteilung zeigt das Ergebnis.
+  - Fehlt die Windows-Berechtigung, genügt einmal „Erlauben“ am PC. Danach misst der Begleiter ab der nächsten Anmeldung von selbst.
+- **Jeder Wert der Insel ist anklickbar:**
+  - Analyse, FPS, CPU, GPU, VRAM, RAM, Speicher, Netzwerk, Ping und Akku haben eine eigene Detailansicht.
+  - Jede Ansicht zeigt den Live-Wert, einen Verlauf (1 min / 10 min / 1 h), Fakten und eine Erklärung.
+  - Man kann direkt zwischen den Werten wechseln, ohne die Seite zu verlassen.
+- **Nexus Performance Intelligence.** Die Analyse erkennt CPU- und GPU-Engpässe, Hintergrundlast, vollen Arbeits- oder Grafikspeicher, hohe Temperaturen, schwankende Bildzeiten, Ruckler, volle oder ausgelastete Laufwerke, Paketverlust und hohen Ping.
+  - Zu jedem Fund steht: was gemessen wurde, warum es wichtig ist, was hilft und welches Risiko besteht.
+  - Jeder Fund ist als „gemessen“ oder „Vermutung“ gekennzeichnet.
+  - Nichts wird von selbst geändert.
+- **Laufwerke im Detail.** Angezeigt werden Lese- und Schreibgeschwindigkeit in MB/s, Aktivität, freier und belegter Platz sowie der SMART-Zustand auf Knopfdruck (Temperatur, Abnutzung, Fehler, Betriebsstunden – soweit das Laufwerk sie meldet).
+- **Netzwerk im Detail.** Download und Upload stehen in Mbit/s. Dazu kommen Verbindungsart (WLAN oder LAN) mit Geschwindigkeit, die Datenmenge seit dem Start des Begleiters sowie Ping, Jitter und Paketverlust.
+- Der eigene Verbrauch des Begleiters (CPU und RAM) wird angezeigt.
+- Neue Einstellung „FPS automatisch messen“ (standardmäßig an).
+### Verbessert
+- Netzwerkgeschwindigkeit überall in **Mbit/s** statt MB/s. Dateien und Laufwerke bleiben in MB/s, Datenmengen in MB/GB.
+- Der Begleiter speichert eine Stunde Messverlauf, aber nur solange jemand zusieht. Lücken bleiben sichtbar.
+### Hinweise
+- Den Begleiter aktualisieren.
+- Die FPS-Messung, die Laufwerkszähler und SMART sind für Windows gebaut. Mit echten Spielen und echter Windows-Hardware ist das noch **nicht getestet**, weil es im Testaufbau keinen Windows-PC gibt. Alles andere wurde gegen den echten Begleiter getestet. Details stehen in `docs/PERFORMANCE-INTELLIGENCE.md`.
+
 ## 3.65.0 – 2026-11-14
 ### Behoben
 - **Wetter-Ort wird gespeichert.** Der Ort, den man in der Wetter-Kachel eingibt, gehört jetzt zum Konto. Er bleibt nach dem Neuladen, nach dem Anmelden und auf allen Geräten erhalten. Bisher fehlte er in der Kontosicherung und ging beim nächsten Anmelden verloren. Ein schon gespeicherter Ort wird übernommen.

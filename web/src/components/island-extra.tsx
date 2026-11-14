@@ -4,7 +4,7 @@
 //  · System    – tiles for CPU, memory, graphics card, storage, battery and running time
 // Every number comes from the PC (or Open-Meteo for the weather). What the PC cannot tell is left out or says so – never a made-up value.
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
-import { ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, BellOff, Clock3, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Cpu, Gauge, HardDrive, Leaf, MemoryStick, Mic, MicOff, Monitor, Moon, Music2, Network, Rocket, Volume1, Wifi, WifiOff, Bluetooth, Sun, Volume2, VolumeX, Zap } from "lucide-react";
+import { ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, BellOff, Clock3, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSnow, CloudSun, Cpu, Gauge, HardDrive, Leaf, MemoryStick, Mic, MicOff, Monitor, Moon, Music2, Network, Rocket, Volume1, Wifi, WifiOff, Bluetooth, Sun, Volume2, VolumeX, Zap, Sparkles, Radio } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { toast, useEvent, useLiveSubscription, useRpc } from "../lib/hooks";
@@ -14,6 +14,8 @@ import { clock } from "../lib/island";
 import { homePlace, setHomePlace } from "../lib/weather";
 import { fetchLyrics, lineAt, lyricsOn, setLyricsOn, speedText, type Lyrics } from "../lib/island-lyrics";
 import { nowPosition, type NowPlaying } from "../lib/now-playing";
+import { fileSpeed } from "../lib/units";
+import type { DetailKind } from "./metric-detail";
 import { cachedWeather, gb, loadWeather, pushHistory, sparkPoints, uptimeText, WEATHER_TTL, type IslandWeather } from "../lib/island-dash";
 
 export interface PcControls { supported: boolean; volume: number | null; muted: boolean | null; brightness: number | null; battery: number | null; charging: boolean | null; powerMode: "saver" | "balanced" | "performance" | null; wifi?: boolean | null; bluetooth?: boolean | null }
@@ -230,10 +232,10 @@ export function IslandControls({ online, canUse, controls, sensors, now, press }
 }
 
 // ------------------------------------------------------------------ System
-function Tile({ icon, name, value, sub, pct, color, onOpen }: { icon: ReactNode; name: string; value: string; sub?: string; pct?: number | null; color: string; onOpen?: () => void }) {
+function Tile({ icon, name, value, sub, pct, color, onOpen, wide }: { icon: ReactNode; name: string; value: string; sub?: string; pct?: number | null; color: string; onOpen?: () => void; wide?: boolean }) {
   const El = onOpen ? "button" : "div";
   return (
-    <El {...(onOpen ? { type: "button" as const, onClick: onOpen, "aria-label": t("{n}: was am meisten verbraucht", { n: name }) } : {})} className={`isl3-stat${onOpen ? " tap" : ""}`} style={{ ["--c" as string]: color } as CSSProperties}>
+    <El {...(onOpen ? { type: "button" as const, onClick: onOpen, "aria-label": t("{n} im Detail", { n: name }) } : {})} data-wide={wide || undefined} className={`isl3-stat${onOpen ? " tap" : ""}`} style={{ ["--c" as string]: color } as CSSProperties}>
       <span className="isl3-stathead">{icon}{name}</span>
       <b>{value}</b>
       {pct != null && <span className="isl3-bar"><i style={{ transform: `scaleX(${Math.max(0, Math.min(100, pct)) / 100})` }} /></span>}
@@ -242,7 +244,7 @@ function Tile({ icon, name, value, sub, pct, color, onOpen }: { icon: ReactNode;
   );
 }
 
-export function IslandSystem({ online, controls, onDetails }: { online: boolean; controls: ReturnType<typeof usePcControls>; onDetails?: (k: "ram" | "cpu") => void }) {
+export function IslandSystem({ online, controls, onDetails }: { online: boolean; controls: ReturnType<typeof usePcControls>; onDetails?: (k: DetailKind) => void }) {
   const m = useMetrics(online);
   const net = useNetSpeed(online, true);
   if (!online) return <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{t("PC nicht verbunden")}</span></div>;
@@ -250,30 +252,42 @@ export function IslandSystem({ online, controls, onDetails }: { online: boolean;
   const gpu = m?.gpus?.[0];
   const disk = m?.disks?.[0];
   const ramPct = m?.memTotalBytes && m.memUsedBytes != null ? (m.memUsedBytes / m.memTotalBytes) * 100 : null;
+  const vramPct = gpu?.memTotalBytes && gpu.memUsedBytes != null ? (gpu.memUsedBytes / gpu.memTotalBytes) * 100 : null;
   const c = controls.data;
+  const open = (k: DetailKind) => (onDetails ? () => onDetails(k) : undefined);
+  const fps = m?.fps;
+  const io = m?.diskIo?.find((x) => disk && disk.name.toUpperCase().startsWith(x.name.toUpperCase()));
+  // Down/up come with the monitor sample from newer companions; older ones answer net.speed (the hook) – both are real readings.
+  const down = m?.net ? m.net.downBps : net.down, up = m?.net ? m.net.upBps : net.up;
   return (
     <div className="isl3-stats">
-      <Tile onOpen={onDetails && (() => onDetails("cpu"))} color="#38bdf8" icon={<Cpu size={13} />} name="CPU" value={m?.cpuPercent != null ? `${Math.round(m.cpuPercent)} %` : na} pct={m?.cpuPercent} sub={m?.cpuTempC != null ? `${Math.round(m.cpuTempC)} °C` : m?.cpuName} />
-      <Tile onOpen={onDetails && (() => onDetails("ram"))} color="#c084fc" icon={<MemoryStick size={13} />} name={t("Arbeitsspeicher")} value={m?.memUsedBytes != null ? gb(m.memUsedBytes) : na} pct={ramPct} sub={m?.memTotalBytes ? t("von {n}", { n: gb(m.memTotalBytes) }) : undefined} />
-      <Tile color="#34d399" icon={<Zap size={13} />} name="GPU" value={gpu?.utilPercent != null ? `${Math.round(gpu.utilPercent)} %` : na} pct={gpu?.utilPercent} sub={gpu?.tempC != null ? `${Math.round(gpu.tempC)} °C` : gpu?.name} />
-      <Tile color="#fbbf24" icon={<HardDrive size={13} />} name={t("Speicher")} value={disk ? t("{n} frei", { n: gb(disk.freeBytes) }) : na} pct={disk ? ((disk.totalBytes - disk.freeBytes) / disk.totalBytes) * 100 : null} sub={disk ? t("von {n}", { n: gb(disk.totalBytes) }) + (disk.label ? ` · ${disk.label}` : "") : undefined} />
-      <Tile color="#4ade80" icon={c?.charging ? <BatteryCharging size={13} /> : <BatteryMedium size={13} />} name={t("Akku")} value={c?.battery != null ? `${c.battery} %` : t("kein Akku")} pct={c?.battery ?? null} sub={c?.battery != null ? (c.charging ? t("Netzbetrieb") : t("Akkubetrieb")) : c && !c.supported ? t("nur Windows-Begleiter") : undefined} />
+      <Tile onOpen={open("insights")} wide color="#f472b6" icon={<Sparkles size={13} />} name={t("Analyse")} value={t("Was fällt auf?")} sub={t("Leistung prüfen und Tipps bekommen")} />
+      <Tile onOpen={open("fps")} color="#f472b6" icon={<Gauge size={13} />} name="FPS" value={fps?.state === "measuring" && fps.fps != null ? `${Math.round(fps.fps)}` : "–"}
+        sub={fps?.state === "measuring" ? (fps.low1 != null ? `1 % Low ${Math.round(fps.low1)}` : fps.game ?? undefined) : fps ? (fps.state === "idle" ? t("startet mit dem Spiel") : fps.state === "permission" ? t("einmal erlauben") : fps.state === "off" ? t("ausgeschaltet") : t("nicht verfügbar")) : t("Begleiter aktualisieren")} />
+      <Tile onOpen={open("cpu")} color="#38bdf8" icon={<Cpu size={13} />} name="CPU" value={m?.cpuPercent != null ? `${Math.round(m.cpuPercent)} %` : na} pct={m?.cpuPercent} sub={m?.cpuTempC != null ? `${Math.round(m.cpuTempC)} °C` : m?.cpuName} />
+      <Tile onOpen={open("gpu")} color="#34d399" icon={<Zap size={13} />} name="GPU" value={gpu?.utilPercent != null ? `${Math.round(gpu.utilPercent)} %` : na} pct={gpu?.utilPercent} sub={gpu?.tempC != null ? `${Math.round(gpu.tempC)} °C` : gpu?.name} />
+      <Tile onOpen={open("ram")} color="#c084fc" icon={<MemoryStick size={13} />} name={t("Arbeitsspeicher")} value={m?.memUsedBytes != null ? gb(m.memUsedBytes) : na} pct={ramPct} sub={m?.memTotalBytes ? t("von {n}", { n: gb(m.memTotalBytes) }) : undefined} />
+      <Tile onOpen={open("vram")} color="#a78bfa" icon={<Zap size={13} />} name="VRAM" value={vramPct != null ? `${Math.round(vramPct)} %` : na} pct={vramPct} sub={gpu?.memTotalBytes ? t("von {n}", { n: gb(gpu.memTotalBytes) }) : t("nicht gemeldet")} />
+      <Tile onOpen={open("disk")} color="#fbbf24" icon={<HardDrive size={13} />} name={t("Speicher")} value={disk ? t("{n} frei", { n: gb(disk.freeBytes) }) : na} pct={disk ? ((disk.totalBytes - disk.freeBytes) / disk.totalBytes) * 100 : null}
+        sub={io?.readBps != null ? t("Lesen {r} · Schreiben {w}", { r: fileSpeed(io.readBps), w: fileSpeed(io.writeBps) }) : disk ? t("von {n}", { n: gb(disk.totalBytes) }) + (disk.label ? ` · ${disk.label}` : "") : undefined} />
+      <Tile onOpen={open("battery")} color="#4ade80" icon={c?.charging ? <BatteryCharging size={13} /> : <BatteryMedium size={13} />} name={t("Akku")} value={c?.battery != null ? `${c.battery} %` : t("kein Akku")} pct={c?.battery ?? null} sub={c?.battery != null ? (c.charging ? t("Netzbetrieb") : t("Akkubetrieb")) : c && !c.supported ? t("nur Windows-Begleiter") : undefined} />
+      <Tile onOpen={open("ping")} color="#22d3ee" icon={<Radio size={13} />} name={t("Ping")} value={t("messen")} sub={t("Router und Internet, Paketverlust")} />
       <Tile color="#facc15" icon={<Clock3 size={13} />} name={t("Laufzeit")} value={uptimeText(m?.uptimeHours)} sub={t("seit dem letzten Start")} />
-      <div className="isl3-stat wide isl3-net" style={{ ["--c" as string]: "#60a5fa" } as CSSProperties}>
+      <button type="button" className="isl3-stat wide isl3-net tap" style={{ ["--c" as string]: "#60a5fa" } as CSSProperties} onClick={open("net")} disabled={!onDetails} aria-label={t("Netzwerk im Detail")}>
         <span className="isl3-stathead"><Network size={13} />{t("Netzwerk")}</span>
-        {net.supported === false
+        {net.supported === false && !m?.net
           ? <span className="isl2-sub">{t("Der Begleiter auf dem PC misst das noch nicht – bitte aktualisieren.")}</span>
           : (
-            <div className="isl3-netrow">
-              <span className="isl3-netval down" aria-label={t("Empfangen: {n}", { n: speedText(net.down) })}><ArrowDown size={14} aria-hidden /><b>{speedText(net.down)}</b></span>
-              <span className="isl3-netval up" aria-label={t("Senden: {n}", { n: speedText(net.up) })}><ArrowUp size={14} aria-hidden /><b>{speedText(net.up)}</b></span>
+            <span className="isl3-netrow">
+              <span className="isl3-netval down" aria-label={t("Empfangen: {n}", { n: speedText(down) })}><ArrowDown size={14} aria-hidden /><b>{speedText(down)}</b></span>
+              <span className="isl3-netval up" aria-label={t("Senden: {n}", { n: speedText(up) })}><ArrowUp size={14} aria-hidden /><b>{speedText(up)}</b></span>
               <svg className="isl3-netspark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden>
                 <polyline className="down" points={sparkPoints(speedCurve(net.downHist, net.upHist))} />
                 <polyline className="up" points={sparkPoints(speedCurve(net.upHist, net.downHist))} />
               </svg>
-            </div>
+            </span>
           )}
-      </div>
+      </button>
     </div>
   );
 }

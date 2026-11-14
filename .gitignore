@@ -25,3 +25,4 @@ android/local.properties
 # generated Worker config (contains the D1 database id)
 wrangler.deploy.json
 .wrangler/
+companion/src/Companion.Windows/tools/PresentMon.exe

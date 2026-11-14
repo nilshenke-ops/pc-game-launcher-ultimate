@@ -27,6 +27,11 @@ public sealed class MonitorService : IDisposable
 
     public MonitorService(IMetricsSource source, RpcServer rpc) { _source = source; _rpc = rpc; }
 
+    // 3.66 – added to every sample by the companion (each null-safe, each cheap): FPS, network, drives.
+    public Func<FpsLive?>? Fps { get; set; }
+    public Func<NetSample?>? Net { get; set; }
+    public Func<List<DiskIo>?>? Disks { get; set; }
+
     public MetricsSample? Last => _last;
 
     public MetricsSample Subscribe(RpcSession s)
@@ -55,10 +60,15 @@ public sealed class MonitorService : IDisposable
         _timer = null;
     }
 
-    MetricsSample SampleNow()
+    public MetricsSample SampleNow()
     {
         var s = _source.Sample();
+        try { s.Fps = Fps?.Invoke(); } catch (Exception ex) { Log.Warn("fps", ex.Message); }
+        try { s.Net = Net?.Invoke(); } catch (Exception ex) { Log.Warn("monitor", ex.Message); }
+        try { s.DiskIo = Disks?.Invoke(); } catch (Exception ex) { Log.Warn("monitor", ex.Message); }
+        s.Self = SelfUse();
         _last = s;
+        Remember(s);
         return s;
     }
 
@@ -74,6 +84,69 @@ public sealed class MonitorService : IDisposable
         }
         catch (Exception ex) { Log.Warn("monitor", ex.Message); }
         finally { Interlocked.Exchange(ref _busy, 0); }
+    }
+
+    // ------------------------------------------------------------------ own use
+    TimeSpan _cpu0; DateTime _cpuAt;
+    SelfUsage SelfUse()
+    {
+        using var p = System.Diagnostics.Process.GetCurrentProcess();
+        double? cpu = null;
+        var now = DateTime.UtcNow; var t = p.TotalProcessorTime;
+        if (_cpuAt != default && now > _cpuAt) cpu = Math.Round(100 * (t - _cpu0).TotalMilliseconds / ((now - _cpuAt).TotalMilliseconds * Environment.ProcessorCount), 1);
+        _cpu0 = t; _cpuAt = now;
+        return new SelfUsage(cpu, Math.Round(p.WorkingSet64 / 1048576.0, 1), p.Threads.Count);
+    }
+
+    // ------------------------------------------------------------------ history
+    // One point per sample (every 2 s while somebody looks, every 10 s while a game is recorded) – kept for 1 hour, about 60 KB.
+    // Only what was measured is kept: times nobody looked stay empty in the chart instead of being filled in.
+    public sealed record Point(DateTime At, double? Cpu, double? Ram, double? Gpu, double? Vram, double? CpuTemp, double? GpuTemp, double? Fps, double? Down, double? Up, double? DiskRead, double? DiskWrite);
+    readonly LinkedList<Point> _hist = new();
+    readonly object _histLock = new();
+
+    void Remember(MetricsSample s)
+    {
+        var g = s.Gpus.FirstOrDefault();
+        var p = new Point(s.At, s.CpuPercent,
+            s.MemTotalBytes is > 0 && s.MemUsedBytes != null ? Math.Round(100.0 * s.MemUsedBytes.Value / s.MemTotalBytes.Value, 1) : null,
+            g?.UtilPercent, g?.MemTotalBytes is > 0 && g.MemUsedBytes != null ? Math.Round(100.0 * g.MemUsedBytes.Value / g.MemTotalBytes.Value, 1) : null,
+            s.CpuTempC, g?.TempC, s.Fps?.Fps, s.Net?.DownBps, s.Net?.UpBps,
+            s.DiskIo is { Count: > 0 } d && d.Any(x => x.ReadBps != null) ? d.Sum(x => x.ReadBps ?? 0) : null,
+            s.DiskIo is { Count: > 0 } e && e.Any(x => x.WriteBps != null) ? e.Sum(x => x.WriteBps ?? 0) : null);
+        lock (_histLock)
+        {
+            if (_hist.Last is { } l && (p.At - l.Value.At).TotalSeconds < 1) return;
+            _hist.AddLast(p);
+            while (_hist.First is { } f && (p.At - f.Value.At).TotalHours > 1) _hist.RemoveFirst();
+        }
+    }
+
+    /// <summary>The last <paramref name="seconds"/> (60 … 3600), at most <paramref name="points"/> points (averaged per bucket).</summary>
+    public List<Point> History(int seconds, int points = 120)
+    {
+        seconds = Math.Clamp(seconds, 30, 3600); points = Math.Clamp(points, 10, 600);
+        List<Point> list;
+        var from = DateTime.UtcNow.AddSeconds(-seconds);
+        lock (_histLock) list = _hist.Where(p => p.At >= from).ToList();
+        if (list.Count <= points) return list;
+        var size = (double)list.Count / points; var outp = new List<Point>();
+        for (var i = 0; i < points; i++)
+        {
+            var b = list.Skip((int)(i * size)).Take(Math.Max(1, (int)((i + 1) * size) - (int)(i * size))).ToList();
+            double? Avg(Func<Point, double?> f) { var v = b.Select(f).Where(x => x != null).Select(x => x!.Value).ToList(); return v.Count > 0 ? Math.Round(v.Average(), 1) : null; }
+            outp.Add(new Point(b[^1].At, Avg(x => x.Cpu), Avg(x => x.Ram), Avg(x => x.Gpu), Avg(x => x.Vram), Avg(x => x.CpuTemp), Avg(x => x.GpuTemp), Avg(x => x.Fps), Avg(x => x.Down), Avg(x => x.Up), Avg(x => x.DiskRead), Avg(x => x.DiskWrite)));
+        }
+        return outp;
+    }
+
+    /// <summary>Average of a value over the last seconds (for the advisor: "for a while", not one spike).</summary>
+    public double? Recent(Func<Point, double?> f, int seconds = 30)
+    {
+        var from = DateTime.UtcNow.AddSeconds(-seconds);
+        List<double> v;
+        lock (_histLock) v = _hist.Where(p => p.At >= from).Select(f).Where(x => x != null).Select(x => x!.Value).ToList();
+        return v.Count >= 3 ? v.Average() : null;
     }
 
     public void Dispose() => _timer?.Dispose();

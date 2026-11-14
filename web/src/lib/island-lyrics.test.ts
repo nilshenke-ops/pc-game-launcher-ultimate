@@ -15,8 +15,8 @@ describe("island lyrics", () => {
   });
   it("formats speeds", () => {
     expect(speedText(null)).toBe("–");
-    expect(speedText(0)).toBe("0 kB/s");
-    expect(speedText(340_000)).toBe("340 kB/s");
-    expect(speedText(1_250_000)).toBe("1,3 MB/s");
+    expect(speedText(0)).toBe("0 kbit/s");
+    expect(speedText(340_000)).toBe("2,7 Mbit/s");
+    expect(speedText(1_250_000)).toBe("10 Mbit/s");
   });
 });

@@ -54,6 +54,8 @@ sealed class WindowsPlatform : IPlatform
     public IInstaller Installer { get; } = new WindowsInstaller(() => Program.RequestExitFromAnyThread());
     public IWindowManager WindowManager { get; } = new WindowsWindowManager();
     public IControllers Controllers { get; } = new XInputControllers();
+    public IFrameCapture FrameCapture { get; } = new PresentMonCapture();
+    public IDiskActivity DiskActivity { get; } = new WindowsDiskActivity();
     public INetworkAccess NetworkAccess { get; } = new WindowsNetworkAccess();
     public IInputHook InputHook { get; } = new WindowsInputHook();
     public WindowsDesktopWidgets DesktopWidgetWindows { get; }

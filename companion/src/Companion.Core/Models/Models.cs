@@ -406,6 +406,8 @@ public sealed class Settings
     public bool AutoInstallUpdates { get; set; }
     /// <summary>Record CPU/RAM/GPU load during game sessions (one sample every 10 s, only while a game runs).</summary>
     public bool RecordSessionPerf { get; set; } = true;
+    /// <summary>Measure FPS automatically while a game runs (Intel PresentMon, Windows companion). Sessions are kept in fps-sessions.json.</summary>
+    public bool FpsAuto { get; set; } = true;
     /// <summary>Plugin store: signed catalog of official/reviewed plugins. "" = no catalog (local plugin files still work).</summary>
     public string? PluginCatalogUrl { get; set; } = "https://nilshenke-ops.github.io/pc-game-launcher-ultimate/plugins/catalog.json";
     public bool NotifyInfo { get; set; } = true;

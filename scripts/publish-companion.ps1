@@ -13,6 +13,36 @@ if (-not (Test-Path node_modules)) { npm ci; if ($LASTEXITCODE) { throw "npm ci 
 npm run build; if ($LASTEXITCODE) { throw "Web-Build fehlgeschlagen" }
 Pop-Location
 
+Write-Host "==> Intel PresentMon für die FPS-Messung einbetten"
+# Fixed version from Intel's GitHub releases; the file is only used when its Authenticode signature is valid and from Intel.
+# Without it the companion still builds – it then says honestly that this build contains no FPS measurement.
+$PmTag = if ($env:PRESENTMON_TAG) { $env:PRESENTMON_TAG } else { "v2.3.0" }
+$pmDir = Join-Path $Root "companion\src\Companion.Windows\tools"
+$pmExe = Join-Path $pmDir "PresentMon.exe"
+New-Item -ItemType Directory -Force $pmDir | Out-Null
+if (-not (Test-Path $pmExe)) {
+  try {
+    $headers = @{ "User-Agent" = "pgl-build" }
+    if ($env:GH_TOKEN) { $headers["Authorization"] = "Bearer $($env:GH_TOKEN)" }
+    try { $rel = Invoke-RestMethod -Headers $headers "https://api.github.com/repos/GameTechDev/PresentMon/releases/tags/$PmTag" }
+    catch {
+      Write-Warning "PresentMon $PmTag nicht gefunden – nehme die neueste 2.x-Version."
+      $rel = (Invoke-RestMethod -Headers $headers "https://api.github.com/repos/GameTechDev/PresentMon/releases?per_page=20") | Where-Object { $_.tag_name -like "v2.*" -and -not $_.prerelease } | Select-Object -First 1
+    }
+    $asset = $rel.assets | Where-Object { $_.name -match '^PresentMon-[\d.]+-x64\.exe$' } | Select-Object -First 1
+    if (-not $asset) { throw "Keine Konsolen-EXE in $($rel.tag_name) gefunden: $($rel.assets.name -join ', ')" }
+    Invoke-WebRequest -Headers $headers $asset.browser_download_url -OutFile $pmExe
+    $sig = Get-AuthenticodeSignature $pmExe
+    if ($sig.Status -ne "Valid" -or $sig.SignerCertificate.Subject -notmatch "Intel Corporation") {
+      Remove-Item $pmExe -Force
+      throw "Signatur von $($asset.name) ungültig oder nicht von Intel ($($sig.Status), $($sig.SignerCertificate.Subject))"
+    }
+    Write-Host "PresentMon $($rel.tag_name) ($($asset.name)), signiert von: $($sig.SignerCertificate.Subject)"
+  } catch {
+    Write-Warning "PresentMon nicht eingebettet: $($_.Exception.Message). Die FPS-Messung fehlt in diesem Build."
+  }
+}
+
 Write-Host "==> Companion veröffentlichen"
 $pub = Join-Path $Out "companion"
 if (Test-Path $pub) { Remove-Item -Recurse -Force $pub }

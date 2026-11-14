@@ -21,6 +21,7 @@ import { AgentIslandCard } from "./island-agent-card";
 import { IslandShelf } from "./island-shelf";
 import { onShelfRequest, takeShelfRequest } from "../lib/island-shelf";
 import { ProcSheet, type ProcKind } from "./island-procs";
+import { MetricDetail, type DetailKind } from "./metric-detail";
 import { IslandColorPicker } from "./island-color";
 import { addTile, moveTile, opt, removeTile, setTabs, setTileOpt, setView, sortTiles, tabsOf, tileDef, viewOf, MAX_TILES, type IslandLayout, type IslandTab, type LayoutPage, type Tile } from "../lib/island-layout";
 import { sendWake, useWake, wakeLabel } from "../lib/wake";
@@ -129,6 +130,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const [editing, setEditing] = useState<LayoutPage | null>(null);
   const [sheet, setSheet] = useState<null | { kind: "add" | "tabs" | "color" | "view" } | { kind: "opts"; id: string }>(null);
   const [procs, setProcs] = useState<ProcKind | null>(null);
+  const [detail, setDetail] = useState<DetailKind | null>(null);
   const canClosePrograms = useCan("manage");
   const hold = useRef<number | null>(null);
   // Holding a tile (or "… bearbeiten" in the menu) starts editing that page.
@@ -448,6 +450,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     pc: { title: online ? t("Verbunden") : waking ? t("Startet …") : cview.short, sub: pcLine, action: pcAction },
     setOpt: (id, key, value) => saveL(setTileOpt(L, pageOf(id), id, key, value)),
     procs: online ? (k) => setProcs(k) : undefined,
+    detail: online ? (k) => setDetail(k) : undefined,
   };
 
   /** The start page keeps its rich cards for JARVIS, the game, music, focus and the PC; every other kind is a tile. */
@@ -881,7 +884,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     audio: <IslandAudio online={online} canUse={canMedia} canManage={canManage} controls={pcControls} sensors={sensors} />,
     shelf: <IslandShelf online={online} canManage={canManage} />,
     controls: <IslandControls online={online} canUse={canMedia} controls={pcControls} sensors={sensors} now={now} press={media} />,
-    system: <IslandSystem online={online} controls={pcControls} onDetails={online ? setProcs : undefined} />,
+    system: <IslandSystem online={online} controls={pcControls} onDetails={online ? setDetail : undefined} />,
     tools: <ToolsArea />, world: <WorldArea now={now} />, lists: <ListsArea /> };
 
   return (
@@ -964,6 +967,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         {peek && <div className="isl2-body isl2-peek" aria-hidden ref={peekRef} {...({ inert: "" } as object)}>{body[peek]}</div>}
         {sheetView}
         {procs && <ProcSheet kind={procs} onKind={setProcs} onClose={() => setProcs(null)} canClose={canClosePrograms} />}
+        {detail && !procs && <MetricDetail kind={detail} onKind={setDetail} onClose={() => setDetail(null)} online={online} floating={floating}
+          battery={pcControls.data ? { battery: pcControls.data.battery ?? null, charging: pcControls.data.charging, supported: pcControls.data.supported } : null}
+          onProcs={(k) => setProcs(k)} />}
       </div>
     </div>
   );

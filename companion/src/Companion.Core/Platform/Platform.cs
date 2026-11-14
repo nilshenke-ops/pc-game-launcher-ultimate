@@ -60,6 +60,10 @@ public interface IPlatform
     INetworkAccess NetworkAccess => NullNetworkAccess.Instance;
     /// <summary>System-wide key and mouse-button remapping (Windows companion only).</summary>
     IInputHook InputHook => NullInputHook.Instance;
+    /// <summary>Frames of running games for the FPS measurement (Intel PresentMon in the Windows companion).</summary>
+    Pgl.Core.Services.IFrameCapture FrameCapture => Pgl.Core.Services.NullFrameCapture.Instance;
+    /// <summary>Read/write speed and activity per drive (performance counters on Windows, /proc/diskstats on Linux).</summary>
+    IDiskActivity DiskActivity => NullDiskActivity.Instance;
 }
 
 /// <summary>Pictures for the capture library and a delete that can be undone.</summary>
@@ -414,7 +418,18 @@ public sealed class MetricsSample
     public Dictionary<string, string> Sources { get; set; } = new();
     /// <summary>Values switched off in the settings (cpu, ram, gpu, disks) – not measured, so the UI says "ausgeschaltet" instead of "nicht verfügbar".</summary>
     public List<string> Off { get; set; } = new();
+    // 3.66 – filled by the monitor service (not by the metrics sources): live FPS, network speed, drive activity, own use.
+    public Pgl.Core.Services.FpsLive? Fps { get; set; }
+    public NetSample? Net { get; set; }
+    public List<DiskIo>? DiskIo { get; set; }
+    public SelfUsage? Self { get; set; }
 }
+
+/// <summary>Network speed in bytes per second (the pages show Mbit/s), the active connections and the data since the companion started.</summary>
+public sealed record NetSample(long? DownBps, long? UpBps, long? RxSinceStart, long? TxSinceStart, List<NetLink> Links);
+public sealed record NetLink(string Name, string Kind, long? SpeedBps);
+/// <summary>What the companion itself uses (so its own load can be told apart).</summary>
+public sealed record SelfUsage(double? CpuPercent, double RamMb, int Threads);
 
 public sealed class GpuSample
 {
@@ -602,4 +617,62 @@ public sealed class NullAudioLoopback : IAudioLoopback
     public bool Supported => false;
     public string? UnsupportedReason => "Ton gibt es nur im Windows-Begleiter.";
     public IDisposable Start(Action<short[], int, int> onChunk) => throw new NotSupportedException(UnsupportedReason);
+}
+
+
+/// <summary>Live activity of one drive. Values the system does not give stay null.</summary>
+public sealed record DiskIo(string Name, double? ReadBps, double? WriteBps, double? BusyPercent);
+
+/// <summary>Health of a physical drive as the system reports it (SMART via Windows' storage reliability counters).</summary>
+public sealed record DriveHealth(string Name, string? MediaType, string? Health, double? TempC, double? WearPercent, long? ReadErrors, long? WriteErrors, long? PowerOnHours);
+
+public interface IDiskActivity
+{
+    bool Supported { get; }
+    /// <summary>Rates since the previous call (the first call gives nulls).</summary>
+    List<DiskIo> Read();
+    /// <summary>Drive health; slow – call only when someone looks. Null when the system cannot tell.</summary>
+    Task<List<DriveHealth>?> HealthAsync(CancellationToken ct) => Task.FromResult<List<DriveHealth>?>(null);
+}
+
+public sealed class NullDiskActivity : IDiskActivity
+{
+    public static readonly NullDiskActivity Instance = new();
+    public bool Supported => false;
+    public List<DiskIo> Read() => new();
+}
+
+/// <summary>Linux: sectors read/written and time spent doing I/O from /proc/diskstats (whole disks only, no partitions).</summary>
+public sealed class ProcDiskActivity : IDiskActivity
+{
+    readonly Func<string?> _read;
+    Dictionary<string, (long rd, long wr, long ioMs)>? _last; DateTime _at;
+    public ProcDiskActivity(Func<string?>? read = null) => _read = read ?? (() => File.Exists("/proc/diskstats") ? File.ReadAllText("/proc/diskstats") : null);
+    public bool Supported => _read() != null;
+
+    public List<DiskIo> Read()
+    {
+        var text = _read();
+        if (text == null) return new();
+        var now = DateTime.UtcNow; var cur = new Dictionary<string, (long, long, long)>();
+        foreach (var line in text.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var p = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            if (p.Length < 14) continue;
+            var name = p[2];
+            if (name.StartsWith("loop") || name.StartsWith("ram") || name.StartsWith("zram") || name.StartsWith("dm-")) continue;
+            if (System.Text.RegularExpressions.Regex.IsMatch(name, @"^(sd[a-z]+|vd[a-z]+|xvd[a-z]+|hd[a-z]+)\d+$|^(nvme\d+n\d+|mmcblk\d+)p\d+$")) continue; // partitions
+            cur[name] = (long.Parse(p[5]), long.Parse(p[9]), long.Parse(p[12]));
+        }
+        var list = new List<DiskIo>();
+        var sec = (now - _at).TotalSeconds;
+        foreach (var (n, v) in cur)
+        {
+            if (_last != null && _last.TryGetValue(n, out var o) && sec > 0.2)
+                list.Add(new DiskIo(n, Math.Max(0, (v.Item1 - o.rd) * 512 / sec), Math.Max(0, (v.Item2 - o.wr) * 512 / sec), Math.Round(Math.Min(100, (v.Item3 - o.ioMs) / (sec * 10)), 1)));
+            else list.Add(new DiskIo(n, null, null, null));
+        }
+        _last = cur; _at = now;
+        return list;
+    }
 }

@@ -26,5 +26,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="app.ico" LogicalName="app.ico" />
+    <!-- Intel PresentMon for the FPS measurement: put here by scripts/publish-companion.ps1 (fixed version, Intel signature checked). -->
+    <EmbeddedResource Include="tools/PresentMon.exe" LogicalName="PresentMon.exe" Condition="Exists('tools/PresentMon.exe')" />
   </ItemGroup>
 </Project>

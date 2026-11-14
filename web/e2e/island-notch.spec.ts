@@ -39,9 +39,10 @@ test("Insel: Symbolleiste oben, Übersicht mit Kalenderwoche und Fokus-Timer, Sy
   await focus.getByRole("button", { name: "Stopp" }).click();
   await expect(focus.locator(".isl3-ring")).toHaveText("30:00");
   await panel.getByRole("tab", { name: "System" }).click();
-  await expect(panel.locator(".isl3-stat")).toHaveCount(7);
-  // network: the companion measures twice, then the speeds stand there
-  await expect(panel.locator(".isl3-net")).toContainText(/\d+ (kB|MB)\/s/, { timeout: 10_000 });
+  // 3.66: Analyse, FPS, CPU, GPU, RAM, VRAM, Speicher, Akku, Ping, Laufzeit, Netzwerk – each opens its detail view
+  await expect(panel.locator(".isl3-stat")).toHaveCount(11);
+  // network: the companion measures twice, then the speeds stand there (in Mbit/s since 3.66)
+  await expect(panel.locator(".isl3-net")).toContainText(/\d+ (kbit|Mbit|Gbit)\/s/, { timeout: 10_000 });
   await expect(panel.locator(".isl3-stat").filter({ hasText: "Akku" })).toContainText("87 %");
   await shot(page, "system");
   await panel.getByRole("tab", { name: "Home" }).click(); await shot(page, "home");
@@ -274,7 +275,8 @@ test("Was am meisten verbraucht: Liste nach RAM/CPU, ein Programm schließen (er
   try {
     const panel = await island(page);
     await panel.getByRole("tab", { name: "System" }).click();
-    await panel.getByRole("button", { name: "Arbeitsspeicher: was am meisten verbraucht" }).click();
+    await panel.getByRole("button", { name: "Arbeitsspeicher im Detail" }).click();       // 3.66: the detail view first …
+    await panel.getByRole("button", { name: "Programme nach Arbeitsspeicher" }).click();   // … the program list from there
     const sheet = panel.getByRole("dialog", { name: "Was am meisten verbraucht" });
     await expect(sheet.getByRole("list", { name: "Programme nach Arbeitsspeicher" }).locator("li").first()).toBeVisible({ timeout: 15_000 });
     await sheet.getByRole("tab", { name: /CPU/ }).click();

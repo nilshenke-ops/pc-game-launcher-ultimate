@@ -731,6 +731,14 @@ public static class RpcApi
         rpc.Register("system.closeProgram", async ctx => await s.ProcessUsage.CloseAsync(ctx.Str("name", 120), ctx.Bool("force")));
         rpc.Register("monitor.subscribe", ctx => s.Monitor.Subscribe(ctx.Session));
         rpc.Register("monitor.unsubscribe", ctx => { s.Monitor.Unsubscribe(ctx.Session); return true; });
+        // 3.66 – history for the detail views (only what was measured while somebody looked), FPS, the advisor, drive health.
+        rpc.Register("monitor.history", ctx => new { points = s.Monitor.History(ctx.Int("seconds", 600, 30, 3600), ctx.Int("points", 120, 10, 600)) });
+        rpc.Register("fps.status", _ => s.Fps.Live());
+        rpc.Register("fps.sessions", ctx => new { sessions = s.Fps.List(ctx.OptStr("itemId", 80)) });
+        rpc.Register("fps.forget", ctx => s.Fps.Forget(ctx.Str("id", 80)));
+        rpc.Register("fps.allow", _ => new { message = s.Fps.RequestPermission() });
+        rpc.Register("perf.insights", async _ => (object?)await s.Insights());
+        rpc.Register("disk.health", async ctx => (object?)new { drives = await s.DriveHealth() });
         rpc.Register("network.diagnose", async ctx => (object?)await s.Network.Run());
 
         // ------------------------------------------------------------ notifications

@@ -44,6 +44,8 @@ export interface TileCtx {
   setOpt: (id: string, key: string, value: OptValue) => void;
   /** Opens the list of programs that use the most memory or processor. */
   procs?: (k: "ram" | "cpu") => void;
+  /** Opens the detail view of a value (3.66). */
+  detail?: (k: import("./metric-detail").DetailKind) => void;
 }
 type P = { tile: Tile; ctx: TileCtx; box: boolean };
 
@@ -143,8 +145,8 @@ function SystemTile({ tile, ctx }: P) {
   ] as const).filter(([k]) => opt<boolean>(tile, k));
   if (!rows.length) return <span className="isl2-sub">{t("Keine Werte gewählt – in den Einstellungen der Kachel einschalten.")}</span>;
   return <>{rows.map(([k, name, list, color, value, tc]) => (
-    k !== "gpu" && ctx.procs
-      ? <button key={k} type="button" className="isl3-sysrow tap" onClick={() => ctx.procs!(k as "ram" | "cpu")} aria-label={t("{n}: was am meisten verbraucht", { n: name })}><span className="isl3-sysname">{name}</span><Spark list={list} color={color} /><b>{value}</b><span className="isl3-systemp">{tc}</span></button>
+    ctx.detail
+      ? <button key={k} type="button" className="isl3-sysrow tap" onClick={() => ctx.detail!(k)} aria-label={t("{n} im Detail", { n: name })}><span className="isl3-sysname">{name}</span><Spark list={list} color={color} /><b>{value}</b><span className="isl3-systemp">{tc}</span></button>
       : <div key={k} className="isl3-sysrow"><span className="isl3-sysname">{name}</span><Spark list={list} color={color} /><b>{value}</b><span className="isl3-systemp">{tc}</span></div>
   ))}</>;
 }
@@ -225,10 +227,15 @@ function NetworkTile({ ctx }: P) {
   const net = useNetSpeed(ctx.online, true);
   if (!ctx.online) return <div className="isl2-empty"><Monitor size={18} aria-hidden /><span>{t("PC nicht verbunden")}</span></div>;
   if (net.supported === false) return <span className="isl2-sub">{t("Der Begleiter auf dem PC misst das noch nicht – bitte aktualisieren.")}</span>;
-  return (
+  const vals = (
     <>
       <span className="isl3-netval down" aria-label={t("Empfangen: {n}", { n: speedText(net.down) })}><ArrowDown size={14} aria-hidden /><b>{speedText(net.down)}</b></span>
       <span className="isl3-netval up" aria-label={t("Senden: {n}", { n: speedText(net.up) })}><ArrowUp size={14} aria-hidden /><b>{speedText(net.up)}</b></span>
+    </>
+  );
+  return (
+    <>
+      {ctx.detail ? <button type="button" className="isl3-nettap" onClick={() => ctx.detail!("net")} aria-label={t("Netzwerk im Detail")}>{vals}</button> : vals}
       <svg className="isl3-netspark" viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden>
         <polyline className="down" points={sparkPoints(speedCurve(net.downHist, net.upHist))} />
         <polyline className="up" points={sparkPoints(speedCurve(net.upHist, net.downHist))} />

@@ -87,6 +87,8 @@ jobs:
         run: dotnet test companion/tests/Companion.Core.Tests --nologo
       - name: Windows-Companion bauen
         shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: ./scripts/publish-companion.ps1
       - name: Veröffentlichungspaket fürs Release bereitstellen
         shell: pwsh

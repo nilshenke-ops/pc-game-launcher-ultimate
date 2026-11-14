@@ -60,8 +60,5 @@ export async function fetchLyrics(title: string, artist: string, durationMs?: nu
 }
 
 /** "1,2 MB/s", "340 kB/s", "0 kB/s". */
-export function speedText(bps: number | null | undefined): string {
-  if (bps == null) return "–";
-  if (bps >= 1_000_000) return `${(bps / 1_000_000).toLocaleString("de-DE", { maximumFractionDigits: 1 })} MB/s`;
-  return `${Math.round(bps / 1000)} kB/s`;
-}
+/** Network speed (bytes per second from the PC) as Mbit/s – see lib/units.ts. */
+export { netSpeed as speedText } from "./units";

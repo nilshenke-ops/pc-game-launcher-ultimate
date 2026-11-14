@@ -281,6 +281,13 @@
 
     "monitor.subscribe": "view",
     "monitor.now": "view",
+    "monitor.history": "view",
+    "fps.status": "view",
+    "fps.sessions": "view",
+    "fps.forget": "manage",
+    "fps.allow": "local",
+    "perf.insights": "view",
+    "disk.health": "view",
     "system.topProcesses": "manage",
     "system.closeProgram": "manage",
     "monitor.unsubscribe": "view",

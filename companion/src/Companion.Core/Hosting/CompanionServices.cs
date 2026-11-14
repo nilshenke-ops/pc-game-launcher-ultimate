@@ -61,6 +61,7 @@ public sealed class CompanionServices : IAsyncDisposable
     public UpdateService Updates { get; }
     public PluginService Plugins { get; }
     public PerformanceRecorder Perf { get; }
+    public FpsService Fps { get; }
     public NetworkMonitor NetMonitor { get; }
     public StorageService Storage { get; }
     public TransferService Transfer { get; }
@@ -161,6 +162,12 @@ public sealed class CompanionServices : IAsyncDisposable
         Plugins = new PluginService(paths, Rpc, Settings.Get);
         Perf = new PerformanceRecorder(Metrics, () => Settings.Get().RecordSessionPerf && Settings.Get().HistoryEnabled);
         NetMonitor = new NetworkMonitor(Rpc, () => Settings.Get().PingTargets);
+        Fps = new FpsService(platform.FrameCapture, paths, () => Settings.Get().FpsAuto);
+        Fps.SessionLoad = id => { var (c, g) = Perf.Peek(id); return (c, g, null, null); };
+        Fps.Saved += s => Rpc.Changed("fps");
+        Monitor.Fps = () => Fps.Live();
+        Monitor.Net = () => NetSpeed.Sample();
+        Monitor.Disks = () => platform.DiskActivity.Supported ? platform.DiskActivity.Read() : null;
         Storage = new StorageService(paths, Library, platform, Rpc);
         Transfer = new TransferService(paths, platform, Rpc, Notifications, Settings.Get);
         Shares = new ShareService(paths, Transfer, Rpc, Settings.Get, (title, text) => Notifications.Push("share:" + title, Severity.Info, title, text, "/files"));
@@ -359,6 +366,7 @@ public sealed class CompanionServices : IAsyncDisposable
         {
             History.SessionStarted(item, at, Sessions.LastScanAccuracy);
             Perf.GameStarted(item.Id);
+            if (IsRealGame(item)) Fps.GameStarted(item.Id, item.Name);   // FPS measurement starts by itself – nothing to set up per game
             // Already running when the companion started (a restart, Windows autostart): shown as running, but no profile
             // switch with its programs, no automation and no game mode – otherwise every start of the companion opened and
             // closed programs on its own.
@@ -388,6 +396,10 @@ public sealed class CompanionServices : IAsyncDisposable
                 try { if (Crashes.AfterSession(item.Id, started.Value, at) is { } r) Notifications.Push("crash:" + item.Id, Severity.Warning, r.Trigger == "crash" ? $"{item.Name} ist abgestürzt" : $"{item.Name} wurde nach kurzer Zeit beendet", "Ein Fehlerbericht liegt bereit.", "/crashes"); }
                 catch (Exception ex) { Log.Warn("crash", ex.Message); }
             });
+            // The FPS session takes the load of the session recorder, so it is finished first.
+            if (IsRealGame(item) && !GameRunning() && Fps.GameStopped() is { } fs)
+                Notifications.Push("fps:" + fs.Id, Severity.Info, $"{fs.Game}: {fs.Avg:0} FPS im Schnitt",
+                    $"1 %-Low {(fs.Low1 is { } l ? $"{l:0}" : "–")} FPS · {fs.Minutes:0.#} min. {FpsService.Compare(fs, Fps.Sessions().Skip(1).FirstOrDefault(o => o.Game == fs.Game)) ?? ""}".Trim(), "/monitor");
             if (Perf.GameStopped(item.Id) is { } perf) History.AttachPerf(item.Id, perf);
             var p = Profiles.Get();
             var profileId = ProfileFor(item, p);
@@ -542,6 +554,33 @@ public sealed class CompanionServices : IAsyncDisposable
     (DateTime at, MetricsSample sample)? _nowSample;
     readonly object _nowLock = new();
     /// <summary>The current values plus what runs (one measurement, reused for 2 s).</summary>
+    /// <summary>Nexus Performance Intelligence: what stands out right now (see <see cref="PerfAdvisor"/>).</summary>
+    public async Task<object> Insights()
+    {
+        var now = Monitor.Last is { } l && DateTime.UtcNow - l.At < TimeSpan.FromSeconds(5) ? l : Monitor.SampleNow();
+        IReadOnlyList<ProcUsage>? cpu = null, ram = null;
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(6));
+            var top = await ProcessUsage.ListAsync(cts.Token);
+            cpu = top.OrderByDescending(p => p.CpuPercent ?? 0).Take(8).ToList(); ram = top.OrderByDescending(p => p.RamMb).Take(8).ToList();
+        }
+        catch (Exception ex) { Log.Warn("perf", ex.Message); }
+        var input = new AdvisorInput(now, GameRunning(), Monitor.Recent(p => p.Cpu), Monitor.Recent(p => p.Gpu), Monitor.Recent(p => p.Ram), cpu, ram, NetMonitor.Recent(), null,
+            Sessions.Running().Select(r => Library.Get(r.itemId)?.Target).Where(t => !string.IsNullOrEmpty(t) && t!.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)).Select(t => Path.GetFileName(t!)).ToList());
+        return new { at = DateTime.UtcNow, gaming = GameRunning(), findings = PerfAdvisor.Analyze(input), self = now.Self, fps = now.Fps };
+    }
+
+    List<DriveHealth>? _health; DateTime _healthAt;
+    /// <summary>Drive health (SMART), at most every 10 minutes – the query is slow and wakes sleeping disks.</summary>
+    public async Task<List<DriveHealth>?> DriveHealth()
+    {
+        if (_health != null && DateTime.UtcNow - _healthAt < TimeSpan.FromMinutes(10)) return _health;
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        _health = await Platform.DiskActivity.HealthAsync(cts.Token); _healthAt = DateTime.UtcNow;
+        return _health;
+    }
+
     public object MetricsNow()
     {
         MetricsSample sample;
@@ -790,6 +829,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Calendar.Dispose();
         Input.Dispose();
         Monitor.Dispose();
+        Fps.Dispose();
         LanAddress.Dispose();
         _stableTimer?.Dispose();
         _scheduleTimer?.Dispose();

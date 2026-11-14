@@ -72,6 +72,13 @@ public sealed class PerformanceRecorder : IDisposable
 
     internal void SampleNow() => Sample();
 
+    /// <summary>Average load of a running session so far (for the FPS session), or nulls.</summary>
+    public (double? cpu, double? gpu) Peek(string itemId)
+    {
+        if (!_running.TryGetValue(itemId, out var a)) return (null, null);
+        lock (a) return (a.CpuN > 0 ? Math.Round(a.Cpu / a.CpuN, 1) : null, a.GpuN > 0 ? Math.Round(a.Gpu / a.GpuN, 1) : null);
+    }
+
     public void Dispose() => _timer?.Dispose();
 }
 
@@ -182,6 +189,18 @@ public sealed class NetworkMonitor : IDisposable
 
     static List<Point> Locked(LinkedList<Point> h) { lock (h) return h.ToList(); }
 
+    /// <summary>Average ping and loss of each target over the last 2 minutes – only what was measured (empty while nobody watched).</summary>
+    public List<PingSummary> Recent()
+    {
+        var from = DateTime.UtcNow.AddMinutes(-2);
+        return _targets.Select(t =>
+        {
+            var pts = _history.TryGetValue(t.Id, out var h) ? Locked(h).Where(p => p.At >= from).ToList() : new List<Point>();
+            var ok = pts.Where(p => p.Ms != null).Select(p => p.Ms!.Value).ToList();
+            return new PingSummary(t.Id, t.Label, pts.Count, ok.Count > 0 ? Math.Round(ok.Average(), 1) : null, pts.Count > 0 ? Math.Round(100.0 * pts.Count(p => p.Ms == null) / pts.Count, 1) : null);
+        }).ToList();
+    }
+
     /// <summary>For tests: fixed targets and recorded results.</summary>
     internal void Record(Target target, double? ms)
     {
@@ -205,6 +224,8 @@ public sealed class NetworkMonitor : IDisposable
 }
 
 // ============================================================ Storage
+
+public sealed record PingSummary(string Id, string Label, int Samples, double? AvgMs, double? LossPercent);
 
 public sealed class StorageFile { public Dictionary<string, SizeEntry> Sizes { get; set; } = new(); }
 public sealed class SizeEntry { public long Bytes { get; set; } public int Files { get; set; } public DateTime At { get; set; } public bool Partial { get; set; } /// <summary>Size as reported by the launcher (Steam), not counted.</summary>
