@@ -1,5 +1,36 @@
 [
   {
+    "version": "3.63.0",
+    "date": "2026-11-14",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.63.0/PCGameLauncherCompanion.exe",
+    "size": 95271955,
+    "sha256": "7d17a9b61b6dc20b2ecc529cc4bf31ab2126aaf2a86b25b3c4451ee452d5a248",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.63.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.63.0/PCGameLauncherCompanion-3.63.0-win-x64.zip",
+      "size": 89546621,
+      "sha256": "3e7d5fc172d0696479eb1fd51ba3f6bb943bc9484b9e9d823877c8a89e2d241f"
+    },
+    "notes": "**Drei neue Bereiche für die Insel** (zuschaltbar unter „Bereiche anpassen“, standardmäßig aus): · **Acht neue Kacheln:** · **Ansichten** je Seite: Karten, Liste oder Raster. **Sortieren** der Kacheln: A–Z, Z–A, nach Art oder umgedreht. Die Bereiche lassen sich nach üblicher Reihenfolge oder A–Z sortieren.",
+    "changes": {
+      "neu": [
+        "**Drei neue Bereiche für die Insel** (zuschaltbar unter „Bereiche anpassen“, standardmäßig aus):",
+        "**Acht neue Kacheln:**",
+        "**Ansichten** je Seite: Karten, Liste oder Raster. **Sortieren** der Kacheln: A–Z, Z–A, nach Art oder umgedreht. Die Bereiche lassen sich nach üblicher Reihenfolge oder A–Z sortieren.",
+        "**Kachel-Katalog** mit Suche, Filtern nach Art (Info, PC, Medien & Spiel, Werkzeuge, Spaß & Ruhe, Neu) und Reihenfolge.",
+        "**Mehr Farben und Effekte:**"
+      ],
+      "verbessert": [
+        "**Menü und Bearbeiten-Fenster am iPad/Handy:**",
+        "**Timer und Stoppuhr** im Fokus-Bereich haben jetzt dieselbe Farbe (die Farbe der Insel, sonst Lila) und denselben Stil."
+      ],
+      "behoben": []
+    },
+    "signature": "VKt4LmTY/Yu5u2Zu7rGpmIk0nSfatgf/94P3CoHTPvOt76ieIUXvzW2smxysb4kL8n72+NVDrWlPJJoxHyrVjA=="
+  },
+  {
     "version": "3.62.0",
     "date": "2026-11-14",
     "channel": "stable",
@@ -1322,31 +1353,5 @@
       "behoben": []
     },
     "signature": "OKqB0EPNcRPrT998DxLKiCpsEidI/eGsFGEK0fCna3/L9LgLGEuGNrzWVwl0kAJJyvUriNGjDyqlhfgMhf7IMA=="
-  },
-  {
-    "version": "3.32.0",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion.exe",
-    "size": 95068511,
-    "sha256": "54a11834f774a7e26ddd5e72e06c61b9c27d02af4d2a1b208fbd2fd0067f95cc",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.32.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.32.0/PCGameLauncherCompanion-3.32.0-win-x64.zip",
-      "size": 89342265,
-      "sha256": "b7e5fa1746c95679b9d829d628a426fdc3db88131daff0eb9b74daad9e2daae8"
-    },
-    "notes": "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt · Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf",
-    "changes": {
-      "neu": [
-        "Insel: Beim Wischen nach links oder rechts folgt der Bereich jetzt dem Finger (wie eine Karte), statt erst nach dem Loslassen zu springen. Beim Loslassen fährt er – bei weitem oder schnellem Wisch – weiter hinaus, und der nächste Bereich federt von der anderen Seite herein; bei kurzem, langsamem Wisch federt der Bereich weich zurück. Am ersten und letzten Bereich gibt es einen sanften Gummiband-Widerstand. Ein Tipp auf einen Reiter wechselt mit derselben Bewegung. Kein Weichzeichner mehr (ruckelte auf schwächeren Geräten); bei „Bewegung reduzieren“ wird sofort gewechselt"
-      ],
-      "verbessert": [
-        "Cloud: Das Verbinden des PCs vom Handy aus (versiegelt) ist jetzt Ende-zu-Ende getestet – ohne Admin-Recht bleibt der PC unverbunden, mit Admin-Recht übernimmt er das Konto binnen Sekunden. Rechte, die am PC gerade erst vergeben wurden, erkennt das Handy sofort statt erst nach dem nächsten Durchlauf"
-      ],
-      "behoben": []
-    },
-    "signature": "LpNViIJ8nIsW2ozsbcxvCa0eN7UfAyEPKZt6jbZdwToWzsSFOqwKUA3xisrJ7om//qQmKsWyC/WPKOaIoK9yOA=="
   }
 ]

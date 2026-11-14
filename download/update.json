@@ -1,29 +1,31 @@
 {
-  "version": "3.62.0",
+  "version": "3.63.0",
   "date": "2026-11-14",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.62.0/PCGameLauncherCompanion.exe",
-  "size": 95259050,
-  "sha256": "6b6ee2f896a93f1822c025ce47e552794ae962ede352c9036cb0fdb818ef8e7c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.63.0/PCGameLauncherCompanion.exe",
+  "size": 95271955,
+  "sha256": "7d17a9b61b6dc20b2ecc529cc4bf31ab2126aaf2a86b25b3c4451ee452d5a248",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.62.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.62.0/PCGameLauncherCompanion-3.62.0-win-x64.zip",
-    "size": 89534243,
-    "sha256": "d2eac5f145a14a33539e458265f61de09aeaec4e3c9b746fc8695b335c1ca303"
+    "fileName": "PCGameLauncherCompanion-3.63.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.63.0/PCGameLauncherCompanion-3.63.0-win-x64.zip",
+    "size": 89546621,
+    "sha256": "3e7d5fc172d0696479eb1fd51ba3f6bb943bc9484b9e9d823877c8a89e2d241f"
   },
-  "notes": "**Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …). · **Leistungs-Presets** unter „Performance“: Energiesparend, Ausgewogen, Maximale Effekte. · **Einfach / Erweitert:** Die einfache Ansicht blendet Expertenfelder aus (eigener Relay-Server, Server-Adresse, Update-Quelle, Prüfintervall) und sagt, wie viele das sind. Es ist nur eine Ansicht, kein Wert ändert sich.",
+  "notes": "**Drei neue Bereiche für die Insel** (zuschaltbar unter „Bereiche anpassen“, standardmäßig aus): · **Acht neue Kacheln:** · **Ansichten** je Seite: Karten, Liste oder Raster. **Sortieren** der Kacheln: A–Z, Z–A, nach Art oder umgedreht. Die Bereiche lassen sich nach üblicher Reihenfolge oder A–Z sortieren.",
   "changes": {
     "neu": [
-      "**Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …).",
-      "**Leistungs-Presets** unter „Performance“: Energiesparend, Ausgewogen, Maximale Effekte.",
-      "**Einfach / Erweitert:** Die einfache Ansicht blendet Expertenfelder aus (eigener Relay-Server, Server-Adresse, Update-Quelle, Prüfintervall) und sagt, wie viele das sind. Es ist nur eine Ansicht, kein Wert ändert sich."
+      "**Drei neue Bereiche für die Insel** (zuschaltbar unter „Bereiche anpassen“, standardmäßig aus):",
+      "**Acht neue Kacheln:**",
+      "**Ansichten** je Seite: Karten, Liste oder Raster. **Sortieren** der Kacheln: A–Z, Z–A, nach Art oder umgedreht. Die Bereiche lassen sich nach üblicher Reihenfolge oder A–Z sortieren.",
+      "**Kachel-Katalog** mit Suche, Filtern nach Art (Info, PC, Medien & Spiel, Werkzeuge, Spaß & Ruhe, Neu) und Reihenfolge.",
+      "**Mehr Farben und Effekte:**"
     ],
     "verbessert": [
-      "**Klare Kategorien:** Allgemein, Personalisierung, Gaming, Audio, JARVIS, Dynamic Island, Verbindung & Geräte, Cloud & Sync, Datenschutz & Sicherheit, Performance, Erweitert, Hilfe.",
-      "Bestandsaufnahme, Struktur und Tests stehen in `docs/SETTINGS.md`."
+      "**Menü und Bearbeiten-Fenster am iPad/Handy:**",
+      "**Timer und Stoppuhr** im Fokus-Bereich haben jetzt dieselbe Farbe (die Farbe der Insel, sonst Lila) und denselben Stil."
     ],
     "behoben": []
   },
-  "signature": "zudl2kRINX8TRLFcebXLqRoKflayZ9hnkrlaY146R+JLSFt+SiDdVlEEZHRzJvEIjxg4rge7Eqqa7W3sxBRMag=="
+  "signature": "VKt4LmTY/Yu5u2Zu7rGpmIk0nSfatgf/94P3CoHTPvOt76ieIUXvzW2smxysb4kL8n72+NVDrWlPJJoxHyrVjA=="
 }
