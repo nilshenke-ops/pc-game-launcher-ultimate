@@ -1474,3 +1474,9 @@ button.isl3-net { display: grid; text-align: left; font: inherit; color: inherit
 .md-warnline { color: #fbbf24; }
 .md-link { justify-self: start; text-decoration: none; }
 @media (max-width: 520px) { .isl3-procs li { flex-wrap: wrap; } .isl3-procs li .isl3-pname { flex-basis: 60%; } }
+
+/* 3.67.1 – real finger swipes: every scrolling area inside the island (the overview grid, the start page, lists, areas) only lets the
+   browser scroll up/down. Without this the browser took the sideways move for itself and cancelled it – swiping to the next area
+   then failed whenever the finger started on a card of the overview. Sliders keep working (they move with the finger themselves). */
+.isl2-body, .isl2-body :is(.isl3-dash, .isl2-cards, .isl3-page, .isl3-area, .isl3-stats, .isl3-check ul, .isl3-ctl, .isl2-list, ul, ol, section, div) { touch-action: pan-y; }
+.isl2-body :is(.md-kinds, .isl3-seg, .isl3-edithead, .isl2-chips, .isl2-engines, .chips, .tile-row) { touch-action: pan-x pan-y; }

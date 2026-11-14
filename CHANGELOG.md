@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.67.1 – 2026-11-14
+### Behoben
+- **Wischen auf der Übersicht mit dem Finger.** Auf iPad und Handy ließ sich von der Übersicht (Kalender, Fokus, Wetter, System) nicht zum nächsten Bereich wischen, wenn der Finger auf einer Kachel startete. Ursache: Die Übersicht ist selbst ein scrollbarer Bereich. Der Browser hat die Seitwärtsbewegung für sich beansprucht und abgebrochen, bevor die Insel sie bekam. Jetzt scrollen alle Bereiche in der Insel nur hoch und runter, und das seitliche Wischen gehört der Insel. Reihen, die selbst seitlich scrollen (KI-Auswahl, Bearbeiten-Leiste), funktionieren weiter.
+- Der Test dafür nutzt jetzt echte Touch-Gesten des Browsers, auf iPad- und Handy-Größe. Der alte Test hatte künstliche Pointer-Ereignisse verwendet, die diese Browser-Regel umgehen. Deshalb war der Fehler darin nicht aufgefallen.
+
 ## 3.67.0 – 2026-11-14
 ### Neu
 - **Wofür wird es gebraucht – jetzt auch bei GPU, FPS und Speicher.** Bisher zeigten nur CPU und RAM, welche Programme sie verbrauchen.
