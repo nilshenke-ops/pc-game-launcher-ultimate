@@ -1,27 +1,29 @@
 {
-  "version": "3.61.0",
-  "date": "2026-11-13",
+  "version": "3.62.0",
+  "date": "2026-11-14",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.61.0/PCGameLauncherCompanion.exe",
-  "size": 95248427,
-  "sha256": "5e66b119fba140d3ba7b67d7c614e894f3dbdd0d075ac57b7269f6615fd66025",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.62.0/PCGameLauncherCompanion.exe",
+  "size": 95259050,
+  "sha256": "6b6ee2f896a93f1822c025ce47e552794ae962ede352c9036cb0fdb818ef8e7c",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.61.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.61.0/PCGameLauncherCompanion-3.61.0-win-x64.zip",
-    "size": 89523597,
-    "sha256": "efe9b4b1d25e39de9d780ca9247809595f4e3040f98ec38601f47ad304d4dd6c"
+    "fileName": "PCGameLauncherCompanion-3.62.0-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.62.0/PCGameLauncherCompanion-3.62.0-win-x64.zip",
+    "size": 89534243,
+    "sha256": "d2eac5f145a14a33539e458265f61de09aeaec4e3c9b746fc8695b335c1ca303"
   },
-  "notes": "**Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`): · **Die Augen leben weiter, ohne Daueranimation.** Alle paar Sekunden blinzeln sie oder schauen kurz zur Seite, dazwischen ruht alles. Das pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“. · **Leucht-Effekte ruhen nach ein paar Durchgängen:**",
+  "notes": "**Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …). · **Leistungs-Presets** unter „Performance“: Energiesparend, Ausgewogen, Maximale Effekte. · **Einfach / Erweitert:** Die einfache Ansicht blendet Expertenfelder aus (eigener Relay-Server, Server-Adresse, Update-Quelle, Prüfintervall) und sagt, wie viele das sind. Es ist nur eine Ansicht, kein Wert ändert sich.",
   "changes": {
-    "neu": [],
+    "neu": [
+      "**Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …).",
+      "**Leistungs-Presets** unter „Performance“: Energiesparend, Ausgewogen, Maximale Effekte.",
+      "**Einfach / Erweitert:** Die einfache Ansicht blendet Expertenfelder aus (eigener Relay-Server, Server-Adresse, Update-Quelle, Prüfintervall) und sagt, wie viele das sind. Es ist nur eine Ansicht, kein Wert ändert sich."
+    ],
     "verbessert": [
-      "**Deutlich weniger Rechenlast im Leerlauf**, echt gemessen vorher und nachher (Werte in `docs/PERFORMANCE.md`):",
-      "**Die Augen leben weiter, ohne Daueranimation.** Alle paar Sekunden blinzeln sie oder schauen kurz zur Seite, dazwischen ruht alles. Das pausiert bei verdecktem Fenster und bei „Bewegung reduzieren“.",
-      "**Leucht-Effekte ruhen nach ein paar Durchgängen:**",
-      "Neues Messwerkzeug `web/e2e/perf-measure.spec.ts` für Vorher/Nachher-Vergleiche (läuft nur auf Wunsch)."
+      "**Klare Kategorien:** Allgemein, Personalisierung, Gaming, Audio, JARVIS, Dynamic Island, Verbindung & Geräte, Cloud & Sync, Datenschutz & Sicherheit, Performance, Erweitert, Hilfe.",
+      "Bestandsaufnahme, Struktur und Tests stehen in `docs/SETTINGS.md`."
     ],
     "behoben": []
   },
-  "signature": "RGDUZYSxWHO1rLaB/u30XS5J4v7Cp9j8T9QjTsgACbG5HwzBxl5algxBGB3IRiJwzAczG9jGyiBoqYBQHJ499w=="
+  "signature": "zudl2kRINX8TRLFcebXLqRoKflayZ9hnkrlaY146R+JLSFt+SiDdVlEEZHRzJvEIjxg4rge7Eqqa7W3sxBRMag=="
 }

@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.62.0",
+    "date": "2026-11-14",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.62.0/PCGameLauncherCompanion.exe",
+    "size": 95259050,
+    "sha256": "6b6ee2f896a93f1822c025ce47e552794ae962ede352c9036cb0fdb818ef8e7c",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.62.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.62.0/PCGameLauncherCompanion-3.62.0-win-x64.zip",
+      "size": 89534243,
+      "sha256": "d2eac5f145a14a33539e458265f61de09aeaec4e3c9b746fc8695b335c1ca303"
+    },
+    "notes": "**Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …). · **Leistungs-Presets** unter „Performance“: Energiesparend, Ausgewogen, Maximale Effekte. · **Einfach / Erweitert:** Die einfache Ansicht blendet Expertenfelder aus (eigener Relay-Server, Server-Adresse, Update-Quelle, Prüfintervall) und sagt, wie viele das sind. Es ist nur eine Ansicht, kein Wert ändert sich.",
+    "changes": {
+      "neu": [
+        "**Einstellungen durchsuchen.** Ein Suchfeld oben findet schon beim Tippen jede der rund 90 Einstellungen, auch auf ihren eigenen Seiten (Audio, KI, Overlay, Geräte …).",
+        "**Leistungs-Presets** unter „Performance“: Energiesparend, Ausgewogen, Maximale Effekte.",
+        "**Einfach / Erweitert:** Die einfache Ansicht blendet Expertenfelder aus (eigener Relay-Server, Server-Adresse, Update-Quelle, Prüfintervall) und sagt, wie viele das sind. Es ist nur eine Ansicht, kein Wert ändert sich."
+      ],
+      "verbessert": [
+        "**Klare Kategorien:** Allgemein, Personalisierung, Gaming, Audio, JARVIS, Dynamic Island, Verbindung & Geräte, Cloud & Sync, Datenschutz & Sicherheit, Performance, Erweitert, Hilfe.",
+        "Bestandsaufnahme, Struktur und Tests stehen in `docs/SETTINGS.md`."
+      ],
+      "behoben": []
+    },
+    "signature": "zudl2kRINX8TRLFcebXLqRoKflayZ9hnkrlaY146R+JLSFt+SiDdVlEEZHRzJvEIjxg4rge7Eqqa7W3sxBRMag=="
+  },
+  {
     "version": "3.61.0",
     "date": "2026-11-13",
     "channel": "stable",
@@ -1319,38 +1348,5 @@
       "behoben": []
     },
     "signature": "LpNViIJ8nIsW2ozsbcxvCa0eN7UfAyEPKZt6jbZdwToWzsSFOqwKUA3xisrJ7om//qQmKsWyC/WPKOaIoK9yOA=="
-  },
-  {
-    "version": "3.31.0",
-    "date": "2026-11-09",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.31.0/PCGameLauncherCompanion.exe",
-    "size": 95067276,
-    "sha256": "33dd0df446a0c3a2b7476d62d4c257b3684c72fc29286932ff0e0f83ec4ae2a5",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.31.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.31.0/PCGameLauncherCompanion-3.31.0-win-x64.zip",
-      "size": 89340915,
-      "sha256": "86399a81b75aa80ad7f758e6748f2357391d414ce5bfbe3c7ab6cf43918d1cb1"
-    },
-    "notes": "Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext · Alle Geräte desselben Kontos holen sich den neuesten Stand von selbst (alle 10 Sekunden bei geöffneter App, sofort beim Zurückkehren in die App oder wenn das Netz wieder da ist) – auch ein iPad, das nie mit dem PC gekoppelt war. Bei ausgeschaltetem PC bleibt alles sichtbar und bearbeitbar: Spiele und Apps, Favoriten, Kategorien, Einstellungen. Nur Aktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung), brauchen weiter eine PC-Verbindung · Änderungen ohne PC: Favorit, Kategorien, Bewertung, Name und Einstellungen, die du am iPad oder Handy bei ausgeschaltetem PC machst, werden sofort angezeigt und als kleine, verschlüsselte „Änderungen“ in die Cloud gelegt. Der PC übernimmt sie beim nächsten Start – jede Änderung genau einmal (eigene ID), und was am PC inzwischen geändert wurde, gilt weiter (Konflikte werden je Feld entschieden und unter „Cloud“ aufgelistet)",
-    "changes": {
-      "neu": [
-        "Automatische Cloud-Synchronisierung: Solange der PC-Begleiter läuft und mit deinem Cloud-Konto verbunden ist, überträgt er seinen Stand (Spiele, Apps, Kategorien, Favoriten, Bewertungen, Einstellungen, Profile, Sounds, Deck, Kalender u. a.) selbst in die Cloud – sofort nach einer Änderung (nach 2 Sekunden gebündelt), zusätzlich alle 30 Sekunden als Absicherung. Alles wird vorher mit dem Schlüssel deines Kontos verschlüsselt; in der Cloud (Cloudflare Worker + D1) liegt nur Chiffretext",
-        "Alle Geräte desselben Kontos holen sich den neuesten Stand von selbst (alle 10 Sekunden bei geöffneter App, sofort beim Zurückkehren in die App oder wenn das Netz wieder da ist) – auch ein iPad, das nie mit dem PC gekoppelt war. Bei ausgeschaltetem PC bleibt alles sichtbar und bearbeitbar: Spiele und Apps, Favoriten, Kategorien, Einstellungen. Nur Aktionen, die auf dem Windows-PC etwas ausführen (Spiel starten, Soundboard, Fernsteuerung), brauchen weiter eine PC-Verbindung",
-        "Änderungen ohne PC: Favorit, Kategorien, Bewertung, Name und Einstellungen, die du am iPad oder Handy bei ausgeschaltetem PC machst, werden sofort angezeigt und als kleine, verschlüsselte „Änderungen“ in die Cloud gelegt. Der PC übernimmt sie beim nächsten Start – jede Änderung genau einmal (eigene ID), und was am PC inzwischen geändert wurde, gilt weiter (Konflikte werden je Feld entschieden und unter „Cloud“ aufgelistet)",
-        "Kein Datenverlust bei Netzausfall: Was nicht gesendet werden konnte, bleibt auf dem Gerät bzw. am PC vorgemerkt und wird automatisch nachgeholt, sobald die Cloud wieder antwortet (mit wachsenden Pausen)",
-        "Neue Karte „Automatische Synchronisierung“ auf der Cloud-Seite: Cloud verbunden / nicht erreichbar, PC verbunden / nicht verbunden, Synchronisierung läuft / abgeschlossen, ausstehende Änderungen, wann der PC zuletzt übertragen hat. Der PC verbindet sich beim Anmelden von selbst mit dem Konto; „PC mit diesem Konto verbinden / trennen“ und „Jetzt abgleichen“ gibt es zusätzlich",
-        "Schlüssel ohne Passwort: KI-, Such- und ElevenLabs-Schlüssel werden einmal eingegeben und danach mit einem Schlüssel verschlüsselt, der fest an dieses Gerät gebunden ist (nicht auslesbar, nicht kopierbar). Kein Passwort, kein „Gesperrt“ mehr – die Schlüssel sind bei jedem Öffnen sofort bereit. Alte, mit Passwort gesperrte Schlüssel werden einmal mit dem Passwort geöffnet und wechseln dabei dauerhaft auf den Geräteschlüssel"
-      ],
-      "verbessert": [
-        "Statt „Gesperrt“ steht bei einem Schlüssel, der noch beim Öffnen ist oder aus einer alten Version stammt, ein klarer Hinweis, was zu tun ist"
-      ],
-      "behoben": [
-        "Teststabilität: Das Kino beim Spielstart verdeckte im Test kurz die Seite; Overlay-Breite wird erst nach dem Loslassen gemessen"
-      ]
-    },
-    "signature": "Zwbo7TovK6LfG6fZwi10q4vbCSgGU9QaX8lRs59YIlNzIjm0FVsaPS3LNYi3CD9Hx1392ISSF5OG+cM+FuJt8A=="
   }
 ]
