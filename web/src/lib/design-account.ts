@@ -11,6 +11,7 @@ import {
 import { ACCOUNT_KEYS, buildAccountBackup, type AccountBackup } from "./account-backup";
 import { getPrefs, keepDeviceMotion, onPrefsChange, replacePrefs, sanitizePrefs, type Prefs } from "./prefs";
 import { reloadRoom } from "./room";
+import { migrateHomePlace } from "./weather";
 import { defaultPrefs } from "./prefs-core";
 import { forgetCloudCopy } from "./cloud-sync";
 import { t } from "./i18n";
@@ -52,6 +53,7 @@ export function designOf(p: Prefs): Prefs {
 export interface AccountData { prefs: Prefs; local: Record<string, unknown>; keys?: unknown }
 
 function localData(): Record<string, unknown> {
+  migrateHomePlace();                                            // a bare-text place from before 3.65 would be left out otherwise
   const out: Record<string, unknown> = {};
   for (const k of ACCOUNT_KEYS) { const v = readJson<unknown>(k); if (v != null) out[k] = v; }
   return out;

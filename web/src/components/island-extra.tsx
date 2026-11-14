@@ -98,7 +98,19 @@ export function useWeatherAt(place: string | null): { w: IslandWeather | null; l
 export function useIslandWeather(): { place: string | null; w: IslandWeather | null; loading: boolean; setPlace: (p: string) => void } {
   const [place, setPlaceState] = useState(() => homePlace());
   const { w, loading } = useWeatherAt(place);
-  return { place, w, loading, setPlace: (p) => { const v = p.trim().slice(0, 60); setHomePlace(v || null); setPlaceState(v || null); } };
+  // Changed somewhere else (JARVIS "Ich wohne in …", another island, the account arriving) → follow it.
+  useEffect(() => {
+    const sync = () => setPlaceState(homePlace());
+    window.addEventListener("pgl-homeplace", sync); window.addEventListener("pgl-account", sync); window.addEventListener("storage", sync);
+    return () => { window.removeEventListener("pgl-homeplace", sync); window.removeEventListener("pgl-account", sync); window.removeEventListener("storage", sync); };
+  }, []);
+  return { place, w, loading, setPlace: (p) => {
+    const v = p.trim().slice(0, 60);
+    setHomePlace(v || null); setPlaceState(v || null);
+    // Kept with the account (all devices, survives signing in again) and handed to the PC for weather questions.
+    void import("../lib/design-account").then((m) => m.saveNow()).catch(() => { /* not signed in or offline – stays on this device */ });
+    void import("../lib/home-place-sync").then((m) => m.applyHomePlaceToPc(undefined, { quiet: true })).catch(() => undefined);
+  } };
 }
 
 export interface MetricsHistory { m: MetricsSample | null; cpu: (number | null)[]; gpu: (number | null)[]; ram: (number | null)[] }

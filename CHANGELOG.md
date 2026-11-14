@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.65.0 – 2026-11-14
+### Behoben
+- **Wetter-Ort wird gespeichert.** Der Ort, den man in der Wetter-Kachel eingibt, gehört jetzt zum Konto. Er bleibt nach dem Neuladen, nach dem Anmelden und auf allen Geräten erhalten. Bisher fehlte er in der Kontosicherung und ging beim nächsten Anmelden verloren. Ein schon gespeicherter Ort wird übernommen.
+- **Wischen auf der Übersicht.** Man kann jetzt auch dann zur nächsten Seite der Insel wischen, wenn der Finger auf einer Kachel oder einem Knopf startet. Bisher ging das nur auf freien Stellen, und die Übersicht besteht fast nur aus Kacheln. Ein normales Tippen bleibt ein Tippen.
+- **Bearbeiten am Handy ohne Überlappung.** Die Knöpfe (verschieben, einstellen, entfernen) sitzen jetzt als eigene Leiste unter jeder Kachel statt darauf. So verdecken sie weder die Kachel noch die nächste Reihe.
+- **Stift oben rechts immer sichtbar.** Bei vielen Bereichen in der Leiste wurde der Stift (Bearbeiten) zusammengedrückt und war nicht mehr zu sehen. Die Knöpfe rechts behalten jetzt ihre Größe, und die Leiste der Bereiche scrollt seitlich. Der gewählte Bereich wird dabei automatisch ins Bild geholt.
+- Am Handy rutschte die geöffnete Insel beim Tippen in ein Feld ein Stück zur Seite, sodass die Augen links abgeschnitten waren.
+### Verbessert
+- **Insel auf Handy und iPad:**
+  - Die geöffnete Insel nutzt etwa 60 % der Bildschirmhöhe (höchstens 540 px). Kacheln, Listen und Bearbeiten haben dadurch mehr Platz.
+  - Die Bearbeiten-Leiste ist am Handy eine kompakte Zeile, „Fertig“ bleibt immer rechts erreichbar.
+  - Kacheln behalten beim Bearbeiten eine lesbare Höhe.
+  - Am PC bleibt die Insel unverändert.
+- Gewählte Knöpfe wie „Fertig“ oder die gewählte App sind auch bei dunklen und grauen Inselfarben gut lesbar.
+
 ## 3.64.1 – 2026-11-14
 ### Verbessert
 - Test: Insel-Widget-Schalter eindeutig (neben „Notiz in der Leiste“ seit 3.63)

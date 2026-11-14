@@ -122,9 +122,14 @@ export function islandProgress(h: number): number {
 }
 
 /** The box of a size; on narrow screens (phone) never wider than the screen, and a smaller closed island. */
-export function islandBox(size: IslandBoxSize, viewportW = Infinity, floating = false): Box {
+export function islandBox(size: IslandBoxSize, viewportW = Infinity, floating = false, viewportH = Infinity): Box {
   const d = ISLAND_DIMS[size];
   const narrow = floating && viewportW < 700;
   const w = size === "notch" && narrow ? 104 : d.w;
-  return { ...d, w: Math.round(Math.max(88, Math.min(w, viewportW - 16))) };
+  // On a phone or tablet the open island takes more of the (tall) screen, so cards, lists and the editing tools have room. The PC window and a
+  // wide browser keep the fixed size (the PC window is sized to it).
+  const h = size === "panel" && floating && viewportW < 1100 && Number.isFinite(viewportH) ? panelHeight(viewportH) : d.h;
+  return { ...d, h, w: Math.round(Math.max(88, Math.min(w, viewportW - 16))) };
 }
+/** Height of the open island in the app: about 60 % of the screen, never smaller than on the PC and never taller than 540 px. */
+export const panelHeight = (viewportH: number) => Math.round(Math.min(540, Math.max(ISLAND_DIMS.panel.h, viewportH * 0.6)));

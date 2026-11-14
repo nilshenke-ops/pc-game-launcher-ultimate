@@ -147,6 +147,13 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const tabsRef = useRef<HTMLElement | null>(null);
   const thumbRef = useRef<HTMLSpanElement | null>(null);
   useGlidePill(tabsRef, thumbRef, ".isl2-tab.on", [current, tabs.length]);
+  // A strip with more areas than fit scrolls sideways: keep the selected one in view (not the page – only the strip moves).
+  useEffect(() => {
+    const strip = tabsRef.current, on = strip?.querySelector<HTMLElement>(".isl2-tab.on");
+    if (!strip || !on || strip.scrollWidth <= strip.clientWidth) return;
+    const left = on.offsetLeft - strip.clientWidth / 2 + on.offsetWidth / 2;
+    strip.scrollTo({ left: Math.max(0, left), behavior: reduced() ? "auto" : "smooth" });
+  }, [current, tabs.length]); // eslint-disable-line react-hooks/exhaustive-deps
   const peekRef = useRef<HTMLDivElement | null>(null);
   const swipe = useRef<{ x: number; y: number; id: number; locked: boolean; samples: { x: number; t: number }[]; dx: number; d: 1 | -1 } | null>(null);
   const swipedAt = useRef(0); // a swipe must not also count as a tap on the card under the finger
@@ -207,7 +214,10 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   };
   const swipeDown = (e: ReactPointerEvent<HTMLDivElement>) => {
     const t = e.target as HTMLElement;
-    if (busyMoving.current || e.pointerType === "mouse" || t.closest("input, textarea, select, button, a, [contenteditable='true']")) { swipe.current = null; return; }
+    // Swiping may start on a card or a button (most cards ARE buttons – the dashboard was nearly impossible to leave by swiping); a tap stays a tap
+    // because a swipe only begins after a clear sideways move and swallows the click afterwards. Only fields, sliders and things that scroll
+    // sideways themselves keep the finger.
+    if (busyMoving.current || e.pointerType === "mouse" || t.closest("input, textarea, select, [contenteditable='true'], [data-noswipe]") || scrollsSideways(t, e.currentTarget)) { swipe.current = null; return; }
     swipe.current = { x: e.clientX, y: e.clientY, id: e.pointerId, locked: false, samples: [{ x: e.clientX, t: e.timeStamp }], dx: 0, d: 1 };
   };
   const swipeMove = (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -957,4 +967,12 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       </div>
     </div>
   );
+}
+
+/** True when something between the finger and the island body scrolls sideways by itself (a chip row, a wide list). */
+function scrollsSideways(from: HTMLElement, stop: HTMLElement): boolean {
+  for (let el: HTMLElement | null = from; el && el !== stop; el = el.parentElement) {
+    if (el.scrollWidth > el.clientWidth + 2) { const o = getComputedStyle(el).overflowX; if (o === "auto" || o === "scroll") return true; }
+  }
+  return false;
 }

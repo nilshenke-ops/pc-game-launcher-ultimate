@@ -13,8 +13,25 @@ export function placeFrom(q: string): string | null {
 }
 // ---- the home place: weather questions without a place use it ("Ich wohne in Adendorf" sets it; the first place asked is taken over, with a note)
 const HOME_KEY = "pgl.homePlace";
-export const homePlace = (): string | null => { try { return localStorage.getItem(HOME_KEY) || null; } catch { return null; } };
-export const setHomePlace = (p: string | null) => { try { if (p) localStorage.setItem(HOME_KEY, p); else localStorage.removeItem(HOME_KEY); } catch { /* blocked */ } };
+// Stored as JSON (like every account key), so it is part of the account blob and survives sign-in, switching and the
+// cloud sync. Older versions wrote the bare text – that is still read (and rewritten as JSON on the next change).
+export const homePlace = (): string | null => {
+  try {
+    const raw = localStorage.getItem(HOME_KEY);
+    if (!raw) return null;
+    let v: unknown = raw;
+    try { v = JSON.parse(raw); } catch { /* bare text from before 3.65 */ }
+    return typeof v === "string" && v.trim() ? v.trim() : null;
+  } catch { return null; }
+};
+export const setHomePlace = (p: string | null) => {
+  try { if (p && p.trim()) localStorage.setItem(HOME_KEY, JSON.stringify(p.trim().slice(0, 60))); else localStorage.removeItem(HOME_KEY); } catch { /* blocked */ }
+  try { if (typeof window !== "undefined") window.dispatchEvent(new Event("pgl-homeplace")); } catch { /* no window (tests) */ }
+};
+/** Old bare-text value → JSON once, so the account can carry it. */
+export function migrateHomePlace() {
+  try { const raw = localStorage.getItem(HOME_KEY); if (raw && !raw.startsWith('"')) localStorage.setItem(HOME_KEY, JSON.stringify(raw.trim())); } catch { /* blocked */ }
+}
 /** "Ich wohne in Adendorf" / "Mein Wohnort ist Adendorf" / "Merk dir, dass ich in Adendorf wohne" → the place. */
 export function homeFrom(q: string): string | null {
   const m = /^(?:merk(?:e)?\s+dir,?\s+(?:dass\s+)?)?(?:ich\s+wohne\s+(?:in|bei|nahe)\s+|ich\s+in\s+(?=.*\swohne$)|mein\s+wohnort\s+ist\s+|ich\s+lebe\s+in\s+|ich\s+komme\s+aus\s+|ich\s+bin\s+(?:aus|in)\s+|(?:meine\s+)?heimat(?:stadt)?\s+ist\s+)([A-ZÄÖÜ][\wäöüß.-]*(?:\s+[A-ZÄÖÜ][\wäöüß.-]*)?)(?:\s+wohne(?:\s+ich)?)?$/i.exec(q.trim().replace(/[.!]+$/, ""));

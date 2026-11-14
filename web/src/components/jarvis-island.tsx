@@ -80,10 +80,11 @@ function Confetti() {
 }
 
 /** Width of the screen, for the narrow phone layout of the in-app island. */
-function useViewportW() {
-  const [w, setW] = useState(() => (typeof window === "undefined" ? 1280 : window.innerWidth));
-  useEffect(() => { const on = () => setW(window.innerWidth); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
-  return w;
+function useViewport(): [number, number] {
+  const read = (): [number, number] => (typeof window === "undefined" ? [1280, 800] : [window.innerWidth, window.innerHeight]);
+  const [v, setV] = useState(read);
+  useEffect(() => { const on = () => setV((o) => { const n = read(); return n[0] === o[0] && n[1] === o[1] ? o : n; }); window.addEventListener("resize", on); return () => window.removeEventListener("resize", on); }, []);
+  return v;
 }
 const reducedMotion = () => motionOff();
 const OPEN_KEYS = Object.keys(OPEN_VARIANTS) as OpenVariant[], CLOSE_KEYS = Object.keys(CLOSE_VARIANTS) as CloseVariant[];
@@ -122,9 +123,10 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   // text would cover the buttons of the top bar. The wide bar is for the island window on the PC screen.
   const wanted = islandSize({ open, ask: !!ask || agentBar, hover, mood, notice: !!notice || aph === "done" || aph === "error" });
   const size = floating && wanted === "bar" ? "notch" : wanted;
-  const vw = useViewportW();
-  const box = islandBox(size, vw, floating);
-  const panelW = islandBox("panel", vw, floating).w;
+  const [vw, vh] = useViewport();
+  const box = islandBox(size, vw, floating, vh);
+  const panelBox = islandBox("panel", vw, floating, vh);
+  const panelW = panelBox.w;
 
   // JARVIS' activity comes from the PC (whichever device asks him) – only to this PC's own windows.
   useEffect(() => client.on("jarvis.agent", (d) => setAgentBrief(d as AgentBrief)), []);
@@ -309,7 +311,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
       onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropping(false); }}
       onDrop={(e) => { if (!carriesFiles(e.dataTransfer)) return; e.preventDefault(); setDropping(false); dropOnShelf(Array.from(e.dataTransfer.files)); }}
       className={`isl-host v2 s-${size} h-${mood}${dropping ? " dropping" : ""}${open ? " is-open" : ""}${notice ? ` n-${notice.severity}` : ""}${live ? " timing" : ""}${floating ? " floating" : ""}${pc ? " pc" : ""}`} onMouseMove={follow} data-isl-style={look.style} data-isl-eye-size={look.eyeSize} data-isl-eye={eyeColor(look.eye) ? "1" : undefined} data-accent={accent ? "1" : undefined} data-fx={look.effect !== "none" ? look.effect : undefined} style={{ ...(eyeColor(look.eye) ? { "--isl-eye": eyeColor(look.eye) } : {}), ...(accent ? { "--isl-accent": accent } : {}) } as CSSProperties} onMouseEnter={() => { setHover(true); islandTouch(); if (!open && mood === "idle") emote("wide", 700); }} onMouseLeave={() => { setHover(false); unfollow(); }}>
-      <div className="isl-inner" style={{ width: innerW }}>
+      <div className="isl-inner" style={{ width: innerW, ["--isl-panel-h" as string]: `${panelBox.h}px` } as CSSProperties}>
       {mood === "happy" && s.last && <Confetti key={s.last.at} />}
       {mood === "dancing" && s.music && s.music.beatAt > 0 && <span className="isl-beat" key={s.music.beatAt} aria-hidden />}
       <div className={`isl m-${mood}`} aria-hidden={open || undefined}>

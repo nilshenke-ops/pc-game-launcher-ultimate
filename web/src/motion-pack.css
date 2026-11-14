@@ -1347,3 +1347,53 @@ button.isl3-pill { cursor: pointer; }
 .isl3-files li .isl3-rename { grid-column: 1 / -1; }
 .isl3-shelfside .xs-actions { margin: 0; }
 .isl3-shelfside .xs-panel { overflow-y: auto; min-height: 0; }
+
+/* 3.65 – editing tiles: the buttons sit in their own row UNDER the tile instead of on top of it. On a phone the bar covered small tiles
+   completely and rows overlapped – nothing could be seen or pressed. The rows grow with their content while editing. */
+.isl2-cards.editing, .isl3-dash.editing { grid-auto-rows: auto; height: auto; max-height: none; align-content: start; }
+.isl2-cards.editing.view-grid, .isl3-dash.editing.view-grid { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); grid-auto-rows: auto; }
+.isl3-ew { flex-direction: column; gap: 5px; }
+.isl3-ew > :first-child { flex: 0 0 auto; min-height: 58px; max-height: 132px; overflow: hidden; }
+.isl3-ew > .isl3-ebar { position: static; translate: none; left: auto; bottom: auto; align-self: stretch; justify-content: space-between; gap: 4px; padding: 3px; border-radius: 14px; box-shadow: none; background: rgba(12, 12, 16, .62); }
+.isl3-ew > .isl3-ebar button { flex: 1 1 0; width: auto; min-width: 0; height: 32px; border-radius: 10px; }
+@media (pointer: coarse) { .isl3-ew > .isl3-ebar button { height: 36px; } }
+.isl3-addtile { min-height: 58px; }
+
+/* 3.65 – the top row on a phone: with many areas the strip pushed the pencil (and almost the menu) out of sight. The buttons on the right keep
+   their size; only the strip of areas gets narrower and scrolls sideways (the selected area is moved into view). */
+.isl2-head > .isl2-more, .isl2-head > .isl2-moreWrap, .isl2-head > .isl2-closeTap, .isl2-head > .isl2-status { flex-shrink: 0; }
+.isl2-head > .isl2-more.isl3-pen { width: 34px; opacity: .95; background: color-mix(in srgb, currentColor 9%, transparent); }
+.isl2-tabs.top { -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 10px, #000 calc(100% - 10px), transparent 100%); scroll-padding-inline: 12px; }
+@media (max-width: 560px) {
+  .isl2-head { gap: 5px; }
+  .isl2-head > .isl2-status .isl2-stat:not(.sens) { display: none; }
+  .isl2-tabs.top .isl2-tab { padding: 0 4px; }
+}
+@media (max-width: 400px) { .isl2-head > .isl2-status .isl2-clock { display: none; } }
+
+/* 3.65 – chosen chips ("Fertig", the chosen app) stay readable with dark or grey island colours: the colour is lightened under the dark text. */
+.isl2 .isl2-chip.done, .isl2 .isl2-chip.on, .isl2 .isl2-engines .isl2-chip.on { background: color-mix(in srgb, var(--isl-c, #9ef0c8) 62%, #ffffff); color: #04121a; font-weight: 700; }
+/* While editing the page grows with its tiles (and the island body scrolls) instead of squeezing every row into the island's height. */
+.isl3-page:has(> .editing) { height: auto; min-height: 100%; }
+.isl3-page > .isl2-cards.editing, .isl3-page > .isl3-dash.editing { flex: none; min-height: auto; overflow: visible; }
+.isl2-cards.editing > .isl3-ew, .isl3-dash.editing > .isl3-ew { min-height: 100px; }
+.isl3-ew > :first-child { flex-shrink: 0; }
+
+/* 3.65 – in the app the open island was a few pixels wider than its frame on phones; focusing a field then slid it sideways (eyes cut off at
+   the left). The inside never gets wider than the frame, and the frame cannot be scrolled. */
+.isl-host.floating .isl-inner { max-width: 100%; }
+.isl-host.floating { overflow: clip; }
+/* The open island in the app follows the height chosen for the screen (taller on phones and tablets). */
+.isl-host.floating .isl2 { height: var(--isl-panel-h, 344px); }
+
+/* 3.65 – editing on a phone: tiles keep a readable height, and the editing tools stay one compact row (it scrolls; "Fertig" stays at the right). */
+.isl2-cards.editing > .isl3-ew > :first-child, .isl3-dash.editing > .isl3-ew > :first-child { min-height: 92px; }
+@media (max-width: 560px) {
+  .isl3-edithead { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 5px; padding: 5px 6px; }
+  .isl3-edithead::-webkit-scrollbar { display: none; }
+  .isl3-edithead > * { flex: none; }
+  .isl3-edithead .isl3-ehtext i { display: none; }
+  .isl3-edithead .isl3-ehtext b { font-size: .8rem; white-space: nowrap; }
+  .isl3-edithead .isl2-chip { padding: 6px 10px; font-size: .76rem; white-space: nowrap; }
+  .isl3-edithead .isl2-chip.done { position: sticky; right: 0; box-shadow: -8px 0 12px rgba(0,0,0,.35); }
+}
