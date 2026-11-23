@@ -1,25 +1,28 @@
 {
-  "version": "3.67.2",
+  "version": "3.67.3",
   "date": "2026-11-23",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.2/PCGameLauncherCompanion.exe",
-  "size": 95579520,
-  "sha256": "5c55bc6869ba3cfbe884696befc8fe17390d18edc9fa086cdc66d3a959d3d78c",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.3/PCGameLauncherCompanion.exe",
+  "size": 95580244,
+  "sha256": "aac20acf23f91ae2e4e30a9f5805b54298647129a827ebc331d51e02f83407b1",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.67.2-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.2/PCGameLauncherCompanion-3.67.2-win-x64.zip",
-    "size": 89851417,
-    "sha256": "361342240aeb692b33f0e8c14f5beef294560d17f817493b5a2cde7a76a52e5f"
+    "fileName": "PCGameLauncherCompanion-3.67.3-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.3/PCGameLauncherCompanion-3.67.3-win-x64.zip",
+    "size": 89852068,
+    "sha256": "a77d5fdc60bf720bfee4394a3277523d3cab95e2c02a1b6fddab4fae87a58827"
   },
   "notes": "",
   "changes": {
     "neu": [],
     "verbessert": [],
     "behoben": [
-      "**Insel nicht mehr verbogen auf iPad und Handy.** Auf Touch-Geräten bekommen alle Knöpfe eine Mindesthöhe von 44 px, damit man sie gut trifft. Die runden Knöpfe der Insel blieben dabei aber schmal und wurden zu hohen Ovalen: Play, Weiter, Stumm, dazu Stift und Menü oben rechts. Jetzt bleiben runde Knöpfe rund (44 × 44 px) und eckige quadratisch. Am PC ändert sich nichts.",
-      "Ein neuer Test prüft auf Handy, iPad und PC in allen Bereichen der Insel, dass kein runder Knopf verzerrt ist."
+      "**Insel öffnet am PC flüssiger.** Die gleitende Markierung im Menü hat bisher nach jeder Änderung 0,7 s lang in jedem Bild die Position neu gemessen. Während des Öffnens hat das in jedem Bild die ganze Insel zusätzlich neu ausgemessen. Jetzt misst sie nur noch, wenn sich wirklich eine Größe ändert. Gemessen im Test (4-fach gedrosselte CPU): Die erzwungene Neuberechnung des Layouts sinkt von rund 350 ms auf 12 ms. Die Neuberechnung der Stile ist um 38 % kürzer, die gesamte Arbeit pro Öffnen um 20 %.",
+      "Der Öffnungsfortschritt wird nicht mehr an die ganze Insel vererbt, sondern nur an die Teile, die sich mitbewegen. So muss pro Bild nur eine Handvoll Elemente neu gestaltet werden statt aller.",
+      "Beim Öffnen wird nichts mehr unscharf gezeichnet und nichts mehr verzerrt oder gekippt. Die Animation skaliert gleichmäßig. Unschärfe-Filter waren am PC der teuerste Teil jedes Bildes.",
+      "Das Windows-Fenster der Insel bekommt seine Form nur noch, wenn sie sich wirklich ändert, nicht mehr in jedem Bild.",
+      "Hinweis: Gemessen wurde im Browser ohne Grafikkarte. Auf einem echten Windows-PC konnte es hier nicht nachgemessen werden."
     ]
   },
-  "signature": "0KwZXZQONafhq/3wAofSmPRsIfyWMA9b8L2thHAJ55nN6CBh1JdUPonqvECS5QI8frkgJNj3VAvlwJnBDm5chg=="
+  "signature": "Wzmg1POud97gVbIbmaadIYV4lqdWPzoKBUZb8fQ0yXT/vRI1M8RZP3oinx04NtTuH70ZVvfuJVaabtjMZFNYnQ=="
 }

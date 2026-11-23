@@ -1,5 +1,33 @@
 [
   {
+    "version": "3.67.3",
+    "date": "2026-11-23",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.3/PCGameLauncherCompanion.exe",
+    "size": 95580244,
+    "sha256": "aac20acf23f91ae2e4e30a9f5805b54298647129a827ebc331d51e02f83407b1",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.67.3-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.3/PCGameLauncherCompanion-3.67.3-win-x64.zip",
+      "size": 89852068,
+      "sha256": "a77d5fdc60bf720bfee4394a3277523d3cab95e2c02a1b6fddab4fae87a58827"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "**Insel öffnet am PC flüssiger.** Die gleitende Markierung im Menü hat bisher nach jeder Änderung 0,7 s lang in jedem Bild die Position neu gemessen. Während des Öffnens hat das in jedem Bild die ganze Insel zusätzlich neu ausgemessen. Jetzt misst sie nur noch, wenn sich wirklich eine Größe ändert. Gemessen im Test (4-fach gedrosselte CPU): Die erzwungene Neuberechnung des Layouts sinkt von rund 350 ms auf 12 ms. Die Neuberechnung der Stile ist um 38 % kürzer, die gesamte Arbeit pro Öffnen um 20 %.",
+        "Der Öffnungsfortschritt wird nicht mehr an die ganze Insel vererbt, sondern nur an die Teile, die sich mitbewegen. So muss pro Bild nur eine Handvoll Elemente neu gestaltet werden statt aller.",
+        "Beim Öffnen wird nichts mehr unscharf gezeichnet und nichts mehr verzerrt oder gekippt. Die Animation skaliert gleichmäßig. Unschärfe-Filter waren am PC der teuerste Teil jedes Bildes.",
+        "Das Windows-Fenster der Insel bekommt seine Form nur noch, wenn sie sich wirklich ändert, nicht mehr in jedem Bild.",
+        "Hinweis: Gemessen wurde im Browser ohne Grafikkarte. Auf einem echten Windows-PC konnte es hier nicht nachgemessen werden."
+      ]
+    },
+    "signature": "Wzmg1POud97gVbIbmaadIYV4lqdWPzoKBUZb8fQ0yXT/vRI1M8RZP3oinx04NtTuH70ZVvfuJVaabtjMZFNYnQ=="
+  },
+  {
     "version": "3.67.2",
     "date": "2026-11-23",
     "channel": "stable",
@@ -1333,29 +1361,5 @@
       "behoben": []
     },
     "signature": "XmkwMU32oGpzI52WWUnMKw+KSfque8vjnWSvmywAqgJM11fQ8FbF3uVH4XUTtRq2/frZwWD8xbED4BG7gwv/7w=="
-  },
-  {
-    "version": "3.37.1",
-    "date": "2026-11-10",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.1/PCGameLauncherCompanion.exe",
-    "size": 95090036,
-    "sha256": "c5ec851768687de5bf312fbaa5f011649022015ac2239d581c7078d862aaaa43",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.37.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.37.1/PCGameLauncherCompanion-3.37.1-win-x64.zip",
-      "size": 89363386,
-      "sha256": "7bd92294ad32be1ae5c1ca7d30c53ddc030cbd4c51b80d14f637aed5b084f185"
-    },
-    "notes": "Test des Stimmenwechslers: Stimmen mit exaktem Namen wählen",
-    "changes": {
-      "neu": [],
-      "verbessert": [
-        "Test des Stimmenwechslers: Stimmen mit exaktem Namen wählen"
-      ],
-      "behoben": []
-    },
-    "signature": "rW0KmAVVQoN6ToE5Ey+excpXiuH9CQB7zTAijtqMSm29QQX7OzoNy6ofMT6/vxfQpxKxmk5qbCCdpfwEt+T7aQ=="
   }
 ]
