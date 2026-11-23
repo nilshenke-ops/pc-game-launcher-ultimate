@@ -1480,3 +1480,13 @@ button.isl3-net { display: grid; text-align: left; font: inherit; color: inherit
    then failed whenever the finger started on a card of the overview. Sliders keep working (they move with the finger themselves). */
 .isl2-body, .isl2-body :is(.isl3-dash, .isl2-cards, .isl3-page, .isl3-area, .isl3-stats, .isl3-check ul, .isl3-ctl, .isl2-list, ul, ol, section, div) { touch-action: pan-y; }
 .isl2-body :is(.md-kinds, .isl3-seg, .isl3-edithead, .isl2-chips, .isl2-engines, .chips, .tile-row) { touch-action: pan-x pan-y; }
+
+/* 3.67.2 – on touch screens the buttons got a minimum height of 40 px for easier tapping but kept their narrow width, so the round
+   buttons (play, mic …) and the pencil/menu became tall ovals – the "bent" island. Round stays round, square stays square. */
+@media (pointer: coarse) {
+  /* (the general touch rule gives every button min-height 44 px – so round buttons get the same width) */
+  .isl2 button.isl2-round.isl2-round { min-width: 44px; min-height: 44px; aspect-ratio: 1; }
+  .isl2 button.isl2-round.big.big { min-width: 48px; min-height: 48px; }
+  .isl2 .isl3-vbar > button.isl3-vbar-b, .isl2 .isl3-vbar > button { width: 44px; min-width: 44px; height: 44px; min-height: 44px; }
+  .isl2 .isl2-head > button.isl2-more.isl2-more, .isl2 .isl2-moreWrap > button.isl2-more.isl2-more { width: 44px; min-width: 44px; height: 44px; min-height: 44px; }
+}

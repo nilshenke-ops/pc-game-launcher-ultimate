@@ -4,6 +4,11 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.67.2 – 2026-11-23
+### Behoben
+- **Insel nicht mehr verbogen auf iPad und Handy.** Auf Touch-Geräten bekommen alle Knöpfe eine Mindesthöhe von 44 px, damit man sie gut trifft. Die runden Knöpfe der Insel blieben dabei aber schmal und wurden zu hohen Ovalen: Play, Weiter, Stumm, dazu Stift und Menü oben rechts. Jetzt bleiben runde Knöpfe rund (44 × 44 px) und eckige quadratisch. Am PC ändert sich nichts.
+- Ein neuer Test prüft auf Handy, iPad und PC in allen Bereichen der Insel, dass kein runder Knopf verzerrt ist.
+
 ## 3.67.1 – 2026-11-14
 ### Behoben
 - **Wischen auf der Übersicht mit dem Finger.** Auf iPad und Handy ließ sich von der Übersicht (Kalender, Fokus, Wetter, System) nicht zum nächsten Bereich wischen, wenn der Finger auf einer Kachel startete. Ursache: Die Übersicht ist selbst ein scrollbarer Bereich. Der Browser hat die Seitwärtsbewegung für sich beansprucht und abgebrochen, bevor die Insel sie bekam. Jetzt scrollen alle Bereiche in der Insel nur hoch und runter, und das seitliche Wischen gehört der Insel. Reihen, die selbst seitlich scrollen (KI-Auswahl, Bearbeiten-Leiste), funktionieren weiter.
