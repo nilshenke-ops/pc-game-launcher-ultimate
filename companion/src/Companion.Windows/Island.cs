@@ -124,9 +124,14 @@ sealed class IslandForm : Form
     int TargetX(int w, Rectangle screen) => _position == "left" ? screen.Left + LogicalToDeviceUnits(24) : _position == "right" ? screen.Right - w - LogicalToDeviceUnits(24) : screen.Left + (screen.Width - w) / 2;
 
     /// <summary>A rounded shape of w × h hanging from the top edge of the window (square at the top, round at the bottom).</summary>
+    string? _shapePos; int _shapeWinW;
     void Shape(int w, int h, int radius, int windowW)
     {
         w = Math.Max(1, Math.Min(w, windowW)); h = Math.Max(1, Math.Min(h, Height));
+        // The page reports fractions; on whole pixels many frames give the same shape. A new region makes Windows recompose the window
+        // (and WebView2 repaint it), so an unchanged shape is not applied again – that was a good part of the stutter while opening.
+        if (w == _curW && h == _curH && radius == _curR && _shapePos == _position && _shapeWinW == windowW) return;
+        _shapePos = _position; _shapeWinW = windowW;
         var off = ShapeOffset(_position, w, windowW);
         var rgn = CreateRoundRectRgn(off, -radius, off + w + 1, h + 1, radius * 2, radius * 2);
         if (!IsHandleCreated || SetWindowRgn(Handle, rgn, false) == 0) DeleteObject(rgn);   // not applied: free it ourselves (applied: the system frees it)
@@ -140,6 +145,7 @@ sealed class IslandForm : Form
         var w = LogicalToDeviceUnits(WindowW);
         var h = LogicalToDeviceUnits(WindowH);
         Bounds = new Rectangle(TargetX(w, screen), screen.Top, w, h);
+        _shapeWinW = -1;   // placing the window again always applies the shape again
         // Until the page reports a shape the closed island is shown – never the whole window.
         if (_curW == 0) Shape(LogicalToDeviceUnits(NotchW), LogicalToDeviceUnits(NotchH), LogicalToDeviceUnits(NotchR), w);
         else Shape(_curW, _curH, _curR, w);

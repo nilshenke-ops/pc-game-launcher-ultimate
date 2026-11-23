@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.67.3 – 2026-11-23
+### Behoben
+- **Insel öffnet am PC flüssiger.** Die gleitende Markierung im Menü hat bisher nach jeder Änderung 0,7 s lang in jedem Bild die Position neu gemessen. Während des Öffnens hat das in jedem Bild die ganze Insel zusätzlich neu ausgemessen. Jetzt misst sie nur noch, wenn sich wirklich eine Größe ändert. Gemessen im Test (4-fach gedrosselte CPU): Die erzwungene Neuberechnung des Layouts sinkt von rund 350 ms auf 12 ms. Die Neuberechnung der Stile ist um 38 % kürzer, die gesamte Arbeit pro Öffnen um 20 %.
+- Der Öffnungsfortschritt wird nicht mehr an die ganze Insel vererbt, sondern nur an die Teile, die sich mitbewegen. So muss pro Bild nur eine Handvoll Elemente neu gestaltet werden statt aller.
+- Beim Öffnen wird nichts mehr unscharf gezeichnet und nichts mehr verzerrt oder gekippt. Die Animation skaliert gleichmäßig. Unschärfe-Filter waren am PC der teuerste Teil jedes Bildes.
+- Das Windows-Fenster der Insel bekommt seine Form nur noch, wenn sie sich wirklich ändert, nicht mehr in jedem Bild.
+- Hinweis: Gemessen wurde im Browser ohne Grafikkarte. Auf einem echten Windows-PC konnte es hier nicht nachgemessen werden.
+
 ## 3.67.2 – 2026-11-23
 ### Behoben
 - **Insel nicht mehr verbogen auf iPad und Handy.** Auf Touch-Geräten bekommen alle Knöpfe eine Mindesthöhe von 44 px, damit man sie gut trifft. Die runden Knöpfe der Insel blieben dabei aber schmal und wurden zu hohen Ovalen: Play, Weiter, Stumm, dazu Stift und Menü oben rechts. Jetzt bleiben runde Knöpfe rund (44 × 44 px) und eckige quadratisch. Am PC ändert sich nichts.

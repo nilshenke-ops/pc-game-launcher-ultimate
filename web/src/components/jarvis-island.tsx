@@ -176,29 +176,55 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
 
   // ---- the spring: width, height and corner radius of the island; in the Windows window the shape of every frame goes to the companion
   const animRef = useRef<ReturnType<typeof createBoxAnimator> | null>(null);
+  const P_SEL = ".isl, .isl2-wrap, .isl2 > *, .isl2-card";   // the elements that follow --isl-p (motion-pack.css)
   const positionRef = useRef(look.position);
   positionRef.current = look.position;
   useLayoutEffect(() => {
     const el = hostRef.current; if (!el) return;
     const post = (m: unknown) => (window as HostWindow).chrome?.webview?.postMessage(m);
+    let lastP = "", lastMoving: boolean | null = null, lastRect = "";
     const apply = (b: Box) => {
       el.style.width = `${b.w}px`; el.style.height = `${b.h}px`;
       // How far open the island is (0 closed … 1 open): the content (header, tabs, cards) fades, rises and clears its blur by this number – so
       // opening, closing and turning around halfway are one continuous movement that always follows the spring (see motion-pack.css).
-      el.style.setProperty("--isl-p", islandProgress(b.h).toFixed(3));
+      // --isl-p is not inherited (motion-pack.css): it goes only onto the elements that move with it, so one frame restyles a handful of
+      // elements instead of the whole island.
+      const pv = islandProgress(b.h).toFixed(3);
+      if (pv !== lastP) {
+        lastP = pv;
+        el.style.setProperty("--isl-p", pv);
+        el.querySelectorAll<HTMLElement>(P_SEL).forEach((x) => x.style.setProperty("--isl-p", pv));
+      }
       // While the island moves, the blur behind the page's glass surfaces is paused (re-blurring them every frame is the costliest part).
-      document.documentElement.toggleAttribute("data-isl-anim", animRef.current?.moving ?? false);
+      // Only on a real change – setting it again on every frame made the browser re-check the styles of the whole page.
+      const moving = animRef.current?.moving ?? false;
+      if (moving !== lastMoving) { lastMoving = moving; document.documentElement.toggleAttribute("data-isl-anim", moving); }
       // In the Windows window the island hangs from the top edge: square at the top, round at the bottom (like the cut-out of the window).
       el.style.borderRadius = floating ? `${b.r}px` : `0 0 ${b.r}px ${b.r}px`;
       if (floating) return;
       const winW = window.innerWidth || WINDOW_W, p = positionRef.current;
       el.style.left = `${Math.round(p === "left" ? 0 : p === "right" ? winW - b.w : (winW - b.w) / 2)}px`;
+      // Only when the shape really changes on the screen (half a pixel) – every message makes the window apply a new shape.
+      const rect = `${Math.round(b.w * 2)}|${Math.round(b.h * 2)}|${Math.round(b.r * 2)}`;
+      if (rect === lastRect) return;
+      lastRect = rect;
       post({ type: "island-rect", w: Math.round(b.w * 10) / 10, h: Math.round(b.h * 10) / 10, r: Math.round(b.r * 10) / 10 });
     };
+    // Parts that appear later (another area, editing, a new card) get the current value too – otherwise they would keep the start value 0
+    // and stay invisible until the island moves again.
+    const mo = typeof MutationObserver === "undefined" ? null : new MutationObserver((recs) => {
+      if (!lastP) return;
+      for (const r of recs) for (const n of Array.from(r.addedNodes)) {
+        if (!(n instanceof HTMLElement)) continue;
+        if (n.matches(P_SEL)) n.style.setProperty("--isl-p", lastP);
+        n.querySelectorAll<HTMLElement>(P_SEL).forEach((x) => x.style.setProperty("--isl-p", lastP));
+      }
+    });
+    mo?.observe(el, { childList: true, subtree: true });
     const a = createBoxAnimator(apply, box);
     animRef.current = a;
     a.to(box, true);
-    return () => { a.stop(); animRef.current = null; };
+    return () => { a.stop(); mo?.disconnect(); animRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [floating]);
   // On the PC every opening and every folding shut plays another variant than the one before (phones and tablets: always the classic one).
