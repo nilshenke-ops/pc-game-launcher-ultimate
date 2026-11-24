@@ -1,28 +1,24 @@
 {
-  "version": "3.67.4",
+  "version": "3.68.1",
   "date": "2026-11-24",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.4/PCGameLauncherCompanion.exe",
-  "size": 95580613,
-  "sha256": "811cd93a8df8db25f18fdd4081f9421249db8a89a3a93a71faeb029e3225bb9b",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.68.1/PCGameLauncherCompanion.exe",
+  "size": 95587288,
+  "sha256": "9f842cda6b86674e76f16d4001a8c66b32a249ddf813c2ac97e7c845346c2f9d",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.67.4-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.4/PCGameLauncherCompanion-3.67.4-win-x64.zip",
-    "size": 89852356,
-    "sha256": "59e9b9b7ee4b1acf4284a3574fc1456667adcc2a7259a5311814d3ba36cc054c"
+    "fileName": "PCGameLauncherCompanion-3.68.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.68.1/PCGameLauncherCompanion-3.68.1-win-x64.zip",
+    "size": 89858764,
+    "sha256": "eef64b0d22d2e23d486609cbfe441832aaf345c0eb03f09388219d1ddc80bca7"
   },
-  "notes": "Am PC und auf dem Tablet stehen die Kacheln in vier Spalten (drei Reihen statt fünf), damit alles ohne Scrollen passt. · Werte sind größer und weiß, Untertitel heller, die Balken etwas dicker. Lange Werte sind kürzer gefasst: „25,5 GB“ statt „25,5 GB frei“ (darunter „frei von 252 GB“), „RAM“ statt „Arbeitsspeicher“ und „Prüfen“ bei der Analyse. · Ein Test prüft im PC-Fenster, dass keine Kachel und keine Zeile darin abgeschnitten ist.",
+  "notes": "",
   "changes": {
     "neu": [],
-    "verbessert": [
-      "Am PC und auf dem Tablet stehen die Kacheln in vier Spalten (drei Reihen statt fünf), damit alles ohne Scrollen passt.",
-      "Werte sind größer und weiß, Untertitel heller, die Balken etwas dicker. Lange Werte sind kürzer gefasst: „25,5 GB“ statt „25,5 GB frei“ (darunter „frei von 252 GB“), „RAM“ statt „Arbeitsspeicher“ und „Prüfen“ bei der Analyse.",
-      "Ein Test prüft im PC-Fenster, dass keine Kachel und keine Zeile darin abgeschnitten ist."
-    ],
+    "verbessert": [],
     "behoben": [
-      "**System-Kacheln der Insel am PC wieder lesbar.** Im Insel-Fenster am PC wurden die elf Kacheln (Analyse, FPS, CPU, GPU, RAM, VRAM, Speicher, Akku, Ping, Laufzeit, Netzwerk) auf die feste Fensterhöhe zusammengedrückt. Dadurch waren Werte und Untertitel nur halb zu sehen. Jetzt ist eine Zeile nie niedriger als ihr Inhalt."
+      "Die Version 3.68.0 (Weihnachtswunschliste) wurde nicht veröffentlicht, weil ein Test im Begleiter fehlschlug: Der Assistent kannte die neue Seite noch nicht. JARVIS kennt die Wunschliste jetzt und kann dorthin führen. Inhalt sonst unverändert, siehe 3.68.0."
     ]
   },
-  "signature": "h2AGbmH0Bq6XjttZAcktBCYpT79qkeKtiEJbUcHkzUhzhHGYjhWhFj1CRCitG7d6YDPMcFaMgzlzLmahGPzMjA=="
+  "signature": "cei2O5PXE58zj0URG96yZKhgjiPZ9sfj6wZYYhd23qmasaMKprNvVqkmxAsPFSLnWQlY/vM5u7n13+f9zWYctA=="
 }

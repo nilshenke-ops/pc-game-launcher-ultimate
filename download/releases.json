@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.68.1",
+    "date": "2026-11-24",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.68.1/PCGameLauncherCompanion.exe",
+    "size": 95587288,
+    "sha256": "9f842cda6b86674e76f16d4001a8c66b32a249ddf813c2ac97e7c845346c2f9d",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.68.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.68.1/PCGameLauncherCompanion-3.68.1-win-x64.zip",
+      "size": 89858764,
+      "sha256": "eef64b0d22d2e23d486609cbfe441832aaf345c0eb03f09388219d1ddc80bca7"
+    },
+    "notes": "",
+    "changes": {
+      "neu": [],
+      "verbessert": [],
+      "behoben": [
+        "Die Version 3.68.0 (Weihnachtswunschliste) wurde nicht veröffentlicht, weil ein Test im Begleiter fehlschlug: Der Assistent kannte die neue Seite noch nicht. JARVIS kennt die Wunschliste jetzt und kann dorthin führen. Inhalt sonst unverändert, siehe 3.68.0."
+      ]
+    },
+    "signature": "cei2O5PXE58zj0URG96yZKhgjiPZ9sfj6wZYYhd23qmasaMKprNvVqkmxAsPFSLnWQlY/vM5u7n13+f9zWYctA=="
+  },
+  {
     "version": "3.67.4",
     "date": "2026-11-24",
     "channel": "stable",
@@ -1332,37 +1356,5 @@
       ]
     },
     "signature": "vyiktmW9qekUVLanrao9NrPxLlETtAtpnC1EG2QVTWt6wnoA77hbg7PQIaA9RCEdYQETKjRE6jCC/WGjsulPGQ=="
-  },
-  {
-    "version": "3.39.0",
-    "date": "2026-11-10",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.0/PCGameLauncherCompanion.exe",
-    "size": 95096588,
-    "sha256": "a831846212c7c614346398b49ddf4d6dfa4acaa650530e5ad24678be893b8c03",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.39.0-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.0/PCGameLauncherCompanion-3.39.0-win-x64.zip",
-      "size": 89370473,
-      "sha256": "e380ed6577d041e85d8dbdebd898a831affe3b2319def656662c9d9985c2e17c"
-    },
-    "notes": "Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %) · Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab · Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen",
-    "changes": {
-      "neu": [
-        "Stimmenwechsler: Regler „Stärke der Stimme“ – die Stimme klingt anders, bleibt aber gut verständlich (Standard 70 %)",
-        "Stimmenwechsler: „Stimme testen“ spielt dich selbst in der gewählten Stimme direkt auf dem Lautsprecher/Kopfhörer ab",
-        "Fußball- und Wetterfragen nutzen zusätzlich die Websuche (Tavily, Serper …), wenn eine eingerichtet ist – am PC und ohne PC im Browser; die anderen KIs bekommen Live-Daten und Suchergebnisse zusammen",
-        "Insel: Logo des laufenden Spiels als Abzeichen auf der Spiel-Karte, auch wenn ein Titelbild da ist",
-        "Hinweis auf Home und in der Bibliothek, wenn der PC noch nichts in die Cloud übertragen hat (mit Anleitung)"
-      ],
-      "verbessert": [
-        "Insel: Titelbilder der Musik 360 statt 128 Pixel, Programm- und Spiel-Symbole 256 statt 96 Pixel – deutlich schärfer (neue Symbole nach dem Update des Begleiters)",
-        "Cloud: Lehnt die Cloud eine Änderung ab, steht jetzt der Grund da statt „Cloud nicht erreichbar“",
-        "Cloud-Karte ohne Anmeldung erklärt, dass auch der PC mit demselben Konto angemeldet sein muss, und führt zur Anmeldung"
-      ],
-      "behoben": []
-    },
-    "signature": "4sV50/zwpz6uSvqeXovwQbrh+385FTEUP+QdoHUqIA2iONwjNjxReY/dCDrmjDi9FtIAi9E9vIsYh5CAJYNwFw=="
   }
 ]
