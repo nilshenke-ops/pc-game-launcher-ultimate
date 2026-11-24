@@ -4,6 +4,14 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.67.4 – 2026-11-24
+### Behoben
+- **System-Kacheln der Insel am PC wieder lesbar.** Im Insel-Fenster am PC wurden die elf Kacheln (Analyse, FPS, CPU, GPU, RAM, VRAM, Speicher, Akku, Ping, Laufzeit, Netzwerk) auf die feste Fensterhöhe zusammengedrückt. Dadurch waren Werte und Untertitel nur halb zu sehen. Jetzt ist eine Zeile nie niedriger als ihr Inhalt.
+### Verbessert
+- Am PC und auf dem Tablet stehen die Kacheln in vier Spalten (drei Reihen statt fünf), damit alles ohne Scrollen passt.
+- Werte sind größer und weiß, Untertitel heller, die Balken etwas dicker. Lange Werte sind kürzer gefasst: „25,5 GB“ statt „25,5 GB frei“ (darunter „frei von 252 GB“), „RAM“ statt „Arbeitsspeicher“ und „Prüfen“ bei der Analyse.
+- Ein Test prüft im PC-Fenster, dass keine Kachel und keine Zeile darin abgeschnitten ist.
+
 ## 3.67.3 – 2026-11-23
 ### Behoben
 - **Insel öffnet am PC flüssiger.** Die gleitende Markierung im Menü hat bisher nach jeder Änderung 0,7 s lang in jedem Bild die Position neu gemessen. Während des Öffnens hat das in jedem Bild die ganze Insel zusätzlich neu ausgemessen. Jetzt misst sie nur noch, wenn sich wirklich eine Größe ändert. Gemessen im Test (4-fach gedrosselte CPU): Die erzwungene Neuberechnung des Layouts sinkt von rund 350 ms auf 12 ms. Die Neuberechnung der Stile ist um 38 % kürzer, die gesamte Arbeit pro Öffnen um 20 %.

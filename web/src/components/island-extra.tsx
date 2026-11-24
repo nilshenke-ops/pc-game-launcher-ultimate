@@ -232,12 +232,12 @@ export function IslandControls({ online, canUse, controls, sensors, now, press }
 }
 
 // ------------------------------------------------------------------ System
-function Tile({ icon, name, value, sub, pct, color, onOpen, wide }: { icon: ReactNode; name: string; value: string; sub?: string; pct?: number | null; color: string; onOpen?: () => void; wide?: boolean }) {
+function Tile({ icon, name, short, value, sub, pct, color, onOpen, wide }: { icon: ReactNode; name: string; short?: string; value: string; sub?: string; pct?: number | null; color: string; onOpen?: () => void; wide?: boolean }) {
   const El = onOpen ? "button" : "div";
   return (
     <El {...(onOpen ? { type: "button" as const, onClick: onOpen, "aria-label": t("{n} im Detail", { n: name }) } : {})} data-wide={wide || undefined} className={`isl3-stat${onOpen ? " tap" : ""}`} style={{ ["--c" as string]: color } as CSSProperties}>
-      <span className="isl3-stathead">{icon}{name}</span>
-      <b>{value}</b>
+      <span className="isl3-stathead" title={name}>{icon}{short ?? name}</span>
+      <b title={value}>{value}</b>
       {pct != null && <span className="isl3-bar"><i style={{ transform: `scaleX(${Math.max(0, Math.min(100, pct)) / 100})` }} /></span>}
       {sub && <span className="isl2-sub ellipsis">{sub}</span>}
     </El>
@@ -261,15 +261,15 @@ export function IslandSystem({ online, controls, onDetails }: { online: boolean;
   const down = m?.net ? m.net.downBps : net.down, up = m?.net ? m.net.upBps : net.up;
   return (
     <div className="isl3-stats">
-      <Tile onOpen={open("insights")} wide color="#f472b6" icon={<Sparkles size={13} />} name={t("Analyse")} value={t("Was fällt auf?")} sub={t("Leistung prüfen und Tipps bekommen")} />
+      <Tile onOpen={open("insights")} wide color="#f472b6" icon={<Sparkles size={13} />} name={t("Analyse")} value={t("Prüfen")} sub={t("Leistung prüfen und Tipps bekommen")} />
       <Tile onOpen={open("fps")} color="#f472b6" icon={<Gauge size={13} />} name="FPS" value={fps?.state === "measuring" && fps.fps != null ? `${Math.round(fps.fps)}` : "–"}
         sub={fps?.state === "measuring" ? (fps.low1 != null ? `1 % Low ${Math.round(fps.low1)}` : fps.game ?? undefined) : fps ? (fps.state === "idle" ? t("startet mit dem Spiel") : fps.state === "permission" ? t("einmal erlauben") : fps.state === "off" ? t("ausgeschaltet") : t("nicht verfügbar")) : t("Begleiter aktualisieren")} />
       <Tile onOpen={open("cpu")} color="#38bdf8" icon={<Cpu size={13} />} name="CPU" value={m?.cpuPercent != null ? `${Math.round(m.cpuPercent)} %` : na} pct={m?.cpuPercent} sub={m?.cpuTempC != null ? `${Math.round(m.cpuTempC)} °C` : m?.cpuName} />
       <Tile onOpen={open("gpu")} color="#34d399" icon={<Zap size={13} />} name="GPU" value={gpu?.utilPercent != null ? `${Math.round(gpu.utilPercent)} %` : na} pct={gpu?.utilPercent} sub={gpu?.tempC != null ? `${Math.round(gpu.tempC)} °C` : gpu?.name} />
-      <Tile onOpen={open("ram")} color="#c084fc" icon={<MemoryStick size={13} />} name={t("Arbeitsspeicher")} value={m?.memUsedBytes != null ? gb(m.memUsedBytes) : na} pct={ramPct} sub={m?.memTotalBytes ? t("von {n}", { n: gb(m.memTotalBytes) }) : undefined} />
+      <Tile onOpen={open("ram")} color="#c084fc" icon={<MemoryStick size={13} />} name={t("Arbeitsspeicher")} short="RAM" value={m?.memUsedBytes != null ? gb(m.memUsedBytes) : na} pct={ramPct} sub={m?.memTotalBytes ? t("von {n}", { n: gb(m.memTotalBytes) }) : undefined} />
       <Tile onOpen={open("vram")} color="#a78bfa" icon={<Zap size={13} />} name="VRAM" value={vramPct != null ? `${Math.round(vramPct)} %` : na} pct={vramPct} sub={gpu?.memTotalBytes ? t("von {n}", { n: gb(gpu.memTotalBytes) }) : t("nicht gemeldet")} />
-      <Tile onOpen={open("disk")} color="#fbbf24" icon={<HardDrive size={13} />} name={t("Speicher")} value={disk ? t("{n} frei", { n: gb(disk.freeBytes) }) : na} pct={disk ? ((disk.totalBytes - disk.freeBytes) / disk.totalBytes) * 100 : null}
-        sub={io?.readBps != null ? t("Lesen {r} · Schreiben {w}", { r: fileSpeed(io.readBps), w: fileSpeed(io.writeBps) }) : disk ? t("von {n}", { n: gb(disk.totalBytes) }) + (disk.label ? ` · ${disk.label}` : "") : undefined} />
+      <Tile onOpen={open("disk")} color="#fbbf24" icon={<HardDrive size={13} />} name={t("Speicher")} value={disk ? gb(disk.freeBytes) : na} pct={disk ? ((disk.totalBytes - disk.freeBytes) / disk.totalBytes) * 100 : null}
+        sub={io?.readBps != null ? t("Lesen {r} · Schreiben {w}", { r: fileSpeed(io.readBps), w: fileSpeed(io.writeBps) }) : disk ? (disk.label ? t("frei von {n} · {l}", { n: gb(disk.totalBytes), l: disk.label }) : t("frei von {n}", { n: gb(disk.totalBytes) })) : undefined} />
       <Tile onOpen={open("battery")} color="#4ade80" icon={c?.charging ? <BatteryCharging size={13} /> : <BatteryMedium size={13} />} name={t("Akku")} value={c?.battery != null ? `${c.battery} %` : t("kein Akku")} pct={c?.battery ?? null} sub={c?.battery != null ? (c.charging ? t("Netzbetrieb") : t("Akkubetrieb")) : c && !c.supported ? t("nur Windows-Begleiter") : undefined} />
       <Tile onOpen={open("ping")} color="#22d3ee" icon={<Radio size={13} />} name={t("Ping")} value={t("messen")} sub={t("Router und Internet, Paketverlust")} />
       <Tile color="#facc15" icon={<Clock3 size={13} />} name={t("Laufzeit")} value={uptimeText(m?.uptimeHours)} sub={t("seit dem letzten Start")} />

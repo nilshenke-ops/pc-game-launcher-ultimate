@@ -1500,3 +1500,22 @@ button.isl3-net { display: grid; text-align: left; font: inherit; color: inherit
 /* 3.67.3 – opening on the PC stuttered. While the island moves, hover transitions of the cards are paused. The opening ways no longer blur,
    squeeze or tilt the content (blur had to repaint everything each frame, and squeezed/tilted content looked bent). */
 html[data-isl-anim] .isl-host .isl2-card, html[data-isl-anim] .isl-host .isl2-card * { transition: none !important; }
+
+/* 3.67.4 – system tiles on the PC: in the island window (fixed height) the rows were squeezed below the height of a tile, so values and
+   lines under them were cut in half. Now a row is never lower than its content (the area scrolls if it must), there are four columns
+   from 521 px on (three rows of four instead of five rows of three), values are bigger and the texts brighter. */
+.isl3-stats { grid-auto-rows: minmax(min-content, 1fr); }
+.isl3-stat:not(.isl3-net) { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; }
+.isl3-stat > b + :is(.isl3-bar, .isl2-sub) { margin-top: auto; }
+.isl3-stat .isl3-stathead { opacity: .92; letter-spacing: .05em; text-overflow: ellipsis; display: flex; min-width: 0; }
+.isl3-stat > b { font-size: 1.22rem; font-weight: 750; line-height: 1.2; color: #fff; }
+.isl3-stat .isl3-bar { height: 5px; background: rgba(255,255,255,.12); }
+.isl3-stat .isl2-sub { font-size: .72rem; line-height: 1.25; color: rgba(232,237,246,.78); opacity: 1; }
+.isl3-stat.isl3-net .isl3-netval b { font-size: 1.1rem; color: #fff; }
+@media (min-width: 521px) {
+  .isl3-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .isl3-stats > .isl3-stat[data-wide] { grid-column: auto; }
+  .isl3-stats > .isl3-stat.wide { grid-column: span 2; }
+  .isl3-stats .isl3-netrow { gap: 10px; flex-wrap: wrap; }
+  .isl3-stats .isl3-netspark { min-width: 0; flex-basis: 100%; height: 18px; }
+}

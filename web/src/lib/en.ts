@@ -7892,6 +7892,8 @@ export const en: Record<string, string> = {
   "Warte auf das Spiel": "Waiting for the game",
   "Warum wichtig:": "Why it matters:",
   "Was fällt auf?": "What stands out?",
+  "frei von {n}": "free of {n}",
+  "frei von {n} · {l}": "free of {n} · {l}",
   "Was hilft:": "What helps:",
   "Wird ausgewertet …": "Analysing …",
   "Wird geladen …": "Loading …",

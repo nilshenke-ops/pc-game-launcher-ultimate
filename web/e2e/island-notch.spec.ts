@@ -41,6 +41,9 @@ test("Insel: Symbolleiste oben, Übersicht mit Kalenderwoche und Fokus-Timer, Sy
   await panel.getByRole("tab", { name: "System" }).click();
   // 3.66: Analyse, FPS, CPU, GPU, RAM, VRAM, Speicher, Akku, Ping, Laufzeit, Netzwerk – each opens its detail view
   await expect(panel.locator(".isl3-stat")).toHaveCount(11);
+  // 3.67.4: in the PC window (fixed height) no tile is squeezed below its content – values and lines under them were cut in half
+  await page.waitForTimeout(800);
+  expect(await panel.locator(".isl3-stat, .isl3-stat > *").evaluateAll((els) => els.filter((e) => e.scrollHeight > e.clientHeight + 1).map((e) => e.textContent))).toEqual([]);
   // network: the companion measures twice, then the speeds stand there (in Mbit/s since 3.66)
   await expect(panel.locator(".isl3-net")).toContainText(/\d+ (kbit|Mbit|Gbit)\/s/, { timeout: 10_000 });
   await expect(panel.locator(".isl3-stat").filter({ hasText: "Akku" })).toContainText("87 %");
