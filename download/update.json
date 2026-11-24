@@ -1,28 +1,28 @@
 {
-  "version": "3.67.3",
-  "date": "2026-11-23",
+  "version": "3.67.4",
+  "date": "2026-11-24",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.3/PCGameLauncherCompanion.exe",
-  "size": 95580244,
-  "sha256": "aac20acf23f91ae2e4e30a9f5805b54298647129a827ebc331d51e02f83407b1",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.4/PCGameLauncherCompanion.exe",
+  "size": 95580613,
+  "sha256": "811cd93a8df8db25f18fdd4081f9421249db8a89a3a93a71faeb029e3225bb9b",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.67.3-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.3/PCGameLauncherCompanion-3.67.3-win-x64.zip",
-    "size": 89852068,
-    "sha256": "a77d5fdc60bf720bfee4394a3277523d3cab95e2c02a1b6fddab4fae87a58827"
+    "fileName": "PCGameLauncherCompanion-3.67.4-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.67.4/PCGameLauncherCompanion-3.67.4-win-x64.zip",
+    "size": 89852356,
+    "sha256": "59e9b9b7ee4b1acf4284a3574fc1456667adcc2a7259a5311814d3ba36cc054c"
   },
-  "notes": "",
+  "notes": "Am PC und auf dem Tablet stehen die Kacheln in vier Spalten (drei Reihen statt fünf), damit alles ohne Scrollen passt. · Werte sind größer und weiß, Untertitel heller, die Balken etwas dicker. Lange Werte sind kürzer gefasst: „25,5 GB“ statt „25,5 GB frei“ (darunter „frei von 252 GB“), „RAM“ statt „Arbeitsspeicher“ und „Prüfen“ bei der Analyse. · Ein Test prüft im PC-Fenster, dass keine Kachel und keine Zeile darin abgeschnitten ist.",
   "changes": {
     "neu": [],
-    "verbessert": [],
+    "verbessert": [
+      "Am PC und auf dem Tablet stehen die Kacheln in vier Spalten (drei Reihen statt fünf), damit alles ohne Scrollen passt.",
+      "Werte sind größer und weiß, Untertitel heller, die Balken etwas dicker. Lange Werte sind kürzer gefasst: „25,5 GB“ statt „25,5 GB frei“ (darunter „frei von 252 GB“), „RAM“ statt „Arbeitsspeicher“ und „Prüfen“ bei der Analyse.",
+      "Ein Test prüft im PC-Fenster, dass keine Kachel und keine Zeile darin abgeschnitten ist."
+    ],
     "behoben": [
-      "**Insel öffnet am PC flüssiger.** Die gleitende Markierung im Menü hat bisher nach jeder Änderung 0,7 s lang in jedem Bild die Position neu gemessen. Während des Öffnens hat das in jedem Bild die ganze Insel zusätzlich neu ausgemessen. Jetzt misst sie nur noch, wenn sich wirklich eine Größe ändert. Gemessen im Test (4-fach gedrosselte CPU): Die erzwungene Neuberechnung des Layouts sinkt von rund 350 ms auf 12 ms. Die Neuberechnung der Stile ist um 38 % kürzer, die gesamte Arbeit pro Öffnen um 20 %.",
-      "Der Öffnungsfortschritt wird nicht mehr an die ganze Insel vererbt, sondern nur an die Teile, die sich mitbewegen. So muss pro Bild nur eine Handvoll Elemente neu gestaltet werden statt aller.",
-      "Beim Öffnen wird nichts mehr unscharf gezeichnet und nichts mehr verzerrt oder gekippt. Die Animation skaliert gleichmäßig. Unschärfe-Filter waren am PC der teuerste Teil jedes Bildes.",
-      "Das Windows-Fenster der Insel bekommt seine Form nur noch, wenn sie sich wirklich ändert, nicht mehr in jedem Bild.",
-      "Hinweis: Gemessen wurde im Browser ohne Grafikkarte. Auf einem echten Windows-PC konnte es hier nicht nachgemessen werden."
+      "**System-Kacheln der Insel am PC wieder lesbar.** Im Insel-Fenster am PC wurden die elf Kacheln (Analyse, FPS, CPU, GPU, RAM, VRAM, Speicher, Akku, Ping, Laufzeit, Netzwerk) auf die feste Fensterhöhe zusammengedrückt. Dadurch waren Werte und Untertitel nur halb zu sehen. Jetzt ist eine Zeile nie niedriger als ihr Inhalt."
     ]
   },
-  "signature": "Wzmg1POud97gVbIbmaadIYV4lqdWPzoKBUZb8fQ0yXT/vRI1M8RZP3oinx04NtTuH70ZVvfuJVaabtjMZFNYnQ=="
+  "signature": "h2AGbmH0Bq6XjttZAcktBCYpT79qkeKtiEJbUcHkzUhzhHGYjhWhFj1CRCitG7d6YDPMcFaMgzlzLmahGPzMjA=="
 }
