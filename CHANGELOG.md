@@ -4,6 +4,10 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.68.1 – 2026-11-24
+### Behoben
+- Die Version 3.68.0 (Weihnachtswunschliste) wurde nicht veröffentlicht, weil ein Test im Begleiter fehlschlug: Der Assistent kannte die neue Seite noch nicht. JARVIS kennt die Wunschliste jetzt und kann dorthin führen. Inhalt sonst unverändert, siehe 3.68.0.
+
 ## 3.68.0 – 2026-11-24
 ### Neu
 - **Weihnachtswunschliste** (Menü „Mehr“ → Dashboard → Weihnachtswunschliste). Du fügst Links zu deinen Wünschen hinzu, trägst optional Titel, Preis und Notiz ein und siehst die Summe aller Preise. Ein Wunsch ohne Preis wird nicht mitgerechnet und das steht auch dabei. Ohne Titel wird er aus dem Link gemacht. Jeder Eintrag lässt sich bearbeiten, löschen und der Link dazu mit einem Klick kopieren.
