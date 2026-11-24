@@ -3511,3 +3511,34 @@ a.card:active, .card[role="button"]:active, button.card:active, .game-card:activ
 .xs-ask { grid-template-columns: auto minmax(0, 1fr); }
 .xs-ask > .xs-code { grid-column: 1 / -1; justify-self: start; }
 .xs-ask > .row { grid-column: 1 / -1; }
+
+/* ---------- 3.68 Christmas wish list ---------- */
+.wl-layout { display: grid; gap: 16px; max-width: 760px; }
+.wl-form { display: grid; gap: 12px; }
+.wl-two { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 12px; }
+.wl-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin: 0 0 10px; }
+.wl-total .muted { font-size: .85rem; }
+.wl-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.wl-item { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line, rgba(255,255,255,.1)); background: color-mix(in srgb, currentColor 4%, transparent); }
+.wl-item.editing { grid-template-columns: minmax(0, 1fr); }
+.wl-edit { display: grid; grid-template-columns: minmax(0, 1fr) 150px minmax(0, 1fr); gap: 10px; }
+.wl-main { display: grid; gap: 2px; min-width: 0; }
+.wl-title { display: inline-flex; align-items: center; gap: 6px; font-weight: 650; overflow-wrap: anywhere; color: inherit; text-decoration: none; }
+.wl-title:hover { text-decoration: underline; }
+.wl-host { font-size: .78rem; opacity: .7; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wl-note { font-size: .82rem; opacity: .85; overflow-wrap: anywhere; }
+.wl-price { font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 1.05rem; }
+.wl-price.none { font-size: .8rem; font-weight: 500; opacity: .65; }
+.wl-actions { display: flex; gap: 4px; justify-content: flex-end; }
+.wl-actions .btn.icon { min-width: 40px; min-height: 40px; }
+.wl-share { display: flex; flex-wrap: wrap; gap: 8px; }
+.wl-link { font-size: .8rem; text-overflow: ellipsis; }
+.wl-warn { color: #fbbf24; }
+.wl-public { max-width: 680px; margin: 0 auto; padding: 32px 16px 48px; display: grid; gap: 16px; }
+.wl-public header { display: grid; gap: 6px; justify-items: start; }
+.wl-public h1 { margin: 0; font-size: 1.7rem; overflow-wrap: anywhere; }
+@media (max-width: 560px) {
+  .wl-two, .wl-edit { grid-template-columns: minmax(0, 1fr); }
+  .wl-item { grid-template-columns: minmax(0, 1fr) auto; }
+  .wl-item .wl-actions { grid-column: 1 / -1; justify-content: flex-start; }
+}

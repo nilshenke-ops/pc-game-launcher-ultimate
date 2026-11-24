@@ -19,7 +19,9 @@ export function AccessGate({ children }: { children: ReactNode }) {
   const [hash, setHash] = useState(() => location.hash);
   useEffect(() => { const on = () => setHash(location.hash); window.addEventListener("hashchange", on); return () => window.removeEventListener("hashchange", on); }, []);
 
-  if (open || /^#\/x\/[A-Za-z0-9_.-]+$/.test(hash)) return <>{children}</>;
+  // The page of a shared wish list (#/w/<code>, 3.68) is open the same way: it shows only the list that is inside the link itself – nothing of
+  // the app, the account or the PC – so the person who gets the link does not need the code.
+  if (open || /^#\/x\/[A-Za-z0-9_.-]+$/.test(hash) || /^#\/w\/[zp][A-Za-z0-9_-]{1,60000}$/.test(hash)) return <>{children}</>;
   const submit = (value: string) => {
     if (value.length !== 4 || wait > 0) return;
     if (unlock(value)) { setOpen(true); return; }

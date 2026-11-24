@@ -4,6 +4,18 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.68.0 – 2026-11-24
+### Neu
+- **Weihnachtswunschliste** (Menü „Mehr“ → Dashboard → Weihnachtswunschliste). Du fügst Links zu deinen Wünschen hinzu, trägst optional Titel, Preis und Notiz ein und siehst die Summe aller Preise. Ein Wunsch ohne Preis wird nicht mitgerechnet und das steht auch dabei. Ohne Titel wird er aus dem Link gemacht. Jeder Eintrag lässt sich bearbeiten, löschen und der Link dazu mit einem Klick kopieren.
+- **Liste als ein Link weiterschicken.** „Link kopieren“ legt den Link zur ganzen Liste in die Zwischenablage, auf Handy und Tablet gibt es zusätzlich „Teilen …“. Wer den Link öffnet, sieht die Liste mit Preisen und Summe, ohne Konto, ohne Zugangscode und ohne PC, und kann die Links einzeln öffnen oder kopieren.
+- Die Liste gehört zum Konto: Sie wird verschlüsselt mit dem Konto gesichert und erscheint auf deinen anderen Geräten.
+### Sicherheit und Datenschutz
+- Die Wünsche stecken im Link selbst (hinter dem „#“, den ein Browser nie an einen Server schickt). Es wird nichts hochgeladen, es gibt keine öffentliche Seite und keine Schnittstelle, die jemand abfragen könnte. Der Link zeigt die Liste, wie sie beim Kopieren war; nach Änderungen schickst du einen neuen Link.
+- Der Inhalt eines Links kommt von außen und wird deshalb geprüft und gesäubert: nur http- und https-Links (kein `javascript:`, `data:`, `file:`), keine Zugangsdaten in Adressen, begrenzte Längen und höchstens 100 Wünsche. Alles wird als reiner Text angezeigt, Links öffnen mit `noopener`. Ein abgeschnittener oder erfundener Link zeigt eine Meldung statt etwas Falsches.
+- Die Zugangscode-Sperre der Website gilt weiter für alles, nur die geteilte Wunschliste (`#/w/…`) ist wie die Übertragungsseite davon ausgenommen. Sie zeigt nichts von App, Konto oder PC.
+### Hinweis
+- Die Preise sind die, die du einträgst. Sie werden nicht aus dem Shop gelesen: Ein Browser darf fremde Webseiten nicht auslesen, und ein Preis-Abruf über den PC wäre ein zusätzlicher Dienst, der Webseiten im Namen des PCs lädt. Deshalb steht auf der Seite, dass der Preis im Shop abweichen kann.
+
 ## 3.67.4 – 2026-11-24
 ### Behoben
 - **System-Kacheln der Insel am PC wieder lesbar.** Im Insel-Fenster am PC wurden die elf Kacheln (Analyse, FPS, CPU, GPU, RAM, VRAM, Speicher, Akku, Ping, Laufzeit, Netzwerk) auf die feste Fensterhöhe zusammengedrückt. Dadurch waren Werte und Untertitel nur halb zu sehen. Jetzt ist eine Zeile nie niedriger als ihr Inhalt.

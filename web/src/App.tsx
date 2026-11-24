@@ -77,6 +77,8 @@ const Deals = lazyRetry(() => import("./pages/Deals"));
 const DesktopWidget = lazyRetry(() => import("./pages/DesktopWidget"));
 const IslandPage = lazyRetry(() => import("./pages/IslandPage"));
 const ShareTransfer = lazyRetry(() => import("./pages/ShareTransfer"));
+const Wishlist = lazyRetry(() => import("./pages/Wishlist"));
+const WishlistShared = lazyRetry(() => import("./pages/WishlistShared"));
 const Connect = lazyRetry(() => import("./pages/Connect"));
 const ProfilePage = lazyRetry(() => import("./pages/Profile"));
 const VoiceChanger = lazyRetry(() => import("./pages/VoiceChanger"));const PairAdmin = lazyRetry(() => import("./pages/Pair").then((m) => ({ default: m.PairPage })));
@@ -131,6 +133,8 @@ function Gate() {
   // everything else asks to connect the PC first ("Verbinden" in the navigation). Logged-in devices keep the app
   // during short connection losses and reconnect automatically.
   // The page a transfer QR code opens on the phone (3.64): works without an account, without the app around it.
+  // The page a shared wish list opens (3.68): read-only, no account and no PC; the list is inside the link.
+  if (loc.pathname.startsWith("/w/")) return <Suspense fallback={null}><WishlistShared code={decodeURIComponent(loc.pathname.slice(3))} /></Suspense>;
   if (loc.pathname.startsWith("/x/")) return <Suspense fallback={null}><ShareTransfer token={decodeURIComponent(loc.pathname.slice(3))} /></Suspense>;
   if (!client.demo && conn.phase === "online" && conn.auth === "checking" && !conn.me)
     return <div className="center-screen"><div className="center-card"><Loading /></div></div>;
@@ -180,6 +184,7 @@ function Gate() {
           <Route path="/network" element={<Network />} />
           <Route path="/quests" element={<Quests />} />
           <Route path="/backlog" element={<Backlog />} />
+          <Route path="/wunschliste" element={<Wishlist />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/journal" element={<JournalPage />} />
           <Route path="/wiki" element={<WikiPage />} />
