@@ -4,7 +4,7 @@
 
 import { carouselMs, directionOf, dragOffset, shouldCommit, swipeIntent, velocity } from "../lib/island-swipe";
 import { createPortal, flushSync } from "react-dom";
-import { Fragment, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { Fragment, memo, useEffect, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { FolderUp, Gamepad2, Home, Inbox, LayoutGrid, MessageCircle, MessagesSquare, Mic, MicOff, Monitor, MoreHorizontal, ChevronUp, Settings2, Power, RefreshCw, Copy, Check, BellOff, History, LayoutDashboard, SlidersHorizontal, Activity, BatteryCharging, BatteryMedium, Music, Pause, Play, Radio, Send, SkipBack, SkipForward, Star, StickyNote, Timer, Trash2, Volume2, Layers, Camera, ScrollText, Download, Headphones, Pencil, Plus, X, Smartphone, Cpu, Gauge, MemoryStick, Palette, Wrench, Earth, ListTodo, ArrowDownAZ } from "lucide-react";
 import { ListsArea, ToolsArea, WorldArea } from "./island-tools";
@@ -13,6 +13,8 @@ import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
 import { useAppState } from "../lib/state";
 import { toast, useCan, useConn, useEvent, useRpc } from "../lib/hooks";
+import { dateTimeLong, dateWdm, timeHM } from "../lib/clock-fmt";
+import { usePanelNow } from "../lib/panel-now";
 import { connView } from "../lib/conn-state";
 import { handoffUrl, IslandControls, IslandLyrics, IslandSystem, onTouchDevice, PcVolumeBar, useIslandWeather, useMetricsHistory, usePcControls, usePcSensors, WeatherIcon } from "./island-extra";
 import { IslandTile, TabsEditor, TileCatalog, TileEditBar, TileSettings, type TileCtx } from "./island-tiles";
@@ -30,7 +32,7 @@ import { ISLAND_WIDGETS, toggleWidget, type IslandWidgetId } from "../lib/island
 import { clock, islandAnswer, islandState, islandBusy, islandPet, islandTouch, MOOD_LABEL, petCommand, setIslandPrefs, useIsland, useIslandPrefs, type Mood } from "../lib/island";
 import { asksForSource } from "../lib/answer-text";
 import type { AssistantAction } from "../lib/assistant";
-import { addCountdown, countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, useTimer } from "../lib/island-timer";
+import { addCountdown, countdownView, pauseCountdown, playTime, resumeCountdown, startCountdown, startPomodoro, stopCountdown, timerLive, useTimer } from "../lib/island-timer";
 import { POMO_LABEL } from "../lib/pomodoro";
 import { nowPosition, nowSub, songTime, useNowPlaying } from "../lib/now-playing";
 import { accentOfCover } from "../lib/cover-accent";
@@ -90,7 +92,7 @@ function AppLogo({ item }: { item: LibraryItem }) {
   return <span className="isl2-letter" aria-hidden>{item.name.slice(0, 1).toUpperCase()}</span>;
 }
 
-export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now: number; floating: boolean; onClose: () => void }) {
+export const IslandPanel = memo(function IslandPanel({ mood, floating, onClose }: { mood: Mood; floating: boolean; onClose: () => void }) {
   const s = useIsland();
   const prefs = useIslandPrefs();
   const { look, save, canManage } = useIslandLook();
@@ -114,6 +116,9 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
   const game = mainGame(app?.running);
   const lay = useIslandLayout();
   const L = lay.layout;
+  // Seconds only where something shows them: a running focus timer, a playing song (progress), lyrics, a clock tile with seconds. Otherwise the clock moves once a minute.
+  const needsSeconds = timerLive(tm) || !!np?.playing || lyrics || L.home.some((x) => x.type === "clock" && x.opts?.seconds) || L.dash.some((x) => x.type === "clock" && x.opts?.seconds);
+  const now = usePanelNow(needsSeconds);
   const tabs = tabsOf(L, visibleTabs(look.widgets, !!game), !!game);
   const metrics = useMetricsHistory(online);
   const has = (id: IslandWidgetId) => look.widgets.includes(id);
@@ -609,7 +614,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       </div>
     </div>
   );
-  const home = <div className="isl3-page"><AgentIslandCard now={now} />{editHead("home")}{homeCards}</div>;
+  const home = <div className="isl3-page"><AgentIslandCard />{editHead("home")}{homeCards}</div>;
   const dashPage = <div className="isl3-page">{editHead("dash")}{dashTiles}</div>;
 
   // ---------------------------------------------------------------- the other tabs
@@ -656,7 +661,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         <span className="isl3-gicon" aria-hidden>{gItem?.iconData ? <img src={gItem.iconData} alt="" /> : gBrand ? <BrandLogo brand={gBrand} size={28} color="#fff" /> : <Gamepad2 size={26} />}</span>
         <div className="isl2-mtext">
           <b className="isl2-big ellipsis" title={game.name}>{game.name}</b>
-          <span className="isl2-sub">{t("läuft seit {t}", { t: new Date(gameSince).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })} · {playTime(gameSince, now) ?? "–"}</span>
+          <span className="isl2-sub">{t("läuft seit {t}", { t: timeHM(gameSince) })} · {playTime(gameSince, now) ?? "–"}</span>
         </div>
         <span className={`isl3-pill ${online ? "ok" : "warn"}`}><i />{online ? t("PC verbunden") : t("PC nicht verbunden")}</span>
       </div>
@@ -724,7 +729,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
     : ["Wie wird das Wetter morgen?", "Erzähl mir einen Witz", "Was ist 15 % von 80?"];
   const jarvisTab = (
     <div className="isl2-chat v3">
-      <AgentIslandCard now={now} />
+      <AgentIslandCard />
       <div className="isl2-answer grow">
         <div className="isl2-ahead">
           <span className="badge">{t(MOOD_LABEL[mood])}</span>
@@ -857,15 +862,15 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
         <div className="isl-card">
           <div className="isl-main">
             <b className="ellipsis">{game ? game.name : t("Kein Spiel aktiv")}</b>
-            <span className="tiny muted">{!online ? t("PC nicht verbunden") : game ? `${t("läuft seit {t}", { t: new Date(game.since).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) })}${playTime(game.since, now) ? ` · ${playTime(game.since, now)}` : ""}` : t("Laut deinem PC")}</span>
+            <span className="tiny muted">{!online ? t("PC nicht verbunden") : game ? `${t("läuft seit {t}", { t: timeHM(new Date(game.since).getTime()) })}${playTime(game.since, now) ? ` · ${playTime(game.since, now)}` : ""}` : t("Laut deinem PC")}</span>
           </div>
         </div>
       )}
       {has("start") && <IslandStart online={online} canLaunch={canMedia} />}
       {has("clock") && (
         <div className="isl-card"><div className="isl-main">
-          <b className="isl-big">{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</b>
-          <span className="tiny muted">{new Date(now).toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" })}</span>
+          <b className="isl-big">{timeHM(now)}</b>
+          <span className="tiny muted">{dateWdm(now)}</span>
         </div></div>
       )}
       {has("stats") && <IslandStats online={online} />}
@@ -904,13 +909,13 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
             );
           })}
         </nav>
-        <span className="isl2-status" title={new Date(now).toLocaleString([], { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}>
+        <span className="isl2-status" title={dateTimeLong(now)}>
           {sensors.data?.micInUse && <span className="isl2-stat sens mic" role="img" aria-label={t("Mikrofon in Benutzung: {n}", { n: sensors.data.micApp ?? "?" })} title={t("Mikrofon in Benutzung: {n}", { n: sensors.data.micApp ?? "?" })}><Mic size={12} /></span>}
           {sensors.data?.cameraInUse && <span className="isl2-stat sens cam" role="img" aria-label={t("Kamera in Benutzung: {n}", { n: sensors.data.cameraApp ?? "?" })} title={t("Kamera in Benutzung: {n}", { n: sensors.data.cameraApp ?? "?" })}><Camera size={12} /></span>}
           {playing && <Bars level={0.4} />}
           {weather.w && <span className="isl2-stat" aria-label={t("Wetter: {n} Grad", { n: weather.w.temp })}><WeatherIcon code={weather.w.code} size={14} />{weather.w.temp}°</span>}
           {pcControls.data?.battery != null && <span className="isl2-stat" aria-label={t("Akku des PCs: {n} Prozent", { n: pcControls.data.battery })}>{pcControls.data.charging ? <BatteryCharging size={14} /> : <BatteryMedium size={14} />}{pcControls.data.battery}%</span>}
-          <time className="isl2-clock" dateTime={new Date(now).toISOString()}>{new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time>
+          <time className="isl2-clock" dateTime={new Date(now).toISOString()}>{timeHM(now)}</time>
         </span>
         {(current === "home" || current === "dash") && editing !== current && (
           <button type="button" className="isl2-more isl3-pen" onClick={() => setEditing(current)} aria-label={current === "home" ? t("Startseite bearbeiten") : t("Übersicht bearbeiten")} title={t("Bearbeiten")}><Pencil size={15} /></button>
@@ -973,7 +978,7 @@ export function IslandPanel({ mood, now, floating, onClose }: { mood: Mood; now:
       </div>
     </div>
   );
-}
+});
 
 /** True when something between the finger and the island body scrolls sideways by itself (a chip row, a wide list). */
 function scrollsSideways(from: HTMLElement, stop: HTMLElement): boolean {

@@ -20,6 +20,9 @@ function offsetIn(el: HTMLElement, root: HTMLElement): { x: number; y: number } 
   return { x, y };
 }
 
+/** The corner radius of each entry, read once per size and class (see measure). */
+const radii = new WeakMap<HTMLElement, { sig: string; radius: string }>();
+
 export function useGlidePill(box: RefObject<HTMLElement | null>, pill: RefObject<HTMLElement | null>, activeSel: string, deps: unknown[]) {
   const placed = useRef(false);
   const last = useRef("");
@@ -36,7 +39,10 @@ export function useGlidePill(box: RefObject<HTMLElement | null>, pill: RefObject
     el.style.opacity = "1";
     el.style.width = `${link.offsetWidth}px`; el.style.height = `${link.offsetHeight}px`;
     el.style.transform = `translate3d(${at.x}px, ${at.y}px, 0)`;
-    el.style.borderRadius = getComputedStyle(link).borderRadius;
+    // getComputedStyle forces a style recalculation – the radius only changes with the entry's size or class, so it is read once for those
+    const sig = `${link.offsetHeight}|${link.className}`, have = radii.get(link);
+    if (!have || have.sig !== sig) radii.set(link, { sig, radius: getComputedStyle(link).borderRadius });
+    el.style.borderRadius = radii.get(link)!.radius;
     if (!placed.current) { placed.current = true; requestAnimationFrame(() => el.classList.add("ready")); }
   };
   // the active entry changed: place the pill there (once – later size changes come through the observer)

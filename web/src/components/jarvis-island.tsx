@@ -5,9 +5,10 @@
 // island and only gets told the shape of every frame, so the screen and the window cut-out can never drift apart.
 // Own design – inspired by "island" apps, no code or character taken from them. Everything shown comes from real state.
 
+import { timeHM, warmClockFormats } from "../lib/clock-fmt";
 import { lazyRetry } from "../lib/lazy-retry";
 import { plainAnswer } from "../lib/answer-text";
-import { Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, useCallback } from "react";
 import { Bell, Check, Gamepad2, Music, Timer as TimerIcon, X } from "lucide-react";
 import { t } from "../lib/i18n";
 import { client } from "../lib/rpc";
@@ -22,7 +23,9 @@ const loadPanel = () => import("./island-panel");
 const IslandPanel = lazyRetry(() => loadPanel().then((m) => ({ default: m.IslandPanel })));
 if (typeof window !== "undefined") {
   const idle = (window as unknown as { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number }).requestIdleCallback;
-  if (idle) idle(() => { void loadPanel(); }, { timeout: 4000 }); else window.setTimeout(() => { void loadPanel(); }, 2500);
+  // after the panel: the date formatters it needs (made now, in a quiet moment, not while the island opens)
+  const warm = () => { void loadPanel().then(() => { if (idle) idle(() => warmClockFormats(), { timeout: 6000 }); else window.setTimeout(() => warmClockFormats(), 500); }); };
+  if (idle) idle(warm, { timeout: 4000 }); else window.setTimeout(warm, 2500);
 }
 import { consumeSpoken } from "../lib/island-voice";
 import { speak } from "../lib/jarvis-voice";
@@ -101,6 +104,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
   const app = useAppState().state;
   const [hover, setHover] = useState(false);
   const [open, setOpen] = useState(false);
+  const closePanel = useCallback(() => setOpen(false), []);   // stable, so the panel (memo) is not redrawn with every tick of the island
   const [dropping, setDropping] = useState(false);
   const [now, setNow] = useState(Date.now());
   const mood = moodOf(s, now);
@@ -183,6 +187,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     const el = hostRef.current; if (!el) return;
     const post = (m: unknown) => (window as HostWindow).chrome?.webview?.postMessage(m);
     let lastP = "", lastMoving: boolean | null = null, lastRect = "";
+    let targets: HTMLElement[] | null = null;   // elements that follow --isl-p; made again after the island's elements change (see the observer below)
     const apply = (b: Box) => {
       el.style.width = `${b.w}px`; el.style.height = `${b.h}px`;
       // How far open the island is (0 closed … 1 open): the content (header, tabs, cards) fades, rises and clears its blur by this number – so
@@ -193,7 +198,8 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
       if (pv !== lastP) {
         lastP = pv;
         el.style.setProperty("--isl-p", pv);
-        el.querySelectorAll<HTMLElement>(P_SEL).forEach((x) => x.style.setProperty("--isl-p", pv));
+        // the list of elements that follow the progress is made once (a selector search through the whole island on every frame was a good part of the work of a frame)
+        (targets ??= Array.from(el.querySelectorAll<HTMLElement>(P_SEL))).forEach((x) => x.style.setProperty("--isl-p", pv));
       }
       // While the island moves, the blur behind the page's glass surfaces is paused (re-blurring them every frame is the costliest part).
       // Only on a real change – setting it again on every frame made the browser re-check the styles of the whole page.
@@ -213,6 +219,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
     // Parts that appear later (another area, editing, a new card) get the current value too – otherwise they would keep the start value 0
     // and stay invisible until the island moves again.
     const mo = typeof MutationObserver === "undefined" ? null : new MutationObserver((recs) => {
+      targets = null;
       if (!lastP) return;
       for (const r of recs) for (const n of Array.from(r.addedNodes)) {
         if (!(n instanceof HTMLElement)) continue;
@@ -358,7 +365,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
           {size !== "notch" && <span className="isl-text" key={textKey}>{text}{mood === "thinking" && <span className="isl-dots" aria-hidden><i /><i /><i /></span>}</span>}
         </button>
         {size !== "notch" && !ask && marks.length > 0 && <span className="isl-marks" aria-hidden>{marks.map((k) => k === "timer" ? <TimerIcon key={k} size={13} /> : k === "game" ? <Gamepad2 key={k} size={13} /> : <Music key={k} size={13} />)}</span>}
-        {size !== "notch" && !ask && <span className="isl-time">{live ? clock(live.left) : new Date(now).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>}
+        {size !== "notch" && !ask && <span className="isl-time">{live ? clock(live.left) : timeHM(now)}</span>}
         {!ask && agent && aph === "decide" && (
           <span className="isl-ask">
             <button type="button" className="btn sm primary" onClick={() => client.call("jarvis.execute", { taskId: agent.id, default: true }).catch((e: Error) => islandAnswer(e.message, false))}><Check size={15} /> {t("Ausführen")}</button>
@@ -379,7 +386,7 @@ export function JarvisIsland({ floating = false }: { floating?: boolean } = {}) 
         )}
       </div>
       {panelMounted && (
-        <div className={`isl2-wrap${open ? "" : " closing"}`}>{look.effect !== "none" && <IslandFx kind={look.effect} />}<Suspense fallback={null}><IslandPanel mood={mood} now={now} floating={floating} onClose={() => setOpen(false)} /></Suspense></div>
+        <div className={`isl2-wrap${open ? "" : " closing"}`}>{look.effect !== "none" && <IslandFx kind={look.effect} />}<Suspense fallback={null}><IslandPanel mood={mood} floating={floating} onClose={closePanel} /></Suspense></div>
       )}
       </div>
     </div>

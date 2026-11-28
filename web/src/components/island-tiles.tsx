@@ -1,6 +1,7 @@
 // Tiles of the JARVIS island (3.57): every kind can lie on the start page (tall cards) or the overview (boxes), each with its own
 // settings. The editing parts (catalog, settings form, areas list) are used inside the island and on the island settings page.
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { dtf, zoneDay, zoneStamp, zoneTime } from "../lib/clock-fmt";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import {
   ArrowDown, ArrowUp, BatteryCharging, BatteryMedium, CalendarDays, ChevronLeft, ChevronRight, Clock3, CloudSun, Cpu, Gamepad2, LayoutGrid,
   MessageCircle, Minus, Monitor, Music, Network, Pause, Play, Plus, Settings2, SkipBack, SkipForward, StickyNote, Sun, Timer, Volume2, VolumeX, X,
@@ -50,21 +51,30 @@ export interface TileCtx {
 type P = { tile: Tile; ctx: TileCtx; box: boolean };
 
 // ------------------------------------------------------------------ the tiles
+/** The day's texts are made once per day (not on every second the island redraws): names of the day and month, week number and the week strip. */
+function dayParts(d: Date) {
+  return {
+    num: d.getDate(), name: dtf(undefined, { weekday: "short" }).format(d).replace(".", ""), month: dtf(undefined, { month: "short" }).format(d).replace(".", ""), kw: isoWeek(d),
+    week: weekStrip(d).map((x) => ({ key: x.date.toISOString(), today: x.today, day: x.day, narrow: dtf(undefined, { weekday: "narrow" }).format(x.date) })),
+  };
+}
 function CalendarTile({ tile, ctx, box }: P) {
   const d = new Date(ctx.now);
+  const dayKey = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}|${typeof navigator === "undefined" ? "" : navigator.language}`;
+  const p = useMemo(() => dayParts(d), [dayKey]); // eslint-disable-line react-hooks/exhaustive-deps
   const kw = opt<boolean>(tile, "kw"), week = opt<boolean>(tile, "week");
   return (
     <>
       <div className="isl3-calhead">
-        <b className="isl3-daynum">{d.getDate()}</b>
-        <span className="isl3-dayname"><b>{d.toLocaleDateString([], { weekday: "short" }).replace(".", "")}</b><span>{d.toLocaleDateString([], { month: "short" }).replace(".", "")}</span></span>
-        {kw && <span className="isl3-kw">{t("KW {n}", { n: isoWeek(d) })}</span>}
+        <b className="isl3-daynum">{p.num}</b>
+        <span className="isl3-dayname"><b>{p.name}</b><span>{p.month}</span></span>
+        {kw && <span className="isl3-kw">{t("KW {n}", { n: p.kw })}</span>}
       </div>
       {week && (
         <div className={`isl3-week${box ? "" : " slim"}`} role="list">
-          {weekStrip(d).map((x) => (
-            <span key={x.date.toISOString()} role="listitem" className={x.today ? "today" : ""} aria-current={x.today ? "date" : undefined}>
-              <i>{x.date.toLocaleDateString([], { weekday: "narrow" })}</i><b>{x.day}</b>
+          {p.week.map((x) => (
+            <span key={x.key} role="listitem" className={x.today ? "today" : ""} aria-current={x.today ? "date" : undefined}>
+              <i>{x.narrow}</i><b>{x.day}</b>
             </span>
           ))}
         </div>
@@ -263,8 +273,8 @@ function BatteryTile({ ctx }: P) {
 export function zoneDiff(zone: string, at: Date): string {
   if (!zone) return "";
   try {
-    const there = new Date(at.toLocaleString("en-US", { timeZone: zone }));
-    const here = new Date(at.toLocaleString("en-US"));
+    const there = new Date(zoneStamp(at.getTime(), zone));
+    const here = new Date(zoneStamp(at.getTime()));
     const h = Math.round(((there.getTime() - here.getTime()) / 3_600_000) * 2) / 2;
     return h === 0 ? t("gleiche Zeit") : `${h > 0 ? "+" : "−"}${Math.abs(h).toLocaleString("de-DE")} h`;
   } catch { return ""; }
@@ -275,8 +285,8 @@ function ClockTile({ tile, ctx, box }: P) {
   const d = new Date(ctx.now);
   let time = "", day = "";
   try {
-    time = d.toLocaleTimeString("de-DE", { timeZone: zone || undefined, hour: "2-digit", minute: "2-digit", ...(secs ? { second: "2-digit" } : {}) });
-    day = d.toLocaleDateString("de-DE", { timeZone: zone || undefined, weekday: "short", day: "numeric", month: "short" });
+    time = zoneTime(ctx.now, zone, !!secs);
+    day = zoneDay(ctx.now, zone);
   } catch { time = "–"; }
   return (
     <>

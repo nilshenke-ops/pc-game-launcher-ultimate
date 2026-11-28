@@ -1,6 +1,6 @@
 // AI Activity Island (3.60): the current JARVIS task inside the open island – what he does, how far, and the decision right here.
 // "Ausführen" runs what the plan ticked; critical steps (Windows settings, closing programs) are left out and need the full plan.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Loader2, Play, Square, X, XCircle } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -8,8 +8,12 @@ import { client } from "../lib/rpc";
 import { toast } from "../lib/hooks";
 import { agentLine, agentPhase, agentProgress, useAgentBrief } from "../lib/island-agent";
 
-export function AgentIslandCard({ now }: { now: number }) {
+export function AgentIslandCard() {
   const b = useAgentBrief();
+  // A finished task goes away by time: while one is shown the card checks the clock itself every second (the panel only ticks once a minute when nothing else needs seconds).
+  const [now, setNow] = useState(() => Date.now());
+  const byTime = !!b && (b.state === "done" || b.state === "failed");   // only a finished task goes away by time – a running or planned one stays until it changes
+  useEffect(() => { if (!byTime) return; setNow(Date.now()); const id = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(id); }, [byTime, b]);
   const phase = agentPhase(b, now);
   const [busy, setBusy] = useState(false);
   if (!b || !phase) return null;

@@ -1,6 +1,7 @@
 // New island tiles and areas (3.63): Zufall, Zähler, Countdown, Checkliste, Durchatmen, Stoppuhr, Schnell-Links, Akku dieses Geräts –
 // and the areas "Werkzeuge", "Weltzeit" and "Listen". Everything works without the PC. Tile values are kept in the island layout (on the
 // PC for every device, or on this device); the areas keep theirs on this device only.
+import { zoneDay, zoneHour, zoneTime } from "../lib/clock-fmt";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { BatteryCharging, BatteryMedium, Dices, ExternalLink, Flag, Minus, Pause, Play, Plus, RotateCcw, Trash2, X } from "lucide-react";
 import { t } from "../lib/i18n";
@@ -229,16 +230,15 @@ export function ToolsArea() {
 export function WorldArea({ now }: { now: number }) {
   const [zones, setZones] = useLocal("pgl.island.world", ["", "Europe/London", "America/New_York", "Asia/Tokyo"], isZones);
   const [adding, setAdding] = useState(false);
-  const d = new Date(now);
   const nameOf = (z: string) => t(ZONES.find((x) => x.id === z)?.label ?? z.split("/").pop()!.replace(/_/g, " "));
   return (
     <div className="isl3-area world">
       {zones.map((z) => {
         let time = "–", day = "", night = false;
         try {
-          time = d.toLocaleTimeString("de-DE", { timeZone: z || undefined, hour: "2-digit", minute: "2-digit" });
-          day = d.toLocaleDateString("de-DE", { timeZone: z || undefined, weekday: "short" });
-          const h = Number(d.toLocaleString("en-US", { timeZone: z || undefined, hour: "numeric", hour12: false }));
+          time = zoneTime(now, z);
+          day = zoneDay(now, z, false);
+          const h = zoneHour(now, z);
           night = h < 6 || h >= 20;
         } catch { /* unknown zone: dash */ }
         return (

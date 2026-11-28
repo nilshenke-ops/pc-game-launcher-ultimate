@@ -4,6 +4,15 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.69.1 – 2026-11-28
+### Verbessert
+- **Insel im Leerlauf deutlich sparsamer** (offenes Panel, nichts bewegt sich). Gemessen als Arbeit des JavaScripts in 8 Sekunden im Test-Browser (ohne Grafikkarte; Werte schwanken um etwa ±5 ms): Home 46 → 25 ms, Übersicht 78 → 31 ms, System 74 → 43 ms. Die geschlossene Insel lag schon bei ca. 2 ms in 8 s und blieb dort. Aussehen und Verhalten sind unverändert.
+  - Das offene Panel zeichnet sich nicht mehr jede Sekunde neu, nur weil eine Uhr sich bewegt. Es meldet sich jede Sekunde nur, wenn etwas Sekunden braucht (laufender Fokus-Timer, spielender Titel, Songtexte, eine Uhr-Kachel mit Sekunden); sonst genau einmal pro Minute beim Minutenwechsel. Der JARVIS-Auftrag („fertig“-Hinweis) prüft seine Zeit selbst.
+  - Datum und Uhrzeit (Uhr, Datum, Kalender-Kachel, Weltuhren) werden nicht mehr bei jedem Zeichnen neu gebaut: Die Formatierer werden einmal erstellt (im Leerlauf, nicht erst beim Öffnen), die Kalender-Kachel rechnet ihre Texte einmal pro Tag, die Uhrzeit nur beim Minutenwechsel. Der Text ist Zeichen für Zeichen derselbe wie vorher (Test).
+  - Beim Öffnen sucht die Insel nicht mehr in jedem Bild per Selektor durch alle Elemente, sondern merkt sich die Liste (und baut sie neu, wenn sich die Elemente ändern). Die Menü-Markierung liest die Eckenrundung nur noch einmal je Größe statt bei jeder Änderung (das erzwang eine Stil-Berechnung).
+### Hinweis
+- Nicht verbessert, weil nicht messbar verbesserbar: Die Arbeit für die Öffnungsanimation selbst (Stil-Berechnung und Zeichnen pro Bild) blieb im Test unverändert. Probiert und wieder verworfen, weil ohne messbaren Effekt: Ebenenhinweise für die Augen, Entfernen von `:has()`-Regeln und der Seitenregel gegen Unschärfe, `contain` auf Karten, Abschalten der Eintrittsanimationen (nur das Abschalten aller Animationen half, das würde das Aussehen ändern) und ein aufgeschobenes Messen der Markierung (die Kosten wanderten nur an eine andere Stelle). Auf einem echten PC mit Grafikkarte konnte ich nichts messen; die Zahlen oben gelten für diesen Test-Browser.
+
 ## 3.69.0 – 2026-11-28
 ### Neu
 - **Wunschliste: Preis automatisch aus dem Shop lesen.** Im Formular gibt es „Preis vom Shop lesen“ (braucht den verbundenen PC): Der PC lädt die Produktseite und liest Titel und Preis aus den Produktdaten, die die Seite selbst angibt (schema.org als JSON-LD oder Microdata, oder Open-Graph-Preis). Bei jedem Wunsch gibt es außerdem „Preis im Shop lesen“ (Lupe), das den Preis später neu liest und „gelesen am …“ dazuschreibt. Ein gelesener Preis steht nur zur Prüfung im Feld und wird erst mit „Hinzufügen“ übernommen.
