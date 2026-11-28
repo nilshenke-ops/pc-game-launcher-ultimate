@@ -1,5 +1,34 @@
 [
   {
+    "version": "3.69.0",
+    "date": "2026-11-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.0/PCGameLauncherCompanion.exe",
+    "size": 95601267,
+    "sha256": "7033b0948864006f5925c44699f1706e63c08167cf6ac0fa31fd4c3c5e3dd2ea",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.69.0-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.0/PCGameLauncherCompanion-3.69.0-win-x64.zip",
+      "size": 89873452,
+      "sha256": "842b17270564f7038fe4b13bf0fd2ce97f7c360c402c7b688c7016a498dad726"
+    },
+    "notes": "**Wunschliste: Preis automatisch aus dem Shop lesen.** Im Formular gibt es „Preis vom Shop lesen“ (braucht den verbundenen PC): Der PC lädt die Produktseite und liest Titel und Preis aus den Produktdaten, die die Seite selbst angibt (schema.org als JSON-LD oder Microdata, oder Open-Graph-Preis). Bei jedem Wunsch gibt es außerdem „Preis im Shop lesen“ (Lupe), das den Preis später neu liest und „gelesen am …“ dazuschreibt. Ein gelesener Preis steht nur zur Prüfung im Feld und wird erst mit „Hinzufügen“ übernommen. · Es wird nichts geraten: Steht auf der Seite kein Preis in den Produktdaten, sagt die App das, statt einen Preis aus dem sichtbaren Text zu fischen. Nennt die Seite mehrere Preise (Varianten), steht der niedrigste mit Hinweis da. Ein Preis in einer anderen Währung wird nicht als Euro eingetragen, sondern genannt („Der Shop nennt 29,99 USD“). · **Insel: Grund fürs Ausblenden in den Einstellungen.** Statt „Gerade nicht sichtbar“ steht dort jetzt, warum: zum Beispiel „Vollbild-Fenster von xyz.exe – das wird als Spiel erkannt“ oder „Ein Spiel aus deiner Bibliothek läuft“.",
+    "changes": {
+      "neu": [
+        "**Wunschliste: Preis automatisch aus dem Shop lesen.** Im Formular gibt es „Preis vom Shop lesen“ (braucht den verbundenen PC): Der PC lädt die Produktseite und liest Titel und Preis aus den Produktdaten, die die Seite selbst angibt (schema.org als JSON-LD oder Microdata, oder Open-Graph-Preis). Bei jedem Wunsch gibt es außerdem „Preis im Shop lesen“ (Lupe), das den Preis später neu liest und „gelesen am …“ dazuschreibt. Ein gelesener Preis steht nur zur Prüfung im Feld und wird erst mit „Hinzufügen“ übernommen.",
+        "Es wird nichts geraten: Steht auf der Seite kein Preis in den Produktdaten, sagt die App das, statt einen Preis aus dem sichtbaren Text zu fischen. Nennt die Seite mehrere Preise (Varianten), steht der niedrigste mit Hinweis da. Ein Preis in einer anderen Währung wird nicht als Euro eingetragen, sondern genannt („Der Shop nennt 29,99 USD“).",
+        "**Insel: Grund fürs Ausblenden in den Einstellungen.** Statt „Gerade nicht sichtbar“ steht dort jetzt, warum: zum Beispiel „Vollbild-Fenster von xyz.exe – das wird als Spiel erkannt“ oder „Ein Spiel aus deiner Bibliothek läuft“."
+      ],
+      "verbessert": [],
+      "behoben": [
+        "**Insel in „In allen Programmen“ wurde in manchen Programmen ausgeblendet.** Ein maximiertes Fenster galt als Spiel, wenn es den ganzen Bildschirm bedeckt (zum Beispiel bei ausgeblendeter Taskleiste). Jetzt zählt nur ein Fenster ohne Titelleiste, das den Bildschirm bedeckt, oder ein Programm aus einem Spiele-Ordner. Spiele-Launcher (Epic, Steam, GOG, Ubisoft, EA, Battle.net, Xbox-App), Wallpaper-Programme, Discord, Browser, Büro- und Entwickler-Programme gelten nie als Spiel, auch wenn sie in einem Spiele-Ordner liegen.",
+        "**Insel verschwand hinter anderen „immer im Vordergrund“-Fenstern.** Ein anderes Fenster mit „immer im Vordergrund“ (Mediaplayer, Terminal, Chat-Overlay), das zuletzt vorne war, lag über der Insel. Die Insel holt sich jetzt alle 1,5 Sekunden und bei jedem Wechsel des vorderen Fensters den obersten Platz zurück, ohne den Fokus zu nehmen."
+      ]
+    },
+    "signature": "3qzQ8bqHbr+jiSyPvQRJ1vuwBuTcDxWpEUblyWi+y7C2P60MdM7vrFxKckHaLW6I4kQJiI32iBN6UXln5KL6vg=="
+  },
+  {
     "version": "3.68.1",
     "date": "2026-11-24",
     "channel": "stable",
@@ -1332,29 +1361,5 @@
       ]
     },
     "signature": "xKVPJWFAPbe9xVzcFr3n93ofZPyu8hyyPep+0sCYxEbaDeopI/rRXtdP3Ssa8ZYKfojpT3RLdEJN8qIPYOrVfg=="
-  },
-  {
-    "version": "3.39.1",
-    "date": "2026-11-10",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion.exe",
-    "size": 95096649,
-    "sha256": "4af916fc8a5ae701fa0b64f0bcf4fbf4901595bcb9ae1df966ed85d25b2658b5",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.39.1-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.1/PCGameLauncherCompanion-3.39.1-win-x64.zip",
-      "size": 89370564,
-      "sha256": "55c1c1c00802b7e7226c03969cc1e929220f8e7ebff657df6ec23609da9d44e9"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Cloud: Lehnt die Cloud einen einzelnen Eintrag ab (z. B. die Spiele-Liste mit vielen Bildern ist zu groß), blockiert das nicht mehr alle anderen – der Eintrag wird einzeln, dann ohne große Bilder erneut gesendet; bleibt ein Fehler, steht der genaue Grund auf der Cloud-Seite am PC"
-      ]
-    },
-    "signature": "vyiktmW9qekUVLanrao9NrPxLlETtAtpnC1EG2QVTWt6wnoA77hbg7PQIaA9RCEdYQETKjRE6jCC/WGjsulPGQ=="
   }
 ]
