@@ -3542,3 +3542,7 @@ a.card:active, .card[role="button"]:active, button.card:active, .game-card:activ
   .wl-item { grid-template-columns: minmax(0, 1fr) auto; }
   .wl-item .wl-actions { grid-column: 1 / -1; justify-content: flex-start; }
 }
+.wl-read-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.wl-readmsg { margin: 0; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.06); }
+.wl-readmsg.ok { border-left: 3px solid #4ade80; } .wl-readmsg.check { border-left: 3px solid #fbbf24; } .wl-readmsg.none { border-left: 3px solid #f87171; }
+.wl-read { display: block; font-size: .68rem; font-weight: 500; opacity: .65; text-align: right; }

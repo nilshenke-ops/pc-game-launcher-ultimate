@@ -449,6 +449,7 @@ public static class RpcApi
             return await s.News.SteamAsync(ctx.Str("appId", 10), count);
         });
         // Price comparison from keyforsteam.de – only on request, at most one page every 5 s, cached 6 h.
+        rpc.Register("price.lookup", async ctx => await s.PriceLookup.LookupAsync(ctx.Str("url", 600)));
         rpc.Register("deals.keyforsteam", async ctx => await s.Keyforsteam.PricesAsync(ctx.OptStr("name", 200), ctx.OptStr("url", 400)));
         rpc.Register("deals.refresh", async ctx => await s.Deals.CheckAllAsync(force: true));
         // GG.deals key: checked with one real request before it is stored (encrypted like the Steam key); "" removes it.
@@ -1221,7 +1222,8 @@ public static class RpcApi
         var set = s.Settings.Get();
         return new
         {
-            supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, scope = SettingsService.ScopeOf(set), front = s.Platform.Foreground.Kind.ToString().ToLowerInvariant(), foregroundSupported = s.Platform.Foreground.Supported, gameRunning = s.GameRunning(),
+            supported = s.Platform.Island.Supported, visible = s.Platform.Island.Visible, desktop = set.IslandDesktop, games = set.IslandInGames, scope = SettingsService.ScopeOf(set), front = s.Platform.Foreground.Kind.ToString().ToLowerInvariant(), foregroundSupported = s.Platform.Foreground.Supported, gameRunning = s.GameRunning(), frontProgram = s.Platform.Foreground.FrontProgram,
+            why = CompanionServices.IslandWhyHidden(set, s.GameRunning(), s.Platform.Foreground.GameInFront, s.Platform.Foreground.GameReason, s.Platform.Foreground.Kind),
             look = new { style = set.IslandStyle, eye = set.IslandEye, eyeSize = set.IslandEyeSize, widgets = set.IslandWidgets ?? SettingsService.IslandLook.DefaultWidgets.ToList(), position = set.IslandPosition, opacity = set.IslandOpacity, layout = set.IslandLayout, accent = set.IslandAccent, effect = set.IslandEffect },
         };
     }

@@ -18,7 +18,7 @@ import { IslandColorPicker } from "./island-color";
 import type { CSSProperties } from "react";
 
 type IslandScope = "app" | "desktop" | "programs" | "games" | "all";
-interface IslandInfo { supported: boolean; visible: boolean; desktop: boolean; games: boolean; gameRunning: boolean; scope?: IslandScope; front?: "program" | "desktop" | "app"; foregroundSupported?: boolean }
+interface IslandInfo { supported: boolean; visible: boolean; desktop: boolean; games: boolean; gameRunning: boolean; scope?: IslandScope; front?: "program" | "desktop" | "app"; foregroundSupported?: boolean; frontProgram?: string | null; why?: string | null }
 /** Where the island window shows (the island inside the app is switched on and off separately). */
 export const ISLAND_SCOPES: { id: IslandScope; label: string; hint: string }[] = [
   { id: "app", label: "Nur in der App", hint: "Kein Fenster auf dem Bildschirm – die Insel gibt es nur in dieser App." },
@@ -57,7 +57,8 @@ function IslandSwitchesCard() {
                   );
                 })}
               </div>
-              <p className="tiny muted">{d.visible ? t("Gerade sichtbar.") : d.gameRunning && (d.scope === "programs" || d.scope === "desktop") ? t("Gerade ausgeblendet, weil ein Spiel läuft.") : d.scope === "app" ? t("Kein Fenster – nur die Insel in der App.") : t("Gerade nicht sichtbar (je nach Bereich und vorderem Fenster).")}</p>
+              <p className="tiny muted" data-testid="island-why">{d.visible ? t("Gerade sichtbar.") : d.why ? <>{t("Gerade nicht sichtbar:")} {d.why}</> : t("Gerade nicht sichtbar (je nach Bereich und vorderem Fenster).")}</p>
+              {d.visible && d.front === "program" && d.frontProgram && <p className="tiny muted">{t("Vorne ist gerade: {n}. Liegt die Insel trotzdem nicht darüber, deckt ein anderes Fenster sie zu, das immer im Vordergrund bleibt, oder das Programm läuft im exklusiven Vollbild (das entscheidet Windows).", { n: d.frontProgram })}</p>}
               {(d.scope === "desktop" || d.scope === "programs" || d.scope === "games") && d.foregroundSupported === false && <p className="tiny muted">{t("Dieser Begleiter erkennt das vordere Fenster nicht.")}</p>}
             </>
           )}

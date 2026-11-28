@@ -205,4 +205,24 @@ public class IslandTests
         Assert.Equal(3, s.IslandLayout!["tabs"]!.AsArray().Count - 1);
         Assert.Throws<RpcException>(() => svc.SetIslandLook(new SettingsService.IslandLookUpdate { Effect = "lava" }));
     }
+
+    [Fact]
+    public void The_settings_say_why_the_island_is_hidden()
+    {
+        Settings S(string scope) => new() { IslandScope = scope };
+        const ForegroundKind Prog = ForegroundKind.Program, Desk = ForegroundKind.Desktop, App = ForegroundKind.App;
+        // wanted: no reason
+        Assert.Null(CompanionServices.IslandWhyHidden(S("programs"), false, false, null, Prog));
+        Assert.Null(CompanionServices.IslandWhyHidden(S("all"), true, true, "x", Prog));
+        // the usual causes, each with its own words
+        Assert.Contains("nur in der App", CompanionServices.IslandWhyHidden(S("app"), false, false, null, Prog));
+        Assert.Contains("dieses Fenster", CompanionServices.IslandWhyHidden(S("programs"), false, false, null, App));
+        Assert.Contains("kein Spiel", CompanionServices.IslandWhyHidden(S("games"), false, false, null, Prog));
+        Assert.Contains("nur auf dem Desktop", CompanionServices.IslandWhyHidden(S("desktop"), false, false, null, Prog));
+        Assert.Contains("aus deiner Bibliothek", CompanionServices.IslandWhyHidden(S("programs"), true, false, null, Prog));
+        var seen = CompanionServices.IslandWhyHidden(S("programs"), false, true, "Vollbild-Fenster von foo.exe", Prog)!;
+        Assert.Contains("Vollbild-Fenster von foo.exe", seen);                 // the program that was taken for a game is named
+        Assert.Contains("Überall", seen);                                      // and the way out
+        Assert.Null(CompanionServices.IslandWhyHidden(S("desktop"), false, false, null, Desk));
+    }
 }

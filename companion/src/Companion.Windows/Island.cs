@@ -23,6 +23,7 @@ sealed class WindowsDesktopIsland(UiInvoker ui) : IDesktopIsland
 
     public bool Supported => true;
     public bool Visible => _form?.Visible == true;
+    public void Raise() => ui.Post(() => _form?.KeepOnTop());
 
     /// <summary>Set by the main window once WebView2 and the web server are ready – a wanted island opens now.</summary>
     public void Ready(CoreWebView2Environment? env, string origin, string token)
@@ -64,7 +65,7 @@ sealed class IslandForm : Form
     [DllImport("user32.dll")] static extern int SetWindowRgn(IntPtr hWnd, IntPtr hRgn, bool redraw);
     [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
     const int WS_EX_TOOLWINDOW = 0x80, WS_EX_NOACTIVATE = 0x08000000, WS_EX_TOPMOST = 0x8;
-    const uint SWP_NOSIZE = 0x1, SWP_NOZORDER = 0x4, SWP_NOACTIVATE = 0x10, SWP_SHOWWINDOW = 0x40;
+    const uint SWP_NOSIZE = 0x1, SWP_NOMOVE = 0x2, SWP_NOZORDER = 0x4, SWP_NOACTIVATE = 0x10, SWP_SHOWWINDOW = 0x40;
     static readonly IntPtr HWND_TOPMOST = new(-1);
 
     /// <summary>
@@ -99,7 +100,18 @@ sealed class IslandForm : Form
         BackColor = Color.FromArgb(7, 9, 13);
         Controls.Add(_web);
         _glide.Tick += (_, _) => GlideStep();
+        _top.Tick += (_, _) => KeepOnTop();
     }
+
+    // Another always-on-top window (a media player, a terminal set to "always on top", a chat overlay) that was in front last sits above this one –
+    // the island would vanish behind it although it is shown. So the window is put on top again now and then (without taking the focus).
+    readonly System.Windows.Forms.Timer _top = new() { Interval = 1500 };
+    public void KeepOnTop()
+    {
+        if (!IsHandleCreated || !Visible) return;
+        SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+    }
+    protected override void OnVisibleChanged(EventArgs e) { base.OnVisibleChanged(e); if (Visible) _top.Start(); else _top.Stop(); }
 
     /// <summary>Where the visible island starts inside the window (device pixels) for a place and an island width.</summary>
     static int ShapeOffset(string position, int w, int windowW) => position == "left" ? 0 : position == "right" ? windowW - w : (windowW - w) / 2;
@@ -257,7 +269,7 @@ sealed class IslandForm : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) { _glide.Dispose(); _web.Dispose(); }
+        if (disposing) { _glide.Dispose(); _top.Dispose(); _web.Dispose(); }
         base.Dispose(disposing);
     }
 }

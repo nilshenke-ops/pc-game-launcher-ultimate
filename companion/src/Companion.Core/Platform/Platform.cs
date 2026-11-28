@@ -180,6 +180,8 @@ public interface IDesktopIsland
     string? SetVisible(bool on);
     /// <summary>Place at the top edge ("center", "left", "right") and opacity in percent (50–100).</summary>
     void SetLook(string position, int opacityPercent);
+    /// <summary>Puts the window back on top of all other windows without taking the focus (another always-on-top window may have covered it).</summary>
+    void Raise() { }
 }
 
 /// <summary>Where the focus is: another program, the desktop (no program window in front) or the companion's own window.</summary>
@@ -195,6 +197,10 @@ public interface IForegroundWatcher
     event Action? Changed;
     /// <summary>The well-known app or website in front, looked at right now (see ForegroundBrand); "self" for this companion's own windows.</summary>
     string? FrontBrand() => null;
+    /// <summary>Why the program in front counts as a game (for the settings: "Vollbild-Fenster von x.exe"); null when it does not.</summary>
+    string? GameReason => null;
+    /// <summary>The program in front (file name without .exe), null for the desktop, this app or when unknown.</summary>
+    string? FrontProgram => null;
     /// <summary>Watching costs a little – only while the island's place depends on it.</summary>
     void SetActive(bool on);
 }

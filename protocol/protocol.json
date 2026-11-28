@@ -99,6 +99,7 @@
     "media.youtube": "view",
     "media.configureYouTube": "admin",
     "deals.keyforsteam": "view",
+    "price.lookup": "view",
     "jarvis.session": "view",
     "jarvis.plan": "view",
     "jarvis.execute": "view",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cleanList, decodeShare, encodeShare, formatPrice, guessTitle, makeWish, normalizeUrl, parsePrice, shareLink, totalCents, withoutPrice, type Wish } from "./xmas-list";
+import { cleanList, decodeShare, applyLookup, encodeShare, formatPrice, guessTitle, makeWish, normalizeUrl, parsePrice, shareLink, totalCents, withoutPrice, type Wish } from "./xmas-list";
 
 describe("Weihnachtswunschliste", () => {
   it("liest Preise in deutscher und englischer Schreibweise", () => {
@@ -79,5 +79,19 @@ describe("Weihnachtswunschliste", () => {
     const code = await encodeShare(cleanList({ items }));
     expect(code.length).toBeLessThan(2000);
     expect((await decodeShare(code))?.items).toHaveLength(30);
+  });
+
+  it("übernimmt vom PC gelesene Preise nur, wenn es Euro sind", () => {
+    const base = { url: "https://a.de/x", host: "a.de", title: "Ding &lt;", currency: "EUR", source: "Produktdaten", note: null, multiple: false, readAt: "2026-11-28T10:00:00Z" };
+    expect(applyLookup({ ...base, priceCents: 1234 })).toMatchObject({ cents: 1234, kind: "ok", message: "found" });
+    expect(applyLookup({ ...base, priceCents: 1234, currency: null })).toMatchObject({ cents: 1234, kind: "ok" });
+    expect(applyLookup({ ...base, priceCents: 1234, multiple: true })).toMatchObject({ cents: 1234, kind: "check", message: "multiple" });
+    expect(applyLookup({ ...base, priceCents: 1234, currency: "USD" })).toMatchObject({ cents: null, kind: "check", message: "other-currency", amount: "12,34", currency: "USD" });
+    expect(applyLookup({ ...base, priceCents: null, note: "keine Daten" })).toMatchObject({ cents: null, kind: "none", message: "none", note: "keine Daten" });
+  });
+
+  it("merkt sich, wann ein Preis gelesen wurde, aber nur zu einem vorhandenen Preis", () => {
+    const l = cleanList({ items: [{ url: "https://a.de/x", priceCents: 500, priceAt: 1700000000000 }, { url: "https://b.de/y", priceCents: null, priceAt: 1700000000000 }, { url: "https://c.de/z", priceCents: 5, priceAt: "x" }] });
+    expect(l.items.map((w) => w.priceAt)).toEqual([1700000000000, null, null]);
   });
 });

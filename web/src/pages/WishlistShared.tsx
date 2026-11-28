@@ -38,7 +38,7 @@ export default function WishlistShared({ code }: { code: string }) {
           </li>
         ))}
       </ul>
-      <p className="small muted">{t("Preise sind die Angaben der Person, die die Liste geschickt hat – im Shop kann der Preis abweichen.")}</p>
+      <p className="small muted">{t("Preise sind die Angaben der Person, die die Liste geschickt hat (eingetragen oder aus dem Shop gelesen) – im Shop kann der Preis abweichen.")}</p>
     </main>
   );
 }

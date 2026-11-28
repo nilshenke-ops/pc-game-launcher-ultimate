@@ -4,6 +4,21 @@ Format: `## MAJOR.MINOR.PATCH – Datum`, darunter `### Neu`, `### Verbessert`, 
 Die Version selbst steht nur in der Datei `VERSION`. `scripts/release-manifest.mjs` liest diesen Eintrag
 für die Update-Zentrale (Webseite und Begleiter) und für die Release-Notizen.
 
+## 3.69.0 – 2026-11-28
+### Neu
+- **Wunschliste: Preis automatisch aus dem Shop lesen.** Im Formular gibt es „Preis vom Shop lesen“ (braucht den verbundenen PC): Der PC lädt die Produktseite und liest Titel und Preis aus den Produktdaten, die die Seite selbst angibt (schema.org als JSON-LD oder Microdata, oder Open-Graph-Preis). Bei jedem Wunsch gibt es außerdem „Preis im Shop lesen“ (Lupe), das den Preis später neu liest und „gelesen am …“ dazuschreibt. Ein gelesener Preis steht nur zur Prüfung im Feld und wird erst mit „Hinzufügen“ übernommen.
+- Es wird nichts geraten: Steht auf der Seite kein Preis in den Produktdaten, sagt die App das, statt einen Preis aus dem sichtbaren Text zu fischen. Nennt die Seite mehrere Preise (Varianten), steht der niedrigste mit Hinweis da. Ein Preis in einer anderen Währung wird nicht als Euro eingetragen, sondern genannt („Der Shop nennt 29,99 USD“).
+- **Insel: Grund fürs Ausblenden in den Einstellungen.** Statt „Gerade nicht sichtbar“ steht dort jetzt, warum: zum Beispiel „Vollbild-Fenster von xyz.exe – das wird als Spiel erkannt“ oder „Ein Spiel aus deiner Bibliothek läuft“.
+### Behoben
+- **Insel in „In allen Programmen“ wurde in manchen Programmen ausgeblendet.** Ein maximiertes Fenster galt als Spiel, wenn es den ganzen Bildschirm bedeckt (zum Beispiel bei ausgeblendeter Taskleiste). Jetzt zählt nur ein Fenster ohne Titelleiste, das den Bildschirm bedeckt, oder ein Programm aus einem Spiele-Ordner. Spiele-Launcher (Epic, Steam, GOG, Ubisoft, EA, Battle.net, Xbox-App), Wallpaper-Programme, Discord, Browser, Büro- und Entwickler-Programme gelten nie als Spiel, auch wenn sie in einem Spiele-Ordner liegen.
+- **Insel verschwand hinter anderen „immer im Vordergrund“-Fenstern.** Ein anderes Fenster mit „immer im Vordergrund“ (Mediaplayer, Terminal, Chat-Overlay), das zuletzt vorne war, lag über der Insel. Die Insel holt sich jetzt alle 1,5 Sekunden und bei jedem Wechsel des vorderen Fensters den obersten Platz zurück, ohne den Fokus zu nehmen.
+### Sicherheit
+- Der Preis-Abruf lädt eine Adresse, die jemand eingetippt hat, deshalb ist er eng begrenzt: nur http/https auf den üblichen Ports, keine IP-Nummern, keine Namen wie localhost, .local, .lan oder .internal, kein Benutzername in der Adresse. Der Name muss zu öffentlichen Internetadressen führen, nie zu diesem PC oder ins Heimnetz, auch nicht über eine Weiterleitung (höchstens 4, jede wird neu geprüft) und nicht über eine später geänderte DNS-Antwort (die Verbindung selbst wird geprüft). Keine Cookies, keine Anmeldedaten, 10 Sekunden, höchstens 1,5 MB, nur HTML, höchstens 2 gleichzeitig und 30 pro Minute, Antworten werden 30 Minuten gemerkt. Das Recht dafür ist „Ansehen“ (wie bei den anderen Preis-Abfragen), nicht öffentlich erreichbar.
+- Der Shop sieht dabei die Internetadresse deines PCs und den Link, sonst nichts. Das geschieht nur auf Knopfdruck, nie im Hintergrund.
+### Hinweis
+- Nicht überall klappt es: Viele Shops blocken automatische Abrufe oder bauen die Seite erst im Browser auf. Im Test lieferte IKEA den Preis korrekt; LEGO, MediaMarkt, Otto, bol und Humble Bundle lehnten die Anfrage ab, Thalia und Steam nennen keine Produktdaten mit Preis. Dann sagt die App das und der Preis wird selbst eingetragen.
+- Ob die Insel danach in deinen Programmen sichtbar bleibt, konnte ich nicht auf einem echten Windows-PC prüfen; die Einstellungen zeigen jetzt den Grund, falls sie noch fehlt.
+
 ## 3.68.1 – 2026-11-24
 ### Behoben
 - Die Version 3.68.0 (Weihnachtswunschliste) wurde nicht veröffentlicht, weil ein Test im Begleiter fehlschlug: Der Assistent kannte die neue Seite noch nicht. JARVIS kennt die Wunschliste jetzt und kann dorthin führen. Inhalt sonst unverändert, siehe 3.68.0.

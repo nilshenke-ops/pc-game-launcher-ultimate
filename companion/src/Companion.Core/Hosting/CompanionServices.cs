@@ -88,6 +88,8 @@ public sealed class CompanionServices : IAsyncDisposable
     public NewsService News { get; }
     public ResearchService Research { get; }
     public KeyforsteamService Keyforsteam { get; }
+    /// <summary>Reads the price of a product from a shop page (Christmas wish list) – see PriceLookupService for the safety rules.</summary>
+    public PriceLookupService PriceLookup { get; } = new();
     public SteamAchievementsService SteamAchievements { get; }
     /// <summary>Play time (Steam, measured sessions) and average durations (IGDB) for "Wie lange brauche ich noch?".</summary>
     public PlaytimeService Playtime { get; }
@@ -761,6 +763,25 @@ public sealed class CompanionServices : IAsyncDisposable
         };
     }
 
+    /// <summary>
+    /// Why the island window is not shown right now (for the settings), null while it is wanted. Says what is really the case instead of
+    /// "not visible": the scope, this app in front, a library game that runs, or the program in front that counts as a game and why.
+    /// </summary>
+    public static string? IslandWhyHidden(Settings set, bool libraryGame, bool gameInFront, string? gameReason, ForegroundKind front)
+    {
+        var gaming = libraryGame || gameInFront;
+        if (IslandWanted(set, gaming, front)) return null;
+        var scope = SettingsService.ScopeOf(set);
+        if (scope == "app") return "Die Insel ist nur in der App eingestellt – es gibt kein Fenster auf dem Bildschirm.";
+        if (front == ForegroundKind.App) return "Gerade ist dieses Fenster vorne – dort ist die Insel in der App selbst.";
+        if (scope == "games" && !gaming) return "Es läuft kein Spiel – diese Einstellung zeigt die Insel nur in Spielen.";
+        if (scope == "desktop" && front == ForegroundKind.Program && !gaming) return "Ein Programm ist vorne – diese Einstellung zeigt die Insel nur auf dem Desktop.";
+        if (gaming) return libraryGame
+            ? "Ein Spiel aus deiner Bibliothek läuft – dann ist die Insel in dieser Einstellung ausgeblendet. „Überall“ zeigt sie auch dort."
+            : $"{gameReason ?? "Das Programm vorne"} – das wird als Spiel erkannt und die Insel ist in dieser Einstellung ausgeblendet. „Überall“ zeigt sie auch dort.";
+        return null;
+    }
+
     readonly object _npGate = new();
     NowPlayingInfo? _np; DateTime _npAt = DateTime.MinValue;
     /// <summary>The current song/video, read from Windows at most every 1.5 seconds.</summary>
@@ -786,7 +807,7 @@ public sealed class CompanionServices : IAsyncDisposable
             var scope = SettingsService.ScopeOf(set);
             Platform.Foreground.SetActive(scope is "desktop" or "programs" or "games"); // "all" and "app" do not depend on the front window
             var want = IslandWanted(set, GameRunning() || Platform.Foreground.GameInFront, Platform.Foreground.Kind);
-            if (_islandShown == want) return null;
+            if (_islandShown == want) { if (want) Platform.Island.Raise(); return null; }   // front window changed: back on top of an always-on-top program
             if (want) Music.Start(); else Music.Stop();
             var err = Platform.Island.SetVisible(want);
             _islandShown = err == null ? want : null;
@@ -847,6 +868,7 @@ public sealed class CompanionServices : IAsyncDisposable
         Deals.Dispose();
         News.Dispose();
         Keyforsteam.Dispose();
+        PriceLookup.Dispose();
         SteamAchievements.Dispose();
         Playtime.Dispose();
         try { Platform.Hotkeys.UnregisterAll(); } catch { }

@@ -28,6 +28,18 @@ for (const [label, viewport, mobile] of [["pc", { width: 1180, height: 860 }, fa
       await add.click();
       await expect(page.getByText("Der Preis ist keine Zahl")).toBeVisible();
 
+      // reading the price from the shop: the PC refuses addresses inside the home network and says why (no real shop is loaded in the test)
+      const read = page.getByRole("button", { name: "Preis vom Shop lesen" });
+      await page.getByLabel("Preis in Euro (optional)").fill("");
+      await url.fill("");
+      await expect(read).toBeDisabled();
+      await url.fill("http://192.168.1.1/router/admin");
+      await expect(read).toBeEnabled();
+      await read.click();
+      await expect(page.getByRole("status").filter({ hasText: "nicht im Internet" })).toBeVisible();
+      await expect(page.getByLabel("Preis in Euro (optional)")).toHaveValue("");               // nothing made up
+      await url.fill("https://www.beispiel-shop.de/Sony-WH-1000XM5-Kopfhoerer/dp/B09XS7JWHH");
+
       // two wishes: one with a price, one without
       await page.getByLabel("Preis in Euro (optional)").fill("299,99");
       await add.click();

@@ -9,7 +9,7 @@ export const MAX_ITEMS = 100;
 const MAX_URL = 600, MAX_TITLE = 120, MAX_NOTE = 200, MAX_NAME = 60;
 const MAX_PAYLOAD = 60_000;     // characters of the share code; larger is refused
 
-export interface Wish { id: string; url: string; title: string; priceCents: number | null; note: string; at: number }
+export interface Wish { id: string; url: string; title: string; priceCents: number | null; note: string; at: number; /** When the price was read from the shop (ms), null when it was typed in. */ priceAt: number | null }
 export interface XmasList { title: string; items: Wish[] }
 
 const clamp = (s: unknown, n: number) => (typeof s === "string" ? s.replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, n) : "");
@@ -67,7 +67,7 @@ export function makeWish(url: string, title: string, price: string, note = ""): 
   if (!u) return { error: "url" };
   let cents: number | null = null;
   if (price.trim()) { cents = parsePrice(price); if (cents == null) return { error: "price" }; }
-  return { id: newId(), url: u, title: clamp(title, MAX_TITLE) || guessTitle(u), priceCents: cents, note: clamp(note, MAX_NOTE), at: Date.now() };
+  return { id: newId(), url: u, title: clamp(title, MAX_TITLE) || guessTitle(u), priceCents: cents, note: clamp(note, MAX_NOTE), at: Date.now(), priceAt: null };
 }
 
 /** Whatever is stored or received becomes a clean list: only valid web links, limited lengths and count. */
@@ -80,9 +80,26 @@ export function cleanList(raw: unknown): XmasList {
     const url = typeof w.url === "string" ? normalizeUrl(w.url) : null;
     if (!url) continue;
     const cents = typeof w.priceCents === "number" && Number.isFinite(w.priceCents) && w.priceCents >= 0 && w.priceCents <= 100_000_000 ? Math.round(w.priceCents) : null;
-    items.push({ id: typeof w.id === "string" && w.id ? w.id.slice(0, 64) : newId(), url, title: clamp(w.title, MAX_TITLE) || guessTitle(url), priceCents: cents, note: clamp(w.note, MAX_NOTE), at: typeof w.at === "number" ? w.at : 0 });
+    items.push({ id: typeof w.id === "string" && w.id ? w.id.slice(0, 64) : newId(), url, title: clamp(w.title, MAX_TITLE) || guessTitle(url), priceCents: cents, note: clamp(w.note, MAX_NOTE), at: typeof w.at === "number" ? w.at : 0, priceAt: cents != null && typeof w.priceAt === "number" && Number.isFinite(w.priceAt) ? w.priceAt : null });
   }
   return { title: clamp(r.title, MAX_NAME), items };
+}
+
+// ------------------------------------------------------------------ price read from the shop (the PC loads the page: price.lookup)
+export interface PriceLookup { url: string; host: string; title: string | null; priceCents: number | null; currency: string | null; source: string | null; note: string | null; multiple: boolean; readAt: string }
+export interface LookupUse {
+  /** Cents to put into the price field – only a price in euros (or one the shop gives without a currency); null otherwise. */
+  cents: number | null; title: string; kind: "ok" | "check" | "none";
+  /** What to tell the person. {n} texts are German here and go through t() in the page, so this only names the case. */
+  message: "found" | "multiple" | "other-currency" | "none"; amount?: string; currency?: string; note?: string; host: string; source?: string;
+}
+/** What to do with the answer of the PC: never a made-up price, never a foreign currency taken for euros. */
+export function applyLookup(r: PriceLookup): LookupUse {
+  const title = clamp(r.title ?? "", MAX_TITLE), host = clamp(r.host, 80);
+  if (r.priceCents == null) return { cents: null, title, kind: "none", message: "none", note: r.note ?? undefined, host };
+  const cur = (r.currency ?? "EUR").toUpperCase();
+  if (cur !== "EUR") return { cents: null, title, kind: "check", message: "other-currency", amount: (r.priceCents / 100).toFixed(2).replace(".", ","), currency: cur, host };
+  return { cents: r.priceCents, title, kind: r.multiple ? "check" : "ok", message: r.multiple ? "multiple" : "found", host, source: r.source ?? undefined };
 }
 
 // ------------------------------------------------------------------ share code
