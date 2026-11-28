@@ -1,5 +1,29 @@
 [
   {
+    "version": "3.69.1",
+    "date": "2026-11-28",
+    "channel": "stable",
+    "fileName": "PCGameLauncherCompanion.exe",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.1/PCGameLauncherCompanion.exe",
+    "size": 95601946,
+    "sha256": "095d21ea5d398500ce2be6c23ac2c6bbec20fc418c149ad2a1906946504c83f9",
+    "zip": {
+      "fileName": "PCGameLauncherCompanion-3.69.1-win-x64.zip",
+      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.1/PCGameLauncherCompanion-3.69.1-win-x64.zip",
+      "size": 89873835,
+      "sha256": "e7feca2cba455bfa9670ea7ebc26f4f90cd063f8a074ec25da001229b147bd46"
+    },
+    "notes": "**Insel im Leerlauf deutlich sparsamer** (offenes Panel, nichts bewegt sich). Gemessen als Arbeit des JavaScripts in 8 Sekunden im Test-Browser (ohne Grafikkarte; Werte schwanken um etwa ±5 ms): Home 46 → 25 ms, Übersicht 78 → 31 ms, System 74 → 43 ms. Die geschlossene Insel lag schon bei ca. 2 ms in 8 s und blieb dort. Aussehen und Verhalten sind unverändert.",
+    "changes": {
+      "neu": [],
+      "verbessert": [
+        "**Insel im Leerlauf deutlich sparsamer** (offenes Panel, nichts bewegt sich). Gemessen als Arbeit des JavaScripts in 8 Sekunden im Test-Browser (ohne Grafikkarte; Werte schwanken um etwa ±5 ms): Home 46 → 25 ms, Übersicht 78 → 31 ms, System 74 → 43 ms. Die geschlossene Insel lag schon bei ca. 2 ms in 8 s und blieb dort. Aussehen und Verhalten sind unverändert."
+      ],
+      "behoben": []
+    },
+    "signature": "Ii3bqMbnilxfaeJlwd22H0q+r7uH1iOcL+ycpW5ucWQUV9hXcOXIEBfOXLKk7K+hY8el2apBEqxcQL9lNHl6cA=="
+  },
+  {
     "version": "3.69.0",
     "date": "2026-11-28",
     "channel": "stable",
@@ -1336,30 +1360,5 @@
       "behoben": []
     },
     "signature": "UtJNLsbmJEgMU7fjOS5bMIYnHf507s2UBi7irlgSwXQsBtUI7aFy5UGIiXLHc+L/cu7JJ4vGUTWYPx2zlHpc2A=="
-  },
-  {
-    "version": "3.39.2",
-    "date": "2026-11-10",
-    "channel": "stable",
-    "fileName": "PCGameLauncherCompanion.exe",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion.exe",
-    "size": 95097598,
-    "sha256": "5601fed1c7d797d4ee36296666d003206bb3f391664cbf113bcfa5333fddb958",
-    "zip": {
-      "fileName": "PCGameLauncherCompanion-3.39.2-win-x64.zip",
-      "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.39.2/PCGameLauncherCompanion-3.39.2-win-x64.zip",
-      "size": 89371449,
-      "sha256": "03ad645f2129824462764640439753621dbd32f6837d4add351e2ba50eed0e1e"
-    },
-    "notes": "",
-    "changes": {
-      "neu": [],
-      "verbessert": [],
-      "behoben": [
-        "Cloud-Karte: Der Knopf „Zur Anmeldung“ tat auf der Profil-Seite nichts – er heißt jetzt „Jetzt anmelden“ und öffnet direkt die Anmeldung",
-        "Cloud-Karte zeigt Anmeldung und Abmeldung sofort (blieb vorher auf „nicht angemeldet“ stehen, bis der nächste Abgleich lief) und sagt, ob das Gerät nur lokal oder mit dem Cloud-Konto angemeldet ist"
-      ]
-    },
-    "signature": "xKVPJWFAPbe9xVzcFr3n93ofZPyu8hyyPep+0sCYxEbaDeopI/rRXtdP3Ssa8ZYKfojpT3RLdEJN8qIPYOrVfg=="
   }
 ]

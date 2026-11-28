@@ -1,29 +1,24 @@
 {
-  "version": "3.69.0",
+  "version": "3.69.1",
   "date": "2026-11-28",
   "channel": "stable",
   "fileName": "PCGameLauncherCompanion.exe",
-  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.0/PCGameLauncherCompanion.exe",
-  "size": 95601267,
-  "sha256": "7033b0948864006f5925c44699f1706e63c08167cf6ac0fa31fd4c3c5e3dd2ea",
+  "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.1/PCGameLauncherCompanion.exe",
+  "size": 95601946,
+  "sha256": "095d21ea5d398500ce2be6c23ac2c6bbec20fc418c149ad2a1906946504c83f9",
   "zip": {
-    "fileName": "PCGameLauncherCompanion-3.69.0-win-x64.zip",
-    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.0/PCGameLauncherCompanion-3.69.0-win-x64.zip",
-    "size": 89873452,
-    "sha256": "842b17270564f7038fe4b13bf0fd2ce97f7c360c402c7b688c7016a498dad726"
+    "fileName": "PCGameLauncherCompanion-3.69.1-win-x64.zip",
+    "url": "https://github.com/nilshenke-ops/pc-game-launcher-ultimate/releases/download/v3.69.1/PCGameLauncherCompanion-3.69.1-win-x64.zip",
+    "size": 89873835,
+    "sha256": "e7feca2cba455bfa9670ea7ebc26f4f90cd063f8a074ec25da001229b147bd46"
   },
-  "notes": "**Wunschliste: Preis automatisch aus dem Shop lesen.** Im Formular gibt es „Preis vom Shop lesen“ (braucht den verbundenen PC): Der PC lädt die Produktseite und liest Titel und Preis aus den Produktdaten, die die Seite selbst angibt (schema.org als JSON-LD oder Microdata, oder Open-Graph-Preis). Bei jedem Wunsch gibt es außerdem „Preis im Shop lesen“ (Lupe), das den Preis später neu liest und „gelesen am …“ dazuschreibt. Ein gelesener Preis steht nur zur Prüfung im Feld und wird erst mit „Hinzufügen“ übernommen. · Es wird nichts geraten: Steht auf der Seite kein Preis in den Produktdaten, sagt die App das, statt einen Preis aus dem sichtbaren Text zu fischen. Nennt die Seite mehrere Preise (Varianten), steht der niedrigste mit Hinweis da. Ein Preis in einer anderen Währung wird nicht als Euro eingetragen, sondern genannt („Der Shop nennt 29,99 USD“). · **Insel: Grund fürs Ausblenden in den Einstellungen.** Statt „Gerade nicht sichtbar“ steht dort jetzt, warum: zum Beispiel „Vollbild-Fenster von xyz.exe – das wird als Spiel erkannt“ oder „Ein Spiel aus deiner Bibliothek läuft“.",
+  "notes": "**Insel im Leerlauf deutlich sparsamer** (offenes Panel, nichts bewegt sich). Gemessen als Arbeit des JavaScripts in 8 Sekunden im Test-Browser (ohne Grafikkarte; Werte schwanken um etwa ±5 ms): Home 46 → 25 ms, Übersicht 78 → 31 ms, System 74 → 43 ms. Die geschlossene Insel lag schon bei ca. 2 ms in 8 s und blieb dort. Aussehen und Verhalten sind unverändert.",
   "changes": {
-    "neu": [
-      "**Wunschliste: Preis automatisch aus dem Shop lesen.** Im Formular gibt es „Preis vom Shop lesen“ (braucht den verbundenen PC): Der PC lädt die Produktseite und liest Titel und Preis aus den Produktdaten, die die Seite selbst angibt (schema.org als JSON-LD oder Microdata, oder Open-Graph-Preis). Bei jedem Wunsch gibt es außerdem „Preis im Shop lesen“ (Lupe), das den Preis später neu liest und „gelesen am …“ dazuschreibt. Ein gelesener Preis steht nur zur Prüfung im Feld und wird erst mit „Hinzufügen“ übernommen.",
-      "Es wird nichts geraten: Steht auf der Seite kein Preis in den Produktdaten, sagt die App das, statt einen Preis aus dem sichtbaren Text zu fischen. Nennt die Seite mehrere Preise (Varianten), steht der niedrigste mit Hinweis da. Ein Preis in einer anderen Währung wird nicht als Euro eingetragen, sondern genannt („Der Shop nennt 29,99 USD“).",
-      "**Insel: Grund fürs Ausblenden in den Einstellungen.** Statt „Gerade nicht sichtbar“ steht dort jetzt, warum: zum Beispiel „Vollbild-Fenster von xyz.exe – das wird als Spiel erkannt“ oder „Ein Spiel aus deiner Bibliothek läuft“."
+    "neu": [],
+    "verbessert": [
+      "**Insel im Leerlauf deutlich sparsamer** (offenes Panel, nichts bewegt sich). Gemessen als Arbeit des JavaScripts in 8 Sekunden im Test-Browser (ohne Grafikkarte; Werte schwanken um etwa ±5 ms): Home 46 → 25 ms, Übersicht 78 → 31 ms, System 74 → 43 ms. Die geschlossene Insel lag schon bei ca. 2 ms in 8 s und blieb dort. Aussehen und Verhalten sind unverändert."
     ],
-    "verbessert": [],
-    "behoben": [
-      "**Insel in „In allen Programmen“ wurde in manchen Programmen ausgeblendet.** Ein maximiertes Fenster galt als Spiel, wenn es den ganzen Bildschirm bedeckt (zum Beispiel bei ausgeblendeter Taskleiste). Jetzt zählt nur ein Fenster ohne Titelleiste, das den Bildschirm bedeckt, oder ein Programm aus einem Spiele-Ordner. Spiele-Launcher (Epic, Steam, GOG, Ubisoft, EA, Battle.net, Xbox-App), Wallpaper-Programme, Discord, Browser, Büro- und Entwickler-Programme gelten nie als Spiel, auch wenn sie in einem Spiele-Ordner liegen.",
-      "**Insel verschwand hinter anderen „immer im Vordergrund“-Fenstern.** Ein anderes Fenster mit „immer im Vordergrund“ (Mediaplayer, Terminal, Chat-Overlay), das zuletzt vorne war, lag über der Insel. Die Insel holt sich jetzt alle 1,5 Sekunden und bei jedem Wechsel des vorderen Fensters den obersten Platz zurück, ohne den Fokus zu nehmen."
-    ]
+    "behoben": []
   },
-  "signature": "3qzQ8bqHbr+jiSyPvQRJ1vuwBuTcDxWpEUblyWi+y7C2P60MdM7vrFxKckHaLW6I4kQJiI32iBN6UXln5KL6vg=="
+  "signature": "Ii3bqMbnilxfaeJlwd22H0q+r7uH1iOcL+ycpW5ucWQUV9hXcOXIEBfOXLKk7K+hY8el2apBEqxcQL9lNHl6cA=="
 }
